@@ -94,7 +94,7 @@ func newFixture(t *testing.T, options ...mcpactions.Option) fixture {
 	projects := newProjectStore()
 	projectReader, err := projectmembershipreads.NewMemberReader(projects)
 	require.NoError(t, err)
-	directory := &directoryStub{}
+	directory := &directoryStub{capabilities: projectmembershipreads.ReadCapabilities{Workspace: true, WorkspaceMembers: true, ProjectMembers: true}}
 	projectReads := newProjectReadStub()
 	projectWrites := newProjectWriteStub()
 	service, err := mcpactions.New(reader, projectReader, directory, projectReads, projectWrites, options...)

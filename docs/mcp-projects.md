@@ -64,5 +64,5 @@ in the roster statement. Their regressions mutate scope after action admission
 and before the domain reader executes, so another credential check alone cannot
 make these tests pass.
 
-All four project actions are integrated and tested through the generated server with both credentials and protocol revisions. The full Go gate and focused race tests pass; package coverage floors remain unchanged. Frontend builds and checks pass after the parity-table formatting correction. Finer read-action discovery filtering and browser conflict proof remain open.
+All four project actions are integrated and tested through the generated server with both credentials and protocol revisions. The full Go gate and focused race tests pass; package coverage floors remain unchanged. Frontend builds and checks pass after the parity-table formatting correction. Read-action discovery now reflects current workspace and project membership. Browser conflict proof remains open.
 Complete OAuth browser/proxy proof and 207-action parity remain separate open work.

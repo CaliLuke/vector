@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
-	"github.com/CaliLuke/go-plane/internal/mcptransport"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	projects "github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
@@ -84,27 +83,4 @@ func projectWriteError(err error) error {
 	}
 
 	return projectReadError(err)
-}
-
-func (s *Service) DiscoverActions(ctx context.Context) (mcptransport.ActionVisibility, error) {
-	ctx, err := mcpauth.Revalidate(ctx)
-	if err != nil {
-		return nil, err
-	}
-	visible := mcptransport.ActionVisibility{}
-	actor, _ := mcpauth.PrincipalFromContext(ctx) // Revalidate returned a verified context.
-	if !actor.AllowsAction(false) {
-		return visible, nil
-	}
-	visible["member"] = map[string]bool{"me": true, "list_workspace": true, "list_project": true, "list_roles": true, "retrieve_role": true}
-	visible["project"] = map[string]bool{"list": true, "retrieve": true}
-	if !actor.AllowsAction(true) {
-		return visible, nil
-	}
-	writes, err := s.projectWrites.VisibleProjectWrites(ctx, actor.UserID, actor.WorkspaceID, actor.WorkspaceSlug)
-	if err != nil {
-		return nil, err
-	}
-	visible["project"]["archive"], visible["project"]["unarchive"] = writes.Archive, writes.Unarchive
-	return visible, nil
 }

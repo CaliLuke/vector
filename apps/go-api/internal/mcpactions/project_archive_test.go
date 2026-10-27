@@ -139,10 +139,17 @@ func TestProjectDiscoveryPropagatesAuthorizationAndPrimaryFailures(t *testing.T)
 	request.Header.Set("X-Workspace-Slug", "workspace-one")
 	ctx, err := f.auth.Authenticate(t.Context(), request)
 	require.NoError(t, err)
-	f.projectWrites.visibilityErr = errors.New("primary unavailable")
-	visible, err := f.service.DiscoverActions(ctx)
-	require.Error(t, err)
-	require.Nil(t, visible)
+	for _, memberFailure := range []bool{false, true} {
+		f.projectWrites.visibilityErr = nil
+		if memberFailure {
+			f.directory.capabilitiesErr = errors.New("primary unavailable")
+		} else {
+			f.projectWrites.visibilityErr = errors.New("primary unavailable")
+		}
+		visible, err := f.service.DiscoverActions(ctx)
+		require.Error(t, err)
+		require.Nil(t, visible)
+	}
 }
 
 func TestProjectRevisionGuardDoesNotRequireReceipt(t *testing.T) {

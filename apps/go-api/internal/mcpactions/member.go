@@ -25,6 +25,7 @@ type projectMemberReader interface {
 }
 
 type memberDirectory interface {
+	ReadCapabilities(context.Context, uuid.UUID, uuid.UUID, string) (membership.ReadCapabilities, error)
 	ListWorkspaceMembers(context.Context, uuid.UUID, string, membership.WorkspaceMembersQuery) (membership.WorkspaceMembersPage, error)
 	ListRolesInWorkspace(context.Context, uuid.UUID, string, string, int, int, uuid.UUID) ([]membership.RoleDefinition, int, error)
 	RetrieveRoleInWorkspace(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID) (membership.RoleDefinition, error)

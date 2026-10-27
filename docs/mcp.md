@@ -200,7 +200,7 @@ size and legacy cursor/errors remain unchanged.
   results use one page with a concrete typed entry carrier, preserving exact
   action-specific fields and empty pages. The member contract records its removal
   condition; no dependency source is patched.
-- **Discovery authorization:** write-action schemas now follow current scopes and domain permissions, using copies of the generated catalogue. Read actions currently follow read scope, with resource access checked at invocation. Finer read-action filtering remains open: guests still see `member.list_workspace`, whose invocation is correctly denied. There is no handwritten replacement registry.
+- **Discovery authorization:** action schemas follow current scopes and domain permissions, using copies of the generated catalogue. Workspace guests do not see `member.list_workspace`; `member.list_project` requires an active membership in a live project. Role and project reads require an eligible workspace membership. Context-free OAuth discovery considers all eligible workspaces; without one, only `member.me` remains. A selected workspace binds both its immutable ID and slug. Invocation rechecks access to the selected resource. There is no handwritten replacement registry.
 - **VEC-35 and VEC-3:** personal-token and generic OAuth invocation are implemented
   for nine member/project actions, including current scopes, linking and revocation.
   Production issuer selection and complete browser/proxy evidence remain open.
@@ -220,5 +220,6 @@ size and legacy cursor/errors remain unchanged.
 Focused verification exercises the real generated HTTP handler, both route
 modes, current and legacy discovery, invalid protocol headers, host/origin
 rejection, request limits, cancellation, unavailable authentication, and startup
-configuration. Typed results and errors are exercised for all five member actions; discovery
-filtering across actions with different permissions remains pending.
+configuration. Typed results and errors are exercised for all five member actions.
+Generated-server discovery tests cover both credentials and revisions, membership
+changes, context-free OAuth, guest permissions, and removed project membership.

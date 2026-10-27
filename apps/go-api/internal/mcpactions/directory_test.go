@@ -17,9 +17,11 @@ import (
 )
 
 type directoryStub struct {
-	body  json.RawMessage
-	total int
-	err   error
+	capabilities    membership.ReadCapabilities
+	capabilitiesErr error
+	body            json.RawMessage
+	total           int
+	err             error
 }
 
 func (s *directoryStub) ListWorkspaceMembers(context.Context, uuid.UUID, string, membership.WorkspaceMembersQuery) (membership.WorkspaceMembersPage, error) {
@@ -76,4 +78,8 @@ func TestDirectDirectoryCallsValidatePageSizeAndRoleID(t *testing.T) {
 		_, err = f.service.Member(ctx, &input)
 		require.Error(t, err)
 	}
+}
+
+func (s *directoryStub) ReadCapabilities(context.Context, uuid.UUID, uuid.UUID, string) (membership.ReadCapabilities, error) {
+	return s.capabilities, s.capabilitiesErr
 }
