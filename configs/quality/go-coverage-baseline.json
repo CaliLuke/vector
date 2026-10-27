@@ -277,6 +277,10 @@
       "statements": 1317,
       "percent": 40.32
     },
+    "github.com/CaliLuke/go-plane/internal/mutationreceipts": {
+      "statements": 77,
+      "percent": 93.51
+    },
     "github.com/CaliLuke/go-plane/internal/notifications": {
       "statements": 200,
       "percent": 80

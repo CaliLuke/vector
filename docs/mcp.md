@@ -210,7 +210,9 @@ size and legacy cursor/errors remain unchanged.
   Production issuer selection and complete browser/proxy evidence remain open.
   Mixed-action discovery filtering and receipt replay still need implementation
   and end-to-end proof.
-- **Reliability and observability:** connect the shared action authorization,
+- **Reliability and observability:** the [receipt transaction foundation](mcp-writes.md)
+  has real PostgreSQL race, rollback, and lost-acknowledgement proof. It is not yet
+  connected to a resource action. Connect the shared action authorization,
   throttling, durable write receipts and sanitized error/trace requirements
   before enabling covered actions. Authentication and generated-validation
   failures now have sanitized log/trace proof; this does not establish the
