@@ -145,6 +145,7 @@ type Webhook struct {
 	Issue        bool                  `json:"issue"`
 	Module       bool                  `json:"module"`
 	Cycle        bool                  `json:"cycle"`
+	Milestone    bool                  `json:"milestone"`
 	IssueComment bool                  `json:"issue_comment"`
 	IsInternal   bool                  `json:"is_internal"`
 	Version      string                `json:"version"`
@@ -170,6 +171,7 @@ type WebhookInvalid struct {
 	Issue          []string `json:"issue,omitzero"`
 	Module         []string `json:"module,omitzero"`
 	Cycle          []string `json:"cycle,omitzero"`
+	Milestone      []string `json:"milestone,omitzero"`
 	IssueComment   []string `json:"issue_comment,omitzero"`
 	IsInternal     []string `json:"is_internal,omitzero"`
 	Version        []string `json:"version,omitzero"`

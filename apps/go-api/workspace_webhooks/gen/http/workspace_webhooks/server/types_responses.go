@@ -50,6 +50,7 @@ type CreateResponseBody struct {
 	Issue        bool                  `form:"issue" json:"issue" xml:"issue"`
 	Module       bool                  `form:"module" json:"module" xml:"module"`
 	Cycle        bool                  `form:"cycle" json:"cycle" xml:"cycle"`
+	Milestone    bool                  `form:"milestone" json:"milestone" xml:"milestone"`
 	IssueComment bool                  `form:"issue_comment" json:"issue_comment" xml:"issue_comment"`
 	IsInternal   bool                  `form:"is_internal" json:"is_internal" xml:"is_internal"`
 	Version      string                `form:"version" json:"version" xml:"version"`
@@ -83,6 +84,7 @@ type CreateInvalidResponseBody struct {
 	Issue          []string `form:"issue,omitempty" json:"issue,omitzero" xml:"issue,omitempty"`
 	Module         []string `form:"module,omitempty" json:"module,omitzero" xml:"module,omitempty"`
 	Cycle          []string `form:"cycle,omitempty" json:"cycle,omitzero" xml:"cycle,omitempty"`
+	Milestone      []string `form:"milestone,omitempty" json:"milestone,omitzero" xml:"milestone,omitempty"`
 	IssueComment   []string `form:"issue_comment,omitempty" json:"issue_comment,omitzero" xml:"issue_comment,omitempty"`
 	IsInternal     []string `form:"is_internal,omitempty" json:"is_internal,omitzero" xml:"is_internal,omitempty"`
 	Version        []string `form:"version,omitempty" json:"version,omitzero" xml:"version,omitempty"`
@@ -169,6 +171,7 @@ type DetailResponseBody struct {
 	Issue        bool                  `form:"issue" json:"issue" xml:"issue"`
 	Module       bool                  `form:"module" json:"module" xml:"module"`
 	Cycle        bool                  `form:"cycle" json:"cycle" xml:"cycle"`
+	Milestone    bool                  `form:"milestone" json:"milestone" xml:"milestone"`
 	IssueComment bool                  `form:"issue_comment" json:"issue_comment" xml:"issue_comment"`
 	IsInternal   bool                  `form:"is_internal" json:"is_internal" xml:"is_internal"`
 	Version      string                `form:"version" json:"version" xml:"version"`
@@ -215,6 +218,7 @@ type PatchDetailResponseBody struct {
 	Issue        bool                  `form:"issue" json:"issue" xml:"issue"`
 	Module       bool                  `form:"module" json:"module" xml:"module"`
 	Cycle        bool                  `form:"cycle" json:"cycle" xml:"cycle"`
+	Milestone    bool                  `form:"milestone" json:"milestone" xml:"milestone"`
 	IssueComment bool                  `form:"issue_comment" json:"issue_comment" xml:"issue_comment"`
 	IsInternal   bool                  `form:"is_internal" json:"is_internal" xml:"is_internal"`
 	Version      string                `form:"version" json:"version" xml:"version"`
@@ -243,6 +247,7 @@ type PatchDetailInvalidResponseBody struct {
 	Issue          []string `form:"issue,omitempty" json:"issue,omitzero" xml:"issue,omitempty"`
 	Module         []string `form:"module,omitempty" json:"module,omitzero" xml:"module,omitempty"`
 	Cycle          []string `form:"cycle,omitempty" json:"cycle,omitzero" xml:"cycle,omitempty"`
+	Milestone      []string `form:"milestone,omitempty" json:"milestone,omitzero" xml:"milestone,omitempty"`
 	IssueComment   []string `form:"issue_comment,omitempty" json:"issue_comment,omitzero" xml:"issue_comment,omitempty"`
 	IsInternal     []string `form:"is_internal,omitempty" json:"is_internal,omitzero" xml:"is_internal,omitempty"`
 	Version        []string `form:"version,omitempty" json:"version,omitzero" xml:"version,omitempty"`
@@ -308,6 +313,7 @@ type RegenerateResponseBody struct {
 	Issue        bool                  `form:"issue" json:"issue" xml:"issue"`
 	Module       bool                  `form:"module" json:"module" xml:"module"`
 	Cycle        bool                  `form:"cycle" json:"cycle" xml:"cycle"`
+	Milestone    bool                  `form:"milestone" json:"milestone" xml:"milestone"`
 	IssueComment bool                  `form:"issue_comment" json:"issue_comment" xml:"issue_comment"`
 	IsInternal   bool                  `form:"is_internal" json:"is_internal" xml:"is_internal"`
 	Version      string                `form:"version" json:"version" xml:"version"`

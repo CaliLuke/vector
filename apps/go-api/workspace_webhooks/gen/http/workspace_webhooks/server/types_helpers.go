@@ -28,6 +28,7 @@ type WebhookResponse struct {
 	Issue        bool                  `form:"issue" json:"issue" xml:"issue"`
 	Module       bool                  `form:"module" json:"module" xml:"module"`
 	Cycle        bool                  `form:"cycle" json:"cycle" xml:"cycle"`
+	Milestone    bool                  `form:"milestone" json:"milestone" xml:"milestone"`
 	IssueComment bool                  `form:"issue_comment" json:"issue_comment" xml:"issue_comment"`
 	IsInternal   bool                  `form:"is_internal" json:"is_internal" xml:"is_internal"`
 	Version      string                `form:"version" json:"version" xml:"version"`
@@ -112,6 +113,7 @@ func NewCreateResponseBody(res *workspacewebhooks.Webhook) *CreateResponseBody {
 		Issue:        res.Issue,
 		Module:       res.Module,
 		Cycle:        res.Cycle,
+		Milestone:    res.Milestone,
 		IssueComment: res.IssueComment,
 		IsInternal:   res.IsInternal,
 		Version:      res.Version,
@@ -202,6 +204,14 @@ func NewCreateInvalidResponseBody(res *workspacewebhooks.WebhookInvalid) *Create
 		}
 	} else {
 		body.Cycle = nil
+	}
+	if res.Milestone != nil {
+		body.Milestone = make([]string, len(res.Milestone))
+		for i, val := range res.Milestone {
+			body.Milestone[i] = val
+		}
+	} else {
+		body.Milestone = nil
 	}
 	if res.IssueComment != nil {
 		body.IssueComment = make([]string, len(res.IssueComment))
@@ -350,6 +360,7 @@ func NewDetailResponseBody(res *workspacewebhooks.Webhook) *DetailResponseBody {
 		Issue:        res.Issue,
 		Module:       res.Module,
 		Cycle:        res.Cycle,
+		Milestone:    res.Milestone,
 		IssueComment: res.IssueComment,
 		IsInternal:   res.IsInternal,
 		Version:      res.Version,
@@ -411,6 +422,7 @@ func NewPatchDetailResponseBody(res *workspacewebhooks.Webhook) *PatchDetailResp
 		Issue:        res.Issue,
 		Module:       res.Module,
 		Cycle:        res.Cycle,
+		Milestone:    res.Milestone,
 		IssueComment: res.IssueComment,
 		IsInternal:   res.IsInternal,
 		Version:      res.Version,
@@ -493,6 +505,14 @@ func NewPatchDetailInvalidResponseBody(res *workspacewebhooks.WebhookInvalid) *P
 		}
 	} else {
 		body.Cycle = nil
+	}
+	if res.Milestone != nil {
+		body.Milestone = make([]string, len(res.Milestone))
+		for i, val := range res.Milestone {
+			body.Milestone[i] = val
+		}
+	} else {
+		body.Milestone = nil
 	}
 	if res.IssueComment != nil {
 		body.IssueComment = make([]string, len(res.IssueComment))
@@ -609,6 +629,7 @@ func NewRegenerateResponseBody(res *workspacewebhooks.Webhook) *RegenerateRespon
 		Issue:        res.Issue,
 		Module:       res.Module,
 		Cycle:        res.Cycle,
+		Milestone:    res.Milestone,
 		IssueComment: res.IssueComment,
 		IsInternal:   res.IsInternal,
 		Version:      res.Version,

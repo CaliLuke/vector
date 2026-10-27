@@ -1348,6 +1348,7 @@ func unmarshalWebhookResponseToWorkspacewebhooksWebhook(v *WebhookResponse) *wor
 		Issue:        *v.Issue,
 		Module:       *v.Module,
 		Cycle:        *v.Cycle,
+		Milestone:    *v.Milestone,
 		IssueComment: *v.IssueComment,
 		IsInternal:   *v.IsInternal,
 		Version:      *v.Version,

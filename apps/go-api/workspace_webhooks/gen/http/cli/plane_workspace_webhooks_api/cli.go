@@ -295,7 +295,7 @@ func workspaceWebhooksCreateUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "workspace-webhooks create --slug \"Cupiditate aut mollitia sunt earum.\" --session-id \"Quae fugiat vitae culpa ut id.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "workspace-webhooks create --slug \"Repellendus ullam nihil.\" --session-id \"Cupiditate aut mollitia sunt earum.\" --stream \"loom.bin\"")
 }
 func workspaceWebhooksPatchCollectionUsage() {
 	// Header with flags
@@ -314,7 +314,7 @@ func workspaceWebhooksPatchCollectionUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "workspace-webhooks patch-collection --slug \"Possimus harum.\" --session-id \"Consequatur adipisci asperiores sit esse consequatur harum.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "workspace-webhooks patch-collection --slug \"Expedita odio repellendus rem.\" --session-id \"Quos cum nulla.\"")
 }
 func workspaceWebhooksDeleteCollectionUsage() {
 	// Header with flags
@@ -333,7 +333,7 @@ func workspaceWebhooksDeleteCollectionUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "workspace-webhooks delete-collection --slug \"Vitae quia omnis voluptate adipisci voluptate.\" --session-id \"Sint sint dolorum odio molestiae consequatur.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "workspace-webhooks delete-collection --slug \"Nihil corporis accusamus nihil et.\" --session-id \"Officia totam dolorem itaque voluptatem quisquam.\"")
 }
 func workspaceWebhooksDetailUsage() {
 	// Header with flags
@@ -354,7 +354,7 @@ func workspaceWebhooksDetailUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "workspace-webhooks detail --slug \"Esse minima incidunt laborum rerum.\" --pk \"9f40ab99-7355-4e46-ba70-dbe7d16161d0\" --session-id \"Fugit quaerat alias magnam eum culpa.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "workspace-webhooks detail --slug \"Provident doloribus.\" --pk \"85f553b7-30e4-4d03-9c26-a77b85de3f20\" --session-id \"Quas rerum voluptatem alias.\"")
 }
 func workspaceWebhooksPatchDetailUsage() {
 	// Header with flags
@@ -377,7 +377,7 @@ func workspaceWebhooksPatchDetailUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "workspace-webhooks patch-detail --slug \"Quaerat quaerat quidem quibusdam voluptas.\" --pk \"ba533ffe-d336-4e02-a6c4-e0bdb8babad3\" --session-id \"Pariatur esse laborum nostrum quis id.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "workspace-webhooks patch-detail --slug \"Aut et autem et aut.\" --pk \"5827bb42-58c4-4998-aa7d-a869e7cbfb0f\" --session-id \"Consequatur dolorem.\" --stream \"loom.bin\"")
 }
 func workspaceWebhooksDeleteDetailUsage() {
 	// Header with flags
@@ -398,7 +398,7 @@ func workspaceWebhooksDeleteDetailUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "workspace-webhooks delete-detail --slug \"Dignissimos unde consequatur nam eius et.\" --pk \"f57f8914-1ec4-4b4f-ab04-a4b344fa3428\" --session-id \"Enim voluptates impedit illo ducimus ad earum.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "workspace-webhooks delete-detail --slug \"Accusamus porro.\" --pk \"1b2ffa4b-3ed9-40a8-b985-a9e7656f7c16\" --session-id \"Aut modi.\"")
 }
 func workspaceWebhooksRegenerateUsage() {
 	// Header with flags
@@ -419,7 +419,7 @@ func workspaceWebhooksRegenerateUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "workspace-webhooks regenerate --slug \"Sunt distinctio dolorem et voluptatem voluptates.\" --pk \"ee35b8e8-8cf7-48ad-8427-9c2fe07b10c1\" --session-id \"Ut et tempora rerum molestias itaque.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "workspace-webhooks regenerate --slug \"Quia minus dolorem quae odit omnis.\" --pk \"0b05e542-7e62-41eb-b8cc-c5cc45a48861\" --session-id \"Sit et labore vitae.\"")
 }
 func workspaceWebhooksLogsUsage() {
 	// Header with flags
@@ -442,5 +442,5 @@ func workspaceWebhooksLogsUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "workspace-webhooks logs --slug \"Nostrum cum eius iure.\" --webhook-id \"c3feeab2-8147-47f0-a379-1108b1752584\" --search \"Qui et aut assumenda magnam et.\" --session-id \"Accusantium officiis molestiae.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "workspace-webhooks logs --slug \"Similique odit facere.\" --webhook-id \"a52e8bef-e5b6-49e5-825c-1d9b6bbeaba4\" --search \"Incidunt tempora.\" --session-id \"Rerum tenetur dolorem aliquam neque.\"")
 }

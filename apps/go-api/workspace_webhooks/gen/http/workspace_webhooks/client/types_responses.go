@@ -47,6 +47,7 @@ type CreateResponseBody struct {
 	Issue        *bool                 `form:"issue,omitempty" json:"issue,omitzero" xml:"issue,omitempty"`
 	Module       *bool                 `form:"module,omitempty" json:"module,omitzero" xml:"module,omitempty"`
 	Cycle        *bool                 `form:"cycle,omitempty" json:"cycle,omitzero" xml:"cycle,omitempty"`
+	Milestone    *bool                 `form:"milestone,omitempty" json:"milestone,omitzero" xml:"milestone,omitempty"`
 	IssueComment *bool                 `form:"issue_comment,omitempty" json:"issue_comment,omitzero" xml:"issue_comment,omitempty"`
 	IsInternal   *bool                 `form:"is_internal,omitempty" json:"is_internal,omitzero" xml:"is_internal,omitempty"`
 	Version      *string               `form:"version,omitempty" json:"version,omitzero" xml:"version,omitempty"`
@@ -80,6 +81,7 @@ type CreateInvalidResponseBody struct {
 	Issue          loom.Optional[[]loom.Optional[string]] `form:"issue,omitempty" json:"issue,omitzero" xml:"issue,omitempty"`
 	Module         loom.Optional[[]loom.Optional[string]] `form:"module,omitempty" json:"module,omitzero" xml:"module,omitempty"`
 	Cycle          loom.Optional[[]loom.Optional[string]] `form:"cycle,omitempty" json:"cycle,omitzero" xml:"cycle,omitempty"`
+	Milestone      loom.Optional[[]loom.Optional[string]] `form:"milestone,omitempty" json:"milestone,omitzero" xml:"milestone,omitempty"`
 	IssueComment   loom.Optional[[]loom.Optional[string]] `form:"issue_comment,omitempty" json:"issue_comment,omitzero" xml:"issue_comment,omitempty"`
 	IsInternal     loom.Optional[[]loom.Optional[string]] `form:"is_internal,omitempty" json:"is_internal,omitzero" xml:"is_internal,omitempty"`
 	Version        loom.Optional[[]loom.Optional[string]] `form:"version,omitempty" json:"version,omitzero" xml:"version,omitempty"`
@@ -166,6 +168,7 @@ type DetailResponseBody struct {
 	Issue        *bool                 `form:"issue,omitempty" json:"issue,omitzero" xml:"issue,omitempty"`
 	Module       *bool                 `form:"module,omitempty" json:"module,omitzero" xml:"module,omitempty"`
 	Cycle        *bool                 `form:"cycle,omitempty" json:"cycle,omitzero" xml:"cycle,omitempty"`
+	Milestone    *bool                 `form:"milestone,omitempty" json:"milestone,omitzero" xml:"milestone,omitempty"`
 	IssueComment *bool                 `form:"issue_comment,omitempty" json:"issue_comment,omitzero" xml:"issue_comment,omitempty"`
 	IsInternal   *bool                 `form:"is_internal,omitempty" json:"is_internal,omitzero" xml:"is_internal,omitempty"`
 	Version      *string               `form:"version,omitempty" json:"version,omitzero" xml:"version,omitempty"`
@@ -212,6 +215,7 @@ type PatchDetailResponseBody struct {
 	Issue        *bool                 `form:"issue,omitempty" json:"issue,omitzero" xml:"issue,omitempty"`
 	Module       *bool                 `form:"module,omitempty" json:"module,omitzero" xml:"module,omitempty"`
 	Cycle        *bool                 `form:"cycle,omitempty" json:"cycle,omitzero" xml:"cycle,omitempty"`
+	Milestone    *bool                 `form:"milestone,omitempty" json:"milestone,omitzero" xml:"milestone,omitempty"`
 	IssueComment *bool                 `form:"issue_comment,omitempty" json:"issue_comment,omitzero" xml:"issue_comment,omitempty"`
 	IsInternal   *bool                 `form:"is_internal,omitempty" json:"is_internal,omitzero" xml:"is_internal,omitempty"`
 	Version      *string               `form:"version,omitempty" json:"version,omitzero" xml:"version,omitempty"`
@@ -240,6 +244,7 @@ type PatchDetailInvalidResponseBody struct {
 	Issue          loom.Optional[[]loom.Optional[string]] `form:"issue,omitempty" json:"issue,omitzero" xml:"issue,omitempty"`
 	Module         loom.Optional[[]loom.Optional[string]] `form:"module,omitempty" json:"module,omitzero" xml:"module,omitempty"`
 	Cycle          loom.Optional[[]loom.Optional[string]] `form:"cycle,omitempty" json:"cycle,omitzero" xml:"cycle,omitempty"`
+	Milestone      loom.Optional[[]loom.Optional[string]] `form:"milestone,omitempty" json:"milestone,omitzero" xml:"milestone,omitempty"`
 	IssueComment   loom.Optional[[]loom.Optional[string]] `form:"issue_comment,omitempty" json:"issue_comment,omitzero" xml:"issue_comment,omitempty"`
 	IsInternal     loom.Optional[[]loom.Optional[string]] `form:"is_internal,omitempty" json:"is_internal,omitzero" xml:"is_internal,omitempty"`
 	Version        loom.Optional[[]loom.Optional[string]] `form:"version,omitempty" json:"version,omitzero" xml:"version,omitempty"`
@@ -305,6 +310,7 @@ type RegenerateResponseBody struct {
 	Issue        *bool                 `form:"issue,omitempty" json:"issue,omitzero" xml:"issue,omitempty"`
 	Module       *bool                 `form:"module,omitempty" json:"module,omitzero" xml:"module,omitempty"`
 	Cycle        *bool                 `form:"cycle,omitempty" json:"cycle,omitzero" xml:"cycle,omitempty"`
+	Milestone    *bool                 `form:"milestone,omitempty" json:"milestone,omitzero" xml:"milestone,omitempty"`
 	IssueComment *bool                 `form:"issue_comment,omitempty" json:"issue_comment,omitzero" xml:"issue_comment,omitempty"`
 	IsInternal   *bool                 `form:"is_internal,omitempty" json:"is_internal,omitzero" xml:"is_internal,omitempty"`
 	Version      *string               `form:"version,omitempty" json:"version,omitzero" xml:"version,omitempty"`
@@ -512,6 +518,21 @@ func NewCreateInvalid(body *CreateInvalidResponseBody) *workspacewebhooks.Webhoo
 		}
 
 		v.Cycle = vCycleValue
+	}
+	if actual, ok := body.Milestone.Value(); ok {
+		var vMilestoneValue []string
+		if actual != nil {
+			vMilestoneValue = make([]string, len(actual))
+			for i, val := range actual {
+				actual, ok := val.Value()
+				if !ok {
+					continue
+				}
+				vMilestoneValue[i] = actual
+			}
+		}
+
+		v.Milestone = vMilestoneValue
 	}
 	if actual, ok := body.IssueComment.Value(); ok {
 		var vIssueCommentValue []string
@@ -840,6 +861,21 @@ func NewPatchDetailInvalid(body *PatchDetailInvalidResponseBody) *workspacewebho
 		}
 
 		v.Cycle = vCycleValue
+	}
+	if actual, ok := body.Milestone.Value(); ok {
+		var vMilestoneValue []string
+		if actual != nil {
+			vMilestoneValue = make([]string, len(actual))
+			for i, val := range actual {
+				actual, ok := val.Value()
+				if !ok {
+					continue
+				}
+				vMilestoneValue[i] = actual
+			}
+		}
+
+		v.Milestone = vMilestoneValue
 	}
 	if actual, ok := body.IssueComment.Value(); ok {
 		var vIssueCommentValue []string

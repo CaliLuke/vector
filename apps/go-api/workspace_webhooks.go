@@ -52,6 +52,7 @@ type webhookCreateRequest struct {
 	Project      *bool                 `json:"project"`
 	Issue        *bool                 `json:"issue"`
 	Module       *bool                 `json:"module"`
+	Milestone    *bool                 `json:"milestone"`
 	Cycle        *bool                 `json:"cycle"`
 	IssueComment *bool                 `json:"issue_comment"`
 	IsInternal   *bool                 `json:"is_internal"`
@@ -225,7 +226,8 @@ func (s *workspaceWebhooksService) Create(ctx context.Context, p *api.CreatePayl
 		ActorID: actor, Slug: p.Slug, CreatedBy: createdBy, CreatedByPresent: createdByPresent,
 		URL: url, IsActive: boolDefault(request.IsActive, true), SecretKey: "plane_wh_" + strings.ReplaceAll(uuid.New().String(), "-", ""),
 		Project: boolDefault(request.Project, false), Issue: boolDefault(request.Issue, false), Module: boolDefault(request.Module, false),
-		Cycle: boolDefault(request.Cycle, false), IssueComment: boolDefault(request.IssueComment, false),
+		Milestone: boolDefault(request.Milestone, false),
+		Cycle:     boolDefault(request.Cycle, false), IssueComment: boolDefault(request.IssueComment, false),
 		IsInternal: boolDefault(request.IsInternal, false), Version: stringDefault(request.Version, "v1"),
 	}
 	data, err := s.repo.Create(ctx, input)
@@ -320,6 +322,7 @@ func (s *workspaceWebhooksService) PatchDetail(ctx context.Context, p *api.Patch
 		Issue: boolDefault(request.Issue, false), IssuePresent: request.Issue != nil,
 		Module: boolDefault(request.Module, false), ModulePresent: request.Module != nil,
 		Cycle: boolDefault(request.Cycle, false), CyclePresent: request.Cycle != nil,
+		Milestone: boolDefault(request.Milestone, false), MilestonePresent: request.Milestone != nil,
 		IssueComment: boolDefault(request.IssueComment, false), IssueCommentPresent: request.IssueComment != nil,
 		IsInternal: boolDefault(request.IsInternal, false), IsInternalPresent: request.IsInternal != nil,
 		Version: stringDefault(request.Version, ""), VersionPresent: request.Version != nil,

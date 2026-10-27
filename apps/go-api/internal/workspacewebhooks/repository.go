@@ -37,7 +37,7 @@ var webhookJSON = `json_build_object(
  'id',h.id,'workspace',h.workspace_id,'created_at',` + djangoapi.DjangoTimestampSQL("h.created_at") + `,'updated_at',` + djangoapi.DjangoTimestampSQL("h.updated_at") + `,
  'created_by',h.created_by_id,'updated_by',h.updated_by_id,'deleted_at',` + djangoapi.DjangoTimestampSQL("h.deleted_at") + `,
  'url',h.url,'is_active',h.is_active,'secret_key',h.secret_key,'project',h.project,
- 'issue',h.issue,'module',h.module,'cycle',h.cycle,'issue_comment',h.issue_comment,
+ 'issue',h.issue,'module',h.module,'cycle',h.cycle,'milestone',h.milestone,'issue_comment',h.issue_comment,
  'is_internal',h.is_internal,'version',h.version)`
 
 var webhookLogJSON = `json_build_object(
@@ -81,16 +81,16 @@ func (r *Repository) Create(ctx context.Context, p CreateParams) (json.RawMessag
 	err := r.db.QueryRow(ctx, `
 INSERT INTO webhooks AS h(
  id,created_at,updated_at,workspace_id,created_by_id,url,is_active,secret_key,project,issue,module,cycle,
- issue_comment,is_internal,version
+ issue_comment,milestone,is_internal,version
 )
 SELECT @id::uuid,NOW(),NOW(),w.id,
  CASE WHEN @created_by_present THEN @created_by::uuid ELSE @actor_id::uuid END,
- @url,@is_active,@secret_key,@project,@issue,@module,@cycle,@issue_comment,@is_internal,@version
+ @url,@is_active,@secret_key,@project,@issue,@module,@cycle,@issue_comment,@milestone,@is_internal,@version
 FROM workspaces w WHERE w.slug=@slug AND w.deleted_at IS NULL
 RETURNING `+webhookJSON, pgx.StrictNamedArgs{
 		"id": uuid.New(), "actor_id": p.ActorID, "created_by_present": p.CreatedByPresent, "created_by": p.CreatedBy,
 		"url": p.URL, "is_active": p.IsActive, "secret_key": p.SecretKey,
-		"project": p.Project, "issue": p.Issue, "module": p.Module, "cycle": p.Cycle,
+		"project": p.Project, "issue": p.Issue, "module": p.Module, "cycle": p.Cycle, "milestone": p.Milestone,
 		"issue_comment": p.IssueComment, "is_internal": p.IsInternal, "version": p.Version, "slug": p.Slug,
 	}).Scan(&data)
 	if err != nil {
@@ -116,6 +116,7 @@ UPDATE webhooks h SET
  issue=CASE WHEN @issue_present THEN @issue ELSE h.issue END,
  module=CASE WHEN @module_present THEN @module ELSE h.module END,
  cycle=CASE WHEN @cycle_present THEN @cycle ELSE h.cycle END,
+ milestone=CASE WHEN @milestone_present THEN @milestone ELSE h.milestone END,
  issue_comment=CASE WHEN @issue_comment_present THEN @issue_comment ELSE h.issue_comment END,
  is_internal=CASE WHEN @is_internal_present THEN @is_internal ELSE h.is_internal END,
  version=CASE WHEN @version_present THEN @version ELSE h.version END,
@@ -131,6 +132,7 @@ RETURNING `+webhookJSON, pgx.StrictNamedArgs{
 		"issue_present": p.IssuePresent, "issue": p.Issue,
 		"module_present": p.ModulePresent, "module": p.Module,
 		"cycle_present": p.CyclePresent, "cycle": p.Cycle,
+		"milestone_present": p.MilestonePresent, "milestone": p.Milestone,
 		"issue_comment_present": p.IssueCommentPresent, "issue_comment": p.IssueComment,
 		"is_internal_present": p.IsInternalPresent, "is_internal": p.IsInternal,
 		"version_present": p.VersionPresent, "version": p.Version,
@@ -205,6 +207,7 @@ type CreateParams struct {
 	Project          bool
 	Issue            bool
 	Module           bool
+	Milestone        bool
 	Cycle            bool
 	IssueComment     bool
 	IsInternal       bool
@@ -227,6 +230,8 @@ type PatchParams struct {
 	ModulePresent       bool
 	Cycle               bool
 	CyclePresent        bool
+	Milestone           bool
+	MilestonePresent    bool
 	IssueComment        bool
 	IssueCommentPresent bool
 	IsInternal          bool

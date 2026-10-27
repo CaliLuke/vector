@@ -60,6 +60,7 @@ type webhookActivityInput struct {
 	NewValue        json.RawMessage `json:"new_value"`
 	ActorID         string          `json:"actor_id"`
 	Slug            string          `json:"slug"`
+	WorkspaceID     string          `json:"workspace_id,omitempty"`
 	CurrentSite     string          `json:"current_site"`
 	EventID         string          `json:"event_id"`
 	OldIdentifier   json.RawMessage `json:"old_identifier"`
@@ -70,6 +71,7 @@ type webhookSendInput struct {
 	EventID     string          `json:"event_id"`
 	WebhookID   string          `json:"webhook_id"`
 	Slug        string          `json:"slug"`
+	WorkspaceID string          `json:"workspace_id,omitempty"`
 	Event       string          `json:"event"`
 	EventData   json.RawMessage `json:"event_data"`
 	Action      string          `json:"action"`
@@ -223,7 +225,8 @@ func validateWebhookModelTask(input WebhookTaskInput) error {
 			return fmt.Errorf("%w: %s is required", ErrPermanentWebhookTask, key)
 		}
 	}
-	return nil
+	_, err := webhookWorkspaceID(input.Kwargs, stringValue(input.Kwargs["model_name"]), nil)
+	return err
 }
 
 func webhookActivityInputFromTask(input WebhookTaskInput) (webhookActivityInput, error) {
@@ -244,7 +247,9 @@ func webhookActivityInputFromTask(input WebhookTaskInput) (webhookActivityInput,
 	if result.Event == "" || result.Verb == "" || result.ActorID == "" || result.Slug == "" || result.EventID == "" {
 		return result, fmt.Errorf("%w: webhook activity requires event, verb, actor, slug and event_id", ErrPermanentWebhookTask)
 	}
-	return result, nil
+	var err error
+	result.WorkspaceID, err = webhookWorkspaceID(input.Kwargs, result.Event, result.Field)
+	return result, err
 }
 
 func webhookSendInputFromTask(input WebhookTaskInput) (webhookSendInput, error) {
@@ -260,6 +265,11 @@ func webhookSendInputFromTask(input WebhookTaskInput) (webhookSendInput, error) 
 		}
 	}
 	result.EventID = input.EventID
+	var err error
+	result.WorkspaceID, err = webhookWorkspaceID(input.Kwargs, result.Event, nil)
+	if err != nil {
+		return result, err
+	}
 	if err := validateWebhookSendInput(result); err != nil {
 		return result, err
 	}
@@ -267,6 +277,9 @@ func webhookSendInputFromTask(input WebhookTaskInput) (webhookSendInput, error) 
 }
 
 func validateWebhookSendInput(input webhookSendInput) error {
+	if err := validateWebhookWorkspace(input.WorkspaceID, input.Event, nil); err != nil {
+		return err
+	}
 	for name, value := range map[string]string{"event ID": input.EventID, "webhook ID": input.WebhookID} {
 		if _, err := uuid.Parse(value); err != nil {
 			return fmt.Errorf("%w: invalid %s", ErrPermanentWebhookTask, name)
@@ -299,6 +312,10 @@ func (store *PostgresWebhookTaskStore) ModelActivities(ctx context.Context, inpu
 		return nil, fmt.Errorf("decode webhook model task: %w", err)
 	}
 	model := stringValue(kwargs["model_name"])
+	workspaceID, err := webhookWorkspaceID(kwargs, model, nil)
+	if err != nil {
+		return nil, err
+	}
 	modelID := stringValue(kwargs["model_id"])
 	requested, err := orderedJSONObject(kwargs["requested_data"])
 	if err != nil {
@@ -312,7 +329,7 @@ func (store *PostgresWebhookTaskStore) ModelActivities(ctx context.Context, inpu
 	slug := stringValue(kwargs["slug"])
 	origin := stringValue(kwargs["origin"])
 	if current == nil {
-		return []webhookActivityInput{{WorkflowEventID: input.EventID, Event: model, Verb: "created", Field: json.RawMessage("null"), OldValue: json.RawMessage("null"), NewValue: json.RawMessage("null"), ActorID: actor, Slug: slug, CurrentSite: origin, EventID: modelID, OldIdentifier: json.RawMessage("null"), NewIdentifier: json.RawMessage("null")}}, nil
+		return []webhookActivityInput{{WorkflowEventID: input.EventID, Event: model, Verb: "created", Field: json.RawMessage("null"), OldValue: json.RawMessage("null"), NewValue: json.RawMessage("null"), ActorID: actor, Slug: slug, WorkspaceID: workspaceID, CurrentSite: origin, EventID: modelID, OldIdentifier: json.RawMessage("null"), NewIdentifier: json.RawMessage("null")}}, nil
 	}
 	activities := make([]webhookActivityInput, 0, len(requested))
 	for _, item := range requested {
@@ -321,19 +338,41 @@ func (store *PostgresWebhookTaskStore) ModelActivities(ctx context.Context, inpu
 			continue
 		}
 		field, _ := json.Marshal(item.key)
-		activities = append(activities, webhookActivityInput{WorkflowEventID: input.EventID, Event: model, Verb: "updated", Field: field, OldValue: nonemptyRaw(old), NewValue: nonemptyRaw(item.value), ActorID: actor, Slug: slug, CurrentSite: origin, EventID: modelID, OldIdentifier: json.RawMessage("null"), NewIdentifier: json.RawMessage("null")})
+		activities = append(activities, webhookActivityInput{WorkflowEventID: input.EventID, Event: model, Verb: "updated", Field: field, OldValue: nonemptyRaw(old), NewValue: nonemptyRaw(item.value), ActorID: actor, Slug: slug, WorkspaceID: workspaceID, CurrentSite: origin, EventID: modelID, OldIdentifier: json.RawMessage("null"), NewIdentifier: json.RawMessage("null")})
 	}
 	return activities, nil
 }
 
 func (store *PostgresWebhookTaskStore) Fanout(ctx context.Context, input webhookActivityInput) ([]webhookSendInput, error) {
+	if err := validateWebhookWorkspace(input.WorkspaceID, input.Event, input.Field); err != nil {
+		return nil, err
+	}
+	if input.WorkspaceID != "" {
+		// The saved slug is display context, never the identity of a queued event.
+		err := store.pool.QueryRow(ctx, `SELECT slug FROM workspaces WHERE id=$1 AND deleted_at IS NULL`, input.WorkspaceID).Scan(&input.Slug)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
 	var eventData json.RawMessage
 	if input.Verb == "deleted" {
+		if input.WorkspaceID != "" {
+			owned, err := store.webhookModelOwned(ctx, input.Event, input.EventID, input.WorkspaceID)
+			if err != nil {
+				return nil, err
+			}
+			if !owned {
+				return nil, nil
+			}
+		}
 		id, _ := json.Marshal(input.EventID)
 		eventData = json.RawMessage(`{"id":` + string(id) + `}`)
 	} else {
 		var err error
-		eventData, err = store.serializedModel(ctx, input.Event, input.EventID)
+		eventData, err = store.serializedScopedModel(ctx, input.Event, input.EventID, input.WorkspaceID)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
 				return nil, nil // source ignores the model-deleted race
@@ -361,18 +400,11 @@ func (store *PostgresWebhookTaskStore) Fanout(ctx context.Context, input webhook
 	}
 	query := `SELECT h.id FROM webhooks h JOIN workspaces w ON w.id=h.workspace_id WHERE w.slug=$1 AND w.deleted_at IS NULL AND h.deleted_at IS NULL AND h.is_active=true`
 	args := []any{input.Slug}
-	switch input.Event {
-	case "project":
-		query += ` AND h.project=true`
-	case "issue":
-		query += ` AND h.issue=true`
-	case "module", "module_issue":
-		query += ` AND h.module=true`
-	case "cycle", "cycle_issue":
-		query += ` AND h.cycle=true`
-	case "issue_comment":
-		query += ` AND h.issue_comment=true`
+	if input.WorkspaceID != "" {
+		query = `SELECT h.id FROM webhooks h JOIN workspaces w ON w.id=h.workspace_id WHERE w.id=$1 AND w.deleted_at IS NULL AND h.deleted_at IS NULL AND h.is_active=true`
+		args = []any{input.WorkspaceID}
 	}
+	query += webhookSubscriptionSQL(input.Event)
 	query += ` ORDER BY h.created_at DESC`
 	rows, err := store.pool.Query(ctx, query, args...)
 	if err != nil {
@@ -387,7 +419,7 @@ func (store *PostgresWebhookTaskStore) Fanout(ctx context.Context, input webhook
 			return nil, err
 		}
 		id := uuid.NewSHA1(uuid.NameSpaceOID, []byte(input.WorkflowEventID+":"+webhookID.String()+":"+input.Event+":"+input.Verb+":"+string(input.Field))).String()
-		result = append(result, webhookSendInput{EventID: id, WebhookID: webhookID.String(), Slug: input.Slug, Event: input.Event, EventData: eventData, Action: input.Verb, CurrentSite: input.CurrentSite, Activity: activity})
+		result = append(result, webhookSendInput{EventID: id, WebhookID: webhookID.String(), Slug: input.Slug, WorkspaceID: input.WorkspaceID, Event: input.Event, EventData: eventData, Action: input.Verb, CurrentSite: input.CurrentSite, Activity: activity})
 	}
 	return result, rows.Err()
 }
@@ -398,8 +430,18 @@ type webhookRecord struct {
 }
 
 func (store *PostgresWebhookTaskStore) Deliver(ctx context.Context, input webhookSendInput, attempt int) error {
+	if err := validateWebhookWorkspace(input.WorkspaceID, input.Event, nil); err != nil {
+		return err
+	}
 	var webhook webhookRecord
-	err := store.pool.QueryRow(ctx, `SELECT h.id,h.workspace_id,w.slug,h.url,h.secret_key,h.created_by_id::text FROM webhooks h JOIN workspaces w ON w.id=h.workspace_id WHERE h.id=$1 AND w.slug=$2 AND w.deleted_at IS NULL AND h.deleted_at IS NULL`, input.WebhookID, input.Slug).Scan(&webhook.ID, &webhook.WorkspaceID, &webhook.Slug, &webhook.URL, &webhook.SecretKey, &webhook.CreatorID)
+	query := `SELECT h.id,h.workspace_id,w.slug,h.url,h.secret_key,h.created_by_id::text FROM webhooks h JOIN workspaces w ON w.id=h.workspace_id WHERE h.id=$1 AND w.slug=$2 AND w.deleted_at IS NULL AND h.deleted_at IS NULL`
+	owner := input.Slug
+	if input.WorkspaceID != "" {
+		query = `SELECT h.id,h.workspace_id,w.slug,h.url,h.secret_key,h.created_by_id::text FROM webhooks h JOIN workspaces w ON w.id=h.workspace_id WHERE h.id=$1 AND w.id=$2 AND w.deleted_at IS NULL AND h.deleted_at IS NULL AND h.is_active=true`
+		query += webhookSubscriptionSQL(input.Event)
+		owner = input.WorkspaceID
+	}
+	err := store.pool.QueryRow(ctx, query, input.WebhookID, owner).Scan(&webhook.ID, &webhook.WorkspaceID, &webhook.Slug, &webhook.URL, &webhook.SecretKey, &webhook.CreatorID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil // source catches missing webhook and drops the stale send task
 	}
@@ -497,6 +539,10 @@ type webhookURLPolicyError struct{ message string }
 func (err *webhookURLPolicyError) Error() string { return err.message }
 
 func (store *PostgresWebhookTaskStore) serializedModel(ctx context.Context, event, id string) (json.RawMessage, error) {
+	return store.serializedScopedModel(ctx, event, id, "")
+}
+
+func (store *PostgresWebhookTaskStore) serializedScopedModel(ctx context.Context, event, id, workspaceID string) (json.RawMessage, error) {
 	table, ok := webhookModelTables[event]
 	if !ok {
 		return nil, fmt.Errorf("unsupported webhook model %q", event)
@@ -506,7 +552,18 @@ func (store *PostgresWebhookTaskStore) serializedModel(ctx context.Context, even
 	if event == "user" {
 		query = `SELECT to_jsonb(model) FROM users model WHERE model.id=$1`
 	}
-	err := store.pool.QueryRow(ctx, query, id).Scan(&raw)
+	if event == "milestone" {
+		query = milestoneWebhookProjectionSQL
+	}
+	args := []any{id}
+	if workspaceID != "" {
+		if event == "user" {
+			return nil, fmt.Errorf("%w: users are not workspace models", ErrPermanentWebhookTask)
+		}
+		query += ` AND model.workspace_id=$2`
+		args = append(args, workspaceID)
+	}
+	err := store.pool.QueryRow(ctx, query, args...).Scan(&raw)
 	if err != nil {
 		return nil, err
 	}
@@ -566,7 +623,7 @@ func (store *PostgresWebhookTaskStore) moduleMembers(ctx context.Context, module
 var webhookModelTables = map[string]string{
 	"project": "projects", "issue": "issues", "cycle": "cycles", "module": "modules",
 	"cycle_issue": "cycle_issues", "module_issue": "module_issues", "issue_comment": "issue_comments",
-	"user": "users", "intake_issue": "intake_issues",
+	"user": "users", "intake_issue": "intake_issues", "milestone": "milestones",
 }
 
 func webhookSerializerRelation(event, field string) bool {

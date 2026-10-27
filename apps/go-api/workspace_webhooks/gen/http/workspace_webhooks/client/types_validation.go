@@ -112,6 +112,9 @@ func ValidateCreateResponseBody(body *CreateResponseBody, validationContext ...s
 	if body.Cycle == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("cycle", validationPath))
 	}
+	if body.Milestone == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("milestone", validationPath))
+	}
 	if body.IssueComment == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("issue_comment", validationPath))
 	}
@@ -257,6 +260,13 @@ func ValidateCreateInvalidResponseBody(body *CreateInvalidResponseBody, validati
 		for i, e := range actual {
 			if _, ok := e.Value(); !ok {
 				err = loom.MergeErrors(err, loom.InvalidNullElementError(validationPath+".cycle", i))
+			}
+		}
+	}
+	if actual, ok := body.Milestone.Value(); ok {
+		for i, e := range actual {
+			if _, ok := e.Value(); !ok {
+				err = loom.MergeErrors(err, loom.InvalidNullElementError(validationPath+".milestone", i))
 			}
 		}
 	}
@@ -493,6 +503,9 @@ func ValidateDetailResponseBody(body *DetailResponseBody, validationContext ...s
 	if body.Cycle == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("cycle", validationPath))
 	}
+	if body.Milestone == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("milestone", validationPath))
+	}
 	if body.IssueComment == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("issue_comment", validationPath))
 	}
@@ -657,6 +670,9 @@ func ValidatePatchDetailResponseBody(body *PatchDetailResponseBody, validationCo
 	if body.Cycle == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("cycle", validationPath))
 	}
+	if body.Milestone == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("milestone", validationPath))
+	}
 	if body.IssueComment == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("issue_comment", validationPath))
 	}
@@ -786,6 +802,13 @@ func ValidatePatchDetailInvalidResponseBody(body *PatchDetailInvalidResponseBody
 		for i, e := range actual {
 			if _, ok := e.Value(); !ok {
 				err = loom.MergeErrors(err, loom.InvalidNullElementError(validationPath+".cycle", i))
+			}
+		}
+	}
+	if actual, ok := body.Milestone.Value(); ok {
+		for i, e := range actual {
+			if _, ok := e.Value(); !ok {
+				err = loom.MergeErrors(err, loom.InvalidNullElementError(validationPath+".milestone", i))
 			}
 		}
 	}
@@ -974,6 +997,9 @@ func ValidateRegenerateResponseBody(body *RegenerateResponseBody, validationCont
 	}
 	if body.Cycle == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("cycle", validationPath))
+	}
+	if body.Milestone == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("milestone", validationPath))
 	}
 	if body.IssueComment == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("issue_comment", validationPath))
@@ -1185,6 +1211,9 @@ func ValidateWebhookResponse(body *WebhookResponse, validationContext ...string)
 	}
 	if body.Cycle == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("cycle", validationPath))
+	}
+	if body.Milestone == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("milestone", validationPath))
 	}
 	if body.IssueComment == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("issue_comment", validationPath))

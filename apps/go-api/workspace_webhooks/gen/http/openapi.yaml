@@ -270,13 +270,14 @@ paths:
                                       is_internal: true
                                       issue: true
                                       issue_comment: true
+                                      milestone: true
                                       module: false
                                       project: true
                                       secret_key: nb6
                                       updated_at: "1979-09-07T10:35:20Z"
                                       updated_by: 2d8a7173-71ed-4fb1-b058-31e0ff8edabd
                                       url: vbw
-                                      version: jug
+                                      version: ugg
                                       workspace: baf753ba-fd41-4962-b588-1c87e4dde294
                                     - created_at: "1995-07-26T17:52:49Z"
                                       created_by: b9fac64b-f817-4467-9a8f-87311035bdcd
@@ -287,13 +288,14 @@ paths:
                                       is_internal: true
                                       issue: true
                                       issue_comment: true
+                                      milestone: true
                                       module: false
                                       project: true
                                       secret_key: nb6
                                       updated_at: "1979-09-07T10:35:20Z"
                                       updated_by: 2d8a7173-71ed-4fb1-b058-31e0ff8edabd
                                       url: vbw
-                                      version: jug
+                                      version: ugg
                                       workspace: baf753ba-fd41-4962-b588-1c87e4dde294
                                     - created_at: "1995-07-26T17:52:49Z"
                                       created_by: b9fac64b-f817-4467-9a8f-87311035bdcd
@@ -304,13 +306,14 @@ paths:
                                       is_internal: true
                                       issue: true
                                       issue_comment: true
+                                      milestone: true
                                       module: false
                                       project: true
                                       secret_key: nb6
                                       updated_at: "1979-09-07T10:35:20Z"
                                       updated_by: 2d8a7173-71ed-4fb1-b058-31e0ff8edabd
                                       url: vbw
-                                      version: jug
+                                      version: ugg
                                       workspace: baf753ba-fd41-4962-b588-1c87e4dde294
                                     - created_at: "1995-07-26T17:52:49Z"
                                       created_by: b9fac64b-f817-4467-9a8f-87311035bdcd
@@ -321,13 +324,14 @@ paths:
                                       is_internal: true
                                       issue: true
                                       issue_comment: true
+                                      milestone: true
                                       module: false
                                       project: true
                                       secret_key: nb6
                                       updated_at: "1979-09-07T10:35:20Z"
                                       updated_by: 2d8a7173-71ed-4fb1-b058-31e0ff8edabd
                                       url: vbw
-                                      version: jug
+                                      version: ugg
                                       workspace: baf753ba-fd41-4962-b588-1c87e4dde294
                             example:
                                 - created_at: "1995-07-26T17:52:49Z"
@@ -339,13 +343,14 @@ paths:
                                   is_internal: true
                                   issue: true
                                   issue_comment: true
+                                  milestone: true
                                   module: false
                                   project: true
                                   secret_key: nb6
                                   updated_at: "1979-09-07T10:35:20Z"
                                   updated_by: 2d8a7173-71ed-4fb1-b058-31e0ff8edabd
                                   url: vbw
-                                  version: jug
+                                  version: ugg
                                   workspace: baf753ba-fd41-4962-b588-1c87e4dde294
                                 - created_at: "1995-07-26T17:52:49Z"
                                   created_by: b9fac64b-f817-4467-9a8f-87311035bdcd
@@ -356,13 +361,14 @@ paths:
                                   is_internal: true
                                   issue: true
                                   issue_comment: true
+                                  milestone: true
                                   module: false
                                   project: true
                                   secret_key: nb6
                                   updated_at: "1979-09-07T10:35:20Z"
                                   updated_by: 2d8a7173-71ed-4fb1-b058-31e0ff8edabd
                                   url: vbw
-                                  version: jug
+                                  version: ugg
                                   workspace: baf753ba-fd41-4962-b588-1c87e4dde294
                                 - created_at: "1995-07-26T17:52:49Z"
                                   created_by: b9fac64b-f817-4467-9a8f-87311035bdcd
@@ -373,13 +379,14 @@ paths:
                                   is_internal: true
                                   issue: true
                                   issue_comment: true
+                                  milestone: true
                                   module: false
                                   project: true
                                   secret_key: nb6
                                   updated_at: "1979-09-07T10:35:20Z"
                                   updated_by: 2d8a7173-71ed-4fb1-b058-31e0ff8edabd
                                   url: vbw
-                                  version: jug
+                                  version: ugg
                                   workspace: baf753ba-fd41-4962-b588-1c87e4dde294
                                 - created_at: "1995-07-26T17:52:49Z"
                                   created_by: b9fac64b-f817-4467-9a8f-87311035bdcd
@@ -390,13 +397,14 @@ paths:
                                   is_internal: true
                                   issue: true
                                   issue_comment: true
+                                  milestone: true
                                   module: false
                                   project: true
                                   secret_key: nb6
                                   updated_at: "1979-09-07T10:35:20Z"
                                   updated_by: 2d8a7173-71ed-4fb1-b058-31e0ff8edabd
                                   url: vbw
-                                  version: jug
+                                  version: ugg
                                   workspace: baf753ba-fd41-4962-b588-1c87e4dde294
                 "401":
                     description: 'unauthenticated: Unauthorized response.'
@@ -505,78 +513,84 @@ paths:
                     application/json:
                         schema:
                             example:
-                                created_by: a0c472d2-9acf-486c-82cb-fc88304fb33e
+                                created_by: 6c82cbfc-8830-4fb3-bef3-dea238a791f0
                                 cycle: true
                                 is_active: false
                                 is_internal: true
                                 issue: false
-                                issue_comment: false
+                                issue_comment: true
+                                milestone: false
                                 module: true
                                 project: true
                                 url: rvf
-                                version: ia1
+                                version: a10
                             $ref: '#/components/schemas/WebhookCreateRequest'
                         example:
-                            created_by: a0c472d2-9acf-486c-82cb-fc88304fb33e
+                            created_by: 6c82cbfc-8830-4fb3-bef3-dea238a791f0
                             cycle: true
                             is_active: false
                             is_internal: true
                             issue: false
-                            issue_comment: false
+                            issue_comment: true
+                            milestone: false
                             module: true
                             project: true
                             url: rvf
-                            version: ia1
+                            version: a10
                     application/x-www-form-urlencoded:
                         schema:
                             example:
-                                created_by: a0c472d2-9acf-486c-82cb-fc88304fb33e
+                                created_by: 6c82cbfc-8830-4fb3-bef3-dea238a791f0
                                 cycle: true
                                 is_active: false
                                 is_internal: true
                                 issue: false
-                                issue_comment: false
+                                issue_comment: true
+                                milestone: false
                                 module: true
                                 project: true
                                 url: rvf
-                                version: ia1
+                                version: a10
                             $ref: '#/components/schemas/WebhookCreateRequest'
                         example:
-                            created_by: a0c472d2-9acf-486c-82cb-fc88304fb33e
+                            created_by: 6c82cbfc-8830-4fb3-bef3-dea238a791f0
                             cycle: true
                             is_active: false
                             is_internal: true
                             issue: false
-                            issue_comment: false
+                            issue_comment: true
+                            milestone: false
                             module: true
                             project: true
                             url: rvf
-                            version: ia1
+                            version: a10
                     multipart/form-data:
                         schema:
                             example:
-                                created_by: a0c472d2-9acf-486c-82cb-fc88304fb33e
+                                created_by: 6c82cbfc-8830-4fb3-bef3-dea238a791f0
                                 cycle: true
                                 is_active: false
                                 is_internal: true
                                 issue: false
-                                issue_comment: false
+                                issue_comment: true
+                                milestone: false
                                 module: true
                                 project: true
                                 url: rvf
-                                version: ia1
+                                version: a10
                             $ref: '#/components/schemas/WebhookCreateRequest'
                         example:
-                            created_by: a0c472d2-9acf-486c-82cb-fc88304fb33e
+                            created_by: 6c82cbfc-8830-4fb3-bef3-dea238a791f0
                             cycle: true
                             is_active: false
                             is_internal: true
                             issue: false
-                            issue_comment: false
+                            issue_comment: true
+                            milestone: false
                             module: true
                             project: true
                             url: rvf
-                            version: ia1
+                            version: a10
             responses:
                 "201":
                     description: Created response.
@@ -592,14 +606,15 @@ paths:
                                     is_active: true
                                     is_internal: false
                                     issue: true
-                                    issue_comment: true
+                                    issue_comment: false
+                                    milestone: true
                                     module: false
                                     project: false
                                     secret_key: m6d
                                     updated_at: "2010-07-02T04:54:26Z"
                                     updated_by: 00aa2c8e-3969-4318-8330-0525746aee78
                                     url: z60
-                                    version: im3
+                                    version: m3t
                                     workspace: e63ed727-1764-43a3-8089-24afdd330b61
                                 $ref: '#/components/schemas/Webhook'
                             example:
@@ -611,14 +626,15 @@ paths:
                                 is_active: true
                                 is_internal: false
                                 issue: true
-                                issue_comment: true
+                                issue_comment: false
+                                milestone: true
                                 module: false
                                 project: false
                                 secret_key: m6d
                                 updated_at: "2010-07-02T04:54:26Z"
                                 updated_by: 00aa2c8e-3969-4318-8330-0525746aee78
                                 url: z60
-                                version: im3
+                                version: m3t
                                 workspace: e63ed727-1764-43a3-8089-24afdd330b61
                 "400":
                     description: 'invalid: Bad Request response.'
@@ -627,10 +643,8 @@ paths:
                             schema:
                                 example:
                                     created_by:
-                                        - Earum id error.
-                                        - Provident et autem dolorem.
-                                        - Dolores voluptas tempora.
-                                        - Consequatur et itaque.
+                                        - Aperiam hic nostrum.
+                                        - Veniam nulla voluptatum ea voluptatum sunt ipsa.
                                     cycle:
                                         - Repellendus quis sequi autem et.
                                         - Sunt rerum.
@@ -640,13 +654,17 @@ paths:
                                         - Libero commodi modi.
                                         - Non impedit placeat reiciendis quia.
                                     is_internal:
-                                        - Natus doloremque non non.
-                                        - Ut distinctio a.
+                                        - Et quam voluptatibus et sequi.
+                                        - Unde ut.
+                                        - Neque facere.
                                     issue:
                                         - Dolore iusto et ipsum velit natus.
                                         - Optio repellendus et aut deleniti.
                                         - Inventore sint omnis.
                                     issue_comment:
+                                        - Natus doloremque non non.
+                                        - Ut distinctio a.
+                                    milestone:
                                         - Omnis quaerat maiores non praesentium.
                                         - Quae quaerat dolorum.
                                     module:
@@ -655,8 +673,9 @@ paths:
                                         - Et velit quam soluta qui nemo.
                                         - Neque odio consequatur.
                                     non_field_errors:
-                                        - Aperiam hic nostrum.
-                                        - Veniam nulla voluptatum ea voluptatum sunt ipsa.
+                                        - Magnam quod.
+                                        - Ea nulla voluptas.
+                                        - Velit maxime ad.
                                     project:
                                         - Necessitatibus est maxime rerum facilis ex esse.
                                         - Nostrum laudantium nihil sint.
@@ -667,16 +686,15 @@ paths:
                                         - Aut doloribus accusamus.
                                         - Ut quibusdam officia.
                                     version:
-                                        - Et quam voluptatibus et sequi.
-                                        - Unde ut.
-                                        - Neque facere.
+                                        - Earum id error.
+                                        - Provident et autem dolorem.
+                                        - Dolores voluptas tempora.
+                                        - Consequatur et itaque.
                                 $ref: '#/components/schemas/WebhookInvalid'
                             example:
                                 created_by:
-                                    - Earum id error.
-                                    - Provident et autem dolorem.
-                                    - Dolores voluptas tempora.
-                                    - Consequatur et itaque.
+                                    - Aperiam hic nostrum.
+                                    - Veniam nulla voluptatum ea voluptatum sunt ipsa.
                                 cycle:
                                     - Repellendus quis sequi autem et.
                                     - Sunt rerum.
@@ -686,13 +704,17 @@ paths:
                                     - Libero commodi modi.
                                     - Non impedit placeat reiciendis quia.
                                 is_internal:
-                                    - Natus doloremque non non.
-                                    - Ut distinctio a.
+                                    - Et quam voluptatibus et sequi.
+                                    - Unde ut.
+                                    - Neque facere.
                                 issue:
                                     - Dolore iusto et ipsum velit natus.
                                     - Optio repellendus et aut deleniti.
                                     - Inventore sint omnis.
                                 issue_comment:
+                                    - Natus doloremque non non.
+                                    - Ut distinctio a.
+                                milestone:
                                     - Omnis quaerat maiores non praesentium.
                                     - Quae quaerat dolorum.
                                 module:
@@ -701,8 +723,9 @@ paths:
                                     - Et velit quam soluta qui nemo.
                                     - Neque odio consequatur.
                                 non_field_errors:
-                                    - Aperiam hic nostrum.
-                                    - Veniam nulla voluptatum ea voluptatum sunt ipsa.
+                                    - Magnam quod.
+                                    - Ea nulla voluptas.
+                                    - Velit maxime ad.
                                 project:
                                     - Necessitatibus est maxime rerum facilis ex esse.
                                     - Nostrum laudantium nihil sint.
@@ -713,9 +736,10 @@ paths:
                                     - Aut doloribus accusamus.
                                     - Ut quibusdam officia.
                                 version:
-                                    - Et quam voluptatibus et sequi.
-                                    - Unde ut.
-                                    - Neque facere.
+                                    - Earum id error.
+                                    - Provident et autem dolorem.
+                                    - Dolores voluptas tempora.
+                                    - Consequatur et itaque.
                 "401":
                     description: 'unauthenticated: Unauthorized response.'
                     content:
@@ -857,16 +881,17 @@ paths:
                                     deleted_at: "1992-11-09T02:21:48Z"
                                     id: 820127bf-de1e-4392-9c97-cb224ebde5b3
                                     is_active: false
-                                    is_internal: false
+                                    is_internal: true
                                     issue: true
-                                    issue_comment: true
+                                    issue_comment: false
+                                    milestone: true
                                     module: false
                                     project: true
                                     secret_key: 94b
                                     updated_at: "1993-06-15T12:36:02Z"
                                     updated_by: ef2483a4-41e1-4b12-8073-461aca933c5a
                                     url: nse
-                                    version: cf1
+                                    version: f17
                                     workspace: 44fcd5b6-5fdc-4418-b2ee-a37f97fa45d7
                                 $ref: '#/components/schemas/Webhook'
                             example:
@@ -876,16 +901,17 @@ paths:
                                 deleted_at: "1992-11-09T02:21:48Z"
                                 id: 820127bf-de1e-4392-9c97-cb224ebde5b3
                                 is_active: false
-                                is_internal: false
+                                is_internal: true
                                 issue: true
-                                issue_comment: true
+                                issue_comment: false
+                                milestone: true
                                 module: false
                                 project: true
                                 secret_key: 94b
                                 updated_at: "1993-06-15T12:36:02Z"
                                 updated_by: ef2483a4-41e1-4b12-8073-461aca933c5a
                                 url: nse
-                                version: cf1
+                                version: f17
                                 workspace: 44fcd5b6-5fdc-4418-b2ee-a37f97fa45d7
                 "401":
                     description: 'unauthenticated: Unauthorized response.'
@@ -956,75 +982,81 @@ paths:
                                 created_by: 0fb98bee-4714-4802-b797-521367566b64
                                 cycle: true
                                 is_active: false
-                                is_internal: false
+                                is_internal: true
                                 issue: true
-                                issue_comment: true
+                                issue_comment: false
+                                milestone: true
                                 module: false
                                 project: false
                                 url: y5o
-                                version: 23y
+                                version: 3yb
                             $ref: '#/components/schemas/WebhookPatchRequest'
                         example:
                             created_by: 0fb98bee-4714-4802-b797-521367566b64
                             cycle: true
                             is_active: false
-                            is_internal: false
+                            is_internal: true
                             issue: true
-                            issue_comment: true
+                            issue_comment: false
+                            milestone: true
                             module: false
                             project: false
                             url: y5o
-                            version: 23y
+                            version: 3yb
                     application/x-www-form-urlencoded:
                         schema:
                             example:
                                 created_by: 0fb98bee-4714-4802-b797-521367566b64
                                 cycle: true
                                 is_active: false
-                                is_internal: false
+                                is_internal: true
                                 issue: true
-                                issue_comment: true
+                                issue_comment: false
+                                milestone: true
                                 module: false
                                 project: false
                                 url: y5o
-                                version: 23y
+                                version: 3yb
                             $ref: '#/components/schemas/WebhookPatchRequest'
                         example:
                             created_by: 0fb98bee-4714-4802-b797-521367566b64
                             cycle: true
                             is_active: false
-                            is_internal: false
+                            is_internal: true
                             issue: true
-                            issue_comment: true
+                            issue_comment: false
+                            milestone: true
                             module: false
                             project: false
                             url: y5o
-                            version: 23y
+                            version: 3yb
                     multipart/form-data:
                         schema:
                             example:
                                 created_by: 0fb98bee-4714-4802-b797-521367566b64
                                 cycle: true
                                 is_active: false
-                                is_internal: false
+                                is_internal: true
                                 issue: true
-                                issue_comment: true
+                                issue_comment: false
+                                milestone: true
                                 module: false
                                 project: false
                                 url: y5o
-                                version: 23y
+                                version: 3yb
                             $ref: '#/components/schemas/WebhookPatchRequest'
                         example:
                             created_by: 0fb98bee-4714-4802-b797-521367566b64
                             cycle: true
                             is_active: false
-                            is_internal: false
+                            is_internal: true
                             issue: true
-                            issue_comment: true
+                            issue_comment: false
+                            milestone: true
                             module: false
                             project: false
                             url: y5o
-                            version: 23y
+                            version: 3yb
             responses:
                 "200":
                     description: OK response.
@@ -1041,13 +1073,14 @@ paths:
                                     is_internal: true
                                     issue: false
                                     issue_comment: true
+                                    milestone: true
                                     module: true
                                     project: false
                                     secret_key: 7qe
                                     updated_at: "1984-04-06T11:44:20Z"
                                     updated_by: 32db7f47-9119-41b5-80c6-811818aa7745
                                     url: yik
-                                    version: d2g
+                                    version: 2g3
                                     workspace: 37e8c656-33c3-42a0-a021-8c02edb727e0
                                 $ref: '#/components/schemas/Webhook'
                             example:
@@ -1060,13 +1093,14 @@ paths:
                                 is_internal: true
                                 issue: false
                                 issue_comment: true
+                                milestone: true
                                 module: true
                                 project: false
                                 secret_key: 7qe
                                 updated_at: "1984-04-06T11:44:20Z"
                                 updated_by: 32db7f47-9119-41b5-80c6-811818aa7745
                                 url: yik
-                                version: d2g
+                                version: 2g3
                                 workspace: 37e8c656-33c3-42a0-a021-8c02edb727e0
                 "400":
                     description: 'invalid: Bad Request response.'
@@ -1075,9 +1109,10 @@ paths:
                             schema:
                                 example:
                                     created_by:
-                                        - Praesentium nihil doloribus voluptatem.
-                                        - Omnis et nihil et.
-                                        - Eaque iste.
+                                        - Molestiae aliquam et omnis.
+                                        - Quis ea excepturi dolore.
+                                        - Error quo aut adipisci qui repellat.
+                                        - Voluptatum id voluptas ut.
                                     cycle:
                                         - Quae corrupti sed dignissimos.
                                         - Quidem velit voluptas tenetur.
@@ -1088,14 +1123,17 @@ paths:
                                         - Eum est voluptatem.
                                         - Quas deserunt ut et et.
                                     is_internal:
-                                        - Harum porro omnis autem voluptas ullam.
-                                        - Est deleniti.
-                                        - Quaerat nihil consequatur non reiciendis.
+                                        - Eaque consectetur sint non accusamus.
+                                        - Illo ducimus blanditiis rem placeat commodi quae.
                                     issue:
                                         - Porro molestias sit et.
                                         - Voluptas neque doloremque alias dolorem autem aut.
                                         - Odit officiis.
                                     issue_comment:
+                                        - Harum porro omnis autem voluptas ullam.
+                                        - Est deleniti.
+                                        - Quaerat nihil consequatur non reiciendis.
+                                    milestone:
                                         - Dolorum qui perferendis eos eos.
                                         - Facilis et minus.
                                     module:
@@ -1104,10 +1142,8 @@ paths:
                                         - At accusamus dolorem corrupti provident.
                                         - Sit est ea magni mollitia.
                                     non_field_errors:
-                                        - Molestiae aliquam et omnis.
-                                        - Quis ea excepturi dolore.
-                                        - Error quo aut adipisci qui repellat.
-                                        - Voluptatum id voluptas ut.
+                                        - Enim provident vitae.
+                                        - Quia illum.
                                     project:
                                         - Perferendis aut doloribus expedita iusto architecto.
                                         - Sit velit.
@@ -1115,14 +1151,16 @@ paths:
                                         - Repellendus tempore qui.
                                         - Ducimus dolores dolor voluptatem excepturi dicta.
                                     version:
-                                        - Eaque consectetur sint non accusamus.
-                                        - Illo ducimus blanditiis rem placeat commodi quae.
+                                        - Praesentium nihil doloribus voluptatem.
+                                        - Omnis et nihil et.
+                                        - Eaque iste.
                                 $ref: '#/components/schemas/WebhookInvalid'
                             example:
                                 created_by:
-                                    - Praesentium nihil doloribus voluptatem.
-                                    - Omnis et nihil et.
-                                    - Eaque iste.
+                                    - Molestiae aliquam et omnis.
+                                    - Quis ea excepturi dolore.
+                                    - Error quo aut adipisci qui repellat.
+                                    - Voluptatum id voluptas ut.
                                 cycle:
                                     - Quae corrupti sed dignissimos.
                                     - Quidem velit voluptas tenetur.
@@ -1133,14 +1171,17 @@ paths:
                                     - Eum est voluptatem.
                                     - Quas deserunt ut et et.
                                 is_internal:
-                                    - Harum porro omnis autem voluptas ullam.
-                                    - Est deleniti.
-                                    - Quaerat nihil consequatur non reiciendis.
+                                    - Eaque consectetur sint non accusamus.
+                                    - Illo ducimus blanditiis rem placeat commodi quae.
                                 issue:
                                     - Porro molestias sit et.
                                     - Voluptas neque doloremque alias dolorem autem aut.
                                     - Odit officiis.
                                 issue_comment:
+                                    - Harum porro omnis autem voluptas ullam.
+                                    - Est deleniti.
+                                    - Quaerat nihil consequatur non reiciendis.
+                                milestone:
                                     - Dolorum qui perferendis eos eos.
                                     - Facilis et minus.
                                 module:
@@ -1149,10 +1190,8 @@ paths:
                                     - At accusamus dolorem corrupti provident.
                                     - Sit est ea magni mollitia.
                                 non_field_errors:
-                                    - Molestiae aliquam et omnis.
-                                    - Quis ea excepturi dolore.
-                                    - Error quo aut adipisci qui repellat.
-                                    - Voluptatum id voluptas ut.
+                                    - Enim provident vitae.
+                                    - Quia illum.
                                 project:
                                     - Perferendis aut doloribus expedita iusto architecto.
                                     - Sit velit.
@@ -1160,8 +1199,9 @@ paths:
                                     - Repellendus tempore qui.
                                     - Ducimus dolores dolor voluptatem excepturi dicta.
                                 version:
-                                    - Eaque consectetur sint non accusamus.
-                                    - Illo ducimus blanditiis rem placeat commodi quae.
+                                    - Praesentium nihil doloribus voluptatem.
+                                    - Omnis et nihil et.
+                                    - Eaque iste.
                 "401":
                     description: 'unauthenticated: Unauthorized response.'
                     content:
@@ -1241,14 +1281,15 @@ paths:
                                     is_active: true
                                     is_internal: true
                                     issue: false
-                                    issue_comment: false
+                                    issue_comment: true
+                                    milestone: false
                                     module: true
                                     project: false
                                     secret_key: lnz
                                     updated_at: "2011-08-16T09:29:49Z"
                                     updated_by: 063c8b21-9576-4f1a-ae81-093b0bc5c289
                                     url: s6f
-                                    version: opp
+                                    version: ppm
                                     workspace: 5d14624b-4333-462a-b502-8641b76b3d83
                                 $ref: '#/components/schemas/Webhook'
                             example:
@@ -1260,14 +1301,15 @@ paths:
                                 is_active: true
                                 is_internal: true
                                 issue: false
-                                issue_comment: false
+                                issue_comment: true
+                                milestone: false
                                 module: true
                                 project: false
                                 secret_key: lnz
                                 updated_at: "2011-08-16T09:29:49Z"
                                 updated_by: 063c8b21-9576-4f1a-ae81-093b0bc5c289
                                 url: s6f
-                                version: opp
+                                version: ppm
                                 workspace: 5d14624b-4333-462a-b502-8641b76b3d83
                 "401":
                     description: 'unauthenticated: Unauthorized response.'
@@ -1353,6 +1395,9 @@ components:
                 issue_comment:
                     type: boolean
                     example: true
+                milestone:
+                    type: boolean
+                    example: false
                 module:
                     type: boolean
                     example: true
@@ -1392,16 +1437,17 @@ components:
                 deleted_at: "2003-04-13T13:43:33Z"
                 id: 3510d1b4-7d49-4724-a58b-b1c3ab6cec15
                 is_active: false
-                is_internal: true
+                is_internal: false
                 issue: false
-                issue_comment: false
+                issue_comment: true
+                milestone: false
                 module: false
                 project: false
                 secret_key: kvu
                 updated_at: "1977-12-02T21:17:16Z"
                 updated_by: 76f1feda-2ff7-4f96-9805-03657f34a54a
                 url: qel
-                version: mle
+                version: le5
                 workspace: 873502be-9581-41f8-b750-da9e0492f98b
             required:
                 - id
@@ -1418,6 +1464,7 @@ components:
                 - issue
                 - module
                 - cycle
+                - milestone
                 - issue_comment
                 - is_internal
                 - version
@@ -1455,6 +1502,9 @@ components:
                 issue_comment:
                     type: boolean
                     example: true
+                milestone:
+                    type: boolean
+                    example: true
                 module:
                     type: boolean
                     example: false
@@ -1470,16 +1520,17 @@ components:
                     example: 80t
                     maxLength: 50
             example:
-                created_by: 5f6c675a-111c-4428-9f0e-8123a00f525a
+                created_by: 525abbb4-505f-48b5-9a02-6f9f9749d085
                 cycle: true
                 is_active: true
                 is_internal: true
                 issue: false
                 issue_comment: true
+                milestone: true
                 module: false
                 project: true
                 url: "672"
-                version: v6v
+                version: 6vx
         WebhookForbidden:
             type: object
             properties:
@@ -1556,6 +1607,16 @@ components:
                     example:
                         - Voluptate debitis quisquam asperiores nobis excepturi.
                         - Soluta consequatur asperiores dolor.
+                milestone:
+                    type: array
+                    items:
+                        type: string
+                        example: Quia laudantium laboriosam atque sunt.
+                    example:
+                        - Assumenda magni sit cum.
+                        - Quia quos dignissimos et aspernatur quibusdam.
+                        - Officia natus velit.
+                        - Itaque ea.
                 module:
                     type: array
                     items:
@@ -1602,10 +1663,10 @@ components:
                         - Et dolores.
             example:
                 created_by:
-                    - Doloremque culpa.
-                    - Dolores autem et ea repellendus aut aut.
-                    - Ducimus aperiam ab quidem.
-                    - Et aperiam et sunt autem laboriosam nemo.
+                    - Omnis iure nobis officiis.
+                    - Soluta aut tempora.
+                    - Amet qui.
+                    - Quisquam dicta fugiat dolorem hic nobis.
                 cycle:
                     - Atque officia accusantium saepe qui.
                     - Beatae iste odit.
@@ -1618,14 +1679,19 @@ components:
                     - Quam eum voluptate voluptate et veritatis.
                     - Autem aspernatur quasi et.
                 is_internal:
-                    - Eum sit possimus consequuntur.
-                    - Voluptatem sunt consequuntur voluptate ducimus distinctio.
-                    - Consectetur nostrum at quis rerum.
+                    - Omnis sunt quia ut sint.
+                    - Inventore voluptas.
+                    - Sed minima.
+                    - Atque consequatur laboriosam culpa recusandae.
                 issue:
                     - Dolore eligendi dolore doloribus vel neque.
                     - Quo illo sed odit itaque repellendus.
                     - Eos doloribus nesciunt rem mollitia consequatur.
                 issue_comment:
+                    - Eum sit possimus consequuntur.
+                    - Voluptatem sunt consequuntur voluptate ducimus distinctio.
+                    - Consectetur nostrum at quis rerum.
+                milestone:
                     - Et distinctio et.
                     - Non aut reprehenderit.
                     - Et dolorem ex laborum aut autem.
@@ -1635,10 +1701,10 @@ components:
                     - Voluptas est.
                     - Inventore officiis modi consequuntur ullam.
                 non_field_errors:
-                    - Omnis iure nobis officiis.
-                    - Soluta aut tempora.
-                    - Amet qui.
-                    - Quisquam dicta fugiat dolorem hic nobis.
+                    - Assumenda voluptatem assumenda cumque natus explicabo adipisci.
+                    - Architecto perspiciatis sint consectetur magnam fugit.
+                    - Labore numquam adipisci.
+                    - Sit ipsam illo eveniet iste vel.
                 project:
                     - Non repellendus debitis debitis.
                     - Accusantium cupiditate maiores aut.
@@ -1646,10 +1712,10 @@ components:
                     - Fugit rerum at ut maxime non.
                     - Non nobis et.
                 version:
-                    - Omnis sunt quia ut sint.
-                    - Inventore voluptas.
-                    - Sed minima.
-                    - Atque consequatur laboriosam culpa recusandae.
+                    - Doloremque culpa.
+                    - Dolores autem et ea repellendus aut aut.
+                    - Ducimus aperiam ab quidem.
+                    - Et aperiam et sunt autem laboriosam nemo.
         WebhookLog:
             type: object
             properties:
@@ -1810,6 +1876,9 @@ components:
                 issue_comment:
                     type: boolean
                     example: false
+                milestone:
+                    type: boolean
+                    example: false
                 module:
                     type: boolean
                     example: false
@@ -1825,16 +1894,17 @@ components:
                     example: ko7
                     maxLength: 50
             example:
-                created_by: 1b70aa8c-d2ea-4a98-9f83-94acd9925ac8
+                created_by: 98df8394-acd9-425a-889c-c1d0383b7f4d
                 cycle: true
                 is_active: false
-                is_internal: false
+                is_internal: true
                 issue: true
-                issue_comment: true
+                issue_comment: false
+                milestone: true
                 module: true
                 project: false
                 url: v95
-                version: mya
+                version: yao
         WebhookUnauthenticated:
             type: object
             properties:

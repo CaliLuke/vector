@@ -1,5 +1,5 @@
 {
-  "loom_version": "v1.10.0-alpha.16",
+  "loom_version": "v1.10.0-alpha.17",
   "design_package": "github.com/CaliLuke/go-plane/workspace_webhooks/design",
-  "design_digest": "2dce217dc00dcea2c249f645f2504ef978da9fb94aaad4398c44bc2591ef75dc"
+  "design_digest": "e47bd450010f61a2758d2c15945bade00f75211827462646f3933837e757e539"
 }

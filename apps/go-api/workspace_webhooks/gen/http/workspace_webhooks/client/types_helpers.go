@@ -28,6 +28,7 @@ type WebhookResponse struct {
 	Issue        *bool                 `form:"issue,omitempty" json:"issue,omitzero" xml:"issue,omitempty"`
 	Module       *bool                 `form:"module,omitempty" json:"module,omitzero" xml:"module,omitempty"`
 	Cycle        *bool                 `form:"cycle,omitempty" json:"cycle,omitzero" xml:"cycle,omitempty"`
+	Milestone    *bool                 `form:"milestone,omitempty" json:"milestone,omitzero" xml:"milestone,omitempty"`
 	IssueComment *bool                 `form:"issue_comment,omitempty" json:"issue_comment,omitzero" xml:"issue_comment,omitempty"`
 	IsInternal   *bool                 `form:"is_internal,omitempty" json:"is_internal,omitzero" xml:"is_internal,omitempty"`
 	Version      *string               `form:"version,omitempty" json:"version,omitzero" xml:"version,omitempty"`
@@ -90,6 +91,7 @@ func NewCreateWebhookCreated(body *CreateResponseBody) *workspacewebhooks.Webhoo
 		Issue:        *body.Issue,
 		Module:       *body.Module,
 		Cycle:        *body.Cycle,
+		Milestone:    *body.Milestone,
 		IssueComment: *body.IssueComment,
 		IsInternal:   *body.IsInternal,
 		Version:      *body.Version,
@@ -116,6 +118,7 @@ func NewDetailWebhookOK(body *DetailResponseBody) *workspacewebhooks.Webhook {
 		Issue:        *body.Issue,
 		Module:       *body.Module,
 		Cycle:        *body.Cycle,
+		Milestone:    *body.Milestone,
 		IssueComment: *body.IssueComment,
 		IsInternal:   *body.IsInternal,
 		Version:      *body.Version,
@@ -142,6 +145,7 @@ func NewPatchDetailWebhookOK(body *PatchDetailResponseBody) *workspacewebhooks.W
 		Issue:        *body.Issue,
 		Module:       *body.Module,
 		Cycle:        *body.Cycle,
+		Milestone:    *body.Milestone,
 		IssueComment: *body.IssueComment,
 		IsInternal:   *body.IsInternal,
 		Version:      *body.Version,
@@ -168,6 +172,7 @@ func NewRegenerateWebhookOK(body *RegenerateResponseBody) *workspacewebhooks.Web
 		Issue:        *body.Issue,
 		Module:       *body.Module,
 		Cycle:        *body.Cycle,
+		Milestone:    *body.Milestone,
 		IssueComment: *body.IssueComment,
 		IsInternal:   *body.IsInternal,
 		Version:      *body.Version,
