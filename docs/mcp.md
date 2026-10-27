@@ -1,7 +1,7 @@
 # Remote MCP transport
 
 VEC-2 is **in progress**. The Go API contains a generated, stateless MCP server
-and ingress routing. Available member actions are `me`, `list_workspace`, `list_project`, `list_roles`, and `retrieve_role`. The `project` tool provides `list`, `retrieve`, `archive`, and `unarchive`. Personal-token and external-issuer OAuth authentication are wired. MCP is disabled
+and ingress routing. Available member actions are `me`, `list_workspace`, `list_project`, `list_roles`, and `retrieve_role`. The `project` tool provides `list`, `retrieve`, `archive`, and `unarchive`. The `cycle` tool provides `list` and `retrieve`, including archived lists. Personal-token and external-issuer OAuth authentication are wired. MCP is disabled
 by default. OAuth requires an explicitly configured issuer and deliberate account
 linking; invalid configuration or discovery fails before database startup.
 
@@ -151,7 +151,7 @@ The generated contract declares stable member and project request/result unions,
 Tests use the generated HTTP server and real PostgreSQL-backed token, membership,
 and identity readers. They cover both protocol revisions, actor isolation, fresh
 profile data, and revocation between request authentication and action execution.
-Separate OAuth integration tests exercise all nine actions with a real TLS
+Separate OAuth integration tests exercise all eleven actions with a real TLS
 issuer and PostgreSQL, including scope reduction and revocation between HTTP
 authentication and execution. Complete browser verification and VEC-36 proof
 remain pending.
@@ -196,13 +196,13 @@ size and legacy cursor/errors remain unchanged.
   list shape, including empty lists, for both revisions. Identity results retain
   their object-valued structured content.
 - **Nested result unions:** [Loom #1036](https://github.com/CaliLuke/loom/issues/1036)
-  tracks the unsupported nested untagged-union composition. Member directory
+  tracks the unsupported nested untagged-union composition. Member directory and cycle
   results use one page with a concrete typed entry carrier, preserving exact
   action-specific fields and empty pages. The member contract records its removal
   condition; no dependency source is patched.
 - **Discovery authorization:** action schemas follow current scopes and domain permissions, using copies of the generated catalogue. Workspace guests do not see `member.list_workspace`; `member.list_project` requires an active membership in a live project. Role and project reads require an eligible workspace membership. Context-free OAuth discovery considers all eligible workspaces; without one, only `member.me` remains. A selected workspace binds both its immutable ID and slug. Invocation rechecks access to the selected resource. There is no handwritten replacement registry.
 - **VEC-35 and VEC-3:** personal-token and generic OAuth invocation are implemented
-  for nine member/project actions, including current scopes, linking and revocation.
+  for eleven member/project/cycle actions, including current scopes, linking and revocation.
   Production issuer selection and complete browser/proxy evidence remain open.
   Mixed-action discovery filtering and archive/restore replay now have focused
   generated-server PostgreSQL proof and pass the full Go gate.

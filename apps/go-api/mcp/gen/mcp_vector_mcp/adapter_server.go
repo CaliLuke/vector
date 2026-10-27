@@ -504,6 +504,12 @@ func (a *MCPAdapter) generatedToolCatalog() []*ToolInfo {
 		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\",\"description\":\"Vector extension: include an opaque revision token for guarded writes.\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"archive\",\"unarchive\"]},\"expected_revision\":{\"type\":\"string\",\"description\":\"Optional opaque Vector revision from retrieve with include_revision. Conflicts fail atomically.\",\"minLength\":1,\"maxLength\":128},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"description\":\"Optional Vector retry identity; retained for at least 24 hours.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"archive\",\"unarchive\"]}]},\"cursor\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"description\":\"Optional opaque Vector revision from retrieve with include_revision. Conflicts fail atomically.\",\"minLength\":1,\"maxLength\":128},\"include_revision\":{\"type\":\"boolean\",\"description\":\"Vector extension: include an opaque revision token for guarded writes.\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"description\":\"Optional Vector retry identity; retained for at least 24 hours.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
 		Name:        "project",
 		Title:       stringPtr("Projects"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":true}")),
+		Description: stringPtr("Cycles in a project. Use an advertised action."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"status\":{\"type\":\"string\",\"description\":\"Active cycle status: current, upcoming, completed, draft, or incomplete. Ignored for archived cycles.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"cycle_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"status\":{\"type\":\"string\",\"description\":\"Active cycle status: current, upcoming, completed, draft, or incomplete. Ignored for archived cycles.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "cycle",
+		Title:       stringPtr("Cycles"),
 	}}
 }
 func (a *MCPAdapter) toolSearchEnabled() bool {
@@ -535,6 +541,8 @@ func isGeneratedToolName(name string) bool {
 	case "member":
 		return true
 	case "project":
+		return true
+	case "cycle":
 		return true
 	default:
 		return false
@@ -1284,6 +1292,21 @@ func projectInputRecovery(err error, raw jsontext.Value) string {
 	}
 	return "Provide valid tool arguments. Example: " + example
 }
+func cycleInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\",\"project_id\":\"example\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
 func (a *MCPAdapter) ToolsCall(ctx context.Context, p *ToolsCallPayload) (res *ToolsCallResult, err error) {
 	attrs := []attribute.KeyValue{}
 	var rawArguments jsontext.Value
@@ -1397,6 +1420,32 @@ func (a *MCPAdapter) executeRealTool(ctx context.Context, p *ToolsCallPayload, s
 			return false, err
 		}
 		result, err := a.service.Project(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "cycle":
+		payload, err := decodeCyclePayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", cycleInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.Cycle(ctx, payload)
 		if err != nil {
 			return true, a.sendToolError(ctx, stream, p.Name, err)
 		}

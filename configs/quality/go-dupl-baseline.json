@@ -328,15 +328,6 @@
     {
       "fingerprint": [
         "apicyclereads/design/design.go",
-        "apimodulereads/design/design.go",
-        "e879f8685196e59f836200847d2cf990a0623376fce8abae6c0a1c569876ed99",
-        "eac073126d68dec9ebde7b9b967ac4e5498b5ba90e86a9c7632bca27656ba540"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "apicyclereads/design/design.go",
         "cyclelifecycle/design/design.go",
         "1540b2b345ad094499284fca2c166a7ed761ea7ef65b1fe4d7936e8c16e3781f",
         "e3292408aec0014ea07c351c5d52d206dd921f16ce7be890c41ca07272979ed5"

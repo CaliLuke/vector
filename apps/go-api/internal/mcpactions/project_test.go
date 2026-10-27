@@ -158,8 +158,8 @@ func TestProjectDiscoveryOmitsWritesWhenTheyAreUnavailable(t *testing.T) {
 			f := newFixture(t)
 			f.projectWrites.visibility = projects.ProjectWriteVisibility{}
 			discovery := rpcVersion(t, f.handler(t, nil), "test-one", "tools/list", map[string]any{}, version)
-			require.Len(t, discovery.Tools, 2)
-			project := discovery.Tools[1]
+			require.Len(t, discovery.Tools, 3)
+			project := discoveredTool(t, discovery, "project")
 			require.Equal(t, "project", project.Name)
 			require.False(t, project.Annotations["readOnlyHint"])
 			require.False(t, project.Annotations["destructiveHint"])

@@ -8,6 +8,7 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/cyclereads"
 	"github.com/CaliLuke/go-plane/internal/mcpactions"
 	membership "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	"github.com/CaliLuke/go-plane/internal/useridentity"
@@ -60,7 +61,9 @@ func memberFixtureWithScopeChange(t *testing.T, f fixture, pool *pgxpool.Pool, m
 	projectReader, err := projects.NewRepository(pool)
 	require.NoError(t, err)
 	change := func() { _, changeErr := pool.Exec(t.Context(), mutation); require.NoError(t, changeErr) }
-	f.service, err = mcpactions.New(identity, changingMemberReader{memberReader, change}, changingDirectoryReader{directory, change}, projectReader, projectLifecycle(t, pool))
+	cycleReads, err := cyclereads.NewRepository(pool)
+	require.NoError(t, err)
+	f.service, err = mcpactions.New(identity, changingMemberReader{memberReader, change}, changingDirectoryReader{directory, change}, projectReader, projectLifecycle(t, pool), cycleReads)
 	require.NoError(t, err)
 	return f
 }

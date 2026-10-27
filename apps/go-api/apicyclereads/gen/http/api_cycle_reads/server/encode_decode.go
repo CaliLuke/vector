@@ -235,6 +235,7 @@ func DecodeGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteRequest(mux loom
 		var (
 			slug                 string
 			projectID            string
+			status               *string
 			cursor               *string
 			orderBy              *string
 			perPage              *int
@@ -248,6 +249,14 @@ func DecodeGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteRequest(mux loom
 		qp, queryErr := url.ParseQuery(r.URL.RawQuery)
 		if queryErr != nil {
 			return payload, loom.DecodePayloadError("invalid query string")
+		}
+		{
+			statusRaw := qp.Get("status")
+			statusPresent := qp.Has("status")
+
+			if statusPresent {
+				status = &statusRaw
+			}
 		}
 		{
 			cursorRaw := qp.Get("cursor")
@@ -289,7 +298,7 @@ func DecodeGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteRequest(mux loom
 		if err != nil {
 			return payload, err
 		}
-		payload = NewGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload(slug, projectID, cursor, orderBy, perPage, apiKeyAuthCredential)
+		payload = NewGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload(slug, projectID, status, cursor, orderBy, perPage, apiKeyAuthCredential)
 
 		return payload, nil
 	}
@@ -434,6 +443,7 @@ func DecodeGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesRequest(mux loomhttp
 		var (
 			slug                 string
 			projectID            string
+			status               *string
 			cursor               *string
 			cycleView            *string
 			expand               *string
@@ -450,6 +460,14 @@ func DecodeGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesRequest(mux loomhttp
 		qp, queryErr := url.ParseQuery(r.URL.RawQuery)
 		if queryErr != nil {
 			return payload, loom.DecodePayloadError("invalid query string")
+		}
+		{
+			statusRaw := qp.Get("status")
+			statusPresent := qp.Has("status")
+
+			if statusPresent {
+				status = &statusRaw
+			}
 		}
 		{
 			cursorRaw := qp.Get("cursor")
@@ -515,7 +533,7 @@ func DecodeGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesRequest(mux loomhttp
 		if err != nil {
 			return payload, err
 		}
-		payload = NewGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload(slug, projectID, cursor, cycleView, expand, fields, orderBy, perPage, apiKeyAuthCredential)
+		payload = NewGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload(slug, projectID, status, cursor, cycleView, expand, fields, orderBy, perPage, apiKeyAuthCredential)
 
 		return payload, nil
 	}

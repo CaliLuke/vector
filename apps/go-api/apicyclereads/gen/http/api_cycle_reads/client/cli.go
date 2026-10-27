@@ -71,7 +71,7 @@ func BuildGetAPIV1WorkspacesBySlugProjectsByProjectIDArchivedCyclesPayload(aPICy
 // payload for the APICycleReads
 // GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLite endpoint from CLI
 // flags.
-func BuildGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload(aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteSlug string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteProjectID string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteCursor string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteOrderBy string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePerPage string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteAPIKeyAuthCredential string) (*apicyclereads.GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload, error) {
+func BuildGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload(aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteSlug string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteProjectID string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteStatus string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteCursor string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteOrderBy string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePerPage string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteAPIKeyAuthCredential string) (*apicyclereads.GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload, error) {
 	var err error
 	var slug string
 	{
@@ -83,6 +83,12 @@ func BuildGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload(aPICycleR
 		err = loom.MergeErrors(err, loom.ValidateFormat("project_id", projectID, loom.FormatUUID))
 		if err != nil {
 			return nil, err
+		}
+	}
+	var status *string
+	{
+		if aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteStatus != "" {
+			status = &aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteStatus
 		}
 	}
 	var cursor *string
@@ -118,6 +124,7 @@ func BuildGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload(aPICycleR
 	v := &apicyclereads.GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload{}
 	v.Slug = slug
 	v.ProjectID = projectID
+	v.Status = status
 	v.Cursor = cursor
 	v.OrderBy = orderBy
 	v.PerPage = perPage
@@ -129,7 +136,7 @@ func BuildGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload(aPICycleR
 // BuildGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload builds the
 // payload for the APICycleReads
 // GetAPIV1WorkspacesBySlugProjectsByProjectIDCycles endpoint from CLI flags.
-func BuildGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload(aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesSlug string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesProjectID string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesCursor string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesCycleView string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesExpand string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesFields string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesOrderBy string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPerPage string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesAPIKeyAuthCredential string) (*apicyclereads.GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload, error) {
+func BuildGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload(aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesSlug string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesProjectID string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesStatus string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesCursor string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesCycleView string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesExpand string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesFields string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesOrderBy string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPerPage string, aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesAPIKeyAuthCredential string) (*apicyclereads.GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload, error) {
 	var err error
 	var slug string
 	{
@@ -141,6 +148,12 @@ func BuildGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload(aPICycleReads
 		err = loom.MergeErrors(err, loom.ValidateFormat("project_id", projectID, loom.FormatUUID))
 		if err != nil {
 			return nil, err
+		}
+	}
+	var status *string
+	{
+		if aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesStatus != "" {
+			status = &aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesStatus
 		}
 	}
 	var cursor *string
@@ -194,6 +207,7 @@ func BuildGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload(aPICycleReads
 	v := &apicyclereads.GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload{}
 	v.Slug = slug
 	v.ProjectID = projectID
+	v.Status = status
 	v.Cursor = cursor
 	v.CycleView = cycleView
 	v.Expand = expand

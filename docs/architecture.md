@@ -12,16 +12,16 @@ Static response fixtures remain for contract regression tests. No Python code or
 
 The initial [remote MCP transport](mcp.md) lives in `apps/go-api/mcp` and
 `internal/mcptransport`. The proxy sends `/mcp` and `/mcp/*` to Go. The generated
-catalogue contains five `member` reads and `project.list`/`project.retrieve`, plus archive/restore; MCP is disabled by default.
+catalogue contains five `member` reads and `project.list`/`project.retrieve`, plus archive/restore and two `cycle` reads; MCP is disabled by default.
 `internal/mcpauth` supplies personal-token authentication using primary token and
 workspace membership reads. `internal/mcpoauth` owns fresh external-issuer
 introspection, verified account linking and expiring proof storage. `mcpoauthlinks`
 defines the generated browser-link API. `internal/mcpactions` projects credential-neutral
 application operations shared with HTTP. `internal/projectmembershipreads.DirectoryReader`
 owns current workspace-directory authorization, filtering, paging and the existing-role catalogue.
-Project reads use `internal/workspaceprojectreads` on the primary. All scoped MCP
+Project reads use `internal/workspaceprojectreads` on the primary. Cycle reads use a primary `internal/cyclereads` instance and its shared API serializer. The authorization scope and cycle data share a database snapshot; immutable workspace IDs prevent slug reassignment from changing the target. `internal/djangoapi.Timestamps` supplies the shared HTTP/MCP timezone projection. All scoped MCP
 reads retain the verified workspace UUID through the data query, preventing slug
-reassignment from changing the selected tenant. Project archive and restore share a transactional writer with HTTP. Optional receipts live in `internal/mutationreceipts`; a database trigger advances project revisions for all project-row writers. Discovery filters generated write-action schemas per request without changing the shared catalogue; finer read-action role filtering remains open.
+reassignment from changing the selected tenant. Project archive and restore share a transactional writer with HTTP. Optional receipts live in `internal/mutationreceipts`; a database trigger advances project revisions for all project-row writers. Discovery filters generated action schemas using current scopes and workspace/project permissions without changing the shared catalogue.
 OAuth is available through an explicitly configured external issuer; remaining resource actions
 and full parity are incomplete.
 

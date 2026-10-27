@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
+	"github.com/CaliLuke/go-plane/internal/cyclereads"
 	"github.com/CaliLuke/go-plane/internal/mcpactions"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/projectmembershipreads"
@@ -72,20 +73,7 @@ func databaseFixture(t *testing.T) (fixture, *pgxpool.Pool) {
 	pool, err := pgxpool.New(ctx, pair.SourceURL)
 	require.NoError(t, err)
 	t.Cleanup(pool.Close)
-	repository, err := useridentity.NewRepository(pool)
-	require.NoError(t, err)
-	reader, err := useridentity.NewIdentityReader(repository)
-	require.NoError(t, err)
-	projectRepository, err := projectmembershipreads.NewLifecycleRepository(pool, rosterPublisher{}, "https://vector.example")
-	require.NoError(t, err)
-	projectReader, err := projectmembershipreads.NewMemberReader(projectRepository)
-	require.NoError(t, err)
-	directory, err := projectmembershipreads.NewDirectoryReader(pool)
-	require.NoError(t, err)
-	projectReads, err := workspaceprojectreads.NewRepository(pool)
-	require.NoError(t, err)
-	service, err := mcpactions.New(reader, projectReader, directory, projectReads, projectLifecycle(t, pool))
-	require.NoError(t, err)
+	service := databaseService(t, pool, nil)
 	keys, err := apikey.NewWithReaderWriter(pool, pool)
 	require.NoError(t, err)
 	members, err := mcpauth.NewWorkspaceReader(pool)
@@ -143,4 +131,26 @@ func TestMemberRechecksPrimaryDatabaseAfterRequestAuthentication(t *testing.T) {
 			assert.Empty(t, result.StructuredContent)
 		})
 	}
+}
+
+func databaseService(t *testing.T, pool *pgxpool.Pool, changeCycle func()) *mcpactions.Service {
+	t.Helper()
+	repository, err := useridentity.NewRepository(pool)
+	require.NoError(t, err)
+	reader, err := useridentity.NewIdentityReader(repository)
+	require.NoError(t, err)
+	projectRepository, err := projectmembershipreads.NewLifecycleRepository(pool, rosterPublisher{}, "https://vector.example")
+	require.NoError(t, err)
+	projectReader, err := projectmembershipreads.NewMemberReader(projectRepository)
+	require.NoError(t, err)
+	directory, err := projectmembershipreads.NewDirectoryReader(pool)
+	require.NoError(t, err)
+	projectReads, err := workspaceprojectreads.NewRepository(pool)
+	require.NoError(t, err)
+	cycleReads, err := cyclereads.NewRepository(pool)
+	require.NoError(t, err)
+	service, err := mcpactions.New(reader, projectReader, directory, projectReads, projectLifecycle(t, pool), changingCycleReader{cycleReads, changeCycle})
+	require.NoError(t, err)
+
+	return service
 }

@@ -661,6 +661,7 @@ var _ = Service("APICycleReads", func() {
 		Meta("openapi:extension:x-plane-view", "\"plane.api.views.cycle.CycleListLiteAPIEndpoint\"")
 		Security(ImportedAPIKeyAuthSecurity)
 		Payload(func() {
+			Attribute("status", String, "Canonical cycle status filter. Takes precedence over cycle_view where supported.")
 			Attribute("cursor", String, func() {
 				Description("Pagination cursor for getting next set of results")
 				Meta("openapi:allowEmptyValue", "false")
@@ -689,6 +690,7 @@ var _ = Service("APICycleReads", func() {
 		HTTP(func() {
 			Meta("openapi:tag:projects")
 			GET("/api/v1/workspaces/{slug}/projects/{project_id}/cycles-lite/")
+			Param("status")
 			Param("cursor")
 			Param("orderBy:order_by")
 			Param("perPage:per_page")
@@ -711,6 +713,7 @@ var _ = Service("APICycleReads", func() {
 		Meta("openapi:extension:x-plane-view", "\"plane.api.views.cycle.CycleListCreateAPIEndpoint\"")
 		Security(ImportedAPIKeyAuthSecurity)
 		Payload(func() {
+			Attribute("status", String, "Canonical cycle status filter. Takes precedence over cycle_view where supported.")
 			Attribute("cursor", String, func() {
 				Description("Pagination cursor for getting next set of results")
 				Meta("openapi:allowEmptyValue", "false")
@@ -751,6 +754,7 @@ var _ = Service("APICycleReads", func() {
 		HTTP(func() {
 			Meta("openapi:tag:cycles")
 			GET("/api/v1/workspaces/{slug}/projects/{project_id}/cycles/")
+			Param("status")
 			Param("cursor")
 			Param("cycleView:cycle_view")
 			Param("expand")

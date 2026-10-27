@@ -20,6 +20,7 @@ var _ = Service("VectorMCP", func() {
 	mcp.MCP("vector", "1.0.0")
 	member()
 	project()
+	cycle()
 })
 
 // Shared error names must have one consistent remedy across resource methods.

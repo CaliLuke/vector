@@ -43,6 +43,7 @@ type commandLine struct {
 		GetApiv1WorkspacesBySlugProjectsByProjectIDCyclesLite struct {
 			Slug                 string `help:"Workspace slug" name:"slug" required:""`
 			ProjectID            string `help:"Project ID" name:"project-id" required:""`
+			Status               string `help:"" name:"status"`
 			Cursor               string `help:"" name:"cursor"`
 			OrderBy              string `help:"" name:"order-by"`
 			PerPage              string `help:"" name:"per-page"`
@@ -51,6 +52,7 @@ type commandLine struct {
 		GetApiv1WorkspacesBySlugProjectsByProjectIDCycles struct {
 			Slug                 string `help:"Workspace slug" name:"slug" required:""`
 			ProjectID            string `help:"Project ID" name:"project-id" required:""`
+			Status               string `help:"" name:"status"`
 			Cursor               string `help:"" name:"cursor"`
 			CycleView            string `help:"" name:"cycle-view"`
 			Expand               string `help:"" name:"expand"`
@@ -98,12 +100,14 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDArchivedCyclesAPIKeyAuthCredentialFlag                      *string
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteSlugFlag                                          *string
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteProjectIDFlag                                     *string
+		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteStatusFlag                                        *string
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteCursorFlag                                        *string
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteOrderByFlag                                       *string
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePerPageFlag                                       *string
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteAPIKeyAuthCredentialFlag                          *string
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesSlugFlag                                              *string
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesProjectIDFlag                                         *string
+		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesStatusFlag                                            *string
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesCursorFlag                                            *string
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesCycleViewFlag                                         *string
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesExpandFlag                                            *string
@@ -143,12 +147,14 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDArchivedCyclesAPIKeyAuthCredentialFlag = &command.APICycleReads.GetApiv1WorkspacesBySlugProjectsByProjectIDArchivedCycles.APIKeyAuthCredential
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteSlugFlag = &command.APICycleReads.GetApiv1WorkspacesBySlugProjectsByProjectIDCyclesLite.Slug
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteProjectIDFlag = &command.APICycleReads.GetApiv1WorkspacesBySlugProjectsByProjectIDCyclesLite.ProjectID
+		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteStatusFlag = &command.APICycleReads.GetApiv1WorkspacesBySlugProjectsByProjectIDCyclesLite.Status
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteCursorFlag = &command.APICycleReads.GetApiv1WorkspacesBySlugProjectsByProjectIDCyclesLite.Cursor
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteOrderByFlag = &command.APICycleReads.GetApiv1WorkspacesBySlugProjectsByProjectIDCyclesLite.OrderBy
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePerPageFlag = &command.APICycleReads.GetApiv1WorkspacesBySlugProjectsByProjectIDCyclesLite.PerPage
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteAPIKeyAuthCredentialFlag = &command.APICycleReads.GetApiv1WorkspacesBySlugProjectsByProjectIDCyclesLite.APIKeyAuthCredential
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesSlugFlag = &command.APICycleReads.GetApiv1WorkspacesBySlugProjectsByProjectIDCycles.Slug
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesProjectIDFlag = &command.APICycleReads.GetApiv1WorkspacesBySlugProjectsByProjectIDCycles.ProjectID
+		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesStatusFlag = &command.APICycleReads.GetApiv1WorkspacesBySlugProjectsByProjectIDCycles.Status
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesCursorFlag = &command.APICycleReads.GetApiv1WorkspacesBySlugProjectsByProjectIDCycles.Cursor
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesCycleViewFlag = &command.APICycleReads.GetApiv1WorkspacesBySlugProjectsByProjectIDCycles.CycleView
 		aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesExpandFlag = &command.APICycleReads.GetApiv1WorkspacesBySlugProjectsByProjectIDCycles.Expand
@@ -208,10 +214,10 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 				data, err = apicyclereadsc.BuildGetAPIV1WorkspacesBySlugProjectsByProjectIDArchivedCyclesPayload(*aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDArchivedCyclesSlugFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDArchivedCyclesProjectIDFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDArchivedCyclesCursorFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDArchivedCyclesPerPageFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDArchivedCyclesAPIKeyAuthCredentialFlag)
 			case "get-apiv1-workspaces-by-slug-projects-by-project-id-cycles-lite":
 				endpoint = c.GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLite()
-				data, err = apicyclereadsc.BuildGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload(*aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteSlugFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteProjectIDFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteCursorFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteOrderByFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePerPageFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteAPIKeyAuthCredentialFlag)
+				data, err = apicyclereadsc.BuildGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload(*aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteSlugFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteProjectIDFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteStatusFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteCursorFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteOrderByFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePerPageFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteAPIKeyAuthCredentialFlag)
 			case "get-apiv1-workspaces-by-slug-projects-by-project-id-cycles":
 				endpoint = c.GetAPIV1WorkspacesBySlugProjectsByProjectIDCycles()
-				data, err = apicyclereadsc.BuildGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload(*aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesSlugFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesProjectIDFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesCursorFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesCycleViewFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesExpandFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesFieldsFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesOrderByFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPerPageFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesAPIKeyAuthCredentialFlag)
+				data, err = apicyclereadsc.BuildGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload(*aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesSlugFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesProjectIDFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesStatusFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesCursorFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesCycleViewFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesExpandFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesFieldsFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesOrderByFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPerPageFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesAPIKeyAuthCredentialFlag)
 			case "get-apiv1-workspaces-by-slug-projects-by-project-id-cycles-by-cycle-id-cycle-issues":
 				endpoint = c.GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesByCycleIDCycleIssues()
 				data, err = apicyclereadsc.BuildGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesByCycleIDCycleIssuesPayload(*aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesByCycleIDCycleIssuesSlugFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesByCycleIDCycleIssuesProjectIDFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesByCycleIDCycleIssuesCycleIDFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesByCycleIDCycleIssuesCursorFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesByCycleIDCycleIssuesPerPageFlag, *aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesByCycleIDCycleIssuesAPIKeyAuthCredentialFlag)
@@ -276,6 +282,7 @@ func aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteUsage() {
 	fmt.Fprintf(os.Stderr, "%s [flags] api-cycle-reads get-apiv1-workspaces-by-slug-projects-by-project-id-cycles-lite", os.Args[0])
 	fmt.Fprint(os.Stderr, " -slug STRING")
 	fmt.Fprint(os.Stderr, " -project-id STRING")
+	fmt.Fprint(os.Stderr, " -status STRING")
 	fmt.Fprint(os.Stderr, " -cursor STRING")
 	fmt.Fprint(os.Stderr, " -order-by STRING")
 	fmt.Fprint(os.Stderr, " -per-page INT")
@@ -289,6 +296,7 @@ func aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteUsage() {
 	// Flags list
 	fmt.Fprintln(os.Stderr, "    -slug STRING: Workspace slug")
 	fmt.Fprintln(os.Stderr, "    -project-id STRING: Project ID")
+	fmt.Fprintln(os.Stderr, "    -status STRING: ")
 	fmt.Fprintln(os.Stderr, "    -cursor STRING: ")
 	fmt.Fprintln(os.Stderr, "    -order-by STRING: ")
 	fmt.Fprintln(os.Stderr, "    -per-page INT: ")
@@ -296,13 +304,14 @@ func aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "api-cycle-reads get-apiv1-workspaces-by-slug-projects-by-project-id-cycles-lite --slug \"Ut aperiam culpa blanditiis.\" --project-id \"cd2c677f-d9b0-4d3e-9c45-eb7ccda90141\" --cursor \"Dolor dignissimos aut molestiae.\" --order-by \"Unde sint error qui fuga.\" --per-page 3403389428420184780 --api-key-auth-credential \"Vel autem aspernatur.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "api-cycle-reads get-apiv1-workspaces-by-slug-projects-by-project-id-cycles-lite --slug \"Ut aperiam culpa blanditiis.\" --project-id \"cd2c677f-d9b0-4d3e-9c45-eb7ccda90141\" --status \"Dolor dignissimos aut molestiae.\" --cursor \"Unde sint error qui fuga.\" --order-by \"Eveniet vel autem aspernatur ad est omnis.\" --per-page 8574537027608793949 --api-key-auth-credential \"Rem dolorum et quaerat cumque.\"")
 }
 func aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesUsage() {
 	// Header with flags
 	fmt.Fprintf(os.Stderr, "%s [flags] api-cycle-reads get-apiv1-workspaces-by-slug-projects-by-project-id-cycles", os.Args[0])
 	fmt.Fprint(os.Stderr, " -slug STRING")
 	fmt.Fprint(os.Stderr, " -project-id STRING")
+	fmt.Fprint(os.Stderr, " -status STRING")
 	fmt.Fprint(os.Stderr, " -cursor STRING")
 	fmt.Fprint(os.Stderr, " -cycle-view STRING")
 	fmt.Fprint(os.Stderr, " -expand STRING")
@@ -319,6 +328,7 @@ func aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesUsage() {
 	// Flags list
 	fmt.Fprintln(os.Stderr, "    -slug STRING: Workspace slug")
 	fmt.Fprintln(os.Stderr, "    -project-id STRING: Project ID")
+	fmt.Fprintln(os.Stderr, "    -status STRING: ")
 	fmt.Fprintln(os.Stderr, "    -cursor STRING: ")
 	fmt.Fprintln(os.Stderr, "    -cycle-view STRING: ")
 	fmt.Fprintln(os.Stderr, "    -expand STRING: ")
@@ -329,7 +339,7 @@ func aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "api-cycle-reads get-apiv1-workspaces-by-slug-projects-by-project-id-cycles --slug \"Omnis sint.\" --project-id \"b8205127-b065-4da0-af7b-b5943339cf38\" --cursor \"Nobis pariatur perspiciatis beatae qui voluptas.\" --cycle-view \"Eos ut cumque officia dicta.\" --expand \"Omnis numquam.\" --fields \"Illo sunt aut optio at autem.\" --order-by \"Beatae cupiditate dolores expedita omnis atque quo.\" --per-page 3639406910844445692 --api-key-auth-credential \"Earum commodi.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "api-cycle-reads get-apiv1-workspaces-by-slug-projects-by-project-id-cycles --slug \"Et dolores quo et error omnis vero.\" --project-id \"ca78756c-83ed-45af-943b-be2df9742f5a\" --status \"Illo sunt aut optio at autem.\" --cursor \"Beatae cupiditate dolores expedita omnis atque quo.\" --cycle-view \"Adipisci earum commodi et iure.\" --expand \"Repudiandae provident labore eum dignissimos quidem et.\" --fields \"Dolores aut veritatis sit corrupti ea veniam.\" --order-by \"Et minima sapiente illo.\" --per-page 4279302594781570874 --api-key-auth-credential \"Quo consectetur est omnis nesciunt.\"")
 }
 func aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesByCycleIDCycleIssuesUsage() {
 	// Header with flags
@@ -356,7 +366,7 @@ func aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesByCycleIDCycl
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "api-cycle-reads get-apiv1-workspaces-by-slug-projects-by-project-id-cycles-by-cycle-id-cycle-issues --slug \"Id non quidem et minima tempora ipsum.\" --project-id \"a8658c55-21b1-4a2d-bf28-c2408a2a0f20\" --cycle-id \"9716e1c2-f734-42cb-95be-8d0e282d440a\" --cursor \"Dolorem sequi delectus voluptatem aut.\" --per-page 7116091037458910057 --api-key-auth-credential \"Reprehenderit sed dicta nisi.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "api-cycle-reads get-apiv1-workspaces-by-slug-projects-by-project-id-cycles-by-cycle-id-cycle-issues --slug \"Nostrum blanditiis.\" --project-id \"d2211fe7-a2e8-4204-944d-ffeb4dce57e8\" --cycle-id \"a6a8001e-ea7d-476f-9bca-a059c52596a9\" --cursor \"Sapiente voluptatem rem molestias quisquam explicabo.\" --per-page 2204890762458024214 --api-key-auth-credential \"Libero molestias iure aut.\"")
 }
 func aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesByCycleIDCycleIssuesByIssueIDUsage() {
 	// Header with flags
@@ -381,7 +391,7 @@ func aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesByCycleIDCycl
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "api-cycle-reads get-apiv1-workspaces-by-slug-projects-by-project-id-cycles-by-cycle-id-cycle-issues-by-issue-id --slug \"Harum tempora error non natus.\" --project-id \"4caba838-5180-4965-af36-70215cbb0f9d\" --cycle-id \"d987163c-dc54-4d83-8eb5-3184da63d897\" --issue-id \"7e36320e-2cd7-47a9-9d10-15c1b192df4f\" --api-key-auth-credential \"Eveniet aut qui consectetur sed.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "api-cycle-reads get-apiv1-workspaces-by-slug-projects-by-project-id-cycles-by-cycle-id-cycle-issues-by-issue-id --slug \"Quia aut aspernatur assumenda voluptas.\" --project-id \"d4f55bbd-bf36-4922-bf82-898ebca49cc1\" --cycle-id \"7a88fff3-ef8e-40a0-9057-83f2dbcc9518\" --issue-id \"edd186e4-91b8-4698-8a83-693c215df232\" --api-key-auth-credential \"Delectus aut sed ut.\"")
 }
 func aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesByPkUsage() {
 	// Header with flags
@@ -404,5 +414,5 @@ func aPICycleReadsGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesByPkUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "api-cycle-reads get-apiv1-workspaces-by-slug-projects-by-project-id-cycles-by-pk --slug \"Ut rerum consequatur nostrum.\" --project-id \"c745ecd8-a6b8-472c-9cb6-a9508c069c54\" --pk \"ad8abcaa-f424-4032-bbfe-df3324813417\" --api-key-auth-credential \"Harum quaerat voluptas exercitationem in et vel.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "api-cycle-reads get-apiv1-workspaces-by-slug-projects-by-project-id-cycles-by-pk --slug \"Reiciendis porro totam sint consequuntur.\" --project-id \"e9fe5151-b699-45f4-b6e4-6e40dc60a2d9\" --pk \"3bb1ac7f-525b-464f-9afb-279fce504b55\" --api-key-auth-credential \"Et non at.\"")
 }

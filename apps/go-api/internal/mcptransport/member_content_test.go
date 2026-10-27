@@ -132,3 +132,7 @@ func TestEnabledTransportRequiresDiscoveryAuthorization(t *testing.T) {
 	_, err := mcptransport.New(config("header"), opts, http.NotFoundHandler())
 	require.ErrorContains(t, err, "discovery authorization is required")
 }
+
+func (memberResponseService) Cycle(context.Context, *api.CycleRequest) (*api.CycleResult, error) {
+	return nil, errors.New("this fixture does not execute cycle reads")
+}

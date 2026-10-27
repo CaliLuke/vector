@@ -47,7 +47,7 @@ Open `http://localhost:8000/`. Instance administration uses `/god-mode/`, and pu
 
 The [remote MCP transport](mcp.md) is disabled by default. Personal-token mode can
 authenticate requests and call five `member` reads and four `project` actions,
-including archive and restore. OAuth mode requires
+including archive and restore, plus two `cycle` reads. OAuth mode requires
 the [external issuer profile and account linking](mcp-oauth.md). The remaining
 resource action contracts are still pending.
 The proxy serves all browser entry points. Frontend ports 3000–3100 are internal development upstreams.
@@ -293,6 +293,8 @@ The cycle header no longer exceeds the complexity threshold; the module header's
 existing allowance tightens from 24 to 17 in both lint ratchets. Display options
 now derive exclusions without mutating the caller's array, with a mounted
 regression for disabling and re-enabling cycle and module grouping.
+
+Adding canonical cycle status filtering removes two obsolete duplicate pairs between the cycle and module API declarations. The Go duplicate baseline falls from 501 to 499 pairs; no allowance or exclusion was added.
 
 ## Logs
 

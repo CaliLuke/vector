@@ -338,3 +338,7 @@ func (transportTestService) Project(context.Context, *api.ProjectRequest) (loom.
 func (transportTestService) DiscoverActions(context.Context) (mcptransport.ActionVisibility, error) {
 	return mcptransport.ActionVisibility{"member": {"me": true, "list_workspace": true, "list_project": true, "list_roles": true, "retrieve_role": true}, "project": {"list": true, "retrieve": true, "archive": true, "unarchive": true}}, nil
 }
+
+func (transportTestService) Cycle(context.Context, *api.CycleRequest) (*api.CycleResult, error) {
+	return nil, errors.New("this fixture does not execute cycle reads")
+}

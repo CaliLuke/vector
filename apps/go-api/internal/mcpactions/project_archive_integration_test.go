@@ -143,8 +143,8 @@ func TestProjectDiscoveryTracksScopesAndDomainPermissionsWithoutSharedMutation(t
 	pat, oauth := f.handler(t, nil), oauthHandler(t, f, auth.Authenticate)
 	assertActions := func(result rpcResult, archive, unarchive bool) {
 		t.Helper()
-		require.Len(t, result.Tools, 2)
-		schema := result.Tools[1].InputSchema
+		require.GreaterOrEqual(t, len(result.Tools), 2)
+		schema := discoveredTool(t, result, "project").InputSchema
 		actions := string(schema.Properties["action"])
 		require.Contains(t, actions, `"list"`)
 		require.Contains(t, actions, `"retrieve"`)

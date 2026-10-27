@@ -38,13 +38,14 @@ type Service struct {
 	directory     memberDirectory
 	projectReads  projectReader
 	projectWrites projectWriter
+	cycleReads    cycleReader
 }
 
-func New(identity identityReader, projects projectMemberReader, directory memberDirectory, projectReads projectReader, projectWrites projectWriter, options ...Option) (*Service, error) {
-	if identity == nil || projects == nil || directory == nil || projectReads == nil || projectWrites == nil {
-		return nil, errors.New("MCP identity, member directory and project applications are required")
+func New(identity identityReader, projects projectMemberReader, directory memberDirectory, projectReads projectReader, projectWrites projectWriter, cycleReads cycleReader, options ...Option) (*Service, error) {
+	if identity == nil || projects == nil || directory == nil || projectReads == nil || projectWrites == nil || cycleReads == nil {
+		return nil, errors.New("MCP identity, member directory, project and cycle applications are required")
 	}
-	service := &Service{identity: identity, projects: projects, directory: directory, projectReads: projectReads, projectWrites: projectWrites}
+	service := &Service{identity: identity, projects: projects, directory: directory, projectReads: projectReads, projectWrites: projectWrites, cycleReads: cycleReads}
 	for _, option := range options {
 		option(service)
 	}

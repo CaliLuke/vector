@@ -179,10 +179,11 @@ func NewGetAPIV1WorkspacesBySlugProjectsByProjectIDArchivedCyclesPayload(slug st
 // NewGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload builds a
 // APICycleReads service GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLite
 // endpoint payload.
-func NewGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload(slug string, projectID string, cursor *string, orderBy *string, perPage *int, apiKeyAuthCredential *string) *apicyclereads.GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload {
+func NewGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload(slug string, projectID string, status *string, cursor *string, orderBy *string, perPage *int, apiKeyAuthCredential *string) *apicyclereads.GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload {
 	v := &apicyclereads.GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload{}
 	v.Slug = slug
 	v.ProjectID = projectID
+	v.Status = status
 	v.Cursor = cursor
 	v.OrderBy = orderBy
 	v.PerPage = perPage
@@ -194,10 +195,11 @@ func NewGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload(slug string
 // NewGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload builds a
 // APICycleReads service GetAPIV1WorkspacesBySlugProjectsByProjectIDCycles
 // endpoint payload.
-func NewGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload(slug string, projectID string, cursor *string, cycleView *string, expand *string, fields *string, orderBy *string, perPage *int, apiKeyAuthCredential *string) *apicyclereads.GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload {
+func NewGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload(slug string, projectID string, status *string, cursor *string, cycleView *string, expand *string, fields *string, orderBy *string, perPage *int, apiKeyAuthCredential *string) *apicyclereads.GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload {
 	v := &apicyclereads.GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload{}
 	v.Slug = slug
 	v.ProjectID = projectID
+	v.Status = status
 	v.Cursor = cursor
 	v.CycleView = cycleView
 	v.Expand = expand

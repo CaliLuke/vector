@@ -136,10 +136,10 @@ emits OAuth challenges or metadata. Authentication/validation failure outputs
 remain safe and correlated by the shared request ID.
 
 Generated action declarations remain the catalogue source of truth. Discovery
-projects the nine implemented member and project actions using current OAuth
+projects the eleven implemented member, project, and cycle actions using current OAuth
 scopes and primary-database permissions. Workspace directory reads require a
 member or admin role; project roster reads require an active project membership.
-Role and project reads require an eligible workspace membership. Without a
+Role and project reads require an eligible workspace membership. Cycle reads require an active project membership. Without a
 selected workspace, discovery considers all eligible memberships; accounts with
 none see only `member.me`. Archive and restore follow their domain permissions.
 The interceptor filters fresh copies of generated schemas without a second action

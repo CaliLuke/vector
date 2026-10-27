@@ -4,9 +4,14 @@ import (
 	"context"
 	"errors"
 	"io"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
+
+	cycleserver "github.com/CaliLuke/go-plane/apicyclereads/gen/http/api_cycle_reads/server"
+	loomhttp "github.com/CaliLuke/loom/http"
 
 	api "github.com/CaliLuke/go-plane/apicyclereads/gen/api_cycle_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
@@ -97,5 +102,31 @@ func TestAPICyclePreservesPathIdentityAndOpaqueJSONTimestamps(t *testing.T) {
 	}
 	if !effects.Authenticated || effects.Rate == nil || !effects.Rate.Allowed {
 		t.Fatalf("request effects=%+v", effects)
+	}
+}
+
+func TestAPICycleGeneratedHTTPAcceptsCanonicalStatus(t *testing.T) {
+	for _, route := range []string{"cycles-lite", "cycles"} {
+		t.Run(route, func(t *testing.T) {
+			repository := &apiCycleRepositoryStub{body: map[string]any{"results": []any{}}}
+			service, err := NewAPICycleReads(repository, &activityAPIKeyStub{principal: apikey.Principal{UserID: uuid.New(), Timezone: "UTC"}}, &activityThrottleStub{rate: apikey.Rate{Allowed: true}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			mux := loomhttp.NewMuxer()
+			cors, err := loomhttp.NewRuntimeCORSPolicy(loomhttp.CORSPolicy{Origins: []loomhttp.CORSOrigin{{Pattern: "http://localhost:8000"}}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			server := cycleserver.New(api.NewEndpoints(service), mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, nil, nil, cors)
+			server.Mount(mux)
+			request := httptest.NewRequest(http.MethodGet, "/api/v1/workspaces/alpha/projects/30000000-0000-4000-8000-000000000001/"+route+"/?status=current", nil)
+			request.Header.Set("X-Api-Key", "test-key")
+			recorder := httptest.NewRecorder()
+			mux.ServeHTTP(recorder, request)
+			if recorder.Code != 200 || repository.request.Params["status"] != "current" || !repository.request.Present["status"] {
+				t.Fatalf("status=%d body=%s request=%+v", recorder.Code, recorder.Body, repository.request)
+			}
+		})
 	}
 }

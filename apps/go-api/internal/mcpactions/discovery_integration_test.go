@@ -67,6 +67,7 @@ func TestDiscoveryUsesCurrentMemberReadPermissionsAcrossCredentialsAndProtocols(
 							expected = append(expected, "list_workspace")
 						}
 						if tc.roster {
+							require.ElementsMatch(t, []string{"list", "retrieve"}, actions["cycle"])
 							expected = append(expected, "list_project")
 						}
 						require.ElementsMatch(t, expected, actions["member"])
@@ -77,11 +78,12 @@ func TestDiscoveryUsesCurrentMemberReadPermissionsAcrossCredentialsAndProtocols(
 						roster := call(`{"action":"list_project","project_id":"30000000-0000-4000-8000-000000000001"}`)
 						require.Equal(t, !tc.roster, roster.IsError, roster.Content)
 						if !tc.directory {
-							require.NotContains(t, listed.Tools[0].InputSchema.Properties, "email")
-							require.NotContains(t, listed.Tools[0].InputSchema.Properties, "is_active")
+							require.NotContains(t, discoveredTool(t, listed, "member").InputSchema.Properties, "email")
+							require.NotContains(t, discoveredTool(t, listed, "member").InputSchema.Properties, "is_active")
 						}
 						if !tc.roster {
-							require.NotContains(t, listed.Tools[0].InputSchema.Properties, "project_id")
+							require.NotContains(t, actions, "cycle")
+							require.NotContains(t, discoveredTool(t, listed, "member").InputSchema.Properties, "project_id")
 						}
 					})
 				}

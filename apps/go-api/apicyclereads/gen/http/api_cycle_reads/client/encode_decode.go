@@ -229,6 +229,9 @@ func EncodeGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLiteRequest(encoder 
 			req.Header.Set("X-Api-Key", head)
 		}
 		values := req.URL.Query()
+		if p.Status != nil {
+			values.Add("status", *p.Status)
+		}
 		if p.Cursor != nil {
 			values.Add("cursor", *p.Cursor)
 		}
@@ -396,6 +399,9 @@ func EncodeGetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesRequest(encoder func
 			req.Header.Set("X-Api-Key", head)
 		}
 		values := req.URL.Query()
+		if p.Status != nil {
+			values.Add("status", *p.Status)
+		}
 		if p.Cursor != nil {
 			values.Add("cursor", *p.Cursor)
 		}

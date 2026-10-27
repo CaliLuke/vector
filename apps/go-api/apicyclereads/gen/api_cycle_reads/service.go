@@ -152,6 +152,9 @@ type GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesByPkPayload struct {
 // type of the APICycleReads service
 // GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLite method.
 type GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload struct {
+	// Canonical cycle status filter. Takes precedence over cycle_view where
+	// supported.
+	Status *string `json:"status,omitzero"`
 	// Pagination cursor for getting next set of results
 	Cursor *string `json:"cursor,omitzero"`
 	// Field to order results by. Prefix with '-' for descending order
@@ -169,6 +172,9 @@ type GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesLitePayload struct {
 // of the APICycleReads service
 // GetAPIV1WorkspacesBySlugProjectsByProjectIDCycles method.
 type GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload struct {
+	// Canonical cycle status filter. Takes precedence over cycle_view where
+	// supported.
+	Status *string `json:"status,omitzero"`
 	// Pagination cursor for getting next set of results
 	Cursor *string `json:"cursor,omitzero"`
 	// Filter cycles by status

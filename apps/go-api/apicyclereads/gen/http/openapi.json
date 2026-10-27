@@ -108,6 +108,9 @@
             "$ref": "#/components/parameters/PathProjectID"
           },
           {
+            "$ref": "#/components/parameters/QueryStatus"
+          },
+          {
             "$ref": "#/components/parameters/QueryCursor"
           },
           {
@@ -192,6 +195,9 @@
           },
           {
             "$ref": "#/components/parameters/PathProjectID"
+          },
+          {
+            "$ref": "#/components/parameters/QueryStatus"
           },
           {
             "$ref": "#/components/parameters/QueryCursor"
@@ -2068,6 +2074,15 @@
         "description": "Number of results per page (default: 20, max: 100)",
         "schema": {
           "type": "integer"
+        }
+      },
+      "QueryStatus": {
+        "name": "status",
+        "in": "query",
+        "description": "Canonical cycle status filter. Takes precedence over cycle_view where supported.",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
         }
       }
     },

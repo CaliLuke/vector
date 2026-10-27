@@ -17,6 +17,7 @@ import (
 type Endpoints struct {
 	Member  loom.Endpoint
 	Project loom.Endpoint
+	Cycle   loom.Endpoint
 }
 
 // NewEndpoints wraps the methods of the "VectorMCP" service with endpoints.
@@ -24,6 +25,7 @@ func NewEndpoints(s Service) *Endpoints {
 	return &Endpoints{
 		Member:  NewMemberEndpoint(s),
 		Project: NewProjectEndpoint(s),
+		Cycle:   NewCycleEndpoint(s),
 	}
 }
 
@@ -31,6 +33,7 @@ func NewEndpoints(s Service) *Endpoints {
 func (e *Endpoints) Use(m func(loom.Endpoint) loom.Endpoint) {
 	e.Member = m(e.Member)
 	e.Project = m(e.Project)
+	e.Cycle = m(e.Cycle)
 }
 
 // NewMemberEndpoint returns an endpoint function that calls the method
@@ -48,5 +51,14 @@ func NewProjectEndpoint(s Service) loom.Endpoint {
 	return func(ctx context.Context, req any) (any, error) {
 		p := req.(*ProjectRequest)
 		return s.Project(ctx, p)
+	}
+}
+
+// NewCycleEndpoint returns an endpoint function that calls the method "cycle"
+// of service "VectorMCP".
+func NewCycleEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*CycleRequest)
+		return s.Cycle(ctx, p)
 	}
 }
