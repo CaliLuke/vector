@@ -83,7 +83,7 @@ func issueActivityInputFromTask(kwargs map[string]any) (IssueActivityInput, erro
 	if kwargs == nil {
 		return IssueActivityInput{}, fmt.Errorf("%w: issue activity task payload is required", ErrPermanentIssueActivity)
 	}
-	input := IssueActivityInput{Type: stringFromTask(kwargs["type"]), ProjectID: stringFromTask(kwargs["project_id"]), IssueID: nullableStringFromTask(kwargs["issue_id"]), ActorID: nullableStringFromTask(kwargs["actor_id"]), Notification: boolFromTask(kwargs["notification"])}
+	input := IssueActivityInput{Type: stringFromTask(kwargs["type"]), ProjectID: stringFromTask(kwargs["project_id"]), WorkspaceID: stringFromTask(kwargs["workspace_id"]), IssueID: nullableStringFromTask(kwargs["issue_id"]), ActorID: nullableStringFromTask(kwargs["actor_id"]), Notification: boolFromTask(kwargs["notification"])}
 	if value, ok := kwargs["subscriber"]; ok {
 		subscriber := boolFromTask(value)
 		input.Subscriber = &subscriber

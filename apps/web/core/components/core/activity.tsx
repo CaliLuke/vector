@@ -38,6 +38,7 @@ import { capitalizeFirstLetter } from "@plane/utils/string";
 import { IssueLink, UserLink } from "./activity-links";
 export { IssueLink } from "./activity-links";
 import { ActivityLabelPill } from "./activity-label-pill";
+import { milestoneActivityDetails } from "./activity-milestone";
 import { propertyActivityDetails } from "./activity-property";
 
 const inboxActivityMessage = {
@@ -81,6 +82,7 @@ const activityDetails: {
   };
 } = {
   ...propertyActivityDetails,
+  ...milestoneActivityDetails,
   assignees: {
     message: (activity, showIssue) => {
       if (activity.old_value === "")

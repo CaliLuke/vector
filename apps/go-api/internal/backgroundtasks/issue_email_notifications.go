@@ -45,6 +45,7 @@ type issueEmailSender interface {
 
 type IssueEmailActivity struct {
 	ID, ActorID, ActorName, ActorAvatar string
+	WorkspaceID, ProjectID              string
 	Field, OldValue, NewValue, Time     string
 	Comment                             string
 }
@@ -267,6 +268,10 @@ func (store *issueEmailStore) pendingBatches(ctx context.Context) ([]IssueEmailB
 
 func decodeIssueEmailActivity(data json.RawMessage) (IssueEmailActivity, error) {
 	var envelope struct {
+		Issue struct {
+			WorkspaceID string `json:"workspace_id"`
+			ProjectID   string `json:"project_id"`
+		} `json:"issue"`
 		Activity struct {
 			ID           string `json:"id"`
 			Actor        string `json:"actor"`
@@ -280,7 +285,7 @@ func decodeIssueEmailActivity(data json.RawMessage) (IssueEmailActivity, error) 
 	if err := json.Unmarshal(data, &envelope); err != nil {
 		return IssueEmailActivity{}, err
 	}
-	return IssueEmailActivity{ID: envelope.Activity.ID, ActorID: envelope.Activity.Actor, Field: envelope.Activity.Field, OldValue: envelope.Activity.OldValue, NewValue: envelope.Activity.NewValue, Time: formatIssueEmailTime(envelope.Activity.ActivityTime), Comment: envelope.Activity.Comment}, nil
+	return IssueEmailActivity{WorkspaceID: envelope.Issue.WorkspaceID, ProjectID: envelope.Issue.ProjectID, ID: envelope.Activity.ID, ActorID: envelope.Activity.Actor, Field: envelope.Activity.Field, OldValue: envelope.Activity.OldValue, NewValue: envelope.Activity.NewValue, Time: formatIssueEmailTime(envelope.Activity.ActivityTime), Comment: envelope.Activity.Comment}, nil
 }
 
 func formatIssueEmailTime(value string) string {
@@ -293,6 +298,11 @@ func formatIssueEmailTime(value string) string {
 func (store *issueEmailStore) sendBatch(ctx context.Context, batch IssueEmailBatch) error {
 	if len(batch.IDs) == 0 {
 		return nil
+	}
+	var err error
+	batch, err = store.filterScopedIssueEmailBatch(ctx, batch)
+	if err != nil || len(batch.IDs) == 0 {
+		return err
 	}
 	needsDelivery, err := store.batchNeedsDelivery(ctx, batch.IDs)
 	if err != nil || !needsDelivery {
@@ -348,6 +358,9 @@ func (store *issueEmailStore) sendBatch(ctx context.Context, batch IssueEmailBat
 func (store *issueEmailStore) processMentionValues(ctx context.Context, activities []IssueEmailActivity) ([]IssueEmailActivity, error) {
 	users := make(map[uuid.UUID]string)
 	for _, activity := range activities {
+		if activity.Field == "milestone" {
+			continue
+		}
 		for _, value := range []string{activity.OldValue, activity.NewValue} {
 			if !strings.Contains(value, "mention-component") {
 				continue
@@ -414,6 +427,9 @@ func (store *issueEmailStore) processMentionValues(ctx context.Context, activiti
 		}
 	}
 	for index := range activities {
+		if activities[index].Field == "milestone" {
+			continue
+		}
 		for _, destination := range []*string{&activities[index].OldValue, &activities[index].NewValue} {
 			if strings.Contains(*destination, "mention-component") {
 				processed, err := replaceEmailMentions(*destination, users)
@@ -548,7 +564,7 @@ type issueEmailTemplateData struct {
 	Activities                                                      []IssueEmailActivity
 }
 
-var issueUpdatesEmailTemplate = htmltemplate.Must(htmltemplate.New("issue-updates").Parse(`<!doctype html><html><body style="font-family:Arial,sans-serif;color:#1f2d5c;background:#f7f9ff;padding:20px"><main style="max-width:600px;margin:auto;background:#fff;padding:28px;border-radius:8px"><h2>{{.IssueIdentifier}} updates</h2><p>{{.Workspace}} / <a href="{{.ProjectURL}}">{{.Project}}</a> / <a href="{{.IssueURL}}">{{.IssueIdentifier}}: {{.IssueName}}</a></p><ul>{{range .Activities}}<li><strong>{{.ActorName}}</strong>{{if .Field}} {{.Field}} changed{{end}}{{if .OldValue}} from “{{.OldValue}}”{{end}}{{if .NewValue}} to “{{.NewValue}}”{{end}}{{if .Comment}}<p>{{.Comment}}</p>{{end}}{{if .Time}} <small>{{.Time}}</small>{{end}}</li>{{end}}</ul><p><a href="{{.IssueURL}}">View issue</a></p><hr><small>This email was sent to {{.ReceiverEmail}}. <a href="{{.PreferenceURL}}">Manage email preferences</a>.</small></main></body></html>`))
+var issueUpdatesEmailTemplate = htmltemplate.Must(htmltemplate.New("issue-updates").Parse(`<!doctype html><html><body style="font-family:Arial,sans-serif;color:#1f2d5c;background:#f7f9ff;padding:20px"><main style="max-width:600px;margin:auto;background:#fff;padding:28px;border-radius:8px"><h2>{{.IssueIdentifier}} updates</h2><p>{{.Workspace}} / <a href="{{.ProjectURL}}">{{.Project}}</a> / <a href="{{.IssueURL}}">{{.IssueIdentifier}}: {{.IssueName}}</a></p><ul>{{range .Activities}}<li><strong>{{.ActorName}}</strong>{{if eq .Field "milestone"}}{{if .NewValue}} set the milestone{{else}} removed the milestone{{end}}{{else}}{{if .Field}} {{.Field}} changed{{end}}{{end}}{{if .OldValue}} from “{{.OldValue}}”{{end}}{{if .NewValue}} to “{{.NewValue}}”{{end}}{{if .Comment}}<p>{{.Comment}}</p>{{end}}{{if .Time}} <small>{{.Time}}</small>{{end}}</li>{{end}}</ul><p><a href="{{.IssueURL}}">View issue</a></p><hr><small>This email was sent to {{.ReceiverEmail}}. <a href="{{.PreferenceURL}}">Manage email preferences</a>.</small></main></body></html>`))
 
 func renderIssueEmail(data issueEmailTemplateData) (string, string, error) {
 	var output strings.Builder

@@ -28,7 +28,7 @@ func admitLinkEffects(ctx context.Context, tx pgx.Tx, opts WriteOptions, milesto
 		oldID, oldTitle = milestone.String(), title
 	}
 	if err := enqueueEffect(ctx, tx, "activity", map[string]any{
-		"type": "issue.activity.updated", "issue_id": item.String(), "project_id": opts.ProjectID.String(), "actor_id": opts.ActorID.String(),
+		"type": "issue.activity.updated", "issue_id": item.String(), "project_id": opts.ProjectID.String(), "workspace_id": opts.WorkspaceID.String(), "actor_id": opts.ActorID.String(),
 		"requested_data":   map[string]any{"milestone": newID, "milestone_title": newTitle},
 		"current_instance": map[string]any{"milestone": oldID, "milestone_title": oldTitle},
 		"notification":     true, "origin": opts.Origin, "epoch": time.Now().Unix(),

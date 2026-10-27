@@ -11,6 +11,7 @@ import { convertMinutesToHoursMinutesString, renderFormattedDate } from "@plane/
 import { sanitizeCommentForNotification } from "@plane/utils/notification";
 import { stripAndTruncateHTML } from "@plane/utils/string";
 // components
+import { milestoneActivityContent } from "@/components/core/milestone-activity-message";
 import { LiteTextEditor } from "@/components/editor/lite-text";
 import {
   ADDITIONAL_NOTIFICATION_CONTENT_MAP,
@@ -41,6 +42,7 @@ export type TNotificationContentMap = {
 
 // Base notification content map for core fields
 export const BASE_NOTIFICATION_CONTENT_MAP: TNotificationContentMap = {
+  milestone: ({ newValue, oldValue }) => milestoneActivityContent(newValue, oldValue),
   duplicate: ({ verb }) => ({
     action:
       verb === "created"

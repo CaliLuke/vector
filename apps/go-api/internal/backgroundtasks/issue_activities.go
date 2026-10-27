@@ -39,6 +39,7 @@ type IssueActivityInput struct {
 	IssueID         *string         `json:"issue_id"`
 	ActorID         *string         `json:"actor_id"`
 	ProjectID       string          `json:"project_id"`
+	WorkspaceID     string          `json:"workspace_id,omitempty"`
 	Epoch           float64         `json:"epoch"`
 	Subscriber      *bool           `json:"subscriber,omitempty"`
 	Notification    bool            `json:"notification,omitempty"`
@@ -177,7 +178,7 @@ func validateIssueActivityInput(eventID string, input IssueActivityInput) error 
 	if !supportedIssueActivityType(input.Type) {
 		return fmt.Errorf("%w: unsupported activity type %q", ErrPermanentIssueActivity, input.Type)
 	}
-	return nil
+	return validateMilestoneActivityInput(input)
 }
 
 func supportedIssueActivityType(activityType string) bool {
@@ -239,14 +240,6 @@ func (store *PostgresIssueActivityStore) RecordIssueActivity(ctx context.Context
 	if err := validateIssueActivityInput(eventID, input); err != nil {
 		return nil, err
 	}
-	if input.Origin != "" && input.IssueID != nil {
-		if store.origin == nil {
-			return nil, errors.New("REDIS_URL is required to preserve issue activity origin")
-		}
-		if err := store.origin.Set(ctx, *input.IssueID, input.Origin, 10*time.Minute).Err(); err != nil {
-			return nil, fmt.Errorf("set issue request origin: %w", err)
-		}
-	}
 	projectID, _ := uuid.Parse(input.ProjectID)
 	eventUUID, _ := uuid.Parse(eventID)
 	tx, err := store.pool.BeginTx(ctx, pgx.TxOptions{})
@@ -265,6 +258,17 @@ func (store *PostgresIssueActivityStore) RecordIssueActivity(ctx context.Context
 	// Schema migrations lock the workspace before changing item rows.
 	if _, err = tx.Exec(ctx, `SELECT work_item_schema_lock($1::uuid)`, workspaceID); err != nil {
 		return nil, fmt.Errorf("lock issue activity schema: %w", err)
+	}
+	if scopeErr := lockBoundIssueActivity(ctx, tx, input, workspaceID, true); scopeErr != nil {
+		return nil, scopeErr
+	}
+	if input.Origin != "" && input.IssueID != nil {
+		if store.origin == nil {
+			return nil, errors.New("REDIS_URL is required to preserve issue activity origin")
+		}
+		if originErr := store.origin.Set(ctx, *input.IssueID, input.Origin, 10*time.Minute).Err(); originErr != nil {
+			return nil, fmt.Errorf("set issue request origin: %w", originErr)
+		}
 	}
 	rows, err := buildIssueActivityRows(ctx, tx, input)
 	if err != nil {
@@ -348,7 +352,14 @@ func buildIssueActivityRows(ctx context.Context, tx pgx.Tx, input IssueActivityI
 		}
 		return rows, nil
 	case "issue.activity.updated":
-		rows := make([]issueActivityRow, 0, 12)
+		rows := make([]issueActivityRow, 0, 13)
+		milestoneRow, milestoneErr := milestoneActivityRow(input)
+		if milestoneErr != nil {
+			return nil, milestoneErr
+		}
+		if milestoneRow != nil {
+			rows = append(rows, *milestoneRow)
+		}
 		for _, field := range []struct{ key, column, comment string }{
 			{"name", "name", "updated the name to"},
 			{"priority", "priority", "updated the priority to"},
