@@ -11,6 +11,8 @@ import (
 	"testing"
 	"time"
 
+	loom "github.com/CaliLuke/loom/pkg"
+
 	"github.com/CaliLuke/go-plane/internal/mcptransport"
 	"github.com/CaliLuke/go-plane/internal/platform"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
@@ -329,6 +331,10 @@ func TestEnabledTransportRequiresApplicationService(t *testing.T) {
 	require.ErrorContains(t, err, "application service is required")
 }
 
-func (transportTestService) Project(context.Context, *api.ProjectRequest) (*api.ProjectResult, error) {
-	return nil, errors.New("this fixture does not execute project reads")
+func (transportTestService) Project(context.Context, *api.ProjectRequest) (loom.Nullable[api.ProjectResult], error) {
+	return loom.Nullable[api.ProjectResult]{}, errors.New("this fixture does not execute project reads")
+}
+
+func (transportTestService) DiscoverActions(context.Context) (mcptransport.ActionVisibility, error) {
+	return mcptransport.ActionVisibility{"member": {"me": true, "list_workspace": true, "list_project": true, "list_roles": true, "retrieve_role": true}, "project": {"list": true, "retrieve": true, "archive": true, "unarchive": true}}, nil
 }

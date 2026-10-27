@@ -23,8 +23,30 @@ var projectList = Type("ProjectList", func() {
 var projectRetrieve = Type("ProjectRetrieve", func() {
 	Attribute("action", String, func() { Enum("retrieve") })
 	Attribute("project_id", String, func() { Format(FormatUUID) })
+	Attribute("include_revision", Boolean, "Vector extension: include an opaque revision token for guarded writes.")
 	projectWorkspaceSelector()
 	Required("action", "project_id")
+	Meta("openapi:additionalProperties", "false")
+})
+
+var projectArchive = Type("ProjectArchive", func() {
+	Attribute("action", String, func() { Enum("archive", "unarchive") })
+	Attribute("project_id", String, func() { Format(FormatUUID) })
+	Attribute("request_id", String, "Optional Vector retry identity; retained for at least 24 hours.", func() { Format(FormatUUID) })
+	Attribute("expected_revision", String, "Optional opaque Vector revision from retrieve with include_revision. Conflicts fail atomically.", func() { MinLength(1); MaxLength(128) })
+	projectWorkspaceSelector()
+	Required("action", "project_id")
+	Meta("openapi:additionalProperties", "false")
+})
+
+var projectMutationReceipt = Type("ProjectMutationReceipt", func() {
+	Description("Vector extension result, returned only when request_id or expected_revision is supplied. Ordinary archive/unarchive calls return no content.")
+	Attribute("project_id", String, func() { Format(FormatUUID) })
+	Attribute("revision", String)
+	Attribute("request_id", String, func() { Format(FormatUUID) })
+	Attribute("replay_expires_at", String, func() { Format(FormatDateTime) })
+	Attribute("replayed", Boolean)
+	Required("project_id", "revision")
 	Meta("openapi:additionalProperties", "false")
 })
 
@@ -49,6 +71,7 @@ var projectPage = Type("ProjectPage", func() {
 
 var projectDetail = Type("ProjectDetail", func() {
 	Extend(projectLite)
+	Attribute("revision", String, "Vector extension, present only when include_revision was requested.")
 	for _, field := range []string{"total_members", "total_cycles", "total_modules", "member_role", "archive_in", "close_in"} {
 		Attribute(field, Int, func() { Nullable() })
 		Required(field)
@@ -71,18 +94,27 @@ var projectDetail = Type("ProjectDetail", func() {
 	Meta("openapi:additionalProperties", "false")
 })
 
-var projectRequest = Type("ProjectRequest", OneOf(projectList, projectRetrieve), func() { Untagged() })
-var projectResult = Type("ProjectResult", OneOf(projectPage, projectDetail), func() { Untagged() })
+var projectRequest = Type("ProjectRequest", OneOf(projectList, projectRetrieve, projectArchive), func() { Untagged() })
+var projectResult = Type("ProjectResult", OneOf(projectPage, projectDetail, projectMutationReceipt), func() { Untagged() })
 
 func project() {
 	Method("project", func() {
-		Description("List authorized projects or retrieve one full project.")
+		Description("Projects in a workspace. Use an advertised action.")
 		Payload(projectRequest)
-		Result(projectResult)
+		Result(projectResult, func() { Nullable() })
 		readErrors()
-		Meta("mcp:annotation:readOnlyHint", "true")
+		Error("request_conflict", func() { Remedy(func() { SafeMessage("This request_id was already used with different input.") }) })
+		Error("revision_conflict", func() {
+			Remedy(func() { SafeMessage("The project changed. Read its current revision before trying a new update.") })
+		})
+		Error("indeterminate", func() {
+			Remedy(func() {
+				SafeMessage("The commit outcome is unknown. Retry with the same request_id, or reconcile with a read before another unkeyed write.")
+			})
+		})
+		Meta("mcp:annotation:readOnlyHint", "false")
 		Meta("mcp:annotation:destructiveHint", "false")
 		Meta("mcp:annotation:openWorldHint", "false")
-		mcp.Tool("project", "List projects or retrieve full detail using the selected action.", mcp.ToolTitle("Projects"))
+		mcp.Tool("project", "Projects in a workspace. Use an advertised action.", mcp.ToolTitle("Projects"))
 	})
 }

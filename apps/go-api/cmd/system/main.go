@@ -1594,7 +1594,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	mcpOptions.Service, err = mcpactions.New(mcpIdentity, mcpMembers, mcpDirectory, workspaceProjectReadsRepository)
+	mcpOptions.Service, err = mcpactions.New(mcpIdentity, mcpMembers, mcpDirectory, workspaceProjectReadsRepository, projectLifecycleRepository, mcpactions.WithLogContext(logCtx))
 	if err != nil {
 		return err
 	}

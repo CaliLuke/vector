@@ -137,6 +137,10 @@ func (repository *Repository) APIProject(ctx context.Context, userID uuid.UUID, 
   'is_deployed', EXISTS(SELECT 1 FROM deploy_boards board WHERE board.entity_name='project' AND board.entity_identifier=project.id AND board.workspace_id=project.workspace_id AND board.deleted_at IS NULL),
   'member_role', (SELECT member.role FROM project_members member WHERE member.project_id=project.id AND member.workspace_id=project.workspace_id AND member.member_id=$1 AND member.is_active=true AND member.deleted_at IS NULL ORDER BY member.created_at DESC LIMIT 1)
 )`
+	if options.IncludeRevision {
+		project += ` || jsonb_build_object('revision',(SELECT 'project:' || project.id::text || ':' || revision::text FROM project_edit_revisions WHERE project_id=project.id))`
+	}
+
 	query := fmt.Sprintf(`WITH requester AS MATERIALIZED (`+apiProjectRequesterSQL(5)+`)
 SELECT (SELECT %s FROM projects project JOIN workspaces workspace ON workspace.id=project.workspace_id CROSS JOIN requester
 WHERE workspace.slug=$2 AND workspace.deleted_at IS NULL AND project.id=$3 AND project.deleted_at IS NULL

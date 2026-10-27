@@ -84,7 +84,7 @@ func databaseFixture(t *testing.T) (fixture, *pgxpool.Pool) {
 	require.NoError(t, err)
 	projectReads, err := workspaceprojectreads.NewRepository(pool)
 	require.NoError(t, err)
-	service, err := mcpactions.New(reader, projectReader, directory, projectReads)
+	service, err := mcpactions.New(reader, projectReader, directory, projectReads, projectLifecycle(t, pool))
 	require.NoError(t, err)
 	keys, err := apikey.NewWithReaderWriter(pool, pool)
 	require.NoError(t, err)

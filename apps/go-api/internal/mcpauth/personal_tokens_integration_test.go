@@ -11,6 +11,8 @@ import (
 	"testing"
 	"time"
 
+	loom "github.com/CaliLuke/loom/pkg"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/mcptransport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
@@ -135,6 +137,10 @@ func (tokenTransportService) Member(context.Context, *api.MemberRequest) (*api.M
 	return nil, errors.New("authentication tests do not execute identity reads")
 }
 
-func (tokenTransportService) Project(context.Context, *api.ProjectRequest) (*api.ProjectResult, error) {
-	return nil, errors.New("this fixture does not execute project reads")
+func (tokenTransportService) Project(context.Context, *api.ProjectRequest) (loom.Nullable[api.ProjectResult], error) {
+	return loom.Nullable[api.ProjectResult]{}, errors.New("this fixture does not execute project reads")
+}
+
+func (tokenTransportService) DiscoverActions(context.Context) (mcptransport.ActionVisibility, error) {
+	return mcptransport.ActionVisibility{"member": {"me": true, "list_workspace": true, "list_project": true, "list_roles": true, "retrieve_role": true}, "project": {"list": true, "retrieve": true}}, nil
 }

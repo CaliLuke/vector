@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"testing"
 
+	loom "github.com/CaliLuke/loom/pkg"
+
 	"github.com/CaliLuke/go-plane/internal/mcptransport"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	"github.com/stretchr/testify/assert"
@@ -87,6 +89,46 @@ func TestGeneratedMemberResultsPreservePinnedContentAcrossRevisions(t *testing.T
 	}
 }
 
-func (memberResponseService) Project(context.Context, *api.ProjectRequest) (*api.ProjectResult, error) {
-	return nil, errors.New("this fixture does not execute project reads")
+func (memberResponseService) Project(context.Context, *api.ProjectRequest) (loom.Nullable[api.ProjectResult], error) {
+	return loom.Nullable[api.ProjectResult]{}, errors.New("this fixture does not execute project reads")
+}
+
+func (memberResponseService) DiscoverActions(context.Context) (mcptransport.ActionVisibility, error) {
+	return mcptransport.ActionVisibility{"member": {"me": true, "list_workspace": true, "list_project": true, "list_roles": true, "retrieve_role": true}, "project": {"list": true, "retrieve": true, "archive": true, "unarchive": true}}, nil
+}
+
+type nullProjectService struct{ transportTestService }
+
+func (nullProjectService) Project(context.Context, *api.ProjectRequest) (loom.Nullable[api.ProjectResult], error) {
+	return loom.NullValue[api.ProjectResult](), nil
+}
+
+func TestGeneratedNullResultPreservesPinnedEmptyContent(t *testing.T) {
+	opts := options()
+	opts.Service = nullProjectService{}
+	h, err := mcptransport.New(config("header"), opts, http.NotFoundHandler())
+	require.NoError(t, err)
+	response := call(h, "/mcp/api-key", `{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"project","arguments":{"action":"archive","project_id":"30000000-0000-4000-8000-000000000001"}}}`, http.Header{"Mcp-Protocol-Version": {"2025-11-25"}})
+	require.Equal(t, http.StatusOK, response.Code, response.Body.String())
+	var message struct {
+		Result struct {
+			Content           []json.RawMessage
+			StructuredContent json.RawMessage
+			IsError           bool
+		}
+		Error json.RawMessage
+	}
+	require.NoError(t, json.Unmarshal(response.Body.Bytes(), &message))
+	require.Empty(t, message.Error)
+	require.False(t, message.Result.IsError)
+	require.Empty(t, message.Result.Content)
+	require.Empty(t, message.Result.StructuredContent)
+}
+
+func TestEnabledTransportRequiresDiscoveryAuthorization(t *testing.T) {
+	opts := options()
+	// Restrict the exposed method set to the generated service contract.
+	opts.Service = struct{ api.Service }{transportTestService{}}
+	_, err := mcptransport.New(config("header"), opts, http.NotFoundHandler())
+	require.ErrorContains(t, err, "discovery authorization is required")
 }

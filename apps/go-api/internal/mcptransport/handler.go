@@ -80,6 +80,10 @@ func New(config Config, options Options, fallback http.Handler) (http.Handler, e
 		if options.Service == nil {
 			return nil, fmt.Errorf("MCP application service is required")
 		}
+		app, ok := options.Service.(actionDiscoverer)
+		if !ok {
+			return nil, fmt.Errorf("MCP action discovery authorization is required")
+		}
 		server, err := generated.NewSDKServer(options.Service, &generated.SDKServerOptions{
 			Adapter: &generated.MCPAdapterOptions{ToolCallInterceptors: []generated.ToolCallInterceptor{memberContent}},
 			Server: &mcpsdk.ServerOptions{
@@ -98,6 +102,7 @@ func New(config Config, options Options, fallback http.Handler) (http.Handler, e
 		if err != nil {
 			return nil, fmt.Errorf("construct MCP server: %w", err)
 		}
+		server.Server.AddReceivingMiddleware(discoveryMiddleware(app))
 		if config.Mode == "header" || config.Mode == "both" {
 			routes[HeaderPath] = platform.RequestIDMiddleware(observeHTTPRejection(options.Observer, protect(config, options.HeaderAuth, server.Handler, false)))
 		}

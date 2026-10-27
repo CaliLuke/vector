@@ -1,0 +1,110 @@
+package mcpactions
+
+import (
+	"context"
+	"errors"
+	"time"
+
+	"github.com/CaliLuke/go-plane/internal/mcpauth"
+	"github.com/CaliLuke/go-plane/internal/mcptransport"
+	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
+	projects "github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
+	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
+	loom "github.com/CaliLuke/loom/pkg"
+	"github.com/google/uuid"
+)
+
+type projectWriter interface {
+	ArchiveProject(context.Context, projects.ArchiveCommand) (projects.ArchiveResult, error)
+	VisibleProjectWrites(context.Context, uuid.UUID, uuid.UUID, string) (projects.ProjectWriteVisibility, error)
+}
+
+func (s *Service) archiveProject(ctx context.Context, actor mcpauth.Principal, input *api.ProjectArchive) (*api.ProjectResult, error) {
+	id, err := uuid.Parse(input.ProjectID)
+	if err != nil || id == uuid.Nil {
+		return nil, api.MakeInvalidParams(errors.New("invalid project identifier"))
+	}
+	var request *uuid.UUID
+	if input.RequestID != nil {
+		parsed, parseErr := uuid.Parse(*input.RequestID)
+		if parseErr != nil || parsed == uuid.Nil {
+			return nil, api.MakeInvalidParams(errors.New("invalid request identifier"))
+		}
+		request = &parsed
+	}
+	result, err := s.projectWrites.ArchiveProject(ctx, projects.ArchiveCommand{
+		ActorID: actor.UserID, WorkspaceID: actor.WorkspaceID, WorkspaceSlug: actor.WorkspaceSlug, ProjectID: id,
+		Archive: input.Action == "archive", RequestID: request, ExpectedRevision: input.ExpectedRevision,
+		Revalidate: func(ctx context.Context) error {
+			_, current, authErr := actionActor(ctx, input.WorkspaceSlug, true)
+			if authErr != nil {
+				return authErr
+			}
+			if current.UserID != actor.UserID || current.WorkspaceID != actor.WorkspaceID {
+				return api.MakeForbidden(errors.New("authorized scope changed"))
+			}
+			return nil
+		},
+	})
+	if err != nil {
+		return nil, projectWriteError(err)
+	}
+	if input.RequestID == nil && input.ExpectedRevision == nil {
+		return nil, nil
+	}
+	receipt := &api.ProjectMutationReceipt{ProjectID: id.String(), Revision: result.Revision}
+	if input.RequestID != nil {
+		canonicalRequestID := request.String()
+		receipt.RequestID = &canonicalRequestID
+		if result.Receipt.ReplayExpiresAt == nil {
+			return nil, api.MakeInternalError(errors.New("missing committed receipt expiry"))
+		}
+		expires := result.Receipt.ReplayExpiresAt.UTC().Format(time.RFC3339Nano)
+		receipt.ReplayExpiresAt = &expires
+		receipt.Replayed = &result.Receipt.Replayed
+	}
+	projected := api.NewProjectResultProjectMutationReceipt(receipt)
+	return &projected, nil
+}
+
+func projectWriteError(err error) error {
+	switch {
+	case errors.Is(err, mutationreceipts.ErrConflict):
+		return api.MakeRequestConflict(errors.New("request input changed"))
+	case errors.Is(err, projects.ErrRevisionConflict):
+		return api.MakeRevisionConflict(errors.New("project revision changed"))
+	case errors.Is(err, mutationreceipts.ErrIndeterminate):
+		return api.MakeIndeterminate(errors.New("unacknowledged commit"))
+	}
+	// Preserve safe errors from live credential revalidation without turning them
+	// into database errors or exposing their underlying credential failures.
+	var serviceError *loom.ServiceError
+	if errors.As(err, &serviceError) {
+		return err
+	}
+
+	return projectReadError(err)
+}
+
+func (s *Service) DiscoverActions(ctx context.Context) (mcptransport.ActionVisibility, error) {
+	ctx, err := mcpauth.Revalidate(ctx)
+	if err != nil {
+		return nil, err
+	}
+	visible := mcptransport.ActionVisibility{}
+	actor, _ := mcpauth.PrincipalFromContext(ctx) // Revalidate returned a verified context.
+	if !actor.AllowsAction(false) {
+		return visible, nil
+	}
+	visible["member"] = map[string]bool{"me": true, "list_workspace": true, "list_project": true, "list_roles": true, "retrieve_role": true}
+	visible["project"] = map[string]bool{"list": true, "retrieve": true}
+	if !actor.AllowsAction(true) {
+		return visible, nil
+	}
+	writes, err := s.projectWrites.VisibleProjectWrites(ctx, actor.UserID, actor.WorkspaceID, actor.WorkspaceSlug)
+	if err != nil {
+		return nil, err
+	}
+	visible["project"]["archive"], visible["project"]["unarchive"] = writes.Archive, writes.Unarchive
+	return visible, nil
+}

@@ -32,7 +32,7 @@ type projectLifecycleRepository interface {
 	CreateProject(context.Context, string, string, djangoinput.Input, bool) (json.RawMessage, error)
 	UpdateProject(context.Context, string, string, string, djangoinput.Input, bool, bool) (json.RawMessage, error)
 	DeleteProject(context.Context, string, string, string, bool) error
-	SetProjectArchived(context.Context, string, string, string, bool) (time.Time, error)
+	ArchiveProject(context.Context, store.ArchiveCommand) (store.ArchiveResult, error)
 
 	AuthorizeAPIProjectRead(context.Context, storeuuid.UUID, string, bool) error
 	APIProjectList(context.Context, storeuuid.UUID, string, store.APIProjectListOptions) (json.RawMessage, error)
@@ -323,8 +323,12 @@ func (s *projectLifecycleService) archive(ctx context.Context, slug, id string, 
 	if err != nil {
 		return time.Time{}, err
 	}
-	at, err := s.repo.SetProjectArchived(ctx, p.userID.String(), slug, id, archive)
-	return at, projectLifecycleWriteRepoErrorOrNil(ctx, err, app)
+	projectID, err := uuid.Parse(id)
+	if err != nil {
+		return time.Time{}, projectLifecycleWriteRepoErrorOrNil(ctx, err, app)
+	}
+	result, err := s.repo.ArchiveProject(ctx, store.ArchiveCommand{ActorID: p.userID, ProjectID: projectID, WorkspaceSlug: slug, Archive: archive, App: app})
+	return result.At, projectLifecycleWriteRepoErrorOrNil(ctx, err, app)
 }
 func (s *projectLifecycleService) PostAPIV1WorkspacesBySlugProjects(ctx context.Context, p *api.PostAPIV1WorkspacesBySlugProjectsPayload, b io.ReadCloser) (*api.ProjectLifecycleRawJSON, io.ReadCloser, error) {
 	return s.create(ctx, p.Slug, b, false)

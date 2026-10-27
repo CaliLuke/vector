@@ -75,7 +75,7 @@ func (a *OAuth) verify(ctx context.Context, token, slug string) (Principal, oaut
 	if linked.ID == uuid.Nil {
 		return Principal{}, oauth.Identity{}, mcptransport.ErrInvalidCredential
 	}
-	principal := Principal{UserID: linked.ID, Timezone: linked.Timezone, oauth: true,
+	principal := Principal{UserID: linked.ID, ClientID: identity.ClientID, Timezone: linked.Timezone, oauth: true,
 		read: slices.Contains(identity.Scopes, oauth.ReadScope), write: slices.Contains(identity.Scopes, oauth.WriteScope)}
 	if slug != "" {
 		workspace, err := a.memberships.Membership(ctx, linked.ID, slug)

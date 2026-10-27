@@ -2,7 +2,7 @@
 
 The accepted [master contract](https://vector.tail7064c5.ts.net/vector/projects/4b4a3685-542a-4ed9-bef5-8fa9bec196ae/pages/f29707ed-60af-42cb-a173-cb69d43d9ed8?paneTab=info) and [VEC-4](https://vector.tail7064c5.ts.net/vector/browse/VEC-4/) require optional write receipts and revision checks. Ordinary Plane-compatible calls remain valid without either extension.
 
-`internal/mutationreceipts` provides the receipt transaction foundation. It is not yet connected to a resource action. No MCP mutation is advertised or counted as implemented. Revision coverage, domain integration, receipt cleanup, generated extension fields, and mutation telemetry remain pending.
+`internal/mutationreceipts` provides the receipt transaction foundation. Archive and restore connect it to `project.archive` and `project.unarchive`, with generated optional extensions, project-row revision coverage, and sanitized mutation telemetry. The integration passes the full Go gate and focused race tests. Receipt cleanup, browser conflict proof, and other resource writes remain pending.
 
 ## Transaction boundary
 
@@ -28,8 +28,22 @@ An authorization, mutation, serialization, or receipt-write failure rolls back t
 
 A commit error returns `ErrIndeterminate` and no result. A network failure can hide a successful commit, so callers must not report rollback or retry an unkeyed mutation automatically. A keyed retry revalidates credentials and permissions, then recovers the stored result if the commit succeeded. An unkeyed caller must reconcile using reads. The public commit error omits database details; its underlying cause remains available for internal classification. This does not promise exactly-once delivery of external effects.
 
+## Project archive and restore
+
+Both actions require `project_id` and accept optional `request_id` and `expected_revision`. With neither extension, they retain the pinned handler's empty content result. With either extension, the result contains `project_id` and `revision`. A keyed call additionally returns its canonical `request_id`, `replay_expires_at`, and `replayed` flag. These fields are Vector extensions, not changes to ordinary SDK results.
+
+Read the current opaque token with `project.retrieve` and `include_revision: true`. Normal detail results omit it. The token covers the project row; it does not version per-user favorites, member counts, or other derived detail fields. A PostgreSQL trigger maintains a separate counter for every project insert or update, including HTTP, worker, and collaboration writers. An update that leaves values unchanged can conservatively advance the token. The authorized detail and token use the same database snapshot. Archive locks the project, reads the latest counter, and compares before updating. Stale input returns `revision_conflict`; a matching stored receipt is replayed before that comparison.
+
+Archive and favorite cleanup commit in the same transaction as the revision and optional receipt. Restore clears the archive timestamp and does not restore favorites. These operations retain the existing domain effect behavior: neither dispatches external activity or webhook work. Both HTTP routes use the same application writer while retaining their distinct existing member permissions and response shapes.
+
+Discovery filters fresh copies of generated action schemas using current OAuth scopes and project-write permissions. Finer domain filtering for read actions remains open; for example, a guest still sees `member.list_workspace`, whose invocation is correctly denied. Read-only callers do not see write action branches or their extension inputs. Invocation still checks the specific target and permission in the transaction, including on replay. No principal-specific schema is written back to the shared SDK catalogue.
+
+Mutation logs and spans contain the validated action, authenticated actor/client, selected workspace, safe outcome, duration, replay status, and committed project ID on success. They share request and trace correlation. They exclude credentials, argument/result bodies, receipt keys, revision inputs, and raw errors. An uncertain commit is recorded as `indeterminate`, without claiming a committed project ID.
+
 ## Evidence and remaining integration
 
 Real PostgreSQL tests cover every receipt key dimension, canonical input, large integer conflicts, duplicate commits and rollback recovery, cancellation while waiting, late authorization revocation, deleted-target replay, expiration, and atomic rollback of receipt/domain/outbox failures. A TCP fixture drops PostgreSQL's successful COMMIT response before the driver receives it, proving both keyed recovery and truthful unkeyed uncertainty. Bootstrap tests install the migration in a fresh database and repeat the complete migration sequence.
 
-Before advertising any mutation, its domain adapter still needs generated optional extension schemas, safe typed result/error mappings, both authentication modes and protocol revisions, revision checks covering every relevant writer, real domain/outbox integration, and correlated sanitized telemetry. The receipt foundation's test tables establish transaction behavior, not resource parity. Browser conflict checks and the complete VEC-4 acceptance evidence remain open.
+Generated-server archive tests exercise real PostgreSQL with PAT and OAuth under both revisions: empty default results, opt-in revisions, replay before CAS, changed-input conflicts, stale-write rejection, permission loss on replay, and discovery isolation. Domain tests additionally prove authorization policies, favorite rollback, concurrent CAS, and revision advancement by other writers. Telemetry tests verify matching log/span correlation and redaction.
+
+Each remaining mutation needs equivalent domain-specific evidence; the receipt foundation alone does not establish resource parity. Receipt cleanup, browser conflict checks, and complete VEC-4 acceptance remain open. The full Go gate passes with unchanged coverage floors. Frontend builds, typechecks, lint, and tests pass; the parity-table formatting fix passes its recheck. The initial full run hit a RabbitMQ startup timeout; the isolated test and complete Go rerun both passed.

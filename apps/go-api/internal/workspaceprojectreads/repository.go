@@ -53,7 +53,9 @@ type ProjectDetailsOptions struct {
 }
 
 type APIProjectDetailOptions struct {
-	Fields, Expand string
+	// IncludeRevision is an optional MCP projection extension; HTTP defaults omit it.
+	IncludeRevision bool
+	Fields, Expand  string
 	// ExpectedWorkspaceID binds a previously selected workspace through slug changes.
 	ExpectedWorkspaceID *uuid.UUID
 }

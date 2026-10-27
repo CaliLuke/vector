@@ -152,15 +152,16 @@ func TestDirectProjectCallsRequireIdentityAndValidInputs(t *testing.T) {
 	require.Zero(t, f.projectReads.reads)
 }
 
-func TestProjectDiscoveryAdvertisesOnlyImplementedReadActions(t *testing.T) {
+func TestProjectDiscoveryOmitsWritesWhenTheyAreUnavailable(t *testing.T) {
 	for _, version := range []string{"2025-11-25", "2026-07-28"} {
 		t.Run(version, func(t *testing.T) {
 			f := newFixture(t)
+			f.projectWrites.visibility = projects.ProjectWriteVisibility{}
 			discovery := rpcVersion(t, f.handler(t, nil), "test-one", "tools/list", map[string]any{}, version)
 			require.Len(t, discovery.Tools, 2)
 			project := discovery.Tools[1]
 			require.Equal(t, "project", project.Name)
-			require.True(t, project.Annotations["readOnlyHint"])
+			require.False(t, project.Annotations["readOnlyHint"])
 			require.False(t, project.Annotations["destructiveHint"])
 			require.False(t, project.Annotations["openWorldHint"])
 			require.JSONEq(t, `{"anyOf":[{"type":"string","enum":["list"]},{"type":"string","enum":["retrieve"]}]}`, string(project.InputSchema.Properties["action"]))

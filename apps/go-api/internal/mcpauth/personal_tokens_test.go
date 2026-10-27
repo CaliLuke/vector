@@ -111,6 +111,8 @@ func TestPersonalTokensRevalidateCredentialAndMembership(t *testing.T) {
 	principal, ok := PrincipalFromContext(ctx)
 	require.True(t, ok)
 	assert.Equal(t, keys.principal.UserID, principal.UserID)
+	assert.Equal(t, "personal_token", principal.CredentialClass())
+	assert.Empty(t, principal.ClientID)
 	assert.Equal(t, memberships.workspace.ID, principal.WorkspaceID)
 	assert.Equal(t, "workspace-one", principal.WorkspaceSlug)
 	assert.Equal(t, 15, principal.WorkspaceRole)

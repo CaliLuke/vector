@@ -1,8 +1,6 @@
-# MCP project reads
+# MCP projects
 
-The `project` tool provides `list` and `retrieve`. Its action and result contracts
-come from the pinned Plane MCP handler and `plane-sdk==0.3.1`. Project mutations
-and feature settings remain outside this implemented slice.
+The `project` tool provides `list`, `retrieve`, `archive`, and `unarchive`. Its action and result contracts come from the pinned Plane MCP handler and `plane-sdk==0.3.1`. Other project mutations and feature settings remain outside this slice. See [write recovery](mcp-writes.md) for archive permissions, receipt and revision extensions, discovery filtering, and remaining evidence.
 
 ## Inputs and results
 
@@ -18,7 +16,7 @@ supplies its SDK default, null. Existing JSON-valued icon, logo and description
 fields retain their values. The enclosing project and page records are typed;
 there is no opaque whole-result map.
 
-Both actions accept the optional MCP `workspace_slug` selector. Personal tokens
+All four actions accept the optional MCP `workspace_slug` selector. Personal tokens
 retain their required workspace header. OAuth can select a workspace through
 that header or the argument. A scoped action without a workspace fails with
 `invalid_params`; conflicting selectors fail at the existing HTTP boundary.
@@ -66,7 +64,5 @@ in the roster statement. Their regressions mutate scope after action admission
 and before the domain reader executes, so another credential check alone cannot
 make these tests pass.
 
-The implementation is integrated. Affected unit and PostgreSQL suites pass, including
-the HTTP regressions. MCP action coverage remains 100%; all affected package floors
-are retained. Static verification is recorded with the change.
+All four project actions are integrated and tested through the generated server with both credentials and protocol revisions. The full Go gate and focused race tests pass; package coverage floors remain unchanged. Frontend builds and checks pass after the parity-table formatting correction. Finer read-action discovery filtering and browser conflict proof remain open.
 Complete OAuth browser/proxy proof and 207-action parity remain separate open work.

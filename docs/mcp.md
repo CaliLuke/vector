@@ -1,7 +1,7 @@
 # Remote MCP transport
 
 VEC-2 is **in progress**. The Go API contains a generated, stateless MCP server
-and ingress routing. Available member actions are `me`, `list_workspace`, `list_project`, `list_roles`, and `retrieve_role`. The `project` tool also provides `list` and `retrieve`. Personal-token and external-issuer OAuth authentication are wired. MCP is disabled
+and ingress routing. Available member actions are `me`, `list_workspace`, `list_project`, `list_roles`, and `retrieve_role`. The `project` tool provides `list`, `retrieve`, `archive`, and `unarchive`. Personal-token and external-issuer OAuth authentication are wired. MCP is disabled
 by default. OAuth requires an explicitly configured issuer and deliberate account
 linking; invalid configuration or discovery fails before database startup.
 
@@ -70,8 +70,7 @@ or generated UUID in `X-Request-ID`. Successful authentication updates token
 
 The authentication package revalidates before each member action invocation and
 binds optional tool workspace selectors to the header. Each future action must
-also enforce its current project and domain permissions. Receipt replay is not
-implemented yet.
+also enforce its current project and domain permissions. Archive/restore receipt replay and revision checks are described in [write recovery](mcp-writes.md).
 
 The supported revisions are `2026-07-28` and `2025-11-25`. The former uses
 stateless `server/discover` and per-request protocol metadata; the latter uses
@@ -105,7 +104,7 @@ and a protected callback-browser cookie must both match. Disconnect removes the
 link and pending flows; it does not revoke grants at the external issuer.
 
 Each OAuth HTTP request and action invocation rechecks introspection, the live
-account link and account activity. Reads require `vector:read`; future mutations
+account link and account activity. Reads require `vector:read`; mutations
 require both read and write scopes. Workspace selection uses the header or tool
 argument. `member.me` can run without a workspace selector. Scoped actions still
 check current membership and domain permissions against the primary database.
@@ -131,7 +130,7 @@ proofs are not logged.
 | `retrieve_role`  | Required `role_id`.                                                      |
 
 `project` provides `list` with optional cursor, page size and ordering, and
-`retrieve` with a required project UUID. Both accept `workspace_slug` and use
+`retrieve` with a required project UUID. Archive and restore require a project UUID and accept the optional [receipt and revision extensions](mcp-writes.md). All four accept `workspace_slug` and use
 current primary-backed authorization. The [project contract](mcp-projects.md)
 defines SDK projections, archive inclusion and immutable workspace binding.
 
@@ -152,7 +151,7 @@ The generated contract declares stable member and project request/result unions,
 Tests use the generated HTTP server and real PostgreSQL-backed token, membership,
 and identity readers. They cover both protocol revisions, actor isolation, fresh
 profile data, and revocation between request authentication and action execution.
-Separate OAuth integration tests exercise all seven actions with a real TLS
+Separate OAuth integration tests exercise all nine actions with a real TLS
 issuer and PostgreSQL, including scope reduction and revocation between HTTP
 authentication and execution. Complete browser verification and VEC-36 proof
 remain pending.
@@ -201,20 +200,16 @@ size and legacy cursor/errors remain unchanged.
   results use one page with a concrete typed entry carrier, preserving exact
   action-specific fields and empty pages. The member contract records its removal
   condition; no dependency source is patched.
-- **Discovery authorization:** prove per-principal permitted-action schemas and
-  invocation checks across actions with different permissions. The current
-  member and project read actions require read scope; resource access is checked at
-  invocation. There is no handwritten replacement registry.
+- **Discovery authorization:** write-action schemas now follow current scopes and domain permissions, using copies of the generated catalogue. Read actions currently follow read scope, with resource access checked at invocation. Finer read-action filtering remains open: guests still see `member.list_workspace`, whose invocation is correctly denied. There is no handwritten replacement registry.
 - **VEC-35 and VEC-3:** personal-token and generic OAuth invocation are implemented
-  for the seven member and project reads, including current scopes, linking and revocation.
+  for nine member/project actions, including current scopes, linking and revocation.
   Production issuer selection and complete browser/proxy evidence remain open.
-  Mixed-action discovery filtering and receipt replay still need implementation
-  and end-to-end proof.
+  Mixed-action discovery filtering and archive/restore replay now have focused
+  generated-server PostgreSQL proof and pass the full Go gate.
 - **Reliability and observability:** the [receipt transaction foundation](mcp-writes.md)
-  has real PostgreSQL race, rollback, and lost-acknowledgement proof. It is not yet
-  connected to a resource action. Connect the shared action authorization,
-  throttling, durable write receipts and sanitized error/trace requirements
-  before enabling covered actions. Authentication and generated-validation
+  has real PostgreSQL race, rollback, and lost-acknowledgement proof. Archive and restore now connect shared action authorization, revision checks,
+  favorite cleanup, and receipts in one transaction. Their mutation logs and traces
+  have correlated safe-outcome tests and pass the full Go gate. Remaining mutations and browser conflict proof are still open. Authentication and generated-validation
   failures now have sanitized log/trace proof; this does not establish the
   complete mutation or asset observability contract.
 - **Resource tickets and VEC-36:** implement and verify the 30 resource tools and

@@ -13,6 +13,7 @@ import (
 // A personal token carries its owner's permissions, not OAuth scopes.
 type Principal struct {
 	UserID        uuid.UUID
+	ClientID      string
 	Timezone      string
 	WorkspaceID   uuid.UUID
 	WorkspaceSlug string
@@ -89,7 +90,7 @@ func RequireScopes(ctx context.Context, mutation bool) error {
 	if !ok {
 		return mcptransport.ErrInvalidCredential
 	}
-	if principal.oauth && (!principal.read || mutation && !principal.write) {
+	if !principal.AllowsAction(mutation) {
 		return mcptransport.ErrAccessDenied
 	}
 	return nil
@@ -101,4 +102,18 @@ func withPrincipal(ctx context.Context, principal Principal, verify func(context
 
 func withWorkspaceResolver(ctx context.Context, principal Principal, verify func(context.Context) (Principal, error), workspaces membershipReader) context.Context {
 	return context.WithValue(ctx, principalContextKey{}, verifiedIdentity{principal: principal, verify: verify, workspaces: workspaces})
+}
+
+// CredentialClass identifies the verified authentication mode without exposing a token.
+func (p Principal) CredentialClass() string {
+	if p.oauth {
+		return "oauth"
+	}
+	return "personal_token"
+}
+
+// AllowsAction reports current scope availability for authenticated discovery.
+// Domain permissions remain the application's responsibility.
+func (p Principal) AllowsAction(mutation bool) bool {
+	return !p.oauth || p.read && (!mutation || p.write)
 }

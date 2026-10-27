@@ -24,8 +24,8 @@ type Service interface {
 	// Read authorized identities, workspace and project members, and role
 	// definitions.
 	Member(context.Context, *MemberRequest) (res *MemberResult, err error)
-	// List authorized projects or retrieve one full project.
-	Project(context.Context, *ProjectRequest) (res *ProjectResult, err error)
+	// Projects in a workspace. Use an advertised action.
+	Project(context.Context, *ProjectRequest) (res loom.Nullable[ProjectResult], err error)
 }
 
 // APIName is the name of the API as defined in the design.
@@ -167,7 +167,20 @@ type MemberRoleDefinition struct {
 	Namespace string `json:"namespace"`
 }
 
+type ProjectArchive struct {
+	Action    string `json:"action"`
+	ProjectID string `json:"project_id"`
+	// Optional Vector retry identity; retained for at least 24 hours.
+	RequestID *string `json:"request_id,omitzero"`
+	// Optional opaque Vector revision from retrieve with include_revision.
+	// Conflicts fail atomically.
+	ExpectedRevision *string `json:"expected_revision,omitzero"`
+	WorkspaceSlug    *string `json:"workspace_slug,omitzero"`
+}
+
 type ProjectDetail struct {
+	// Vector extension, present only when include_revision was requested.
+	Revision              *string                       `json:"revision,omitzero"`
 	TotalMembers          loom.Nullable[int]            `json:"total_members"`
 	TotalCycles           loom.Nullable[int]            `json:"total_cycles"`
 	TotalModules          loom.Nullable[int]            `json:"total_modules"`
@@ -237,6 +250,16 @@ type ProjectLite struct {
 
 type ProjectMembers []*MemberIdentityWithRole
 
+// Vector extension result, returned only when request_id or expected_revision
+// is supplied. Ordinary archive/unarchive calls return no content.
+type ProjectMutationReceipt struct {
+	ProjectID       string  `json:"project_id"`
+	Revision        string  `json:"revision"`
+	RequestID       *string `json:"request_id,omitzero"`
+	ReplayExpiresAt *string `json:"replay_expires_at,omitzero"`
+	Replayed        *bool   `json:"replayed,omitzero"`
+}
+
 type ProjectPage struct {
 	Count           int                   `json:"count"`
 	ExtraStats      loom.Nullable[string] `json:"extra_stats"`
@@ -253,9 +276,11 @@ type ProjectPage struct {
 }
 
 type ProjectRetrieve struct {
-	Action        string  `json:"action"`
-	ProjectID     string  `json:"project_id"`
-	WorkspaceSlug *string `json:"workspace_slug,omitzero"`
+	Action    string `json:"action"`
+	ProjectID string `json:"project_id"`
+	// Vector extension: include an opaque revision token for guarded writes.
+	IncludeRevision *bool   `json:"include_revision,omitzero"`
+	WorkspaceSlug   *string `json:"workspace_slug,omitzero"`
 }
 
 // runs the validations defined on MemberDirectoryEntry.
@@ -542,6 +567,40 @@ func ValidateMemberRoleDefinition(result *MemberRoleDefinition, validationContex
 	return
 }
 
+// runs the validations defined on ProjectArchive.
+func ValidateProjectArchive(result *ProjectArchive, validationContext ...string) (err error) {
+	validationPath := "result"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if !(result.Action == "archive" || result.Action == "unarchive") {
+		err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", result.Action, []any{"archive", "unarchive"}))
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", result.ProjectID, loom.FormatUUID))
+	if result.RequestID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".request_id", *result.RequestID, loom.FormatUUID))
+	}
+	if result.ExpectedRevision != nil {
+		if utf8.RuneCountInString(*result.ExpectedRevision) < 1 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".expected_revision", utf8.RuneCountInString(*result.ExpectedRevision), 1, true))
+		}
+	}
+	if result.ExpectedRevision != nil {
+		if utf8.RuneCountInString(*result.ExpectedRevision) > 128 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".expected_revision", utf8.RuneCountInString(*result.ExpectedRevision), 128, false))
+		}
+	}
+	if result.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*result.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*result.WorkspaceSlug), 255, false))
+		}
+	}
+	return
+}
+
 // runs the validations defined on ProjectDetail.
 func ValidateProjectDetail(result *ProjectDetail, validationContext ...string) (err error) {
 	validationPath := "result"
@@ -772,6 +831,25 @@ func ValidateProjectMembers(result ProjectMembers, validationContext ...string) 
 				err = loom.MergeErrors(err, err2)
 			}
 		}
+	}
+	return
+}
+
+// runs the validations defined on ProjectMutationReceipt.
+func ValidateProjectMutationReceipt(result *ProjectMutationReceipt, validationContext ...string) (err error) {
+	validationPath := "result"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", result.ProjectID, loom.FormatUUID))
+	if result.RequestID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".request_id", *result.RequestID, loom.FormatUUID))
+	}
+	if result.ReplayExpiresAt != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".replay_expires_at", *result.ReplayExpiresAt, loom.FormatDateTime))
 	}
 	return
 }
@@ -2789,6 +2867,7 @@ type ProjectRequest struct {
 	kind            ProjectRequestKind
 	ProjectList     *ProjectList
 	ProjectRetrieve *ProjectRetrieve
+	ProjectArchive  *ProjectArchive
 }
 
 // ProjectRequestKind enumerates the union variants for ProjectRequest.
@@ -2799,6 +2878,8 @@ const (
 	ProjectRequestKindProjectList ProjectRequestKind = "ProjectList"
 	// ProjectRequestKindProjectRetrieve identifies the ProjectRetrieve branch of the union.
 	ProjectRequestKindProjectRetrieve ProjectRequestKind = "ProjectRetrieve"
+	// ProjectRequestKindProjectArchive identifies the ProjectArchive branch of the union.
+	ProjectRequestKindProjectArchive ProjectRequestKind = "ProjectArchive"
 )
 
 // Kind returns the discriminator value of the union.
@@ -2852,6 +2933,29 @@ func (u *ProjectRequest) SetProjectRetrieve(v *ProjectRetrieve) {
 	u.ProjectRetrieve = v
 }
 
+// NewProjectRequestProjectArchive constructs a ProjectRequest with the
+// ProjectArchive branch set.
+func NewProjectRequestProjectArchive(v *ProjectArchive) ProjectRequest {
+	return ProjectRequest{
+		kind:           ProjectRequestKindProjectArchive,
+		ProjectArchive: v,
+	}
+}
+
+// AsProjectArchive returns the value of the ProjectArchive branch if set.
+func (u ProjectRequest) AsProjectArchive() (_ *ProjectArchive, ok bool) {
+	if u.kind != ProjectRequestKindProjectArchive {
+		return
+	}
+	return u.ProjectArchive, true
+}
+
+// SetProjectArchive sets the ProjectArchive branch of the union.
+func (u *ProjectRequest) SetProjectArchive(v *ProjectArchive) {
+	u.kind = ProjectRequestKindProjectArchive
+	u.ProjectArchive = v
+}
+
 // Validate ensures the union discriminant is valid.
 func (u ProjectRequest) Validate() error {
 	switch u.kind {
@@ -2859,15 +2963,19 @@ func (u ProjectRequest) Validate() error {
 		return loom.InvalidEnumValueError("type", "", []any{
 			string(ProjectRequestKindProjectList),
 			string(ProjectRequestKindProjectRetrieve),
+			string(ProjectRequestKindProjectArchive),
 		})
 	case ProjectRequestKindProjectList:
 		return nil
 	case ProjectRequestKindProjectRetrieve:
 		return nil
+	case ProjectRequestKindProjectArchive:
+		return nil
 	default:
 		return loom.InvalidEnumValueError("type", u.kind, []any{
 			string(ProjectRequestKindProjectList),
 			string(ProjectRequestKindProjectRetrieve),
+			string(ProjectRequestKindProjectArchive),
 		})
 	}
 }
@@ -2887,6 +2995,9 @@ func (u ProjectRequest) MarshalJSON() ([]byte, error) {
 	case ProjectRequestKindProjectRetrieve:
 		selected = 1
 		data, err = json.Marshal(u.ProjectRetrieve, loom.JSONOptions(), json.Deterministic(true))
+	case ProjectRequestKindProjectArchive:
+		selected = 2
+		data, err = json.Marshal(u.ProjectArchive, loom.JSONOptions(), json.Deterministic(true))
 	}
 	if err != nil {
 		return nil, err
@@ -2916,6 +3027,9 @@ func (u ProjectRequest) MarshalFormValues(values url.Values, prefix string) erro
 		return err
 	case ProjectRequestKindProjectRetrieve:
 		_, err := loomhttp.EncodeFormValue(values, prefix, u.ProjectRetrieve)
+		return err
+	case ProjectRequestKindProjectArchive:
+		_, err := loomhttp.EncodeFormValue(values, prefix, u.ProjectArchive)
 		return err
 	default:
 		return fmt.Errorf("unexpected ProjectRequest discriminant %q", u.kind)
@@ -2955,10 +3069,22 @@ func (u *ProjectRequest) UnmarshalFormValues(values url.Values, prefix string) e
 		}
 		u.kind = ProjectRequestKindProjectRetrieve
 		u.ProjectRetrieve = v
+	case string(ProjectRequestKindProjectArchive):
+		var v *ProjectArchive
+		seen, err := loomhttp.DecodeFormValue(values, prefix, &v)
+		if err != nil {
+			return err
+		}
+		if !seen {
+			return loom.MissingFieldError("value", "body")
+		}
+		u.kind = ProjectRequestKindProjectArchive
+		u.ProjectArchive = v
 	default:
 		return loom.InvalidEnumValueError("type", rawType, []any{
 			string(ProjectRequestKindProjectList),
 			string(ProjectRequestKindProjectRetrieve),
+			string(ProjectRequestKindProjectArchive),
 		})
 	}
 	return nil
@@ -3054,7 +3180,7 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 	}
 	runtime0 := &runtime0Nodes[0]
 	var value1 *ProjectRetrieve
-	schema1Nodes := make([]loom.JSONShape, 5)
+	schema1Nodes := make([]loom.JSONShape, 6)
 	schema1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &schema1Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -3063,7 +3189,8 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &schema1Nodes[2]},
 			{Name: "project_id", Required: true, Shape: &schema1Nodes[3]},
-			{Name: "workspace_slug", Required: false, Shape: &schema1Nodes[4]},
+			{Name: "include_revision", Required: false, Shape: &schema1Nodes[4]},
+			{Name: "workspace_slug", Required: false, Shape: &schema1Nodes[5]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -3083,13 +3210,16 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 			},
 		},
 	}
-	schema1Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+	schema1Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
 			MaxLength: new(255),
 		},
 	}
 	schema1 := &schema1Nodes[0]
-	runtime1Nodes := make([]loom.JSONShape, 5)
+	runtime1Nodes := make([]loom.JSONShape, 6)
 	runtime1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &runtime1Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -3098,7 +3228,8 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &runtime1Nodes[2]},
 			{Name: "project_id", Required: true, Shape: &runtime1Nodes[3]},
-			{Name: "workspace_slug", Required: false, Shape: &runtime1Nodes[4]},
+			{Name: "include_revision", Required: false, Shape: &runtime1Nodes[4]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime1Nodes[5]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -3118,12 +3249,118 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 			},
 		},
 	}
-	runtime1Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime1Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
 			MaxLength: new(255),
 		},
 	}
 	runtime1 := &runtime1Nodes[0]
+	var value2 *ProjectArchive
+	schema2Nodes := make([]loom.JSONShape, 7)
+	schema2Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema2Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema2Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &schema2Nodes[3]},
+			{Name: "request_id", Required: false, Shape: &schema2Nodes[4]},
+			{Name: "expected_revision", Required: false, Shape: &schema2Nodes[5]},
+			{Name: "workspace_slug", Required: false, Shape: &schema2Nodes[6]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"archive\""),
+					jsontext.Value("\"unarchive\""),
+				},
+			},
+		},
+	}
+	schema2Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema2Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema2Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+			MaxLength: new(128),
+		},
+	}
+	schema2Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema2 := &schema2Nodes[0]
+	runtime2Nodes := make([]loom.JSONShape, 7)
+	runtime2Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime2Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime2Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &runtime2Nodes[3]},
+			{Name: "request_id", Required: false, Shape: &runtime2Nodes[4]},
+			{Name: "expected_revision", Required: false, Shape: &runtime2Nodes[5]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime2Nodes[6]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"archive\""),
+					jsontext.Value("\"unarchive\""),
+				},
+			},
+		},
+	}
+	runtime2Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime2Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime2Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+			MaxLength: new(128),
+		},
+	}
+	runtime2Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime2 := &runtime2Nodes[0]
 	candidates := []loom.JSONUnionBranch{
 		{Schema: schema0, Decode: func(wire jsontext.Value) (bool, error) {
 			matched, err := runtime0.Match(wire)
@@ -3188,6 +3425,46 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 			value1 = v
 			return true, nil
 		}},
+		{Schema: schema2, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime2.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *ProjectArchive
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if !(v.Action == "archive" || v.Action == "unarchive") {
+					err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", v.Action, []any{"archive", "unarchive"}))
+				}
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", v.ProjectID, loom.FormatUUID))
+				if v.RequestID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.request_id", *v.RequestID, loom.FormatUUID))
+				}
+				if v.ExpectedRevision != nil {
+					if utf8.RuneCountInString(*v.ExpectedRevision) < 1 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.expected_revision", utf8.RuneCountInString(*v.ExpectedRevision), 1, true))
+					}
+				}
+				if v.ExpectedRevision != nil {
+					if utf8.RuneCountInString(*v.ExpectedRevision) > 128 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.expected_revision", utf8.RuneCountInString(*v.ExpectedRevision), 128, false))
+					}
+				}
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value2 = v
+			return true, nil
+		}},
 	}
 	matched, err := loom.MatchUntaggedJSON("ProjectRequest", data, candidates)
 	if err != nil {
@@ -3198,15 +3475,18 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 		return ProjectRequest{kind: ProjectRequestKindProjectList, ProjectList: value0}, matched, nil
 	case 1:
 		return ProjectRequest{kind: ProjectRequestKindProjectRetrieve, ProjectRetrieve: value1}, matched, nil
+	case 2:
+		return ProjectRequest{kind: ProjectRequestKindProjectArchive, ProjectArchive: value2}, matched, nil
 	}
 	return ProjectRequest{}, -1, fmt.Errorf("invalid untagged union match index")
 }
 
 // ProjectResult is a sum-type union.
 type ProjectResult struct {
-	kind          ProjectResultKind
-	ProjectPage   *ProjectPage
-	ProjectDetail *ProjectDetail
+	kind                   ProjectResultKind
+	ProjectPage            *ProjectPage
+	ProjectDetail          *ProjectDetail
+	ProjectMutationReceipt *ProjectMutationReceipt
 }
 
 // ProjectResultKind enumerates the union variants for ProjectResult.
@@ -3217,6 +3497,8 @@ const (
 	ProjectResultKindProjectPage ProjectResultKind = "ProjectPage"
 	// ProjectResultKindProjectDetail identifies the ProjectDetail branch of the union.
 	ProjectResultKindProjectDetail ProjectResultKind = "ProjectDetail"
+	// ProjectResultKindProjectMutationReceipt identifies the ProjectMutationReceipt branch of the union.
+	ProjectResultKindProjectMutationReceipt ProjectResultKind = "ProjectMutationReceipt"
 )
 
 // Kind returns the discriminator value of the union.
@@ -3270,6 +3552,31 @@ func (u *ProjectResult) SetProjectDetail(v *ProjectDetail) {
 	u.ProjectDetail = v
 }
 
+// NewProjectResultProjectMutationReceipt constructs a ProjectResult with the
+// ProjectMutationReceipt branch set.
+func NewProjectResultProjectMutationReceipt(v *ProjectMutationReceipt) ProjectResult {
+	return ProjectResult{
+		kind:                   ProjectResultKindProjectMutationReceipt,
+		ProjectMutationReceipt: v,
+	}
+}
+
+// AsProjectMutationReceipt returns the value of the ProjectMutationReceipt
+// branch if set.
+func (u ProjectResult) AsProjectMutationReceipt() (_ *ProjectMutationReceipt, ok bool) {
+	if u.kind != ProjectResultKindProjectMutationReceipt {
+		return
+	}
+	return u.ProjectMutationReceipt, true
+}
+
+// SetProjectMutationReceipt sets the ProjectMutationReceipt branch of the
+// union.
+func (u *ProjectResult) SetProjectMutationReceipt(v *ProjectMutationReceipt) {
+	u.kind = ProjectResultKindProjectMutationReceipt
+	u.ProjectMutationReceipt = v
+}
+
 // Validate ensures the union discriminant is valid.
 func (u ProjectResult) Validate() error {
 	switch u.kind {
@@ -3277,15 +3584,19 @@ func (u ProjectResult) Validate() error {
 		return loom.InvalidEnumValueError("type", "", []any{
 			string(ProjectResultKindProjectPage),
 			string(ProjectResultKindProjectDetail),
+			string(ProjectResultKindProjectMutationReceipt),
 		})
 	case ProjectResultKindProjectPage:
 		return nil
 	case ProjectResultKindProjectDetail:
 		return nil
+	case ProjectResultKindProjectMutationReceipt:
+		return nil
 	default:
 		return loom.InvalidEnumValueError("type", u.kind, []any{
 			string(ProjectResultKindProjectPage),
 			string(ProjectResultKindProjectDetail),
+			string(ProjectResultKindProjectMutationReceipt),
 		})
 	}
 }
@@ -3305,6 +3616,9 @@ func (u ProjectResult) MarshalJSON() ([]byte, error) {
 	case ProjectResultKindProjectDetail:
 		selected = 1
 		data, err = json.Marshal(u.ProjectDetail, loom.JSONOptions(), json.Deterministic(true))
+	case ProjectResultKindProjectMutationReceipt:
+		selected = 2
+		data, err = json.Marshal(u.ProjectMutationReceipt, loom.JSONOptions(), json.Deterministic(true))
 	}
 	if err != nil {
 		return nil, err
@@ -3334,6 +3648,9 @@ func (u ProjectResult) MarshalFormValues(values url.Values, prefix string) error
 		return err
 	case ProjectResultKindProjectDetail:
 		_, err := loomhttp.EncodeFormValue(values, prefix, u.ProjectDetail)
+		return err
+	case ProjectResultKindProjectMutationReceipt:
+		_, err := loomhttp.EncodeFormValue(values, prefix, u.ProjectMutationReceipt)
 		return err
 	default:
 		return fmt.Errorf("unexpected ProjectResult discriminant %q", u.kind)
@@ -3373,10 +3690,22 @@ func (u *ProjectResult) UnmarshalFormValues(values url.Values, prefix string) er
 		}
 		u.kind = ProjectResultKindProjectDetail
 		u.ProjectDetail = v
+	case string(ProjectResultKindProjectMutationReceipt):
+		var v *ProjectMutationReceipt
+		seen, err := loomhttp.DecodeFormValue(values, prefix, &v)
+		if err != nil {
+			return err
+		}
+		if !seen {
+			return loom.MissingFieldError("value", "body")
+		}
+		u.kind = ProjectResultKindProjectMutationReceipt
+		u.ProjectMutationReceipt = v
 	default:
 		return loom.InvalidEnumValueError("type", rawType, []any{
 			string(ProjectResultKindProjectPage),
 			string(ProjectResultKindProjectDetail),
+			string(ProjectResultKindProjectMutationReceipt),
 		})
 	}
 	return nil
@@ -3612,61 +3941,62 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 	}
 	runtime0 := &runtime0Nodes[0]
 	var value1 *ProjectDetail
-	schema1Nodes := make([]loom.JSONShape, 46)
+	schema1Nodes := make([]loom.JSONShape, 47)
 	schema1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &schema1Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	schema1Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
 		Fields: []loom.JSONShapeField{
-			{Name: "total_members", Required: true, Shape: &schema1Nodes[2]},
-			{Name: "total_cycles", Required: true, Shape: &schema1Nodes[3]},
-			{Name: "total_modules", Required: true, Shape: &schema1Nodes[4]},
-			{Name: "member_role", Required: true, Shape: &schema1Nodes[5]},
-			{Name: "archive_in", Required: true, Shape: &schema1Nodes[6]},
-			{Name: "close_in", Required: true, Shape: &schema1Nodes[7]},
-			{Name: "sort_order", Required: true, Shape: &schema1Nodes[8]},
-			{Name: "network", Required: true, Shape: &schema1Nodes[9]},
-			{Name: "is_member", Required: true, Shape: &schema1Nodes[10]},
-			{Name: "is_deployed", Required: true, Shape: &schema1Nodes[11]},
-			{Name: "module_view", Required: true, Shape: &schema1Nodes[12]},
-			{Name: "cycle_view", Required: true, Shape: &schema1Nodes[13]},
-			{Name: "issue_views_view", Required: true, Shape: &schema1Nodes[14]},
-			{Name: "page_view", Required: true, Shape: &schema1Nodes[15]},
-			{Name: "intake_view", Required: true, Shape: &schema1Nodes[16]},
-			{Name: "is_time_tracking_enabled", Required: true, Shape: &schema1Nodes[17]},
-			{Name: "is_issue_type_enabled", Required: true, Shape: &schema1Nodes[18]},
-			{Name: "guest_view_all_features", Required: true, Shape: &schema1Nodes[19]},
-			{Name: "created_at", Required: true, Shape: &schema1Nodes[20]},
-			{Name: "updated_at", Required: true, Shape: &schema1Nodes[21]},
-			{Name: "deleted_at", Required: true, Shape: &schema1Nodes[22]},
-			{Name: "timezone", Required: true, Shape: &schema1Nodes[23]},
-			{Name: "external_source", Required: true, Shape: &schema1Nodes[24]},
-			{Name: "external_id", Required: true, Shape: &schema1Nodes[25]},
-			{Name: "created_by", Required: true, Shape: &schema1Nodes[26]},
-			{Name: "updated_by", Required: true, Shape: &schema1Nodes[27]},
-			{Name: "workspace", Required: true, Shape: &schema1Nodes[28]},
-			{Name: "default_assignee", Required: true, Shape: &schema1Nodes[29]},
-			{Name: "project_lead", Required: true, Shape: &schema1Nodes[30]},
-			{Name: "cover_image_asset", Required: true, Shape: &schema1Nodes[31]},
-			{Name: "estimate", Required: true, Shape: &schema1Nodes[32]},
-			{Name: "default_state", Required: true, Shape: &schema1Nodes[33]},
-			{Name: "description_text", Required: true, Shape: &schema1Nodes[34]},
-			{Name: "description_html", Required: true, Shape: &schema1Nodes[35]},
-			{Name: "logo_props", Required: true, Shape: &schema1Nodes[36]},
-			{Name: "name", Required: true, Shape: &schema1Nodes[37]},
-			{Name: "identifier", Required: true, Shape: &schema1Nodes[38]},
-			{Name: "id", Required: true, Shape: &schema1Nodes[39]},
-			{Name: "cover_image", Required: true, Shape: &schema1Nodes[40]},
-			{Name: "emoji", Required: true, Shape: &schema1Nodes[41]},
-			{Name: "description", Required: true, Shape: &schema1Nodes[42]},
-			{Name: "cover_image_url", Required: true, Shape: &schema1Nodes[43]},
-			{Name: "archived_at", Required: true, Shape: &schema1Nodes[44]},
-			{Name: "icon_prop", Required: true, Shape: &schema1Nodes[45]},
+			{Name: "revision", Required: false, Shape: &schema1Nodes[2]},
+			{Name: "total_members", Required: true, Shape: &schema1Nodes[3]},
+			{Name: "total_cycles", Required: true, Shape: &schema1Nodes[4]},
+			{Name: "total_modules", Required: true, Shape: &schema1Nodes[5]},
+			{Name: "member_role", Required: true, Shape: &schema1Nodes[6]},
+			{Name: "archive_in", Required: true, Shape: &schema1Nodes[7]},
+			{Name: "close_in", Required: true, Shape: &schema1Nodes[8]},
+			{Name: "sort_order", Required: true, Shape: &schema1Nodes[9]},
+			{Name: "network", Required: true, Shape: &schema1Nodes[10]},
+			{Name: "is_member", Required: true, Shape: &schema1Nodes[11]},
+			{Name: "is_deployed", Required: true, Shape: &schema1Nodes[12]},
+			{Name: "module_view", Required: true, Shape: &schema1Nodes[13]},
+			{Name: "cycle_view", Required: true, Shape: &schema1Nodes[14]},
+			{Name: "issue_views_view", Required: true, Shape: &schema1Nodes[15]},
+			{Name: "page_view", Required: true, Shape: &schema1Nodes[16]},
+			{Name: "intake_view", Required: true, Shape: &schema1Nodes[17]},
+			{Name: "is_time_tracking_enabled", Required: true, Shape: &schema1Nodes[18]},
+			{Name: "is_issue_type_enabled", Required: true, Shape: &schema1Nodes[19]},
+			{Name: "guest_view_all_features", Required: true, Shape: &schema1Nodes[20]},
+			{Name: "created_at", Required: true, Shape: &schema1Nodes[21]},
+			{Name: "updated_at", Required: true, Shape: &schema1Nodes[22]},
+			{Name: "deleted_at", Required: true, Shape: &schema1Nodes[23]},
+			{Name: "timezone", Required: true, Shape: &schema1Nodes[24]},
+			{Name: "external_source", Required: true, Shape: &schema1Nodes[25]},
+			{Name: "external_id", Required: true, Shape: &schema1Nodes[26]},
+			{Name: "created_by", Required: true, Shape: &schema1Nodes[27]},
+			{Name: "updated_by", Required: true, Shape: &schema1Nodes[28]},
+			{Name: "workspace", Required: true, Shape: &schema1Nodes[29]},
+			{Name: "default_assignee", Required: true, Shape: &schema1Nodes[30]},
+			{Name: "project_lead", Required: true, Shape: &schema1Nodes[31]},
+			{Name: "cover_image_asset", Required: true, Shape: &schema1Nodes[32]},
+			{Name: "estimate", Required: true, Shape: &schema1Nodes[33]},
+			{Name: "default_state", Required: true, Shape: &schema1Nodes[34]},
+			{Name: "description_text", Required: true, Shape: &schema1Nodes[35]},
+			{Name: "description_html", Required: true, Shape: &schema1Nodes[36]},
+			{Name: "logo_props", Required: true, Shape: &schema1Nodes[37]},
+			{Name: "name", Required: true, Shape: &schema1Nodes[38]},
+			{Name: "identifier", Required: true, Shape: &schema1Nodes[39]},
+			{Name: "id", Required: true, Shape: &schema1Nodes[40]},
+			{Name: "cover_image", Required: true, Shape: &schema1Nodes[41]},
+			{Name: "emoji", Required: true, Shape: &schema1Nodes[42]},
+			{Name: "description", Required: true, Shape: &schema1Nodes[43]},
+			{Name: "cover_image_url", Required: true, Shape: &schema1Nodes[44]},
+			{Name: "archived_at", Required: true, Shape: &schema1Nodes[45]},
+			{Name: "icon_prop", Required: true, Shape: &schema1Nodes[46]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema1Nodes[2] = loom.JSONShape{Kind: "integer", Nullable: true, Closed: false, NonNullableElements: false,
+	schema1Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	schema1Nodes[3] = loom.JSONShape{Kind: "integer", Nullable: true, Closed: false, NonNullableElements: false,
@@ -3684,10 +4014,13 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 	schema1Nodes[7] = loom.JSONShape{Kind: "integer", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema1Nodes[8] = loom.JSONShape{Kind: "number", Nullable: true, Closed: false, NonNullableElements: false,
+	schema1Nodes[8] = loom.JSONShape{Kind: "integer", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema1Nodes[9] = loom.JSONShape{Kind: "integer", Nullable: true, Closed: false, NonNullableElements: false,
+	schema1Nodes[9] = loom.JSONShape{Kind: "number", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[10] = loom.JSONShape{Kind: "integer", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
 			Enums: [][]jsontext.Value{
 				{
@@ -3696,9 +4029,6 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 				},
 			},
 		},
-	}
-	schema1Nodes[10] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	schema1Nodes[11] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -3727,7 +4057,7 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 	schema1Nodes[19] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema1Nodes[20] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+	schema1Nodes[20] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	schema1Nodes[21] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
@@ -3769,7 +4099,7 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 	schema1Nodes[33] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema1Nodes[34] = loom.JSONShape{Kind: "any", Nullable: true, Closed: false, NonNullableElements: false,
+	schema1Nodes[34] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	schema1Nodes[35] = loom.JSONShape{Kind: "any", Nullable: true, Closed: false, NonNullableElements: false,
@@ -3778,21 +4108,21 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 	schema1Nodes[36] = loom.JSONShape{Kind: "any", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema1Nodes[37] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+	schema1Nodes[37] = loom.JSONShape{Kind: "any", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	schema1Nodes[38] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema1Nodes[39] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+	schema1Nodes[39] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[40] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
 			Formats: []loom.Format{
 				"uuid",
 			},
 		},
-	}
-	schema1Nodes[40] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	schema1Nodes[41] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -3806,65 +4136,69 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 	schema1Nodes[44] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema1Nodes[45] = loom.JSONShape{Kind: "any", Nullable: true, Closed: false, NonNullableElements: false,
+	schema1Nodes[45] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[46] = loom.JSONShape{Kind: "any", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	schema1 := &schema1Nodes[0]
-	runtime1Nodes := make([]loom.JSONShape, 46)
+	runtime1Nodes := make([]loom.JSONShape, 47)
 	runtime1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &runtime1Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	runtime1Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
 		Fields: []loom.JSONShapeField{
-			{Name: "total_members", Required: true, Shape: &runtime1Nodes[2]},
-			{Name: "total_cycles", Required: true, Shape: &runtime1Nodes[3]},
-			{Name: "total_modules", Required: true, Shape: &runtime1Nodes[4]},
-			{Name: "member_role", Required: true, Shape: &runtime1Nodes[5]},
-			{Name: "archive_in", Required: true, Shape: &runtime1Nodes[6]},
-			{Name: "close_in", Required: true, Shape: &runtime1Nodes[7]},
-			{Name: "sort_order", Required: true, Shape: &runtime1Nodes[8]},
-			{Name: "network", Required: true, Shape: &runtime1Nodes[9]},
-			{Name: "is_member", Required: true, Shape: &runtime1Nodes[10]},
-			{Name: "is_deployed", Required: true, Shape: &runtime1Nodes[11]},
-			{Name: "module_view", Required: true, Shape: &runtime1Nodes[12]},
-			{Name: "cycle_view", Required: true, Shape: &runtime1Nodes[13]},
-			{Name: "issue_views_view", Required: true, Shape: &runtime1Nodes[14]},
-			{Name: "page_view", Required: true, Shape: &runtime1Nodes[15]},
-			{Name: "intake_view", Required: true, Shape: &runtime1Nodes[16]},
-			{Name: "is_time_tracking_enabled", Required: true, Shape: &runtime1Nodes[17]},
-			{Name: "is_issue_type_enabled", Required: true, Shape: &runtime1Nodes[18]},
-			{Name: "guest_view_all_features", Required: true, Shape: &runtime1Nodes[19]},
-			{Name: "created_at", Required: true, Shape: &runtime1Nodes[20]},
-			{Name: "updated_at", Required: true, Shape: &runtime1Nodes[21]},
-			{Name: "deleted_at", Required: true, Shape: &runtime1Nodes[22]},
-			{Name: "timezone", Required: true, Shape: &runtime1Nodes[23]},
-			{Name: "external_source", Required: true, Shape: &runtime1Nodes[24]},
-			{Name: "external_id", Required: true, Shape: &runtime1Nodes[25]},
-			{Name: "created_by", Required: true, Shape: &runtime1Nodes[26]},
-			{Name: "updated_by", Required: true, Shape: &runtime1Nodes[27]},
-			{Name: "workspace", Required: true, Shape: &runtime1Nodes[28]},
-			{Name: "default_assignee", Required: true, Shape: &runtime1Nodes[29]},
-			{Name: "project_lead", Required: true, Shape: &runtime1Nodes[30]},
-			{Name: "cover_image_asset", Required: true, Shape: &runtime1Nodes[31]},
-			{Name: "estimate", Required: true, Shape: &runtime1Nodes[32]},
-			{Name: "default_state", Required: true, Shape: &runtime1Nodes[33]},
-			{Name: "description_text", Required: true, Shape: &runtime1Nodes[34]},
-			{Name: "description_html", Required: true, Shape: &runtime1Nodes[35]},
-			{Name: "logo_props", Required: true, Shape: &runtime1Nodes[36]},
-			{Name: "name", Required: true, Shape: &runtime1Nodes[37]},
-			{Name: "identifier", Required: true, Shape: &runtime1Nodes[38]},
-			{Name: "id", Required: true, Shape: &runtime1Nodes[39]},
-			{Name: "cover_image", Required: true, Shape: &runtime1Nodes[40]},
-			{Name: "emoji", Required: true, Shape: &runtime1Nodes[41]},
-			{Name: "description", Required: true, Shape: &runtime1Nodes[42]},
-			{Name: "cover_image_url", Required: true, Shape: &runtime1Nodes[43]},
-			{Name: "archived_at", Required: true, Shape: &runtime1Nodes[44]},
-			{Name: "icon_prop", Required: true, Shape: &runtime1Nodes[45]},
+			{Name: "revision", Required: false, Shape: &runtime1Nodes[2]},
+			{Name: "total_members", Required: true, Shape: &runtime1Nodes[3]},
+			{Name: "total_cycles", Required: true, Shape: &runtime1Nodes[4]},
+			{Name: "total_modules", Required: true, Shape: &runtime1Nodes[5]},
+			{Name: "member_role", Required: true, Shape: &runtime1Nodes[6]},
+			{Name: "archive_in", Required: true, Shape: &runtime1Nodes[7]},
+			{Name: "close_in", Required: true, Shape: &runtime1Nodes[8]},
+			{Name: "sort_order", Required: true, Shape: &runtime1Nodes[9]},
+			{Name: "network", Required: true, Shape: &runtime1Nodes[10]},
+			{Name: "is_member", Required: true, Shape: &runtime1Nodes[11]},
+			{Name: "is_deployed", Required: true, Shape: &runtime1Nodes[12]},
+			{Name: "module_view", Required: true, Shape: &runtime1Nodes[13]},
+			{Name: "cycle_view", Required: true, Shape: &runtime1Nodes[14]},
+			{Name: "issue_views_view", Required: true, Shape: &runtime1Nodes[15]},
+			{Name: "page_view", Required: true, Shape: &runtime1Nodes[16]},
+			{Name: "intake_view", Required: true, Shape: &runtime1Nodes[17]},
+			{Name: "is_time_tracking_enabled", Required: true, Shape: &runtime1Nodes[18]},
+			{Name: "is_issue_type_enabled", Required: true, Shape: &runtime1Nodes[19]},
+			{Name: "guest_view_all_features", Required: true, Shape: &runtime1Nodes[20]},
+			{Name: "created_at", Required: true, Shape: &runtime1Nodes[21]},
+			{Name: "updated_at", Required: true, Shape: &runtime1Nodes[22]},
+			{Name: "deleted_at", Required: true, Shape: &runtime1Nodes[23]},
+			{Name: "timezone", Required: true, Shape: &runtime1Nodes[24]},
+			{Name: "external_source", Required: true, Shape: &runtime1Nodes[25]},
+			{Name: "external_id", Required: true, Shape: &runtime1Nodes[26]},
+			{Name: "created_by", Required: true, Shape: &runtime1Nodes[27]},
+			{Name: "updated_by", Required: true, Shape: &runtime1Nodes[28]},
+			{Name: "workspace", Required: true, Shape: &runtime1Nodes[29]},
+			{Name: "default_assignee", Required: true, Shape: &runtime1Nodes[30]},
+			{Name: "project_lead", Required: true, Shape: &runtime1Nodes[31]},
+			{Name: "cover_image_asset", Required: true, Shape: &runtime1Nodes[32]},
+			{Name: "estimate", Required: true, Shape: &runtime1Nodes[33]},
+			{Name: "default_state", Required: true, Shape: &runtime1Nodes[34]},
+			{Name: "description_text", Required: true, Shape: &runtime1Nodes[35]},
+			{Name: "description_html", Required: true, Shape: &runtime1Nodes[36]},
+			{Name: "logo_props", Required: true, Shape: &runtime1Nodes[37]},
+			{Name: "name", Required: true, Shape: &runtime1Nodes[38]},
+			{Name: "identifier", Required: true, Shape: &runtime1Nodes[39]},
+			{Name: "id", Required: true, Shape: &runtime1Nodes[40]},
+			{Name: "cover_image", Required: true, Shape: &runtime1Nodes[41]},
+			{Name: "emoji", Required: true, Shape: &runtime1Nodes[42]},
+			{Name: "description", Required: true, Shape: &runtime1Nodes[43]},
+			{Name: "cover_image_url", Required: true, Shape: &runtime1Nodes[44]},
+			{Name: "archived_at", Required: true, Shape: &runtime1Nodes[45]},
+			{Name: "icon_prop", Required: true, Shape: &runtime1Nodes[46]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime1Nodes[2] = loom.JSONShape{Kind: "integer", Nullable: true, Closed: false, NonNullableElements: false,
+	runtime1Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	runtime1Nodes[3] = loom.JSONShape{Kind: "integer", Nullable: true, Closed: false, NonNullableElements: false,
@@ -3882,10 +4216,13 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 	runtime1Nodes[7] = loom.JSONShape{Kind: "integer", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime1Nodes[8] = loom.JSONShape{Kind: "number", Nullable: true, Closed: false, NonNullableElements: false,
+	runtime1Nodes[8] = loom.JSONShape{Kind: "integer", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime1Nodes[9] = loom.JSONShape{Kind: "integer", Nullable: true, Closed: false, NonNullableElements: false,
+	runtime1Nodes[9] = loom.JSONShape{Kind: "number", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[10] = loom.JSONShape{Kind: "integer", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
 			Enums: [][]jsontext.Value{
 				{
@@ -3894,9 +4231,6 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 				},
 			},
 		},
-	}
-	runtime1Nodes[10] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	runtime1Nodes[11] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -3925,7 +4259,7 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 	runtime1Nodes[19] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime1Nodes[20] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+	runtime1Nodes[20] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	runtime1Nodes[21] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
@@ -3967,7 +4301,7 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 	runtime1Nodes[33] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime1Nodes[34] = loom.JSONShape{Kind: "any", Nullable: true, Closed: false, NonNullableElements: false,
+	runtime1Nodes[34] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	runtime1Nodes[35] = loom.JSONShape{Kind: "any", Nullable: true, Closed: false, NonNullableElements: false,
@@ -3976,21 +4310,21 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 	runtime1Nodes[36] = loom.JSONShape{Kind: "any", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime1Nodes[37] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime1Nodes[37] = loom.JSONShape{Kind: "any", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	runtime1Nodes[38] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime1Nodes[39] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+	runtime1Nodes[39] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[40] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
 			Formats: []loom.Format{
 				"uuid",
 			},
 		},
-	}
-	runtime1Nodes[40] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	runtime1Nodes[41] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -4004,10 +4338,100 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 	runtime1Nodes[44] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime1Nodes[45] = loom.JSONShape{Kind: "any", Nullable: true, Closed: false, NonNullableElements: false,
+	runtime1Nodes[45] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[46] = loom.JSONShape{Kind: "any", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	runtime1 := &runtime1Nodes[0]
+	var value2 *ProjectMutationReceipt
+	schema2Nodes := make([]loom.JSONShape, 7)
+	schema2Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema2Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "project_id", Required: true, Shape: &schema2Nodes[2]},
+			{Name: "revision", Required: true, Shape: &schema2Nodes[3]},
+			{Name: "request_id", Required: false, Shape: &schema2Nodes[4]},
+			{Name: "replay_expires_at", Required: false, Shape: &schema2Nodes[5]},
+			{Name: "replayed", Required: false, Shape: &schema2Nodes[6]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema2Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema2Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"date-time",
+			},
+		},
+	}
+	schema2Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2 := &schema2Nodes[0]
+	runtime2Nodes := make([]loom.JSONShape, 7)
+	runtime2Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime2Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "project_id", Required: true, Shape: &runtime2Nodes[2]},
+			{Name: "revision", Required: true, Shape: &runtime2Nodes[3]},
+			{Name: "request_id", Required: false, Shape: &runtime2Nodes[4]},
+			{Name: "replay_expires_at", Required: false, Shape: &runtime2Nodes[5]},
+			{Name: "replayed", Required: false, Shape: &runtime2Nodes[6]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime2Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime2Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"date-time",
+			},
+		},
+	}
+	runtime2Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2 := &runtime2Nodes[0]
 	candidates := []loom.JSONUnionBranch{
 		{Schema: schema0, Decode: func(wire jsontext.Value) (bool, error) {
 			matched, err := runtime0.Match(wire)
@@ -4201,6 +4625,31 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 			value1 = v
 			return true, nil
 		}},
+		{Schema: schema2, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime2.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *ProjectMutationReceipt
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", v.ProjectID, loom.FormatUUID))
+				if v.RequestID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.request_id", *v.RequestID, loom.FormatUUID))
+				}
+				if v.ReplayExpiresAt != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.replay_expires_at", *v.ReplayExpiresAt, loom.FormatDateTime))
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value2 = v
+			return true, nil
+		}},
 	}
 	matched, err := loom.MatchUntaggedJSON("ProjectResult", data, candidates)
 	if err != nil {
@@ -4211,6 +4660,8 @@ func (u ProjectResult) matchJSON(data []byte) (ProjectResult, int, error) {
 		return ProjectResult{kind: ProjectResultKindProjectPage, ProjectPage: value0}, matched, nil
 	case 1:
 		return ProjectResult{kind: ProjectResultKindProjectDetail, ProjectDetail: value1}, matched, nil
+	case 2:
+		return ProjectResult{kind: ProjectResultKindProjectMutationReceipt, ProjectMutationReceipt: value2}, matched, nil
 	}
 	return ProjectResult{}, -1, fmt.Errorf("invalid untagged union match index")
 }
@@ -4264,7 +4715,40 @@ func MakeInternalError(err error) *loom.ServiceError {
 	serr := loom.NewServiceError(err, "internal_error", false, false, false)
 	loom.WithErrorRemedy(serr, &loom.ErrorRemedy{
 		Code:        "",
-		SafeMessage: "The requested information could not be read.",
+		SafeMessage: "The requested operation could not be completed.",
+		RetryHint:   "",
+	})
+	return serr
+}
+
+// MakeRequestConflict builds a loom.ServiceError from an error.
+func MakeRequestConflict(err error) *loom.ServiceError {
+	serr := loom.NewServiceError(err, "request_conflict", false, false, false)
+	loom.WithErrorRemedy(serr, &loom.ErrorRemedy{
+		Code:        "",
+		SafeMessage: "This request_id was already used with different input.",
+		RetryHint:   "",
+	})
+	return serr
+}
+
+// MakeRevisionConflict builds a loom.ServiceError from an error.
+func MakeRevisionConflict(err error) *loom.ServiceError {
+	serr := loom.NewServiceError(err, "revision_conflict", false, false, false)
+	loom.WithErrorRemedy(serr, &loom.ErrorRemedy{
+		Code:        "",
+		SafeMessage: "The project changed. Read its current revision before trying a new update.",
+		RetryHint:   "",
+	})
+	return serr
+}
+
+// MakeIndeterminate builds a loom.ServiceError from an error.
+func MakeIndeterminate(err error) *loom.ServiceError {
+	serr := loom.NewServiceError(err, "indeterminate", false, false, false)
+	loom.WithErrorRemedy(serr, &loom.ErrorRemedy{
+		Code:        "",
+		SafeMessage: "The commit outcome is unknown. Retry with the same request_id, or reconcile with a read before another unkeyed write.",
 		RetryHint:   "",
 	})
 	return serr

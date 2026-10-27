@@ -88,19 +88,25 @@ func oauthCall(t *testing.T, h http.Handler, version, token, workspace, input st
 
 func oauthToolCall(t *testing.T, h http.Handler, version, token, workspace, tool, input string, status int) rpcResult {
 	t.Helper()
-	params := map[string]any{"name": tool, "arguments": json.RawMessage(input)}
+	return oauthRPC(t, h, version, token, workspace, "tools/call", map[string]any{"name": tool, "arguments": json.RawMessage(input)}, status)
+}
+
+func oauthRPC(t *testing.T, h http.Handler, version, token, workspace, method string, params map[string]any, status int) rpcResult {
+	t.Helper()
 	if version == "2026-07-28" {
 		params["_meta"] = map[string]any{"io.modelcontextprotocol/protocolVersion": version, "io.modelcontextprotocol/clientInfo": map[string]string{"name": "test", "version": "1"}, "io.modelcontextprotocol/clientCapabilities": map[string]any{}}
 	}
-	body, err := json.Marshal(map[string]any{"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": params})
+	body, err := json.Marshal(map[string]any{"jsonrpc": "2.0", "id": 1, "method": method, "params": params})
 	require.NoError(t, err)
 	r := httptest.NewRequest("POST", "https://vector.example/mcp", strings.NewReader(string(body)))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Accept", "application/json, text/event-stream")
 	r.Header.Set("Mcp-Protocol-Version", version)
 	if version == "2026-07-28" {
-		r.Header.Set("Mcp-Method", "tools/call")
-		r.Header.Set("Mcp-Name", tool)
+		r.Header.Set("Mcp-Method", method)
+		if method == "tools/call" {
+			r.Header.Set("Mcp-Name", params["name"].(string))
+		}
 	}
 	r.Header.Set("Authorization", "Bearer "+token)
 	if workspace != "" {

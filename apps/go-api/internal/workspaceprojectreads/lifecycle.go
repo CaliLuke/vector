@@ -30,6 +30,7 @@ type lifecycleDatabase interface {
 	database
 	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
 	Begin(context.Context) (pgx.Tx, error)
+	BeginTx(context.Context, pgx.TxOptions) (pgx.Tx, error)
 }
 type LifecycleRepository struct {
 	*Repository
@@ -111,20 +112,6 @@ func (r *LifecycleRepository) AuthorizeProjectWrite(ctx context.Context, user, s
 		return projectFailure(403, map[string]any{"error": "You don't have the required permissions."})
 	}
 	return ErrForbidden
-}
-func (r *LifecycleRepository) SetProjectArchived(ctx context.Context, user, slug, id string, archived bool) (time.Time, error) {
-	var at time.Time
-	err := r.writer.QueryRow(ctx, `UPDATE projects p SET archived_at=CASE WHEN $4 THEN clock_timestamp() ELSE NULL END,updated_at=clock_timestamp(),updated_by_id=$1 FROM workspaces w WHERE p.workspace_id=w.id AND w.slug=$2 AND p.id=$3 AND p.deleted_at IS NULL RETURNING COALESCE(p.archived_at,p.updated_at)`, user, slug, id, archived).Scan(&at)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return time.Time{}, ErrNotFound
-	}
-	if err != nil {
-		return time.Time{}, err
-	}
-	if archived {
-		_, err = r.writer.Exec(ctx, `UPDATE user_favorites SET deleted_at=clock_timestamp() WHERE project_id=$1 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$2) AND deleted_at IS NULL`, id, slug)
-	}
-	return at, err
 }
 func (r *LifecycleRepository) DeleteProject(ctx context.Context, user, slug, id string, app bool) error {
 	var exists bool

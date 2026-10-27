@@ -12,7 +12,7 @@ Static response fixtures remain for contract regression tests. No Python code or
 
 The initial [remote MCP transport](mcp.md) lives in `apps/go-api/mcp` and
 `internal/mcptransport`. The proxy sends `/mcp` and `/mcp/*` to Go. The generated
-catalogue contains five `member` reads and `project.list`/`project.retrieve`; MCP is disabled by default.
+catalogue contains five `member` reads and `project.list`/`project.retrieve`, plus archive/restore; MCP is disabled by default.
 `internal/mcpauth` supplies personal-token authentication using primary token and
 workspace membership reads. `internal/mcpoauth` owns fresh external-issuer
 introspection, verified account linking and expiring proof storage. `mcpoauthlinks`
@@ -21,7 +21,7 @@ application operations shared with HTTP. `internal/projectmembershipreads.Direct
 owns current workspace-directory authorization, filtering, paging and the existing-role catalogue.
 Project reads use `internal/workspaceprojectreads` on the primary. All scoped MCP
 reads retain the verified workspace UUID through the data query, preventing slug
-reassignment from changing the selected tenant.
+reassignment from changing the selected tenant. Project archive and restore share a transactional writer with HTTP. Optional receipts live in `internal/mutationreceipts`; a database trigger advances project revisions for all project-row writers. Discovery filters generated write-action schemas per request without changing the shared catalogue; finer read-action role filtering remains open.
 OAuth is available through an explicitly configured external issuer; remaining resource actions
 and full parity are incomplete.
 

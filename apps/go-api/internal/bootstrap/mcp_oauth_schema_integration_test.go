@@ -22,7 +22,7 @@ func TestBootstrapInstallsMCPAccountLinksAndReceiptsAndCanRepeat(t *testing.T) {
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, connection.Close(context.WithoutCancel(ctx))) })
-	for _, table := range []string{"mcp_oauth_links", "mcp_oauth_link_flows", "mutation_receipts"} {
+	for _, table := range []string{"mcp_oauth_links", "mcp_oauth_link_flows", "mutation_receipts", "project_edit_revisions"} {
 		var exists bool
 		require.NoError(t, connection.QueryRow(ctx, `SELECT to_regclass($1) IS NOT NULL`, "public."+table).Scan(&exists))
 		require.True(t, exists, table)

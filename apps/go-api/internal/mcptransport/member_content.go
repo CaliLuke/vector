@@ -15,7 +15,16 @@ import (
 // including empty lists, for both supported revisions.
 func memberContent(ctx context.Context, _ generated.ToolCallInterceptorInfo, payload *generated.ToolsCallPayload, next generated.ToolCallHandler) (*generated.ToolsCallResult, error) {
 	result, err := next(ctx, payload)
-	if err != nil || result == nil || payload == nil || payload.Name != "member" || result.StructuredContent.Kind() != '[' {
+	if err != nil || result == nil || payload == nil {
+		return result, err
+	}
+	// FastMCP maps None to an empty content list, not a JSON null text block.
+	if bytes.Equal(result.StructuredContent, []byte("null")) {
+		result.StructuredContent = nil
+		result.Content = []*generated.ContentItem{}
+		return result, nil
+	}
+	if payload.Name != "member" || result.StructuredContent.Kind() != '[' {
 		return result, err
 	}
 	// The generated encoder supplies valid, compact JSON from the typed result.

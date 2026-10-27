@@ -29,7 +29,7 @@ func readErrors() {
 		{"forbidden", "Access is no longer allowed."},
 		{"invalid_params", "The action or workspace selector is invalid."},
 		{"not_found", "The requested resource is no longer available."},
-		{"internal_error", "The requested information could not be read."},
+		{"internal_error", "The requested operation could not be completed."},
 	} {
 		Error(failure.name, func() { Remedy(func() { SafeMessage(failure.message) }) })
 	}

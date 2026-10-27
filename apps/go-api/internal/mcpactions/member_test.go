@@ -70,17 +70,18 @@ func (throttle) AllowCacheKey(context.Context, string, string) (apikey.Rate, err
 }
 
 type fixture struct {
-	service      *mcpactions.Service
-	auth         *mcpauth.PersonalTokens
-	store        *identityStore
-	keys         *tokens
-	members      *memberships
-	projects     *projectStore
-	directory    *directoryStub
-	projectReads *projectReadStub
+	service       *mcpactions.Service
+	auth          *mcpauth.PersonalTokens
+	store         *identityStore
+	keys          *tokens
+	members       *memberships
+	projects      *projectStore
+	directory     *directoryStub
+	projectReads  *projectReadStub
+	projectWrites *projectWriteStub
 }
 
-func newFixture(t *testing.T) fixture {
+func newFixture(t *testing.T, options ...mcpactions.Option) fixture {
 	t.Helper()
 	one := googleuuid.MustParse("10000000-0000-4000-8000-000000000001")
 	two := googleuuid.MustParse("10000000-0000-4000-8000-000000000002")
@@ -95,7 +96,8 @@ func newFixture(t *testing.T) fixture {
 	require.NoError(t, err)
 	directory := &directoryStub{}
 	projectReads := newProjectReadStub()
-	service, err := mcpactions.New(reader, projectReader, directory, projectReads)
+	projectWrites := newProjectWriteStub()
+	service, err := mcpactions.New(reader, projectReader, directory, projectReads, projectWrites, options...)
 	require.NoError(t, err)
 	keys := &tokens{owners: map[string]apikey.Principal{
 		"test-one": {UserID: one, Timezone: "UTC"}, "test-two": {UserID: two, Timezone: "UTC"},
@@ -103,7 +105,7 @@ func newFixture(t *testing.T) fixture {
 	members := &memberships{}
 	auth, err := mcpauth.NewPersonalTokens(keys, members, throttle{})
 	require.NoError(t, err)
-	return fixture{service: service, auth: auth, store: store, keys: keys, members: members, projects: projects, directory: directory, projectReads: projectReads}
+	return fixture{service: service, auth: auth, store: store, keys: keys, members: members, projects: projects, directory: directory, projectReads: projectReads, projectWrites: projectWrites}
 }
 
 func (f fixture) handler(t *testing.T, authenticate mcptransport.Authenticate) http.Handler {
@@ -293,11 +295,11 @@ func TestMemberRequiresAuthenticatedContextAndValidAction(t *testing.T) {
 	_, err = f.service.Member(t.Context(), nil)
 	require.Error(t, err)
 	assert.Zero(t, f.store.reads.Load())
-	_, err = mcpactions.New(nil, nil, nil, nil)
+	_, err = mcpactions.New(nil, nil, nil, nil, nil)
 	require.Error(t, err)
 	reader, err := useridentity.NewIdentityReader(f.store)
 	require.NoError(t, err)
-	_, err = mcpactions.New(reader, nil, &directoryStub{}, nil)
+	_, err = mcpactions.New(reader, nil, &directoryStub{}, nil, nil)
 	require.Error(t, err)
 }
 

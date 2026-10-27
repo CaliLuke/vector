@@ -196,3 +196,7 @@ func TestSessionProjectPATCHRetainsMutableFields(t *testing.T) {
 		}
 	}
 }
+
+func (db *projectContractDB) BeginTx(ctx context.Context, _ pgx.TxOptions) (pgx.Tx, error) {
+	return db.Begin(ctx)
+}

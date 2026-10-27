@@ -48,12 +48,15 @@ func (c *Client) Member(ctx context.Context, p *MemberRequest) (res *MemberResul
 // - "invalid_params" (type *loom.ServiceError)
 // - "not_found" (type *loom.ServiceError)
 // - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
 // - error: internal error
-func (c *Client) Project(ctx context.Context, p *ProjectRequest) (res *ProjectResult, err error) {
+func (c *Client) Project(ctx context.Context, p *ProjectRequest) (res loom.Nullable[ProjectResult], err error) {
 	var ires any
 	ires, err = c.ProjectEndpoint(ctx, p)
 	if err != nil {
 		return
 	}
-	return ires.(*ProjectResult), nil
+	return ires.(loom.Nullable[ProjectResult]), nil
 }

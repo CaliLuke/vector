@@ -942,3 +942,7 @@ func TestProjectFieldValidationCollectsNullChoiceAndIntegerFailures(t *testing.T
 		t.Fatalf("valid coercion=%v,%v", values, err)
 	}
 }
+
+func (f *projectLifecycleDBFake) BeginTx(ctx context.Context, _ pgx.TxOptions) (pgx.Tx, error) {
+	return f.Begin(ctx)
+}

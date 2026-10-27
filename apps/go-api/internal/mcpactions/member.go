@@ -31,17 +31,23 @@ type memberDirectory interface {
 }
 
 type Service struct {
-	identity     identityReader
-	projects     projectMemberReader
-	directory    memberDirectory
-	projectReads projectReader
+	logContext    context.Context
+	identity      identityReader
+	projects      projectMemberReader
+	directory     memberDirectory
+	projectReads  projectReader
+	projectWrites projectWriter
 }
 
-func New(identity identityReader, projects projectMemberReader, directory memberDirectory, projectReads projectReader) (*Service, error) {
-	if identity == nil || projects == nil || directory == nil || projectReads == nil {
-		return nil, errors.New("MCP identity, member directory and project read applications are required")
+func New(identity identityReader, projects projectMemberReader, directory memberDirectory, projectReads projectReader, projectWrites projectWriter, options ...Option) (*Service, error) {
+	if identity == nil || projects == nil || directory == nil || projectReads == nil || projectWrites == nil {
+		return nil, errors.New("MCP identity, member directory and project applications are required")
 	}
-	return &Service{identity: identity, projects: projects, directory: directory, projectReads: projectReads}, nil
+	service := &Service{identity: identity, projects: projects, directory: directory, projectReads: projectReads, projectWrites: projectWrites}
+	for _, option := range options {
+		option(service)
+	}
+	return service, nil
 }
 
 func (s *Service) Member(ctx context.Context, input *api.MemberRequest) (*api.MemberResult, error) {
@@ -147,11 +153,15 @@ func memberReadFailure() error {
 var _ api.Service = (*Service)(nil)
 
 func readActor(ctx context.Context, workspace *string) (context.Context, mcpauth.Principal, error) {
+	return actionActor(ctx, workspace, false)
+}
+
+func actionActor(ctx context.Context, workspace *string, mutation bool) (context.Context, mcpauth.Principal, error) {
 	ctx, err := mcpauth.Revalidate(ctx)
 	if err != nil {
 		return nil, mcpauth.Principal{}, authenticationError(err)
 	}
-	if err = mcpauth.RequireScopes(ctx, false); err != nil {
+	if err = mcpauth.RequireScopes(ctx, mutation); err != nil {
 		return nil, mcpauth.Principal{}, authenticationError(err)
 	}
 	slug := ""

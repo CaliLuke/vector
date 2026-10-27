@@ -20,22 +20,41 @@ type projectReader interface {
 	APIProject(context.Context, uuid.UUID, string, uuid.UUID, projects.APIProjectDetailOptions) (json.RawMessage, error)
 }
 
-func (s *Service) Project(ctx context.Context, input *api.ProjectRequest) (*api.ProjectResult, error) {
+func (s *Service) Project(ctx context.Context, input *api.ProjectRequest) (loom.Nullable[api.ProjectResult], error) {
+	result, err := s.project(ctx, input)
+	if err != nil {
+		return loom.Nullable[api.ProjectResult]{}, err
+	}
+	if result == nil {
+		return loom.NullValue[api.ProjectResult](), nil
+	}
+	return loom.NullableValue(*result), nil
+}
+
+func (s *Service) project(ctx context.Context, input *api.ProjectRequest) (*api.ProjectResult, error) {
 	if input == nil {
 		return nil, api.MakeInvalidParams(errors.New("invalid project action"))
 	}
 	list, isList := input.AsProjectList()
 	detail, isDetail := input.AsProjectRetrieve()
+	archive, isArchive := input.AsProjectArchive()
 	var workspace *string
+	mutation := false
 	switch {
 	case isList && list != nil && list.Action == "list":
 		workspace = list.WorkspaceSlug
 	case isDetail && detail != nil && detail.Action == "retrieve":
 		workspace = detail.WorkspaceSlug
+	case isArchive && archive != nil && (archive.Action == "archive" || archive.Action == "unarchive"):
+		workspace = archive.WorkspaceSlug
+		mutation = true
 	default:
 		return nil, api.MakeInvalidParams(errors.New("invalid project action"))
 	}
-	ctx, actor, err := readActor(ctx, workspace)
+	if mutation {
+		return s.projectMutation(ctx, archive)
+	}
+	ctx, actor, err := actionActor(ctx, workspace, false)
 	if err != nil {
 		return nil, err
 	}
@@ -80,13 +99,16 @@ func (s *Service) projectDetail(ctx context.Context, actor mcpauth.Principal, in
 		return nil, api.MakeInvalidParams(errors.New("invalid project identifier"))
 	}
 	workspaceID := uuid.UUID(actor.WorkspaceID)
-	body, err := s.projectReads.APIProject(ctx, uuid.UUID(actor.UserID), actor.WorkspaceSlug, id, projects.APIProjectDetailOptions{ExpectedWorkspaceID: &workspaceID})
+	body, err := s.projectReads.APIProject(ctx, uuid.UUID(actor.UserID), actor.WorkspaceSlug, id, projects.APIProjectDetailOptions{ExpectedWorkspaceID: &workspaceID, IncludeRevision: input.IncludeRevision != nil && *input.IncludeRevision})
 	if err != nil {
 		return nil, projectReadError(err)
 	}
 	// The HTTP detail omits per-member sort_order; the pinned SDK defaults it to null.
 	detail := &api.ProjectDetail{SortOrder: loom.NullValue[float64]()}
 	if err := json.Unmarshal(body, &detail); err != nil || detail == nil {
+		return nil, projectReadFailure()
+	}
+	if input.IncludeRevision != nil && *input.IncludeRevision && detail.Revision == nil {
 		return nil, projectReadFailure()
 	}
 	result := api.NewProjectResultProjectDetail(detail)
