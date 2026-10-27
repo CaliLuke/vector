@@ -16,8 +16,10 @@ export function CascadingEditor({
   onClose,
   onSave,
   review,
+  initialSetup,
 }: {
   property: PreviewProperty;
+  initialSetup?: boolean;
   onClose: () => void;
   onSave?: (property: PreviewProperty) => Promise<void>;
   review?: PropertyEditPersistence;
@@ -125,14 +127,14 @@ export function CascadingEditor({
   return (
     <PreviewDialog
       wide
-      title={`Manage levels and options · ${property.name}`}
+      title={`${initialSetup ? "Add cascading options" : "Manage levels and options"} · ${property.name}`}
       onClose={() => {
         if (!isSubmitting) onClose();
       }}
       footer={
         <>
           <Button variant="secondary" disabled={isSubmitting} onClick={onClose}>
-            Cancel
+            {initialSetup ? "Skip" : "Cancel"}
           </Button>
           <Button type="submit" form="cascading-options-form" disabled={isSubmitting}>
             Save changes

@@ -1,3 +1,4 @@
+import { showEmptyDiscoveryGroups } from "@/helpers/issue-list/grouping-axis";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -145,7 +146,11 @@ export function BaseListRoot(props: IBaseListRoot) {
 
   return (
     <IssueListViewProvider readState={readState}>
-      <IssueLayoutHOC readState={readState} layout={EIssueLayoutTypes.LIST}>
+      <IssueLayoutHOC
+        allowEmptyGroups={showEmptyDiscoveryGroups(group_by, showEmptyGroup)}
+        readState={readState}
+        layout={EIssueLayoutTypes.LIST}
+      >
         <div className={`relative size-full bg-surface-2`}>
           <List
             issuesMap={issueMap}

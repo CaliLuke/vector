@@ -12,6 +12,8 @@ import type { CompleteOrEmpty } from "./utils";
 export type TIssueLayouts = "list" | "kanban" | "calendar" | "spreadsheet" | "gantt_chart";
 
 export type TIssueGroupByOptions =
+  | `parent_type_${string}`
+  | `customproperty_${string}`
   | "type_id"
   | "state"
   | "priority"

@@ -99,7 +99,7 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 	where := []string{`workspace.slug=$2`, strings.ReplaceAll(liveIssue, "i.", "issue.")}
 	if archive {
 		where = []string{`workspace.slug=$2`, `issue.deleted_at IS NULL`, `issue.archived_at IS NOT NULL`, `NOT EXISTS(SELECT 1 FROM issue_types t WHERE t.id=issue.type_id AND t.is_epic)`}
-		if q.Present["show_sub_issues"] && q.Params["show_sub_issues"] != "true" {
+		if r.parentGrouping == nil && q.Present["show_sub_issues"] && q.Params["show_sub_issues"] != "true" {
 			where = append(where, `issue.parent_id IS NULL`)
 		}
 	}
@@ -140,7 +140,10 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 	var err error
 	var deferredFilterError error
 	options := queryOptions(q)
-	if workspace && !user && !usesTypeGrouping(q) {
+	if r.parentGrouping != nil {
+		options.SubIssue = "true"
+	}
+	if workspace && !user && !usesDiscoveryGrouping(q) {
 		options.GroupBy, options.SubGroupBy = "", ""
 	}
 	if !q.API {
@@ -158,7 +161,7 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 			deferredFilterError = err
 		}
 	}
-	where, args, err = r.appendDiscoveryGroupSelectors(q, where, args)
+	where, args, err = r.appendDiscoveryGroupSelectors(ctx, q, where, args)
 	if err != nil {
 		return Result{}, err
 	}
@@ -240,7 +243,7 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 	if err != nil {
 		return Result{}, err
 	}
-	if q.Params["include_properties"] == "true" {
+	if q.Params["include_properties"] == "true" || len(r.propertyGroups) > 0 {
 		if err = r.projectDiscoveryRows(ctx, rows); err != nil {
 			return Result{}, err
 		}
@@ -292,6 +295,8 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 			value["property_values"], value["properties_evaluated_at"] = row["property_values"], row["properties_evaluated_at"]
 			value["properties_revision"] = row["properties_revision"]
 		}
+		r.projectPropertyGroups(row, value)
+		r.projectParentGroup(row, value)
 		results = append(results, value)
 	}
 	if byIDs {

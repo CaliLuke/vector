@@ -508,7 +508,7 @@ function MenuItem(props: ICustomMenuItemProps) {
   const submenuContext = useSubMenu();
 
   return (
-    <Menu.Item as="div" disabled={disabled}>
+    <Menu.Item as={React.Fragment} disabled={disabled}>
       {({ active, close }) => (
         <button
           type="button"

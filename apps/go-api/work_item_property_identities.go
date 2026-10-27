@@ -2,7 +2,6 @@ package systemapi
 
 import (
 	"context"
-	"errors"
 
 	api "github.com/CaliLuke/go-plane/workitemtypes/gen/work_item_types"
 )
@@ -18,12 +17,7 @@ func (s *workItemTypesService) DiscoveryProperties(ctx context.Context, p *api.D
 	}
 	catalog, err := s.repository.DiscoveryProperties(ctx, actor, p.Slug, project)
 	if err != nil {
-		response := typeServiceError(err)
-		var failure *api.TypeError
-		if errors.As(response, &failure) && failure.Kind == "status_500" {
-			workItemLogError(ctx, "work_item_types.discovery_properties", "read", err)
-		}
-		return nil, response
+		return nil, typeServiceError(ctx, "work_item_types.discovery_properties", err)
 	}
 	out := &api.PropertyDiscoveryCatalog{Enabled: catalog.Enabled, Revision: catalog.Revision, Fields: []*api.DiscoveryProperty{}}
 	for _, field := range catalog.Fields {

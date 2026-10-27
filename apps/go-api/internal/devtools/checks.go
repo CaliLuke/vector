@@ -183,7 +183,7 @@ func CheckLocalLogging(ctx context.Context, root string, output io.Writer) error
 		if err != nil {
 			return err
 		}
-		correlated, err := hasLocalGoErrorTrace(ctx, root, traceID)
+		correlated, err := hasLocalGoErrorTrace(ctx, root, traceID, cutoff)
 		if err != nil {
 			return err
 		}
@@ -201,7 +201,7 @@ func CheckLocalLogging(ctx context.Context, root string, output io.Writer) error
 func hasLocalLoggingMarker(ctx context.Context, root, marker string, cutoff time.Time) (bool, error) {
 	args := []string{
 		"scripts/logal-query.sh", "logs", "--service", "plane-logging-check",
-		"--since", cutoff.Format(time.RFC3339Nano), "--time", "received", "--json", "--details",
+		"--since", cutoff.Format(time.RFC3339Nano), "--time", "received", "--json", "--details", "--timeout", "15s",
 	}
 	command := exec.CommandContext(ctx, "bash", args...)
 	command.Dir = root
@@ -236,14 +236,14 @@ func hasLocalLoggingMarker(ctx context.Context, root, marker string, cutoff time
 
 // hasLocalGoErrorTrace requires native OTLP correlation fields, so a trace alone
 // or an uncorrelated stdout copy cannot make the logging check pass.
-func hasLocalGoErrorTrace(ctx context.Context, root, traceID string) (bool, error) {
+func hasLocalGoErrorTrace(ctx context.Context, root, traceID string, cutoff time.Time) (bool, error) {
 	type record struct {
 		SpanID     string `json:"span_id"`
 		StatusCode int    `json:"status_code"`
 	}
 	rows := make(map[string][]record, 2)
 	for _, signal := range []string{"logs", "spans"} {
-		args := []string{"scripts/logal-query.sh", signal, "--service", "plane-go-api", "--trace-id", traceID, "--json"}
+		args := []string{"scripts/logal-query.sh", signal, "--service", "plane-go-api", "--trace-id", traceID, "--json", "--since", cutoff.Format(time.RFC3339Nano), "--time", "received", "--timeout", "15s"}
 		if signal == "logs" {
 			args = append(args, "--level", "error")
 		}

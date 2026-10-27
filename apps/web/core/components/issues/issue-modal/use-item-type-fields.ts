@@ -1,3 +1,4 @@
+import { nextFormulaClockBoundary } from "@/queries/work-item-clock";
 import { isAxiosError } from "axios";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, skipToken } from "@tanstack/react-query";
@@ -283,7 +284,9 @@ function useFormulaPreview(
         ? ({ signal }) => workItemSchemaService.preview(workspaceSlug, scope, debounced, signal)
         : skipToken,
     retry: false,
-    refetchInterval: hasFormulas ? 60_000 : false,
+    refetchInterval: hasFormulas ? nextFormulaClockBoundary : false,
+    refetchOnWindowFocus: hasFormulas ? "always" : false,
+    refetchOnMount: hasFormulas ? "always" : true,
   });
   return {
     computed: previewBody === debounced ? previewQuery.data?.computed : undefined,

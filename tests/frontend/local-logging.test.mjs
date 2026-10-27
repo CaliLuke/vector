@@ -31,7 +31,11 @@ function browser(t) {
     responseURL = "http://localhost:8000/api/workspaces/default/?password=private";
     status = 500;
     pending = false;
+    responseHeaders = new Headers();
     open() {}
+    getResponseHeader(name) {
+      return this.responseHeaders.get(name);
+    }
     send() {
       if (!this.pending) this.dispatchEvent(new Event("loadend"));
     }
@@ -82,6 +86,87 @@ await test("browser failures survive as OTLP records without request secrets", a
   assert.equal(exports.length, 1);
   assert.equal(body.resourceLogs[0].scopeLogs[0].logRecords.length, 7);
   assert.ok(exports.every((request) => !request.options.body.includes("private")));
+});
+
+await test("failed fetch and XHR requests export backend correlation, method, and monotonic elapsed time", async (t) => {
+  const { window, requests, XHR } = browser(t);
+  const requestId = "019a1d30-1d6a-7f10-8765-0123456789ab";
+  let now = 100;
+  t.mock.method(performance, "now", () => now);
+  const originalFetch = window.fetch;
+  window.fetch = async (...args) => {
+    if (args[0] === "/__local_telemetry/v1/logs") return originalFetch(...args);
+    now = 112;
+    return new Response("private response body", { status: 409, headers: { "X-Request-ID": requestId } });
+  };
+  const stop = installLocalLogging("plane-web-browser");
+  t.after(() => {
+    stop();
+    delete globalThis.window;
+    delete globalThis.XMLHttpRequest;
+  });
+  const xhr = new XHR();
+  xhr.open("PATCH", "/api/properties/?token=private");
+  xhr.pending = true;
+  xhr.status = 422;
+  xhr.responseURL = "http://localhost:8000/api/properties/?token=private";
+  xhr.responseHeaders.set("X-Request-ID", requestId);
+
+  await window.fetch(new Request("http://localhost:8000/api/types/?token=private", { method: "POST" }));
+  xhr.send("private request body");
+  now = 146;
+  xhr.dispatchEvent(new Event("loadend"));
+  window.tick();
+  await setImmediate();
+
+  const exported = requests.find((request) => request.url === "/__local_telemetry/v1/logs");
+  const records = JSON.parse(exported.options.body).resourceLogs[0].scopeLogs[0].logRecords;
+  const attributes = records.map((record) =>
+    Object.fromEntries(record.attributes.map(({ key, value }) => [key, value.stringValue ?? value.intValue]))
+  );
+  assert.deepEqual(attributes, [
+    {
+      "url.path": "/default/",
+      "http.response.status_code": "409",
+      "http.request.path": "/api/types/",
+      "http.request.method": "POST",
+      duration_ms: "12",
+      request_id: requestId,
+    },
+    {
+      "url.path": "/default/",
+      "http.response.status_code": "422",
+      "http.request.path": "/api/properties/",
+      "http.request.method": "PATCH",
+      duration_ms: "34",
+      request_id: requestId,
+    },
+  ]);
+  assert.equal(exported.options.body.includes("private"), false);
+});
+
+await test("request diagnostics omit non-UUID correlation headers and custom method contents", async (t) => {
+  const { window, requests, XHR } = browser(t);
+  const stop = installLocalLogging("plane-web-browser");
+  t.after(() => {
+    stop();
+    delete globalThis.window;
+    delete globalThis.XMLHttpRequest;
+  });
+  const xhr = new XHR();
+  xhr.open("PRIVATE-METHOD", "/api/types/");
+  xhr.responseHeaders.set("X-Request-ID", "private header data");
+
+  xhr.send();
+  window.tick();
+  await setImmediate();
+
+  const exported = requests.find((request) => request.url === "/__local_telemetry/v1/logs");
+  const records = JSON.parse(exported.options.body).resourceLogs[0].scopeLogs[0].logRecords;
+  const attributes = Object.fromEntries(records[0].attributes.map(({ key, value }) => [key, value.stringValue]));
+  assert.equal(attributes.request_id, undefined);
+  assert.equal(attributes["http.request.method"], "OTHER");
+  assert.equal(exported.options.body.toLowerCase().includes("private"), false);
 });
 
 await test("failed exports are retried without recursively logging the collector", async (t) => {

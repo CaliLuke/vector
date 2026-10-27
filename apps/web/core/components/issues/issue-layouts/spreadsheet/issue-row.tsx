@@ -107,7 +107,8 @@ export function SpreadsheetIssueRow(props: Props) {
     workspaceSlug?.toString() ?? "",
     subItems ?? [],
     propertyRevision,
-    isExpanded && customColumns.length > 0
+    isExpanded && customColumns.length > 0,
+    customColumns.some((field) => field.kind === "Formula")
   );
   const propertyValues = useMemo(
     () => ({ ...inheritedPropertyValues, ...childPropertyReads.values }),

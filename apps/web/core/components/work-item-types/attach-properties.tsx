@@ -12,11 +12,13 @@ export function AttachProperties({
   onClose,
   onAttach,
   properties: availableProperties,
+  onManageProperties,
 }: {
   type: PreviewType;
   onClose: () => void;
   onAttach?: (properties: string[]) => Promise<void>;
   properties?: PreviewContent["properties"];
+  onManageProperties?: () => void;
 }) {
   const { content, setContent, announce } = useTypePreview();
   const formId = useId();
@@ -63,7 +65,7 @@ export function AttachProperties({
           <Button variant="secondary" disabled={isSubmitting} onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" form={formId} disabled={isSubmitting}>
+          <Button type="submit" form={formId} disabled={isSubmitting || selected.length === 0}>
             Add{selected.length > 0 && ` (${selected.length})`}
           </Button>
         </>
@@ -80,9 +82,19 @@ export function AttachProperties({
       >
         {!available.length ? (
           <EmptyState
-            title="No properties available"
-            description="All existing properties are attached, or the property library is empty. Create another property from the Properties tab."
-          />
+            title={options.length === 0 ? "No properties yet" : "All properties are attached"}
+            description={
+              options.length === 0
+                ? "Create a property in the workspace library, then attach it to this type."
+                : "Every workspace property is already attached to this type."
+            }
+          >
+            {onManageProperties && (
+              <Button variant="secondary" onClick={onManageProperties}>
+                Manage properties
+              </Button>
+            )}
+          </EmptyState>
         ) : (
           available.map((property) => (
             <label

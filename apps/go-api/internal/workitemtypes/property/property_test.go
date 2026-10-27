@@ -108,6 +108,41 @@ func TestDefinitionProtectsIdentityAndUsedStructure(t *testing.T) {
 	}
 }
 
+func TestUnusedTextPropertyCanChangeKind(t *testing.T) {
+	before := definition()
+	before.Kind = p.Text
+	before.Configuration = p.Configuration{Active: true, Format: "Single line"}
+	after := before
+	after.Kind = p.Number
+	after.Configuration = p.Configuration{Active: true, Default: float64(0)}
+	if err := p.ValidateDefinition(after, &before, false); err != nil {
+		t.Fatalf("unused Text to Number conversion rejected: %v", err)
+	}
+}
+
+func TestUsedTextPropertyCannotChangeKind(t *testing.T) {
+	before := definition()
+	before.Kind = p.Text
+	before.Configuration = p.Configuration{Active: true, Format: "Single line"}
+	after := before
+	after.Kind = p.Number
+	after.Configuration = p.Configuration{Active: true}
+	if err := p.ValidateDefinition(after, &before, true); err == nil {
+		t.Fatal("used Text property changed kind")
+	}
+}
+
+func TestUnusedTextPropertyCannotChangeTextFormat(t *testing.T) {
+	before := definition()
+	before.Kind = p.Text
+	before.Configuration = p.Configuration{Active: true, Format: "Single line"}
+	after := before
+	after.Configuration.Format = "Paragraph"
+	if err := p.ValidateDefinition(after, &before, false); err == nil {
+		t.Fatal("existing Text property changed format")
+	}
+}
+
 func TestValuesEnforceKindsAndPreserveZeroAndFalse(t *testing.T) {
 	for _, test := range []struct {
 		kind        p.Kind

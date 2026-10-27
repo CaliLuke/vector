@@ -31,23 +31,25 @@ func TestWorkspaceExportStringFieldsUseSharedPythonCompatibility(t *testing.T) {
 }
 
 type projectValuesRepository struct {
-	projects []any
-	called   bool
+	projects      []any
+	includeCustom bool
+	called        bool
 }
 
 func (*projectValuesRepository) Authorized(context.Context, string, string) (bool, error) {
 	return true, nil
 }
 func (*projectValuesRepository) UserEmail(context.Context, string) (string, error) { return "", nil }
-func (repository *projectValuesRepository) CreateIssueExport(_ context.Context, _, _, _ string, projects []any) (json.RawMessage, string, string, []any, error) {
+func (repository *projectValuesRepository) CreateIssueExport(_ context.Context, _, _, _ string, projects []any, includeCustom bool) (json.RawMessage, string, string, []any, error) {
 	repository.called = true
+	repository.includeCustom = includeCustom
 	repository.projects = append([]any(nil), projects...)
 	if len(projects) == 0 {
 		projects = []any{"default-project-id"}
 	}
 	return json.RawMessage(`{"message":"queued"}`), "workspace-id", "token-id", projects, nil
 }
-func (*projectValuesRepository) History(context.Context, string, djangoapi.Query) (json.RawMessage, error) {
+func (*projectValuesRepository) History(context.Context, string, string, djangoapi.Query) (json.RawMessage, error) {
 	return nil, nil
 }
 
@@ -79,11 +81,11 @@ func (*deniedWorkspaceExportsRepository) Authorized(context.Context, string, str
 func (*deniedWorkspaceExportsRepository) UserEmail(context.Context, string) (string, error) {
 	return "", nil
 }
-func (repository *deniedWorkspaceExportsRepository) CreateIssueExport(context.Context, string, string, string, []any) (json.RawMessage, string, string, []any, error) {
+func (repository *deniedWorkspaceExportsRepository) CreateIssueExport(context.Context, string, string, string, []any, bool) (json.RawMessage, string, string, []any, error) {
 	repository.createCalls++
 	return nil, "", "", nil, nil
 }
-func (repository *deniedWorkspaceExportsRepository) History(context.Context, string, djangoapi.Query) (json.RawMessage, error) {
+func (repository *deniedWorkspaceExportsRepository) History(context.Context, string, string, djangoapi.Query) (json.RawMessage, error) {
 	repository.historyCalls++
 	return nil, nil
 }
@@ -202,4 +204,49 @@ func workspaceExportTestRequestContext(t *testing.T, body string) context.Contex
 		t.Fatal("request metadata middleware did not capture context")
 	}
 	return result
+}
+
+func TestWorkspaceExportCustomPropertiesRequiresExplicitBoolean(t *testing.T) {
+	for _, test := range []struct {
+		name, body string
+		want       bool
+		status     int
+	}{
+		{name: "default stays standard", body: `{"provider":"csv"}`, status: 200},
+		{name: "explicit opt in", body: `{"provider":"csv","include_custom_properties":true}`, want: true, status: 200},
+		{name: "explicit opt out", body: `{"provider":"csv","include_custom_properties":false}`, status: 200},
+		{name: "string is not consent", body: `{"provider":"csv","include_custom_properties":"true"}`, status: 400},
+		{name: "null rejected", body: `{"provider":"csv","include_custom_properties":null}`, status: 400},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			repository := &projectValuesRepository{}
+			publisher := &projectValuesPublisher{}
+			service, err := NewWorkspaceExports(repository, projectValuesSessions{}, publisher)
+			if err != nil {
+				t.Fatal(err)
+			}
+			ctx := context.WithValue(workspaceExportTestRequestContext(t, test.body), workspaceExportsPrincipalKey{}, workspaceExportsPrincipal{userID: "00000000-0000-4000-8000-000000000001"})
+			_, body, err := service.CreateIssueExport(ctx, &api.CreateIssueExportPayload{Slug: "demo"}, io.NopCloser(strings.NewReader(test.body)))
+			if body != nil {
+				defer func() {
+					if closeErr := body.Close(); closeErr != nil {
+						t.Error(closeErr)
+					}
+				}()
+			}
+			if test.status != 200 {
+				status, _ := workspaceExportsProtocolError(err)
+				if status != test.status || repository.called || publisher.calls != 0 {
+					t.Fatalf("status=%d error=%v created=%v published=%d", status, err, repository.called, publisher.calls)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if repository.includeCustom != test.want || publisher.kwargs["include_custom_properties"] != test.want {
+				t.Fatalf("stored=%v queued=%v want=%v", repository.includeCustom, publisher.kwargs["include_custom_properties"], test.want)
+			}
+		})
+	}
 }

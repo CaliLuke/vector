@@ -396,14 +396,6 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/backgroundtasks/issue_export_test.go",
-        "Error return value of `book.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/backgroundtasks/issue_export.go",
         "Error return value of `workbook.Close` is not checked"
       ],
@@ -1999,7 +1991,7 @@
         "internal/backgroundtasks/issue_export.go",
         "shadow: declaration of \"err\" shadows declaration at line #"
       ],
-      "count": 5
+      "count": 3
     },
     {
       "fingerprint": [
@@ -3427,7 +3419,7 @@
         "internal/backgroundtasks/issue_export.go",
         "SA1019: strings.Title has been deprecated since Go 1.18 and an alternative has been available since Go 1.0: The rule Title uses for word boundaries does not handle Unicode punctuation properly. Use golang.org/x/text/cases instead. "
       ],
-      "count": 2
+      "count": 1
     },
     {
       "fingerprint": [

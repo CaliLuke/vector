@@ -49,5 +49,5 @@ func (s *workItemTypesService) loadItemSchema(ctx context.Context, slug string, 
 		return nil, &api.TypeError{Kind: "status_401", Message: unauthenticatedDetail}
 	}
 	result, err := s.repository.ItemSchema(ctx, actor, slug, input)
-	return workItemTypesResponse[api.ItemSchema](result, err)
+	return workItemTypesResponse[api.ItemSchema](ctx, "work_item_types.schema", result, err)
 }

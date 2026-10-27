@@ -15,6 +15,11 @@ import { workspaceRosterMemberIds, projectRosterMemberIds } from "@/helpers/memb
 import { useWorkItemGroupingCatalog } from "@/hooks/use-work-item-grouping-catalog";
 import { typeGroupColumns } from "./type-group-columns";
 import { getGroupByColumns } from "./utils";
+import { parentGroupColumns } from "./parent-group-columns";
+import { useOptionalIssueListView } from "@/providers/issue-list-view";
+import { isParentTypeGrouping, isCustomGrouping } from "@/helpers/issue-list/grouping-axis";
+import { useWorkItemTableCatalog } from "@/hooks/use-work-item-table-catalog";
+import { propertyGroupColumns } from "./property-group-columns";
 
 type Options = Omit<
   Parameters<typeof getGroupByColumns>[0],
@@ -31,11 +36,21 @@ type Options = Omit<
 > & {
   workspaceSlug: string | undefined;
   isWorkspaceLevel: boolean;
+  observedIds?: string[];
 };
 
-export function useGroupColumns({ workspaceSlug, isWorkspaceLevel, ...options }: Options) {
+export function useGroupColumns({ workspaceSlug, isWorkspaceLevel, observedIds = [], ...options }: Options) {
   const catalogues = useGroupCatalogueData(workspaceSlug, options.projectId, isWorkspaceLevel, options.groupBy);
   const roster = useGroupRosterData(workspaceSlug, options.projectId, isWorkspaceLevel, options.groupBy);
+  const custom = isCustomGrouping(options.groupBy);
+  const properties = useWorkItemTableCatalog(custom && !options.isEpic);
+  const list = useOptionalIssueListView();
+  if (isParentTypeGrouping(options.groupBy))
+    return list?.parentGroups ? parentGroupColumns(list.parentGroups) : undefined;
+  if (custom) {
+    const field = properties.fields.find((candidate) => candidate.key === options.groupBy && candidate.groupable);
+    return field ? propertyGroupColumns(field, observedIds) : undefined;
+  }
   return getGroupByColumns({
     ...options,
     ...roster,

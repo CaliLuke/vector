@@ -267,6 +267,13 @@ export const issueCountBasedOnFilters = (
  * @param {IIssueDisplayFilterOptions} displayFilters
  * @returns {IIssueDisplayFilterOptions}
  */
+export function isParentTypeGroupingActive(filters: IIssueDisplayFilterOptions | undefined) {
+  return Boolean(
+    filters?.group_by?.startsWith("parent_type_") &&
+    (!filters.layout || filters.layout === "list" || filters.layout === "kanban")
+  );
+}
+
 export const getComputedDisplayFilters = (
   displayFilters: IIssueDisplayFilterOptions = {},
   defaultValues?: IIssueDisplayFilterOptions
@@ -281,7 +288,7 @@ export const getComputedDisplayFilters = (
     order_by: filters?.order_by || "sort_order",
     group_by: filters?.group_by || null,
     sub_group_by: filters?.sub_group_by || null,
-    sub_issue: filters?.sub_issue || false,
+    sub_issue: computedSubIssueExpansion(filters),
     show_empty_groups: filters?.show_empty_groups || false,
   };
 };
@@ -354,3 +361,7 @@ export const getIssuePriorityFilters = (priorityKey: TIssuePriorities): TIssueFi
   if (currentIssuePriority) return currentIssuePriority;
   return undefined;
 };
+
+function computedSubIssueExpansion(filters: IIssueDisplayFilterOptions | undefined) {
+  return !isParentTypeGroupingActive(filters) && (filters?.sub_issue || false);
+}

@@ -6,6 +6,7 @@
  */
 
 import type { CSSProperties } from "react";
+import { isParentTypeGrouping, isCustomGrouping } from "@/helpers/issue-list/grouping-axis";
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 import clone from "lodash-es/clone.js";
 import isNil from "lodash-es/isNil.js";
@@ -167,10 +168,13 @@ export const getGroupByColumns = ({
   }
 
   // Return undefined if no valid groupBy
-  if (!groupBy) return undefined;
+  if (!groupBy || isCustomGrouping(groupBy) || isParentTypeGrouping(groupBy)) return undefined;
 
   // Map of group by options to their corresponding column getter functions
-  const groupByColumnMap: Record<GroupByColumnTypes, () => IGroupByColumn[] | undefined> = {
+  const groupByColumnMap: Record<
+    Exclude<GroupByColumnTypes, `customproperty_${string}` | `parent_type_${string}`>,
+    () => IGroupByColumn[] | undefined
+  > = {
     type_id: () => typeColumns,
     project: () => getProjectColumns(projects, joinedProjectIds),
     cycle: () => getCycleColumns(cycles),

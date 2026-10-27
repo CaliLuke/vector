@@ -167,7 +167,7 @@ export function WorkItemsPreview({ readOnly = false }: { readOnly?: boolean }) {
                       {properties.map((property) => (
                         <div key={`${selectedItem.id}-${property.id}`} className="space-y-2">
                           <div className="flex items-center gap-2">
-                            <PropertyIcon kind={property.kind} />
+                            <PropertyIcon kind={property.kind} icon={property.icon} />
                             <span className="text-12 text-secondary">
                               {property.name}
                               {property.required && <span className="ml-1 text-danger-primary">*</span>}
@@ -475,7 +475,7 @@ function WorkItemEditor({
           {fields.map((property) => (
             <div key={property.id}>
               <div className="mb-2 flex items-center gap-2">
-                <PropertyIcon kind={property.kind} />
+                <PropertyIcon kind={property.kind} icon={property.icon} />
                 <span className="text-13 font-medium">
                   {property.name}
                   {property.required ? " *" : ""}

@@ -51,7 +51,7 @@ export function WorkspaceTypeLibrary() {
       {!catalog.enabled ? (
         <EmptyState
           title="Give every kind of work its own type"
-          description="Enable work item types to create shared definitions across your workspace. Existing work without a type will become Task."
+          description="Enable work item types to create shared definitions across your workspace. Existing work without a type will become Task. Once enabled, work item types cannot be turned off."
         >
           <Button
             disabled={!catalog.can_manage || mutation.isPending}
@@ -71,11 +71,14 @@ export function WorkspaceTypeLibrary() {
             projects: catalog.projects,
             members: catalog.members,
             saveProperty: async (property, creating = false, revision = catalog.revision) => {
-              await propertyMutation.mutateAsync({
+              const accepted = await propertyMutation.mutateAsync({
                 action: creating ? "create" : "update",
                 revision,
                 definition: propertyToSave(property),
               });
+              const record = accepted.properties.find((item) => item.definition.id === property.id);
+              if (!record) throw new Error("The saved property is missing from the accepted catalog.");
+              return { property: propertyForEditor(record.definition, record.used), revision: accepted.revision };
             },
             attachProperties: async (typeId, propertyIds, revision = catalog.revision) => {
               await propertyMutation.mutateAsync({

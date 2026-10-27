@@ -239,7 +239,7 @@ export const IssueView = function IssueView(props: IIssueView) {
                             workspaceSlug={workspaceSlug}
                             projectId={projectId}
                             issueId={issueId}
-                            disabled={disabled}
+                            disabled={disabled || is_archived}
                             issueServiceType={EIssueServiceType.ISSUES}
                           />
                         </div>
@@ -253,11 +253,7 @@ export const IssueView = function IssueView(props: IIssueView) {
                         />
                       </div>
                     </div>
-                    <div
-                      className={`vertical-scrollbar scrollbar-sm h-full !w-[400px] flex-shrink-0 overflow-hidden border-l border-subtle p-4 py-5 ${
-                        is_archived ? "pointer-events-none" : ""
-                      }`}
-                    >
+                    <div className="vertical-scrollbar scrollbar-sm h-full !w-[400px] flex-shrink-0 overflow-hidden border-l border-subtle p-4 py-5">
                       <PeekOverviewProperties
                         workspaceSlug={workspaceSlug}
                         projectId={projectId}

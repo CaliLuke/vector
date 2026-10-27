@@ -3743,7 +3743,7 @@
         "filename": "apps/web/core/components/issues/issue-layouts/filters/header/display-filters/display-filters-selection.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `DisplayFiltersSelection` has a complexity of 34. Maximum allowed is 15."
+        "message": "function `DisplayFiltersSelection` has a complexity of 33. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -11015,7 +11015,7 @@
         "filename": "packages/utils/src/work-item/base.ts",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function has a complexity of 21. Maximum allowed is 15."
+        "message": "function has a complexity of 19. Maximum allowed is 15."
       },
       "count": 1
     },

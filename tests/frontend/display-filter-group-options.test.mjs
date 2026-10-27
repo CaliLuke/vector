@@ -9,9 +9,11 @@ import { createModuleStub } from "./helpers/module-stubs.mjs";
 
 registerWebTestModules(
   {
+    "@/hooks/use-work-item-grouping-catalog": "export const useTypeGroupingOptions=()=>options=>options;",
     "lodash-es": "export const isEmpty = (value) => value == null || Object.keys(value).length === 0;",
     "@/components/issues/issue-layouts/filters": `
         import React from "${reactUrl}";
+        export const FilterOption = () => null;
         export const FilterDisplayProperties = () => null;
         export const FilterExtraOptions = () => null;
         export const FilterOrderBy = () => null;

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { isParentTypeGroupingActive } from "@plane/utils/work-item";
 import React from "react";
 
 import { useTranslation } from "@plane/i18n";
@@ -58,3 +59,7 @@ export const FilterExtraOptions = function FilterExtraOptions(props: Props) {
     </div>
   );
 };
+
+export function availableExtraOptions(options: TIssueExtraOptions[], filters: IIssueDisplayFilterOptions | undefined) {
+  return options.filter((option) => option !== "sub_issue" || !isParentTypeGroupingActive(filters));
+}

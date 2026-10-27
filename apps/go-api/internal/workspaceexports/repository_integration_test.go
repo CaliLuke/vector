@@ -59,7 +59,7 @@ VALUES ('00000000-0000-4000-8000-000000000002','Test','User','Test User','',FALS
 		t.Fatal(err)
 	}
 	original := []any{json.Number("123"), "123e4567-e89b-12d3-a456-426614174000", nil}
-	_, _, _, queued, err := repository.CreateIssueExport(ctx, "00000000-0000-4000-8000-000000000002", "demo", "csv", original)
+	_, _, _, queued, err := repository.CreateIssueExport(ctx, "00000000-0000-4000-8000-000000000002", "demo", "csv", original, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,6 +87,19 @@ VALUES ('00000000-0000-4000-8000-000000000002','Test','User','Test User','',FALS
 	if !nameIsNull || !filtersIsNull || !urlIsNull || !deletedAtIsNull || !updatedByIsNull {
 		t.Fatalf("nullable defaults = name:%v filters:%v url:%v deleted_at:%v updated_by:%v, want all NULL", nameIsNull, filtersIsNull, urlIsNull, deletedAtIsNull, updatedByIsNull)
 	}
+	t.Run("custom properties are explicitly persisted", func(t *testing.T) {
+		_, _, customToken, _, err := repository.CreateIssueExport(ctx, "00000000-0000-4000-8000-000000000002", "demo", "json", original, true)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var enabled bool
+		if err = connection.QueryRow(ctx, `SELECT rich_filters->>'include_custom_properties'='true' FROM exporters WHERE token=$1`, customToken).Scan(&enabled); err != nil {
+			t.Fatal(err)
+		}
+		if !enabled {
+			t.Fatal("custom opt-in was not persisted")
+		}
+	})
 }
 
 func TestAuthorizedRejectsSoftDeletedMembership(t *testing.T) {
@@ -193,7 +206,7 @@ VALUES ('00000000-0000-4000-8000-000000000002','Test','User','Test User','',FALS
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, _, _, _, err := repository.CreateIssueExport(ctx, "00000000-0000-4000-8000-000000000002", "demo", "csv", []any{"00000000-0000-4000-8000-000000000003"}); !errors.Is(err, ErrWorkspaceMissing) {
+	if _, _, _, _, err := repository.CreateIssueExport(ctx, "00000000-0000-4000-8000-000000000002", "demo", "csv", []any{"00000000-0000-4000-8000-000000000003"}, false); !errors.Is(err, ErrWorkspaceMissing) {
 		t.Fatalf("CreateIssueExport error = %v, want ErrWorkspaceMissing", err)
 	}
 	var count int
@@ -259,7 +272,7 @@ INSERT INTO project_members(project_id,member_id,is_active,deleted_at) VALUES
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, _, _, projects, err := repository.CreateIssueExport(ctx, "00000000-0000-4000-8000-000000000002", "demo", "csv", nil)
+	_, _, _, projects, err := repository.CreateIssueExport(ctx, "00000000-0000-4000-8000-000000000002", "demo", "csv", nil, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -276,14 +289,14 @@ func TestHistoryExcludesSoftDeletedExporterRows(t *testing.T) {
 			return err
 		}
 		defer connection.Close(context.WithoutCancel(ctx))
-		_, err = connection.Exec(ctx, `
+		_, err = connection.Exec(ctx, historyVisibilityFixtureDDL+`
 CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text NOT NULL, deleted_at timestamptz);
 CREATE TABLE users (id uuid PRIMARY KEY, first_name text, last_name text, display_name text, avatar text, avatar_asset_id uuid, is_bot boolean);
 CREATE TABLE exporters (
   id uuid PRIMARY KEY, created_at timestamptz NOT NULL, updated_at timestamptz NOT NULL,
   type text NOT NULL, workspace_id uuid NOT NULL, project uuid[], provider text NOT NULL,
   status text NOT NULL, reason text NOT NULL, key text NOT NULL, url text, initiated_by_id uuid,
-  token text NOT NULL, created_by_id uuid, updated_by_id uuid, deleted_at timestamptz
+  token text NOT NULL, created_by_id uuid, updated_by_id uuid, deleted_at timestamptz, rich_filters jsonb
 );
 INSERT INTO workspaces(id,slug) VALUES ('00000000-0000-4000-8000-000000000001','demo');
 INSERT INTO exporters(id,created_at,updated_at,type,workspace_id,project,provider,status,reason,key,url,initiated_by_id,token,created_by_id,updated_by_id,deleted_at) VALUES
@@ -309,7 +322,7 @@ INSERT INTO exporters(id,created_at,updated_at,type,workspace_id,project,provide
 	if err != nil {
 		t.Fatal(err)
 	}
-	data, err := repository.History(ctx, "demo", djangoapi.Query{Params: map[string]string{"per_page": "20", "cursor": "20:1:0", "order_by": "-created_at"}})
+	data, err := repository.History(ctx, "00000000-0000-4000-8000-000000000002", "demo", djangoapi.Query{Params: map[string]string{"per_page": "20", "cursor": "20:1:0", "order_by": "-created_at"}})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -59,7 +59,7 @@ export function installLocalLogging(service: string): () => void {
   const originalOpen = XMLHttpRequest.prototype.open;
   // oxlint-disable-next-line unbound-method -- Store the original method for restoration; invocation supplies its XHR receiver.
   const originalSend = XMLHttpRequest.prototype.send;
-  const requestUrls = new WeakMap<XMLHttpRequest, string>();
+  const requests = new WeakMap<XMLHttpRequest, { url: string; method: string }>();
   const originalError = console.error;
   const originalWarn = console.warn;
   const queue: object[] = [];
@@ -125,7 +125,7 @@ export function installLocalLogging(service: string): () => void {
     }
   };
 
-  const failedRequest = (url: string, status: number) => {
+  const failedRequest = (url: string, status: number, method: string, started: number, requestId?: string | null) => {
     let parsed: URL;
     try {
       parsed = new URL(url, window.location.href);
@@ -134,7 +134,29 @@ export function installLocalLogging(service: string): () => void {
     }
     if (parsed.origin !== window.location.origin || parsed.pathname === endpoint) return;
     if (status === 0 || status >= 400) {
-      report("HTTP request failed", { "http.response.status_code": status, "http.request.path": parsed.pathname });
+      const normalizedMethod = method.toUpperCase();
+      // Only canonical correlation IDs and standard methods belong in diagnostics.
+      // Neither custom method strings nor arbitrary response header contents are safe.
+      const safeRequestId = requestId?.match(/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i)?.[0];
+      report("HTTP request failed", {
+        "http.response.status_code": status,
+        "http.request.path": parsed.pathname,
+        "http.request.method": [
+          "GET",
+          "POST",
+          "PUT",
+          "PATCH",
+          "DELETE",
+          "HEAD",
+          "OPTIONS",
+          "CONNECT",
+          "TRACE",
+        ].includes(normalizedMethod)
+          ? normalizedMethod
+          : "OTHER",
+        duration_ms: Math.max(0, Math.round(performance.now() - started)),
+        ...(safeRequestId ? { request_id: safeRequestId.toLowerCase() } : {}),
+      });
     }
   };
   const previousQueryReporter = queryReporter;
@@ -158,12 +180,14 @@ export function installLocalLogging(service: string): () => void {
   window.fetch = async (...args: Parameters<typeof window.fetch>) => {
     const input = args[0];
     const url = input instanceof Request ? input.url : String(input);
+    const method = args[1]?.method ?? (input instanceof Request ? input.method : "GET");
+    const started = performance.now();
     try {
       const response = await originalFetch.apply(window, args);
-      failedRequest(url, response.status);
+      failedRequest(url, response.status, method, started, response.headers.get("X-Request-ID"));
       return response;
     } catch (error) {
-      if (!(error instanceof DOMException && error.name === "AbortError")) failedRequest(url, 0);
+      if (!(error instanceof DOMException && error.name === "AbortError")) failedRequest(url, 0, method, started);
       throw error;
     }
   };
@@ -176,16 +200,25 @@ export function installLocalLogging(service: string): () => void {
     password?: string | null
   ) {
     originalOpen.call(this, method, url, async, username, password);
-    requestUrls.set(this, String(url));
+    requests.set(this, { url: String(url), method });
   };
   // oxlint-disable-next-line no-extend-native -- Development instrumentation covers all Axios instances and is restored on disposal.
   XMLHttpRequest.prototype.send = function (body) {
+    const started = performance.now();
+    const request = requests.get(this);
     let aborted = false;
     const markAborted = () => {
       aborted = true;
     };
     const onLoadEnd = () => {
-      if (!aborted) failedRequest(this.responseURL || requestUrls.get(this) || "", this.status);
+      if (!aborted)
+        failedRequest(
+          this.responseURL || request?.url || "",
+          this.status,
+          request?.method || "GET",
+          started,
+          this.getResponseHeader("X-Request-ID")
+        );
       this.removeEventListener("abort", markAborted);
     };
     this.addEventListener("abort", markAborted, { once: true });

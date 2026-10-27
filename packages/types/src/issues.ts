@@ -117,6 +117,8 @@ export interface ViewFlags {
 }
 
 export type GroupByColumnTypes =
+  | `parent_type_${string}`
+  | `customproperty_${string}`
   | "type_id"
   | "project"
   | "cycle"

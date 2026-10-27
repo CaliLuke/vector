@@ -40,6 +40,7 @@ function ActiveLoader(props: { layout: EIssueLayoutTypes }) {
 }
 
 interface Props {
+  allowEmptyGroups?: boolean;
   children: string | React.ReactNode | React.ReactNode[];
   layout: EIssueLayoutTypes;
   readState: {
@@ -79,7 +80,7 @@ export function IssueLayoutHOC(props: Props) {
       </output>
     );
 
-  if (issueCount === 0 && layout !== EIssueLayoutTypes.CALENDAR) {
+  if (issueCount === 0 && layout !== EIssueLayoutTypes.CALENDAR && !props.allowEmptyGroups) {
     return <IssueLayoutEmptyState storeType={storeType} />;
   }
 

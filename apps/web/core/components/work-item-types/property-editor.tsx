@@ -1,3 +1,5 @@
+import type { PropertySaveReceipt } from "./library-persistence";
+import { IconPicker } from "./icon-picker";
 import { FormulaEditor, type FormulaPersistence } from "./formula-editor";
 import { PropertyDefaultInput } from "./property-default-input";
 import { useState } from "react";
@@ -17,13 +19,15 @@ export function PropertyEditor({
   members,
   onSave,
   formula,
+  onCreated,
 }: {
   property?: PreviewProperty;
   onClose: () => void;
   library?: Pick<PreviewContent, "types" | "properties"> & Partial<Pick<PreviewContent, "projects">>;
   formula?: FormulaPersistence;
   members?: { id: string; name: string }[];
-  onSave?: (property: PreviewProperty, creating: boolean) => Promise<void>;
+  onSave?: (property: PreviewProperty, creating: boolean) => Promise<PropertySaveReceipt | void>;
+  onCreated?: (property: PreviewProperty, revision?: number) => void;
 }) {
   const { content: previewContent, setContent, announce } = useTypePreview();
   const content = library ?? previewContent;
@@ -71,8 +75,8 @@ export function PropertyEditor({
         id: value.id,
         name: value.name.trim(),
       };
-      if (onSave) await onSave(saved, !property);
-      else
+      const accepted = onSave ? await onSave(saved, !property) : undefined;
+      if (!onSave)
         setContent((current) => ({
           ...current,
           properties: property
@@ -81,6 +85,7 @@ export function PropertyEditor({
         }));
       announce(`${saved.name} ${property ? "updated" : "created"}.`);
       onClose();
+      if (!property) onCreated?.(accepted?.property ?? saved, accepted?.revision);
     },
   });
   const value = useStore(form.store, (state) => state.values);
@@ -166,6 +171,19 @@ export function PropertyEditor({
           <p className="text-13 font-medium">Options</p>
           {value.options.map((option, index) => (
             <div key={option.id} className="flex items-center gap-2">
+              <IconPicker
+                label={`Choose icon for option ${index + 1}`}
+                value={option.icon ?? ""}
+                trigger={<PropertyIcon kind="Dropdown" icon={option.icon} />}
+                disabled={submitting || property?.used}
+                allowClear
+                onChange={(icon) =>
+                  form.setFieldValue(
+                    "options",
+                    value.options.map((item) => (item.id === option.id ? { ...item, icon } : item))
+                  )
+                }
+              />
               <input
                 aria-label={`Option ${index + 1}`}
                 className={inputStyle}
@@ -423,17 +441,29 @@ export function PropertyEditor({
         className="space-y-5"
       >
         <fieldset disabled={submitting} className="space-y-5">
-          <Field label="Title">
-            {(id) => (
-              <input
-                id={id}
-                className={inputStyle}
-                value={value.name}
-                placeholder="e.g. Severity"
-                onChange={(event) => form.setFieldValue("name", event.target.value)}
-              />
-            )}
-          </Field>
+          <div className="flex items-end gap-3">
+            <IconPicker
+              label="Choose property icon"
+              value={value.icon ?? ""}
+              disabled={submitting}
+              trigger={<PropertyIcon kind={value.kind} icon={value.icon} />}
+              allowClear
+              onChange={(icon) => form.setFieldValue("icon", icon)}
+            />
+            <div className="min-w-0 flex-1">
+              <Field label="Title">
+                {(id) => (
+                  <input
+                    id={id}
+                    className={inputStyle}
+                    value={value.name}
+                    placeholder="e.g. Severity"
+                    onChange={(event) => form.setFieldValue("name", event.target.value)}
+                  />
+                )}
+              </Field>
+            </div>
+          </div>
           <Field label="Description">
             {(id) => (
               <textarea

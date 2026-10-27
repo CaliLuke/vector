@@ -51,6 +51,8 @@ type Repository struct {
 	propertyFilter           *issuequery.PreparedPropertyFilter
 	propertyPredicates       map[int]*workitemtypes.ScopedPropertyPredicate
 	propertyDiscovery        *workitemtypes.PropertyDiscoverySnapshot
+	propertyGroups           map[string]*workitemtypes.DiscoveryProperty
+	parentGrouping           *parentGrouping
 	typeDiscovery            *workitemtypes.TypeIdentityCatalog
 	db                       Database
 	publisher                Publisher

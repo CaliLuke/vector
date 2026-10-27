@@ -31,6 +31,7 @@ import { IssueArchiveService } from "@/services/issue/issue_archive.service";
 import { UserService } from "@/services/user.service";
 import { WorkspaceService } from "@/services/workspace.service";
 import { processIssueResponse } from "@/helpers/issue-list/response";
+import { hasCustomPropertyFilter, nextFormulaClockBoundary } from "./work-item-clock";
 
 const issueListCacheGcTime = 5 * 60_000;
 
@@ -307,6 +308,7 @@ export function issueListGroups(response: TIssuesResponse): IssueListGroup[] {
 export function issueListOptions(read: IssueListRead) {
   const queryKey = issueListKeys.list(read);
   const { scope, request, pagination } = read;
+  const clockSensitive = hasCustomPropertyFilter(request.input.richFilters);
   return queryOptions<IssueListReadData>({
     queryKey,
     queryFn: parentScopeReady(scope)
@@ -325,7 +327,9 @@ export function issueListOptions(read: IssueListRead) {
       : skipToken,
     gcTime: issueListCacheGcTime,
     retry: false,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: clockSensitive ? "always" : false,
+    refetchInterval: clockSensitive ? nextFormulaClockBoundary : false,
+    refetchIntervalInBackground: false,
   });
 }
 

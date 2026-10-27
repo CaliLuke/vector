@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { CustomPropertyGrouping } from "./custom-property-grouping";
 import React, { useState } from "react";
 
 import { ISSUE_GROUP_BY_OPTIONS } from "@plane/constants";
@@ -14,6 +15,7 @@ import { FilterHeader, FilterOption } from "@/components/issues/issue-layouts/fi
 // constants
 
 type Props = {
+  isEpic?: boolean;
   displayFilters: IIssueDisplayFilterOptions;
   handleUpdate: (val: TIssueGroupByOptions) => void;
   subGroupByOptions: TIssueGroupByOptions[];
@@ -54,6 +56,12 @@ export const FilterSubGroupBy = function FilterSubGroupBy(props: Props) {
               />
             );
           })}
+          <CustomPropertyGrouping
+            displayFilters={displayFilters}
+            axis="sub_group_by"
+            isEpic={props.isEpic}
+            onChange={handleUpdate}
+          />
         </div>
       )}
     </>

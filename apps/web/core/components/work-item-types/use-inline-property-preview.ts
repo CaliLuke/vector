@@ -1,3 +1,4 @@
+import { nextFormulaClockBoundary } from "@/queries/work-item-clock";
 import { captureVisibleItemRead } from "@/queries/work-item-access";
 import { useMemo } from "react";
 import { skipToken, useQuery } from "@tanstack/react-query";
@@ -55,8 +56,9 @@ export function useInlinePropertyPreview(
         : skipToken,
     retry: false,
     gcTime: 0,
-    refetchOnWindowFocus: false,
-    refetchInterval: hasFormulas ? 60_000 : false,
+    refetchOnWindowFocus: hasFormulas ? "always" : false,
+    refetchOnMount: hasFormulas ? "always" : true,
+    refetchInterval: hasFormulas ? nextFormulaClockBoundary : false,
   });
   return {
     computed: body === debounced ? query.data?.computed : undefined,

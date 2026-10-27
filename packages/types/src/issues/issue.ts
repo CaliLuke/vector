@@ -129,6 +129,7 @@ export type TIssueResponseResults =
     };
 
 export type TIssuesResponse = {
+  parent_groups?: { id: string; name: string; project_id: string; identifier: string }[];
   grouped_by: string;
   next_cursor: string;
   prev_cursor: string;

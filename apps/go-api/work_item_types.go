@@ -103,7 +103,7 @@ func (s *workItemTypesService) run(ctx context.Context, slug, action, id string,
 		result, err = s.repository.Mutate(ctx, actor, slug, action, id, input)
 	}
 	if err != nil {
-		return nil, typeServiceError(err)
+		return nil, typeServiceError(ctx, "work_item_types."+typeOperation(action), err)
 	}
 	out := &api.Catalog{Enabled: result.Enabled, CanManage: result.CanManage, Revision: result.Revision, ProjectCount: result.ProjectCount, Types: make([]*api.WorkItemType, 0, len(result.Types))}
 	for _, item := range result.Types {
@@ -112,14 +112,30 @@ func (s *workItemTypesService) run(ctx context.Context, slug, action, id string,
 	return out, nil
 }
 
-func typeServiceError(err error) error {
+func typeServiceError(ctx context.Context, operation string, err error) error {
 	var failure *store.Error
 	if errors.As(err, &failure) {
+		if failure.Status >= 500 {
+			workItemLogError(ctx, operation, "execute", err)
+		}
 		out := &api.TypeError{Kind: "status_" + strconv.Itoa(failure.Status), Message: failure.Message}
 		if failure.ReviewAgain {
 			out.ReviewAgain = &failure.ReviewAgain
 		}
 		return out
 	}
+	workItemLogError(ctx, operation, "execute", err)
 	return &api.TypeError{Kind: "status_500", Message: "Work item types could not be saved or loaded. Please try again."}
+}
+
+// Only canonical command names enter telemetry; never echo arbitrary input.
+func typeOperation(action string) string {
+	switch action {
+	case "":
+		return "catalog"
+	case "create", "update", "delete", "enable", "attach", "detach", "set_default", "import", "remove":
+		return action
+	default:
+		return "unknown"
+	}
 }

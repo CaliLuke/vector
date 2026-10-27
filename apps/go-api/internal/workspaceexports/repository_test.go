@@ -74,7 +74,7 @@ func TestCreateIssueExportStoresCanonicalUUIDsAndReturnsOriginalTaskValues(t *te
 		t.Fatal(err)
 	}
 	original := []any{json.Number("123"), "123e4567-e89b-12d3-a456-426614174000", nil}
-	_, _, _, queuedProjects, err := repository.CreateIssueExport(context.Background(), "00000000-0000-4000-8000-000000000002", "demo", "csv", original)
+	_, _, _, queuedProjects, err := repository.CreateIssueExport(context.Background(), "00000000-0000-4000-8000-000000000002", "demo", "csv", original, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -104,7 +104,7 @@ func TestCreateIssueExportRejectsMalformedUUIDBeforeInsert(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, _, _, _, err := repository.CreateIssueExport(context.Background(), "user", "demo", "csv", []any{"not-a-uuid"}); err == nil {
+	if _, _, _, _, err := repository.CreateIssueExport(context.Background(), "user", "demo", "csv", []any{"not-a-uuid"}, false); err == nil {
 		t.Fatal("malformed UUID unexpectedly accepted")
 	}
 	if len(database.queries) != 1 {

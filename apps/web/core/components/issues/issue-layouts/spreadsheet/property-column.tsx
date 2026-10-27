@@ -27,8 +27,20 @@ export function PropertyColumn({ issue, field, onEdit, disabled }: Props) {
           <PropertyCellValue field={field} projection={projection} />
         </button>
       ) : (
-        <div className="truncate">
-          <PropertyCellValue field={field} projection={projection} />
+        <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1 truncate">
+            <PropertyCellValue field={field} projection={projection} />
+          </div>
+          {canEdit && (
+            <button
+              type="button"
+              className="clickable shrink-0 rounded px-1 text-12 text-secondary hover:bg-layer-2 focus-visible:outline-2 focus-visible:outline-accent-strong"
+              aria-label={`Edit ${field.name} for ${issue.name}`}
+              onClick={() => onEdit(issue)}
+            >
+              Edit
+            </button>
+          )}
         </div>
       )}
     </td>

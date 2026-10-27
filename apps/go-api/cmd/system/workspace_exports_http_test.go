@@ -24,11 +24,11 @@ func (r *exportMountRepository) Authorized(context.Context, string, string) (boo
 func (*exportMountRepository) UserEmail(context.Context, string) (string, error) {
 	return "test@example.com", nil
 }
-func (r *exportMountRepository) CreateIssueExport(context.Context, string, string, string, []any) (json.RawMessage, string, string, []any, error) {
+func (r *exportMountRepository) CreateIssueExport(context.Context, string, string, string, []any, bool) (json.RawMessage, string, string, []any, error) {
 	r.creates++
 	return json.RawMessage(`{"message":"export queued"}`), "workspace-id", "export-token", []any{"project-id"}, nil
 }
-func (r *exportMountRepository) History(context.Context, string, djangoapi.Query) (json.RawMessage, error) {
+func (r *exportMountRepository) History(context.Context, string, string, djangoapi.Query) (json.RawMessage, error) {
 	r.reads++
 	return json.RawMessage(`{"results":[]}`), nil
 }

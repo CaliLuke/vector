@@ -1,6 +1,6 @@
 import type { IIssueDisplayProperties, IIssueDisplayFilterOptions } from "@plane/types";
 import { useWorkItemTableCatalog } from "@/hooks/use-work-item-table-catalog";
-import { OptionIcon } from "@/components/work-item-types/property-option-label";
+import { PropertyIcon } from "@/components/work-item-types/property-icon";
 
 export function CustomPropertyColumns({
   displayProperties,
@@ -39,7 +39,7 @@ export function CustomPropertyColumns({
             className={`rounded-sm border px-2 py-0.5 text-11 ${displayProperties[field.key] ? "border-accent-strong bg-accent-primary text-on-color" : "border-subtle hover:bg-layer-1"}`}
             onClick={() => onChange({ [field.key]: !displayProperties[field.key] })}
           >
-            <OptionIcon icon={field.icon} />
+            <PropertyIcon kind={field.kind} icon={field.icon} />
             {field.name}
           </button>
         ))}

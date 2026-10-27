@@ -1,6 +1,7 @@
 # Work item types: UI and behavior specification
 
-Status: UI-first design for review. Researched 2026-10-24.
+Status: production behavior contract, revised after documentation parity audit on
+2026-10-26. Original research: 2026-10-24.
 
 This specifies Vector's workspace-managed work item types, including all eleven
 property kinds, formulas, contexts, and hierarchy. The first implementation
@@ -21,6 +22,109 @@ migrations, or endpoint payloads.
 This is an independently authored product contract, not a claim that the paid
 implementation or its private API has been inspected. Sources are listed at the
 end. Source references such as [W] resolve there.
+
+## Observability contract — 2026-10-26
+
+Development and regression testing use the same local Logal collector and native
+Go OTLP traces. Diagnostic acceptance includes persisted records, not only console
+output or mocked logger calls.
+
+- Failed same-origin fetch/XHR requests record a path without query parameters,
+  HTTP status, allowlisted method, monotonic elapsed milliseconds, and the
+  server's UUID-validated `X-Request-ID` when available. Request IDs join browser
+  failures to server logs; backend logs retain native trace/span IDs.
+- Expected cancellation remains quiet. Native Query does not duplicate transport
+  failures. Bodies, response data, arbitrary console objects, query keys, mutation
+  variables, credentials and arbitrary request-header contents are excluded.
+- Unexpected work-item type/property service failures record a stable operation,
+  error classification and safe database metadata through the existing reporter;
+  raw error text and property values stay out of logs and client responses.
+  Expected validation/conflict responses retain their existing API semantics and
+  are not reported as infrastructure failures.
+- Property command spans carry an allowlisted action for successes and failures.
+  The HTTP span supplies status/duration. Fine-grained domain validation codes are
+  not implemented and must not be implied by the diagnostic coverage claim.
+- `pnpm dev:check-logs` must find the current proxy-ingested marker and a server
+  error log with its matching error span. Queries use the probe's exact received
+  cutoff and a bounded 15-second query deadline for concurrent dev/test workloads.
+  Tests assert correlation, command classification, timing, cancellation,
+  deduplication, privacy and matching-log/span requirements.
+- Inspect logs only through `pnpm dev:logs`, `pnpm dev:errors`, and
+  `pnpm dev:traces`; never query the collector's live SQLite file from the host.
+
+## Parity corrections and explicit boundaries — 2026-10-26
+
+The source audit found missing controls and differences that the previous
+acceptance checklist did not catch. The contracts in this section take precedence
+where earlier prose is less specific. Completion requires reachable UI, durable
+save/reload and consistent rendering, not merely a field in an API payload.
+
+### Appearance and configuration transitions
+
+Property definitions own their icon identifier. Dropdown options own independent
+icon identifiers. Both use the existing searchable icon catalog, an anchored
+scrollable sheet and keyboard selection; neither introduces a separate icon-name
+text field. Property/option icons do not acquire a new color setting: their stored
+contract contains an icon only. The type editor keeps its existing icon/color UI.
+An empty or unrecognized property icon renders the kind default; an empty or unrecognized option
+icon renders no ornament. Editing unrelated fields retains unknown stored icon
+identifiers until the user explicitly chooses a replacement. Read-only surfaces
+show the same saved identifier as the editor and library. Used-property structure
+locks still prevent changing dropdown option metadata, including icons.
+
+| Transition                                             | Accepted behavior                                                                                                                                                      | Rejected behavior / retained state                                                                                   |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Choose a property or option icon                       | Draft updates immediately; successful save persists the identifier; reopen and consumers render it                                                                     | Failed save keeps the draft and selection; Cancel does not mutate persisted data                                     |
+| Create a Cascading property                            | After the successful creation receipt, open its options manager using that saved identity and accepted catalog revision; Skip/close leaves the saved definition intact | Failed creation stays in the creation form; closing options never recreates or deletes the definition                |
+| Change an unused Text property's kind                  | Allow conversion through the existing definition validator with valid target configuration                                                                             | Retain immutable identity/internal name; reject kind changes once used; Text-to-Text format changes remain forbidden |
+| Open a new-item type picker                            | Offer only available types eligible under the current parent/hierarchy                                                                                                 | Hide invalid choices; do not silently replace an explicit selection that became invalid                              |
+| Edit an existing item with a retained unavailable type | Keep its selected type recognizable; allow ordinary edits and only eligible replacement choices                                                                        | Do not retype automatically or offer that unavailable type for a new item                                            |
+
+Library property rows, attachment rows, item field labels, native creation fields,
+and discovery/table selectors consume the saved property icon. Dropdown option
+pickers and selected-value displays consume the saved option icon. Kind selection
+continues to use the kind glyph rather than the property's customized appearance.
+The existing definition/option fields and adapter remain the source of truth; no
+schema, generated transport or alternate icon metadata is required.
+
+### Table and archived read-only access
+
+Editable URL cells expose a separate, keyboard-accessible Edit action beside any
+safe external link. An empty URL cell also opens editing. Opening a link must not
+start editing, and editing must not navigate. Existing item permissions and the
+coordinated property editor govern saves; formula/read-only cells do not gain edit
+actions. Failed saves retain values through the same native editor contract.
+
+Archiving disables mutations, not authorized reading. Full-screen, side and modal
+peek retain pointer/keyboard access to custom property history and safe links.
+History browsing remains available where the user can read the item; restoration
+and all editors remain disabled when the item is archived or otherwise read-only.
+Individual mutation controls enforce this state rather than an inert whole sidebar.
+
+### Deliberate boundaries where documentation is ambiguous
+
+These are explicit Vector policies, not claims about undocumented paid behavior:
+
+- Member choices list workspace members, but storing a selection and subscribing
+  both require the selected member's existing project/item access. Ineligible
+  recipients remain visibly unavailable; selecting a member never grants access.
+  Projectless private drafts may retain workspace-member selections without
+  subscribing anyone. Destination selection/publication applies the existing
+  destination access validation before any subscription or published save.
+- Merely visiting hierarchy does not enable it. Saving an all-Level-0 configuration
+  explicitly enables a leaf-only hierarchy. Any existing invalid links require the
+  same counted impact review and exact confirmation as other hierarchy edits.
+- Custom-value columns and inline editors currently belong to Table. List/Board
+  custom-value display/editing, custom sorting, and custom grouping/columns on
+  profile/archive surfaces remain deferred pending a separate contract. Existing
+  type display/grouping and custom filtering retain their specified coverage.
+  The application must not present these deferred capabilities as available.
+
+Proof must cover icon authoring through consumers and failed-save retention,
+creation-to-options identity continuity, both sides of the Text conversion rule,
+type choice visibility with retained current selections, URL edit/link separation,
+and history read access without enabling archived mutations. Existing authorization,
+required-value validation, preservation and revision checks continue to apply.
 
 ## Product scope and intended experience
 
@@ -623,6 +727,19 @@ saved views, and authorized exports. Search includes sanitized rich-text content
 under item permissions. Public project projections must not start exposing custom
 fields implicitly; external/public visibility requires its own explicit contract.
 
+Export decision: the existing workspace export form has an explicit **Include
+custom properties** option when work-item types are enabled. Standard exports keep
+their existing fields. Custom CSV/XLSX exports include type identity and stable-ID
+property columns; cascading catalogs have separate level columns. JSON also keeps
+canonical typed values, statuses, schema revision and evaluation time. Empty,
+not-applicable and formula-error values remain distinct. All selected projects use
+one authorized snapshot and one formula evaluation time, including multi-file
+exports. Only the requester can retrieve a custom export through history, and
+current workspace, selected-project and recorded-item visibility are rechecked.
+Previously downloaded files and issued expiring download URLs are snapshots;
+history filtering does not revoke copies already issued. Public projections remain
+unchanged.
+
 Search decision: authenticated workspace, entity, and project relationship search
 match case-insensitive literal substrings in sanitized **current** rich-text field
 values. `%`, `_`, and backslashes are literal input. A result may include one
@@ -668,24 +785,25 @@ remain unchanged merely by visiting the prototype. Enabling the eventual feature
 must preserve existing types/properties and their identities; conflicting legacy
 names require an explicit resolution preview, not silent merging.
 
-## Decisions still requiring resolution
+## Adopted Vector decisions
 
-These gaps do not block placeholder screens. They do block claiming complete
-production parity. Proposed controls and states must stay visible during review.
+The source documentation leaves the following behavior unspecified or ambiguous.
+The contracts below are the adopted Vector behavior, with implementation evidence
+tracked in `work-item-types-completion.md`; they do not claim undocumented paid-version parity.
 
-| Question                          | Evidence / uncertainty                                                                                     | Prototype and proposed direction                                                                                                                                                                                                                                            |
+| Question                          | Evidence / uncertainty                                                                                     | Adopted direction                                                                                                                                                                                                                                                           |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Default type versus default level | [T] supports a project default; [W] protects Task and exposes a default-level action without its semantics | Resolved above: explicit choice; otherwise eligible project preference, Task, or sole candidate. Ambiguous/empty remains unselected; saved items never auto-retype                                                                                                          |
 | Workspace type deletion           | [W] requires reassignment; [T] describes retained deleted-type labels                                      | Use explicit replacement/impact UI and workspace rules; do not adopt project tombstone behavior accidentally                                                                                                                                                                |
 | Context override surface          | [W] gives examples, not a complete per-kind override matrix                                                | Use the explicit allowlist above; mark other controls inherited/locked                                                                                                                                                                                                      |
 | Context conflicts                 | No documented tie rule                                                                                     | Reject overlapping equal-specificity contexts; show conflicting scopes before save                                                                                                                                                                                          |
-| Formula precision and time        | No complete grammar, time zone, refresh, rounding, or coercion specification                               | Use the proposed deterministic rules above; verify fixture results before persistence design                                                                                                                                                                                |
+| Formula precision and time        | No complete grammar, time zone, refresh, rounding, or coercion specification                               | Use the deterministic grammar, precision, UTC clock and error rules above; verify them through evaluator and projection regressions                                                                                                                                         |
 | Release catalog integration       | Release picker is included, but a complete releases subsystem was not found in the inspected Vector paths  | Use a real project catalog: members read; project admins manage names, descriptions and optional target dates. Schema revisions and locks protect changes; retained references block deletion. Stable creation IDs support retries. Full release lifecycle remains separate |
 | Rich-text version UX              | [W] promises versioning/search but does not show a custom-field history screen                             | Reuse detail-history conventions with field-specific history and restore; prove access isolation                                                                                                                                                                            |
 | Permanent deletion and history    | [W] describes deleting values but does not specify retention of historical versions and audit payloads     | Retain existing versions/audit records, create no new copies of removed values, and explicitly disclose that current-value removal does not purge history                                                                                                                   |
 | Used-property exceptions          | Generic structural lock conflicts with date/cascading edit instructions                                    | Explicit date-presentation and cascading-migration exceptions; ordinary dropdown structure locked                                                                                                                                                                           |
-| Workspace member eligibility      | [W] says workspace members; [T] says project members                                                       | Workspace model lists workspace members; existing item access limits subscription; show unavailable recipients clearly                                                                                                                                                      |
-| Custom group/filter coverage      | [F] lists common kinds, not Formula/Release/Cascading exhaustively                                         | Show proposed matrix above and label unsupported grouping; no fake controls                                                                                                                                                                                                 |
+| Workspace member eligibility      | [W] says workspace members; [T] says project members                                                       | Workspace model lists workspace members; existing project/item access limits both selection and subscription; show unavailable recipients clearly                                                                                                                           |
+| Custom group/filter coverage      | [F] lists common kinds, not Formula/Release/Cascading exhaustively                                         | Use the explicit grouping/filter matrix above; omit unsupported controls                                                                                                                                                                                                    |
 
 ## Acceptance and proof obligations
 

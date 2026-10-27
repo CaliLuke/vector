@@ -188,3 +188,71 @@ await test("denied restore replaces the entire dialog and removes Back navigatio
   assert.equal(button("Back to history"), undefined);
   assert.equal(document.querySelector("nav"), null);
 });
+
+await test("archived full-screen peek keeps history readable while editing stays disabled", async (t) => {
+  const f = await fixture(t, true);
+  const { ItemPropertyHistory } =
+    await import("../../apps/web/core/components/work-item-types/item-property-history.tsx");
+  globalThis.archivedPeekHistory = ItemPropertyHistory;
+  const viewStubs = {
+    "@/providers/issue-detail-ui-state":
+      "export const useIssueDetailUiState=()=>({setPeekIssue:()=>{},isAnyModalOpen:false});",
+    "@/providers/work-item-detail-record":
+      "export const useWorkItemDetailRecord=()=>({issueId:'item',issue:{id:'item',project_id:'p',archived_at:'2026-10-26'}});",
+    "@/hooks/use-keypress": "export default ()=>{};",
+    "@/hooks/use-peek-overview-outside-click": "export default ()=>{};",
+    "../use-text-save-status":
+      "export const useTextSaveStatus=()=>({status:'saved',setTitleStatus:()=>{},setDescriptionStatus:()=>{}});",
+    "../issue-detail/issue-activity": "export const IssueActivity=()=>null;",
+    "../issue-detail-widgets": `const React=globalThis.historyReact;export const IssueDetailWidgets=({disabled})=>React.createElement('button',{disabled,'data-widget':true},'Add sub-item');`,
+    "./error": "export const IssuePeekOverviewError=()=>null;",
+    "./loader": "export const IssuePeekOverviewLoader=()=>null;",
+    "./issue-detail": "export const PeekOverviewIssueDetails=()=>null;",
+    "./header": `const React=globalThis.historyReact;export const IssuePeekOverviewHeader=({setPeekMode})=>React.createElement('button',{onClick:()=>setPeekMode('full-screen')},'Full screen');`,
+    "./properties": `const React=globalThis.historyReact;export const PeekOverviewProperties=props=>React.createElement(globalThis.archivedPeekHistory,props);`,
+  };
+  const hooks = registerHooks({
+    resolve: (specifier, context, next) =>
+      context.parentURL?.endsWith("/peek-overview/view.tsx")
+        ? resolvePackageStub(specifier, viewStubs, context, next)
+        : next(specifier, context),
+  });
+  t.after(() => {
+    hooks.deregister();
+    delete globalThis.archivedPeekHistory;
+  });
+  const { IssueView } = await import("../../apps/web/core/components/issues/peek-overview/view.tsx");
+  await f.env.render(
+    React.createElement(
+      QueryClientProvider,
+      { client: f.client },
+      React.createElement(IssueView, {
+        workspaceSlug: "acme",
+        projectId: "p",
+        issueId: "item",
+        is_archived: true,
+        issueOperations: {},
+      })
+    )
+  );
+  assert.equal(document.querySelector("[data-widget]").disabled, true);
+  await act(async () => button("Full screen").click());
+  const history = button("Property history");
+  assert.ok(history);
+  assert.equal(
+    history.closest(".pointer-events-none"),
+    null,
+    "read-only history must not have an inert sidebar ancestor"
+  );
+  assert.equal(
+    document.querySelector("[data-widget]").disabled,
+    true,
+    "full-screen widgets must preserve archived restrictions"
+  );
+  await act(async () => history.click());
+  await settle();
+  assert.ok(document.querySelector('[role="dialog"]'));
+  assert.match(document.body.textContent, /Content v2/);
+  assert.equal(button("Restore this revision"), undefined, "archived history cannot offer restoration");
+  assert.equal(f.editSource.mock.callCount(), 0);
+});

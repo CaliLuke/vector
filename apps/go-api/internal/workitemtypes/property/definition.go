@@ -98,7 +98,7 @@ func ValidateDefinition(def Definition, previous *Definition, used bool) error {
 		if def.ID != previous.ID || def.Name != previous.Name {
 			return fmt.Errorf("property identity and internal name cannot change")
 		}
-		if previous.Kind == Text && (def.Kind != Text || def.Configuration.Format != previous.Configuration.Format) {
+		if previous.Kind == Text && def.Kind == Text && def.Configuration.Format != previous.Configuration.Format {
 			return fmt.Errorf("text format cannot change after creation")
 		}
 		if used && (def.Kind != previous.Kind || def.Configuration.Multiple != previous.Configuration.Multiple || def.Kind == Dropdown && !reflect.DeepEqual(def.Configuration.Options, previous.Configuration.Options)) {

@@ -26,7 +26,7 @@ func (s *workItemTypesService) projectReleases(ctx context.Context, slug, projec
 		catalog, err = s.repository.MutateReleaseCatalog(ctx, actor, slug, project, *input)
 	}
 	if err != nil {
-		return nil, typeServiceError(err)
+		return nil, typeServiceError(ctx, "work_item_types.releases", err)
 	}
 	out := &api.ReleaseCatalog{Revision: catalog.Revision, ProjectName: catalog.ProjectName, CanManage: catalog.CanManage, Releases: make([]*api.ProjectRelease, 0, len(catalog.Releases))}
 	for _, item := range catalog.Releases {

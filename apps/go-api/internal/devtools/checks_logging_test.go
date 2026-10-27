@@ -71,7 +71,7 @@ printf '%s\n' "$LOGAL_TEST_RESPONSE"
 			}
 			for _, want := range []string{
 				"logs --service plane-logging-check --since " + cutoff.Format(time.RFC3339Nano),
-				"--time received --json --details",
+				"--time received --json --details --timeout 15s",
 			} {
 				if !strings.Contains(string(calls), want) {
 					t.Errorf("query arguments missing %q: %s", want, calls)
@@ -84,6 +84,7 @@ printf '%s\n' "$LOGAL_TEST_RESPONSE"
 func TestHasLocalGoErrorTraceRequiresErrorLogAndMatchingErrorSpan(t *testing.T) {
 	const traceID = "0123456789abcdef0123456789abcdef"
 	const spanID = "0123456789abcdef"
+	cutoff := time.Date(2026, time.October, 26, 23, 0, 0, 123456789, time.UTC)
 
 	tests := []struct {
 		name       string
@@ -142,7 +143,7 @@ esac
 			t.Setenv("LOGAL_TEST_LOGS", test.logs)
 			t.Setenv("LOGAL_TEST_SPANS", test.spans)
 
-			got, err := hasLocalGoErrorTrace(context.Background(), root, traceID)
+			got, err := hasLocalGoErrorTrace(context.Background(), root, traceID, cutoff)
 			if err != nil {
 				t.Fatalf("hasLocalGoErrorTrace() error = %v", err)
 			}
@@ -156,8 +157,8 @@ esac
 			}
 			text := string(calls)
 			for _, want := range []string{
-				"logs --service plane-go-api --trace-id " + traceID + " --json --level error",
-				"spans --service plane-go-api --trace-id " + traceID + " --json",
+				"logs --service plane-go-api --trace-id " + traceID + " --json --since " + cutoff.Format(time.RFC3339Nano) + " --time received --timeout 15s --level error",
+				"spans --service plane-go-api --trace-id " + traceID + " --json --since " + cutoff.Format(time.RFC3339Nano) + " --time received --timeout 15s",
 			} {
 				if !strings.Contains(text, want) {
 					t.Errorf("query arguments missing %q: %s", want, text)

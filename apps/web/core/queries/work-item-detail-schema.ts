@@ -4,6 +4,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { captureItemReadScope } from "./work-item-read-scope";
 import type { TProjectRosterScope } from "./member-rosters";
 import { workItemSchemaService } from "@/services/work-item-schema.service";
+import { nextFormulaClockBoundary } from "./work-item-clock";
 
 type Scope = TProjectRosterScope & { issueId: string; generation: number; refreshVersion?: string };
 
@@ -56,7 +57,7 @@ export function itemDetailSchemaOptions(scope: Scope) {
       query.state.data?.properties.some(
         (field) => field.kind === "Formula" && /\b(?:NOW|TODAY)\s*\(/i.test(field.configuration.expression)
       )
-        ? 60_000
+        ? nextFormulaClockBoundary()
         : false,
   });
 }

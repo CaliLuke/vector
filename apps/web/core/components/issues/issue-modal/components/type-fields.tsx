@@ -38,18 +38,18 @@ export function IssueTypeSelect({
             {selected?.name ?? (value ? "Unavailable type" : "Select type")}
           </button>
         }
-        options={fields.choicesQuery.data.types.map((type) => ({
-          value: type.id,
-          query: type.name,
-          disabled: !type.available || !fields.schema || !fields.schema.eligible_type_ids.includes(type.id),
-          content: (
-            <span className="flex items-center gap-2">
-              <TypeIcon type={type} />
-              {type.name}
-              {!type.available && <span className="text-tertiary">Unavailable</span>}
-            </span>
-          ),
-        }))}
+        options={fields.choicesQuery.data.types
+          .filter((type) => type.available && fields.schema?.eligible_type_ids.includes(type.id))
+          .map((type) => ({
+            value: type.id,
+            query: type.name,
+            content: (
+              <span className="flex items-center gap-2">
+                <TypeIcon type={type} />
+                {type.name}
+              </span>
+            ),
+          }))}
       />
       {!value && fields.schema?.selection_reason && (
         <p className="mt-1 text-12 text-secondary">{fields.schema.selection_reason}</p>

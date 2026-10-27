@@ -44,7 +44,7 @@ func (r *Repository) UserEmail(ctx context.Context, userID string) (string, erro
 
 // CreateIssueExport stores values using Django UUIDField coercion while
 // returning the original request values for the background task payload.
-func (r *Repository) CreateIssueExport(ctx context.Context, userID, slug, provider string, projects []any) (json.RawMessage, string, string, []any, error) {
+func (r *Repository) CreateIssueExport(ctx context.Context, userID, slug, provider string, projects []any, includeCustom bool) (json.RawMessage, string, string, []any, error) {
 	var workspaceID string
 	if err := r.db.QueryRow(ctx, `SELECT id FROM workspaces WHERE slug=$1 AND deleted_at IS NULL`, slug).Scan(&workspaceID); errors.Is(err, pgx.ErrNoRows) {
 		return nil, "", "", nil, ErrWorkspaceMissing
@@ -65,10 +65,10 @@ func (r *Repository) CreateIssueExport(ctx context.Context, userID, slug, provid
 			projects[i] = project
 		}
 	}
-	return r.createHistory(ctx, userID, workspaceID, provider, projects)
+	return r.createHistory(ctx, userID, workspaceID, provider, projects, includeCustom)
 }
 
-func (r *Repository) createHistory(ctx context.Context, userID, workspaceID, provider string, projects []any) (json.RawMessage, string, string, []any, error) {
+func (r *Repository) createHistory(ctx context.Context, userID, workspaceID, provider string, projects []any, includeCustom bool) (json.RawMessage, string, string, []any, error) {
 	parsedProjects := make([]pgtype.UUID, 0, len(projects))
 	for _, value := range projects {
 		id, err := djangoUUIDArrayValue(value)
@@ -79,7 +79,7 @@ func (r *Repository) createHistory(ctx context.Context, userID, workspaceID, pro
 	}
 	id, token := uuid.New(), strings.ReplaceAll(uuid.NewString(), "-", "")
 	var response []byte
-	err := r.db.QueryRow(ctx, `INSERT INTO exporters (id,created_at,updated_at,type,workspace_id,project,provider,status,reason,key,token,initiated_by_id,created_by_id,updated_by_id,rich_filters) VALUES ($1,clock_timestamp(),clock_timestamp(),'issue_exports',$2,$3,$4,'queued','','',$5,$6,$6,NULL,'{}'::jsonb) RETURNING json_build_object('id',id,'created_at',to_json(created_at),'updated_at',to_json(updated_at),'project',project,'provider',provider,'status',status,'url',url,'initiated_by',initiated_by_id,'initiated_by_detail',(SELECT json_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'avatar',u.avatar,'avatar_url',CASE WHEN u.avatar_asset_id IS NOT NULL THEN '/api/assets/v2/static/'||u.avatar_asset_id::text||'/' ELSE u.avatar END,'is_bot',u.is_bot,'display_name',u.display_name) FROM users u WHERE u.id=initiated_by_id),'token',token,'created_by',created_by_id,'updated_by',updated_by_id)`, id, workspaceID, parsedProjects, provider, token, userID).Scan(&response)
+	err := r.db.QueryRow(ctx, `INSERT INTO exporters (id,created_at,updated_at,type,workspace_id,project,provider,status,reason,key,token,initiated_by_id,created_by_id,updated_by_id,rich_filters) VALUES ($1,clock_timestamp(),clock_timestamp(),'issue_exports',$2,$3,$4,'queued','','',$5,$6,$6,NULL,CASE WHEN $7::boolean THEN '{"include_custom_properties":true}'::jsonb ELSE '{}'::jsonb END) RETURNING json_build_object('id',id,'created_at',to_json(created_at),'updated_at',to_json(updated_at),'project',project,'provider',provider,'status',status,'url',url,'initiated_by',initiated_by_id,'initiated_by_detail',(SELECT json_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'avatar',u.avatar,'avatar_url',CASE WHEN u.avatar_asset_id IS NOT NULL THEN '/api/assets/v2/static/'||u.avatar_asset_id::text||'/' ELSE u.avatar END,'is_bot',u.is_bot,'display_name',u.display_name) FROM users u WHERE u.id=initiated_by_id),'token',token,'created_by',created_by_id,'updated_by',updated_by_id)`, id, workspaceID, parsedProjects, provider, token, userID, includeCustom).Scan(&response)
 	if err != nil {
 		return nil, "", "", nil, err
 	}
@@ -107,7 +107,7 @@ func djangoUUIDArrayValue(value any) (pgtype.UUID, error) {
 	return pgtype.UUID{Bytes: [16]byte(parsed), Valid: true}, nil
 }
 
-func (r *Repository) History(ctx context.Context, slug string, query djangoapi.Query) (json.RawMessage, error) {
+func (r *Repository) History(ctx context.Context, userID, slug string, query djangoapi.Query) (json.RawMessage, error) {
 	limit, page, offset, err := djangoapi.PageWindow(query)
 	if err != nil {
 		return nil, err
@@ -131,7 +131,7 @@ func (r *Repository) History(ctx context.Context, slug string, query djangoapi.Q
 	}
 	_ = page
 	var response []byte
-	err = r.db.QueryRow(ctx, `WITH filtered AS (SELECT e.*,u.first_name,u.last_name,u.display_name,u.avatar,u.avatar_asset_id,u.is_bot FROM exporters e JOIN workspaces w ON w.id=e.workspace_id LEFT JOIN users u ON u.id=e.initiated_by_id WHERE w.slug=$1 AND e.type='issue_exports' AND e.deleted_at IS NULL), totals AS (SELECT count(*)::int total FROM filtered), rows AS (SELECT * FROM filtered ORDER BY `+order+` LIMIT $2 OFFSET $3), result AS (SELECT COALESCE(json_agg(json_build_object('id',id,'created_at',to_json(created_at),'updated_at',to_json(updated_at),'project',project,'provider',provider,'status',status,'url',url,'initiated_by',initiated_by_id,'initiated_by_detail',json_build_object('id',initiated_by_id,'first_name',first_name,'last_name',last_name,'avatar',avatar,'avatar_url',CASE WHEN avatar_asset_id IS NOT NULL THEN '/api/assets/v2/static/'||avatar_asset_id::text||'/' ELSE avatar END,'is_bot',is_bot,'display_name',display_name),'token',token,'created_by',created_by_id,'updated_by',updated_by_id) ORDER BY `+order+`),'[]'::json) results FROM rows) SELECT json_build_object('grouped_by',NULL,'sub_grouped_by',NULL,'total_count',totals.total,'next_cursor',concat($2,':',($3/$2)+1,':0'),'prev_cursor',concat($2,':',($3/$2)-1,':1'),'next_page_results',($3+$2)<totals.total,'prev_page_results',$3>0,'count',json_array_length(result.results),'total_pages',CASE WHEN totals.total=0 THEN 0 ELSE CEIL(totals.total::numeric/$2)::int END,'total_results',totals.total,'extra_stats',NULL,'results',result.results) FROM totals CROSS JOIN result`, slug, limit, offset).Scan(&response)
+	err = r.db.QueryRow(ctx, `WITH filtered AS (SELECT e.*,u.first_name,u.last_name,u.display_name,u.avatar,u.avatar_asset_id,u.is_bot FROM exporters e JOIN workspaces w ON w.id=e.workspace_id LEFT JOIN users u ON u.id=e.initiated_by_id WHERE w.slug=$1 AND e.type='issue_exports' AND e.deleted_at IS NULL AND `+customExportHistoryVisibleSQL+`), totals AS (SELECT count(*)::int total FROM filtered), rows AS (SELECT * FROM filtered ORDER BY `+order+` LIMIT $2 OFFSET $3), result AS (SELECT COALESCE(json_agg(json_build_object('id',id,'created_at',to_json(created_at),'updated_at',to_json(updated_at),'project',project,'provider',provider,'status',status,'url',url,'initiated_by',initiated_by_id,'initiated_by_detail',json_build_object('id',initiated_by_id,'first_name',first_name,'last_name',last_name,'avatar',avatar,'avatar_url',CASE WHEN avatar_asset_id IS NOT NULL THEN '/api/assets/v2/static/'||avatar_asset_id::text||'/' ELSE avatar END,'is_bot',is_bot,'display_name',display_name),'token',token,'created_by',created_by_id,'updated_by',updated_by_id) ORDER BY `+order+`),'[]'::json) results FROM rows) SELECT json_build_object('grouped_by',NULL,'sub_grouped_by',NULL,'total_count',totals.total,'next_cursor',concat($2,':',($3/$2)+1,':0'),'prev_cursor',concat($2,':',($3/$2)-1,':1'),'next_page_results',($3+$2)<totals.total,'prev_page_results',$3>0,'count',json_array_length(result.results),'total_pages',CASE WHEN totals.total=0 THEN 0 ELSE CEIL(totals.total::numeric/$2)::int END,'total_results',totals.total,'extra_stats',NULL,'results',result.results) FROM totals CROSS JOIN result`, slug, limit, offset, userID).Scan(&response)
 	if err != nil {
 		return nil, err
 	}

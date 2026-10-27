@@ -6,6 +6,8 @@ import (
 
 	store "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	api "github.com/CaliLuke/go-plane/workitemtypes/gen/work_item_types"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func (s *workItemTypesService) PropertyCatalog(ctx context.Context, p *api.PropertyCatalogPayload) (*api.PropertyCatalog, error) {
@@ -14,19 +16,22 @@ func (s *workItemTypesService) PropertyCatalog(ctx context.Context, p *api.Prope
 		return nil, &api.TypeError{Kind: "status_401", Message: unauthenticatedDetail}
 	}
 	result, err := s.repository.PropertyCatalog(ctx, actor, p.Slug)
-	return propertyCatalogResponse(result, err)
+	return propertyCatalogResponse(ctx, "work_item_types.properties.catalog", result, err)
 }
 func (s *workItemTypesService) MutateProperty(ctx context.Context, p *api.MutatePropertyPayload) (*api.PropertyCatalog, error) {
 	actor, _ := ctx.Value(workItemTypesPrincipal{}).(string)
 	if actor == "" {
 		return nil, &api.TypeError{Kind: "status_401", Message: unauthenticatedDetail}
 	}
+	if p.Data != nil {
+		trace.SpanFromContext(ctx).SetAttributes(attribute.String("work_item_types.property.action", typeOperation(p.Data.Action)))
+	}
 	input, err := propertyCommand(p.Data)
 	if err != nil {
 		return nil, err
 	}
 	result, err := s.repository.MutateProperty(ctx, actor, p.Slug, input)
-	return propertyCatalogResponse(result, err)
+	return propertyCatalogResponse(ctx, "work_item_types.properties."+typeOperation(input.Action), result, err)
 }
 func (s *workItemTypesService) PreviewPropertyRemoval(ctx context.Context, p *api.PreviewPropertyRemovalPayload) (*api.PropertyReview, error) {
 	actor, _ := ctx.Value(workItemTypesPrincipal{}).(string)
@@ -39,7 +44,7 @@ func (s *workItemTypesService) PreviewPropertyRemoval(ctx context.Context, p *ap
 	}
 	result, err := s.repository.PreviewPropertyRemoval(ctx, actor, p.Slug, input)
 	if err != nil {
-		return nil, typeServiceError(err)
+		return nil, typeServiceError(ctx, "work_item_types.properties.preview_removal", err)
 	}
 	return &api.PropertyReview{ID: result.ID, Items: result.Items, Types: result.Types, Projects: result.Projects}, nil
 }
@@ -74,13 +79,13 @@ func propertyCommand(data *api.PropertyInput) (store.PropertyInput, error) {
 	}
 	return input, nil
 }
-func propertyCatalogResponse(result store.PropertyCatalog, err error) (*api.PropertyCatalog, error) {
-	return workItemTypesResponse[api.PropertyCatalog](result, err)
+func propertyCatalogResponse(ctx context.Context, operation string, result store.PropertyCatalog, err error) (*api.PropertyCatalog, error) {
+	return workItemTypesResponse[api.PropertyCatalog](ctx, operation, result, err)
 }
 
-func workItemTypesResponse[T any](result any, err error) (*T, error) {
+func workItemTypesResponse[T any](ctx context.Context, operation string, result any, err error) (*T, error) {
 	if err != nil {
-		return nil, typeServiceError(err)
+		return nil, typeServiceError(ctx, operation, err)
 	}
 	// The domain JSON contract is also the persistence contract. Keep the
 	// generated HTTP structs at this boundary, including nullable default values.
@@ -90,7 +95,7 @@ func workItemTypesResponse[T any](result any, err error) (*T, error) {
 		err = json.Unmarshal(raw, &out)
 	}
 	if err != nil {
-		return nil, typeServiceError(err)
+		return nil, typeServiceError(ctx, operation, err)
 	}
 	return &out, nil
 }

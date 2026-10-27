@@ -6,6 +6,7 @@ import { permissionKeys } from "./permissions";
 import { captureItemReadScope } from "./work-item-read-scope";
 import { getIdentitySessionGeneration } from "./identity";
 import type { TProjectRosterScope } from "./member-rosters";
+import { nextFormulaClockBoundary } from "./work-item-clock";
 
 export type TableValueTarget = Pick<TIssue, "id" | "updated_at">;
 export type TableValueResult = Pick<TIssue, "property_values" | "properties_evaluated_at">;
@@ -40,7 +41,8 @@ export function tablePropertyValuesOptions(
   scope: TableValueScope,
   revision: number,
   items: TableValueTarget[],
-  enabled = true
+  enabled = true,
+  hasFormulaColumn = false
 ) {
   const queryKey = [
     "workspace",
@@ -100,7 +102,10 @@ export function tablePropertyValuesOptions(
     retry: false,
     staleTime: 30_000,
     gcTime: 60_000,
-    refetchOnWindowFocus: true,
+    refetchOnMount: hasFormulaColumn ? "always" : true,
+    refetchOnWindowFocus: hasFormulaColumn ? "always" : true,
+    refetchInterval: ready && hasFormulaColumn ? nextFormulaClockBoundary : false,
+    refetchIntervalInBackground: false,
   });
 }
 

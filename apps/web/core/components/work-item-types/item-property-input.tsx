@@ -1,3 +1,4 @@
+import { PropertyIcon } from "./property-icon";
 import { CascadingValueInput } from "./cascading-value-input";
 import { useId } from "react";
 import type { ReactNode } from "react";
@@ -26,7 +27,8 @@ export function ItemPropertyInput(props: Props) {
   const required = property.configuration.required && property.kind !== "Boolean";
   return (
     <fieldset className="min-w-0 space-y-1.5">
-      <legend id={`${id}-label`} className="text-13 font-medium text-secondary">
+      <legend id={`${id}-label`} className="flex items-center gap-2 text-13 font-medium text-secondary">
+        <PropertyIcon kind={property.kind} icon={property.icon} />
         {property.title}
         {required && <span aria-label="required"> *</span>}
       </legend>

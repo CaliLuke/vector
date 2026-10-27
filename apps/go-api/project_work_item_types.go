@@ -29,7 +29,7 @@ func (s *workItemTypesService) projectTypes(ctx context.Context, slug, project s
 		result, err = s.repository.MutateProject(ctx, actor, slug, project, *input)
 	}
 	if err != nil {
-		return nil, typeServiceError(err)
+		return nil, typeServiceError(ctx, "work_item_types.project", err)
 	}
 	out := &api.ProjectCatalog{Enabled: result.Enabled, CanManage: result.CanManage, Revision: result.Revision, ProjectName: result.ProjectName, DefaultTypeID: result.DefaultTypeID, Types: make([]*api.ProjectWorkItemType, 0, len(result.Types))}
 	for _, item := range result.Types {

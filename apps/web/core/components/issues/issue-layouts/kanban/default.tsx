@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { TypeGroupingStatus } from "@/components/issues/issue-layouts/type-group-columns";
+import { GroupingStatus, propertyGroupingIds } from "@/components/issues/issue-layouts/property-group-columns";
 import { useGroupColumns } from "@/components/issues/issue-layouts/use-group-columns";
 import { useParams } from "@tanstack/react-router";
 import type { MutableRefObject } from "react";
@@ -124,12 +124,13 @@ export const KanBan = function KanBan(props: IKanBan) {
     workspaceSlug,
     projectId,
     groupBy: group_by as GroupByColumnTypes,
+    observedIds: propertyGroupingIds(groupedIssueIds),
     includeNone: true,
     isWorkspaceLevel: isWorkspaceLevel(storeType),
     isEpic: isEpic,
   });
 
-  if (!list) return <TypeGroupingStatus active={group_by === "type_id"} />;
+  if (!list) return <GroupingStatus groupBy={group_by} />;
 
   const visibilityGroupBy = (_list: IGroupByColumn): { showGroup: boolean; showIssues: boolean } => {
     if (sub_group_by) {

@@ -14,14 +14,12 @@ import type {
   TWorkItemFilterExpression,
 } from "@plane/types";
 import { EIssueLayoutTypes } from "@plane/types";
+import { groupingServerAxis, isDiscoveryGrouping, isParentTypeGrouping } from "./grouping-axis";
 import isEmpty from "lodash-es/isEmpty.js";
-import {
-  EIssueGroupByToServerOptions,
-  EServerGroupByToFilterOptions,
-  ENABLE_ISSUE_DEPENDENCIES,
-} from "@plane/constants";
+import { EServerGroupByToFilterOptions, ENABLE_ISSUE_DEPENDENCIES } from "@plane/constants";
 import {
   getComputedDisplayFilters,
+  isParentTypeGroupingActive,
   getComputedDisplayProperties,
   handleIssueQueryParamsByLayout,
 } from "@plane/utils/work-item";
@@ -122,7 +120,7 @@ export const getIssueListProjection = (
         : filters.layout === EIssueLayoutTypes.KANBAN
           ? filters.sub_group_by
           : undefined,
-    includeSubIssues: filters.sub_issue ?? false,
+    includeSubIssues: !isParentTypeGrouping(groupBy) && (filters.sub_issue ?? false),
   };
 };
 
@@ -138,13 +136,10 @@ function appendDisplayFilterParams(
   target: Partial<Record<TIssueParams, string | boolean>>
 ) {
   const computedDisplayFilters: [TIssueParams, string[] | boolean | string | undefined][] = [
-    ["group_by", displayFilters?.group_by ? EIssueGroupByToServerOptions[displayFilters.group_by] : undefined],
-    [
-      "sub_group_by",
-      displayFilters?.sub_group_by ? EIssueGroupByToServerOptions[displayFilters.sub_group_by] : undefined,
-    ],
+    ["group_by", groupingServerAxis(displayFilters?.group_by)],
+    ["sub_group_by", groupingServerAxis(displayFilters?.sub_group_by)],
     ["order_by", displayFilters?.order_by || undefined],
-    ["sub_issue", displayFilters?.sub_issue ?? true],
+    ["sub_issue", isParentTypeGroupingActive(displayFilters) || (displayFilters?.sub_issue ?? true)],
   ];
 
   for (const [filterKey, value] of computedDisplayFilters) {
@@ -210,7 +205,7 @@ export const getPaginationParams = (
   if (groupId) {
     const groupBy = paginationParams.group_by;
     delete paginationParams.group_by;
-    if (groupBy === "type_id") {
+    if (isDiscoveryGrouping(groupBy)) {
       paginationParams.group_filter_by = groupBy;
       paginationParams.group_filter_value = groupId;
     } else if (typeof groupBy === "string" && isServerGroupBy(groupBy))
@@ -220,7 +215,7 @@ export const getPaginationParams = (
   if (subGroupId) {
     const subGroupBy = paginationParams.sub_group_by;
     delete paginationParams.sub_group_by;
-    if (subGroupBy === "type_id") {
+    if (isDiscoveryGrouping(subGroupBy)) {
       paginationParams.sub_group_filter_by = subGroupBy;
       paginationParams.sub_group_filter_value = subGroupId;
     } else if (typeof subGroupBy === "string" && isServerGroupBy(subGroupBy))

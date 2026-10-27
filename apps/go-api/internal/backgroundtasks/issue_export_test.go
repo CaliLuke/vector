@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/xuri/excelize/v2"
 )
 
@@ -58,7 +59,7 @@ func TestFormatIssueExportSupportsSourceFormatsAndSanitizesSpreadsheetCells(t *t
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer book.Close()
+		defer func() { _ = book.Close() }()
 		rows, err := book.GetRows(book.GetSheetName(0))
 		if err != nil {
 			t.Fatal(err)
@@ -100,5 +101,36 @@ func TestIssueExportZipContainsEveryEncodedFile(t *testing.T) {
 		if expected == "demo.csv" && string(got) != "a,b\n1,2\n" || expected == "project.json" && !strings.EqualFold(string(got), "[]") {
 			t.Fatalf("file %q content=%q", expected, got)
 		}
+	}
+}
+
+func TestCustomExportColumnsPreserveValuesAndSanitizeTitles(t *testing.T) {
+	columns := []workitemtypes.PropertyExportColumn{{Key: "flag", Title: "=HYPERLINK(\"https://example.test\")"}, {Key: "number", Title: "Number"}, {Key: "error", Title: "Formula"}}
+	records := []map[string]any{{"flag": false, "number": 0, "error": "#ERROR: division by zero"}}
+	_, data, err := formatIssueExportColumns("custom", "csv", records, columns)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows, err := csv.NewReader(bytes.NewReader(data)).ReadAll()
+	if err != nil {
+		t.Fatal(err)
+	}
+	offset := len(issueExportFields)
+	if rows[0][offset] != "'=HYPERLINK(\"https://example.test\")" || rows[1][offset] != "false" || rows[1][offset+1] != "0" || rows[1][offset+2] != "#ERROR: division by zero" {
+		t.Fatalf("custom CSV: %+v", rows)
+	}
+	_, data, err = formatIssueExportColumns("custom", "xlsx", records, columns)
+	if err != nil {
+		t.Fatal(err)
+	}
+	book, err := excelize.OpenReader(bytes.NewReader(data))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = book.Close() }()
+	cell, _ := excelize.CoordinatesToCellName(offset+1, 1)
+	formula, err := book.GetCellFormula(book.GetSheetName(0), cell)
+	if err != nil || formula != "" {
+		t.Fatalf("header became formula %q: %v", formula, err)
 	}
 }

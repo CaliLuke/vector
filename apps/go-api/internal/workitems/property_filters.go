@@ -33,11 +33,8 @@ func (r *Repository) preparePropertyFilters(ctx context.Context, q Request, tx p
 // This is deliberately before counts and windows; it never reads the first page
 // and infers the remaining matches from it.
 func (r *Repository) bindPropertyFilters(ctx context.Context, where []string, args []any) (*issuequery.BoundPropertyFilter, error) {
-	rows, err := r.rows(ctx, `SELECT jsonb_build_object('id',issue.id,'project_id',issue.project_id,'type_id',issue.type_id,'name',issue.name,'priority',issue.priority,'start_date',issue.start_date,'target_date',issue.target_date,'estimate_point_id',issue.estimate_point_id,'custom_properties',issue.custom_properties) FROM issues issue JOIN projects project ON project.id=issue.project_id JOIN workspaces workspace ON workspace.id=issue.workspace_id WHERE `+strings.Join(where, " AND "), args...)
+	rows, err := r.propertyCandidateRows(ctx, where, args)
 	if err != nil {
-		return nil, err
-	}
-	if err = r.projectDiscoveryRows(ctx, rows); err != nil {
 		return nil, err
 	}
 	ids := make([]string, len(rows))
@@ -48,4 +45,15 @@ func (r *Repository) bindPropertyFilters(ctx context.Context, where []string, ar
 		values := rows[index]["property_values"].(map[string]workitemtypes.ProjectedValue)
 		return r.propertyPredicates[leafID].Match(values)
 	})
+}
+
+func (r *Repository) propertyCandidateRows(ctx context.Context, where []string, args []any) ([]map[string]any, error) {
+	rows, err := r.rows(ctx, `SELECT jsonb_build_object('id',issue.id,'project_id',issue.project_id,'type_id',issue.type_id,'name',issue.name,'priority',issue.priority,'start_date',issue.start_date,'target_date',issue.target_date,'estimate_point_id',issue.estimate_point_id,'custom_properties',issue.custom_properties) FROM issues issue JOIN projects project ON project.id=issue.project_id JOIN workspaces workspace ON workspace.id=issue.workspace_id WHERE `+strings.Join(where, " AND "), args...)
+	if err != nil {
+		return nil, err
+	}
+	if err = r.projectDiscoveryRows(ctx, rows); err != nil {
+		return nil, err
+	}
+	return rows, nil
 }

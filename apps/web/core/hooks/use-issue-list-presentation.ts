@@ -16,6 +16,7 @@ import { useWorkspaceProjects } from "@/hooks/use-projects";
 import { useIssueListRead } from "@/hooks/use-issue-list-read";
 import { useIssueListQuery } from "@/hooks/use-issue-list-query";
 import type { NativeIssueStoreType } from "@/hooks/use-issue-filter-preferences";
+import { usePropertyGroupingRevision } from "./use-work-item-grouping-catalog";
 
 function labelReadRequirements(displayFilters: IIssueDisplayFilterOptions | undefined) {
   const grouped = displayFilters?.group_by === "labels" || displayFilters?.sub_group_by === "labels";
@@ -166,6 +167,11 @@ export function useIssueListPresentation(
 ) {
   const { workspaceSlug, projectId } = useParams({ strict: false });
   const workspaceLevel = isWorkspaceLevel(storeType);
+  const propertyRevision = usePropertyGroupingRevision(
+    workspaceSlug,
+    workspaceLevel ? undefined : projectId,
+    displayFilters
+  );
   const labelRequirements = labelReadRequirements(displayFilters);
   const projectRequired = issueOrderingNeedsProject(displayFilters);
   const estimateRequired = issueOrderingNeedsEstimate(displayFilters);
@@ -186,6 +192,7 @@ export function useIssueListPresentation(
     projectReady
   );
   const catalogueRevision = hashKey([
+    propertyRevision,
     labelRequirements.grouped ? labels.idsRevision : undefined,
     parents.grouped ? parents.structuralRevision : undefined,
     projectRequired ? sortBy(projects.projects?.map((project) => project.id) ?? [], (id) => id) : undefined,

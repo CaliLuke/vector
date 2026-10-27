@@ -2,13 +2,14 @@ import type { WorkItemType } from "@/services/work-item-types.service";
 import type { PreviewType, PreviewProperty } from "./preview-content";
 import type { FormulaPersistence } from "./formula-editor";
 import type { PropertyRemovalPersistence } from "./property-removal-dialog";
+export type PropertySaveReceipt = { property: PreviewProperty; revision: number };
 export type TypePersistence = {
   types: WorkItemType[];
   properties: PreviewProperty[];
   attachments: { type_id: string; property_ids: string[] }[];
   projects: { id: string; name: string }[];
   members: { id: string; name: string }[];
-  saveProperty: (property: PreviewProperty, creating?: boolean, revision?: number) => Promise<void>;
+  saveProperty: (property: PreviewProperty, creating?: boolean, revision?: number) => Promise<PropertySaveReceipt>;
   attachProperties: (typeId: string, properties: string[], revision?: number) => Promise<void>;
   propertyRemoval: PropertyRemovalPersistence;
   previewFormula: FormulaPersistence["preview"];

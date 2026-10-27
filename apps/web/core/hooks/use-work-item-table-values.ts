@@ -19,7 +19,8 @@ export function useWorkItemTableValues(
   workspaceSlug: string,
   items: TIssue[],
   revision: number | undefined,
-  enabled: boolean
+  enabled: boolean,
+  hasFormulaColumn: boolean
 ) {
   const client = useQueryClient();
   const access = useWorkItemCatalogAccess(workspaceSlug, undefined, enabled);
@@ -34,7 +35,7 @@ export function useWorkItemTableValues(
   const permissionError = access.permissionError || permissions.isError;
   const allowed = access.allowed && permissions.roles !== undefined && revision !== undefined;
   const options = batches.map((batch, index) =>
-    tablePropertyValuesOptions(scopes[index], revision ?? 0, batch.items, allowed)
+    tablePropertyValuesOptions(scopes[index], revision ?? 0, batch.items, allowed, hasFormulaColumn)
   );
   const queries = useQueries({ queries: options });
   const values: Record<string, TableValues> = {};

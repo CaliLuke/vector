@@ -70,7 +70,8 @@ export function SpreadsheetView(props: Props) {
     workspaceSlug ?? "",
     loadedItems,
     catalog.identities?.revision,
-    customColumns.length > 0
+    customColumns.length > 0,
+    customColumns.some((field) => field.kind === "Formula")
   );
 
   // refs

@@ -4,6 +4,7 @@ package workitemtypes_test
 
 import (
 	"errors"
+	"slices"
 	"testing"
 	"uuid"
 
@@ -19,6 +20,39 @@ func assertTypeError(t *testing.T, err error, status int) {
 		t.Fatalf("want status %d, got %v", status, err)
 	}
 }
+
+func TestUnusedTextConversionPersistsThroughPropertyMutation(t *testing.T) {
+	f := newProjectTypeFixture(t)
+	id := uuid.New().String()
+	attachValueProperties(t, f, property.Definition{ID: id, Title: "Score", Kind: property.Text, Configuration: property.Configuration{Active: true, Format: "Single line"}})
+	before, err := f.repo.PropertyCatalog(f.ctx, f.owner, "types")
+	if err != nil {
+		t.Fatal(err)
+	}
+	changed := before.Properties[0].Definition
+	changed.Kind = property.Number
+	changed.Configuration = property.Configuration{Active: true, Default: float64(0)}
+	_, err = f.repo.MutateProperty(f.ctx, f.owner, "types", types.PropertyInput{Revision: before.Revision, Action: "update", Definition: changed})
+	if err != nil {
+		t.Fatal(err)
+	}
+	after, err := f.repo.PropertyCatalog(f.ctx, f.owner, "types")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(after.Properties) != 1 || after.Revision != before.Revision+1 {
+		t.Fatalf("unexpected catalog after conversion: %+v", after)
+	}
+	saved := after.Properties[0].Definition
+	if saved.ID != id || saved.Name != "score" || saved.Kind != property.Number || saved.Configuration.Default != float64(0) {
+		t.Fatalf("conversion did not retain identity and target configuration: %+v", saved)
+	}
+	attachment := slices.IndexFunc(after.Attachments, func(value types.PropertyAttachment) bool { return value.TypeID == f.task })
+	if attachment < 0 || len(after.Attachments[attachment].PropertyIDs) != 1 || after.Attachments[attachment].PropertyIDs[0] != id {
+		t.Fatal("conversion lost the type attachment")
+	}
+}
+
 func TestPropertyPersistenceAndUsage(t *testing.T) {
 	f := newTypeFixture(t)
 	repo := types.NewRepository(f.db)

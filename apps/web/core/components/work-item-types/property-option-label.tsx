@@ -12,6 +12,6 @@ export function dropdownPath(id: string, options: { id: string; name: string; pa
   return parts.join(" → ");
 }
 export function OptionIcon({ icon }: { icon: string }) {
-  const Icon = typeIconComponents[icon];
+  const Icon = Object.hasOwn(typeIconComponents, icon) ? typeIconComponents[icon] : undefined;
   return Icon ? <Icon aria-hidden className="mr-1 inline size-3.5" /> : null;
 }

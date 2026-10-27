@@ -20,6 +20,7 @@ export class ProjectExportService extends APIService {
       provider: string;
       project: string[];
       multiple?: boolean;
+      include_custom_properties?: boolean;
       rich_filters?: TWorkItemFilterExpression;
     }
   ): Promise<any> {

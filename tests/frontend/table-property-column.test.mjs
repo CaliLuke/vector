@@ -14,7 +14,7 @@ async function fixture(t) {
   const env = await createReactDomTestEnvironment();
   t.after(() => env.unmount());
   let opens = 0;
-  function Table({ result, column }) {
+  function Table({ result, column, disabled }) {
     return React.createElement(
       TablePropertyValuesContext,
       { value: { item: result } },
@@ -27,7 +27,7 @@ async function fixture(t) {
           React.createElement(
             "tr",
             null,
-            React.createElement(PropertyColumn, { issue, field: column, onEdit: () => opens++, disabled: false })
+            React.createElement(PropertyColumn, { issue, field: column, onEdit: () => opens++, disabled })
           )
         )
       )
@@ -36,7 +36,8 @@ async function fixture(t) {
   return {
     env,
     opens: () => opens,
-    render: (result, column = field) => env.render(React.createElement(Table, { result, column })),
+    render: (result, column = field, disabled = false) =>
+      env.render(React.createElement(Table, { result, column, disabled })),
   };
 }
 await test("unattached and foreign-catalog properties are not loading and cannot be edited", async (t) => {
@@ -104,4 +105,54 @@ await test("arrow navigation crosses header/body boundaries and retains the colu
     document.activeElement.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true }))
   );
   assert.equal(document.activeElement.textContent, "h1");
+});
+
+await test("URL cells separate link navigation from editing and allow empty values", async (t) => {
+  const f = await fixture(t);
+  const column = { ...field, kind: "URL" };
+  await f.render(
+    {
+      status: "ready",
+      data: { property_values: { value: { status: "value", kind: "URL", value: "https://example.test/design" } } },
+    },
+    column
+  );
+  const link = f.env.container.querySelector("a");
+  assert.equal(link.getAttribute("href"), "https://example.test/design");
+  const edit = f.env.container.querySelector('button[aria-label="Edit Value for Test"]');
+  assert.ok(edit, "URL cells expose an edit action alongside the link");
+  assert.equal(edit.contains(link), false);
+  assert.equal(link.contains(edit), false);
+  await act(async () => edit.click());
+  assert.equal(f.opens(), 1);
+  await act(async () => {
+    link.addEventListener("click", (event) => event.preventDefault(), { once: true });
+    link.click();
+  });
+  assert.equal(f.opens(), 1, "link activation must not start editing");
+  await f.render(
+    { status: "ready", data: { property_values: { value: { status: "empty", kind: "URL", value: null } } } },
+    column
+  );
+  assert.equal(f.env.container.querySelector("a"), null);
+  const cell = f.env.container.querySelector("td");
+  await act(async () => {
+    cell.focus();
+    cell.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+  });
+  assert.equal(f.opens(), 2, "an empty URL remains keyboard editable");
+});
+
+await test("read-only URL cells retain the link without an edit action", async (t) => {
+  const f = await fixture(t);
+  await f.render(
+    {
+      status: "ready",
+      data: { property_values: { value: { status: "value", kind: "URL", value: "https://example.test/design" } } },
+    },
+    { ...field, kind: "URL" },
+    true
+  );
+  assert.equal(f.env.container.querySelector("button"), null);
+  assert.equal(f.env.container.querySelector("a").getAttribute("href"), "https://example.test/design");
 });

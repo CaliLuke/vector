@@ -17,7 +17,7 @@ func (s *workItemTypesService) TypeIdentities(ctx context.Context, p *api.TypeId
 	}
 	catalog, err := s.repository.TypeIdentities(ctx, actor, p.Slug, project)
 	if err != nil {
-		return nil, typeServiceError(err)
+		return nil, typeServiceError(ctx, "work_item_types.identities", err)
 	}
 	out := &api.TypeIdentityCatalog{Enabled: catalog.Enabled, Revision: catalog.Revision, Types: make([]*api.WorkItemTypeIdentity, 0, len(catalog.Types))}
 	for _, item := range catalog.Types {

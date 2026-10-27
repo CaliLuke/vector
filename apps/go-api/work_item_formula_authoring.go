@@ -27,5 +27,5 @@ func (s *workItemTypesService) PreviewFormula(ctx context.Context, p *api.Previe
 		input.IssueID = *p.Data.IssueID
 	}
 	result, err := s.repository.PreviewFormula(ctx, actor, p.Slug, input)
-	return workItemTypesResponse[api.FormulaAuthoringResult](result, err)
+	return workItemTypesResponse[api.FormulaAuthoringResult](ctx, "work_item_types.formula_preview", result, err)
 }

@@ -1,3 +1,4 @@
+import { PropertyIcon } from "./property-icon";
 import { forgetItemReads, itemAccessOptions, retryItemAccess } from "@/queries/work-item-access";
 import { isPropertyHistoryAccessDenied } from "@/queries/work-item-property-history";
 import { useEffect, useEffectEvent, useState } from "react";
@@ -150,7 +151,11 @@ function SavedPropertyList({ scope, snapshot }: { scope: PublishedItemEditScope;
       <dl className="space-y-4">
         {snapshot.properties.map((property) => (
           <div key={property.id} className="min-w-0">
-            <dt className="mb-1 text-12 text-secondary" title={property.description || undefined}>
+            <dt
+              className="mb-1 flex items-center gap-2 text-12 text-secondary"
+              title={property.description || undefined}
+            >
+              <PropertyIcon kind={property.kind} icon={property.icon} />
               {property.title}
             </dt>
             <dd className="min-w-0 text-13 break-words text-primary">

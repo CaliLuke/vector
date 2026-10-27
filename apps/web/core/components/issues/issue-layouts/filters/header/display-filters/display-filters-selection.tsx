@@ -4,7 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { availableExtraOptions } from "./extra-options";
 import React from "react";
+import { useTypeGroupingOptions } from "@/hooks/use-work-item-grouping-catalog";
 import { CustomPropertyColumns } from "./custom-property-columns";
 import isEmpty from "lodash-es/isEmpty.js";
 
@@ -48,6 +50,9 @@ export const DisplayFiltersSelection = function DisplayFiltersSelection(props: P
     isEpic = false,
   } = props;
 
+  const layout = displayFilters?.layout;
+  const groupingOptions = useTypeGroupingOptions(layout, isEpic);
+
   const isDisplayFilterEnabled = (displayFilter: keyof IIssueDisplayFilterOptions) =>
     Object.keys(layoutDisplayFiltersOptions?.display_filters ?? {}).includes(displayFilter);
 
@@ -85,8 +90,9 @@ export const DisplayFiltersSelection = function DisplayFiltersSelection(props: P
       {isDisplayFilterEnabled("group_by") && (
         <div className="py-2">
           <FilterGroupBy
+            isEpic={isEpic}
             displayFilters={displayFilters}
-            groupByOptions={layoutDisplayFiltersOptions?.display_filters.group_by ?? []}
+            groupByOptions={groupingOptions(layoutDisplayFiltersOptions?.display_filters.group_by ?? [])}
             handleUpdate={(val) =>
               handleDisplayFiltersUpdate({
                 group_by: val,
@@ -99,17 +105,19 @@ export const DisplayFiltersSelection = function DisplayFiltersSelection(props: P
 
       {/* sub-group by */}
       {isDisplayFilterEnabled("sub_group_by") &&
-        displayFilters?.group_by !== null &&
-        displayFilters?.layout === "kanban" && (
+        displayFilters &&
+        displayFilters.group_by !== null &&
+        layout === "kanban" && (
           <div className="py-2">
             <FilterSubGroupBy
+              isEpic={isEpic}
               displayFilters={displayFilters}
               handleUpdate={(val) =>
                 handleDisplayFiltersUpdate({
                   sub_group_by: val,
                 })
               }
-              subGroupByOptions={layoutDisplayFiltersOptions?.display_filters.sub_group_by ?? []}
+              subGroupByOptions={groupingOptions(layoutDisplayFiltersOptions?.display_filters.sub_group_by ?? [])}
               ignoreGroupedFilters={computedIgnoreGroupedFilters}
             />
           </div>
@@ -143,7 +151,10 @@ export const DisplayFiltersSelection = function DisplayFiltersSelection(props: P
                 [key]: val,
               })
             }
-            enabledExtraOptions={layoutDisplayFiltersOptions?.extra_options.values}
+            enabledExtraOptions={availableExtraOptions(
+              layoutDisplayFiltersOptions.extra_options.values,
+              displayFilters
+            )}
           />
         </div>
       )}

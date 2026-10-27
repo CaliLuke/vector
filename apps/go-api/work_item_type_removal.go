@@ -26,5 +26,5 @@ func typeRemovalMutation[Result, Stored any](ctx context.Context, slug string, d
 		in.ReviewID = *data.ReviewID
 	}
 	out, err := write(ctx, actor, slug, in)
-	return workItemTypesResponse[Result](out, err)
+	return workItemTypesResponse[Result](ctx, "work_item_types.removal", out, err)
 }

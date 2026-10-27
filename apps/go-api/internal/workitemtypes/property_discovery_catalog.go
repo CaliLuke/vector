@@ -89,6 +89,10 @@ func (snapshot *PropertyDiscoverySnapshot) discoveryFields() (map[string]*Discov
 							base.Options = append(base.Options, DiscoveryPropertyChoice{PropertyChoice: PropertyChoice{ID: option.ID, Name: option.Name}, Icon: option.Icon, Parent: option.Parent})
 						}
 					}
+					if previous := fields[base.Key]; previous != nil {
+						base.Groupable = base.Groupable && previous.Groupable
+						base.Multiple = base.Multiple || previous.Multiple
+					}
 					fields[base.Key] = &base
 					continue
 				}

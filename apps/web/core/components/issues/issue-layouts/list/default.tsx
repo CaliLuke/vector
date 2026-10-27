@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { TypeGroupingStatus } from "@/components/issues/issue-layouts/type-group-columns";
+import { GroupingStatus, propertyGroupingIds } from "@/components/issues/issue-layouts/property-group-columns";
 import { useGroupColumns } from "@/components/issues/issue-layouts/use-group-columns";
 import { useParams } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
@@ -103,6 +103,7 @@ export function List(props: IList) {
     workspaceSlug,
     projectId,
     groupBy: group_by as GroupByColumnTypes,
+    observedIds: propertyGroupingIds(groupedIssueIds),
     includeNone: true,
     isWorkspaceLevel: isWorkspaceLevel(storeType),
     isEpic: isEpic,
@@ -121,7 +122,7 @@ export function List(props: IList) {
     );
   }, [containerRef]);
 
-  if (!groups) return <TypeGroupingStatus active={group_by === "type_id"} />;
+  if (!groups) return <GroupingStatus groupBy={group_by} />;
 
   const getGroupIndex = (groupId: string | undefined) => groups.findIndex(({ id }) => id === groupId);
 

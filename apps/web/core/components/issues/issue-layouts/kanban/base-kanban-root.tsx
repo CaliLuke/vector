@@ -1,3 +1,4 @@
+import { showEmptyDiscoveryGroups } from "@/helpers/issue-list/grouping-axis";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -125,6 +126,7 @@ function BaseKanBanRootContent(props: IBaseKanBanLayout) {
   );
 
   const userDisplayFilters = displayFilters || null;
+  const showEmptyGroup = userDisplayFilters?.show_empty_groups ?? true;
 
   const KanBanView = sub_group_by ? KanBanSwimLanes : KanBan;
 
@@ -256,7 +258,11 @@ function BaseKanBanRootContent(props: IBaseKanBanLayout) {
             Drop here to delete the work item.
           </div>
         </div>
-        <IssueLayoutHOC readState={readState} layout={EIssueLayoutTypes.KANBAN}>
+        <IssueLayoutHOC
+          allowEmptyGroups={showEmptyDiscoveryGroups(group_by, showEmptyGroup)}
+          readState={readState}
+          layout={EIssueLayoutTypes.KANBAN}
+        >
           <div
             className={`horizontal-scrollbar relative flex scrollbar-lg h-full w-full bg-surface-2 ${sub_group_by ? "vertical-scrollbar overflow-y-auto" : "overflow-x-auto overflow-y-hidden"}`}
             ref={scrollableContainerRef}
@@ -276,7 +282,7 @@ function BaseKanBanRootContent(props: IBaseKanBanLayout) {
                   handleCollapsedGroups={handleCollapsedGroups}
                   collapsedGroups={collapsedGroups}
                   enableQuickIssueCreate={enableQuickAdd}
-                  showEmptyGroup={userDisplayFilters?.show_empty_groups ?? true}
+                  showEmptyGroup={showEmptyGroup}
                   quickAddCallback={quickAddIssue}
                   disableIssueCreation={!enableIssueCreation || !isEditingAllowed || isCompletedCycle}
                   canEditProperties={canEditProperties}

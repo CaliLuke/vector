@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useWorkItemTypeCatalog } from "@/hooks/use-work-item-type-catalog";
 import { useCurrentWorkspace } from "@/hooks/use-workspaces";
 import intersection from "lodash-es/intersection.js";
 
@@ -12,7 +13,7 @@ import { EUserPermissions, EXPORTERS_LIST } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import { CustomSearchSelect, CustomSelect } from "@plane/ui";
+import { CustomSearchSelect, CustomSelect, ToggleSwitch } from "@plane/ui";
 import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 import { useWorkspacePermissions } from "@/hooks/use-permissions";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -29,6 +30,7 @@ type Props = {
 type FormData = {
   provider: (typeof EXPORTERS_LIST)[0];
   project: string[];
+  includeCustomProperties: boolean;
 };
 
 const projectExportService = new ProjectExportService();
@@ -39,6 +41,9 @@ export const ExportForm = function ExportForm(props: Props) {
 
   // store hooks
   const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
+  const isMember = canWorkspace([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
+  const { identities } = useWorkItemTypeCatalog(workspaceSlug, undefined, isMember);
+  const customPropertiesEnabled = identities?.enabled === true;
   const { data: user } = useCurrentUser();
   const { canPerformAnyCreateAction, projectsWithCreatePermissions } = useCreationPermissions();
   const { data: catalogueWorkspace } = useCurrentWorkspace();
@@ -52,6 +57,7 @@ export const ExportForm = function ExportForm(props: Props) {
   const defaultValues: FormData = {
     provider: EXPORTERS_LIST[0],
     project: [],
+    includeCustomProperties: false,
   };
   const form = useForm({
     defaultValues,
@@ -63,7 +69,6 @@ export const ExportForm = function ExportForm(props: Props) {
 
   // derived values
   const hasProjects = workspaceProjectIds && workspaceProjectIds.length > 0;
-  const isMember = canWorkspace([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
   const wsProjectIdsWithCreatePermisisons = projectsWithCreatePermissions
     ? intersection(workspaceProjectIds, Object.keys(projectsWithCreatePermissions))
     : [];
@@ -90,6 +95,7 @@ export const ExportForm = function ExportForm(props: Props) {
         project: formData.project,
         multiple: formData.project.length > 1,
         rich_filters: {},
+        include_custom_properties: customPropertiesEnabled && formData.includeCustomProperties,
       };
       try {
         await projectExportService.csvExport(workspaceSlug, payload);
@@ -186,6 +192,25 @@ export const ExportForm = function ExportForm(props: Props) {
             </form.Field>
           }
         />
+        {customPropertiesEnabled && (
+          <SettingsBoxedControlItem
+            className="rounded-none border-0 border-b"
+            title="Include custom properties"
+            description="Include work item types and custom property values, including formula results."
+            control={
+              <form.Field name="includeCustomProperties">
+                {(field) => (
+                  <ToggleSwitch
+                    value={field.state.value}
+                    onChange={field.handleChange}
+                    disabled={exportLoading || !isMember}
+                    aria-label="Include custom properties"
+                  />
+                )}
+              </form.Field>
+            }
+          />
+        )}
         <div className="px-4 py-3">
           <Button variant="primary" size="lg" type="submit" loading={exportLoading}>
             {exportLoading ? `${t("workspace_settings.settings.exports.exporting")}...` : t("export")}

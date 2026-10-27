@@ -10,10 +10,20 @@ import (
 )
 
 func (r *Repository) groupUniverse(ctx context.Context, q Request, field string, rows []map[string]any) ([]any, error) {
+	if r.parentGrouping != nil && field == r.parentGrouping.axis {
+		values := make([]any, 0, len(r.parentGrouping.ids)+1)
+		for _, id := range r.parentGrouping.ids {
+			values = append(values, id)
+		}
+		return append(values, "None"), nil
+	}
+	if r.propertyGroups[field] != nil {
+		return visibleGroupValues(rows, field), nil
+	}
 	if field == "type_id" && r.typeDiscovery != nil {
 		return r.discoveryTypeGroups(), nil
 	}
-	if field != "" && q.ProjectID == "" && usesTypeGrouping(q) {
+	if field != "" && q.ProjectID == "" && usesDiscoveryGrouping(q) {
 		return visibleGroupValues(rows, field), nil
 	}
 	switch field {
@@ -116,7 +126,7 @@ func (r *Repository) groupedPageWithVisibleRowCounts(ctx context.Context, q Requ
 	group, subgroup := q.Params["group_by"], q.Params["sub_group_by"]
 	var groups, subgroups []any
 	universeRows := rows
-	if q.ProjectID == "" && usesTypeGrouping(q) {
+	if usesDiscoveryGrouping(q) {
 		universeRows = make([]map[string]any, 0, len(results))
 		for _, result := range results {
 			universeRows = append(universeRows, result.(map[string]any))
@@ -191,6 +201,9 @@ func (r *Repository) groupedPageWithVisibleRowCounts(ctx context.Context, q Requ
 	}
 	envelope := djangoapi.Envelope([]any{}, total, limit, page)
 	envelope["results"] = grouped
+	if r.parentGrouping != nil {
+		envelope["parent_groups"] = r.parentGrouping.parents
+	}
 	envelope["grouped_by"] = group
 	if subgroup != "" {
 		envelope["sub_grouped_by"] = subgroup

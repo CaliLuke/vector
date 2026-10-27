@@ -13,6 +13,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
+	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/CaliLuke/loom/execution"
 	executionSelvedge "github.com/CaliLuke/loom/execution/selvedge"
 	"github.com/CaliLuke/selvedge"
@@ -37,12 +38,13 @@ var issueExportFields = []string{
 }
 
 type IssueExportInput struct {
-	Provider    string   `json:"provider"`
-	WorkspaceID string   `json:"workspace_id"`
-	ProjectIDs  []string `json:"project_ids"`
-	TokenID     string   `json:"token_id"`
-	Multiple    bool     `json:"multiple"`
-	Slug        string   `json:"slug"`
+	IncludeCustomProperties bool     `json:"include_custom_properties"`
+	Provider                string   `json:"provider"`
+	WorkspaceID             string   `json:"workspace_id"`
+	ProjectIDs              []string `json:"project_ids"`
+	TokenID                 string   `json:"token_id"`
+	Multiple                bool     `json:"multiple"`
+	Slug                    string   `json:"slug"`
 }
 
 type issueExportFailureInput struct {
@@ -189,7 +191,7 @@ func (dispatcher *IssueExportDispatcher) Admit(ctx context.Context, input IssueE
 }
 
 func (store *issueExportStore) Generate(ctx context.Context, input IssueExportInput) error {
-	result, err := store.pool.Exec(ctx, `UPDATE exporters SET status='processing',updated_at=NOW() WHERE token=$1 AND workspace_id=$2::uuid AND type='issue_exports'`, input.TokenID, input.WorkspaceID)
+	result, err := store.pool.Exec(ctx, `UPDATE exporters SET status='processing',updated_at=NOW() WHERE token=$1 AND workspace_id=$2::uuid AND type='issue_exports' AND deleted_at IS NULL AND COALESCE(rich_filters->>'include_custom_properties','false')=$3`, input.TokenID, input.WorkspaceID, fmt.Sprint(input.IncludeCustomProperties))
 	if err != nil {
 		return fmt.Errorf("mark exporter processing: %w", err)
 	}
@@ -207,37 +209,17 @@ func (store *issueExportStore) Generate(ctx context.Context, input IssueExportIn
 		}
 		projectIDs = append(projectIDs, projectID)
 	}
-	groups := make([]struct {
-		name string
-		rows []map[string]any
-	}, 0, 1)
-	if input.Multiple {
-		for _, projectID := range projectIDs {
-			rows, err := store.issues(ctx, input, []uuid.UUID{projectID})
-			if err != nil {
-				return err
-			}
-			groups = append(groups, struct {
-				name string
-				rows []map[string]any
-			}{name: input.Slug + "-" + projectID.String(), rows: rows})
-		}
-	} else {
-		rows, err := store.issues(ctx, input, projectIDs)
-		if err != nil {
-			return err
-		}
-		groups = append(groups, struct {
-			name string
-			rows []map[string]any
-		}{name: input.Slug + "-" + input.WorkspaceID, rows: rows})
+	data, err := store.exportData(ctx, input, projectIDs)
+	if err != nil {
+		return err
 	}
+	groups := splitIssueExport(input, projectIDs, data)
 	files := make([]struct {
 		name string
 		data []byte
 	}, 0, len(groups))
 	for _, group := range groups {
-		name, data, err := formatIssueExport(group.name, input.Provider, group.rows)
+		name, data, err := formatIssueExportColumns(group.name, input.Provider, group.data.rows, group.data.columns)
 		if err != nil {
 			return err
 		}
@@ -259,7 +241,7 @@ func (store *issueExportStore) Generate(ctx context.Context, input IssueExportIn
 	if err != nil {
 		return fmt.Errorf("presign issue export download: %w", err)
 	}
-	result, err = store.pool.Exec(ctx, `UPDATE exporters SET status='completed',reason='',key=$2,url=$3,updated_at=NOW() WHERE token=$1 AND workspace_id=$4::uuid AND type='issue_exports'`, input.TokenID, key, url, input.WorkspaceID)
+	result, err = store.pool.Exec(ctx, `UPDATE exporters SET status='completed',reason='',key=$2,url=$3,updated_at=NOW(),rich_filters=CASE WHEN $5::boolean THEN COALESCE(rich_filters,'{}'::jsonb)||jsonb_build_object('exported_item_ids',$6::jsonb) ELSE rich_filters END WHERE token=$1 AND workspace_id=$4::uuid AND type='issue_exports' AND deleted_at IS NULL`, input.TokenID, key, url, input.WorkspaceID, input.IncludeCustomProperties, data.itemIDs)
 	if err != nil {
 		return fmt.Errorf("mark issue export complete: %w", err)
 	}
@@ -280,8 +262,8 @@ func (store *issueExportStore) MarkFailed(ctx context.Context, token, reason str
 	return nil
 }
 
-func (store *issueExportStore) issues(ctx context.Context, input IssueExportInput, projectIDs []uuid.UUID) ([]map[string]any, error) {
-	rows, err := store.pool.Query(ctx, issueExportQuery, input.WorkspaceID, projectIDs, input.TokenID)
+func readIssueExportRows(ctx context.Context, reader issueExportReader, query string, input IssueExportInput, projectIDs []uuid.UUID) ([]map[string]any, error) {
+	rows, err := reader.Query(ctx, query, input.WorkspaceID, projectIDs, input.TokenID)
 	if err != nil {
 		return nil, fmt.Errorf("query issue export rows: %w", err)
 	}
@@ -330,6 +312,20 @@ var issueExportQuery = `SELECT json_build_object(
 ) FROM issues i JOIN projects p ON p.id=i.project_id JOIN users initiator ON initiator.id=(SELECT initiated_by_id FROM exporters WHERE token=$3 AND type='issue_exports') LEFT JOIN states state ON state.id=i.state_id LEFT JOIN users creator ON creator.id=i.created_by_id LEFT JOIN estimate_points estimate_point ON estimate_point.id=i.estimate_point_id LEFT JOIN issues parent ON parent.id=i.parent_id AND ` + djangoapi.IssueVisibleSQL("parent", "initiator.id", "i.workspace_id") + ` LEFT JOIN projects parent_project ON parent_project.id=parent.project_id WHERE i.workspace_id=$1::uuid AND i.project_id=ANY($2::uuid[]) AND i.deleted_at IS NULL AND p.archived_at IS NULL AND ` + djangoapi.IssueVisibleSQL("i", "initiator.id", "$1::uuid") + ` ORDER BY i.created_at,i.id`
 
 func formatIssueExport(filename, format string, records []map[string]any) (string, []byte, error) {
+	return formatIssueExportColumns(filename, format, records, nil)
+}
+
+func formatIssueExportColumns(filename, format string, records []map[string]any, columns []workitemtypes.PropertyExportColumn) (string, []byte, error) {
+	fields := append([]string{}, issueExportFields...)
+	titles := map[string]string{}
+	for _, field := range fields {
+		titles[field] = strings.Title(strings.ReplaceAll(field, "_", " "))
+	}
+	for _, column := range columns {
+		fields = append(fields, column.Key)
+		titles[column.Key] = column.Title
+	}
+
 	switch format {
 	case "json":
 		data, err := json.MarshalIndent(records, "", "  ")
@@ -337,16 +333,16 @@ func formatIssueExport(filename, format string, records []map[string]any) (strin
 	case "csv":
 		var buffer bytes.Buffer
 		writer := csv.NewWriter(&buffer)
-		headers := make([]string, len(issueExportFields))
-		for i, field := range issueExportFields {
-			headers[i] = strings.Title(strings.ReplaceAll(field, "_", " "))
+		headers := make([]string, len(fields))
+		for i, field := range fields {
+			headers[i] = sanitizeExportCell(titles[field])
 		}
 		if err := writeSanitizedCSVRow(writer, headers); err != nil {
 			return "", nil, err
 		}
 		for _, record := range records {
-			row := make([]string, len(issueExportFields))
-			for i, field := range issueExportFields {
+			row := make([]string, len(fields))
+			for i, field := range fields {
 				formatted, err := exportCellValue(record[field], false)
 				if err != nil {
 					return "", nil, err
@@ -370,14 +366,14 @@ func formatIssueExport(filename, format string, records []map[string]any) (strin
 		workbook := excelize.NewFile()
 		defer workbook.Close()
 		sheet := workbook.GetSheetName(0)
-		for column, field := range issueExportFields {
+		for column, field := range fields {
 			cell, _ := excelize.CoordinatesToCellName(column+1, 1)
-			if err := workbook.SetCellValue(sheet, cell, strings.Title(strings.ReplaceAll(field, "_", " "))); err != nil {
+			if err := workbook.SetCellValue(sheet, cell, titles[field]); err != nil {
 				return "", nil, err
 			}
 		}
 		for rowIndex, record := range records {
-			for column, field := range issueExportFields {
+			for column, field := range fields {
 				value, err := exportCellValue(record[field], true)
 				if err != nil {
 					return "", nil, err

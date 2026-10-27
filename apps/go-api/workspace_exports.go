@@ -31,8 +31,8 @@ type workspaceExportsPublisher interface {
 type workspaceExportsRepository interface {
 	Authorized(context.Context, string, string) (bool, error)
 	UserEmail(context.Context, string) (string, error)
-	CreateIssueExport(context.Context, string, string, string, []any) (json.RawMessage, string, string, []any, error)
-	History(context.Context, string, djangoapi.Query) (json.RawMessage, error)
+	CreateIssueExport(context.Context, string, string, string, []any, bool) (json.RawMessage, string, string, []any, error)
+	History(context.Context, string, string, djangoapi.Query) (json.RawMessage, error)
 }
 type workspaceExportsPrincipal struct{ userID, email, timezone string }
 type workspaceExportsPrincipalKey struct{}
@@ -131,7 +131,8 @@ func exportBody(ctx context.Context, body io.ReadCloser) (djangoinput.Input, err
 	return djangoinput.Parse(body, contentType)
 }
 func (s *workspaceExportsService) GetIssueExports(ctx context.Context, p *api.GetIssueExportsPayload) (*api.WorkspaceExportsRawJSON, io.ReadCloser, error) {
-	if _, err := s.actor(ctx, p.Slug); err != nil {
+	principal, err := s.actor(ctx, p.Slug)
+	if err != nil {
 		return nil, nil, err
 	}
 	if p.PerPage == nil || *p.PerPage == "" || p.Cursor == nil || *p.Cursor == "" {
@@ -145,7 +146,7 @@ func (s *workspaceExportsService) GetIssueExports(ctx context.Context, p *api.Ge
 	}
 	params["order_by"] = order
 	present["order_by"] = p.OrderBy != nil
-	data, err := s.repo.History(ctx, p.Slug, djangoapi.Query{Params: params, Present: present})
+	data, err := s.repo.History(ctx, principal.userID, p.Slug, djangoapi.Query{Params: params, Present: present})
 	if err != nil {
 		var httpErr *djangoapi.HTTPError
 		if errors.As(err, &httpErr) {
@@ -189,18 +190,33 @@ func (s *workspaceExportsService) CreateIssueExport(ctx context.Context, p *api.
 	if !hasMultiple {
 		multiple = false
 	}
-	_, workspaceID, token, chosen, err := s.repo.CreateIssueExport(ctx, principal.userID, p.Slug, provider, projects)
+	includeCustom, err := workspaceExportCustomProperties(input)
+	if err != nil {
+		return nil, nil, s.error(400, map[string]any{"error": err.Error()})
+	}
+	_, workspaceID, token, chosen, err := s.repo.CreateIssueExport(ctx, principal.userID, p.Slug, provider, projects, includeCustom)
 	if err != nil {
 		if errors.Is(err, store.ErrWorkspaceMissing) {
 			return nil, nil, s.error(404, map[string]any{"error": "The required object does not exist."})
 		}
 		return nil, nil, s.internal()
 	}
-	args := map[string]any{"provider": provider, "workspace_id": workspaceID, "project_ids": chosen, "token_id": token, "multiple": multiple, "slug": p.Slug}
+	args := map[string]any{"provider": provider, "workspace_id": workspaceID, "project_ids": chosen, "token_id": token, "multiple": multiple, "slug": p.Slug, "include_custom_properties": includeCustom}
 	if err := s.publisher.Task(ctx, "plane.bgtasks.export_task.issue_export_task", nil, args); err != nil {
 		return nil, nil, s.internal()
 	}
 	return workspaceExportsRaw(json.RawMessage(`{"message":"Once the export is ready you will be able to download it"}`))
+}
+func workspaceExportCustomProperties(input djangoinput.Input) (bool, error) {
+	value, exists := input.Fields["include_custom_properties"]
+	if !exists {
+		return false, nil
+	}
+	include, valid := value.(bool)
+	if !valid {
+		return false, errors.New("include_custom_properties must be a boolean")
+	}
+	return include, nil
 }
 func workspaceExportProjectValues(input djangoinput.Input) ([]any, error) {
 	value, ok := input.Fields["project"]

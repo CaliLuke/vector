@@ -1,11 +1,12 @@
+import { DeleteType } from "./delete-type-preview";
+import { PropertyAttachmentRow, reorderAttachedProperties } from "./property-attachment-row";
 import { WorkspaceTypeDeletion } from "./workspace-type-deletion";
 import { capturePropertyEditors, type TypePersistence } from "./library-persistence";
-import { useId, useState } from "react";
-import { useForm, useStore } from "@tanstack/react-form";
+import { useState } from "react";
 import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@plane/propel/button";
-import { CustomMenu, Form, ToggleSwitch } from "@plane/ui";
-import { Confirmation, EmptyState, PreviewDialog, PropertyIcon, TypeIcon } from "./controls";
+import { CustomMenu, ToggleSwitch } from "@plane/ui";
+import { Confirmation, EmptyState, PropertyIcon, TypeIcon } from "./controls";
 import type { PreviewProperty, PreviewType } from "./preview-content";
 import { useTypePreview } from "./preview-provider";
 import { AttachProperties } from "./attach-properties";
@@ -40,6 +41,7 @@ export function TypeLibrary({ readOnly = false, persistence }: { readOnly?: bool
   const [attach, setAttach] = useState<PreviewType | null>(null);
   const [context, setContext] = useState<PreviewProperty | null>(null);
   const [cascade, setCascade] = useState<PreviewProperty | null>(null);
+  const [cascadeSetup, setCascadeSetup] = useState(false);
   const [remove, setRemove] = useState<{
     property: PreviewProperty;
     type?: PreviewType;
@@ -56,9 +58,10 @@ export function TypeLibrary({ readOnly = false, persistence }: { readOnly?: bool
       types: current.types.map((item) => (item.id === type.id ? type : item)),
     }));
   };
-  const reorder = (type: PreviewType, index: number, offset: number) => {
-    const properties = [...type.properties];
-    [properties[index], properties[index + offset]] = [properties[index + offset], properties[index]];
+  const moveProperty = (type: PreviewType, sourceId: string, targetId: string, after: boolean) => {
+    if (readOnly) return;
+    const properties = reorderAttachedProperties(type.properties, sourceId, targetId, after);
+    if (properties === type.properties) return;
     if (persistence) void persistence.attachProperties(type.id, properties).catch(() => {});
     else
       setContent((current) => ({
@@ -148,6 +151,12 @@ export function TypeLibrary({ readOnly = false, persistence }: { readOnly?: bool
               ? (property, creating) => persistence.saveProperty(property, creating, actionRevision)
               : undefined
           }
+          onCreated={(property, revision) => {
+            if (property.kind !== "Cascading") return;
+            setActionRevision(revision);
+            setCascadeSetup(true);
+            setCascade(property);
+          }}
           onClose={() => setEditProperty(null)}
         />
       )}
@@ -156,6 +165,10 @@ export function TypeLibrary({ readOnly = false, persistence }: { readOnly?: bool
           type={attach}
           properties={content.properties}
           onClose={() => setAttach(null)}
+          onManageProperties={() => {
+            setAttach(null);
+            setTab("properties");
+          }}
           onAttach={
             persistence
               ? (properties) => persistence.attachProperties(attach.id, properties, actionRevision)
@@ -169,15 +182,28 @@ export function TypeLibrary({ readOnly = false, persistence }: { readOnly?: bool
           library={content}
           members={persistence?.members}
           review={editors.review}
-          onSave={persistence ? (property) => persistence.saveProperty(property, false, actionRevision) : undefined}
+          onSave={
+            persistence
+              ? async (property) => {
+                  await persistence.saveProperty(property, false, actionRevision);
+                }
+              : undefined
+          }
           onClose={() => setContext(null)}
         />
       )}
       {cascade && (
         <CascadingEditor
           property={cascade}
+          initialSetup={cascadeSetup}
           review={editors.review}
-          onSave={persistence ? (property) => persistence.saveProperty(property, false, actionRevision) : undefined}
+          onSave={
+            persistence
+              ? async (property) => {
+                  await persistence.saveProperty(property, false, actionRevision);
+                }
+              : undefined
+          }
           onClose={() => setCascade(null)}
         />
       )}
@@ -346,6 +372,10 @@ export function TypeLibrary({ readOnly = false, persistence }: { readOnly?: bool
                 <TypeIcon type={type} />
                 <div className="min-w-0 flex-1">
                   <h3 className="text-14 font-medium text-primary">{type.name}</h3>
+                  <p className="text-11 text-tertiary">
+                    {type.properties.length} {type.properties.length === 1 ? "property" : "properties"}
+                    {!type.active && " · Inactive"}
+                  </p>
                   <p className="mt-0.5 text-12 text-tertiary">{type.description}</p>
                 </div>
                 {isDefault(type) ? (
@@ -412,16 +442,26 @@ export function TypeLibrary({ readOnly = false, persistence }: { readOnly?: bool
                     const property = content.properties.find((item) => item.id === id);
                     return (
                       property && (
-                        <div key={id} className="flex items-center gap-3 border-b border-subtle py-3 last:border-0">
-                          <PropertyIcon kind={property.kind} />
-                          <span className="min-w-0 flex-1 truncate text-13">{property.name}</span>
-                          {property.required && <span className="text-11 text-tertiary">Required</span>}
+                        <PropertyAttachmentRow
+                          key={id}
+                          id={id}
+                          name={property.name}
+                          typeId={type.id}
+                          readOnly={readOnly}
+                          onMove={(source, target, after) => moveProperty(type, source, target, after)}
+                        >
+                          <div className="flex w-[calc(100%-2rem)] min-w-0 items-center gap-3 sm:w-auto sm:flex-1">
+                            <PropertyIcon kind={property.kind} icon={property.icon} />
+                            <span className="min-w-0 truncate text-13">{property.name}</span>
+                          </div>
+                          <span className="text-11 text-tertiary">{property.required ? "Required" : "Optional"}</span>
+                          <span className="text-11 text-tertiary">{property.active ? "Active" : "Inactive"}</span>
                           <span className="rounded bg-layer-2 px-2 py-0.5 text-11 text-tertiary">{property.kind}</span>
                           <button
                             aria-label={`Move ${property.name} up`}
                             disabled={readOnly || index === 0}
                             className="text-tertiary disabled:opacity-25"
-                            onClick={() => reorder(type, index, -1)}
+                            onClick={() => moveProperty(type, id, type.properties[index - 1], false)}
                           >
                             <ArrowUp className="size-3.5" />
                           </button>
@@ -429,7 +469,7 @@ export function TypeLibrary({ readOnly = false, persistence }: { readOnly?: bool
                             aria-label={`Move ${property.name} down`}
                             disabled={readOnly || index === type.properties.length - 1}
                             className="text-tertiary disabled:opacity-25"
-                            onClick={() => reorder(type, index, 1)}
+                            onClick={() => moveProperty(type, id, type.properties[index + 1], true)}
                           >
                             <ArrowDown className="size-3.5" />
                           </button>
@@ -454,7 +494,7 @@ export function TypeLibrary({ readOnly = false, persistence }: { readOnly?: bool
                               Detach property
                             </CustomMenu.MenuItem>
                           </CustomMenu>
-                        </div>
+                        </PropertyAttachmentRow>
                       )
                     );
                   })}
@@ -479,7 +519,7 @@ export function TypeLibrary({ readOnly = false, persistence }: { readOnly?: bool
         <div className="overflow-hidden rounded-lg border border-subtle">
           {content.properties.map((property) => (
             <div key={property.id} className="flex items-center gap-3 border-b border-subtle px-4 py-4 last:border-0">
-              <PropertyIcon kind={property.kind} />
+              <PropertyIcon kind={property.kind} icon={property.icon} />
               <button
                 className="min-w-0 flex-1 text-left"
                 disabled={readOnly}
@@ -494,7 +534,8 @@ export function TypeLibrary({ readOnly = false, persistence }: { readOnly?: bool
                     .filter((type) => type.properties.includes(property.id))
                     .map((type) => type.name)
                     .join(", ") || "Not attached to any type"}
-                  {property.contexts.length > 0 && ` · ${property.contexts.length + 1} contexts`}
+                  {` · ${property.contexts.length + 1} ${property.contexts.length === 0 ? "context" : "contexts"}`}
+                  {property.used !== undefined && ` · ${property.used ? "Used" : "Not used"}`}
                 </span>
               </button>
               <span className="rounded bg-layer-2 px-2 py-0.5 text-11 text-secondary">{property.kind}</span>
@@ -541,6 +582,7 @@ export function TypeLibrary({ readOnly = false, persistence }: { readOnly?: bool
                   <CustomMenu.MenuItem
                     onClick={() => {
                       setActionRevision(persistence?.revision);
+                      setCascadeSetup(false);
                       setCascade(property);
                     }}
                   >
@@ -569,104 +611,5 @@ export function TypeLibrary({ readOnly = false, persistence }: { readOnly?: bool
       {renderConfigurationDialogs()}
       {renderPropertyDialogs()}
     </>
-  );
-}
-function DeleteType({ type, onClose }: { type: PreviewType; onClose: () => void }) {
-  const { content, setContent, announce } = useTypePreview();
-  const formId = useId();
-  const affected = content.items.filter((item) => item.type === type.id);
-  const choices = content.types.filter(
-    (item) => item.id !== type.id && item.active && (!content.hierarchyEnabled || item.level === type.level)
-  );
-  const form = useForm({
-    defaultValues: { replacement: "" },
-    validators: {
-      onSubmit: ({ value }) => {
-        if (affected.length && !value.replacement) return "Choose a compatible replacement type.";
-        if (value.replacement && !choices.some((item) => item.id === value.replacement))
-          return "Choose an active replacement at the same hierarchy level.";
-        return undefined;
-      },
-    },
-    onSubmit: ({ value }) => {
-      const nextType = content.types.find((item) => item.id === value.replacement);
-      setContent((current) => ({
-        ...current,
-        types: current.types.filter((item) => item.id !== type.id),
-        projects: current.projects.map((project) => ({
-          ...project,
-          types: [
-            ...new Set(
-              project.types
-                .filter((id) => id !== type.id)
-                .concat(nextType && project.types.includes(type.id) ? [nextType.id] : [])
-            ),
-          ],
-        })),
-        items: current.items.map((item) =>
-          item.type !== type.id || !nextType
-            ? item
-            : {
-                ...preserveProperties(
-                  item,
-                  current.properties.filter(
-                    (property) => type.properties.includes(property.id) && !nextType.properties.includes(property.id)
-                  ),
-                  `Type changed from ${type.name} to ${nextType.name}`
-                ),
-                type: nextType.id,
-              }
-        ),
-      }));
-      announce(`${type.name} deleted.`);
-      onClose();
-    },
-  });
-  const replacement = useStore(form.store, (state) => state.values.replacement);
-  const formError = useStore(form.store, (state) => state.errorMap.onSubmit);
-  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
-  return (
-    <PreviewDialog
-      title={`Delete ${type.name}?`}
-      description={`${affected.length} work items need a replacement type.`}
-      onClose={() => {
-        if (!isSubmitting) onClose();
-      }}
-      footer={
-        <>
-          <Button variant="secondary" disabled={isSubmitting} onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" form={formId} variant="error-fill" disabled={isSubmitting}>
-            Delete type
-          </Button>
-        </>
-      }
-    >
-      <Form id={formId} onSubmit={() => form.handleSubmit()} className="space-y-4 text-13 text-secondary">
-        <p>Work items are kept. Properties exclusive to the old type move into their descriptions.</p>
-        {affected.length > 0 && (
-          <label className="block">
-            Replacement type
-            <select
-              className="mt-2 block w-full rounded border border-strong bg-surface-1 p-2"
-              value={replacement}
-              onChange={(event) => form.setFieldValue("replacement", event.target.value)}
-            >
-              <option value="">Choose a compatible type</option>
-              {choices.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-        {!choices.length && !!affected.length && (
-          <p role="alert">No active type is available at this level. Move its work items before deletion.</p>
-        )}
-        {formError && <p role="alert">{formError}</p>}
-      </Form>
-    </PreviewDialog>
   );
 }

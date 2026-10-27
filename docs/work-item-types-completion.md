@@ -5,6 +5,145 @@ Goal: implement and verify every in-scope requirement in
 checkpoint does not complete this goal. Prototype screens remain available for
 comparison, but fixture behavior does not count as production integration.
 
+## Parity correction implementation — 2026-10-26
+
+The design now explicitly defines the seven corrections and the remaining
+coverage boundaries. A focused independent design review found no blockers after
+clarifying projectless drafts and the accepted revision for cascading setup.
+
+Implemented and verified:
+
+- Shared icon sheet for type appearance, property icons and dropdown-option icons;
+  saved property icons render through library, attachment, native field and detail
+  consumers. Unknown stored identifiers are retained; defaults provide fallbacks.
+- Cascading creation opens options with the canonical saved property and accepted
+  revision. Closing/Skip retains the created definition.
+- Unused Text kind conversion is allowed; existing Text format and used-kind locks
+  remain. The regression failed before the fix; property tests and mutation/reload
+  integration checks pass. A fresh backend review is clear.
+- Ineligible type choices are hidden without discarding the retained current type.
+- URL Table cells separate editing from link navigation, including empty values.
+- Archived full-screen history remains readable; mutation widgets stay disabled.
+  A fresh independent review of these three item-view corrections is clear.
+
+Live browser/API verification confirmed property icon persistence, successful
+creation-to-options navigation and option save with the same property identity,
+and dropdown-option icon persistence. Only the two unused temporary properties
+created for this verification were removed. Evidence: `tmp/parity-cascade-live-proof.json`,
+`tmp/parity-dropdown-live-proof.json`, `tmp/parity-cascade-options.png`, and
+`tmp/parity-option-icon.png`.
+
+The API build is deployed locally. Frontend builds and coverage/static gates pass;
+all 1,505 behavior tests pass (276.8 seconds). The first concurrent behavior run
+hit its unchanged 300-second bound; the rerun completed within that bound. Two
+unhandled test-registration promises found by full lint were fixed; the final
+type-aware lint ratchet passes without increased findings. Final formatting and
+affected Go package tests pass. All scheduled Go tests passed (478 packages;
+work-item types 84.8% coverage). The aggregate Go gate is not green: its final
+coverage inventory found `internal/mcptransport`, created at 21:12 while the
+existing test run was already executing. That concurrent MCP work is outside
+this feature correction and absent from this run’s coverage profile. No baseline
+was increased or owned source excluded. Evidence: `tmp/parity-go-full.log`,
+`tmp/parity-frontend-tests-final.log`, `tmp/parity-frontend-lint-final.log`,
+`tmp/observability-go-fast.log`, `tmp/observability-final-package-tests.log`.
+The audit below records the pre-correction findings as provenance.
+
+### Observability verification
+
+A fresh audit found two gaps: browser failures lacked request correlation, and
+most unexpected type/property service errors lost diagnostic classification.
+Both are corrected using the existing logging pipeline. Property command spans
+also carry a safe action attribute. Independent review found no blocking issues.
+
+Ten browser logging tests pass, including request-ID/timing/privacy regressions;
+backend tests verify wrapped SQLSTATE/cancellation classification, trace/span
+correlation, unchanged 409/422 responses, and success/rejection command spans.
+The live `pnpm dev:check-logs` probe passes after narrowing its queries to the
+probe's timestamp and setting a bounded 15-second deadline. Its original
+2-second query deadline failed under concurrent checks; no correlation assertion
+was removed. Evidence: `tmp/parity-observability-smoke-final.log`,
+`tmp/observability-service-tests.log`, `tmp/observability-smoke-tests.log`.
+Live browser verification also joined a missing-project HTTP 404 from the browser
+record (request ID and 241ms duration) to server request logs with native
+trace/span IDs. Evidence: `tmp/browser-correlation-404.json` and
+`tmp/server-correlation-404.json` and `tmp/browser-server-trace-proof.json`.
+A rejected incomplete property-create command also persisted a span with action
+`create` and HTTP 400, without saving data: `tmp/property-command-live-proof.json`
+and `tmp/property-command-span-proof.json`.
+Fine-grained domain validation codes remain outside this verification.
+
+## Documentation parity audit — 2026-10-26
+
+**Verdict: broad functional coverage, but not complete documented parity.** This
+source audit supersedes the earlier unqualified completion statement. Three fresh
+reviewers compared the current Plane docs with reachable UI and backend code.
+Passing the earlier tests did not establish that every documented control existed.
+This audit changed no application code and did not rerun the full test suite.
+
+### Confirmed gaps and differences
+
+The reference for these rows is [Plane workspace work item types](https://docs.plane.so/work-items/workspace-work-item-types).
+
+| Finding                                                        | Implementation evidence                                                                                                                                                                                                                                                                                                     | Classification                                                                          |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Property icon customization is missing.                        | `property-editor.tsx:455` uses the fixed kind glyph; `controls.tsx:41` accepts only kind. The adapter retains stored icons, but library rows ignore them and detail labels omit them. The column selector does render stored icons. Paths are under `apps/web/core/components/work-item-types/` except the column selector. | Missing user-facing capability; existing type-icon selection is separate and works.     |
+| Dropdown option icons cannot be configured.                    | `apps/web/core/components/work-item-types/property-editor.tsx:167` exposes option name/parent/removal only; new options at line 237 omit icons. Saved API-provided icons already render in value pickers.                                                                                                                   | Missing authoring control, not missing storage.                                         |
+| Unused Text kind conversion fails despite an enabled selector. | `apps/go-api/internal/workitemtypes/property/definition.go:101` rejects any change away from Text before consulting usage; `apps/web/core/components/work-item-types/property-editor.tsx:449` allows the unused-property kind selector.                                                                                     | Confirmed UI/API inconsistency; broader than the documented immutable Text-format rule. |
+| Unavailable and hierarchy-invalid types remain visible.        | `apps/web/core/components/issues/issue-modal/components/type-fields.tsx:41` maps all choices and disables invalid entries; backend eligibility is enforced.                                                                                                                                                                 | Picker behavior differs from documented hiding; invalid creation remains blocked.       |
+| Cascading creation closes without opening option setup.        | `apps/web/core/components/work-item-types/property-editor.tsx:83` closes after save. `library.tsx:561` offers Manage options separately.                                                                                                                                                                                    | Workflow mismatch; options management itself exists.                                    |
+
+### Additional implementation limits and unresolved comparisons
+
+- Custom field display/editing is exposed in Table, not List/Board:
+  `apps/web/core/components/issues/issue-layouts/filters/header/display-filters/custom-property-columns.tsx:16`.
+  The [properties overview](https://docs.plane.so/work-items/work-item-properties)
+  describes layout editing generally; the [specific display reference](https://docs.plane.so/core-concepts/issues/display-options)
+  enumerates built-ins. The limitation is confirmed, but custom-field parity here
+  requires a paid-product comparison. Custom sorting is similarly unverified.
+- Custom URL Table cells cannot open their editor, including when empty:
+  `apps/web/core/components/issues/issue-layouts/spreadsheet/property-column.tsx:20`.
+  Values remain editable from the item's normal editor.
+- Archived full-screen peek gives its whole property sidebar `pointer-events-none`
+  (`apps/web/core/components/issues/peek-overview/view.tsx:256`). That contains the
+  custom-history control. This suggests read-only history is inaccessible by
+  pointer in that mode; it was not reproduced live in this audit.
+- Custom grouping/column controls exclude profile/archive locations:
+  `apps/web/core/hooks/use-work-item-discovery-scope.ts:11`. The reviewed docs do
+  not explicitly establish those scopes, so this is a coverage limit, not a proven
+  missing documented requirement.
+- Member selection requires eligible project/item access, not merely workspace
+  membership (`apps/go-api/internal/workitemtypes/item_values.go:214`). The docs
+  do not fully specify equivalent eligibility rules. The local spec described
+  access restrictions on subscription; actual code also restricts storing the
+  member selection. This policy needs an explicit decision.
+- Saving hierarchy with every type at Level 0 activates strict adjacency and
+  reviews all existing parent links for removal (`hierarchy_review.go:115`,
+  `hierarchy_apply.go:30`, under `apps/go-api/internal/workitemtypes/`). The docs'
+  unrestricted-before-configuration and leaf-Level-0 descriptions leave this
+  transition unclear. Confirm against Plane before labeling it a defect.
+
+### Coverage found in the actual implementation
+
+Production paths exist for workspace lifecycle, protected Task, rollout/imports,
+attachments/order, all eleven property kinds, required/default validation,
+contexts, cascading paths/preservation, hierarchy validation and conflict review,
+creation/private drafts/publication, type switching, activity, rich-text history,
+restore and search. All named formula functions/operators in the primary article
+have implementation paths; no missing function was found.
+
+The [filter reference](https://docs.plane.so/core-concepts/issues/visualise_filter)
+was checked against `property_predicate_operators.go` and `property-filter-config.ts`.
+The documented custom filter families/operators are covered. Type grouping,
+subgrouping, parent grouping and the sub-item display restriction are integrated.
+Exports are a Vector addition with their own authorization contract, not evidence
+of paid-product parity.
+
+The separately documented project-owned type model, billing gates and full
+release lifecycle were excluded explicitly in the accepted spec. Vector has a
+real project release reference catalog; it does not implement the complete
+[release-management product](https://docs.plane.so/projects/project-releases).
+These exclusions must not be reported as full Plane product parity.
+
 ## Requirement tracker
 
 - [x] Workspace activation, protected Task, type creation/editing and rollout.
@@ -12,14 +151,14 @@ comparison, but fixture behavior does not count as production integration.
 - [x] Property definitions, attachments/order, all eleven configuration editors.
 - [x] Context resolution, scope validation and explicit override inheritance.
 - [x] Formula parsing, type checking, evaluation and authoring preview.
-- [ ] Formula results throughout item detail and discovery surfaces.
+- [x] Formula results in detail/peek and custom table columns; clock refresh in visible tables and custom-filtered lists.
 - [x] Cascading configuration, path validation and confirmed preservation.
 - [x] Type selection and custom fields in full creation/editing forms.
 - [x] Type selection and custom fields in inline detail and peeks.
 - [x] Custom values through ordinary writers and UI duplication.
-- [ ] Audit remaining import/move and secondary writer integrations.
+- [x] Audit existing imports, draft destination changes and secondary writers. Published-item project transfer has no supported surface.
 - [x] Private draft values and atomic publication with required-field validation.
-- [ ] Hierarchy persistence, previews, cross-project parentage and all writers.
+- [x] Hierarchy persistence, previews, cross-project parentage and existing writers.
 - [x] Project default preference and hierarchy-aware creation defaults.
 - [x] Used-type deletion with valid reassignment/preservation.
 - [x] Type switching from full detail and peek entry points.
@@ -32,14 +171,134 @@ comparison, but fixture behavior does not count as production integration.
 - [x] Text, number and numeric-range filter controls.
 - [x] Authorized effective-property catalog and typed filters on project/workspace/profile/archive pages.
 - [x] Authorized type catalogs and filter integration across project/workspace/module/cycle lists and counts.
-- [ ] Type grouping/subgrouping and parent-type grouping.
+- [x] Type grouping/subgrouping in list/board Display controls and authenticated readers.
+- [x] Parent-type grouping.
 - [x] Custom filters on module/cycle/view endpoints and filtered counts.
-- [ ] Custom categorical grouping and grouped counts.
+- [x] Custom categorical grouping and grouped counts.
 - [x] Custom table columns, including formatted values and separate cascading levels.
-- [ ] Formula results throughout the remaining discovery/export surfaces.
+- [x] Formula results throughout discovery and authorized export surfaces.
 - [x] Saved-view round trips and repair without silently broadening results.
-- [ ] Explicit authorized custom exports; unchanged public-field visibility.
-- [ ] Keyboard/narrow viewport checks, full gates and final independent reviews.
+- [x] Explicit authorized custom exports; unchanged public-field visibility.
+- [x] Keyboard/narrow viewport checks, full gates and final independent reviews.
+- [x] Close the confirmed UI/configuration gaps identified by the documentation parity audit above.
+- [ ] Resolve the explicit policy/coverage uncertainties before claiming full Plane parity.
+
+## Current verification — 2026-10-26
+
+The earlier S1–S11 completion assessment missed the parity gaps recorded above.
+The validation results below remain valid for the implementation tested.
+The full Prek invocation passed the Go gate,
+frontend builds, typechecks, lint, formatting, duplication and coverage checks.
+Its Knip finding and outdated clock assertion were corrected. The subsequent
+frontend run exposed one obsolete attachment-menu selector, which was corrected
+without changing its delete-callback assertion. Final checks are clean:
+
+- All 1,493 frontend tests pass, with no failures, skips or cancellations
+  (`tmp/work-item-types-final-frontend-clean.log`, 177.271 seconds).
+- Knip passes with no increased findings (`tmp/work-item-types-final-knip.log`).
+- Go full gate passes (`tmp/work-item-types-final-full.log`); work-item-types
+  integration coverage is 84.8%.
+- Final web/UI typechecks and affected formatting checks pass. Fresh reviewers
+  verified export authorization, UI behavior, spec acceptance and the final fixes.
+- Localhost returns HTTP 200; the final local error-log query returned zero rows.
+
+The original combined run retained its nonzero result; the failed gates were
+rerun separately to verify the corrections. No coverage, lint or timeout limit
+was relaxed. The development stack remains running.
+
+Custom exports are now implemented behind explicit opt-in, with standard exports
+unchanged. One authorized snapshot supplies all selected projects and formula
+results, including multi-file archives. CSV headers and values are sanitized;
+JSON retains canonical values/statuses and evaluation metadata. Private history
+requires the requester and current source visibility, including visible parent,
+child and relation references from unselected projects. Worker, property projection,
+history, adapter and UI tests pass; fresh independent review is clear after the
+reference-scope regression fix. Live export verification passed: the local archive contains 400 rows; the disposable
+item preserves Number 0, Boolean false and Formula 10 with canonical status/value
+metadata. Evidence: `tmp/custom-export-live-proof.json` and
+`tmp/custom-export-completed.png`. The complete Go gate passed. See the final
+verification result below for the frontend gate follow-up.
+
+The final UI audit corrected production-library omissions: irreversible activation
+explanation, attachment counts/status, drag reordering with keyboard alternatives,
+usage summaries, disabled empty attachment submission and distinct empty states.
+All 19 affected tests and web typechecking pass; a fresh UI review passed 15 tests
+without findings. Creation and inline formula previews now share minute-boundary
+refresh and focus/remount behavior with detail/table; all 41 affected tests pass.
+
+The complete repository run passed Go, frontend production builds, typechecks,
+lint, formatting, duplication and coverage checks. It reported an unused exported
+component and a stale fixed-interval clock assertion; both are corrected. Its
+frontend tests reached 1,438 passes before the five-minute deadline cancelled the
+remaining files. The failed Knip and frontend checks subsequently passed on the final
+source without concurrent Go checks. Frontend watchers were stopped for production
+builds and restarted afterward; localhost remains available.
+Go lint baseline changes only retire four diagnostics removed by export refactoring:
+one unchecked test close, two shadows, and one duplicate deprecated-title call.
+No baseline allowance increased.
+
+Custom categorical grouping now supports Boolean, single Dropdown/Member/Release,
+and distinct cascading levels in List/Board. Counts and independent group pages
+use the same authorized property snapshot and preserve OR/NOT predicates.
+False, empty, inactive/unattached, foreign-context and invalid values stay distinct.
+Review caught conflicting selectors, foreign-context errors and inactive subgroup
+menu exclusions; all were fixed. Live proof: `tmp/custom-property-grouping.png`.
+
+Parent-type grouping uses the selected type and visible direct parents, including
+cross-project parents and empty-group metadata from the same read transaction.
+The full creation form receives the selected parent. Quick-add and drag remain
+disabled for this axis; normal form validation owns parent changes. Nested sub-item
+expansion is suppressed only while parent grouping is active in List/Board.
+The fresh review's empty-state and layout-switch findings were fixed and rechecked.
+Live proof: `tmp/parent-type-grouping.png`, `tmp/parent-type-empty-groups.png`.
+Temporary verification records were removed and original Module/list preferences
+and filters restored. Parent/custom database tests passed in 16.759 seconds
+(`tmp/grouping-final-db.log`); Go fast gates, web types and full typed lint pass
+(`tmp/grouping-go-fast.log`, `tmp/parent-group-types.log`, `tmp/parent-group-lint.log`).
+All 25 focused frontend regressions pass (`tmp/grouping-final-frontend.log`).
+The two lint identity updates tighten existing complexity allowances: display
+selection 34→33 and display preference normalization 21→19; none increased.
+
+Type grouping and board subgroups are available through Display. Live checks on
+Platform App rendered the Task group and Task subgroups beneath Priority; the
+original Module/list preferences were restored. Evidence: `tmp/type-grouping-list.png`
+and `tmp/type-subgroup-board.png`. Fresh independent review found no blockers.
+
+Formula table batches and custom-filtered lists now refresh at minute boundaries.
+Formula batches also refresh on focus/remount, including when a boundary falls
+inside the normal cache freshness window. Discovery catalogs do not disclose
+formula expressions, so custom predicates conservatively trigger refresh; ordinary
+lists and tables without formula columns do not poll. Tests use actual Query
+observers across UTC midnight, verify new membership/counts, and verify refresh
+stops on unmount. The review's focus/remount finding is fixed and independently
+rechecked. All 51 focused frontend tests, the web typecheck and full typed lint
+pass with no baseline increases. Results are recorded in
+`tmp/work-item-clock-suite.log`, `tmp/work-item-clock-types.log`, and
+`tmp/work-item-current-lint.log`. The terminal full-run result and follow-up are recorded above.
+
+The writer audit follows Notion import through the normal API and its shared
+custom-value validation. Draft destination/publication, intake, parent attachment,
+and estimate changes already have integration coverage. No published-item transfer
+endpoint/UI exists; this audit does not introduce a new transfer workflow.
+The targeted database suite covering hierarchy, draft destinations, intake,
+estimate writers and formula projection passed in 117.183 seconds
+(`tmp/work-item-completion-audit.log`). All 12 hierarchy UI/refresh tests pass
+(`tmp/work-item-hierarchy-audit.log`). The production hierarchy screen calls the
+durable catalog, preview and commit services; the prototype is not its data source.
+
+The earlier export gap is resolved by the opt-in worker projection and private
+history contract described at the start of this verification section.
+
+Keyboard/narrow-screen verification covered the production library, attachment
+reordering with Enter, type-creation dialog, icon/color radio selection and Escape,
+and context scope controls at 390px (icon sheet also at 320px). Mobile attachment
+labels now occupy their own line rather than being squeezed by status/actions.
+Evidence: `tmp/type-attachments-narrow.png`, `tmp/type-icon-picker-narrow.png`, and
+`tmp/property-context-narrow.png`. Keyboard action testing found a shared menu
+wrapper registered as the item instead of its button. Forwarding the menu ref/role
+to the actual button fixes Enter/Space activation; the regression failed before
+and all 30 dropdown tests pass afterward. The live context action also opens with
+Enter after the fix. Hierarchy's unactivated production state remains unchanged.
 
 ## Review checkpoints
 

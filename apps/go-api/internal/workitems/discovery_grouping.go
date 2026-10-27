@@ -1,6 +1,7 @@
 package workitems
 
 import (
+	"context"
 	"fmt"
 	"slices"
 
@@ -15,7 +16,7 @@ func usesTypeGrouping(q Request) bool {
 			return true
 		}
 	}
-	return false
+	return parentGroupingAxis(q) != ""
 }
 
 func (r *Repository) validateDiscoveryGrouping(group, subgroup string) error {
@@ -23,7 +24,7 @@ func (r *Repository) validateDiscoveryGrouping(group, subgroup string) error {
 		return failure(400, "error", "Group by and sub group by cannot have same parameters")
 	}
 	for _, axis := range []string{group, subgroup} {
-		if axis == "type_id" && r.typeDiscovery != nil {
+		if axis == "type_id" && r.typeDiscovery != nil || r.propertyGroups[axis] != nil || r.parentGrouping != nil && axis == r.parentGrouping.axis {
 			continue
 		}
 		if err := issuequery.ValidateGrouping(axis, ""); err != nil {
@@ -35,13 +36,19 @@ func (r *Repository) validateDiscoveryGrouping(group, subgroup string) error {
 
 // Bucket selectors are separate conjunctions, so loading a group's next page
 // cannot replace an existing OR/NOT expression or accidentally broaden it.
-func (r *Repository) appendDiscoveryGroupSelectors(q Request, where []string, args []any) ([]string, []any, error) {
+func (r *Repository) appendDiscoveryGroupSelectors(ctx context.Context, q Request, where []string, args []any) ([]string, []any, error) {
 	for _, prefix := range []string{"group_filter", "sub_group_filter"} {
 		axis, value := q.Params[prefix+"_by"], q.Params[prefix+"_value"]
 		if axis == "" && value == "" {
 			continue
 		}
-		if q.API || axis != "type_id" || value == "" || r.typeDiscovery == nil {
+		if q.API || value == "" || r.typeDiscovery == nil {
+			return nil, args, failure(400, "error", "Invalid work item group selection.")
+		}
+		if r.propertyGroups[axis] != nil || r.parentGrouping != nil && axis == r.parentGrouping.axis {
+			continue
+		}
+		if axis != "type_id" {
 			return nil, args, failure(400, "error", "Invalid work item group selection.")
 		}
 		if value == "None" {
@@ -54,7 +61,11 @@ func (r *Repository) appendDiscoveryGroupSelectors(q Request, where []string, ar
 			where = append(where, fmt.Sprintf("issue.type_id=$%d::uuid", len(args)))
 		}
 	}
-	return where, args, nil
+	where, args, err := r.appendParentGroupSelector(q, where, args)
+	if err != nil {
+		return nil, args, err
+	}
+	return r.appendPropertyGroupSelectors(ctx, q, where, args)
 }
 
 func (r *Repository) discoveryTypeGroups() []any {

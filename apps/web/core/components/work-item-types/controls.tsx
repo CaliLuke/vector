@@ -1,29 +1,14 @@
+export { PropertyIcon } from "./property-icon";
 import { typeErrorMessage } from "@/services/work-item-types.service";
 import { Dialog, Listbox, ListboxButton, ListboxOptions, ListboxOption } from "@headlessui/react";
-import {
-  Check,
-  Layers,
-  ChevronDown,
-  X,
-  Hash,
-  Type,
-  Calendar,
-  Users,
-  ListFilter,
-  ToggleLeft,
-  Link,
-  FileText,
-  FunctionSquare,
-  GitBranch,
-  Package,
-} from "lucide-react";
+import { Check, Layers, ChevronDown, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { useId } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
 import { Button } from "@plane/propel/button";
 import { EModalWidth, ModalCore } from "@plane/ui";
 import { typeIconComponents } from "./type-icons";
-import type { PreviewType, PropertyKind } from "./preview-content";
+import type { PreviewType } from "./preview-content";
 
 export const inputStyle =
   "w-full rounded-md border border-strong bg-surface-1 px-3 py-2 text-13 text-primary outline-none focus:border-accent-strong focus:ring-1 focus:ring-accent-strong disabled:bg-layer-1 disabled:text-tertiary";
@@ -37,22 +22,6 @@ export function TypeIcon({ type, size = "md" }: { type: Pick<PreviewType, "icon"
       <Icon className={size === "sm" ? "size-3.5" : "size-4"} aria-hidden />
     </span>
   );
-}
-export function PropertyIcon({ kind }: { kind: PropertyKind }) {
-  const Icon = {
-    Text: Type,
-    Number: Hash,
-    Dropdown: ListFilter,
-    Boolean: ToggleLeft,
-    Date: Calendar,
-    "Member picker": Users,
-    "Release picker": Package,
-    "Rich text": FileText,
-    URL: Link,
-    Formula: FunctionSquare,
-    Cascading: GitBranch,
-  }[kind];
-  return <Icon className="size-4 shrink-0 text-tertiary" aria-hidden />;
 }
 export function Field({
   label,

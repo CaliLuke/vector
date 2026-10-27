@@ -30,6 +30,7 @@ const nativeForms = registerWorkItemTypesFormHarness({
   sourceFiles: [
     "apps/web/core/components/work-item-types/cascading-editor.tsx",
     "apps/web/core/components/work-item-types/library.tsx",
+    "apps/web/core/components/work-item-types/delete-type-preview.tsx",
     "apps/web/core/components/work-item-types/attach-properties.tsx",
     "apps/web/core/components/work-item-types/work-item-preview.tsx",
     "apps/web/core/components/work-item-types/controls.tsx",
@@ -44,6 +45,10 @@ const { WorkItemTypesPreviewProvider, useTypePreview } =
   await import("../../apps/web/core/components/work-item-types/preview-provider.tsx");
 const { CascadingEditor } = await import("../../apps/web/core/components/work-item-types/cascading-editor.tsx");
 const { TypeLibrary } = await import("../../apps/web/core/components/work-item-types/library.tsx");
+const { AttachProperties } = await import("../../apps/web/core/components/work-item-types/attach-properties.tsx");
+const { createPreviewContent } = await import("../../apps/web/core/components/work-item-types/preview-content.ts");
+const { reorderAttachedProperties } =
+  await import("../../apps/web/core/components/work-item-types/property-attachment-row.tsx");
 const { WorkItemsPreview } = await import("../../apps/web/core/components/work-item-types/work-item-preview.tsx");
 
 function CascadeScreen() {
@@ -147,10 +152,9 @@ await test("property attachment requires a selection and updates only after nati
   await environment.render(React.createElement(WorkItemTypesPreviewProvider, null, React.createElement(LibraryScreen)));
   await click(document.body.querySelector('button[aria-label="Expand Task"]'));
   await click([...document.body.querySelectorAll("button")].find((node) => node.textContent === "Add properties"));
-  await click(addButton());
+  assert.equal(addButton().disabled, true);
   const attachForm = nativeForms.getForms("apps/web/core/components/work-item-types/attach-properties.tsx").at(-1);
   assert.equal(attachForm.state.isSubmitSuccessful, false);
-  assert.match(document.body.querySelector('[role="alert"]').textContent, /Choose at least one property/);
   const severity = [...document.body.querySelectorAll("label")].find((node) => node.textContent.includes("Severity"));
   await click(severity.querySelector("input"));
   await click(addButton());
@@ -196,7 +200,7 @@ await test("type replacement is a native required selection and preserves the af
   t.after(async () => environment.render(null));
   await environment.render(React.createElement(WorkItemTypesPreviewProvider, null, React.createElement(LibraryScreen)));
   await click([...document.body.querySelectorAll("button")].find((node) => node.textContent === "Delete type"));
-  const form = nativeForms.getForms("apps/web/core/components/work-item-types/library.tsx").at(-1);
+  const form = nativeForms.getForms("apps/web/core/components/work-item-types/delete-type-preview.tsx").at(-1);
   await click(document.body.querySelector('button[type="submit"]'));
   assert.equal(form.state.isSubmitSuccessful, false);
   assert.match(document.body.querySelector('[role="alert"]').textContent, /replacement type/i);
@@ -238,6 +242,69 @@ await test("work-item draft mode is a native value that skips publication-only r
   assert.equal(saved.items.at(-1).draft, true);
   assert.equal(workItemForm.state.values.draft, true);
   assert.equal(workItemForm.state.isSubmitSuccessful, true);
+});
+
+await test("attachment reordering preserves identities and no-op drops", () => {
+  const ids = ["a", "b", "c"];
+  assert.deepEqual(reorderAttachedProperties(ids, "a", "c", true), ["b", "c", "a"]);
+  assert.deepEqual(reorderAttachedProperties(ids, "c", "a", false), ["c", "a", "b"]);
+  assert.equal(reorderAttachedProperties(ids, "a", "b", false), ids);
+  assert.equal(reorderAttachedProperties(ids, "foreign", "b", false), ids);
+  assert.deepEqual(ids, ["a", "b", "c"]);
+});
+
+await test("attachment controls reorder only their own type and expose drag handles", async (t) => {
+  t.after(async () => environment.render(null));
+  await environment.render(React.createElement(WorkItemTypesPreviewProvider, null, React.createElement(LibraryScreen)));
+  await click(document.body.querySelector('button[aria-label="Expand Task"]'));
+  const before = readContent();
+  const task = before.types.find((type) => type.id === "task");
+  const property = before.properties.find((item) => item.id === task.properties[0]);
+  const handle = document.body.querySelector(`button[aria-label="Drag ${property.name} to reorder"]`);
+  assert.ok(handle);
+  assert.equal(handle.parentElement.draggable, true);
+  await click(document.body.querySelector(`button[aria-label="Move ${property.name} down"]`));
+  const after = readContent();
+  assert.equal(after.types.find((type) => type.id === "task").properties[1], property.id);
+  assert.deepEqual(
+    after.types.filter((type) => type.id !== "task"),
+    before.types.filter((type) => type.id !== "task")
+  );
+  assert.match(handle.parentElement.textContent, /Active/);
+});
+
+await test("attachment empty states distinguish a new library from an exhausted library and link to management", async (t) => {
+  t.after(async () => environment.render(null));
+  const content = createPreviewContent();
+  let navigated = false;
+  const props = {
+    type: content.types[0],
+    properties: [],
+    onClose() {},
+    onManageProperties() {
+      navigated = true;
+    },
+  };
+  await environment.render(
+    React.createElement(WorkItemTypesPreviewProvider, null, React.createElement(AttachProperties, props))
+  );
+  assert.match(document.body.textContent, /No properties yet/);
+  assert.equal(addButton().disabled, true);
+  await click(button("Manage properties"));
+  assert.equal(navigated, true);
+  await environment.render(
+    React.createElement(
+      WorkItemTypesPreviewProvider,
+      null,
+      React.createElement(AttachProperties, {
+        ...props,
+        properties: content.properties,
+        type: { ...props.type, properties: content.properties.map((property) => property.id) },
+      })
+    )
+  );
+  assert.match(document.body.textContent, /All properties are attached/);
+  assert.equal(addButton().disabled, true);
 });
 
 nativeForms.restore();

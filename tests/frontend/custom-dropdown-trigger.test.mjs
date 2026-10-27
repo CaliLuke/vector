@@ -619,3 +619,67 @@ void test("search keyboard selection restores focus to its trigger", async () =>
   await waitForFocus(trigger);
   assert.equal(document.querySelector("[role=listbox]"), null);
 });
+
+void test("CustomMenu keyboard selection invokes the enabled action and skips disabled actions", async (t) => {
+  assertNoConsoleErrors(t);
+  const { CustomMenu } = await loadDropdowns();
+  const actions = [];
+  await environment.render(
+    React.createElement(
+      CustomMenu,
+      { label: "Property actions" },
+      React.createElement(
+        CustomMenu.MenuItem,
+        { disabled: true, onClick: () => actions.push("disabled") },
+        "Unavailable"
+      ),
+      React.createElement(CustomMenu.MenuItem, { onClick: () => actions.push("contexts") }, "Manage contexts")
+    )
+  );
+  const trigger = environment.container.querySelector("button");
+  await activateWithKeyboard(trigger, "ArrowDown");
+  const menu = document.querySelector('[role="menu"]');
+  await waitForFocus(menu, "keyboard opening should focus the menu");
+  assert.equal(document.getElementById(menu.getAttribute("aria-activedescendant")).textContent, "Manage contexts");
+  await actWithAnimationFrames(() => keyDown(menu, "Enter"));
+  assert.deepEqual(actions, ["contexts"]);
+  assert.equal(document.querySelector('[role="menu"]'), null);
+  await waitForFocus(trigger);
+  await activateWithKeyboard(trigger, "ArrowDown");
+  await actWithAnimationFrames(() => keyDown(document.querySelector('[role="menu"]'), " "));
+  assert.deepEqual(actions, ["contexts", "contexts"]);
+  assert.equal(document.querySelector('[role="menu"]'), null);
+  await waitForFocus(trigger);
+});
+
+void test("CustomMenu keyboard action inside an open submenu closes both menus", async (t) => {
+  assertNoConsoleErrors(t);
+  const { CustomMenu } = await loadDropdowns();
+  const actions = [];
+  await environment.render(
+    React.createElement(
+      CustomMenu,
+      { label: "Actions" },
+      React.createElement(
+        CustomMenu.SubMenu,
+        { trigger: "More actions" },
+        React.createElement(CustomMenu.MenuItem, { onClick: () => actions.push("nested") }, "Nested action")
+      )
+    )
+  );
+  const trigger = environment.container.querySelector("button");
+  await activateWithKeyboard(trigger, "ArrowDown");
+  const submenuTrigger = [...document.querySelectorAll("button")].find(
+    (button) => button.textContent === "More actions"
+  );
+  await actWithAnimationFrames(() => submenuTrigger.click());
+  const menu = document.querySelector('[role="menu"]');
+  assert.ok(document.body.textContent.includes("Nested action"));
+  await actWithAnimationFrames(() => keyDown(menu, "ArrowDown"));
+  assert.equal(document.getElementById(menu.getAttribute("aria-activedescendant")).textContent, "Nested action");
+  await actWithAnimationFrames(() => keyDown(menu, "Enter"));
+  assert.deepEqual(actions, ["nested"]);
+  assert.equal(document.querySelector('[role="menu"]'), null);
+  assert.equal(document.body.textContent.includes("Nested action"), false);
+  await waitForFocus(trigger);
+});

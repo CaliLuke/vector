@@ -13,7 +13,7 @@ func (s *workItemTypesService) HierarchyCatalog(ctx context.Context, p *api.Hier
 		return nil, &api.TypeError{Kind: "status_401", Message: unauthenticatedDetail}
 	}
 	result, err := s.repository.HierarchyCatalog(ctx, actor, p.Slug)
-	return workItemTypesResponse[api.HierarchyCatalog](result, err)
+	return workItemTypesResponse[api.HierarchyCatalog](ctx, "work_item_types.hierarchy", result, err)
 }
 func (s *workItemTypesService) PreviewHierarchy(ctx context.Context, p *api.PreviewHierarchyPayload) (*api.HierarchyReview, error) {
 	return hierarchyMutation[api.HierarchyReview](ctx, p.Slug, p.Data, s.repository.PreviewHierarchy)
@@ -43,5 +43,5 @@ func hierarchyMutation[Result, Stored any](ctx context.Context, slug string, dat
 		input.Confirm = *data.Confirm
 	}
 	result, err := write(ctx, actor, slug, input)
-	return workItemTypesResponse[Result](result, err)
+	return workItemTypesResponse[Result](ctx, "work_item_types.hierarchy", result, err)
 }

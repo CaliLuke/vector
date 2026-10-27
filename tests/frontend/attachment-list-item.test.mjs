@@ -144,7 +144,7 @@ test("attachment menu keeps its delete action when opened by pointer", async (t)
     item.textContent.includes("common.actions.delete")
   );
   assert.ok(deleteItem);
-  await React.act(async () => deleteItem.querySelector("button").click());
+  await React.act(async () => deleteItem.click());
   assert.deepEqual(globalThis.attachmentCalls, [["delete", "attachment-1"]]);
 });
 

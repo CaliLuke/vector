@@ -75,8 +75,12 @@ await test("accepted edits invalidate the earlier optimistic read only for the o
   assert.equal(f.client.getQueryState(f.options.queryKey).isInvalidated, true);
   assert.equal(f.client.getQueryState(other.queryKey).isInvalidated, false);
 });
-await test("clock formulas refresh every visible minute; ordinary formulas do not poll", () => {
+await test("clock formulas refresh at minute boundaries; ordinary formulas do not poll", (t) => {
+  t.mock.timers.enable({ apis: ["Date"], now: new Date("2026-10-26T23:59:30Z") });
   const { refetchInterval } = itemDetailSchemaOptions(scope);
+  assert.equal(refetchInterval(field("NOW()")), 30000);
+  assert.equal(refetchInterval(field("today () + 2")), 30000);
+  t.mock.timers.tick(30000);
   assert.equal(refetchInterval(field("NOW()")), 60000);
   assert.equal(refetchInterval(field("today () + 2")), 60000);
   assert.equal(refetchInterval(field("{{effort}} + 2")), false);

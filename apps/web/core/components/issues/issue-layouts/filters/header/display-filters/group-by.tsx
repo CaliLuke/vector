@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { ParentTypeGrouping } from "./parent-type-grouping";
+import { CustomPropertyGrouping } from "./custom-property-grouping";
 import React, { useState } from "react";
 
 import { useTranslation } from "@plane/i18n";
@@ -14,6 +16,7 @@ import { useGroupByOptions } from "../../../utils";
 import { FilterHeader, FilterOption } from "@/components/issues/issue-layouts/filters";
 
 type Props = {
+  isEpic?: boolean;
   displayFilters: IIssueDisplayFilterOptions | undefined;
   groupByOptions: TIssueGroupByOptions[];
   handleUpdate: (val: TIssueGroupByOptions) => void;
@@ -59,6 +62,13 @@ export const FilterGroupBy = function FilterGroupBy(props: Props) {
               />
             );
           })}
+          <ParentTypeGrouping displayFilters={displayFilters} isEpic={props.isEpic} onChange={handleUpdate} />
+          <CustomPropertyGrouping
+            displayFilters={displayFilters}
+            axis="group_by"
+            isEpic={props.isEpic}
+            onChange={handleUpdate}
+          />
         </div>
       )}
     </>
