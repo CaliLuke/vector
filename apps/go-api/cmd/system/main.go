@@ -100,6 +100,7 @@ import (
 	instanceworkspaceslugstore "github.com/CaliLuke/go-plane/internal/instanceworkspaceslugcheck"
 	intakeinboxreadsstore "github.com/CaliLuke/go-plane/internal/intakeinboxreads"
 	lastvisitedworkspacestore "github.com/CaliLuke/go-plane/internal/lastvisitedworkspace"
+	"github.com/CaliLuke/go-plane/internal/mcptransport"
 	modulereadsstore "github.com/CaliLuke/go-plane/internal/modulereads"
 	notificationsstore "github.com/CaliLuke/go-plane/internal/notifications"
 	pagereadsstore "github.com/CaliLuke/go-plane/internal/pagereads"
@@ -180,6 +181,7 @@ const (
 )
 
 type config struct {
+	mcp                        mcptransport.Config
 	goBackgroundTasks          bool
 	goBackgroundTasksNoWorkers bool
 	httpAddress                string
@@ -217,6 +219,9 @@ func main() {
 func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	cfg, err := parseConfig(args)
 	if err != nil {
+		return err
+	}
+	if err = mcptransport.ValidateStartup(cfg.mcp, mcptransport.Options{}); err != nil {
 		return err
 	}
 
@@ -1523,6 +1528,10 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 		intakeInboxReads:                        intakeInboxReadsEndpoints,
 		deployBoardReads:                        deployBoardReadsEndpoints,
 	}, workspaceFavoritesEndpoints)
+	handler, err = mcptransport.New(cfg.mcp, mcptransport.Options{}, handler)
+	if err != nil {
+		return err
+	}
 	handler = wrapHTTP(handler)
 	serveErr := listenAndServeHTTP(logCtx, cfg.httpAddress, handler, cfg.shutdownTimeout)
 	return serveErr
@@ -1574,6 +1583,10 @@ func readReplicaDatabaseURL() (string, error) {
 	}).String(), nil
 }
 func parseConfig(args []string) (config, error) {
+	mcpConfig, err := mcpConfigFromEnvironment()
+	if err != nil {
+		return config{}, err
+	}
 	sessionCookieAge, err := envSeconds("SESSION_COOKIE_AGE", 604800)
 	if err != nil {
 		return config{}, err
@@ -1606,7 +1619,7 @@ func parseConfig(args []string) (config, error) {
 		)
 	}
 
-	cfg := config{sessionCookieAge: sessionCookieAge, adminSessionCookieAge: adminSessionCookieAge}
+	cfg := config{sessionCookieAge: sessionCookieAge, adminSessionCookieAge: adminSessionCookieAge, mcp: mcpConfig}
 	flags.StringVar(&cfg.httpAddress, "http-address", defaultHTTPAddress, "HTTP listen address")
 	flags.DurationVar(&cfg.shutdownTimeout, "shutdown-timeout", defaultShutdownTimeout, "graceful shutdown timeout")
 	flags.BoolVar(&cfg.debug, "debug", debugMode, "enable Django-compatible debug behavior and debug logs")

@@ -13,6 +13,7 @@ export const RESTRICTED_URLS: string[] = [
   "404",
   "accounts",
   "api",
+  "mcp",
   "create-workspace",
   "god-mode",
   "installations",

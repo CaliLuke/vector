@@ -31,7 +31,7 @@ func ContainsURL(value string) bool {
 }
 
 var restrictedSlugs = []string{
-	"404", "accounts", "api", "create-workspace", "god-mode", "installations", "invitations", "onboarding", "profile",
+	"404", "accounts", "api", "mcp", "create-workspace", "god-mode", "installations", "invitations", "onboarding", "profile",
 	"spaces", "workspace-invitations", "password", "flags", "monitor", "monitoring", "ingest", "plane-pro", "plane-ultimate",
 	"enterprise", "plane-enterprise", "disco", "silo", "chat", "calendar", "drive", "channels", "upgrade", "billing",
 	"sign-in", "sign-up", "signin", "signup", "config", "live", "admin", "m", "import", "importers", "integrations",
@@ -45,7 +45,7 @@ var slugPattern = regexp.MustCompile(`\A[-a-zA-Z0-9_]+\z`)
 // ValidSlug matches Django's default DRF SlugField character validator.
 func ValidSlug(value string) bool { return slugPattern.MatchString(value) }
 
-// RestrictedSlug matches the source's case-sensitive reserved-slug list.
+// RestrictedSlug matches the case-sensitive reserved routes, including MCP.
 func RestrictedSlug(value string) bool {
 	for _, restricted := range restrictedSlugs {
 		if value == restricted {

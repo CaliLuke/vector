@@ -33,7 +33,7 @@ func TestContainsURLUsesSourceWorkspaceNamePatterns(t *testing.T) {
 }
 
 func TestSlugValidationMatchesDRFAndReservedSourceList(t *testing.T) {
-	for _, value := range []string{"admin", "api", "accounts"} {
+	for _, value := range []string{"admin", "api", "accounts", "mcp"} {
 		if !RestrictedSlug(value) {
 			t.Errorf("RestrictedSlug(%q) = false, want true", value)
 		}

@@ -1,0 +1,262 @@
+package mcptransport_test
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"sync/atomic"
+	"testing"
+	"time"
+
+	"github.com/CaliLuke/go-plane/internal/mcptransport"
+	"github.com/stretchr/testify/require"
+)
+
+func config(mode string) mcptransport.Config {
+	c := mcptransport.DefaultConfig()
+	c.Enabled, c.Mode, c.ResourceURL = true, mode, "https://vector.example/mcp"
+	return c
+}
+
+func verified(ctx context.Context, _ *http.Request) (context.Context, error) { return ctx, nil }
+
+func options() mcptransport.Options {
+	return mcptransport.Options{HeaderAuth: verified, OAuthAuth: verified}
+}
+
+func handler(t *testing.T, c mcptransport.Config, opts mcptransport.Options) http.Handler {
+	t.Helper()
+	h, err := mcptransport.New(c, opts, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusTeapot) }))
+	require.NoError(t, err)
+	return h
+}
+
+func call(h http.Handler, path, body string, headers http.Header) *httptest.ResponseRecorder {
+	r := httptest.NewRequest(http.MethodPost, "https://vector.example"+path, strings.NewReader(body))
+	r.Header = headers.Clone()
+	if r.Header == nil {
+		r.Header = make(http.Header)
+	}
+	r.Header.Set("Content-Type", "application/json")
+	r.Header.Set("Accept", "application/json, text/event-stream")
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	return w
+}
+
+func initialize(version string) string {
+	return `{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"` + version + `","capabilities":{},"clientInfo":{"name":"test","version":"1"}}}`
+}
+
+func TestDisabledRoutesDoNotFallThroughToFrontend(t *testing.T) {
+	h := handler(t, mcptransport.DefaultConfig(), mcptransport.Options{})
+	for _, path := range []string{"/mcp", "/mcp/api-key", "/mcp/", "/mcp/unknown"} {
+		t.Run(path, func(t *testing.T) { require.Equal(t, http.StatusNotFound, call(h, path, "", nil).Code) })
+	}
+	require.Equal(t, http.StatusTeapot, call(h, "/api/example", "", nil).Code)
+}
+
+func TestOnlySelectedAuthenticationRoutesAreMounted(t *testing.T) {
+	for _, tc := range []struct{ mode, present, absent string }{
+		{"header", "/mcp/api-key", "/mcp"}, {"oauth", "/mcp", "/mcp/api-key"},
+	} {
+		t.Run(tc.mode, func(t *testing.T) {
+			h := handler(t, config(tc.mode), options())
+			require.Equal(t, http.StatusOK, call(h, tc.present, initialize("2026-07-28"), nil).Code)
+			require.Equal(t, http.StatusNotFound, call(h, tc.absent, initialize("2026-07-28"), nil).Code)
+		})
+	}
+}
+
+func TestGeneratedHandlerNegotiatesLegacyRevisionWithoutSessions(t *testing.T) {
+	h := handler(t, config("both"), options())
+	for _, path := range []string{"/mcp", "/mcp/api-key"} {
+		t.Run(path, func(t *testing.T) {
+			const version = "2025-11-25"
+			w := call(h, path, initialize(version), nil)
+			require.Equal(t, http.StatusOK, w.Code, w.Body.String())
+			require.Empty(t, w.Header().Get("Mcp-Session-Id"))
+			require.Equal(t, "no-store", w.Header().Get("Cache-Control"))
+			var response struct {
+				Result struct {
+					ProtocolVersion string
+					Capabilities    map[string]json.RawMessage
+				}
+			}
+			require.NoError(t, json.Unmarshal(w.Body.Bytes(), &response))
+			require.Equal(t, version, response.Result.ProtocolVersion)
+			require.NotContains(t, response.Result.Capabilities, "tools")
+			require.NotContains(t, response.Result.Capabilities, "prompts")
+			require.NotContains(t, response.Result.Capabilities, "resources")
+		})
+	}
+}
+
+func TestGeneratedHandlerSupportsStatelessDiscovery(t *testing.T) {
+	h := handler(t, config("both"), options())
+	for _, path := range []string{"/mcp", "/mcp/api-key"} {
+		t.Run(path, func(t *testing.T) {
+			w := call(h, path, `{"jsonrpc":"2.0","id":1,"method":"server/discover","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientInfo":{"name":"test","version":"1"},"io.modelcontextprotocol/clientCapabilities":{}}}}`, http.Header{
+				"Mcp-Protocol-Version": []string{"2026-07-28"}, "Mcp-Method": []string{"server/discover"},
+			})
+			require.Equal(t, http.StatusOK, w.Code, w.Body.String())
+			var response struct {
+				Result struct{ SupportedVersions []string }
+			}
+			require.NoError(t, json.Unmarshal(w.Body.Bytes(), &response))
+			require.ElementsMatch(t, []string{"2026-07-28", "2025-11-25"}, response.Result.SupportedVersions)
+			require.Empty(t, w.Header().Get("Mcp-Session-Id"))
+		})
+	}
+}
+
+func TestGeneratedHandlerRejectsUnsupportedProtocolHeader(t *testing.T) {
+	h := handler(t, config("header"), options())
+	w := call(h, "/mcp/api-key", `{"jsonrpc":"2.0","id":1,"method":"ping"}`, http.Header{"Mcp-Protocol-Version": []string{"2025-03-26"}})
+	require.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestAuthenticationDoesNotFallBackAcrossRoutes(t *testing.T) {
+	var calls atomic.Int64
+	opts := mcptransport.Options{
+		HeaderAuth: func(context.Context, *http.Request) (context.Context, error) {
+			return nil, mcptransport.ErrInvalidCredential
+		},
+		OAuthAuth: func(ctx context.Context, _ *http.Request) (context.Context, error) { calls.Add(1); return ctx, nil },
+	}
+	h := handler(t, config("both"), opts)
+	require.Equal(t, http.StatusUnauthorized, call(h, "/mcp/api-key", initialize("2026-07-28"), nil).Code)
+	require.Zero(t, calls.Load())
+	require.Equal(t, http.StatusOK, call(h, "/mcp", initialize("2026-07-28"), nil).Code)
+	require.EqualValues(t, 1, calls.Load())
+}
+
+func TestAuthenticationRunsOnEveryRequestAndFailsClosed(t *testing.T) {
+	var revoked atomic.Bool
+	opts := options()
+	opts.HeaderAuth = func(ctx context.Context, _ *http.Request) (context.Context, error) {
+		if revoked.Load() {
+			return nil, errors.New("private validator failure: secret")
+		}
+		return ctx, nil
+	}
+	h := handler(t, config("header"), opts)
+	require.Equal(t, http.StatusOK, call(h, "/mcp/api-key", initialize("2026-07-28"), nil).Code)
+	revoked.Store(true)
+	w := call(h, "/mcp/api-key", `{"jsonrpc":"2.0","id":2,"method":"ping"}`, nil)
+	require.Equal(t, http.StatusServiceUnavailable, w.Code)
+	require.NotContains(t, w.Body.String(), "secret")
+}
+
+func TestIngressRejectsUntrustedTargetsBeforeAuthentication(t *testing.T) {
+	var calls atomic.Int64
+	opts := options()
+	opts.HeaderAuth = func(ctx context.Context, _ *http.Request) (context.Context, error) { calls.Add(1); return ctx, nil }
+	h := handler(t, config("header"), opts)
+	for _, origin := range []string{"https://evil.example", "http://vector.example", "null", ""} {
+		t.Run("origin "+origin, func(t *testing.T) {
+			w := call(h, "/mcp/api-key", initialize("2026-07-28"), http.Header{"Origin": []string{origin}})
+			require.Equal(t, http.StatusForbidden, w.Code)
+		})
+	}
+	require.Equal(t, http.StatusBadRequest, call(h, "/mcp/api-key?token=secret", "", nil).Code)
+	r := httptest.NewRequest(http.MethodPost, "https://evil.example/mcp/api-key", strings.NewReader("{}"))
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	require.Equal(t, http.StatusBadRequest, w.Code)
+	require.Zero(t, calls.Load())
+}
+
+func TestTrustedOriginUsesGeneratedOriginProtection(t *testing.T) {
+	c := config("header")
+	c.TrustedOrigins = []string{"https://agent.example"}
+	h := handler(t, c, options())
+	for _, origin := range []string{"https://vector.example", "https://agent.example"} {
+		t.Run(origin, func(t *testing.T) {
+			require.Equal(t, http.StatusOK, call(h, "/mcp/api-key", initialize("2026-07-28"), http.Header{"Origin": []string{origin}}).Code)
+		})
+	}
+}
+
+func TestRequestBodyBound(t *testing.T) {
+	c := config("header")
+	c.MaxRequestBytes = 32
+	h := handler(t, c, options())
+	require.Equal(t, http.StatusRequestEntityTooLarge, call(h, "/mcp/api-key", initialize("2026-07-28"), nil).Code)
+}
+
+func TestUnknownLengthRequestBodyIsAlsoBounded(t *testing.T) {
+	c := config("header")
+	c.MaxRequestBytes = 32
+	h := handler(t, c, options())
+	r := httptest.NewRequest(http.MethodPost, "https://vector.example/mcp/api-key", strings.NewReader(initialize("2025-11-25")))
+	r.ContentLength = -1
+	r.Header.Set("Content-Type", "application/json")
+	r.Header.Set("Accept", "application/json, text/event-stream")
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	require.Equal(t, http.StatusRequestEntityTooLarge, w.Code, w.Body.String())
+}
+
+func TestMissingAuthenticatedContextFailsClosed(t *testing.T) {
+	opts := options()
+	opts.HeaderAuth = func(context.Context, *http.Request) (context.Context, error) { return nil, nil }
+	h := handler(t, config("header"), opts)
+	require.Equal(t, http.StatusServiceUnavailable, call(h, "/mcp/api-key", initialize("2025-11-25"), nil).Code)
+}
+
+func TestAuthenticationFailureClassifications(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		err    error
+		status int
+	}{
+		{"malformed request", mcptransport.ErrInvalidRequest, http.StatusBadRequest},
+		{"invalid credential", mcptransport.ErrInvalidCredential, http.StatusUnauthorized},
+		{"denied membership", mcptransport.ErrAccessDenied, http.StatusForbidden},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			opts := options()
+			opts.HeaderAuth = func(context.Context, *http.Request) (context.Context, error) { return nil, tc.err }
+			h := handler(t, config("header"), opts)
+			require.Equal(t, tc.status, call(h, "/mcp/api-key", initialize("2025-11-25"), nil).Code)
+		})
+	}
+}
+
+func TestDuplicateOriginIsRejected(t *testing.T) {
+	h := handler(t, config("header"), options())
+	w := call(h, "/mcp/api-key", initialize("2025-11-25"), http.Header{"Origin": []string{"https://vector.example", "https://vector.example"}})
+	require.Equal(t, http.StatusForbidden, w.Code)
+}
+
+func TestRequestTimeoutCancelsAuthentication(t *testing.T) {
+	c := config("header")
+	c.RequestTimeout = 10 * time.Millisecond
+	cancelled := make(chan struct{})
+	opts := options()
+	opts.HeaderAuth = func(ctx context.Context, _ *http.Request) (context.Context, error) {
+		<-ctx.Done()
+		close(cancelled)
+		return nil, ctx.Err()
+	}
+	w := call(handler(t, c, opts), "/mcp/api-key", initialize("2026-07-28"), nil)
+	require.Equal(t, http.StatusServiceUnavailable, w.Code)
+	select {
+	case <-cancelled:
+	case <-time.After(time.Second):
+		t.Fatal("authentication did not receive cancellation")
+	}
+}
+
+func TestSelectedAuthenticationMustBeAvailable(t *testing.T) {
+	for _, mode := range []string{"header", "oauth", "both"} {
+		t.Run(mode, func(t *testing.T) {
+			_, err := mcptransport.New(config(mode), mcptransport.Options{}, http.NotFoundHandler())
+			require.Error(t, err)
+		})
+	}
+}

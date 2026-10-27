@@ -253,6 +253,10 @@
       "statements": 10,
       "percent": 90
     },
+    "github.com/CaliLuke/go-plane/internal/mcptransport": {
+      "statements": 80,
+      "percent": 95
+    },
     "github.com/CaliLuke/go-plane/internal/modulereads": {
       "statements": 1317,
       "percent": 40.32
@@ -479,6 +483,10 @@
     },
     "github.com/CaliLuke/go-plane/loomprobe": {
       "statements": 32,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/mcp/design": {
+      "statements": 4,
       "percent": 0
     },
     "github.com/CaliLuke/go-plane/modulelifecycle/design": {

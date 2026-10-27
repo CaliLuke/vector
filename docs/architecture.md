@@ -10,6 +10,11 @@ S3-compatible storage holds uploaded files. The Node.js collaboration service su
 The runtime does not require Django, Celery, or RabbitMQ.
 Static response fixtures remain for contract regression tests. No Python code or interpreter is required.
 
+The initial [remote MCP transport](mcp.md) lives in `apps/go-api/mcp` and
+`internal/mcptransport`. The proxy sends `/mcp` and `/mcp/*` to Go. The generated
+catalogue is empty and both authentication routes are disabled until their
+providers and action contracts are implemented and verified.
+
 ## Source layout
 
 | Path                                   | Purpose                                       |

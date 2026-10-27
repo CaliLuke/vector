@@ -44,6 +44,9 @@ Setup copies `.env.example` files, creates a signing secret, and installs fronte
 Keep local environment files private. The example database and storage credentials are for local development only.
 
 Open `http://localhost:8000/`. Instance administration uses `/god-mode/`, and public projects use `/spaces/`.
+
+The [remote MCP transport](mcp.md) is disabled by default. Its generated action
+contracts and authentication providers are still pending; do not enable it yet.
 The proxy serves all browser entry points. Frontend ports 3000–3100 are internal development upstreams.
 
 `PLANE_ADMIN_PORT` and `PLANE_SPACE_PORT` can override the admin and Sites upstream ports.

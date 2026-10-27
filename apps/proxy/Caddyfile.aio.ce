@@ -22,6 +22,11 @@
 			reverse_proxy {$GO_API_UPSTREAM:localhost:8080}
 		}
 
+		@mcp path /mcp /mcp/*
+		handle @mcp {
+			reverse_proxy {$GO_API_UPSTREAM:localhost:8080}
+		}
+
 		handle_path /god-mode* {
 			root * /app/admin
 			try_files {path} {path}/ /index.html
