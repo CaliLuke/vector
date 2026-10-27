@@ -3,10 +3,11 @@ package issuequery
 import "strings"
 
 type pqlExpression struct {
-	op, field   string
-	pos         int
-	left, right *pqlExpression
-	values      []pqlValue
+	op, field    string
+	pos          int
+	left, right  *pqlExpression
+	values       []pqlValue
+	listFunction *pqlValue
 }
 
 type pqlValue struct {
@@ -142,7 +143,15 @@ func (p *pqlParser) wordOperator(node *pqlExpression, op pqlToken, depth int) (*
 			}
 			return node, err
 		}
-		return nil, pqlError(p.peek().pos, "list functions are not available")
+		value, err := p.value(depth)
+		if err != nil {
+			return nil, err
+		}
+		if value.kind != "call" {
+			return nil, pqlError(value.pos, "expected list or list function")
+		}
+		node.listFunction = &value
+		return node, nil
 	case strings.EqualFold(op.text, "BETWEEN"):
 		node.op = "BETWEEN"
 		parenthesized := p.match("(")

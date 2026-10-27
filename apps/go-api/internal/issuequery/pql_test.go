@@ -45,7 +45,7 @@ func TestPQLSupportedScalarForms(t *testing.T) {
 
 func TestPQLRejectsInvalidOrUnavailableExpressionsAtomically(t *testing.T) {
 	for _, query := range []string{
-		`title = "secret" OR milestone = "secret"`, `text ~ "secret"`, `stateGroup IN openStates()`,
+		`title = "secret" OR milestone = "secret"`, `text ~ "secret"`, `state IN openStates()`,
 		`cf["secret"] = 42`, `cf[42] = "secret"`, `cf["secret" = 42`,
 		`title =`, `title = "secret`, `title = "\q"`, `title='secret'`, `title = "secret";`,
 		`title = "secret" trailing`, `title = "secret" -- comment`, `title = "secret" AND`,
