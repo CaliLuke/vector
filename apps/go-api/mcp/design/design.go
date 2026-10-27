@@ -14,8 +14,9 @@ var _ = API("Vector MCP", func() {
 })
 
 // Add only implemented actions after their authentication, authorization and
-// reliability prerequisites pass. An empty catalogue exposes no domain data.
+// reliability prerequisites pass.
 var _ = Service("VectorMCP", func() {
 	Description("Remote access to Vector.")
 	mcp.MCP("vector", "1.0.0")
+	member()
 })

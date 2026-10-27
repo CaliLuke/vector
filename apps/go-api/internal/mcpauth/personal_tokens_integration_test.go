@@ -4,6 +4,7 @@ package mcpauth
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/mcptransport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
+	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
@@ -62,7 +64,7 @@ func TestPersonalTokenGeneratedHTTPUsesCurrentDatabaseAuthorization(t *testing.T
 	require.NoError(t, err)
 	cfg := mcptransport.DefaultConfig()
 	cfg.Enabled, cfg.Mode, cfg.ResourceURL = true, "header", "https://vector.example/mcp"
-	h, err := mcptransport.New(cfg, mcptransport.Options{HeaderAuth: auth.Authenticate}, http.NotFoundHandler())
+	h, err := mcptransport.New(cfg, mcptransport.Options{HeaderAuth: auth.Authenticate, Service: tokenTransportService{}}, http.NotFoundHandler())
 	require.NoError(t, err)
 	call := func(t *testing.T, token, workspace string) *httptest.ResponseRecorder {
 		t.Helper()
@@ -125,4 +127,10 @@ UPDATE workspaces SET deleted_at=NULL;`)
 	w := call(t, "test-only-personal-token", "workspace-one")
 	require.Equal(t, http.StatusServiceUnavailable, w.Code)
 	assert.Equal(t, "authentication unavailable\n", w.Body.String())
+}
+
+type tokenTransportService struct{}
+
+func (tokenTransportService) Member(context.Context, *api.MemberMe) (*api.MemberIdentity, error) {
+	return nil, errors.New("authentication tests do not execute identity reads")
 }

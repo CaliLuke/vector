@@ -8,16 +8,33 @@
 package vectormcp
 
 import (
+	"context"
+
 	loom "github.com/CaliLuke/loom/pkg"
 )
 
 // Endpoints wraps the "VectorMCP" service endpoints.
-type Endpoints struct{}
+type Endpoints struct {
+	Member loom.Endpoint
+}
 
 // NewEndpoints wraps the methods of the "VectorMCP" service with endpoints.
 func NewEndpoints(s Service) *Endpoints {
-	return &Endpoints{}
+	return &Endpoints{
+		Member: NewMemberEndpoint(s),
+	}
 }
 
 // Use applies the given middleware to all the "VectorMCP" service endpoints.
-func (e *Endpoints) Use(m func(loom.Endpoint) loom.Endpoint) {}
+func (e *Endpoints) Use(m func(loom.Endpoint) loom.Endpoint) {
+	e.Member = m(e.Member)
+}
+
+// NewMemberEndpoint returns an endpoint function that calls the method
+// "member" of service "VectorMCP".
+func NewMemberEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*MemberMe)
+		return s.Member(ctx, p)
+	}
+}

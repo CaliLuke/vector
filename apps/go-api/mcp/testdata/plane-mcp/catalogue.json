@@ -1,0 +1,4903 @@
+{
+  "source_repository": "https://github.com/makeplane/plane-mcp-server",
+  "revision": "dc7cfd9f3c305891909e2372f0cc507291353801",
+  "sdk": "plane-sdk==0.3.1",
+  "tool_count": 30,
+  "operation_count": 207,
+  "tools": [
+    {
+      "tool": "customer",
+      "source": "plane_mcp/tools/customer.py",
+      "source_sha256": "2a1c2ba6aacb9e386afc8a23063740a85069e08ec44ace12c60cd5c31f6badc4",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Customers",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'create', 'update', 'delete', 'list_workitems', 'manage_workitems']",
+          "has_default": false
+        },
+        "customer_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "customer_request_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description_html": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "email": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "website_url": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "domain": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "employees": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        },
+        "stage": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "contract_status": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "revenue": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "link_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "unlink_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "search": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "query": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_source": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": [],
+          "optional": ["query", "cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 27
+        },
+        {
+          "action": "retrieve",
+          "required": ["customer_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 28
+        },
+        {
+          "action": "create",
+          "required": ["name"],
+          "optional": [
+            "description_html",
+            "email",
+            "website_url",
+            "domain",
+            "employees",
+            "stage",
+            "contract_status",
+            "revenue",
+            "external_source",
+            "external_id"
+          ],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "upsert: matches on external_source + external_id, else on name, so it never duplicates",
+          "source_line": 29
+        },
+        {
+          "action": "update",
+          "required": ["customer_id"],
+          "optional": [
+            "name",
+            "description_html",
+            "email",
+            "website_url",
+            "domain",
+            "employees",
+            "stage",
+            "contract_status",
+            "revenue",
+            "external_source",
+            "external_id"
+          ],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "only the fields you pass are changed",
+          "source_line": 46
+        },
+        {
+          "action": "delete",
+          "required": [],
+          "optional": ["customer_id", "external_source", "external_id"],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "address by customer_id, or by external_source plus external_id",
+          "source_line": 64
+        },
+        {
+          "action": "list_workitems",
+          "required": ["customer_id"],
+          "optional": ["customer_request_id", "search"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 71
+        },
+        {
+          "action": "manage_workitems",
+          "required": ["customer_id"],
+          "optional": ["link_ids", "unlink_ids", "customer_request_id"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "pass at least one of link_ids or unlink_ids; returns nothing, read back with list_workitems",
+          "source_line": 72
+        }
+      ]
+    },
+    {
+      "tool": "customer_property",
+      "source": "plane_mcp/tools/customer_property.py",
+      "source_sha256": "78752c971741df1a07d0ed5f16120969ac008a47b5751a8ab111adb496ea184f",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Customer properties",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'create', 'update', 'delete', 'get_values', 'set_values']",
+          "has_default": false
+        },
+        "property_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "customer_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "display_name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "property_type": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "relation_type": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "default_value": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "options": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "display_format": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "values": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "is_required": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "is_multi": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "is_active": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "external_source": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": [],
+          "optional": ["cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 42
+        },
+        {
+          "action": "retrieve",
+          "required": ["property_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 43
+        },
+        {
+          "action": "create",
+          "required": ["display_name", "property_type"],
+          "optional": [
+            "relation_type",
+            "description",
+            "is_required",
+            "is_multi",
+            "is_active",
+            "default_value",
+            "options",
+            "display_format",
+            "external_source",
+            "external_id"
+          ],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 44
+        },
+        {
+          "action": "update",
+          "required": ["property_id"],
+          "optional": [
+            "display_name",
+            "relation_type",
+            "description",
+            "is_required",
+            "is_multi",
+            "is_active",
+            "default_value",
+            "options",
+            "external_source",
+            "external_id"
+          ],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "only the fields you pass are changed",
+          "source_line": 60
+        },
+        {
+          "action": "delete",
+          "required": ["property_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 77
+        },
+        {
+          "action": "get_values",
+          "required": ["customer_id"],
+          "optional": ["property_id"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "omit property_id to read them all",
+          "source_line": 78
+        },
+        {
+          "action": "set_values",
+          "required": ["customer_id", "values"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "replaces the values of the properties named; others keep theirs",
+          "source_line": 79
+        }
+      ]
+    },
+    {
+      "tool": "customer_request",
+      "source": "plane_mcp/tools/customer_request.py",
+      "source_sha256": "69202b797e578494b8b7d4b46105bff8dd4cf45a6d10a6b7f6662a680c536f63",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Customer requests",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'create', 'update', 'delete']",
+          "has_default": false
+        },
+        "customer_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "request_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description_html": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "link": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "workitem_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "query": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": ["customer_id"],
+          "optional": ["query", "cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 22
+        },
+        {
+          "action": "retrieve",
+          "required": ["customer_id", "request_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 23
+        },
+        {
+          "action": "create",
+          "required": ["customer_id", "name"],
+          "optional": ["description_html", "link", "workitem_ids"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "workitem_ids can only be set here; change links afterwards with customer manage_workitems",
+          "source_line": 24
+        },
+        {
+          "action": "update",
+          "required": ["customer_id", "request_id"],
+          "optional": ["name", "description_html", "link"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "only the fields you pass are changed",
+          "source_line": 30
+        },
+        {
+          "action": "delete",
+          "required": ["customer_id", "request_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 36
+        }
+      ]
+    },
+    {
+      "tool": "cycle",
+      "source": "plane_mcp/tools/cycle.py",
+      "source_sha256": "a47a52764c72c877399740acd287a8a458aab84cd0984abf8c502278c5a875fa",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Cycles",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'create', 'update', 'delete', 'list_workitems', 'manage_workitems', 'transfer_workitems', 'complete', 'archive', 'unarchive']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cycle_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "new_cycle_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "owned_by": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "start_date": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "end_date": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "timezone": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "status": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "archived": {
+          "type": "bool",
+          "has_default": true,
+          "default": false
+        },
+        "add_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "remove_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "pql": {
+          "type": "Annotated[str, Field(description=PQL_FIELD_HINT)]",
+          "has_default": true,
+          "default": ""
+        },
+        "expand": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "fields": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_source": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        },
+        "order_by": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": ["project_id"],
+          "optional": ["archived", "status", "cursor", "per_page", "order_by"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 41
+        },
+        {
+          "action": "retrieve",
+          "required": ["project_id", "cycle_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 42
+        },
+        {
+          "action": "create",
+          "required": ["project_id", "name", "owned_by"],
+          "optional": ["description", "start_date", "end_date", "timezone", "external_source", "external_id"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 43
+        },
+        {
+          "action": "update",
+          "required": ["project_id", "cycle_id"],
+          "optional": [
+            "name",
+            "description",
+            "start_date",
+            "end_date",
+            "owned_by",
+            "timezone",
+            "external_source",
+            "external_id"
+          ],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "only the fields you pass are changed",
+          "source_line": 48
+        },
+        {
+          "action": "delete",
+          "required": ["project_id", "cycle_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 54
+        },
+        {
+          "action": "list_workitems",
+          "required": ["project_id", "cycle_id"],
+          "optional": ["pql", "order_by", "cursor", "per_page", "expand", "fields"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 55
+        },
+        {
+          "action": "manage_workitems",
+          "required": ["project_id", "cycle_id"],
+          "optional": ["add_ids", "remove_ids"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "pass at least one of add_ids or remove_ids; returns nothing, read back with list_workitems",
+          "source_line": 61
+        },
+        {
+          "action": "transfer_workitems",
+          "required": ["project_id", "cycle_id", "new_cycle_id"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "moves only the unfinished work items to new_cycle_id; the source cycle must have ended first, so complete it before transferring or the call is rejected",
+          "source_line": 67
+        },
+        {
+          "action": "complete",
+          "required": ["project_id", "cycle_id"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "sets end_date to today",
+          "source_line": 75
+        },
+        {
+          "action": "archive",
+          "required": ["project_id", "cycle_id"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "ends the cycle first if it is still running",
+          "source_line": 76
+        },
+        {
+          "action": "unarchive",
+          "required": ["project_id", "cycle_id"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 77
+        }
+      ]
+    },
+    {
+      "tool": "get_pql_reference",
+      "source": "plane_mcp/tools/get_pql_reference.py",
+      "source_sha256": "3d6378cad2a20ca01af6de9950eda0983b76b325059cb3948b52362a2afba1de",
+      "has_action_parameter": false,
+      "annotations": {
+        "title": "PQL reference",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "detail": {
+          "type": "Literal['brief', 'full']",
+          "has_default": true,
+          "default": "full"
+        }
+      },
+      "actions": [
+        {
+          "action": "read",
+          "required": [],
+          "optional": ["detail"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "this tool has no action parameter",
+          "source_line": 20
+        }
+      ]
+    },
+    {
+      "tool": "initiative",
+      "source": "plane_mcp/tools/initiative.py",
+      "source_sha256": "7b6ea5ef3a301cb66aa107e34498fed1ccb8bd70887a00cfb9fc8f6cda4c5bfe",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Initiatives",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'create', 'update', 'delete', 'list_projects', 'add_projects', 'remove_projects', 'list_workitems', 'manage_workitems']",
+          "has_default": false
+        },
+        "initiative_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description_html": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "start_date": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "end_date": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "state": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "lead": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "project_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "add_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "remove_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": [],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "returns every initiative; this endpoint does not paginate",
+          "source_line": 59
+        },
+        {
+          "action": "retrieve",
+          "required": ["initiative_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 60
+        },
+        {
+          "action": "create",
+          "required": ["name"],
+          "optional": ["description_html", "start_date", "end_date", "state", "lead"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 61
+        },
+        {
+          "action": "update",
+          "required": ["initiative_id"],
+          "optional": ["name", "description_html", "start_date", "end_date", "state", "lead"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "only the fields you pass are changed",
+          "source_line": 62
+        },
+        {
+          "action": "delete",
+          "required": ["initiative_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 68
+        },
+        {
+          "action": "list_projects",
+          "required": ["initiative_id"],
+          "optional": ["cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 69
+        },
+        {
+          "action": "add_projects",
+          "required": ["initiative_id", "project_ids"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "returns nothing, read back with list_projects",
+          "source_line": 70
+        },
+        {
+          "action": "remove_projects",
+          "required": ["initiative_id", "project_ids"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "returns nothing, read back with list_projects",
+          "source_line": 71
+        },
+        {
+          "action": "list_workitems",
+          "required": ["initiative_id"],
+          "optional": ["cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 77
+        },
+        {
+          "action": "manage_workitems",
+          "required": ["initiative_id"],
+          "optional": ["add_ids", "remove_ids"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "pass at least one of add_ids or remove_ids; each takes one id or several, and removals apply first; returns nothing, read back with list_workitems",
+          "source_line": 78
+        }
+      ]
+    },
+    {
+      "tool": "intake",
+      "source": "plane_mcp/tools/intake.py",
+      "source_sha256": "b1312c3a5ec9d90cc18cf641ed64a641aac14ecd78aa266c6d71257366b4f69a",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Intake queue",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'create', 'update', 'delete']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "workitem_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description_html": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "priority": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "status": {
+          "type": "int | None",
+          "has_default": true,
+          "default": null
+        },
+        "snoozed_till": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "duplicate_to": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "source": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "source_email": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": ["project_id"],
+          "optional": ["cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 25
+        },
+        {
+          "action": "retrieve",
+          "required": ["project_id", "workitem_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 26
+        },
+        {
+          "action": "create",
+          "required": ["project_id", "name"],
+          "optional": ["description_html", "priority"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 27
+        },
+        {
+          "action": "update",
+          "required": ["project_id", "workitem_id"],
+          "optional": ["status", "snoozed_till", "duplicate_to", "source", "source_email"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "pass status to make a triage decision",
+          "source_line": 28
+        },
+        {
+          "action": "delete",
+          "required": ["project_id", "workitem_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 34
+        }
+      ]
+    },
+    {
+      "tool": "label",
+      "source": "plane_mcp/tools/label.py",
+      "source_sha256": "2d1bba558f30e0af42366e897baa97d2d47228baf9c42c01908c7f28503cc55e",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Labels",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'create', 'update', 'delete']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "label_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "color": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "parent": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "sort_order": {
+          "type": "float | None",
+          "has_default": true,
+          "default": null
+        },
+        "external_source": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": ["project_id"],
+          "optional": ["cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 17
+        },
+        {
+          "action": "retrieve",
+          "required": ["project_id", "label_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 18
+        },
+        {
+          "action": "create",
+          "required": ["project_id", "name"],
+          "optional": ["color", "description", "parent", "sort_order", "external_source", "external_id"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 19
+        },
+        {
+          "action": "update",
+          "required": ["project_id", "label_id"],
+          "optional": ["name", "color", "description", "parent", "sort_order", "external_source", "external_id"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "only the fields you pass are changed",
+          "source_line": 24
+        },
+        {
+          "action": "delete",
+          "required": ["project_id", "label_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 30
+        }
+      ]
+    },
+    {
+      "tool": "member",
+      "source": "plane_mcp/tools/member.py",
+      "source_sha256": "5b4a4a816a6676630842a1f4f114f6603dd97f678a460ebed2ccb583a0a08f30",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Members and roles",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['me', 'list_workspace', 'list_project', 'list_roles', 'retrieve_role']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "role_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "namespace": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "first_name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "last_name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "email": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "display_name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "role_slug": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "is_active": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "is_bot": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "order_by": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "me",
+          "required": [],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "the authenticated user",
+          "source_line": 17
+        },
+        {
+          "action": "list_workspace",
+          "required": [],
+          "optional": [
+            "first_name",
+            "last_name",
+            "email",
+            "display_name",
+            "role_slug",
+            "is_active",
+            "is_bot",
+            "cursor",
+            "per_page",
+            "order_by"
+          ],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "name filters match case-insensitively and combine with AND",
+          "source_line": 18
+        },
+        {
+          "action": "list_project",
+          "required": ["project_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 35
+        },
+        {
+          "action": "list_roles",
+          "required": [],
+          "optional": ["namespace", "cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 36
+        },
+        {
+          "action": "retrieve_role",
+          "required": ["role_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 37
+        }
+      ]
+    },
+    {
+      "tool": "milestone",
+      "source": "plane_mcp/tools/milestone.py",
+      "source_sha256": "2d812812bb340d0cbb20d0f7d3c94ac807fa1f15cd51dc063ca287ce4a514461",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Milestones",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'create', 'update', 'delete', 'list_workitems', 'manage_workitems']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "milestone_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "title": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "target_date": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "add_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "remove_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_source": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": ["project_id"],
+          "optional": ["cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 32
+        },
+        {
+          "action": "retrieve",
+          "required": ["project_id", "milestone_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 33
+        },
+        {
+          "action": "create",
+          "required": ["project_id", "title"],
+          "optional": ["target_date", "external_source", "external_id"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 34
+        },
+        {
+          "action": "update",
+          "required": ["project_id", "milestone_id"],
+          "optional": ["title", "target_date", "external_source", "external_id"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "only the fields you pass are changed",
+          "source_line": 35
+        },
+        {
+          "action": "delete",
+          "required": ["project_id", "milestone_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 41
+        },
+        {
+          "action": "list_workitems",
+          "required": ["project_id", "milestone_id"],
+          "optional": ["cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 42
+        },
+        {
+          "action": "manage_workitems",
+          "required": ["project_id", "milestone_id"],
+          "optional": ["add_ids", "remove_ids"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "pass at least one of add_ids or remove_ids; returns nothing, read back with list_workitems",
+          "source_line": 43
+        }
+      ]
+    },
+    {
+      "tool": "module",
+      "source": "plane_mcp/tools/module.py",
+      "source_sha256": "a61964f95464b598ec5ac45610c1801ec3c12caa7298cf1453bfc7695758657f",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Modules",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'create', 'update', 'delete', 'list_workitems', 'manage_workitems', 'archive', 'unarchive']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "module_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "start_date": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "target_date": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "status": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "lead": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "members": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "archived": {
+          "type": "bool",
+          "has_default": true,
+          "default": false
+        },
+        "add_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "remove_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "pql": {
+          "type": "Annotated[str, Field(description=PQL_FIELD_HINT)]",
+          "has_default": true,
+          "default": ""
+        },
+        "expand": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "fields": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_source": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        },
+        "order_by": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": ["project_id"],
+          "optional": ["archived", "cursor", "per_page", "order_by"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 37
+        },
+        {
+          "action": "retrieve",
+          "required": ["project_id", "module_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 38
+        },
+        {
+          "action": "create",
+          "required": ["project_id", "name"],
+          "optional": [
+            "description",
+            "start_date",
+            "target_date",
+            "status",
+            "lead",
+            "members",
+            "external_source",
+            "external_id"
+          ],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 39
+        },
+        {
+          "action": "update",
+          "required": ["project_id", "module_id"],
+          "optional": [
+            "name",
+            "description",
+            "start_date",
+            "target_date",
+            "status",
+            "lead",
+            "members",
+            "external_source",
+            "external_id"
+          ],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "only the fields you pass are changed",
+          "source_line": 44
+        },
+        {
+          "action": "delete",
+          "required": ["project_id", "module_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 60
+        },
+        {
+          "action": "list_workitems",
+          "required": ["project_id", "module_id"],
+          "optional": ["pql", "order_by", "cursor", "per_page", "expand", "fields"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 61
+        },
+        {
+          "action": "manage_workitems",
+          "required": ["project_id", "module_id"],
+          "optional": ["add_ids", "remove_ids"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "pass at least one of add_ids or remove_ids; returns nothing, read back with list_workitems",
+          "source_line": 67
+        },
+        {
+          "action": "archive",
+          "required": ["project_id", "module_id"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 73
+        },
+        {
+          "action": "unarchive",
+          "required": ["project_id", "module_id"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 74
+        }
+      ]
+    },
+    {
+      "tool": "page",
+      "source": "plane_mcp/tools/page.py",
+      "source_sha256": "f2a6c60ba82f68efb11175a90ee4e4e252fbf4dbf7105a8eedd22c07299bbe66",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Pages",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'create', 'update', 'archive', 'delete', 'set_collection', 'list_workitem_pages', 'attach_to_workitem', 'detach_from_workitem']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "page_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "parent_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "collection_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "workitem_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "workitem_page_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description_html": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "access": {
+          "type": "int | None",
+          "has_default": true,
+          "default": null
+        },
+        "color": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "is_locked": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "archive": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "external_source": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": [],
+          "optional": ["project_id", "cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "workspace pages unless project_id is given",
+          "source_line": 25
+        },
+        {
+          "action": "retrieve",
+          "required": ["page_id"],
+          "optional": ["project_id"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 28
+        },
+        {
+          "action": "create",
+          "required": ["name", "description_html"],
+          "optional": [
+            "project_id",
+            "parent_id",
+            "collection_id",
+            "access",
+            "color",
+            "is_locked",
+            "external_source",
+            "external_id"
+          ],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "parent_id nests the new page under an existing one; collection_id files it. Pass one or the other, never both",
+          "source_line": 29
+        },
+        {
+          "action": "update",
+          "required": ["page_id"],
+          "optional": ["project_id", "name", "description_html"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "pass name, description_html, or both; description_html replaces the whole body, so retrieve the page first when editing part of it; a locked or archived page is refused",
+          "source_line": 45
+        },
+        {
+          "action": "archive",
+          "required": ["page_id"],
+          "optional": ["project_id", "archive"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "archive defaults to true; pass archive=false to restore",
+          "source_line": 52
+        },
+        {
+          "action": "delete",
+          "required": ["page_id"],
+          "optional": ["project_id"],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "requires the page to be archived first",
+          "source_line": 58
+        },
+        {
+          "action": "set_collection",
+          "required": ["page_id", "collection_id"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "files a page into a collection, or moves it out of the one it is in; workspace pages only, and collection_id comes from the collection tool",
+          "source_line": 65
+        },
+        {
+          "action": "list_workitem_pages",
+          "required": ["project_id", "workitem_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 71
+        },
+        {
+          "action": "attach_to_workitem",
+          "required": ["project_id", "workitem_id", "page_id"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 72
+        },
+        {
+          "action": "detach_from_workitem",
+          "required": ["project_id", "workitem_id", "workitem_page_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "workitem_page_id is the link id from list_workitem_pages, not the page id",
+          "source_line": 73
+        }
+      ]
+    },
+    {
+      "tool": "project",
+      "source": "plane_mcp/tools/project.py",
+      "source_sha256": "c243d5eddaf7b9f4f2181f519ec94adefeeb6fc43ed98d14f7ac621b9d5a5a1f",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Projects",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'create', 'update', 'delete', 'archive', 'unarchive', 'worklog_summary', 'get_features', 'update_features']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "identifier": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description_html": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "project_lead": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "default_assignee": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "emoji": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cover_image": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "network": {
+          "type": "int | None",
+          "has_default": true,
+          "default": null
+        },
+        "timezone": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "archive_in": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        },
+        "close_in": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        },
+        "default_state": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "estimate": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_source": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "modules": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "cycles": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "views": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "pages": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "intakes": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "workitem_types": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "epics": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "parallel_cycles": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "project_updates": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "workflows": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "is_time_tracking_enabled": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        },
+        "order_by": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": [],
+          "optional": ["cursor", "per_page", "order_by"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "trimmed fields; use retrieve for full detail",
+          "source_line": 31
+        },
+        {
+          "action": "retrieve",
+          "required": ["project_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 34
+        },
+        {
+          "action": "create",
+          "required": ["name", "identifier"],
+          "optional": [
+            "description",
+            "description_html",
+            "project_lead",
+            "default_assignee",
+            "emoji",
+            "cover_image",
+            "timezone",
+            "archive_in",
+            "close_in",
+            "external_source",
+            "external_id"
+          ],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 35
+        },
+        {
+          "action": "update",
+          "required": ["project_id"],
+          "optional": [
+            "name",
+            "description",
+            "description_html",
+            "identifier",
+            "project_lead",
+            "default_assignee",
+            "emoji",
+            "cover_image",
+            "network",
+            "timezone",
+            "archive_in",
+            "close_in",
+            "default_state",
+            "estimate",
+            "is_time_tracking_enabled",
+            "external_source",
+            "external_id"
+          ],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "only the fields you pass are changed",
+          "source_line": 52
+        },
+        {
+          "action": "delete",
+          "required": ["project_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 76
+        },
+        {
+          "action": "archive",
+          "required": ["project_id"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 77
+        },
+        {
+          "action": "unarchive",
+          "required": ["project_id"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 78
+        },
+        {
+          "action": "worklog_summary",
+          "required": ["project_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 79
+        },
+        {
+          "action": "get_features",
+          "required": ["project_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 80
+        },
+        {
+          "action": "update_features",
+          "required": ["project_id"],
+          "optional": [
+            "modules",
+            "cycles",
+            "views",
+            "pages",
+            "intakes",
+            "workitem_types",
+            "epics",
+            "parallel_cycles",
+            "project_updates",
+            "workflows"
+          ],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "toggles project features on or off",
+          "source_line": 81
+        }
+      ]
+    },
+    {
+      "tool": "project_estimate",
+      "source": "plane_mcp/tools/project_estimate.py",
+      "source_sha256": "31b4d5a3ba0b866c0636848cbdab88fdc8acabe1042dc3ba04d44c1508be5644",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Project estimates",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['retrieve', 'create', 'update', 'delete', 'link', 'list_points', 'create_points', 'update_point', 'delete_point']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "estimate_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "estimate_point_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "type": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "points": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "value": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "key": {
+          "type": "int | None",
+          "has_default": true,
+          "default": null
+        },
+        "last_used": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "external_source": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        }
+      },
+      "actions": [
+        {
+          "action": "retrieve",
+          "required": ["project_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "a project has at most one estimate",
+          "source_line": 33
+        },
+        {
+          "action": "create",
+          "required": ["project_id", "name"],
+          "optional": ["type", "description", "last_used", "external_source", "external_id"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "creates the estimate only; add its values afterwards with create_points",
+          "source_line": 34
+        },
+        {
+          "action": "update",
+          "required": ["project_id"],
+          "optional": ["name", "description", "external_source", "external_id"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 40
+        },
+        {
+          "action": "delete",
+          "required": ["project_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 41
+        },
+        {
+          "action": "link",
+          "required": ["project_id", "estimate_id"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "makes that estimate the project's active one",
+          "source_line": 42
+        },
+        {
+          "action": "list_points",
+          "required": ["project_id", "estimate_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 43
+        },
+        {
+          "action": "create_points",
+          "required": ["project_id", "estimate_id", "points"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 44
+        },
+        {
+          "action": "update_point",
+          "required": ["project_id", "estimate_id", "estimate_point_id"],
+          "optional": ["value", "key", "description", "external_source", "external_id"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 45
+        },
+        {
+          "action": "delete_point",
+          "required": ["project_id", "estimate_id", "estimate_point_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 50
+        }
+      ]
+    },
+    {
+      "tool": "release",
+      "source": "plane_mcp/tools/release.py",
+      "source_sha256": "096d5d9242c6fb0309b2246966e11139ba896c67b6f735eaaf5be0ecdd60c0b1",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Releases",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'create', 'update', 'delete', 'get_changelog', 'update_changelog', 'list_workitems', 'manage_workitems']",
+          "has_default": false
+        },
+        "release_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description_html": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description_stripped": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "status": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "release_date": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "target_date": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "tag_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "lead_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "add_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "remove_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "is_prerelease": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "external_source": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": [],
+          "optional": ["cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 39
+        },
+        {
+          "action": "retrieve",
+          "required": ["release_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 40
+        },
+        {
+          "action": "create",
+          "required": ["name"],
+          "optional": [
+            "description_html",
+            "status",
+            "release_date",
+            "target_date",
+            "tag_id",
+            "lead_id",
+            "is_prerelease",
+            "external_source",
+            "external_id"
+          ],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 41
+        },
+        {
+          "action": "update",
+          "required": ["release_id"],
+          "optional": [
+            "name",
+            "description_html",
+            "status",
+            "release_date",
+            "target_date",
+            "tag_id",
+            "lead_id",
+            "is_prerelease"
+          ],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "only the fields you pass are changed",
+          "source_line": 56
+        },
+        {
+          "action": "delete",
+          "required": ["release_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 71
+        },
+        {
+          "action": "get_changelog",
+          "required": ["release_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 72
+        },
+        {
+          "action": "update_changelog",
+          "required": ["release_id"],
+          "optional": ["description_html", "description_stripped"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 73
+        },
+        {
+          "action": "list_workitems",
+          "required": ["release_id"],
+          "optional": ["cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 74
+        },
+        {
+          "action": "manage_workitems",
+          "required": ["release_id"],
+          "optional": ["add_ids", "remove_ids"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "pass at least one of add_ids or remove_ids; returns nothing, read back with list_workitems",
+          "source_line": 75
+        }
+      ]
+    },
+    {
+      "tool": "release_label",
+      "source": "plane_mcp/tools/release_label.py",
+      "source_sha256": "1ffb23f38bf4fab881e236c66a21b926977b19875831351342c2d01371d7ab77",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Release labels",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'create', 'update', 'delete', 'attach', 'detach']",
+          "has_default": false
+        },
+        "release_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "label_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "label_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "color": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "sort_order": {
+          "type": "int | None",
+          "has_default": true,
+          "default": null
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": [],
+          "optional": ["release_id", "cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "the workspace palette unless release_id is given",
+          "source_line": 37
+        },
+        {
+          "action": "create",
+          "required": ["name"],
+          "optional": ["color", "sort_order"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "adds to the workspace palette",
+          "source_line": 44
+        },
+        {
+          "action": "update",
+          "required": ["label_id"],
+          "optional": ["name", "color", "sort_order"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 45
+        },
+        {
+          "action": "delete",
+          "required": ["label_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "removes it from the palette entirely",
+          "source_line": 46
+        },
+        {
+          "action": "attach",
+          "required": ["release_id", "label_ids"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "returns nothing, read back with list",
+          "source_line": 47
+        },
+        {
+          "action": "detach",
+          "required": ["release_id", "label_ids"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "returns nothing, read back with list",
+          "source_line": 48
+        }
+      ]
+    },
+    {
+      "tool": "release_tag",
+      "source": "plane_mcp/tools/release_tag.py",
+      "source_sha256": "9daec1e49adae13323c5abd1245ff697f0c8368e58d46df76fa9fa584cf67f7e",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Release tags",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'create', 'update', 'delete']",
+          "has_default": false
+        },
+        "tag_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "version": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "commit_hash": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "git_tag": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": [],
+          "optional": ["cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 22
+        },
+        {
+          "action": "retrieve",
+          "required": ["tag_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 23
+        },
+        {
+          "action": "create",
+          "required": ["version"],
+          "optional": ["description", "commit_hash", "git_tag"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 24
+        },
+        {
+          "action": "update",
+          "required": ["tag_id"],
+          "optional": ["version", "description", "commit_hash", "git_tag"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "only the fields you pass are changed",
+          "source_line": 25
+        },
+        {
+          "action": "delete",
+          "required": ["tag_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 31
+        }
+      ]
+    },
+    {
+      "tool": "state",
+      "source": "plane_mcp/tools/state.py",
+      "source_sha256": "a732151675dce7f6bfe3e6e8ef373281adb7e3bd98152d8b64915d8be98acefe",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Workflow states",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'create', 'update', 'delete']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "state_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "color": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "sequence": {
+          "type": "float | None",
+          "has_default": true,
+          "default": null
+        },
+        "group": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "default": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "external_source": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": [],
+          "optional": ["project_id", "cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "workspace scope when project_id is omitted",
+          "source_line": 41
+        },
+        {
+          "action": "retrieve",
+          "required": ["state_id"],
+          "optional": ["project_id"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 44
+        },
+        {
+          "action": "create",
+          "required": ["name", "color"],
+          "optional": ["project_id", "description", "sequence", "group", "default", "external_source", "external_id"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "group is required at workspace scope",
+          "source_line": 45
+        },
+        {
+          "action": "update",
+          "required": ["state_id"],
+          "optional": ["project_id", "name", "color", "description", "sequence", "group", "default"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "only the fields you pass are changed",
+          "source_line": 51
+        },
+        {
+          "action": "delete",
+          "required": ["state_id"],
+          "optional": ["project_id"],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 57
+        }
+      ]
+    },
+    {
+      "tool": "work_log",
+      "source": "plane_mcp/tools/work_log.py",
+      "source_sha256": "ce45f126e8e9191a389c048bcf5ad8c6332cf5a7bf7c222130eacefab42a09dc",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Work logs",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'create', 'update', 'delete']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "workitem_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "work_log_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "duration": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        },
+        "description": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": ["project_id", "workitem_id"],
+          "optional": ["cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 17
+        },
+        {
+          "action": "create",
+          "required": ["project_id", "workitem_id", "duration"],
+          "optional": ["description"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 18
+        },
+        {
+          "action": "update",
+          "required": ["project_id", "workitem_id", "work_log_id"],
+          "optional": ["duration", "description"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 19
+        },
+        {
+          "action": "delete",
+          "required": ["project_id", "workitem_id", "work_log_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 20
+        }
+      ]
+    },
+    {
+      "tool": "workitem",
+      "source": "plane_mcp/tools/workitem.py",
+      "source_sha256": "b8fee878b9ab81fdb534d00d32995633913e5f31a310e237f9eb8b21111aadad",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Work items",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'list_archived', 'retrieve', 'retrieve_by_identifier', 'search', 'count', 'create', 'update', 'delete', 'archive', 'manage_assignee', 'manage_label']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "workitem_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "workitem_identifier": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "query": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "pql": {
+          "type": "Annotated[str, Field(description=PQL_FIELD_HINT)]",
+          "has_default": true,
+          "default": ""
+        },
+        "group_by": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "sub_group_by": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "assignees": {
+          "type": "list[str] | None",
+          "has_default": true,
+          "default": null
+        },
+        "labels": {
+          "type": "list[str] | None",
+          "has_default": true,
+          "default": null
+        },
+        "type_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "point": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        },
+        "description_html": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description_stripped": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "priority": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "start_date": {
+          "type": "str | None",
+          "has_default": true,
+          "default": ""
+        },
+        "target_date": {
+          "type": "str | None",
+          "has_default": true,
+          "default": ""
+        },
+        "sort_order": {
+          "type": "float",
+          "has_default": true,
+          "default": 0
+        },
+        "parent": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "state": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "estimate_point": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "add_user_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "remove_user_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "add_label_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "remove_label_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_source": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "order_by": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "expand": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "fields": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        },
+        "is_draft": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "archive": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": [],
+          "optional": [
+            "project_id",
+            "pql",
+            "order_by",
+            "per_page",
+            "cursor",
+            "expand",
+            "fields",
+            "external_id",
+            "external_source"
+          ],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "omit project_id to search the whole workspace",
+          "source_line": 76
+        },
+        {
+          "action": "list_archived",
+          "required": ["project_id"],
+          "optional": ["pql", "order_by", "per_page", "cursor", "expand", "fields", "external_id", "external_source"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 82
+        },
+        {
+          "action": "retrieve",
+          "required": ["project_id", "workitem_id"],
+          "optional": ["expand", "fields", "external_id", "external_source", "order_by"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 83
+        },
+        {
+          "action": "retrieve_by_identifier",
+          "required": ["workitem_identifier"],
+          "optional": ["expand", "fields", "external_id", "external_source", "order_by"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "identifier is PROJECT-N, e.g. ENG-42",
+          "source_line": 89
+        },
+        {
+          "action": "search",
+          "required": ["query"],
+          "optional": ["expand", "fields", "external_id", "external_source", "order_by"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 96
+        },
+        {
+          "action": "count",
+          "required": [],
+          "optional": ["project_id", "pql", "group_by", "sub_group_by"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "counts the whole workspace unless project_id narrows it",
+          "source_line": 97
+        },
+        {
+          "action": "create",
+          "required": ["project_id", "name"],
+          "optional": [
+            "assignees",
+            "labels",
+            "type_id",
+            "point",
+            "description_html",
+            "description_stripped",
+            "priority",
+            "start_date",
+            "target_date",
+            "sort_order",
+            "is_draft",
+            "parent",
+            "state",
+            "estimate_point",
+            "external_source",
+            "external_id"
+          ],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 103
+        },
+        {
+          "action": "update",
+          "required": ["project_id", "workitem_id"],
+          "optional": [
+            "name",
+            "assignees",
+            "labels",
+            "type_id",
+            "point",
+            "description_html",
+            "description_stripped",
+            "priority",
+            "start_date",
+            "target_date",
+            "sort_order",
+            "is_draft",
+            "parent",
+            "state",
+            "estimate_point",
+            "external_source",
+            "external_id"
+          ],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "only the fields you pass are changed",
+          "source_line": 104
+        },
+        {
+          "action": "delete",
+          "required": ["project_id", "workitem_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 105
+        },
+        {
+          "action": "archive",
+          "required": ["project_id", "workitem_id"],
+          "optional": ["archive"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "archive defaults to true; pass archive=false to unarchive. Only completed or cancelled items can be archived",
+          "source_line": 106
+        },
+        {
+          "action": "manage_assignee",
+          "required": ["project_id", "workitem_id"],
+          "optional": ["add_user_id", "remove_user_id"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "each takes one id or several; the list is merged, not replaced, and removals apply first",
+          "source_line": 113
+        },
+        {
+          "action": "manage_label",
+          "required": ["project_id", "workitem_id"],
+          "optional": ["add_label_id", "remove_label_id"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "each takes one id or several; the list is merged, not replaced, and removals apply first",
+          "source_line": 119
+        }
+      ]
+    },
+    {
+      "tool": "workitem_activity",
+      "source": "plane_mcp/tools/workitem_activity.py",
+      "source_sha256": "6341c0bb62e66c2bf3bf4a6737e823071ddd543d4eed00db9810b9855de6aeae",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Work item activity",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "workitem_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "activity_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": ["project_id", "workitem_id"],
+          "optional": ["cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 17
+        },
+        {
+          "action": "retrieve",
+          "required": ["project_id", "workitem_id", "activity_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 18
+        }
+      ]
+    },
+    {
+      "tool": "workitem_attachment",
+      "source": "plane_mcp/tools/workitem_attachment.py",
+      "source_sha256": "af161122338c00c0130b48f041102e8f29997b4be425bba6fbe1213999200679",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Work item attachments",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'read', 'download_url', 'upload_from_url', 'delete']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "workitem_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "attachment_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "url": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": ["project_id", "workitem_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 37
+        },
+        {
+          "action": "read",
+          "required": ["project_id", "workitem_id", "attachment_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "returns images and text inline; use download_url for anything else",
+          "source_line": 38
+        },
+        {
+          "action": "download_url",
+          "required": ["project_id", "workitem_id", "attachment_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 44
+        },
+        {
+          "action": "upload_from_url",
+          "required": ["project_id", "workitem_id", "url"],
+          "optional": ["name"],
+          "read": false,
+          "destructive": false,
+          "open_world": true,
+          "note": "",
+          "source_line": 45
+        },
+        {
+          "action": "delete",
+          "required": ["project_id", "workitem_id", "attachment_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 46
+        }
+      ]
+    },
+    {
+      "tool": "workitem_comment",
+      "source": "plane_mcp/tools/workitem_comment.py",
+      "source_sha256": "272de585697bb3b4c32e72173d059912a8a4b7755735526d60616e2d0e6935fb",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Work item comments",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'create', 'update', 'delete']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "workitem_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "comment_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "comment_html": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "access": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_source": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": ["project_id", "workitem_id"],
+          "optional": ["cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 29
+        },
+        {
+          "action": "retrieve",
+          "required": ["project_id", "workitem_id", "comment_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 30
+        },
+        {
+          "action": "create",
+          "required": ["project_id", "workitem_id", "comment_html"],
+          "optional": ["access", "external_source", "external_id"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 31
+        },
+        {
+          "action": "update",
+          "required": ["project_id", "workitem_id", "comment_id"],
+          "optional": ["comment_html", "access", "external_source", "external_id"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 36
+        },
+        {
+          "action": "delete",
+          "required": ["project_id", "workitem_id", "comment_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 41
+        }
+      ]
+    },
+    {
+      "tool": "workitem_link",
+      "source": "plane_mcp/tools/workitem_link.py",
+      "source_sha256": "38a248d5c08004c6d4e07488385842e1c27bc8a332710ad76fd79db903bbb69c",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Work item links",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'create', 'update', 'delete']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "workitem_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "link_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "url": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "title": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": ["project_id", "workitem_id"],
+          "optional": ["cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 17
+        },
+        {
+          "action": "retrieve",
+          "required": ["project_id", "workitem_id", "link_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 18
+        },
+        {
+          "action": "create",
+          "required": ["project_id", "workitem_id", "url"],
+          "optional": ["title"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 19
+        },
+        {
+          "action": "update",
+          "required": ["project_id", "workitem_id", "link_id"],
+          "optional": ["url", "title"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "pass at least one of url or title; only the fields you pass are changed",
+          "source_line": 20
+        },
+        {
+          "action": "delete",
+          "required": ["project_id", "workitem_id", "link_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 26
+        }
+      ]
+    },
+    {
+      "tool": "workitem_property",
+      "source": "plane_mcp/tools/workitem_property.py",
+      "source_sha256": "fb20101b3492b773d53cdc11b94754c3391dc6a9f52d2b80fe95504f20546dd6",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Work item properties",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'create', 'update', 'delete', 'manage_type_properties', 'list_options', 'retrieve_option', 'create_option', 'update_option', 'delete_option', 'get_value', 'set_value', 'delete_value']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "workitem_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "workitem_type_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "workitem_property_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "property_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "option_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "display_name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "property_type": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "relation_type": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "color": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "default_value": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "options": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "display_format": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "value": {
+          "type": "str | bool | int | float | list[str]",
+          "has_default": true,
+          "default": ""
+        },
+        "description_html": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "attach_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "detach_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "is_required": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "is_multi": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "is_active": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "is_default": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "external_source": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": [],
+          "optional": ["project_id", "workitem_type_id", "cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "no ids lists every workspace property in one call -- the fast path for PQL",
+          "source_line": 64
+        },
+        {
+          "action": "retrieve",
+          "required": ["workitem_property_id"],
+          "optional": ["project_id", "workitem_type_id"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 71
+        },
+        {
+          "action": "create",
+          "required": ["display_name", "property_type"],
+          "optional": [
+            "project_id",
+            "workitem_type_id",
+            "description",
+            "relation_type",
+            "is_required",
+            "is_multi",
+            "is_active",
+            "default_value",
+            "options",
+            "display_format",
+            "external_source",
+            "external_id"
+          ],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 72
+        },
+        {
+          "action": "update",
+          "required": ["workitem_property_id"],
+          "optional": [
+            "project_id",
+            "workitem_type_id",
+            "display_name",
+            "property_type",
+            "description",
+            "relation_type",
+            "is_required",
+            "is_multi",
+            "is_active",
+            "default_value",
+            "display_format",
+            "external_source",
+            "external_id"
+          ],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "only the fields you pass are changed",
+          "source_line": 90
+        },
+        {
+          "action": "delete",
+          "required": ["workitem_property_id"],
+          "optional": ["project_id", "workitem_type_id"],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 110
+        },
+        {
+          "action": "manage_type_properties",
+          "required": ["workitem_type_id"],
+          "optional": ["project_id", "attach_ids", "detach_ids"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "omit project_id where the workspace owns types; detach removes the association only, it does not delete the property",
+          "source_line": 111
+        },
+        {
+          "action": "list_options",
+          "required": ["property_id"],
+          "optional": ["project_id"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 118
+        },
+        {
+          "action": "retrieve_option",
+          "required": ["property_id", "option_id"],
+          "optional": ["project_id"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 119
+        },
+        {
+          "action": "create_option",
+          "required": ["property_id", "name"],
+          "optional": ["project_id", "description", "color", "is_default", "external_source", "external_id"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 120
+        },
+        {
+          "action": "update_option",
+          "required": ["property_id", "option_id"],
+          "optional": ["project_id", "name", "description", "color", "is_default", "external_source", "external_id"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 125
+        },
+        {
+          "action": "delete_option",
+          "required": ["property_id", "option_id"],
+          "optional": ["project_id"],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 130
+        },
+        {
+          "action": "get_value",
+          "required": ["project_id", "workitem_id", "property_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 131
+        },
+        {
+          "action": "set_value",
+          "required": ["project_id", "workitem_id", "property_id"],
+          "optional": ["value", "description_html", "external_source", "external_id"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "upsert; pass value, or description_html for a rich text property; for a multi-value property this replaces every existing value",
+          "source_line": 132
+        },
+        {
+          "action": "delete_value",
+          "required": ["project_id", "workitem_id", "property_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 139
+        }
+      ]
+    },
+    {
+      "tool": "workitem_relation",
+      "source": "plane_mcp/tools/workitem_relation.py",
+      "source_sha256": "08286005e1a9142135699059838271a2c8580189b499254b5b2a334f5d0abaa1",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Work item relations",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'create', 'delete', 'list_definitions', 'create_definition', 'update_definition', 'delete_definition']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "workitem_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "workitem_ids": {
+          "type": "list[str] | None",
+          "has_default": true,
+          "default": null
+        },
+        "related_workitem_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "relation_type": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "relation_definition_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "relation_definition_label": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "definition_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "outward": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "inward": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "color": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "is_default": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "is_active": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "is_dependency": {
+          "type": "bool",
+          "has_default": true,
+          "default": false
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": ["project_id", "workitem_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 48
+        },
+        {
+          "action": "create",
+          "required": ["project_id", "workitem_id", "workitem_ids"],
+          "optional": ["relation_type", "relation_definition_id", "relation_definition_label"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "pass relation_type for a dependency, or definition id + label for a custom relation",
+          "source_line": 49
+        },
+        {
+          "action": "delete",
+          "required": ["project_id", "workitem_id", "related_workitem_id"],
+          "optional": ["is_dependency"],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "removes one relation; dependencies and custom relations are independent, so is_dependency must match the kind that was created (default false)",
+          "source_line": 55
+        },
+        {
+          "action": "list_definitions",
+          "required": [],
+          "optional": ["is_default", "is_active"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 63
+        },
+        {
+          "action": "create_definition",
+          "required": ["name"],
+          "optional": ["outward", "inward", "is_active", "color"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 64
+        },
+        {
+          "action": "update_definition",
+          "required": ["definition_id"],
+          "optional": ["name", "outward", "inward", "is_active", "color"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 65
+        },
+        {
+          "action": "delete_definition",
+          "required": ["definition_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 66
+        }
+      ]
+    },
+    {
+      "tool": "workitem_type",
+      "source": "plane_mcp/tools/workitem_type.py",
+      "source_sha256": "ce40504c5257a77a0d5bf6a205b970eac94da611bc9adbb31acfa573fae6e817",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Work item types",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'resolve', 'create', 'update', 'delete', 'import_to_project']",
+          "has_default": false
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "workitem_type_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "workitem_type_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "project_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "is_active": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "external_source": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "external_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": [],
+          "optional": ["project_id", "cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "workspace scope when project_id is omitted",
+          "source_line": 38
+        },
+        {
+          "action": "retrieve",
+          "required": ["workitem_type_id"],
+          "optional": ["project_id"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 41
+        },
+        {
+          "action": "resolve",
+          "required": ["project_id", "name"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "finds or creates a named type usable in the project; never duplicates",
+          "source_line": 42
+        },
+        {
+          "action": "create",
+          "required": ["name"],
+          "optional": ["project_id", "description", "project_ids", "is_active", "external_source", "external_id"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 47
+        },
+        {
+          "action": "update",
+          "required": ["workitem_type_id"],
+          "optional": [
+            "project_id",
+            "name",
+            "description",
+            "project_ids",
+            "is_active",
+            "external_source",
+            "external_id"
+          ],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "only the fields you pass are changed",
+          "source_line": 52
+        },
+        {
+          "action": "delete",
+          "required": ["workitem_type_id"],
+          "optional": ["project_id"],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 58
+        },
+        {
+          "action": "import_to_project",
+          "required": ["project_id", "workitem_type_ids"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "links workspace types to a project",
+          "source_line": 59
+        }
+      ]
+    },
+    {
+      "tool": "workspace",
+      "source": "plane_mcp/tools/workspace.py",
+      "source_sha256": "c9534c97406b5432241671e08911dbc5d71a9d570710ab8aad28bf6d187cc1e8",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Workspace settings",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['retrieve', 'get_features', 'update_features']",
+          "has_default": false
+        },
+        "project_grouping": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "initiatives": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "teams": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "customers": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "wiki": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "pi": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        }
+      },
+      "actions": [
+        {
+          "action": "retrieve",
+          "required": [],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "the workspace this connection is bound to: slug, id, name and how it connected. id and name are known only on an OAuth connection and are null otherwise",
+          "source_line": 17
+        },
+        {
+          "action": "get_features",
+          "required": [],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "feature flags for the current workspace",
+          "source_line": 23
+        },
+        {
+          "action": "update_features",
+          "required": [],
+          "optional": ["project_grouping", "initiatives", "teams", "customers", "wiki", "pi"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "only the flags you pass are changed",
+          "source_line": 24
+        }
+      ]
+    },
+    {
+      "tool": "template",
+      "source": "plane_mcp/tools/template.py",
+      "source_sha256": "7b1b00b369e3dd684222174eb65609248ed749d2218d1a8138ae479b9c908c84",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Templates",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'create', 'update', 'delete']",
+          "has_default": false
+        },
+        "kind": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "project_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "template_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "description": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "template_data": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": ["kind"],
+          "optional": ["project_id"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 43
+        },
+        {
+          "action": "create",
+          "required": ["kind", "name", "template_data"],
+          "optional": ["project_id", "description"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 44
+        },
+        {
+          "action": "update",
+          "required": ["kind", "template_id"],
+          "optional": ["project_id", "name", "description", "template_data"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "only the fields you pass are changed",
+          "source_line": 45
+        },
+        {
+          "action": "delete",
+          "required": ["kind", "template_id"],
+          "optional": ["project_id"],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "",
+          "source_line": 51
+        }
+      ]
+    },
+    {
+      "tool": "collection",
+      "source": "plane_mcp/tools/collection.py",
+      "source_sha256": "5be69c5cc30da8830ca6c351283630fde54d1e896b33243dbc37714363d9cc54",
+      "has_action_parameter": true,
+      "annotations": {
+        "title": "Page collections",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "parameters": {
+        "action": {
+          "type": "Literal['list', 'retrieve', 'create', 'update', 'delete', 'list_pages', 'search_pages', 'add_pages', 'remove_page', 'list_members', 'add_member', 'update_member', 'remove_member']",
+          "has_default": false
+        },
+        "collection_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "name": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "access": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "member_access": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "user_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "collection_member_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "page_ids": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "page_collection_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "parent_id": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "search": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "archive_pages": {
+          "type": "bool | None",
+          "has_default": true,
+          "default": null
+        },
+        "sort_order": {
+          "type": "float | None",
+          "has_default": true,
+          "default": null
+        },
+        "cursor": {
+          "type": "str",
+          "has_default": true,
+          "default": ""
+        },
+        "per_page": {
+          "type": "int",
+          "has_default": true,
+          "default": 0
+        }
+      },
+      "actions": [
+        {
+          "action": "list",
+          "required": [],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 44
+        },
+        {
+          "action": "retrieve",
+          "required": ["collection_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 45
+        },
+        {
+          "action": "create",
+          "required": ["name"],
+          "optional": ["access"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "access is fixed at creation and cannot be changed afterwards",
+          "source_line": 46
+        },
+        {
+          "action": "update",
+          "required": ["collection_id"],
+          "optional": ["name", "sort_order"],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "only the fields you pass are changed",
+          "source_line": 47
+        },
+        {
+          "action": "delete",
+          "required": ["collection_id"],
+          "optional": ["archive_pages"],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "the pages survive; archive_pages defaults to true, pass false to leave them unfiled instead",
+          "source_line": 48
+        },
+        {
+          "action": "list_pages",
+          "required": ["collection_id"],
+          "optional": ["search", "parent_id", "cursor", "per_page"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 55
+        },
+        {
+          "action": "search_pages",
+          "required": ["collection_id"],
+          "optional": ["search"],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "pages not yet in this collection, to pick ids for add_pages",
+          "source_line": 56
+        },
+        {
+          "action": "add_pages",
+          "required": ["collection_id", "page_ids"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "files existing pages; use page create to make new ones",
+          "source_line": 63
+        },
+        {
+          "action": "remove_page",
+          "required": ["collection_id", "page_collection_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "page_collection_id is the membership id from list_pages, not the page id; the page itself is kept",
+          "source_line": 64
+        },
+        {
+          "action": "list_members",
+          "required": ["collection_id"],
+          "optional": [],
+          "read": true,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 70
+        },
+        {
+          "action": "add_member",
+          "required": ["collection_id", "user_id", "member_access"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 71
+        },
+        {
+          "action": "update_member",
+          "required": ["collection_id", "collection_member_id", "member_access"],
+          "optional": [],
+          "read": false,
+          "destructive": false,
+          "open_world": false,
+          "note": "",
+          "source_line": 72
+        },
+        {
+          "action": "remove_member",
+          "required": ["collection_id", "collection_member_id"],
+          "optional": [],
+          "read": false,
+          "destructive": true,
+          "open_world": false,
+          "note": "collection_member_id is the membership id from list_members, not the user id",
+          "source_line": 73
+        }
+      ]
+    }
+  ]
+}

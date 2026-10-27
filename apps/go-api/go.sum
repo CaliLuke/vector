@@ -25,8 +25,8 @@ github.com/CaliLuke/libopenapi v0.41.7-0.20261014145029-7886f0170cc4 h1:KG8QSbAt
 github.com/CaliLuke/libopenapi v0.41.7-0.20261014145029-7886f0170cc4/go.mod h1:gEQ2ydf5xr92Ql+uRl54gig6N/DAc/zuIrfZNqtFqPA=
 github.com/CaliLuke/loom v1.10.0-alpha.17 h1:Jbrz3WXAuVvePmGQw0j++ux+5jesWfm/FqfZaiDyzIE=
 github.com/CaliLuke/loom v1.10.0-alpha.17/go.mod h1:mX7STFvV/6tr8HpCNhnOruI/JprgtBieGr3Be8aAD6s=
-github.com/CaliLuke/loom-mcp/v2 v2.1.0-alpha.47 h1:H/yaV52a7jC8YntxL3e0oCsMNF6moork7ERkvGw/9As=
-github.com/CaliLuke/loom-mcp/v2 v2.1.0-alpha.47/go.mod h1:ilFdXxmAxUDhmVlBCiVcVJJDEWkglwHWianIW7IrM+Q=
+github.com/CaliLuke/loom-mcp/v2 v2.1.0-alpha.48 h1:pwF+V5r7xSdn0ACLEQidb7jo8MMhuUCPrtqyKyWrn7o=
+github.com/CaliLuke/loom-mcp/v2 v2.1.0-alpha.48/go.mod h1:ilFdXxmAxUDhmVlBCiVcVJJDEWkglwHWianIW7IrM+Q=
 github.com/CaliLuke/selvedge v0.7.0 h1:9scL+JWLODAOie5C6vHKkkSvknyLWglUQT5c2Ij6YM8=
 github.com/CaliLuke/selvedge v0.7.0/go.mod h1:WMOxrwKeto/YPgLNhH9mxvduVEiWlVKDGLkm2uAUZw8=
 github.com/JensRantil/go-csv v1.0.0 h1:ZNLAXxLnbq8VsjLSKVkN+nkeB4Z1UorKk0Tjqqvxto8=

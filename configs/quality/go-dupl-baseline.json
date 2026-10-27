@@ -570,15 +570,6 @@
     },
     {
       "fingerprint": [
-        "apiuseridentity/design/design.go",
-        "projectmembershiplifecycle/design/design.go",
-        "48843c6875deeb19d6c5e2fe3e76fe403e34e8aec66d7567b88bdfc0c4d94868",
-        "c0d75d03e740c1273932087c49a5e1184c1fe7ff708dac0701a3bc3c60590772"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
         "assetslifecycle/design/design.go",
         "assetslifecycle/design/design.go",
         "036f2fc020408c2a9e907169ba008aee2b94905fec3225dcb76a59f9c6d4cb46",

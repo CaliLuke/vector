@@ -33,6 +33,10 @@
       "statements": 118,
       "percent": 0
     },
+    "github.com/CaliLuke/go-plane/apiuseridentity/design/types": {
+      "statements": 19,
+      "percent": 0
+    },
     "github.com/CaliLuke/go-plane/apiv1stickies/design": {
       "statements": 243,
       "percent": 0
@@ -252,6 +256,10 @@
     "github.com/CaliLuke/go-plane/internal/logredact": {
       "statements": 10,
       "percent": 90
+    },
+    "github.com/CaliLuke/go-plane/internal/mcpactions": {
+      "statements": 30,
+      "percent": 100
     },
     "github.com/CaliLuke/go-plane/internal/mcpauth": {
       "statements": 73,

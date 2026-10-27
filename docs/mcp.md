@@ -1,7 +1,7 @@
 # Remote MCP transport
 
 VEC-2 is **in progress**. The Go API contains a generated, stateless MCP server
-and ingress routing. No resource actions are registered. Personal-token
+and ingress routing. The first resource action is `member.me`. Personal-token
 authentication is wired; OAuth remains unavailable. MCP is disabled by default.
 Enabling `oauth` or `both` fails before database startup.
 
@@ -13,7 +13,7 @@ source scripts/dev-env.sh
 go -C apps/go-api generate ./mcp/design
 ```
 
-The integration pins `loom-mcp/v2 v2.1.0-alpha.47` with Vector's existing
+The integration pins `loom-mcp/v2 v2.1.0-alpha.48` with Vector's existing
 `loom v1.10.0-alpha.17`. Generated files are not edited by hand. The dependency
 adds its SDK and schema/runtime dependencies; no local module replacement is used.
 
@@ -68,10 +68,10 @@ middleware, including authentication failures. The response returns a validated
 or generated UUID in `X-Request-ID`. Successful authentication updates token
 `last_used` through the existing validator.
 
-The authentication package provides fresh revalidation for future action calls
-and receipt replay, and binds optional tool workspace selectors to the header.
-Each action must still enforce current project and domain permissions. No action
-or receipt handler is registered yet, so those integrations remain unproven.
+The authentication package revalidates before each `member.me` invocation and
+binds optional tool workspace selectors to the header. Each future action must
+also enforce its current project and domain permissions. Receipt replay is not
+implemented yet.
 
 The supported revisions are `2026-07-28` and `2025-11-25`. The former uses
 stateless `server/discover` and per-request protocol metadata; the latter uses
@@ -79,19 +79,36 @@ the legacy initialize handshake. A legacy initialize request cannot negotiate
 the new lifecycle. The server does not issue session IDs or advertise
 unimplemented tools, prompts, or resources.
 
+## Available action
+
+`member` currently accepts only `{"action":"me"}` and the optional
+`workspace_slug` selector. Discovery advertises only that action. Unknown actions,
+fields belonging to other actions, and mismatched workspace selectors fail with
+`invalid_params` before reading identity data.
+
+The action uses the same credential-neutral identity reader as `GET /api/v1/users/me/`.
+That reader selects only the authenticated actor and checks the account's current
+active state. The MCP projection normalizes absent UserLite fields to null, as the
+pinned Plane SDK does; the HTTP response shape remains unchanged. Both designs
+reference the same API identity field declaration.
+
+The generated contract declares typed identity output and safe named errors.
+Tests use the generated HTTP server and real PostgreSQL-backed token, membership,
+and identity readers. They cover both protocol revisions, actor isolation, fresh
+profile data, and revocation between request authentication and action execution.
+This is personal-token evidence for one action, not complete VEC-7 or VEC-36 proof.
+
 ## Remaining requirements
 
-- **Generated action contracts:** [loom-mcp #381](https://github.com/CaliLuke/loom-mcp/issues/381)
-  tracks two defects reproduced with a standalone, two-branch object union:
-  generated transport conversion calls missing union accessors, and the
-  generated input schema lacks the root object type required by the SDK.
-  The same compile failure occurs with Loom alpha.16 and alpha.17. No workaround
-  or patched dependency is retained. A released fix must compile the projection,
-  register it with the SDK, and reject action-specific invalid inputs before
-  resource actions can be added.
+- **Generated action contracts:** the upstream union defects in
+  [loom-mcp #381](https://github.com/CaliLuke/loom-mcp/issues/381) are fixed in
+  alpha.48. Vector consumes the released module without a replacement or retained
+  workaround. Expand the generated catalogue as application actions become
+  available, including consumer proof of multi-action union contracts.
 - **Discovery authorization:** prove per-principal permitted-action schemas and
-  invocation checks through the generated handler after the action contract is
-  usable. There is no handwritten replacement registry.
+  invocation checks across actions with different permissions. The current
+  `member.me` action is available to every authenticated actor. There is no
+  handwritten replacement registry.
 - **VEC-35 and VEC-3:** complete personal-token invocation integration and supply
   the OAuth provider, including scopes and account linking. Personal-token
   transport authentication is implemented; action-level authorization, discovery
@@ -101,10 +118,11 @@ unimplemented tools, prompts, or resources.
   before enabling covered actions. The transport accepts the generated observer
   hook, but this does not establish the complete observability contract.
 - **Resource tickets and VEC-36:** implement and verify the 30 resource tools and
-  207 actions. The empty initial catalogue is not a parity claim.
+  207 actions. The pinned expected catalogue lives under
+  `apps/go-api/mcp/testdata/plane-mcp`; it is not a runtime registry or a parity claim.
 
 Focused verification exercises the real generated HTTP handler, both route
 modes, current and legacy discovery, invalid protocol headers, host/origin
 rejection, request limits, cancellation, unavailable authentication, and startup
-configuration. It does not yet prove typed action results/errors or permission
-filtering; those remain blocked above.
+configuration. Typed results and errors are exercised for `member.me`; discovery
+filtering across actions with different permissions remains pending.

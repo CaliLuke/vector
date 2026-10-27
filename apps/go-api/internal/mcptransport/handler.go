@@ -13,6 +13,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 	generated "github.com/CaliLuke/go-plane/mcp/gen/mcp_vector_mcp"
+	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	"github.com/CaliLuke/loom-mcp/v2/runtime/mcp/sdkbridge"
 	"github.com/CaliLuke/loom/observability/transport"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
@@ -32,6 +33,7 @@ var (
 type Authenticate func(context.Context, *http.Request) (context.Context, error)
 
 type Options struct {
+	Service    api.Service
 	HeaderAuth Authenticate
 	OAuthAuth  Authenticate
 	Observer   transport.Observer
@@ -55,8 +57,7 @@ func ValidateStartup(config Config, options Options) error {
 	return nil
 }
 
-// New constructs the generated, stateless server. Its initial catalogue is empty
-// until action implementations and their authorization contracts are available.
+// New constructs the generated, stateless server from implemented actions.
 // A missing selected authentication provider is a startup error, never anonymous
 // access. Disabled routes and paths beneath /mcp are always 404, not SPA pages.
 func New(config Config, options Options, fallback http.Handler) (http.Handler, error) {
@@ -68,7 +69,10 @@ func New(config Config, options Options, fallback http.Handler) (http.Handler, e
 	}
 	routes := make(map[string]http.Handler)
 	if config.Enabled {
-		server, err := generated.NewSDKServer(struct{}{}, &generated.SDKServerOptions{
+		if options.Service == nil {
+			return nil, fmt.Errorf("MCP application service is required")
+		}
+		server, err := generated.NewSDKServer(options.Service, &generated.SDKServerOptions{
 			Server: &mcpsdk.ServerOptions{
 				SupportedProtocolVersions: []string{"2026-07-28", "2025-11-25"},
 				SetCacheable: func(_ context.Context, _ mcpsdk.Request, result *mcpsdk.Cacheable) {

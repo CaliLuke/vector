@@ -22,17 +22,18 @@ type apiUserIdentityRepository interface {
 	APIV1Identity(context.Context, uuid.UUID) (json.RawMessage, error)
 }
 type apiUserIdentityReadsService struct {
-	repository apiUserIdentityRepository
-	keys       activityReadsAPIKeys
-	throttle   activityReadsThrottle
+	identity *store.IdentityReader
+	keys     activityReadsAPIKeys
+	throttle activityReadsThrottle
 }
 type apiUserIdentityPrincipalKey struct{}
 
 func NewAPIUserIdentity(repository apiUserIdentityRepository, keys activityReadsAPIKeys, throttle activityReadsThrottle) (api.Service, error) {
-	if repository == nil || keys == nil || throttle == nil {
+	identity, err := store.NewIdentityReader(repository)
+	if err != nil || keys == nil || throttle == nil {
 		return nil, fmt.Errorf("API identity repository, API-key validator and throttle are required")
 	}
-	return &apiUserIdentityReadsService{repository: repository, keys: keys, throttle: throttle}, nil
+	return &apiUserIdentityReadsService{identity: identity, keys: keys, throttle: throttle}, nil
 }
 
 func (s *apiUserIdentityReadsService) APIKeyAuth(ctx context.Context, key string, _ *security.APIKeyScheme) (context.Context, error) {
@@ -88,7 +89,7 @@ func (s *apiUserIdentityReadsService) GetAPIV1UsersMe(ctx context.Context, _ *ap
 	if err != nil {
 		return nil, nil, err
 	}
-	body, err := s.repository.APIV1Identity(ctx, uuid.UUID(principal.UserID))
+	body, err := s.identity.CurrentIdentity(ctx, uuid.UUID(principal.UserID))
 	if err != nil {
 		return nil, nil, mapAPIUserIdentityError(err)
 	}

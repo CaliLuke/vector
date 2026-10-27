@@ -119,7 +119,22 @@ func sdkToolBindings(adapter *MCPAdapter) ([]sdkbridge.ToolBinding, error) {
 		}
 		return bindings, nil
 	}
-	bindings := make([]sdkbridge.ToolBinding, 0, 0)
+	bindings := make([]sdkbridge.ToolBinding, 0, 1)
+	annotationsMember, err := sdkToolAnnotations(jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":true}")))
+	if err != nil {
+		return nil, fmt.Errorf("tool %q annotations: %w", "member", err)
+	}
+	bindings = append(bindings, sdkbridge.ToolBinding{
+		Handler: handler,
+		Tool: &mcpsdk.Tool{
+			Annotations:  annotationsMember,
+			Description:  "Members and roles. Available action: me — the authenticated user.",
+			InputSchema:  sdkToolInputSchema("{\"type\":\"object\",\"description\":\"Read the authenticated user's identity.\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"me\"]},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"additionalProperties\":false}"),
+			Name:         "member",
+			OutputSchema: sdkToolInputSchema("{\"type\":\"object\",\"description\":\"The existing API identity, normalized to the pinned SDK's UserLite result.\",\"required\":[\"id\",\"first_name\",\"last_name\",\"email\",\"avatar\",\"avatar_url\",\"display_name\"],\"properties\":{\"avatar\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"avatar_url\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"display_name\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"email\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"first_name\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"id\":{\"anyOf\":[{\"type\":\"string\",\"format\":\"uuid\"},{\"type\":\"null\"}]},\"last_name\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}},\"additionalProperties\":false}"),
+			Title:        "Members and roles",
+		},
+	})
 	return bindings, nil
 }
 func sdkResourceBindings(adapter *MCPAdapter) ([]sdkbridge.ResourceBinding, error) {

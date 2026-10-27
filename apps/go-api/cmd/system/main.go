@@ -100,6 +100,7 @@ import (
 	instanceworkspaceslugstore "github.com/CaliLuke/go-plane/internal/instanceworkspaceslugcheck"
 	intakeinboxreadsstore "github.com/CaliLuke/go-plane/internal/intakeinboxreads"
 	lastvisitedworkspacestore "github.com/CaliLuke/go-plane/internal/lastvisitedworkspace"
+	"github.com/CaliLuke/go-plane/internal/mcpactions"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/mcptransport"
 	modulereadsstore "github.com/CaliLuke/go-plane/internal/modulereads"
@@ -1541,6 +1542,14 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 		intakeInboxReads:                        intakeInboxReadsEndpoints,
 		deployBoardReads:                        deployBoardReadsEndpoints,
 	}, workspaceFavoritesEndpoints)
+	mcpIdentity, err := useridentitystore.NewIdentityReader(userIdentityRepository)
+	if err != nil {
+		return err
+	}
+	mcpOptions.Service, err = mcpactions.New(mcpIdentity)
+	if err != nil {
+		return err
+	}
 	handler, err = mcptransport.New(cfg.mcp, mcpOptions, handler)
 	if err != nil {
 		return err

@@ -7,8 +7,17 @@
 
 package vectormcp
 
+import (
+	"context"
+
+	loom "github.com/CaliLuke/loom/pkg"
+)
+
 // Remote access to Vector.
-type Service interface{}
+type Service interface {
+	// Read the authenticated user's identity.
+	Member(context.Context, *MemberMe) (res *MemberIdentity, err error)
+}
 
 // APIName is the name of the API as defined in the design.
 const APIName = "Vector MCP"
@@ -24,4 +33,77 @@ const ServiceName = "VectorMCP"
 // MethodNames lists the service method names as defined in the design. These
 // are the same values that are set in the endpoint request contexts under the
 // MethodKey key.
-var MethodNames = [0]string{}
+var MethodNames = [1]string{"member"}
+
+// MemberIdentity is the result type of the VectorMCP service member method.
+type MemberIdentity struct {
+	ID          loom.Nullable[string] `json:"id"`
+	FirstName   loom.Nullable[string] `json:"first_name"`
+	LastName    loom.Nullable[string] `json:"last_name"`
+	Email       loom.Nullable[string] `json:"email"`
+	Avatar      loom.Nullable[string] `json:"avatar"`
+	AvatarURL   loom.Nullable[string] `json:"avatar_url"`
+	DisplayName loom.Nullable[string] `json:"display_name"`
+}
+
+// MemberMe is the payload type of the VectorMCP service member method.
+type MemberMe struct {
+	Action string `json:"action"`
+	// Optional workspace selector; must match the authenticated workspace.
+	WorkspaceSlug *string `json:"workspace_slug,omitzero"`
+}
+
+// MakeUnauthorized builds a loom.ServiceError from an error.
+func MakeUnauthorized(err error) *loom.ServiceError {
+	serr := loom.NewServiceError(err, "unauthorized", false, false, false)
+	loom.WithErrorRemedy(serr, &loom.ErrorRemedy{
+		Code:        "",
+		SafeMessage: "Authentication is no longer valid.",
+		RetryHint:   "",
+	})
+	return serr
+}
+
+// MakeForbidden builds a loom.ServiceError from an error.
+func MakeForbidden(err error) *loom.ServiceError {
+	serr := loom.NewServiceError(err, "forbidden", false, false, false)
+	loom.WithErrorRemedy(serr, &loom.ErrorRemedy{
+		Code:        "",
+		SafeMessage: "Access is no longer allowed.",
+		RetryHint:   "",
+	})
+	return serr
+}
+
+// MakeInvalidParams builds a loom.ServiceError from an error.
+func MakeInvalidParams(err error) *loom.ServiceError {
+	serr := loom.NewServiceError(err, "invalid_params", false, false, false)
+	loom.WithErrorRemedy(serr, &loom.ErrorRemedy{
+		Code:        "",
+		SafeMessage: "The action or workspace selector is invalid.",
+		RetryHint:   "",
+	})
+	return serr
+}
+
+// MakeNotFound builds a loom.ServiceError from an error.
+func MakeNotFound(err error) *loom.ServiceError {
+	serr := loom.NewServiceError(err, "not_found", false, false, false)
+	loom.WithErrorRemedy(serr, &loom.ErrorRemedy{
+		Code:        "",
+		SafeMessage: "The user is no longer available.",
+		RetryHint:   "",
+	})
+	return serr
+}
+
+// MakeInternalError builds a loom.ServiceError from an error.
+func MakeInternalError(err error) *loom.ServiceError {
+	serr := loom.NewServiceError(err, "internal_error", false, false, false)
+	loom.WithErrorRemedy(serr, &loom.ErrorRemedy{
+		Code:        "",
+		SafeMessage: "The identity could not be read.",
+		RetryHint:   "",
+	})
+	return serr
+}

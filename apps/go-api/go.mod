@@ -4,7 +4,7 @@ go 1.27.3
 
 require (
 	github.com/CaliLuke/loom v1.10.0-alpha.17
-	github.com/CaliLuke/loom-mcp/v2 v2.1.0-alpha.47
+	github.com/CaliLuke/loom-mcp/v2 v2.1.0-alpha.48
 	github.com/CaliLuke/selvedge v0.7.0
 	github.com/JensRantil/go-csv v1.0.0
 	github.com/aws/aws-sdk-go-v2 v1.47.4

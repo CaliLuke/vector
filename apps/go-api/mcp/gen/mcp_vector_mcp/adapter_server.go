@@ -20,6 +20,7 @@ import (
 	"time"
 
 	vector_mcp "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
+	agentruntime "github.com/CaliLuke/loom-mcp/v2/runtime/agent/runtime"
 	mcpruntime "github.com/CaliLuke/loom-mcp/v2/runtime/mcp"
 	sdkbridge "github.com/CaliLuke/loom-mcp/v2/runtime/mcp/sdkbridge"
 	loom "github.com/CaliLuke/loom/pkg"
@@ -491,7 +492,14 @@ type toolSearchSettings struct {
 }
 
 func (a *MCPAdapter) generatedToolCatalog() []*ToolInfo {
-	return []*ToolInfo{}
+	return []*ToolInfo{&ToolInfo{
+		Annotations:  jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":true}")),
+		Description:  stringPtr("Members and roles. Available action: me — the authenticated user."),
+		InputSchema:  jsontext.Value([]byte("{\"type\":\"object\",\"description\":\"Read the authenticated user's identity.\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"me\"]},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"additionalProperties\":false}")),
+		Name:         "member",
+		OutputSchema: jsontext.Value([]byte("{\"type\":\"object\",\"description\":\"The existing API identity, normalized to the pinned SDK's UserLite result.\",\"required\":[\"id\",\"first_name\",\"last_name\",\"email\",\"avatar\",\"avatar_url\",\"display_name\"],\"properties\":{\"avatar\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"avatar_url\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"display_name\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"email\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"first_name\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"id\":{\"anyOf\":[{\"type\":\"string\",\"format\":\"uuid\"},{\"type\":\"null\"}]},\"last_name\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}},\"additionalProperties\":false}")),
+		Title:        stringPtr("Members and roles"),
+	}}
 }
 func (a *MCPAdapter) toolSearchEnabled() bool {
 	return a != nil && a.opts != nil && a.opts.ToolSearch != nil
@@ -519,6 +527,8 @@ func (a *MCPAdapter) isToolCallProxyName(name string) bool {
 }
 func isGeneratedToolName(name string) bool {
 	switch name {
+	case "member":
+		return true
 	default:
 		return false
 	}
@@ -1237,6 +1247,21 @@ func (a *MCPAdapter) handleCallToolProxy(ctx context.Context, p *ToolsCallPayloa
 	toolErr := result != nil && result.IsError != nil && *result.IsError
 	return toolErr, stream.SendAndClose(ctx, result)
 }
+func memberInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"me\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
 func (a *MCPAdapter) ToolsCall(ctx context.Context, p *ToolsCallPayload) (res *ToolsCallResult, err error) {
 	attrs := []attribute.KeyValue{}
 	var rawArguments jsontext.Value
@@ -1315,6 +1340,32 @@ func (a *MCPAdapter) executeRealTool(ctx context.Context, p *ToolsCallPayload, s
 		arguments = jsontext.Value([]byte("{}"))
 	}
 	switch p.Name {
+	case "member":
+		payload, err := decodeMemberPayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", memberInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.Member(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
 	default:
 		return false, loom.PermanentError("invalid_params", "Unknown tool: %s", p.Name)
 	}

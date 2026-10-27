@@ -7,10 +7,35 @@
 
 package vectormcp
 
+import (
+	"context"
+
+	loom "github.com/CaliLuke/loom/pkg"
+)
+
 // Client is the "VectorMCP" service client.
-type Client struct{}
+type Client struct {
+	MemberEndpoint loom.Endpoint
+}
 
 // NewClient initializes a "VectorMCP" service client given the endpoints.
-func NewClient() *Client {
-	return &Client{}
+func NewClient(member loom.Endpoint) *Client {
+	return &Client{MemberEndpoint: member}
+}
+
+// Member calls the "member" endpoint of the "VectorMCP" service.
+// Member may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) Member(ctx context.Context, p *MemberMe) (res *MemberIdentity, err error) {
+	var ires any
+	ires, err = c.MemberEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(*MemberIdentity), nil
 }

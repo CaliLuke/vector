@@ -13,6 +13,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/mcptransport"
 	"github.com/CaliLuke/go-plane/internal/platform"
+	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
@@ -31,9 +32,16 @@ func options() mcptransport.Options {
 
 func handler(t *testing.T, c mcptransport.Config, opts mcptransport.Options) http.Handler {
 	t.Helper()
+	opts.Service = transportTestService{}
 	h, err := mcptransport.New(c, opts, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusTeapot) }))
 	require.NoError(t, err)
 	return h
+}
+
+type transportTestService struct{}
+
+func (transportTestService) Member(context.Context, *api.MemberMe) (*api.MemberIdentity, error) {
+	return nil, errors.New("transport tests do not execute identity reads")
 }
 
 func call(h http.Handler, path, body string, headers http.Header) *httptest.ResponseRecorder {
@@ -90,7 +98,7 @@ func TestGeneratedHandlerNegotiatesLegacyRevisionWithoutSessions(t *testing.T) {
 			}
 			require.NoError(t, json.Unmarshal(w.Body.Bytes(), &response))
 			require.Equal(t, version, response.Result.ProtocolVersion)
-			require.NotContains(t, response.Result.Capabilities, "tools")
+			require.Contains(t, response.Result.Capabilities, "tools")
 			require.NotContains(t, response.Result.Capabilities, "prompts")
 			require.NotContains(t, response.Result.Capabilities, "resources")
 		})
@@ -313,4 +321,9 @@ func TestSelectedAuthenticationMustBeAvailable(t *testing.T) {
 			require.Error(t, err)
 		})
 	}
+}
+
+func TestEnabledTransportRequiresApplicationService(t *testing.T) {
+	_, err := mcptransport.New(config("header"), options(), http.NotFoundHandler())
+	require.ErrorContains(t, err, "application service is required")
 }
