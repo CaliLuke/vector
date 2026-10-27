@@ -93,10 +93,20 @@ func TestRunnerRetriesWhenDockerLogChildCannotRestart(t *testing.T) {
 	writeExecutable(t, filepath.Join(bin, "pnpm"), "#!/bin/sh\nexec /bin/sleep 20\n")
 	t.Setenv("PATH", bin)
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	finished := make(chan int, 1)
 	var stderr strings.Builder
-	go func() { finished <- runLocalDevelopment(ctx, root, io.Discard, &stderr, "http://127.0.0.1:1") }()
-	time.Sleep(2300 * time.Millisecond)
+	restarted := make(chan struct{})
+	output := &runnerDiagnosticWriter{Writer: &stderr, observed: restarted}
+	go func() { finished <- runLocalDevelopment(ctx, root, io.Discard, output, "http://127.0.0.1:1") }()
+	// Wait for the failed restart before cancellation. Child startup can take
+	// longer than the old 300ms allowance when the full suite runs concurrently.
+	var observed bool
+	select {
+	case <-restarted:
+		observed = true
+	case <-time.After(10 * time.Second):
+	}
 	cancel()
 	select {
 	case code := <-finished:
@@ -106,9 +116,25 @@ func TestRunnerRetriesWhenDockerLogChildCannotRestart(t *testing.T) {
 	case <-time.After(3 * time.Second):
 		t.Fatal("runner stalled after Docker log capture restart failure")
 	}
-	if !strings.Contains(stderr.String(), "Restart Docker log capture") {
+	if !observed {
 		t.Fatalf("expected restart failure diagnostic, got %q", stderr.String())
 	}
+}
+
+// runnerDiagnosticWriter synchronizes cancellation with the existing restart
+// failure diagnostic, rather than assuming process startup has a fixed duration.
+type runnerDiagnosticWriter struct {
+	io.Writer
+	once     sync.Once
+	observed chan struct{}
+}
+
+func (w *runnerDiagnosticWriter) Write(p []byte) (int, error) {
+	n, err := w.Writer.Write(p)
+	if strings.Contains(string(p), "Restart Docker log capture") {
+		w.once.Do(func() { close(w.observed) })
+	}
+	return n, err
 }
 
 func writeExecutable(t *testing.T, path, content string) {
