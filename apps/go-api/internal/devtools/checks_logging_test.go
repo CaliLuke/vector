@@ -6,7 +6,80 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
+
+func TestHasLocalLoggingMarkerRequiresExactCurrentServiceRecord(t *testing.T) {
+	const marker = "local-logging-check-current"
+	cutoff := time.Date(2026, time.October, 26, 23, 0, 0, 123456789, time.UTC)
+	rows := func(receivedAt, service, body string) string {
+		return `{"rows":[{"received_at":"` + receivedAt + `","service_name":"` + service + `","body":{"string":"` + body + `"}}]}`
+	}
+	tests := []struct {
+		name       string
+		response   string
+		wantResult bool
+	}{
+		{
+			name:       "exact current marker",
+			response:   rows(cutoff.Format(time.RFC3339Nano), "plane-logging-check", marker),
+			wantResult: true,
+		},
+		{
+			name:     "stale marker",
+			response: rows(cutoff.Add(-time.Nanosecond).Format(time.RFC3339Nano), "plane-logging-check", marker),
+		},
+		{
+			name:     "marker is only a substring",
+			response: rows(cutoff.Format(time.RFC3339Nano), "plane-logging-check", "prefix-"+marker),
+		},
+		{
+			name:     "other service",
+			response: rows(cutoff.Format(time.RFC3339Nano), "plane-go-api", marker),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			root := t.TempDir()
+			scriptDir := filepath.Join(root, "scripts")
+			if err := os.MkdirAll(scriptDir, 0700); err != nil {
+				t.Fatal(err)
+			}
+			callsPath := filepath.Join(root, "calls")
+			script := `#!/bin/sh
+printf '%s\n' "$*" >> "$LOGAL_TEST_CALLS"
+printf '%s\n' "$LOGAL_TEST_RESPONSE"
+`
+			if err := os.WriteFile(filepath.Join(scriptDir, "logal-query.sh"), []byte(script), 0700); err != nil {
+				t.Fatal(err)
+			}
+			t.Setenv("LOGAL_TEST_CALLS", callsPath)
+			t.Setenv("LOGAL_TEST_RESPONSE", test.response)
+
+			got, err := hasLocalLoggingMarker(context.Background(), root, marker, cutoff)
+			if err != nil {
+				t.Fatalf("hasLocalLoggingMarker() error = %v", err)
+			}
+			if got != test.wantResult {
+				t.Fatalf("hasLocalLoggingMarker() = %t, want %t", got, test.wantResult)
+			}
+
+			calls, err := os.ReadFile(callsPath)
+			if err != nil {
+				t.Fatalf("read query arguments: %v", err)
+			}
+			for _, want := range []string{
+				"logs --service plane-logging-check --since " + cutoff.Format(time.RFC3339Nano),
+				"--time received --json --details",
+			} {
+				if !strings.Contains(string(calls), want) {
+					t.Errorf("query arguments missing %q: %s", want, calls)
+				}
+			}
+		})
+	}
+}
 
 func TestHasLocalGoErrorTraceRequiresErrorLogAndMatchingErrorSpan(t *testing.T) {
 	const traceID = "0123456789abcdef0123456789abcdef"

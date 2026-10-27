@@ -136,7 +136,7 @@ func hasCookie(cookies []*http.Cookie, name string) bool {
 // CheckLocalLogging verifies proxy ingestion and correlated Go error logs and spans.
 func CheckLocalLogging(ctx context.Context, root string, output io.Writer) error {
 	marker := "local-logging-check-" + strings.ReplaceAll(uuid.NewString(), "-", "")
-	cutoff := time.Now().UnixNano()
+	cutoff := time.Now().UTC()
 	payload := map[string]any{"resourceLogs": []any{map[string]any{
 		"resource": map[string]any{"attributes": []any{map[string]any{
 			"key": "service.name", "value": map[string]any{"stringValue": "plane-logging-check"},
@@ -144,7 +144,7 @@ func CheckLocalLogging(ctx context.Context, root string, output io.Writer) error
 		"scopeLogs": []any{map[string]any{
 			"scope": map[string]any{"name": "plane.local.check"},
 			"logRecords": []any{map[string]any{
-				"timeUnixNano": fmt.Sprint(cutoff), "severityNumber": 9,
+				"timeUnixNano": fmt.Sprint(cutoff.UnixNano()), "severityNumber": 9,
 				"severityText": "INFO", "body": map[string]any{"stringValue": marker},
 			}},
 		}},
@@ -179,23 +179,10 @@ func CheckLocalLogging(ctx context.Context, root string, output io.Writer) error
 	}
 	deadline := time.Now().Add(15 * time.Second)
 	for {
-		query := fmt.Sprintf("SELECT COUNT(*) AS count FROM otel_logs WHERE body_json LIKE '%%%s%%'", marker)
-		cmd := exec.CommandContext(ctx, "bash", "scripts/logal-query.sh", "sql", "--query", query, "--json")
-		cmd.Dir = root
-		var stdout, stderr bytes.Buffer
-		cmd.Stdout, cmd.Stderr = &stdout, &stderr
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("query Logal records: %w: %s", err, strings.TrimSpace(stderr.String()))
+		found, err := hasLocalLoggingMarker(ctx, root, marker, cutoff)
+		if err != nil {
+			return err
 		}
-		var result struct {
-			Rows []struct {
-				Count int64 `json:"count"`
-			} `json:"rows"`
-		}
-		if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
-			return fmt.Errorf("decode Logal query: %w", err)
-		}
-		found := len(result.Rows) == 1 && result.Rows[0].Count > 0
 		correlated, err := hasLocalGoErrorTrace(ctx, root, traceID)
 		if err != nil {
 			return err
@@ -209,6 +196,42 @@ func CheckLocalLogging(ctx context.Context, root string, output io.Writer) error
 		}
 		time.Sleep(250 * time.Millisecond)
 	}
+}
+
+func hasLocalLoggingMarker(ctx context.Context, root, marker string, cutoff time.Time) (bool, error) {
+	args := []string{
+		"scripts/logal-query.sh", "logs", "--service", "plane-logging-check",
+		"--since", cutoff.Format(time.RFC3339Nano), "--time", "received", "--json", "--details",
+	}
+	command := exec.CommandContext(ctx, "bash", args...)
+	command.Dir = root
+	var stdout, stderr bytes.Buffer
+	command.Stdout, command.Stderr = &stdout, &stderr
+	if err := command.Run(); err != nil {
+		return false, fmt.Errorf("query Logal records: %w: %s", err, strings.TrimSpace(stderr.String()))
+	}
+	var result struct {
+		Rows []struct {
+			Body struct {
+				String string `json:"string"`
+			} `json:"body"`
+			ReceivedAt string `json:"received_at"`
+			Service    string `json:"service_name"`
+		} `json:"rows"`
+	}
+	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
+		return false, fmt.Errorf("decode Logal query: %w", err)
+	}
+	for _, row := range result.Rows {
+		receivedAt, err := time.Parse(time.RFC3339Nano, row.ReceivedAt)
+		if err != nil {
+			continue
+		}
+		if row.Service == "plane-logging-check" && !receivedAt.Before(cutoff) && row.Body.String == marker {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 // hasLocalGoErrorTrace requires native OTLP correlation fields, so a trace alone
