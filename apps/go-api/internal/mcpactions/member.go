@@ -52,13 +52,19 @@ func (s *Service) Member(ctx context.Context, input *api.MemberRequest) (*api.Me
 	if err != nil {
 		return nil, authenticationError(err)
 	}
+	if err = mcpauth.RequireScopes(ctx, false); err != nil {
+		return nil, authenticationError(err)
+	}
 	slug := ""
 	if request.workspace != nil {
 		slug = *request.workspace
 	}
 	actor, err := mcpauth.SelectWorkspace(ctx, slug)
 	if err != nil {
-		return nil, api.MakeInvalidParams(errors.New("invalid workspace selector"))
+		if errors.Is(err, mcpauth.ErrWorkspaceMismatch) {
+			return nil, api.MakeInvalidParams(errors.New("invalid workspace selector"))
+		}
+		return nil, authenticationError(err)
 	}
 	if timezoneErr := djangosession.ValidateUserTimezone(actor.Timezone); timezoneErr != nil {
 		return nil, memberReadFailure()

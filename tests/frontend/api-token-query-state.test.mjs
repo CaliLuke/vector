@@ -43,6 +43,9 @@ function resolveCreateDialogModule(specifier) {
 }
 
 function resolveSettingsPageModule(specifier) {
+  if (specifier === "./mcp-connection")
+    return createModuleStub(`const React = globalThis.apiTokenQueryReact;
+      export const MCPConnection = () => React.createElement("output", null, "MCP connection");`);
   if (specifier === "@plane/propel/button")
     return createModuleStub(`const React = globalThis.apiTokenQueryReact;
       export const Button = ({ children, ...props }) => React.createElement("button", props, children);`);
@@ -287,6 +290,7 @@ await test("API token settings shows query errors, retries, and retains stale to
   await act(async () => new Promise((resolve) => setTimeout(resolve, 20)));
   assert.equal(environment.container.querySelector("p")?.textContent, "Existing");
   assert.match(environment.container.querySelector('[role="alert"]').textContent, /Could not refresh/);
+  assert.equal(environment.container.querySelector("output")?.textContent, "MCP connection");
 
   state.listError = null;
   await act(async () => {

@@ -265,6 +265,10 @@
       "statements": 73,
       "percent": 98.63
     },
+    "github.com/CaliLuke/go-plane/internal/mcpoauth": {
+      "statements": 272,
+      "percent": 83.46
+    },
     "github.com/CaliLuke/go-plane/internal/mcptransport": {
       "statements": 80,
       "percent": 95
@@ -504,6 +508,10 @@
     "github.com/CaliLuke/go-plane/mcp/design": {
       "statements": 4,
       "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/mcpoauthlinks/design": {
+      "statements": 105,
+      "percent": 100.0
     },
     "github.com/CaliLuke/go-plane/modulelifecycle/design": {
       "statements": 1091,

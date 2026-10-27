@@ -17,8 +17,18 @@ import { ProfileSettingsHeading } from "@/components/settings/profile/heading";
 import { APITokenSettingsLoader } from "@/components/ui/loader/settings/api-token";
 // constants
 import { apiTokensOptions } from "@/queries/api-tokens";
+import { MCPConnection } from "./mcp-connection";
 
 export function APITokensProfileSettings() {
+  return (
+    <div className="w-full">
+      <APITokensContent />
+      <MCPConnection />
+    </div>
+  );
+}
+
+function APITokensContent() {
   // states
   const [isCreateTokenModalOpen, setIsCreateTokenModalOpen] = useState(false);
   const { data: tokens, isError, refetch } = useQuery(apiTokensOptions);
@@ -40,7 +50,7 @@ export function APITokensProfileSettings() {
   }
 
   return (
-    <div className="size-full">
+    <div className="w-full">
       <CreateApiTokenModal isOpen={isCreateTokenModalOpen} onClose={() => setIsCreateTokenModalOpen(false)} />
       <ProfileSettingsHeading
         title={t("account_settings.api_tokens.title")}

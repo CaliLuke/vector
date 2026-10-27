@@ -46,8 +46,9 @@ Keep local environment files private. The example database and storage credentia
 Open `http://localhost:8000/`. Instance administration uses `/god-mode/`, and public projects use `/spaces/`.
 
 The [remote MCP transport](mcp.md) is disabled by default. Personal-token mode can
-authenticate requests and call all five `member` read actions. OAuth and the
-remaining resource action contracts are still pending.
+authenticate requests and call all five `member` read actions. OAuth mode requires
+the [external issuer profile and account linking](mcp-oauth.md). The remaining
+resource action contracts are still pending.
 The proxy serves all browser entry points. Frontend ports 3000–3100 are internal development upstreams.
 
 `PLANE_ADMIN_PORT` and `PLANE_SPACE_PORT` can override the admin and Sites upstream ports.

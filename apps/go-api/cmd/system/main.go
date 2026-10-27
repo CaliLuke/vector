@@ -102,6 +102,7 @@ import (
 	lastvisitedworkspacestore "github.com/CaliLuke/go-plane/internal/lastvisitedworkspace"
 	"github.com/CaliLuke/go-plane/internal/mcpactions"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
+	"github.com/CaliLuke/go-plane/internal/mcpoauth"
 	"github.com/CaliLuke/go-plane/internal/mcptransport"
 	modulereadsstore "github.com/CaliLuke/go-plane/internal/modulereads"
 	notificationsstore "github.com/CaliLuke/go-plane/internal/notifications"
@@ -148,6 +149,7 @@ import (
 	insightsstore "github.com/CaliLuke/go-plane/internal/workspaceuserinsights"
 	workspacewebhooksstore "github.com/CaliLuke/go-plane/internal/workspacewebhooks"
 	invitationsapi "github.com/CaliLuke/go-plane/invitationsmembership/gen/invitations_membership"
+	mcpoauthlinksapi "github.com/CaliLuke/go-plane/mcpoauthlinks/gen/mcp_oauth_links"
 	modulelifecycleapi "github.com/CaliLuke/go-plane/modulelifecycle/gen/module_lifecycle_api"
 	notificationactionsapi "github.com/CaliLuke/go-plane/notificationactions/gen/notification_actions"
 	notificationsapi "github.com/CaliLuke/go-plane/notificationreads/gen/notifications"
@@ -184,6 +186,7 @@ const (
 
 type config struct {
 	mcp                        mcptransport.Config
+	mcpOAuth                   mcpoauth.Config
 	goBackgroundTasks          bool
 	goBackgroundTasksNoWorkers bool
 	httpAddress                string
@@ -223,8 +226,16 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	if err = validateMCPAvailability(cfg.mcp); err != nil {
+	if err = validateMCPAvailability(cfg.mcp, cfg.mcpOAuth); err != nil {
 		return err
+	}
+
+	var mcpOAuthProvider *mcpoauth.Provider
+	if cfg.mcp.Enabled && (cfg.mcp.Mode == "oauth" || cfg.mcp.Mode == "both") {
+		mcpOAuthProvider, err = mcpoauth.NewProvider(ctx, cfg.mcpOAuth, nil)
+		if err != nil {
+			return err
+		}
 	}
 
 	wrapHTTP, otelLogOutput, shutdownTelemetry, err := telemetry.ConfigureHTTPObservability(ctx, "plane-go-api")
@@ -790,7 +801,9 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	mcpOptions := mcptransport.Options{}
+	mcpOptions := mcptransport.Options{Observer: mcptransport.LogObserver(logCtx)}
+	var mcpLinks *mcpoauth.Links
+	var mcpLinkEndpoints *mcpoauthlinksapi.Endpoints
 	if cfg.mcp.Enabled {
 		memberships, membershipErr := mcpauth.NewWorkspaceReader(pool)
 		if membershipErr != nil {
@@ -801,6 +814,17 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 			return authErr
 		}
 		mcpOptions.HeaderAuth = headerAuth.Authenticate
+		if mcpOAuthProvider != nil {
+			mcpLinks, err = mcpoauth.NewLinks(pool, cfg.mcpOAuth.Issuer)
+			if err != nil {
+				return err
+			}
+			oauthAuth, oauthErr := mcpauth.NewOAuth(mcpOAuthProvider, mcpLinks, memberships, apiKeyThrottle)
+			if oauthErr != nil {
+				return oauthErr
+			}
+			mcpOptions.OAuthAuth, mcpOptions.OAuthIssuer = oauthAuth.Authenticate, cfg.mcpOAuth.Issuer
+		}
 	}
 	var assetsLifecycleEndpoints *assetslifecycleapi.Endpoints
 	var assetsLifecycleMetadata interface {
@@ -1229,6 +1253,20 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
+	if mcpLinks != nil {
+		linking, linkErr := mcpoauth.NewLinking(mcpLinks, mcpOAuthProvider, instanceCipher)
+		if linkErr != nil {
+			return linkErr
+		}
+		linkService, linkErr := systemapi.NewMCPOAuthLinks(linking, sessionValidator, cfg.mcpOAuth.Issuer, cfg.mcp.ResourceURL)
+		if linkErr != nil {
+			return linkErr
+		}
+		mcpLinkEndpoints = mcpoauthlinksapi.NewEndpoints(linkService)
+		mcpLinkEndpoints.Use(log.Endpoint)
+		stopCleanup := startMCPLinkCleanup(logCtx, mcpLinks)
+		defer stopCleanup()
+	}
 	useDatabaseConfiguration := os.Getenv("SKIP_ENV_VAR") == "1" || strings.EqualFold(os.Getenv("SKIP_ENV_VAR"), "true")
 	accountRepository, err := accountauthentication.NewPoolRepository(pool, instanceCipher, useDatabaseConfiguration)
 	if err != nil {
@@ -1419,6 +1457,8 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 
 	handler := newHTTPHandlerWithPendingReplacements(logCtx, systemEndpoints, cfg.debug, stickyEndpoints, stickyService.(sticky.Authorizer).APIKeyAuth, workspaceSlugEndpoints, instanceWorkspaceSlugEndpoints, userInstanceAdminEndpoints, userProfileFlagsEndpoints, userNotificationPreferencesEndpoints, userAccountsEndpoints, userAPITokensEndpoints, instanceAdminSessionEndpoints, workspaceQuickLinksEndpoints, workspaceThemesEndpoints, workspaceHomePreferencesEndpoints, workspaceMemberMeEndpoints, analyticViewsEndpoints, workspaceRecentVisitsEndpoints, lastVisitedWorkspaceEndpoints, entityFavoritesEndpoints, pendingReplacementEndpoints{
 		workItemTypes:                           typeEndpoints,
+		mcpLinks:                                mcpLinkEndpoints,
+		mcpResourceURL:                          cfg.mcp.ResourceURL,
 		accountAuthentication:                   accountAuthenticationEndpoints,
 		accountAuthenticationMetadata:           accountAuthenticationService.(systemapi.SessionProtocolAuthorizer),
 		authRedirects:                           authRedirectEndpoints,
@@ -1562,7 +1602,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	handler = wrapHTTP(handler)
+	handler = mcptransport.RedactRejectedQueries(wrapHTTP(handler))
 	serveErr := listenAndServeHTTP(logCtx, cfg.httpAddress, handler, cfg.shutdownTimeout)
 	return serveErr
 }
@@ -1649,7 +1689,7 @@ func parseConfig(args []string) (config, error) {
 		)
 	}
 
-	cfg := config{sessionCookieAge: sessionCookieAge, adminSessionCookieAge: adminSessionCookieAge, mcp: mcpConfig}
+	cfg := config{sessionCookieAge: sessionCookieAge, adminSessionCookieAge: adminSessionCookieAge, mcp: mcpConfig, mcpOAuth: mcpOAuthConfigFromEnvironment(mcpConfig.ResourceURL)}
 	flags.StringVar(&cfg.httpAddress, "http-address", defaultHTTPAddress, "HTTP listen address")
 	flags.DurationVar(&cfg.shutdownTimeout, "shutdown-timeout", defaultShutdownTimeout, "graceful shutdown timeout")
 	flags.BoolVar(&cfg.debug, "debug", debugMode, "enable Django-compatible debug behavior and debug logs")

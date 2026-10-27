@@ -7,8 +7,9 @@ filters required by `member.list_workspace`. Both HTTP and MCP use authorized
 application operations in `internal/projectmembershipreads`. Catalogue entries
 describe existing roles; they do not create permissions or custom roles.
 
-This contract is implemented for personal-token MCP and the HTTP member reads.
-OAuth verification and overall MCP parity remain incomplete.
+This contract is implemented for personal-token and generic OAuth MCP, and the
+HTTP member reads. Production OAuth deployment, complete browser proof and overall
+MCP parity remain incomplete.
 
 ## Problem statement and current state
 
@@ -196,8 +197,8 @@ between separate page calls does not promise snapshot pagination.
 
 MCP advertises only implemented action branches; catalogue and directory actions
 are read actions available to the same credential classes as other member reads.
-Workspace-specific authorization is rechecked at invocation. OAuth will additionally
-require vector:read under its separate contract. No role or action aliases are
+Workspace-specific authorization is rechecked at invocation. OAuth additionally
+requires vector:read under its separate contract. No role or action aliases are
 added. The generated root input remains a typed object with closed action
 branches. Unknown actions, cross-action fields, invalid types and nonadvertised
 branches fail invalid_params. Object results preserve the pinned object text and

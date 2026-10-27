@@ -1,9 +1,9 @@
 # Remote MCP transport
 
 VEC-2 is **in progress**. The Go API contains a generated, stateless MCP server
-and ingress routing. Available member actions are `me`, `list_workspace`, `list_project`, `list_roles`, and `retrieve_role`. Personal-token
-authentication is wired; OAuth remains unavailable. MCP is disabled by default.
-Enabling `oauth` or `both` fails before database startup.
+and ingress routing. Available member actions are `me`, `list_workspace`, `list_project`, `list_roles`, and `retrieve_role`. Personal-token and external-issuer OAuth authentication are wired. MCP is disabled
+by default. OAuth requires an explicitly configured issuer and deliberate account
+linking; invalid configuration or discovery fails before database startup.
 
 The source declaration is `apps/go-api/mcp/design/design.go`. Regenerate only
 this projection with:
@@ -79,6 +79,44 @@ the legacy initialize handshake. A legacy initialize request cannot negotiate
 the new lifecycle. The server does not issue session IDs or advertise
 unimplemented tools, prompts, or resources.
 
+## OAuth authentication and account linking
+
+OAuth uses the [issuer and account-link contract](mcp-oauth.md). Configure the
+following settings in addition to the shared transport settings:
+
+| Variable                                | Purpose                                              |
+| --------------------------------------- | ---------------------------------------------------- |
+| `MCP_OAUTH_ISSUER_URL`                  | Exact external OIDC issuer URL.                      |
+| `MCP_OAUTH_INTROSPECTION_URL`           | HTTPS endpoint for fresh access-token introspection. |
+| `MCP_OAUTH_INTROSPECTION_CLIENT_ID`     | Confidential introspection client.                   |
+| `MCP_OAUTH_INTROSPECTION_CLIENT_SECRET` | Introspection client secret.                         |
+| `MCP_OAUTH_LINK_CLIENT_ID`              | Separate confidential OIDC account-linking client.   |
+| `MCP_OAUTH_LINK_CLIENT_SECRET`          | Account-linking client secret.                       |
+
+The issuer must support the documented code/S256/form-post profile, RS256 ID
+tokens, stable subjects shared across clients, and the required introspection
+claims. Register the resource origin plus `/auth/mcp/callback/` as the linking
+client's callback. Vector neither creates OAuth clients nor matches accounts by
+email. The production issuer has not been selected or deployed.
+
+Signed-in users connect their identity under profile **API tokens**, return from
+the issuer, then explicitly confirm the verified subject. The original session
+and a protected callback-browser cookie must both match. Disconnect removes the
+link and pending flows; it does not revoke grants at the external issuer.
+
+Each OAuth HTTP request and action invocation rechecks introspection, the live
+account link and account activity. Reads require `vector:read`; future mutations
+require both read and write scopes. Workspace selection uses the header or tool
+argument. `member.me` can run without a workspace selector. Scoped actions still
+check current membership and domain permissions against the primary database.
+
+Only OAuth-enabled modes expose `/.well-known/oauth-protected-resource/mcp`.
+OAuth credential and scope errors carry the corresponding Bearer challenge;
+personal-token errors never do. The observer emits sanitized failure logs with
+request/trace correlation. These routes reject query strings and redact their
+values before HTTP telemetry. Authorization codes, bearer tokens and browser
+proofs are not logged.
+
 ## Available actions
 
 `member` accepts the five read actions below, each with an optional
@@ -109,7 +147,10 @@ The generated contract declares stable `MemberRequest` and `MemberResult` unions
 Tests use the generated HTTP server and real PostgreSQL-backed token, membership,
 and identity readers. They cover both protocol revisions, actor isolation, fresh
 profile data, and revocation between request authentication and action execution.
-This is personal-token evidence for the member actions. OAuth and complete VEC-36 proof remain pending.
+Separate OAuth integration tests exercise the same five actions with a real TLS
+issuer and PostgreSQL, including scope reduction and revocation between HTTP
+authentication and execution. Complete browser verification and VEC-36 proof
+remain pending.
 
 The `list_project` action and the project-member HTTP endpoint use the same credential-neutral `MemberReader`.
 It reads the primary database and checks project access in the same SQL statement
@@ -159,17 +200,20 @@ size and legacy cursor/errors remain unchanged.
   invocation checks across actions with different permissions. The current
   member read actions share a credential class; project access is checked at
   invocation. There is no handwritten replacement registry.
-- **VEC-35 and VEC-3:** complete personal-token invocation integration and supply
-  the OAuth provider, including scopes and account linking. Personal-token
-  transport authentication is implemented; action-level authorization, discovery
-  filtering and receipt replay still need end-to-end proof.
+- **VEC-35 and VEC-3:** personal-token and generic OAuth invocation are implemented
+  for the five member reads, including current scopes, linking and revocation.
+  Production issuer selection and complete browser/proxy evidence remain open.
+  Mixed-action discovery filtering and receipt replay still need implementation
+  and end-to-end proof.
 - **Reliability and observability:** connect the shared action authorization,
   throttling, durable write receipts and sanitized error/trace requirements
-  before enabling covered actions. The transport accepts the generated observer
-  hook, but this does not establish the complete observability contract.
+  before enabling covered actions. Authentication and generated-validation
+  failures now have sanitized log/trace proof; this does not establish the
+  complete mutation or asset observability contract.
 - **Resource tickets and VEC-36:** implement and verify the 30 resource tools and
   207 actions. The pinned expected catalogue lives under
-  `apps/go-api/mcp/testdata/plane-mcp`; it is not a runtime registry or a parity claim.
+  `apps/go-api/mcp/testdata/plane-mcp`; the [207-action tracker](mcp-parity.md)
+  records remaining work. Neither is a runtime registry or a parity claim.
 
 Focused verification exercises the real generated HTTP handler, both route
 modes, current and legacy discovery, invalid protocol headers, host/origin

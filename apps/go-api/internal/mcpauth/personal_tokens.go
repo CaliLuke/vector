@@ -3,8 +3,6 @@ package mcpauth
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
@@ -61,19 +59,10 @@ func (a *PersonalTokens) Authenticate(ctx context.Context, request *http.Request
 	if err != nil {
 		return nil, err
 	}
-	digest := sha256.Sum256([]byte(token))
-	for _, key := range []string{
-		":1:mcp:actor:" + principal.UserID.String(),
-		":1:mcp:credential:" + hex.EncodeToString(digest[:]),
-	} {
-		rate, err := a.throttle.AllowCacheKey(ctx, key, "MCP")
-		if err != nil {
-			return nil, err
-		}
-		if !rate.Allowed {
-			return nil, &mcptransport.RateLimitError{RetryAfter: rate.Wait}
-		}
+	if err := throttleCredential(ctx, a.throttle, principal.UserID, token); err != nil {
+		return nil, err
 	}
+
 	return withPrincipal(ctx, principal, verify), nil
 }
 
@@ -99,14 +88,20 @@ func (a *PersonalTokens) verify(ctx context.Context, token, slug string) (Princi
 }
 
 func personalTokenHeaders(header http.Header) (token, slug string, err error) {
+	return credentialHeaders(header, true)
+}
+
+func credentialHeaders(header http.Header, requireWorkspace bool) (token, slug string, err error) {
 	authorization := header.Values("Authorization")
 	workspaces := header.Values("X-Workspace-Slug")
-	if len(header.Values("X-Api-Key")) > 0 || len(authorization) > 1 || len(workspaces) != 1 {
+	if len(header.Values("X-Api-Key")) > 0 || len(authorization) > 1 || len(workspaces) > 1 || requireWorkspace && len(workspaces) != 1 {
 		return "", "", mcptransport.ErrInvalidRequest
 	}
-	slug = workspaces[0]
-	if len(slug) > 255 || !workspacevalidation.ValidSlug(slug) {
-		return "", "", mcptransport.ErrInvalidRequest
+	if len(workspaces) == 1 {
+		slug = workspaces[0]
+		if len(slug) > 255 || !workspacevalidation.ValidSlug(slug) {
+			return "", "", mcptransport.ErrInvalidRequest
+		}
 	}
 	if len(authorization) == 0 {
 		return "", "", mcptransport.ErrInvalidCredential

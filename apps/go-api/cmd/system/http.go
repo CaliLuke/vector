@@ -150,6 +150,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/telemetry"
 	invitationssvr "github.com/CaliLuke/go-plane/invitationsmembership/gen/http/invitations_membership/server"
 	invitationsapi "github.com/CaliLuke/go-plane/invitationsmembership/gen/invitations_membership"
+	mcpoauthlinksapi "github.com/CaliLuke/go-plane/mcpoauthlinks/gen/mcp_oauth_links"
 	modulelifecycle "github.com/CaliLuke/go-plane/modulelifecycle/gen/module_lifecycle_api"
 	notificationactionssvr "github.com/CaliLuke/go-plane/notificationactions/gen/http/notification_actions/server"
 	notificationactions "github.com/CaliLuke/go-plane/notificationactions/gen/notification_actions"
@@ -333,6 +334,8 @@ type readServicesSessionLifecycle interface {
 }
 
 type pendingReplacementEndpoints struct {
+	mcpLinks                                *mcpoauthlinksapi.Endpoints
+	mcpResourceURL                          string
 	workItemTypes                           *workitemtypesapi.Endpoints
 	workspaceLifecycle                      *workspaceLifecycleAPI.Endpoints
 	accountAuthentication                   *accountauthapi.Endpoints
@@ -1021,6 +1024,7 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 		sessionProtocolMiddleware = newSessionServiceProtocolMiddleware(notificationProtocolMetadata, authorizer, readServicesCORSPolicy, stack, pending.readServicesCookie, dbg, options)
 	}
 	mountWorkItemTypes(mux, pending, readServicesCORSPolicy, errorHandler)
+	mountMCPOAuthLinks(mux, pending, readServicesCORSPolicy, errorHandler)
 	if pending.accountAuthentication != nil || pending.invitationsMembership != nil || pending.assetsLifecycle != nil || pending.membershipLifecycle != nil || pending.notifications != nil || pending.notificationActions != nil || pending.projectLabelWrites != nil || pending.userAccountWrites != nil || pending.workspaceLifecycle != nil || pending.workspaceExports != nil || pending.personalDashboard != nil || pending.workspaceAnalytics != nil || pending.workspaceSearch != nil || pending.externalIntegrations != nil || pending.projectMemberPreferences != nil || pending.projectIntakeWrites != nil || pending.projectConfiguration != nil || pending.customViewCreation != nil || pending.workspaceWebhooks != nil || pending.cycleLifecycle != nil || pending.moduleLifecycle != nil || pending.projectLifecycle != nil || pending.projectPublication != nil || pending.workItemHistory != nil || pending.pageReadsMetadata != nil || stateProtocol != nil {
 		options := apiV1CompatibilityOptions{activityLogger: pending.activityReadsActivity, activitySecret: pending.activityReadsSecret, bodySizeLimit: pending.activityReadsBodyLimit}
 		sessionStack := sessionServiceMiddlewareStack(options, pending.readServicesSession, pending.readServicesCookie)

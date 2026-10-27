@@ -27,7 +27,7 @@ func config(mode string) mcptransport.Config {
 func verified(ctx context.Context, _ *http.Request) (context.Context, error) { return ctx, nil }
 
 func options() mcptransport.Options {
-	return mcptransport.Options{HeaderAuth: verified, OAuthAuth: verified}
+	return mcptransport.Options{HeaderAuth: verified, OAuthAuth: verified, OAuthIssuer: "https://issuer.example"}
 }
 
 func handler(t *testing.T, c mcptransport.Config, opts mcptransport.Options) http.Handler {
@@ -139,6 +139,7 @@ func TestGeneratedHandlerRejectsUnsupportedProtocolHeader(t *testing.T) {
 func TestAuthenticationDoesNotFallBackAcrossRoutes(t *testing.T) {
 	var calls atomic.Int64
 	opts := mcptransport.Options{
+		OAuthIssuer: "https://issuer.example",
 		HeaderAuth: func(context.Context, *http.Request) (context.Context, error) {
 			return nil, mcptransport.ErrInvalidCredential
 		},

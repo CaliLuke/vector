@@ -13,9 +13,11 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.114.5
 	github.com/aws/smithy-go v1.28.6
 	github.com/c-robinson/iplib/v2 v2.0.5
+	github.com/coreos/go-oidc/v3 v3.21.0
 	github.com/emersion/go-sasl v0.0.0-20241020182733-b788ff22d5a6
 	github.com/emersion/go-smtp v0.25.0
 	github.com/fernet/fernet-go v0.0.0-20240119011108-303da6aec611
+	github.com/go-jose/go-jose/v4 v4.1.4
 	github.com/go-json-experiment/json v0.0.0-20260820222146-c27c302e5fc3
 	github.com/golang-migrate/migrate/v4 v4.20.1
 	github.com/google/go-cmp v0.7.0

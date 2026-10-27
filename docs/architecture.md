@@ -14,10 +14,13 @@ The initial [remote MCP transport](mcp.md) lives in `apps/go-api/mcp` and
 `internal/mcptransport`. The proxy sends `/mcp` and `/mcp/*` to Go. The generated
 catalogue currently contains the five `member` read actions; MCP is disabled by default.
 `internal/mcpauth` supplies personal-token authentication using primary token and
-workspace membership reads. `internal/mcpactions` projects credential-neutral
+workspace membership reads. `internal/mcpoauth` owns fresh external-issuer
+introspection, verified account linking and expiring proof storage. `mcpoauthlinks`
+defines the generated browser-link API. `internal/mcpactions` projects credential-neutral
 application operations shared with HTTP. `internal/projectmembershipreads.DirectoryReader`
-owns current workspace-directory authorization, filtering, paging and the existing-role catalogue. OAuth and the remaining resource
-actions are incomplete.
+owns current workspace-directory authorization, filtering, paging and the existing-role catalogue.
+OAuth is available through an explicitly configured external issuer; remaining resource actions
+and full parity are incomplete.
 
 ## Source layout
 

@@ -1,0 +1,539 @@
+openapi: 3.2.0
+info:
+    title: Vector MCP Account Linking
+    version: "1.0"
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+servers:
+    - name: Vector MCP Account Linking
+      url: http://localhost:80
+      description: Default server for Vector MCP Account Linking
+paths:
+    /api/users/me/mcp-link/:
+        delete:
+            tags:
+                - mcp_oauth_links
+            summary: Disconnect mcp_oauth_links
+            operationId: mcp_oauth_links.disconnect
+            responses:
+                "204":
+                    description: No Content response.
+                    headers:
+                        Set-Cookie:
+                            schema:
+                                type: string
+                                example: Repudiandae minus ut nihil ipsum autem culpa.
+                            example: Repudiandae minus ut nihil ipsum autem culpa.
+                "400":
+                    description: 'status_400: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Odit ut delectus et.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Odit ut delectus et.
+                "401":
+                    description: 'status_401: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Doloribus delectus in tenetur incidunt labore qui.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Doloribus delectus in tenetur incidunt labore qui.
+                "403":
+                    description: 'status_403: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: In odit harum cupiditate officia.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: In odit harum cupiditate officia.
+                "409":
+                    description: 'status_409: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Repudiandae sit.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Repudiandae sit.
+                "503":
+                    description: 'status_503: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Magnam ea qui sunt iusto voluptas.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Magnam ea qui sunt iusto voluptas.
+            security:
+                - MCPOAuthLinkCookie: []
+        get:
+            tags:
+                - mcp_oauth_links
+            summary: Status mcp_oauth_links
+            operationId: mcp_oauth_links.status
+            parameters:
+                - name: __Host-vector-mcp-link
+                  in: cookie
+                  schema:
+                    type: string
+                  example: Temporibus cumque voluptatibus aspernatur velit modi.
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    connected: false
+                                    issuer: Error quia atque est qui.
+                                    pending:
+                                        expires_at: "2003-03-21T11:01:40Z"
+                                        id: 47288501-6a7a-41f5-b97b-68593f6fd4db
+                                        subject: Labore laboriosam.
+                                    subject: Ut quas.
+                                $ref: '#/components/schemas/LinkStatus'
+                            example:
+                                connected: false
+                                issuer: Error quia atque est qui.
+                                pending:
+                                    expires_at: "2003-03-21T11:01:40Z"
+                                    id: 47288501-6a7a-41f5-b97b-68593f6fd4db
+                                    subject: Labore laboriosam.
+                                subject: Ut quas.
+                "400":
+                    description: 'status_400: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Magnam at eveniet fugiat in.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Magnam at eveniet fugiat in.
+                "401":
+                    description: 'status_401: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Sunt non aut.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Sunt non aut.
+                "403":
+                    description: 'status_403: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Distinctio veritatis.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Distinctio veritatis.
+                "409":
+                    description: 'status_409: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Porro rerum expedita occaecati quo optio.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Porro rerum expedita occaecati quo optio.
+                "503":
+                    description: 'status_503: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Culpa fugit sunt culpa quibusdam.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Culpa fugit sunt culpa quibusdam.
+            security:
+                - MCPOAuthLinkCookie: []
+        x-loom-cors:
+            runtime: true
+    /api/users/me/mcp-link/confirm/:
+        post:
+            tags:
+                - mcp_oauth_links
+            summary: Confirm mcp_oauth_links
+            operationId: mcp_oauth_links.confirm
+            parameters:
+                - name: __Host-vector-mcp-link
+                  in: cookie
+                  schema:
+                    type: string
+                  example: Corporis et quo.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            example:
+                                id: 5e1d7dff-4e00-48f2-9052-55a977b0a761
+                            $ref: '#/components/schemas/ConfirmRequestBody'
+                        example:
+                            id: 5e1d7dff-4e00-48f2-9052-55a977b0a761
+            responses:
+                "204":
+                    description: No Content response.
+                    headers:
+                        Set-Cookie:
+                            schema:
+                                type: string
+                                example: Veniam et cumque vel occaecati labore eos.
+                            example: Veniam et cumque vel occaecati labore eos.
+                "400":
+                    description: 'status_400: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Reprehenderit dolores at maxime necessitatibus inventore eum.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Reprehenderit dolores at maxime necessitatibus inventore eum.
+                "401":
+                    description: 'status_401: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Incidunt vel.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Incidunt vel.
+                "403":
+                    description: 'status_403: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Laboriosam voluptatibus alias delectus rerum saepe.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Laboriosam voluptatibus alias delectus rerum saepe.
+                "409":
+                    description: 'status_409: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Aut doloremque id exercitationem.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Aut doloremque id exercitationem.
+                "503":
+                    description: 'status_503: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Voluptatem soluta hic est non suscipit.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Voluptatem soluta hic est non suscipit.
+            security:
+                - MCPOAuthLinkCookie: []
+        x-loom-cors:
+            runtime: true
+    /api/users/me/mcp-link/start/:
+        post:
+            tags:
+                - mcp_oauth_links
+            summary: Start mcp_oauth_links
+            operationId: mcp_oauth_links.start
+            responses:
+                "200":
+                    description: OK response.
+                    headers:
+                        Set-Cookie:
+                            schema:
+                                type: string
+                                example: Deserunt nostrum voluptas eos ut ad.
+                            example: Deserunt nostrum voluptas eos ut ad.
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    authorization_url: Voluptatibus tenetur maxime est.
+                                $ref: '#/components/schemas/StartResponseBody'
+                            example:
+                                authorization_url: Voluptatibus tenetur maxime est.
+                "400":
+                    description: 'status_400: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Alias dolor qui ea.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Alias dolor qui ea.
+                "401":
+                    description: 'status_401: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Nisi cumque.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Nisi cumque.
+                "403":
+                    description: 'status_403: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Aut fuga est qui possimus eos.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Aut fuga est qui possimus eos.
+                "409":
+                    description: 'status_409: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Reprehenderit rerum quod fuga.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Reprehenderit rerum quod fuga.
+                "503":
+                    description: 'status_503: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: In itaque et sit harum illum quaerat.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: In itaque et sit harum illum quaerat.
+            security:
+                - MCPOAuthLinkCookie: []
+        x-loom-cors:
+            runtime: true
+    /auth/mcp/callback/:
+        post:
+            tags:
+                - mcp_oauth_links
+            summary: Callback mcp_oauth_links
+            operationId: mcp_oauth_links.callback
+            requestBody:
+                required: true
+                content:
+                    application/x-www-form-urlencoded:
+                        schema:
+                            example:
+                                code: uzo
+                                error: 8s8
+                                iss: grz
+                                state: 01lh5ji2207zy2p9shhxeld8aqhc06ixhqnompmxbdb
+                            $ref: '#/components/schemas/CallbackRequestBody'
+                        example:
+                            code: uzo
+                            error: 8s8
+                            iss: grz
+                            state: 01lh5ji2207zy2p9shhxeld8aqhc06ixhqnompmxbdb
+            responses:
+                "303":
+                    description: See Other response.
+                    headers:
+                        Location:
+                            schema:
+                                type: string
+                                example: Vero veniam.
+                            example: Vero veniam.
+                        Set-Cookie:
+                            schema:
+                                type: string
+                                example: Et quasi eum nam dolor ullam placeat.
+                            example: Et quasi eum nam dolor ullam placeat.
+                "400":
+                    description: 'status_400: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Rerum libero rerum.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Rerum libero rerum.
+                "401":
+                    description: 'status_401: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Fuga molestiae natus enim cum voluptate consequatur.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Fuga molestiae natus enim cum voluptate consequatur.
+                "403":
+                    description: 'status_403: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Laudantium fugit.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Laudantium fugit.
+                "409":
+                    description: 'status_409: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Deleniti eius magni.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Deleniti eius magni.
+                "503":
+                    description: 'status_503: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    message: Beatae et odio.
+                                $ref: '#/components/schemas/LinkError'
+                            example:
+                                message: Beatae et odio.
+        x-loom-cors:
+            runtime: true
+components:
+    schemas:
+        CallbackRequestBody:
+            type: object
+            properties:
+                code:
+                    type: string
+                    example: r4m
+                    maxLength: 8192
+                error:
+                    type: string
+                    example: 0rm
+                    maxLength: 255
+                iss:
+                    type: string
+                    example: 41v
+                    maxLength: 2048
+                state:
+                    type: string
+                    example: tiwfs37mem1mreyt2m3vnrqzgeteaid6bhdj1ui36zj
+                    minLength: 43
+                    maxLength: 43
+            example:
+                code: zkz
+                error: be2
+                iss: 2i7
+                state: xh07xh2yh5pbriijo3oirv9g8zizyv487l9i7vbxgm1
+            required:
+                - state
+        ConfirmRequestBody:
+            type: object
+            properties:
+                id:
+                    type: string
+                    example: 0877144d-5d98-44a9-a1bb-2011347abb83
+                    format: uuid
+            example:
+                id: 4553f0ca-f42f-46fc-98db-a7f8e332d47d
+            required:
+                - id
+        LinkError:
+            type: object
+            properties:
+                message:
+                    type: string
+                    example: Nemo voluptates qui.
+            example:
+                message: Corporis voluptatibus laboriosam.
+            required:
+                - message
+        LinkStatus:
+            type: object
+            properties:
+                connected:
+                    type: boolean
+                    example: false
+                issuer:
+                    type: string
+                    example: Excepturi modi sint dolores officia earum.
+                pending:
+                    example:
+                        expires_at: "2005-05-19T17:32:36Z"
+                        id: 6da2bdb8-3e6d-4d47-9e48-f2c04c5ad666
+                        subject: Earum tenetur ut ipsum consequuntur.
+                    anyOf:
+                        - $ref: '#/components/schemas/PendingLink'
+                        - type: "null"
+                subject:
+                    example: Quia magnam blanditiis.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+            example:
+                connected: false
+                issuer: Sequi cum commodi in.
+                pending:
+                    expires_at: "1980-02-14T07:25:34Z"
+                    id: 6b372c9b-650a-4a4e-b56e-68b9235d9850
+                    subject: Sed voluptatem.
+                subject: Incidunt repudiandae voluptatem accusantium excepturi nostrum vel.
+            required:
+                - issuer
+                - connected
+                - subject
+                - pending
+        PendingLink:
+            type: object
+            properties:
+                expires_at:
+                    type: string
+                    example: "2004-12-22T11:06:00Z"
+                    format: date-time
+                id:
+                    type: string
+                    example: 428e96bc-8a55-41b8-aaa9-68ae98a666a4
+                    format: uuid
+                subject:
+                    type: string
+                    example: Rem ratione nesciunt autem quis atque odit.
+            example:
+                expires_at: "2009-04-29T03:32:14Z"
+                id: 439b5fa0-588b-4be1-a652-18fb48f11125
+                subject: Quia fugiat deleniti vel.
+            required:
+                - id
+                - subject
+                - expires_at
+        StartResponseBody:
+            type: object
+            properties:
+                authorization_url:
+                    type: string
+                    example: Aut rerum ullam aut ipsam sit.
+            example:
+                authorization_url: Et aut.
+            required:
+                - authorization_url
+    securitySchemes:
+        MCPOAuthLinkCookie:
+            type: apiKey
+            name: session-id
+            in: cookie
+tags:
+    - name: mcp_oauth_links

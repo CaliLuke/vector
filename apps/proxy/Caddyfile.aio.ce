@@ -22,7 +22,7 @@
 			reverse_proxy {$GO_API_UPSTREAM:localhost:8080}
 		}
 
-		@mcp path /mcp /mcp/*
+		@mcp path /mcp /mcp/* /.well-known/oauth-protected-resource/mcp /.well-known/oauth-protected-resource/mcp/*
 		handle @mcp {
 			reverse_proxy {$GO_API_UPSTREAM:localhost:8080}
 		}

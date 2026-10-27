@@ -25,6 +25,7 @@ var (
 	ErrInvalidRequest    = errors.New("invalid MCP authentication request")
 	ErrInvalidCredential = errors.New("invalid MCP credential")
 	ErrAccessDenied      = errors.New("MCP access denied")
+	ErrInsufficientScope = errors.New("insufficient MCP OAuth scope")
 )
 
 // Authenticate verifies the live credential and installs a verified actor in
@@ -33,10 +34,11 @@ var (
 type Authenticate func(context.Context, *http.Request) (context.Context, error)
 
 type Options struct {
-	Service    api.Service
-	HeaderAuth Authenticate
-	OAuthAuth  Authenticate
-	Observer   transport.Observer
+	Service     api.Service
+	HeaderAuth  Authenticate
+	OAuthAuth   Authenticate
+	OAuthIssuer string
+	Observer    transport.Observer
 }
 
 // ValidateStartup rejects unavailable authentication before starting databases,
@@ -53,6 +55,12 @@ func ValidateStartup(config Config, options Options) error {
 	}
 	if (config.Mode == "oauth" || config.Mode == "both") && options.OAuthAuth == nil {
 		return fmt.Errorf("MCP OAuth authentication is not available")
+	}
+	if config.Mode == "oauth" || config.Mode == "both" {
+		issuer, err := url.Parse(options.OAuthIssuer)
+		if err != nil || issuer.Scheme != "https" || issuer.Hostname() == "" || issuer.User != nil || issuer.RawQuery != "" || issuer.ForceQuery || issuer.Fragment != "" || issuer.Opaque != "" {
+			return fmt.Errorf("MCP OAuth issuer must be an HTTPS URL without credentials, query or fragment")
+		}
 	}
 	return nil
 }
@@ -91,16 +99,17 @@ func New(config Config, options Options, fallback http.Handler) (http.Handler, e
 			return nil, fmt.Errorf("construct MCP server: %w", err)
 		}
 		if config.Mode == "header" || config.Mode == "both" {
-			routes[HeaderPath] = platform.RequestIDMiddleware(protect(config, options.HeaderAuth, server.Handler))
+			routes[HeaderPath] = platform.RequestIDMiddleware(observeHTTPRejection(options.Observer, protect(config, options.HeaderAuth, server.Handler, false)))
 		}
 		if config.Mode == "oauth" || config.Mode == "both" {
-			routes[OAuthPath] = platform.RequestIDMiddleware(protect(config, options.OAuthAuth, server.Handler))
+			routes[MetadataPath] = platform.RequestIDMiddleware(oauthMetadata(config, options.OAuthIssuer))
+			routes[OAuthPath] = platform.RequestIDMiddleware(observeHTTPRejection(options.Observer, protect(config, options.OAuthAuth, server.Handler, true)))
 		}
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if handler := routes[r.URL.Path]; handler != nil {
 			handler.ServeHTTP(w, r)
-		} else if r.URL.Path == OAuthPath || strings.HasPrefix(r.URL.Path, OAuthPath+"/") {
+		} else if r.URL.Path == OAuthPath || strings.HasPrefix(r.URL.Path, OAuthPath+"/") || r.URL.Path == MetadataPath || strings.HasPrefix(r.URL.Path, MetadataPath+"/") {
 			http.NotFound(w, r)
 		} else {
 			fallback.ServeHTTP(w, r)
@@ -108,7 +117,7 @@ func New(config Config, options Options, fallback http.Handler) (http.Handler, e
 	}), nil
 }
 
-func protect(config Config, authenticate Authenticate, next http.Handler) http.Handler {
+func protect(config Config, authenticate Authenticate, next http.Handler, oauth bool) http.Handler {
 	resource, _ := url.Parse(config.ResourceURL) // Validated before construction.
 	origins := append(slices.Clone(config.TrustedOrigins), "https://"+resource.Host)
 	bounded := http.TimeoutHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -124,7 +133,16 @@ func protect(config Config, authenticate Authenticate, next http.Handler) http.H
 			http.Error(w, "invalid_request", http.StatusBadRequest)
 			return
 		case errors.Is(err, ErrInvalidCredential):
+			if oauth {
+				writeOAuthChallenge(w, config, r.Header.Get("Authorization") != "", false)
+			}
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		case errors.Is(err, ErrInsufficientScope):
+			if oauth {
+				writeOAuthChallenge(w, config, false, true)
+			}
+			http.Error(w, "insufficient_scope", http.StatusForbidden)
 			return
 		case errors.Is(err, ErrAccessDenied):
 			http.Error(w, "forbidden", http.StatusForbidden)
