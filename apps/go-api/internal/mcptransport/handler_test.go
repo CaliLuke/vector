@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/mcptransport"
+	"github.com/CaliLuke/go-plane/internal/platform"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -104,10 +106,17 @@ func TestGeneratedHandlerSupportsStatelessDiscovery(t *testing.T) {
 			})
 			require.Equal(t, http.StatusOK, w.Code, w.Body.String())
 			var response struct {
-				Result struct{ SupportedVersions []string }
+				Result struct {
+					SupportedVersions []string
+					CacheScope        string
+					TTLMs             *int
+				}
 			}
 			require.NoError(t, json.Unmarshal(w.Body.Bytes(), &response))
 			require.ElementsMatch(t, []string{"2026-07-28", "2025-11-25"}, response.Result.SupportedVersions)
+			require.Equal(t, "private", response.Result.CacheScope)
+			require.NotNil(t, response.Result.TTLMs)
+			require.Zero(t, *response.Result.TTLMs)
 			require.Empty(t, w.Header().Get("Mcp-Session-Id"))
 		})
 	}
@@ -206,6 +215,51 @@ func TestMissingAuthenticatedContextFailsClosed(t *testing.T) {
 	opts.HeaderAuth = func(context.Context, *http.Request) (context.Context, error) { return nil, nil }
 	h := handler(t, config("header"), opts)
 	require.Equal(t, http.StatusServiceUnavailable, call(h, "/mcp/api-key", initialize("2025-11-25"), nil).Code)
+}
+
+func TestAuthenticationRateLimitHasSafeRetryAndNoOAuthChallenge(t *testing.T) {
+	for _, tc := range []struct {
+		wait time.Duration
+		want string
+	}{{0, "1"}, {1500 * time.Millisecond, "2"}} {
+		opts := options()
+		limited := &mcptransport.RateLimitError{RetryAfter: tc.wait}
+		require.Equal(t, "MCP request rate exceeded", limited.Error())
+		opts.HeaderAuth = func(context.Context, *http.Request) (context.Context, error) {
+			return nil, limited
+		}
+		w := call(handler(t, config("header"), opts), "/mcp/api-key", initialize("2025-11-25"), nil)
+		require.Equal(t, http.StatusTooManyRequests, w.Code)
+		require.Equal(t, tc.want, w.Header().Get("Retry-After"))
+		require.Equal(t, "no-store", w.Header().Get("Cache-Control"))
+		require.Empty(t, w.Header().Get("WWW-Authenticate"))
+		require.Equal(t, "rate limit exceeded\n", w.Body.String())
+	}
+}
+
+func TestAuthenticationFailureRetainsRequestCorrelation(t *testing.T) {
+	for _, incoming := range []string{"10000000-0000-4000-8000-000000000001", "private-untrusted-value", ""} {
+		t.Run(incoming, func(t *testing.T) {
+			var received string
+			opts := options()
+			opts.HeaderAuth = func(ctx context.Context, _ *http.Request) (context.Context, error) {
+				received, _ = platform.RequestID(ctx)
+				return nil, mcptransport.ErrInvalidCredential
+			}
+			w := call(handler(t, config("header"), opts), "/mcp/api-key", initialize("2025-11-25"), http.Header{
+				"X-Request-Id": []string{incoming},
+			})
+			require.Equal(t, http.StatusUnauthorized, w.Code)
+			_, err := uuid.Parse(received)
+			require.NoError(t, err)
+			require.Equal(t, received, w.Header().Get(platform.RequestIDHeader))
+			if incoming == "10000000-0000-4000-8000-000000000001" {
+				require.Equal(t, incoming, received)
+			}
+			require.NotContains(t, w.Header().Get(platform.RequestIDHeader), "private-untrusted-value")
+			require.NotContains(t, w.Body.String(), "private-untrusted-value")
+		})
+	}
 }
 
 func TestAuthenticationFailureClassifications(t *testing.T) {

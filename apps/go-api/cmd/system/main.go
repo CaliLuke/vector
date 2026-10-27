@@ -100,6 +100,7 @@ import (
 	instanceworkspaceslugstore "github.com/CaliLuke/go-plane/internal/instanceworkspaceslugcheck"
 	intakeinboxreadsstore "github.com/CaliLuke/go-plane/internal/intakeinboxreads"
 	lastvisitedworkspacestore "github.com/CaliLuke/go-plane/internal/lastvisitedworkspace"
+	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/mcptransport"
 	modulereadsstore "github.com/CaliLuke/go-plane/internal/modulereads"
 	notificationsstore "github.com/CaliLuke/go-plane/internal/notifications"
@@ -221,7 +222,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	if err = mcptransport.ValidateStartup(cfg.mcp, mcptransport.Options{}); err != nil {
+	if err = validateMCPAvailability(cfg.mcp); err != nil {
 		return err
 	}
 
@@ -787,6 +788,18 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	activityReadsPrimaryAPIKeyValidator, err := apikey.NewWithReaderWriter(pool, pool)
 	if err != nil {
 		return err
+	}
+	mcpOptions := mcptransport.Options{}
+	if cfg.mcp.Enabled {
+		memberships, membershipErr := mcpauth.NewWorkspaceReader(pool)
+		if membershipErr != nil {
+			return membershipErr
+		}
+		headerAuth, authErr := mcpauth.NewPersonalTokens(activityReadsPrimaryAPIKeyValidator, memberships, apiKeyThrottle)
+		if authErr != nil {
+			return authErr
+		}
+		mcpOptions.HeaderAuth = headerAuth.Authenticate
 	}
 	var assetsLifecycleEndpoints *assetslifecycleapi.Endpoints
 	var assetsLifecycleMetadata interface {
@@ -1528,7 +1541,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 		intakeInboxReads:                        intakeInboxReadsEndpoints,
 		deployBoardReads:                        deployBoardReadsEndpoints,
 	}, workspaceFavoritesEndpoints)
-	handler, err = mcptransport.New(cfg.mcp, mcptransport.Options{}, handler)
+	handler, err = mcptransport.New(cfg.mcp, mcpOptions, handler)
 	if err != nil {
 		return err
 	}

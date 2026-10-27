@@ -7,8 +7,11 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strconv"
 	"strings"
+	"time"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
 	generated "github.com/CaliLuke/go-plane/mcp/gen/mcp_vector_mcp"
 	"github.com/CaliLuke/loom-mcp/v2/runtime/mcp/sdkbridge"
 	"github.com/CaliLuke/loom/observability/transport"
@@ -66,7 +69,12 @@ func New(config Config, options Options, fallback http.Handler) (http.Handler, e
 	routes := make(map[string]http.Handler)
 	if config.Enabled {
 		server, err := generated.NewSDKServer(struct{}{}, &generated.SDKServerOptions{
-			Server:            &mcpsdk.ServerOptions{SupportedProtocolVersions: []string{"2026-07-28", "2025-11-25"}},
+			Server: &mcpsdk.ServerOptions{
+				SupportedProtocolVersions: []string{"2026-07-28", "2025-11-25"},
+				SetCacheable: func(_ context.Context, _ mcpsdk.Request, result *mcpsdk.Cacheable) {
+					result.TTLMs, result.CacheScope = 0, "private"
+				},
+			},
 			TransportObserver: options.Observer,
 			OriginProtection:  &sdkbridge.OriginProtection{TrustedOrigins: slices.Clone(config.TrustedOrigins)},
 			StreamableHTTP: &sdkbridge.StreamableHTTPOptions{
@@ -78,10 +86,10 @@ func New(config Config, options Options, fallback http.Handler) (http.Handler, e
 			return nil, fmt.Errorf("construct MCP server: %w", err)
 		}
 		if config.Mode == "header" || config.Mode == "both" {
-			routes[HeaderPath] = protect(config, options.HeaderAuth, server.Handler)
+			routes[HeaderPath] = platform.RequestIDMiddleware(protect(config, options.HeaderAuth, server.Handler))
 		}
 		if config.Mode == "oauth" || config.Mode == "both" {
-			routes[OAuthPath] = protect(config, options.OAuthAuth, server.Handler)
+			routes[OAuthPath] = platform.RequestIDMiddleware(protect(config, options.OAuthAuth, server.Handler))
 		}
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +108,13 @@ func protect(config Config, authenticate Authenticate, next http.Handler) http.H
 	origins := append(slices.Clone(config.TrustedOrigins), "https://"+resource.Host)
 	bounded := http.TimeoutHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx, err := authenticate(r.Context(), r)
+		var limited *RateLimitError
 		switch {
+		case errors.As(err, &limited):
+			seconds := max(int64((limited.RetryAfter+time.Second-1)/time.Second), 1)
+			w.Header().Set("Retry-After", strconv.FormatInt(seconds, 10))
+			http.Error(w, "rate limit exceeded", http.StatusTooManyRequests)
+			return
 		case errors.Is(err, ErrInvalidRequest):
 			http.Error(w, "invalid_request", http.StatusBadRequest)
 			return

@@ -253,6 +253,10 @@
       "statements": 10,
       "percent": 90
     },
+    "github.com/CaliLuke/go-plane/internal/mcpauth": {
+      "statements": 73,
+      "percent": 98.63
+    },
     "github.com/CaliLuke/go-plane/internal/mcptransport": {
       "statements": 80,
       "percent": 95

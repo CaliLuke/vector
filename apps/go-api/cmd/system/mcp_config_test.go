@@ -64,9 +64,21 @@ func TestMCPEnvironmentCannotEnableWithoutSelectedMode(t *testing.T) {
 func TestMCPUnavailableAuthenticationFailsBeforeDatabaseStartup(t *testing.T) {
 	clearMCPEnvironment(t)
 	t.Setenv("MCP_ENABLED", "true")
-	t.Setenv("MCP_AUTH_MODE", "header")
+	t.Setenv("MCP_AUTH_MODE", "oauth")
 	t.Setenv("MCP_RESOURCE_URL", "https://vector.example/mcp")
 	t.Setenv("DATABASE_URL", "not-a-database-url")
 	err := run(context.Background(), []string{"--django-secret-key", "test-only-secret"}, io.Discard)
-	require.ErrorContains(t, err, "MCP header authentication is not available")
+	require.ErrorContains(t, err, "MCP OAuth authentication is not available")
+}
+
+func TestMCPPersonalTokensAvailableWithoutOAuth(t *testing.T) {
+	clearMCPEnvironment(t)
+	t.Setenv("MCP_ENABLED", "true")
+	t.Setenv("MCP_AUTH_MODE", "header")
+	t.Setenv("MCP_RESOURCE_URL", "https://vector.example/mcp")
+	cfg, err := mcpConfigFromEnvironment()
+	require.NoError(t, err)
+	require.NoError(t, validateMCPAvailability(cfg))
+	cfg.Mode = "both"
+	require.ErrorContains(t, validateMCPAvailability(cfg), "OAuth authentication is not available")
 }

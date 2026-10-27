@@ -42,3 +42,15 @@ func mcpConfigFromEnvironment() (mcptransport.Config, error) {
 	}
 	return cfg, cfg.Validate()
 }
+
+// validateMCPAvailability rejects unavailable modes before opening databases or
+// starting workers. New also verifies the concrete providers at the mount boundary.
+func validateMCPAvailability(cfg mcptransport.Config) error {
+	if err := cfg.Validate(); err != nil {
+		return err
+	}
+	if cfg.Enabled && (cfg.Mode == "oauth" || cfg.Mode == "both") {
+		return fmt.Errorf("MCP OAuth authentication is not available")
+	}
+	return nil
+}
