@@ -4,7 +4,7 @@
 
 PQL belongs to Vector's work-item query boundary. HTTP and MCP must execute the same predicates against the same authorized candidate set. MCP must not translate PQL into client-side filtering or publish a reference for language that cannot execute.
 
-This design establishes the parser and the scalar, relationship, member, body, and effective property query boundaries below. The [native milestone contract](mcp-milestones.md) supplies the milestone schema and query rules; its HTTP/MCP actions remain pending. Teamspace modeling remains unresolved, and this work does not complete VEC-12 or VEC-22. The accepted target remains the full language in the [pinned reference](https://github.com/makeplane/plane-mcp-server/blob/dc7cfd9f3c305891909e2372f0cc507291353801/plane_mcp/pql_reference.py). The current execution surface below is explicitly smaller than that target; it adds no MCP action or reference-tool registration.
+This design establishes the parser and the scalar, relationship, member, body, and effective property query boundaries below. The [native milestone contract](mcp-milestones.md) supplies the milestone schema and query rules; its seven HTTP/MCP actions are implemented. Teamspace modeling remains unresolved, and this work does not complete VEC-12 or VEC-22. The accepted target remains the full language in the [pinned reference](https://github.com/makeplane/plane-mcp-server/blob/dc7cfd9f3c305891909e2372f0cc507291353801/plane_mcp/pql_reference.py). The current execution surface below is explicitly smaller than that target; it adds no MCP action or reference-tool registration.
 
 ## Problem statement and current state
 

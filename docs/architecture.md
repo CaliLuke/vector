@@ -12,7 +12,7 @@ Static response fixtures remain for contract regression tests. No Python code or
 
 The initial [remote MCP transport](mcp.md) lives in `apps/go-api/mcp` and
 `internal/mcptransport`. The proxy sends `/mcp` and `/mcp/*` to Go. The generated
-catalogue contains twenty-one actions across member, project, cycle, module, label, comment, link, and activity tools; MCP is disabled by default.
+catalogue contains twenty-eight actions across member, project, cycle, module, label, comment, link, activity, and milestone tools; MCP is disabled by default.
 `internal/mcpauth` supplies personal-token authentication using primary token and
 workspace membership reads. `internal/mcpoauth` owns fresh external-issuer
 introspection, verified account linking and expiring proof storage. `mcpoauthlinks`
@@ -24,6 +24,11 @@ reads retain the verified workspace UUID through the data query, preventing slug
 reassignment from changing the selected tenant. Project archive and restore share a transactional writer with HTTP. Optional receipts live in `internal/mutationreceipts`; a database trigger advances project revisions for all project-row writers. Discovery filters generated action schemas using current scopes and workspace/project permissions without changing the shared catalogue.
 OAuth is available through an explicitly configured external issuer; remaining resource actions
 and full parity are incomplete.
+
+`internal/projectstatereads` also supplies the [bound state read contract](mcp-states.md),
+with project reads and workspace aggregation over accessible project states in
+one authorization snapshot. Existing HTTP projections are retained. State
+mutations and generated MCP registration remain pending.
 
 The [PQL query boundary](pql.md) lives in `internal/issuequery` and is executed by the existing `internal/workitems` API list path before counting and pagination. Its scalar, relationship (including native milestones), member, body, and effective custom-property query subset does not yet satisfy the complete MCP query contract; the core query actions and reference tool remain unregistered.
 
