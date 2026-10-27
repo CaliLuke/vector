@@ -1546,7 +1546,11 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	mcpOptions.Service, err = mcpactions.New(mcpIdentity)
+	mcpMembers, err := projectmembershipreadsstore.NewMemberReader(membershipRepository)
+	if err != nil {
+		return err
+	}
+	mcpOptions.Service, err = mcpactions.New(mcpIdentity, mcpMembers)
 	if err != nil {
 		return err
 	}

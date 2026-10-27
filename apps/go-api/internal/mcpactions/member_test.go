@@ -15,6 +15,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/mcpactions"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/mcptransport"
+	"github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	"github.com/CaliLuke/go-plane/internal/useridentity"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	googleuuid "github.com/google/uuid"
@@ -69,11 +70,12 @@ func (throttle) AllowCacheKey(context.Context, string, string) (apikey.Rate, err
 }
 
 type fixture struct {
-	service *mcpactions.Service
-	auth    *mcpauth.PersonalTokens
-	store   *identityStore
-	keys    *tokens
-	members *memberships
+	service  *mcpactions.Service
+	auth     *mcpauth.PersonalTokens
+	store    *identityStore
+	keys     *tokens
+	members  *memberships
+	projects *projectStore
 }
 
 func newFixture(t *testing.T) fixture {
@@ -86,7 +88,10 @@ func newFixture(t *testing.T) fixture {
 	}}
 	reader, err := useridentity.NewIdentityReader(store)
 	require.NoError(t, err)
-	service, err := mcpactions.New(reader)
+	projects := newProjectStore()
+	projectReader, err := projectmembershipreads.NewMemberReader(projects)
+	require.NoError(t, err)
+	service, err := mcpactions.New(reader, projectReader)
 	require.NoError(t, err)
 	keys := &tokens{owners: map[string]apikey.Principal{
 		"test-one": {UserID: one, Timezone: "UTC"}, "test-two": {UserID: two, Timezone: "UTC"},
@@ -94,7 +99,7 @@ func newFixture(t *testing.T) fixture {
 	members := &memberships{}
 	auth, err := mcpauth.NewPersonalTokens(keys, members, throttle{})
 	require.NoError(t, err)
-	return fixture{service, auth, store, keys, members}
+	return fixture{service: service, auth: auth, store: store, keys: keys, members: members, projects: projects}
 }
 
 func (f fixture) handler(t *testing.T, authenticate mcptransport.Authenticate) http.Handler {
@@ -118,7 +123,8 @@ type rpcResult struct {
 		Annotations map[string]bool
 		InputSchema struct {
 			Type                 string
-			Properties           map[string]struct{ Enum []string }
+			Properties           map[string]json.RawMessage
+			OneOf                []json.RawMessage
 			AdditionalProperties bool
 		}
 	}
@@ -177,8 +183,14 @@ func TestMemberDiscoveryAndIdentityAreScopedToTheAuthenticatedUser(t *testing.T)
 	assert.Equal(t, "member", discovery.Tools[0].Name)
 	assert.Equal(t, map[string]bool{"readOnlyHint": true, "destructiveHint": false, "idempotentHint": false, "openWorldHint": false}, discovery.Tools[0].Annotations)
 	assert.Equal(t, "object", discovery.Tools[0].InputSchema.Type)
-	assert.Equal(t, []string{"me"}, discovery.Tools[0].InputSchema.Properties["action"].Enum)
-	assert.False(t, discovery.Tools[0].InputSchema.AdditionalProperties)
+	assert.JSONEq(t, `{"anyOf":[{"type":"string","enum":["me"]},{"type":"string","enum":["list_project"]}]}`, string(discovery.Tools[0].InputSchema.Properties["action"]))
+	require.Len(t, discovery.Tools[0].InputSchema.OneOf, 2)
+	for _, branch := range discovery.Tools[0].InputSchema.OneOf {
+		var schema struct{ AdditionalProperties *bool }
+		require.NoError(t, json.Unmarshal(branch, &schema))
+		require.NotNil(t, schema.AdditionalProperties)
+		assert.False(t, *schema.AdditionalProperties)
+	}
 	first := rpc(t, h, "test-one", "tools/call", memberCall(`{"action":"me"}`))
 	require.False(t, first.IsError, first.Content)
 	assert.JSONEq(t, `{"id":"10000000-0000-4000-8000-000000000001","first_name":"Zoë","last_name":null,"email":null,"avatar":null,"avatar_url":null,"display_name":null}`, string(first.StructuredContent))
@@ -192,10 +204,12 @@ func TestMemberRejectsUnknownActionsAndCrossActionFieldsBeforeApplicationRead(t 
 	f := newFixture(t)
 	h := f.handler(t, nil)
 	for _, input := range []string{
-		`{}`, `{"action":null}`, `{"action":"list_project","project_id":"10000000-0000-4000-8000-000000000001"}`,
+		`{}`, `{"action":null}`, `{"action":"list_workspace"}`,
+		`{"action":"list_project"}`, `{"action":"list_project","project_id":null}`,
+		`{"action":"list_project","project_id":"not-a-uuid"}`,
 		`{"action":"me","project_id":"10000000-0000-4000-8000-000000000001"}`,
 		`{"action":"me","user_id":"10000000-0000-4000-8000-000000000002"}`,
-		`{"action":"me","workspace_slug":"workspace-two"}`, `{"action":"me","workspace_slug":null}`,
+		`{"action":"me","workspace_slug":null}`,
 	} {
 		t.Run(input, func(t *testing.T) {
 			result := rpc(t, h, "test-one", "tools/call", memberCall(input))
@@ -244,6 +258,7 @@ func TestMemberSanitizesApplicationFailures(t *testing.T) {
 		{"missing user", useridentity.ErrNotFound, nil, "not_found"},
 		{"database failure", errors.New("private database details"), nil, "internal_error"},
 		{"invalid result", nil, json.RawMessage(`{"email":123}`), "internal_error"},
+		{"null result", nil, json.RawMessage(`null`), "internal_error"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			f := newFixture(t)
@@ -262,12 +277,17 @@ func TestMemberSanitizesApplicationFailures(t *testing.T) {
 
 func TestMemberRequiresAuthenticatedContextAndValidAction(t *testing.T) {
 	f := newFixture(t)
-	_, err := f.service.Member(t.Context(), &api.MemberMe{Action: "me"})
+	input := api.NewMemberListProjectOrMemberMeMemberMe(&api.MemberMe{Action: "me"})
+	_, err := f.service.Member(t.Context(), &input)
 	require.Error(t, err)
 	_, err = f.service.Member(t.Context(), nil)
 	require.Error(t, err)
 	assert.Zero(t, f.store.reads.Load())
-	_, err = mcpactions.New(nil)
+	_, err = mcpactions.New(nil, nil)
+	require.Error(t, err)
+	reader, err := useridentity.NewIdentityReader(f.store)
+	require.NoError(t, err)
+	_, err = mcpactions.New(reader, nil)
 	require.Error(t, err)
 }
 

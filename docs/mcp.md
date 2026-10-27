@@ -1,7 +1,7 @@
 # Remote MCP transport
 
 VEC-2 is **in progress**. The Go API contains a generated, stateless MCP server
-and ingress routing. The first resource action is `member.me`. Personal-token
+and ingress routing. Available actions are `member.me` and `member.list_project`. Personal-token
 authentication is wired; OAuth remains unavailable. MCP is disabled by default.
 Enabling `oauth` or `both` fails before database startup.
 
@@ -68,7 +68,7 @@ middleware, including authentication failures. The response returns a validated
 or generated UUID in `X-Request-ID`. Successful authentication updates token
 `last_used` through the existing validator.
 
-The authentication package revalidates before each `member.me` invocation and
+The authentication package revalidates before each member action invocation and
 binds optional tool workspace selectors to the header. Each future action must
 also enforce its current project and domain permissions. Receipt replay is not
 implemented yet.
@@ -79,48 +79,57 @@ the legacy initialize handshake. A legacy initialize request cannot negotiate
 the new lifecycle. The server does not issue session IDs or advertise
 unimplemented tools, prompts, or resources.
 
-## Available action
+## Available actions
 
-`member` currently accepts only `{"action":"me"}` and the optional
-`workspace_slug` selector. Discovery advertises only that action. Unknown actions,
-fields belonging to other actions, and mismatched workspace selectors fail with
-`invalid_params` before reading identity data.
+`member` accepts `{"action":"me"}` or
+`{"action":"list_project","project_id":"<UUID>"}`, each with an optional
+`workspace_slug` selector. Discovery advertises these two read actions. The
+generated union schema retains a top-level object and typed properties, with
+closed, action-specific branches. Unknown actions and fields belonging to other
+actions fail with `invalid_params`. A supplied workspace selector that conflicts
+with the header returns HTTP 400 `invalid_request` before any application read.
 
-The action uses the same credential-neutral identity reader as `GET /api/v1/users/me/`.
+The `me` action uses the same credential-neutral identity reader as `GET /api/v1/users/me/`.
 That reader selects only the authenticated actor and checks the account's current
 active state. The MCP projection normalizes absent UserLite fields to null, as the
 pinned Plane SDK does; the HTTP response shape remains unchanged. Both designs
 reference the same API identity field declaration.
 
-The generated contract declares typed identity output and safe named errors.
+The generated contract declares typed identity and project-member results and safe named errors.
 Tests use the generated HTTP server and real PostgreSQL-backed token, membership,
 and identity readers. They cover both protocol revisions, actor isolation, fresh
 profile data, and revocation between request authentication and action execution.
-This is personal-token evidence for one action, not complete VEC-7 or VEC-36 proof.
+This is personal-token evidence for two actions, not complete VEC-7 or VEC-36 proof.
 
-The project-member HTTP endpoint now uses a credential-neutral `MemberReader`.
+The `list_project` action and the project-member HTTP endpoint use the same credential-neutral `MemberReader`.
 It reads the primary database and checks project access in the same SQL statement
 as the roster read. PostgreSQL tests cover revocation after initial authorization,
 deleted projects and workspaces, and tenant isolation. Its response remains the
-existing UserLite array. `member.list_project` is not yet advertised or callable.
+existing UserLite array. The MCP projection fills the SDK's absent role fields
+with null; it does not infer role metadata absent from the HTTP contract. The
+operation is unpaginated, as in the pinned tool. Its nonempty result is a JSON
+text block without `structuredContent`; an empty result has no content blocks.
+This matches the pinned FastMCP list response on both protocol revisions.
 
 ## Remaining requirements
 
 - **Generated action contracts:** the upstream union defects in
   [loom-mcp #381](https://github.com/CaliLuke/loom-mcp/issues/381) are fixed in
   alpha.48. Vector consumes the released module without a replacement or retained
-  workaround. An isolated consumer using the released module verifies closed
-  multi-action inputs and object/array result-union dispatch through both protocol
-  revisions. Expand the generated catalogue as application actions become available.
+  workaround for #381. Vector's generated-server tests verify closed multi-action
+  inputs and object/array result-union dispatch through both protocol revisions.
+  Expand the generated catalogue as application actions become available.
 - **Array result compatibility:** [loom-mcp #383](https://github.com/CaliLuke/loom-mcp/issues/383)
   tracks generated non-object `structuredContent` being sent to 2025-11-25 clients,
-  whose protocol requires an object. An isolated generated-server reproduction
-  confirms the failure. Resolve the wire projection before enabling array-returning
-  actions; the currently available identity action is unaffected.
+  whose protocol requires an object. The generated interceptor hook now applies
+  the pinned member-list content contract without editing generated code. Remove
+  this interceptor when the minimum upstream version can produce that content-only
+  list shape, including empty lists, for both revisions. Identity results retain
+  their object-valued structured content.
 - **Discovery authorization:** prove per-principal permitted-action schemas and
   invocation checks across actions with different permissions. The current
-  `member.me` action is available to every authenticated actor. There is no
-  handwritten replacement registry.
+  member read actions share a credential class; project access is checked at
+  invocation. There is no handwritten replacement registry.
 - **VEC-35 and VEC-3:** complete personal-token invocation integration and supply
   the OAuth provider, including scopes and account linking. Personal-token
   transport authentication is implemented; action-level authorization, discovery
@@ -136,5 +145,5 @@ existing UserLite array. `member.list_project` is not yet advertised or callable
 Focused verification exercises the real generated HTTP handler, both route
 modes, current and legacy discovery, invalid protocol headers, host/origin
 rejection, request limits, cancellation, unavailable authentication, and startup
-configuration. Typed results and errors are exercised for `member.me`; discovery
+configuration. Typed results and errors are exercised for `member.me` and `member.list_project`; discovery
 filtering across actions with different permissions remains pending.

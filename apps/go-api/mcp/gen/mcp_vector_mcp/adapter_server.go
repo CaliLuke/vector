@@ -493,12 +493,11 @@ type toolSearchSettings struct {
 
 func (a *MCPAdapter) generatedToolCatalog() []*ToolInfo {
 	return []*ToolInfo{&ToolInfo{
-		Annotations:  jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":true}")),
-		Description:  stringPtr("Members and roles. Available action: me — the authenticated user."),
-		InputSchema:  jsontext.Value([]byte("{\"type\":\"object\",\"description\":\"Read the authenticated user's identity.\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"me\"]},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"additionalProperties\":false}")),
-		Name:         "member",
-		OutputSchema: jsontext.Value([]byte("{\"type\":\"object\",\"description\":\"The existing API identity, normalized to the pinned SDK's UserLite result.\",\"required\":[\"id\",\"first_name\",\"last_name\",\"email\",\"avatar\",\"avatar_url\",\"display_name\"],\"properties\":{\"avatar\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"avatar_url\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"display_name\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"email\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"first_name\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"id\":{\"anyOf\":[{\"type\":\"string\",\"format\":\"uuid\"},{\"type\":\"null\"}]},\"last_name\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}},\"additionalProperties\":false}")),
-		Title:        stringPtr("Members and roles"),
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":true}")),
+		Description: stringPtr("Read identities and project members using the selected action."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"description\":\"Read the authenticated user's identity.\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"me\"]},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"description\":\"List the members of a project the authenticated user can access.\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_project\"]},\"project_id\":{\"type\":\"string\",\"description\":\"Project identifier.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"me\"]},{\"type\":\"string\",\"enum\":[\"list_project\"]}]},\"project_id\":{\"type\":\"string\",\"description\":\"Project identifier.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "member",
+		Title:       stringPtr("Members and roles"),
 	}}
 }
 func (a *MCPAdapter) toolSearchEnabled() bool {

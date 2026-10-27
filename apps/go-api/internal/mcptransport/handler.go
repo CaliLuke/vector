@@ -73,6 +73,7 @@ func New(config Config, options Options, fallback http.Handler) (http.Handler, e
 			return nil, fmt.Errorf("MCP application service is required")
 		}
 		server, err := generated.NewSDKServer(options.Service, &generated.SDKServerOptions{
+			Adapter: &generated.MCPAdapterOptions{ToolCallInterceptors: []generated.ToolCallInterceptor{memberContent}},
 			Server: &mcpsdk.ServerOptions{
 				SupportedProtocolVersions: []string{"2026-07-28", "2025-11-25"},
 				SetCacheable: func(_ context.Context, _ mcpsdk.Request, result *mcpsdk.Cacheable) {
@@ -130,6 +131,10 @@ func protect(config Config, authenticate Authenticate, next http.Handler) http.H
 			return
 		case err != nil || ctx == nil:
 			http.Error(w, "authentication unavailable", http.StatusServiceUnavailable)
+			return
+		}
+		if status := workspaceSelectorStatus(r); status != 0 {
+			http.Error(w, "invalid_request", status)
 			return
 		}
 		next.ServeHTTP(w, r.WithContext(ctx))

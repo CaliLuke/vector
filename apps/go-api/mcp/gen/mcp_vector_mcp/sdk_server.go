@@ -127,12 +127,11 @@ func sdkToolBindings(adapter *MCPAdapter) ([]sdkbridge.ToolBinding, error) {
 	bindings = append(bindings, sdkbridge.ToolBinding{
 		Handler: handler,
 		Tool: &mcpsdk.Tool{
-			Annotations:  annotationsMember,
-			Description:  "Members and roles. Available action: me — the authenticated user.",
-			InputSchema:  sdkToolInputSchema("{\"type\":\"object\",\"description\":\"Read the authenticated user's identity.\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"me\"]},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"additionalProperties\":false}"),
-			Name:         "member",
-			OutputSchema: sdkToolInputSchema("{\"type\":\"object\",\"description\":\"The existing API identity, normalized to the pinned SDK's UserLite result.\",\"required\":[\"id\",\"first_name\",\"last_name\",\"email\",\"avatar\",\"avatar_url\",\"display_name\"],\"properties\":{\"avatar\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"avatar_url\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"display_name\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"email\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"first_name\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"id\":{\"anyOf\":[{\"type\":\"string\",\"format\":\"uuid\"},{\"type\":\"null\"}]},\"last_name\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}},\"additionalProperties\":false}"),
-			Title:        "Members and roles",
+			Annotations: annotationsMember,
+			Description: "Read identities and project members using the selected action.",
+			InputSchema: sdkToolInputSchema("{\"oneOf\":[{\"type\":\"object\",\"description\":\"Read the authenticated user's identity.\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"me\"]},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"description\":\"List the members of a project the authenticated user can access.\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_project\"]},\"project_id\":{\"type\":\"string\",\"description\":\"Project identifier.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"me\"]},{\"type\":\"string\",\"enum\":[\"list_project\"]}]},\"project_id\":{\"type\":\"string\",\"description\":\"Project identifier.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"type\":\"object\"}"),
+			Name:        "member",
+			Title:       "Members and roles",
 		},
 	})
 	return bindings, nil

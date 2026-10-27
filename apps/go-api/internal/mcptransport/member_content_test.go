@@ -1,0 +1,88 @@
+package mcptransport_test
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"net/http"
+	"testing"
+
+	"github.com/CaliLuke/go-plane/internal/mcptransport"
+	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+type memberResponseService struct {
+	body    string
+	failure error
+}
+
+func (s memberResponseService) Member(context.Context, *api.MemberListProjectOrMemberMe) (*api.MemberIdentityOrProjectMembers, error) {
+	if s.failure != nil {
+		return nil, s.failure
+	}
+	var result api.MemberIdentityOrProjectMembers
+	err := json.Unmarshal([]byte(s.body), &result)
+	return &result, err
+}
+
+const identityResult = `{"id":"10000000-0000-4000-8000-000000000001","first_name":null,"last_name":null,"email":null,"avatar":null,"avatar_url":null,"display_name":null}`
+const rosterResult = `[{"id":"10000000-0000-4000-8000-000000000001","first_name":null,"last_name":null,"email":null,"avatar":null,"avatar_url":null,"display_name":null,"role":null,"role_slug":null,"is_active":null,"is_bot":null}]`
+
+func TestGeneratedMemberResultsPreservePinnedContentAcrossRevisions(t *testing.T) {
+	for _, version := range []string{"2025-11-25", "2026-07-28"} {
+		for _, tc := range []struct {
+			name, body, action string
+			failure            error
+			contentCount       int
+		}{
+			{"identity", identityResult, "me", nil, 1},
+			{"roster", rosterResult, "list_project", nil, 1},
+			{"empty roster", `[]`, "list_project", nil, 0},
+			{"domain failure", "", "list_project", api.MakeForbidden(errors.New("safe denial")), 1},
+		} {
+			t.Run(version+"/"+tc.name, func(t *testing.T) {
+				opts := options()
+				opts.Service = memberResponseService{tc.body, tc.failure}
+				h, err := mcptransport.New(config("header"), opts, http.NotFoundHandler())
+				require.NoError(t, err)
+				arguments := map[string]any{"action": tc.action}
+				if tc.action == "list_project" {
+					arguments["project_id"] = "30000000-0000-4000-8000-000000000001"
+				}
+				params := map[string]any{"name": "member", "arguments": arguments}
+				headers := http.Header{"Mcp-Protocol-Version": []string{version}}
+				if version == "2026-07-28" {
+					params["_meta"] = map[string]any{"io.modelcontextprotocol/protocolVersion": version, "io.modelcontextprotocol/clientInfo": map[string]string{"name": "test", "version": "1"}, "io.modelcontextprotocol/clientCapabilities": map[string]any{}}
+					headers.Set("Mcp-Method", "tools/call")
+					headers.Set("Mcp-Name", "member")
+				}
+				body, err := json.Marshal(map[string]any{"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": params})
+				require.NoError(t, err)
+				response := call(h, "/mcp/api-key", string(body), headers)
+				require.Equal(t, http.StatusOK, response.Code, response.Body.String())
+				var message struct {
+					Error  json.RawMessage
+					Result struct {
+						Content           []struct{ Text string }
+						StructuredContent json.RawMessage
+						IsError           bool
+					}
+				}
+				require.NoError(t, json.Unmarshal(response.Body.Bytes(), &message))
+				require.Empty(t, message.Error)
+				require.Len(t, message.Result.Content, tc.contentCount)
+				assert.Equal(t, tc.failure != nil, message.Result.IsError)
+				if tc.action == "me" {
+					assert.JSONEq(t, tc.body, string(message.Result.StructuredContent))
+				} else {
+					assert.Empty(t, message.Result.StructuredContent)
+				}
+				if tc.failure == nil && tc.contentCount != 0 {
+					assert.JSONEq(t, tc.body, message.Result.Content[0].Text)
+				}
+			})
+		}
+	}
+}

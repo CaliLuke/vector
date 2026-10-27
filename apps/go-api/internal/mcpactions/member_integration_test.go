@@ -11,6 +11,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/mcpactions"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
+	"github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/CaliLuke/go-plane/internal/useridentity"
 	"github.com/jackc/pgx/v5"
@@ -32,6 +33,19 @@ INSERT INTO workspaces VALUES ('20000000-0000-4000-8000-000000000001','workspace
 INSERT INTO workspace_members SELECT '20000000-0000-4000-8000-000000000001',id,15,true,NULL FROM users;
 INSERT INTO api_tokens VALUES ('test-one','10000000-0000-4000-8000-000000000001',NULL,true,NULL,NULL,NULL),
  ('test-two','10000000-0000-4000-8000-000000000002',NULL,true,NULL,NULL,NULL);
+ALTER TABLE users ADD COLUMN created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP;
+CREATE TABLE projects(id uuid PRIMARY KEY, workspace_id uuid NOT NULL, deleted_at timestamptz);
+CREATE TABLE project_members(project_id uuid NOT NULL, workspace_id uuid NOT NULL, member_id uuid NOT NULL,
+ role int NOT NULL, is_active boolean NOT NULL, deleted_at timestamptz);
+INSERT INTO workspaces VALUES ('20000000-0000-4000-8000-000000000002','workspace-two',NULL);
+INSERT INTO projects VALUES
+ ('30000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001',NULL),
+ ('30000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000001',NULL),
+ ('30000000-0000-4000-8000-000000000003','20000000-0000-4000-8000-000000000002',NULL);
+INSERT INTO project_members VALUES
+ ('30000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001',15,true,NULL),
+ ('30000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000002',15,true,NULL),
+ ('30000000-0000-4000-8000-000000000003','20000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000002',15,true,NULL);
 `
 
 func databaseFixture(t *testing.T) (fixture, *pgxpool.Pool) {
@@ -56,7 +70,11 @@ func databaseFixture(t *testing.T) (fixture, *pgxpool.Pool) {
 	require.NoError(t, err)
 	reader, err := useridentity.NewIdentityReader(repository)
 	require.NoError(t, err)
-	service, err := mcpactions.New(reader)
+	projectRepository, err := projectmembershipreads.NewLifecycleRepository(pool, rosterPublisher{}, "https://vector.example")
+	require.NoError(t, err)
+	projectReader, err := projectmembershipreads.NewMemberReader(projectRepository)
+	require.NoError(t, err)
+	service, err := mcpactions.New(reader, projectReader)
 	require.NoError(t, err)
 	keys, err := apikey.NewWithReaderWriter(pool, pool)
 	require.NoError(t, err)
@@ -65,6 +83,12 @@ func databaseFixture(t *testing.T) (fixture, *pgxpool.Pool) {
 	auth, err := mcpauth.NewPersonalTokens(keys, members, throttle{})
 	require.NoError(t, err)
 	return fixture{service: service, auth: auth}, pool
+}
+
+type rosterPublisher struct{}
+
+func (rosterPublisher) Task(context.Context, string, []any, map[string]any) error {
+	return nil
 }
 
 func TestMemberReadsRealIdentityThroughBothProtocolRevisions(t *testing.T) {

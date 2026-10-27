@@ -9,39 +9,479 @@ package mcpvectormcp
 
 import (
 	jsontext "encoding/json/jsontext"
+	json "encoding/json/v2"
+	"fmt"
+	"unicode/utf8"
 
 	vector_mcp "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	sdkbridge "github.com/CaliLuke/loom-mcp/v2/runtime/mcp/sdkbridge"
+	loom "github.com/CaliLuke/loom/pkg"
 )
 
+// MemberListProjectTransport preserves JSON field presence before service conversion.
+type MemberListProjectTransport struct {
+	Action *string `json:"action"`
+	// Project identifier.
+	ProjectID *string `json:"project_id"`
+	// Optional workspace selector; must match the authenticated workspace.
+	WorkspaceSlug *string `json:"workspace_slug,omitzero"`
+}
+
 // MemberMCPInput preserves JSON field presence before service conversion.
-type MemberMCPInput struct {
+type MemberMCPInput = MemberListProjectOrMemberMe
+
+// MemberMeTransport preserves JSON field presence before service conversion.
+type MemberMeTransport struct {
 	Action *string `json:"action"`
 	// Optional workspace selector; must match the authenticated workspace.
 	WorkspaceSlug *string `json:"workspace_slug,omitzero"`
 }
 
-func decodeMemberPayload(raw jsontext.Value) (out *vector_mcp.MemberMe, err error) {
+// MemberListProjectOrMemberMe is a sum-type union.
+type MemberListProjectOrMemberMe struct {
+	kind              MemberListProjectOrMemberMeKind
+	MemberMe          *MemberMeTransport
+	MemberListProject *MemberListProjectTransport
+}
+
+// MemberListProjectOrMemberMeKind enumerates the union variants for
+// MemberListProjectOrMemberMe.
+type MemberListProjectOrMemberMeKind string
+
+const (
+	// MemberListProjectOrMemberMeKindMemberMe identifies the MemberMe branch of the union.
+	MemberListProjectOrMemberMeKindMemberMe MemberListProjectOrMemberMeKind = "MemberMe"
+	// MemberListProjectOrMemberMeKindMemberListProject identifies the MemberListProject branch of the union.
+	MemberListProjectOrMemberMeKindMemberListProject MemberListProjectOrMemberMeKind = "MemberListProject"
+)
+
+// Kind returns the discriminator value of the union.
+func (u MemberListProjectOrMemberMe) Kind() MemberListProjectOrMemberMeKind {
+	return u.kind
+}
+
+// NewMemberListProjectOrMemberMeMemberMe constructs a
+// MemberListProjectOrMemberMe with the MemberMe branch set.
+func NewMemberListProjectOrMemberMeMemberMe(v *MemberMeTransport) MemberListProjectOrMemberMe {
+	return MemberListProjectOrMemberMe{
+		kind:     MemberListProjectOrMemberMeKindMemberMe,
+		MemberMe: v,
+	}
+}
+
+// AsMemberMe returns the value of the MemberMe branch if set.
+func (u MemberListProjectOrMemberMe) AsMemberMe() (_ *MemberMeTransport, ok bool) {
+	if u.kind != MemberListProjectOrMemberMeKindMemberMe {
+		return
+	}
+	return u.MemberMe, true
+}
+
+// SetMemberMe sets the MemberMe branch of the union.
+func (u *MemberListProjectOrMemberMe) SetMemberMe(v *MemberMeTransport) {
+	u.kind = MemberListProjectOrMemberMeKindMemberMe
+	u.MemberMe = v
+}
+
+// NewMemberListProjectOrMemberMeMemberListProject constructs a
+// MemberListProjectOrMemberMe with the MemberListProject branch set.
+func NewMemberListProjectOrMemberMeMemberListProject(v *MemberListProjectTransport) MemberListProjectOrMemberMe {
+	return MemberListProjectOrMemberMe{
+		kind:              MemberListProjectOrMemberMeKindMemberListProject,
+		MemberListProject: v,
+	}
+}
+
+// AsMemberListProject returns the value of the MemberListProject branch if set.
+func (u MemberListProjectOrMemberMe) AsMemberListProject() (_ *MemberListProjectTransport, ok bool) {
+	if u.kind != MemberListProjectOrMemberMeKindMemberListProject {
+		return
+	}
+	return u.MemberListProject, true
+}
+
+// SetMemberListProject sets the MemberListProject branch of the union.
+func (u *MemberListProjectOrMemberMe) SetMemberListProject(v *MemberListProjectTransport) {
+	u.kind = MemberListProjectOrMemberMeKindMemberListProject
+	u.MemberListProject = v
+}
+
+// Validate ensures the union discriminant is valid.
+func (u MemberListProjectOrMemberMe) Validate() error {
+	switch u.kind {
+	case "":
+		return loom.InvalidEnumValueError("type", "", []any{
+			string(MemberListProjectOrMemberMeKindMemberMe),
+			string(MemberListProjectOrMemberMeKindMemberListProject),
+		})
+	case MemberListProjectOrMemberMeKindMemberMe:
+		return nil
+	case MemberListProjectOrMemberMeKindMemberListProject:
+		return nil
+	default:
+		return loom.InvalidEnumValueError("type", u.kind, []any{
+			string(MemberListProjectOrMemberMeKindMemberMe),
+			string(MemberListProjectOrMemberMeKindMemberListProject),
+		})
+	}
+}
+
+// MarshalJSON marshals the selected union branch directly.
+func (u MemberListProjectOrMemberMe) MarshalJSON() ([]byte, error) {
+	if err := u.Validate(); err != nil {
+		return nil, err
+	}
+	var data []byte
+	var err error
+	selected := -1
+	switch u.kind {
+	case MemberListProjectOrMemberMeKindMemberMe:
+		selected = 0
+		data, err = json.Marshal(u.MemberMe, loom.JSONOptions(), json.Deterministic(true))
+	case MemberListProjectOrMemberMeKindMemberListProject:
+		selected = 1
+		data, err = json.Marshal(u.MemberListProject, loom.JSONOptions(), json.Deterministic(true))
+	}
+	if err != nil {
+		return nil, err
+	}
+	_, matched, err := u.matchJSON(data)
+	if err != nil {
+		return nil, err
+	}
+	if matched != selected {
+		return nil, fmt.Errorf("untagged union changed selected branch")
+	}
+	return data, nil
+}
+
+// UnmarshalJSON selects the single valid untagged union branch.
+func (u *MemberListProjectOrMemberMe) UnmarshalJSON(data []byte) error {
+	matched, _, err := u.matchJSON(data)
+	if err != nil {
+		return err
+	}
+	*u = matched
+	return nil
+}
+func (u MemberListProjectOrMemberMe) matchJSON(data []byte) (MemberListProjectOrMemberMe, int, error) {
+	var value0 *MemberMeTransport
+	schema0Nodes := make([]loom.JSONShape, 4)
+	schema0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema0Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema0Nodes[2]},
+			{Name: "workspace_slug", Required: false, Shape: &schema0Nodes[3]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"me\""),
+				},
+			},
+		},
+	}
+	schema0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema0 := &schema0Nodes[0]
+	runtime0Nodes := make([]loom.JSONShape, 4)
+	runtime0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime0Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime0Nodes[2]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime0Nodes[3]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"me\""),
+				},
+			},
+		},
+	}
+	runtime0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime0 := &runtime0Nodes[0]
+	var value1 *MemberListProjectTransport
+	schema1Nodes := make([]loom.JSONShape, 5)
+	schema1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema1Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema1Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &schema1Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &schema1Nodes[4]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"list_project\""),
+				},
+			},
+		},
+	}
+	schema1Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema1Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema1 := &schema1Nodes[0]
+	runtime1Nodes := make([]loom.JSONShape, 5)
+	runtime1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime1Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime1Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &runtime1Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime1Nodes[4]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"list_project\""),
+				},
+			},
+		},
+	}
+	runtime1Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime1Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime1 := &runtime1Nodes[0]
+	candidates := []loom.JSONUnionBranch{
+		{Schema: schema0, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime0.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MemberMeTransport
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if v.Action == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("action", "v"))
+				}
+				if v.Action != nil {
+					if !(*v.Action == "me") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", *v.Action, []any{"me"}))
+					}
+				}
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value0 = v
+			return true, nil
+		}},
+		{Schema: schema1, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime1.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MemberListProjectTransport
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if v.Action == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("action", "v"))
+				}
+				if v.ProjectID == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("project_id", "v"))
+				}
+				if v.Action != nil {
+					if !(*v.Action == "list_project") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", *v.Action, []any{"list_project"}))
+					}
+				}
+				if v.ProjectID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", *v.ProjectID, loom.FormatUUID))
+				}
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value1 = v
+			return true, nil
+		}},
+	}
+	matched, err := loom.MatchUntaggedJSON("MemberListProjectOrMemberMe", data, candidates)
+	if err != nil {
+		return MemberListProjectOrMemberMe{}, -1, err
+	}
+	switch matched {
+	case 0:
+		return MemberListProjectOrMemberMe{kind: MemberListProjectOrMemberMeKindMemberMe, MemberMe: value0}, matched, nil
+	case 1:
+		return MemberListProjectOrMemberMe{kind: MemberListProjectOrMemberMeKindMemberListProject, MemberListProject: value1}, matched, nil
+	}
+	return MemberListProjectOrMemberMe{}, -1, fmt.Errorf("invalid untagged union match index")
+}
+func validateMemberListProjectOrMemberMeMemberMeTransport(body *MemberMeTransport, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if body.Action == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("action", validationPath))
+	}
+	if body.Action != nil {
+		if !(*body.Action == "me") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", *body.Action, []any{"me"}))
+		}
+	}
+	if body.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*body.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*body.WorkspaceSlug), 255, false))
+		}
+	}
+	return
+}
+
+func validateMemberListProjectOrMemberMeMemberListProjectTransport(body *MemberListProjectTransport, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if body.Action == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("action", validationPath))
+	}
+	if body.ProjectID == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("project_id", validationPath))
+	}
+	if body.Action != nil {
+		if !(*body.Action == "list_project") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", *body.Action, []any{"list_project"}))
+		}
+	}
+	if body.ProjectID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", *body.ProjectID, loom.FormatUUID))
+	}
+	if body.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*body.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*body.WorkspaceSlug), 255, false))
+		}
+	}
+	return
+}
+
+func decodeMemberPayload(raw jsontext.Value) (out *vector_mcp.MemberListProjectOrMemberMe, err error) {
 	var in *MemberMCPInput
 	if err = decodeMCPPayloadStrict(raw, &in); err != nil {
 		return out, err
 	}
-	fields, err := decodeMCPPayloadFields(raw)
-	if err != nil {
+	if err = sdkbridge.ValidateToolArguments(raw, "{\"oneOf\":[{\"type\":\"object\",\"description\":\"Read the authenticated user's identity.\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"me\"]},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"description\":\"List the members of a project the authenticated user can access.\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_project\"]},\"project_id\":{\"type\":\"string\",\"description\":\"Project identifier.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"me\"]},{\"type\":\"string\",\"enum\":[\"list_project\"]}]},\"project_id\":{\"type\":\"string\",\"description\":\"Project identifier.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"type\":\"object\"}"); err != nil {
 		return out, err
 	}
-	if err = validateMCPPayloadRequired(fields, "action", false); err != nil {
-		return out, err
-	}
-	if err = validateMCPPayloadEnum(fields, "action", false, "me"); err != nil {
-		return out, err
-	}
-	if err = sdkbridge.ValidateToolArguments(raw, "{\"type\":\"object\",\"description\":\"Read the authenticated user's identity.\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"me\"]},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"additionalProperties\":false}"); err != nil {
-		return out, err
-	}
-	out = &vector_mcp.MemberMe{
-		Action:        *in.Action,
-		WorkspaceSlug: in.WorkspaceSlug,
+
+	switch string(in.Kind()) {
+	case "MemberMe":
+		actual, _ := in.AsMemberMe()
+		obj := decodeMemberPayloadMemberMeTransportToVectorMcpMemberMe(actual)
+
+		var u vector_mcp.MemberListProjectOrMemberMe
+		if out != nil {
+			u = *out
+		}
+		u.SetMemberMe((*vector_mcp.MemberMe)(obj))
+		out = &u
+	case "MemberListProject":
+		actual, _ := in.AsMemberListProject()
+		obj := decodeMemberPayloadMemberListProjectTransportToVectorMcpMemberListProject(actual)
+
+		var u vector_mcp.MemberListProjectOrMemberMe
+		if out != nil {
+			u = *out
+		}
+		u.SetMemberListProject((*vector_mcp.MemberListProject)(obj))
+		out = &u
 	}
 	return out, err
+}
+
+func decodeMemberPayloadMemberMeTransportToVectorMcpMemberMe(v *MemberMeTransport) *vector_mcp.MemberMe {
+	if v == nil {
+		return nil
+	}
+	res := &vector_mcp.MemberMe{
+		Action:        *v.Action,
+		WorkspaceSlug: v.WorkspaceSlug,
+	}
+
+	return res
+}
+
+func decodeMemberPayloadMemberListProjectTransportToVectorMcpMemberListProject(v *MemberListProjectTransport) *vector_mcp.MemberListProject {
+	if v == nil {
+		return nil
+	}
+	res := &vector_mcp.MemberListProject{
+		Action:        *v.Action,
+		ProjectID:     *v.ProjectID,
+		WorkspaceSlug: v.WorkspaceSlug,
+	}
+
+	return res
 }

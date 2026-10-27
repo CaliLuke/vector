@@ -131,6 +131,6 @@ UPDATE workspaces SET deleted_at=NULL;`)
 
 type tokenTransportService struct{}
 
-func (tokenTransportService) Member(context.Context, *api.MemberMe) (*api.MemberIdentity, error) {
+func (tokenTransportService) Member(context.Context, *api.MemberListProjectOrMemberMe) (*api.MemberIdentityOrProjectMembers, error) {
 	return nil, errors.New("authentication tests do not execute identity reads")
 }

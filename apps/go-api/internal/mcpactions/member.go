@@ -19,40 +19,82 @@ type identityReader interface {
 	CurrentIdentity(context.Context, uuid.UUID) (json.RawMessage, error)
 }
 
-type Service struct{ identity identityReader }
-
-func New(identity identityReader) (*Service, error) {
-	if identity == nil {
-		return nil, errors.New("MCP identity application is required")
-	}
-	return &Service{identity: identity}, nil
+type projectMemberReader interface {
+	ListProjectMembers(context.Context, uuid.UUID, string, uuid.UUID) (json.RawMessage, error)
 }
 
-func (s *Service) Member(ctx context.Context, input *api.MemberMe) (*api.MemberIdentity, error) {
-	if input == nil || input.Action != "me" {
-		return nil, api.MakeInvalidParams(errors.New("invalid member action"))
+type Service struct {
+	identity identityReader
+	projects projectMemberReader
+}
+
+func New(identity identityReader, projects projectMemberReader) (*Service, error) {
+	if identity == nil || projects == nil {
+		return nil, errors.New("MCP identity and project member applications are required")
 	}
-	ctx, err := mcpauth.Revalidate(ctx)
+	return &Service{identity: identity, projects: projects}, nil
+}
+
+func (s *Service) Member(ctx context.Context, input *api.MemberListProjectOrMemberMe) (*api.MemberIdentityOrProjectMembers, error) {
+	request, err := selectMemberAction(input)
+	if err != nil {
+		return nil, err
+	}
+	ctx, err = mcpauth.Revalidate(ctx)
 	if err != nil {
 		return nil, authenticationError(err)
 	}
 	slug := ""
-	if input.WorkspaceSlug != nil {
-		slug = *input.WorkspaceSlug
+	if request.workspace != nil {
+		slug = *request.workspace
 	}
 	actor, err := mcpauth.SelectWorkspace(ctx, slug)
 	if err != nil {
 		return nil, api.MakeInvalidParams(errors.New("invalid workspace selector"))
 	}
 	if timezoneErr := djangosession.ValidateUserTimezone(actor.Timezone); timezoneErr != nil {
-		return nil, identityFailure()
+		return nil, memberReadFailure()
 	}
+	if request.action == "list_project" {
+		members, readErr := s.projectMembers(ctx, actor, request.project)
+		if readErr != nil {
+			return nil, readErr
+		}
+		result := api.NewMemberIdentityOrProjectMembersProjectMembers(members)
+		return &result, nil
+	}
+	identity, err := s.currentIdentity(ctx, actor)
+	if err != nil {
+		return nil, err
+	}
+	result := api.NewMemberIdentityOrProjectMembersMemberIdentity(identity)
+	return &result, nil
+}
+
+type memberRequest struct {
+	action, project string
+	workspace       *string
+}
+
+func selectMemberAction(input *api.MemberListProjectOrMemberMe) (memberRequest, error) {
+	if input != nil {
+		if me, ok := input.AsMemberMe(); ok && me != nil && me.Action == "me" {
+			return memberRequest{action: me.Action, workspace: me.WorkspaceSlug}, nil
+		}
+		if list, ok := input.AsMemberListProject(); ok && list != nil && list.Action == "list_project" {
+			return memberRequest{action: list.Action, project: list.ProjectID, workspace: list.WorkspaceSlug}, nil
+		}
+	}
+	return memberRequest{}, api.MakeInvalidParams(errors.New("invalid member action"))
+}
+
+func (s *Service) currentIdentity(ctx context.Context, actor mcpauth.Principal) (*api.MemberIdentity, error) {
 	body, err := s.identity.CurrentIdentity(ctx, uuid.UUID(actor.UserID))
 	if errors.Is(err, useridentity.ErrNotFound) {
 		return nil, api.MakeNotFound(errors.New("identity unavailable"))
 	}
 	if err != nil {
-		return nil, identityFailure()
+		return nil, memberReadFailure()
 	}
 	// The pinned SDK fills absent UserLite properties with null. Keep that
 	// normalization in this projection; HTTP retains its existing wire shape.
@@ -62,8 +104,8 @@ func (s *Service) Member(ctx context.Context, input *api.MemberMe) (*api.MemberI
 		Avatar: loom.NullValue[string](), AvatarURL: loom.NullValue[string](),
 		DisplayName: loom.NullValue[string](),
 	}
-	if decodeErr := json.Unmarshal(body, result); decodeErr != nil {
-		return nil, identityFailure()
+	if decodeErr := json.Unmarshal(body, &result); decodeErr != nil || result == nil {
+		return nil, memberReadFailure()
 	}
 	return result, nil
 }
@@ -75,12 +117,12 @@ func authenticationError(err error) error {
 	case errors.Is(err, mcptransport.ErrAccessDenied):
 		return api.MakeForbidden(errors.New("access revoked"))
 	default:
-		return identityFailure()
+		return memberReadFailure()
 	}
 }
 
-func identityFailure() error {
-	return api.MakeInternalError(errors.New("identity read failed"))
+func memberReadFailure() error {
+	return api.MakeInternalError(errors.New("member read failed"))
 }
 
 var _ api.Service = (*Service)(nil)

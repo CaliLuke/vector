@@ -24,23 +24,44 @@ var memberIdentity = Type("MemberIdentity", func() {
 	Required(fields...)
 })
 
+var memberListProject = Type("MemberListProject", func() {
+	Description("List the members of a project the authenticated user can access.")
+	Attribute("action", String, func() { Enum("list_project") })
+	Attribute("project_id", String, "Project identifier.", func() { Format(FormatUUID) })
+	Attribute("workspace_slug", String, "Optional workspace selector; must match the authenticated workspace.", func() { MaxLength(255) })
+	Required("action", "project_id")
+	Meta("openapi:additionalProperties", "false")
+})
+
+var projectMember = Type("ProjectMember", func() {
+	Description("An API project member normalized to the pinned SDK's ProjectMember model.")
+	Extend(memberIdentity)
+	Attribute("role", Int, func() { Nullable() })
+	Attribute("role_slug", String, func() { Nullable() })
+	Attribute("is_active", Boolean, func() { Nullable() })
+	Attribute("is_bot", Boolean, func() { Nullable() })
+	Required("role", "role_slug", "is_active", "is_bot")
+})
+
+var projectMembers = Type("ProjectMembers", ArrayOf(projectMember))
+
 func member() {
 	Method("member", func() {
-		Description("Read the authenticated user's identity.")
-		Payload(memberMe)
-		Result(memberIdentity)
+		Description("Read the authenticated user's identity or an authorized project roster.")
+		Payload(OneOf(memberMe, memberListProject), func() { Untagged() })
+		Result(OneOf(memberIdentity, projectMembers), func() { Untagged() })
 		for _, failure := range []struct{ name, message string }{
 			{"unauthorized", "Authentication is no longer valid."},
 			{"forbidden", "Access is no longer allowed."},
 			{"invalid_params", "The action or workspace selector is invalid."},
-			{"not_found", "The user is no longer available."},
-			{"internal_error", "The identity could not be read."},
+			{"not_found", "The requested resource is no longer available."},
+			{"internal_error", "The member information could not be read."},
 		} {
 			Error(failure.name, func() { Remedy(func() { SafeMessage(failure.message) }) })
 		}
 		Meta("mcp:annotation:readOnlyHint", "true")
 		Meta("mcp:annotation:destructiveHint", "false")
 		Meta("mcp:annotation:openWorldHint", "false")
-		mcp.Tool("member", "Members and roles. Available action: me — the authenticated user.", mcp.ToolTitle("Members and roles"))
+		mcp.Tool("member", "Read identities and project members using the selected action.", mcp.ToolTitle("Members and roles"))
 	})
 }
