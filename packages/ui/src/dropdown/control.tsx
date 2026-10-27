@@ -86,7 +86,7 @@ export function DropdownControl(props: Props) {
     if (!isOpen) return;
     setIsOpen(false);
     onClose?.();
-    setQuery?.("");
+    setQuery("");
   };
 
   // options
@@ -100,14 +100,18 @@ export function DropdownControl(props: Props) {
         })
       : options;
 
-    if (disableSorting || (!props.multiple && !sortByKey)) return filteredOptions;
+    if (disableSorting || (!props.multiple && !sortByKey && !firstItem)) return filteredOptions;
 
     return sortBy(filteredOptions, [
-      (option) => firstItem && firstItem(option.data[option.value]),
-      (option) => !(value ?? []).includes(option.data[option.value]),
-      () => sortByKey && sortByKey.toLowerCase(),
+      (option) => !firstItem?.(keyExtractor(option)),
+      (option) => (props.multiple ? !props.value.includes(keyExtractor(option)) : props.value !== keyExtractor(option)),
+      (option) => {
+        if (!sortByKey) return undefined;
+        const sortValue: unknown = option.data[sortByKey];
+        return typeof sortValue === "string" ? sortValue.toLowerCase() : sortValue;
+      },
     ]);
-  }, [query, options, queryArray, disableSorting, sortByKey, firstItem, value, props.multiple]);
+  }, [query, options, queryArray, disableSorting, sortByKey, firstItem, props.value, props.multiple, keyExtractor]);
 
   // hooks
   const handleKeyDown = useDropdownKeyPressed(toggleDropdown, handleClose);

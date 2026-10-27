@@ -6,6 +6,7 @@
 
 import StarterKitExtension from "@tiptap/starter-kit";
 import { generateHTML, generateJSON } from "@tiptap/html/server";
+import { expect, it } from "vitest";
 
 it("round-trips headings, marks, links, and lists through the server HTML API", () => {
   const source =

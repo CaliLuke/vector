@@ -49,6 +49,11 @@ components use its native form contexts. Configuration mutations preserve failed
 after successful saves. SMTP security is one form choice mapped to mutually exclusive API flags; test emails use
 saved configurations. Admin has no React Hook Form dependency.
 
+The static browser apps render next-themes' bootstrap script through React, which triggers the client-rendered
+script warning tracked in [next-themes issue #385](https://github.com/pacocoursey/next-themes/issues/385).
+Theme changes still apply through the provider's client effects. Remove this note when an upstream release avoids
+rendering the bootstrap script on the client.
+
 Web instance information, notifications, home widgets, quick links, and stickies also use Query as their only
 server-data owner. Instance consumers share a cancellable query through the existing instance service;
 there is no instance store or store hook. The instance gate renders loading, maintenance, or setup from
