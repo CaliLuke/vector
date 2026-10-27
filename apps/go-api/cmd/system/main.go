@@ -17,6 +17,9 @@ import (
 	"syscall"
 	"time"
 
+	milestonestore "github.com/CaliLuke/go-plane/internal/milestones"
+	milestoneapi "github.com/CaliLuke/go-plane/milestones/gen/milestones"
+
 	workitemtypesstore "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	workitemtypesapi "github.com/CaliLuke/go-plane/workitemtypes/gen/work_item_types"
 
@@ -801,6 +804,16 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
+	milestoneRepository, err := milestonestore.NewRepository(pool)
+	if err != nil {
+		return err
+	}
+	milestoneService, err := systemapi.NewMilestones(milestoneRepository, activityReadsPrimaryAPIKeyValidator, apiKeyThrottle, os.Getenv("WEB_URL"))
+	if err != nil {
+		return err
+	}
+	milestoneEndpoints := milestoneapi.NewEndpoints(milestoneService)
+	milestoneEndpoints.Use(log.Endpoint)
 	mcpOptions := mcptransport.Options{Observer: mcptransport.LogObserver(logCtx)}
 	var mcpLinks *mcpoauth.Links
 	var mcpLinkEndpoints *mcpoauthlinksapi.Endpoints
@@ -1555,6 +1568,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 		apiCycleReads:                           apiCycleEndpoints,
 		apiModuleReads:                          apiModuleEndpoints,
 		apiLabelReads:                           apiLabelEndpoints,
+		milestones:                              milestoneEndpoints,
 		projectConfiguration:                    configurationEndpoints,
 		customViewCreation:                      customViewCreationEndpoints,
 		customViewCreationMetadata:              customViewCreationService.(systemapi.SessionResourceProtocolAuthorizer),

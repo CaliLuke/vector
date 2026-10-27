@@ -31,6 +31,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	milestoneapi "github.com/CaliLuke/go-plane/milestones/gen/milestones"
+
 	workitemtypesapi "github.com/CaliLuke/go-plane/workitemtypes/gen/work_item_types"
 
 	systemapi "github.com/CaliLuke/go-plane"
@@ -447,6 +449,7 @@ type pendingReplacementEndpoints struct {
 	apiCycleReads                           *apicyclereads.Endpoints
 	apiModuleReads                          *apimodulereads.Endpoints
 	apiLabelReads                           *apilabelreads.Endpoints
+	milestones                              *milestoneapi.Endpoints
 	invitationsMembership                   *invitationsapi.Endpoints
 	invitationsMetadata                     systemapi.InvitationsMembershipProtocolAuthorizer
 	membershipLifecycle                     *membershiplifecycle.Endpoints
@@ -462,7 +465,7 @@ type pendingReplacementEndpoints struct {
 }
 
 func (pending pendingReplacementEndpoints) hasReadServices() bool {
-	if pending.workItemTypes != nil {
+	if pending.workItemTypes != nil || pending.milestones != nil {
 		return true
 	}
 	return pending.accountAuthentication != nil || pending.invitationsMembership != nil || pending.membershipLifecycle != nil || pending.workItemCore != nil || pending.projectLabelWrites != nil || pending.workspaceProjectReads != nil || pending.projectLifecycle != nil ||
@@ -1221,6 +1224,7 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 		}, readServicesCORSPolicy)
 		instanceProtocolMiddleware = newSessionServiceProtocolMiddleware(notificationProtocolMetadata, pending.instanceManagementMetadata, readServicesCORSPolicy, stack, cookie, dbg, options)
 	}
+	mountMilestoneHTTP(mux, pending, errorHandler, readServicesCORSPolicy)
 	var activityOptions *apiV1CompatibilityOptions
 	var activityProtocolMiddleware func(http.Handler) http.Handler
 	if pending.activityReads != nil {

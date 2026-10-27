@@ -1,0 +1,2184 @@
+openapi: 3.1.1
+info:
+    title: Vector Milestones
+    version: 1.0.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+servers:
+    - url: http://localhost:80
+      description: Default server for Vector Milestones
+paths:
+    /api/v1/workspaces/{slug}/projects/{project_id}/milestones/:
+        get:
+            tags:
+                - Milestones
+            summary: list Milestones
+            operationId: milestones.list
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    maxLength: 255
+                  example: m92
+                - name: project_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: f6af01f4-f8bc-4aa1-a9e9-bc3d1dd8a415
+                - name: cursor
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                  example: Dolore eaque est nobis.
+                - name: per_page
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                  example: Illo quo nihil.
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    count: 8485862783467347034
+                                    extra_stats: Qui facilis odio esse sed perferendis beatae.
+                                    grouped_by: Odit harum dolor.
+                                    next_cursor: Voluptatum unde provident beatae mollitia.
+                                    next_page_results: false
+                                    prev_cursor: Itaque tempora vitae quia.
+                                    prev_page_results: false
+                                    results:
+                                        - created_at: "2007-05-12T13:55:47Z"
+                                          external_id: Sint alias minus corrupti temporibus non.
+                                          external_source: At tempore.
+                                          id: 5f1f2db5-5226-4f43-ad1b-9546fb21ede8
+                                          revision: Culpa ratione.
+                                          target_date: "1997-08-25"
+                                          title: Et aut occaecati vel.
+                                          updated_at: "1972-12-16T14:26:04Z"
+                                        - created_at: "2007-05-12T13:55:47Z"
+                                          external_id: Sint alias minus corrupti temporibus non.
+                                          external_source: At tempore.
+                                          id: 5f1f2db5-5226-4f43-ad1b-9546fb21ede8
+                                          revision: Culpa ratione.
+                                          target_date: "1997-08-25"
+                                          title: Et aut occaecati vel.
+                                          updated_at: "1972-12-16T14:26:04Z"
+                                        - created_at: "2007-05-12T13:55:47Z"
+                                          external_id: Sint alias minus corrupti temporibus non.
+                                          external_source: At tempore.
+                                          id: 5f1f2db5-5226-4f43-ad1b-9546fb21ede8
+                                          revision: Culpa ratione.
+                                          target_date: "1997-08-25"
+                                          title: Et aut occaecati vel.
+                                          updated_at: "1972-12-16T14:26:04Z"
+                                        - created_at: "2007-05-12T13:55:47Z"
+                                          external_id: Sint alias minus corrupti temporibus non.
+                                          external_source: At tempore.
+                                          id: 5f1f2db5-5226-4f43-ad1b-9546fb21ede8
+                                          revision: Culpa ratione.
+                                          target_date: "1997-08-25"
+                                          title: Et aut occaecati vel.
+                                          updated_at: "1972-12-16T14:26:04Z"
+                                    sub_grouped_by: Asperiores architecto vel laboriosam illum fugit.
+                                    total_count: 3898771476858153144
+                                    total_pages: 6109765316983870523
+                                    total_results: 3576573455865780833
+                                $ref: '#/components/schemas/MilestonePage'
+                            example:
+                                count: 8485862783467347034
+                                extra_stats: Qui facilis odio esse sed perferendis beatae.
+                                grouped_by: Odit harum dolor.
+                                next_cursor: Voluptatum unde provident beatae mollitia.
+                                next_page_results: false
+                                prev_cursor: Itaque tempora vitae quia.
+                                prev_page_results: false
+                                results:
+                                    - created_at: "2007-05-12T13:55:47Z"
+                                      external_id: Sint alias minus corrupti temporibus non.
+                                      external_source: At tempore.
+                                      id: 5f1f2db5-5226-4f43-ad1b-9546fb21ede8
+                                      revision: Culpa ratione.
+                                      target_date: "1997-08-25"
+                                      title: Et aut occaecati vel.
+                                      updated_at: "1972-12-16T14:26:04Z"
+                                    - created_at: "2007-05-12T13:55:47Z"
+                                      external_id: Sint alias minus corrupti temporibus non.
+                                      external_source: At tempore.
+                                      id: 5f1f2db5-5226-4f43-ad1b-9546fb21ede8
+                                      revision: Culpa ratione.
+                                      target_date: "1997-08-25"
+                                      title: Et aut occaecati vel.
+                                      updated_at: "1972-12-16T14:26:04Z"
+                                    - created_at: "2007-05-12T13:55:47Z"
+                                      external_id: Sint alias minus corrupti temporibus non.
+                                      external_source: At tempore.
+                                      id: 5f1f2db5-5226-4f43-ad1b-9546fb21ede8
+                                      revision: Culpa ratione.
+                                      target_date: "1997-08-25"
+                                      title: Et aut occaecati vel.
+                                      updated_at: "1972-12-16T14:26:04Z"
+                                    - created_at: "2007-05-12T13:55:47Z"
+                                      external_id: Sint alias minus corrupti temporibus non.
+                                      external_source: At tempore.
+                                      id: 5f1f2db5-5226-4f43-ad1b-9546fb21ede8
+                                      revision: Culpa ratione.
+                                      target_date: "1997-08-25"
+                                      title: Et aut occaecati vel.
+                                      updated_at: "1972-12-16T14:26:04Z"
+                                sub_grouped_by: Asperiores architecto vel laboriosam illum fugit.
+                                total_count: 3898771476858153144
+                                total_pages: 6109765316983870523
+                                total_results: 3576573455865780833
+                "400":
+                    description: 'invalid_input: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Recusandae quae voluptate ratione animi reiciendis dolores.
+                                    name: Voluptatem temporibus qui quaerat consequuntur.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Recusandae quae voluptate ratione animi reiciendis dolores.
+                                name: Voluptatem temporibus qui quaerat consequuntur.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Quasi voluptatem.
+                                    name: Aperiam impedit velit.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Quasi voluptatem.
+                                name: Aperiam impedit velit.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Nihil sint fuga illum minus atque.
+                                    name: Ducimus placeat sit vero.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Nihil sint fuga illum minus atque.
+                                name: Ducimus placeat sit vero.
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Laudantium magni fugit dolor.
+                                    name: Modi quaerat qui deserunt minus.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Laudantium magni fugit dolor.
+                                name: Modi quaerat qui deserunt minus.
+                "409":
+                    description: |-
+                        conflict: Conflict response.
+
+                        request_conflict: Conflict response.
+
+                        revision_conflict: Conflict response.
+                    content:
+                        application/json:
+                            schema:
+                                anyOf:
+                                    - example:
+                                        error: Commodi porro et nisi et ratione iusto.
+                                        name: Repellat ab nisi fugiat dolore vel.
+                                      $ref: '#/components/schemas/MilestoneError'
+                                    - example:
+                                        error: Nihil aut molestiae harum.
+                                        name: Sequi provident.
+                                      $ref: '#/components/schemas/MilestoneError'
+                                    - example:
+                                        error: Veniam libero itaque voluptate occaecati.
+                                        name: Aut quam ratione corporis.
+                                      $ref: '#/components/schemas/MilestoneError'
+                            examples:
+                                conflict:
+                                    value:
+                                        error: Commodi porro et nisi et ratione iusto.
+                                        name: Repellat ab nisi fugiat dolore vel.
+                                request_conflict:
+                                    value:
+                                        error: Veniam libero itaque voluptate occaecati.
+                                        name: Aut quam ratione corporis.
+                                revision_conflict:
+                                    value:
+                                        error: Nihil aut molestiae harum.
+                                        name: Sequi provident.
+                "429":
+                    description: 'rate_limited: Too Many Requests response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Quod quos ea ut.
+                                    name: Magni similique vel vel qui quod.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Quod quos ea ut.
+                                name: Magni similique vel vel qui quod.
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Aut possimus in.
+                                    name: Iure et libero minus voluptatem nulla.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Aut possimus in.
+                                name: Iure et libero minus voluptatem nulla.
+                "503":
+                    description: 'indeterminate: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Nesciunt omnis.
+                                    name: Quia ut.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Nesciunt omnis.
+                                name: Quia ut.
+            security:
+                - MilestoneAPIKey: []
+        post:
+            tags:
+                - Milestones
+            summary: create Milestones
+            operationId: milestones.create
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    maxLength: 255
+                  example: 3s7
+                - name: project_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: 62bbc3c5-b348-43e5-ae5a-3a81528ba54e
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            example:
+                                expected_revision: 2ah
+                                external_id: Quis non labore eaque molestias aliquam.
+                                external_source: Corrupti explicabo aut molestias.
+                                request_id: b29f9587-0a31-4970-94c3-05cbe4bab48d
+                                target_date: Vero sint atque qui sunt voluptates aut.
+                                title: Quia nesciunt rerum.
+                            $ref: '#/components/schemas/MilestoneCreateFields'
+                        example:
+                            expected_revision: 2ah
+                            external_id: Quis non labore eaque molestias aliquam.
+                            external_source: Corrupti explicabo aut molestias.
+                            request_id: b29f9587-0a31-4970-94c3-05cbe4bab48d
+                            target_date: Vero sint atque qui sunt voluptates aut.
+                            title: Quia nesciunt rerum.
+            responses:
+                "201":
+                    description: Created response.
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    created_at: "1996-05-11T10:01:07Z"
+                                    external_id: Eum molestias quod non vel repellendus consequatur.
+                                    external_source: Sunt est aut voluptas iure quo soluta.
+                                    id: 162efd15-7a0a-4bec-ba09-1dfa63c6b100
+                                    revision: Suscipit facilis laudantium quo quae doloribus.
+                                    target_date: "1980-04-21"
+                                    title: Qui vel in fuga eaque ut rerum.
+                                    updated_at: "1996-07-27T23:32:15Z"
+                                oneOf:
+                                    - example:
+                                        milestone_id: 59cd5785-674a-4b8f-b414-054609668ab9
+                                        replay_expires_at: "1988-12-19T12:44:30Z"
+                                        replayed: true
+                                        request_id: edfc6b6a-cab2-4171-b755-df0abba3a703
+                                        result:
+                                            created_at: "2000-12-26T12:17:07Z"
+                                            external_id: Voluptate voluptatum ipsa minus.
+                                            external_source: Sit rem culpa consequatur id laborum.
+                                            id: a8727f5b-8d94-4181-91cb-f671ad98609c
+                                            revision: Perspiciatis porro aut atque consequatur.
+                                            target_date: "1995-05-19"
+                                            title: Facilis odio fugit quas error.
+                                            updated_at: "1983-05-31T01:07:37Z"
+                                        revision: Natus ipsa dolores voluptates.
+                                      $ref: '#/components/schemas/MilestoneMutationReceipt'
+                                    - example:
+                                        created_at: "1993-08-15T09:33:35Z"
+                                        external_id: Dolorum et magni.
+                                        external_source: Placeat sunt consectetur maiores ut.
+                                        id: 23299dba-2005-48ed-949e-e4c4de82c7b1
+                                        revision: Voluptatum id voluptas vel occaecati dolor molestiae.
+                                        target_date: "1973-01-21"
+                                        title: Quos non.
+                                        updated_at: "2008-01-29T17:11:42Z"
+                                      $ref: '#/components/schemas/MilestoneRecord'
+                            example:
+                                created_at: "1996-05-11T10:01:07Z"
+                                external_id: Eum molestias quod non vel repellendus consequatur.
+                                external_source: Sunt est aut voluptas iure quo soluta.
+                                id: 162efd15-7a0a-4bec-ba09-1dfa63c6b100
+                                revision: Suscipit facilis laudantium quo quae doloribus.
+                                target_date: "1980-04-21"
+                                title: Qui vel in fuga eaque ut rerum.
+                                updated_at: "1996-07-27T23:32:15Z"
+                "400":
+                    description: 'invalid_input: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Ullam quisquam minus eius perspiciatis nihil explicabo.
+                                    name: Corporis tenetur sint.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Ullam quisquam minus eius perspiciatis nihil explicabo.
+                                name: Corporis tenetur sint.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Commodi aut nisi quia sunt similique.
+                                    name: Et a eius delectus at eaque in.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Commodi aut nisi quia sunt similique.
+                                name: Et a eius delectus at eaque in.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Tempora rerum inventore nemo.
+                                    name: Minus debitis itaque est.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Tempora rerum inventore nemo.
+                                name: Minus debitis itaque est.
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Quibusdam autem amet quisquam.
+                                    name: Ratione et vitae voluptates.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Quibusdam autem amet quisquam.
+                                name: Ratione et vitae voluptates.
+                "409":
+                    description: |-
+                        conflict: Conflict response.
+
+                        request_conflict: Conflict response.
+
+                        revision_conflict: Conflict response.
+                    content:
+                        application/json:
+                            schema:
+                                anyOf:
+                                    - example:
+                                        error: Minus iusto laudantium ea optio.
+                                        name: Dolorem rerum accusantium quo earum facere.
+                                      $ref: '#/components/schemas/MilestoneError'
+                                    - example:
+                                        error: Nemo dolore autem repellat molestiae esse atque.
+                                        name: Sit similique deleniti suscipit quis.
+                                      $ref: '#/components/schemas/MilestoneError'
+                                    - example:
+                                        error: Voluptatum quia harum.
+                                        name: Reprehenderit aut.
+                                      $ref: '#/components/schemas/MilestoneError'
+                            examples:
+                                conflict:
+                                    value:
+                                        error: Minus iusto laudantium ea optio.
+                                        name: Dolorem rerum accusantium quo earum facere.
+                                request_conflict:
+                                    value:
+                                        error: Nemo dolore autem repellat molestiae esse atque.
+                                        name: Sit similique deleniti suscipit quis.
+                                revision_conflict:
+                                    value:
+                                        error: Voluptatum quia harum.
+                                        name: Reprehenderit aut.
+                "429":
+                    description: 'rate_limited: Too Many Requests response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Ratione et sit.
+                                    name: Voluptatem omnis.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Ratione et sit.
+                                name: Voluptatem omnis.
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Dolorum qui aut voluptas voluptatem eos.
+                                    name: Saepe doloribus et.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Dolorum qui aut voluptas voluptatem eos.
+                                name: Saepe doloribus et.
+                "503":
+                    description: 'indeterminate: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Distinctio harum eveniet dignissimos at praesentium et.
+                                    name: Porro molestias.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Distinctio harum eveniet dignissimos at praesentium et.
+                                name: Porro molestias.
+            security:
+                - MilestoneAPIKey: []
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/projects/{project_id}/milestones/{milestone_id}/:
+        delete:
+            tags:
+                - Milestones
+            summary: delete Milestones
+            operationId: milestones.delete
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    maxLength: 255
+                  example: pv4
+                - name: project_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: 278d1be6-b32d-43fc-b4aa-ebbdc6587b7c
+                - name: milestone_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: 3b4d8a21-0d15-4a45-a5c2-0f3f2feb4ac0
+                - name: request_id
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: 5b37557f-5abe-43e8-b306-932bcd14fd87
+                - name: expected_revision
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                    minLength: 1
+                    maxLength: 128
+                  example: c
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    milestone_id: c91576f6-8c34-47a9-9319-f6d98e47cdb3
+                                    replay_expires_at: "1974-03-07T09:18:11Z"
+                                    replayed: false
+                                    request_id: bd3d6eb6-cead-416a-84e1-aae2aa51d33f
+                                    result:
+                                        created_at: "2002-02-01T19:21:01Z"
+                                        external_id: Repudiandae eos libero rerum et quisquam.
+                                        external_source: Quos quasi molestiae ut.
+                                        id: 02af69d8-73dd-480a-b3fb-64c17840f954
+                                        revision: Nihil dignissimos accusantium.
+                                        target_date: "2005-08-07"
+                                        title: Voluptates velit qui consequatur ullam.
+                                        updated_at: "2015-05-11T14:54:32Z"
+                                    revision: Ut ullam consectetur et ut.
+                                $ref: '#/components/schemas/MilestoneMutationReceipt'
+                            example:
+                                milestone_id: c91576f6-8c34-47a9-9319-f6d98e47cdb3
+                                replay_expires_at: "1974-03-07T09:18:11Z"
+                                replayed: false
+                                request_id: bd3d6eb6-cead-416a-84e1-aae2aa51d33f
+                                result:
+                                    created_at: "2002-02-01T19:21:01Z"
+                                    external_id: Repudiandae eos libero rerum et quisquam.
+                                    external_source: Quos quasi molestiae ut.
+                                    id: 02af69d8-73dd-480a-b3fb-64c17840f954
+                                    revision: Nihil dignissimos accusantium.
+                                    target_date: "2005-08-07"
+                                    title: Voluptates velit qui consequatur ullam.
+                                    updated_at: "2015-05-11T14:54:32Z"
+                                revision: Ut ullam consectetur et ut.
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                "400":
+                    description: 'invalid_input: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Vel voluptatem deleniti temporibus odit quisquam.
+                                    name: Velit culpa dolorem et.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Vel voluptatem deleniti temporibus odit quisquam.
+                                name: Velit culpa dolorem et.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Voluptates voluptatem molestiae.
+                                    name: Beatae iste corporis nostrum enim.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Voluptates voluptatem molestiae.
+                                name: Beatae iste corporis nostrum enim.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Sit hic quasi.
+                                    name: Id aut aspernatur.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Sit hic quasi.
+                                name: Id aut aspernatur.
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Nihil exercitationem eos explicabo ut.
+                                    name: Autem nostrum quibusdam adipisci voluptatem.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Nihil exercitationem eos explicabo ut.
+                                name: Autem nostrum quibusdam adipisci voluptatem.
+                "409":
+                    description: |-
+                        conflict: Conflict response.
+
+                        request_conflict: Conflict response.
+
+                        revision_conflict: Conflict response.
+                    content:
+                        application/json:
+                            schema:
+                                anyOf:
+                                    - example:
+                                        error: Necessitatibus laudantium molestias amet et esse.
+                                        name: Provident quibusdam.
+                                      $ref: '#/components/schemas/MilestoneError'
+                                    - example:
+                                        error: Nesciunt quis.
+                                        name: Est consequatur voluptatibus illum dignissimos hic et.
+                                      $ref: '#/components/schemas/MilestoneError'
+                                    - example:
+                                        error: Sed nihil officiis et quas dolorem sed.
+                                        name: Dolor blanditiis qui accusamus amet ipsam.
+                                      $ref: '#/components/schemas/MilestoneError'
+                            examples:
+                                conflict:
+                                    value:
+                                        error: Necessitatibus laudantium molestias amet et esse.
+                                        name: Provident quibusdam.
+                                request_conflict:
+                                    value:
+                                        error: Sed nihil officiis et quas dolorem sed.
+                                        name: Dolor blanditiis qui accusamus amet ipsam.
+                                revision_conflict:
+                                    value:
+                                        error: Nesciunt quis.
+                                        name: Est consequatur voluptatibus illum dignissimos hic et.
+                "429":
+                    description: 'rate_limited: Too Many Requests response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Nam eum et atque molestiae.
+                                    name: Dolor consequatur.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Nam eum et atque molestiae.
+                                name: Dolor consequatur.
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Et corporis mollitia tempore.
+                                    name: Enim ut ipsum veniam distinctio cum animi.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Et corporis mollitia tempore.
+                                name: Enim ut ipsum veniam distinctio cum animi.
+                "503":
+                    description: 'indeterminate: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Dolores illum culpa totam voluptas in quidem.
+                                    name: Repellat eos ut delectus perferendis.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Dolores illum culpa totam voluptas in quidem.
+                                name: Repellat eos ut delectus perferendis.
+            security:
+                - MilestoneAPIKey: []
+        get:
+            tags:
+                - Milestones
+            summary: retrieve Milestones
+            operationId: milestones.retrieve
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    maxLength: 255
+                  example: lze
+                - name: project_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: 4b735e64-625f-4a73-ba76-ab1375b1efc3
+                - name: milestone_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: 6eef0096-c2ca-45a9-b6ca-070a2bb7711c
+                - name: include_revision
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: boolean
+                  example: true
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    created_at: "1992-10-07T04:03:50Z"
+                                    external_id: Nihil placeat beatae fugiat eum laudantium.
+                                    external_source: Eum rerum qui ut deleniti.
+                                    id: ac50384a-ef5b-4b18-bc2b-ee027c2c06c5
+                                    revision: Dolor quis nihil officiis quis dolor.
+                                    target_date: "2007-05-17"
+                                    title: Est tenetur est.
+                                    updated_at: "2001-12-13T06:08:26Z"
+                                $ref: '#/components/schemas/MilestoneRecord'
+                            example:
+                                created_at: "1992-10-07T04:03:50Z"
+                                external_id: Nihil placeat beatae fugiat eum laudantium.
+                                external_source: Eum rerum qui ut deleniti.
+                                id: ac50384a-ef5b-4b18-bc2b-ee027c2c06c5
+                                revision: Dolor quis nihil officiis quis dolor.
+                                target_date: "2007-05-17"
+                                title: Est tenetur est.
+                                updated_at: "2001-12-13T06:08:26Z"
+                "400":
+                    description: 'invalid_input: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Cupiditate quo.
+                                    name: Accusantium ab et et doloribus et.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Cupiditate quo.
+                                name: Accusantium ab et et doloribus et.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Aliquam ut.
+                                    name: Debitis et omnis.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Aliquam ut.
+                                name: Debitis et omnis.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Repellat rerum.
+                                    name: Voluptatibus et impedit veritatis sunt qui fuga.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Repellat rerum.
+                                name: Voluptatibus et impedit veritatis sunt qui fuga.
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Natus adipisci expedita consequatur blanditiis.
+                                    name: Architecto asperiores dolore dignissimos nemo itaque occaecati.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Natus adipisci expedita consequatur blanditiis.
+                                name: Architecto asperiores dolore dignissimos nemo itaque occaecati.
+                "409":
+                    description: |-
+                        conflict: Conflict response.
+
+                        request_conflict: Conflict response.
+
+                        revision_conflict: Conflict response.
+                    content:
+                        application/json:
+                            schema:
+                                anyOf:
+                                    - example:
+                                        error: Doloribus ut voluptatibus.
+                                        name: Ipsa porro fugiat officiis exercitationem.
+                                      $ref: '#/components/schemas/MilestoneError'
+                                    - example:
+                                        error: Et dolorum assumenda commodi.
+                                        name: Deleniti minima blanditiis eos quasi porro et.
+                                      $ref: '#/components/schemas/MilestoneError'
+                                    - example:
+                                        error: Rem asperiores.
+                                        name: Nihil amet ut occaecati.
+                                      $ref: '#/components/schemas/MilestoneError'
+                            examples:
+                                conflict:
+                                    value:
+                                        error: Rem asperiores.
+                                        name: Nihil amet ut occaecati.
+                                request_conflict:
+                                    value:
+                                        error: Et dolorum assumenda commodi.
+                                        name: Deleniti minima blanditiis eos quasi porro et.
+                                revision_conflict:
+                                    value:
+                                        error: Doloribus ut voluptatibus.
+                                        name: Ipsa porro fugiat officiis exercitationem.
+                "429":
+                    description: 'rate_limited: Too Many Requests response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Fugiat qui omnis ipsam magnam.
+                                    name: Itaque porro molestiae labore.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Fugiat qui omnis ipsam magnam.
+                                name: Itaque porro molestiae labore.
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Distinctio non quia inventore.
+                                    name: Aut est enim neque.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Distinctio non quia inventore.
+                                name: Aut est enim neque.
+                "503":
+                    description: 'indeterminate: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Aut nemo tempore deserunt mollitia consequatur.
+                                    name: Quis sed ducimus occaecati quam consequatur.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Aut nemo tempore deserunt mollitia consequatur.
+                                name: Quis sed ducimus occaecati quam consequatur.
+            security:
+                - MilestoneAPIKey: []
+        patch:
+            tags:
+                - Milestones
+            summary: update Milestones
+            operationId: milestones.update
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    maxLength: 255
+                  example: qh1
+                - name: project_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: e16f1d2e-de8a-43d7-8bfc-cce6d9ccd374
+                - name: milestone_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: db9ec372-8a5a-453c-88c1-9909ed7691d1
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            example:
+                                expected_revision: n3y
+                                external_id: Velit porro nihil.
+                                external_source: Voluptatem dicta.
+                                request_id: 5b5c03d0-5261-48fa-bf7e-4a6b8dc013a4
+                                target_date: Sequi maxime quasi soluta temporibus.
+                                title: Omnis cupiditate.
+                            $ref: '#/components/schemas/MilestoneFields'
+                        example:
+                            expected_revision: n3y
+                            external_id: Velit porro nihil.
+                            external_source: Voluptatem dicta.
+                            request_id: 5b5c03d0-5261-48fa-bf7e-4a6b8dc013a4
+                            target_date: Sequi maxime quasi soluta temporibus.
+                            title: Omnis cupiditate.
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    created_at: "1971-01-01T01:45:32Z"
+                                    external_id: Totam porro at.
+                                    external_source: Repellat omnis debitis qui.
+                                    id: c24792b8-bb30-41d8-8d71-98253d224fc5
+                                    revision: Omnis quae est ut sit.
+                                    target_date: "2000-10-27"
+                                    title: Nesciunt consequatur non debitis illo.
+                                    updated_at: "1978-10-05T09:04:42Z"
+                                oneOf:
+                                    - example:
+                                        milestone_id: 1e64fcfd-3706-42ec-bad6-9fd43c1bedfb
+                                        replay_expires_at: "1972-11-20T19:19:18Z"
+                                        replayed: true
+                                        request_id: a47ece7e-6dd1-4f30-9cb6-c41fb9acfc35
+                                        result:
+                                            created_at: "1979-07-04T09:50:24Z"
+                                            external_id: Molestiae corporis esse ad incidunt.
+                                            external_source: Voluptatem dolorum asperiores voluptatibus.
+                                            id: 0d3a1231-cba2-4167-b1ba-7ec68d6037f7
+                                            revision: Molestiae molestiae asperiores voluptatem molestiae ipsum.
+                                            target_date: "2000-03-12"
+                                            title: Libero similique.
+                                            updated_at: "1976-08-22T18:34:16Z"
+                                        revision: Quis sit dolores aut consequatur.
+                                      $ref: '#/components/schemas/MilestoneMutationReceipt'
+                                    - example:
+                                        created_at: "1996-03-01T07:45:22Z"
+                                        external_id: Alias distinctio.
+                                        external_source: Corrupti dolores et ut molestias non eaque.
+                                        id: e20ed831-2d01-4b05-bcfa-c64f05272a22
+                                        revision: Enim quo atque reiciendis quidem.
+                                        target_date: "1984-07-24"
+                                        title: Sit dolor.
+                                        updated_at: "1993-04-23T04:56:54Z"
+                                      $ref: '#/components/schemas/MilestoneRecord'
+                            example:
+                                created_at: "1971-01-01T01:45:32Z"
+                                external_id: Totam porro at.
+                                external_source: Repellat omnis debitis qui.
+                                id: c24792b8-bb30-41d8-8d71-98253d224fc5
+                                revision: Omnis quae est ut sit.
+                                target_date: "2000-10-27"
+                                title: Nesciunt consequatur non debitis illo.
+                                updated_at: "1978-10-05T09:04:42Z"
+                "400":
+                    description: 'invalid_input: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Consequatur perspiciatis reprehenderit.
+                                    name: Quia dolorem.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Consequatur perspiciatis reprehenderit.
+                                name: Quia dolorem.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Accusamus et architecto hic.
+                                    name: Tempora voluptatem possimus dolorem aut.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Accusamus et architecto hic.
+                                name: Tempora voluptatem possimus dolorem aut.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Ullam nulla.
+                                    name: Dolore est eos ea velit aperiam nesciunt.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Ullam nulla.
+                                name: Dolore est eos ea velit aperiam nesciunt.
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Earum voluptatum iusto eveniet eligendi quia quisquam.
+                                    name: Nesciunt iure nesciunt labore assumenda.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Earum voluptatum iusto eveniet eligendi quia quisquam.
+                                name: Nesciunt iure nesciunt labore assumenda.
+                "409":
+                    description: |-
+                        conflict: Conflict response.
+
+                        request_conflict: Conflict response.
+
+                        revision_conflict: Conflict response.
+                    content:
+                        application/json:
+                            schema:
+                                anyOf:
+                                    - example:
+                                        error: Consequatur eum sequi tempora ut doloribus.
+                                        name: Architecto et velit repellendus.
+                                      $ref: '#/components/schemas/MilestoneError'
+                                    - example:
+                                        error: Est ab provident tempora laborum est quibusdam.
+                                        name: Sunt tempora et non.
+                                      $ref: '#/components/schemas/MilestoneError'
+                                    - example:
+                                        error: Minima odit architecto quas.
+                                        name: Non quo aspernatur voluptatem maxime.
+                                      $ref: '#/components/schemas/MilestoneError'
+                            examples:
+                                conflict:
+                                    value:
+                                        error: Est ab provident tempora laborum est quibusdam.
+                                        name: Sunt tempora et non.
+                                request_conflict:
+                                    value:
+                                        error: Consequatur eum sequi tempora ut doloribus.
+                                        name: Architecto et velit repellendus.
+                                revision_conflict:
+                                    value:
+                                        error: Minima odit architecto quas.
+                                        name: Non quo aspernatur voluptatem maxime.
+                "429":
+                    description: 'rate_limited: Too Many Requests response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Fugit est ut repellendus delectus sint fugiat.
+                                    name: Et velit molestias quia et quia voluptatibus.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Fugit est ut repellendus delectus sint fugiat.
+                                name: Et velit molestias quia et quia voluptatibus.
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Dolor asperiores.
+                                    name: Aut magnam amet autem.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Dolor asperiores.
+                                name: Aut magnam amet autem.
+                "503":
+                    description: 'indeterminate: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Voluptas voluptatem ullam itaque vel.
+                                    name: Qui officia voluptate eum.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Voluptas voluptatem ullam itaque vel.
+                                name: Qui officia voluptate eum.
+            security:
+                - MilestoneAPIKey: []
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/projects/{project_id}/milestones/{milestone_id}/work-items/:
+        delete:
+            tags:
+                - Milestones
+            summary: remove_workitems Milestones
+            operationId: milestones.remove_workitems
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    maxLength: 255
+                  example: s2w
+                - name: project_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: 21522730-651c-478c-92fd-c5d01f2b721f
+                - name: milestone_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: b33ff061-d87c-4118-a791-2b395ddd27ef
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            example:
+                                expected_revision: 8xd
+                                issues:
+                                    - 7937ca8e-ce8c-4a3c-b4b6-1ed6a04e4f57
+                                    - 000fc058-d4f5-4ff8-8d18-86c7406d28fa
+                                    - eda08648-d619-41d9-b98d-f846c845968d
+                                request_id: 7c93734b-4b93-4f73-86bf-abc3f38f6353
+                            $ref: '#/components/schemas/MilestoneIssues'
+                        example:
+                            expected_revision: 8xd
+                            issues:
+                                - 7937ca8e-ce8c-4a3c-b4b6-1ed6a04e4f57
+                                - 000fc058-d4f5-4ff8-8d18-86c7406d28fa
+                                - eda08648-d619-41d9-b98d-f846c845968d
+                            request_id: 7c93734b-4b93-4f73-86bf-abc3f38f6353
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    milestone_id: e77effa5-3c34-42d6-8c96-4326077d6ce1
+                                    replay_expires_at: "2003-09-11T01:25:49Z"
+                                    replayed: false
+                                    request_id: 38a1c86c-a279-4490-ae3c-93a836f54afa
+                                    result:
+                                        created_at: "2008-06-18T17:38:21Z"
+                                        external_id: Ipsa nemo quasi eligendi hic quisquam dolores.
+                                        external_source: Sit inventore et aliquid.
+                                        id: 6e1e543c-51f0-410e-99f2-bc35b768faae
+                                        revision: Non nostrum ea.
+                                        target_date: "1992-05-22"
+                                        title: Eos eos.
+                                        updated_at: "2009-06-20T01:49:37Z"
+                                    revision: Temporibus quam.
+                                $ref: '#/components/schemas/MilestoneMutationReceipt'
+                            example:
+                                milestone_id: e77effa5-3c34-42d6-8c96-4326077d6ce1
+                                replay_expires_at: "2003-09-11T01:25:49Z"
+                                replayed: false
+                                request_id: 38a1c86c-a279-4490-ae3c-93a836f54afa
+                                result:
+                                    created_at: "2008-06-18T17:38:21Z"
+                                    external_id: Ipsa nemo quasi eligendi hic quisquam dolores.
+                                    external_source: Sit inventore et aliquid.
+                                    id: 6e1e543c-51f0-410e-99f2-bc35b768faae
+                                    revision: Non nostrum ea.
+                                    target_date: "1992-05-22"
+                                    title: Eos eos.
+                                    updated_at: "2009-06-20T01:49:37Z"
+                                revision: Temporibus quam.
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                "400":
+                    description: 'invalid_input: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: At molestiae.
+                                    name: Corrupti corrupti totam unde sint aliquam.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: At molestiae.
+                                name: Corrupti corrupti totam unde sint aliquam.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Voluptatum ad illum sed.
+                                    name: In qui aut optio aut dolorem.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Voluptatum ad illum sed.
+                                name: In qui aut optio aut dolorem.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Non magni beatae porro cupiditate velit beatae.
+                                    name: Perferendis aspernatur laboriosam unde.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Non magni beatae porro cupiditate velit beatae.
+                                name: Perferendis aspernatur laboriosam unde.
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Architecto consectetur tempora in cupiditate dolorem dolor.
+                                    name: Excepturi itaque repudiandae.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Architecto consectetur tempora in cupiditate dolorem dolor.
+                                name: Excepturi itaque repudiandae.
+                "409":
+                    description: |-
+                        conflict: Conflict response.
+
+                        request_conflict: Conflict response.
+
+                        revision_conflict: Conflict response.
+                    content:
+                        application/json:
+                            schema:
+                                anyOf:
+                                    - example:
+                                        error: A deleniti harum laudantium repudiandae laborum.
+                                        name: Ut tenetur facilis dolore aliquam labore unde.
+                                      $ref: '#/components/schemas/MilestoneError'
+                                    - example:
+                                        error: Porro cupiditate est nesciunt.
+                                        name: Molestiae voluptas totam delectus excepturi qui nesciunt.
+                                      $ref: '#/components/schemas/MilestoneError'
+                                    - example:
+                                        error: Qui eum harum error voluptas quibusdam aperiam.
+                                        name: Nihil voluptatem excepturi non cumque.
+                                      $ref: '#/components/schemas/MilestoneError'
+                            examples:
+                                conflict:
+                                    value:
+                                        error: A deleniti harum laudantium repudiandae laborum.
+                                        name: Ut tenetur facilis dolore aliquam labore unde.
+                                request_conflict:
+                                    value:
+                                        error: Porro cupiditate est nesciunt.
+                                        name: Molestiae voluptas totam delectus excepturi qui nesciunt.
+                                revision_conflict:
+                                    value:
+                                        error: Qui eum harum error voluptas quibusdam aperiam.
+                                        name: Nihil voluptatem excepturi non cumque.
+                "429":
+                    description: 'rate_limited: Too Many Requests response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Sunt velit.
+                                    name: Porro quia qui.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Sunt velit.
+                                name: Porro quia qui.
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Mollitia sed eligendi id odio tempora minus.
+                                    name: Harum possimus aut dolores sit rerum.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Mollitia sed eligendi id odio tempora minus.
+                                name: Harum possimus aut dolores sit rerum.
+                "503":
+                    description: 'indeterminate: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Sed inventore esse aut rerum nihil.
+                                    name: Vel voluptatem.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Sed inventore esse aut rerum nihil.
+                                name: Vel voluptatem.
+            security:
+                - MilestoneAPIKey: []
+        get:
+            tags:
+                - Milestones
+            summary: list_workitems Milestones
+            operationId: milestones.list_workitems
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    maxLength: 255
+                  example: pf0
+                - name: project_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: a06fa246-5ef9-4cbd-b0b9-2f7280fa184e
+                - name: milestone_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: 21ca4ab2-1f15-44fc-9aae-eb062b933195
+                - name: cursor
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                  example: Ipsum dolorem autem dolor.
+                - name: per_page
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                  example: Et voluptates consectetur et corrupti dolor.
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    count: 7421600125495696621
+                                    extra_stats: Dolore corporis aliquam.
+                                    grouped_by: Ipsam amet reprehenderit rerum voluptatem veritatis ut.
+                                    next_cursor: Molestiae omnis quod voluptatem non et.
+                                    next_page_results: true
+                                    prev_cursor: Laboriosam reprehenderit natus incidunt rerum voluptas adipisci.
+                                    prev_page_results: false
+                                    results:
+                                        - id: 8408ee6f-d28e-4163-88b2-d50ecb648769
+                                          issue: d491d527-53fc-423b-a953-4454cc4a299e
+                                          milestone: 8ce6ec30-45e9-435e-8d33-0f1f15a21949
+                                        - id: 8408ee6f-d28e-4163-88b2-d50ecb648769
+                                          issue: d491d527-53fc-423b-a953-4454cc4a299e
+                                          milestone: 8ce6ec30-45e9-435e-8d33-0f1f15a21949
+                                    sub_grouped_by: Illum quam ea repellendus dolorem doloremque.
+                                    total_count: 2755937040382555951
+                                    total_pages: 8411469165890288242
+                                    total_results: 4371109105648539693
+                                $ref: '#/components/schemas/MilestoneLinkPage'
+                            example:
+                                count: 7421600125495696621
+                                extra_stats: Dolore corporis aliquam.
+                                grouped_by: Ipsam amet reprehenderit rerum voluptatem veritatis ut.
+                                next_cursor: Molestiae omnis quod voluptatem non et.
+                                next_page_results: true
+                                prev_cursor: Laboriosam reprehenderit natus incidunt rerum voluptas adipisci.
+                                prev_page_results: false
+                                results:
+                                    - id: 8408ee6f-d28e-4163-88b2-d50ecb648769
+                                      issue: d491d527-53fc-423b-a953-4454cc4a299e
+                                      milestone: 8ce6ec30-45e9-435e-8d33-0f1f15a21949
+                                    - id: 8408ee6f-d28e-4163-88b2-d50ecb648769
+                                      issue: d491d527-53fc-423b-a953-4454cc4a299e
+                                      milestone: 8ce6ec30-45e9-435e-8d33-0f1f15a21949
+                                sub_grouped_by: Illum quam ea repellendus dolorem doloremque.
+                                total_count: 2755937040382555951
+                                total_pages: 8411469165890288242
+                                total_results: 4371109105648539693
+                "400":
+                    description: 'invalid_input: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Inventore ipsam quo rerum est.
+                                    name: Quos nisi.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Inventore ipsam quo rerum est.
+                                name: Quos nisi.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Non magni eaque eos eum.
+                                    name: Sapiente non quaerat est in.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Non magni eaque eos eum.
+                                name: Sapiente non quaerat est in.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Ullam ut dolores.
+                                    name: Maxime molestiae sint consequatur id.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Ullam ut dolores.
+                                name: Maxime molestiae sint consequatur id.
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Architecto eaque magnam aut atque totam dolor.
+                                    name: Voluptatum consequatur cum cumque id magni.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Architecto eaque magnam aut atque totam dolor.
+                                name: Voluptatum consequatur cum cumque id magni.
+                "409":
+                    description: |-
+                        conflict: Conflict response.
+
+                        request_conflict: Conflict response.
+
+                        revision_conflict: Conflict response.
+                    content:
+                        application/json:
+                            schema:
+                                anyOf:
+                                    - example:
+                                        error: Earum eveniet hic porro vel repellat.
+                                        name: Officiis similique culpa vel.
+                                      $ref: '#/components/schemas/MilestoneError'
+                                    - example:
+                                        error: In accusamus nihil eveniet accusantium quos enim.
+                                        name: Quod necessitatibus quo iusto.
+                                      $ref: '#/components/schemas/MilestoneError'
+                                    - example:
+                                        error: Qui quisquam dolores.
+                                        name: Laborum facilis ut ad quis.
+                                      $ref: '#/components/schemas/MilestoneError'
+                            examples:
+                                conflict:
+                                    value:
+                                        error: Earum eveniet hic porro vel repellat.
+                                        name: Officiis similique culpa vel.
+                                request_conflict:
+                                    value:
+                                        error: Qui quisquam dolores.
+                                        name: Laborum facilis ut ad quis.
+                                revision_conflict:
+                                    value:
+                                        error: In accusamus nihil eveniet accusantium quos enim.
+                                        name: Quod necessitatibus quo iusto.
+                "429":
+                    description: 'rate_limited: Too Many Requests response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Cumque laborum.
+                                    name: Quae nisi.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Cumque laborum.
+                                name: Quae nisi.
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Pariatur nesciunt.
+                                    name: Qui voluptatem quisquam soluta.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Pariatur nesciunt.
+                                name: Qui voluptatem quisquam soluta.
+                "503":
+                    description: 'indeterminate: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Corporis sequi enim eos sed.
+                                    name: Mollitia repellat.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Corporis sequi enim eos sed.
+                                name: Mollitia repellat.
+            security:
+                - MilestoneAPIKey: []
+        post:
+            tags:
+                - Milestones
+            summary: add_workitems Milestones
+            operationId: milestones.add_workitems
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    maxLength: 255
+                  example: tsu
+                - name: project_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: 46a449c6-01c7-483c-805b-55321b8a9a35
+                - name: milestone_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: 1ef3c46b-cc8d-4974-b853-295dec9a3e24
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            example:
+                                expected_revision: l
+                                issues:
+                                    - 2ede0db5-f185-43e9-85b2-7cde51077730
+                                    - 1b7f28a9-d6c2-4912-9b24-0eefc8d439e6
+                                request_id: 82764a0a-25ba-4913-a2d4-5c61bb13ff74
+                            $ref: '#/components/schemas/MilestoneIssues'
+                        example:
+                            expected_revision: l
+                            issues:
+                                - 2ede0db5-f185-43e9-85b2-7cde51077730
+                                - 1b7f28a9-d6c2-4912-9b24-0eefc8d439e6
+                            request_id: 82764a0a-25ba-4913-a2d4-5c61bb13ff74
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    milestone_id: df1c7f1c-361d-4fed-b462-d86249032dc9
+                                    replay_expires_at: "2014-03-04T03:54:04Z"
+                                    replayed: false
+                                    request_id: f63a2aa2-0c86-4219-b567-2e8bd0f8d790
+                                    result:
+                                        created_at: "2007-09-03T17:29:32Z"
+                                        external_id: Omnis aspernatur est maxime natus quia.
+                                        external_source: Vel vel rerum et pariatur aut.
+                                        id: cc0eb1da-548d-4433-8e5d-d137951fad55
+                                        revision: Illo voluptatibus ut modi quam.
+                                        target_date: "1975-07-08"
+                                        title: Praesentium necessitatibus expedita ipsam qui.
+                                        updated_at: "2004-04-01T23:05:32Z"
+                                    revision: Quia sed dolores.
+                                $ref: '#/components/schemas/MilestoneMutationReceipt'
+                            example:
+                                milestone_id: df1c7f1c-361d-4fed-b462-d86249032dc9
+                                replay_expires_at: "2014-03-04T03:54:04Z"
+                                replayed: false
+                                request_id: f63a2aa2-0c86-4219-b567-2e8bd0f8d790
+                                result:
+                                    created_at: "2007-09-03T17:29:32Z"
+                                    external_id: Omnis aspernatur est maxime natus quia.
+                                    external_source: Vel vel rerum et pariatur aut.
+                                    id: cc0eb1da-548d-4433-8e5d-d137951fad55
+                                    revision: Illo voluptatibus ut modi quam.
+                                    target_date: "1975-07-08"
+                                    title: Praesentium necessitatibus expedita ipsam qui.
+                                    updated_at: "2004-04-01T23:05:32Z"
+                                revision: Quia sed dolores.
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                "400":
+                    description: 'invalid_input: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Repudiandae modi laboriosam in.
+                                    name: Est sed qui.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Repudiandae modi laboriosam in.
+                                name: Est sed qui.
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Sint aut.
+                                    name: Eius aperiam unde sint enim libero.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Sint aut.
+                                name: Eius aperiam unde sint enim libero.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Et vel asperiores ex maxime necessitatibus.
+                                    name: Qui quis sunt totam eligendi blanditiis.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Et vel asperiores ex maxime necessitatibus.
+                                name: Qui quis sunt totam eligendi blanditiis.
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Et blanditiis rerum ipsa.
+                                    name: Est debitis accusamus et iure soluta.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Et blanditiis rerum ipsa.
+                                name: Est debitis accusamus et iure soluta.
+                "409":
+                    description: |-
+                        conflict: Conflict response.
+
+                        request_conflict: Conflict response.
+
+                        revision_conflict: Conflict response.
+                    content:
+                        application/json:
+                            schema:
+                                anyOf:
+                                    - example:
+                                        error: Aperiam nulla aliquam.
+                                        name: Iure et.
+                                      $ref: '#/components/schemas/MilestoneError'
+                                    - example:
+                                        error: Debitis consequatur repellat qui.
+                                        name: Ex sed natus earum eos optio.
+                                      $ref: '#/components/schemas/MilestoneError'
+                                    - example:
+                                        error: Et qui facilis aut.
+                                        name: Beatae quia iure a est sit aut.
+                                      $ref: '#/components/schemas/MilestoneError'
+                            examples:
+                                conflict:
+                                    value:
+                                        error: Aperiam nulla aliquam.
+                                        name: Iure et.
+                                request_conflict:
+                                    value:
+                                        error: Et qui facilis aut.
+                                        name: Beatae quia iure a est sit aut.
+                                revision_conflict:
+                                    value:
+                                        error: Debitis consequatur repellat qui.
+                                        name: Ex sed natus earum eos optio.
+                "429":
+                    description: 'rate_limited: Too Many Requests response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Debitis in.
+                                    name: Aliquam accusamus nisi et.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Debitis in.
+                                name: Aliquam accusamus nisi et.
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Neque delectus mollitia.
+                                    name: Aut modi dolore aut animi.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Neque delectus mollitia.
+                                name: Aut modi dolore aut animi.
+                "503":
+                    description: 'indeterminate: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Autem sequi recusandae est sit.
+                                    name: Praesentium architecto reprehenderit officia nesciunt minus.
+                                $ref: '#/components/schemas/MilestoneError'
+                            example:
+                                error: Autem sequi recusandae est sit.
+                                name: Praesentium architecto reprehenderit officia nesciunt minus.
+            security:
+                - MilestoneAPIKey: []
+        x-loom-cors:
+            runtime: true
+components:
+    schemas:
+        MilestoneCreateFields:
+            type: object
+            properties:
+                expected_revision:
+                    type: string
+                    example: "04"
+                    minLength: 1
+                    maxLength: 128
+                external_id:
+                    example: Debitis totam nisi hic.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                external_source:
+                    example: Vero est laboriosam vel quaerat.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                request_id:
+                    type: string
+                    example: 836dda01-0465-4b85-8fd4-74dba653d54a
+                    format: uuid
+                target_date:
+                    example: Aut numquam debitis ut et odio blanditiis.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                title:
+                    example: Dolorum et.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+            example:
+                expected_revision: vze
+                external_id: Ipsum corporis consequuntur mollitia.
+                external_source: Voluptate quia laborum esse.
+                request_id: 1eb2a0a5-5ce9-4d60-aa9a-0c9fcc29ea5f
+                target_date: Cupiditate placeat nihil maxime quis nam voluptas.
+                title: Debitis fugiat velit qui fugiat repudiandae.
+            required:
+                - title
+            additionalProperties: false
+        MilestoneError:
+            type: object
+            properties:
+                error:
+                    type: string
+                    example: Iusto ut aut.
+                name:
+                    type: string
+                    example: Culpa reiciendis neque quibusdam enim.
+            example:
+                error: Aut laborum et quod est quae.
+                name: Necessitatibus quod libero.
+            required:
+                - name
+                - error
+        MilestoneFields:
+            type: object
+            properties:
+                expected_revision:
+                    type: string
+                    example: m9
+                    minLength: 1
+                    maxLength: 128
+                external_id:
+                    example: Est cumque est.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                external_source:
+                    example: Laborum ad dolores.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                request_id:
+                    type: string
+                    example: 8ef47cc6-a1eb-42cf-9412-cc2772101dab
+                    format: uuid
+                target_date:
+                    example: Dolores voluptatem nobis.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                title:
+                    example: Aut eos minima totam et ut incidunt.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+            example:
+                expected_revision: "1"
+                external_id: Velit et hic repellat.
+                external_source: Et ratione doloribus qui iure quis illo.
+                request_id: e2e49d9a-46d0-4ff9-ad5c-3afc18ba5be6
+                target_date: Pariatur et asperiores.
+                title: Recusandae expedita sit ut blanditiis eos.
+            additionalProperties: false
+        MilestoneIssues:
+            type: object
+            properties:
+                expected_revision:
+                    type: string
+                    example: j
+                    minLength: 1
+                    maxLength: 128
+                issues:
+                    type: array
+                    items:
+                        type: string
+                        example: 6c19f411-38a7-4951-966f-71edec719ba4
+                        format: uuid
+                    example:
+                        - 79c82d00-d855-4dc5-ba1f-7fbc99cb6dc1
+                        - 2ea64bc2-f27f-455c-acc7-579ebde0fe78
+                        - 55aaa42a-fceb-4fcf-9d0a-3318a9184439
+                request_id:
+                    type: string
+                    example: 5492758c-dd9b-4c9e-88d0-7b05a433d33f
+                    format: uuid
+            example:
+                expected_revision: if
+                issues:
+                    - 378d2df3-160a-4222-9476-37042365bc50
+                    - 952ce290-4ded-451d-aa8a-f47b664dad7f
+                    - 775cb1de-1803-469f-ac57-cdc9f56b04f2
+                    - 7b9eb115-8ba2-436b-a998-11f08e0e39f6
+                request_id: ca9efcef-b546-4318-99a2-dc1c3aadf82a
+            required:
+                - issues
+            additionalProperties: false
+        MilestoneLink:
+            type: object
+            properties:
+                id:
+                    type: string
+                    example: c7cefeb6-07c2-4600-ae91-3208f0ebc2b3
+                    format: uuid
+                issue:
+                    type: string
+                    example: 250eeade-6ab2-4269-9186-71a07367450e
+                    format: uuid
+                milestone:
+                    type: string
+                    example: d8d04393-4f73-4d78-ab99-c535ac05d788
+                    format: uuid
+            example:
+                id: 7f98315f-13f4-457e-a67d-f1c9700bbacc
+                issue: 6178a430-9007-4005-82b6-9e03a722bf06
+                milestone: 9d405cb5-f201-4e99-9f2e-279a080acc8e
+            required:
+                - id
+                - issue
+                - milestone
+            additionalProperties: false
+        MilestoneLinkPage:
+            type: object
+            properties:
+                count:
+                    type: integer
+                    example: 4376761730655833356
+                extra_stats:
+                    example: In ipsum voluptas dolore corrupti voluptatem.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                grouped_by:
+                    example: Laboriosam error ipsam et adipisci.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                next_cursor:
+                    type: string
+                    example: Alias suscipit quis ducimus.
+                next_page_results:
+                    type: boolean
+                    example: true
+                prev_cursor:
+                    type: string
+                    example: Qui aspernatur rerum architecto incidunt cupiditate.
+                prev_page_results:
+                    type: boolean
+                    example: true
+                results:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/MilestoneLink'
+                    example:
+                        - id: 9aad9fb2-dcc3-4eb2-a880-d42ea0d3260b
+                          issue: add46c5c-7c59-48ac-a551-3059621d18c4
+                          milestone: 558d3f4e-53cc-4325-8699-56cd963972c6
+                        - id: 9aad9fb2-dcc3-4eb2-a880-d42ea0d3260b
+                          issue: add46c5c-7c59-48ac-a551-3059621d18c4
+                          milestone: 558d3f4e-53cc-4325-8699-56cd963972c6
+                        - id: 9aad9fb2-dcc3-4eb2-a880-d42ea0d3260b
+                          issue: add46c5c-7c59-48ac-a551-3059621d18c4
+                          milestone: 558d3f4e-53cc-4325-8699-56cd963972c6
+                sub_grouped_by:
+                    example: Iure consequatur.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                total_count:
+                    type: integer
+                    example: 661987501295624502
+                total_pages:
+                    type: integer
+                    example: 7207820169744464368
+                total_results:
+                    type: integer
+                    example: 3818571543380649686
+            example:
+                count: 8513316183820589707
+                extra_stats: Officiis aut consequatur consequatur est nihil.
+                grouped_by: Qui earum.
+                next_cursor: Hic quam reiciendis doloremque ab hic modi.
+                next_page_results: false
+                prev_cursor: Pariatur consequatur.
+                prev_page_results: true
+                results:
+                    - id: 05189e66-1582-4e00-9718-7d7392746986
+                      issue: e2303225-ad09-4f5a-a88d-adaaad403298
+                      milestone: 20c29b01-a80e-4274-bf5d-73d2fbd5aa1d
+                    - id: 05189e66-1582-4e00-9718-7d7392746986
+                      issue: e2303225-ad09-4f5a-a88d-adaaad403298
+                      milestone: 20c29b01-a80e-4274-bf5d-73d2fbd5aa1d
+                sub_grouped_by: Veritatis voluptatem ut nihil.
+                total_count: 2257133862019055165
+                total_pages: 6626347521636382764
+                total_results: 962586543108446728
+            required:
+                - count
+                - extra_stats
+                - grouped_by
+                - next_cursor
+                - next_page_results
+                - prev_cursor
+                - prev_page_results
+                - results
+                - sub_grouped_by
+                - total_count
+                - total_pages
+                - total_results
+            additionalProperties: false
+        MilestoneMutationReceipt:
+            type: object
+            properties:
+                milestone_id:
+                    type: string
+                    example: ffe72dab-cb3f-4702-bebf-23221a06859d
+                    format: uuid
+                replay_expires_at:
+                    type: string
+                    example: "1971-09-11T13:28:55Z"
+                    format: date-time
+                replayed:
+                    type: boolean
+                    example: false
+                request_id:
+                    type: string
+                    example: 1f5b5c61-5964-44ef-9ad4-873bb9062eaa
+                    format: uuid
+                result:
+                    example:
+                        created_at: "2003-04-05T19:35:51Z"
+                        external_id: Accusantium iusto voluptas nihil et.
+                        external_source: Dignissimos corrupti.
+                        id: 88f3ab13-de95-4673-b7a3-2b2d1e41d181
+                        revision: Minus eum sint nemo.
+                        target_date: "1996-04-19"
+                        title: Ut vitae corrupti asperiores.
+                        updated_at: "1995-12-17T09:58:07Z"
+                    anyOf:
+                        - $ref: '#/components/schemas/MilestoneRecord'
+                        - type: "null"
+                revision:
+                    type: string
+                    example: Alias ut dolores sequi.
+            example:
+                milestone_id: 5e0b5cf1-6802-41cc-bcde-f999eb164399
+                replay_expires_at: "2012-04-11T00:56:25Z"
+                replayed: false
+                request_id: cee8bb3b-f737-48ca-982c-69f8697ede69
+                result:
+                    created_at: "1981-11-15T00:40:53Z"
+                    external_id: Quia sit.
+                    external_source: Ut et aspernatur similique qui.
+                    id: bd6663f7-e361-40f1-b4ce-3dd873ad4d21
+                    revision: Qui quia quae culpa.
+                    target_date: "1982-02-15"
+                    title: Temporibus atque animi quis expedita.
+                    updated_at: "1980-07-14T18:43:57Z"
+                revision: Illo et id assumenda.
+            required:
+                - milestone_id
+                - revision
+                - result
+            additionalProperties: false
+        MilestonePage:
+            type: object
+            properties:
+                count:
+                    type: integer
+                    example: 7347303801911377483
+                extra_stats:
+                    example: Ipsam error porro nam animi veritatis reprehenderit.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                grouped_by:
+                    example: Suscipit ut soluta animi quae ut dolor.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                next_cursor:
+                    type: string
+                    example: Quia illo sunt mollitia consequatur laborum et.
+                next_page_results:
+                    type: boolean
+                    example: true
+                prev_cursor:
+                    type: string
+                    example: Recusandae amet natus qui impedit officiis.
+                prev_page_results:
+                    type: boolean
+                    example: true
+                results:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/MilestoneRecord'
+                    example:
+                        - created_at: "1979-11-09T05:09:01Z"
+                          external_id: Possimus est voluptates.
+                          external_source: Sit omnis qui similique natus.
+                          id: 6003a7d3-3123-4914-8987-1735453de2c8
+                          revision: Amet possimus accusamus.
+                          target_date: "2004-09-16"
+                          title: Repudiandae assumenda ex.
+                          updated_at: "2007-03-06T08:44:42Z"
+                        - created_at: "1979-11-09T05:09:01Z"
+                          external_id: Possimus est voluptates.
+                          external_source: Sit omnis qui similique natus.
+                          id: 6003a7d3-3123-4914-8987-1735453de2c8
+                          revision: Amet possimus accusamus.
+                          target_date: "2004-09-16"
+                          title: Repudiandae assumenda ex.
+                          updated_at: "2007-03-06T08:44:42Z"
+                sub_grouped_by:
+                    example: Rem quam quo ut.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                total_count:
+                    type: integer
+                    example: 4538983149857380115
+                total_pages:
+                    type: integer
+                    example: 8484367164740730582
+                total_results:
+                    type: integer
+                    example: 943003532028635116
+            example:
+                count: 8460057642607073879
+                extra_stats: Velit a adipisci odit.
+                grouped_by: Odit qui cum iste aut.
+                next_cursor: Explicabo possimus recusandae iure quae.
+                next_page_results: true
+                prev_cursor: Maiores at et illo expedita facilis earum.
+                prev_page_results: true
+                results:
+                    - created_at: "2007-02-15T04:02:50Z"
+                      external_id: Repellendus aut.
+                      external_source: Incidunt distinctio.
+                      id: b082a486-7e04-416d-9bd5-10fa3c703e0b
+                      revision: Doloribus sit aut nisi.
+                      target_date: "1983-11-15"
+                      title: Nisi ipsum.
+                      updated_at: "2012-05-09T06:37:28Z"
+                    - created_at: "2007-02-15T04:02:50Z"
+                      external_id: Repellendus aut.
+                      external_source: Incidunt distinctio.
+                      id: b082a486-7e04-416d-9bd5-10fa3c703e0b
+                      revision: Doloribus sit aut nisi.
+                      target_date: "1983-11-15"
+                      title: Nisi ipsum.
+                      updated_at: "2012-05-09T06:37:28Z"
+                    - created_at: "2007-02-15T04:02:50Z"
+                      external_id: Repellendus aut.
+                      external_source: Incidunt distinctio.
+                      id: b082a486-7e04-416d-9bd5-10fa3c703e0b
+                      revision: Doloribus sit aut nisi.
+                      target_date: "1983-11-15"
+                      title: Nisi ipsum.
+                      updated_at: "2012-05-09T06:37:28Z"
+                sub_grouped_by: Adipisci velit rerum ut nostrum vero impedit.
+                total_count: 8573383874407256772
+                total_pages: 601259657616131093
+                total_results: 5569268379805795901
+            required:
+                - count
+                - extra_stats
+                - grouped_by
+                - next_cursor
+                - next_page_results
+                - prev_cursor
+                - prev_page_results
+                - results
+                - sub_grouped_by
+                - total_count
+                - total_pages
+                - total_results
+            additionalProperties: false
+        MilestoneRecord:
+            type: object
+            properties:
+                created_at:
+                    type: string
+                    example: "1989-12-31T21:19:05Z"
+                    format: date-time
+                external_id:
+                    example: Fugiat modi id sunt commodi eos aut.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                external_source:
+                    example: Nemo ducimus commodi eius magnam.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                id:
+                    type: string
+                    example: 621acc3d-ebb7-450f-bead-6da6e83336df
+                    format: uuid
+                revision:
+                    type: string
+                    description: Present only when include_revision is requested.
+                    example: Maiores aliquid quo totam.
+                target_date:
+                    example: "1979-08-26"
+                    anyOf:
+                        - type: string
+                          format: date
+                        - type: "null"
+                title:
+                    type: string
+                    example: Omnis minima expedita praesentium iste vel.
+                updated_at:
+                    type: string
+                    example: "1974-02-05T20:49:54Z"
+                    format: date-time
+            example:
+                created_at: "2004-11-01T10:12:53Z"
+                external_id: Quia porro.
+                external_source: Ab placeat aliquam facere unde.
+                id: ba2e1db0-14db-4c89-9460-6f694260cdcf
+                revision: Laudantium qui.
+                target_date: "1991-04-10"
+                title: Inventore laudantium iure.
+                updated_at: "1972-07-20T11:37:14Z"
+            required:
+                - id
+                - title
+                - target_date
+                - external_source
+                - external_id
+                - created_at
+                - updated_at
+            additionalProperties: false
+    responses:
+        NoContentResponse:
+            description: No Content response.
+    securitySchemes:
+        MilestoneAPIKey:
+            type: apiKey
+            name: X-Api-Key
+            in: header
+tags:
+    - name: Milestones

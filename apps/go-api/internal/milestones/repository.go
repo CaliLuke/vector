@@ -43,6 +43,16 @@ func readSnapshot[T any](ctx context.Context, r *Repository, scope Scope, read f
 	if !scope.valid() {
 		return zero, ErrInvalidInput
 	}
+	return readTransaction(ctx, r, func(tx pgx.Tx) (T, error) {
+		if err := authorizeRead(ctx, tx, scope); err != nil {
+			return zero, err
+		}
+		return read(tx)
+	})
+}
+
+func readTransaction[T any](ctx context.Context, r *Repository, read func(pgx.Tx) (T, error)) (T, error) {
+	var zero T
 	tx, err := r.database.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
 	if err != nil {
 		return zero, err
@@ -52,9 +62,6 @@ func readSnapshot[T any](ctx context.Context, r *Repository, scope Scope, read f
 		defer cancel()
 		_ = tx.Rollback(cleanup)
 	}()
-	if err = authorizeRead(ctx, tx, scope); err != nil {
-		return zero, err
-	}
 	result, err := read(tx)
 	if err != nil {
 		return zero, err
