@@ -18,27 +18,39 @@ func pqlTypeValue(column string) string {
 type pqlCollection struct{ bridge, target, foreignKey string }
 
 var pqlCollections = map[string]pqlCollection{
-	"label":  {"issue_labels", "labels", "label_id"},
-	"cycle":  {"cycle_issues", "cycles", "cycle_id"},
-	"module": {"module_issues", "modules", "module_id"},
+	"label":      {"issue_labels", "labels", "label_id"},
+	"cycle":      {"cycle_issues", "cycles", "cycle_id"},
+	"module":     {"module_issues", "modules", "module_id"},
+	"assignee":   {"issue_assignees", "users", "assignee_id"},
+	"mention":    {"issue_mentions", "users", "mention_id"},
+	"subscriber": {"issue_subscribers", "users", "subscriber_id"},
 }
 
-func (r pqlCollection) exists(condition string) string {
+const pqlProjectTargetScope = `pql_target.project_id=issue.project_id AND pql_target.workspace_id=issue.workspace_id AND pql_target.deleted_at IS NULL`
+
+func (r pqlCollection) exists(condition, targetScope string) string {
 	return `EXISTS(SELECT 1 FROM ` + r.bridge + ` pql_bridge
  JOIN ` + r.target + ` pql_target ON pql_target.id=pql_bridge.` + r.foreignKey + `
  WHERE pql_bridge.issue_id=issue.id AND pql_bridge.deleted_at IS NULL
  AND pql_bridge.project_id=issue.project_id AND pql_bridge.workspace_id=issue.workspace_id
- AND pql_target.project_id=issue.project_id AND pql_target.workspace_id=issue.workspace_id
- AND pql_target.deleted_at IS NULL AND (` + condition + `))`
+ AND (` + targetScope + `) AND (` + condition + `))`
 }
 
 func (c *pqlCompiler) collection(e *pqlExpression, relation pqlCollection) (string, error) {
+	targetScope := pqlProjectTargetScope
+	if relation.target == "users" {
+		var err error
+		targetScope, err = c.userTargetScope(e.pos)
+		if err != nil {
+			return "", err
+		}
+	}
 	op, negate := e.op, false
 	switch op {
 	case "IS NULL", "IS EMPTY":
-		return "(NOT " + relation.exists("TRUE") + ")", nil
+		return "(NOT " + relation.exists("TRUE", targetScope) + ")", nil
 	case "IS NOT NULL", "IS NOT EMPTY":
-		return relation.exists("TRUE"), nil
+		return relation.exists("TRUE", targetScope), nil
 	case "!=":
 		op, negate = "=", true
 	case "NOT IN":
@@ -50,7 +62,13 @@ func (c *pqlCompiler) collection(e *pqlExpression, relation pqlCollection) (stri
 	var condition string
 	if e.listFunction != nil {
 		var err error
-		condition, err = c.cycleList(e.field, *e.listFunction)
+		if relation.target == "users" {
+			var set string
+			set, err = c.userList(e.field, *e.listFunction)
+			condition = "pql_target.id IN (" + set + ")"
+		} else {
+			condition, err = c.cycleList(e.field, *e.listFunction)
+		}
 		if err != nil {
 			return "", err
 		}
@@ -61,7 +79,7 @@ func (c *pqlCompiler) collection(e *pqlExpression, relation pqlCollection) (stri
 		}
 		condition = pqlComparison("pql_target.id", op, operands)
 	}
-	result := relation.exists(condition)
+	result := relation.exists(condition, targetScope)
 	if negate {
 		result = "(NOT " + result + ")"
 	}

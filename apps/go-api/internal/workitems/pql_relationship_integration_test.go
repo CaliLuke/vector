@@ -77,19 +77,7 @@ func TestAPIPQLRelationshipsUseOwnedLiveTargetsBeforeCounting(t *testing.T) {
 		})
 	}
 	t.Run("multiple relationships do not inflate count or pagination", func(t *testing.T) {
-		q := base
-		q.Params = map[string]string{"pql": "cycle IS NOT NULL", "fields": "sequence_id", "order_by": "sequence_id", "per_page": "1"}
-		q.Present = map[string]bool{"per_page": true}
-		first, readErr := repo.Execute(ctx, q, nil, "")
-		require.NoError(t, readErr)
-		page := first.Body.(map[string]any)
-		require.Equal(t, 5, page["total_results"])
-		require.Equal(t, []any{map[string]any{"sequence_id": json.Number("1")}}, page["results"])
-		q.Params["cursor"], q.Present["cursor"] = page["next_cursor"].(string), true
-		next, readErr := repo.Execute(ctx, q, nil, "")
-		require.NoError(t, readErr)
-		require.Equal(t, 5, next.Body.(map[string]any)["total_results"])
-		require.Equal(t, []any{map[string]any{"sequence_id": json.Number("2")}}, next.Body.(map[string]any)["results"])
+		assertPQLFirstTwoPages(t, ctx, repo, base, "cycle IS NOT NULL", 5, "1", "2")
 	})
 	t.Run("cycle endpoints use requester calendar dates", func(t *testing.T) {
 		q := base
@@ -138,4 +126,21 @@ func assertPQLSequences(t *testing.T, ctx context.Context, repo *Repository, bas
 		require.NoError(t, err)
 	}
 	require.Equal(t, want, got)
+}
+
+func assertPQLFirstTwoPages(t *testing.T, ctx context.Context, repo *Repository, base Request, query string, total int, firstSequence, secondSequence string) {
+	t.Helper()
+	q := base
+	q.Params = map[string]string{"pql": query, "fields": "sequence_id", "order_by": "sequence_id", "per_page": "1"}
+	q.Present = map[string]bool{"per_page": true}
+	first, err := repo.Execute(ctx, q, nil, "")
+	require.NoError(t, err)
+	page := first.Body.(map[string]any)
+	require.Equal(t, total, page["total_results"])
+	require.Equal(t, []any{map[string]any{"sequence_id": json.Number(firstSequence)}}, page["results"])
+	q.Params["cursor"], q.Present["cursor"] = page["next_cursor"].(string), true
+	next, err := repo.Execute(ctx, q, nil, "")
+	require.NoError(t, err)
+	require.Equal(t, total, next.Body.(map[string]any)["total_results"])
+	require.Equal(t, []any{map[string]any{"sequence_id": json.Number(secondSequence)}}, next.Body.(map[string]any)["results"])
 }

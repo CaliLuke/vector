@@ -51,6 +51,7 @@ type pqlField struct{ sql, kind string }
 var pqlFields = map[string]pqlField{
 	"priority":   {"issue.priority", "priority"},
 	"title":      {"issue.name", "text"},
+	"text":       {`(CASE WHEN issue.name IS NULL AND issue.description_stripped IS NULL THEN NULL ELSE concat_ws(E'\n',NULLIF(issue.name,''),NULLIF(issue.description_stripped,'')) END)`, "text"},
 	"id":         {"(project.identifier || '-' || issue.sequence_id::text)", "text"},
 	"isDraft":    {"issue.is_draft", "boolean"},
 	"isArchived": {"(issue.archived_at IS NOT NULL)", "boolean"},
@@ -91,6 +92,9 @@ func (c *pqlCompiler) expression(e *pqlExpression) (string, error) {
 		return "", pqlError(e.pos, "field or predicate is not available")
 	}
 	if e.listFunction != nil {
+		if pqlUserField(e.field) {
+			return c.scalarUserList(e, field.sql)
+		}
 		values, err := pqlStateList(e.field, *e.listFunction)
 		if err != nil {
 			return "", err
@@ -188,7 +192,7 @@ func (c *pqlCompiler) operand(kind, field string, v pqlValue) (any, error) {
 		return v.text == "true", nil
 	case "uuid":
 		text := v.text
-		if v.kind == "call" && field == "createdBy" && v.text == "currentUser" && len(v.arguments) == 0 {
+		if v.kind == "call" && pqlUserField(field) && v.text == "currentUser" && len(v.arguments) == 0 {
 			text = c.request.ActorID
 		} else if v.kind != "string" {
 			return nil, invalid
