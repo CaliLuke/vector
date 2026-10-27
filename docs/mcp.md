@@ -203,7 +203,7 @@ size and legacy cursor/errors remain unchanged.
 - **Discovery authorization:** action schemas follow current scopes and domain permissions, using copies of the generated catalogue. Workspace guests do not see `member.list_workspace`; `member.list_project` requires an active membership in a live project. Role and project reads require an eligible workspace membership. Context-free OAuth discovery considers all eligible workspaces; without one, only `member.me` remains. A selected workspace binds both its immutable ID and slug. Invocation rechecks access to the selected resource. There is no handwritten replacement registry.
 - **VEC-35 and VEC-3:** personal-token and generic OAuth invocation are implemented
   for twenty-one member/project/cycle/module/label/comment/link/activity actions, including current scopes, linking and revocation.
-  Production issuer selection and complete browser/proxy evidence remain open.
+  Production issuer selection is deferred; complete local browser/proxy evidence remains open.
   Mixed-action discovery filtering and archive/restore replay now have focused
   generated-server PostgreSQL proof and pass the full Go gate.
 - **Reliability and observability:** the [receipt transaction foundation](mcp-writes.md)

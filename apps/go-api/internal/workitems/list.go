@@ -70,14 +70,8 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 		}
 	}
 	if q.API {
-		unsupported := []string{}
-		for _, key := range []string{"pql", "filters"} {
-			if q.Params[key] != "" {
-				unsupported = append(unsupported, key)
-			}
-		}
-		if len(unsupported) > 0 {
-			return Result{}, invalid(map[string]any{"pql": "PQL and structured filters are not supported in Vector. Remove the pql/filters parameter and filter results client-side.", "unsupported_parameters": unsupported})
+		if err := validateAPIFilterMode(q); err != nil {
+			return Result{}, err
 		}
 		if q.Params["external_id"] != "" && q.Params["external_source"] != "" {
 			row, err := r.row(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE w.slug=$1 AND i.project_id=$2 AND i.external_id=$3 AND i.external_source=$4 AND i.deleted_at IS NULL`, q.Slug, q.ProjectID, q.Params["external_id"], q.Params["external_source"])
@@ -138,6 +132,10 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 		where = append(where, `NOT EXISTS(SELECT 1 FROM states s WHERE s.id=issue.state_id AND s.deleted_at IS NOT NULL)`)
 	}
 	var err error
+	where, args, err = r.appendPQL(q, where, args)
+	if err != nil {
+		return Result{}, err
+	}
 	var deferredFilterError error
 	options := queryOptions(q)
 	if r.parentGrouping != nil {

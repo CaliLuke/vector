@@ -15,6 +15,8 @@ Cycle proof: [generated-server contracts, scope revocation, tenant isolation, an
 Module and label proof: [generated-server contracts, scope revocation, and relationship isolation](../apps/go-api/internal/mcpactions/resource_read_integration_test.go). [Contract notes](mcp-modules-labels.md) record their different page shapes and archive policies.
 Work-item child reads: [contract and scope notes](mcp-workitem-reads.md) and [generated-server regression tests](../apps/go-api/internal/mcpactions/workitem_read_integration_test.go).
 
+The [PQL foundation](pql.md) adds shared scalar filtering to HTTP work-item lists. It does not add an MCP action: full query grammar, domain resolvers, immutable workspace binding, and generated core contracts remain pending.
+
 | Operation                                  | Kind     | Required upstream inputs                                 | Vector implementation | Remaining proof                                     |
 | ------------------------------------------ | -------- | -------------------------------------------------------- | --------------------- | --------------------------------------------------- |
 | `customer.list`                            | Read     | None                                                     | Not implemented       | Domain mapping, contract and authorization          |
@@ -68,11 +70,11 @@ Work-item child reads: [contract and scope notes](mcp-workitem-reads.md) and [ge
 | `label.create`                             | Mutation | `project_id`, `name`                                     | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `label.update`                             | Mutation | `project_id`, `label_id`                                 | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `label.delete`                             | Mutation | `project_id`, `label_id`                                 | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
-| `member.me`                                | Read     | None                                                     | PAT and OAuth         | Deployed issuer and complete browser verification   |
-| `member.list_workspace`                    | Read     | None                                                     | PAT and OAuth         | Deployed issuer and complete browser verification   |
-| `member.list_project`                      | Read     | `project_id`                                             | PAT and OAuth         | Deployed issuer and complete browser verification   |
-| `member.list_roles`                        | Read     | None                                                     | PAT and OAuth         | Deployed issuer and complete browser verification   |
-| `member.retrieve_role`                     | Read     | `role_id`                                                | PAT and OAuth         | Deployed issuer and complete browser verification   |
+| `member.me`                                | Read     | None                                                     | PAT and OAuth         | Local browser/proxy verification                    |
+| `member.list_workspace`                    | Read     | None                                                     | PAT and OAuth         | Local browser/proxy verification                    |
+| `member.list_project`                      | Read     | `project_id`                                             | PAT and OAuth         | Local browser/proxy verification                    |
+| `member.list_roles`                        | Read     | None                                                     | PAT and OAuth         | Local browser/proxy verification                    |
+| `member.retrieve_role`                     | Read     | `role_id`                                                | PAT and OAuth         | Local browser/proxy verification                    |
 | `milestone.list`                           | Read     | `project_id`                                             | Not implemented       | Domain mapping, contract and authorization          |
 | `milestone.retrieve`                       | Read     | `project_id`, `milestone_id`                             | Not implemented       | Domain mapping, contract and authorization          |
 | `milestone.create`                         | Mutation | `project_id`, `title`                                    | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
@@ -99,8 +101,8 @@ Work-item child reads: [contract and scope notes](mcp-workitem-reads.md) and [ge
 | `page.list_workitem_pages`                 | Read     | `project_id`, `workitem_id`                              | Not implemented       | Domain mapping, contract and authorization          |
 | `page.attach_to_workitem`                  | Mutation | `project_id`, `workitem_id`, `page_id`                   | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `page.detach_from_workitem`                | Mutation | `project_id`, `workitem_id`, `workitem_page_id`          | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
-| `project.list`                             | Read     | None                                                     | PAT and OAuth         | Deployed issuer and complete browser verification   |
-| `project.retrieve`                         | Read     | `project_id`                                             | PAT and OAuth         | Deployed issuer and complete browser verification   |
+| `project.list`                             | Read     | None                                                     | PAT and OAuth         | Local browser/proxy verification                    |
+| `project.retrieve`                         | Read     | `project_id`                                             | PAT and OAuth         | Local browser/proxy verification                    |
 | `project.create`                           | Mutation | `name`, `identifier`                                     | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `project.update`                           | Mutation | `project_id`                                             | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `project.delete`                           | Mutation | `project_id`                                             | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
