@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
@@ -31,16 +32,18 @@ type projectMembershipLifecyclePrincipal struct {
 type projectMembershipLifecyclePrincipalKey struct{}
 type projectMembershipLifecycleService struct {
 	repository projectMembershipLifecycleRepository
+	members    *store.MemberReader
 	keys       activityReadsAPIKeys
 	throttle   activityReadsThrottle
 	sessions   projectLabelReadsSessions
 }
 
 func NewProjectMembershipLifecycle(repository projectMembershipLifecycleRepository, keys activityReadsAPIKeys, throttle activityReadsThrottle, sessions projectLabelReadsSessions) (api.Service, error) {
-	if repository == nil || keys == nil || throttle == nil || sessions == nil {
+	members, err := store.NewMemberReader(repository)
+	if err != nil || keys == nil || throttle == nil || sessions == nil {
 		return nil, errors.New("membership repository, API-key validator, throttle and sessions are required")
 	}
-	return &projectMembershipLifecycleService{repository, keys, throttle, sessions}, nil
+	return &projectMembershipLifecycleService{repository: repository, members: members, keys: keys, throttle: throttle, sessions: sessions}, nil
 }
 func (s *projectMembershipLifecycleService) APIKeyAuth(ctx context.Context, key string, scheme *security.APIKeyScheme) (context.Context, error) {
 	if scheme != nil && scheme.Name == "PlaneSessionCookie" {
@@ -113,7 +116,7 @@ func (s *projectMembershipLifecycleService) execute(ctx context.Context, method,
 		}
 		return nil, projectMembershipLifecycleMapError(err)
 	}
-	result, err := s.repository.ExecuteLifecycle(ctx, command)
+	result, err := s.executeAuthorized(ctx, command)
 	if err != nil {
 		if errors.Is(err, store.ErrLifecycleRendering) {
 			MarkReadServiceDjangoHTML500(ctx)
@@ -121,6 +124,21 @@ func (s *projectMembershipLifecycleService) execute(ctx context.Context, method,
 		return nil, projectMembershipLifecycleMapError(err)
 	}
 	return activityTimestamps(result, principal.Timezone), nil
+}
+
+func (s *projectMembershipLifecycleService) executeAuthorized(ctx context.Context, command store.LifecycleCommand) (any, error) {
+	if command.Operation != "v1-list-project-members" || command.Method != http.MethodGet {
+		return s.repository.ExecuteLifecycle(ctx, command)
+	}
+	actor, err := uuid.Parse(command.UserID)
+	if err != nil {
+		return nil, err
+	}
+	project, err := uuid.Parse(command.ProjectID)
+	if err != nil {
+		return nil, err
+	}
+	return s.members.ListProjectMembers(ctx, actor, command.Slug, project)
 }
 func (s *projectMembershipLifecycleService) raw(ctx context.Context, method, operation string, payload any, body io.ReadCloser) (*api.MembershipLifecycleRawJSONResponseMetadata, io.ReadCloser, error) {
 	value, err := s.execute(ctx, method, operation, payload, body)

@@ -98,13 +98,25 @@ and identity readers. They cover both protocol revisions, actor isolation, fresh
 profile data, and revocation between request authentication and action execution.
 This is personal-token evidence for one action, not complete VEC-7 or VEC-36 proof.
 
+The project-member HTTP endpoint now uses a credential-neutral `MemberReader`.
+It reads the primary database and checks project access in the same SQL statement
+as the roster read. PostgreSQL tests cover revocation after initial authorization,
+deleted projects and workspaces, and tenant isolation. Its response remains the
+existing UserLite array. `member.list_project` is not yet advertised or callable.
+
 ## Remaining requirements
 
 - **Generated action contracts:** the upstream union defects in
   [loom-mcp #381](https://github.com/CaliLuke/loom-mcp/issues/381) are fixed in
   alpha.48. Vector consumes the released module without a replacement or retained
-  workaround. Expand the generated catalogue as application actions become
-  available, including consumer proof of multi-action union contracts.
+  workaround. An isolated consumer using the released module verifies closed
+  multi-action inputs and object/array result-union dispatch through both protocol
+  revisions. Expand the generated catalogue as application actions become available.
+- **Array result compatibility:** [loom-mcp #383](https://github.com/CaliLuke/loom-mcp/issues/383)
+  tracks generated non-object `structuredContent` being sent to 2025-11-25 clients,
+  whose protocol requires an object. An isolated generated-server reproduction
+  confirms the failure. Resolve the wire projection before enabling array-returning
+  actions; the currently available identity action is unaffected.
 - **Discovery authorization:** prove per-principal permitted-action schemas and
   invocation checks across actions with different permissions. The current
   `member.me` action is available to every authenticated actor. There is no

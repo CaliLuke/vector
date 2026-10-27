@@ -51,6 +51,9 @@ func NewLifecycleRepositoryWithReaderWriter(reader, writer database, publisher T
 	return &LifecycleRepository{Repository: r, publisher: publisher, baseHost: baseHost, reader: reader}, nil
 }
 func (r *LifecycleRepository) forCommand(c LifecycleCommand) *LifecycleRepository {
+	if c.Operation == "v1-list-project-members" && c.Method == http.MethodGet {
+		return r
+	}
 	if strings.HasPrefix(c.Operation, "v1-") && (c.Method == http.MethodGet || c.Method == http.MethodHead || c.Method == http.MethodOptions) {
 		selected := *r
 		selected.Repository = &Repository{database: r.reader}
@@ -120,6 +123,8 @@ func (r *LifecycleRepository) ExecuteLifecycle(ctx context.Context, c LifecycleC
 		return nil, lifecycleFailure(405, "detail", fmt.Sprintf("Method %q not allowed.", c.Method))
 	}
 	switch {
+	case c.Operation == "v1-list-project-members":
+		return r.projectMembers(ctx, c)
 	case strings.Contains(c.Operation, "lite"):
 		return r.lifecycleLite(ctx, c)
 	case strings.HasPrefix(c.Operation, "v1-list-"):
