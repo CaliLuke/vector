@@ -31,27 +31,6 @@ type memberDirectory interface {
 	RetrieveRoleInWorkspace(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID) (membership.RoleDefinition, error)
 }
 
-type Service struct {
-	logContext    context.Context
-	identity      identityReader
-	projects      projectMemberReader
-	directory     memberDirectory
-	projectReads  projectReader
-	projectWrites projectWriter
-	cycleReads    cycleReader
-}
-
-func New(identity identityReader, projects projectMemberReader, directory memberDirectory, projectReads projectReader, projectWrites projectWriter, cycleReads cycleReader, options ...Option) (*Service, error) {
-	if identity == nil || projects == nil || directory == nil || projectReads == nil || projectWrites == nil || cycleReads == nil {
-		return nil, errors.New("MCP identity, member directory, project and cycle applications are required")
-	}
-	service := &Service{identity: identity, projects: projects, directory: directory, projectReads: projectReads, projectWrites: projectWrites, cycleReads: cycleReads}
-	for _, option := range options {
-		option(service)
-	}
-	return service, nil
-}
-
 func (s *Service) Member(ctx context.Context, input *api.MemberRequest) (*api.MemberResult, error) {
 	request, err := selectMemberAction(input)
 	if err != nil {

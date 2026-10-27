@@ -14,8 +14,8 @@ implementation does not enable remote access or establish 207-action parity.
 The backend, generated linking routes and profile controls are implemented.
 Focused checks cover both MCP revisions, real PostgreSQL, the TLS issuer, session
 revocation, account linking, scopes and sanitized correlated logs/traces.
-The frontend and Go full quality gates pass. Complete browser/proxy evidence
-and production issuer selection remain open. The verification section below states completion criteria,
+The frontend and Go full quality gates pass. Complete browser/proxy evidence remains open. OAuth stays generic and provider-agnostic;
+production issuer selection and deployment verification are deferred. The verification section below states completion criteria,
 not a claim that every criterion has already passed.
 
 ## Current state and ownership
@@ -136,10 +136,10 @@ emits OAuth challenges or metadata. Authentication/validation failure outputs
 remain safe and correlated by the shared request ID.
 
 Generated action declarations remain the catalogue source of truth. Discovery
-projects the eleven implemented member, project, and cycle actions using current OAuth
+projects the fifteen implemented member, project, cycle, module, and label actions using current OAuth
 scopes and primary-database permissions. Workspace directory reads require a
 member or admin role; project roster reads require an active project membership.
-Role and project reads require an eligible workspace membership. Cycle reads require an active project membership. Without a
+Role and project reads require an eligible workspace membership. Cycle, module, and label reads require an active project membership. Without a
 selected workspace, discovery considers all eligible memberships; accounts with
 none see only `member.me`. Archive and restore follow their domain permissions.
 The interceptor filters fresh copies of generated schemas without a second action
@@ -281,8 +281,8 @@ Fresh introspection adds issuer latency and makes issuer availability part of
 every call. Form-post plus final same-session confirmation adds one deliberate
 step, keeps authorization codes out of browser URLs, and works with SameSite
 cookies. The required introspection claim profile and stable subject constrain
-eligible providers. The production issuer choice is still pending; generic
-implementation and isolated issuer proof do not require deploying one.
+eligible providers. Production issuer selection is deferred. The current implementation remains generic;
+implementation and isolated issuer proof do not require deploying an issuer.
 
 References: [MCP authorization](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization),
 [RFC 7662](https://www.rfc-editor.org/rfc/rfc7662.html),

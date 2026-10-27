@@ -23,7 +23,9 @@ func (s *Service) DiscoverActions(ctx context.Context) (mcptransport.ActionVisib
 		return nil, err
 	}
 	visible["member"] = map[string]bool{"me": true, "list_workspace": reads.WorkspaceMembers, "list_project": reads.ProjectMembers, "list_roles": reads.Workspace, "retrieve_role": reads.Workspace}
-	visible["cycle"] = map[string]bool{"list": reads.ProjectMembers, "retrieve": reads.ProjectMembers}
+	for _, tool := range []string{"cycle", "module", "label"} {
+		visible[tool] = map[string]bool{"list": reads.ProjectMembers, "retrieve": reads.ProjectMembers}
+	}
 	visible["project"] = map[string]bool{"list": reads.Workspace, "retrieve": reads.Workspace}
 	if !actor.AllowsAction(true) || !reads.Workspace {
 		return visible, nil

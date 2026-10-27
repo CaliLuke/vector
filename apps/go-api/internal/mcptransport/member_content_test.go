@@ -136,3 +136,11 @@ func TestEnabledTransportRequiresDiscoveryAuthorization(t *testing.T) {
 func (memberResponseService) Cycle(context.Context, *api.CycleRequest) (*api.CycleResult, error) {
 	return nil, errors.New("this fixture does not execute cycle reads")
 }
+
+func (memberResponseService) Module(context.Context, *api.ModuleRequest) (*api.ModuleResult, error) {
+	return nil, nil
+}
+
+func (memberResponseService) Label(context.Context, *api.LabelRequest) (*api.LabelResult, error) {
+	return nil, nil
+}

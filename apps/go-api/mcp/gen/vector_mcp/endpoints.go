@@ -18,6 +18,8 @@ type Endpoints struct {
 	Member  loom.Endpoint
 	Project loom.Endpoint
 	Cycle   loom.Endpoint
+	Module  loom.Endpoint
+	Label   loom.Endpoint
 }
 
 // NewEndpoints wraps the methods of the "VectorMCP" service with endpoints.
@@ -26,6 +28,8 @@ func NewEndpoints(s Service) *Endpoints {
 		Member:  NewMemberEndpoint(s),
 		Project: NewProjectEndpoint(s),
 		Cycle:   NewCycleEndpoint(s),
+		Module:  NewModuleEndpoint(s),
+		Label:   NewLabelEndpoint(s),
 	}
 }
 
@@ -34,6 +38,8 @@ func (e *Endpoints) Use(m func(loom.Endpoint) loom.Endpoint) {
 	e.Member = m(e.Member)
 	e.Project = m(e.Project)
 	e.Cycle = m(e.Cycle)
+	e.Module = m(e.Module)
+	e.Label = m(e.Label)
 }
 
 // NewMemberEndpoint returns an endpoint function that calls the method
@@ -60,5 +66,23 @@ func NewCycleEndpoint(s Service) loom.Endpoint {
 	return func(ctx context.Context, req any) (any, error) {
 		p := req.(*CycleRequest)
 		return s.Cycle(ctx, p)
+	}
+}
+
+// NewModuleEndpoint returns an endpoint function that calls the method
+// "module" of service "VectorMCP".
+func NewModuleEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*ModuleRequest)
+		return s.Module(ctx, p)
+	}
+}
+
+// NewLabelEndpoint returns an endpoint function that calls the method "label"
+// of service "VectorMCP".
+func NewLabelEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*LabelRequest)
+		return s.Label(ctx, p)
 	}
 }

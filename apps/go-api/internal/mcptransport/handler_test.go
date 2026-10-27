@@ -342,3 +342,11 @@ func (transportTestService) DiscoverActions(context.Context) (mcptransport.Actio
 func (transportTestService) Cycle(context.Context, *api.CycleRequest) (*api.CycleResult, error) {
 	return nil, errors.New("this fixture does not execute cycle reads")
 }
+
+func (transportTestService) Module(context.Context, *api.ModuleRequest) (*api.ModuleResult, error) {
+	return nil, nil
+}
+
+func (transportTestService) Label(context.Context, *api.LabelRequest) (*api.LabelResult, error) {
+	return nil, nil
+}

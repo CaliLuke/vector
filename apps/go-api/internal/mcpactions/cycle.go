@@ -4,43 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"math/big"
 	"strconv"
 	"uuid"
 
 	cycles "github.com/CaliLuke/go-plane/internal/cyclereads"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 )
 
-type cycleReader interface {
-	ReadAPIV1(context.Context, string, cycles.APIV1Request) (any, error)
-}
-
 func (s *Service) Cycle(ctx context.Context, input *api.CycleRequest) (*api.CycleResult, error) {
-	request, workspace, err := selectCycleAction(input)
-	if err != nil {
-		return nil, err
-	}
-	ctx, actor, err := readActor(ctx, workspace)
-	if err != nil {
-		return nil, err
-	}
-	if actor.WorkspaceSlug == "" {
-		return nil, api.MakeInvalidParams(errors.New("workspace is required"))
-	}
-	workspaceID := uuid.UUID(actor.WorkspaceID)
-	request.ExpectedWorkspaceID = &workspaceID
-	request.Params["slug"] = actor.WorkspaceSlug
-	value, err := s.cycleReads.ReadAPIV1(ctx, actor.UserID.String(), request)
-	if err != nil {
-		return nil, cycleReadError(err)
-	}
-	result, err := projectCycleResult(djangoapi.Timestamps(value, actor.Timezone), request.Operation)
-	if err != nil {
-		return nil, api.MakeInternalError(errors.New("cycle projection unavailable"))
-	}
-	return result, nil
+	return readProjectResource(ctx, input, selectCycleAction, s.cycleReads, cycles.ErrForbidden, cycles.ErrNotFound, projectCycleResult)
 }
 
 func selectCycleAction(input *api.CycleRequest) (cycles.APIV1Request, *string, error) {
@@ -87,68 +59,16 @@ func selectCycleAction(input *api.CycleRequest) (cycles.APIV1Request, *string, e
 	return request, workspace, nil
 }
 
-func cycleReadError(err error) error {
-	switch {
-	case errors.Is(err, cycles.ErrForbidden):
-		return api.MakeForbidden(errors.New("cycle access denied"))
-	case errors.Is(err, cycles.ErrNotFound):
-		return api.MakeNotFound(errors.New("cycle unavailable"))
-	}
-	var failure *djangoapi.HTTPError
-	if errors.As(err, &failure) && failure.Status == 400 {
-		return api.MakeInvalidParams(errors.New("invalid cycle query"))
-	}
-	return api.MakeInternalError(errors.New("cycle read unavailable"))
-}
-
 var cycleNullableFields = []string{"id", "created_at", "updated_at", "deleted_at", "description", "start_date", "end_date", "external_source", "external_id", "archived_at", "timezone", "created_by", "updated_by", "project", "workspace", "owned_by", "view_props", "progress_snapshot", "logo_props", "sort_order", "version"}
 var cycleMetricFields = []string{"total_issues", "cancelled_issues", "completed_issues", "started_issues", "unstarted_issues", "backlog_issues", "total_estimates", "completed_estimates", "started_estimates"}
 
 func projectCycleResult(value any, operation string) (*api.CycleResult, error) {
-	document, ok := value.(map[string]any)
-	if !ok {
-		return nil, errors.New("invalid cycle document")
-	}
-	if operation == "detail" {
-		record, err := projectCycleRecord(document, false)
-		if err != nil {
-			return nil, err
-		}
-		result := api.NewCycleResultCycleRecord(record)
-		return &result, nil
-	}
-	rows, ok := document["results"].([]any)
-	if !ok {
-		return nil, errors.New("invalid cycle page")
-	}
-	// Decode pagination separately from entries so SDK integer coercion is exact.
-	envelope := make(map[string]any, len(document))
-	for key, value := range document {
-		if key != "results" {
-			envelope[key] = value
-		}
-	}
-	body, err := json.Marshal(envelope)
-	if err != nil {
-		return nil, err
-	}
-	page := &api.CyclePage{Results: make([]*api.CycleRecord, 0, len(rows))}
-	if err = json.Unmarshal(body, page); err != nil {
-		return nil, err
-	}
-	for _, raw := range rows {
-		row, ok := raw.(map[string]any)
-		if !ok {
-			return nil, errors.New("invalid cycle row")
-		}
-		record, err := projectCycleRecord(row, operation == "lite")
-		if err != nil {
-			return nil, err
-		}
-		page.Results = append(page.Results, record)
-	}
-	result := api.NewCycleResultCyclePage(page)
-	return &result, nil
+	return projectReadResult(value, operation == "detail", func(row map[string]any) (*api.CycleRecord, error) {
+		return projectCycleRecord(row, operation == "lite")
+	}, api.NewCycleResultCycleRecord, func(page *api.CyclePage, records []*api.CycleRecord) api.CycleResult {
+		page.Results = records
+		return api.NewCycleResultCyclePage(page)
+	})
 }
 
 func projectCycleRecord(row map[string]any, lite bool) (*api.CycleRecord, error) {
@@ -168,7 +88,7 @@ func projectCycleRecord(row map[string]any, lite bool) (*api.CycleRecord, error)
 		}
 	} else {
 		for _, field := range cycleMetricFields {
-			value, err := cycleMetric(row[field])
+			value, err := sdkInteger(row[field])
 			if err != nil {
 				return nil, err
 			}
@@ -184,21 +104,4 @@ func projectCycleRecord(row map[string]any, lite bool) (*api.CycleRecord, error)
 		return nil, err
 	}
 	return record, nil
-}
-
-// The HTTP serializer emits integral estimates as e.g. 3.0; the pinned SDK
-// coerces them to integers. Preserve precision rather than converting via float.
-func cycleMetric(value any) (any, error) {
-	if value == nil {
-		return nil, nil
-	}
-	raw, err := json.Marshal(value)
-	if err != nil {
-		return nil, err
-	}
-	number, ok := new(big.Rat).SetString(string(raw))
-	if !ok || !number.IsInt() || !number.Num().IsInt64() {
-		return nil, errors.New("invalid cycle metric")
-	}
-	return number.Num().Int64(), nil
 }

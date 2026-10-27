@@ -148,3 +148,11 @@ func (tokenTransportService) DiscoverActions(context.Context) (mcptransport.Acti
 func (tokenTransportService) Cycle(context.Context, *api.CycleRequest) (*api.CycleResult, error) {
 	return nil, errors.New("this fixture does not execute cycle reads")
 }
+
+func (tokenTransportService) Module(context.Context, *api.ModuleRequest) (*api.ModuleResult, error) {
+	return nil, nil
+}
+
+func (tokenTransportService) Label(context.Context, *api.LabelRequest) (*api.LabelResult, error) {
+	return nil, nil
+}

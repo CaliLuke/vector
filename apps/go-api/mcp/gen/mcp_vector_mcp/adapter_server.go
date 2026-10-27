@@ -510,6 +510,18 @@ func (a *MCPAdapter) generatedToolCatalog() []*ToolInfo {
 		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"status\":{\"type\":\"string\",\"description\":\"Active cycle status: current, upcoming, completed, draft, or incomplete. Ignored for archived cycles.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"cycle_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"status\":{\"type\":\"string\",\"description\":\"Active cycle status: current, upcoming, completed, draft, or incomplete. Ignored for archived cycles.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
 		Name:        "cycle",
 		Title:       stringPtr("Cycles"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":true}")),
+		Description: stringPtr("Modules in a project. Use an advertised action."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"module_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"module_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"module_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "module",
+		Title:       stringPtr("Modules"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":true}")),
+		Description: stringPtr("Labels in a project. Use an advertised action."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"label_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"label_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"cursor\":{\"type\":\"string\"},\"label_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "label",
+		Title:       stringPtr("Labels"),
 	}}
 }
 func (a *MCPAdapter) toolSearchEnabled() bool {
@@ -543,6 +555,10 @@ func isGeneratedToolName(name string) bool {
 	case "project":
 		return true
 	case "cycle":
+		return true
+	case "module":
+		return true
+	case "label":
 		return true
 	default:
 		return false
@@ -1307,6 +1323,36 @@ func cycleInputRecovery(err error, raw jsontext.Value) string {
 	}
 	return "Provide valid tool arguments. Example: " + example
 }
+func moduleInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\",\"project_id\":\"example\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func labelInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\",\"project_id\":\"example\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
 func (a *MCPAdapter) ToolsCall(ctx context.Context, p *ToolsCallPayload) (res *ToolsCallResult, err error) {
 	attrs := []attribute.KeyValue{}
 	var rawArguments jsontext.Value
@@ -1446,6 +1492,58 @@ func (a *MCPAdapter) executeRealTool(ctx context.Context, p *ToolsCallPayload, s
 			return false, err
 		}
 		result, err := a.service.Cycle(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "module":
+		payload, err := decodeModulePayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", moduleInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.Module(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "label":
+		payload, err := decodeLabelPayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", labelInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.Label(ctx, payload)
 		if err != nil {
 			return true, a.sendToolError(ctx, stream, p.Name, err)
 		}

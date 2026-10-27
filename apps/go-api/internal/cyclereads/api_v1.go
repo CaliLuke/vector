@@ -6,19 +6,12 @@ import (
 	"errors"
 	"strconv"
 	"strings"
-	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/jackc/pgx/v5"
 )
 
-type APIV1Request struct {
-	// ExpectedWorkspaceID binds an admitted workspace and requires current primary-data authorization.
-	ExpectedWorkspaceID *uuid.UUID
-	Operation           string
-	Params              map[string]string
-	Present             map[string]bool
-}
+type APIV1Request = djangoapi.ProjectReadRequest
 
 func (r *Repository) AuthorizeAPIV1(ctx context.Context, user, slug, project string, write bool) error {
 	allowed, err := djangoapi.ProjectEntityAllowed(ctx, r.database, user, slug, project, write)
@@ -161,7 +154,7 @@ func (r *Repository) apiCycles(ctx context.Context, user string, request APIV1Re
 	scope, scopeJoin, scopeResult := "", "", ""
 	args := []any{p["project_id"], p["slug"], user, nilIfEmpty(p["pk"]), limit, offset}
 	if request.ExpectedWorkspaceID != nil {
-		scope, scopeJoin, scopeResult = apiCycleScopeSQL, " JOIN scope ON scope.id=c.project_id AND scope.workspace_id=c.workspace_id ", " FROM scope"
+		scope, scopeJoin, scopeResult = djangoapi.ProjectMemberReadScopeSQL(1, 2, 3, 7), " JOIN scope ON scope.id=c.project_id AND scope.workspace_id=c.workspace_id ", " FROM scope"
 		args = append(args, request.ExpectedWorkspaceID)
 	}
 	query := `WITH ` + scope + `base AS MATERIALIZED(SELECT ` + row + ` AS data,row_number() OVER(ORDER BY ` + order + `) AS ordinal FROM cycles c JOIN workspaces w ON w.id=c.workspace_id ` + scopeJoin + joins + ` WHERE c.project_id=$1::uuid AND w.slug=$2 AND c.deleted_at IS NULL AND ` + predicate + ` AND $3::uuid IS NOT NULL AND ($4::text IS NULL OR true)), page AS (SELECT * FROM base ORDER BY ordinal ` + slice + `) SELECT jsonb_build_object('total_count',(SELECT count(*) FROM base),'has_next',(SELECT count(*) FROM base)-$6::bigint>$5::bigint,'results',COALESCE((SELECT jsonb_agg(data ORDER BY ordinal) FROM page),'[]'::jsonb))`

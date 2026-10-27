@@ -12,6 +12,8 @@ import (
 	"github.com/CaliLuke/go-plane/internal/cyclereads"
 	"github.com/CaliLuke/go-plane/internal/mcpactions"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
+	"github.com/CaliLuke/go-plane/internal/modulereads"
+	"github.com/CaliLuke/go-plane/internal/projectlabelreads"
 	"github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/CaliLuke/go-plane/internal/useridentity"
@@ -135,6 +137,15 @@ func TestMemberRechecksPrimaryDatabaseAfterRequestAuthentication(t *testing.T) {
 
 func databaseService(t *testing.T, pool *pgxpool.Pool, changeCycle func()) *mcpactions.Service {
 	t.Helper()
+	apps := databaseApplications(t, pool)
+	apps.Cycles = changingCycleReader{apps.Cycles.(*cyclereads.Repository), changeCycle}
+	service, err := mcpactions.New(apps)
+	require.NoError(t, err)
+	return service
+}
+
+func databaseApplications(t *testing.T, pool *pgxpool.Pool) mcpactions.Applications {
+	t.Helper()
 	repository, err := useridentity.NewRepository(pool)
 	require.NoError(t, err)
 	reader, err := useridentity.NewIdentityReader(repository)
@@ -149,8 +160,9 @@ func databaseService(t *testing.T, pool *pgxpool.Pool, changeCycle func()) *mcpa
 	require.NoError(t, err)
 	cycleReads, err := cyclereads.NewRepository(pool)
 	require.NoError(t, err)
-	service, err := mcpactions.New(reader, projectReader, directory, projectReads, projectLifecycle(t, pool), changingCycleReader{cycleReads, changeCycle})
+	moduleReads, err := modulereads.NewRepository(pool)
 	require.NoError(t, err)
-
-	return service
+	labelReads, err := projectlabelreads.NewRepository(pool)
+	require.NoError(t, err)
+	return mcpactions.Applications{Identity: reader, ProjectMembers: projectReader, MemberDirectory: directory, Projects: projectReads, ProjectWrites: projectLifecycle(t, pool), Cycles: cycleReads, Modules: moduleReads, Labels: labelReads}
 }

@@ -119,7 +119,7 @@ func sdkToolBindings(adapter *MCPAdapter) ([]sdkbridge.ToolBinding, error) {
 		}
 		return bindings, nil
 	}
-	bindings := make([]sdkbridge.ToolBinding, 0, 3)
+	bindings := make([]sdkbridge.ToolBinding, 0, 5)
 	annotationsMember, err := sdkToolAnnotations(jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":true}")))
 	if err != nil {
 		return nil, fmt.Errorf("tool %q annotations: %w", "member", err)
@@ -160,6 +160,34 @@ func sdkToolBindings(adapter *MCPAdapter) ([]sdkbridge.ToolBinding, error) {
 			InputSchema: sdkToolInputSchema("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"status\":{\"type\":\"string\",\"description\":\"Active cycle status: current, upcoming, completed, draft, or incomplete. Ignored for archived cycles.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"cycle_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"status\":{\"type\":\"string\",\"description\":\"Active cycle status: current, upcoming, completed, draft, or incomplete. Ignored for archived cycles.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"),
 			Name:        "cycle",
 			Title:       "Cycles",
+		},
+	})
+	annotationsModule, err := sdkToolAnnotations(jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":true}")))
+	if err != nil {
+		return nil, fmt.Errorf("tool %q annotations: %w", "module", err)
+	}
+	bindings = append(bindings, sdkbridge.ToolBinding{
+		Handler: handler,
+		Tool: &mcpsdk.Tool{
+			Annotations: annotationsModule,
+			Description: "Modules in a project. Use an advertised action.",
+			InputSchema: sdkToolInputSchema("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"module_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"module_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"module_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"),
+			Name:        "module",
+			Title:       "Modules",
+		},
+	})
+	annotationsLabel, err := sdkToolAnnotations(jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":true}")))
+	if err != nil {
+		return nil, fmt.Errorf("tool %q annotations: %w", "label", err)
+	}
+	bindings = append(bindings, sdkbridge.ToolBinding{
+		Handler: handler,
+		Tool: &mcpsdk.Tool{
+			Annotations: annotationsLabel,
+			Description: "Labels in a project. Use an advertised action.",
+			InputSchema: sdkToolInputSchema("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"label_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"label_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"cursor\":{\"type\":\"string\"},\"label_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"),
+			Name:        "label",
+			Title:       "Labels",
 		},
 	})
 	return bindings, nil

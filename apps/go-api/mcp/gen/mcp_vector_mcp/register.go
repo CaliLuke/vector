@@ -168,6 +168,102 @@ var VectorMCPVectorToolsetToolSpecs = []tools.ToolSpec{tools.ToolSpec{
 	},
 	Service: "VectorMCP",
 	Toolset: "VectorMCP.vector",
+}, tools.ToolSpec{
+	Description: "Modules in a project. Use an advertised action.",
+	Meta: map[string][]string{
+		"destructiveHint": []string{"false"},
+		"openWorldHint":   []string{"false"},
+		"readOnlyHint":    []string{"true"},
+	},
+	Name: "module",
+	Payload: tools.TypeSpec{
+		Codec: tools.JSONCodec[any]{
+			FromJSON: func(data []byte) (any, error) {
+				if len(data) == 0 {
+					return nil, nil
+				}
+				var out any
+				if err := json.Unmarshal(data, &out); err != nil {
+					return nil, err
+				}
+				return out, nil
+			},
+			ToJSON: func(v any) ([]byte, error) {
+				return json.Marshal(v)
+			},
+		},
+		Name:   "*vector_mcp.ModuleRequest",
+		Schema: []byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"module_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"module_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"module_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"),
+	},
+	Result: tools.TypeSpec{
+		Codec: tools.JSONCodec[any]{
+			FromJSON: func(data []byte) (any, error) {
+				if len(data) == 0 {
+					return nil, nil
+				}
+				var out any
+				if err := json.Unmarshal(data, &out); err != nil {
+					return nil, err
+				}
+				return out, nil
+			},
+			ToJSON: func(v any) ([]byte, error) {
+				return json.Marshal(v)
+			},
+		},
+		Name:   "*vector_mcp.ModuleResult",
+		Schema: nil,
+	},
+	Service: "VectorMCP",
+	Toolset: "VectorMCP.vector",
+}, tools.ToolSpec{
+	Description: "Labels in a project. Use an advertised action.",
+	Meta: map[string][]string{
+		"destructiveHint": []string{"false"},
+		"openWorldHint":   []string{"false"},
+		"readOnlyHint":    []string{"true"},
+	},
+	Name: "label",
+	Payload: tools.TypeSpec{
+		Codec: tools.JSONCodec[any]{
+			FromJSON: func(data []byte) (any, error) {
+				if len(data) == 0 {
+					return nil, nil
+				}
+				var out any
+				if err := json.Unmarshal(data, &out); err != nil {
+					return nil, err
+				}
+				return out, nil
+			},
+			ToJSON: func(v any) ([]byte, error) {
+				return json.Marshal(v)
+			},
+		},
+		Name:   "*vector_mcp.LabelRequest",
+		Schema: []byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"label_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"label_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"cursor\":{\"type\":\"string\"},\"label_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"),
+	},
+	Result: tools.TypeSpec{
+		Codec: tools.JSONCodec[any]{
+			FromJSON: func(data []byte) (any, error) {
+				if len(data) == 0 {
+					return nil, nil
+				}
+				var out any
+				if err := json.Unmarshal(data, &out); err != nil {
+					return nil, err
+				}
+				return out, nil
+			},
+			ToJSON: func(v any) ([]byte, error) {
+				return json.Marshal(v)
+			},
+		},
+		Name:   "*vector_mcp.LabelResult",
+		Schema: nil,
+	},
+	Service: "VectorMCP",
+	Toolset: "VectorMCP.vector",
 }}
 
 // RegisterVectorMCPVectorToolset registers the vector toolset with the runtime.
@@ -271,6 +367,12 @@ func VectorMCPVectorToolsetRetryHint(toolName tools.Ident, err error) *planner.R
 				example = "{\"action\":\"list\"}"
 			case "cycle":
 				schemaJSON = "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"status\":{\"type\":\"string\",\"description\":\"Active cycle status: current, upcoming, completed, draft, or incomplete. Ignored for archived cycles.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"cycle_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"status\":{\"type\":\"string\",\"description\":\"Active cycle status: current, upcoming, completed, draft, or incomplete. Ignored for archived cycles.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"
+				example = "{\"action\":\"list\",\"project_id\":\"example\"}"
+			case "module":
+				schemaJSON = "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"module_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"module_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"module_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"
+				example = "{\"action\":\"list\",\"project_id\":\"example\"}"
+			case "label":
+				schemaJSON = "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"label_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"label_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"cursor\":{\"type\":\"string\"},\"label_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"
 				example = "{\"action\":\"list\",\"project_id\":\"example\"}"
 			}
 			prompt := retry.BuildRepairPrompt("tools/call:"+key, rpcErr.Message, example, schemaJSON)

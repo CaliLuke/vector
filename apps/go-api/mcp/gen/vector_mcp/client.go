@@ -18,11 +18,13 @@ type Client struct {
 	MemberEndpoint  loom.Endpoint
 	ProjectEndpoint loom.Endpoint
 	CycleEndpoint   loom.Endpoint
+	ModuleEndpoint  loom.Endpoint
+	LabelEndpoint   loom.Endpoint
 }
 
 // NewClient initializes a "VectorMCP" service client given the endpoints.
-func NewClient(member, project, cycle loom.Endpoint) *Client {
-	return &Client{MemberEndpoint: member, ProjectEndpoint: project, CycleEndpoint: cycle}
+func NewClient(member, project, cycle, module, label loom.Endpoint) *Client {
+	return &Client{MemberEndpoint: member, ProjectEndpoint: project, CycleEndpoint: cycle, ModuleEndpoint: module, LabelEndpoint: label}
 }
 
 // Member calls the "member" endpoint of the "VectorMCP" service.
@@ -77,4 +79,38 @@ func (c *Client) Cycle(ctx context.Context, p *CycleRequest) (res *CycleResult, 
 		return
 	}
 	return ires.(*CycleResult), nil
+}
+
+// Module calls the "module" endpoint of the "VectorMCP" service.
+// Module may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) Module(ctx context.Context, p *ModuleRequest) (res *ModuleResult, err error) {
+	var ires any
+	ires, err = c.ModuleEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(*ModuleResult), nil
+}
+
+// Label calls the "label" endpoint of the "VectorMCP" service.
+// Label may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) Label(ctx context.Context, p *LabelRequest) (res *LabelResult, err error) {
+	var ires any
+	ires, err = c.LabelEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(*LabelResult), nil
 }

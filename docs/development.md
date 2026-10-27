@@ -47,7 +47,7 @@ Open `http://localhost:8000/`. Instance administration uses `/god-mode/`, and pu
 
 The [remote MCP transport](mcp.md) is disabled by default. Personal-token mode can
 authenticate requests and call five `member` reads and four `project` actions,
-including archive and restore, plus two `cycle` reads. OAuth mode requires
+including archive and restore, plus list/detail reads for `cycle`, `module`, and `label`. OAuth mode requires
 the [external issuer profile and account linking](mcp-oauth.md). The remaining
 resource action contracts are still pending.
 The proxy serves all browser entry points. Frontend ports 3000–3100 are internal development upstreams.
