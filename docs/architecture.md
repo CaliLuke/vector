@@ -27,6 +27,8 @@ and full parity are incomplete.
 
 The [PQL query boundary](pql.md) lives in `internal/issuequery` and is executed by the existing `internal/workitems` API list path before counting and pagination. Its scalar, relationship (including native milestones), member, body, and effective custom-property query subset does not yet satisfy the complete MCP query contract; the core query actions and reference tool remain unregistered.
 
+`internal/milestones` owns the [native milestone operations](mcp-milestones.md): consistent scoped reads and transactional record/association changes, receipts, revisions and outbox insertion. HTTP/MCP mounting and milestone-specific worker delivery remain incomplete; none of these seven MCP actions is advertised yet.
+
 ## Source layout
 
 | Path                                   | Purpose                                       |
