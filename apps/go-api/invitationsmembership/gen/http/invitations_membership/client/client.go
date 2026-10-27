@@ -18,6 +18,12 @@ import (
 
 // Client lists the InvitationsMembership service endpoint HTTP clients.
 type Client struct {
+	// ListMemberRoles Doer is the HTTP client used to make requests to the
+	// ListMemberRoles endpoint.
+	ListMemberRolesDoer loomhttp.Doer
+	// RetrieveMemberRole Doer is the HTTP client used to make requests to the
+	// RetrieveMemberRole endpoint.
+	RetrieveMemberRoleDoer loomhttp.Doer
 	// GetAPIUsersMeWorkspacesInvitations Doer is the HTTP client used to make
 	// requests to the GetAPIUsersMeWorkspacesInvitations endpoint.
 	GetAPIUsersMeWorkspacesInvitationsDoer loomhttp.Doer
@@ -125,6 +131,32 @@ type Client struct {
 // APIClient groups API HTTP client operations.
 type APIClient struct {
 	client *Client
+}
+
+// ListMemberRoles returns an endpoint that makes HTTP requests to the
+// InvitationsMembership service ListMemberRoles server.
+func (g *APIClient) ListMemberRoles() loom.Endpoint {
+	return g.client.ListMemberRoles()
+}
+
+// BuildListMemberRolesRequest instantiates a HTTP request object with method
+// and path set to call the "InvitationsMembership" service "ListMemberRoles"
+// endpoint
+func (g *APIClient) BuildListMemberRolesRequest(ctx context.Context, v any) (*http.Request, error) {
+	return g.client.BuildListMemberRolesRequest(ctx, v)
+}
+
+// RetrieveMemberRole returns an endpoint that makes HTTP requests to the
+// InvitationsMembership service RetrieveMemberRole server.
+func (g *APIClient) RetrieveMemberRole() loom.Endpoint {
+	return g.client.RetrieveMemberRole()
+}
+
+// BuildRetrieveMemberRoleRequest instantiates a HTTP request object with
+// method and path set to call the "InvitationsMembership" service
+// "RetrieveMemberRole" endpoint
+func (g *APIClient) BuildRetrieveMemberRoleRequest(ctx context.Context, v any) (*http.Request, error) {
+	return g.client.BuildRetrieveMemberRoleRequest(ctx, v)
 }
 
 // GetAPIUsersMeWorkspacesInvitations returns an endpoint that makes HTTP
@@ -529,9 +561,57 @@ func (g *APIClient) BuildPostAPIWorkspacesBySlugProjectsByProjectIDJoinByPkReque
 // NewClient instantiates HTTP clients for all the InvitationsMembership
 // service servers.
 func NewClient(scheme string, host string, doer loomhttp.Doer, enc func(*http.Request) loomhttp.Encoder, dec func(*http.Response) loomhttp.Decoder, restoreBody bool) *Client {
-	client := &Client{GetAPIUsersMeWorkspacesInvitationsDoer: doer, PostAPIUsersMeWorkspacesInvitationsDoer: doer, GetAPIUsersMeWorkspacesBySlugProjectsInvitationsDoer: doer, PostAPIUsersMeWorkspacesBySlugProjectsInvitationsDoer: doer, GetAPIV1WorkspacesBySlugInvitationsDoer: doer, PostAPIV1WorkspacesBySlugInvitationsDoer: doer, DeleteAPIV1WorkspacesBySlugInvitationsByPkDoer: doer, GetAPIV1WorkspacesBySlugInvitationsByPkDoer: doer, PatchAPIV1WorkspacesBySlugInvitationsByPkDoer: doer, PutAPIV1WorkspacesBySlugInvitationsByPkDoer: doer, GetAPIV1WorkspacesBySlugMembersLiteDoer: doer, GetAPIV1WorkspacesBySlugMembersDoer: doer, GetAPIWorkspacesBySlugInvitationsDoer: doer, PostAPIWorkspacesBySlugInvitationsDoer: doer, DeleteAPIWorkspacesBySlugInvitationsByPkDoer: doer, GetAPIWorkspacesBySlugInvitationsByPkDoer: doer, PatchAPIWorkspacesBySlugInvitationsByPkDoer: doer, GetAPIWorkspacesBySlugInvitationsByPkJoinDoer: doer, PostAPIWorkspacesBySlugInvitationsByPkJoinDoer: doer, PostAPIWorkspacesBySlugMembersLeaveDoer: doer, DeleteAPIWorkspacesBySlugMembersByPkDoer: doer, PatchAPIWorkspacesBySlugMembersByPkDoer: doer, GetAPIWorkspacesBySlugProjectsByProjectIDInvitationsDoer: doer, PostAPIWorkspacesBySlugProjectsByProjectIDInvitationsDoer: doer, DeleteAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPkDoer: doer, GetAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPkDoer: doer, GetAPIWorkspacesBySlugProjectsByProjectIDJoinByPkDoer: doer, PostAPIWorkspacesBySlugProjectsByProjectIDJoinByPkDoer: doer, RestoreResponseBody: restoreBody, scheme: scheme, host: host, decoder: dec, encoder: enc}
+	client := &Client{ListMemberRolesDoer: doer, RetrieveMemberRoleDoer: doer, GetAPIUsersMeWorkspacesInvitationsDoer: doer, PostAPIUsersMeWorkspacesInvitationsDoer: doer, GetAPIUsersMeWorkspacesBySlugProjectsInvitationsDoer: doer, PostAPIUsersMeWorkspacesBySlugProjectsInvitationsDoer: doer, GetAPIV1WorkspacesBySlugInvitationsDoer: doer, PostAPIV1WorkspacesBySlugInvitationsDoer: doer, DeleteAPIV1WorkspacesBySlugInvitationsByPkDoer: doer, GetAPIV1WorkspacesBySlugInvitationsByPkDoer: doer, PatchAPIV1WorkspacesBySlugInvitationsByPkDoer: doer, PutAPIV1WorkspacesBySlugInvitationsByPkDoer: doer, GetAPIV1WorkspacesBySlugMembersLiteDoer: doer, GetAPIV1WorkspacesBySlugMembersDoer: doer, GetAPIWorkspacesBySlugInvitationsDoer: doer, PostAPIWorkspacesBySlugInvitationsDoer: doer, DeleteAPIWorkspacesBySlugInvitationsByPkDoer: doer, GetAPIWorkspacesBySlugInvitationsByPkDoer: doer, PatchAPIWorkspacesBySlugInvitationsByPkDoer: doer, GetAPIWorkspacesBySlugInvitationsByPkJoinDoer: doer, PostAPIWorkspacesBySlugInvitationsByPkJoinDoer: doer, PostAPIWorkspacesBySlugMembersLeaveDoer: doer, DeleteAPIWorkspacesBySlugMembersByPkDoer: doer, PatchAPIWorkspacesBySlugMembersByPkDoer: doer, GetAPIWorkspacesBySlugProjectsByProjectIDInvitationsDoer: doer, PostAPIWorkspacesBySlugProjectsByProjectIDInvitationsDoer: doer, DeleteAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPkDoer: doer, GetAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPkDoer: doer, GetAPIWorkspacesBySlugProjectsByProjectIDJoinByPkDoer: doer, PostAPIWorkspacesBySlugProjectsByProjectIDJoinByPkDoer: doer, RestoreResponseBody: restoreBody, scheme: scheme, host: host, decoder: dec, encoder: enc}
 	client.API = &APIClient{client: client}
 	return client
+}
+
+// ListMemberRoles returns an endpoint that makes HTTP requests to the
+// InvitationsMembership service ListMemberRoles server.
+func (c *Client) ListMemberRoles() loom.Endpoint {
+	var (
+		encodeRequest  = EncodeListMemberRolesRequest(c.encoder)
+		decodeResponse = DecodeListMemberRolesResponse(c.decoder, c.RestoreResponseBody)
+	)
+	return func(ctx context.Context, v any) (any, error) {
+		req, err := c.BuildListMemberRolesRequest(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+		err = encodeRequest(req, v)
+		if err != nil {
+			return nil, err
+		}
+		resp, err := c.ListMemberRolesDoer.Do(req)
+		if err != nil {
+			return nil, loomhttp.ErrRequestError("InvitationsMembership", "ListMemberRoles", err)
+		}
+		return decodeResponse(resp)
+	}
+}
+
+// RetrieveMemberRole returns an endpoint that makes HTTP requests to the
+// InvitationsMembership service RetrieveMemberRole server.
+func (c *Client) RetrieveMemberRole() loom.Endpoint {
+	var (
+		encodeRequest  = EncodeRetrieveMemberRoleRequest(c.encoder)
+		decodeResponse = DecodeRetrieveMemberRoleResponse(c.decoder, c.RestoreResponseBody)
+	)
+	return func(ctx context.Context, v any) (any, error) {
+		req, err := c.BuildRetrieveMemberRoleRequest(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+		err = encodeRequest(req, v)
+		if err != nil {
+			return nil, err
+		}
+		resp, err := c.RetrieveMemberRoleDoer.Do(req)
+		if err != nil {
+			return nil, loomhttp.ErrRequestError("InvitationsMembership", "RetrieveMemberRole", err)
+		}
+		return decodeResponse(resp)
+	}
 }
 
 // GetAPIUsersMeWorkspacesInvitations returns an endpoint that makes HTTP

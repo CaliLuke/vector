@@ -34,7 +34,7 @@ func (e *Endpoints) Use(m func(loom.Endpoint) loom.Endpoint) {
 // "member" of service "VectorMCP".
 func NewMemberEndpoint(s Service) loom.Endpoint {
 	return func(ctx context.Context, req any) (any, error) {
-		p := req.(*MemberListProjectOrMemberMe)
+		p := req.(*MemberRequest)
 		return s.Member(ctx, p)
 	}
 }

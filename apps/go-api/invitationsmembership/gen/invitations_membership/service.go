@@ -18,6 +18,10 @@ import (
 
 // Service is the InvitationsMembership service interface.
 type Service interface {
+	// List the workspace's existing workspace and project role definitions.
+	ListMemberRoles(context.Context, *ListMemberRolesPayload) (res *MemberRolesPage, err error)
+	// Retrieve a role definition by its workspace-scoped identifier.
+	RetrieveMemberRole(context.Context, *RetrieveMemberRolePayload) (res *MemberRoleDefinition, err error)
 	// This enables timezone conversion according
 	// to the user set timezone
 	GetAPIUsersMeWorkspacesInvitations(context.Context, *GetAPIUsersMeWorkspacesInvitationsPayload) (res []*PlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponse, err error)
@@ -112,7 +116,7 @@ const ServiceName = "InvitationsMembership"
 // MethodNames lists the service method names as defined in the design. These
 // are the same values that are set in the endpoint request contexts under the
 // MethodKey key.
-var MethodNames = [28]string{"GetAPIUsersMeWorkspacesInvitations", "PostAPIUsersMeWorkspacesInvitations", "GetAPIUsersMeWorkspacesBySlugProjectsInvitations", "PostAPIUsersMeWorkspacesBySlugProjectsInvitations", "GetAPIV1WorkspacesBySlugInvitations", "PostAPIV1WorkspacesBySlugInvitations", "DeleteAPIV1WorkspacesBySlugInvitationsByPk", "GetAPIV1WorkspacesBySlugInvitationsByPk", "PatchAPIV1WorkspacesBySlugInvitationsByPk", "PutAPIV1WorkspacesBySlugInvitationsByPk", "GetAPIV1WorkspacesBySlugMembersLite", "GetAPIV1WorkspacesBySlugMembers", "GetAPIWorkspacesBySlugInvitations", "PostAPIWorkspacesBySlugInvitations", "DeleteAPIWorkspacesBySlugInvitationsByPk", "GetAPIWorkspacesBySlugInvitationsByPk", "PatchAPIWorkspacesBySlugInvitationsByPk", "GetAPIWorkspacesBySlugInvitationsByPkJoin", "PostAPIWorkspacesBySlugInvitationsByPkJoin", "PostAPIWorkspacesBySlugMembersLeave", "DeleteAPIWorkspacesBySlugMembersByPk", "PatchAPIWorkspacesBySlugMembersByPk", "GetAPIWorkspacesBySlugProjectsByProjectIDInvitations", "PostAPIWorkspacesBySlugProjectsByProjectIDInvitations", "DeleteAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPk", "GetAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPk", "GetAPIWorkspacesBySlugProjectsByProjectIDJoinByPk", "PostAPIWorkspacesBySlugProjectsByProjectIDJoinByPk"}
+var MethodNames = [30]string{"ListMemberRoles", "RetrieveMemberRole", "GetAPIUsersMeWorkspacesInvitations", "PostAPIUsersMeWorkspacesInvitations", "GetAPIUsersMeWorkspacesBySlugProjectsInvitations", "PostAPIUsersMeWorkspacesBySlugProjectsInvitations", "GetAPIV1WorkspacesBySlugInvitations", "PostAPIV1WorkspacesBySlugInvitations", "DeleteAPIV1WorkspacesBySlugInvitationsByPk", "GetAPIV1WorkspacesBySlugInvitationsByPk", "PatchAPIV1WorkspacesBySlugInvitationsByPk", "PutAPIV1WorkspacesBySlugInvitationsByPk", "GetAPIV1WorkspacesBySlugMembersLite", "GetAPIV1WorkspacesBySlugMembers", "GetAPIWorkspacesBySlugInvitations", "PostAPIWorkspacesBySlugInvitations", "DeleteAPIWorkspacesBySlugInvitationsByPk", "GetAPIWorkspacesBySlugInvitationsByPk", "PatchAPIWorkspacesBySlugInvitationsByPk", "GetAPIWorkspacesBySlugInvitationsByPkJoin", "PostAPIWorkspacesBySlugInvitationsByPkJoin", "PostAPIWorkspacesBySlugMembersLeave", "DeleteAPIWorkspacesBySlugMembersByPk", "PatchAPIWorkspacesBySlugMembersByPk", "GetAPIWorkspacesBySlugProjectsByProjectIDInvitations", "PostAPIWorkspacesBySlugProjectsByProjectIDInvitations", "DeleteAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPk", "GetAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPk", "GetAPIWorkspacesBySlugProjectsByProjectIDJoinByPk", "PostAPIWorkspacesBySlugProjectsByProjectIDJoinByPk"}
 
 // DeleteAPIV1WorkspacesBySlugInvitationsByPkPayload is the payload type of the
 // InvitationsMembership service DeleteAPIV1WorkspacesBySlugInvitationsByPk
@@ -191,6 +195,14 @@ type GetAPIV1WorkspacesBySlugInvitationsPayload struct {
 // GetAPIV1WorkspacesBySlugMembersLitePayload is the payload type of the
 // InvitationsMembership service GetAPIV1WorkspacesBySlugMembersLite method.
 type GetAPIV1WorkspacesBySlugMembersLitePayload struct {
+	FirstName   *string `json:"first_name,omitzero"`
+	LastName    *string `json:"last_name,omitzero"`
+	Email       *string `json:"email,omitzero"`
+	DisplayName *string `json:"display_name,omitzero"`
+	RoleSlug    *string `json:"role_slug,omitzero"`
+	OrderBy     *string `json:"order_by,omitzero"`
+	IsActive    *string `json:"is_active,omitzero"`
+	IsBot       *string `json:"is_bot,omitzero"`
 	// Pagination cursor for getting next set of results
 	Cursor *string `json:"cursor,omitzero"`
 	// Number of results per page (default: 20, max: 100)
@@ -289,6 +301,43 @@ type InvitationsMembershipAPIKeyError struct {
 	ErrorValue              loom.JSONValue `json:"error,omitzero"`
 }
 
+// ListMemberRolesPayload is the payload type of the InvitationsMembership
+// service ListMemberRoles method.
+type ListMemberRolesPayload struct {
+	Slug      string  `json:"slug"`
+	Namespace *string `json:"namespace,omitzero"`
+	Cursor    *string `json:"cursor,omitzero"`
+	// Page size, default 20 and maximum 1000.
+	PerPage              *string `json:"perPage,omitzero"`
+	APIKeyAuthCredential *string `json:"apiKeyAuthCredential,omitzero"`
+}
+
+// MemberRoleDefinition is the result type of the InvitationsMembership service
+// RetrieveMemberRole method.
+type MemberRoleDefinition struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	Slug      string `json:"slug"`
+	Namespace string `json:"namespace"`
+}
+
+// MemberRolesPage is the result type of the InvitationsMembership service
+// ListMemberRoles method.
+type MemberRolesPage struct {
+	Count           int                     `json:"count"`
+	ExtraStats      loom.Nullable[string]   `json:"extra_stats"`
+	GroupedBy       loom.Nullable[string]   `json:"grouped_by"`
+	NextCursor      string                  `json:"next_cursor"`
+	NextPageResults bool                    `json:"next_page_results"`
+	PrevCursor      string                  `json:"prev_cursor"`
+	PrevPageResults bool                    `json:"prev_page_results"`
+	SubGroupedBy    loom.Nullable[string]   `json:"sub_grouped_by"`
+	TotalCount      int                     `json:"total_count"`
+	TotalPages      int                     `json:"total_pages"`
+	TotalResults    int                     `json:"total_results"`
+	Results         []*MemberRoleDefinition `json:"results"`
+}
+
 // PatchAPIV1WorkspacesBySlugInvitationsByPkPayload is the payload type of the
 // InvitationsMembership service PatchAPIV1WorkspacesBySlugInvitationsByPk
 // method.
@@ -342,6 +391,7 @@ type PlaneAPISerializersMemberWorkspacememberliteapiserializerResponse struct {
 	IsBot       *bool                 `json:"is_bot,omitzero"`
 	LastName    string                `json:"last_name"`
 	Role        *RoleC37Enum          `json:"role,omitzero"`
+	RoleSlug    loom.Nullable[string] `json:"role_slug"`
 }
 
 // The existing workspace roster adds a role to the API user projection.
@@ -568,11 +618,19 @@ type RestFrameworkSerializersPaginatedworkspacememberliteResponse struct {
 	NextPageResults bool                                                                 `json:"next_page_results"`
 	PrevCursor      string                                                               `json:"prev_cursor"`
 	PrevPageResults bool                                                                 `json:"prev_page_results"`
-	Results         []*PlaneAPISerializersMemberWorkspacememberliteapiserializerResponse `json:"results"`
 	SubGroupedBy    loom.Nullable[string]                                                `json:"sub_grouped_by"`
 	TotalCount      int                                                                  `json:"total_count"`
 	TotalPages      int                                                                  `json:"total_pages"`
 	TotalResults    int                                                                  `json:"total_results"`
+	Results         []*PlaneAPISerializersMemberWorkspacememberliteapiserializerResponse `json:"results"`
+}
+
+// RetrieveMemberRolePayload is the payload type of the InvitationsMembership
+// service RetrieveMemberRole method.
+type RetrieveMemberRolePayload struct {
+	Slug                 string  `json:"slug"`
+	RoleID               string  `json:"role_id"`
+	APIKeyAuthCredential *string `json:"apiKeyAuthCredential,omitzero"`
 }
 
 // * `20` - Admin

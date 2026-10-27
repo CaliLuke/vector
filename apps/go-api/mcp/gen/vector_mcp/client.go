@@ -31,11 +31,11 @@ func NewClient(member loom.Endpoint) *Client {
 // - "not_found" (type *loom.ServiceError)
 // - "internal_error" (type *loom.ServiceError)
 // - error: internal error
-func (c *Client) Member(ctx context.Context, p *MemberListProjectOrMemberMe) (res *MemberIdentityOrProjectMembers, err error) {
+func (c *Client) Member(ctx context.Context, p *MemberRequest) (res *MemberResult, err error) {
 	var ires any
 	ires, err = c.MemberEndpoint(ctx, p)
 	if err != nil {
 		return
 	}
-	return ires.(*MemberIdentityOrProjectMembers), nil
+	return ires.(*MemberResult), nil
 }

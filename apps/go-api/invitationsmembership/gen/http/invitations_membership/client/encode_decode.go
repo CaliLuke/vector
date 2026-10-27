@@ -21,6 +21,355 @@ import (
 	loom "github.com/CaliLuke/loom/pkg"
 )
 
+// BuildListMemberRolesRequest instantiates a HTTP request object with method
+// and path set to call the "InvitationsMembership" service "ListMemberRoles"
+// endpoint
+func (c *Client) BuildListMemberRolesRequest(ctx context.Context, v any) (*http.Request, error) {
+	var (
+		slug string
+	)
+	{
+		p, ok := v.(*invitationsmembership.ListMemberRolesPayload)
+		if !ok {
+			return nil, loomhttp.ErrInvalidType("InvitationsMembership", "ListMemberRoles", "*invitationsmembership.ListMemberRolesPayload", v)
+		}
+		slug = p.Slug
+	}
+	u, err := loomhttp.RequestURL(c.scheme, c.host, ListMemberRolesInvitationsMembershipPath(slug))
+	if err != nil {
+		return nil, loomhttp.ErrInvalidURL("InvitationsMembership", "ListMemberRoles", u.String(), err)
+	}
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, loomhttp.ErrInvalidURL("InvitationsMembership", "ListMemberRoles", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
+	}
+
+	return req, nil
+}
+
+// EncodeListMemberRolesRequest returns an encoder for requests sent to the
+// InvitationsMembership ListMemberRoles server.
+func EncodeListMemberRolesRequest(encoder func(*http.Request) loomhttp.Encoder) func(*http.Request, any) error {
+	return func(req *http.Request, v any) error {
+		p, ok := v.(*invitationsmembership.ListMemberRolesPayload)
+		if !ok {
+			return loomhttp.ErrInvalidType("InvitationsMembership", "ListMemberRoles", "*invitationsmembership.ListMemberRolesPayload", v)
+		}
+		if p.APIKeyAuthCredential != nil {
+			head := *p.APIKeyAuthCredential
+			req.Header.Set("X-Api-Key", head)
+		}
+		values := req.URL.Query()
+		if p.Namespace != nil {
+			values.Add("namespace", *p.Namespace)
+		}
+		if p.Cursor != nil {
+			values.Add("cursor", *p.Cursor)
+		}
+		if p.PerPage != nil {
+			values.Add("per_page", *p.PerPage)
+		}
+		req.URL.RawQuery = values.Encode()
+		return nil
+	}
+}
+
+// DecodeListMemberRolesResponse returns a decoder for responses returned by
+// the InvitationsMembership ListMemberRoles endpoint. restoreBody controls
+// whether the response body should be restored after having been read.
+// DecodeListMemberRolesResponse may return the following errors:
+//   - "status_400" (type *invitationsmembership.InvitationsMembershipAPIKeyError): http.StatusBadRequest
+//   - "status_401" (type *invitationsmembership.InvitationsMembershipAPIKeyError): http.StatusUnauthorized
+//   - "status_403" (type *invitationsmembership.InvitationsMembershipAPIKeyError): http.StatusForbidden
+//   - "status_404" (type *invitationsmembership.InvitationsMembershipAPIKeyError): http.StatusNotFound
+//   - "status_409" (type *invitationsmembership.InvitationsMembershipAPIKeyError): http.StatusConflict
+//   - "status_415" (type *invitationsmembership.InvitationsMembershipAPIKeyError): http.StatusUnsupportedMediaType
+//   - "status_429" (type *invitationsmembership.InvitationsMembershipAPIKeyError): http.StatusTooManyRequests
+//   - "status_500" (type *invitationsmembership.InvitationsMembershipAPIKeyError): http.StatusInternalServerError
+//   - error: internal error
+func DecodeListMemberRolesResponse(decoder func(*http.Response) loomhttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
+	return func(resp *http.Response) (any, error) {
+		return loomhttp.DecodeResponse(resp, restoreBody, false, func(resp *http.Response) (any, error) {
+			switch resp.StatusCode {
+			case http.StatusOK:
+				var (
+					body ListMemberRolesResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("InvitationsMembership", "ListMemberRoles", err)
+				}
+				err = ValidateListMemberRolesResponseBody(&body)
+				if err != nil {
+					return nil, loomhttp.ErrValidationError("InvitationsMembership", "ListMemberRoles", err)
+				}
+				res := NewListMemberRolesMemberRolesPageOK(&body)
+				return res, nil
+			case http.StatusBadRequest:
+				var (
+					body InvitationsMembershipListMemberRolesResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("InvitationsMembership", "ListMemberRoles", err)
+				}
+				return nil, NewListMemberRolesStatus400(&body, "status_400")
+			case http.StatusUnauthorized:
+				var (
+					body InvitationsMembershipListMemberRolesResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("InvitationsMembership", "ListMemberRoles", err)
+				}
+				return nil, NewListMemberRolesStatus400(&body, "status_401")
+			case http.StatusForbidden:
+				var (
+					body InvitationsMembershipListMemberRolesResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("InvitationsMembership", "ListMemberRoles", err)
+				}
+				return nil, NewListMemberRolesStatus400(&body, "status_403")
+			case http.StatusNotFound:
+				var (
+					body InvitationsMembershipListMemberRolesResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("InvitationsMembership", "ListMemberRoles", err)
+				}
+				return nil, NewListMemberRolesStatus400(&body, "status_404")
+			case http.StatusConflict:
+				var (
+					body InvitationsMembershipListMemberRolesResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("InvitationsMembership", "ListMemberRoles", err)
+				}
+				return nil, NewListMemberRolesStatus400(&body, "status_409")
+			case http.StatusUnsupportedMediaType:
+				var (
+					body InvitationsMembershipListMemberRolesResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("InvitationsMembership", "ListMemberRoles", err)
+				}
+				return nil, NewListMemberRolesStatus400(&body, "status_415")
+			case http.StatusTooManyRequests:
+				var (
+					body InvitationsMembershipListMemberRolesResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("InvitationsMembership", "ListMemberRoles", err)
+				}
+				return nil, NewListMemberRolesStatus400(&body, "status_429")
+			case http.StatusInternalServerError:
+				var (
+					body InvitationsMembershipListMemberRolesResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("InvitationsMembership", "ListMemberRoles", err)
+				}
+				return nil, NewListMemberRolesStatus400(&body, "status_500")
+			default:
+				body, err := loomhttp.ReadUnexpectedResponseBody(resp)
+				if err != nil {
+					return nil, err
+				}
+				return nil, loomhttp.ErrInvalidResponse("InvitationsMembership", "ListMemberRoles", resp.StatusCode, string(body))
+			}
+		})
+	}
+}
+
+// BuildRetrieveMemberRoleRequest instantiates a HTTP request object with
+// method and path set to call the "InvitationsMembership" service
+// "RetrieveMemberRole" endpoint
+func (c *Client) BuildRetrieveMemberRoleRequest(ctx context.Context, v any) (*http.Request, error) {
+	var (
+		slug   string
+		roleID string
+	)
+	{
+		p, ok := v.(*invitationsmembership.RetrieveMemberRolePayload)
+		if !ok {
+			return nil, loomhttp.ErrInvalidType("InvitationsMembership", "RetrieveMemberRole", "*invitationsmembership.RetrieveMemberRolePayload", v)
+		}
+		slug = p.Slug
+		roleID = p.RoleID
+	}
+	u, err := loomhttp.RequestURL(c.scheme, c.host, RetrieveMemberRoleInvitationsMembershipPath(slug, roleID))
+	if err != nil {
+		return nil, loomhttp.ErrInvalidURL("InvitationsMembership", "RetrieveMemberRole", u.String(), err)
+	}
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, loomhttp.ErrInvalidURL("InvitationsMembership", "RetrieveMemberRole", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
+	}
+
+	return req, nil
+}
+
+// EncodeRetrieveMemberRoleRequest returns an encoder for requests sent to the
+// InvitationsMembership RetrieveMemberRole server.
+func EncodeRetrieveMemberRoleRequest(encoder func(*http.Request) loomhttp.Encoder) func(*http.Request, any) error {
+	return func(req *http.Request, v any) error {
+		p, ok := v.(*invitationsmembership.RetrieveMemberRolePayload)
+		if !ok {
+			return loomhttp.ErrInvalidType("InvitationsMembership", "RetrieveMemberRole", "*invitationsmembership.RetrieveMemberRolePayload", v)
+		}
+		if p.APIKeyAuthCredential != nil {
+			head := *p.APIKeyAuthCredential
+			req.Header.Set("X-Api-Key", head)
+		}
+		return nil
+	}
+}
+
+// DecodeRetrieveMemberRoleResponse returns a decoder for responses returned by
+// the InvitationsMembership RetrieveMemberRole endpoint. restoreBody controls
+// whether the response body should be restored after having been read.
+// DecodeRetrieveMemberRoleResponse may return the following errors:
+//   - "status_400" (type *invitationsmembership.InvitationsMembershipAPIKeyError): http.StatusBadRequest
+//   - "status_401" (type *invitationsmembership.InvitationsMembershipAPIKeyError): http.StatusUnauthorized
+//   - "status_403" (type *invitationsmembership.InvitationsMembershipAPIKeyError): http.StatusForbidden
+//   - "status_404" (type *invitationsmembership.InvitationsMembershipAPIKeyError): http.StatusNotFound
+//   - "status_409" (type *invitationsmembership.InvitationsMembershipAPIKeyError): http.StatusConflict
+//   - "status_415" (type *invitationsmembership.InvitationsMembershipAPIKeyError): http.StatusUnsupportedMediaType
+//   - "status_429" (type *invitationsmembership.InvitationsMembershipAPIKeyError): http.StatusTooManyRequests
+//   - "status_500" (type *invitationsmembership.InvitationsMembershipAPIKeyError): http.StatusInternalServerError
+//   - error: internal error
+func DecodeRetrieveMemberRoleResponse(decoder func(*http.Response) loomhttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
+	return func(resp *http.Response) (any, error) {
+		return loomhttp.DecodeResponse(resp, restoreBody, false, func(resp *http.Response) (any, error) {
+			switch resp.StatusCode {
+			case http.StatusOK:
+				var (
+					body RetrieveMemberRoleResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("InvitationsMembership", "RetrieveMemberRole", err)
+				}
+				err = ValidateRetrieveMemberRoleResponseBody(&body)
+				if err != nil {
+					return nil, loomhttp.ErrValidationError("InvitationsMembership", "RetrieveMemberRole", err)
+				}
+				res := NewRetrieveMemberRoleMemberRoleDefinitionOK(&body)
+				return res, nil
+			case http.StatusBadRequest:
+				var (
+					body InvitationsMembershipRetrieveMemberRoleResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("InvitationsMembership", "RetrieveMemberRole", err)
+				}
+				return nil, NewRetrieveMemberRoleStatus400(&body, "status_400")
+			case http.StatusUnauthorized:
+				var (
+					body InvitationsMembershipRetrieveMemberRoleResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("InvitationsMembership", "RetrieveMemberRole", err)
+				}
+				return nil, NewRetrieveMemberRoleStatus400(&body, "status_401")
+			case http.StatusForbidden:
+				var (
+					body InvitationsMembershipRetrieveMemberRoleResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("InvitationsMembership", "RetrieveMemberRole", err)
+				}
+				return nil, NewRetrieveMemberRoleStatus400(&body, "status_403")
+			case http.StatusNotFound:
+				var (
+					body InvitationsMembershipRetrieveMemberRoleResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("InvitationsMembership", "RetrieveMemberRole", err)
+				}
+				return nil, NewRetrieveMemberRoleStatus400(&body, "status_404")
+			case http.StatusConflict:
+				var (
+					body InvitationsMembershipRetrieveMemberRoleResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("InvitationsMembership", "RetrieveMemberRole", err)
+				}
+				return nil, NewRetrieveMemberRoleStatus400(&body, "status_409")
+			case http.StatusUnsupportedMediaType:
+				var (
+					body InvitationsMembershipRetrieveMemberRoleResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("InvitationsMembership", "RetrieveMemberRole", err)
+				}
+				return nil, NewRetrieveMemberRoleStatus400(&body, "status_415")
+			case http.StatusTooManyRequests:
+				var (
+					body InvitationsMembershipRetrieveMemberRoleResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("InvitationsMembership", "RetrieveMemberRole", err)
+				}
+				return nil, NewRetrieveMemberRoleStatus400(&body, "status_429")
+			case http.StatusInternalServerError:
+				var (
+					body InvitationsMembershipRetrieveMemberRoleResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("InvitationsMembership", "RetrieveMemberRole", err)
+				}
+				return nil, NewRetrieveMemberRoleStatus400(&body, "status_500")
+			default:
+				body, err := loomhttp.ReadUnexpectedResponseBody(resp)
+				if err != nil {
+					return nil, err
+				}
+				return nil, loomhttp.ErrInvalidResponse("InvitationsMembership", "RetrieveMemberRole", resp.StatusCode, string(body))
+			}
+		})
+	}
+}
+
 // BuildGetAPIUsersMeWorkspacesInvitationsRequest instantiates a HTTP request
 // object with method and path set to call the "InvitationsMembership" service
 // "GetAPIUsersMeWorkspacesInvitations" endpoint
@@ -1890,6 +2239,30 @@ func EncodeGetAPIV1WorkspacesBySlugMembersLiteRequest(encoder func(*http.Request
 			req.Header.Set("X-Api-Key", head)
 		}
 		values := req.URL.Query()
+		if p.FirstName != nil {
+			values.Add("first_name", *p.FirstName)
+		}
+		if p.LastName != nil {
+			values.Add("last_name", *p.LastName)
+		}
+		if p.Email != nil {
+			values.Add("email", *p.Email)
+		}
+		if p.DisplayName != nil {
+			values.Add("display_name", *p.DisplayName)
+		}
+		if p.RoleSlug != nil {
+			values.Add("role_slug", *p.RoleSlug)
+		}
+		if p.OrderBy != nil {
+			values.Add("order_by", *p.OrderBy)
+		}
+		if p.IsActive != nil {
+			values.Add("is_active", *p.IsActive)
+		}
+		if p.IsBot != nil {
+			values.Add("is_bot", *p.IsBot)
+		}
 		if p.Cursor != nil {
 			values.Add("cursor", *p.Cursor)
 		}
@@ -5141,6 +5514,23 @@ func BuildPostAPIWorkspacesBySlugProjectsByProjectIDJoinByPkStreamPayload(payloa
 	}, nil
 }
 
+// unmarshalMemberRoleDefinitionResponseBodyToInvitationsmembershipMemberRoleDefinition
+// builds a value of type *invitationsmembership.MemberRoleDefinition from a
+// value of type *MemberRoleDefinitionResponseBody.
+func unmarshalMemberRoleDefinitionResponseBodyToInvitationsmembershipMemberRoleDefinition(v *MemberRoleDefinitionResponseBody) *invitationsmembership.MemberRoleDefinition {
+	if v == nil {
+		return nil
+	}
+	res := &invitationsmembership.MemberRoleDefinition{
+		ID:        *v.ID,
+		Name:      *v.Name,
+		Slug:      *v.Slug,
+		Namespace: *v.Namespace,
+	}
+
+	return res
+}
+
 // unmarshalPlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponseResponseToInvitationsmembershipPlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponse
 // builds a value of type
 // *invitationsmembership.PlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponse
@@ -5331,6 +5721,7 @@ func unmarshalPlaneAPISerializersMemberWorkspacememberliteapiserializerResponseR
 
 		res.Role = &resRoleValue
 	}
+	res.RoleSlug = v.RoleSlug
 
 	return res
 }

@@ -7,11 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
+	stduuid "uuid"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
@@ -31,7 +30,9 @@ type invitationsMembershipRepository interface {
 	WorkspaceInvites(context.Context, string) (json.RawMessage, error)
 	WorkspaceInvite(context.Context, string, uuid.UUID) (json.RawMessage, error)
 	WorkspaceMemberUsers(context.Context, string) (json.RawMessage, error)
-	WorkspaceMemberLitePage(context.Context, string, int, int) (json.RawMessage, int, error)
+	ListWorkspaceMembers(context.Context, stduuid.UUID, string, store.WorkspaceMembersQuery) (store.WorkspaceMembersPage, error)
+	ListRoles(context.Context, stduuid.UUID, string, string, int, int) ([]store.RoleDefinition, int, error)
+	RetrieveRole(context.Context, stduuid.UUID, string, stduuid.UUID) (store.RoleDefinition, error)
 	CreateAPIWorkspaceInvite(context.Context, string, uuid.UUID, io.Reader, string) (json.RawMessage, error)
 	PatchAPIWorkspaceInvite(context.Context, string, uuid.UUID, io.Reader, string) (json.RawMessage, error)
 	DeleteAPIWorkspaceInvite(context.Context, string, uuid.UUID) error
@@ -109,6 +110,9 @@ func (service *invitationsMembershipService) AuthorizeInvitationsMembershipProto
 			switch {
 			case strings.Contains(resource.Pattern, "/members-lite"), strings.HasSuffix(strings.TrimSuffix(resource.Pattern, "/"), "/members"):
 				roles = []int{15, 20}
+				throttle = true
+			case strings.Contains(resource.Pattern, "/roles/"):
+				roles = []int{5, 15, 20}
 				throttle = true
 			case strings.Contains(resource.Pattern, "/invitations"):
 				roles = []int{20}
@@ -459,84 +463,44 @@ func (service *invitationsMembershipService) GetAPIV1WorkspacesBySlugMembersLite
 	if perPage > 1000 {
 		return nil, invitationsMembershipError(400, map[string]any{"detail": "Invalid per_page value. Cannot exceed 1000."})
 	}
-	page, err := parseInvitationsMembershipCursor(payload.Cursor, perPage)
+	page, err := store.ParseMemberCursor(payload.Cursor, perPage)
 	if err != nil {
 		return nil, invitationsMembershipError(400, map[string]any{"detail": "Invalid cursor parameter."})
 	}
 	if perPage == 0 {
 		return nil, invitationsMembershipError(500, map[string]any{"error": "Something went wrong please try again later"})
 	}
-	if page.offset < 0 {
+	if page.Page < 0 {
 		return nil, invitationsMembershipError(400, map[string]any{"detail": "Error in parsing"})
 	}
-	// OffsetPaginator uses a page index, independently of the cursor's size.
-	offset := page.offset * perPage
-	if page.isPrev && page.value != float64(perPage) {
+	if page.Previous && page.Value != float64(perPage) {
 		return nil, invitationsMembershipError(500, map[string]any{"error": "Something went wrong please try again later"})
 	}
-	data, total, err := service.repository.WorkspaceMemberLitePage(ctx, payload.Slug, perPage+1, offset)
+	if perPage < 0 {
+		return nil, invitationsMembershipError(500, map[string]any{"error": "Something went wrong please try again later"})
+	}
+	query, err := workspaceMemberFilters(ctx, payload)
+	if err != nil {
+		return nil, err
+	}
+	query.Limit, query.Page = perPage, page.Page
+	result, err := service.repository.ListWorkspaceMembers(ctx, stduuid.UUID(principal.UserID), payload.Slug, query)
+	if err != nil {
+		return nil, memberDirectoryError(err)
+	}
+	var members []*api.PlaneAPISerializersMemberWorkspacememberliteapiserializerResponse
+	if decodeErr := json.Unmarshal(result.Results, &members); decodeErr != nil {
+		return nil, invitationsMembershipRepositoryError(decodeErr)
+	}
+	envelope, err := store.NewMemberPage(members, result.Total, perPage, page.Page)
+	if err != nil {
+		return nil, memberDirectoryError(err)
+	}
+	encoded, err := json.Marshal(envelope)
 	if err != nil {
 		return nil, invitationsMembershipRepositoryError(err)
 	}
-	var members []*api.PlaneAPISerializersMemberWorkspacememberliteapiserializerResponse
-	if err := json.Unmarshal(data, &members); err != nil {
-		return nil, invitationsMembershipError(500, map[string]any{"error": "Something went wrong please try again later"})
-	}
-	nextPage := len(members) > perPage
-	if len(members) > perPage {
-		members = members[:perPage]
-	}
-	pageCount := len(members)
-	encoded, _ := json.Marshal(map[string]any{
-		"count": pageCount, "extra_stats": nil, "grouped_by": nil,
-		"next_cursor":       fmt.Sprintf("%d:%d:0", perPage, page.offset+1),
-		"prev_cursor":       fmt.Sprintf("%d:%d:1", perPage, page.offset-1),
-		"next_page_results": nextPage, "prev_page_results": page.offset > 0,
-		"results": members, "sub_grouped_by": nil,
-		"total_count": total, "total_pages": int(math.Ceil(float64(total) / float64(perPage))), "total_results": total,
-	})
-	response := &api.RestFrameworkSerializersPaginatedworkspacememberliteResponse{}
-	if err := json.Unmarshal(encoded, response); err != nil {
-		return nil, invitationsMembershipError(500, map[string]any{"error": "Something went wrong please try again later"})
-	}
-	return response, nil
-}
-
-type invitationsMembershipCursorValue struct {
-	value  float64
-	offset int
-	isPrev bool
-}
-
-func parseInvitationsMembershipCursor(raw *string, perPage int) (invitationsMembershipCursorValue, error) {
-	if raw == nil {
-		return invitationsMembershipCursorValue{value: float64(perPage)}, nil
-	}
-	parts := strings.Split(*raw, ":")
-	if len(parts) != 3 {
-		return invitationsMembershipCursorValue{}, errors.New("invalid cursor")
-	}
-	var value float64
-	var err error
-	if strings.Contains(parts[0], ".") {
-		value, err = strconv.ParseFloat(strings.TrimSpace(parts[0]), 64)
-	} else {
-		var integer int
-		integer, err = strconv.Atoi(strings.TrimSpace(parts[0]))
-		value = float64(integer)
-	}
-	if err != nil {
-		return invitationsMembershipCursorValue{}, err
-	}
-	offset, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return invitationsMembershipCursorValue{}, err
-	}
-	isPrev, err := strconv.Atoi(parts[2])
-	if err != nil {
-		return invitationsMembershipCursorValue{}, err
-	}
-	return invitationsMembershipCursorValue{value: value, offset: offset, isPrev: isPrev != 0}, nil
+	return decodeInvitationsMembershipResponse[*api.RestFrameworkSerializersPaginatedworkspacememberliteResponse](ctx, encoded)
 }
 
 func (service *invitationsMembershipService) GetAPIUsersMeWorkspacesInvitations(ctx context.Context, payload *api.GetAPIUsersMeWorkspacesInvitationsPayload) ([]*api.PlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponse, error) {

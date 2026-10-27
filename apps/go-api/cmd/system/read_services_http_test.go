@@ -886,16 +886,23 @@ func TestDjangoPageInternalErrorsUseHTML500(t *testing.T) {
 }
 
 func TestReadServiceProtocolRegistryOwnsDeclaredRoutes(t *testing.T) {
-	// Membership lifecycle, the 36 legacy assets paths plus draft association, the 14 invitation/membership
+	// Membership lifecycle, the 36 legacy assets paths plus draft association, the 16 invitation/membership and role catalogue
 	// paths, custom view creation, API-v1 Sticky format-suffix companions,
 	// administration paths, four workspace user-insights routes, and three custom-property
 	// history routes contribute here.
 	if len(assetsProtocolMetadata) != 36 {
 		t.Fatalf("assets protocol paths = %d, want 36", len(assetsProtocolMetadata))
 	}
-	if len(readServiceProtocols) != 276 {
-		t.Fatalf("protocol routes = %d, want 276", len(readServiceProtocols))
+	if len(readServiceProtocols) != 278 {
+		t.Fatalf("protocol routes = %d, want 278", len(readServiceProtocols))
 	}
+	for _, path := range []string{"/api/v1/workspaces/{slug}/roles/", "/api/v1/workspaces/{slug}/roles/{role_id}/"} {
+		protocol := mustReadServiceProtocol(path)
+		if protocol.allow != "GET" || !protocol.generatedMethods {
+			t.Fatalf("role catalogue route %s must use generated GET only", path)
+		}
+	}
+
 	draftAssets := mustReadServiceProtocol("/api/assets/v2/workspaces/{slug}/{entity_id}/bulk/")
 	if !draftAssets.authenticateMethod || !draftAssets.csrfForAuthenticatedSession || draftAssets.allow != "POST, OPTIONS" {
 		t.Fatal("draft association must enforce session authentication and CSRF")

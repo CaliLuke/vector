@@ -5,7 +5,10 @@
 //go:generate go tool loom gen github.com/CaliLuke/go-plane/invitationsmembership/design --output ..
 package design
 
-import . "github.com/CaliLuke/loom/dsl"
+import (
+	membertypes "github.com/CaliLuke/go-plane/invitationsmembership/design/types"
+	. "github.com/CaliLuke/loom/dsl"
+)
 
 var ImportedPatchedPlaneAPISerializersInviteWorkspaceinviteserializerRequestRequest = Type("PatchedPlaneApiSerializersInviteWorkspaceinviteserializerRequestRequest", func() {
 	Meta("openapi:typename:canonical", "true")
@@ -141,46 +144,7 @@ var ImportedPlaneAPISerializersInviteWorkspaceinviteserializerResponse = Type("P
 	Required("created_at", "email", "id", "updated_at")
 })
 
-var ImportedPlaneAPISerializersMemberWorkspacememberliteapiserializerResponse = Type("PlaneApiSerializersMemberWorkspacememberliteapiserializerResponse", func() {
-	Meta("openapi:typename:canonical", "true")
-	Description("Minimal WorkspaceMember representation for paginated member pickers/directories.")
-	Attribute("avatar", String, func() {
-		Nullable()
-		Meta("openapi:readOnly", "true")
-	})
-	Attribute("avatar_url", String, func() {
-		Nullable()
-		Meta("openapi:readOnly", "true")
-	})
-	Attribute("display_name", String, func() {
-		Meta("openapi:readOnly", "true")
-	})
-	Attribute("email", String, func() {
-		Format(FormatEmail)
-		Meta("openapi:readOnly", "true")
-	})
-	Attribute("first_name", String, func() {
-		Meta("openapi:readOnly", "true")
-	})
-	Attribute("id", String, func() {
-		Format(FormatUUID)
-		Meta("openapi:readOnly", "true")
-	})
-	Attribute("is_active", Boolean, func() {
-		Meta("openapi:readOnly", "true")
-	})
-	Attribute("is_bot", Boolean, func() {
-		Meta("openapi:readOnly", "true")
-	})
-	Attribute("last_name", String, func() {
-		Meta("openapi:readOnly", "true")
-	})
-	Attribute("role", ImportedRoleC37Enum, func() {
-		Meta("openapi:allOf:reference", "true")
-		Meta("openapi:readOnly", "true")
-	})
-	Required("display_name", "email", "first_name", "id", "last_name")
-})
+var ImportedPlaneAPISerializersMemberWorkspacememberliteapiserializerResponse = membertypes.WorkspaceMember
 
 var ImportedPlaneAPISerializersMemberWorkspacememberuserliteserializerResponse = Type("PlaneApiSerializersMemberWorkspacememberuserliteserializerResponse", func() {
 	Meta("openapi:typename:canonical", "true")
@@ -690,43 +654,9 @@ var ImportedRestFrameworkSerializersMessageresponseResponse = Type("RestFramewor
 	Required("message")
 })
 
-var ImportedRestFrameworkSerializersPaginatedworkspacememberliteResponse = Type("RestFrameworkSerializersPaginatedworkspacememberliteResponse", func() {
-	Meta("openapi:typename:canonical", "true")
-	Attribute("count", Int, func() {
-		Meta("openapi:format", "")
-	})
-	Attribute("extra_stats", String, func() {
-		Nullable()
-	})
-	Attribute("grouped_by", String, func() {
-		Nullable()
-	})
-	Attribute("next_cursor", String, func() {})
-	Attribute("next_page_results", Boolean)
-	Attribute("prev_cursor", String, func() {})
-	Attribute("prev_page_results", Boolean)
-	Attribute("results", ArrayOf(ImportedPlaneAPISerializersMemberWorkspacememberliteapiserializerResponse))
-	Attribute("sub_grouped_by", String, func() {
-		Nullable()
-	})
-	Attribute("total_count", Int, func() {
-		Meta("openapi:format", "")
-	})
-	Attribute("total_pages", Int, func() {
-		Meta("openapi:format", "")
-	})
-	Attribute("total_results", Int, func() {
-		Meta("openapi:format", "")
-	})
-	Required("count", "extra_stats", "grouped_by", "next_cursor", "next_page_results", "prev_cursor", "prev_page_results", "results", "sub_grouped_by", "total_count", "total_pages", "total_results")
-})
+var ImportedRestFrameworkSerializersPaginatedworkspacememberliteResponse = membertypes.WorkspaceMembersPage
 
-var ImportedRoleC37Enum = Type("RoleC37Enum", Int, func() {
-	Meta("openapi:typename:canonical", "true")
-	Description("* `20` - Admin\n* `15` - Member\n* `5` - Guest")
-	Meta("openapi:format", "")
-	Enum(20, 15, 5)
-})
+var ImportedRoleC37Enum = membertypes.MemberRole
 
 var ImportedAPIKeyAuthSecurity = APIKeySecurity("ApiKeyAuth", func() {
 	Description("Plane API token authentication.")
@@ -876,6 +806,7 @@ var projectMembershipSelectionRequest = Type("ProjectMembershipSelectionRequest"
 
 var _ = Service("InvitationsMembership", func() {
 	invitationsMembershipAPIKeyErrors()
+	memberRoleMethods()
 	Method("GetAPIUsersMeWorkspacesInvitations", func() {
 		HTTP(func() { invitationsMembershipAPIKeyHTTPResponses() })
 		Description("This enables timezone conversion according\nto the user set timezone")
@@ -1222,6 +1153,7 @@ var _ = Service("InvitationsMembership", func() {
 		Meta("openapi:extension:x-plane-view", "\"plane.api.views.member.WorkspaceMemberLiteAPIEndpoint\"")
 		Security(ImportedAPIKeyAuthSecurity)
 		Payload(func() {
+			memberDirectoryFilterAttributes()
 			Attribute("cursor", String, func() {
 				Description("Pagination cursor for getting next set of results")
 				Meta("openapi:allowEmptyValue", "false")
@@ -1247,6 +1179,7 @@ var _ = Service("InvitationsMembership", func() {
 		HTTP(func() {
 			Meta("openapi:tag:workspaces")
 			GET("/api/v1/workspaces/{slug}/members-lite/")
+			memberDirectoryFilterParams()
 			Param("cursor")
 			Param("perPage:per_page")
 			Param("slug")

@@ -13,6 +13,40 @@ import (
 	loom "github.com/CaliLuke/loom/pkg"
 )
 
+// MemberRoleDefinitionResponseBody is used to define fields on response body
+// types.
+type MemberRoleDefinitionResponseBody struct {
+	ID        *string `form:"id,omitempty" json:"id,omitzero" xml:"id,omitempty"`
+	Name      *string `form:"name,omitempty" json:"name,omitzero" xml:"name,omitempty"`
+	Slug      *string `form:"slug,omitempty" json:"slug,omitzero" xml:"slug,omitempty"`
+	Namespace *string `form:"namespace,omitempty" json:"namespace,omitzero" xml:"namespace,omitempty"`
+}
+
+// InvitationsMembershipHTTPError is used to define fields on response body
+// types.
+type InvitationsMembershipHTTPError struct {
+	Code                    loom.JSONValue `form:"code,omitempty" json:"code,omitzero" xml:"code,omitempty"`
+	Email                   loom.JSONValue `form:"email,omitempty" json:"email,omitzero" xml:"email,omitempty"`
+	Role                    loom.JSONValue `form:"role,omitempty" json:"role,omitzero" xml:"role,omitempty"`
+	NonFieldErrors          loom.JSONValue `form:"non_field_errors,omitempty" json:"non_field_errors,omitzero" xml:"non_field_errors,omitempty"`
+	WorkspaceUsers          loom.JSONValue `form:"workspace_users,omitempty" json:"workspace_users,omitzero" xml:"workspace_users,omitempty"`
+	IsActive                loom.JSONValue `form:"is_active,omitempty" json:"is_active,omitzero" xml:"is_active,omitempty"`
+	CreatedBy               loom.JSONValue `form:"created_by,omitempty" json:"created_by,omitzero" xml:"created_by,omitempty"`
+	UpdatedBy               loom.JSONValue `form:"updated_by,omitempty" json:"updated_by,omitzero" xml:"updated_by,omitempty"`
+	DeletedAt               loom.JSONValue `form:"deleted_at,omitempty" json:"deleted_at,omitzero" xml:"deleted_at,omitempty"`
+	Workspace               loom.JSONValue `form:"workspace,omitempty" json:"workspace,omitzero" xml:"workspace,omitempty"`
+	CompanyRole             loom.JSONValue `form:"company_role,omitempty" json:"company_role,omitzero" xml:"company_role,omitempty"`
+	Accepted                loom.JSONValue `form:"accepted,omitempty" json:"accepted,omitzero" xml:"accepted,omitempty"`
+	ViewProps               loom.JSONValue `form:"view_props,omitempty" json:"view_props,omitzero" xml:"view_props,omitempty"`
+	DefaultProps            loom.JSONValue `form:"default_props,omitempty" json:"default_props,omitzero" xml:"default_props,omitempty"`
+	IssueProps              loom.JSONValue `form:"issue_props,omitempty" json:"issue_props,omitzero" xml:"issue_props,omitempty"`
+	GettingStartedChecklist loom.JSONValue `form:"getting_started_checklist,omitempty" json:"getting_started_checklist,omitzero" xml:"getting_started_checklist,omitempty"`
+	Tips                    loom.JSONValue `form:"tips,omitempty" json:"tips,omitzero" xml:"tips,omitempty"`
+	ExploredFeatures        loom.JSONValue `form:"explored_features,omitempty" json:"explored_features,omitzero" xml:"explored_features,omitempty"`
+	Detail                  loom.JSONValue `form:"detail,omitempty" json:"detail,omitzero" xml:"detail,omitempty"`
+	ErrorValue              loom.JSONValue `form:"error,omitempty" json:"error,omitzero" xml:"error,omitempty"`
+}
+
 // PlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponseResponse
 // is used to define fields on response body types.
 type PlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponseResponse struct {
@@ -42,31 +76,6 @@ type PlaneAppSerializersWorkspaceWorkspaceliteserializerResponseResponse struct 
 	LogoURL loom.Nullable[string] `form:"logo_url,omitempty" json:"logo_url,omitzero" xml:"logo_url,omitempty"`
 	Name    *string               `form:"name,omitempty" json:"name,omitzero" xml:"name,omitempty"`
 	Slug    *string               `form:"slug,omitempty" json:"slug,omitzero" xml:"slug,omitempty"`
-}
-
-// InvitationsMembershipHTTPError is used to define fields on response body
-// types.
-type InvitationsMembershipHTTPError struct {
-	Code                    loom.JSONValue `form:"code,omitempty" json:"code,omitzero" xml:"code,omitempty"`
-	Email                   loom.JSONValue `form:"email,omitempty" json:"email,omitzero" xml:"email,omitempty"`
-	Role                    loom.JSONValue `form:"role,omitempty" json:"role,omitzero" xml:"role,omitempty"`
-	NonFieldErrors          loom.JSONValue `form:"non_field_errors,omitempty" json:"non_field_errors,omitzero" xml:"non_field_errors,omitempty"`
-	WorkspaceUsers          loom.JSONValue `form:"workspace_users,omitempty" json:"workspace_users,omitzero" xml:"workspace_users,omitempty"`
-	IsActive                loom.JSONValue `form:"is_active,omitempty" json:"is_active,omitzero" xml:"is_active,omitempty"`
-	CreatedBy               loom.JSONValue `form:"created_by,omitempty" json:"created_by,omitzero" xml:"created_by,omitempty"`
-	UpdatedBy               loom.JSONValue `form:"updated_by,omitempty" json:"updated_by,omitzero" xml:"updated_by,omitempty"`
-	DeletedAt               loom.JSONValue `form:"deleted_at,omitempty" json:"deleted_at,omitzero" xml:"deleted_at,omitempty"`
-	Workspace               loom.JSONValue `form:"workspace,omitempty" json:"workspace,omitzero" xml:"workspace,omitempty"`
-	CompanyRole             loom.JSONValue `form:"company_role,omitempty" json:"company_role,omitzero" xml:"company_role,omitempty"`
-	Accepted                loom.JSONValue `form:"accepted,omitempty" json:"accepted,omitzero" xml:"accepted,omitempty"`
-	ViewProps               loom.JSONValue `form:"view_props,omitempty" json:"view_props,omitzero" xml:"view_props,omitempty"`
-	DefaultProps            loom.JSONValue `form:"default_props,omitempty" json:"default_props,omitzero" xml:"default_props,omitempty"`
-	IssueProps              loom.JSONValue `form:"issue_props,omitempty" json:"issue_props,omitzero" xml:"issue_props,omitempty"`
-	GettingStartedChecklist loom.JSONValue `form:"getting_started_checklist,omitempty" json:"getting_started_checklist,omitzero" xml:"getting_started_checklist,omitempty"`
-	Tips                    loom.JSONValue `form:"tips,omitempty" json:"tips,omitzero" xml:"tips,omitempty"`
-	ExploredFeatures        loom.JSONValue `form:"explored_features,omitempty" json:"explored_features,omitzero" xml:"explored_features,omitempty"`
-	Detail                  loom.JSONValue `form:"detail,omitempty" json:"detail,omitzero" xml:"detail,omitempty"`
-	ErrorValue              loom.JSONValue `form:"error,omitempty" json:"error,omitzero" xml:"error,omitempty"`
 }
 
 // PlaneAppSerializersProjectProjectmemberinviteserializerResponseResponse is
@@ -128,6 +137,7 @@ type PlaneAPISerializersMemberWorkspacememberliteapiserializerResponseResponseBo
 	IsBot       loom.Optional[bool]                    `form:"is_bot,omitempty" json:"is_bot,omitzero" xml:"is_bot,omitempty"`
 	LastName    *string                                `form:"last_name,omitempty" json:"last_name,omitzero" xml:"last_name,omitempty"`
 	Role        loom.Optional[RoleC37EnumResponseBody] `form:"role,omitempty" json:"role,omitzero" xml:"role,omitempty"`
+	RoleSlug    loom.Nullable[string]                  `form:"role_slug,omitempty" json:"role_slug,omitzero" xml:"role_slug,omitempty"`
 }
 
 // PlaneAPISerializersMemberWorkspacememberuserliteserializerResponseResponse
@@ -176,6 +186,55 @@ type PlaneAppSerializersProjectProjectliteserializerResponseResponseBody struct 
 	Identifier    *string               `form:"identifier,omitempty" json:"identifier,omitzero" xml:"identifier,omitempty"`
 	LogoProps     loom.JSONValue        `form:"logo_props,omitempty" json:"logo_props,omitzero" xml:"logo_props,omitempty"`
 	Name          *string               `form:"name,omitempty" json:"name,omitzero" xml:"name,omitempty"`
+}
+
+// NewListMemberRolesMemberRolesPageOK builds a "InvitationsMembership" service
+// "ListMemberRoles" endpoint result from a HTTP "OK" response.
+func NewListMemberRolesMemberRolesPageOK(body *ListMemberRolesResponseBody) *invitationsmembership.MemberRolesPage {
+	v := &invitationsmembership.MemberRolesPage{
+		Count:           *body.Count,
+		NextCursor:      *body.NextCursor,
+		NextPageResults: *body.NextPageResults,
+		PrevCursor:      *body.PrevCursor,
+		PrevPageResults: *body.PrevPageResults,
+		TotalCount:      *body.TotalCount,
+		TotalPages:      *body.TotalPages,
+		TotalResults:    *body.TotalResults,
+	}
+	v.ExtraStats = body.ExtraStats
+	v.GroupedBy = body.GroupedBy
+	v.SubGroupedBy = body.SubGroupedBy
+	if body.Results != nil {
+		v.Results = make([]*invitationsmembership.MemberRoleDefinition, len(body.Results))
+		for i, val := range body.Results {
+			actual, ok := val.Value()
+			if !ok {
+				continue
+			}
+			if actual == nil {
+				v.Results[i] = nil
+				continue
+			}
+			v.Results[i] = unmarshalMemberRoleDefinitionResponseBodyToInvitationsmembershipMemberRoleDefinition(actual)
+		}
+	} else {
+		v.Results = nil
+	}
+
+	return v
+}
+
+// NewRetrieveMemberRoleMemberRoleDefinitionOK builds a "InvitationsMembership"
+// service "RetrieveMemberRole" endpoint result from a HTTP "OK" response.
+func NewRetrieveMemberRoleMemberRoleDefinitionOK(body *RetrieveMemberRoleResponseBody) *invitationsmembership.MemberRoleDefinition {
+	v := &invitationsmembership.MemberRoleDefinition{
+		ID:        *body.ID,
+		Name:      *body.Name,
+		Slug:      *body.Slug,
+		Namespace: *body.Namespace,
+	}
+
+	return v
 }
 
 // NewGetAPIUsersMeWorkspacesInvitationsPlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponseOK
@@ -383,6 +442,7 @@ func NewGetAPIV1WorkspacesBySlugMembersLiteRestFrameworkSerializersPaginatedwork
 	}
 	v.ExtraStats = body.ExtraStats
 	v.GroupedBy = body.GroupedBy
+	v.SubGroupedBy = body.SubGroupedBy
 	if body.Results != nil {
 		v.Results = make([]*invitationsmembership.PlaneAPISerializersMemberWorkspacememberliteapiserializerResponse, len(body.Results))
 		for i, val := range body.Results {
@@ -399,7 +459,6 @@ func NewGetAPIV1WorkspacesBySlugMembersLiteRestFrameworkSerializersPaginatedwork
 	} else {
 		v.Results = nil
 	}
-	v.SubGroupedBy = body.SubGroupedBy
 
 	return v
 }

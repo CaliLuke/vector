@@ -1,7 +1,7 @@
 # Remote MCP transport
 
 VEC-2 is **in progress**. The Go API contains a generated, stateless MCP server
-and ingress routing. Available actions are `member.me` and `member.list_project`. Personal-token
+and ingress routing. Available member actions are `me`, `list_workspace`, `list_project`, `list_roles`, and `retrieve_role`. Personal-token
 authentication is wired; OAuth remains unavailable. MCP is disabled by default.
 Enabling `oauth` or `both` fails before database startup.
 
@@ -81,9 +81,19 @@ unimplemented tools, prompts, or resources.
 
 ## Available actions
 
-`member` accepts `{"action":"me"}` or
-`{"action":"list_project","project_id":"<UUID>"}`, each with an optional
-`workspace_slug` selector. Discovery advertises these two read actions. The
+`member` accepts the five read actions below, each with an optional
+`workspace_slug` selector. Discovery advertises only these implemented actions.
+
+| Action           | Inputs                                                                   |
+| ---------------- | ------------------------------------------------------------------------ |
+| `me`             | No resource identifier.                                                  |
+| `list_workspace` | Optional text, role and boolean filters, ordering, cursor and page size. |
+| `list_project`   | Required `project_id`.                                                   |
+| `list_roles`     | Optional namespace, cursor and page size.                                |
+| `retrieve_role`  | Required `role_id`.                                                      |
+
+The [member directory contract](mcp-members.md) defines filters, role mappings,
+IDs, permissions, defaults and compatibility behavior. The
 generated union schema retains a top-level object and typed properties, with
 closed, action-specific branches. Unknown actions and fields belonging to other
 actions fail with `invalid_params`. A supplied workspace selector that conflicts
@@ -95,11 +105,11 @@ active state. The MCP projection normalizes absent UserLite fields to null, as t
 pinned Plane SDK does; the HTTP response shape remains unchanged. Both designs
 reference the same API identity field declaration.
 
-The generated contract declares typed identity and project-member results and safe named errors.
+The generated contract declares stable `MemberRequest` and `MemberResult` unions, typed identities, member pages and role results, and safe named errors.
 Tests use the generated HTTP server and real PostgreSQL-backed token, membership,
 and identity readers. They cover both protocol revisions, actor isolation, fresh
 profile data, and revocation between request authentication and action execution.
-This is personal-token evidence for two actions, not complete VEC-7 or VEC-36 proof.
+This is personal-token evidence for the member actions. OAuth and complete VEC-36 proof remain pending.
 
 The `list_project` action and the project-member HTTP endpoint use the same credential-neutral `MemberReader`.
 It reads the primary database and checks project access in the same SQL statement
@@ -110,6 +120,20 @@ with null; it does not infer role metadata absent from the HTTP contract. The
 operation is unpaginated, as in the pinned tool. Its nonempty result is a JSON
 text block without `structuredContent`; an empty result has no content blocks.
 This matches the pinned FastMCP list response on both protocol revisions.
+
+`list_workspace`, `list_roles` and `retrieve_role` use the same primary-backed
+`DirectoryReader` as the members-lite and new role HTTP endpoints. Directory
+access requires a current workspace member or admin; guests can read role
+definitions. Filters run before counting and paging. Required identity strings
+preserve the HTTP serializer's empty-string projection for database nulls.
+
+The catalogue contains four workspace definitions and three project definitions.
+It maps existing permissions without adding a Commenter or custom-role model.
+Role IDs are stable within a workspace and cannot resolve in another workspace.
+The HTTP role routes are `/api/v1/workspaces/{slug}/roles/` and
+`/api/v1/workspaces/{slug}/roles/{role_id}/`. Workspace member filters and
+`role_slug` are additive to the existing members-lite endpoint. Its default page
+size and legacy cursor/errors remain unchanged.
 
 ## Remaining requirements
 
@@ -126,6 +150,11 @@ This matches the pinned FastMCP list response on both protocol revisions.
   this interceptor when the minimum upstream version can produce that content-only
   list shape, including empty lists, for both revisions. Identity results retain
   their object-valued structured content.
+- **Nested result unions:** [Loom #1036](https://github.com/CaliLuke/loom/issues/1036)
+  tracks the unsupported nested untagged-union composition. Member directory
+  results use one page with a concrete typed entry carrier, preserving exact
+  action-specific fields and empty pages. The member contract records its removal
+  condition; no dependency source is patched.
 - **Discovery authorization:** prove per-principal permitted-action schemas and
   invocation checks across actions with different permissions. The current
   member read actions share a credential class; project access is checked at
@@ -145,5 +174,5 @@ This matches the pinned FastMCP list response on both protocol revisions.
 Focused verification exercises the real generated HTTP handler, both route
 modes, current and legacy discovery, invalid protocol headers, host/origin
 rejection, request limits, cancellation, unavailable authentication, and startup
-configuration. Typed results and errors are exercised for `member.me` and `member.list_project`; discovery
+configuration. Typed results and errors are exercised for all five member actions; discovery
 filtering across actions with different permissions remains pending.

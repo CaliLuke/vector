@@ -493,6 +493,10 @@
       "statements": 1460,
       "percent": 0
     },
+    "github.com/CaliLuke/go-plane/invitationsmembership/design/types": {
+      "statements": 67,
+      "percent": 100
+    },
     "github.com/CaliLuke/go-plane/loomprobe": {
       "statements": 32,
       "percent": 0

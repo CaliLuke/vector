@@ -67,6 +67,10 @@ func TestInvitationsMembershipProductionMiddleware(t *testing.T) {
 		status, audit                          int
 		events                                 []string
 	}{
+		{name: "role list rejects anonymous", method: "GET", suffix: "roles/", zone: "UTC", status: 401, events: []string{"authentication"}},
+		{name: "role scope denied", method: "GET", suffix: "roles/", key: "valid", zone: "UTC", denied: true, status: 403, audit: 1, events: []string{"authentication", "authorization"}},
+		{name: "role POST unsupported after auth", method: "POST", suffix: "roles/", key: "valid", zone: "UTC", status: 405, audit: 1, events: []string{"authentication", "authorization", "throttling"}, allow: "GET"},
+		{name: "role identifier checked after throttle", method: "GET", suffix: "roles/not-a-uuid/", key: "valid", zone: "UTC", status: 400, audit: 1, events: []string{"authentication", "authorization", "throttling"}},
 		{name: "member PATCH retains write Allow", method: "PATCH", suffix: "members/00000000-0000-4000-8000-000000000011/", key: "valid", zone: "UTC", denied: true, session: true, status: 403, audit: 1, events: []string{"authorization"}, allow: "PATCH, DELETE, OPTIONS"},
 		{name: "member DELETE retains write Allow", method: "DELETE", suffix: "members/00000000-0000-4000-8000-000000000011/", key: "valid", zone: "UTC", denied: true, session: true, status: 403, audit: 1, events: []string{"authorization"}, allow: "PATCH, DELETE, OPTIONS"},
 		{name: "member OPTIONS retains write Allow", method: "OPTIONS", suffix: "members/00000000-0000-4000-8000-000000000011/", key: "valid", zone: "UTC", denied: true, session: true, status: 200, audit: 1, allow: "PATCH, DELETE, OPTIONS"},

@@ -13,6 +13,42 @@ import (
 	loom "github.com/CaliLuke/loom/pkg"
 )
 
+// ListMemberRolesResponseBody is the type of the "InvitationsMembership"
+// service "ListMemberRoles" endpoint HTTP response body.
+type ListMemberRolesResponseBody struct {
+	Count           *int                                               `form:"count,omitempty" json:"count,omitzero" xml:"count,omitempty"`
+	ExtraStats      loom.Nullable[string]                              `form:"extra_stats,omitempty" json:"extra_stats,omitzero" xml:"extra_stats,omitempty"`
+	GroupedBy       loom.Nullable[string]                              `form:"grouped_by,omitempty" json:"grouped_by,omitzero" xml:"grouped_by,omitempty"`
+	NextCursor      *string                                            `form:"next_cursor,omitempty" json:"next_cursor,omitzero" xml:"next_cursor,omitempty"`
+	NextPageResults *bool                                              `form:"next_page_results,omitempty" json:"next_page_results,omitzero" xml:"next_page_results,omitempty"`
+	PrevCursor      *string                                            `form:"prev_cursor,omitempty" json:"prev_cursor,omitzero" xml:"prev_cursor,omitempty"`
+	PrevPageResults *bool                                              `form:"prev_page_results,omitempty" json:"prev_page_results,omitzero" xml:"prev_page_results,omitempty"`
+	SubGroupedBy    loom.Nullable[string]                              `form:"sub_grouped_by,omitempty" json:"sub_grouped_by,omitzero" xml:"sub_grouped_by,omitempty"`
+	TotalCount      *int                                               `form:"total_count,omitempty" json:"total_count,omitzero" xml:"total_count,omitempty"`
+	TotalPages      *int                                               `form:"total_pages,omitempty" json:"total_pages,omitzero" xml:"total_pages,omitempty"`
+	TotalResults    *int                                               `form:"total_results,omitempty" json:"total_results,omitzero" xml:"total_results,omitempty"`
+	Results         []loom.Optional[*MemberRoleDefinitionResponseBody] `form:"results,omitempty" json:"results,omitzero" xml:"results,omitempty"`
+}
+
+// InvitationsMembershipListMemberRolesResponseBody is the type of the
+// "InvitationsMembership" service "ListMemberRoles" endpoint HTTP response
+// body for the "status_400" error.
+type InvitationsMembershipListMemberRolesResponseBody InvitationsMembershipHTTPError
+
+// RetrieveMemberRoleResponseBody is the type of the "InvitationsMembership"
+// service "RetrieveMemberRole" endpoint HTTP response body.
+type RetrieveMemberRoleResponseBody struct {
+	ID        *string `form:"id,omitempty" json:"id,omitzero" xml:"id,omitempty"`
+	Name      *string `form:"name,omitempty" json:"name,omitzero" xml:"name,omitempty"`
+	Slug      *string `form:"slug,omitempty" json:"slug,omitzero" xml:"slug,omitempty"`
+	Namespace *string `form:"namespace,omitempty" json:"namespace,omitzero" xml:"namespace,omitempty"`
+}
+
+// InvitationsMembershipRetrieveMemberRoleResponseBody is the type of the
+// "InvitationsMembership" service "RetrieveMemberRole" endpoint HTTP response
+// body for the "status_400" error.
+type InvitationsMembershipRetrieveMemberRoleResponseBody InvitationsMembershipHTTPError
+
 // InvitationsMembershipGetAPIUsersMeWorkspacesInvitationsResponseBody is the
 // type of the "InvitationsMembership" service
 // "GetAPIUsersMeWorkspacesInvitations" endpoint HTTP response body for the
@@ -144,11 +180,11 @@ type GetAPIV1WorkspacesBySlugMembersLiteResponseBody struct {
 	NextPageResults *bool                                                                                           `form:"next_page_results,omitempty" json:"next_page_results,omitzero" xml:"next_page_results,omitempty"`
 	PrevCursor      *string                                                                                         `form:"prev_cursor,omitempty" json:"prev_cursor,omitzero" xml:"prev_cursor,omitempty"`
 	PrevPageResults *bool                                                                                           `form:"prev_page_results,omitempty" json:"prev_page_results,omitzero" xml:"prev_page_results,omitempty"`
-	Results         []loom.Optional[*PlaneAPISerializersMemberWorkspacememberliteapiserializerResponseResponseBody] `form:"results,omitempty" json:"results,omitzero" xml:"results,omitempty"`
 	SubGroupedBy    loom.Nullable[string]                                                                           `form:"sub_grouped_by,omitempty" json:"sub_grouped_by,omitzero" xml:"sub_grouped_by,omitempty"`
 	TotalCount      *int                                                                                            `form:"total_count,omitempty" json:"total_count,omitzero" xml:"total_count,omitempty"`
 	TotalPages      *int                                                                                            `form:"total_pages,omitempty" json:"total_pages,omitzero" xml:"total_pages,omitempty"`
 	TotalResults    *int                                                                                            `form:"total_results,omitempty" json:"total_results,omitzero" xml:"total_results,omitempty"`
+	Results         []loom.Optional[*PlaneAPISerializersMemberWorkspacememberliteapiserializerResponseResponseBody] `form:"results,omitempty" json:"results,omitzero" xml:"results,omitempty"`
 }
 
 // InvitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteResponseBody is the
@@ -401,6 +437,66 @@ type PostAPIWorkspacesBySlugProjectsByProjectIDJoinByPkResponseBody struct {
 // "PostAPIWorkspacesBySlugProjectsByProjectIDJoinByPk" endpoint HTTP response
 // body for the "status_400" error.
 type InvitationsMembershipPostAPIWorkspacesBySlugProjectsByProjectIDJoinByPkResponseBody InvitationsMembershipHTTPError
+
+// NewListMemberRolesStatus400 builds a InvitationsMembership service
+// ListMemberRoles endpoint status_400 error.
+func NewListMemberRolesStatus400(body *InvitationsMembershipListMemberRolesResponseBody, name string) *invitationsmembership.InvitationsMembershipAPIKeyError {
+	v := &invitationsmembership.InvitationsMembershipAPIKeyError{
+		Code:                    body.Code,
+		Email:                   body.Email,
+		Role:                    body.Role,
+		NonFieldErrors:          body.NonFieldErrors,
+		WorkspaceUsers:          body.WorkspaceUsers,
+		IsActive:                body.IsActive,
+		CreatedBy:               body.CreatedBy,
+		UpdatedBy:               body.UpdatedBy,
+		DeletedAt:               body.DeletedAt,
+		Workspace:               body.Workspace,
+		CompanyRole:             body.CompanyRole,
+		Accepted:                body.Accepted,
+		ViewProps:               body.ViewProps,
+		DefaultProps:            body.DefaultProps,
+		IssueProps:              body.IssueProps,
+		GettingStartedChecklist: body.GettingStartedChecklist,
+		Tips:                    body.Tips,
+		ExploredFeatures:        body.ExploredFeatures,
+		Detail:                  body.Detail,
+		ErrorValue:              body.ErrorValue,
+	}
+	v.Name = name
+
+	return v
+}
+
+// NewRetrieveMemberRoleStatus400 builds a InvitationsMembership service
+// RetrieveMemberRole endpoint status_400 error.
+func NewRetrieveMemberRoleStatus400(body *InvitationsMembershipRetrieveMemberRoleResponseBody, name string) *invitationsmembership.InvitationsMembershipAPIKeyError {
+	v := &invitationsmembership.InvitationsMembershipAPIKeyError{
+		Code:                    body.Code,
+		Email:                   body.Email,
+		Role:                    body.Role,
+		NonFieldErrors:          body.NonFieldErrors,
+		WorkspaceUsers:          body.WorkspaceUsers,
+		IsActive:                body.IsActive,
+		CreatedBy:               body.CreatedBy,
+		UpdatedBy:               body.UpdatedBy,
+		DeletedAt:               body.DeletedAt,
+		Workspace:               body.Workspace,
+		CompanyRole:             body.CompanyRole,
+		Accepted:                body.Accepted,
+		ViewProps:               body.ViewProps,
+		DefaultProps:            body.DefaultProps,
+		IssueProps:              body.IssueProps,
+		GettingStartedChecklist: body.GettingStartedChecklist,
+		Tips:                    body.Tips,
+		ExploredFeatures:        body.ExploredFeatures,
+		Detail:                  body.Detail,
+		ErrorValue:              body.ErrorValue,
+	}
+	v.Name = name
+
+	return v
+}
 
 // NewGetAPIUsersMeWorkspacesInvitationsStatus400 builds a
 // InvitationsMembership service GetAPIUsersMeWorkspacesInvitations endpoint

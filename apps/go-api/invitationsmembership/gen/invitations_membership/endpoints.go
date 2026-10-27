@@ -18,6 +18,8 @@ import (
 
 // Endpoints wraps the "InvitationsMembership" service endpoints.
 type Endpoints struct {
+	ListMemberRoles                                             loom.Endpoint
+	RetrieveMemberRole                                          loom.Endpoint
 	GetAPIUsersMeWorkspacesInvitations                          loom.Endpoint
 	PostAPIUsersMeWorkspacesInvitations                         loom.Endpoint
 	GetAPIUsersMeWorkspacesBySlugProjectsInvitations            loom.Endpoint
@@ -173,6 +175,8 @@ func NewEndpoints(s Service) *Endpoints {
 	// Casting service to Authorizer interface
 	a := s.(Authorizer)
 	return &Endpoints{
+		ListMemberRoles:                                             NewListMemberRolesEndpoint(s, a.APIKeyAuth),
+		RetrieveMemberRole:                                          NewRetrieveMemberRoleEndpoint(s, a.APIKeyAuth),
 		GetAPIUsersMeWorkspacesInvitations:                          NewGetAPIUsersMeWorkspacesInvitationsEndpoint(s, a.APIKeyAuth),
 		PostAPIUsersMeWorkspacesInvitations:                         NewPostAPIUsersMeWorkspacesInvitationsEndpoint(s, a.APIKeyAuth),
 		GetAPIUsersMeWorkspacesBySlugProjectsInvitations:            NewGetAPIUsersMeWorkspacesBySlugProjectsInvitationsEndpoint(s, a.APIKeyAuth),
@@ -207,6 +211,8 @@ func NewEndpoints(s Service) *Endpoints {
 // Use applies the given middleware to all the "InvitationsMembership" service
 // endpoints.
 func (e *Endpoints) Use(m func(loom.Endpoint) loom.Endpoint) {
+	e.ListMemberRoles = m(e.ListMemberRoles)
+	e.RetrieveMemberRole = m(e.RetrieveMemberRole)
 	e.GetAPIUsersMeWorkspacesInvitations = m(e.GetAPIUsersMeWorkspacesInvitations)
 	e.PostAPIUsersMeWorkspacesInvitations = m(e.PostAPIUsersMeWorkspacesInvitations)
 	e.GetAPIUsersMeWorkspacesBySlugProjectsInvitations = m(e.GetAPIUsersMeWorkspacesBySlugProjectsInvitations)
@@ -235,6 +241,52 @@ func (e *Endpoints) Use(m func(loom.Endpoint) loom.Endpoint) {
 	e.GetAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPk = m(e.GetAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPk)
 	e.GetAPIWorkspacesBySlugProjectsByProjectIDJoinByPk = m(e.GetAPIWorkspacesBySlugProjectsByProjectIDJoinByPk)
 	e.PostAPIWorkspacesBySlugProjectsByProjectIDJoinByPk = m(e.PostAPIWorkspacesBySlugProjectsByProjectIDJoinByPk)
+}
+
+// NewListMemberRolesEndpoint returns an endpoint function that calls the
+// method "ListMemberRoles" of service "InvitationsMembership".
+func NewListMemberRolesEndpoint(s Service, authAPIKeyFn security.AuthAPIKeyFunc) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*ListMemberRolesPayload)
+		var err error
+		sc := security.APIKeyScheme{
+			Name:           "ApiKeyAuth",
+			Scopes:         []string{},
+			RequiredScopes: []string{},
+		}
+		var key string
+		if p.APIKeyAuthCredential != nil {
+			key = *p.APIKeyAuthCredential
+		}
+		ctx, err = authAPIKeyFn(ctx, key, &sc)
+		if err != nil {
+			return nil, err
+		}
+		return s.ListMemberRoles(ctx, p)
+	}
+}
+
+// NewRetrieveMemberRoleEndpoint returns an endpoint function that calls the
+// method "RetrieveMemberRole" of service "InvitationsMembership".
+func NewRetrieveMemberRoleEndpoint(s Service, authAPIKeyFn security.AuthAPIKeyFunc) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*RetrieveMemberRolePayload)
+		var err error
+		sc := security.APIKeyScheme{
+			Name:           "ApiKeyAuth",
+			Scopes:         []string{},
+			RequiredScopes: []string{},
+		}
+		var key string
+		if p.APIKeyAuthCredential != nil {
+			key = *p.APIKeyAuthCredential
+		}
+		ctx, err = authAPIKeyFn(ctx, key, &sc)
+		if err != nil {
+			return nil, err
+		}
+		return s.RetrieveMemberRole(ctx, p)
+	}
 }
 
 // NewGetAPIUsersMeWorkspacesInvitationsEndpoint returns an endpoint function

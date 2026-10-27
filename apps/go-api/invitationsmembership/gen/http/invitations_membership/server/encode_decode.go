@@ -20,6 +20,417 @@ import (
 	loom "github.com/CaliLuke/loom/pkg"
 )
 
+// EncodeListMemberRolesResponse returns an encoder for responses returned by
+// the InvitationsMembership ListMemberRoles endpoint.
+func EncodeListMemberRolesResponse(encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder) func(context.Context, http.ResponseWriter, any) error {
+	return func(ctx context.Context, w http.ResponseWriter, v any) error {
+		res, ok := v.(*invitationsmembership.MemberRolesPage)
+		if !ok {
+			return loomhttp.ErrInvalidType("InvitationsMembership", "ListMemberRoles", "*invitationsmembership.MemberRolesPage", v)
+		}
+		enc := encoder(ctx, w)
+		body := NewListMemberRolesResponseBody(res)
+		w.WriteHeader(http.StatusOK)
+		return enc.Encode(body)
+	}
+}
+
+// DecodeListMemberRolesRequest returns a decoder for requests sent to the
+// InvitationsMembership ListMemberRoles endpoint.
+func DecodeListMemberRolesRequest(mux loomhttp.Muxer, _ func(*http.Request) loomhttp.Decoder) func(*http.Request) (*invitationsmembership.ListMemberRolesPayload, error) {
+	return func(r *http.Request) (*invitationsmembership.ListMemberRolesPayload, error) {
+		var payload *invitationsmembership.ListMemberRolesPayload
+		var err error
+		var (
+			slug                 string
+			namespace            *string
+			cursor               *string
+			perPage              *string
+			apiKeyAuthCredential *string
+
+			params = mux.Vars(r)
+		)
+		slug = params["slug"]
+		qp, queryErr := url.ParseQuery(r.URL.RawQuery)
+		if queryErr != nil {
+			return payload, loom.DecodePayloadError("invalid query string")
+		}
+		{
+			namespaceRaw := qp.Get("namespace")
+			namespacePresent := qp.Has("namespace")
+
+			if namespacePresent {
+				namespace = &namespaceRaw
+			}
+		}
+		{
+			cursorRaw := qp.Get("cursor")
+			cursorPresent := qp.Has("cursor")
+
+			if cursorPresent {
+				cursor = &cursorRaw
+			}
+		}
+		{
+			perPageRaw := qp.Get("per_page")
+			perPagePresent := qp.Has("per_page")
+
+			if perPagePresent {
+				perPage = &perPageRaw
+			}
+		}
+		{
+			apiKeyAuthCredentialRaw := r.Header.Get("X-Api-Key")
+			apiKeyAuthCredentialPresent := len(r.Header.Values("X-Api-Key")) > 0
+
+			if apiKeyAuthCredentialPresent {
+				apiKeyAuthCredential = &apiKeyAuthCredentialRaw
+			}
+		}
+		if err != nil {
+			return payload, err
+		}
+		payload = NewListMemberRolesPayload(slug, namespace, cursor, perPage, apiKeyAuthCredential)
+
+		return payload, nil
+	}
+}
+
+// EncodeListMemberRolesError returns an encoder for errors returned by the
+// ListMemberRoles InvitationsMembership endpoint.
+func EncodeListMemberRolesError(encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder, formatter func(ctx context.Context, err error) loomhttp.StatusCoder) func(context.Context, http.ResponseWriter, error) error {
+	encodeError := loomhttp.ErrorEncoder(encoder, formatter)
+	return func(ctx context.Context, w http.ResponseWriter, v error) error {
+		errorResponse := loom.ResolveErrorResponse(v)
+		if errorResponse.Owner == nil {
+			return encodeError(ctx, w, v)
+		}
+		switch errorResponse.Name {
+		case "status_400":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*invitationsmembership.InvitationsMembershipAPIKeyError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = NewInvitationsMembershipListMemberRolesResponseBody(res)
+			}
+			w.WriteHeader(http.StatusBadRequest)
+			return enc.Encode(body)
+		case "status_401":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*invitationsmembership.InvitationsMembershipAPIKeyError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = NewInvitationsMembershipListMemberRolesResponseBody(res)
+			}
+			w.WriteHeader(http.StatusUnauthorized)
+			return enc.Encode(body)
+		case "status_403":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*invitationsmembership.InvitationsMembershipAPIKeyError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = NewInvitationsMembershipListMemberRolesResponseBody(res)
+			}
+			w.WriteHeader(http.StatusForbidden)
+			return enc.Encode(body)
+		case "status_404":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*invitationsmembership.InvitationsMembershipAPIKeyError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = NewInvitationsMembershipListMemberRolesResponseBody(res)
+			}
+			w.WriteHeader(http.StatusNotFound)
+			return enc.Encode(body)
+		case "status_409":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*invitationsmembership.InvitationsMembershipAPIKeyError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = NewInvitationsMembershipListMemberRolesResponseBody(res)
+			}
+			w.WriteHeader(http.StatusConflict)
+			return enc.Encode(body)
+		case "status_415":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*invitationsmembership.InvitationsMembershipAPIKeyError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = NewInvitationsMembershipListMemberRolesResponseBody(res)
+			}
+			w.WriteHeader(http.StatusUnsupportedMediaType)
+			return enc.Encode(body)
+		case "status_429":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*invitationsmembership.InvitationsMembershipAPIKeyError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = NewInvitationsMembershipListMemberRolesResponseBody(res)
+			}
+			w.WriteHeader(http.StatusTooManyRequests)
+			return enc.Encode(body)
+		case "status_500":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*invitationsmembership.InvitationsMembershipAPIKeyError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = NewInvitationsMembershipListMemberRolesResponseBody(res)
+			}
+			w.WriteHeader(http.StatusInternalServerError)
+			return enc.Encode(body)
+		default:
+			return encodeError(ctx, w, v)
+		}
+	}
+}
+
+// EncodeRetrieveMemberRoleResponse returns an encoder for responses returned
+// by the InvitationsMembership RetrieveMemberRole endpoint.
+func EncodeRetrieveMemberRoleResponse(encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder) func(context.Context, http.ResponseWriter, any) error {
+	return func(ctx context.Context, w http.ResponseWriter, v any) error {
+		res, ok := v.(*invitationsmembership.MemberRoleDefinition)
+		if !ok {
+			return loomhttp.ErrInvalidType("InvitationsMembership", "RetrieveMemberRole", "*invitationsmembership.MemberRoleDefinition", v)
+		}
+		enc := encoder(ctx, w)
+		body := NewRetrieveMemberRoleResponseBody(res)
+		w.WriteHeader(http.StatusOK)
+		return enc.Encode(body)
+	}
+}
+
+// DecodeRetrieveMemberRoleRequest returns a decoder for requests sent to the
+// InvitationsMembership RetrieveMemberRole endpoint.
+func DecodeRetrieveMemberRoleRequest(mux loomhttp.Muxer, _ func(*http.Request) loomhttp.Decoder) func(*http.Request) (*invitationsmembership.RetrieveMemberRolePayload, error) {
+	return func(r *http.Request) (*invitationsmembership.RetrieveMemberRolePayload, error) {
+		var payload *invitationsmembership.RetrieveMemberRolePayload
+		var err error
+		var (
+			slug                 string
+			roleID               string
+			apiKeyAuthCredential *string
+
+			params = mux.Vars(r)
+		)
+		slug = params["slug"]
+		roleID = params["role_id"]
+		{
+			apiKeyAuthCredentialRaw := r.Header.Get("X-Api-Key")
+			apiKeyAuthCredentialPresent := len(r.Header.Values("X-Api-Key")) > 0
+
+			if apiKeyAuthCredentialPresent {
+				apiKeyAuthCredential = &apiKeyAuthCredentialRaw
+			}
+		}
+		if err != nil {
+			return payload, err
+		}
+		payload = NewRetrieveMemberRolePayload(slug, roleID, apiKeyAuthCredential)
+
+		return payload, nil
+	}
+}
+
+// EncodeRetrieveMemberRoleError returns an encoder for errors returned by the
+// RetrieveMemberRole InvitationsMembership endpoint.
+func EncodeRetrieveMemberRoleError(encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder, formatter func(ctx context.Context, err error) loomhttp.StatusCoder) func(context.Context, http.ResponseWriter, error) error {
+	encodeError := loomhttp.ErrorEncoder(encoder, formatter)
+	return func(ctx context.Context, w http.ResponseWriter, v error) error {
+		errorResponse := loom.ResolveErrorResponse(v)
+		if errorResponse.Owner == nil {
+			return encodeError(ctx, w, v)
+		}
+		switch errorResponse.Name {
+		case "status_400":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*invitationsmembership.InvitationsMembershipAPIKeyError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = NewInvitationsMembershipRetrieveMemberRoleResponseBody(res)
+			}
+			w.WriteHeader(http.StatusBadRequest)
+			return enc.Encode(body)
+		case "status_401":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*invitationsmembership.InvitationsMembershipAPIKeyError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = NewInvitationsMembershipRetrieveMemberRoleResponseBody(res)
+			}
+			w.WriteHeader(http.StatusUnauthorized)
+			return enc.Encode(body)
+		case "status_403":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*invitationsmembership.InvitationsMembershipAPIKeyError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = NewInvitationsMembershipRetrieveMemberRoleResponseBody(res)
+			}
+			w.WriteHeader(http.StatusForbidden)
+			return enc.Encode(body)
+		case "status_404":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*invitationsmembership.InvitationsMembershipAPIKeyError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = NewInvitationsMembershipRetrieveMemberRoleResponseBody(res)
+			}
+			w.WriteHeader(http.StatusNotFound)
+			return enc.Encode(body)
+		case "status_409":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*invitationsmembership.InvitationsMembershipAPIKeyError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = NewInvitationsMembershipRetrieveMemberRoleResponseBody(res)
+			}
+			w.WriteHeader(http.StatusConflict)
+			return enc.Encode(body)
+		case "status_415":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*invitationsmembership.InvitationsMembershipAPIKeyError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = NewInvitationsMembershipRetrieveMemberRoleResponseBody(res)
+			}
+			w.WriteHeader(http.StatusUnsupportedMediaType)
+			return enc.Encode(body)
+		case "status_429":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*invitationsmembership.InvitationsMembershipAPIKeyError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = NewInvitationsMembershipRetrieveMemberRoleResponseBody(res)
+			}
+			w.WriteHeader(http.StatusTooManyRequests)
+			return enc.Encode(body)
+		case "status_500":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*invitationsmembership.InvitationsMembershipAPIKeyError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = NewInvitationsMembershipRetrieveMemberRoleResponseBody(res)
+			}
+			w.WriteHeader(http.StatusInternalServerError)
+			return enc.Encode(body)
+		default:
+			return encodeError(ctx, w, v)
+		}
+	}
+}
+
 // EncodeGetAPIUsersMeWorkspacesInvitationsResponse returns an encoder for
 // responses returned by the InvitationsMembership
 // GetAPIUsersMeWorkspacesInvitations endpoint.
@@ -2010,6 +2421,14 @@ func DecodeGetAPIV1WorkspacesBySlugMembersLiteRequest(mux loomhttp.Muxer, _ func
 		var err error
 		var (
 			slug                 string
+			firstName            *string
+			lastName             *string
+			email                *string
+			displayName          *string
+			roleSlug             *string
+			orderBy              *string
+			isActive             *string
+			isBot                *string
 			cursor               *string
 			perPage              *int
 			apiKeyAuthCredential *string
@@ -2020,6 +2439,70 @@ func DecodeGetAPIV1WorkspacesBySlugMembersLiteRequest(mux loomhttp.Muxer, _ func
 		qp, queryErr := url.ParseQuery(r.URL.RawQuery)
 		if queryErr != nil {
 			return payload, loom.DecodePayloadError("invalid query string")
+		}
+		{
+			firstNameRaw := qp.Get("first_name")
+			firstNamePresent := qp.Has("first_name")
+
+			if firstNamePresent {
+				firstName = &firstNameRaw
+			}
+		}
+		{
+			lastNameRaw := qp.Get("last_name")
+			lastNamePresent := qp.Has("last_name")
+
+			if lastNamePresent {
+				lastName = &lastNameRaw
+			}
+		}
+		{
+			emailRaw := qp.Get("email")
+			emailPresent := qp.Has("email")
+
+			if emailPresent {
+				email = &emailRaw
+			}
+		}
+		{
+			displayNameRaw := qp.Get("display_name")
+			displayNamePresent := qp.Has("display_name")
+
+			if displayNamePresent {
+				displayName = &displayNameRaw
+			}
+		}
+		{
+			roleSlugRaw := qp.Get("role_slug")
+			roleSlugPresent := qp.Has("role_slug")
+
+			if roleSlugPresent {
+				roleSlug = &roleSlugRaw
+			}
+		}
+		{
+			orderByRaw := qp.Get("order_by")
+			orderByPresent := qp.Has("order_by")
+
+			if orderByPresent {
+				orderBy = &orderByRaw
+			}
+		}
+		{
+			isActiveRaw := qp.Get("is_active")
+			isActivePresent := qp.Has("is_active")
+
+			if isActivePresent {
+				isActive = &isActiveRaw
+			}
+		}
+		{
+			isBotRaw := qp.Get("is_bot")
+			isBotPresent := qp.Has("is_bot")
+
+			if isBotPresent {
+				isBot = &isBotRaw
+			}
 		}
 		{
 			cursorRaw := qp.Get("cursor")
@@ -2053,7 +2536,7 @@ func DecodeGetAPIV1WorkspacesBySlugMembersLiteRequest(mux loomhttp.Muxer, _ func
 		if err != nil {
 			return payload, err
 		}
-		payload = NewGetAPIV1WorkspacesBySlugMembersLitePayload(slug, cursor, perPage, apiKeyAuthCredential)
+		payload = NewGetAPIV1WorkspacesBySlugMembersLitePayload(slug, firstName, lastName, email, displayName, roleSlug, orderBy, isActive, isBot, cursor, perPage, apiKeyAuthCredential)
 
 		return payload, nil
 	}
@@ -5651,6 +6134,20 @@ func EncodePostAPIWorkspacesBySlugProjectsByProjectIDJoinByPkError(encoder func(
 	}
 }
 
+// marshalInvitationsmembershipMemberRoleDefinitionToMemberRoleDefinitionResponseBody
+// builds a value of type *MemberRoleDefinitionResponseBody from a value of
+// type *invitationsmembership.MemberRoleDefinition.
+func marshalInvitationsmembershipMemberRoleDefinitionToMemberRoleDefinitionResponseBody(v *invitationsmembership.MemberRoleDefinition) *MemberRoleDefinitionResponseBody {
+	res := &MemberRoleDefinitionResponseBody{
+		ID:        v.ID,
+		Name:      v.Name,
+		Slug:      v.Slug,
+		Namespace: v.Namespace,
+	}
+
+	return res
+}
+
 // marshalInvitationsmembershipPlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponseToPlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponseResponse
 // builds a value of type
 // *PlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponseResponse
@@ -5799,6 +6296,7 @@ func marshalInvitationsmembershipPlaneAPISerializersMemberWorkspacememberliteapi
 	}
 	res.Avatar = v.Avatar
 	res.AvatarURL = v.AvatarURL
+	res.RoleSlug = v.RoleSlug
 
 	return res
 }

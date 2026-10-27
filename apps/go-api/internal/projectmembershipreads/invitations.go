@@ -8,6 +8,7 @@ import (
 	"io"
 	"strings"
 	"time"
+	stduuid "uuid"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
@@ -81,8 +82,14 @@ func (repository *InvitationsRepository) WorkspaceMemberUsers(ctx context.Contex
 	return (&Repository{database: repository.reader}).WorkspaceMemberUsers(ctx, slug)
 }
 
-func (repository *InvitationsRepository) WorkspaceMemberLitePage(ctx context.Context, slug string, limit, offset int) (json.RawMessage, int, error) {
-	return (&Repository{database: repository.reader}).WorkspaceMemberLitePage(ctx, slug, limit, offset)
+func (repository *InvitationsRepository) ListWorkspaceMembers(ctx context.Context, actor stduuid.UUID, slug string, query WorkspaceMembersQuery) (WorkspaceMembersPage, error) {
+	return (&DirectoryReader{primary: repository.writer}).ListWorkspaceMembers(ctx, actor, slug, query)
+}
+func (repository *InvitationsRepository) ListRoles(ctx context.Context, actor stduuid.UUID, slug, namespace string, limit, page int) ([]RoleDefinition, int, error) {
+	return (&DirectoryReader{primary: repository.writer}).ListRoles(ctx, actor, slug, namespace, limit, page)
+}
+func (repository *InvitationsRepository) RetrieveRole(ctx context.Context, actor stduuid.UUID, slug string, id stduuid.UUID) (RoleDefinition, error) {
+	return (&DirectoryReader{primary: repository.writer}).RetrieveRole(ctx, actor, slug, id)
 }
 
 func invitationHTTP(status int, body map[string]any) error {
@@ -304,48 +311,4 @@ WHERE workspace.slug = $1 AND workspace_member.deleted_at IS NULL
 		return nil, fmt.Errorf("list workspace member users: %w", err)
 	}
 	return json.RawMessage(data), nil
-}
-
-// WorkspaceMemberLitePage returns the source serializer projection and count.
-// Cursor arithmetic and envelope construction stay in the transport adapter.
-func (repository *Repository) WorkspaceMemberLitePage(ctx context.Context, slug string, limit, offset int) (json.RawMessage, int, error) {
-	if limit < 1 {
-		return nil, 0, fmt.Errorf("workspace member page size must be positive")
-	}
-	var data []byte
-	var count int
-	err := repository.database.QueryRow(ctx, `
-WITH totals AS (
-  SELECT count(*)::int AS total_count
-  FROM workspace_members workspace_member
-  JOIN workspaces workspace ON workspace.id = workspace_member.workspace_id
-  WHERE workspace.slug = $1 AND workspace_member.deleted_at IS NULL
-), page AS (
-  SELECT jsonb_build_object(
-    'id', member.id, 'first_name', member.first_name, 'last_name', member.last_name,
-    'email', member.email, 'avatar', member.avatar,
-    'avatar_url', CASE WHEN member.avatar_asset_id IS NOT NULL
-      THEN '/api/assets/v2/static/' || member.avatar_asset_id::text || '/'
-      ELSE NULLIF(member.avatar, '') END,
-    'display_name', member.display_name, 'role', workspace_member.role,
-    'is_active', workspace_member.is_active, 'is_bot', member.is_bot
-  ) AS member, workspace_member.created_at
-  FROM workspace_members workspace_member
-  JOIN workspaces workspace ON workspace.id = workspace_member.workspace_id
-  JOIN users member ON member.id = workspace_member.member_id
-  WHERE workspace.slug = $1 AND workspace_member.deleted_at IS NULL
-  ORDER BY workspace_member.created_at DESC
-  LIMIT $2 OFFSET $3
-)
-SELECT COALESCE((SELECT jsonb_agg(page.member ORDER BY page.created_at DESC) FROM page), '[]'::jsonb),
-       totals.total_count
-FROM totals
-`, slug, limit, offset).Scan(&data, &count)
-	if err != nil {
-		return nil, 0, fmt.Errorf("list lite workspace members: %w", err)
-	}
-	if len(data) == 0 {
-		data = []byte("[]")
-	}
-	return json.RawMessage(data), count, nil
 }

@@ -40,7 +40,7 @@ func handler(t *testing.T, c mcptransport.Config, opts mcptransport.Options) htt
 
 type transportTestService struct{}
 
-func (transportTestService) Member(context.Context, *api.MemberListProjectOrMemberMe) (*api.MemberIdentityOrProjectMembers, error) {
+func (transportTestService) Member(context.Context, *api.MemberRequest) (*api.MemberResult, error) {
 	return nil, errors.New("transport tests do not execute identity reads")
 }
 

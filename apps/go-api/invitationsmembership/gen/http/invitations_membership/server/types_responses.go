@@ -12,6 +12,42 @@ import (
 	loom "github.com/CaliLuke/loom/pkg"
 )
 
+// ListMemberRolesResponseBody is the type of the "InvitationsMembership"
+// service "ListMemberRoles" endpoint HTTP response body.
+type ListMemberRolesResponseBody struct {
+	Count           int                                 `form:"count" json:"count" xml:"count"`
+	ExtraStats      loom.Nullable[string]               `form:"extra_stats" json:"extra_stats" xml:"extra_stats"`
+	GroupedBy       loom.Nullable[string]               `form:"grouped_by" json:"grouped_by" xml:"grouped_by"`
+	NextCursor      string                              `form:"next_cursor" json:"next_cursor" xml:"next_cursor"`
+	NextPageResults bool                                `form:"next_page_results" json:"next_page_results" xml:"next_page_results"`
+	PrevCursor      string                              `form:"prev_cursor" json:"prev_cursor" xml:"prev_cursor"`
+	PrevPageResults bool                                `form:"prev_page_results" json:"prev_page_results" xml:"prev_page_results"`
+	SubGroupedBy    loom.Nullable[string]               `form:"sub_grouped_by" json:"sub_grouped_by" xml:"sub_grouped_by"`
+	TotalCount      int                                 `form:"total_count" json:"total_count" xml:"total_count"`
+	TotalPages      int                                 `form:"total_pages" json:"total_pages" xml:"total_pages"`
+	TotalResults    int                                 `form:"total_results" json:"total_results" xml:"total_results"`
+	Results         []*MemberRoleDefinitionResponseBody `form:"results" json:"results" xml:"results"`
+}
+
+// InvitationsMembershipListMemberRolesResponseBody is the type of the
+// "InvitationsMembership" service "ListMemberRoles" endpoint HTTP response
+// body for the "status_400" error.
+type InvitationsMembershipListMemberRolesResponseBody InvitationsMembershipHTTPError
+
+// RetrieveMemberRoleResponseBody is the type of the "InvitationsMembership"
+// service "RetrieveMemberRole" endpoint HTTP response body.
+type RetrieveMemberRoleResponseBody struct {
+	ID        string `form:"id" json:"id" xml:"id"`
+	Name      string `form:"name" json:"name" xml:"name"`
+	Slug      string `form:"slug" json:"slug" xml:"slug"`
+	Namespace string `form:"namespace" json:"namespace" xml:"namespace"`
+}
+
+// InvitationsMembershipRetrieveMemberRoleResponseBody is the type of the
+// "InvitationsMembership" service "RetrieveMemberRole" endpoint HTTP response
+// body for the "status_400" error.
+type InvitationsMembershipRetrieveMemberRoleResponseBody InvitationsMembershipHTTPError
+
 // GetAPIUsersMeWorkspacesInvitationsResponseBody is the type of the
 // "InvitationsMembership" service "GetAPIUsersMeWorkspacesInvitations"
 // endpoint HTTP response body.
@@ -159,11 +195,11 @@ type GetAPIV1WorkspacesBySlugMembersLiteResponseBody struct {
 	NextPageResults bool                                                                             `form:"next_page_results" json:"next_page_results" xml:"next_page_results"`
 	PrevCursor      string                                                                           `form:"prev_cursor" json:"prev_cursor" xml:"prev_cursor"`
 	PrevPageResults bool                                                                             `form:"prev_page_results" json:"prev_page_results" xml:"prev_page_results"`
-	Results         []*PlaneAPISerializersMemberWorkspacememberliteapiserializerResponseResponseBody `form:"results" json:"results" xml:"results"`
 	SubGroupedBy    loom.Nullable[string]                                                            `form:"sub_grouped_by" json:"sub_grouped_by" xml:"sub_grouped_by"`
 	TotalCount      int                                                                              `form:"total_count" json:"total_count" xml:"total_count"`
 	TotalPages      int                                                                              `form:"total_pages" json:"total_pages" xml:"total_pages"`
 	TotalResults    int                                                                              `form:"total_results" json:"total_results" xml:"total_results"`
+	Results         []*PlaneAPISerializersMemberWorkspacememberliteapiserializerResponseResponseBody `form:"results" json:"results" xml:"results"`
 }
 
 // InvitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteResponseBody is the

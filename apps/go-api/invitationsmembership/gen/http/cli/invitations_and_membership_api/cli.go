@@ -24,16 +24,28 @@ import (
 //
 //	command (subcommand1|subcommand2|...)
 func UsageCommands() []string {
-	return []string{"invitations-membership (get-api-users-me-workspaces-invitations|post-api-users-me-workspaces-invitations|get-api-users-me-workspaces-by-slug-projects-invitations|post-api-users-me-workspaces-by-slug-projects-invitations|get-apiv1-workspaces-by-slug-invitations|post-apiv1-workspaces-by-slug-invitations|delete-apiv1-workspaces-by-slug-invitations-by-pk|get-apiv1-workspaces-by-slug-invitations-by-pk|patch-apiv1-workspaces-by-slug-invitations-by-pk|put-apiv1-workspaces-by-slug-invitations-by-pk|get-apiv1-workspaces-by-slug-members-lite|get-apiv1-workspaces-by-slug-members|get-api-workspaces-by-slug-invitations|post-api-workspaces-by-slug-invitations|delete-api-workspaces-by-slug-invitations-by-pk|get-api-workspaces-by-slug-invitations-by-pk|patch-api-workspaces-by-slug-invitations-by-pk|get-api-workspaces-by-slug-invitations-by-pk-join|post-api-workspaces-by-slug-invitations-by-pk-join|post-api-workspaces-by-slug-members-leave|delete-api-workspaces-by-slug-members-by-pk|patch-api-workspaces-by-slug-members-by-pk|get-api-workspaces-by-slug-projects-by-project-id-invitations|post-api-workspaces-by-slug-projects-by-project-id-invitations|delete-api-workspaces-by-slug-projects-by-project-id-invitations-by-pk|get-api-workspaces-by-slug-projects-by-project-id-invitations-by-pk|get-api-workspaces-by-slug-projects-by-project-id-join-by-pk|post-api-workspaces-by-slug-projects-by-project-id-join-by-pk)"}
+	return []string{"invitations-membership (list-member-roles|retrieve-member-role|get-api-users-me-workspaces-invitations|post-api-users-me-workspaces-invitations|get-api-users-me-workspaces-by-slug-projects-invitations|post-api-users-me-workspaces-by-slug-projects-invitations|get-apiv1-workspaces-by-slug-invitations|post-apiv1-workspaces-by-slug-invitations|delete-apiv1-workspaces-by-slug-invitations-by-pk|get-apiv1-workspaces-by-slug-invitations-by-pk|patch-apiv1-workspaces-by-slug-invitations-by-pk|put-apiv1-workspaces-by-slug-invitations-by-pk|get-apiv1-workspaces-by-slug-members-lite|get-apiv1-workspaces-by-slug-members|get-api-workspaces-by-slug-invitations|post-api-workspaces-by-slug-invitations|delete-api-workspaces-by-slug-invitations-by-pk|get-api-workspaces-by-slug-invitations-by-pk|patch-api-workspaces-by-slug-invitations-by-pk|get-api-workspaces-by-slug-invitations-by-pk-join|post-api-workspaces-by-slug-invitations-by-pk-join|post-api-workspaces-by-slug-members-leave|delete-api-workspaces-by-slug-members-by-pk|patch-api-workspaces-by-slug-members-by-pk|get-api-workspaces-by-slug-projects-by-project-id-invitations|post-api-workspaces-by-slug-projects-by-project-id-invitations|delete-api-workspaces-by-slug-projects-by-project-id-invitations-by-pk|get-api-workspaces-by-slug-projects-by-project-id-invitations-by-pk|get-api-workspaces-by-slug-projects-by-project-id-join-by-pk|post-api-workspaces-by-slug-projects-by-project-id-join-by-pk)"}
 }
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + " invitations-membership get-api-users-me-workspaces-invitations --search \"Cumque ad et est aut.\" --plane-session-cookie-credential \"Modi velit.\"\n"
+	return os.Args[0] + " invitations-membership list-member-roles --slug \"Modi velit.\" --namespace \"Cumque fugit qui exercitationem quia.\" --cursor \"Explicabo voluptatem cupiditate.\" --per-page \"Ut sed sit qui tenetur ullam molestiae.\" --api-key-auth-credential \"Illo vitae qui excepturi in reprehenderit.\"\n"
 }
 
 type commandLine struct {
 	InvitationsMembership struct {
+		ListMemberRoles struct {
+			Slug                 string `help:"" name:"slug" required:""`
+			Namespace            string `help:"" name:"namespace"`
+			Cursor               string `help:"" name:"cursor"`
+			PerPage              string `help:"" name:"per-page"`
+			APIKeyAuthCredential string `help:"" name:"api-key-auth-credential"`
+		} `cmd:"" help:"List the workspace's existing workspace and project role definitions." name:"list-member-roles"`
+		RetrieveMemberRole struct {
+			Slug                 string `help:"" name:"slug" required:""`
+			RoleID               string `help:"" name:"role-id" required:""`
+			APIKeyAuthCredential string `help:"" name:"api-key-auth-credential"`
+		} `cmd:"" help:"Retrieve a role definition by its workspace-scoped identifier." name:"retrieve-member-role"`
 		GetAPIUsersMeWorkspacesInvitations struct {
 			Search                       string `help:"" name:"search"`
 			PlaneSessionCookieCredential string `help:"" name:"plane-session-cookie-credential"`
@@ -85,6 +97,14 @@ type commandLine struct {
 		} `cmd:"" help:"Endpoint for creating, listing and deleting workspace invites." name:"put-apiv1-workspaces-by-slug-invitations-by-pk"`
 		GetApiv1WorkspacesBySlugMembersLite struct {
 			Slug                 string `help:"Workspace slug" name:"slug" required:""`
+			FirstName            string `help:"" name:"first-name"`
+			LastName             string `help:"" name:"last-name"`
+			Email                string `help:"" name:"email"`
+			DisplayName          string `help:"" name:"display-name"`
+			RoleSlug             string `help:"" name:"role-slug"`
+			OrderBy              string `help:"" name:"order-by"`
+			IsActive             string `help:"" name:"is-active"`
+			IsBot                string `help:"" name:"is-bot"`
 			Cursor               string `help:"" name:"cursor"`
 			PerPage              string `help:"" name:"per-page"`
 			APIKeyAuthCredential string `help:"" name:"api-key-auth-credential"`
@@ -194,6 +214,14 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		args                                                                                                             []string
 		svcn                                                                                                             string
 		epn                                                                                                              string
+		invitationsMembershipListMemberRolesSlugFlag                                                                     *string
+		invitationsMembershipListMemberRolesNamespaceFlag                                                                *string
+		invitationsMembershipListMemberRolesCursorFlag                                                                   *string
+		invitationsMembershipListMemberRolesPerPageFlag                                                                  *string
+		invitationsMembershipListMemberRolesAPIKeyAuthCredentialFlag                                                     *string
+		invitationsMembershipRetrieveMemberRoleSlugFlag                                                                  *string
+		invitationsMembershipRetrieveMemberRoleRoleIDFlag                                                                *string
+		invitationsMembershipRetrieveMemberRoleAPIKeyAuthCredentialFlag                                                  *string
 		invitationsMembershipGetAPIUsersMeWorkspacesInvitationsSearchFlag                                                *string
 		invitationsMembershipGetAPIUsersMeWorkspacesInvitationsPlaneSessionCookieCredentialFlag                          *string
 		invitationsMembershipPostAPIUsersMeWorkspacesInvitationsPlaneSessionCookieCredentialFlag                         *string
@@ -224,6 +252,14 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		invitationsMembershipPutAPIV1WorkspacesBySlugInvitationsByPkAPIKeyAuthCredentialFlag                             *string
 		invitationsMembershipPutAPIV1WorkspacesBySlugInvitationsByPkStreamFlag                                           *string
 		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteSlugFlag                                                 *string
+		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteFirstNameFlag                                            *string
+		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteLastNameFlag                                             *string
+		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteEmailFlag                                                *string
+		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteDisplayNameFlag                                          *string
+		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteRoleSlugFlag                                             *string
+		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteOrderByFlag                                              *string
+		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteIsActiveFlag                                             *string
+		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteIsBotFlag                                                *string
 		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteCursorFlag                                               *string
 		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLitePerPageFlag                                              *string
 		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteAPIKeyAuthCredentialFlag                                 *string
@@ -297,6 +333,14 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		if err != nil {
 			return nil, nil, fmt.Errorf("parse command: %w", err)
 		}
+		invitationsMembershipListMemberRolesSlugFlag = &command.InvitationsMembership.ListMemberRoles.Slug
+		invitationsMembershipListMemberRolesNamespaceFlag = &command.InvitationsMembership.ListMemberRoles.Namespace
+		invitationsMembershipListMemberRolesCursorFlag = &command.InvitationsMembership.ListMemberRoles.Cursor
+		invitationsMembershipListMemberRolesPerPageFlag = &command.InvitationsMembership.ListMemberRoles.PerPage
+		invitationsMembershipListMemberRolesAPIKeyAuthCredentialFlag = &command.InvitationsMembership.ListMemberRoles.APIKeyAuthCredential
+		invitationsMembershipRetrieveMemberRoleSlugFlag = &command.InvitationsMembership.RetrieveMemberRole.Slug
+		invitationsMembershipRetrieveMemberRoleRoleIDFlag = &command.InvitationsMembership.RetrieveMemberRole.RoleID
+		invitationsMembershipRetrieveMemberRoleAPIKeyAuthCredentialFlag = &command.InvitationsMembership.RetrieveMemberRole.APIKeyAuthCredential
 		invitationsMembershipGetAPIUsersMeWorkspacesInvitationsSearchFlag = &command.InvitationsMembership.GetAPIUsersMeWorkspacesInvitations.Search
 		invitationsMembershipGetAPIUsersMeWorkspacesInvitationsPlaneSessionCookieCredentialFlag = &command.InvitationsMembership.GetAPIUsersMeWorkspacesInvitations.PlaneSessionCookieCredential
 		invitationsMembershipPostAPIUsersMeWorkspacesInvitationsPlaneSessionCookieCredentialFlag = &command.InvitationsMembership.PostAPIUsersMeWorkspacesInvitations.PlaneSessionCookieCredential
@@ -327,6 +371,14 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		invitationsMembershipPutAPIV1WorkspacesBySlugInvitationsByPkAPIKeyAuthCredentialFlag = &command.InvitationsMembership.PutApiv1WorkspacesBySlugInvitationsByPk.APIKeyAuthCredential
 		invitationsMembershipPutAPIV1WorkspacesBySlugInvitationsByPkStreamFlag = &command.InvitationsMembership.PutApiv1WorkspacesBySlugInvitationsByPk.Stream
 		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteSlugFlag = &command.InvitationsMembership.GetApiv1WorkspacesBySlugMembersLite.Slug
+		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteFirstNameFlag = &command.InvitationsMembership.GetApiv1WorkspacesBySlugMembersLite.FirstName
+		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteLastNameFlag = &command.InvitationsMembership.GetApiv1WorkspacesBySlugMembersLite.LastName
+		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteEmailFlag = &command.InvitationsMembership.GetApiv1WorkspacesBySlugMembersLite.Email
+		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteDisplayNameFlag = &command.InvitationsMembership.GetApiv1WorkspacesBySlugMembersLite.DisplayName
+		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteRoleSlugFlag = &command.InvitationsMembership.GetApiv1WorkspacesBySlugMembersLite.RoleSlug
+		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteOrderByFlag = &command.InvitationsMembership.GetApiv1WorkspacesBySlugMembersLite.OrderBy
+		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteIsActiveFlag = &command.InvitationsMembership.GetApiv1WorkspacesBySlugMembersLite.IsActive
+		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteIsBotFlag = &command.InvitationsMembership.GetApiv1WorkspacesBySlugMembersLite.IsBot
 		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteCursorFlag = &command.InvitationsMembership.GetApiv1WorkspacesBySlugMembersLite.Cursor
 		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLitePerPageFlag = &command.InvitationsMembership.GetApiv1WorkspacesBySlugMembersLite.PerPage
 		invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteAPIKeyAuthCredentialFlag = &command.InvitationsMembership.GetApiv1WorkspacesBySlugMembersLite.APIKeyAuthCredential
@@ -391,6 +443,12 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		invitationsMembershipPostAPIWorkspacesBySlugProjectsByProjectIDJoinByPkPlaneSessionCookieCredentialFlag = &command.InvitationsMembership.PostAPIWorkspacesBySlugProjectsByProjectIDJoinByPk.PlaneSessionCookieCredential
 		invitationsMembershipPostAPIWorkspacesBySlugProjectsByProjectIDJoinByPkStreamFlag = &command.InvitationsMembership.PostAPIWorkspacesBySlugProjectsByProjectIDJoinByPk.Stream
 		switch path {
+		case "invitations-membership list-member-roles":
+			svcn = "invitations-membership"
+			epn = "list-member-roles"
+		case "invitations-membership retrieve-member-role":
+			svcn = "invitations-membership"
+			epn = "retrieve-member-role"
 		case "invitations-membership get-api-users-me-workspaces-invitations":
 			svcn = "invitations-membership"
 			epn = "get-api-users-me-workspaces-invitations"
@@ -488,6 +546,12 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		case "invitations-membership":
 			c := invitationsmembershipc.NewClient(scheme, host, doer, enc, dec, restore)
 			switch epn {
+			case "list-member-roles":
+				endpoint = c.ListMemberRoles()
+				data, err = invitationsmembershipc.BuildListMemberRolesPayload(*invitationsMembershipListMemberRolesSlugFlag, *invitationsMembershipListMemberRolesNamespaceFlag, *invitationsMembershipListMemberRolesCursorFlag, *invitationsMembershipListMemberRolesPerPageFlag, *invitationsMembershipListMemberRolesAPIKeyAuthCredentialFlag)
+			case "retrieve-member-role":
+				endpoint = c.RetrieveMemberRole()
+				data, err = invitationsmembershipc.BuildRetrieveMemberRolePayload(*invitationsMembershipRetrieveMemberRoleSlugFlag, *invitationsMembershipRetrieveMemberRoleRoleIDFlag, *invitationsMembershipRetrieveMemberRoleAPIKeyAuthCredentialFlag)
 			case "get-api-users-me-workspaces-invitations":
 				endpoint = c.GetAPIUsersMeWorkspacesInvitations()
 				data, err = invitationsmembershipc.BuildGetAPIUsersMeWorkspacesInvitationsPayload(*invitationsMembershipGetAPIUsersMeWorkspacesInvitationsSearchFlag, *invitationsMembershipGetAPIUsersMeWorkspacesInvitationsPlaneSessionCookieCredentialFlag)
@@ -535,7 +599,7 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 				}
 			case "get-apiv1-workspaces-by-slug-members-lite":
 				endpoint = c.GetAPIV1WorkspacesBySlugMembersLite()
-				data, err = invitationsmembershipc.BuildGetAPIV1WorkspacesBySlugMembersLitePayload(*invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteSlugFlag, *invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteCursorFlag, *invitationsMembershipGetAPIV1WorkspacesBySlugMembersLitePerPageFlag, *invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteAPIKeyAuthCredentialFlag)
+				data, err = invitationsmembershipc.BuildGetAPIV1WorkspacesBySlugMembersLitePayload(*invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteSlugFlag, *invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteFirstNameFlag, *invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteLastNameFlag, *invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteEmailFlag, *invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteDisplayNameFlag, *invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteRoleSlugFlag, *invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteOrderByFlag, *invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteIsActiveFlag, *invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteIsBotFlag, *invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteCursorFlag, *invitationsMembershipGetAPIV1WorkspacesBySlugMembersLitePerPageFlag, *invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteAPIKeyAuthCredentialFlag)
 			case "get-apiv1-workspaces-by-slug-members":
 				endpoint = c.GetAPIV1WorkspacesBySlugMembers()
 				data, err = invitationsmembershipc.BuildGetAPIV1WorkspacesBySlugMembersPayload(*invitationsMembershipGetAPIV1WorkspacesBySlugMembersSlugFlag, *invitationsMembershipGetAPIV1WorkspacesBySlugMembersAPIKeyAuthCredentialFlag)
@@ -623,6 +687,8 @@ func invitationsMembershipUsage() {
 	fmt.Fprintln(os.Stderr, "Service is the InvitationsMembership service interface.")
 	fmt.Fprintf(os.Stderr, "Usage:\n    %s [globalflags] invitations-membership COMMAND [flags]\n\n", os.Args[0])
 	fmt.Fprintln(os.Stderr, "COMMAND:")
+	fmt.Fprintln(os.Stderr, "    list-member-roles: List the workspace's existing workspace and project role definitions.")
+	fmt.Fprintln(os.Stderr, "    retrieve-member-role: Retrieve a role definition by its workspace-scoped identifier.")
 	fmt.Fprintln(os.Stderr, "    get-api-users-me-workspaces-invitations: This enables timezone conversion according\n\tto the user set timezone")
 	fmt.Fprintln(os.Stderr, "    post-api-users-me-workspaces-invitations: This enables timezone conversion according\n\tto the user set timezone")
 	fmt.Fprintln(os.Stderr, "    get-api-users-me-workspaces-by-slug-projects-invitations: This enables timezone conversion according\n\tto the user set timezone")
@@ -655,6 +721,52 @@ func invitationsMembershipUsage() {
 	fmt.Fprintln(os.Stderr, "Additional help:")
 	fmt.Fprintf(os.Stderr, "    %s invitations-membership COMMAND --help\n", os.Args[0])
 }
+func invitationsMembershipListMemberRolesUsage() {
+	// Header with flags
+	fmt.Fprintf(os.Stderr, "%s [flags] invitations-membership list-member-roles", os.Args[0])
+	fmt.Fprint(os.Stderr, " -slug STRING")
+	fmt.Fprint(os.Stderr, " -namespace STRING")
+	fmt.Fprint(os.Stderr, " -cursor STRING")
+	fmt.Fprint(os.Stderr, " -per-page STRING")
+	fmt.Fprint(os.Stderr, " -api-key-auth-credential STRING")
+	fmt.Fprintln(os.Stderr)
+
+	// Description
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, "List the workspace's existing workspace and project role definitions.")
+
+	// Flags list
+	fmt.Fprintln(os.Stderr, "    -slug STRING: ")
+	fmt.Fprintln(os.Stderr, "    -namespace STRING: ")
+	fmt.Fprintln(os.Stderr, "    -cursor STRING: ")
+	fmt.Fprintln(os.Stderr, "    -per-page STRING: ")
+	fmt.Fprintln(os.Stderr, "    -api-key-auth-credential STRING: ")
+
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, "Example:")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership list-member-roles --slug \"Modi velit.\" --namespace \"Cumque fugit qui exercitationem quia.\" --cursor \"Explicabo voluptatem cupiditate.\" --per-page \"Ut sed sit qui tenetur ullam molestiae.\" --api-key-auth-credential \"Illo vitae qui excepturi in reprehenderit.\"")
+}
+func invitationsMembershipRetrieveMemberRoleUsage() {
+	// Header with flags
+	fmt.Fprintf(os.Stderr, "%s [flags] invitations-membership retrieve-member-role", os.Args[0])
+	fmt.Fprint(os.Stderr, " -slug STRING")
+	fmt.Fprint(os.Stderr, " -role-id STRING")
+	fmt.Fprint(os.Stderr, " -api-key-auth-credential STRING")
+	fmt.Fprintln(os.Stderr)
+
+	// Description
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, "Retrieve a role definition by its workspace-scoped identifier.")
+
+	// Flags list
+	fmt.Fprintln(os.Stderr, "    -slug STRING: ")
+	fmt.Fprintln(os.Stderr, "    -role-id STRING: ")
+	fmt.Fprintln(os.Stderr, "    -api-key-auth-credential STRING: ")
+
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, "Example:")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership retrieve-member-role --slug \"Non in ut nisi.\" --role-id \"Fuga magni maiores nesciunt necessitatibus quam.\" --api-key-auth-credential \"Aperiam consequatur.\"")
+}
 func invitationsMembershipGetAPIUsersMeWorkspacesInvitationsUsage() {
 	// Header with flags
 	fmt.Fprintf(os.Stderr, "%s [flags] invitations-membership get-api-users-me-workspaces-invitations", os.Args[0])
@@ -672,7 +784,7 @@ func invitationsMembershipGetAPIUsersMeWorkspacesInvitationsUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-api-users-me-workspaces-invitations --search \"Cumque ad et est aut.\" --plane-session-cookie-credential \"Modi velit.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-api-users-me-workspaces-invitations --search \"Nihil ut error est aut sapiente accusamus.\" --plane-session-cookie-credential \"Ut provident dicta.\"")
 }
 func invitationsMembershipPostAPIUsersMeWorkspacesInvitationsUsage() {
 	// Header with flags
@@ -691,7 +803,7 @@ func invitationsMembershipPostAPIUsersMeWorkspacesInvitationsUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership post-api-users-me-workspaces-invitations --plane-session-cookie-credential \"Eos aliquam sunt soluta quas tempore consequatur.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership post-api-users-me-workspaces-invitations --plane-session-cookie-credential \"Possimus optio.\" --stream \"loom.bin\"")
 }
 func invitationsMembershipGetAPIUsersMeWorkspacesBySlugProjectsInvitationsUsage() {
 	// Header with flags
@@ -712,7 +824,7 @@ func invitationsMembershipGetAPIUsersMeWorkspacesBySlugProjectsInvitationsUsage(
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-api-users-me-workspaces-by-slug-projects-invitations --slug \"Aliquid voluptatibus.\" --search \"Et fuga vel non eum optio impedit.\" --plane-session-cookie-credential \"Facere voluptas consequatur voluptatibus velit porro.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-api-users-me-workspaces-by-slug-projects-invitations --slug \"Perspiciatis necessitatibus quia.\" --search \"Tempora ad aut consequatur qui nulla ut.\" --plane-session-cookie-credential \"Numquam ut.\"")
 }
 func invitationsMembershipPostAPIUsersMeWorkspacesBySlugProjectsInvitationsUsage() {
 	// Header with flags
@@ -733,7 +845,7 @@ func invitationsMembershipPostAPIUsersMeWorkspacesBySlugProjectsInvitationsUsage
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership post-api-users-me-workspaces-by-slug-projects-invitations --slug \"Exercitationem nesciunt itaque ut in consequatur deserunt.\" --plane-session-cookie-credential \"Dolorum eveniet aut ipsum velit qui ex.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership post-api-users-me-workspaces-by-slug-projects-invitations --slug \"Et cum.\" --plane-session-cookie-credential \"Ducimus et.\" --stream \"loom.bin\"")
 }
 func invitationsMembershipGetAPIV1WorkspacesBySlugInvitationsUsage() {
 	// Header with flags
@@ -752,7 +864,7 @@ func invitationsMembershipGetAPIV1WorkspacesBySlugInvitationsUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-apiv1-workspaces-by-slug-invitations --slug \"Quo in est ea commodi.\" --api-key-auth-credential \"Sequi iste.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-apiv1-workspaces-by-slug-invitations --slug \"Odio earum culpa est quia.\" --api-key-auth-credential \"Architecto enim consequatur libero dolor aspernatur.\"")
 }
 func invitationsMembershipPostAPIV1WorkspacesBySlugInvitationsUsage() {
 	// Header with flags
@@ -773,7 +885,7 @@ func invitationsMembershipPostAPIV1WorkspacesBySlugInvitationsUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership post-apiv1-workspaces-by-slug-invitations --slug \"Quia expedita doloribus.\" --api-key-auth-credential \"Mollitia quaerat.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership post-apiv1-workspaces-by-slug-invitations --slug \"Adipisci aut recusandae consequatur quas recusandae eum.\" --api-key-auth-credential \"Optio eligendi.\" --stream \"loom.bin\"")
 }
 func invitationsMembershipDeleteAPIV1WorkspacesBySlugInvitationsByPkUsage() {
 	// Header with flags
@@ -794,7 +906,7 @@ func invitationsMembershipDeleteAPIV1WorkspacesBySlugInvitationsByPkUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership delete-apiv1-workspaces-by-slug-invitations-by-pk --slug \"Sed non iste.\" --pk \"Fuga nihil rem quae saepe.\" --api-key-auth-credential \"Fugiat similique sint.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership delete-apiv1-workspaces-by-slug-invitations-by-pk --slug \"Est adipisci est incidunt quibusdam totam tempora.\" --pk \"Rerum aliquid fugit sit dolor.\" --api-key-auth-credential \"Totam dolor dolor maiores.\"")
 }
 func invitationsMembershipGetAPIV1WorkspacesBySlugInvitationsByPkUsage() {
 	// Header with flags
@@ -815,7 +927,7 @@ func invitationsMembershipGetAPIV1WorkspacesBySlugInvitationsByPkUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-apiv1-workspaces-by-slug-invitations-by-pk --slug \"Quia eligendi voluptatem earum eos molestiae.\" --pk \"Et et.\" --api-key-auth-credential \"Est voluptatum nam ut itaque.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-apiv1-workspaces-by-slug-invitations-by-pk --slug \"Ad repudiandae unde minima.\" --pk \"Nam qui exercitationem.\" --api-key-auth-credential \"Tempora porro.\"")
 }
 func invitationsMembershipPatchAPIV1WorkspacesBySlugInvitationsByPkUsage() {
 	// Header with flags
@@ -838,7 +950,7 @@ func invitationsMembershipPatchAPIV1WorkspacesBySlugInvitationsByPkUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership patch-apiv1-workspaces-by-slug-invitations-by-pk --slug \"Cumque enim.\" --pk \"Et dolorem ratione aut.\" --api-key-auth-credential \"Quo ea.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership patch-apiv1-workspaces-by-slug-invitations-by-pk --slug \"Temporibus ullam delectus rerum veniam et.\" --pk \"Dolorem accusamus omnis.\" --api-key-auth-credential \"Voluptatum veritatis ex fugit.\" --stream \"loom.bin\"")
 }
 func invitationsMembershipPutAPIV1WorkspacesBySlugInvitationsByPkUsage() {
 	// Header with flags
@@ -861,12 +973,20 @@ func invitationsMembershipPutAPIV1WorkspacesBySlugInvitationsByPkUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership put-apiv1-workspaces-by-slug-invitations-by-pk --slug \"Corrupti consequuntur.\" --pk \"Earum omnis voluptatum omnis distinctio enim.\" --api-key-auth-credential \"Corporis est error perspiciatis qui.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership put-apiv1-workspaces-by-slug-invitations-by-pk --slug \"Mollitia eum quam.\" --pk \"Corporis eum ut odit dolorem nostrum sed.\" --api-key-auth-credential \"Tempore recusandae sunt quo sit commodi.\" --stream \"loom.bin\"")
 }
 func invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteUsage() {
 	// Header with flags
 	fmt.Fprintf(os.Stderr, "%s [flags] invitations-membership get-apiv1-workspaces-by-slug-members-lite", os.Args[0])
 	fmt.Fprint(os.Stderr, " -slug STRING")
+	fmt.Fprint(os.Stderr, " -first-name STRING")
+	fmt.Fprint(os.Stderr, " -last-name STRING")
+	fmt.Fprint(os.Stderr, " -email STRING")
+	fmt.Fprint(os.Stderr, " -display-name STRING")
+	fmt.Fprint(os.Stderr, " -role-slug STRING")
+	fmt.Fprint(os.Stderr, " -order-by STRING")
+	fmt.Fprint(os.Stderr, " -is-active STRING")
+	fmt.Fprint(os.Stderr, " -is-bot STRING")
 	fmt.Fprint(os.Stderr, " -cursor STRING")
 	fmt.Fprint(os.Stderr, " -per-page INT")
 	fmt.Fprint(os.Stderr, " -api-key-auth-credential STRING")
@@ -878,13 +998,21 @@ func invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteUsage() {
 
 	// Flags list
 	fmt.Fprintln(os.Stderr, "    -slug STRING: Workspace slug")
+	fmt.Fprintln(os.Stderr, "    -first-name STRING: ")
+	fmt.Fprintln(os.Stderr, "    -last-name STRING: ")
+	fmt.Fprintln(os.Stderr, "    -email STRING: ")
+	fmt.Fprintln(os.Stderr, "    -display-name STRING: ")
+	fmt.Fprintln(os.Stderr, "    -role-slug STRING: ")
+	fmt.Fprintln(os.Stderr, "    -order-by STRING: ")
+	fmt.Fprintln(os.Stderr, "    -is-active STRING: ")
+	fmt.Fprintln(os.Stderr, "    -is-bot STRING: ")
 	fmt.Fprintln(os.Stderr, "    -cursor STRING: ")
 	fmt.Fprintln(os.Stderr, "    -per-page INT: ")
 	fmt.Fprintln(os.Stderr, "    -api-key-auth-credential STRING: ")
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-apiv1-workspaces-by-slug-members-lite --slug \"Cupiditate quasi facilis.\" --cursor \"Voluptate sit.\" --per-page 5634507488393224171 --api-key-auth-credential \"Praesentium laboriosam esse dolor.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-apiv1-workspaces-by-slug-members-lite --slug \"Reiciendis saepe et et molestiae earum exercitationem.\" --first-name \"Hic omnis.\" --last-name \"Accusamus culpa praesentium.\" --email \"Error nihil.\" --display-name \"Nemo voluptas occaecati est facilis.\" --role-slug \"Neque repellat deleniti.\" --order-by \"Ab velit saepe aperiam nam neque.\" --is-active \"Et ut saepe et quia harum quia.\" --is-bot \"Iure natus ad cum.\" --cursor \"Vel assumenda.\" --per-page 5489016450384158501 --api-key-auth-credential \"Quia explicabo autem et.\"")
 }
 func invitationsMembershipGetAPIV1WorkspacesBySlugMembersUsage() {
 	// Header with flags
@@ -903,7 +1031,7 @@ func invitationsMembershipGetAPIV1WorkspacesBySlugMembersUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-apiv1-workspaces-by-slug-members --slug \"Aliquam sit cupiditate.\" --api-key-auth-credential \"Sint magni nisi.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-apiv1-workspaces-by-slug-members --slug \"Corrupti ipsam vitae et aperiam quis.\" --api-key-auth-credential \"Et enim quidem.\"")
 }
 func invitationsMembershipGetAPIWorkspacesBySlugInvitationsUsage() {
 	// Header with flags
@@ -924,7 +1052,7 @@ func invitationsMembershipGetAPIWorkspacesBySlugInvitationsUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-api-workspaces-by-slug-invitations --slug \"Exercitationem et hic omnis asperiores.\" --search \"Culpa praesentium est error nihil.\" --plane-session-cookie-credential \"Nemo voluptas occaecati est facilis.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-api-workspaces-by-slug-invitations --slug \"Voluptatem blanditiis ipsum porro non impedit dolor.\" --search \"Vero praesentium voluptatem beatae occaecati qui vel.\" --plane-session-cookie-credential \"Repellat autem pariatur laudantium necessitatibus harum voluptate.\"")
 }
 func invitationsMembershipPostAPIWorkspacesBySlugInvitationsUsage() {
 	// Header with flags
@@ -945,7 +1073,7 @@ func invitationsMembershipPostAPIWorkspacesBySlugInvitationsUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership post-api-workspaces-by-slug-invitations --slug \"Nam neque sapiente et.\" --plane-session-cookie-credential \"Saepe et quia harum quia.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership post-api-workspaces-by-slug-invitations --slug \"Perferendis non sunt consequatur sed provident mollitia.\" --plane-session-cookie-credential \"Unde qui et optio omnis accusamus.\" --stream \"loom.bin\"")
 }
 func invitationsMembershipDeleteAPIWorkspacesBySlugInvitationsByPkUsage() {
 	// Header with flags
@@ -966,7 +1094,7 @@ func invitationsMembershipDeleteAPIWorkspacesBySlugInvitationsByPkUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership delete-api-workspaces-by-slug-invitations-by-pk --slug \"In quis ut et magni et.\" --pk \"c700bf99-e8d0-4184-a0d1-d08c397176a0\" --plane-session-cookie-credential \"Tempore quibusdam.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership delete-api-workspaces-by-slug-invitations-by-pk --slug \"Tempore fugit commodi suscipit.\" --pk \"62f5b389-1227-4389-8e23-a83b6fec2260\" --plane-session-cookie-credential \"Tempora ipsam numquam voluptas et.\"")
 }
 func invitationsMembershipGetAPIWorkspacesBySlugInvitationsByPkUsage() {
 	// Header with flags
@@ -987,7 +1115,7 @@ func invitationsMembershipGetAPIWorkspacesBySlugInvitationsByPkUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-api-workspaces-by-slug-invitations-by-pk --slug \"Quis asperiores atque dolores reiciendis consequatur recusandae.\" --pk \"5ef7cf73-eade-4644-8cdb-778ef64534be\" --plane-session-cookie-credential \"Id non minus culpa ad laboriosam dolor.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-api-workspaces-by-slug-invitations-by-pk --slug \"Iusto ab doloremque hic nemo autem.\" --pk \"731acadd-2ac1-4ebf-be69-7c61e9b70171\" --plane-session-cookie-credential \"Unde quod quis et ducimus.\"")
 }
 func invitationsMembershipPatchAPIWorkspacesBySlugInvitationsByPkUsage() {
 	// Header with flags
@@ -1010,7 +1138,7 @@ func invitationsMembershipPatchAPIWorkspacesBySlugInvitationsByPkUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership patch-api-workspaces-by-slug-invitations-by-pk --slug \"Aut rem.\" --pk \"befaee64-2487-4dd4-a4de-7ebed5ccf839\" --plane-session-cookie-credential \"Ut et ratione eos.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership patch-api-workspaces-by-slug-invitations-by-pk --slug \"Ut pariatur.\" --pk \"934e61c1-c446-43b8-bfb8-af702b068fd8\" --plane-session-cookie-credential \"Aut et dolor id harum neque autem.\" --stream \"loom.bin\"")
 }
 func invitationsMembershipGetAPIWorkspacesBySlugInvitationsByPkJoinUsage() {
 	// Header with flags
@@ -1031,7 +1159,7 @@ func invitationsMembershipGetAPIWorkspacesBySlugInvitationsByPkJoinUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-api-workspaces-by-slug-invitations-by-pk-join --slug \"Molestias et eum.\" --pk \"9483391c-cba3-4d66-857f-a022bd4793b8\" --plane-session-cookie-credential \"Excepturi praesentium.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-api-workspaces-by-slug-invitations-by-pk-join --slug \"Dolor nostrum.\" --pk \"0efeae50-f235-49b7-9670-23ec8262a71b\" --plane-session-cookie-credential \"Rerum et et blanditiis.\"")
 }
 func invitationsMembershipPostAPIWorkspacesBySlugInvitationsByPkJoinUsage() {
 	// Header with flags
@@ -1054,7 +1182,7 @@ func invitationsMembershipPostAPIWorkspacesBySlugInvitationsByPkJoinUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership post-api-workspaces-by-slug-invitations-by-pk-join --slug \"Sed sunt et amet qui praesentium.\" --pk \"6dfd180d-a01b-4002-b253-944980745437\" --plane-session-cookie-credential \"Itaque ad consequatur aut illo voluptate asperiores.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership post-api-workspaces-by-slug-invitations-by-pk-join --slug \"Molestias sed et vel aliquam.\" --pk \"042e7aa2-bba5-4c33-bb46-9e226df957be\" --plane-session-cookie-credential \"Consequatur dolore magnam qui est.\" --stream \"loom.bin\"")
 }
 func invitationsMembershipPostAPIWorkspacesBySlugMembersLeaveUsage() {
 	// Header with flags
@@ -1075,7 +1203,7 @@ func invitationsMembershipPostAPIWorkspacesBySlugMembersLeaveUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership post-api-workspaces-by-slug-members-leave --slug \"Et delectus ut illum.\" --plane-session-cookie-credential \"Dolores excepturi amet fugit omnis.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership post-api-workspaces-by-slug-members-leave --slug \"Tenetur dolore et incidunt doloremque possimus.\" --plane-session-cookie-credential \"Illo tempora velit corporis et.\" --stream \"loom.bin\"")
 }
 func invitationsMembershipDeleteAPIWorkspacesBySlugMembersByPkUsage() {
 	// Header with flags
@@ -1096,7 +1224,7 @@ func invitationsMembershipDeleteAPIWorkspacesBySlugMembersByPkUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership delete-api-workspaces-by-slug-members-by-pk --slug \"Provident aut iure odit dolorum.\" --pk \"df48d068-885c-45dd-a34c-0d684b38b27b\" --plane-session-cookie-credential \"Fuga aspernatur veritatis repellat aliquam.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership delete-api-workspaces-by-slug-members-by-pk --slug \"Molestiae ut est error.\" --pk \"71cc04ab-8e79-4f97-a4a1-6d0789087b97\" --plane-session-cookie-credential \"Voluptatem consectetur quis.\"")
 }
 func invitationsMembershipPatchAPIWorkspacesBySlugMembersByPkUsage() {
 	// Header with flags
@@ -1119,7 +1247,7 @@ func invitationsMembershipPatchAPIWorkspacesBySlugMembersByPkUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership patch-api-workspaces-by-slug-members-by-pk --slug \"Unde nostrum hic distinctio.\" --pk \"38865372-abda-43e8-b34c-0805ea2a90d2\" --plane-session-cookie-credential \"Autem aut consequatur quasi esse libero aliquam.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership patch-api-workspaces-by-slug-members-by-pk --slug \"Quam suscipit doloribus ad velit qui soluta.\" --pk \"fe6de333-fe93-4e69-9beb-9097ca10c30d\" --plane-session-cookie-credential \"Et et.\" --stream \"loom.bin\"")
 }
 func invitationsMembershipGetAPIWorkspacesBySlugProjectsByProjectIDInvitationsUsage() {
 	// Header with flags
@@ -1142,7 +1270,7 @@ func invitationsMembershipGetAPIWorkspacesBySlugProjectsByProjectIDInvitationsUs
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-api-workspaces-by-slug-projects-by-project-id-invitations --slug \"Iusto explicabo minima omnis facere esse.\" --project-id \"ffc1254e-c65b-4b13-be95-92fccab7ef02\" --search \"Magnam libero voluptatibus quod sed repellendus non.\" --plane-session-cookie-credential \"Impedit odio quas quis qui perspiciatis.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-api-workspaces-by-slug-projects-by-project-id-invitations --slug \"Sunt quo ut consequatur iusto praesentium.\" --project-id \"716eb852-e1fd-43de-8c7f-53e7d8cfa7e3\" --search \"Beatae est ut maiores.\" --plane-session-cookie-credential \"Vero animi facere sequi ut quasi nesciunt.\"")
 }
 func invitationsMembershipPostAPIWorkspacesBySlugProjectsByProjectIDInvitationsUsage() {
 	// Header with flags
@@ -1165,7 +1293,7 @@ func invitationsMembershipPostAPIWorkspacesBySlugProjectsByProjectIDInvitationsU
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership post-api-workspaces-by-slug-projects-by-project-id-invitations --slug \"Non est voluptatem.\" --project-id \"aafe508c-682c-4ce4-9e22-a5d8285428e4\" --plane-session-cookie-credential \"Pariatur velit voluptatem.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership post-api-workspaces-by-slug-projects-by-project-id-invitations --slug \"Ex autem molestiae vitae qui.\" --project-id \"d9b26051-7673-4ecb-9b7b-6239720f1453\" --plane-session-cookie-credential \"Quae et in assumenda consequuntur.\" --stream \"loom.bin\"")
 }
 func invitationsMembershipDeleteAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPkUsage() {
 	// Header with flags
@@ -1188,7 +1316,7 @@ func invitationsMembershipDeleteAPIWorkspacesBySlugProjectsByProjectIDInvitation
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership delete-api-workspaces-by-slug-projects-by-project-id-invitations-by-pk --slug \"Voluptatem provident et repudiandae omnis velit.\" --project-id \"0e9ff84e-ce5a-4ec5-8481-8bead64b1b8b\" --pk \"e5177ed8-498e-4b96-a182-bd4b4231fbd8\" --plane-session-cookie-credential \"Est libero non ea pariatur velit voluptatibus.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership delete-api-workspaces-by-slug-projects-by-project-id-invitations-by-pk --slug \"Qui esse minus eius ullam eum rem.\" --project-id \"4ec31f23-97f2-4299-9724-e0d98861063d\" --pk \"0c026dcd-4e1d-47a8-a5b2-296d60582c54\" --plane-session-cookie-credential \"Et aliquam.\"")
 }
 func invitationsMembershipGetAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPkUsage() {
 	// Header with flags
@@ -1211,7 +1339,7 @@ func invitationsMembershipGetAPIWorkspacesBySlugProjectsByProjectIDInvitationsBy
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-api-workspaces-by-slug-projects-by-project-id-invitations-by-pk --slug \"Repudiandae exercitationem.\" --project-id \"e5cd49a7-4ba3-42c4-a371-b26e46b2eacd\" --pk \"dc029dba-78b8-4171-9033-8eb5e23a1646\" --plane-session-cookie-credential \"Repellendus harum est consequatur.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-api-workspaces-by-slug-projects-by-project-id-invitations-by-pk --slug \"Consequatur sunt natus adipisci sed.\" --project-id \"0b928956-48d5-4405-bde0-4fe4b4b681f7\" --pk \"a494fcf5-5ed2-4220-a312-59a136953a59\" --plane-session-cookie-credential \"Aut aspernatur qui quia dolore.\"")
 }
 func invitationsMembershipGetAPIWorkspacesBySlugProjectsByProjectIDJoinByPkUsage() {
 	// Header with flags
@@ -1234,7 +1362,7 @@ func invitationsMembershipGetAPIWorkspacesBySlugProjectsByProjectIDJoinByPkUsage
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-api-workspaces-by-slug-projects-by-project-id-join-by-pk --slug \"Facere itaque nostrum eaque.\" --project-id \"c5b8548c-6d13-49a4-864f-e8d81db580d6\" --pk \"423c6aa5-164a-427f-a8e2-be9c3ab724e8\" --plane-session-cookie-credential \"Eum ut non ut voluptate.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership get-api-workspaces-by-slug-projects-by-project-id-join-by-pk --slug \"Minus quis velit.\" --project-id \"73722d01-b708-4381-a97d-bf5f64f72c2f\" --pk \"97b38727-3cb4-440a-a94a-f99e35b9244d\" --plane-session-cookie-credential \"Et maiores saepe dolorum earum.\"")
 }
 func invitationsMembershipPostAPIWorkspacesBySlugProjectsByProjectIDJoinByPkUsage() {
 	// Header with flags
@@ -1259,5 +1387,5 @@ func invitationsMembershipPostAPIWorkspacesBySlugProjectsByProjectIDJoinByPkUsag
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership post-api-workspaces-by-slug-projects-by-project-id-join-by-pk --slug \"Est et recusandae totam iste facere et.\" --project-id \"4d9ef41a-e67d-4195-b2af-ed366d705b11\" --pk \"eeee7dad-f00f-4656-bddc-2aeef3810931\" --plane-session-cookie-credential \"Omnis optio et sit.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "invitations-membership post-api-workspaces-by-slug-projects-by-project-id-join-by-pk --slug \"Natus laboriosam repudiandae quia et provident non.\" --project-id \"e29da79e-fb16-470b-a48e-b78e618c1844\" --pk \"6828867c-34af-4cc9-af42-19d66810de4f\" --plane-session-cookie-credential \"Illo ut unde.\" --stream \"loom.bin\"")
 }

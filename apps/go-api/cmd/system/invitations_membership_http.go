@@ -41,6 +41,8 @@ func invitationsMembershipProtocols() []readServiceProtocol {
 		{"/api/v1/workspaces/{slug}/invitations/", "GET, POST, HEAD, OPTIONS", "Workspace Invite"},
 		{"/api/v1/workspaces/{slug}/invitations/{pk}/", "GET, PUT, PATCH, DELETE, HEAD, OPTIONS", "Workspace Invite"},
 		{"/api/v1/workspaces/{slug}/members-lite/", "GET", "Workspace Members Lite Endpoint"},
+		{"/api/v1/workspaces/{slug}/roles/", "GET", "Member Roles"},
+		{"/api/v1/workspaces/{slug}/roles/{role_id}/", "GET", "Member Role"},
 		{"/api/v1/workspaces/{slug}/members/", "GET", "Workspace Members Endpoint"},
 		{"/api/workspaces/{slug}/invitations/", "GET, POST, HEAD, OPTIONS", "Workspace Invitations"},
 		{"/api/workspaces/{slug}/invitations/{pk}/", "GET, PATCH, DELETE, HEAD, OPTIONS", "Workspace Invitations"},

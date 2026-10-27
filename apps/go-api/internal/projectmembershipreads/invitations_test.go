@@ -104,21 +104,7 @@ func TestWorkspaceMemberReadQueriesRetainInactiveRowsAndSerializerFields(t *test
 	if strings.Contains(database.query, "is_active = true") || !strings.Contains(database.query, "'role'") || !strings.Contains(database.query, "ORDER BY workspace_member.created_at DESC") {
 		t.Fatalf("full roster filters inactive rows, omits role, or has wrong order: %s", database.query)
 	}
-	data, count, err := repository.WorkspaceMemberLitePage(context.Background(), "demo", 1, 0)
-	if err != nil || string(data) != `[]` || count != 3 {
-		t.Fatalf("data=%s count=%d err=%v", data, count, err)
-	}
-	for _, fragment := range []string{"'is_active'", "'is_bot'", "workspace_member.deleted_at IS NULL", "ORDER BY workspace_member.created_at DESC", "LIMIT $2 OFFSET $3", "WITH totals AS", "totals.total_count"} {
-		if !strings.Contains(database.query, fragment) {
-			t.Errorf("lite roster query missing %q", fragment)
-		}
-	}
-	if strings.Contains(database.query, "workspace_member.is_active = true") {
-		t.Fatal("lite roster filters inactive members")
-	}
-	if strings.Contains(database.query, "workspace.deleted_at IS NULL") {
-		t.Fatal("roster serializer added an existence filter that the source query lacks")
-	}
+
 }
 
 type invitationTestDB struct {

@@ -157,11 +157,11 @@ func TestDirectMemberCallsStillValidateGeneratedBranchAndProject(t *testing.T) {
 	request.Header.Set("X-Workspace-Slug", "workspace-one")
 	ctx, err := f.auth.Authenticate(t.Context(), request)
 	require.NoError(t, err)
-	for _, input := range []api.MemberListProjectOrMemberMe{
+	for _, input := range []api.MemberRequest{
 		{},
-		api.NewMemberListProjectOrMemberMeMemberMe(&api.MemberMe{Action: "unknown"}),
-		api.NewMemberListProjectOrMemberMeMemberMe(&api.MemberMe{Action: "me", WorkspaceSlug: new("workspace-two")}),
-		api.NewMemberListProjectOrMemberMeMemberListProject(&api.MemberListProject{Action: "list_project", ProjectID: "invalid"}),
+		api.NewMemberRequestMemberMe(&api.MemberMe{Action: "unknown"}),
+		api.NewMemberRequestMemberMe(&api.MemberMe{Action: "me", WorkspaceSlug: new("workspace-two")}),
+		api.NewMemberRequestMemberListProject(&api.MemberListProject{Action: "list_project", ProjectID: "invalid"}),
 	} {
 		_, err := f.service.Member(ctx, &input)
 		require.Error(t, err)

@@ -17,6 +17,8 @@ import (
 
 // Client is the "InvitationsMembership" service client.
 type Client struct {
+	ListMemberRolesEndpoint                                             loom.Endpoint
+	RetrieveMemberRoleEndpoint                                          loom.Endpoint
 	GetAPIUsersMeWorkspacesInvitationsEndpoint                          loom.Endpoint
 	PostAPIUsersMeWorkspacesInvitationsEndpoint                         loom.Endpoint
 	GetAPIUsersMeWorkspacesBySlugProjectsInvitationsEndpoint            loom.Endpoint
@@ -49,8 +51,50 @@ type Client struct {
 
 // NewClient initializes a "InvitationsMembership" service client given the
 // endpoints.
-func NewClient(getAPIUsersMeWorkspacesInvitations, postAPIUsersMeWorkspacesInvitations, getAPIUsersMeWorkspacesBySlugProjectsInvitations, postAPIUsersMeWorkspacesBySlugProjectsInvitations, getAPIV1WorkspacesBySlugInvitations, postAPIV1WorkspacesBySlugInvitations, deleteAPIV1WorkspacesBySlugInvitationsByPk, getAPIV1WorkspacesBySlugInvitationsByPk, patchAPIV1WorkspacesBySlugInvitationsByPk, putAPIV1WorkspacesBySlugInvitationsByPk, getAPIV1WorkspacesBySlugMembersLite, getAPIV1WorkspacesBySlugMembers, getAPIWorkspacesBySlugInvitations, postAPIWorkspacesBySlugInvitations, deleteAPIWorkspacesBySlugInvitationsByPk, getAPIWorkspacesBySlugInvitationsByPk, patchAPIWorkspacesBySlugInvitationsByPk, getAPIWorkspacesBySlugInvitationsByPkJoin, postAPIWorkspacesBySlugInvitationsByPkJoin, postAPIWorkspacesBySlugMembersLeave, deleteAPIWorkspacesBySlugMembersByPk, patchAPIWorkspacesBySlugMembersByPk, getAPIWorkspacesBySlugProjectsByProjectIDInvitations, postAPIWorkspacesBySlugProjectsByProjectIDInvitations, deleteAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPk, getAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPk, getAPIWorkspacesBySlugProjectsByProjectIDJoinByPk, postAPIWorkspacesBySlugProjectsByProjectIDJoinByPk loom.Endpoint) *Client {
-	return &Client{GetAPIUsersMeWorkspacesInvitationsEndpoint: getAPIUsersMeWorkspacesInvitations, PostAPIUsersMeWorkspacesInvitationsEndpoint: postAPIUsersMeWorkspacesInvitations, GetAPIUsersMeWorkspacesBySlugProjectsInvitationsEndpoint: getAPIUsersMeWorkspacesBySlugProjectsInvitations, PostAPIUsersMeWorkspacesBySlugProjectsInvitationsEndpoint: postAPIUsersMeWorkspacesBySlugProjectsInvitations, GetAPIV1WorkspacesBySlugInvitationsEndpoint: getAPIV1WorkspacesBySlugInvitations, PostAPIV1WorkspacesBySlugInvitationsEndpoint: postAPIV1WorkspacesBySlugInvitations, DeleteAPIV1WorkspacesBySlugInvitationsByPkEndpoint: deleteAPIV1WorkspacesBySlugInvitationsByPk, GetAPIV1WorkspacesBySlugInvitationsByPkEndpoint: getAPIV1WorkspacesBySlugInvitationsByPk, PatchAPIV1WorkspacesBySlugInvitationsByPkEndpoint: patchAPIV1WorkspacesBySlugInvitationsByPk, PutAPIV1WorkspacesBySlugInvitationsByPkEndpoint: putAPIV1WorkspacesBySlugInvitationsByPk, GetAPIV1WorkspacesBySlugMembersLiteEndpoint: getAPIV1WorkspacesBySlugMembersLite, GetAPIV1WorkspacesBySlugMembersEndpoint: getAPIV1WorkspacesBySlugMembers, GetAPIWorkspacesBySlugInvitationsEndpoint: getAPIWorkspacesBySlugInvitations, PostAPIWorkspacesBySlugInvitationsEndpoint: postAPIWorkspacesBySlugInvitations, DeleteAPIWorkspacesBySlugInvitationsByPkEndpoint: deleteAPIWorkspacesBySlugInvitationsByPk, GetAPIWorkspacesBySlugInvitationsByPkEndpoint: getAPIWorkspacesBySlugInvitationsByPk, PatchAPIWorkspacesBySlugInvitationsByPkEndpoint: patchAPIWorkspacesBySlugInvitationsByPk, GetAPIWorkspacesBySlugInvitationsByPkJoinEndpoint: getAPIWorkspacesBySlugInvitationsByPkJoin, PostAPIWorkspacesBySlugInvitationsByPkJoinEndpoint: postAPIWorkspacesBySlugInvitationsByPkJoin, PostAPIWorkspacesBySlugMembersLeaveEndpoint: postAPIWorkspacesBySlugMembersLeave, DeleteAPIWorkspacesBySlugMembersByPkEndpoint: deleteAPIWorkspacesBySlugMembersByPk, PatchAPIWorkspacesBySlugMembersByPkEndpoint: patchAPIWorkspacesBySlugMembersByPk, GetAPIWorkspacesBySlugProjectsByProjectIDInvitationsEndpoint: getAPIWorkspacesBySlugProjectsByProjectIDInvitations, PostAPIWorkspacesBySlugProjectsByProjectIDInvitationsEndpoint: postAPIWorkspacesBySlugProjectsByProjectIDInvitations, DeleteAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPkEndpoint: deleteAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPk, GetAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPkEndpoint: getAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPk, GetAPIWorkspacesBySlugProjectsByProjectIDJoinByPkEndpoint: getAPIWorkspacesBySlugProjectsByProjectIDJoinByPk, PostAPIWorkspacesBySlugProjectsByProjectIDJoinByPkEndpoint: postAPIWorkspacesBySlugProjectsByProjectIDJoinByPk}
+func NewClient(listMemberRoles, retrieveMemberRole, getAPIUsersMeWorkspacesInvitations, postAPIUsersMeWorkspacesInvitations, getAPIUsersMeWorkspacesBySlugProjectsInvitations, postAPIUsersMeWorkspacesBySlugProjectsInvitations, getAPIV1WorkspacesBySlugInvitations, postAPIV1WorkspacesBySlugInvitations, deleteAPIV1WorkspacesBySlugInvitationsByPk, getAPIV1WorkspacesBySlugInvitationsByPk, patchAPIV1WorkspacesBySlugInvitationsByPk, putAPIV1WorkspacesBySlugInvitationsByPk, getAPIV1WorkspacesBySlugMembersLite, getAPIV1WorkspacesBySlugMembers, getAPIWorkspacesBySlugInvitations, postAPIWorkspacesBySlugInvitations, deleteAPIWorkspacesBySlugInvitationsByPk, getAPIWorkspacesBySlugInvitationsByPk, patchAPIWorkspacesBySlugInvitationsByPk, getAPIWorkspacesBySlugInvitationsByPkJoin, postAPIWorkspacesBySlugInvitationsByPkJoin, postAPIWorkspacesBySlugMembersLeave, deleteAPIWorkspacesBySlugMembersByPk, patchAPIWorkspacesBySlugMembersByPk, getAPIWorkspacesBySlugProjectsByProjectIDInvitations, postAPIWorkspacesBySlugProjectsByProjectIDInvitations, deleteAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPk, getAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPk, getAPIWorkspacesBySlugProjectsByProjectIDJoinByPk, postAPIWorkspacesBySlugProjectsByProjectIDJoinByPk loom.Endpoint) *Client {
+	return &Client{ListMemberRolesEndpoint: listMemberRoles, RetrieveMemberRoleEndpoint: retrieveMemberRole, GetAPIUsersMeWorkspacesInvitationsEndpoint: getAPIUsersMeWorkspacesInvitations, PostAPIUsersMeWorkspacesInvitationsEndpoint: postAPIUsersMeWorkspacesInvitations, GetAPIUsersMeWorkspacesBySlugProjectsInvitationsEndpoint: getAPIUsersMeWorkspacesBySlugProjectsInvitations, PostAPIUsersMeWorkspacesBySlugProjectsInvitationsEndpoint: postAPIUsersMeWorkspacesBySlugProjectsInvitations, GetAPIV1WorkspacesBySlugInvitationsEndpoint: getAPIV1WorkspacesBySlugInvitations, PostAPIV1WorkspacesBySlugInvitationsEndpoint: postAPIV1WorkspacesBySlugInvitations, DeleteAPIV1WorkspacesBySlugInvitationsByPkEndpoint: deleteAPIV1WorkspacesBySlugInvitationsByPk, GetAPIV1WorkspacesBySlugInvitationsByPkEndpoint: getAPIV1WorkspacesBySlugInvitationsByPk, PatchAPIV1WorkspacesBySlugInvitationsByPkEndpoint: patchAPIV1WorkspacesBySlugInvitationsByPk, PutAPIV1WorkspacesBySlugInvitationsByPkEndpoint: putAPIV1WorkspacesBySlugInvitationsByPk, GetAPIV1WorkspacesBySlugMembersLiteEndpoint: getAPIV1WorkspacesBySlugMembersLite, GetAPIV1WorkspacesBySlugMembersEndpoint: getAPIV1WorkspacesBySlugMembers, GetAPIWorkspacesBySlugInvitationsEndpoint: getAPIWorkspacesBySlugInvitations, PostAPIWorkspacesBySlugInvitationsEndpoint: postAPIWorkspacesBySlugInvitations, DeleteAPIWorkspacesBySlugInvitationsByPkEndpoint: deleteAPIWorkspacesBySlugInvitationsByPk, GetAPIWorkspacesBySlugInvitationsByPkEndpoint: getAPIWorkspacesBySlugInvitationsByPk, PatchAPIWorkspacesBySlugInvitationsByPkEndpoint: patchAPIWorkspacesBySlugInvitationsByPk, GetAPIWorkspacesBySlugInvitationsByPkJoinEndpoint: getAPIWorkspacesBySlugInvitationsByPkJoin, PostAPIWorkspacesBySlugInvitationsByPkJoinEndpoint: postAPIWorkspacesBySlugInvitationsByPkJoin, PostAPIWorkspacesBySlugMembersLeaveEndpoint: postAPIWorkspacesBySlugMembersLeave, DeleteAPIWorkspacesBySlugMembersByPkEndpoint: deleteAPIWorkspacesBySlugMembersByPk, PatchAPIWorkspacesBySlugMembersByPkEndpoint: patchAPIWorkspacesBySlugMembersByPk, GetAPIWorkspacesBySlugProjectsByProjectIDInvitationsEndpoint: getAPIWorkspacesBySlugProjectsByProjectIDInvitations, PostAPIWorkspacesBySlugProjectsByProjectIDInvitationsEndpoint: postAPIWorkspacesBySlugProjectsByProjectIDInvitations, DeleteAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPkEndpoint: deleteAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPk, GetAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPkEndpoint: getAPIWorkspacesBySlugProjectsByProjectIDInvitationsByPk, GetAPIWorkspacesBySlugProjectsByProjectIDJoinByPkEndpoint: getAPIWorkspacesBySlugProjectsByProjectIDJoinByPk, PostAPIWorkspacesBySlugProjectsByProjectIDJoinByPkEndpoint: postAPIWorkspacesBySlugProjectsByProjectIDJoinByPk}
+}
+
+// ListMemberRoles calls the "ListMemberRoles" endpoint of the
+// "InvitationsMembership" service.
+// ListMemberRoles may return the following errors:
+// - "status_400" (type *InvitationsMembershipAPIKeyError)
+// - "status_401" (type *InvitationsMembershipAPIKeyError)
+// - "status_403" (type *InvitationsMembershipAPIKeyError)
+// - "status_404" (type *InvitationsMembershipAPIKeyError)
+// - "status_409" (type *InvitationsMembershipAPIKeyError)
+// - "status_415" (type *InvitationsMembershipAPIKeyError)
+// - "status_429" (type *InvitationsMembershipAPIKeyError)
+// - "status_500" (type *InvitationsMembershipAPIKeyError)
+// - error: internal error
+func (c *Client) ListMemberRoles(ctx context.Context, p *ListMemberRolesPayload) (res *MemberRolesPage, err error) {
+	var ires any
+	ires, err = c.ListMemberRolesEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(*MemberRolesPage), nil
+}
+
+// RetrieveMemberRole calls the "RetrieveMemberRole" endpoint of the
+// "InvitationsMembership" service.
+// RetrieveMemberRole may return the following errors:
+// - "status_400" (type *InvitationsMembershipAPIKeyError)
+// - "status_401" (type *InvitationsMembershipAPIKeyError)
+// - "status_403" (type *InvitationsMembershipAPIKeyError)
+// - "status_404" (type *InvitationsMembershipAPIKeyError)
+// - "status_409" (type *InvitationsMembershipAPIKeyError)
+// - "status_415" (type *InvitationsMembershipAPIKeyError)
+// - "status_429" (type *InvitationsMembershipAPIKeyError)
+// - "status_500" (type *InvitationsMembershipAPIKeyError)
+// - error: internal error
+func (c *Client) RetrieveMemberRole(ctx context.Context, p *RetrieveMemberRolePayload) (res *MemberRoleDefinition, err error) {
+	var ires any
+	ires, err = c.RetrieveMemberRoleEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(*MemberRoleDefinition), nil
 }
 
 // GetAPIUsersMeWorkspacesInvitations calls the

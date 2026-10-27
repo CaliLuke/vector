@@ -12,10 +12,11 @@ Static response fixtures remain for contract regression tests. No Python code or
 
 The initial [remote MCP transport](mcp.md) lives in `apps/go-api/mcp` and
 `internal/mcptransport`. The proxy sends `/mcp` and `/mcp/*` to Go. The generated
-catalogue currently contains `member.me` and `member.list_project`; MCP is disabled by default.
+catalogue currently contains the five `member` read actions; MCP is disabled by default.
 `internal/mcpauth` supplies personal-token authentication using primary token and
 workspace membership reads. `internal/mcpactions` projects credential-neutral
-application operations shared with HTTP. OAuth and the remaining resource
+application operations shared with HTTP. `internal/projectmembershipreads.DirectoryReader`
+owns current workspace-directory authorization, filtering, paging and the existing-role catalogue. OAuth and the remaining resource
 actions are incomplete.
 
 ## Source layout

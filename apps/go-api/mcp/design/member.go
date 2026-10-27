@@ -2,6 +2,7 @@ package design
 
 import (
 	identity "github.com/CaliLuke/go-plane/apiuseridentity/design/types"
+	membertypes "github.com/CaliLuke/go-plane/invitationsmembership/design/types"
 	mcp "github.com/CaliLuke/loom-mcp/v2/dsl"
 	. "github.com/CaliLuke/loom/dsl"
 )
@@ -33,8 +34,8 @@ var memberListProject = Type("MemberListProject", func() {
 	Meta("openapi:additionalProperties", "false")
 })
 
-var projectMember = Type("ProjectMember", func() {
-	Description("An API project member normalized to the pinned SDK's ProjectMember model.")
+var membershipIdentity = Type("MemberIdentityWithRole", func() {
+	Description("An API workspace or project member normalized to the pinned SDK's ProjectMember model.")
 	Extend(memberIdentity)
 	Attribute("role", Int, func() { Nullable() })
 	Attribute("role_slug", String, func() { Nullable() })
@@ -43,13 +44,16 @@ var projectMember = Type("ProjectMember", func() {
 	Required("role", "role_slug", "is_active", "is_bot")
 })
 
-var projectMembers = Type("ProjectMembers", ArrayOf(projectMember))
+var projectMembers = Type("ProjectMembers", ArrayOf(membershipIdentity))
+
+var memberRequest = Type("MemberRequest", OneOf(memberMe, memberListProject, memberListWorkspace, memberListRoles, memberRetrieveRole), func() { Untagged() })
+var memberResult = Type("MemberResult", OneOf(memberIdentity, projectMembers, memberDirectoryPage, membertypes.RoleDefinition), func() { Untagged() })
 
 func member() {
 	Method("member", func() {
-		Description("Read the authenticated user's identity or an authorized project roster.")
-		Payload(OneOf(memberMe, memberListProject), func() { Untagged() })
-		Result(OneOf(memberIdentity, projectMembers), func() { Untagged() })
+		Description("Read authorized identities, workspace and project members, and role definitions.")
+		Payload(memberRequest)
+		Result(memberResult)
 		for _, failure := range []struct{ name, message string }{
 			{"unauthorized", "Authentication is no longer valid."},
 			{"forbidden", "Access is no longer allowed."},
@@ -62,6 +66,6 @@ func member() {
 		Meta("mcp:annotation:readOnlyHint", "true")
 		Meta("mcp:annotation:destructiveHint", "false")
 		Meta("mcp:annotation:openWorldHint", "false")
-		mcp.Tool("member", "Read identities and project members using the selected action.", mcp.ToolTitle("Members and roles"))
+		mcp.Tool("member", "Read identities, members and role definitions using the selected action.", mcp.ToolTitle("Members and roles"))
 	})
 }

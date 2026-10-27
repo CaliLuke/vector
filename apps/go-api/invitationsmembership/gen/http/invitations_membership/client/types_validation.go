@@ -15,6 +15,99 @@ import (
 	loom "github.com/CaliLuke/loom/pkg"
 )
 
+// ValidateListMemberRolesResponseBody runs the validations defined on
+// ListMemberRolesResponseBody
+func ValidateListMemberRolesResponseBody(body *ListMemberRolesResponseBody, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if body.Count == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("count", validationPath))
+	}
+	if !body.ExtraStats.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("extra_stats", validationPath))
+	}
+	if !body.GroupedBy.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("grouped_by", validationPath))
+	}
+	if body.NextCursor == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("next_cursor", validationPath))
+	}
+	if body.NextPageResults == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("next_page_results", validationPath))
+	}
+	if body.PrevCursor == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("prev_cursor", validationPath))
+	}
+	if body.PrevPageResults == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("prev_page_results", validationPath))
+	}
+	if body.Results == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
+	}
+	if !body.SubGroupedBy.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("sub_grouped_by", validationPath))
+	}
+	if body.TotalCount == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("total_count", validationPath))
+	}
+	if body.TotalPages == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("total_pages", validationPath))
+	}
+	if body.TotalResults == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("total_results", validationPath))
+	}
+	for i, e := range body.Results {
+		if actual, ok := e.Value(); ok {
+			if actual != nil {
+				if err2 := ValidateMemberRoleDefinitionResponseBody(actual, validationPath+".results[*]"); err2 != nil {
+					err = loom.MergeErrors(err, err2)
+				}
+			}
+		} else {
+			err = loom.MergeErrors(err, loom.InvalidNullElementError(validationPath+".results", i))
+		}
+	}
+	return
+}
+
+// ValidateRetrieveMemberRoleResponseBody runs the validations defined on
+// RetrieveMemberRoleResponseBody
+func ValidateRetrieveMemberRoleResponseBody(body *RetrieveMemberRoleResponseBody, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if body.ID == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
+	}
+	if body.Name == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("name", validationPath))
+	}
+	if body.Slug == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("slug", validationPath))
+	}
+	if body.Namespace == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("namespace", validationPath))
+	}
+	if body.ID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", *body.ID, loom.FormatUUID))
+	}
+	if body.Namespace != nil {
+		if !(*body.Namespace == "workspace" || *body.Namespace == "project") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".namespace", *body.Namespace, []any{"workspace", "project"}))
+		}
+	}
+	return
+}
+
 // ValidatePostAPIUsersMeWorkspacesBySlugProjectsInvitationsResponseBody runs
 // the validations defined on
 // PostAPIUsersMeWorkspacesBySlugProjectsInvitationsResponseBody
@@ -737,6 +830,39 @@ func ValidatePostAPIWorkspacesBySlugProjectsByProjectIDJoinByPkResponseBody(body
 	return
 }
 
+// ValidateMemberRoleDefinitionResponseBody runs the validations defined on
+// MemberRoleDefinitionResponseBody
+func ValidateMemberRoleDefinitionResponseBody(body *MemberRoleDefinitionResponseBody, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if body.ID == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
+	}
+	if body.Name == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("name", validationPath))
+	}
+	if body.Slug == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("slug", validationPath))
+	}
+	if body.Namespace == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("namespace", validationPath))
+	}
+	if body.ID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", *body.ID, loom.FormatUUID))
+	}
+	if body.Namespace != nil {
+		if !(*body.Namespace == "workspace" || *body.Namespace == "project") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".namespace", *body.Namespace, []any{"workspace", "project"}))
+		}
+	}
+	return
+}
+
 // ValidatePlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponseResponse
 // runs the validations defined on
 // PlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponseResponse
@@ -1009,6 +1135,9 @@ func ValidatePlaneAPISerializersMemberWorkspacememberliteapiserializerResponseRe
 		for _, validationPart := range validationContext {
 			validationPath += validationPart
 		}
+	}
+	if !body.RoleSlug.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("role_slug", validationPath))
 	}
 	if body.DisplayName == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("display_name", validationPath))

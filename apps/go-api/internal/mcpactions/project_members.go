@@ -29,6 +29,10 @@ func (s *Service) projectMembers(ctx context.Context, actor mcpauth.Principal, p
 		}
 		return nil, memberReadFailure()
 	}
+	return decodeMemberRows(body)
+}
+
+func decodeMemberRows(body json.RawMessage) (api.ProjectMembers, error) {
 	var rows []json.RawMessage
 	if err := json.Unmarshal(body, &rows); err != nil || rows == nil {
 		return nil, memberReadFailure()
@@ -37,7 +41,7 @@ func (s *Service) projectMembers(ctx context.Context, actor mcpauth.Principal, p
 	for _, row := range rows {
 		// ProjectMember extends UserLite in the pinned SDK. Properties absent
 		// from the authoritative HTTP response remain null, including role data.
-		member := &api.ProjectMember{
+		member := &api.MemberIdentityWithRole{
 			ID: loom.NullValue[string](), FirstName: loom.NullValue[string](),
 			LastName: loom.NullValue[string](), Email: loom.NullValue[string](),
 			Avatar: loom.NullValue[string](), AvatarURL: loom.NullValue[string](),

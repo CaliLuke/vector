@@ -20,6 +20,8 @@ import (
 // Server lists the InvitationsMembership service endpoint HTTP handlers.
 type Server struct {
 	Mounts                                                      []*MountPoint
+	ListMemberRoles                                             http.Handler
+	RetrieveMemberRole                                          http.Handler
 	GetAPIUsersMeWorkspacesInvitations                          http.Handler
 	PostAPIUsersMeWorkspacesInvitations                         http.Handler
 	GetAPIUsersMeWorkspacesBySlugProjectsInvitations            http.Handler
@@ -70,6 +72,8 @@ type MountPoint struct {
 func New(e *invitationsmembership.Endpoints, mux loomhttp.Muxer, decoder func(*http.Request) loomhttp.Decoder, encoder func(ctx context.Context, w http.ResponseWriter) loomhttp.Encoder, errhandler func(ctx context.Context, w http.ResponseWriter, err error), formatter func(ctx context.Context, err error) loomhttp.StatusCoder) *Server {
 	return &Server{
 		Mounts: []*MountPoint{
+			{"ListMemberRoles", "GET", "/api/v1/workspaces/{slug}/roles/"},
+			{"RetrieveMemberRole", "GET", "/api/v1/workspaces/{slug}/roles/{role_id}/"},
 			{"GetAPIUsersMeWorkspacesInvitations", "GET", "/api/users/me/workspaces/invitations/"},
 			{"PostAPIUsersMeWorkspacesInvitations", "POST", "/api/users/me/workspaces/invitations/"},
 			{"GetAPIUsersMeWorkspacesBySlugProjectsInvitations", "GET", "/api/users/me/workspaces/{slug}/projects/invitations/"},
@@ -99,6 +103,8 @@ func New(e *invitationsmembership.Endpoints, mux loomhttp.Muxer, decoder func(*h
 			{"GetAPIWorkspacesBySlugProjectsByProjectIDJoinByPk", "GET", "/api/workspaces/{slug}/projects/{project_id}/join/{pk}/"},
 			{"PostAPIWorkspacesBySlugProjectsByProjectIDJoinByPk", "POST", "/api/workspaces/{slug}/projects/{project_id}/join/{pk}/"},
 		},
+		ListMemberRoles:                                             NewListMemberRolesHandler(e.ListMemberRoles, mux, decoder, encoder, errhandler, formatter),
+		RetrieveMemberRole:                                          NewRetrieveMemberRoleHandler(e.RetrieveMemberRole, mux, decoder, encoder, errhandler, formatter),
 		GetAPIUsersMeWorkspacesInvitations:                          NewGetAPIUsersMeWorkspacesInvitationsHandler(e.GetAPIUsersMeWorkspacesInvitations, mux, decoder, encoder, errhandler, formatter),
 		PostAPIUsersMeWorkspacesInvitations:                         NewPostAPIUsersMeWorkspacesInvitationsHandler(e.PostAPIUsersMeWorkspacesInvitations, mux, decoder, encoder, errhandler, formatter),
 		GetAPIUsersMeWorkspacesBySlugProjectsInvitations:            NewGetAPIUsersMeWorkspacesBySlugProjectsInvitationsHandler(e.GetAPIUsersMeWorkspacesBySlugProjectsInvitations, mux, decoder, encoder, errhandler, formatter),
@@ -137,6 +143,8 @@ func (s *Server) Service() string {
 
 // Use wraps the server handlers with the given middleware.
 func (s *Server) Use(m func(http.Handler) http.Handler) {
+	s.ListMemberRoles = m(s.ListMemberRoles)
+	s.RetrieveMemberRole = m(s.RetrieveMemberRole)
 	s.GetAPIUsersMeWorkspacesInvitations = m(s.GetAPIUsersMeWorkspacesInvitations)
 	s.PostAPIUsersMeWorkspacesInvitations = m(s.PostAPIUsersMeWorkspacesInvitations)
 	s.GetAPIUsersMeWorkspacesBySlugProjectsInvitations = m(s.GetAPIUsersMeWorkspacesBySlugProjectsInvitations)
@@ -174,6 +182,8 @@ func (s *Server) MethodNames() []string {
 
 // Mount configures the mux to serve the InvitationsMembership endpoints.
 func Mount(mux loomhttp.Muxer, h *Server) {
+	MountListMemberRolesHandler(mux, h.ListMemberRoles)
+	MountRetrieveMemberRoleHandler(mux, h.RetrieveMemberRole)
 	MountGetAPIUsersMeWorkspacesInvitationsHandler(mux, h.GetAPIUsersMeWorkspacesInvitations)
 	MountPostAPIUsersMeWorkspacesInvitationsHandler(mux, h.PostAPIUsersMeWorkspacesInvitations)
 	MountGetAPIUsersMeWorkspacesBySlugProjectsInvitationsHandler(mux, h.GetAPIUsersMeWorkspacesBySlugProjectsInvitations)
@@ -207,6 +217,104 @@ func Mount(mux loomhttp.Muxer, h *Server) {
 // Mount configures the mux to serve the InvitationsMembership endpoints.
 func (s *Server) Mount(mux loomhttp.Muxer) {
 	Mount(mux, s)
+}
+
+// MountListMemberRolesHandler configures the mux to serve the
+// "InvitationsMembership" service "ListMemberRoles" endpoint.
+func MountListMemberRolesHandler(mux loomhttp.Muxer, h http.Handler) {
+	loomhttp.MountHandler(mux, "GET", "/api/v1/workspaces/{slug}/roles/", h)
+}
+
+// NewListMemberRolesHandler creates a HTTP handler which loads the HTTP
+// request and calls the "InvitationsMembership" service "ListMemberRoles"
+// endpoint.
+func NewListMemberRolesHandler(
+	endpoint loom.Endpoint,
+	mux loomhttp.Muxer,
+	decoder func(*http.Request) loomhttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(ctx context.Context, err error) loomhttp.StatusCoder,
+) http.Handler {
+	var (
+		decodeRequest  = DecodeListMemberRolesRequest(mux, decoder)
+		encodeResponse = EncodeListMemberRolesResponse(encoder)
+		encodeError    = EncodeListMemberRolesError(encoder, formatter)
+	)
+	return loomhttp.NewUnaryHandler(loomhttp.UnaryHandlerSpec[*invitationsmembership.ListMemberRolesPayload, loomhttp.UnaryResult[*invitationsmembership.MemberRolesPage]]{
+		Service: "InvitationsMembership",
+		Method:  "ListMemberRoles",
+		Decode:  decodeRequest,
+		Invoke: func(ctx context.Context, payload *invitationsmembership.ListMemberRolesPayload) (loomhttp.UnaryResult[*invitationsmembership.MemberRolesPage], error) {
+			res, err := endpoint(ctx, payload)
+			if err != nil {
+				var zero loomhttp.UnaryResult[*invitationsmembership.MemberRolesPage]
+				return zero, err
+			}
+			return loomhttp.UnaryResult[*invitationsmembership.MemberRolesPage]{Value: res}, nil
+		},
+		EncodeResponse: func(ctx context.Context, w http.ResponseWriter, result loomhttp.UnaryResult[*invitationsmembership.MemberRolesPage]) error {
+			return encodeResponse(ctx, w, result.Value)
+		},
+		EncodeError:   encodeError,
+		HandleFailure: errhandler,
+	})
+}
+
+// ListMemberRolesResponseContractCases returns the declared HTTP wire-response
+// contracts for ListMemberRoles. Callers remain responsible for exercising the
+// application scenarios that produce each response.
+func ListMemberRolesResponseContractCases() []loomhttp.ResponseContractCase {
+	return []loomhttp.ResponseContractCase{{ID: "InvitationsMembership.ListMemberRoles.success.200", Kind: loomhttp.ResponseContractSuccess, Transport: loomhttp.ResponseContractHTTP, StatusCode: 200, ContentTypes: []string{"application/json"}}, {ID: "InvitationsMembership.ListMemberRoles.error.status_400.400", Kind: loomhttp.ResponseContractError, Transport: loomhttp.ResponseContractHTTP, StatusCode: 400, ErrorName: "status_400", ErrorNameFromStatus: true, ContentTypes: []string{"application/json"}}, {ID: "InvitationsMembership.ListMemberRoles.error.status_401.401", Kind: loomhttp.ResponseContractError, Transport: loomhttp.ResponseContractHTTP, StatusCode: 401, ErrorName: "status_401", ErrorNameFromStatus: true, ContentTypes: []string{"application/json"}}, {ID: "InvitationsMembership.ListMemberRoles.error.status_403.403", Kind: loomhttp.ResponseContractError, Transport: loomhttp.ResponseContractHTTP, StatusCode: 403, ErrorName: "status_403", ErrorNameFromStatus: true, ContentTypes: []string{"application/json"}}, {ID: "InvitationsMembership.ListMemberRoles.error.status_404.404", Kind: loomhttp.ResponseContractError, Transport: loomhttp.ResponseContractHTTP, StatusCode: 404, ErrorName: "status_404", ErrorNameFromStatus: true, ContentTypes: []string{"application/json"}}, {ID: "InvitationsMembership.ListMemberRoles.error.status_409.409", Kind: loomhttp.ResponseContractError, Transport: loomhttp.ResponseContractHTTP, StatusCode: 409, ErrorName: "status_409", ErrorNameFromStatus: true, ContentTypes: []string{"application/json"}}, {ID: "InvitationsMembership.ListMemberRoles.error.status_415.415", Kind: loomhttp.ResponseContractError, Transport: loomhttp.ResponseContractHTTP, StatusCode: 415, ErrorName: "status_415", ErrorNameFromStatus: true, ContentTypes: []string{"application/json"}}, {ID: "InvitationsMembership.ListMemberRoles.error.status_429.429", Kind: loomhttp.ResponseContractError, Transport: loomhttp.ResponseContractHTTP, StatusCode: 429, ErrorName: "status_429", ErrorNameFromStatus: true, ContentTypes: []string{"application/json"}}, {ID: "InvitationsMembership.ListMemberRoles.error.status_500.500", Kind: loomhttp.ResponseContractError, Transport: loomhttp.ResponseContractHTTP, StatusCode: 500, ErrorName: "status_500", ErrorNameFromStatus: true, ContentTypes: []string{"application/json"}}}
+}
+
+// MountRetrieveMemberRoleHandler configures the mux to serve the
+// "InvitationsMembership" service "RetrieveMemberRole" endpoint.
+func MountRetrieveMemberRoleHandler(mux loomhttp.Muxer, h http.Handler) {
+	loomhttp.MountHandler(mux, "GET", "/api/v1/workspaces/{slug}/roles/{role_id}/", h)
+}
+
+// NewRetrieveMemberRoleHandler creates a HTTP handler which loads the HTTP
+// request and calls the "InvitationsMembership" service "RetrieveMemberRole"
+// endpoint.
+func NewRetrieveMemberRoleHandler(
+	endpoint loom.Endpoint,
+	mux loomhttp.Muxer,
+	decoder func(*http.Request) loomhttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(ctx context.Context, err error) loomhttp.StatusCoder,
+) http.Handler {
+	var (
+		decodeRequest  = DecodeRetrieveMemberRoleRequest(mux, decoder)
+		encodeResponse = EncodeRetrieveMemberRoleResponse(encoder)
+		encodeError    = EncodeRetrieveMemberRoleError(encoder, formatter)
+	)
+	return loomhttp.NewUnaryHandler(loomhttp.UnaryHandlerSpec[*invitationsmembership.RetrieveMemberRolePayload, loomhttp.UnaryResult[*invitationsmembership.MemberRoleDefinition]]{
+		Service: "InvitationsMembership",
+		Method:  "RetrieveMemberRole",
+		Decode:  decodeRequest,
+		Invoke: func(ctx context.Context, payload *invitationsmembership.RetrieveMemberRolePayload) (loomhttp.UnaryResult[*invitationsmembership.MemberRoleDefinition], error) {
+			res, err := endpoint(ctx, payload)
+			if err != nil {
+				var zero loomhttp.UnaryResult[*invitationsmembership.MemberRoleDefinition]
+				return zero, err
+			}
+			return loomhttp.UnaryResult[*invitationsmembership.MemberRoleDefinition]{Value: res}, nil
+		},
+		EncodeResponse: func(ctx context.Context, w http.ResponseWriter, result loomhttp.UnaryResult[*invitationsmembership.MemberRoleDefinition]) error {
+			return encodeResponse(ctx, w, result.Value)
+		},
+		EncodeError:   encodeError,
+		HandleFailure: errhandler,
+	})
+}
+
+// RetrieveMemberRoleResponseContractCases returns the declared HTTP
+// wire-response contracts for RetrieveMemberRole. Callers remain responsible
+// for exercising the application scenarios that produce each response.
+func RetrieveMemberRoleResponseContractCases() []loomhttp.ResponseContractCase {
+	return []loomhttp.ResponseContractCase{{ID: "InvitationsMembership.RetrieveMemberRole.success.200", Kind: loomhttp.ResponseContractSuccess, Transport: loomhttp.ResponseContractHTTP, StatusCode: 200, ContentTypes: []string{"application/json"}}, {ID: "InvitationsMembership.RetrieveMemberRole.error.status_400.400", Kind: loomhttp.ResponseContractError, Transport: loomhttp.ResponseContractHTTP, StatusCode: 400, ErrorName: "status_400", ErrorNameFromStatus: true, ContentTypes: []string{"application/json"}}, {ID: "InvitationsMembership.RetrieveMemberRole.error.status_401.401", Kind: loomhttp.ResponseContractError, Transport: loomhttp.ResponseContractHTTP, StatusCode: 401, ErrorName: "status_401", ErrorNameFromStatus: true, ContentTypes: []string{"application/json"}}, {ID: "InvitationsMembership.RetrieveMemberRole.error.status_403.403", Kind: loomhttp.ResponseContractError, Transport: loomhttp.ResponseContractHTTP, StatusCode: 403, ErrorName: "status_403", ErrorNameFromStatus: true, ContentTypes: []string{"application/json"}}, {ID: "InvitationsMembership.RetrieveMemberRole.error.status_404.404", Kind: loomhttp.ResponseContractError, Transport: loomhttp.ResponseContractHTTP, StatusCode: 404, ErrorName: "status_404", ErrorNameFromStatus: true, ContentTypes: []string{"application/json"}}, {ID: "InvitationsMembership.RetrieveMemberRole.error.status_409.409", Kind: loomhttp.ResponseContractError, Transport: loomhttp.ResponseContractHTTP, StatusCode: 409, ErrorName: "status_409", ErrorNameFromStatus: true, ContentTypes: []string{"application/json"}}, {ID: "InvitationsMembership.RetrieveMemberRole.error.status_415.415", Kind: loomhttp.ResponseContractError, Transport: loomhttp.ResponseContractHTTP, StatusCode: 415, ErrorName: "status_415", ErrorNameFromStatus: true, ContentTypes: []string{"application/json"}}, {ID: "InvitationsMembership.RetrieveMemberRole.error.status_429.429", Kind: loomhttp.ResponseContractError, Transport: loomhttp.ResponseContractHTTP, StatusCode: 429, ErrorName: "status_429", ErrorNameFromStatus: true, ContentTypes: []string{"application/json"}}, {ID: "InvitationsMembership.RetrieveMemberRole.error.status_500.500", Kind: loomhttp.ResponseContractError, Transport: loomhttp.ResponseContractHTTP, StatusCode: 500, ErrorName: "status_500", ErrorNameFromStatus: true, ContentTypes: []string{"application/json"}}}
 }
 
 // MountGetAPIUsersMeWorkspacesInvitationsHandler configures the mux to serve
@@ -1575,7 +1683,9 @@ func NewPostAPIWorkspacesBySlugProjectsByProjectIDJoinByPkHandler(
 // ResponseContractCases returns every supported declared HTTP wire-response
 // contract for this service. The returned slice is owned by the caller.
 func ResponseContractCases() []loomhttp.ResponseContractCase {
-	cases := make([]loomhttp.ResponseContractCase, 0, 144)
+	cases := make([]loomhttp.ResponseContractCase, 0, 162)
+	cases = append(cases, ListMemberRolesResponseContractCases()...)
+	cases = append(cases, RetrieveMemberRoleResponseContractCases()...)
 	cases = append(cases, GetAPIUsersMeWorkspacesInvitationsResponseContractCases()...)
 	cases = append(cases, GetAPIUsersMeWorkspacesBySlugProjectsInvitationsResponseContractCases()...)
 	cases = append(cases, GetAPIV1WorkspacesBySlugInvitationsResponseContractCases()...)

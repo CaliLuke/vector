@@ -46,6 +46,11 @@ INSERT INTO project_members VALUES
  ('30000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001',15,true,NULL),
  ('30000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000002',15,true,NULL),
  ('30000000-0000-4000-8000-000000000003','20000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000002',15,true,NULL);
+ALTER TABLE users ADD COLUMN is_bot boolean NOT NULL DEFAULT false;
+ALTER TABLE workspaces ADD COLUMN owner_id uuid NOT NULL DEFAULT '10000000-0000-4000-8000-000000000001';
+ALTER TABLE workspace_members ADD COLUMN id uuid NOT NULL DEFAULT gen_random_uuid();
+ALTER TABLE workspace_members ADD COLUMN created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE workspace_members ADD COLUMN updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP;
 `
 
 func databaseFixture(t *testing.T) (fixture, *pgxpool.Pool) {
@@ -74,7 +79,9 @@ func databaseFixture(t *testing.T) (fixture, *pgxpool.Pool) {
 	require.NoError(t, err)
 	projectReader, err := projectmembershipreads.NewMemberReader(projectRepository)
 	require.NoError(t, err)
-	service, err := mcpactions.New(reader, projectReader)
+	directory, err := projectmembershipreads.NewDirectoryReader(pool)
+	require.NoError(t, err)
+	service, err := mcpactions.New(reader, projectReader, directory)
 	require.NoError(t, err)
 	keys, err := apikey.NewWithReaderWriter(pool, pool)
 	require.NoError(t, err)

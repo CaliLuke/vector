@@ -18,11 +18,11 @@ type memberResponseService struct {
 	failure error
 }
 
-func (s memberResponseService) Member(context.Context, *api.MemberListProjectOrMemberMe) (*api.MemberIdentityOrProjectMembers, error) {
+func (s memberResponseService) Member(context.Context, *api.MemberRequest) (*api.MemberResult, error) {
 	if s.failure != nil {
 		return nil, s.failure
 	}
-	var result api.MemberIdentityOrProjectMembers
+	var result api.MemberResult
 	err := json.Unmarshal([]byte(s.body), &result)
 	return &result, err
 }

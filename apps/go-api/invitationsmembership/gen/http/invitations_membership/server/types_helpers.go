@@ -13,6 +13,40 @@ import (
 	loom "github.com/CaliLuke/loom/pkg"
 )
 
+// MemberRoleDefinitionResponseBody is used to define fields on response body
+// types.
+type MemberRoleDefinitionResponseBody struct {
+	ID        string `form:"id" json:"id" xml:"id"`
+	Name      string `form:"name" json:"name" xml:"name"`
+	Slug      string `form:"slug" json:"slug" xml:"slug"`
+	Namespace string `form:"namespace" json:"namespace" xml:"namespace"`
+}
+
+// InvitationsMembershipHTTPError is used to define fields on response body
+// types.
+type InvitationsMembershipHTTPError struct {
+	Code                    loom.JSONValue `form:"code,omitempty" json:"code,omitzero" xml:"code,omitempty"`
+	Email                   loom.JSONValue `form:"email,omitempty" json:"email,omitzero" xml:"email,omitempty"`
+	Role                    loom.JSONValue `form:"role,omitempty" json:"role,omitzero" xml:"role,omitempty"`
+	NonFieldErrors          loom.JSONValue `form:"non_field_errors,omitempty" json:"non_field_errors,omitzero" xml:"non_field_errors,omitempty"`
+	WorkspaceUsers          loom.JSONValue `form:"workspace_users,omitempty" json:"workspace_users,omitzero" xml:"workspace_users,omitempty"`
+	IsActive                loom.JSONValue `form:"is_active,omitempty" json:"is_active,omitzero" xml:"is_active,omitempty"`
+	CreatedBy               loom.JSONValue `form:"created_by,omitempty" json:"created_by,omitzero" xml:"created_by,omitempty"`
+	UpdatedBy               loom.JSONValue `form:"updated_by,omitempty" json:"updated_by,omitzero" xml:"updated_by,omitempty"`
+	DeletedAt               loom.JSONValue `form:"deleted_at,omitempty" json:"deleted_at,omitzero" xml:"deleted_at,omitempty"`
+	Workspace               loom.JSONValue `form:"workspace,omitempty" json:"workspace,omitzero" xml:"workspace,omitempty"`
+	CompanyRole             loom.JSONValue `form:"company_role,omitempty" json:"company_role,omitzero" xml:"company_role,omitempty"`
+	Accepted                loom.JSONValue `form:"accepted,omitempty" json:"accepted,omitzero" xml:"accepted,omitempty"`
+	ViewProps               loom.JSONValue `form:"view_props,omitempty" json:"view_props,omitzero" xml:"view_props,omitempty"`
+	DefaultProps            loom.JSONValue `form:"default_props,omitempty" json:"default_props,omitzero" xml:"default_props,omitempty"`
+	IssueProps              loom.JSONValue `form:"issue_props,omitempty" json:"issue_props,omitzero" xml:"issue_props,omitempty"`
+	GettingStartedChecklist loom.JSONValue `form:"getting_started_checklist,omitempty" json:"getting_started_checklist,omitzero" xml:"getting_started_checklist,omitempty"`
+	Tips                    loom.JSONValue `form:"tips,omitempty" json:"tips,omitzero" xml:"tips,omitempty"`
+	ExploredFeatures        loom.JSONValue `form:"explored_features,omitempty" json:"explored_features,omitzero" xml:"explored_features,omitempty"`
+	Detail                  loom.JSONValue `form:"detail,omitempty" json:"detail,omitzero" xml:"detail,omitempty"`
+	ErrorValue              loom.JSONValue `form:"error,omitempty" json:"error,omitzero" xml:"error,omitempty"`
+}
+
 // PlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponseResponse
 // is used to define fields on response body types.
 type PlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponseResponse struct {
@@ -42,31 +76,6 @@ type PlaneAppSerializersWorkspaceWorkspaceliteserializerResponseResponse struct 
 	LogoURL loom.Nullable[string] `form:"logo_url,omitempty" json:"logo_url,omitzero" xml:"logo_url,omitempty"`
 	Name    string                `form:"name" json:"name" xml:"name"`
 	Slug    string                `form:"slug" json:"slug" xml:"slug"`
-}
-
-// InvitationsMembershipHTTPError is used to define fields on response body
-// types.
-type InvitationsMembershipHTTPError struct {
-	Code                    loom.JSONValue `form:"code,omitempty" json:"code,omitzero" xml:"code,omitempty"`
-	Email                   loom.JSONValue `form:"email,omitempty" json:"email,omitzero" xml:"email,omitempty"`
-	Role                    loom.JSONValue `form:"role,omitempty" json:"role,omitzero" xml:"role,omitempty"`
-	NonFieldErrors          loom.JSONValue `form:"non_field_errors,omitempty" json:"non_field_errors,omitzero" xml:"non_field_errors,omitempty"`
-	WorkspaceUsers          loom.JSONValue `form:"workspace_users,omitempty" json:"workspace_users,omitzero" xml:"workspace_users,omitempty"`
-	IsActive                loom.JSONValue `form:"is_active,omitempty" json:"is_active,omitzero" xml:"is_active,omitempty"`
-	CreatedBy               loom.JSONValue `form:"created_by,omitempty" json:"created_by,omitzero" xml:"created_by,omitempty"`
-	UpdatedBy               loom.JSONValue `form:"updated_by,omitempty" json:"updated_by,omitzero" xml:"updated_by,omitempty"`
-	DeletedAt               loom.JSONValue `form:"deleted_at,omitempty" json:"deleted_at,omitzero" xml:"deleted_at,omitempty"`
-	Workspace               loom.JSONValue `form:"workspace,omitempty" json:"workspace,omitzero" xml:"workspace,omitempty"`
-	CompanyRole             loom.JSONValue `form:"company_role,omitempty" json:"company_role,omitzero" xml:"company_role,omitempty"`
-	Accepted                loom.JSONValue `form:"accepted,omitempty" json:"accepted,omitzero" xml:"accepted,omitempty"`
-	ViewProps               loom.JSONValue `form:"view_props,omitempty" json:"view_props,omitzero" xml:"view_props,omitempty"`
-	DefaultProps            loom.JSONValue `form:"default_props,omitempty" json:"default_props,omitzero" xml:"default_props,omitempty"`
-	IssueProps              loom.JSONValue `form:"issue_props,omitempty" json:"issue_props,omitzero" xml:"issue_props,omitempty"`
-	GettingStartedChecklist loom.JSONValue `form:"getting_started_checklist,omitempty" json:"getting_started_checklist,omitzero" xml:"getting_started_checklist,omitempty"`
-	Tips                    loom.JSONValue `form:"tips,omitempty" json:"tips,omitzero" xml:"tips,omitempty"`
-	ExploredFeatures        loom.JSONValue `form:"explored_features,omitempty" json:"explored_features,omitzero" xml:"explored_features,omitempty"`
-	Detail                  loom.JSONValue `form:"detail,omitempty" json:"detail,omitzero" xml:"detail,omitempty"`
-	ErrorValue              loom.JSONValue `form:"error,omitempty" json:"error,omitzero" xml:"error,omitempty"`
 }
 
 // PlaneAppSerializersProjectProjectmemberinviteserializerResponseResponse is
@@ -128,6 +137,7 @@ type PlaneAPISerializersMemberWorkspacememberliteapiserializerResponseResponseBo
 	IsBot       *bool                    `form:"is_bot,omitempty" json:"is_bot,omitzero" xml:"is_bot,omitempty"`
 	LastName    string                   `form:"last_name" json:"last_name" xml:"last_name"`
 	Role        *RoleC37EnumResponseBody `form:"role,omitempty" json:"role,omitzero" xml:"role,omitempty"`
+	RoleSlug    loom.Nullable[string]    `form:"role_slug" json:"role_slug" xml:"role_slug"`
 }
 
 // PlaneAPISerializersMemberWorkspacememberuserliteserializerResponseResponse
@@ -176,6 +186,112 @@ type PlaneAppSerializersProjectProjectliteserializerResponseResponseBody struct 
 	Identifier    string                `form:"identifier" json:"identifier" xml:"identifier"`
 	LogoProps     loom.JSONValue        `form:"logo_props,omitempty" json:"logo_props,omitzero" xml:"logo_props,omitempty"`
 	Name          string                `form:"name" json:"name" xml:"name"`
+}
+
+// NewListMemberRolesResponseBody builds the HTTP response body from the result
+// of the "ListMemberRoles" endpoint of the "InvitationsMembership" service.
+func NewListMemberRolesResponseBody(res *invitationsmembership.MemberRolesPage) *ListMemberRolesResponseBody {
+	body := &ListMemberRolesResponseBody{
+		Count:           res.Count,
+		NextCursor:      res.NextCursor,
+		NextPageResults: res.NextPageResults,
+		PrevCursor:      res.PrevCursor,
+		PrevPageResults: res.PrevPageResults,
+		TotalCount:      res.TotalCount,
+		TotalPages:      res.TotalPages,
+		TotalResults:    res.TotalResults,
+	}
+	body.ExtraStats = res.ExtraStats
+	body.GroupedBy = res.GroupedBy
+	body.SubGroupedBy = res.SubGroupedBy
+	if res.Results != nil {
+		if res.Results != nil {
+			body.Results = make([]*MemberRoleDefinitionResponseBody, len(res.Results))
+			for i, val := range res.Results {
+				if val == nil {
+					body.Results[i] = nil
+					continue
+				}
+				body.Results[i] = marshalInvitationsmembershipMemberRoleDefinitionToMemberRoleDefinitionResponseBody(val)
+			}
+		} else {
+			body.Results = nil
+		}
+	} else {
+		body.Results = []*MemberRoleDefinitionResponseBody{}
+	}
+	return body
+}
+
+// NewInvitationsMembershipListMemberRolesResponseBody builds the HTTP response
+// body from the result of the "ListMemberRoles" endpoint of the
+// "InvitationsMembership" service.
+func NewInvitationsMembershipListMemberRolesResponseBody(res *invitationsmembership.InvitationsMembershipAPIKeyError) *InvitationsMembershipListMemberRolesResponseBody {
+	body := &InvitationsMembershipListMemberRolesResponseBody{
+		Code:                    res.Code,
+		Email:                   res.Email,
+		Role:                    res.Role,
+		NonFieldErrors:          res.NonFieldErrors,
+		WorkspaceUsers:          res.WorkspaceUsers,
+		IsActive:                res.IsActive,
+		CreatedBy:               res.CreatedBy,
+		UpdatedBy:               res.UpdatedBy,
+		DeletedAt:               res.DeletedAt,
+		Workspace:               res.Workspace,
+		CompanyRole:             res.CompanyRole,
+		Accepted:                res.Accepted,
+		ViewProps:               res.ViewProps,
+		DefaultProps:            res.DefaultProps,
+		IssueProps:              res.IssueProps,
+		GettingStartedChecklist: res.GettingStartedChecklist,
+		Tips:                    res.Tips,
+		ExploredFeatures:        res.ExploredFeatures,
+		Detail:                  res.Detail,
+		ErrorValue:              res.ErrorValue,
+	}
+	return body
+}
+
+// NewRetrieveMemberRoleResponseBody builds the HTTP response body from the
+// result of the "RetrieveMemberRole" endpoint of the "InvitationsMembership"
+// service.
+func NewRetrieveMemberRoleResponseBody(res *invitationsmembership.MemberRoleDefinition) *RetrieveMemberRoleResponseBody {
+	body := &RetrieveMemberRoleResponseBody{
+		ID:        res.ID,
+		Name:      res.Name,
+		Slug:      res.Slug,
+		Namespace: res.Namespace,
+	}
+	return body
+}
+
+// NewInvitationsMembershipRetrieveMemberRoleResponseBody builds the HTTP
+// response body from the result of the "RetrieveMemberRole" endpoint of the
+// "InvitationsMembership" service.
+func NewInvitationsMembershipRetrieveMemberRoleResponseBody(res *invitationsmembership.InvitationsMembershipAPIKeyError) *InvitationsMembershipRetrieveMemberRoleResponseBody {
+	body := &InvitationsMembershipRetrieveMemberRoleResponseBody{
+		Code:                    res.Code,
+		Email:                   res.Email,
+		Role:                    res.Role,
+		NonFieldErrors:          res.NonFieldErrors,
+		WorkspaceUsers:          res.WorkspaceUsers,
+		IsActive:                res.IsActive,
+		CreatedBy:               res.CreatedBy,
+		UpdatedBy:               res.UpdatedBy,
+		DeletedAt:               res.DeletedAt,
+		Workspace:               res.Workspace,
+		CompanyRole:             res.CompanyRole,
+		Accepted:                res.Accepted,
+		ViewProps:               res.ViewProps,
+		DefaultProps:            res.DefaultProps,
+		IssueProps:              res.IssueProps,
+		GettingStartedChecklist: res.GettingStartedChecklist,
+		Tips:                    res.Tips,
+		ExploredFeatures:        res.ExploredFeatures,
+		Detail:                  res.Detail,
+		ErrorValue:              res.ErrorValue,
+	}
+	return body
 }
 
 // NewGetAPIUsersMeWorkspacesInvitationsResponseBody builds the HTTP response
@@ -639,6 +755,7 @@ func NewGetAPIV1WorkspacesBySlugMembersLiteResponseBody(res *invitationsmembersh
 	}
 	body.ExtraStats = res.ExtraStats
 	body.GroupedBy = res.GroupedBy
+	body.SubGroupedBy = res.SubGroupedBy
 	if res.Results != nil {
 		if res.Results != nil {
 			body.Results = make([]*PlaneAPISerializersMemberWorkspacememberliteapiserializerResponseResponseBody, len(res.Results))
@@ -655,7 +772,6 @@ func NewGetAPIV1WorkspacesBySlugMembersLiteResponseBody(res *invitationsmembersh
 	} else {
 		body.Results = []*PlaneAPISerializersMemberWorkspacememberliteapiserializerResponseResponseBody{}
 	}
-	body.SubGroupedBy = res.SubGroupedBy
 	return body
 }
 
@@ -1465,6 +1581,30 @@ func NewInvitationsMembershipPostAPIWorkspacesBySlugProjectsByProjectIDJoinByPkR
 	return body
 }
 
+// NewListMemberRolesPayload builds a InvitationsMembership service
+// ListMemberRoles endpoint payload.
+func NewListMemberRolesPayload(slug string, namespace *string, cursor *string, perPage *string, apiKeyAuthCredential *string) *invitationsmembership.ListMemberRolesPayload {
+	v := &invitationsmembership.ListMemberRolesPayload{}
+	v.Slug = slug
+	v.Namespace = namespace
+	v.Cursor = cursor
+	v.PerPage = perPage
+	v.APIKeyAuthCredential = apiKeyAuthCredential
+
+	return v
+}
+
+// NewRetrieveMemberRolePayload builds a InvitationsMembership service
+// RetrieveMemberRole endpoint payload.
+func NewRetrieveMemberRolePayload(slug string, roleID string, apiKeyAuthCredential *string) *invitationsmembership.RetrieveMemberRolePayload {
+	v := &invitationsmembership.RetrieveMemberRolePayload{}
+	v.Slug = slug
+	v.RoleID = roleID
+	v.APIKeyAuthCredential = apiKeyAuthCredential
+
+	return v
+}
+
 // NewGetAPIUsersMeWorkspacesInvitationsPayload builds a InvitationsMembership
 // service GetAPIUsersMeWorkspacesInvitations endpoint payload.
 func NewGetAPIUsersMeWorkspacesInvitationsPayload(search *string, planeSessionCookieCredential *string) *invitationsmembership.GetAPIUsersMeWorkspacesInvitationsPayload {
@@ -1578,9 +1718,17 @@ func NewPutAPIV1WorkspacesBySlugInvitationsByPkPayload(slug string, pk string, a
 
 // NewGetAPIV1WorkspacesBySlugMembersLitePayload builds a InvitationsMembership
 // service GetAPIV1WorkspacesBySlugMembersLite endpoint payload.
-func NewGetAPIV1WorkspacesBySlugMembersLitePayload(slug string, cursor *string, perPage *int, apiKeyAuthCredential *string) *invitationsmembership.GetAPIV1WorkspacesBySlugMembersLitePayload {
+func NewGetAPIV1WorkspacesBySlugMembersLitePayload(slug string, firstName *string, lastName *string, email *string, displayName *string, roleSlug *string, orderBy *string, isActive *string, isBot *string, cursor *string, perPage *int, apiKeyAuthCredential *string) *invitationsmembership.GetAPIV1WorkspacesBySlugMembersLitePayload {
 	v := &invitationsmembership.GetAPIV1WorkspacesBySlugMembersLitePayload{}
 	v.Slug = slug
+	v.FirstName = firstName
+	v.LastName = lastName
+	v.Email = email
+	v.DisplayName = displayName
+	v.RoleSlug = roleSlug
+	v.OrderBy = orderBy
+	v.IsActive = isActive
+	v.IsBot = isBot
 	v.Cursor = cursor
 	v.PerPage = perPage
 	v.APIKeyAuthCredential = apiKeyAuthCredential

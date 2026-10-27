@@ -536,6 +536,46 @@ paths:
             operationId: get_api_v1_workspaces_by_slug_members_lite
             parameters:
                 - $ref: '#/components/parameters/PathSlug_a6aed7d4'
+                - name: first_name
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                - name: last_name
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                - name: email
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                - name: display_name
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                - name: role_slug
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                - name: order_by
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                - name: is_active
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                - name: is_bot
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
                 - name: cursor
                   in: query
                   description: Pagination cursor for getting next set of results
@@ -642,6 +682,111 @@ paths:
             x-plane-permission-classes:
                 - plane.utils.permissions.workspace.WorkSpaceAdminPermission
             x-plane-view: plane.api.views.member.WorkspaceMemberAPIEndpoint
+    /api/v1/workspaces/{slug}/roles/:
+        get:
+            tags:
+                - InvitationsMembership
+            summary: ListMemberRoles InvitationsMembership
+            description: List the workspace's existing workspace and project role definitions.
+            operationId: invitations_membership.list_member_roles
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - name: namespace
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                - name: cursor
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                - name: per_page
+                  in: query
+                  description: Page size, default 20 and maximum 1000.
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MemberRolesPage'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+    /api/v1/workspaces/{slug}/roles/{role_id}/:
+        get:
+            tags:
+                - InvitationsMembership
+            summary: RetrieveMemberRole InvitationsMembership
+            description: Retrieve a role definition by its workspace-scoped identifier.
+            operationId: invitations_membership.retrieve_member_role
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - name: role_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MemberRoleDefinition'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
     /api/workspaces/{slug}/invitations/:
         get:
             description: Endpoint for creating, listing and  deleting workspaces
@@ -1525,6 +1670,75 @@ components:
                 view_props: {}
                 workspace: {}
                 workspace_users: {}
+        MemberRoleDefinition:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                name:
+                    type: string
+                namespace:
+                    type: string
+                    enum:
+                        - workspace
+                        - project
+                slug:
+                    type: string
+            description: An existing Vector membership role in this workspace.
+            required:
+                - id
+                - name
+                - slug
+                - namespace
+        MemberRolesPage:
+            type: object
+            properties:
+                count:
+                    type: integer
+                extra_stats:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                next_cursor:
+                    type: string
+                next_page_results:
+                    type: boolean
+                prev_cursor:
+                    type: string
+                prev_page_results:
+                    type: boolean
+                results:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/MemberRoleDefinition'
+                sub_grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                total_count:
+                    type: integer
+                total_pages:
+                    type: integer
+                total_results:
+                    type: integer
+            required:
+                - count
+                - extra_stats
+                - grouped_by
+                - next_cursor
+                - next_page_results
+                - prev_cursor
+                - prev_page_results
+                - results
+                - sub_grouped_by
+                - total_count
+                - total_pages
+                - total_results
         PatchedPlaneApiSerializersInviteWorkspaceinviteserializerRequestRequest:
             type: object
             properties:
@@ -1721,8 +1935,14 @@ components:
                         - 5
                     allOf:
                         - $ref: '#/components/schemas/RoleC37Enum'
+                role_slug:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                        - type: "null"
             description: Minimal WorkspaceMember representation for paginated member pickers/directories.
             required:
+                - role_slug
                 - display_name
                 - email
                 - first_name

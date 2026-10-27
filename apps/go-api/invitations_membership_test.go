@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	stduuid "uuid"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
@@ -140,14 +141,15 @@ func (invitationRosterPageRepository) AuthorizeWorkspaceRole(context.Context, uu
 func (invitationRosterPageRepository) WorkspaceExists(context.Context, string) (bool, error) {
 	return true, nil
 }
-func (invitationRosterPageRepository) WorkspaceMemberLitePage(_ context.Context, _ string, limit, offset int) (json.RawMessage, int, error) {
+func (invitationRosterPageRepository) ListWorkspaceMembers(_ context.Context, _ stduuid.UUID, _ string, query store.WorkspaceMembersQuery) (store.WorkspaceMembersPage, error) {
+	limit, offset := query.Limit+1, query.Page*query.Limit
 	if limit != 3 {
-		return nil, 0, errors.New("wrong page limit")
+		return store.WorkspaceMembersPage{}, errors.New("wrong page limit")
 	}
 	if offset == 2 {
-		return json.RawMessage(`[{"id":"00000000-0000-4000-8000-000000000003"},{"id":"00000000-0000-4000-8000-000000000004"}]`), 4, nil
+		return store.WorkspaceMembersPage{Results: json.RawMessage(`[{"id":"00000000-0000-4000-8000-000000000003","role_slug":null},{"id":"00000000-0000-4000-8000-000000000004","role_slug":null}]`), Total: 4}, nil
 	}
-	return json.RawMessage(`[{"id":"00000000-0000-4000-8000-000000000002"},{"id":"00000000-0000-4000-8000-000000000003"},{"id":"00000000-0000-4000-8000-000000000004"}]`), 4, nil
+	return store.WorkspaceMembersPage{Results: json.RawMessage(`[{"id":"00000000-0000-4000-8000-000000000002","role_slug":null},{"id":"00000000-0000-4000-8000-000000000003","role_slug":null},{"id":"00000000-0000-4000-8000-000000000004","role_slug":null}]`), Total: 4}, nil
 }
 func TestWorkspaceRosterCursorUsesPageIndexForMultirowPage(t *testing.T) {
 	service := &invitationsMembershipService{repository: invitationRosterPageRepository{}}
@@ -206,8 +208,8 @@ func (invitationEmptyStringRepository) AuthorizeWorkspaceRole(context.Context, u
 func (invitationEmptyStringRepository) WorkspaceExists(context.Context, string) (bool, error) {
 	return true, nil
 }
-func (invitationEmptyStringRepository) WorkspaceMemberLitePage(context.Context, string, int, int) (json.RawMessage, int, error) {
-	return json.RawMessage(`[{"id":"00000000-0000-4000-8000-000000000001","first_name":"","last_name":"","display_name":"","email":"invitee@example.com","avatar":"","avatar_url":null,"is_bot":false,"is_active":false,"role":5}]`), 1, nil
+func (invitationEmptyStringRepository) ListWorkspaceMembers(context.Context, stduuid.UUID, string, store.WorkspaceMembersQuery) (store.WorkspaceMembersPage, error) {
+	return store.WorkspaceMembersPage{Results: json.RawMessage(`[{"id":"00000000-0000-4000-8000-000000000001","first_name":"","last_name":"","display_name":"","email":"invitee@example.com","avatar":"","avatar_url":null,"is_bot":false,"is_active":false,"role":5,"role_slug":"guest"}]`), Total: 1}, nil
 }
 func TestInvitationGeneratedRosterRetainsPresentEmptyStrings(t *testing.T) {
 	service := &invitationsMembershipService{repository: invitationEmptyStringRepository{}, keys: &invitationsMembershipKeyValidator{}, sessions: invitationsMembershipSessionValidator{}, throttle: &activityThrottleStub{rate: apikey.Rate{Allowed: true}}}

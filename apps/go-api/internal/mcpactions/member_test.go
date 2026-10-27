@@ -70,12 +70,13 @@ func (throttle) AllowCacheKey(context.Context, string, string) (apikey.Rate, err
 }
 
 type fixture struct {
-	service  *mcpactions.Service
-	auth     *mcpauth.PersonalTokens
-	store    *identityStore
-	keys     *tokens
-	members  *memberships
-	projects *projectStore
+	service   *mcpactions.Service
+	auth      *mcpauth.PersonalTokens
+	store     *identityStore
+	keys      *tokens
+	members   *memberships
+	projects  *projectStore
+	directory *directoryStub
 }
 
 func newFixture(t *testing.T) fixture {
@@ -91,7 +92,8 @@ func newFixture(t *testing.T) fixture {
 	projects := newProjectStore()
 	projectReader, err := projectmembershipreads.NewMemberReader(projects)
 	require.NoError(t, err)
-	service, err := mcpactions.New(reader, projectReader)
+	directory := &directoryStub{}
+	service, err := mcpactions.New(reader, projectReader, directory)
 	require.NoError(t, err)
 	keys := &tokens{owners: map[string]apikey.Principal{
 		"test-one": {UserID: one, Timezone: "UTC"}, "test-two": {UserID: two, Timezone: "UTC"},
@@ -99,7 +101,7 @@ func newFixture(t *testing.T) fixture {
 	members := &memberships{}
 	auth, err := mcpauth.NewPersonalTokens(keys, members, throttle{})
 	require.NoError(t, err)
-	return fixture{service: service, auth: auth, store: store, keys: keys, members: members, projects: projects}
+	return fixture{service: service, auth: auth, store: store, keys: keys, members: members, projects: projects, directory: directory}
 }
 
 func (f fixture) handler(t *testing.T, authenticate mcptransport.Authenticate) http.Handler {
@@ -183,8 +185,8 @@ func TestMemberDiscoveryAndIdentityAreScopedToTheAuthenticatedUser(t *testing.T)
 	assert.Equal(t, "member", discovery.Tools[0].Name)
 	assert.Equal(t, map[string]bool{"readOnlyHint": true, "destructiveHint": false, "idempotentHint": false, "openWorldHint": false}, discovery.Tools[0].Annotations)
 	assert.Equal(t, "object", discovery.Tools[0].InputSchema.Type)
-	assert.JSONEq(t, `{"anyOf":[{"type":"string","enum":["me"]},{"type":"string","enum":["list_project"]}]}`, string(discovery.Tools[0].InputSchema.Properties["action"]))
-	require.Len(t, discovery.Tools[0].InputSchema.OneOf, 2)
+	assert.JSONEq(t, `{"anyOf":[{"type":"string","enum":["me"]},{"type":"string","enum":["list_project"]},{"type":"string","enum":["list_workspace"]},{"type":"string","enum":["list_roles"]},{"type":"string","enum":["retrieve_role"]}]}`, string(discovery.Tools[0].InputSchema.Properties["action"]))
+	require.Len(t, discovery.Tools[0].InputSchema.OneOf, 5)
 	for _, branch := range discovery.Tools[0].InputSchema.OneOf {
 		var schema struct{ AdditionalProperties *bool }
 		require.NoError(t, json.Unmarshal(branch, &schema))
@@ -204,7 +206,13 @@ func TestMemberRejectsUnknownActionsAndCrossActionFieldsBeforeApplicationRead(t 
 	f := newFixture(t)
 	h := f.handler(t, nil)
 	for _, input := range []string{
-		`{}`, `{"action":null}`, `{"action":"list_workspace"}`,
+		`{}`, `{"action":null}`, `{"action":"update"}`,
+		`{"action":"list_workspace","namespace":"project"}`,
+		`{"action":"list_workspace","is_active":"false"}`,
+		`{"action":"list_roles","first_name":"example"}`,
+		`{"action":"list_roles","namespace":"unknown"}`,
+		`{"action":"retrieve_role"}`,
+		`{"action":"retrieve_role","role_id":"invalid"}`,
 		`{"action":"list_project"}`, `{"action":"list_project","project_id":null}`,
 		`{"action":"list_project","project_id":"not-a-uuid"}`,
 		`{"action":"me","project_id":"10000000-0000-4000-8000-000000000001"}`,
@@ -277,17 +285,17 @@ func TestMemberSanitizesApplicationFailures(t *testing.T) {
 
 func TestMemberRequiresAuthenticatedContextAndValidAction(t *testing.T) {
 	f := newFixture(t)
-	input := api.NewMemberListProjectOrMemberMeMemberMe(&api.MemberMe{Action: "me"})
+	input := api.NewMemberRequestMemberMe(&api.MemberMe{Action: "me"})
 	_, err := f.service.Member(t.Context(), &input)
 	require.Error(t, err)
 	_, err = f.service.Member(t.Context(), nil)
 	require.Error(t, err)
 	assert.Zero(t, f.store.reads.Load())
-	_, err = mcpactions.New(nil, nil)
+	_, err = mcpactions.New(nil, nil, nil)
 	require.Error(t, err)
 	reader, err := useridentity.NewIdentityReader(f.store)
 	require.NoError(t, err)
-	_, err = mcpactions.New(reader, nil)
+	_, err = mcpactions.New(reader, nil, &directoryStub{})
 	require.Error(t, err)
 }
 

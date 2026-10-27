@@ -16,6 +16,72 @@ import (
 	loom "github.com/CaliLuke/loom/pkg"
 )
 
+// BuildListMemberRolesPayload builds the payload for the InvitationsMembership
+// ListMemberRoles endpoint from CLI flags.
+func BuildListMemberRolesPayload(invitationsMembershipListMemberRolesSlug string, invitationsMembershipListMemberRolesNamespace string, invitationsMembershipListMemberRolesCursor string, invitationsMembershipListMemberRolesPerPage string, invitationsMembershipListMemberRolesAPIKeyAuthCredential string) (*invitationsmembership.ListMemberRolesPayload, error) {
+	var slug string
+	{
+		slug = invitationsMembershipListMemberRolesSlug
+	}
+	var namespace *string
+	{
+		if invitationsMembershipListMemberRolesNamespace != "" {
+			namespace = &invitationsMembershipListMemberRolesNamespace
+		}
+	}
+	var cursor *string
+	{
+		if invitationsMembershipListMemberRolesCursor != "" {
+			cursor = &invitationsMembershipListMemberRolesCursor
+		}
+	}
+	var perPage *string
+	{
+		if invitationsMembershipListMemberRolesPerPage != "" {
+			perPage = &invitationsMembershipListMemberRolesPerPage
+		}
+	}
+	var apiKeyAuthCredential *string
+	{
+		if invitationsMembershipListMemberRolesAPIKeyAuthCredential != "" {
+			apiKeyAuthCredential = &invitationsMembershipListMemberRolesAPIKeyAuthCredential
+		}
+	}
+	v := &invitationsmembership.ListMemberRolesPayload{}
+	v.Slug = slug
+	v.Namespace = namespace
+	v.Cursor = cursor
+	v.PerPage = perPage
+	v.APIKeyAuthCredential = apiKeyAuthCredential
+
+	return v, nil
+}
+
+// BuildRetrieveMemberRolePayload builds the payload for the
+// InvitationsMembership RetrieveMemberRole endpoint from CLI flags.
+func BuildRetrieveMemberRolePayload(invitationsMembershipRetrieveMemberRoleSlug string, invitationsMembershipRetrieveMemberRoleRoleID string, invitationsMembershipRetrieveMemberRoleAPIKeyAuthCredential string) (*invitationsmembership.RetrieveMemberRolePayload, error) {
+	var slug string
+	{
+		slug = invitationsMembershipRetrieveMemberRoleSlug
+	}
+	var roleID string
+	{
+		roleID = invitationsMembershipRetrieveMemberRoleRoleID
+	}
+	var apiKeyAuthCredential *string
+	{
+		if invitationsMembershipRetrieveMemberRoleAPIKeyAuthCredential != "" {
+			apiKeyAuthCredential = &invitationsMembershipRetrieveMemberRoleAPIKeyAuthCredential
+		}
+	}
+	v := &invitationsmembership.RetrieveMemberRolePayload{}
+	v.Slug = slug
+	v.RoleID = roleID
+	v.APIKeyAuthCredential = apiKeyAuthCredential
+
+	return v, nil
+}
+
 // BuildGetAPIUsersMeWorkspacesInvitationsPayload builds the payload for the
 // InvitationsMembership GetAPIUsersMeWorkspacesInvitations endpoint from CLI
 // flags.
@@ -253,11 +319,59 @@ func BuildPutAPIV1WorkspacesBySlugInvitationsByPkPayload(invitationsMembershipPu
 // BuildGetAPIV1WorkspacesBySlugMembersLitePayload builds the payload for the
 // InvitationsMembership GetAPIV1WorkspacesBySlugMembersLite endpoint from CLI
 // flags.
-func BuildGetAPIV1WorkspacesBySlugMembersLitePayload(invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteSlug string, invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteCursor string, invitationsMembershipGetAPIV1WorkspacesBySlugMembersLitePerPage string, invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteAPIKeyAuthCredential string) (*invitationsmembership.GetAPIV1WorkspacesBySlugMembersLitePayload, error) {
+func BuildGetAPIV1WorkspacesBySlugMembersLitePayload(invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteSlug string, invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteFirstName string, invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteLastName string, invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteEmail string, invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteDisplayName string, invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteRoleSlug string, invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteOrderBy string, invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteIsActive string, invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteIsBot string, invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteCursor string, invitationsMembershipGetAPIV1WorkspacesBySlugMembersLitePerPage string, invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteAPIKeyAuthCredential string) (*invitationsmembership.GetAPIV1WorkspacesBySlugMembersLitePayload, error) {
 	var err error
 	var slug string
 	{
 		slug = invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteSlug
+	}
+	var firstName *string
+	{
+		if invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteFirstName != "" {
+			firstName = &invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteFirstName
+		}
+	}
+	var lastName *string
+	{
+		if invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteLastName != "" {
+			lastName = &invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteLastName
+		}
+	}
+	var email *string
+	{
+		if invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteEmail != "" {
+			email = &invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteEmail
+		}
+	}
+	var displayName *string
+	{
+		if invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteDisplayName != "" {
+			displayName = &invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteDisplayName
+		}
+	}
+	var roleSlug *string
+	{
+		if invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteRoleSlug != "" {
+			roleSlug = &invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteRoleSlug
+		}
+	}
+	var orderBy *string
+	{
+		if invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteOrderBy != "" {
+			orderBy = &invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteOrderBy
+		}
+	}
+	var isActive *string
+	{
+		if invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteIsActive != "" {
+			isActive = &invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteIsActive
+		}
+	}
+	var isBot *string
+	{
+		if invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteIsBot != "" {
+			isBot = &invitationsMembershipGetAPIV1WorkspacesBySlugMembersLiteIsBot
+		}
 	}
 	var cursor *string
 	{
@@ -285,6 +399,14 @@ func BuildGetAPIV1WorkspacesBySlugMembersLitePayload(invitationsMembershipGetAPI
 	}
 	v := &invitationsmembership.GetAPIV1WorkspacesBySlugMembersLitePayload{}
 	v.Slug = slug
+	v.FirstName = firstName
+	v.LastName = lastName
+	v.Email = email
+	v.DisplayName = displayName
+	v.RoleSlug = roleSlug
+	v.OrderBy = orderBy
+	v.IsActive = isActive
+	v.IsBot = isBot
 	v.Cursor = cursor
 	v.PerPage = perPage
 	v.APIKeyAuthCredential = apiKeyAuthCredential

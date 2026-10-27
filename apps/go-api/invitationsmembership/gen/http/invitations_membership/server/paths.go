@@ -14,6 +14,16 @@ import (
 	loomhttp "github.com/CaliLuke/loom/http"
 )
 
+// ListMemberRolesInvitationsMembershipPath returns the URL path to the InvitationsMembership service ListMemberRoles HTTP endpoint.
+func ListMemberRolesInvitationsMembershipPath(slug string) string {
+	return fmt.Sprintf("/api/v1/workspaces/%v/roles/", loomhttp.EscapePathSegment(slug))
+}
+
+// RetrieveMemberRoleInvitationsMembershipPath returns the URL path to the InvitationsMembership service RetrieveMemberRole HTTP endpoint.
+func RetrieveMemberRoleInvitationsMembershipPath(slug string, roleID string) string {
+	return fmt.Sprintf("/api/v1/workspaces/%v/roles/%v/", loomhttp.EscapePathSegment(slug), loomhttp.EscapePathSegment(roleID))
+}
+
 // GetAPIUsersMeWorkspacesInvitationsInvitationsMembershipPath returns the URL path to the InvitationsMembership service GetAPIUsersMeWorkspacesInvitations HTTP endpoint.
 func GetAPIUsersMeWorkspacesInvitationsInvitationsMembershipPath() string {
 	return "/api/users/me/workspaces/invitations/"
