@@ -15,16 +15,19 @@ import (
 
 // Client is the "VectorMCP" service client.
 type Client struct {
-	MemberEndpoint  loom.Endpoint
-	ProjectEndpoint loom.Endpoint
-	CycleEndpoint   loom.Endpoint
-	ModuleEndpoint  loom.Endpoint
-	LabelEndpoint   loom.Endpoint
+	MemberEndpoint           loom.Endpoint
+	ProjectEndpoint          loom.Endpoint
+	CycleEndpoint            loom.Endpoint
+	ModuleEndpoint           loom.Endpoint
+	LabelEndpoint            loom.Endpoint
+	WorkitemCommentEndpoint  loom.Endpoint
+	WorkitemLinkEndpoint     loom.Endpoint
+	WorkitemActivityEndpoint loom.Endpoint
 }
 
 // NewClient initializes a "VectorMCP" service client given the endpoints.
-func NewClient(member, project, cycle, module, label loom.Endpoint) *Client {
-	return &Client{MemberEndpoint: member, ProjectEndpoint: project, CycleEndpoint: cycle, ModuleEndpoint: module, LabelEndpoint: label}
+func NewClient(member, project, cycle, module, label, workitemComment, workitemLink, workitemActivity loom.Endpoint) *Client {
+	return &Client{MemberEndpoint: member, ProjectEndpoint: project, CycleEndpoint: cycle, ModuleEndpoint: module, LabelEndpoint: label, WorkitemCommentEndpoint: workitemComment, WorkitemLinkEndpoint: workitemLink, WorkitemActivityEndpoint: workitemActivity}
 }
 
 // Member calls the "member" endpoint of the "VectorMCP" service.
@@ -113,4 +116,57 @@ func (c *Client) Label(ctx context.Context, p *LabelRequest) (res *LabelResult, 
 		return
 	}
 	return ires.(*LabelResult), nil
+}
+
+// WorkitemComment calls the "workitem_comment" endpoint of the "VectorMCP"
+// service.
+// WorkitemComment may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) WorkitemComment(ctx context.Context, p *WorkitemCommentRequest) (res *WorkitemCommentResult, err error) {
+	var ires any
+	ires, err = c.WorkitemCommentEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(*WorkitemCommentResult), nil
+}
+
+// WorkitemLink calls the "workitem_link" endpoint of the "VectorMCP" service.
+// WorkitemLink may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) WorkitemLink(ctx context.Context, p *WorkitemLinkRequest) (res *WorkitemLinkResult, err error) {
+	var ires any
+	ires, err = c.WorkitemLinkEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(*WorkitemLinkResult), nil
+}
+
+// WorkitemActivity calls the "workitem_activity" endpoint of the "VectorMCP"
+// service.
+// WorkitemActivity may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) WorkitemActivity(ctx context.Context, p *WorkitemActivityRequest) (res *WorkitemActivityResult, err error) {
+	var ires any
+	ires, err = c.WorkitemActivityEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(*WorkitemActivityResult), nil
 }

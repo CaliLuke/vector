@@ -2,7 +2,7 @@
 
 The accepted scope is 30 tools and 207 operations. The pinned [catalogue](../apps/go-api/mcp/testdata/plane-mcp/catalogue.json) supplies the expected names and input declarations. This tracker records implementation evidence; catalogue presence alone is not implementation.
 
-Five member reads, four project actions, two cycle reads, two module reads, and two label reads are implemented with personal tokens and OAuth and tested through the generated server under both MCP revisions. OAuth tests use an isolated TLS issuer and real PostgreSQL; OAuth remains generic, production issuer selection is deferred, and complete local browser verification remains pending. Archive and restore include optional receipts and revision guards, transactional favorite cleanup, and correlated telemetry. The other 192 actions are not implemented. Read-action discovery now reflects current workspace and project membership. Browser conflict proof remains open. No full-parity claim is made.
+Five member reads, four project actions, two cycle reads, two module reads, two label reads, and six work-item comment/link/activity reads are implemented with personal tokens and OAuth and tested through the generated server under both MCP revisions. OAuth tests use an isolated TLS issuer and real PostgreSQL; OAuth remains generic, production issuer selection is deferred, and complete local browser verification remains pending. Archive and restore include optional receipts and revision guards, transactional favorite cleanup, and correlated telemetry. The other 186 actions are not implemented. Read-action discovery now reflects current workspace and project membership. Browser conflict proof remains open. No full-parity claim is made.
 
 For each action, completion requires inspected pinned handler/SDK behavior, typed generated contracts, current authorization and tenant checks, both authentication modes and protocol revisions, and real PostgreSQL proof. Mutations additionally require durable receipt/replay, request-hash conflicts, current authorization on replay, CAS on all relevant writers, and durable effects. Asset operations require real object-storage and SSRF proof. Missing domain features require an accepted domain design before transport implementation.
 
@@ -13,6 +13,7 @@ Project proof: [project contracts and primary data](../apps/go-api/internal/mcpa
 Cycle proof: [generated-server contracts, scope revocation, tenant isolation, and timezone behavior](../apps/go-api/internal/mcpactions/cycle_integration_test.go). [Cycle contract notes](mcp-cycles.md) record active/archived shapes and shared HTTP filtering.
 
 Module and label proof: [generated-server contracts, scope revocation, and relationship isolation](../apps/go-api/internal/mcpactions/resource_read_integration_test.go). [Contract notes](mcp-modules-labels.md) record their different page shapes and archive policies.
+Work-item child reads: [contract and scope notes](mcp-workitem-reads.md) and [generated-server regression tests](../apps/go-api/internal/mcpactions/workitem_read_integration_test.go).
 
 | Operation                                  | Kind     | Required upstream inputs                                 | Vector implementation | Remaining proof                                     |
 | ------------------------------------------ | -------- | -------------------------------------------------------- | --------------------- | --------------------------------------------------- |
@@ -35,8 +36,8 @@ Module and label proof: [generated-server contracts, scope revocation, and relat
 | `customer_request.create`                  | Mutation | `customer_id`, `name`                                    | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `customer_request.update`                  | Mutation | `customer_id`, `request_id`                              | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `customer_request.delete`                  | Mutation | `customer_id`, `request_id`                              | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
-| `cycle.list`                               | Read     | `project_id`                                             | Implemented           | Deployed OAuth/browser proof                        |
-| `cycle.retrieve`                           | Read     | `project_id`, `cycle_id`                                 | Implemented           | Deployed OAuth/browser proof                        |
+| `cycle.list`                               | Read     | `project_id`                                             | Implemented           | Local browser/proxy verification                    |
+| `cycle.retrieve`                           | Read     | `project_id`, `cycle_id`                                 | Implemented           | Local browser/proxy verification                    |
 | `cycle.create`                             | Mutation | `project_id`, `name`, `owned_by`                         | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `cycle.update`                             | Mutation | `project_id`, `cycle_id`                                 | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `cycle.delete`                             | Mutation | `project_id`, `cycle_id`                                 | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
@@ -62,8 +63,8 @@ Module and label proof: [generated-server contracts, scope revocation, and relat
 | `intake.create`                            | Mutation | `project_id`, `name`                                     | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `intake.update`                            | Mutation | `project_id`, `workitem_id`                              | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `intake.delete`                            | Mutation | `project_id`, `workitem_id`                              | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
-| `label.list`                               | Read     | `project_id`                                             | Implemented           | Deployed issuer/browser verification                |
-| `label.retrieve`                           | Read     | `project_id`, `label_id`                                 | Implemented           | Deployed issuer/browser verification                |
+| `label.list`                               | Read     | `project_id`                                             | Implemented           | Local browser/proxy verification                    |
+| `label.retrieve`                           | Read     | `project_id`, `label_id`                                 | Implemented           | Local browser/proxy verification                    |
 | `label.create`                             | Mutation | `project_id`, `name`                                     | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `label.update`                             | Mutation | `project_id`, `label_id`                                 | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `label.delete`                             | Mutation | `project_id`, `label_id`                                 | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
@@ -79,8 +80,8 @@ Module and label proof: [generated-server contracts, scope revocation, and relat
 | `milestone.delete`                         | Mutation | `project_id`, `milestone_id`                             | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `milestone.list_workitems`                 | Read     | `project_id`, `milestone_id`                             | Not implemented       | Domain mapping, contract and authorization          |
 | `milestone.manage_workitems`               | Mutation | `project_id`, `milestone_id`                             | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
-| `module.list`                              | Read     | `project_id`                                             | Implemented           | Deployed issuer/browser verification                |
-| `module.retrieve`                          | Read     | `project_id`, `module_id`                                | Implemented           | Deployed issuer/browser verification                |
+| `module.list`                              | Read     | `project_id`                                             | Implemented           | Local browser/proxy verification                    |
+| `module.retrieve`                          | Read     | `project_id`, `module_id`                                | Implemented           | Local browser/proxy verification                    |
 | `module.create`                            | Mutation | `project_id`, `name`                                     | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `module.update`                            | Mutation | `project_id`, `module_id`                                | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `module.delete`                            | Mutation | `project_id`, `module_id`                                | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
@@ -158,20 +159,20 @@ Module and label proof: [generated-server contracts, scope revocation, and relat
 | `workitem.archive`                         | Mutation | `project_id`, `workitem_id`                              | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `workitem.manage_assignee`                 | Mutation | `project_id`, `workitem_id`                              | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `workitem.manage_label`                    | Mutation | `project_id`, `workitem_id`                              | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
-| `workitem_activity.list`                   | Read     | `project_id`, `workitem_id`                              | Not implemented       | Domain mapping, contract and authorization          |
-| `workitem_activity.retrieve`               | Read     | `project_id`, `workitem_id`, `activity_id`               | Not implemented       | Domain mapping, contract and authorization          |
+| `workitem_activity.list`                   | Read     | `project_id`, `workitem_id`                              | Implemented           | Local browser/proxy verification                    |
+| `workitem_activity.retrieve`               | Read     | `project_id`, `workitem_id`, `activity_id`               | Implemented           | Local browser/proxy verification                    |
 | `workitem_attachment.list`                 | Read     | `project_id`, `workitem_id`                              | Not implemented       | Domain mapping, contract and authorization          |
 | `workitem_attachment.read`                 | Read     | `project_id`, `workitem_id`, `attachment_id`             | Not implemented       | Domain mapping, contract and authorization          |
 | `workitem_attachment.download_url`         | Read     | `project_id`, `workitem_id`, `attachment_id`             | Not implemented       | Domain mapping, contract and authorization          |
 | `workitem_attachment.upload_from_url`      | Mutation | `project_id`, `workitem_id`, `url`                       | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `workitem_attachment.delete`               | Mutation | `project_id`, `workitem_id`, `attachment_id`             | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
-| `workitem_comment.list`                    | Read     | `project_id`, `workitem_id`                              | Not implemented       | Domain mapping, contract and authorization          |
-| `workitem_comment.retrieve`                | Read     | `project_id`, `workitem_id`, `comment_id`                | Not implemented       | Domain mapping, contract and authorization          |
+| `workitem_comment.list`                    | Read     | `project_id`, `workitem_id`                              | Implemented           | Local browser/proxy verification                    |
+| `workitem_comment.retrieve`                | Read     | `project_id`, `workitem_id`, `comment_id`                | Implemented           | Local browser/proxy verification                    |
 | `workitem_comment.create`                  | Mutation | `project_id`, `workitem_id`, `comment_html`              | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `workitem_comment.update`                  | Mutation | `project_id`, `workitem_id`, `comment_id`                | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `workitem_comment.delete`                  | Mutation | `project_id`, `workitem_id`, `comment_id`                | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
-| `workitem_link.list`                       | Read     | `project_id`, `workitem_id`                              | Not implemented       | Domain mapping, contract and authorization          |
-| `workitem_link.retrieve`                   | Read     | `project_id`, `workitem_id`, `link_id`                   | Not implemented       | Domain mapping, contract and authorization          |
+| `workitem_link.list`                       | Read     | `project_id`, `workitem_id`                              | Implemented           | Local browser/proxy verification                    |
+| `workitem_link.retrieve`                   | Read     | `project_id`, `workitem_id`, `link_id`                   | Implemented           | Local browser/proxy verification                    |
 | `workitem_link.create`                     | Mutation | `project_id`, `workitem_id`, `url`                       | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `workitem_link.update`                     | Mutation | `project_id`, `workitem_id`, `link_id`                   | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `workitem_link.delete`                     | Mutation | `project_id`, `workitem_id`, `link_id`                   | Not implemented       | Domain mapping, contract, receipts, CAS and effects |

@@ -30,9 +30,15 @@ func collaborationVisibleParentSQL(q Request, kind string, args *[]any) string {
             AND visible_comment.deleted_at IS NULL`
 		anchorExpression = `visible_comment.id`
 	}
+	binding := ""
+	if q.ExpectedWorkspaceID != nil {
+		*args = append(*args, q.ExpectedWorkspaceID)
+		workspace := "$" + strconv.Itoa(len(*args)) + "::uuid"
+		binding = " AND EXISTS(SELECT 1 FROM projects p WHERE p.id=visible_issue.project_id AND p.archived_at IS NULL) AND visible_workspace.id=" + workspace + " AND EXISTS(SELECT 1 FROM users u WHERE u.id=" + actor + "::uuid AND u.is_active) AND EXISTS(SELECT 1 FROM workspace_members wm WHERE wm.workspace_id=" + workspace + " AND wm.member_id=" + actor + "::uuid AND wm.is_active AND wm.deleted_at IS NULL AND wm.role IN(5,15,20))"
+	}
 	return `SELECT visible_issue.id,visible_issue.workspace_id,visible_issue.project_id,` + anchorExpression + ` AS anchor_id
         FROM ` + from + ` WHERE visible_workspace.slug=` + slug + ` AND visible_issue.project_id=` + project + `::uuid
-        AND ` + anchorExpression + `=` + item + `::uuid AND ` + djangoapi.IssueVisibleSQL("visible_issue", actor+"::uuid", "visible_workspace.id")
+        AND ` + anchorExpression + `=` + item + `::uuid AND ` + djangoapi.IssueVisibleSQL("visible_issue", actor+"::uuid", "visible_workspace.id") + binding
 }
 
 func (r *Repository) visibleCollaborationRows(ctx context.Context, q Request, kind, statement string, args ...any) ([]map[string]any, error) {

@@ -67,7 +67,7 @@ func TestDiscoveryUsesCurrentMemberReadPermissionsAcrossCredentialsAndProtocols(
 							expected = append(expected, "list_workspace")
 						}
 						if tc.roster {
-							for _, tool := range []string{"cycle", "module", "label"} {
+							for _, tool := range []string{"cycle", "module", "label", "workitem_comment", "workitem_link", "workitem_activity"} {
 								require.ElementsMatch(t, []string{"list", "retrieve"}, actions[tool])
 							}
 							expected = append(expected, "list_project")
@@ -84,7 +84,7 @@ func TestDiscoveryUsesCurrentMemberReadPermissionsAcrossCredentialsAndProtocols(
 							require.NotContains(t, discoveredTool(t, listed, "member").InputSchema.Properties, "is_active")
 						}
 						if !tc.roster {
-							for _, tool := range []string{"cycle", "module", "label"} {
+							for _, tool := range []string{"cycle", "module", "label", "workitem_comment", "workitem_link", "workitem_activity"} {
 								require.NotContains(t, actions, tool)
 							}
 							require.NotContains(t, discoveredTool(t, listed, "member").InputSchema.Properties, "project_id")

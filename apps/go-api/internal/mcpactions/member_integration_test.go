@@ -8,6 +8,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/activityreads"
+	"github.com/CaliLuke/go-plane/internal/workitems"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/cyclereads"
 	"github.com/CaliLuke/go-plane/internal/mcpactions"
@@ -164,5 +167,9 @@ func databaseApplications(t *testing.T, pool *pgxpool.Pool) mcpactions.Applicati
 	require.NoError(t, err)
 	labelReads, err := projectlabelreads.NewRepository(pool)
 	require.NoError(t, err)
-	return mcpactions.Applications{Identity: reader, ProjectMembers: projectReader, MemberDirectory: directory, Projects: projectReads, ProjectWrites: projectLifecycle(t, pool), Cycles: cycleReads, Modules: moduleReads, Labels: labelReads}
+	collaborationReads, err := workitems.NewRepository(pool, rosterPublisher{}, "https://vector.example")
+	require.NoError(t, err)
+	activityReads, err := activityreads.NewRepository(pool)
+	require.NoError(t, err)
+	return mcpactions.Applications{Identity: reader, ProjectMembers: projectReader, MemberDirectory: directory, Projects: projectReads, ProjectWrites: projectLifecycle(t, pool), Cycles: cycleReads, Modules: moduleReads, Labels: labelReads, Collaboration: collaborationReads, Activities: activityReads}
 }

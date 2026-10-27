@@ -26,7 +26,7 @@ var (
 // collaboration models. App nested details are deliberately kept distinct
 // from API expand serializers (notably UserLite's is_bot and no email field).
 func (r *Repository) collaborationProjection(ctx context.Context, q Request, row map[string]any, kind string, annotated bool) (map[string]any, error) {
-	if kind == "comment" && annotated {
+	if kind == "comment" && annotated && q.ExpectedWorkspaceID == nil {
 		var member bool
 		if q.ActorID != "" {
 			if err := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM project_members WHERE project_id=$1 AND member_id=$2 AND is_active AND deleted_at IS NULL)`, row["project_id"], q.ActorID).Scan(&member); err != nil {
@@ -36,7 +36,7 @@ func (r *Repository) collaborationProjection(ctx context.Context, q Request, row
 		row = cloneCollaborationRow(row)
 		row["is_member"] = member
 	}
-	if kind == "comment" && row["description_id"] != nil {
+	if kind == "comment" && row["description_id"] != nil && q.ExpectedWorkspaceID == nil {
 		owned, err := r.collaborationDescriptionOwned(ctx, q, row)
 		if err != nil {
 			return nil, err

@@ -23,6 +23,9 @@ var _ = Service("VectorMCP", func() {
 	cycle()
 	module()
 	label()
+	workitemComment()
+	workitemLink()
+	workitemActivity()
 })
 
 // Shared error names must have one consistent remedy across resource methods.

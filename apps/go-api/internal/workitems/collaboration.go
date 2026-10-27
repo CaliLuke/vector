@@ -28,6 +28,9 @@ func collaborationKind(q Request) (string, string) {
 
 func (r *Repository) ExecuteCollaboration(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
 	kind, table := collaborationKind(q)
+	if q.ExpectedWorkspaceID != nil && (!q.API || q.Method != "GET" || collaborationPublic(q) || (kind != "comment" && kind != "link") || q.Params["fields"] != "" || q.Params["expand"] != "") {
+		return Result{}, forbidden()
+	}
 	if collaborationPublic(q) {
 		board, err := r.collaborationBoard(ctx, q)
 		if err != nil {
@@ -279,7 +282,7 @@ func (r *Repository) readCollaboration(ctx context.Context, q Request, kind, tab
 	if collaborationPublic(q) && kind == "comment" {
 		ordering = "ASC"
 	}
-	rows, err := r.visibleCollaborationRows(ctx, q, kind, `SELECT to_jsonb(t) FROM `+table+` t JOIN workspaces w ON w.id=t.workspace_id JOIN projects p ON p.id=t.project_id WHERE `+where+` ORDER BY t.created_at `+ordering, args...)
+	rows, err := r.visibleCollaborationRows(ctx, q, kind, `SELECT `+collaborationReadRow(q, kind)+` FROM `+table+` t JOIN workspaces w ON w.id=t.workspace_id JOIN projects p ON p.id=t.project_id WHERE `+where+` ORDER BY t.created_at `+ordering, args...)
 	if err != nil {
 		return Result{}, err
 	}

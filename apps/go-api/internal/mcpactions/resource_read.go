@@ -46,8 +46,15 @@ func resourceReadError(err, forbidden, notFound error) error {
 		return api.MakeNotFound(errors.New("resource unavailable"))
 	}
 	var failure *djangoapi.HTTPError
-	if errors.As(err, &failure) && failure.Status == 400 {
-		return api.MakeInvalidParams(errors.New("invalid resource query"))
+	if errors.As(err, &failure) {
+		switch failure.Status {
+		case 400:
+			return api.MakeInvalidParams(errors.New("invalid resource query"))
+		case 403:
+			return api.MakeForbidden(errors.New("resource access denied"))
+		case 404:
+			return api.MakeNotFound(errors.New("resource unavailable"))
+		}
 	}
 	return api.MakeInternalError(errors.New("resource read unavailable"))
 }

@@ -34,15 +34,8 @@ var labelRecord = Type("LabelRecord", func() {
 	Meta("openapi:additionalProperties", "false")
 })
 var labelPage = Type("LabelPage", func() {
-	// The pinned toolkit envelope exposes seven fields, unlike SDK page models.
+	toolkitPageFields()
 	Attribute("results", ArrayOf(labelRecord))
-	Attribute("count", Int)
-	Attribute("total_count", Int)
-	Attribute("next_cursor", String)
-	Attribute("prev_cursor", String)
-	Attribute("next_page_results", Boolean)
-	Attribute("prev_page_results", Boolean)
-	Required("results", "count", "total_count", "next_cursor", "prev_cursor", "next_page_results", "prev_page_results")
 	Meta("openapi:additionalProperties", "false")
 })
 var labelRequest = Type("LabelRequest", OneOf(labelList, labelRetrieve), func() { Untagged() })

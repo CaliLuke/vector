@@ -70,18 +70,20 @@ func (throttle) AllowCacheKey(context.Context, string, string) (apikey.Rate, err
 }
 
 type fixture struct {
-	service       *mcpactions.Service
-	auth          *mcpauth.PersonalTokens
-	store         *identityStore
-	keys          *tokens
-	members       *memberships
-	projects      *projectStore
-	directory     *directoryStub
-	projectReads  *projectReadStub
-	projectWrites *projectWriteStub
-	cycleReads    *cycleReadStub
-	moduleReads   *moduleReadStub
-	labelReads    *labelReadStub
+	service            *mcpactions.Service
+	auth               *mcpauth.PersonalTokens
+	store              *identityStore
+	keys               *tokens
+	members            *memberships
+	projects           *projectStore
+	directory          *directoryStub
+	projectReads       *projectReadStub
+	projectWrites      *projectWriteStub
+	cycleReads         *cycleReadStub
+	moduleReads        *moduleReadStub
+	labelReads         *labelReadStub
+	collaborationReads *collaborationReadStub
+	activityReads      *activityReadStub
 }
 
 func newFixture(t *testing.T, options ...mcpactions.Option) fixture {
@@ -102,7 +104,8 @@ func newFixture(t *testing.T, options ...mcpactions.Option) fixture {
 	projectWrites := newProjectWriteStub()
 	cycleReads := &cycleReadStub{}
 	moduleReads, labelReads := &moduleReadStub{}, &labelReadStub{}
-	service, err := mcpactions.New(mcpactions.Applications{Identity: reader, ProjectMembers: projectReader, MemberDirectory: directory, Projects: projectReads, ProjectWrites: projectWrites, Cycles: cycleReads, Modules: moduleReads, Labels: labelReads}, options...)
+	collaborationReads, activityReads := &collaborationReadStub{}, &activityReadStub{}
+	service, err := mcpactions.New(mcpactions.Applications{Identity: reader, ProjectMembers: projectReader, MemberDirectory: directory, Projects: projectReads, ProjectWrites: projectWrites, Cycles: cycleReads, Modules: moduleReads, Labels: labelReads, Collaboration: collaborationReads, Activities: activityReads}, options...)
 	require.NoError(t, err)
 	keys := &tokens{owners: map[string]apikey.Principal{
 		"test-one": {UserID: one, Timezone: "UTC"}, "test-two": {UserID: two, Timezone: "UTC"},
@@ -110,7 +113,7 @@ func newFixture(t *testing.T, options ...mcpactions.Option) fixture {
 	members := &memberships{}
 	auth, err := mcpauth.NewPersonalTokens(keys, members, throttle{})
 	require.NoError(t, err)
-	return fixture{service: service, auth: auth, store: store, keys: keys, members: members, projects: projects, directory: directory, projectReads: projectReads, projectWrites: projectWrites, cycleReads: cycleReads, moduleReads: moduleReads, labelReads: labelReads}
+	return fixture{service: service, auth: auth, store: store, keys: keys, members: members, projects: projects, directory: directory, projectReads: projectReads, projectWrites: projectWrites, cycleReads: cycleReads, moduleReads: moduleReads, labelReads: labelReads, collaborationReads: collaborationReads, activityReads: activityReads}
 }
 
 func (f fixture) handler(t *testing.T, authenticate mcptransport.Authenticate) http.Handler {
@@ -203,7 +206,7 @@ func TestMemberDiscoveryAndIdentityAreScopedToTheAuthenticatedUser(t *testing.T)
 	f := newFixture(t)
 	h := f.handler(t, nil)
 	discovery := rpc(t, h, "test-one", "tools/list", map[string]any{})
-	require.Len(t, discovery.Tools, 5)
+	require.Len(t, discovery.Tools, 8)
 	assert.Equal(t, "member", discoveredTool(t, discovery, "member").Name)
 	assert.Equal(t, map[string]bool{"readOnlyHint": true, "destructiveHint": false, "idempotentHint": false, "openWorldHint": false}, discoveredTool(t, discovery, "member").Annotations)
 	assert.Equal(t, "object", discoveredTool(t, discovery, "member").InputSchema.Type)

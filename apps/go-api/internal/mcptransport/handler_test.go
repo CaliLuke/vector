@@ -350,3 +350,15 @@ func (transportTestService) Module(context.Context, *api.ModuleRequest) (*api.Mo
 func (transportTestService) Label(context.Context, *api.LabelRequest) (*api.LabelResult, error) {
 	return nil, nil
 }
+
+func (transportTestService) WorkitemComment(context.Context, *api.WorkitemCommentRequest) (*api.WorkitemCommentResult, error) {
+	return nil, nil
+}
+
+func (transportTestService) WorkitemLink(context.Context, *api.WorkitemLinkRequest) (*api.WorkitemLinkResult, error) {
+	return nil, nil
+}
+
+func (transportTestService) WorkitemActivity(context.Context, *api.WorkitemActivityRequest) (*api.WorkitemActivityResult, error) {
+	return nil, nil
+}

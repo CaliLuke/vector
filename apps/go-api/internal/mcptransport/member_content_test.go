@@ -144,3 +144,15 @@ func (memberResponseService) Module(context.Context, *api.ModuleRequest) (*api.M
 func (memberResponseService) Label(context.Context, *api.LabelRequest) (*api.LabelResult, error) {
 	return nil, nil
 }
+
+func (memberResponseService) WorkitemComment(context.Context, *api.WorkitemCommentRequest) (*api.WorkitemCommentResult, error) {
+	return nil, nil
+}
+
+func (memberResponseService) WorkitemLink(context.Context, *api.WorkitemLinkRequest) (*api.WorkitemLinkResult, error) {
+	return nil, nil
+}
+
+func (memberResponseService) WorkitemActivity(context.Context, *api.WorkitemActivityRequest) (*api.WorkitemActivityResult, error) {
+	return nil, nil
+}

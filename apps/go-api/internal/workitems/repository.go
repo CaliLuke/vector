@@ -143,6 +143,8 @@ func snapshotJSON(value any) (string, error) {
 }
 
 type Request struct {
+	// ExpectedWorkspaceID requires a bound, fresh primary-data read scope.
+	ExpectedWorkspaceID                                            *uuid.UUID
 	Operation, Method, Slug, ProjectID, IssueID, ActorID, Timezone string
 	Params                                                         map[string]string
 	Present                                                        map[string]bool

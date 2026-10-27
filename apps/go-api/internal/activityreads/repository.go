@@ -43,6 +43,8 @@ type Principal struct {
 }
 
 type Request struct {
+	// ExpectedWorkspaceID binds resource data and authorization to a primary snapshot.
+	ExpectedWorkspaceID      *uuid.UUID
 	Operation                string
 	Params                   map[string]string
 	Present                  map[string]bool
@@ -74,6 +76,9 @@ func (repository *Repository) Read(ctx context.Context, principal Principal, req
 	}
 	switch request.Operation {
 	case "get_api_users_me_activities":
+		if request.ExpectedWorkspaceID != nil {
+			return Result{}, ErrForbidden
+		}
 		return repository.userActivities(ctx, principal, request)
 	case "get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_activities",
 		"get_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_activities":
@@ -273,6 +278,9 @@ func (repository *Repository) apiActivities(ctx context.Context, principal Princ
 	issueID, err := uuid.Parse(param(request, "issue_id"))
 	if err != nil {
 		return Result{}, ErrNotFound
+	}
+	if request.ExpectedWorkspaceID != nil {
+		return repository.scopedAPIActivities(ctx, principal, request, detail, projectID, issueID)
 	}
 	serializer := activityAPISerializer(request)
 	if detail {

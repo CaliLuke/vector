@@ -156,3 +156,15 @@ func (tokenTransportService) Module(context.Context, *api.ModuleRequest) (*api.M
 func (tokenTransportService) Label(context.Context, *api.LabelRequest) (*api.LabelResult, error) {
 	return nil, nil
 }
+
+func (tokenTransportService) WorkitemComment(context.Context, *api.WorkitemCommentRequest) (*api.WorkitemCommentResult, error) {
+	return nil, nil
+}
+
+func (tokenTransportService) WorkitemLink(context.Context, *api.WorkitemLinkRequest) (*api.WorkitemLinkResult, error) {
+	return nil, nil
+}
+
+func (tokenTransportService) WorkitemActivity(context.Context, *api.WorkitemActivityRequest) (*api.WorkitemActivityResult, error) {
+	return nil, nil
+}

@@ -15,21 +15,27 @@ import (
 
 // Endpoints wraps the "VectorMCP" service endpoints.
 type Endpoints struct {
-	Member  loom.Endpoint
-	Project loom.Endpoint
-	Cycle   loom.Endpoint
-	Module  loom.Endpoint
-	Label   loom.Endpoint
+	Member           loom.Endpoint
+	Project          loom.Endpoint
+	Cycle            loom.Endpoint
+	Module           loom.Endpoint
+	Label            loom.Endpoint
+	WorkitemComment  loom.Endpoint
+	WorkitemLink     loom.Endpoint
+	WorkitemActivity loom.Endpoint
 }
 
 // NewEndpoints wraps the methods of the "VectorMCP" service with endpoints.
 func NewEndpoints(s Service) *Endpoints {
 	return &Endpoints{
-		Member:  NewMemberEndpoint(s),
-		Project: NewProjectEndpoint(s),
-		Cycle:   NewCycleEndpoint(s),
-		Module:  NewModuleEndpoint(s),
-		Label:   NewLabelEndpoint(s),
+		Member:           NewMemberEndpoint(s),
+		Project:          NewProjectEndpoint(s),
+		Cycle:            NewCycleEndpoint(s),
+		Module:           NewModuleEndpoint(s),
+		Label:            NewLabelEndpoint(s),
+		WorkitemComment:  NewWorkitemCommentEndpoint(s),
+		WorkitemLink:     NewWorkitemLinkEndpoint(s),
+		WorkitemActivity: NewWorkitemActivityEndpoint(s),
 	}
 }
 
@@ -40,6 +46,9 @@ func (e *Endpoints) Use(m func(loom.Endpoint) loom.Endpoint) {
 	e.Cycle = m(e.Cycle)
 	e.Module = m(e.Module)
 	e.Label = m(e.Label)
+	e.WorkitemComment = m(e.WorkitemComment)
+	e.WorkitemLink = m(e.WorkitemLink)
+	e.WorkitemActivity = m(e.WorkitemActivity)
 }
 
 // NewMemberEndpoint returns an endpoint function that calls the method
@@ -84,5 +93,32 @@ func NewLabelEndpoint(s Service) loom.Endpoint {
 	return func(ctx context.Context, req any) (any, error) {
 		p := req.(*LabelRequest)
 		return s.Label(ctx, p)
+	}
+}
+
+// NewWorkitemCommentEndpoint returns an endpoint function that calls the
+// method "workitem_comment" of service "VectorMCP".
+func NewWorkitemCommentEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*WorkitemCommentRequest)
+		return s.WorkitemComment(ctx, p)
+	}
+}
+
+// NewWorkitemLinkEndpoint returns an endpoint function that calls the method
+// "workitem_link" of service "VectorMCP".
+func NewWorkitemLinkEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*WorkitemLinkRequest)
+		return s.WorkitemLink(ctx, p)
+	}
+}
+
+// NewWorkitemActivityEndpoint returns an endpoint function that calls the
+// method "workitem_activity" of service "VectorMCP".
+func NewWorkitemActivityEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*WorkitemActivityRequest)
+		return s.WorkitemActivity(ctx, p)
 	}
 }

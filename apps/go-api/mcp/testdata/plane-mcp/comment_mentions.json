@@ -1,0 +1,121 @@
+{
+  "source": "https://raw.githubusercontent.com/makeplane/plane-mcp-server/dc7cfd9f3c305891909e2372f0cc507291353801/plane_mcp/toolkit/mentions.py",
+  "source_sha256": "c53d9d3bc1db7bd48e1a709f4e96b28c2587d7990116897a96a0abb61ae683e2",
+  "cases": [
+    {
+      "name": "empty",
+      "input": "",
+      "expected": ""
+    },
+    {
+      "name": "plain",
+      "input": "<p>@[existing] &amp; hello</p>",
+      "expected": "<p>@[existing] &amp; hello</p>"
+    },
+    {
+      "name": "paired",
+      "input": "<p>Hi <mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"></mention-component>!</p>",
+      "expected": "<p>Hi @[10000000-0000-4000-8000-00000000000a]!</p>"
+    },
+    {
+      "name": "whitespace",
+      "input": "<mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"> \n\t</mention-component>",
+      "expected": "@[10000000-0000-4000-8000-00000000000a]"
+    },
+    {
+      "name": "content",
+      "input": "<mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\">Name</mention-component>",
+      "expected": "@[10000000-0000-4000-8000-00000000000a]Name</mention-component>"
+    },
+    {
+      "name": "self closing",
+      "input": "<mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\" />",
+      "expected": "@[10000000-0000-4000-8000-00000000000a]"
+    },
+    {
+      "name": "unicode",
+      "input": "é\n你好 <mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"></mention-component>",
+      "expected": "é\n你好 @[10000000-0000-4000-8000-00000000000a]"
+    },
+    {
+      "name": "script",
+      "input": "<script><mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"></mention-component></script>",
+      "expected": "<script><mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"></mention-component></script>"
+    },
+    {
+      "name": "style",
+      "input": "<style><mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"></mention-component></style>",
+      "expected": "<style><mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"></mention-component></style>"
+    },
+    {
+      "name": "textarea",
+      "input": "<textarea><mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"></mention-component></textarea>",
+      "expected": "<textarea><mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"></mention-component></textarea>"
+    },
+    {
+      "name": "title",
+      "input": "<title><mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"></mention-component></title>",
+      "expected": "<title><mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"></mention-component></title>"
+    },
+    {
+      "name": "comment",
+      "input": "<!-- <mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"> -->",
+      "expected": "<!-- <mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"> -->"
+    },
+    {
+      "name": "different entity",
+      "input": "<mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"issue_mention\"></mention-component>",
+      "expected": "<mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"issue_mention\"></mention-component>"
+    },
+    {
+      "name": "missing entity",
+      "input": "<mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\"></mention-component>",
+      "expected": "<mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\"></mention-component>"
+    },
+    {
+      "name": "invalid uuid",
+      "input": "<mention-component entity_identifier=\"invalid\" entity_name=\"user_mention\"></mention-component>",
+      "expected": "<mention-component entity_identifier=\"invalid\" entity_name=\"user_mention\"></mention-component>"
+    },
+    {
+      "name": "canonical hex",
+      "input": "<mention-component entity_identifier=\"1000000000004000800000000000000A\" entity_name=\"user_mention\"></mention-component>",
+      "expected": "@[10000000-0000-4000-8000-00000000000a]"
+    },
+    {
+      "name": "uppercase tag",
+      "input": "<MENTION-COMPONENT ENTITY_IDENTIFIER=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"></MENTION-COMPONENT>",
+      "expected": "@[10000000-0000-4000-8000-00000000000a]"
+    },
+    {
+      "name": "comment content",
+      "input": "<mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"><!--note--></mention-component>",
+      "expected": "@[10000000-0000-4000-8000-00000000000a]<!--note--></mention-component>"
+    },
+    {
+      "name": "nested",
+      "input": "<mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"><mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"></mention-component></mention-component>",
+      "expected": "@[10000000-0000-4000-8000-00000000000a]@[10000000-0000-4000-8000-00000000000a]"
+    },
+    {
+      "name": "extra closing",
+      "input": "<mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"></mention-component> </mention-component>",
+      "expected": "@[10000000-0000-4000-8000-00000000000a]"
+    },
+    {
+      "name": "duplicate attribute",
+      "input": "<mention-component entity_identifier=\"10000000-0000-4000-8000-00000000000A\" entity_name=\"issue_mention\" entity_name=\"user_mention\"></mention-component>",
+      "expected": "@[10000000-0000-4000-8000-00000000000a]"
+    },
+    {
+      "name": "entity attribute",
+      "input": "<mention-component entity_identifier=\"&#49;0000000-0000-4000-8000-00000000000A\" entity_name=\"user_mention\"></mention-component>",
+      "expected": "@[10000000-0000-4000-8000-00000000000a]"
+    },
+    {
+      "name": "unclosed tag",
+      "input": "<p><mention-component entity_name=\"user_mention\" entity_identifier=\"unfinished",
+      "expected": "<p><mention-component entity_name=\"user_mention\" entity_identifier=\"unfinished"
+    }
+  ]
+}
