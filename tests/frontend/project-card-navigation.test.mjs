@@ -1,7 +1,7 @@
 import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { notifyManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { React, act } from "./helpers/react.mjs";
 import { seedPermissionQueries } from "./helpers/permission-query-fixture.mjs";
@@ -16,14 +16,22 @@ const project = { id: "project-id", name: "Go Plane", identifier: "GOPLANE", mem
 
 async function setup(t, overrides = {}) {
   const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
   const errors = [];
   t.mock.method(console, "error", (...args) => errors.push(args.join(" ")));
-  t.after(() => assert.deepEqual(errors, []));
   state.navigations = [];
   const { ProjectCard } = await import("../../apps/web/core/components/project/card.tsx");
   const fixture = createRouterFixture("/default/projects/");
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
+  t.after(async () => {
+    await environment.render(null);
+    await client.cancelQueries();
+    client.clear();
+    // Unsubscribing does not cancel notifications already queued for React.
+    // Drain that queue while the DOM globals still exist.
+    await act(async () => new Promise((resolve) => notifyManager.schedule(resolve)));
+    await environment.unmount();
+    assert.deepEqual(errors, []);
+  });
   const { currentUserOptions } = await import("../../apps/web/core/queries/identity.ts");
   client.setQueryData(currentUserOptions().queryKey, { id: "alice" });
   const memberRole = Object.hasOwn(overrides, "member_role") ? overrides.member_role : project.member_role;
@@ -32,7 +40,6 @@ async function setup(t, overrides = {}) {
     workspaceSlug: "default",
     projectRoles: memberRole == null ? {} : { "project-id": memberRole },
   });
-  t.after(() => client.clear());
   await fixture.render(
     environment,
     React.createElement(
