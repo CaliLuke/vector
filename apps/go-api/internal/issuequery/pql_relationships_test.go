@@ -30,6 +30,8 @@ func TestPQLRejectsInvalidRelationshipOperatorsAndFunctionsAtomically(t *testing
 		`type ~ "secret"`, `type IS EMPTY`, `type = currentUser()`,
 		`label > "secret"`, `label ~ "secret"`, `label BETWEEN "secret" AND "secret"`,
 		`label = currentUser()`, `label IN openStates()`, `module IN activeCycle()`,
+		`milestone ~ "secret"`, `milestone = "secret"`, `milestone = currentUser()`,
+		`milestone IN activeCycle()`, `milestone IN workspaceMembers()`, `milestone BETWEEN "secret" AND "secret"`,
 		`cycle IN activeCycle(1)`, `cycle IN unknown()`, `cycle IN openStates()`,
 		`cycle = activeCycle()`, `cycle IN (activeCycle())`, `cycle IN ("secret", activeCycle())`,
 		`cycle IN activeCycle(today())`, `cycle IN activeCycle() trailing`, `cycle IN ()`,
@@ -40,7 +42,7 @@ func TestPQLRejectsInvalidRelationshipOperatorsAndFunctionsAtomically(t *testing
 		t.Run(query, func(t *testing.T) {
 			backing := []any{"scope", "sentinel", "sentinel"}
 			args := backing[:1]
-			_, err := issuequery.BuildPQL(`title = "bound first" AND (`+query+`)`, issuequery.PQLContext{Now: time.Date(2026, 10, 27, 12, 0, 0, 0, time.UTC)}, &args)
+			_, err := issuequery.BuildPQL(`title = "bound first" AND (`+query+`)`, issuequery.PQLContext{ActorID: pqlActor, Now: time.Date(2026, 10, 27, 12, 0, 0, 0, time.UTC)}, &args)
 			var invalid *issuequery.FilterError
 			require.ErrorAs(t, err, &invalid)
 			require.Equal(t, "invalid_pql", invalid.Code)

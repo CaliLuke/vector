@@ -15,7 +15,7 @@ Cycle proof: [generated-server contracts, scope revocation, tenant isolation, an
 Module and label proof: [generated-server contracts, scope revocation, and relationship isolation](../apps/go-api/internal/mcpactions/resource_read_integration_test.go). [Contract notes](mcp-modules-labels.md) record their different page shapes and archive policies.
 Work-item child reads: [contract and scope notes](mcp-workitem-reads.md) and [generated-server regression tests](../apps/go-api/internal/mcpactions/workitem_read_integration_test.go).
 
-The [PQL foundation](pql.md) adds shared scalar, relationship, member, body, and effective custom-property filtering to HTTP work-item lists. It does not add an MCP action: full query grammar, domain resolvers, immutable workspace binding, and generated core contracts remain pending.
+The [PQL foundation](pql.md) adds shared scalar, relationship (including native milestones), member, body, and effective custom-property filtering to HTTP work-item lists. It does not add an MCP action: full query grammar, domain resolvers, immutable workspace binding, and generated core contracts remain pending.
 
 | Operation                                  | Kind     | Required upstream inputs                                 | Vector implementation | Remaining proof                                     |
 | ------------------------------------------ | -------- | -------------------------------------------------------- | --------------------- | --------------------------------------------------- |

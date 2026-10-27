@@ -1,0 +1,12 @@
+BEGIN;
+SET LOCAL search_path = public, pg_catalog;
+DROP TABLE milestone_issues;
+DROP TABLE milestone_edit_revisions;
+DROP TABLE milestones;
+DROP FUNCTION advance_milestone_link_revisions();
+DROP FUNCTION advance_milestone_edit_revision();
+DROP FUNCTION guard_milestone_link();
+DROP FUNCTION guard_milestone_row();
+DROP INDEX issues_milestone_owner_key;
+DROP INDEX projects_milestone_owner_key;
+COMMIT;

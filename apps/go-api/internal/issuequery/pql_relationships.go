@@ -21,6 +21,7 @@ var pqlCollections = map[string]pqlCollection{
 	"label":      {"issue_labels", "labels", "label_id"},
 	"cycle":      {"cycle_issues", "cycles", "cycle_id"},
 	"module":     {"module_issues", "modules", "module_id"},
+	"milestone":  {"milestone_issues", "milestones", "milestone_id"},
 	"assignee":   {"issue_assignees", "users", "assignee_id"},
 	"mention":    {"issue_mentions", "users", "mention_id"},
 	"subscriber": {"issue_subscribers", "users", "subscriber_id"},
@@ -44,6 +45,14 @@ func (c *pqlCompiler) collection(e *pqlExpression, relation pqlCollection) (stri
 		if err != nil {
 			return "", err
 		}
+	}
+	if relation.target == "milestones" {
+		actor, err := c.actorParameter(e.pos)
+		if err != nil {
+			return "", err
+		}
+		targetScope += ` AND issue.deleted_at IS NULL AND NOT issue.is_draft AND ` +
+			MilestoneReadScopeSQL("issue.project_id", "issue.workspace_id", actor)
 	}
 	op, negate := e.op, false
 	switch op {
