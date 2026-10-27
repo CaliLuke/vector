@@ -20,7 +20,7 @@ function project(id, workspaceId, sortOrder, values = {}) {
   return { id, workspace: workspaceId, sort_order: sortOrder, archived_at: null, ...values };
 }
 
-function waitForJoinedProjectText(container, expectedText) {
+export function waitForJoinedProjectText(container, expectedText) {
   return new Promise((resolve, reject) => {
     const output = container.querySelector("[data-testid=joined-projects]");
     if (output?.textContent === expectedText) return resolve();

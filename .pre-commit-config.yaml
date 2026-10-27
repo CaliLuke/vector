@@ -20,15 +20,6 @@ repos:
         always_run: true
         stages: [pre-commit]
         groups: [fast, typescript]
-      - id: vector-go-full
-        priority: 20
-        name: Go full gates
-        entry: ./check.sh --go --full
-        language: system
-        pass_filenames: false
-        always_run: true
-        stages: [pre-push, manual]
-        groups: [full, ci, go]
       - id: vector-typescript-full
         priority: 20
         name: TypeScript full gates
@@ -38,3 +29,12 @@ repos:
         always_run: true
         stages: [pre-push, manual]
         groups: [full, ci, typescript]
+      - id: vector-go-full
+        priority: 20
+        name: Go full gates
+        entry: ./check.sh --go --full
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push, manual]
+        groups: [full, ci, go]
