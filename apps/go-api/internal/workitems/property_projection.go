@@ -24,6 +24,9 @@ func (r *Repository) projectDiscoveryRows(ctx context.Context, rows []map[string
 	}
 	projected, err := r.propertyDiscovery.ProjectItems(ctx, items)
 	if err != nil {
+		if r.pql != nil {
+			return pqlDiscoveryReadError(err)
+		}
 		return discoveryReadError(err)
 	}
 	for index, value := range projected {

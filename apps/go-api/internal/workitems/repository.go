@@ -48,6 +48,7 @@ type IssueActivityAdmitter interface {
 }
 
 type Repository struct {
+	pql                      *issuequery.PreparedPQL
 	propertyFilter           *issuequery.PreparedPropertyFilter
 	propertyPredicates       map[int]*workitemtypes.ScopedPropertyPredicate
 	propertyDiscovery        *workitemtypes.PropertyDiscoverySnapshot

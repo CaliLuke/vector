@@ -4,6 +4,7 @@ import "strings"
 
 type pqlExpression struct {
 	op, field    string
+	propertyID   string
 	pos          int
 	left, right  *pqlExpression
 	values       []pqlValue
@@ -96,6 +97,7 @@ func (p *pqlParser) condition(depth int) (*pqlExpression, error) {
 		}
 		// Preserve the field category without putting a caller's ID in errors.
 		node.field = "cf"
+		node.propertyID = property.text
 	}
 	op := p.take()
 	node.op = op.text

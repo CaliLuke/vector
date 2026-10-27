@@ -25,7 +25,7 @@ reassignment from changing the selected tenant. Project archive and restore shar
 OAuth is available through an explicitly configured external issuer; remaining resource actions
 and full parity are incomplete.
 
-The [PQL query boundary](pql.md) lives in `internal/issuequery` and is executed by the existing `internal/workitems` API list path before counting and pagination. Its scalar, relationship, member, and body query subset does not yet satisfy the complete MCP query contract; the core query actions and reference tool remain unregistered.
+The [PQL query boundary](pql.md) lives in `internal/issuequery` and is executed by the existing `internal/workitems` API list path before counting and pagination. Its scalar, relationship, member, body, and effective custom-property query subset does not yet satisfy the complete MCP query contract; the core query actions and reference tool remain unregistered.
 
 ## Source layout
 

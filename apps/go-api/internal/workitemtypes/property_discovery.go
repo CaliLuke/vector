@@ -97,12 +97,13 @@ func discoveryDefinitions(ctx context.Context, tx pgx.Tx, workspace string, type
 		var id string
 		var raw []byte
 		var def property.Definition
-		if err = rows.Scan(&id, &raw); err == nil {
-			err = json.Unmarshal(raw, &def)
-		}
-		if err != nil {
+		if err = rows.Scan(&id, &raw); err != nil {
 			rows.Close()
 			return nil, err
+		}
+		if err = json.Unmarshal(raw, &def); err != nil {
+			rows.Close()
+			return nil, &PropertyDefinitionError{cause: err}
 		}
 		definitions[id] = def
 	}
@@ -147,7 +148,7 @@ func (snapshot *PropertyDiscoverySnapshot) Project(projectID, typeID string, sta
 		var err error
 		plan, err = CompileItemProjection(snapshot.definitions[typeID], projectID, typeID)
 		if err != nil {
-			return ItemProjection{}, err
+			return ItemProjection{}, &PropertyDefinitionError{cause: err}
 		}
 		snapshot.plans[scope] = plan
 	}

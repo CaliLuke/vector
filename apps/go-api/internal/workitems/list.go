@@ -181,6 +181,10 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 		}
 		where = append(where, predicate)
 	}
+	where, args, err = r.appendPropertyPQL(ctx, where, args)
+	if err != nil {
+		return Result{}, err
+	}
 	order := "issue.created_at DESC"
 	if v2 {
 		order = "issue.updated_at ASC"
@@ -241,7 +245,7 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 	if err != nil {
 		return Result{}, err
 	}
-	if q.Params["include_properties"] == "true" || len(r.propertyGroups) > 0 {
+	if !q.API && (q.Params["include_properties"] == "true" || len(r.propertyGroups) > 0) {
 		if err = r.projectDiscoveryRows(ctx, rows); err != nil {
 			return Result{}, err
 		}

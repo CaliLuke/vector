@@ -20,12 +20,12 @@ func validateAPIFilterMode(q Request) error {
 }
 
 func (r *Repository) appendPQL(q Request, where []string, args []any) ([]string, []any, error) {
-	if !q.API || q.Params["pql"] == "" {
+	if !q.API || q.Params["pql"] == "" || r.pql != nil {
 		return where, args, nil
 	}
 	predicate, err := issuequery.BuildPQL(q.Params["pql"], issuequery.PQLContext{ActorID: q.ActorID, Timezone: q.Timezone, Now: r.now()}, &args)
 	if err != nil {
-		return nil, args, invalid(map[string]any{"pql": err.Error(), "code": "invalid_pql"})
+		return nil, args, pqlRequestError(err)
 	}
 	if predicate == "" {
 		return where, args, nil

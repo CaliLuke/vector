@@ -23,15 +23,10 @@ func BuildPQL(raw string, request PQLContext, args *[]any) (string, error) {
 	if err != nil || root == nil {
 		return "", err
 	}
-	zone := request.Timezone
-	if zone == "" {
-		zone = "UTC"
-	}
-	location, err := time.LoadLocation(zone)
+	compiler, err := newPQLCompiler(request, *args)
 	if err != nil {
-		return "", pqlError(0, "invalid timezone")
+		return "", err
 	}
-	compiler := pqlCompiler{request: request, location: location, args: slices.Clone(*args)}
 	result, err := compiler.expression(root)
 	if err != nil {
 		return "", err
@@ -41,9 +36,26 @@ func BuildPQL(raw string, request PQLContext, args *[]any) (string, error) {
 }
 
 type pqlCompiler struct {
-	request  PQLContext
-	location *time.Location
-	args     []any
+	request             PQLContext
+	location            *time.Location
+	args                []any
+	properties          map[string]PQLPropertyDefinition
+	resolveProperty     PQLPropertyResolver
+	preparingProperties bool
+	propertyValues      map[string]string
+	propertyParameters  map[string]string
+}
+
+func newPQLCompiler(request PQLContext, args []any) (pqlCompiler, error) {
+	zone := request.Timezone
+	if zone == "" {
+		zone = "UTC"
+	}
+	location, err := time.LoadLocation(zone)
+	if err != nil {
+		return pqlCompiler{}, pqlError(0, "invalid timezone")
+	}
+	return pqlCompiler{request: request, location: location, args: slices.Clone(args)}, nil
 }
 
 type pqlField struct{ sql, kind string }
@@ -83,6 +95,9 @@ func (c *pqlCompiler) expression(e *pqlExpression) (string, error) {
 	}
 	if e.op == "predicate" {
 		return c.predicate(e)
+	}
+	if e.field == "cf" {
+		return c.property(e)
 	}
 	if relation, ok := pqlCollections[e.field]; ok {
 		return c.collection(e, relation)
