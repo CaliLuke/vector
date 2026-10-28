@@ -158,6 +158,31 @@ helper is at most 11. The refactor retires its maintainability allowance of 2,
 and all extracted functions meet the floor of 20. Characterization tests preserve
 field-error precedence and the session/API distinction in relationship errors.
 
+The work-item refactor retires nine more production maintainability allowances,
+including the zero-score list assembler. Field decoding, reference checks,
+write preparation, persistence, effects, and response projection now have explicit
+boundaries. JSON field decoding is shared by issue and collaboration validation.
+Planning selection uses one assignment lookup while preserving target order and
+repeated IDs. Existing authorization, transaction, error-precedence, and effect
+contracts remain covered by the work-item suites.
+
+| Work-item function      | Cyclomatic complexity before | After |
+| ----------------------- | ---------------------------: | ----: |
+| `listIssueResults`      |                          125 |    29 |
+| `validateIssue`         |                          102 |    12 |
+| `writeIssueTransaction` |                          102 |     6 |
+| `writeCollaboration`    |                           83 |    27 |
+| `validateCollaboration` |                           76 |     8 |
+| `patchIntake`           |                           63 |    27 |
+| `writeDraft`            |                           62 |    17 |
+| `createIntake`          |                           49 |    30 |
+| `planningTransaction`   |                           49 |    29 |
+
+All extracted functions meet the maintainability floor. The lint baseline also
+retires four shadowing occurrences and one redundant assignment. The duplicate
+baseline remains at 499 directed pairs, without replacement fingerprints, added
+allowances, or source exclusions.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML

@@ -31,21 +31,8 @@ func (r *Repository) drafts(ctx context.Context, q Request, body io.Reader, cont
 
 func (r *Repository) writeDraft(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
 	publish := strings.Contains(q.Operation, "_draft_to_issue")
-	roles := []int{5, 15, 20}
-	if publish {
-		roles = []int{15, 20}
-	}
-	if err := r.allowWorkspace(ctx, q, roles); err != nil {
-		return Result{}, err
-	}
-	workspace, err := r.row(ctx, `SELECT to_jsonb(w) FROM workspaces w WHERE slug=$1 AND deleted_at IS NULL`, q.Slug)
+	workspace, err := r.lockDraftWriteScope(ctx, q, publish)
 	if err != nil {
-		return Result{}, err
-	}
-	if _, err = r.db.Exec(ctx, `SELECT work_item_schema_lock($1::uuid)`, workspace["id"]); err != nil {
-		return Result{}, err
-	}
-	if err = r.allowWorkspace(ctx, q, roles); err != nil {
 		return Result{}, err
 	}
 	if publish {
@@ -53,24 +40,9 @@ func (r *Repository) writeDraft(ctx context.Context, q Request, body io.Reader, 
 			return result, publicationErr
 		}
 	}
-	var old map[string]any
-	if q.Method != "POST" || publish {
-		id := q.Params["pk"]
-		if publish {
-			id = q.Params["draft_id"]
-		}
-		// Drafts remain private even to workspace administrators. Publication
-		// and deletion use the same owner boundary as editing and listing.
-		old, err = r.row(ctx, `SELECT to_jsonb(d) FROM draft_issues d WHERE d.id=$1 AND d.workspace_id=$2 AND d.created_by_id=$3 AND d.deleted_at IS NULL FOR UPDATE`, id, workspace["id"], q.ActorID)
-		if err != nil {
-			if q.Method == "PATCH" {
-				var e *djangoapi.HTTPError
-				if errors.As(err, &e) && e.Status == 404 {
-					return Result{}, failure(404, "error", "Issue not found")
-				}
-			}
-			return Result{}, err
-		}
+	old, err := r.draftForWrite(ctx, q, workspace["id"], publish)
+	if err != nil {
+		return Result{}, err
 	}
 	if q.Method == "DELETE" {
 		return Result{Status: 204}, r.deleteDraft(ctx, q, old)
@@ -96,6 +68,68 @@ func (r *Repository) writeDraft(ctx context.Context, q Request, body io.Reader, 
 			return Result{}, err
 		}
 	}
+	edit, err := r.validateDraftEdit(ctx, q, input, old, workspace, publish)
+	if err != nil {
+		return Result{}, err
+	}
+	if publish {
+		return r.publishDraft(ctx, q, old, input, edit.changes, submitted)
+	}
+	return r.persistDraftEdit(ctx, q, input, old, workspace, submitted, edit)
+}
+
+type draftEdit struct {
+	project   any
+	projectID string
+	changes   issueChanges
+}
+
+func (r *Repository) lockDraftWriteScope(ctx context.Context, q Request, publish bool) (map[string]any, error) {
+	roles := []int{5, 15, 20}
+	if publish {
+		roles = []int{15, 20}
+	}
+	if err := r.allowWorkspace(ctx, q, roles); err != nil {
+		return nil, err
+	}
+	workspace, err := r.row(ctx, `SELECT to_jsonb(w) FROM workspaces w WHERE slug=$1 AND deleted_at IS NULL`, q.Slug)
+	if err != nil {
+		return nil, err
+	}
+	if _, err = r.db.Exec(ctx, `SELECT work_item_schema_lock($1::uuid)`, workspace["id"]); err != nil {
+		return nil, err
+	}
+	if err = r.allowWorkspace(ctx, q, roles); err != nil {
+		return nil, err
+	}
+	return workspace, nil
+}
+
+func (r *Repository) draftForWrite(ctx context.Context, q Request, workspace any, publish bool) (map[string]any, error) {
+	var err error
+	var old map[string]any
+	if q.Method != "POST" || publish {
+		id := q.Params["pk"]
+		if publish {
+			id = q.Params["draft_id"]
+		}
+		// Drafts remain private even to workspace administrators. Publication
+		// and deletion use the same owner boundary as editing and listing.
+		old, err = r.row(ctx, `SELECT to_jsonb(d) FROM draft_issues d WHERE d.id=$1 AND d.workspace_id=$2 AND d.created_by_id=$3 AND d.deleted_at IS NULL FOR UPDATE`, id, workspace, q.ActorID)
+		if err != nil {
+			if q.Method == "PATCH" {
+				var e *djangoapi.HTTPError
+				if errors.As(err, &e) && e.Status == 404 {
+					return nil, failure(404, "error", "Issue not found")
+				}
+			}
+			return nil, err
+		}
+	}
+	return old, nil
+}
+
+func (r *Repository) validateDraftEdit(ctx context.Context, q Request, input djangoinput.Input, old, workspace map[string]any, publish bool) (draftEdit, error) {
 	project := any(nil)
 	if old != nil {
 		project = old["project_id"]
@@ -124,37 +158,11 @@ func (r *Repository) writeDraft(ctx context.Context, q Request, body io.Reader, 
 	}
 	changes, err := r.validateIssue(ctx, validation, issueValidation{ActorID: q.ActorID, Timezone: q.Timezone, Partial: q.Method == "PATCH", Draft: !publish, ProjectID: optionsProject, WorkspaceID: workspace["id"].(string)})
 	if err != nil {
-		return Result{}, err
+		return draftEdit{}, err
 	}
 	if !publish {
-		for _, field := range []string{"project_id", "project"} {
-			value, ok := input.Fields[field]
-			if !ok {
-				continue
-			}
-			if value == nil || value == "" {
-				changes.values["project_id"] = nil
-			} else {
-				id, messages, e := r.primaryKey(ctx, value, "projects", false)
-				if e != nil {
-					return Result{}, e
-				}
-				if len(messages) > 0 {
-					return Result{}, invalid(map[string]any{field: messages})
-				}
-				changes.values["project_id"] = id
-			}
-		}
-		if value, ok := input.Fields["completed_at"]; ok {
-			if value == nil {
-				changes.values["completed_at"] = nil
-			} else {
-				parsed, e := parseQueryDateTime(djangoinput.ScalarString(value), q.Timezone)
-				if e != nil {
-					return Result{}, invalid(map[string]any{"completed_at": []string{"Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."}})
-				}
-				changes.values["completed_at"] = parsed
-			}
+		if err = r.validateDraftProjectAndCompletion(ctx, q, input, &changes); err != nil {
+			return draftEdit{}, err
 		}
 	}
 	effective := project
@@ -162,14 +170,50 @@ func (r *Repository) writeDraft(ctx context.Context, q Request, body io.Reader, 
 		effective = v
 	}
 	if err = r.validateDraftReferences(ctx, input.Fields, effective, workspace["id"]); err != nil {
-		return Result{}, err
+		return draftEdit{}, err
 	}
 	if err = r.validateTypeTenant(ctx, changes.values, input.Fields, workspace["id"]); err != nil {
-		return Result{}, err
+		return draftEdit{}, err
 	}
-	if publish {
-		return r.publishDraft(ctx, q, old, input, changes, submitted)
+	return draftEdit{project: project, projectID: optionsProject, changes: changes}, nil
+}
+
+func (r *Repository) validateDraftProjectAndCompletion(ctx context.Context, q Request, input djangoinput.Input, changes *issueChanges) error {
+	for _, field := range []string{"project_id", "project"} {
+		value, ok := input.Fields[field]
+		if !ok {
+			continue
+		}
+		if value == nil || value == "" {
+			changes.values["project_id"] = nil
+		} else {
+			id, messages, e := r.primaryKey(ctx, value, "projects", false)
+			if e != nil {
+				return e
+			}
+			if len(messages) > 0 {
+				return invalid(map[string]any{field: messages})
+			}
+			changes.values["project_id"] = id
+		}
 	}
+	if value, ok := input.Fields["completed_at"]; ok {
+		if value == nil {
+			changes.values["completed_at"] = nil
+		} else {
+			parsed, e := parseQueryDateTime(djangoinput.ScalarString(value), q.Timezone)
+			if e != nil {
+				return invalid(map[string]any{"completed_at": []string{"Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."}})
+			}
+			changes.values["completed_at"] = parsed
+		}
+	}
+	return nil
+}
+
+func (r *Repository) persistDraftEdit(ctx context.Context, q Request, input djangoinput.Input, old, workspace, submitted map[string]any, edit draftEdit) (Result, error) {
+	project, optionsProject, changes := edit.project, edit.projectID, edit.changes
+	var err error
 	row := maps.Clone(old)
 	if old == nil {
 		row = defaultIssue(optionsProject)

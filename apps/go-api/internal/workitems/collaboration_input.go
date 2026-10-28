@@ -2,7 +2,6 @@ package workitems
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -19,6 +18,35 @@ func (r *Repository) validateCollaboration(ctx context.Context, q Request, input
 		return nil, invalid(map[string]any{"non_field_errors": []string{"Invalid data. Expected a dictionary, but got " + input.Kind + "."}})
 	}
 	failures := map[string]any{}
+	rules := collaborationRules(q, table)
+	validateCollaborationTexts(q, input, rules, values, failures)
+	validateCollaborationAccess(input, table, values, failures)
+	validateJSONInputFields(input, rules.jsonFields, values, failures)
+	if err := r.validateCollaborationForeignKeys(ctx, q, input, rules.foreign, values, failures); err != nil {
+		return nil, err
+	}
+	validateCollaborationDates(q, input, rules.dates, values, failures)
+	validateCollaborationAttachments(q, input, table, values, failures)
+	if len(failures) > 0 {
+		return nil, invalid(failures)
+	}
+	if html, ok := values["comment_html"].(string); ok && html != "" {
+		sanitized, _, err := content.ValidateHTML(html)
+		if err != nil {
+			return nil, invalid(map[string]any{"comment_html": "HTML content is not valid"})
+		}
+		values["comment_html"] = sanitized
+	}
+	return values, nil
+}
+
+type collaborationFieldRules struct {
+	texts, jsonFields, dates []string
+	nullable                 map[string]bool
+	foreign                  map[string]string
+}
+
+func collaborationRules(q Request, table string) collaborationFieldRules {
 	texts := []string{}
 	nullable := map[string]bool{}
 	foreign := map[string]string{}
@@ -50,7 +78,34 @@ func (r *Repository) validateCollaboration(ctx context.Context, q Request, input
 		foreign = map[string]string{"subscriber": "users", "created_by": "users", "updated_by": "users"}
 		dates = []string{"deleted_at"}
 	}
-	for _, field := range texts {
+	return collaborationFieldRules{texts: texts, jsonFields: jsonFields, dates: dates, nullable: nullable, foreign: foreign}
+}
+
+func validateCollaborationURL(q Request, parsed string) (string, any) {
+	var message any
+	if !q.API && parsed != "" && !strings.HasPrefix(parsed, "http://") && !strings.HasPrefix(parsed, "https://") {
+		parsed = "http://" + parsed
+	}
+	if !djangoinput.ValidURL(parsed) {
+		if q.API {
+			message = []string{"Enter a valid URL."}
+			if q.Method == "POST" {
+				message = []string{"Invalid URL format."}
+			}
+		} else {
+			message = map[string]any{"error": "Invalid URL format."}
+		}
+		return parsed, message
+	}
+	if q.API && q.Method == "POST" && !strings.HasPrefix(parsed, "http://") && !strings.HasPrefix(parsed, "https://") {
+		message = []string{"Invalid URL scheme."}
+		return parsed, message
+	}
+	return parsed, nil
+}
+
+func validateCollaborationTexts(q Request, input djangoinput.Input, rules collaborationFieldRules, values, failures map[string]any) {
+	for _, field := range rules.texts {
 		value, present := input.Fields[field]
 		required := field == "reaction" || field == "url"
 		if !present {
@@ -59,7 +114,7 @@ func (r *Repository) validateCollaboration(ctx context.Context, q Request, input
 			}
 			continue
 		}
-		if value == nil && nullable[field] {
+		if value == nil && rules.nullable[field] {
 			values[field] = nil
 			continue
 		}
@@ -73,27 +128,19 @@ func (r *Repository) validateCollaboration(ctx context.Context, q Request, input
 			continue
 		}
 		if field == "url" {
-			if !q.API && parsed != "" && !strings.HasPrefix(parsed, "http://") && !strings.HasPrefix(parsed, "https://") {
-				parsed = "http://" + parsed
-			}
-			if !djangoinput.ValidURL(parsed) {
-				if q.API {
-					failures[field] = []string{"Enter a valid URL."}
-					if q.Method == "POST" {
-						failures[field] = []string{"Invalid URL format."}
-					}
-				} else {
-					failures[field] = map[string]any{"error": "Invalid URL format."}
-				}
-				continue
-			}
-			if q.API && q.Method == "POST" && !strings.HasPrefix(parsed, "http://") && !strings.HasPrefix(parsed, "https://") {
-				failures[field] = []string{"Invalid URL scheme."}
+			var message any
+			parsed, message = validateCollaborationURL(q, parsed)
+			if message != nil {
+				failures[field] = message
 				continue
 			}
 		}
+
 		values[field] = parsed
 	}
+}
+
+func validateCollaborationAccess(input djangoinput.Input, table string, values, failures map[string]any) {
 	if value, present := input.Fields["access"]; present && table == "issue_comments" {
 		if value == nil {
 			failures["access"] = []string{"This field may not be null."}
@@ -106,24 +153,9 @@ func (r *Repository) validateCollaboration(ctx context.Context, q Request, input
 			}
 		}
 	}
-	for _, field := range jsonFields {
-		if value, present := input.Fields[field]; present {
-			if value == nil {
-				failures[field] = []string{"This field may not be null."}
-			} else if input.Form {
-				var parsed any
-				decoder := json.NewDecoder(strings.NewReader(djangoinput.ScalarString(value)))
-				decoder.UseNumber()
-				if err := decoder.Decode(&parsed); err != nil {
-					failures[field] = []string{"Value must be valid JSON."}
-				} else {
-					values[field] = parsed
-				}
-			} else {
-				values[field] = value
-			}
-		}
-	}
+}
+
+func (r *Repository) validateCollaborationForeignKeys(ctx context.Context, q Request, input djangoinput.Input, foreign map[string]string, values, failures map[string]any) error {
 	for field, table := range foreign {
 		value, present := input.Fields[field]
 		if !present {
@@ -142,7 +174,7 @@ func (r *Repository) validateCollaboration(ctx context.Context, q Request, input
 		}
 		id, messages, err := r.primaryKey(ctx, value, table, false)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		if len(messages) > 0 {
 			failures[field] = messages
@@ -150,6 +182,11 @@ func (r *Repository) validateCollaboration(ctx context.Context, q Request, input
 			values[field+"_id"] = id
 		}
 	}
+
+	return nil
+}
+
+func validateCollaborationDates(q Request, input djangoinput.Input, dates []string, values, failures map[string]any) {
 	for _, field := range dates {
 		if value, present := input.Fields[field]; present {
 			if value == nil || input.Form && value == "" {
@@ -165,6 +202,9 @@ func (r *Repository) validateCollaboration(ctx context.Context, q Request, input
 			}
 		}
 	}
+}
+
+func validateCollaborationAttachments(q Request, input djangoinput.Input, table string, values, failures map[string]any) {
 	if table == "issue_comments" && !q.API {
 		if value, present := input.ListValue("attachments", q.Method == "PATCH"); present {
 			list, ok := value.([]any)
@@ -198,15 +238,4 @@ func (r *Repository) validateCollaboration(ctx context.Context, q Request, input
 			}
 		}
 	}
-	if len(failures) > 0 {
-		return nil, invalid(failures)
-	}
-	if html, ok := values["comment_html"].(string); ok && html != "" {
-		sanitized, _, err := content.ValidateHTML(html)
-		if err != nil {
-			return nil, invalid(map[string]any{"comment_html": "HTML content is not valid"})
-		}
-		values["comment_html"] = sanitized
-	}
-	return values, nil
 }

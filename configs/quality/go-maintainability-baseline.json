@@ -253,71 +253,16 @@
       "score": 15
     },
     {
-      "file": "internal/workitems/collaboration_input.go",
-      "package": "workitems",
-      "function": "(*Repository).validateCollaboration",
-      "score": 12
-    },
-    {
       "file": "internal/workitems/collaboration_visibility_integration_test.go",
       "package": "workitems",
       "function": "TestPrivateItemChildrenRequireCurrentParentVisibility",
       "score": 8
     },
     {
-      "file": "internal/workitems/collaboration_writes.go",
-      "package": "workitems",
-      "function": "(*Repository).writeCollaboration",
-      "score": 11
-    },
-    {
-      "file": "internal/workitems/draft.go",
-      "package": "workitems",
-      "function": "(*Repository).writeDraft",
-      "score": 15
-    },
-    {
-      "file": "internal/workitems/input.go",
-      "package": "workitems",
-      "function": "(*Repository).validateIssue",
-      "score": 3
-    },
-    {
-      "file": "internal/workitems/intake.go",
-      "package": "workitems",
-      "function": "(*Repository).createIntake",
-      "score": 17
-    },
-    {
-      "file": "internal/workitems/intake.go",
-      "package": "workitems",
-      "function": "(*Repository).patchIntake",
-      "score": 14
-    },
-    {
-      "file": "internal/workitems/issue_writes.go",
-      "package": "workitems",
-      "function": "(*Repository).writeIssueTransaction",
-      "score": 5
-    },
-    {
-      "file": "internal/workitems/list.go",
-      "package": "workitems",
-      "function": "(*Repository).listIssueResults",
-      "score": 0,
-      "sourceHash": "65ebd6546fa046bb20ed4554e939bc28a18864c4e5607f28e9da776f4b501f82"
-    },
-    {
       "file": "internal/workitems/model_integration_test.go",
       "package": "workitems",
       "function": "TestIssueModelPostgresInvariants",
       "score": 14
-    },
-    {
-      "file": "internal/workitems/planning.go",
-      "package": "workitems",
-      "function": "(*Repository).planningTransaction",
-      "score": 19
     },
     {
       "file": "internal/workspacefavorites/repository_scope_integration_test.go",

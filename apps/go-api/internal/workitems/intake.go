@@ -168,90 +168,17 @@ func (r *Repository) createIntake(ctx context.Context, q Request, body io.Reader
 	if q.API && intakeID == nil && !truthy(project["intake_view"]) {
 		return Result{}, failure(400, "error", "Intake is not enabled for this project enable it through the project's api")
 	}
-	priority := "none"
-	if value, ok := data["priority"]; ok {
-		s, ok := value.(string)
-		if !ok {
-			return Result{}, failure(400, "error", "Invalid priority")
-		}
-		priority = s
-	}
-	if !slices.Contains([]string{"low", "medium", "high", "urgent", "none"}, priority) {
-		return Result{}, failure(400, "error", "Invalid priority")
-	}
-	var state *string
-	if err = r.db.QueryRow(ctx, `SELECT (SELECT id::text FROM states WHERE project_id=$1 AND workspace_id=$2 AND "group"='triage' AND deleted_at IS NULL ORDER BY sequence LIMIT 1)`, q.ProjectID, project["workspace_id"]).Scan(&state); err != nil {
+	priority, err := intakeCreationPriority(data)
+	if err != nil {
 		return Result{}, err
 	}
-	if state == nil {
-		if !q.API && data["type"] != nil {
-			// A foreign effective type must be rejected before creating Triage.
-			// Keep ordinary serializer failures in their source position after
-			// state creation, and preserve their precedence over tenant errors.
-			preflight := maps.Clone(data)
-			delete(preflight, "state_id") // The intake view replaces this alias.
-			changes, validationErr := r.validateIssue(ctx, djangoinput.Input{Fields: preflight}, issueValidation{ActorID: q.ActorID, Timezone: q.Timezone, AllowTriage: true, ProjectID: q.ProjectID, WorkspaceID: project["workspace_id"].(string)})
-			if tenantErr := r.validateTypeTenant(ctx, changes.values, data, project["workspace_id"]); tenantErr != nil {
-				if validationErr != nil {
-					return Result{}, validationErr
-				}
-				return Result{}, tenantErr
-			}
-		}
-		id := uuid.NewString()
-		_, err = r.db.Exec(ctx, `INSERT INTO states(id,name,description,color,slug,sequence,"group",is_triage,"default",project_id,workspace_id,created_at,updated_at,created_by_id) VALUES($1,'Triage','','#4E5355','triage',COALESCE((SELECT MAX(sequence)+15000 FROM states WHERE project_id=$2 AND deleted_at IS NULL AND "group"<>'triage'),65000),'triage',false,false,$2,$3,$4,$4,$5)`, id, q.ProjectID, project["workspace_id"], timestamp(r.now()), q.ActorID)
-		if err != nil {
-			return Result{}, err
-		}
-		state = &id
+	state, err := r.ensureIntakeTriageState(ctx, q, project, data)
+	if err != nil {
+		return Result{}, err
 	}
-	row := defaultIssue(q.ProjectID)
-	changes := issueChanges{}
-	if q.API {
-		row["name"] = djangoinput.ScalarString(data["name"])
-		row["priority"] = priority
-		row["state_id"] = *state
-		description := data["description"]
-		if !truthy(description) {
-			description = data["description_json"]
-		}
-		if !truthy(description) {
-			description = map[string]any{}
-		}
-		row["description_json"] = description
-		raw := "<p></p>"
-		if value, ok := data["description_html"]; ok {
-			raw = djangoinput.ScalarString(value)
-		}
-		clean, _, e := content.ValidateHTML(raw)
-		if e != nil {
-			clean = "<p></p>"
-		}
-		row["description_html"] = clean
-	} else {
-		data["state_id"] = *state
-		nestedInput := djangoinput.Input{Fields: data}
-		changes, err = r.validateIssue(ctx, nestedInput, issueValidation{ActorID: q.ActorID, Timezone: q.Timezone, AllowTriage: true, ProjectID: q.ProjectID, WorkspaceID: project["workspace_id"].(string)})
-		if err != nil {
-			return Result{}, err
-		}
-		if err = r.validateTypeTenant(ctx, changes.values, data, project["workspace_id"]); err != nil {
-			return Result{}, err
-		}
-		maps.Copy(row, changes.values)
-	}
-	if q.API && hasSubmittedType(data) {
-		typeFields := map[string]any{}
-		for _, key := range []string{"type_id", "type"} {
-			if value, present := data[key]; present {
-				typeFields[key] = value
-			}
-		}
-		typeChanges, validationErr := r.validateIssue(ctx, djangoinput.Input{Fields: typeFields}, issueValidation{API: true, Partial: true, ProjectID: q.ProjectID, WorkspaceID: stringValue(project["workspace_id"]), ActorID: q.ActorID})
-		if validationErr != nil {
-			return Result{}, validationErr
-		}
-		maps.Copy(row, typeChanges.values)
+	row, changes, err := r.newIntakeIssueRow(ctx, q, project, data, priority, state)
+	if err != nil {
+		return Result{}, err
 	}
 	row["workspace_id"] = project["workspace_id"]
 	submitted, err := submittedCustomValues(djangoinput.Input{Fields: data})
@@ -312,6 +239,105 @@ func (r *Repository) createIntake(ctx context.Context, q Request, body io.Reader
 		status = 201
 	}
 	return Result{status, result}, err
+}
+
+func intakeCreationPriority(data map[string]any) (string, error) {
+	priority := "none"
+	if value, ok := data["priority"]; ok {
+		s, ok := value.(string)
+		if !ok {
+			return "", failure(400, "error", "Invalid priority")
+		}
+		priority = s
+	}
+	if !slices.Contains([]string{"low", "medium", "high", "urgent", "none"}, priority) {
+		return "", failure(400, "error", "Invalid priority")
+	}
+	return priority, nil
+}
+
+func (r *Repository) ensureIntakeTriageState(ctx context.Context, q Request, project, data map[string]any) (string, error) {
+	var err error
+	var state *string
+	if err = r.db.QueryRow(ctx, `SELECT (SELECT id::text FROM states WHERE project_id=$1 AND workspace_id=$2 AND "group"='triage' AND deleted_at IS NULL ORDER BY sequence LIMIT 1)`, q.ProjectID, project["workspace_id"]).Scan(&state); err != nil {
+		return "", err
+	}
+	if state == nil {
+		if !q.API && data["type"] != nil {
+			// A foreign effective type must be rejected before creating Triage.
+			// Keep ordinary serializer failures in their source position after
+			// state creation, and preserve their precedence over tenant errors.
+			preflight := maps.Clone(data)
+			delete(preflight, "state_id") // The intake view replaces this alias.
+			changes, validationErr := r.validateIssue(ctx, djangoinput.Input{Fields: preflight}, issueValidation{ActorID: q.ActorID, Timezone: q.Timezone, AllowTriage: true, ProjectID: q.ProjectID, WorkspaceID: project["workspace_id"].(string)})
+			if tenantErr := r.validateTypeTenant(ctx, changes.values, data, project["workspace_id"]); tenantErr != nil {
+				if validationErr != nil {
+					return "", validationErr
+				}
+				return "", tenantErr
+			}
+		}
+		id := uuid.NewString()
+		_, err = r.db.Exec(ctx, `INSERT INTO states(id,name,description,color,slug,sequence,"group",is_triage,"default",project_id,workspace_id,created_at,updated_at,created_by_id) VALUES($1,'Triage','','#4E5355','triage',COALESCE((SELECT MAX(sequence)+15000 FROM states WHERE project_id=$2 AND deleted_at IS NULL AND "group"<>'triage'),65000),'triage',false,false,$2,$3,$4,$4,$5)`, id, q.ProjectID, project["workspace_id"], timestamp(r.now()), q.ActorID)
+		if err != nil {
+			return "", err
+		}
+		state = &id
+	}
+	return *state, nil
+}
+
+func (r *Repository) newIntakeIssueRow(ctx context.Context, q Request, project, data map[string]any, priority, state string) (map[string]any, issueChanges, error) {
+	var err error
+	row := defaultIssue(q.ProjectID)
+	changes := issueChanges{}
+	if q.API {
+		row["name"] = djangoinput.ScalarString(data["name"])
+		row["priority"] = priority
+		row["state_id"] = state
+		description := data["description"]
+		if !truthy(description) {
+			description = data["description_json"]
+		}
+		if !truthy(description) {
+			description = map[string]any{}
+		}
+		row["description_json"] = description
+		raw := "<p></p>"
+		if value, ok := data["description_html"]; ok {
+			raw = djangoinput.ScalarString(value)
+		}
+		clean, _, e := content.ValidateHTML(raw)
+		if e != nil {
+			clean = "<p></p>"
+		}
+		row["description_html"] = clean
+	} else {
+		data["state_id"] = state
+		nestedInput := djangoinput.Input{Fields: data}
+		changes, err = r.validateIssue(ctx, nestedInput, issueValidation{ActorID: q.ActorID, Timezone: q.Timezone, AllowTriage: true, ProjectID: q.ProjectID, WorkspaceID: project["workspace_id"].(string)})
+		if err != nil {
+			return nil, issueChanges{}, err
+		}
+		if err = r.validateTypeTenant(ctx, changes.values, data, project["workspace_id"]); err != nil {
+			return nil, issueChanges{}, err
+		}
+		maps.Copy(row, changes.values)
+	}
+	if q.API && hasSubmittedType(data) {
+		typeFields := map[string]any{}
+		for _, key := range []string{"type_id", "type"} {
+			if value, present := data[key]; present {
+				typeFields[key] = value
+			}
+		}
+		typeChanges, validationErr := r.validateIssue(ctx, djangoinput.Input{Fields: typeFields}, issueValidation{API: true, Partial: true, ProjectID: q.ProjectID, WorkspaceID: stringValue(project["workspace_id"]), ActorID: q.ActorID})
+		if validationErr != nil {
+			return nil, issueChanges{}, validationErr
+		}
+		maps.Copy(row, typeChanges.values)
+	}
+	return row, changes, nil
 }
 
 func (r *Repository) intakeActivity(ctx context.Context, q Request, intakeID, kind string, requested, current any, notification bool) error {
@@ -378,23 +404,9 @@ func (r *Repository) patchIntake(ctx context.Context, q Request, project, row ma
 	if err != nil {
 		return Result{}, err
 	}
-	var role *int
-	var workspaceAdmin bool
-	if err := r.db.QueryRow(ctx, `SELECT (SELECT role FROM project_members WHERE project_id=$1 AND workspace_id=$2 AND member_id=$3 AND is_active AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1),EXISTS(SELECT 1 FROM workspace_members WHERE workspace_id=$2 AND member_id=$3 AND role=20 AND is_active AND deleted_at IS NULL)`, q.ProjectID, row["workspace_id"], q.ActorID).Scan(&role, &workspaceAdmin); err != nil {
+	role, workspaceAdmin, err := r.intakeEditAccess(ctx, q, row)
+	if err != nil {
 		return Result{}, err
-	}
-	if q.API && role == nil {
-		return Result{}, failure(404, "error", "The requested resource does not exist.")
-	}
-	if role == nil && !workspaceAdmin {
-		return Result{}, failure(403, "error", "Only admin or creator can update the intake work items")
-	}
-	if role != nil && *role <= 5 && (q.API || !workspaceAdmin) && row["created_by_id"] != q.ActorID {
-		message := "You cannot edit intake issues"
-		if q.API {
-			message = "You cannot edit intake work items"
-		}
-		return Result{}, failure(400, "error", message)
 	}
 	skip, descriptionUpdate := input.Fields["skip_activity"], input.Fields["description_html"] != nil
 	if !q.API {
@@ -402,78 +414,9 @@ func (r *Repository) patchIntake(ctx context.Context, q Request, project, row ma
 	}
 	nested := input.Fields["issue"]
 	delete(input.Fields, "issue")
-	var old map[string]any
-	var changes issueChanges
-	var nestedInput djangoinput.Input
-	var previous, requested any
-	if truthy(nested) {
-		data, ok := nested.(map[string]any)
-		if !ok {
-			return Result{}, errors.New("nested issue must be an object")
-		}
-		var err error
-		old, err = r.issue(ctx, q, false)
-		if err != nil {
-			return Result{}, err
-		}
-		if !q.API {
-			if err = r.annotateIntakeIssue(ctx, old); err != nil {
-				return Result{}, err
-			}
-		}
-		if role != nil && *role <= 5 {
-			get := func(key string) any {
-				if value, ok := data[key]; ok {
-					return value
-				}
-				return old[key]
-			}
-			description := get("description_json")
-			if q.API {
-				description = data["description"]
-				if !truthy(description) {
-					description = data["description_json"]
-				}
-				if !truthy(description) {
-					description = map[string]any{}
-				}
-			}
-			data = map[string]any{"name": get("name"), "description_html": get("description_html"), "description_json": description}
-		}
-		nestedInput = djangoinput.Input{Fields: data}
-		options := issueValidation{ActorID: q.ActorID, Timezone: q.Timezone, API: q.API, Partial: true, AllowTriage: !q.API, ProjectID: q.ProjectID, WorkspaceID: project["workspace_id"].(string)}
-		if q.API {
-			options.ProjectID = ""
-		}
-		changes, err = r.validateIssue(ctx, nestedInput, options)
-		if err != nil {
-			return Result{}, err
-		}
-		if err = r.validateTypeTenant(ctx, changes.values, data, project["workspace_id"]); err != nil {
-			return Result{}, err
-		}
-		projected := projectFields(old, detailFields)
-		order := detailFields
-		if q.API {
-			projected, err = r.serializeAuthorizedIssue(ctx, old, "", "")
-			order = apiIssueOrder
-		}
-		if err != nil {
-			return Result{}, err
-		}
-		previous, err = orderedDump(timestampProjection(projected, q.Timezone).(map[string]any), order)
-		if err != nil {
-			return Result{}, err
-		}
-		var rawFields map[string]json.RawMessage
-		_ = json.Unmarshal(input.Raw, &rawFields)
-		requested, err = pythoncompat.Dumps(data, rawFields["issue"])
-		if role != nil && *role <= 5 {
-			requested, err = orderedDump(data, []string{"name", "description_html", "description_json"})
-		}
-		if err != nil {
-			return Result{}, err
-		}
+	edit, err := r.prepareIntakeIssueEdit(ctx, q, project, input, nested, role)
+	if err != nil {
+		return Result{}, err
 	}
 	canMetadata := role != nil && *role > 15 || !q.API && workspaceAdmin
 	var metadata map[string]any
@@ -498,23 +441,23 @@ func (r *Repository) patchIntake(ctx context.Context, q Request, project, row ma
 			}
 		}
 	}
-	if old != nil {
+	if edit.old != nil {
 		if q.API {
-			if err := r.intakeActivity(ctx, q, row["id"].(string), "issue.activity.updated", requested, previous, true); err != nil {
+			if err := r.intakeActivity(ctx, q, row["id"].(string), "issue.activity.updated", edit.requested, edit.previous, true); err != nil {
 				return Result{}, err
 			}
 		}
-		saved, err := r.saveIntakeIssueEdit(ctx, q.ActorID, old, changes, nestedInput)
+		saved, err := r.saveIntakeIssueEdit(ctx, q.ActorID, edit.old, edit.changes, edit.input)
 		if err != nil {
 			return Result{}, err
 		}
 		// A later acceptance transition must build on this saved edit.
 		cachedIssue = saved
 		if !q.API && !(truthy(skip) && descriptionUpdate) {
-			if err := r.intakeActivity(ctx, q, row["id"].(string), "issue.activity.updated", requested, previous, true); err != nil {
+			if err := r.intakeActivity(ctx, q, row["id"].(string), "issue.activity.updated", edit.requested, edit.previous, true); err != nil {
 				return Result{}, err
 			}
-			if err := r.admitIssueDescriptionVersion(ctx, previous, q.IssueID, q.ActorID, false); err != nil {
+			if err := r.admitIssueDescriptionVersion(ctx, edit.previous, q.IssueID, q.ActorID, false); err != nil {
 				return Result{}, err
 			}
 		}
@@ -525,36 +468,8 @@ func (r *Repository) patchIntake(ctx context.Context, q Request, project, row ma
 				return Result{}, err
 			}
 		}
-		maps.Copy(row, metadata)
-		row["updated_at"], row["updated_by_id"] = timestamp(r.now()), q.ActorID
-		encoded, err := json.Marshal(row)
+		cachedIssue, err = r.applyIntakeMetadata(ctx, q, input, row, metadata, cachedIssue, intakePrevious)
 		if err != nil {
-			return Result{}, err
-		}
-		_, err = r.db.Exec(ctx, `UPDATE intake_issues t SET (status,snoozed_till,duplicate_to_id,source,source_email,created_by_id,updated_by_id,updated_at)=(SELECT x.status,x.snoozed_till,x.duplicate_to_id,x.source,x.source_email,x.created_by_id,x.updated_by_id,x.updated_at FROM jsonb_populate_record(NULL::intake_issues,$1::jsonb) x) WHERE id=($1::jsonb->>'id')::uuid`, encoded)
-		if err != nil {
-			return Result{}, err
-		}
-		if metadata["status"] == int64(1) {
-			issue := cachedIssue
-			var state *string
-			if err = r.db.QueryRow(ctx, `SELECT (SELECT s.id::text FROM states s WHERE s.project_id=$1 AND s.workspace_id=$2 AND s."default" AND s."group"<>'triage' AND s.deleted_at IS NULL AND EXISTS(SELECT 1 FROM states current WHERE current.id=$3 AND current."group"='triage') ORDER BY s.sequence LIMIT 1)`, q.ProjectID, row["workspace_id"], issue["state_id"]).Scan(&state); err != nil {
-				return Result{}, err
-			}
-			if state != nil {
-				updated := maps.Clone(issue)
-				updated["state_id"] = *state
-				if _, err = r.saveIssue(ctx, q.ActorID, updated, issue); err != nil {
-					return Result{}, err
-				}
-				cachedIssue = updated
-			}
-		}
-		requested, err := dumpRequest(input)
-		if err != nil {
-			return Result{}, err
-		}
-		if err = r.intakeActivity(ctx, q, row["id"].(string), "intake.activity.created", requested, intakePrevious, false); err != nil {
 			return Result{}, err
 		}
 	}
@@ -565,6 +480,152 @@ func (r *Repository) patchIntake(ctx context.Context, q Request, project, row ma
 		result, err = r.intakeProjection(ctx, q, row, false, true)
 	}
 	return Result{200, result}, err
+}
+
+type intakeIssueEdit struct {
+	old                 map[string]any
+	changes             issueChanges
+	input               djangoinput.Input
+	previous, requested any
+}
+
+func (r *Repository) intakeEditAccess(ctx context.Context, q Request, row map[string]any) (*int, bool, error) {
+	var role *int
+	var workspaceAdmin bool
+	if err := r.db.QueryRow(ctx, `SELECT (SELECT role FROM project_members WHERE project_id=$1 AND workspace_id=$2 AND member_id=$3 AND is_active AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1),EXISTS(SELECT 1 FROM workspace_members WHERE workspace_id=$2 AND member_id=$3 AND role=20 AND is_active AND deleted_at IS NULL)`, q.ProjectID, row["workspace_id"], q.ActorID).Scan(&role, &workspaceAdmin); err != nil {
+		return nil, false, err
+	}
+	if q.API && role == nil {
+		return nil, false, failure(404, "error", "The requested resource does not exist.")
+	}
+	if role == nil && !workspaceAdmin {
+		return nil, false, failure(403, "error", "Only admin or creator can update the intake work items")
+	}
+	if role != nil && *role <= 5 && (q.API || !workspaceAdmin) && row["created_by_id"] != q.ActorID {
+		message := "You cannot edit intake issues"
+		if q.API {
+			message = "You cannot edit intake work items"
+		}
+		return nil, false, failure(400, "error", message)
+	}
+	return role, workspaceAdmin, nil
+}
+
+func (r *Repository) prepareIntakeIssueEdit(ctx context.Context, q Request, project map[string]any, input djangoinput.Input, nested any, role *int) (intakeIssueEdit, error) {
+	var old map[string]any
+	var changes issueChanges
+	var nestedInput djangoinput.Input
+	var previous, requested any
+	if truthy(nested) {
+		data, ok := nested.(map[string]any)
+		if !ok {
+			return intakeIssueEdit{}, errors.New("nested issue must be an object")
+		}
+		var err error
+		old, err = r.issue(ctx, q, false)
+		if err != nil {
+			return intakeIssueEdit{}, err
+		}
+		if !q.API {
+			if err = r.annotateIntakeIssue(ctx, old); err != nil {
+				return intakeIssueEdit{}, err
+			}
+		}
+		if role != nil && *role <= 5 {
+			data = intakeGuestIssueData(q, data, old)
+		}
+		nestedInput = djangoinput.Input{Fields: data}
+		options := issueValidation{ActorID: q.ActorID, Timezone: q.Timezone, API: q.API, Partial: true, AllowTriage: !q.API, ProjectID: q.ProjectID, WorkspaceID: project["workspace_id"].(string)}
+		if q.API {
+			options.ProjectID = ""
+		}
+		changes, err = r.validateIssue(ctx, nestedInput, options)
+		if err != nil {
+			return intakeIssueEdit{}, err
+		}
+		if err = r.validateTypeTenant(ctx, changes.values, data, project["workspace_id"]); err != nil {
+			return intakeIssueEdit{}, err
+		}
+		projected := projectFields(old, detailFields)
+		order := detailFields
+		if q.API {
+			projected, err = r.serializeAuthorizedIssue(ctx, old, "", "")
+			order = apiIssueOrder
+		}
+		if err != nil {
+			return intakeIssueEdit{}, err
+		}
+		previous, err = orderedDump(timestampProjection(projected, q.Timezone).(map[string]any), order)
+		if err != nil {
+			return intakeIssueEdit{}, err
+		}
+		var rawFields map[string]json.RawMessage
+		_ = json.Unmarshal(input.Raw, &rawFields)
+		requested, err = pythoncompat.Dumps(data, rawFields["issue"])
+		if role != nil && *role <= 5 {
+			requested, err = orderedDump(data, []string{"name", "description_html", "description_json"})
+		}
+		if err != nil {
+			return intakeIssueEdit{}, err
+		}
+	}
+	return intakeIssueEdit{old: old, changes: changes, input: nestedInput, previous: previous, requested: requested}, nil
+}
+
+func intakeGuestIssueData(q Request, data, old map[string]any) map[string]any {
+	get := func(key string) any {
+		if value, ok := data[key]; ok {
+			return value
+		}
+		return old[key]
+	}
+	description := get("description_json")
+	if q.API {
+		description = data["description"]
+		if !truthy(description) {
+			description = data["description_json"]
+		}
+		if !truthy(description) {
+			description = map[string]any{}
+		}
+	}
+	return map[string]any{"name": get("name"), "description_html": get("description_html"), "description_json": description}
+}
+
+func (r *Repository) applyIntakeMetadata(ctx context.Context, q Request, input djangoinput.Input, row, metadata, cachedIssue map[string]any, intakePrevious any) (map[string]any, error) {
+	maps.Copy(row, metadata)
+	row["updated_at"], row["updated_by_id"] = timestamp(r.now()), q.ActorID
+	encoded, err := json.Marshal(row)
+	if err != nil {
+		return nil, err
+	}
+	_, err = r.db.Exec(ctx, `UPDATE intake_issues t SET (status,snoozed_till,duplicate_to_id,source,source_email,created_by_id,updated_by_id,updated_at)=(SELECT x.status,x.snoozed_till,x.duplicate_to_id,x.source,x.source_email,x.created_by_id,x.updated_by_id,x.updated_at FROM jsonb_populate_record(NULL::intake_issues,$1::jsonb) x) WHERE id=($1::jsonb->>'id')::uuid`, encoded)
+	if err != nil {
+		return nil, err
+	}
+	if metadata["status"] == int64(1) {
+		issue := cachedIssue
+		var state *string
+		if err = r.db.QueryRow(ctx, `SELECT (SELECT s.id::text FROM states s WHERE s.project_id=$1 AND s.workspace_id=$2 AND s."default" AND s."group"<>'triage' AND s.deleted_at IS NULL AND EXISTS(SELECT 1 FROM states current WHERE current.id=$3 AND current."group"='triage') ORDER BY s.sequence LIMIT 1)`, q.ProjectID, row["workspace_id"], issue["state_id"]).Scan(&state); err != nil {
+			return nil, err
+		}
+		if state != nil {
+			updated := maps.Clone(issue)
+			updated["state_id"] = *state
+			if _, err = r.saveIssue(ctx, q.ActorID, updated, issue); err != nil {
+				return nil, err
+			}
+			cachedIssue = updated
+		}
+	}
+	requested, err := dumpRequest(input)
+	if err != nil {
+		return nil, err
+	}
+	if err = r.intakeActivity(ctx, q, row["id"].(string), "intake.activity.created", requested, intakePrevious, false); err != nil {
+		return nil, err
+	}
+	return cachedIssue, nil
 }
 
 func (r *Repository) annotateIntakeIssue(ctx context.Context, issue map[string]any) error {

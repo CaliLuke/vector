@@ -60,20 +60,9 @@ func (r *Repository) planningTransaction(ctx context.Context, q Request, body io
 	if err != nil {
 		return Result{}, err
 	}
-	var container map[string]any
-	if kind == "cycle" || q.API {
-		container, err = r.row(ctx, `SELECT to_jsonb(p) FROM `+kind+`s p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$1 AND p.project_id=$2 AND w.slug=$3 AND p.deleted_at IS NULL`, q.Params[kind+"_id"], q.ProjectID, q.Slug)
-	} else {
-		container, err = r.project(ctx, q.ProjectID)
-	}
+	container, err := r.planningContainer(ctx, q, kind)
 	if err != nil {
 		return Result{}, err
-	}
-	if kind == "cycle" && beforeNow(container["end_date"], r.now()) {
-		if q.API {
-			return Result{}, invalid(map[string]any{"code": "CYCLE_COMPLETED", "message": "The Cycle has already been completed so no new issues can be added"})
-		}
-		return Result{}, failure(400, "error", "The Cycle has already been completed so no new issues can be added")
 	}
 	targets, err := r.eligibleIssues(ctx, q, ids, true)
 	if err != nil {
@@ -97,18 +86,7 @@ func (r *Repository) planningTransaction(ctx context.Context, q Request, body io
 			updated = append(updated, map[string]any{"old_cycle_id": link["cycle_id"], "new_cycle_id": q.Params["cycle_id"], "issue_id": link["issue_id"]})
 		}
 	}
-	selected := []string{}
-	for _, row := range targets {
-		found := false
-		for _, old := range existing {
-			if old["issue_id"] == row["id"] {
-				found = true
-			}
-		}
-		if !found {
-			selected = append(selected, row["id"].(string))
-		}
-	}
+	selected := unassignedPlanningIssues(targets, existing)
 	audit := any(q.ActorID)
 	if q.API && kind == "cycle" {
 		audit = nil
@@ -126,23 +104,77 @@ func (r *Repository) planningTransaction(ctx context.Context, q Request, body io
 			return Result{}, err
 		}
 	}
+	if err = r.publishPlanningCreation(ctx, q, kind, input, selected, created, updated); err != nil {
+		return Result{}, err
+	}
+	if !q.API {
+		return Result{201, map[string]any{"message": "success"}}, nil
+	}
+	rows, err := r.rows(ctx, `SELECT to_jsonb(link)||jsonb_build_object('sub_issues_count',(SELECT COUNT(*) FROM issues child WHERE child.parent_id=link.issue_id AND `+djangoapi.IssueVisibleSQL("child", "$4::uuid", "link.workspace_id")+` AND child.deleted_at IS NULL AND child.archived_at IS NULL AND NOT child.is_draft AND NOT EXISTS(SELECT 1 FROM states s WHERE s.id=child.state_id AND s."group"='triage'))) FROM `+kind+`_issues link JOIN projects p ON p.id=link.project_id JOIN workspaces w ON w.id=link.workspace_id WHERE link.`+kind+`_id=$1 AND link.project_id=$2 AND w.slug=$3 AND p.archived_at IS NULL AND link.deleted_at IS NULL ORDER BY link.created_at DESC`, q.Params[kind+"_id"], q.ProjectID, q.Slug, q.ActorID)
+	if err != nil {
+		return Result{}, err
+	}
+	results := []any{}
+	for _, row := range rows {
+		results = append(results, planningProjection(row, kind))
+	}
+	return Result{200, results}, nil
+}
+func (r *Repository) planningContainer(ctx context.Context, q Request, kind string) (map[string]any, error) {
+	var err error
+	var container map[string]any
+	if kind == "cycle" || q.API {
+		container, err = r.row(ctx, `SELECT to_jsonb(p) FROM `+kind+`s p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$1 AND p.project_id=$2 AND w.slug=$3 AND p.deleted_at IS NULL`, q.Params[kind+"_id"], q.ProjectID, q.Slug)
+	} else {
+		container, err = r.project(ctx, q.ProjectID)
+	}
+	if err != nil {
+		return nil, err
+	}
+	if kind == "cycle" && beforeNow(container["end_date"], r.now()) {
+		if q.API {
+			return nil, invalid(map[string]any{"code": "CYCLE_COMPLETED", "message": "The Cycle has already been completed so no new issues can be added"})
+		}
+		return nil, failure(400, "error", "The Cycle has already been completed so no new issues can be added")
+	}
+	return container, nil
+}
+
+func unassignedPlanningIssues(targets, existing []map[string]any) []string {
+	assigned := make(map[any]struct{}, len(existing))
+	for _, link := range existing {
+		assigned[link["issue_id"]] = struct{}{}
+	}
+	selected := []string{}
+	for _, row := range targets {
+		_, found := assigned[row["id"]]
+		if !found {
+			selected = append(selected, row["id"].(string))
+		}
+	}
+	return selected
+}
+
+func (r *Repository) publishPlanningCreation(ctx context.Context, q Request, kind string, input djangoinput.Input, selected []string, created []map[string]any, updated []any) error {
+	var err error
+	raw := input.Fields["issues"]
 	if !q.API && kind == "module" {
 		requested, _ := pythoncompat.Dumps(map[string]any{"module_id": q.Params["module_id"]}, nil)
 		for _, id := range selected {
 			local := q
 			local.IssueID = id
 			if err = r.activity(ctx, local, "module.activity.created", requested, nil, false); err != nil {
-				return Result{}, err
+				return err
 			}
 		}
 	} else {
 		serialized, err := serializePlanningRecords(kind, created)
 		if err != nil {
-			return Result{}, err
+			return err
 		}
 		previous, err := planningCurrent(kind, updated, serialized)
 		if err != nil {
-			return Result{}, err
+			return err
 		}
 		var requested string
 		if kind == "cycle" {
@@ -159,29 +191,19 @@ func (r *Repository) planningTransaction(ctx context.Context, q Request, body io
 			requested, err = pythoncompat.Dumps(map[string]any{"modules_list": "<SoftDeletionQuerySet [" + strings.Join(names, ", ") + "]>"}, nil)
 		}
 		if err != nil {
-			return Result{}, err
+			return err
 		}
 		args := map[string]any{"type": kind + ".activity.created", "requested_data": requested, "actor_id": q.ActorID, "issue_id": nil, "project_id": q.ProjectID, "current_instance": previous, "epoch": r.now().Unix(), "origin": r.origin}
 		if kind == "cycle" {
 			args["notification"] = true
 		}
 		if err = r.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, args); err != nil {
-			return Result{}, err
+			return err
 		}
 	}
-	if !q.API {
-		return Result{201, map[string]any{"message": "success"}}, nil
-	}
-	rows, err := r.rows(ctx, `SELECT to_jsonb(link)||jsonb_build_object('sub_issues_count',(SELECT COUNT(*) FROM issues child WHERE child.parent_id=link.issue_id AND `+djangoapi.IssueVisibleSQL("child", "$4::uuid", "link.workspace_id")+` AND child.deleted_at IS NULL AND child.archived_at IS NULL AND NOT child.is_draft AND NOT EXISTS(SELECT 1 FROM states s WHERE s.id=child.state_id AND s."group"='triage'))) FROM `+kind+`_issues link JOIN projects p ON p.id=link.project_id JOIN workspaces w ON w.id=link.workspace_id WHERE link.`+kind+`_id=$1 AND link.project_id=$2 AND w.slug=$3 AND p.archived_at IS NULL AND link.deleted_at IS NULL ORDER BY link.created_at DESC`, q.Params[kind+"_id"], q.ProjectID, q.Slug, q.ActorID)
-	if err != nil {
-		return Result{}, err
-	}
-	results := []any{}
-	for _, row := range rows {
-		results = append(results, planningProjection(row, kind))
-	}
-	return Result{200, results}, nil
+	return nil
 }
+
 func beforeNow(raw any, now time.Time) bool {
 	s, ok := raw.(string)
 	if !ok {

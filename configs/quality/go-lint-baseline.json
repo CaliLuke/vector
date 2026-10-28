@@ -2703,7 +2703,7 @@
         "internal/workitems/intake.go",
         "shadow: declaration of \"err\" shadows declaration at line #"
       ],
-      "count": 10
+      "count": 7
     },
     {
       "fingerprint": [
@@ -2736,14 +2736,6 @@
         "shadow: declaration of \"err\" shadows declaration at line #"
       ],
       "count": 2
-    },
-    {
-      "fingerprint": [
-        "govet",
-        "internal/workitems/planning.go",
-        "shadow: declaration of \"err\" shadows declaration at line #"
-      ],
-      "count": 1
     },
     {
       "fingerprint": [
@@ -2999,10 +2991,6 @@
     },
     {
       "fingerprint": ["ineffassign", "internal/workitems/collaboration_writes.go", "ineffectual assignment to input"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["ineffassign", "internal/workitems/list.go", "ineffectual assignment to order"],
       "count": 1
     },
     {

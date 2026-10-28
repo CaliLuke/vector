@@ -126,53 +126,8 @@ AND ` + visibility + `)`
 }
 
 func (r *Repository) writeCollaboration(ctx context.Context, q Request, kind, table string, input djangoinput.Input, changes, old map[string]any) (Result, error) {
-	if kind == "link" && (!q.API || q.Method == "POST") {
-		var duplicate bool
-		var id any
-		if old != nil {
-			id = old["id"]
-		}
-		if err := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issue_links WHERE issue_id=$1 AND url=$2 AND deleted_at IS NULL AND ($3::uuid IS NULL OR id<>$3))`, q.IssueID, changes["url"], id).Scan(&duplicate); err != nil {
-			return Result{}, err
-		}
-		if duplicate {
-			return Result{}, invalid(map[string]any{"error": "URL already exists for this Issue"})
-		}
-	}
-	// Tenant checks follow source serializer/duplicate precedence and precede writes.
-	if err := r.collaborationReference(ctx, q, "issues", q.IssueID); err != nil {
+	if err := r.validateCollaborationWrite(ctx, q, kind, changes, old); err != nil {
 		return Result{}, err
-	}
-	if kind == "commentReaction" {
-		if err := r.collaborationReference(ctx, q, "issue_comments", q.Params["comment_id"]); err != nil {
-			return Result{}, err
-		}
-		if collaborationPublic(q) {
-			if err := r.collaborationPublicCommentReference(ctx, q); err != nil {
-				return Result{}, err
-			}
-		}
-	}
-	if kind == "comment" && !q.API {
-		if err := r.collaborationReference(ctx, q, "issue_comments", changes["parent_id"]); err != nil {
-			return Result{}, err
-		}
-	}
-	if kind == "comment" && old != nil {
-		// Saving content updates the attached description even when its ID
-		// was omitted from the request, including the narrower API serializer.
-		description := old["description_id"]
-		if value, present := changes["description_id"]; present {
-			description = value
-		}
-		if err := r.collaborationReference(ctx, q, "descriptions", description); err != nil {
-			return Result{}, err
-		}
-	}
-	if kind == "comment" {
-		if err := r.validateCollaborationCommentReferences(ctx, q, changes, old); err != nil {
-			return Result{}, err
-		}
 	}
 	project, err := r.project(ctx, q.ProjectID)
 	if err != nil {
@@ -218,36 +173,97 @@ func (r *Repository) writeCollaboration(ctx context.Context, q Request, kind, ta
 			return Result{}, err
 		}
 	}
+	if q.API && old == nil {
+		if err = r.saveAPICollaborationAudit(ctx, q, kind, input, row); err != nil {
+			return Result{}, err
+		}
+	}
+	return r.finishCollaborationWrite(ctx, q, kind, table, input, row, old, project["workspace_id"], previous)
+}
+
+func (r *Repository) validateCollaborationWrite(ctx context.Context, q Request, kind string, changes, old map[string]any) error {
+	if kind == "link" && (!q.API || q.Method == "POST") {
+		var duplicate bool
+		var id any
+		if old != nil {
+			id = old["id"]
+		}
+		if err := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issue_links WHERE issue_id=$1 AND url=$2 AND deleted_at IS NULL AND ($3::uuid IS NULL OR id<>$3))`, q.IssueID, changes["url"], id).Scan(&duplicate); err != nil {
+			return err
+		}
+		if duplicate {
+			return invalid(map[string]any{"error": "URL already exists for this Issue"})
+		}
+	}
+	// Tenant checks follow source serializer/duplicate precedence and precede writes.
+	if err := r.collaborationReference(ctx, q, "issues", q.IssueID); err != nil {
+		return err
+	}
+	if kind == "commentReaction" {
+		if err := r.collaborationReference(ctx, q, "issue_comments", q.Params["comment_id"]); err != nil {
+			return err
+		}
+		if collaborationPublic(q) {
+			if err := r.collaborationPublicCommentReference(ctx, q); err != nil {
+				return err
+			}
+		}
+	}
+	if kind == "comment" && !q.API {
+		if err := r.collaborationReference(ctx, q, "issue_comments", changes["parent_id"]); err != nil {
+			return err
+		}
+	}
+	if kind == "comment" && old != nil {
+		// Saving content updates the attached description even when its ID
+		// was omitted from the request, including the narrower API serializer.
+		description := old["description_id"]
+		if value, present := changes["description_id"]; present {
+			description = value
+		}
+		if err := r.collaborationReference(ctx, q, "descriptions", description); err != nil {
+			return err
+		}
+	}
+	if kind == "comment" {
+		if err := r.validateCollaborationCommentReferences(ctx, q, changes, old); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *Repository) saveAPICollaborationAudit(ctx context.Context, q Request, kind string, input djangoinput.Input, row map[string]any) error {
 	// API creation has a second update_fields save. Preserve its deliberately
 	// narrower persisted fields and its in-memory actor/updater representation.
-	if q.API && old == nil {
-		creator := any(q.ActorID)
-		if value, present := input.Fields["created_by"]; present {
-			creator = value
-		}
-		if kind == "comment" {
-			created := any(timestamp(r.now()))
-			if value, present := input.Fields["created_at"]; present {
-				created = value
-			}
-			if _, err = r.db.Exec(ctx, `UPDATE issue_comments SET created_at=$2,created_by_id=$3 WHERE id=$1`, row["id"], created, creator); err != nil {
-				return Result{}, err
-			}
-			row["created_at"], row["created_by_id"], row["actor_id"], row["updated_by_id"] = created, creator, creator, q.ActorID
-		} else {
-			if _, err = r.db.Exec(ctx, `UPDATE issue_links SET created_by_id=$2 WHERE id=$1`, row["id"], creator); err != nil {
-				return Result{}, err
-			}
-			row["created_by_id"], row["updated_by_id"] = creator, q.ActorID
-		}
+	creator := any(q.ActorID)
+	if value, present := input.Fields["created_by"]; present {
+		creator = value
 	}
+	if kind == "comment" {
+		created := any(timestamp(r.now()))
+		if value, present := input.Fields["created_at"]; present {
+			created = value
+		}
+		if _, err := r.db.Exec(ctx, `UPDATE issue_comments SET created_at=$2,created_by_id=$3 WHERE id=$1`, row["id"], created, creator); err != nil {
+			return err
+		}
+		row["created_at"], row["created_by_id"], row["actor_id"], row["updated_by_id"] = created, creator, creator, q.ActorID
+	} else {
+		if _, err := r.db.Exec(ctx, `UPDATE issue_links SET created_by_id=$2 WHERE id=$1`, row["id"], creator); err != nil {
+			return err
+		}
+		row["created_by_id"], row["updated_by_id"] = creator, q.ActorID
+	}
+	return nil
+}
+
+func (r *Repository) collaborationWriteRequest(ctx context.Context, q Request, kind string, input djangoinput.Input, row map[string]any, create bool) (string, error) {
 	requested, err := dumpRequest(input)
 	if err != nil {
-		return Result{}, err
+		return "", err
 	}
-	verb := "updated"
-	if old == nil {
-		verb = "created"
+	if create {
 		if q.API {
 			fields := strings.Fields("comment_json comment_html access external_source external_id")
 			if kind == "link" {
@@ -265,8 +281,20 @@ func (r *Repository) writeCollaboration(ctx context.Context, q Request, kind, ta
 			requested, err = r.collaborationDump(ctx, q, row, kind, false)
 		}
 		if err != nil {
-			return Result{}, err
+			return "", err
 		}
+	}
+	return requested, nil
+}
+
+func (r *Repository) finishCollaborationWrite(ctx context.Context, q Request, kind, table string, input djangoinput.Input, row, old map[string]any, workspace, previous any) (Result, error) {
+	requested, err := r.collaborationWriteRequest(ctx, q, kind, input, row, old == nil)
+	if err != nil {
+		return Result{}, err
+	}
+	verb := "updated"
+	if old == nil {
+		verb = "created"
 	}
 	activityQ := q
 	if q.API && old == nil {
@@ -279,7 +307,7 @@ func (r *Repository) writeCollaboration(ctx context.Context, q Request, kind, ta
 		}
 	}
 	if collaborationPublic(q) && kind != "comment" {
-		if err = r.collaborationPublicMember(ctx, q, project["workspace_id"]); err != nil {
+		if err = r.collaborationPublicMember(ctx, q, workspace); err != nil {
 			return Result{}, err
 		}
 	}
@@ -292,7 +320,7 @@ func (r *Repository) writeCollaboration(ctx context.Context, q Request, kind, ta
 		}
 	}
 	if collaborationPublic(q) && kind == "comment" && old == nil {
-		if err = r.collaborationPublicMember(ctx, q, project["workspace_id"]); err != nil {
+		if err = r.collaborationPublicMember(ctx, q, workspace); err != nil {
 			return Result{}, err
 		}
 	}

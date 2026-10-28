@@ -39,28 +39,58 @@ func (r *Repository) writeIssue(ctx context.Context, q Request, body io.Reader, 
 	return result, tx.Commit(ctx)
 }
 
+type issueEdit struct {
+	input                   djangoinput.Input
+	changes                 issueChanges
+	old, project, submitted map[string]any
+	skipActivity            any
+}
+
 func (r *Repository) writeIssueTransaction(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
+	project, err := r.lockIssueWriteScope(ctx, q)
+	if err != nil {
+		return Result{}, err
+	}
+	if q.Method == "DELETE" {
+		return r.destroyIssue(ctx, q)
+	}
+	edit, err := r.prepareIssueEdit(ctx, q, body, contentType, project)
+	if err != nil {
+		return Result{}, err
+	}
+	previous, err := r.previousIssueWriteProjection(ctx, q, edit.old)
+	if err != nil {
+		return Result{}, err
+	}
+	row, err := r.persistIssueEdit(ctx, q, &edit)
+	if err != nil {
+		return Result{}, err
+	}
+	return r.finishIssueWrite(ctx, q, edit.input, edit.old, row, previous, edit.skipActivity)
+}
+
+func (r *Repository) lockIssueWriteScope(ctx context.Context, q Request) (map[string]any, error) {
 	if !q.API && q.Method != "PUT" {
 		roles, creator := []int{15, 20}, q.Method != "POST"
 		if q.Method == "DELETE" {
 			roles = []int{20}
 		}
 		if err := r.allowProject(ctx, q, roles, creator); err != nil {
-			return Result{}, err
+			return nil, err
 		}
 	}
 	project, err := r.row(ctx, `SELECT to_jsonb(p) FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$1 AND w.slug=$2 AND p.deleted_at IS NULL AND w.deleted_at IS NULL`, q.ProjectID, q.Slug)
 	if err != nil {
-		return Result{}, err
+		return nil, err
 	}
 	if _, err = r.db.Exec(ctx, `SELECT work_item_schema_lock($1::uuid)`, project["workspace_id"]); err != nil {
-		return Result{}, err
+		return nil, err
 	}
 	if err = r.AuthorizeInitial(ctx, q); err != nil {
-		return Result{}, err
+		return nil, err
 	}
 	if err = r.allowWorkspace(ctx, q, []int{5, 15, 20}); err != nil {
-		return Result{}, err
+		return nil, err
 	}
 	if !q.API && q.Method != "PUT" {
 		roles := []int{15, 20}
@@ -68,25 +98,27 @@ func (r *Repository) writeIssueTransaction(ctx context.Context, q Request, body 
 			roles = []int{20}
 		}
 		if err = r.allowProject(ctx, q, roles, q.Method != "POST"); err != nil {
-			return Result{}, err
+			return nil, err
 		}
 	}
 	if q.Method != "POST" {
 		// Lock before every old-value read. A partial update merges only its
 		// submitted fields into the latest committed row, never a stale snapshot.
 		if _, err = r.db.Exec(ctx, `SELECT id FROM issues WHERE id=$1 AND project_id=$2 AND workspace_id=$3 FOR UPDATE`, q.IssueID, q.ProjectID, project["workspace_id"]); err != nil {
-			return Result{}, err
+			return nil, err
 		}
 	}
-	if q.Method == "DELETE" {
-		return r.destroyIssue(ctx, q)
-	}
+	return project, nil
+}
+
+func (r *Repository) prepareIssueEdit(ctx context.Context, q Request, body io.Reader, contentType string, project map[string]any) (issueEdit, error) {
+	var err error
 	// API PATCH performs lookup before touching the request data.
 	var old map[string]any
 	if q.API && q.Method == "PATCH" {
 		old, err = r.issue(ctx, q, false)
 		if err != nil {
-			return Result{}, err
+			return issueEdit{}, err
 		}
 	}
 	if !q.API && q.Method == "PUT" {
@@ -94,19 +126,19 @@ func (r *Repository) writeIssueTransaction(ctx context.Context, q Request, body 
 		// serializer input. The custom PATCH action does not apply this filter.
 		old, err = r.putIssue(ctx, q)
 		if err != nil {
-			return Result{}, err
+			return issueEdit{}, err
 		}
 	}
 	input, err := djangoinput.Parse(body, contentType)
 	if err != nil {
-		return Result{}, err
+		return issueEdit{}, err
 	}
 	submitted, err := submittedCustomValues(input)
 	if err != nil {
-		return Result{}, err
+		return issueEdit{}, err
 	}
 	if !q.API && q.Method == "PATCH" && (input.Form || input.Kind != "") {
-		return Result{}, errors.New("Django PATCH requires mutable request.data")
+		return issueEdit{}, errors.New("Django PATCH requires mutable request.data")
 	}
 	skip := input.Fields["skip_activity"]
 	if !q.API && q.Method == "PATCH" {
@@ -117,9 +149,9 @@ func (r *Repository) writeIssueTransaction(ctx context.Context, q Request, body 
 		if err != nil {
 			var e *djangoapi.HTTPError
 			if q.Method == "PATCH" && errors.As(err, &e) && e.Status == 404 {
-				return Result{}, failure(404, "error", "Issue not found")
+				return issueEdit{}, failure(404, "error", "Issue not found")
 			}
-			return Result{}, err
+			return issueEdit{}, err
 		}
 	}
 	options := issueValidation{ActorID: q.ActorID, Timezone: q.Timezone, API: q.API, Partial: q.Method == "PATCH", ProjectID: q.ProjectID, WorkspaceID: project["workspace_id"].(string)}
@@ -135,29 +167,41 @@ func (r *Repository) writeIssueTransaction(ctx context.Context, q Request, body 
 	}
 	changes, err := r.validateIssue(ctx, validationInput, options)
 	if err != nil {
-		return Result{}, err
+		return issueEdit{}, err
 	}
 	if err = r.validateTypeTenant(ctx, changes.values, input.Fields, project["workspace_id"]); err != nil {
-		return Result{}, err
+		return issueEdit{}, err
 	}
+	if err := r.validateIssueExternalIdentity(ctx, q, input, old); err != nil {
+		return issueEdit{}, err
+	}
+	return issueEdit{input: input, changes: changes, old: old, project: project, submitted: submitted, skipActivity: skip}, nil
+}
+
+func (r *Repository) validateIssueExternalIdentity(ctx context.Context, q Request, input djangoinput.Input, old map[string]any) error {
 	if q.API && truthy(input.Fields["external_id"]) && (q.Method == "POST" && truthy(input.Fields["external_source"]) || q.Method == "PATCH" && old["external_id"] != djangoinput.ScalarString(input.Fields["external_id"])) {
 		source := input.Fields["external_source"]
 		if _, present := input.Fields["external_source"]; !present && old != nil {
 			source = old["external_source"]
 		}
 		var id *string
-		err = r.db.QueryRow(ctx, `SELECT (SELECT i.id::text FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE i.project_id=$1 AND w.slug=$2 AND i.deleted_at IS NULL AND i.external_id=$3 AND i.external_source=$4 ORDER BY i.created_at DESC LIMIT 1)`, q.ProjectID, q.Slug, djangoinput.ScalarString(input.Fields["external_id"]), source).Scan(&id)
+		err := r.db.QueryRow(ctx, `SELECT (SELECT i.id::text FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE i.project_id=$1 AND w.slug=$2 AND i.deleted_at IS NULL AND i.external_id=$3 AND i.external_source=$4 ORDER BY i.created_at DESC LIMIT 1)`, q.ProjectID, q.Slug, djangoinput.ScalarString(input.Fields["external_id"]), source).Scan(&id)
 		if err != nil {
-			return Result{}, err
+			return err
 		}
 		if id != nil {
 			conflict := *id
 			if old != nil {
 				conflict = q.IssueID
 			}
-			return Result{}, &djangoapi.HTTPError{Status: 409, Body: map[string]any{"error": "Issue with the same external id and external source already exists", "id": conflict}}
+			return &djangoapi.HTTPError{Status: 409, Body: map[string]any{"error": "Issue with the same external id and external source already exists", "id": conflict}}
 		}
 	}
+	return nil
+}
+
+func (r *Repository) previousIssueWriteProjection(ctx context.Context, q Request, old map[string]any) (any, error) {
+	var err error
 	var previous any
 	if old != nil && q.Method != "PUT" {
 		var projection map[string]any
@@ -171,100 +215,85 @@ func (r *Repository) writeIssueTransaction(ctx context.Context, q Request, body 
 			projection, err = r.detail(ctx, maps.Clone(old), detailQ, false, false)
 		}
 		if err != nil {
-			return Result{}, err
+			return nil, err
 		}
 		previous, err = orderedDump(timestampProjection(projection, q.Timezone).(map[string]any), keys)
 		if err != nil {
-			return Result{}, err
+			return nil, err
 		}
 	}
-	row := maps.Clone(old)
-	if old == nil {
+	return previous, nil
+}
+
+func (r *Repository) persistIssueEdit(ctx context.Context, q Request, edit *issueEdit) (map[string]any, error) {
+	var err error
+	row := maps.Clone(edit.old)
+	if edit.old == nil {
 		row = defaultIssue(q.ProjectID)
 	}
-	maps.Copy(row, changes.values)
-	if old == nil && q.API && row["type_id"] == nil {
+	maps.Copy(row, edit.changes.values)
+	if edit.old == nil && q.API && row["type_id"] == nil {
 		var defaultType *string
 		err = r.db.QueryRow(ctx, apiDefaultIssueTypeSQL, q.ProjectID).Scan(&defaultType)
 		if err != nil {
-			return Result{}, err
+			return nil, err
 		}
 		if defaultType != nil {
 			row["type_id"] = *defaultType
 		}
 	}
-	row["workspace_id"] = project["workspace_id"]
+	row["workspace_id"] = edit.project["workspace_id"]
 	creator := q.ActorID
-	if q.API && old == nil {
-		if value, exists := input.Fields["created_by"]; exists {
+	if q.API && edit.old == nil {
+		if value, exists := edit.input.Fields["created_by"]; exists {
 			creator = stringValue(value)
 		}
 	}
-	subscribers, err := r.validateCustomValues(ctx, creator, row, old, submitted, false, old == nil, hasSubmittedType(input.Fields))
+	subscribers, err := r.validateCustomValues(ctx, creator, row, edit.old, edit.submitted, false, edit.old == nil, hasSubmittedType(edit.input.Fields))
 	if err != nil {
-		return Result{}, err
+		return nil, err
 	}
-	input = r.composedItemEditInput(input, row)
-	if old != nil {
-		row, err = r.updateIssueWithRelations(ctx, q.ActorID, row, old, changes)
+	edit.input = r.composedItemEditInput(edit.input, row)
+	if edit.old != nil {
+		row, err = r.updateIssueWithRelations(ctx, q.ActorID, row, edit.old, edit.changes)
 	} else {
-		row, err = r.saveIssue(ctx, q.ActorID, row, old)
+		row, err = r.saveIssue(ctx, q.ActorID, row, edit.old)
 	}
 	if err != nil {
-		return Result{}, err
+		return nil, err
 	}
 	if err = r.subscribePropertyMembers(ctx, q.ActorID, row, subscribers); err != nil {
-		return Result{}, err
+		return nil, err
 	}
-	if old == nil {
-		if len(changes.assignees) == 0 && !changes.assigneesSet && project["default_assignee_id"] != nil {
-			ids, e := r.filteredIDs(ctx, `SELECT member_id::text FROM project_members WHERE project_id=$1 AND member_id=$2 AND role>=15 AND is_active AND deleted_at IS NULL`, q.ProjectID, project["default_assignee_id"])
+	if edit.old == nil {
+		if len(edit.changes.assignees) == 0 && !edit.changes.assigneesSet && edit.project["default_assignee_id"] != nil {
+			ids, e := r.filteredIDs(ctx, `SELECT member_id::text FROM project_members WHERE project_id=$1 AND member_id=$2 AND role>=15 AND is_active AND deleted_at IS NULL`, q.ProjectID, edit.project["default_assignee_id"])
 			if e != nil {
-				return Result{}, e
+				return nil, e
 			}
-			changes.assignees = ids
+			edit.changes.assignees = ids
 		}
-		if err = r.replaceIssueRelations(ctx, row, changes, true); err != nil {
-			return Result{}, err
+		if err = r.replaceIssueRelations(ctx, row, edit.changes, true); err != nil {
+			return nil, err
 		}
 		if q.API {
 			row, err = r.issue(ctx, Request{IssueID: row["id"].(string), ProjectID: q.ProjectID, Slug: q.Slug}, false)
 			if err != nil {
-				return Result{}, errors.New("created API issue cannot be refetched")
+				return nil, errors.New("created API issue cannot be refetched")
 			}
 		}
 	}
+	return row, nil
+}
+
+func (r *Repository) finishIssueWrite(ctx context.Context, q Request, input djangoinput.Input, old, row map[string]any, previous, skip any) (Result, error) {
+	var err error
 	q.IssueID = row["id"].(string)
 	if old == nil && !q.API {
-		requested, e := r.issueWriteActivity(ctx, q, input, nil, true)
-		if e != nil {
-			return Result{}, e
-		}
-		// The source queues activity before resolving its live response queryset.
-		// Deleted or draft creates therefore persist and queue activity, then fail.
-		live, e := r.issue(ctx, q, true)
-		if e != nil {
-			return Result{}, errors.New("created issue missing from live response queryset")
-		}
-		annotated, e := r.annotateIssue(ctx, live, q.ActorID, false)
-		if e != nil {
-			return Result{}, e
-		}
-		if e = r.issueWriteFollowups(ctx, q, input, nil, requested, true); e != nil {
-			return Result{}, e
-		}
-		return Result{201, projectFields(annotated, append(append([]string{}, compactFields...), "deleted_at"))}, nil
+		return r.createdAppIssueResponse(ctx, q, input)
 	}
 	if q.API && old == nil {
-		createdAt := input.Fields["created_at"]
-		if createdAt == nil {
-			createdAt = timestamp(r.now())
-		}
-		createdBy, exists := input.Fields["created_by"]
-		if !exists {
-			createdBy = q.ActorID
-		}
-		if _, err = r.db.Exec(ctx, `UPDATE issues SET created_at=$2,created_by_id=$3 WHERE id=$1`, q.IssueID, createdAt, createdBy); err != nil {
+		if err = r.saveAPIIssueCreationAudit(ctx, q, input); err != nil {
 			return Result{}, err
 		}
 	}
@@ -300,6 +329,42 @@ func (r *Repository) writeIssueTransaction(ctx context.Context, q Request, body 
 		return Result{}, err
 	}
 	return Result{201, projectFields(annotated, append(append([]string{}, compactFields...), "deleted_at"))}, nil
+}
+
+func (r *Repository) createdAppIssueResponse(ctx context.Context, q Request, input djangoinput.Input) (Result, error) {
+	requested, e := r.issueWriteActivity(ctx, q, input, nil, true)
+	if e != nil {
+		return Result{}, e
+	}
+	// The source queues activity before resolving its live response queryset.
+	// Deleted or draft creates therefore persist and queue activity, then fail.
+	live, e := r.issue(ctx, q, true)
+	if e != nil {
+		return Result{}, errors.New("created issue missing from live response queryset")
+	}
+	annotated, e := r.annotateIssue(ctx, live, q.ActorID, false)
+	if e != nil {
+		return Result{}, e
+	}
+	if e = r.issueWriteFollowups(ctx, q, input, nil, requested, true); e != nil {
+		return Result{}, e
+	}
+	return Result{201, projectFields(annotated, append(append([]string{}, compactFields...), "deleted_at"))}, nil
+}
+
+func (r *Repository) saveAPIIssueCreationAudit(ctx context.Context, q Request, input djangoinput.Input) error {
+	createdAt := input.Fields["created_at"]
+	if createdAt == nil {
+		createdAt = timestamp(r.now())
+	}
+	createdBy, exists := input.Fields["created_by"]
+	if !exists {
+		createdBy = q.ActorID
+	}
+	if _, err := r.db.Exec(ctx, `UPDATE issues SET created_at=$2,created_by_id=$3 WHERE id=$1`, q.IssueID, createdAt, createdBy); err != nil {
+		return err
+	}
+	return nil
 }
 
 // ProtocolPutAction mirrors DRF SimpleMetadata.determine_actions: PUT metadata

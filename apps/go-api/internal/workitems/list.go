@@ -41,7 +41,88 @@ func queryOptions(q Request) issuequery.Options {
 	}
 	return o
 }
+
+type issueListShape struct {
+	archive, v2, byIDs, details, user, workspace bool
+}
+
+type issueListFilterPlan struct {
+	where         []string
+	args          []any
+	options       issuequery.Options
+	deferredError error
+}
+
+type issueListPage struct {
+	rows               []map[string]any
+	total, limit, page int
+	inSQL              bool
+}
+
 func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs map[string]bool) (Result, error) {
+	shape := issueListShapeFor(q)
+	if err := r.authorizeIssueList(ctx, q, shape); err != nil {
+		return Result{}, err
+	}
+	if q.API {
+		if err := validateAPIFilterMode(q); err != nil {
+			return Result{}, err
+		}
+		if q.ExpectedWorkspaceID == nil && q.Params["external_id"] != "" && q.Params["external_source"] != "" {
+			return r.externalIssueListResult(ctx, q)
+		}
+	}
+	where, args, err := r.issueListScope(q, shape)
+	if err != nil {
+		return Result{}, err
+	}
+	plan, err := r.issueListFilters(ctx, q, shape, typeIDs, where, args)
+	if err != nil {
+		return Result{}, err
+	}
+	order, err := issueListOrder(q, shape, plan.options, &plan.args)
+	if err != nil {
+		return Result{}, err
+	}
+	if !q.API && !shape.v2 && !shape.workspace && !shape.archive && !shape.details {
+		if err = r.recentVisit(ctx, q, "project", q.ProjectID); err != nil {
+			return Result{}, err
+		}
+	}
+	if err = r.validateIssueListGrouping(q, shape, plan.options); err != nil {
+		return Result{}, err
+	}
+	if plan.deferredError != nil {
+		return Result{}, plan.deferredError
+	}
+	from := ` FROM issues issue JOIN projects project ON project.id=issue.project_id JOIN workspaces workspace ON workspace.id=issue.workspace_id WHERE ` + strings.Join(plan.where, " AND ")
+	if q.API && q.ExpectedWorkspaceID != nil && q.Operation == "count" {
+		return r.countIssueResults(ctx, q, from, plan.args)
+	}
+	page, err := r.readIssueListPage(ctx, q, shape, plan.options, from, order, plan.args)
+	if err != nil {
+		return Result{}, err
+	}
+	if !q.API && (q.Params["include_properties"] == "true" || len(r.propertyGroups) > 0) {
+		if err = r.projectDiscoveryRows(ctx, page.rows); err != nil {
+			return Result{}, err
+		}
+	}
+	if shape.v2 {
+		return v2Envelope(q, page.rows, page.total, page.limit, page.page), nil
+	}
+	results := []any{}
+	for _, row := range page.rows {
+		value, err := r.projectIssueListRow(ctx, q, shape, row)
+		if err != nil {
+			return Result{}, err
+		}
+		results = append(results, value)
+	}
+	return r.issueListResponse(ctx, q, shape, plan.options, page, results)
+}
+
+func issueListShapeFor(q Request) issueListShape {
 	op := q.Operation
 	archive := strings.HasSuffix(op, "_archived_issues")
 	v2 := strings.HasSuffix(op, "_v2_issues")
@@ -49,56 +130,61 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 	details := strings.HasSuffix(op, "_issues_detail")
 	user := strings.Contains(op, "_user_issues_by_user_id")
 	workspace := q.ProjectID == ""
+	return issueListShape{archive: archive, v2: v2, byIDs: byIDs, details: details, user: user, workspace: workspace}
+}
+
+func (r *Repository) authorizeIssueList(ctx context.Context, q Request, shape issueListShape) error {
 	if !q.API {
-		if workspace && !user {
+		if shape.workspace && !shape.user {
 			if err := r.allowWorkspace(ctx, q, []int{5, 15, 20}); err != nil {
-				return Result{}, err
+				return err
 			}
-		} else if !workspace {
+		} else if !shape.workspace {
 			roles := []int{5, 15, 20}
-			if archive {
+			if shape.archive {
 				roles = []int{15, 20}
 			}
 			if err := r.allowProject(ctx, q, roles, false); err != nil {
-				return Result{}, err
+				return err
 			}
 		}
 	}
-	if !q.API && !workspace && !v2 && !byIDs && !details && !archive {
+	if !q.API && !shape.workspace && !shape.v2 && !shape.byIDs && !shape.details && !shape.archive {
 		if _, err := r.project(ctx, q.ProjectID); err != nil {
-			return Result{}, err
+			return err
 		}
 	}
-	if q.API {
-		if err := validateAPIFilterMode(q); err != nil {
-			return Result{}, err
+	return nil
+}
+
+func (r *Repository) externalIssueListResult(ctx context.Context, q Request) (Result, error) {
+
+	row, err := r.row(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE w.slug=$1 AND i.project_id=$2 AND i.external_id=$3 AND i.external_source=$4 AND i.deleted_at IS NULL`, q.Slug, q.ProjectID, q.Params["external_id"], q.Params["external_source"])
+	if err != nil {
+		var missing *djangoapi.HTTPError
+		if errors.As(err, &missing) && missing.Status == 404 {
+			return Result{}, failure(404, "error", "The requested resource does not exist.")
 		}
-		if q.ExpectedWorkspaceID == nil && q.Params["external_id"] != "" && q.Params["external_source"] != "" {
-			row, err := r.row(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE w.slug=$1 AND i.project_id=$2 AND i.external_id=$3 AND i.external_source=$4 AND i.deleted_at IS NULL`, q.Slug, q.ProjectID, q.Params["external_id"], q.Params["external_source"])
-			if err != nil {
-				var missing *djangoapi.HTTPError
-				if errors.As(err, &missing) && missing.Status == 404 {
-					return Result{}, failure(404, "error", "The requested resource does not exist.")
-				}
-				return Result{}, err
-			}
-			if err = r.authorizeGuestItemRead(ctx, q, row); err != nil {
-				return Result{}, err
-			}
-			result, err := r.serializeVisibleIssue(ctx, row, q, q.Params["fields"], q.Params["expand"])
-			return Result{200, result}, err
-		}
+		return Result{}, err
 	}
+	if err = r.authorizeGuestItemRead(ctx, q, row); err != nil {
+		return Result{}, err
+	}
+	result, err := r.serializeVisibleIssue(ctx, row, q, q.Params["fields"], q.Params["expand"])
+	return Result{200, result}, err
+}
+
+func (r *Repository) issueListScope(q Request, shape issueListShape) ([]string, []any, error) {
 	args := []any{q.ActorID, q.Slug}
 	where := []string{`workspace.slug=$2`, strings.ReplaceAll(liveIssue, "i.", "issue.")}
-	if archive {
+	if shape.archive {
 		where = []string{`workspace.slug=$2`, `issue.deleted_at IS NULL`, `issue.archived_at IS NOT NULL`, `NOT EXISTS(SELECT 1 FROM issue_types t WHERE t.id=issue.type_id AND t.is_epic)`}
 		if r.parentGrouping == nil && q.Present["show_sub_issues"] && q.Params["show_sub_issues"] != "true" {
 			where = append(where, `issue.parent_id IS NULL`)
 		}
 	}
 	where = append(where, "project.deleted_at IS NULL", "workspace.deleted_at IS NULL")
-	if !workspace {
+	if !shape.workspace {
 		args = append(args, q.ProjectID)
 		where = append(where, "issue.project_id=$3")
 	}
@@ -114,17 +200,17 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 			}
 		}
 	}
-	if workspace || details {
+	if shape.workspace || shape.details {
 		where = append(where, `EXISTS(SELECT 1 FROM project_members pm WHERE pm.project_id=issue.project_id AND pm.member_id=$1 AND pm.is_active AND pm.deleted_at IS NULL)`)
 	}
-	if user {
+	if shape.user {
 		add(q.Params["user_id"], `(issue.created_by_id=$%[1]d OR EXISTS(SELECT 1 FROM issue_assignees a WHERE a.issue_id=issue.id AND a.assignee_id=$%[1]d) OR EXISTS(SELECT 1 FROM issue_subscribers s WHERE s.issue_id=issue.id AND s.subscriber_id=$%[1]d))`)
 	}
 	where = append(where, `(project.guest_view_all_features OR issue.created_by_id=$1 OR NOT EXISTS(SELECT 1 FROM project_members pm WHERE pm.project_id=issue.project_id AND pm.member_id=$1 AND pm.is_active AND pm.role=5 AND pm.deleted_at IS NULL))`)
-	if byIDs {
+	if shape.byIDs {
 		raw := q.Params["issues"]
 		if raw == "" {
-			return Result{}, failure(400, "error", "Issues are required")
+			return nil, nil, failure(400, "error", "Issues are required")
 		}
 		values := []any{}
 		for _, id := range strings.Split(raw, ",") {
@@ -134,33 +220,41 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 		}
 		ids, err := rawIDs(values)
 		if err != nil {
-			return Result{}, err
+			return nil, nil, err
 		}
 		add(ids, `issue.id=ANY($%d::uuid[])`)
 		where = append(where, `NOT EXISTS(SELECT 1 FROM states s WHERE s.id=issue.state_id AND s.deleted_at IS NOT NULL)`)
 	}
+	return where, args, nil
+}
+
+func (r *Repository) issueListFilters(ctx context.Context, q Request, shape issueListShape, typeIDs map[string]bool, where []string, args []any) (issueListFilterPlan, error) {
+	options := queryOptions(q)
+	add := func(value any, format string) {
+		args = append(args, value)
+		where = append(where, fmt.Sprintf(format, len(args)))
+	}
 	var err error
 	where, args, err = r.appendPQL(q, where, args)
 	if err != nil {
-		return Result{}, err
+		return issueListFilterPlan{}, err
 	}
 	var deferredFilterError error
-	options := queryOptions(q)
 	if r.parentGrouping != nil {
 		options.SubIssue = "true"
 	}
-	if workspace && !user && !usesDiscoveryGrouping(q) {
+	if shape.workspace && !shape.user && !usesDiscoveryGrouping(q) {
 		options.GroupBy, options.SubGroupBy = "", ""
 	}
 	if !q.API {
-		flatOptions := listFilterOptions(options, v2)
+		flatOptions := listFilterOptions(options, shape.v2)
 		if r.propertyFilter != nil {
 			flatOptions.Filters = ""
 		}
 		where, args, err = appFiltersWithTypes(flatOptions, where, args, typeIDs)
 		if err != nil {
 			if !errors.Is(err, issuequery.ErrInvalidComplexRange) {
-				return Result{}, err
+				return issueListFilterPlan{}, err
 			}
 			// Django constructs this invalid range lazily, then queues the visit
 			// before evaluating the queryset.
@@ -169,150 +263,148 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 	}
 	where, args, err = r.appendDiscoveryGroupSelectors(ctx, q, where, args)
 	if err != nil {
-		return Result{}, err
+		return issueListFilterPlan{}, err
 	}
 	if !q.API && q.Present["updated_at__gt"] {
 		value, e := parseQueryDateTime(q.Params["updated_at__gt"], q.Timezone)
 		if e != nil {
-			return Result{}, failure(400, "error", "Please provide valid detail")
+			return issueListFilterPlan{}, failure(400, "error", "Please provide valid detail")
 		}
 		add(value, `issue.updated_at>$%d`)
 	}
 	if r.propertyFilter != nil && deferredFilterError == nil {
 		options.PropertyFilter, err = r.bindPropertyFilters(ctx, where, args)
 		if err != nil {
-			return Result{}, err
+			return issueListFilterPlan{}, err
 		}
 		predicate, filterErr := options.PropertyFilter.SQL(&args)
 		if filterErr != nil {
-			return Result{}, filterErr
+			return issueListFilterPlan{}, filterErr
 		}
 		where = append(where, predicate)
 	}
 	where, args, err = r.appendPropertyPQL(ctx, where, args)
 	if err != nil {
-		return Result{}, err
+		return issueListFilterPlan{}, err
 	}
-	order := "issue.created_at DESC"
-	if v2 {
-		order = "issue.updated_at ASC"
-	} else {
-		assignees, _ := issuequery.ValidUUIDFilter(options.Assignees, true)
-		labels, _ := issuequery.ValidUUIDFilter(options.Labels, true)
-		modules, _ := issuequery.ValidUUIDFilter(options.Module, true)
-		order, err = issuequery.Order(options, assignees, labels, modules, &args)
-		if err != nil {
-			return Result{}, err
+	return issueListFilterPlan{where: where, args: args, options: options, deferredError: deferredFilterError}, nil
+}
+
+func issueListOrder(q Request, shape issueListShape, options issuequery.Options, args *[]any) (string, error) {
+	if shape.v2 {
+		return "issue.updated_at ASC", nil
+	}
+	assignees, _ := issuequery.ValidUUIDFilter(options.Assignees, true)
+	labels, _ := issuequery.ValidUUIDFilter(options.Labels, true)
+	modules, _ := issuequery.ValidUUIDFilter(options.Module, true)
+	order, err := issuequery.Order(options, assignees, labels, modules, args)
+	if err != nil {
+		return "", err
+	}
+	if q.API {
+		order = apiIssueOrderSQL(q.Params["order_by"])
+	}
+	return order, nil
+}
+
+func (r *Repository) validateIssueListGrouping(q Request, shape issueListShape, options issuequery.Options) error {
+	if !q.API && !shape.v2 && !shape.byIDs && options.GroupBy != "" && options.GroupBy == options.SubGroupBy {
+		return failure(400, "error", "Group by and sub group by cannot have same parameters")
+	}
+	if !q.API && !shape.v2 && !shape.byIDs {
+		if err := r.validateDiscoveryGrouping(options.GroupBy, options.SubGroupBy); err != nil {
+			return failure(400, "detail", err.Error())
 		}
-		if q.API {
-			order = apiIssueOrderSQL(q.Params["order_by"])
-		}
 	}
-	if !q.API && !v2 && !workspace && !archive && !details {
-		if err = r.recentVisit(ctx, q, "project", q.ProjectID); err != nil {
-			return Result{}, err
-		}
-	}
-	if !q.API && !v2 && !byIDs && options.GroupBy != "" && options.GroupBy == options.SubGroupBy {
-		return Result{}, failure(400, "error", "Group by and sub group by cannot have same parameters")
-	}
-	if !q.API && !v2 && !byIDs {
-		if err = r.validateDiscoveryGrouping(options.GroupBy, options.SubGroupBy); err != nil {
-			return Result{}, failure(400, "detail", err.Error())
-		}
-	}
-	if deferredFilterError != nil {
-		return Result{}, deferredFilterError
-	}
-	from := ` FROM issues issue JOIN projects project ON project.id=issue.project_id JOIN workspaces workspace ON workspace.id=issue.workspace_id WHERE ` + strings.Join(where, " AND ")
-	if q.API && q.ExpectedWorkspaceID != nil && q.Operation == "count" {
-		return r.countIssueResults(ctx, q, from, args)
-	}
+	return nil
+}
+
+func (r *Repository) readIssueListPage(ctx context.Context, q Request, shape issueListShape, options issuequery.Options, from, order string, args []any) (issueListPage, error) {
+	var err error
 	if !q.API {
 		order += ",issue.created_at DESC"
 	}
-	sql := `SELECT ` + djangoapi.IssueRowSQL("issue") + `||` + strings.ReplaceAll(issueAnnotationsSQL("$1", v2), "i.", "issue.") + `||jsonb_build_object('state__group',(SELECT "group" FROM states s WHERE s.id=issue.state_id))` + from + ` ORDER BY ` + order
+	sql := `SELECT ` + djangoapi.IssueRowSQL("issue") + `||` + strings.ReplaceAll(issueAnnotationsSQL("$1", shape.v2), "i.", "issue.") + `||jsonb_build_object('state__group',(SELECT "group" FROM states s WHERE s.id=issue.state_id))` + from + ` ORDER BY ` + order
 	limit, page, offset, total := 0, 0, 0, 0
-	pageInSQL := v2 || !byIDs && (q.API || options.GroupBy == "")
+	pageInSQL := shape.v2 || !shape.byIDs && (q.API || options.GroupBy == "")
 	if pageInSQL {
-		if v2 {
+		if shape.v2 {
 			limit, page, err = v2Window(q)
 			offset = max(0, page) * limit
 		} else {
 			limit, page, offset, err = djangoapi.PageWindow(djangoapi.Query{Params: q.Params, Present: q.Present})
 		}
 		if err != nil {
-			return Result{}, err
+			return issueListPage{}, err
 		}
 		// Wrap the ordered query so positional parameters and invalid ordering
 		// retain their source behavior, while PostgreSQL bounds returned rows.
 		if err = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM (`+sql+`) counted`, args...).Scan(&total); err != nil {
-			return Result{}, err
+			return issueListPage{}, err
 		}
 		args = append(args, limit, offset)
 		sql += fmt.Sprintf(" LIMIT $%d OFFSET $%d", len(args)-1, len(args))
 	}
 	rows, err := r.rows(ctx, sql, args...)
 	if err != nil {
-		return Result{}, err
+		return issueListPage{}, err
 	}
-	if !q.API && (q.Params["include_properties"] == "true" || len(r.propertyGroups) > 0) {
-		if err = r.projectDiscoveryRows(ctx, rows); err != nil {
-			return Result{}, err
+	return issueListPage{rows: rows, total: total, limit: limit, page: page, inSQL: pageInSQL}, nil
+}
+
+func (r *Repository) projectIssueListRow(ctx context.Context, q Request, shape issueListShape, row map[string]any) (map[string]any, error) {
+	var err error
+	if q.API {
+		value, e := r.serializeVisibleIssue(ctx, row, q, q.Params["fields"], q.Params["expand"])
+		if e != nil {
+			return nil, e
+		}
+		return value, nil
+	}
+	if !shape.byIDs && !shape.details && !shape.workspace {
+		for _, field := range []string{"sub_issues_count", "attachment_count", "link_count"} {
+			if row[field] == json.Number("0") {
+				row[field] = nil
+			}
 		}
 	}
-	if v2 {
-		return v2Envelope(q, rows, total, limit, page), nil
+	fields := compactFields
+	if shape.byIDs && q.Params["expand"] == "" && q.Params["fields"] == "" {
+		fields = append(append([]string{}, compactFields...), "deleted_at")
 	}
-	results := []any{}
-	for _, row := range rows {
-		if q.API {
-			value, e := r.serializeVisibleIssue(ctx, row, q, q.Params["fields"], q.Params["expand"])
-			if e != nil {
-				return Result{}, e
-			}
-			results = append(results, value)
-			continue
-		}
-		if !byIDs && !details && !workspace {
-			for _, field := range []string{"sub_issues_count", "attachment_count", "link_count"} {
-				if row[field] == json.Number("0") {
-					row[field] = nil
-				}
-			}
-		}
-		fields := compactFields
-		if byIDs && q.Params["expand"] == "" && q.Params["fields"] == "" {
-			fields = append(append([]string{}, compactFields...), "deleted_at")
-		}
-		if !byIDs && !details || user {
-			fields = append(append([]string{}, compactFields...), "state__group")
-		}
-		value := projectFields(row, fields)
-		if byIDs && (q.Params["expand"] != "" || q.Params["fields"] != "") {
-			value, err = r.expandedCompact(ctx, row, q, value)
-			if err != nil {
-				return Result{}, err
-			}
-		}
-		if details || workspace && !user {
-			value, err = r.listDetailProjection(ctx, row, q)
-			if err != nil {
-				return Result{}, err
-			}
-			if workspace && !user {
-				value["state__group"] = row["state__group"]
-			}
-		}
-		if r.propertyDiscovery != nil && q.Params["include_properties"] == "true" {
-			value["property_values"], value["properties_evaluated_at"] = row["property_values"], row["properties_evaluated_at"]
-			value["properties_revision"] = row["properties_revision"]
-		}
-		r.projectPropertyGroups(row, value)
-		r.projectParentGroup(row, value)
-		results = append(results, value)
+	if !shape.byIDs && !shape.details || shape.user {
+		fields = append(append([]string{}, compactFields...), "state__group")
 	}
-	if byIDs {
+	value := projectFields(row, fields)
+	if shape.byIDs && (q.Params["expand"] != "" || q.Params["fields"] != "") {
+		value, err = r.expandedCompact(ctx, row, q, value)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if shape.details || shape.workspace && !shape.user {
+		value, err = r.listDetailProjection(ctx, row, q)
+		if err != nil {
+			return nil, err
+		}
+		if shape.workspace && !shape.user {
+			value["state__group"] = row["state__group"]
+		}
+	}
+	if r.propertyDiscovery != nil && q.Params["include_properties"] == "true" {
+		value["property_values"], value["properties_evaluated_at"] = row["property_values"], row["properties_evaluated_at"]
+		value["properties_revision"] = row["properties_revision"]
+	}
+	r.projectPropertyGroups(row, value)
+	r.projectParentGroup(row, value)
+	return value, nil
+}
+
+func (r *Repository) issueListResponse(ctx context.Context, q Request, shape issueListShape, options issuequery.Options, window issueListPage, results []any) (Result, error) {
+	total, limit, page, rows, pageInSQL := window.total, window.limit, window.page, window.rows, window.inSQL
+	var offset int
+	var err error
+	if shape.byIDs {
 		return Result{200, results}, nil
 	}
 	if pageInSQL {
@@ -330,6 +422,7 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 	offset = min(offset, total)
 	return Result{200, djangoapi.Envelope(results[offset:end], total, limit, page)}, nil
 }
+
 func apiIssueOrderSQL(raw string) string {
 	name := strings.TrimPrefix(raw, "-")
 	direction := " ASC"

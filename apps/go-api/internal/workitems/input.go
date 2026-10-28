@@ -35,6 +35,41 @@ func (r *Repository) validateIssue(ctx context.Context, input djangoinput.Input,
 		return changes, invalid(map[string]any{"non_field_errors": []string{"Invalid data. Expected a dictionary, but got " + input.Kind + "."}})
 	}
 	failures := map[string]any{}
+	validateIssueTextFields(input, options, &changes, failures)
+	validateIssuePriority(input, &changes, failures)
+	validateIssueDates(input, &changes, failures)
+	validateIssueDateTimes(input, options, &changes, failures)
+	validateIssueNumbers(input, &changes, failures)
+	validateIssueDraftFlag(input, options, &changes, failures)
+	validateIssueJSON(input, options, &changes, failures)
+	if err := r.validateIssueReferences(ctx, input, options, &changes, failures); err != nil {
+		return changes, err
+	}
+	if err := r.validateIssueMemberAndLabelLists(ctx, input, options, &changes, failures); err != nil {
+		return changes, err
+	}
+	if len(failures) > 0 {
+		return changes, invalid(failures)
+	}
+	if start, ok := changes.values["start_date"].(string); ok {
+		if target, ok := changes.values["target_date"].(string); ok && start > target {
+			return changes, invalid(map[string]any{"non_field_errors": []string{"Start date cannot exceed target date"}})
+		}
+	}
+
+	if err := validateIssueHTML(options, &changes); err != nil {
+		return changes, err
+	}
+	if err := r.filterIssueRelationIDs(ctx, options, &changes); err != nil {
+		return changes, err
+	}
+	if err := r.validateIssueRelationScopes(ctx, options, &changes); err != nil {
+		return changes, err
+	}
+	return changes, nil
+}
+
+func validateIssueTextFields(input djangoinput.Input, options issueValidation, changes *issueChanges, failures map[string]any) {
 	fields := input.Fields
 	for _, field := range []string{"name", "description_html", "external_source", "external_id"} {
 		value, present := fields[field]
@@ -59,6 +94,10 @@ func (r *Repository) validateIssue(ctx context.Context, input djangoinput.Input,
 			changes.values[field] = parsed
 		}
 	}
+}
+
+func validateIssuePriority(input djangoinput.Input, changes *issueChanges, failures map[string]any) {
+	fields := input.Fields
 	if value, present := fields["priority"]; present {
 		if value == nil {
 			failures["priority"] = []string{"This field may not be null."}
@@ -71,6 +110,10 @@ func (r *Repository) validateIssue(ctx context.Context, input djangoinput.Input,
 			}
 		}
 	}
+}
+
+func validateIssueDates(input djangoinput.Input, changes *issueChanges, failures map[string]any) {
+	fields := input.Fields
 	for _, field := range []string{"start_date", "target_date", "archived_at"} {
 		if value, present := fields[field]; present {
 			if value == nil || input.Form && value == "" {
@@ -86,6 +129,10 @@ func (r *Repository) validateIssue(ctx context.Context, input djangoinput.Input,
 			}
 		}
 	}
+}
+
+func validateIssueDateTimes(input djangoinput.Input, options issueValidation, changes *issueChanges, failures map[string]any) {
+	fields := input.Fields
 	datetimeFields := []string{"deleted_at"}
 	if options.API {
 		datetimeFields = append(datetimeFields, "created_at")
@@ -110,6 +157,10 @@ func (r *Repository) validateIssue(ctx context.Context, input djangoinput.Input,
 		}
 	}
 
+}
+
+func validateIssueNumbers(input djangoinput.Input, changes *issueChanges, failures map[string]any) {
+	fields := input.Fields
 	if value, present := fields["sort_order"]; present && !(input.Form && value == "") {
 		if value == nil {
 			failures["sort_order"] = []string{"This field may not be null."}
@@ -147,6 +198,10 @@ func (r *Repository) validateIssue(ctx context.Context, input djangoinput.Input,
 			}
 		}
 	}
+}
+
+func validateIssueDraftFlag(input djangoinput.Input, options issueValidation, changes *issueChanges, failures map[string]any) {
+	fields := input.Fields
 	if value, present := fields["is_draft"]; present {
 		if parsed, ok := booleanField(value); ok {
 			changes.values["is_draft"] = parsed
@@ -156,24 +211,37 @@ func (r *Repository) validateIssue(ctx context.Context, input djangoinput.Input,
 	} else if input.Form && !options.Partial {
 		changes.values["is_draft"] = false
 	}
+}
+
+func validateIssueJSON(input djangoinput.Input, options issueValidation, changes *issueChanges, failures map[string]any) {
 	if !options.API {
-		if value, present := fields["description_json"]; present {
+		validateJSONInputFields(input, []string{"description_json"}, changes.values, failures)
+	}
+}
+
+func validateJSONInputFields(input djangoinput.Input, jsonFields []string, values, failures map[string]any) {
+	for _, field := range jsonFields {
+		if value, present := input.Fields[field]; present {
 			if value == nil {
-				failures["description_json"] = []string{"This field may not be null."}
+				failures[field] = []string{"This field may not be null."}
 			} else if input.Form {
 				var parsed any
 				decoder := json.NewDecoder(strings.NewReader(djangoinput.ScalarString(value)))
 				decoder.UseNumber()
 				if err := decoder.Decode(&parsed); err != nil {
-					failures["description_json"] = []string{"Value must be valid JSON."}
+					failures[field] = []string{"Value must be valid JSON."}
 				} else {
-					changes.values["description_json"] = parsed
+					values[field] = parsed
 				}
 			} else {
-				changes.values["description_json"] = value
+				values[field] = value
 			}
 		}
 	}
+}
+
+func (r *Repository) validateIssueReferences(ctx context.Context, input djangoinput.Input, options issueValidation, changes *issueChanges, failures map[string]any) error {
+	fields := input.Fields
 	// Declared aliases are evaluated before model relationship fields, as DRF's
 	// ModelSerializer does when two input fields have the same source.
 	fieldsToRelations := [][3]string{{"estimate_point", "estimate_point_id", "estimate_points"}}
@@ -201,7 +269,7 @@ func (r *Repository) validateIssue(ctx context.Context, input djangoinput.Input,
 			id, messages, err = r.primaryKey(ctx, value, table, field == "state_id" && !options.Draft)
 		}
 		if err != nil {
-			return changes, err
+			return err
 		}
 		if len(messages) > 0 {
 			failures[field] = messages
@@ -209,6 +277,11 @@ func (r *Repository) validateIssue(ctx context.Context, input djangoinput.Input,
 			changes.values[column] = id
 		}
 	}
+	return nil
+}
+
+func (r *Repository) validateIssueMemberAndLabelLists(ctx context.Context, input djangoinput.Input, options issueValidation, changes *issueChanges, failures map[string]any) error {
+	fields := input.Fields
 	assignees, labels := "assignee_ids", "label_ids"
 	if options.API {
 		assignees, labels = "assignees", "labels"
@@ -240,7 +313,7 @@ func (r *Repository) validateIssue(ctx context.Context, input djangoinput.Input,
 			}
 			id, messages, err := r.primaryKey(ctx, v, item.table, false)
 			if err != nil {
-				return changes, err
+				return err
 			}
 			if len(messages) > 0 {
 				indexed[strconv.Itoa(index)] = messages
@@ -252,51 +325,55 @@ func (r *Repository) validateIssue(ctx context.Context, input djangoinput.Input,
 			failures[item.field] = indexed
 		}
 	}
-	if len(failures) > 0 {
-		return changes, invalid(failures)
-	}
-	if start, ok := changes.values["start_date"].(string); ok {
-		if target, ok := changes.values["target_date"].(string); ok && start > target {
-			return changes, invalid(map[string]any{"non_field_errors": []string{"Start date cannot exceed target date"}})
-		}
-	}
+	return nil
+}
+
+func validateIssueHTML(options issueValidation, changes *issueChanges) error {
 	if html, present := changes.values["description_html"]; present {
 		text := html.(string)
 		if options.API {
 			clean, err := normalizeAPIHTML(text)
 			if errors.Is(err, errInvalidAPIHTML) {
-				return changes, invalid(map[string]any{"non_field_errors": []string{"Invalid HTML passed"}})
+				return invalid(map[string]any{"non_field_errors": []string{"Invalid HTML passed"}})
 			}
 			if err != nil {
-				return changes, invalid(map[string]any{"error": []string{"html content is not valid"}})
+				return invalid(map[string]any{"error": []string{"html content is not valid"}})
 			}
 			text = clean
 		} else if text != "" {
 			clean, _, err := content.ValidateHTML(text)
 			if err != nil {
-				return changes, invalid(map[string]any{"error": []string{"html content is not valid"}})
+				return invalid(map[string]any{"error": []string{"html content is not valid"}})
 			}
 			text = clean
 		}
 		changes.values["description_html"] = text
 	}
+	return nil
+}
+
+func (r *Repository) filterIssueRelationIDs(ctx context.Context, options issueValidation, changes *issueChanges) error {
 	if len(changes.assignees) > 0 {
 		if options.ProjectID == "" && !options.API && !options.Draft {
-			return changes, failure(400, "error", "The required key does not exist.")
+			return failure(400, "error", "The required key does not exist.")
 		}
 		ids, err := r.filteredIDs(ctx, `SELECT member_id::text FROM project_members WHERE project_id=NULLIF($1,'')::uuid AND member_id=ANY($2::uuid[]) AND role>=15 AND is_active AND deleted_at IS NULL ORDER BY created_at DESC`, options.ProjectID, changes.assignees)
 		if err != nil {
-			return changes, err
+			return err
 		}
 		changes.assignees = ids
 	}
 	if len(changes.labels) > 0 {
 		ids, err := r.filteredIDs(ctx, `SELECT id::text FROM labels WHERE project_id IS NOT DISTINCT FROM NULLIF($1,'')::uuid AND id=ANY($2::uuid[]) AND deleted_at IS NULL ORDER BY created_at DESC`, options.ProjectID, changes.labels)
 		if err != nil {
-			return changes, err
+			return err
 		}
 		changes.labels = ids
 	}
+	return nil
+}
+
+func (r *Repository) validateIssueRelationScopes(ctx context.Context, options issueValidation, changes *issueChanges) error {
 	for _, relation := range [][3]string{{"state_id", "states", "State is not valid please pass a valid state_id"}, {"estimate_point_id", "estimate_points", "Estimate point is not valid please pass a valid estimate_point_id"}} {
 		id, present := changes.values[relation[0]]
 		if !present || id == nil {
@@ -318,13 +395,13 @@ func (r *Repository) validateIssue(ctx context.Context, input djangoinput.Input,
 		var exists bool
 		err := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM `+relation[1]+` WHERE id=$1 AND project_id=NULLIF($2,'')::uuid AND `+predicate+`)`, id, options.ProjectID, options.WorkspaceID).Scan(&exists)
 		if err != nil {
-			return changes, err
+			return err
 		}
 		if !exists {
-			return changes, invalid(map[string]any{"non_field_errors": []string{relation[2]}})
+			return invalid(map[string]any{"non_field_errors": []string{relation[2]}})
 		}
 	}
-	return changes, nil
+	return nil
 }
 
 func (r *Repository) primaryKey(ctx context.Context, value any, table string, allStates bool) (string, []string, error) {
