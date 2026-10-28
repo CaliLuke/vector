@@ -505,8 +505,8 @@ func startCaddyWithConfig(t *testing.T, ctx context.Context, configPath string, 
 		t.Fatalf("start Caddy with Sticky flag %v: %v", enabled, err)
 	}
 	t.Cleanup(func() {
-		if err := testcontainers.TerminateContainer(container); err != nil {
-			t.Errorf("terminate Caddy testcontainer: %v", err)
+		if terminateContainerErr := testcontainers.TerminateContainer(container); terminateContainerErr != nil {
+			t.Errorf("terminate Caddy testcontainer: %v", terminateContainerErr)
 		}
 	})
 

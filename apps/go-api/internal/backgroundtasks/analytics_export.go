@@ -181,8 +181,8 @@ func (store *analyticsExportStore) ExportAndEmail(ctx context.Context, input Ana
 				clean[i] = sanitizeExportCell(value)
 			}
 		}
-		if err := writeAnalyticsCSVRow(&csvData, clean); err != nil {
-			return fmt.Errorf("write analytics CSV row %d: %w", rowIndex+1, err)
+		if writeAnalyticsCSVRowErr := writeAnalyticsCSVRow(&csvData, clean); writeAnalyticsCSVRowErr != nil {
+			return fmt.Errorf("write analytics CSV row %d: %w", rowIndex+1, writeAnalyticsCSVRowErr)
 		}
 	}
 	config, from, err := store.config.SMTPConfiguration(ctx)

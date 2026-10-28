@@ -105,8 +105,8 @@ func TestPostgresIssueActivityWorkflowIsIdempotentPerEvent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := app.Start(ctx); err != nil {
-		t.Fatal(err)
+	if startErr := app.Start(ctx); startErr != nil {
+		t.Fatal(startErr)
 	}
 	appStopped := false
 	defer func() {
@@ -115,8 +115,8 @@ func TestPostgresIssueActivityWorkflowIsIdempotentPerEvent(t *testing.T) {
 		}
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutdownCancel()
-		if err := app.Shutdown(shutdownCtx); err != nil {
-			t.Errorf("shutdown issue activity runtime: %v", err)
+		if shutdownErr := app.Shutdown(shutdownCtx); shutdownErr != nil {
+			t.Errorf("shutdown issue activity runtime: %v", shutdownErr)
 		}
 	}()
 
@@ -127,17 +127,17 @@ func TestPostgresIssueActivityWorkflowIsIdempotentPerEvent(t *testing.T) {
 		t.Fatalf("admit first activity event: %v", err)
 	}
 	waitVersionWorkflow(t, ctx, app, firstID)
-	if _, err := dispatcher.Admit(ctx, eventID, input); err != nil {
-		t.Fatalf("reconcile duplicate activity event: %v", err)
+	if _, admitErr := dispatcher.Admit(ctx, eventID, input); admitErr != nil {
+		t.Fatalf("reconcile duplicate activity event: %v", admitErr)
 	}
 	// This simulates an activity retry after its PostgreSQL commit but before
 	// the durable framework records completion.
-	if _, err := store.RecordIssueActivity(ctx, eventID, input); err != nil {
-		t.Fatalf("replay committed activity effect: %v", err)
+	if _, recordIssueActivityErr := store.RecordIssueActivity(ctx, eventID, input); recordIssueActivityErr != nil {
+		t.Fatalf("replay committed activity effect: %v", recordIssueActivityErr)
 	}
 	var count int
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_activities WHERE issue_id=$1 AND field='issue' AND verb='deleted' AND actor_id=$2`, issueID, ownerID).Scan(&count); err != nil {
-		t.Fatalf("count replayed activity rows: %v", err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_activities WHERE issue_id=$1 AND field='issue' AND verb='deleted' AND actor_id=$2`, issueID, ownerID).Scan(&count); scanErr != nil {
+		t.Fatalf("count replayed activity rows: %v", scanErr)
 	}
 	if count != 1 {
 		t.Fatalf("duplicate event created %d activity rows, want 1", count)
@@ -148,8 +148,8 @@ func TestPostgresIssueActivityWorkflowIsIdempotentPerEvent(t *testing.T) {
 		t.Fatalf("admit second identical activity event: %v", err)
 	}
 	waitVersionWorkflow(t, ctx, app, secondID)
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_activities WHERE issue_id=$1 AND field='issue' AND verb='deleted' AND actor_id=$2`, issueID, ownerID).Scan(&count); err != nil {
-		t.Fatalf("count distinct activity rows: %v", err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_activities WHERE issue_id=$1 AND field='issue' AND verb='deleted' AND actor_id=$2`, issueID, ownerID).Scan(&count); scanErr != nil {
+		t.Fatalf("count distinct activity rows: %v", scanErr)
 	}
 	if count != 2 {
 		t.Fatalf("distinct identical event created %d activity rows, want 2", count)
@@ -167,34 +167,34 @@ func TestPostgresIssueActivityWorkflowIsIdempotentPerEvent(t *testing.T) {
 	}
 	waitVersionWorkflow(t, ctx, app, updateID)
 	var updateCount int
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_activities WHERE issue_id=$1 AND actor_id=$2 AND verb='updated' AND field IN ('name','priority')`, issueID, ownerID).Scan(&updateCount); err != nil {
-		t.Fatalf("count issue update activities: %v", err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_activities WHERE issue_id=$1 AND actor_id=$2 AND verb='updated' AND field IN ('name','priority')`, issueID, ownerID).Scan(&updateCount); scanErr != nil {
+		t.Fatalf("count issue update activities: %v", scanErr)
 	}
 	if updateCount != 2 {
 		t.Fatalf("issue update created %d activity rows, want 2", updateCount)
 	}
 	var notificationCount, emailCount int
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM notifications WHERE receiver_id=$1 AND entity_identifier=$2`, receiverID, issueID).Scan(&notificationCount); err != nil {
-		t.Fatalf("count native issue notifications: %v", err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM notifications WHERE receiver_id=$1 AND entity_identifier=$2`, receiverID, issueID).Scan(&notificationCount); scanErr != nil {
+		t.Fatalf("count native issue notifications: %v", scanErr)
 	}
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM email_notification_logs WHERE receiver_id=$1 AND entity_identifier=$2`, receiverID, issueID).Scan(&emailCount); err != nil {
-		t.Fatalf("count native issue email logs: %v", err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM email_notification_logs WHERE receiver_id=$1 AND entity_identifier=$2`, receiverID, issueID).Scan(&emailCount); scanErr != nil {
+		t.Fatalf("count native issue email logs: %v", scanErr)
 	}
 	if notificationCount != 3 || emailCount != 2 {
 		t.Fatalf("notification fanout created notifications=%d email logs=%d, want one per activity and email only for name and priority changes", notificationCount, emailCount)
 	}
 	var mentionNotifications, mentionEmailLogs, mentionSubscribers, issueMentions int
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM notifications WHERE receiver_id=$1 AND entity_identifier=$2 AND sender='in_app:issue_activities:mentioned'`, mentionID, issueID).Scan(&mentionNotifications); err != nil {
-		t.Fatalf("count mention notifications: %v", err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM notifications WHERE receiver_id=$1 AND entity_identifier=$2 AND sender='in_app:issue_activities:mentioned'`, mentionID, issueID).Scan(&mentionNotifications); scanErr != nil {
+		t.Fatalf("count mention notifications: %v", scanErr)
 	}
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM email_notification_logs WHERE receiver_id=$1 AND entity_identifier=$2`, mentionID, issueID).Scan(&mentionEmailLogs); err != nil {
-		t.Fatalf("count mention email logs: %v", err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM email_notification_logs WHERE receiver_id=$1 AND entity_identifier=$2`, mentionID, issueID).Scan(&mentionEmailLogs); scanErr != nil {
+		t.Fatalf("count mention email logs: %v", scanErr)
 	}
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_subscribers WHERE issue_id=$1 AND subscriber_id=$2 AND deleted_at IS NULL`, issueID, mentionID).Scan(&mentionSubscribers); err != nil {
-		t.Fatalf("count mention subscriber: %v", err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_subscribers WHERE issue_id=$1 AND subscriber_id=$2 AND deleted_at IS NULL`, issueID, mentionID).Scan(&mentionSubscribers); scanErr != nil {
+		t.Fatalf("count mention subscriber: %v", scanErr)
 	}
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_mentions WHERE issue_id=$1 AND mention_id=$2 AND deleted_at IS NULL`, issueID, mentionID).Scan(&issueMentions); err != nil {
-		t.Fatalf("count issue mention: %v", err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_mentions WHERE issue_id=$1 AND mention_id=$2 AND deleted_at IS NULL`, issueID, mentionID).Scan(&issueMentions); scanErr != nil {
+		t.Fatalf("count issue mention: %v", scanErr)
 	}
 	if mentionNotifications != 1 || mentionEmailLogs != 1 || mentionSubscribers != 1 || issueMentions != 1 {
 		t.Fatalf("description mention effects notification=%d email=%d subscriber=%d issue_mention=%d, want one each", mentionNotifications, mentionEmailLogs, mentionSubscribers, issueMentions)
@@ -207,8 +207,8 @@ func TestPostgresIssueActivityWorkflowIsIdempotentPerEvent(t *testing.T) {
 		t.Fatalf("collected %d pending receiver batches, want two", len(pendingBatches))
 	}
 	var stillPending int
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM email_notification_logs WHERE receiver_id=ANY($1::uuid[]) AND entity_identifier=$2 AND processed_at IS NULL`, []uuid.UUID{receiverID, mentionID}, issueID).Scan(&stillPending); err != nil {
-		t.Fatalf("check pending rows after collector-only pass: %v", err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM email_notification_logs WHERE receiver_id=ANY($1::uuid[]) AND entity_identifier=$2 AND processed_at IS NULL`, []uuid.UUID{receiverID, mentionID}, issueID).Scan(&stillPending); scanErr != nil {
+		t.Fatalf("check pending rows after collector-only pass: %v", scanErr)
 	}
 	if stillPending != 3 {
 		t.Fatalf("collector-only pass marked %d rows processed; want all three replayable until child admission and delivery", 3-stillPending)
@@ -228,8 +228,8 @@ func TestPostgresIssueActivityWorkflowIsIdempotentPerEvent(t *testing.T) {
 		t.Fatal("mention activity email did not render the mentioned user's display name")
 	}
 	var sentCount, processedCount int
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FILTER (WHERE sent_at IS NOT NULL),COUNT(*) FILTER (WHERE processed_at IS NOT NULL) FROM email_notification_logs WHERE receiver_id=ANY($1::uuid[]) AND entity_identifier=$2`, []uuid.UUID{receiverID, mentionID}, issueID).Scan(&sentCount, &processedCount); err != nil {
-		t.Fatalf("count delivered email notification logs: %v", err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FILTER (WHERE sent_at IS NOT NULL),COUNT(*) FILTER (WHERE processed_at IS NOT NULL) FROM email_notification_logs WHERE receiver_id=ANY($1::uuid[]) AND entity_identifier=$2`, []uuid.UUID{receiverID, mentionID}, issueID).Scan(&sentCount, &processedCount); scanErr != nil {
+		t.Fatalf("count delivered email notification logs: %v", scanErr)
 	}
 	if sentCount != 3 || processedCount != 3 {
 		t.Fatalf("email delivery status sent=%d processed=%d, want three each", sentCount, processedCount)
@@ -257,9 +257,9 @@ func TestPostgresIssueActivityWorkflowIsIdempotentPerEvent(t *testing.T) {
 		t.Fatalf("duplicate schedule start returned %q, want stable ID %q", duplicateScheduleID, scheduleID)
 	}
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
-	if err := app.Shutdown(shutdownCtx); err != nil {
+	if shutdownErr := app.Shutdown(shutdownCtx); shutdownErr != nil {
 		shutdownCancel()
-		t.Fatalf("stop email schedule worker for restart test: %v", err)
+		t.Fatalf("stop email schedule worker for restart test: %v", shutdownErr)
 	}
 	shutdownCancel()
 	appStopped = true
@@ -275,14 +275,14 @@ func TestPostgresIssueActivityWorkflowIsIdempotentPerEvent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("register restarted email worker: %v", err)
 	}
-	if err := restartedApp.Start(ctx); err != nil {
-		t.Fatalf("restart email worker: %v", err)
+	if startErr := restartedApp.Start(ctx); startErr != nil {
+		t.Fatalf("restart email worker: %v", startErr)
 	}
 	defer func() {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutdownCancel()
-		if err := restartedApp.Shutdown(shutdownCtx); err != nil {
-			t.Errorf("shutdown restarted email worker: %v", err)
+		if shutdownErr := restartedApp.Shutdown(shutdownCtx); shutdownErr != nil {
+			t.Errorf("shutdown restarted email worker: %v", shutdownErr)
 		}
 	}()
 	restartedScheduleID, err := restartedEmailDispatcher.StartBeatSchedule(ctx)

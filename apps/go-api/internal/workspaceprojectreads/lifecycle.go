@@ -186,8 +186,8 @@ func (r *LifecycleRepository) CreateProject(ctx context.Context, user, slug stri
 	}
 	defaults["identifier"] = normalizeProjectIdentifier(defaults["identifier"].(string))
 	var reserved bool
-	if err := r.writer.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM project_identifiers WHERE workspace_id=$1 AND name=$2 AND deleted_at IS NULL)`, workspace, defaults["identifier"]).Scan(&reserved); err != nil {
-		return nil, err
+	if scanErr := r.writer.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM project_identifiers WHERE workspace_id=$1 AND name=$2 AND deleted_at IS NULL)`, workspace, defaults["identifier"]).Scan(&reserved); scanErr != nil {
+		return nil, scanErr
 	}
 	if reserved && !app {
 		return nil, projectFailure(409, map[string]any{"identifier": "The project identifier is already taken"})
@@ -288,8 +288,8 @@ func (r *LifecycleRepository) UpdateProject(ctx context.Context, user, slug, id 
 		return nil, err
 	}
 	var existing map[string]any
-	if err := json.Unmarshal(current, &existing); err != nil {
-		return nil, err
+	if unmarshalErr := json.Unmarshal(current, &existing); unmarshalErr != nil {
+		return nil, unmarshalErr
 	}
 	if existing["archived_at"] != nil {
 		message := "Archived project cannot be updated"

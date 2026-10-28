@@ -53,14 +53,14 @@ func TestPostgresRecentVisitAdmissionRefreshesAndEvicts(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := app.Start(ctx); err != nil {
-		t.Fatal(err)
+	if startErr := app.Start(ctx); startErr != nil {
+		t.Fatal(startErr)
 	}
 	defer func() {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutdownCancel()
-		if err := app.Shutdown(shutdownCtx); err != nil {
-			t.Errorf("shutdown recent visit runtime: %v", err)
+		if shutdownErr := app.Shutdown(shutdownCtx); shutdownErr != nil {
+			t.Errorf("shutdown recent visit runtime: %v", shutdownErr)
 		}
 	}()
 
@@ -74,13 +74,13 @@ func TestPostgresRecentVisitAdmissionRefreshesAndEvicts(t *testing.T) {
 	waitVersionWorkflow(t, ctx, app, instanceID)
 	var visitID uuid.UUID
 	var createdAt, visitedAt time.Time
-	if err := pool.QueryRow(ctx, `SELECT id,created_at,visited_at FROM user_recent_visits WHERE user_id=$1 AND entity_name='issue' AND entity_identifier=$2 AND project_id=$3 AND deleted_at IS NULL`, userID, entityID, projectID).Scan(&visitID, &createdAt, &visitedAt); err != nil {
-		t.Fatalf("read inserted recent visit: %v", err)
+	if scanErr := pool.QueryRow(ctx, `SELECT id,created_at,visited_at FROM user_recent_visits WHERE user_id=$1 AND entity_name='issue' AND entity_identifier=$2 AND project_id=$3 AND deleted_at IS NULL`, userID, entityID, projectID).Scan(&visitID, &createdAt, &visitedAt); scanErr != nil {
+		t.Fatalf("read inserted recent visit: %v", scanErr)
 	}
 	// Replaying one event ID must reconcile the same workflow. A later identical
 	// request receives a different ID and refreshes the existing row instead.
-	if _, err := dispatcher.Admit(ctx, eventID, input); err != nil {
-		t.Fatalf("reconcile repeated recent visit admission: %v", err)
+	if _, admitErr := dispatcher.Admit(ctx, eventID, input); admitErr != nil {
+		t.Fatalf("reconcile repeated recent visit admission: %v", admitErr)
 	}
 	time.Sleep(2 * time.Millisecond)
 	laterEventID := uuid.NewString()
@@ -91,12 +91,12 @@ func TestPostgresRecentVisitAdmissionRefreshesAndEvicts(t *testing.T) {
 	waitVersionWorkflow(t, ctx, app, laterInstanceID)
 	var refreshedCreatedAt, refreshedVisitedAt time.Time
 	var visitCount int
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*),MIN(created_at),MAX(visited_at) FROM user_recent_visits WHERE user_id=$1 AND entity_name='issue' AND entity_identifier=$2 AND project_id=$3 AND deleted_at IS NULL`, userID, entityID, projectID).Scan(&visitCount, &refreshedCreatedAt, &refreshedVisitedAt); err != nil {
-		t.Fatalf("read refreshed recent visit: %v", err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*),MIN(created_at),MAX(visited_at) FROM user_recent_visits WHERE user_id=$1 AND entity_name='issue' AND entity_identifier=$2 AND project_id=$3 AND deleted_at IS NULL`, userID, entityID, projectID).Scan(&visitCount, &refreshedCreatedAt, &refreshedVisitedAt); scanErr != nil {
+		t.Fatalf("read refreshed recent visit: %v", scanErr)
 	}
 	var sameID bool
-	if err := pool.QueryRow(ctx, `SELECT id=$1 FROM user_recent_visits WHERE user_id=$2 AND entity_name='issue' AND entity_identifier=$3 AND project_id=$4 AND deleted_at IS NULL`, visitID, userID, entityID, projectID).Scan(&sameID); err != nil {
-		t.Fatalf("verify stable recent visit identity: %v", err)
+	if scanErr := pool.QueryRow(ctx, `SELECT id=$1 FROM user_recent_visits WHERE user_id=$2 AND entity_name='issue' AND entity_identifier=$3 AND project_id=$4 AND deleted_at IS NULL`, visitID, userID, entityID, projectID).Scan(&sameID); scanErr != nil {
+		t.Fatalf("verify stable recent visit identity: %v", scanErr)
 	}
 	if visitCount != 1 || !sameID || !refreshedCreatedAt.Equal(createdAt) || !refreshedVisitedAt.After(visitedAt) {
 		t.Fatalf("refresh result count=%d same-id=%t created=%s visited=%s; want one stable row with refreshed visited_at", visitCount, sameID, refreshedCreatedAt, refreshedVisitedAt)
@@ -106,9 +106,9 @@ func TestPostgresRecentVisitAdmissionRefreshesAndEvicts(t *testing.T) {
 		otherID := uuid.New()
 		otherInput := input
 		otherInput.EntityIdentifier = stringPointer(otherID.String())
-		otherInstanceID, err := dispatcher.Admit(ctx, uuid.NewString(), otherInput)
-		if err != nil {
-			t.Fatalf("admit capped visit %d: %v", index, err)
+		otherInstanceID, admitErr := dispatcher.Admit(ctx, uuid.NewString(), otherInput)
+		if admitErr != nil {
+			t.Fatalf("admit capped visit %d: %v", index, admitErr)
 		}
 		waitVersionWorkflow(t, ctx, app, otherInstanceID)
 	}

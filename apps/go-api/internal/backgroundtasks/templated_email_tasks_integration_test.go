@@ -46,14 +46,14 @@ func TestPostgresTemplatedEmailWorkflowRetriesAndDeliversSMTP(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := app.Start(ctx); err != nil {
-		t.Fatal(err)
+	if startErr := app.Start(ctx); startErr != nil {
+		t.Fatal(startErr)
 	}
 	defer func() {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutdownCancel()
-		if err := app.Shutdown(shutdownCtx); err != nil {
-			t.Errorf("shutdown templated email runtime: %v", err)
+		if shutdownErr := app.Shutdown(shutdownCtx); shutdownErr != nil {
+			t.Errorf("shutdown templated email runtime: %v", shutdownErr)
 		}
 	}()
 
@@ -62,8 +62,8 @@ func TestPostgresTemplatedEmailWorkflowRetriesAndDeliversSMTP(t *testing.T) {
 		t.Fatal(err)
 	}
 	eventID := uuid.NewString()
-	if err := admission.AdmitTemplatedEmailTask(ctx, eventID, magicLinkTask, []any{"person@example.test", "opaque-key", "314159"}); err != nil {
-		t.Fatalf("admit magic-link email: %v", err)
+	if admitTemplatedEmailTaskErr := admission.AdmitTemplatedEmailTask(ctx, eventID, magicLinkTask, []any{"person@example.test", "opaque-key", "314159"}); admitTemplatedEmailTaskErr != nil {
+		t.Fatalf("admit magic-link email: %v", admitTemplatedEmailTaskErr)
 	}
 	instanceID := "plane-email-task:" + eventID
 	result, err := selvedge.WaitWorkflow[struct{}](ctx, app, instanceID)
@@ -147,8 +147,8 @@ func TestPostgresTemplatedEmailPreparationUsesPlaneRows(t *testing.T) {
 			t.Fatal(err)
 		}
 		var rawArgs []json.RawMessage
-		if err := json.Unmarshal(encoded, &rawArgs); err != nil {
-			t.Fatal(err)
+		if unmarshalErr := json.Unmarshal(encoded, &rawArgs); unmarshalErr != nil {
+			t.Fatal(unmarshalErr)
 		}
 		prepared, err := store.prepare(ctx, templatedEmailTaskInput{EventID: uuid.NewString(), TaskName: task, Args: rawArgs})
 		if err != nil {

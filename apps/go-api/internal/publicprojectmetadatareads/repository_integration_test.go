@@ -150,11 +150,11 @@ INSERT INTO sessions VALUES ('invalid-auth-hash-session');
 		Emoji       string         `json:"emoji"`
 		Description string         `json:"description"`
 	}
-	if err := json.Unmarshal(metaData, &meta); err != nil || meta.Identifier != "DEMO" || meta.Name != "Public <Project>" || meta.IconProp["name"] != "rocket" || meta.Emoji != "🚀" {
-		t.Fatalf("meta=%s err=%v", metaData, err)
+	if unmarshalErr := json.Unmarshal(metaData, &meta); unmarshalErr != nil || meta.Identifier != "DEMO" || meta.Name != "Public <Project>" || meta.IconProp["name"] != "rocket" || meta.Emoji != "🚀" {
+		t.Fatalf("meta=%s err=%v", metaData, unmarshalErr)
 	}
-	if _, err := repository.Meta(ctx, "orphan-anchor"); !errors.Is(err, ErrProjectNotPublished) {
-		t.Fatalf("orphan meta err=%v", err)
+	if _, metaErr := repository.Meta(ctx, "orphan-anchor"); !errors.Is(metaErr, ErrProjectNotPublished) {
+		t.Fatalf("orphan meta err=%v", metaErr)
 	}
 	settingsData, err := repository.Settings(ctx, "anchor")
 	if err != nil {
@@ -175,8 +175,8 @@ INSERT INTO sessions VALUES ('invalid-auth-hash-session');
 	if err != nil || !bytes.Contains(nullProjectSettings, []byte(`"project_details":null`)) || !bytes.Contains(nullProjectSettings, []byte(`"project":null`)) {
 		t.Fatalf("null project settings=%s err=%v", nullProjectSettings, err)
 	}
-	if _, err := repository.Settings(ctx, "missing"); !errors.Is(err, ErrRequiredObject) {
-		t.Fatalf("missing settings err=%v", err)
+	if _, settingsErr := repository.Settings(ctx, "missing"); !errors.Is(settingsErr, ErrRequiredObject) {
+		t.Fatalf("missing settings err=%v", settingsErr)
 	}
 	projectID := uuid.MustParse("00000000-0000-4000-8000-000000000002")
 	projectAnchor, err := repository.ProjectAnchor(ctx, "demo", projectID)
@@ -190,24 +190,24 @@ INSERT INTO sessions VALUES ('invalid-auth-hash-session');
 		!bytes.Contains(authenticatedProjectAnchor, []byte(`"updated_at":"2026-01-01T19:04:05.123456-08:00"`)) {
 		t.Fatalf("authenticated project anchor=%s err=%v", authenticatedProjectAnchor, err)
 	}
-	if _, err := connection.Exec(ctx, `
+	if _, execErr := connection.Exec(ctx, `
 INSERT INTO deploy_boards VALUES (
   '00000000-0000-4000-8000-000000000007', '00000000-0000-4000-8000-000000000001',
   '00000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000099', 'project',
   'duplicate-project-anchor', NOW(), NOW(), NULL, NULL, NULL, NULL,
   FALSE, FALSE, FALSE, '{}', TRUE, FALSE
 )
-`); err != nil {
-		t.Fatal(err)
+`); execErr != nil {
+		t.Fatal(execErr)
 	}
-	if _, err := repository.ProjectAnchor(ctx, "demo", projectID); err == nil || errors.Is(err, ErrRender) {
-		t.Fatalf("duplicate project anchor err=%v", err)
+	if _, projectAnchorErr := repository.ProjectAnchor(ctx, "demo", projectID); projectAnchorErr == nil || errors.Is(projectAnchorErr, ErrRender) {
+		t.Fatalf("duplicate project anchor err=%v", projectAnchorErr)
 	}
-	if _, err := repository.ProjectAnchor(ctx, "wrong", projectID); !errors.Is(err, ErrRequiredObject) {
-		t.Fatalf("missing project anchor err=%v", err)
+	if _, projectAnchorErr := repository.ProjectAnchor(ctx, "wrong", projectID); !errors.Is(projectAnchorErr, ErrRequiredObject) {
+		t.Fatalf("missing project anchor err=%v", projectAnchorErr)
 	}
-	if _, err := repository.ProjectAnchor(ctx, "demo", uuid.MustParse("00000000-0000-4000-8000-000000000097")); !errors.Is(err, ErrRequiredObject) {
-		t.Fatalf("wrong-project anchor err=%v", err)
+	if _, projectAnchorErr := repository.ProjectAnchor(ctx, "demo", uuid.MustParse("00000000-0000-4000-8000-000000000097")); !errors.Is(projectAnchorErr, ErrRequiredObject) {
+		t.Fatalf("wrong-project anchor err=%v", projectAnchorErr)
 	}
 
 	cyclesData, err := repository.Cycles(ctx, "anchor")
@@ -217,8 +217,8 @@ INSERT INTO deploy_boards VALUES (
 	var cycles []struct {
 		Name string `json:"name"`
 	}
-	if err := json.Unmarshal(cyclesData, &cycles); err != nil || len(cycles) != 2 || cycles[0].Name != "Cycle Two" {
-		t.Fatalf("cycles=%s err=%v", cyclesData, err)
+	if unmarshalErr := json.Unmarshal(cyclesData, &cycles); unmarshalErr != nil || len(cycles) != 2 || cycles[0].Name != "Cycle Two" {
+		t.Fatalf("cycles=%s err=%v", cyclesData, unmarshalErr)
 	}
 
 	labelsData, err := repository.Labels(ctx, "anchor")
@@ -228,8 +228,8 @@ INSERT INTO deploy_boards VALUES (
 	var labels []struct {
 		Name string `json:"name"`
 	}
-	if err := json.Unmarshal(labelsData, &labels); err != nil || len(labels) != 2 || labels[0].Name != "Child" {
-		t.Fatalf("labels=%s err=%v", labelsData, err)
+	if unmarshalErr := json.Unmarshal(labelsData, &labels); unmarshalErr != nil || len(labels) != 2 || labels[0].Name != "Child" {
+		t.Fatalf("labels=%s err=%v", labelsData, unmarshalErr)
 	}
 	modulesData, err := repository.Modules(ctx, "anchor")
 	if err != nil {
@@ -238,8 +238,8 @@ INSERT INTO deploy_boards VALUES (
 	var modules []struct {
 		Name string `json:"name"`
 	}
-	if err := json.Unmarshal(modulesData, &modules); err != nil || len(modules) != 2 || modules[0].Name != "Module Two" {
-		t.Fatalf("modules=%s err=%v", modulesData, err)
+	if unmarshalErr := json.Unmarshal(modulesData, &modules); unmarshalErr != nil || len(modules) != 2 || modules[0].Name != "Module Two" {
+		t.Fatalf("modules=%s err=%v", modulesData, unmarshalErr)
 	}
 	membersData, err := repository.Members(ctx, "anchor")
 	if err != nil {
@@ -250,8 +250,8 @@ INSERT INTO deploy_boards VALUES (
 		DisplayName *string `json:"member__display_name"`
 		Avatar      *string `json:"member__avatar"`
 	}
-	if err := json.Unmarshal(membersData, &members); err != nil || len(members) != 3 || members[0].Member != nil || members[0].DisplayName != nil || members[0].Avatar != nil {
-		t.Fatalf("members=%s err=%v", membersData, err)
+	if unmarshalErr := json.Unmarshal(membersData, &members); unmarshalErr != nil || len(members) != 3 || members[0].Member != nil || members[0].DisplayName != nil || members[0].Avatar != nil {
+		t.Fatalf("members=%s err=%v", membersData, unmarshalErr)
 	}
 	if members[1].DisplayName == nil || *members[1].DisplayName != "Member" || members[1].Avatar == nil || *members[1].Avatar != "" {
 		t.Fatalf("members=%s", membersData)
@@ -263,8 +263,8 @@ INSERT INTO deploy_boards VALUES (
 	var states []struct {
 		Name string `json:"name"`
 	}
-	if err := json.Unmarshal(statesData, &states); err != nil || len(states) != 6 || states[0].Name != "Signed Zero" || states[5].Name != "Far Future" {
-		t.Fatalf("states=%s err=%v", statesData, err)
+	if unmarshalErr := json.Unmarshal(statesData, &states); unmarshalErr != nil || len(states) != 6 || states[0].Name != "Signed Zero" || states[5].Name != "Far Future" {
+		t.Fatalf("states=%s err=%v", statesData, unmarshalErr)
 	}
 	if !bytes.Contains(statesData, []byte(`"sequence":-0.0`)) {
 		t.Fatalf("states do not preserve Django signed-zero JSON: %s", statesData)
@@ -287,11 +287,11 @@ INSERT INTO deploy_boards VALUES (
 	var workspaceLabels []struct {
 		Name string `json:"name"`
 	}
-	if err := json.Unmarshal(workspaceLabelsData, &workspaceLabels); err != nil || len(workspaceLabels) != 1 || workspaceLabels[0].Name != "Workspace" {
-		t.Fatalf("workspace labels=%s err=%v", workspaceLabelsData, err)
+	if unmarshalErr := json.Unmarshal(workspaceLabelsData, &workspaceLabels); unmarshalErr != nil || len(workspaceLabels) != 1 || workspaceLabels[0].Name != "Workspace" {
+		t.Fatalf("workspace labels=%s err=%v", workspaceLabelsData, unmarshalErr)
 	}
-	if _, err := repository.Labels(ctx, "missing"); !errors.Is(err, ErrInvalidAnchor) {
-		t.Fatalf("missing anchor err=%v", err)
+	if _, labelsErr := repository.Labels(ctx, "missing"); !errors.Is(labelsErr, ErrInvalidAnchor) {
+		t.Fatalf("missing anchor err=%v", labelsErr)
 	}
 	invalidator, err := NewPostgreSQLSessionInvalidator(connection)
 	if err != nil {

@@ -251,8 +251,8 @@ func (service *userAccountWritesService) UpdateEmail(ctx context.Context, payloa
 	if !ok {
 		code = ""
 	}
-	if err := service.validateNewEmail(ctx, principal.userID, newEmail); err != nil {
-		return nil, nil, err
+	if validateNewEmailErr := service.validateNewEmail(ctx, principal.userID, newEmail); validateNewEmailErr != nil {
+		return nil, nil, validateNewEmailErr
 	}
 	if strings.TrimSpace(code) == "" {
 		return nil, nil, userAccountWritesBadRequest(map[string]any{"error": "Verification code is required"})
@@ -274,26 +274,26 @@ func (service *userAccountWritesService) UpdateEmail(ctx context.Context, payloa
 	}
 	// The source checks uniqueness again immediately before updating because
 	// another account may claim the address after code generation.
-	if err := service.validateNewEmail(ctx, principal.userID, newEmail); err != nil {
-		return nil, nil, err
+	if validateNewEmailErr := service.validateNewEmail(ctx, principal.userID, newEmail); validateNewEmailErr != nil {
+		return nil, nil, validateNewEmailErr
 	}
 	oldEmail, err := service.repository.UpdateEmail(ctx, principal.userID, newEmail)
 	if err != nil {
 		return nil, nil, userAccountWritesRepositoryError(err)
 	}
-	if err := service.cache.Delete(ctx, cacheKey); err != nil {
+	if deleteErr := service.cache.Delete(ctx, cacheKey); deleteErr != nil {
 		return nil, nil, userAccountWritesInternal()
 	}
-	if err := service.repository.Logout(ctx, principal.sessionID); err != nil {
+	if logoutErr := service.repository.Logout(ctx, principal.sessionID); logoutErr != nil {
 		return nil, nil, userAccountWritesInternal()
 	}
 	// Django logout() removes the session and expires the browser cookie in
 	// SessionMiddleware's response finalizer.
 	djangosession.ExpireResponseSession(ctx)
-	if err := service.tasks.Task(ctx, "plane.bgtasks.user_email_update_task.send_email_update_confirmation", []any{newEmail}, nil); err != nil {
+	if taskErr := service.tasks.Task(ctx, "plane.bgtasks.user_email_update_task.send_email_update_confirmation", []any{newEmail}, nil); taskErr != nil {
 		return nil, nil, userAccountWritesInternal()
 	}
-	if err := service.tasks.Task(ctx, "plane.bgtasks.user_email_update_task.send_email_update_confirmation", []any{oldEmail}, nil); err != nil {
+	if taskErr := service.tasks.Task(ctx, "plane.bgtasks.user_email_update_task.send_email_update_confirmation", []any{oldEmail}, nil); taskErr != nil {
 		return nil, nil, userAccountWritesInternal()
 	}
 	result, err := service.repository.Me(ctx, principal.userID)
@@ -332,8 +332,8 @@ func (service *userAccountWritesService) GenerateEmailCode(ctx context.Context, 
 		newEmail = ""
 	}
 	newEmail = normalizeUserAccountEmail(newEmail)
-	if err := service.validateNewEmail(ctx, principal.userID, newEmail); err != nil {
-		return nil, nil, err
+	if validateNewEmailErr := service.validateNewEmail(ctx, principal.userID, newEmail); validateNewEmailErr != nil {
+		return nil, nil, validateNewEmailErr
 	}
 	code, err := emailVerificationCode()
 	if err != nil {
@@ -367,7 +367,7 @@ func (service *userAccountWritesService) validateNewEmail(ctx context.Context, u
 	var me struct {
 		Email string `json:"email"`
 	}
-	if err := json.Unmarshal(current, &me); err != nil {
+	if unmarshalErr := json.Unmarshal(current, &me); unmarshalErr != nil {
 		return userAccountWritesInternal()
 	}
 	if email == me.Email {

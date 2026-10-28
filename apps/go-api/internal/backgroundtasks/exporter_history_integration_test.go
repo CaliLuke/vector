@@ -34,14 +34,14 @@ func TestPostgresExporterHistoryWorkflowUsesDurableAdmission(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := workflowApp.Start(ctx); err != nil {
-		t.Fatal(err)
+	if startErr := workflowApp.Start(ctx); startErr != nil {
+		t.Fatal(startErr)
 	}
 	defer func() {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutdownCancel()
-		if err := workflowApp.Shutdown(shutdownCtx); err != nil {
-			t.Errorf("shutdown exporter history runtime: %v", err)
+		if shutdownErr := workflowApp.Shutdown(shutdownCtx); shutdownErr != nil {
+			t.Errorf("shutdown exporter history runtime: %v", shutdownErr)
 		}
 	}()
 

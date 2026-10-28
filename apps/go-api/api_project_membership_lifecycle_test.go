@@ -231,9 +231,9 @@ func (doer *projectMembershipLifecycleStatusDoer) Do(request *http.Request) (*ht
 		doer.status = response.StatusCode
 		doer.errorName = response.Header.Get("loom-error")
 		if response.Body != nil {
-			body, err := io.ReadAll(response.Body)
-			if err != nil {
-				return response, err
+			body, readAllErr := io.ReadAll(response.Body)
+			if readAllErr != nil {
+				return response, readAllErr
 			}
 			_ = response.Body.Close()
 			doer.body = string(body)

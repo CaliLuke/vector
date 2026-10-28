@@ -71,8 +71,8 @@ func installParitySeed(ctx context.Context, seedURL string) error {
     is_encrypted boolean NOT NULL
 )`
 		}
-		if _, err := connection.Exec(ctx, statement); err != nil {
-			return fmt.Errorf("apply migrated seed table %s: %w", table, err)
+		if _, execErr := connection.Exec(ctx, statement); execErr != nil {
+			return fmt.Errorf("apply migrated seed table %s: %w", table, execErr)
 		}
 	}
 	_, err = connection.Exec(ctx, `INSERT INTO accounts (id) VALUES ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')`)

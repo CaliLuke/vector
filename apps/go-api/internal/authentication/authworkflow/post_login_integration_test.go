@@ -60,8 +60,8 @@ CREATE UNIQUE INDEX project_member_active_unique ON project_members(project_id,m
 		t.Fatalf("start PostgreSQL: %v", err)
 	}
 	t.Cleanup(func() {
-		if err := pair.Close(); err != nil {
-			t.Errorf("close PostgreSQL: %v", err)
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close PostgreSQL: %v", closeErr)
 		}
 	})
 	connection, err := pgx.Connect(ctx, pair.SourceURL)
@@ -86,8 +86,8 @@ CREATE UNIQUE INDEX project_member_active_unique ON project_members(project_id,m
 		{`INSERT INTO workspace_members VALUES ('88888888-8888-8888-8888-888888888888',$1,$2,5,NULL,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,NULL)`, []any{workspaceID, userID}},
 	}
 	for _, seed := range seedStatements {
-		if _, err := connection.Exec(ctx, seed.query, seed.args...); err != nil {
-			t.Fatalf("seed invitations: %v", err)
+		if _, execErr := connection.Exec(ctx, seed.query, seed.args...); execErr != nil {
+			t.Fatalf("seed invitations: %v", execErr)
 		}
 	}
 	cache, publisher := &cacheSpy{}, &taskSpy{}

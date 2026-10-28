@@ -99,8 +99,8 @@ func (repository *Repository) PublicVoteCreate(
 	if err != nil {
 		return Result{}, err
 	}
-	if err := publicFeedbackObjectRootError(input); err != nil {
-		return Result{}, err
+	if publicFeedbackErr := publicFeedbackObjectRootError(input); publicFeedbackErr != nil {
+		return Result{}, publicFeedbackErr
 	}
 	voteValue, exists := input.Fields["vote"]
 	if !exists {
@@ -124,8 +124,8 @@ func (repository *Repository) PublicVoteCreate(
 	if err != nil {
 		return Result{}, err
 	}
-	if err := repository.collaborationPublicMember(ctx, q, scope.WorkspaceID); err != nil {
-		return Result{}, err
+	if collaborationPublicErr := repository.collaborationPublicMember(ctx, q, scope.WorkspaceID); collaborationPublicErr != nil {
+		return Result{}, collaborationPublicErr
 	}
 	vote, ok := publicVoteValue(voteValue)
 	if !ok {
@@ -143,12 +143,12 @@ func (repository *Repository) PublicVoteCreate(
 	if err != nil {
 		return Result{}, err
 	}
-	if err := repository.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, map[string]any{
+	if publishTaskErr := repository.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, map[string]any{
 		"type": "issue_vote.activity.created", "requested_data": requested, "actor_id": actorID,
 		"issue_id": issueID, "project_id": scope.ProjectID, "current_instance": nil,
 		"epoch": repository.now().Unix(),
-	}); err != nil {
-		return Result{}, err
+	}); publishTaskErr != nil {
+		return Result{}, publishTaskErr
 	}
 	response, err := repository.row(ctx, `
 SELECT jsonb_build_object(
@@ -212,8 +212,8 @@ func (repository *Repository) PublicVoteDelete(ctx context.Context, scope Public
 	if err != nil {
 		return Result{}, err
 	}
-	if err := repository.publicVisibleIssue(ctx, scope, issueID); err != nil {
-		return Result{}, err
+	if publicVisibleIssueErr := repository.publicVisibleIssue(ctx, scope, issueID); publicVisibleIssueErr != nil {
+		return Result{}, publicVisibleIssueErr
 	}
 	current, err := orderedDump(map[string]any{"vote": vote, "identifier": identifier}, []string{"vote", "identifier"})
 	if err != nil {

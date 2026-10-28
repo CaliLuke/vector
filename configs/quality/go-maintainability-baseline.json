@@ -19,7 +19,7 @@
       "package": "main",
       "function": "buildHTTPHandlerWithReplacementServicesAndPending",
       "score": 0,
-      "sourceHash": "2631337e02b8b14634bd29333d4144a9938afb106a063150437ff11b6392bab9"
+      "sourceHash": "855a5e24b5df8e04d84c9323184a887aa34799bdb000e1423afd16894636b1a6"
     },
     {
       "file": "cmd/system/http.go",
@@ -32,7 +32,7 @@
       "package": "main",
       "function": "run",
       "score": 0,
-      "sourceHash": "5ab8403e4f3bcee09a94d4edef938444ae2c264da5b1b842272b286af731889d"
+      "sourceHash": "a8bbd3a14f8e9e4af0f0fe4f78b092c0b4d92d0f6c02477b5630905ded2dc095"
     },
     {
       "file": "cmd/system/read_services_http_test.go",

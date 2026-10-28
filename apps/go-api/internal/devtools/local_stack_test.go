@@ -162,8 +162,8 @@ func composeServices(t *testing.T, root string, env map[string]string) map[strin
 	configText = strings.ReplaceAll(configText, "      - .env\n", "      - /dev/null\n")
 	configDir := t.TempDir()
 	configPath := filepath.Join(configDir, "docker-compose-local.yml")
-	if err := os.WriteFile(configPath, []byte(configText), 0600); err != nil {
-		t.Fatal(err)
+	if writeFileErr := os.WriteFile(configPath, []byte(configText), 0600); writeFileErr != nil {
+		t.Fatal(writeFileErr)
 	}
 	cmd := exec.Command("docker", "compose", "--project-directory", root, "-f", configPath, "config", "--format", "json")
 	if env != nil {

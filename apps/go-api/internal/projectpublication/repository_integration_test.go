@@ -63,16 +63,16 @@ INSERT INTO project_members VALUES('00000000-0000-4000-8000-000000000201','00000
 		t.Fatal(err)
 	}
 	user, project := "00000000-0000-4000-8000-000000000001", "00000000-0000-4000-8000-000000000100"
-	if err := repository.Authorize(ctx, user, "POST", "demo", project); err != nil {
-		t.Fatalf("workspace member create permission: %v", err)
+	if authorizeErr := repository.Authorize(ctx, user, "POST", "demo", project); authorizeErr != nil {
+		t.Fatalf("workspace member create permission: %v", authorizeErr)
 	}
 	board, err := repository.Create(ctx, user, "demo", project, CreateInput{Comments: true, Views: map[string]any{"list": true}})
 	if err != nil {
 		t.Fatal(err)
 	}
 	var decoded map[string]any
-	if err := json.Unmarshal(board, &decoded); err != nil {
-		t.Fatal(err)
+	if unmarshalErr := json.Unmarshal(board, &decoded); unmarshalErr != nil {
+		t.Fatal(unmarshalErr)
 	}
 	if decoded["entity_name"] != "project" || decoded["is_comments_enabled"] != true || decoded["view_props"].(map[string]any)["list"] != true {
 		t.Fatalf("serialized board = %s", board)
@@ -82,8 +82,8 @@ INSERT INTO project_members VALUES('00000000-0000-4000-8000-000000000201','00000
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := json.Unmarshal(board, &decoded); err != nil {
-		t.Fatal(err)
+	if unmarshalErr := json.Unmarshal(board, &decoded); unmarshalErr != nil {
+		t.Fatal(unmarshalErr)
 	}
 	if decoded["id"] != id {
 		t.Fatalf("get_or_create allocated a second board: %s", board)

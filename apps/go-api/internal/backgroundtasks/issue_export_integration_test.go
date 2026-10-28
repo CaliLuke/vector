@@ -62,13 +62,13 @@ func TestPostgresIssueExportProducesAndStoresArchive(t *testing.T) {
 		t.Fatal(err)
 	}
 	input := IssueExportInput{Provider: "csv", WorkspaceID: workspaceID.String(), ProjectIDs: []string{projectID.String()}, TokenID: token, Slug: slug}
-	if err := store.Generate(ctx, input); err != nil {
-		t.Fatalf("generate issue export from PostgreSQL: %v", err)
+	if generateErr := store.Generate(ctx, input); generateErr != nil {
+		t.Fatalf("generate issue export from PostgreSQL: %v", generateErr)
 	}
 
 	var status, key, downloadURL string
-	if err := pool.QueryRow(ctx, `SELECT status,key,url FROM exporters WHERE id=$1`, exporterID).Scan(&status, &key, &downloadURL); err != nil {
-		t.Fatal(err)
+	if scanErr := pool.QueryRow(ctx, `SELECT status,key,url FROM exporters WHERE id=$1`, exporterID).Scan(&status, &key, &downloadURL); scanErr != nil {
+		t.Fatal(scanErr)
 	}
 	if status != "completed" || key != objects.key || downloadURL != objects.url {
 		t.Fatalf("exporter status=%q key=%q url=%q", status, key, downloadURL)

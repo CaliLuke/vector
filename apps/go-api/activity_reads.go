@@ -134,8 +134,8 @@ func (service *activityReadsService) execute(ctx context.Context, operation stri
 	if operation == "get_api_users_me_activities" {
 		repository = service.userRepository
 	}
-	if err := service.authorizeRequest(ctx, repository, principal, request); err != nil {
-		return activitystore.Result{}, err
+	if authorizeRequestErr := service.authorizeRequest(ctx, repository, principal, request); authorizeRequestErr != nil {
+		return activitystore.Result{}, authorizeRequestErr
 	}
 	result, err := repository.Read(ctx, principal, request)
 	if err != nil {

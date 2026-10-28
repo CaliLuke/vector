@@ -92,17 +92,17 @@ func (r *Repository) ExecuteCollaboration(ctx context.Context, q Request, body i
 	}
 	// App guest checks precede parsing the body and serializer validation.
 	if kind == "comment" && !q.API && !collaborationPublic(q) && q.Method == "POST" {
-		project, err := r.project(ctx, q.ProjectID)
-		if err != nil {
-			return Result{}, err
+		project, guestAccessErr := r.project(ctx, q.ProjectID)
+		if guestAccessErr != nil {
+			return Result{}, guestAccessErr
 		}
-		issue, err := r.row(ctx, `SELECT to_jsonb(i) FROM issues i WHERE id=$1 AND deleted_at IS NULL`, q.IssueID)
-		if err != nil {
-			return Result{}, err
+		issue, guestAccessErr := r.row(ctx, `SELECT to_jsonb(i) FROM issues i WHERE id=$1 AND deleted_at IS NULL`, q.IssueID)
+		if guestAccessErr != nil {
+			return Result{}, guestAccessErr
 		}
 		var guest bool
-		if err = r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM project_members WHERE project_id=$1 AND member_id=$2 AND role=5 AND is_active AND deleted_at IS NULL)`, q.ProjectID, q.ActorID).Scan(&guest); err != nil {
-			return Result{}, err
+		if guestAccessErr = r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM project_members WHERE project_id=$1 AND member_id=$2 AND role=5 AND is_active AND deleted_at IS NULL)`, q.ProjectID, q.ActorID).Scan(&guest); guestAccessErr != nil {
+			return Result{}, guestAccessErr
 		}
 		if guest && project["guest_view_all_features"] == false && issue["created_by_id"] != q.ActorID {
 			return Result{}, failure(400, "error", "You are not allowed to comment on the issue")
@@ -297,8 +297,8 @@ func (r *Repository) readCollaboration(ctx context.Context, q Request, kind, tab
 			}
 			return Result{}, failure(404, "detail", "No "+model+" matches the given query.")
 		}
-		result, err := r.collaborationProjection(ctx, q, rows[0], kind, true)
-		return Result{200, result}, err
+		result, collaborationProjectionErr := r.collaborationProjection(ctx, q, rows[0], kind, true)
+		return Result{200, result}, collaborationProjectionErr
 	}
 	total := len(rows)
 	limit, page, offset := total, 0, 0

@@ -160,8 +160,8 @@ func (repository *WriteRepository) mutate(ctx context.Context, input StateWriteI
 		return nil, fmt.Errorf("begin project state write: %w", err)
 	}
 	defer tx.Rollback(context.WithoutCancel(ctx))
-	if err := lockStateProject(ctx, tx, input.Slug, input.ProjectID); err != nil {
-		return nil, err
+	if lockStateProjectErr := lockStateProject(ctx, tx, input.Slug, input.ProjectID); lockStateProjectErr != nil {
+		return nil, lockStateProjectErr
 	}
 	var raw json.RawMessage
 	if action == "create" {
@@ -265,17 +265,17 @@ func updateState(ctx context.Context, tx pgx.Tx, input StateWriteInput, fields m
 	if err != nil {
 		return nil, err
 	}
-	if err := validateStateFields(fields, false, input.App, input.Parsed); err != nil {
-		return nil, err
+	if validateStateFieldsErr := validateStateFields(fields, false, input.App, input.Parsed); validateStateFieldsErr != nil {
+		return nil, validateStateFieldsErr
 	}
 	if !input.App {
-		if err := checkStateExternalIdentity(ctx, tx, input, fields, currentExternalID, currentExternalSource); err != nil {
-			return nil, err
+		if checkStateErr := checkStateExternalIdentity(ctx, tx, input, fields, currentExternalID, currentExternalSource); checkStateErr != nil {
+			return nil, checkStateErr
 		}
 	}
 	if hasStateField(fields, "default") && stateBool(fields, "default", false) {
-		if _, err := tx.Exec(ctx, `UPDATE states SET "default"=false WHERE project_id=$1 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$2) AND deleted_at IS NULL AND "group"<>'triage'`, input.ProjectID, input.Slug); err != nil {
-			return nil, err
+		if _, execErr := tx.Exec(ctx, `UPDATE states SET "default"=false WHERE project_id=$1 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$2) AND deleted_at IS NULL AND "group"<>'triage'`, input.ProjectID, input.Slug); execErr != nil {
+			return nil, execErr
 		}
 	}
 	var data []byte
@@ -350,8 +350,8 @@ func addAppOrderToResponse(data json.RawMessage, input StateWriteInput, fields m
 		return nil, err
 	}
 	var response map[string]json.RawMessage
-	if err := json.Unmarshal(data, &response); err != nil {
-		return nil, err
+	if unmarshalErr := json.Unmarshal(data, &response); unmarshalErr != nil {
+		return nil, unmarshalErr
 	}
 	response["order"] = encodedOrder
 	encoded, err := json.Marshal(response)

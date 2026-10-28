@@ -27,8 +27,8 @@ func TestPostgresMembershipScopeForEveryStickyOperation(t *testing.T) {
 		t.Fatalf("start PostgreSQL fixture: %v", err)
 	}
 	t.Cleanup(func() {
-		if err := pair.Close(); err != nil {
-			t.Errorf("close PostgreSQL fixture: %v", err)
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close PostgreSQL fixture: %v", closeErr)
 		}
 	})
 
@@ -36,8 +36,8 @@ func TestPostgresMembershipScopeForEveryStickyOperation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("parse PostgreSQL configuration: %v", err)
 	}
-	if err := database.ConfigurePool(configuration); err != nil {
-		t.Fatalf("configure PostgreSQL pool: %v", err)
+	if configurePoolErr := database.ConfigurePool(configuration); configurePoolErr != nil {
+		t.Fatalf("configure PostgreSQL pool: %v", configurePoolErr)
 	}
 	pool, err := pgxpool.NewWithConfig(ctx, configuration)
 	if err != nil {
@@ -52,7 +52,7 @@ func TestPostgresMembershipScopeForEveryStickyOperation(t *testing.T) {
 	deletedUserID := uuid.MustParse("0198a28d-d227-7752-82ac-bc4c1c290365")
 	otherOnlyUserID := uuid.MustParse("0198a28d-d227-7752-82ac-bc4c1c290366")
 	ownerWithoutMembershipUserID := uuid.MustParse("0198a28d-d227-7752-82ac-bc4c1c290367")
-	if _, err := pool.Exec(ctx, `
+	if _, execErr := pool.Exec(ctx, `
 INSERT INTO workspace_members (id, workspace_id, member_id, is_active, deleted_at)
 VALUES
     ($1, $2, $3, TRUE, NULL),
@@ -66,8 +66,8 @@ VALUES
 		uuid.MustParse("0198a28d-d227-7752-82ac-bc4c1c290373"), deletedUserID,
 		uuid.MustParse("0198a28d-d227-7752-82ac-bc4c1c290374"), otherWorkspaceID,
 		uuid.MustParse("0198a28d-d227-7752-82ac-bc4c1c290375"), otherOnlyUserID,
-	); err != nil {
-		t.Fatalf("seed workspace memberships: %v", err)
+	); execErr != nil {
+		t.Fatalf("seed workspace memberships: %v", execErr)
 	}
 
 	reader, err := NewPostgresMembershipReader(pool)
@@ -121,8 +121,8 @@ func createMembershipTestSchema(ctx context.Context, databaseURL string) error {
 	if err != nil {
 		return err
 	}
-	if err := database.ConfigurePool(configuration); err != nil {
-		return err
+	if configurePoolErr := database.ConfigurePool(configuration); configurePoolErr != nil {
+		return configurePoolErr
 	}
 	pool, err := pgxpool.NewWithConfig(ctx, configuration)
 	if err != nil {

@@ -267,6 +267,20 @@ response closure retires three lint occurrences, leaving 1,247. The proxy suite
 passes 847 tests/subtests; affected database workflows and unit suites also pass.
 Neither test-file exclusion is replaced by a baseline or inline suppression.
 
+Shadow cleanup gives local errors operation-specific names and distinguishes
+request contexts, compatibility options, and validated values from their outer
+bindings. It also removes one obsolete loop-variable capture. Binding-aware
+renames preserve every identifier reference; no helper extraction or control-flow
+change is needed. All 593 baselined shadow diagnostics are retired, and the 20
+additional declarations exposed while resolving nested shadows are fixed too.
+This leaves 654 lint occurrences and no shadow findings. Maintainability remains at 36
+allowances with identical scores. The two zero-score assembly-file fingerprints
+are reviewed identifier-only updates. All 488 duplicate report ranges are
+identical; one fingerprint pair is reanchored for the renamed cache-invalidation
+errors in instance management. No threshold, exclusion, or suppression changes.
+The untagged Go suite passes 9,117 tests/subtests across 105 packages; its seven
+existing opt-in skips remain tracked separately for removal.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML

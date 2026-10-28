@@ -177,8 +177,8 @@ func (s *projectIntakeWritesService) create(ctx context.Context, slug, project s
 	if err != nil {
 		return nil, nil, mapProjectIntakeError(err)
 	}
-	if err := s.repository.Authorize(ctx, p.userID, slug, project); err != nil {
-		return nil, nil, mapProjectIntakeError(err)
+	if authorizeErr := s.repository.Authorize(ctx, p.userID, slug, project); authorizeErr != nil {
+		return nil, nil, mapProjectIntakeError(authorizeErr)
 	}
 	data, err := s.repository.Create(ctx, p.userID, slug, project, fields)
 	return projectIntakeResponse(data, err)
@@ -189,8 +189,8 @@ func (s *projectIntakeWritesService) patch(ctx context.Context, slug, project, i
 	if err != nil {
 		return nil, nil, err
 	}
-	if err := s.repository.Authorize(ctx, p.userID, slug, project); err != nil {
-		return nil, nil, mapProjectIntakeError(err)
+	if authorizeErr := s.repository.Authorize(ctx, p.userID, slug, project); authorizeErr != nil {
+		return nil, nil, mapProjectIntakeError(authorizeErr)
 	}
 	fields, err := projectIntakeFields(ctx, body)
 	if err != nil {

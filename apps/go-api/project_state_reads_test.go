@@ -70,8 +70,8 @@ func TestProjectStateReadsAuthenticateListAndGroup(t *testing.T) {
 		t.Fatal(err)
 	}
 	var states []*api.ProjectStateRead
-	if err := json.Unmarshal(result, &states); err != nil {
-		t.Fatal(err)
+	if unmarshalErr := json.Unmarshal(result, &states); unmarshalErr != nil {
+		t.Fatal(unmarshalErr)
 	}
 	if len(states) != 1 || states[0].Name != "Backlog" || states[0].Order == nil || *states[0].Order != 1 {
 		t.Fatalf("states=%+v", states)

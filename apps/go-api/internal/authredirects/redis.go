@@ -44,12 +44,12 @@ func (verifier *RedisMagicCodeVerifier) Verify(ctx context.Context, key, code st
 		return fmt.Errorf("read magic code: %w", err)
 	}
 	var record magicCodeRecord
-	if err := json.Unmarshal(encoded, &record); err != nil {
-		return fmt.Errorf("decode magic code: %w", err)
+	if unmarshalErr := json.Unmarshal(encoded, &record); unmarshalErr != nil {
+		return fmt.Errorf("decode magic code: %w", unmarshalErr)
 	}
 	if record.Token == code {
-		if err := verifier.client.Del(ctx, key, key+":verify_attempts").Err(); err != nil {
-			return fmt.Errorf("consume magic code: %w", err)
+		if deleteErr := verifier.client.Del(ctx, key, key+":verify_attempts").Err(); deleteErr != nil {
+			return fmt.Errorf("consume magic code: %w", deleteErr)
 		}
 		return nil
 	}

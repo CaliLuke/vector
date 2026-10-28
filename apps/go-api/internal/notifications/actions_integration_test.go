@@ -72,8 +72,8 @@ func TestNotificationMarkAllReadUsesSourceFilters(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := repository.MarkAllRead(t.Context(), notificationPrincipal, "test", false, false, "watching"); err != nil {
-		t.Fatal(err)
+	if markAllReadErr := repository.MarkAllRead(t.Context(), notificationPrincipal, "test", false, false, "watching"); markAllReadErr != nil {
+		t.Fatal(markAllReadErr)
 	}
 	var read []int
 	rows, err := tx.Query(t.Context(), `SELECT CASE id WHEN $1 THEN 21 WHEN $2 THEN 22 WHEN $3 THEN 23 WHEN $4 THEN 24 END FROM notifications WHERE read_at IS NOT NULL ORDER BY id`, notificationID(21), notificationID(22), notificationID(23), notificationID(24))

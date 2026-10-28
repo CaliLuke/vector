@@ -48,8 +48,8 @@ func TestPostgresInstanceMetricsCollectionAndDurableSchedule(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := store.Push(ctx); err != nil {
-		t.Fatalf("collect and export PostgreSQL instance metrics: %v", err)
+	if pushErr := store.Push(ctx); pushErr != nil {
+		t.Fatalf("collect and export PostgreSQL instance metrics: %v", pushErr)
 	}
 	snapshot := exporter.snapshot()
 	if snapshot.ServiceName != "vector-ce-api" || snapshot.InstanceID != instanceID {
@@ -70,11 +70,11 @@ func TestPostgresInstanceMetricsCollectionAndDurableSchedule(t *testing.T) {
 		}
 	}
 
-	if _, err := pool.Exec(ctx, `UPDATE instances SET is_telemetry_enabled=false WHERE id=$1`, instanceRowID); err != nil {
-		t.Fatalf("disable telemetry fixture: %v", err)
+	if _, execErr := pool.Exec(ctx, `UPDATE instances SET is_telemetry_enabled=false WHERE id=$1`, instanceRowID); execErr != nil {
+		t.Fatalf("disable telemetry fixture: %v", execErr)
 	}
-	if err := store.Push(ctx); err != nil {
-		t.Fatalf("skip disabled telemetry: %v", err)
+	if pushErr := store.Push(ctx); pushErr != nil {
+		t.Fatalf("skip disabled telemetry: %v", pushErr)
 	}
 	if got := exporter.calls(); got != 1 {
 		t.Fatalf("exporter called %d times after telemetry disabled, want 1", got)
@@ -92,8 +92,8 @@ func TestPostgresInstanceMetricsCollectionAndDurableSchedule(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := app.Start(ctx); err != nil {
-		t.Fatalf("start instance metrics workflow app: %v", err)
+	if startErr := app.Start(ctx); startErr != nil {
+		t.Fatalf("start instance metrics workflow app: %v", startErr)
 	}
 	scheduleID, err := dispatcher.StartBeatSchedule(ctx)
 	if err != nil {
@@ -101,9 +101,9 @@ func TestPostgresInstanceMetricsCollectionAndDurableSchedule(t *testing.T) {
 	}
 	waitForMetricBeatTimer(t, ctx, pool, scheduleID)
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
-	if err := app.Shutdown(shutdownCtx); err != nil {
+	if shutdownErr := app.Shutdown(shutdownCtx); shutdownErr != nil {
 		shutdownCancel()
-		t.Fatalf("stop instance metrics worker: %v", err)
+		t.Fatalf("stop instance metrics worker: %v", shutdownErr)
 	}
 	shutdownCancel()
 
@@ -118,14 +118,14 @@ func TestPostgresInstanceMetricsCollectionAndDurableSchedule(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := restarted.Start(ctx); err != nil {
-		t.Fatalf("restart instance metrics worker: %v", err)
+	if startErr := restarted.Start(ctx); startErr != nil {
+		t.Fatalf("restart instance metrics worker: %v", startErr)
 	}
 	defer func() {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutdownCancel()
-		if err := restarted.Shutdown(shutdownCtx); err != nil {
-			t.Errorf("shutdown restarted instance metrics worker: %v", err)
+		if shutdownErr := restarted.Shutdown(shutdownCtx); shutdownErr != nil {
+			t.Errorf("shutdown restarted instance metrics worker: %v", shutdownErr)
 		}
 	}()
 	restartedID, err := restartedDispatcher.StartBeatSchedule(ctx)

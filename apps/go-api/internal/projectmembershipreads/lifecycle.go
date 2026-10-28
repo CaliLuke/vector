@@ -369,8 +369,8 @@ func (r *LifecycleRepository) lifecycleBulkCreate(ctx context.Context, c Lifecyc
 		return nil, lifecycleFailure(500, "error", "Something went wrong please try again later")
 	}
 	var project bool
-	if err := r.database.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$1 AND w.slug=$2 AND p.deleted_at IS NULL)`, c.ProjectID, c.Slug).Scan(&project); err != nil {
-		return nil, err
+	if scanErr := r.database.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$1 AND w.slug=$2 AND p.deleted_at IS NULL)`, c.ProjectID, c.Slug).Scan(&project); scanErr != nil {
+		return nil, scanErr
 	}
 	if !project {
 		return nil, lifecycleMissing(true)
@@ -421,18 +421,18 @@ func (r *LifecycleRepository) lifecycleBulkCreate(ctx context.Context, c Lifecyc
 	// Python constructs the complete dictionary before any ORM lookup. Equal
 	// numeric keys replace the role but retain the first key and its position.
 	for _, entry := range ordered {
-		id, err := lifecycleBulkMemberUUID(entry.identity)
-		if err != nil {
-			return nil, err
+		id, membershipErr := lifecycleBulkMemberUUID(entry.identity)
+		if membershipErr != nil {
+			return nil, membershipErr
 		}
 		entry.id = id
 		var role int
-		err = r.database.QueryRow(ctx, `SELECT wm.role FROM workspace_members wm JOIN workspaces w ON w.id=wm.workspace_id WHERE w.slug=$1 AND wm.member_id=$2 AND wm.is_active AND wm.deleted_at IS NULL`, c.Slug, entry.id).Scan(&role)
-		if errors.Is(err, pgx.ErrNoRows) {
+		membershipErr = r.database.QueryRow(ctx, `SELECT wm.role FROM workspace_members wm JOIN workspaces w ON w.id=wm.workspace_id WHERE w.slug=$1 AND wm.member_id=$2 AND wm.is_active AND wm.deleted_at IS NULL`, c.Slug, entry.id).Scan(&role)
+		if errors.Is(membershipErr, pgx.ErrNoRows) {
 			return nil, lifecycleMissing(true)
 		}
-		if err != nil {
-			return nil, err
+		if membershipErr != nil {
+			return nil, membershipErr
 		}
 		submitted, numeric := lifecycleNumericRole(entry.role)
 		if role == 20 && numeric && (submitted == 5 || submitted == 15) {
@@ -448,9 +448,9 @@ func (r *LifecycleRepository) lifecycleBulkCreate(ctx context.Context, c Lifecyc
 	// whose equal dictionary keys were collapsed during the role checks.
 	queryIDs := make([]string, 0, len(members))
 	for _, item := range members {
-		id, err := lifecycleBulkMemberUUID(item.(map[string]any)["member_id"])
-		if err != nil {
-			return nil, err
+		id, lifecycleBulkMemberUUIDErr := lifecycleBulkMemberUUID(item.(map[string]any)["member_id"])
+		if lifecycleBulkMemberUUIDErr != nil {
+			return nil, lifecycleBulkMemberUUIDErr
 		}
 		queryIDs = append(queryIDs, id)
 	}
@@ -466,9 +466,9 @@ func (r *LifecycleRepository) lifecycleBulkCreate(ctx context.Context, c Lifecyc
 		if !exists {
 			return nil, lifecycleFailure(400, "error", "The required key does not exist.")
 		}
-		role, err := lifecycleDatabaseRole(entry.role)
-		if err != nil {
-			return nil, err
+		role, lifecycleDatabaseRoleErr := lifecycleDatabaseRole(entry.role)
+		if lifecycleDatabaseRoleErr != nil {
+			return nil, lifecycleDatabaseRoleErr
 		}
 		updates = append(updates, map[string]any{"member_id": id, "role": role})
 	}
@@ -647,9 +647,9 @@ func (r *LifecycleRepository) lifecycleLegacyPatch(ctx context.Context, c Lifecy
 				if input.Form {
 					decoder := json.NewDecoder(strings.NewReader(djangoinput.ScalarString(value)))
 					decoder.UseNumber()
-					if err := decoder.Decode(&value); err != nil {
+					if decodeErr := decoder.Decode(&value); decodeErr != nil {
 						failure = "Value must be valid JSON."
-					} else if err := decoder.Decode(new(any)); err != io.EOF {
+					} else if trailingDataErr := decoder.Decode(new(any)); trailingDataErr != io.EOF {
 						failure = "Value must be valid JSON."
 					}
 					if failure != "" {
@@ -673,8 +673,8 @@ func (r *LifecycleRepository) lifecycleLegacyPatch(ctx context.Context, c Lifecy
 				} else {
 					value = parsed.String()
 					var exists bool
-					if err := r.database.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM users WHERE id=$1)`, value).Scan(&exists); err != nil {
-						return nil, err
+					if scanErr := r.database.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM users WHERE id=$1)`, value).Scan(&exists); scanErr != nil {
+						return nil, scanErr
 					}
 					if !exists {
 						failure = fmt.Sprintf("Invalid pk %q - object does not exist.", value)

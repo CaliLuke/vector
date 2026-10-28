@@ -189,8 +189,8 @@ func (store *PostgresRecentVisitStore) RecordRecentVisit(ctx context.Context, in
 	err = tx.QueryRow(ctx, `SELECT id FROM user_recent_visits WHERE entity_name=$1 AND entity_identifier IS NOT DISTINCT FROM $2 AND user_id=$3 AND project_id IS NOT DISTINCT FROM $4 AND workspace_id=$5 AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1 FOR UPDATE`, input.EntityName, entityID, userID, projectID, workspaceID).Scan(&visitID)
 	if err == nil {
 		now := time.Now().UTC()
-		if _, err := tx.Exec(ctx, `UPDATE user_recent_visits SET visited_at=$2 WHERE id=$1`, visitID, now); err != nil {
-			return fmt.Errorf("update recent visit timestamp: %w", err)
+		if _, execErr := tx.Exec(ctx, `UPDATE user_recent_visits SET visited_at=$2 WHERE id=$1`, visitID, now); execErr != nil {
+			return fmt.Errorf("update recent visit timestamp: %w", execErr)
 		}
 		return tx.Commit(ctx)
 	}
@@ -198,19 +198,19 @@ func (store *PostgresRecentVisitStore) RecordRecentVisit(ctx context.Context, in
 		return fmt.Errorf("find existing recent visit: %w", err)
 	}
 	var count int
-	if err := tx.QueryRow(ctx, `SELECT COUNT(*) FROM user_recent_visits WHERE user_id=$1 AND workspace_id=$2 AND deleted_at IS NULL`, userID, workspaceID).Scan(&count); err != nil {
-		return fmt.Errorf("count workspace recent visits: %w", err)
+	if scanErr := tx.QueryRow(ctx, `SELECT COUNT(*) FROM user_recent_visits WHERE user_id=$1 AND workspace_id=$2 AND deleted_at IS NULL`, userID, workspaceID).Scan(&count); scanErr != nil {
+		return fmt.Errorf("count workspace recent visits: %w", scanErr)
 	}
 	now := time.Now().UTC()
 	if count == recentVisitLimit {
 		var oldestID uuid.UUID
-		err := tx.QueryRow(ctx, `SELECT id FROM user_recent_visits WHERE user_id=$1 AND workspace_id=$2 AND deleted_at IS NULL ORDER BY created_at ASC LIMIT 1 FOR UPDATE`, userID, workspaceID).Scan(&oldestID)
-		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("find oldest recent visit: %w", err)
+		scanErr := tx.QueryRow(ctx, `SELECT id FROM user_recent_visits WHERE user_id=$1 AND workspace_id=$2 AND deleted_at IS NULL ORDER BY created_at ASC LIMIT 1 FOR UPDATE`, userID, workspaceID).Scan(&oldestID)
+		if scanErr != nil && !errors.Is(scanErr, pgx.ErrNoRows) {
+			return fmt.Errorf("find oldest recent visit: %w", scanErr)
 		}
-		if err == nil {
-			if _, err := tx.Exec(ctx, `UPDATE user_recent_visits SET deleted_at=$2 WHERE id=$1`, oldestID, now); err != nil {
-				return fmt.Errorf("evict oldest recent visit: %w", err)
+		if scanErr == nil {
+			if _, execErr := tx.Exec(ctx, `UPDATE user_recent_visits SET deleted_at=$2 WHERE id=$1`, oldestID, now); execErr != nil {
+				return fmt.Errorf("evict oldest recent visit: %w", execErr)
 			}
 		}
 	}

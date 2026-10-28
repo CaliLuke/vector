@@ -216,8 +216,8 @@ func (r *Repository) List(ctx context.Context, p Principal, slug string, q url.V
 	query := `SELECT ` + notificationJSON + ` || ` + annotationJSON + joins + ` WHERE ` + where + ` ORDER BY ` + order
 	var total int64
 	if page != nil {
-		if err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM notifications n JOIN workspaces w ON w.id=n.workspace_id WHERE `+where, args...).Scan(&total); err != nil {
-			return nil, err
+		if scanErr := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM notifications n JOIN workspaces w ON w.id=n.workspace_id WHERE `+where, args...).Scan(&total); scanErr != nil {
+			return nil, scanErr
 		}
 		if page.offset.IsInt64() {
 			query += ` LIMIT $3 OFFSET $4`

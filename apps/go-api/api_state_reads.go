@@ -157,16 +157,16 @@ func (s *apiStateReadsService) executeWrite(ctx context.Context, operation, stat
 	if !rate.Allowed {
 		return nil, nil, apiStateWriteError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))})
 	}
-	if err := djangosession.ValidateUserTimezone(principal.Timezone); err != nil {
-		if errors.Is(err, djangosession.ErrTimezoneNotFound) {
+	if validateUserTimezoneErr := djangosession.ValidateUserTimezone(principal.Timezone); validateUserTimezoneErr != nil {
+		if errors.Is(validateUserTimezoneErr, djangosession.ErrTimezoneNotFound) {
 			return nil, nil, apiStateWriteError(400, map[string]any{"error": "The required key does not exist."})
 		}
-		return nil, nil, mapAPIStateWriteError(err)
+		return nil, nil, mapAPIStateWriteError(validateUserTimezoneErr)
 	}
 	input := store.StateWriteInput{UserID: principal.UserID.String(), Slug: raw.Params["slug"], ProjectID: raw.Params["project_id"], StateID: stateID, Method: map[string]string{"create": "POST", "update": "PATCH", "delete": "DELETE"}[operation]}
 	if operation == "update" {
-		if err := writes.ResolveForUpdate(ctx, input); err != nil {
-			return nil, nil, apiStateErrorFromWrite(err)
+		if resolveForUpdateErr := writes.ResolveForUpdate(ctx, input); resolveForUpdateErr != nil {
+			return nil, nil, apiStateErrorFromWrite(resolveForUpdateErr)
 		}
 	}
 	parsed := djangoinput.Input{Fields: map[string]any{}}

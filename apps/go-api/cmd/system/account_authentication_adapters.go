@@ -46,13 +46,13 @@ func (issuer *redisMagicCodeIssuer) Issue(ctx context.Context, email string) (st
 		var record struct {
 			CurrentAttempt int `json:"current_attempt"`
 		}
-		if err := json.Unmarshal(value, &record); err != nil {
-			return "", "", fmt.Errorf("decode existing magic code: %w", err)
+		if unmarshalErr := json.Unmarshal(value, &record); unmarshalErr != nil {
+			return "", "", fmt.Errorf("decode existing magic code: %w", unmarshalErr)
 		}
 		if record.CurrentAttempt > 2 {
-			exists, err := issuer.lookup(ctx, email)
-			if err != nil {
-				return "", "", fmt.Errorf("check magic-code account: %w", err)
+			exists, lookupErr := issuer.lookup(ctx, email)
+			if lookupErr != nil {
+				return "", "", fmt.Errorf("check magic-code account: %w", lookupErr)
 			}
 			if exists {
 				return "", "", &systemapi.MagicCodeError{Code: 5100, Message: "EMAIL_CODE_ATTEMPT_EXHAUSTED_SIGN_IN", Email: email}

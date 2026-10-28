@@ -65,8 +65,8 @@ func TestRedisMagicCodeIssuerPayloadVerifiesAndConsumes(t *testing.T) {
 	defer client.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	if err := client.Ping(ctx).Err(); err != nil {
-		t.Fatalf("connect test Redis: %v", err)
+	if pingErr := client.Ping(ctx).Err(); pingErr != nil {
+		t.Fatalf("connect test Redis: %v", pingErr)
 	}
 	issuer, err := newRedisMagicCodeIssuer(client, func(context.Context, string) (bool, error) { return true, nil })
 	if err != nil {
@@ -87,8 +87,8 @@ func TestRedisMagicCodeIssuerPayloadVerifiesAndConsumes(t *testing.T) {
 		Email          string `json:"email"`
 		Token          string `json:"token"`
 	}
-	if err := json.Unmarshal(encoded, &record); err != nil {
-		t.Fatalf("decode issued record: %v", err)
+	if unmarshalErr := json.Unmarshal(encoded, &record); unmarshalErr != nil {
+		t.Fatalf("decode issued record: %v", unmarshalErr)
 	}
 	if record.CurrentAttempt != 0 || record.Email != email || record.Token != code {
 		t.Fatalf("issued Redis record = %#v", record)

@@ -42,9 +42,9 @@ func checkLocalLoginAt(ctx context.Context, email, password, origin string, outp
 		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
 	}
 	request := func(path string, body io.Reader) (*http.Response, error) {
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, origin+path, body)
-		if err != nil {
-			return nil, err
+		req, newRequestWithContextErr := http.NewRequestWithContext(ctx, http.MethodGet, origin+path, body)
+		if newRequestWithContextErr != nil {
+			return nil, newRequestWithContextErr
 		}
 		if body != nil {
 			req.Method = http.MethodPost
@@ -65,9 +65,9 @@ func checkLocalLoginAt(ctx context.Context, email, password, origin string, outp
 	var csrf struct {
 		Token string `json:"csrf_token"`
 	}
-	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&csrf); err != nil {
+	if decodeErr := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&csrf); decodeErr != nil {
 		resp.Body.Close()
-		return fmt.Errorf("decode CSRF response: %w", err)
+		return fmt.Errorf("decode CSRF response: %w", decodeErr)
 	}
 	resp.Body.Close()
 	if csrf.Token == "" {

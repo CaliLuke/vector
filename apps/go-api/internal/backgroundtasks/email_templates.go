@@ -37,8 +37,8 @@ func renderPlaneEmail(templateName string, values map[string]string) (string, st
 		return "", "", fmt.Errorf("parse email template %q: %w", templateName, err)
 	}
 	var body bytes.Buffer
-	if err := template.Execute(&body, values); err != nil {
-		return "", "", fmt.Errorf("render email template %q: %w", templateName, err)
+	if executeErr := template.Execute(&body, values); executeErr != nil {
+		return "", "", fmt.Errorf("render email template %q: %w", templateName, executeErr)
 	}
 	text, err := planeEmailPlainText(body.String())
 	if err != nil {

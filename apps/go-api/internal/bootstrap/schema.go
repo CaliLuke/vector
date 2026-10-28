@@ -35,11 +35,11 @@ func MigrateSchema(ctx context.Context, databaseURL string) error {
 	}
 	// Closing this dedicated connection releases its session lock even on error.
 	defer connection.Close(context.WithoutCancel(ctx))
-	if _, err := connection.Exec(ctx, `SELECT pg_advisory_lock($1)`, registrationLockID+2); err != nil {
-		return fmt.Errorf("lock schema bootstrap: %w", err)
+	if _, execErr := connection.Exec(ctx, `SELECT pg_advisory_lock($1)`, registrationLockID+2); execErr != nil {
+		return fmt.Errorf("lock schema bootstrap: %w", execErr)
 	}
-	if _, err := connection.Exec(ctx, `SET search_path TO pg_catalog`); err != nil {
-		return err
+	if _, execErr := connection.Exec(ctx, `SET search_path TO pg_catalog`); execErr != nil {
+		return execErr
 	}
 	expected, err := expectedSchema()
 	if err != nil {
@@ -53,11 +53,11 @@ func MigrateSchema(ctx context.Context, databaseURL string) error {
 	if managed {
 		var version int64
 		var dirty bool
-		err := connection.QueryRow(ctx, `SELECT version,dirty FROM public.plane_schema_migrations LIMIT 1`).Scan(&version, &dirty)
-		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("read application migration baseline: %w", err)
+		scanErr := connection.QueryRow(ctx, `SELECT version,dirty FROM public.plane_schema_migrations LIMIT 1`).Scan(&version, &dirty)
+		if scanErr != nil && !errors.Is(scanErr, pgx.ErrNoRows) {
+			return fmt.Errorf("read application migration baseline: %w", scanErr)
 		}
-		managed = dirty || err == nil && version >= 1
+		managed = dirty || scanErr == nil && version >= 1
 	}
 	adopt := false
 	adoptVersion := 1
@@ -71,13 +71,13 @@ func MigrateSchema(ctx context.Context, databaseURL string) error {
 			}
 		}
 		if adopt {
-			if err := validateSchema(expected, actual); err != nil {
+			if validateSchemaErr := validateSchema(expected, actual); validateSchemaErr != nil {
 				native, nativeErr := schemaManifest("schema_native_deletion.json")
 				if nativeErr != nil {
 					return nativeErr
 				}
 				if validateSchema(native, actual) != nil {
-					return fmt.Errorf("cannot adopt existing Django schema: %w", err)
+					return fmt.Errorf("cannot adopt existing Django schema: %w", validateSchemaErr)
 				}
 				adoptVersion = 2
 			}
@@ -103,25 +103,25 @@ func MigrateSchema(ctx context.Context, databaseURL string) error {
 	if adopt {
 		// Force is the library's baseline-adoption operation. It is safe only
 		// after the complete source schema comparison above has succeeded.
-		if err := migrator.Force(adoptVersion); err != nil {
-			return fmt.Errorf("record verified Django baseline: %w", err)
+		if forceErr := migrator.Force(adoptVersion); forceErr != nil {
+			return fmt.Errorf("record verified Django baseline: %w", forceErr)
 		}
 	}
 	if !managed && !adopt {
 		// Verify the original schema before applying native constraint policies.
-		if err := migrator.Steps(1); err != nil {
-			return fmt.Errorf("install source baseline: %w", err)
+		if stepsErr := migrator.Steps(1); stepsErr != nil {
+			return fmt.Errorf("install source baseline: %w", stepsErr)
 		}
 		actual, err = readSchema(ctx, connection)
 		if err != nil {
 			return err
 		}
-		if err := validateSchema(expected, actual); err != nil {
-			return fmt.Errorf("verify source baseline: %w", err)
+		if validateSchemaErr := validateSchema(expected, actual); validateSchemaErr != nil {
+			return fmt.Errorf("verify source baseline: %w", validateSchemaErr)
 		}
 	}
-	if err := migrator.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		return fmt.Errorf("apply application schema migrations: %w", err)
+	if upErr := migrator.Up(); upErr != nil && !errors.Is(upErr, migrate.ErrNoChange) {
+		return fmt.Errorf("apply application schema migrations: %w", upErr)
 	}
 	native, err := schemaManifest("schema_native_deletion.json")
 	if err != nil {

@@ -274,8 +274,8 @@ func (service *invitationsMembershipService) PostAPIV1WorkspacesBySlugInvitation
 	if err != nil {
 		return nil, err
 	}
-	if err := service.authorizeWorkspace(ctx, principal, payload.Slug, false, 20); err != nil {
-		return nil, err
+	if authorizeWorkspaceErr := service.authorizeWorkspace(ctx, principal, payload.Slug, false, 20); authorizeWorkspaceErr != nil {
+		return nil, authorizeWorkspaceErr
 	}
 	if body != nil {
 		defer body.Close()
@@ -292,8 +292,8 @@ func (service *invitationsMembershipService) PatchAPIV1WorkspacesBySlugInvitatio
 	if err != nil {
 		return nil, err
 	}
-	if err := service.authorizeWorkspace(ctx, principal, payload.Slug, false, 20); err != nil {
-		return nil, err
+	if authorizeWorkspaceErr := service.authorizeWorkspace(ctx, principal, payload.Slug, false, 20); authorizeWorkspaceErr != nil {
+		return nil, authorizeWorkspaceErr
 	}
 	id, err := uuid.Parse(payload.Pk)
 	if err != nil {
@@ -314,8 +314,8 @@ func (service *invitationsMembershipService) DeleteAPIV1WorkspacesBySlugInvitati
 	if err != nil {
 		return err
 	}
-	if err := service.authorizeWorkspace(ctx, principal, payload.Slug, false, 20); err != nil {
-		return err
+	if authorizeWorkspaceErr := service.authorizeWorkspace(ctx, principal, payload.Slug, false, 20); authorizeWorkspaceErr != nil {
+		return authorizeWorkspaceErr
 	}
 	id, err := uuid.Parse(payload.Pk)
 	if err != nil {
@@ -376,8 +376,8 @@ func (service *invitationsMembershipService) GetAPIV1WorkspacesBySlugInvitations
 	if err != nil {
 		return nil, err
 	}
-	if err := service.authorizeWorkspace(ctx, principal, payload.Slug, false, 20); err != nil {
-		return nil, err
+	if authorizeWorkspaceErr := service.authorizeWorkspace(ctx, principal, payload.Slug, false, 20); authorizeWorkspaceErr != nil {
+		return nil, authorizeWorkspaceErr
 	}
 	data, err := service.repository.WorkspaceInvites(ctx, payload.Slug)
 	if err != nil {
@@ -391,8 +391,8 @@ func (service *invitationsMembershipService) GetAPIV1WorkspacesBySlugInvitations
 	if err != nil {
 		return nil, err
 	}
-	if err := service.authorizeWorkspace(ctx, principal, payload.Slug, false, 20); err != nil {
-		return nil, err
+	if authorizeWorkspaceErr := service.authorizeWorkspace(ctx, principal, payload.Slug, false, 20); authorizeWorkspaceErr != nil {
+		return nil, authorizeWorkspaceErr
 	}
 	id, err := uuid.Parse(payload.Pk)
 	if err != nil {
@@ -410,8 +410,8 @@ func (service *invitationsMembershipService) GetAPIV1WorkspacesBySlugMembers(ctx
 	if err != nil {
 		return nil, err
 	}
-	if err := service.authorizeWorkspace(ctx, principal, payload.Slug, true, 15, 20); err != nil {
-		return nil, err
+	if authorizeWorkspaceErr := service.authorizeWorkspace(ctx, principal, payload.Slug, true, 15, 20); authorizeWorkspaceErr != nil {
+		return nil, authorizeWorkspaceErr
 	}
 	exists, existsErr := service.repository.WorkspaceExists(ctx, payload.Slug)
 	if existsErr != nil {
@@ -432,8 +432,8 @@ func (service *invitationsMembershipService) GetAPIV1WorkspacesBySlugMembersLite
 	if err != nil {
 		return nil, err
 	}
-	if err := service.authorizeWorkspace(ctx, principal, payload.Slug, true, 15, 20); err != nil {
-		return nil, err
+	if authorizeWorkspaceErr := service.authorizeWorkspace(ctx, principal, payload.Slug, true, 15, 20); authorizeWorkspaceErr != nil {
+		return nil, authorizeWorkspaceErr
 	}
 	exists, err := service.repository.WorkspaceExists(ctx, payload.Slug)
 	if err != nil {

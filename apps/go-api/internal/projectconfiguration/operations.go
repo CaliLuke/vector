@@ -29,8 +29,8 @@ func (r *Repository) PatchEstimate(ctx context.Context, user, slug, project, est
 	if err != nil {
 		return nil, err
 	}
-	if err := requireObjectInput(input); err != nil {
-		return nil, err
+	if requireObjectInputErr := requireObjectInput(input); requireObjectInputErr != nil {
+		return nil, requireObjectInputErr
 	}
 	pointsValue, present := input.Fields["estimate_points"]
 	points, ok := pointsValue.([]any)
@@ -129,8 +129,8 @@ func (r *Repository) CreateEstimatePoint(ctx context.Context, user, slug, projec
 	if err != nil {
 		return nil, err
 	}
-	if err := requireObjectInput(input); err != nil {
-		return nil, err
+	if requireObjectInputErr := requireObjectInput(input); requireObjectInputErr != nil {
+		return nil, requireObjectInputErr
 	}
 	key, keyOK := input.Fields["key"]
 	value, valueOK := input.Fields["value"]
@@ -285,17 +285,17 @@ func (r *Repository) deleteEstimatePoint(ctx context.Context, user, slug, projec
 		return nil, err
 	}
 	for _, issue := range issues {
-		requestedData, err := pythoncompat.Dumps(map[string]any{"estimate_point": requested}, nil)
-		if err != nil {
-			return nil, err
+		requestedData, dumpsErr := pythoncompat.Dumps(map[string]any{"estimate_point": requested}, nil)
+		if dumpsErr != nil {
+			return nil, dumpsErr
 		}
-		current, err := pythoncompat.Dumps(map[string]any{"estimate_point": issue.CurrentPoint}, nil)
-		if err != nil {
-			return nil, err
+		current, dumpsErr := pythoncompat.Dumps(map[string]any{"estimate_point": issue.CurrentPoint}, nil)
+		if dumpsErr != nil {
+			return nil, dumpsErr
 		}
 		args := map[string]any{"type": "issue.activity.updated", "requested_data": requestedData, "actor_id": user, "issue_id": issue.ID, "project_id": project, "current_instance": current, "epoch": 0}
-		if err := r.enqueueWorkItemEffect(ctx, "activity", args); err != nil {
-			return nil, err
+		if enqueueWorkItemEffectErr := r.enqueueWorkItemEffect(ctx, "activity", args); enqueueWorkItemEffectErr != nil {
+			return nil, enqueueWorkItemEffectErr
 		}
 	}
 	if _, err = r.db.Exec(ctx, `UPDATE issues SET estimate_point_id=$1,updated_at=clock_timestamp() WHERE project_id=$2 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$3) AND estimate_point_id=$4 AND deleted_at IS NULL`, requested, project, slug, pointID); err != nil {
@@ -510,24 +510,24 @@ func (r *Repository) writeAPILabel(ctx context.Context, tx pgx.Tx, user, slug, p
 	if src, srcOK := values["external_source"]; srcOK && truthy(src) {
 		if ext, extOK := values["external_id"]; extOK && truthy(ext) {
 			var conflictID string
-			err := db.QueryRow(ctx, `SELECT id::text FROM labels WHERE project_id=$1 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$2) AND external_source=$3 AND external_id=$4 AND deleted_at IS NULL AND ($5='' OR id::text<>$5) LIMIT 1`, project, slug, src, ext, labelID).Scan(&conflictID)
-			if err == nil {
+			scanErr := db.QueryRow(ctx, `SELECT id::text FROM labels WHERE project_id=$1 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$2) AND external_source=$3 AND external_id=$4 AND deleted_at IS NULL AND ($5='' OR id::text<>$5) LIMIT 1`, project, slug, src, ext, labelID).Scan(&conflictID)
+			if scanErr == nil {
 				return nil, &HTTPError{Status: 409, Body: map[string]any{"error": "Label with the same external id and external source already exists", "id": conflictID}}
 			}
-			if !errors.Is(err, pgx.ErrNoRows) {
-				return nil, err
+			if !errors.Is(scanErr, pgx.ErrNoRows) {
+				return nil, scanErr
 			}
 		}
 	}
 	if method == http.MethodPost {
 		name := values["name"]
 		var conflictID string
-		err := db.QueryRow(ctx, `SELECT id::text FROM labels WHERE project_id=$1 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$2) AND name=$3 AND deleted_at IS NULL LIMIT 1`, project, slug, name).Scan(&conflictID)
-		if err == nil {
+		createLabelErr := db.QueryRow(ctx, `SELECT id::text FROM labels WHERE project_id=$1 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$2) AND name=$3 AND deleted_at IS NULL LIMIT 1`, project, slug, name).Scan(&conflictID)
+		if createLabelErr == nil {
 			return nil, &HTTPError{Status: 409, Body: map[string]any{"error": "Label with the same name already exists in the project", "id": conflictID}}
 		}
-		if !errors.Is(err, pgx.ErrNoRows) {
-			return nil, err
+		if !errors.Is(createLabelErr, pgx.ErrNoRows) {
+			return nil, createLabelErr
 		}
 		color, _ := values["color"].(string)
 		description := stringValueOrDefault(values, "description", "")
@@ -537,13 +537,13 @@ func (r *Repository) writeAPILabel(ctx context.Context, tx pgx.Tx, user, slug, p
 		if value, ok := values["parent_id"]; ok && value != nil {
 			parent = value
 		}
-		_, err = db.Exec(ctx, `INSERT INTO labels(id,name,color,parent_id,project_id,workspace_id,sort_order,description,external_source,external_id,created_at,updated_at,created_by_id,updated_by_id) SELECT $1,$2,$3,$4,p.id,p.workspace_id,COALESCE((SELECT MAX(sort_order)+10000 FROM labels WHERE project_id=p.id AND deleted_at IS NULL),65535),$5,$6,$7,clock_timestamp(),clock_timestamp(),$8,NULL FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$9 AND w.slug=$10`, targetID, name, color, parent, description, externalSource, externalID, user, project, slug)
-		if err != nil {
-			return nil, err
+		_, createLabelErr = db.Exec(ctx, `INSERT INTO labels(id,name,color,parent_id,project_id,workspace_id,sort_order,description,external_source,external_id,created_at,updated_at,created_by_id,updated_by_id) SELECT $1,$2,$3,$4,p.id,p.workspace_id,COALESCE((SELECT MAX(sort_order)+10000 FROM labels WHERE project_id=p.id AND deleted_at IS NULL),65535),$5,$6,$7,clock_timestamp(),clock_timestamp(),$8,NULL FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$9 AND w.slug=$10`, targetID, name, color, parent, description, externalSource, externalID, user, project, slug)
+		if createLabelErr != nil {
+			return nil, createLabelErr
 		}
-		data, err := scanJSON(ctx, db, labelReadSQL, targetID)
-		if err != nil {
-			return nil, err
+		data, createLabelErr := scanJSON(ctx, db, labelReadSQL, targetID)
+		if createLabelErr != nil {
+			return nil, createLabelErr
 		}
 		return data, nil
 	}
@@ -593,8 +593,8 @@ func (r *Repository) BulkCreateLabels(ctx context.Context, user, slug, project s
 	if err != nil {
 		return nil, err
 	}
-	if err := requireObjectInput(input); err != nil {
-		return nil, err
+	if requireObjectInputErr := requireObjectInput(input); requireObjectInputErr != nil {
+		return nil, requireObjectInputErr
 	}
 	value, present := input.Fields["label_data"]
 	labels := []any{}
@@ -619,23 +619,23 @@ func (r *Repository) BulkCreateLabels(ctx context.Context, user, slug, project s
 		if value, ok := label["description"]; ok {
 			description = djangoinput.ScalarString(value)
 		}
-		colorNumber, err := rand.Int(rand.Reader, big.NewInt(0x1000001))
-		if err != nil {
-			return nil, err
+		colorNumber, labelErr := rand.Int(rand.Reader, big.NewInt(0x1000001))
+		if labelErr != nil {
+			return nil, labelErr
 		}
 		color := fmt.Sprintf("#%06X", colorNumber.Int64())
 		id := uuid.NewString()
 		var data []byte
-		err = r.db.QueryRow(ctx, `INSERT INTO labels(id,name,color,project_id,workspace_id,sort_order,description,created_at,updated_at,created_by_id,updated_by_id) SELECT $1,$2,$3,p.id,p.workspace_id,65535,$4,clock_timestamp(),clock_timestamp(),$5,$5 FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$6 AND w.slug=$7 ON CONFLICT DO NOTHING RETURNING jsonb_build_object('parent',parent_id,'name',name,'color',color,'id',id,'project_id',project_id,'workspace_id',workspace_id,'sort_order',sort_order)`, id, name, color, description, user, project, slug).Scan(&data)
-		if errors.Is(err, pgx.ErrNoRows) {
+		labelErr = r.db.QueryRow(ctx, `INSERT INTO labels(id,name,color,project_id,workspace_id,sort_order,description,created_at,updated_at,created_by_id,updated_by_id) SELECT $1,$2,$3,p.id,p.workspace_id,65535,$4,clock_timestamp(),clock_timestamp(),$5,$5 FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$6 AND w.slug=$7 ON CONFLICT DO NOTHING RETURNING jsonb_build_object('parent',parent_id,'name',name,'color',color,'id',id,'project_id',project_id,'workspace_id',workspace_id,'sort_order',sort_order)`, id, name, color, description, user, project, slug).Scan(&data)
+		if errors.Is(labelErr, pgx.ErrNoRows) {
 			continue
 		}
-		if err != nil {
-			return nil, err
+		if labelErr != nil {
+			return nil, labelErr
 		}
 		var row any
-		if err = json.Unmarshal(data, &row); err != nil {
-			return nil, err
+		if labelErr = json.Unmarshal(data, &row); labelErr != nil {
+			return nil, labelErr
 		}
 		result = append(result, row)
 	}

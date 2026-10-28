@@ -145,9 +145,9 @@ func (s *customViewCreationService) CreateProjectView(ctx context.Context, paylo
 		closeCustomViewBody(body)
 		return err
 	}
-	if err := s.repo.ProjectTarget(ctx, principal.userID, payload.Slug, payload.ProjectID); err != nil {
+	if projectTargetErr := s.repo.ProjectTarget(ctx, principal.userID, payload.Slug, payload.ProjectID); projectTargetErr != nil {
 		closeCustomViewBody(body)
-		return s.mapError(err)
+		return s.mapError(projectTargetErr)
 	}
 	input, err := customViewCreationInput(ctx, body)
 	if err != nil {
@@ -191,9 +191,9 @@ func (s *customViewCreationService) CreateWorkspaceView(ctx context.Context, pay
 		closeCustomViewBody(body)
 		return err
 	}
-	if err := s.repo.WorkspaceTarget(ctx, principal.userID, payload.Slug); err != nil {
+	if workspaceTargetErr := s.repo.WorkspaceTarget(ctx, principal.userID, payload.Slug); workspaceTargetErr != nil {
 		closeCustomViewBody(body)
-		return s.mapError(err)
+		return s.mapError(workspaceTargetErr)
 	}
 	input, err := customViewCreationInput(ctx, body)
 	if err != nil {

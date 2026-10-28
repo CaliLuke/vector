@@ -154,8 +154,8 @@ func (repository *LifecycleRepository) Patch(ctx context.Context, slug, projectI
 	}
 	var projectTimezone string
 	var actorTimezone string
-	if err := repository.database.QueryRow(ctx, `SELECT p.timezone,COALESCE(NULLIF(u.user_timezone,''),'UTC') FROM projects p JOIN users u ON u.id=$2 WHERE p.id=$1`, projectID, actor).Scan(&projectTimezone, &actorTimezone); err != nil {
-		return nil, err
+	if scanErr := repository.database.QueryRow(ctx, `SELECT p.timezone,COALESCE(NULLIF(u.user_timezone,''),'UTC') FROM projects p JOIN users u ON u.id=$2 WHERE p.id=$1`, projectID, actor).Scan(&projectTimezone, &actorTimezone); scanErr != nil {
+		return nil, scanErr
 	}
 	end, _ := timestampValue(before["end_date"])
 	completed := end != nil && end.Before(repository.now())
@@ -202,9 +202,9 @@ func (repository *LifecycleRepository) Patch(ctx context.Context, slug, projectI
 			return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{key: []string{"Datetime has wrong format."}}}
 		}
 		var parsed *time.Time
-		var err error
-		parsed, err = parseCycleDateTime(text, actorTimezone)
-		if err != nil {
+		var dateParseErr error
+		parsed, dateParseErr = parseCycleDateTime(text, actorTimezone)
+		if dateParseErr != nil {
 			return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{key: []string{"Datetime has wrong format."}}}
 		}
 		*destination = parsed
@@ -214,19 +214,19 @@ func (repository *LifecycleRepository) Patch(ctx context.Context, slug, projectI
 		if startDate.After(*endDate) {
 			return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"non_field_errors": []string{"Start date cannot exceed end date"}}}
 		}
-		actorLocation, err := time.LoadLocation(actorTimezone)
-		if err != nil {
-			return nil, err
+		actorLocation, dateRangeErr := time.LoadLocation(actorTimezone)
+		if dateRangeErr != nil {
+			return nil, dateRangeErr
 		}
 		startDay := startDate.In(actorLocation).Format("2006-01-02")
 		endDay := endDate.In(actorLocation).Format("2006-01-02")
-		startDate, err = parseCycleDate(&startDay, projectTimezone, true)
-		if err != nil {
-			return nil, err
+		startDate, dateRangeErr = parseCycleDate(&startDay, projectTimezone, true)
+		if dateRangeErr != nil {
+			return nil, dateRangeErr
 		}
-		endDate, err = parseCycleDate(&endDay, projectTimezone, false)
-		if err != nil {
-			return nil, err
+		endDate, dateRangeErr = parseCycleDate(&endDay, projectTimezone, false)
+		if dateRangeErr != nil {
+			return nil, dateRangeErr
 		}
 		effective["start_date"] = startDate
 		effective["end_date"] = endDate
@@ -256,9 +256,9 @@ func (repository *LifecycleRepository) Patch(ctx context.Context, slug, projectI
 		}
 		cast := ""
 		if key == "view_props" || key == "progress_snapshot" || key == "logo_props" {
-			encoded, err := json.Marshal(value)
-			if err != nil {
-				return nil, err
+			encoded, marshalErr := json.Marshal(value)
+			if marshalErr != nil {
+				return nil, marshalErr
 			}
 			value = string(encoded)
 			cast = "::jsonb"
@@ -266,8 +266,8 @@ func (repository *LifecycleRepository) Patch(ctx context.Context, slug, projectI
 		if key == "owned_by" {
 			if text, ok := value.(string); ok {
 				var exists bool
-				if err := repository.database.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM users WHERE id=$1)`, text).Scan(&exists); err != nil {
-					return nil, err
+				if scanErr := repository.database.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM users WHERE id=$1)`, text).Scan(&exists); scanErr != nil {
+					return nil, scanErr
 				}
 				if !exists {
 					return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"owned_by": []string{"Invalid pk \"" + text + "\" - object does not exist."}}}
@@ -277,19 +277,19 @@ func (repository *LifecycleRepository) Patch(ctx context.Context, slug, projectI
 		add(column, value, cast)
 	}
 	if api {
-		if err := repository.checkAPIExternalIDConflict(ctx, projectID, slug, cycleID, before, activityData); err != nil {
-			return nil, err
+		if checkAPIExternalErr := repository.checkAPIExternalIDConflict(ctx, projectID, slug, cycleID, before, activityData); checkAPIExternalErr != nil {
+			return nil, checkAPIExternalErr
 		}
 	}
 	args = append(args, repository.now(), actor)
 	updates = append(updates, "updated_at=$"+strconv.Itoa(len(args)-1), "updated_by_id=$"+strconv.Itoa(len(args)))
 	query := "UPDATE cycles SET " + strings.Join(updates, ",") + " WHERE id=$2 AND project_id=$3 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$4) AND deleted_at IS NULL RETURNING to_jsonb(cycles)||jsonb_build_object('project',project_id,'workspace',workspace_id,'owned_by',owned_by_id,'created_by',created_by_id,'updated_by',updated_by_id," + cycleUserTimestampJSONFields("cycles") + ")"
 	var raw []byte
-	if err := repository.database.QueryRow(ctx, query, args...).Scan(&raw); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
+	if scanErr := repository.database.QueryRow(ctx, query, args...).Scan(&raw); scanErr != nil {
+		if errors.Is(scanErr, pgx.ErrNoRows) {
 			return nil, ErrNotFound
 		}
-		return nil, err
+		return nil, scanErr
 	}
 	var updated map[string]any
 	updated, err = pythoncompat.DecodeObject(raw)
@@ -627,12 +627,12 @@ func (repository *LifecycleRepository) Delete(ctx context.Context, slug, project
 		return err
 	}
 	var issueIDs []byte
-	if err := repository.database.QueryRow(ctx, `SELECT COALESCE(json_agg(ci.issue_id ORDER BY ci.issue_id),'[]'::json) FROM cycle_issues ci WHERE ci.cycle_id=$1 AND ci.deleted_at IS NULL`, cycleID).Scan(&issueIDs); err != nil {
-		return err
+	if scanErr := repository.database.QueryRow(ctx, `SELECT COALESCE(json_agg(ci.issue_id ORDER BY ci.issue_id),'[]'::json) FROM cycle_issues ci WHERE ci.cycle_id=$1 AND ci.deleted_at IS NULL`, cycleID).Scan(&issueIDs); scanErr != nil {
+		return scanErr
 	}
 	var ids []string
-	if err := json.Unmarshal(issueIDs, &ids); err != nil {
-		return err
+	if unmarshalErr := json.Unmarshal(issueIDs, &ids); unmarshalErr != nil {
+		return unmarshalErr
 	}
 	requested, err := json.Marshal(map[string]any{"cycle_id": cycleID, "cycle_name": cycle.Name, "issues": ids})
 	if err != nil {
@@ -702,8 +702,8 @@ func (repository *LifecycleRepository) Create(ctx context.Context, actor, slug, 
 		owner = *input.OwnedBy
 	}
 	var ownerExists bool
-	if err := repository.database.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM users WHERE id=$1)`, owner).Scan(&ownerExists); err != nil {
-		return nil, err
+	if scanErr := repository.database.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM users WHERE id=$1)`, owner).Scan(&ownerExists); scanErr != nil {
+		return nil, scanErr
 	}
 	if !ownerExists {
 		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"owned_by": []string{"Invalid pk \"" + owner + "\" - object does not exist."}}}
@@ -762,8 +762,8 @@ RETURNING id::text`
 		"external_source": input.ExternalSource, "external_id": input.ExternalID, "progress_snapshot": progressSnapshot,
 		"logo_props": logoProps, "timezone": input.Timezone, "version": version, "actor": actor,
 	}
-	if err := repository.database.QueryRow(ctx, query, args).Scan(&cycleID); err != nil {
-		return nil, err
+	if scanErr := repository.database.QueryRow(ctx, query, args).Scan(&cycleID); scanErr != nil {
+		return nil, scanErr
 	}
 	value, err := djangoapi.JSON(ctx, repository.database, `SELECT to_jsonb(c) || jsonb_build_object('workspace',c.workspace_id,'project',c.project_id,'owned_by',c.owned_by_id,'created_by',c.created_by_id,'updated_by',c.updated_by_id,`+cycleUserTimestampJSONFields("c")+`) FROM cycles c WHERE c.id=$2`, actor, cycleID)
 	if err != nil {

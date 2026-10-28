@@ -331,9 +331,9 @@ func testParseCase(text, want, context string, opts ...ParseOption) (err error) 
 			Namespace: namespace,
 			Type:      ElementNode,
 		}
-		nodes, err := ParseFragmentWithOptions(strings.NewReader(text), contextNode, opts...)
-		if err != nil {
-			return err
+		nodes, parseFragmentWithOptionsErr := ParseFragmentWithOptions(strings.NewReader(text), contextNode, opts...)
+		if parseFragmentWithOptionsErr != nil {
+			return parseFragmentWithOptionsErr
 		}
 		doc = &Node{
 			Type: DocumentNode,
@@ -343,8 +343,8 @@ func testParseCase(text, want, context string, opts ...ParseOption) (err error) 
 		}
 	}
 
-	if err := checkTreeConsistency(doc); err != nil {
-		return err
+	if checkTreeConsistencyErr := checkTreeConsistency(doc); checkTreeConsistencyErr != nil {
+		return checkTreeConsistencyErr
 	}
 
 	got, err := dump(doc)

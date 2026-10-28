@@ -74,7 +74,7 @@ func (hasher *Hasher) Verify(encoded, raw string) (bool, error) {
 	if err != nil || iterations < 1 || iterations > math.MaxInt32 {
 		return false, ErrInvalidHash
 	}
-	if _, err := base64.StdEncoding.DecodeString(parts[3]); err != nil {
+	if _, decodeStringErr := base64.StdEncoding.DecodeString(parts[3]); decodeStringErr != nil {
 		return false, ErrInvalidHash
 	}
 	calculated, err := encode(raw, parts[2], int(iterations))

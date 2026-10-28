@@ -24,8 +24,8 @@ func TestPostgresCleanupBatchOperations(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, task := range cleanupTasks {
-		if _, err := store.DeleteCleanupBatch(ctx, CleanupBatchInput{Task: task, Cutoff: time.Now().UTC()}); err != nil {
-			t.Fatalf("execute empty PostgreSQL cleanup batch for %s: %v", task, err)
+		if _, deleteCleanupBatchErr := store.DeleteCleanupBatch(ctx, CleanupBatchInput{Task: task, Cutoff: time.Now().UTC()}); deleteCleanupBatchErr != nil {
+			t.Fatalf("execute empty PostgreSQL cleanup batch for %s: %v", task, deleteCleanupBatchErr)
 		}
 	}
 
@@ -34,14 +34,14 @@ func TestPostgresCleanupBatchOperations(t *testing.T) {
 	for range CleanupBatchSize + 1 {
 		id := uuid.New()
 		ids = append(ids, id)
-		if err := insertAPIActivityLogFixture(ctx, pool, id, cutoff.Add(-time.Second)); err != nil {
-			t.Fatalf("insert old API activity log: %v", err)
+		if insertAPIActivityErr := insertAPIActivityLogFixture(ctx, pool, id, cutoff.Add(-time.Second)); insertAPIActivityErr != nil {
+			t.Fatalf("insert old API activity log: %v", insertAPIActivityErr)
 		}
 	}
 	recentID := uuid.New()
 	ids = append(ids, recentID)
-	if err := insertAPIActivityLogFixture(ctx, pool, recentID, cutoff.Add(time.Second)); err != nil {
-		t.Fatalf("insert recent API activity log: %v", err)
+	if insertAPIActivityErr := insertAPIActivityLogFixture(ctx, pool, recentID, cutoff.Add(time.Second)); insertAPIActivityErr != nil {
+		t.Fatalf("insert recent API activity log: %v", insertAPIActivityErr)
 	}
 	defer func() {
 		idStrings := make([]string, len(ids))
@@ -73,16 +73,16 @@ func TestPostgresCleanupBatchOperations(t *testing.T) {
 		t.Fatalf("repeat cleanup deleted %d rows, want 0", deleted)
 	}
 	var remaining int
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM api_activity_logs WHERE id=ANY($1::uuid[])`, []string{recentID.String()}).Scan(&remaining); err != nil {
-		t.Fatal(err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM api_activity_logs WHERE id=ANY($1::uuid[])`, []string{recentID.String()}).Scan(&remaining); scanErr != nil {
+		t.Fatal(scanErr)
 	}
 	if remaining != 1 {
 		t.Fatalf("recent API activity logs remaining = %d, want 1", remaining)
 	}
 
 	assetID := uuid.New()
-	if err := insertFileAssetFixture(ctx, pool, assetID, cutoff.Add(-time.Second), false); err != nil {
-		t.Fatalf("insert old unuploaded FileAsset: %v", err)
+	if insertFileAssetFixtureErr := insertFileAssetFixture(ctx, pool, assetID, cutoff.Add(-time.Second), false); insertFileAssetFixtureErr != nil {
+		t.Fatalf("insert old unuploaded FileAsset: %v", insertFileAssetFixtureErr)
 	}
 	defer func() {
 		_, _ = pool.Exec(context.Background(), `DELETE FROM file_assets WHERE id=$1`, assetID)
@@ -95,8 +95,8 @@ func TestPostgresCleanupBatchOperations(t *testing.T) {
 		t.Fatalf("unuploaded FileAsset cleanup affected %d rows, want 1", deleted)
 	}
 	var deletedAt *time.Time
-	if err := pool.QueryRow(ctx, `SELECT deleted_at FROM file_assets WHERE id=$1`, assetID).Scan(&deletedAt); err != nil {
-		t.Fatalf("read soft-deleted FileAsset: %v", err)
+	if scanErr := pool.QueryRow(ctx, `SELECT deleted_at FROM file_assets WHERE id=$1`, assetID).Scan(&deletedAt); scanErr != nil {
+		t.Fatalf("read soft-deleted FileAsset: %v", scanErr)
 	}
 	if deletedAt == nil {
 		t.Fatal("unuploaded FileAsset cleanup must preserve Django's soft-delete semantics")
@@ -132,25 +132,25 @@ func TestPostgresCleanupWorkflowUsesDurableAdmission(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := app.Start(ctx); err != nil {
-		t.Fatal(err)
+	if startErr := app.Start(ctx); startErr != nil {
+		t.Fatal(startErr)
 	}
 	defer func() {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutdownCancel()
-		if err := app.Shutdown(shutdownCtx); err != nil {
-			t.Errorf("shutdown cleanup runtime: %v", err)
+		if shutdownErr := app.Shutdown(shutdownCtx); shutdownErr != nil {
+			t.Errorf("shutdown cleanup runtime: %v", shutdownErr)
 		}
 	}()
 
 	scheduledAt := time.Now().UTC()
 	oldID := uuid.New()
-	if err := insertAPIActivityLogFixture(ctx, pool, oldID, scheduledAt.Add(-time.Second)); err != nil {
-		t.Fatal(err)
+	if insertAPIActivityErr := insertAPIActivityLogFixture(ctx, pool, oldID, scheduledAt.Add(-time.Second)); insertAPIActivityErr != nil {
+		t.Fatal(insertAPIActivityErr)
 	}
 	freshID := uuid.New()
-	if err := insertAPIActivityLogFixture(ctx, pool, freshID, scheduledAt.Add(time.Hour)); err != nil {
-		t.Fatal(err)
+	if insertAPIActivityErr := insertAPIActivityLogFixture(ctx, pool, freshID, scheduledAt.Add(time.Hour)); insertAPIActivityErr != nil {
+		t.Fatal(insertAPIActivityErr)
 	}
 	defer func() {
 		_, _ = pool.Exec(context.Background(), `DELETE FROM api_activity_logs WHERE id=ANY($1::uuid[])`, []string{oldID.String(), freshID.String()})

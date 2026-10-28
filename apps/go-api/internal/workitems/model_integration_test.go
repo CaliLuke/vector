@@ -132,8 +132,8 @@ INSERT INTO issue_sequences(id,project_id,sequence,deleted,deleted_at) VALUES
 			t.Fatal(err)
 		}
 		var completion time.Time
-		if err := pool.QueryRow(ctx, `SELECT completed_at FROM issues WHERE id=$1`, saved["id"]).Scan(&completion); err != nil {
-			t.Fatal(err)
+		if scanErr := pool.QueryRow(ctx, `SELECT completed_at FROM issues WHERE id=$1`, saved["id"]).Scan(&completion); scanErr != nil {
+			t.Fatal(scanErr)
 		}
 		if !completion.Equal(now) {
 			t.Fatalf("completion=%s; want %s", completion, now)
@@ -147,8 +147,8 @@ INSERT INTO issue_sequences(id,project_id,sequence,deleted,deleted_at) VALUES
 		}
 		var touched time.Time
 		var updater string
-		if err := pool.QueryRow(ctx, `SELECT completed_at,updated_at,updated_by_id FROM issues WHERE id=$1`, saved["id"]).Scan(&completion, &touched, &updater); err != nil {
-			t.Fatal(err)
+		if scanErr := pool.QueryRow(ctx, `SELECT completed_at,updated_at,updated_by_id FROM issues WHERE id=$1`, saved["id"]).Scan(&completion, &touched, &updater); scanErr != nil {
+			t.Fatal(scanErr)
 		}
 		if !completion.Equal(now.Add(-time.Hour)) || !touched.Equal(now) || updater != actor {
 			t.Fatalf("completion=%s touched=%s updater=%s", completion, touched, updater)

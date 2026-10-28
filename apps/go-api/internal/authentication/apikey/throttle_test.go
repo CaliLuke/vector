@@ -91,7 +91,7 @@ func TestThrottleReturnsCacheFailures(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := throttle.AllowCacheKey(context.Background(), ":1:throttle_asset_asset-id", "asset-ID"); err == nil {
+	if _, allowCacheKeyErr := throttle.AllowCacheKey(context.Background(), ":1:throttle_asset_asset-id", "asset-ID"); allowCacheKeyErr == nil {
 		t.Fatal("AllowCacheKey succeeded after cache read failure")
 	}
 

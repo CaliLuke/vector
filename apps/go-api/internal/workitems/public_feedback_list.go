@@ -39,8 +39,8 @@ func (repository *Repository) PublicIssueList(ctx context.Context, scope PublicF
 		return Result{}, err
 	}
 	if options.GroupBy != "" || options.SubGroupBy != "" {
-		if err := issuequery.ValidateGrouping(options.GroupBy, options.SubGroupBy); err != nil {
-			return Result{}, failure(400, "detail", err.Error())
+		if validateGroupingErr := issuequery.ValidateGrouping(options.GroupBy, options.SubGroupBy); validateGroupingErr != nil {
+			return Result{}, failure(400, "detail", validateGroupingErr.Error())
 		}
 	}
 	// Django's legacy date filter builder treats malformed/non-ASCII and
@@ -124,14 +124,14 @@ func (repository *Repository) PublicIssueList(ctx context.Context, scope PublicF
 	 )` + from + ` WHERE ` + strings.Join(where, " AND ") + ` ORDER BY ` + order
 	if options.GroupBy == "" {
 		var total int
-		if err := repository.db.QueryRow(ctx, `SELECT COUNT(*) FROM (`+query+`) public_count`, args...).Scan(&total); err != nil {
-			return Result{}, err
+		if scanErr := repository.db.QueryRow(ctx, `SELECT COUNT(*) FROM (`+query+`) public_count`, args...).Scan(&total); scanErr != nil {
+			return Result{}, scanErr
 		}
 		args = append(args, limit, offset)
 		query += ` LIMIT $` + strconv.Itoa(len(args)-1) + ` OFFSET $` + strconv.Itoa(len(args))
-		rows, err := repository.rows(ctx, query, args...)
-		if err != nil {
-			return Result{}, err
+		rows, rowsErr := repository.rows(ctx, query, args...)
+		if rowsErr != nil {
+			return Result{}, rowsErr
 		}
 		results := make([]any, 0, len(rows))
 		for _, row := range rows {

@@ -112,8 +112,8 @@ func TestPostgresWorkspaceSeedAtomicRetryAndSourceContent(t *testing.T) {
 	defer func() {
 		stopCtx, stop := context.WithTimeout(context.Background(), 5*time.Second)
 		defer stop()
-		if err := app.Shutdown(stopCtx); err != nil {
-			t.Error(err)
+		if shutdownErr := app.Shutdown(stopCtx); shutdownErr != nil {
+			t.Error(shutdownErr)
 		}
 	}()
 	instance, err := dispatcher.Admit(ctx, WorkspaceSeedInput{workspace, at})

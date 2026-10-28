@@ -81,9 +81,9 @@ func (service *workItemHistoryService) AuthorizeSessionResourceProtocol(ctx cont
 		return status, body
 	}
 	if resource.Pattern != "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/history/" || resource.Method == "GET" || resource.Method == "HEAD" {
-		principal, err := service.principal(ctx)
-		if err != nil {
-			return workItemHistoryProtocolError(err)
+		principal, principalErr := service.principal(ctx)
+		if principalErr != nil {
+			return workItemHistoryProtocolError(principalErr)
 		}
 		return workItemHistoryTimezoneError(djangosession.ValidateUserTimezone(principal.timezone))
 	}
@@ -163,8 +163,8 @@ func (service *workItemHistoryService) read(ctx context.Context, request store.R
 			return nil, nil, service.error(403, map[string]any{"detail": "You do not have permission to perform this action."})
 		}
 	}
-	if err := djangosession.ValidateUserTimezone(principal.timezone); err != nil {
-		status, body := workItemHistoryTimezoneError(err)
+	if validateUserTimezoneErr := djangosession.ValidateUserTimezone(principal.timezone); validateUserTimezoneErr != nil {
+		status, body := workItemHistoryTimezoneError(validateUserTimezoneErr)
 		return nil, nil, service.error(status, body)
 	}
 	request.UserID = uuid.MustParse(principal.userID)

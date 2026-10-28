@@ -80,8 +80,8 @@ func (repository *Repository) publicIntakeCreate(ctx context.Context, scope Publ
 	if err != nil {
 		return Result{}, err
 	}
-	if err := publicFeedbackObjectRootError(input); err != nil {
-		return Result{}, err
+	if publicFeedbackErr := publicFeedbackObjectRootError(input); publicFeedbackErr != nil {
+		return Result{}, publicFeedbackErr
 	}
 	nested, exists := input.Fields["issue"]
 	if !exists {
@@ -102,14 +102,14 @@ func (repository *Repository) publicIntakeCreate(ctx context.Context, scope Publ
 		}
 	}
 	var stateID *string
-	if err := repository.db.QueryRow(ctx, `SELECT (SELECT id::text FROM states WHERE project_id=$1 AND workspace_id=$2 AND "group"='triage' AND deleted_at IS NULL ORDER BY sequence LIMIT 1)`, scope.ProjectID, scope.WorkspaceID).Scan(&stateID); err != nil {
-		return Result{}, err
+	if scanErr := repository.db.QueryRow(ctx, `SELECT (SELECT id::text FROM states WHERE project_id=$1 AND workspace_id=$2 AND "group"='triage' AND deleted_at IS NULL ORDER BY sequence LIMIT 1)`, scope.ProjectID, scope.WorkspaceID).Scan(&stateID); scanErr != nil {
+		return Result{}, scanErr
 	}
 	if stateID == nil {
 		id := uuid.NewString()
-		_, err := repository.db.Exec(ctx, `INSERT INTO states(id,name,description,color,slug,sequence,"group",is_triage,"default",project_id,workspace_id,created_at,updated_at,created_by_id) VALUES($1,'Triage','','#4E5355','triage',COALESCE((SELECT MAX(sequence)+15000 FROM states WHERE project_id=$2 AND deleted_at IS NULL AND "group"<>'triage'),65000),'triage',false,false,$2,$3,$4,$4,$5)`, id, scope.ProjectID, scope.WorkspaceID, timestamp(repository.now()), actorID)
-		if err != nil {
-			return Result{}, err
+		_, execErr := repository.db.Exec(ctx, `INSERT INTO states(id,name,description,color,slug,sequence,"group",is_triage,"default",project_id,workspace_id,created_at,updated_at,created_by_id) VALUES($1,'Triage','','#4E5355','triage',COALESCE((SELECT MAX(sequence)+15000 FROM states WHERE project_id=$2 AND deleted_at IS NULL AND "group"<>'triage'),65000),'triage',false,false,$2,$3,$4,$4,$5)`, id, scope.ProjectID, scope.WorkspaceID, timestamp(repository.now()), actorID)
+		if execErr != nil {
+			return Result{}, execErr
 		}
 		stateID = &id
 	}
@@ -152,12 +152,12 @@ func (repository *Repository) publicIntakeCreate(ctx context.Context, scope Publ
 	if err != nil {
 		return Result{}, err
 	}
-	if err := repository.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, map[string]any{
+	if publishTaskErr := repository.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, map[string]any{
 		"type": "issue.activity.created", "requested_data": requested, "actor_id": actorID,
 		"issue_id": q.IssueID, "project_id": scope.ProjectID, "current_instance": nil,
 		"epoch": repository.now().Unix(),
-	}); err != nil {
-		return Result{}, err
+	}); publishTaskErr != nil {
+		return Result{}, publishTaskErr
 	}
 	intakeRowID := uuid.NewString()
 	now := timestamp(repository.now())
@@ -214,8 +214,8 @@ func (repository *Repository) publicIntakeUpdate(ctx context.Context, scope Publ
 	if err != nil {
 		return Result{}, err
 	}
-	if err := publicFeedbackObjectRootError(input); err != nil {
-		return Result{}, err
+	if publicFeedbackErr := publicFeedbackObjectRootError(input); publicFeedbackErr != nil {
+		return Result{}, publicFeedbackErr
 	}
 	nested := input.Fields["issue"]
 	var issue map[string]any
@@ -248,19 +248,19 @@ func (repository *Repository) publicIntakeUpdate(ctx context.Context, scope Publ
 		return Result{}, err
 	}
 	var rawFields map[string]json.RawMessage
-	if err := json.Unmarshal(input.Raw, &rawFields); err != nil {
-		return Result{}, err
+	if unmarshalErr := json.Unmarshal(input.Raw, &rawFields); unmarshalErr != nil {
+		return Result{}, unmarshalErr
 	}
 	requested, err := pythoncompat.Dumps(issueData, rawFields["issue"])
 	if err != nil {
 		return Result{}, err
 	}
-	if err := repository.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, map[string]any{
+	if publishTaskErr := repository.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, map[string]any{
 		"type": "issue.activity.updated", "requested_data": requested, "actor_id": actorID,
 		"issue_id": q.IssueID, "project_id": scope.ProjectID, "current_instance": current,
 		"epoch": repository.now().Unix(),
-	}); err != nil {
-		return Result{}, err
+	}); publishTaskErr != nil {
+		return Result{}, publishTaskErr
 	}
 	issue, err = repository.saveIssue(ctx, actorID, issue, old)
 	if err != nil {

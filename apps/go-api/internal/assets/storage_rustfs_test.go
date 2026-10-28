@@ -71,8 +71,8 @@ func checkStorageRustFS(t *testing.T, config StorageConfig) {
 	expiredKey := key + ".expired"
 	t.Cleanup(func() {
 		for _, cleanupKey := range []string{key, copyKey, badSignatureKey, keyEscape, escapedKey, wrongContentTypeKey, oversizeKey, expiredKey} {
-			if err := storage.Delete(context.Background(), cleanupKey); err != nil {
-				t.Errorf("clean test object: %v", err)
+			if deleteErr := storage.Delete(context.Background(), cleanupKey); deleteErr != nil {
+				t.Errorf("clean test object: %v", deleteErr)
 			}
 		}
 	})
@@ -235,11 +235,11 @@ func postStorageForm(t *testing.T, ctx context.Context, postURL string, values m
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := file.Write(content); err != nil {
-		t.Fatal(err)
+	if _, writeErr := file.Write(content); writeErr != nil {
+		t.Fatal(writeErr)
 	}
-	if err := form.Close(); err != nil {
-		t.Fatal(err)
+	if closeErr := form.Close(); closeErr != nil {
+		t.Fatal(closeErr)
 	}
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, postURL, &body)
 	if err != nil {

@@ -109,8 +109,8 @@ func newCommand() *cli.Command {
 						return fmt.Errorf("configure isolated Plane database: %w", err)
 					}
 					defer pool.Close()
-					if err := pool.Ping(ctx); err != nil {
-						return fmt.Errorf("connect isolated Plane database: %w", err)
+					if pingErr := pool.Ping(ctx); pingErr != nil {
+						return fmt.Errorf("connect isolated Plane database: %w", pingErr)
 					}
 					var workflowName, status string
 					err = pool.QueryRow(ctx, `SELECT workflow_name, status FROM workflow_instances WHERE instance_id=$1`, command.String("run-id")).Scan(&workflowName, &status)
@@ -148,9 +148,9 @@ func startApp(ctx context.Context, databaseURL string) (*selvedge.App, *selvedge
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("configure isolated Plane database: %w", err)
 	}
-	if err := pool.Ping(ctx); err != nil {
+	if pingErr := pool.Ping(ctx); pingErr != nil {
 		pool.Close()
-		return nil, nil, nil, fmt.Errorf("connect isolated Plane database: %w", err)
+		return nil, nil, nil, fmt.Errorf("connect isolated Plane database: %w", pingErr)
 	}
 	store, err := assets.NewPostgresRepository(pool)
 	if err != nil {

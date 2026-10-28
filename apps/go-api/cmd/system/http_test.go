@@ -6364,8 +6364,8 @@ func capturedStickyFields(t *testing.T, stub *stickyMediaCaptureStub, method str
 		t.Fatal(err)
 	}
 	var payload map[string]any
-	if err := json.Unmarshal(data, &payload); err != nil {
-		t.Fatal(err)
+	if unmarshalErr := json.Unmarshal(data, &payload); unmarshalErr != nil {
+		t.Fatal(unmarshalErr)
 	}
 	delete(payload, "session_id")
 	delete(payload, "slug")

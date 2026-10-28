@@ -174,19 +174,19 @@ func (repository *Repository) intakeIssueList(ctx context.Context, userID uuid.U
 	if err != nil {
 		return nil, err
 	}
-	if err := validateIntakeIssueFilters(options); err != nil {
-		return nil, err
+	if validateIntakeErr := validateIntakeIssueFilters(options); validateIntakeErr != nil {
+		return nil, validateIntakeErr
 	}
 	builder := newWhereBuilder(intakeID, projectID)
 	builder.conditions = append(builder.conditions, "intake_issue.intake_id = $1", "intake_issue.project_id = $2", "intake_issue.deleted_at IS NULL")
 	if guestRestricted {
 		builder.addCondition("intake_issue.created_by_id = %s", userID)
 	}
-	if err := addIssueFilters(builder, "issue", options.Filters, options.PresentFilters, false, options.Timezone); err != nil {
-		return nil, err
+	if addIssueFiltersErr := addIssueFilters(builder, "issue", options.Filters, options.PresentFilters, false, options.Timezone); addIssueFiltersErr != nil {
+		return nil, addIssueFiltersErr
 	}
-	if err := addIntakeStatuses(builder, options.Filters["status"], options.StatusSet || options.Filters["status"] != ""); err != nil {
-		return nil, err
+	if addIntakeStatusesErr := addIntakeStatuses(builder, options.Filters["status"], options.StatusSet || options.Filters["status"] != ""); addIntakeStatusesErr != nil {
+		return nil, addIntakeStatusesErr
 	}
 	pagination, err := parseOffsetPagination(options.PerPage, options.PerPageSet || options.PerPage != "", options.Cursor, options.CursorSet || options.Cursor != "")
 	if err != nil {

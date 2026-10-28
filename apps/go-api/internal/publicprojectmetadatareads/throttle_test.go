@@ -150,9 +150,9 @@ func TestConfiguredAnonymousThrottleUsesAuthenticationScopeAndRate(t *testing.T)
 	request := httptest.NewRequest(http.MethodPost, "/auth/email-check/", nil)
 	request.RemoteAddr = "192.0.2.44:1234"
 	for index := 0; index < 2; index++ {
-		allowed, _, _, _, _, _, err := throttle.AllowRequestWithoutTimezone(context.Background(), request)
-		if err != nil || !allowed {
-			t.Fatalf("request %d allowed=%v err=%v", index+1, allowed, err)
+		allowed, _, _, _, _, _, allowRequestErr := throttle.AllowRequestWithoutTimezone(context.Background(), request)
+		if allowRequestErr != nil || !allowed {
+			t.Fatalf("request %d allowed=%v err=%v", index+1, allowed, allowRequestErr)
 		}
 	}
 	allowed, wait, _, _, _, _, err := throttle.AllowRequestWithoutTimezone(context.Background(), request)
@@ -363,11 +363,11 @@ func TestAnonymousThrottleValidatesTimezoneAfterAuthentication(t *testing.T) {
 	if len(cache.data) != 0 {
 		t.Fatalf("authenticated timezone failure consumed throttle capacity: %v", cache.data)
 	}
-	if _, _, _, _, err := throttle.InspectSession(context.Background(), request); err != nil {
-		t.Fatalf("request-logger-only inspection activated timezone: %v", err)
+	if _, _, _, _, inspectSessionErr := throttle.InspectSession(context.Background(), request); inspectSessionErr != nil {
+		t.Fatalf("request-logger-only inspection activated timezone: %v", inspectSessionErr)
 	}
-	if _, _, _, _, err := throttle.InspectSessionWithTimezone(context.Background(), request); !errors.Is(err, djangosession.ErrTimezoneNotFound) {
-		t.Fatalf("view authentication inspection timezone error=%v", err)
+	if _, _, _, _, inspectSessionErr := throttle.InspectSessionWithTimezone(context.Background(), request); !errors.Is(inspectSessionErr, djangosession.ErrTimezoneNotFound) {
+		t.Fatalf("view authentication inspection timezone error=%v", inspectSessionErr)
 	}
 	allowed, _, _, _, _, userID, err = throttle.AllowRequestWithoutTimezone(context.Background(), request)
 	if err != nil || !allowed || userID != "user-id" {

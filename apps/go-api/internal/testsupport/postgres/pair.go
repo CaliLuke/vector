@@ -141,22 +141,22 @@ func (pair *Pair) Reset(ctx context.Context) error {
 	defer connection.Close(context.WithoutCancel(ctx))
 
 	for _, database := range []string{sourceDatabase, targetDatabase} {
-		if _, err := connection.Exec(
+		if _, execErr := connection.Exec(
 			ctx,
 			"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()",
 			database,
-		); err != nil {
-			return fmt.Errorf("terminate connections to %s: %w", database, err)
+		); execErr != nil {
+			return fmt.Errorf("terminate connections to %s: %w", database, execErr)
 		}
 		identifier := pgx.Identifier{database}.Sanitize()
-		if _, err := connection.Exec(ctx, "DROP DATABASE IF EXISTS "+identifier); err != nil {
-			return fmt.Errorf("drop disposable database %s: %w", database, err)
+		if _, execErr := connection.Exec(ctx, "DROP DATABASE IF EXISTS "+identifier); execErr != nil {
+			return fmt.Errorf("drop disposable database %s: %w", database, execErr)
 		}
-		if _, err := connection.Exec(
+		if _, execErr := connection.Exec(
 			ctx,
 			"CREATE DATABASE "+identifier+" TEMPLATE "+pgx.Identifier{seedDatabase}.Sanitize(),
-		); err != nil {
-			return fmt.Errorf("restore disposable database %s: %w", database, err)
+		); execErr != nil {
+			return fmt.Errorf("restore disposable database %s: %w", database, execErr)
 		}
 	}
 	pair.SourceURL, err = databaseURL(pair.seedURL, sourceDatabase)

@@ -242,12 +242,12 @@ func (service *cycleLifecycleService) create(ctx context.Context, slug, projectI
 	if err != nil {
 		return nil, cycleLifecyclePrincipal{}, err
 	}
-	if err := service.authorizeProjectRepository(ctx, principal.userID.String(), slug, projectID, apiV1); err != nil {
-		return nil, principal, cycleLifecycleRepoError(ctx, err, apiV1)
+	if authorizeProjectErr := service.authorizeProjectRepository(ctx, principal.userID.String(), slug, projectID, apiV1); authorizeProjectErr != nil {
+		return nil, principal, cycleLifecycleRepoError(ctx, authorizeProjectErr, apiV1)
 	}
 	if apiV1 {
-		rate, err := service.throttle.Allow(ctx, principal.key)
-		if err != nil {
+		rate, allowErr := service.throttle.Allow(ctx, principal.key)
+		if allowErr != nil {
 			return nil, principal, cycleLifecycleError(500, map[string]any{"detail": "Something went wrong please try again later"})
 		}
 		if effects := apikey.EffectsFromContext(ctx); effects != nil {
@@ -256,7 +256,7 @@ func (service *cycleLifecycleService) create(ctx context.Context, slug, projectI
 		if !rate.Allowed {
 			return nil, principal, cycleLifecycleError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))})
 		}
-		if err := djangosession.ValidateUserTimezone(principal.timezone); err != nil {
+		if validateUserTimezoneErr := djangosession.ValidateUserTimezone(principal.timezone); validateUserTimezoneErr != nil {
 			return nil, principal, cycleLifecycleError(400, map[string]any{"error": "The required key does not exist."})
 		}
 	}
@@ -395,8 +395,8 @@ func (service *cycleLifecycleService) PostAPIWorkspacesBySlugProjectsByProjectID
 	if err != nil {
 		return nil, err
 	}
-	if err := service.repo.AuthorizeAppProject(ctx, principal.userID.String(), payload.Slug, payload.ProjectID); err != nil {
-		return nil, cycleLifecycleRepoError(ctx, err, false)
+	if authorizeAppProjectErr := service.repo.AuthorizeAppProject(ctx, principal.userID.String(), payload.Slug, payload.ProjectID); authorizeAppProjectErr != nil {
+		return nil, cycleLifecycleRepoError(ctx, authorizeAppProjectErr, false)
 	}
 	metadata, hasMetadata := loomhttp.RequestMetadataFromContext(ctx)
 	contentType := "application/json"
@@ -472,8 +472,8 @@ func (service *cycleLifecycleService) archive(ctx context.Context, slug, project
 		return time.Time{}, err
 	}
 	if apiV1 {
-		if err := service.allowAPIRequest(ctx, principal); err != nil {
-			return time.Time{}, err
+		if allowAPIRequestErr := service.allowAPIRequest(ctx, principal); allowAPIRequestErr != nil {
+			return time.Time{}, allowAPIRequestErr
 		}
 	}
 	archivedAt, err := service.repo.SetArchived(ctx, slug, projectID, cycleID, principal.userID.String(), value)
@@ -590,8 +590,8 @@ func (service *cycleLifecycleService) patch(ctx context.Context, slug, projectID
 		return nil, err
 	}
 	if apiV1 {
-		rate, err := service.throttle.Allow(ctx, principal.key)
-		if err != nil {
+		rate, allowErr := service.throttle.Allow(ctx, principal.key)
+		if allowErr != nil {
 			return nil, cycleLifecycleError(500, map[string]any{"detail": "Something went wrong please try again later"})
 		}
 		if effects := apikey.EffectsFromContext(ctx); effects != nil {
@@ -600,7 +600,7 @@ func (service *cycleLifecycleService) patch(ctx context.Context, slug, projectID
 		if !rate.Allowed {
 			return nil, cycleLifecycleError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))})
 		}
-		if err := djangosession.ValidateUserTimezone(principal.timezone); err != nil {
+		if validateUserTimezoneErr := djangosession.ValidateUserTimezone(principal.timezone); validateUserTimezoneErr != nil {
 			return nil, cycleLifecycleError(400, map[string]any{"error": "The required key does not exist."})
 		}
 	}
@@ -664,25 +664,25 @@ func (service *cycleLifecycleService) PutAPIWorkspacesBySlugProjectsByProjectIDC
 	if err != nil {
 		return nil, err
 	}
-	if err := service.repo.AuthorizeReadProject(ctx, principal.userID.String(), payload.Slug, payload.ProjectID); err != nil {
-		if errors.Is(err, store.ErrNotFound) {
+	if authorizeReadProjectErr := service.repo.AuthorizeReadProject(ctx, principal.userID.String(), payload.Slug, payload.ProjectID); authorizeReadProjectErr != nil {
+		if errors.Is(authorizeReadProjectErr, store.ErrNotFound) {
 			return nil, cycleLifecycleError(404, map[string]any{"detail": "No Cycle matches the given query."})
 		}
-		return nil, cycleLifecycleRepoError(ctx, err, false)
+		return nil, cycleLifecycleRepoError(ctx, authorizeReadProjectErr, false)
 	}
-	if _, err := service.repo.Cycle(ctx, payload.Slug, payload.ProjectID, payload.Pk); err != nil {
-		if errors.Is(err, store.ErrNotFound) {
+	if _, cycleErr := service.repo.Cycle(ctx, payload.Slug, payload.ProjectID, payload.Pk); cycleErr != nil {
+		if errors.Is(cycleErr, store.ErrNotFound) {
 			return nil, cycleLifecycleError(404, map[string]any{"detail": "No Cycle matches the given query."})
 		}
-		return nil, cycleLifecycleRepoError(ctx, err, false)
+		return nil, cycleLifecycleRepoError(ctx, cycleErr, false)
 	}
 	metadata, hasMetadata := loomhttp.RequestMetadataFromContext(ctx)
 	contentType := "application/json"
 	if hasMetadata && metadata.Headers().Get("Content-Type") != "" {
 		contentType = metadata.Headers().Get("Content-Type")
 	}
-	if _, err := djangoinput.Parse(body, contentType); err != nil {
-		return nil, cycleLifecycleRepoError(ctx, err, false)
+	if _, parseErr := djangoinput.Parse(body, contentType); parseErr != nil {
+		return nil, cycleLifecycleRepoError(ctx, parseErr, false)
 	}
 	cycle, err := service.repo.PutNoop(ctx, payload.Slug, payload.ProjectID, payload.Pk, principal.userID.String())
 	if err != nil {

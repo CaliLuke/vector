@@ -61,11 +61,11 @@ func CaptureAndCompare(
 	if err != nil {
 		return "", err
 	}
-	if err := config.Normalizations.validateColumns(sourceBefore.Tables); err != nil {
-		return "", fmt.Errorf("source normalizations: %w", err)
+	if validateColumnsErr := config.Normalizations.validateColumns(sourceBefore.Tables); validateColumnsErr != nil {
+		return "", fmt.Errorf("source normalizations: %w", validateColumnsErr)
 	}
-	if err := config.Normalizations.validateColumns(targetBefore.Tables); err != nil {
-		return "", fmt.Errorf("target normalizations: %w", err)
+	if validateColumnsErr := config.Normalizations.validateColumns(targetBefore.Tables); validateColumnsErr != nil {
+		return "", fmt.Errorf("target normalizations: %w", validateColumnsErr)
 	}
 	if betweenSnapshots == nil {
 		return "", fmt.Errorf("between-snapshots action is required")
@@ -74,11 +74,11 @@ func CaptureAndCompare(
 	if err != nil {
 		return "", fmt.Errorf("between-snapshots action failed: %w", err)
 	}
-	if err := actionResult.SourceResponse.validate("source"); err != nil {
-		return "", err
+	if validateErr := actionResult.SourceResponse.validate("source"); validateErr != nil {
+		return "", validateErr
 	}
-	if err := actionResult.TargetResponse.validate("target"); err != nil {
-		return "", err
+	if validateErr := actionResult.TargetResponse.validate("target"); validateErr != nil {
+		return "", validateErr
 	}
 	sourceAfter, targetAfter, err := snapshotPair(ctx, config)
 	if err != nil {

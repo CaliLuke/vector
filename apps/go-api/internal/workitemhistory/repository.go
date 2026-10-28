@@ -323,8 +323,8 @@ func transformedJSON(data []byte, err error, operation, timezone string, detail 
 	var value any
 	decoder := json.NewDecoder(strings.NewReader(string(result)))
 	decoder.UseNumber()
-	if err := decoder.Decode(&value); err != nil {
-		return nil, err
+	if decodeErr := decoder.Decode(&value); decodeErr != nil {
+		return nil, decodeErr
 	}
 	convertResponseTimes(value, location, detail)
 	encoded, err := json.Marshal(value)

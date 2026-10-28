@@ -21,8 +21,8 @@ func MigrateRuntimeSchemas(ctx context.Context, databaseURL string, pool *pgxpoo
 	if err != nil {
 		return fmt.Errorf("configure River migrations: %w", err)
 	}
-	if _, err := river.Migrate(ctx, rivermigrate.DirectionUp, nil); err != nil {
-		return fmt.Errorf("apply River migrations: %w", err)
+	if _, migrateErr := river.Migrate(ctx, rivermigrate.DirectionUp, nil); migrateErr != nil {
+		return fmt.Errorf("apply River migrations: %w", migrateErr)
 	}
 	source, err := iofs.New(support.Files, ".")
 	if err != nil {

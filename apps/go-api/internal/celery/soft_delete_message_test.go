@@ -21,8 +21,8 @@ func TestSoftDeleteMessageUsesKombuUUIDAndDurableCeleryEnvelope(t *testing.T) {
 	if message.Headers["task"] != "plane.bgtasks.deletion_task.soft_delete_related_objects" || message.Headers["lang"] != "py" {
 		t.Fatalf("wrong Celery task headers: %#v", message.Headers)
 	}
-	if _, err := uuid.Parse(message.CorrelationId); err != nil {
-		t.Fatalf("invalid task ID: %v", err)
+	if _, parseErr := uuid.Parse(message.CorrelationId); parseErr != nil {
+		t.Fatalf("invalid task ID: %v", parseErr)
 	}
 	if message.Headers["id"] != message.CorrelationId || message.Headers["root_id"] != message.CorrelationId {
 		t.Fatalf("task identity differs between correlation and Celery headers: %#v", message.Headers)
@@ -31,11 +31,11 @@ func TestSoftDeleteMessageUsesKombuUUIDAndDurableCeleryEnvelope(t *testing.T) {
 	// A plain UUID string loses Kombu's Python UUID type on worker delivery.
 	wantJSON := `[["db", "notification", {"__type__": "uuid", "__value__": {"hex": "00000000000040008000000000009020"}}], {"using": null}, {"callbacks": null, "errbacks": null, "chain": null, "chord": null}]`
 	var got, want any
-	if err := json.Unmarshal(message.Body, &got); err != nil {
-		t.Fatal(err)
+	if unmarshalErr := json.Unmarshal(message.Body, &got); unmarshalErr != nil {
+		t.Fatal(unmarshalErr)
 	}
-	if err := json.Unmarshal([]byte(wantJSON), &want); err != nil {
-		t.Fatal(err)
+	if unmarshalErr := json.Unmarshal([]byte(wantJSON), &want); unmarshalErr != nil {
+		t.Fatal(unmarshalErr)
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("Celery envelope differs from Kombu: got %s; want %s", message.Body, wantJSON)

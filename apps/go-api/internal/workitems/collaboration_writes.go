@@ -165,8 +165,8 @@ func (r *Repository) writeCollaboration(ctx context.Context, q Request, kind, ta
 		return Result{}, err
 	}
 	if q.Method == "PUT" {
-		projected, err := r.collaborationProjection(ctx, q, row, kind, true)
-		return Result{200, projected}, err
+		projected, collaborationProjectionErr := r.collaborationProjection(ctx, q, row, kind, true)
+		return Result{200, projected}, collaborationProjectionErr
 	}
 	if kind == "link" {
 		if err = r.publisher.Task(ctx, "plane.bgtasks.work_item_link_task.crawl_work_item_link_title", []any{row["id"], row["url"]}, map[string]any{}); err != nil {

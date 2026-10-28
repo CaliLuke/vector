@@ -59,21 +59,21 @@ func (r *Repository) intakeTransaction(ctx context.Context, q Request, body io.R
 	}
 	if q.Method == "DELETE" {
 		if row["status"] != json.Number("1") {
-			issue, err := r.issue(ctx, q, false)
-			if err != nil {
+			issue, intakeErr := r.issue(ctx, q, false)
+			if intakeErr != nil {
 				return Result{}, errors.New("missing intake issue")
 			}
 			if q.API && issue["created_by_id"] != q.ActorID {
 				var admin bool
-				if err = r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM project_members WHERE workspace_id=$1 AND project_id=$2 AND member_id=$3 AND is_active AND deleted_at IS NULL AND role=20)`, row["workspace_id"], q.ProjectID, q.ActorID).Scan(&admin); err != nil {
-					return Result{}, err
+				if intakeErr = r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM project_members WHERE workspace_id=$1 AND project_id=$2 AND member_id=$3 AND is_active AND deleted_at IS NULL AND role=20)`, row["workspace_id"], q.ProjectID, q.ActorID).Scan(&admin); intakeErr != nil {
+					return Result{}, intakeErr
 				}
 				if !admin {
 					return Result{}, failure(403, "error", "Only admin or creator can delete the work item")
 				}
 			}
-			if err = r.deleteIssue(ctx, q.ActorID, issue); err != nil {
-				return Result{}, err
+			if intakeErr = r.deleteIssue(ctx, q.ActorID, issue); intakeErr != nil {
+				return Result{}, intakeErr
 			}
 		}
 		return Result{Status: 204}, r.softDeleteRow(ctx, "intake_issues", "intakeissue", row["id"].(string), q.ActorID)
@@ -363,8 +363,8 @@ func (r *Repository) intakeProjection(ctx context.Context, q Request, row map[st
 	if !q.API {
 		result := map[string]any{"id": row["id"], "status": row["status"], "duplicate_to": row["duplicate_to_id"], "snoozed_till": row["snoozed_till"], "source": row["source"]}
 		if detail {
-			if err := r.annotateIntakeIssue(ctx, issue); err != nil {
-				return nil, err
+			if annotateIntakeIssueErr := r.annotateIntakeIssue(ctx, issue); annotateIntakeIssueErr != nil {
+				return nil, annotateIntakeIssueErr
 			}
 			result["issue"] = projectFields(issue, detailFields)
 			result["duplicate_issue_detail"] = nil
@@ -422,50 +422,50 @@ func (r *Repository) patchIntake(ctx context.Context, q Request, project, row ma
 	var metadata map[string]any
 	var intakePrevious any
 	previousIntake := func() error {
-		projected, err := r.intakeProjection(ctx, q, row, false, false, cachedIssue)
-		if err != nil {
-			return err
+		projected, snapshotErr := r.intakeProjection(ctx, q, row, false, false, cachedIssue)
+		if snapshotErr != nil {
+			return snapshotErr
 		}
-		intakePrevious, err = dumpIntakeSnapshot(timestampProjection(projected, q.Timezone).(map[string]any), q.API)
-		return err
+		intakePrevious, snapshotErr = dumpIntakeSnapshot(timestampProjection(projected, q.Timezone).(map[string]any), q.API)
+		return snapshotErr
 	}
 	if canMetadata {
-		var err error
-		metadata, err = r.validateIntake(ctx, q, row, input)
-		if err != nil {
-			return Result{}, err
+		var validationErr error
+		metadata, validationErr = r.validateIntake(ctx, q, row, input)
+		if validationErr != nil {
+			return Result{}, validationErr
 		}
 		if !q.API {
-			if err := previousIntake(); err != nil {
-				return Result{}, err
+			if previousIntakeErr := previousIntake(); previousIntakeErr != nil {
+				return Result{}, previousIntakeErr
 			}
 		}
 	}
 	if edit.old != nil {
 		if q.API {
-			if err := r.intakeActivity(ctx, q, row["id"].(string), "issue.activity.updated", edit.requested, edit.previous, true); err != nil {
-				return Result{}, err
+			if intakeActivityErr := r.intakeActivity(ctx, q, row["id"].(string), "issue.activity.updated", edit.requested, edit.previous, true); intakeActivityErr != nil {
+				return Result{}, intakeActivityErr
 			}
 		}
-		saved, err := r.saveIntakeIssueEdit(ctx, q.ActorID, edit.old, edit.changes, edit.input)
-		if err != nil {
-			return Result{}, err
+		saved, saveIntakeIssueEditErr := r.saveIntakeIssueEdit(ctx, q.ActorID, edit.old, edit.changes, edit.input)
+		if saveIntakeIssueEditErr != nil {
+			return Result{}, saveIntakeIssueEditErr
 		}
 		// A later acceptance transition must build on this saved edit.
 		cachedIssue = saved
 		if !q.API && !(truthy(skip) && descriptionUpdate) {
-			if err := r.intakeActivity(ctx, q, row["id"].(string), "issue.activity.updated", edit.requested, edit.previous, true); err != nil {
-				return Result{}, err
+			if intakeActivityErr := r.intakeActivity(ctx, q, row["id"].(string), "issue.activity.updated", edit.requested, edit.previous, true); intakeActivityErr != nil {
+				return Result{}, intakeActivityErr
 			}
-			if err := r.admitIssueDescriptionVersion(ctx, edit.previous, q.IssueID, q.ActorID, false); err != nil {
-				return Result{}, err
+			if descriptionVersionErr := r.admitIssueDescriptionVersion(ctx, edit.previous, q.IssueID, q.ActorID, false); descriptionVersionErr != nil {
+				return Result{}, descriptionVersionErr
 			}
 		}
 	}
 	if canMetadata {
 		if q.API {
-			if err := previousIntake(); err != nil {
-				return Result{}, err
+			if previousIntakeErr := previousIntake(); previousIntakeErr != nil {
+				return Result{}, previousIntakeErr
 			}
 		}
 		cachedIssue, err = r.applyIntakeMetadata(ctx, q, input, row, metadata, cachedIssue, intakePrevious)

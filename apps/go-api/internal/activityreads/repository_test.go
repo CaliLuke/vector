@@ -70,8 +70,8 @@ func TestAPIActivitiesPreserveDjangoListAndDetailContracts(t *testing.T) {
 			},
 			Present: map[string]bool{"per_page": true},
 		}
-		if err := repository.Authorize(context.Background(), principal, request); err != nil {
-			t.Fatal(err)
+		if authorizeErr := repository.Authorize(context.Background(), principal, request); authorizeErr != nil {
+			t.Fatal(authorizeErr)
 		}
 		result, err := repository.Read(context.Background(), principal, request)
 		if err != nil {
@@ -250,9 +250,9 @@ func TestActivityPaginationMatchesCursorContract(t *testing.T) {
 		t.Fatalf("backward default-limit window=(%d,%d,%d), error=%v", limit, page, offset, err)
 	}
 	for raw, expected := range map[string]int{" 1_0 ": 10, "١٠": 10} {
-		size, err := pageSize(Request{Params: map[string]string{"per_page": raw}, Present: map[string]bool{"per_page": true}})
-		if err != nil || size != expected {
-			t.Fatalf("per_page=%q size=%d error=%v", raw, size, err)
+		size, pageSizeErr := pageSize(Request{Params: map[string]string{"per_page": raw}, Present: map[string]bool{"per_page": true}})
+		if pageSizeErr != nil || size != expected {
+			t.Fatalf("per_page=%q size=%d error=%v", raw, size, pageSizeErr)
 		}
 	}
 	for _, raw := range []string{"", "%ZZ"} {

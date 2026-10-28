@@ -62,8 +62,8 @@ func TestStorageMetadataCrashAfterWriteBeforeCompletion(t *testing.T) {
 	}
 	defer pool.Close()
 	var activeLeaders int
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM system_locks WHERE lock_name='selvedge_leader' AND lock_expires_at > NOW()`).Scan(&activeLeaders); err != nil {
-		t.Fatalf("check for another Selvedge worker using the proof database: %v", err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM system_locks WHERE lock_name='selvedge_leader' AND lock_expires_at > NOW()`).Scan(&activeLeaders); scanErr != nil {
+		t.Fatalf("check for another Selvedge worker using the proof database: %v", scanErr)
 	}
 	if activeLeaders != 0 {
 		t.Fatalf("proof database has %d live Selvedge leader lease(s); stop other workers before the crash proof", activeLeaders)
@@ -74,8 +74,8 @@ func TestStorageMetadataCrashAfterWriteBeforeCompletion(t *testing.T) {
 	var output bytes.Buffer
 	child.Stdout = &output
 	child.Stderr = &output
-	if err := child.Start(); err != nil {
-		t.Fatalf("start activity subprocess: %v", err)
+	if startErr := child.Start(); startErr != nil {
+		t.Fatalf("start activity subprocess: %v", startErr)
 	}
 	childDone := make(chan error, 1)
 	go func() { childDone <- child.Wait() }()
@@ -94,10 +94,10 @@ func TestStorageMetadataCrashAfterWriteBeforeCompletion(t *testing.T) {
 	markerTicker := time.NewTicker(20 * time.Millisecond)
 	defer markerTicker.Stop()
 	for {
-		if _, err := os.Stat(marker); err == nil {
+		if _, statErr := os.Stat(marker); statErr == nil {
 			break
-		} else if !errors.Is(err, os.ErrNotExist) {
-			t.Fatalf("stat committed metadata marker: %v", err)
+		} else if !errors.Is(statErr, os.ErrNotExist) {
+			t.Fatalf("stat committed metadata marker: %v", statErr)
 		}
 		select {
 		case childErr := <-childDone:
@@ -116,8 +116,8 @@ func TestStorageMetadataCrashAfterWriteBeforeCompletion(t *testing.T) {
 	if len(metadataBefore) == 0 || string(metadataBefore) == "null" {
 		t.Fatalf("write marker appeared without persisted object metadata: %s", metadataBefore)
 	}
-	if err := child.Process.Kill(); err != nil {
-		t.Fatalf("SIGKILL activity subprocess after database commit: %v", err)
+	if killErr := child.Process.Kill(); killErr != nil {
+		t.Fatalf("SIGKILL activity subprocess after database commit: %v", killErr)
 	}
 	childErr := <-childDone
 	childWaited = true
@@ -146,8 +146,8 @@ func TestStorageMetadataCrashAfterWriteBeforeCompletion(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := app.Start(ctx); err != nil {
-		t.Fatal(err)
+	if startErr := app.Start(ctx); startErr != nil {
+		t.Fatal(startErr)
 	}
 	t.Cleanup(func() {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 3*time.Second)

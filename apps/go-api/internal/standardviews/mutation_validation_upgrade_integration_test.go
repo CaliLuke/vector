@@ -65,8 +65,8 @@ func TestMutationValidationPreservesDjangoPrecedence(t *testing.T) {
 			}
 			defer tx.Rollback(ctx)
 			if test.setup != "" {
-				if _, err := tx.Exec(ctx, test.setup); err != nil {
-					t.Fatal(err)
+				if _, execErr := tx.Exec(ctx, test.setup); execErr != nil {
+					t.Fatal(execErr)
 				}
 			}
 			repository, err := NewRepository(tx)

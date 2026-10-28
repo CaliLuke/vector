@@ -149,7 +149,7 @@ func (service *userIdentityService) UpdateProfile(ctx context.Context, payload *
 		return nil, &api.UserIdentityInternalError{Message: userIdentityInternalErrorDetail}
 	}
 	var fields map[string]json.RawMessage
-	if err := json.Unmarshal(body, &fields); err != nil {
+	if unmarshalErr := json.Unmarshal(body, &fields); unmarshalErr != nil {
 		return nil, &api.UserIdentityInternalError{Message: userIdentityInternalErrorDetail}
 	}
 	if invalid := normalizeJSONFields(fields, "theme", "onboarding_step", "billing_address", "mobile_onboarding_step", "goals", "product_tour"); invalid != nil {

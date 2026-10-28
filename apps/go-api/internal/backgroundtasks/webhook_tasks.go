@@ -568,8 +568,8 @@ func (store *PostgresWebhookTaskStore) serializedScopedModel(ctx context.Context
 		return nil, err
 	}
 	var fields map[string]json.RawMessage
-	if err := json.Unmarshal(raw, &fields); err != nil {
-		return nil, err
+	if unmarshalErr := json.Unmarshal(raw, &fields); unmarshalErr != nil {
+		return nil, unmarshalErr
 	}
 	for key, value := range fields {
 		if strings.HasSuffix(key, "_id") {
@@ -592,9 +592,9 @@ func (store *PostgresWebhookTaskStore) serializedScopedModel(ctx context.Context
 		}
 	}
 	if event == "module" {
-		members, err := store.moduleMembers(ctx, id)
-		if err != nil {
-			return nil, err
+		members, moduleMembersErr := store.moduleMembers(ctx, id)
+		if moduleMembersErr != nil {
+			return nil, moduleMembersErr
 		}
 		encoded, _ := json.Marshal(members)
 		fields["members"] = encoded

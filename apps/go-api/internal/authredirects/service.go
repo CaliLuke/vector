@@ -368,9 +368,9 @@ func (service *Service) magicAuthenticate(ctx context.Context, request Request, 
 	if enabled == "0" {
 		return service.failure(request, 5016, "MAGIC_LINK_LOGIN_DISABLED", map[string]string{"email": request.Email})
 	}
-	if err := service.magic.Verify(ctx, "magic_"+request.Email, request.Code, lookupErr == nil); err != nil {
+	if verifyErr := service.magic.Verify(ctx, "magic_"+request.Email, request.Code, lookupErr == nil); verifyErr != nil {
 		var codeError *CodeError
-		if errors.As(err, &codeError) {
+		if errors.As(verifyErr, &codeError) {
 			payload := map[string]string(nil)
 			if codeError.Email != "" {
 				payload = map[string]string{"email": codeError.Email}
@@ -466,7 +466,7 @@ func (service *Service) AdminSignIn(ctx context.Context, request Request) Result
 		return service.failure(request, 5175, "ADMIN_AUTHENTICATION_FAILED", map[string]string{"email": request.Email})
 	}
 	now := service.requestNow(request)
-	if _, err := service.accounts.UpdateLoginMetadata(ctx, user.ID, now, request.ClientIP, request.UserAgent, "email", now); err != nil {
+	if _, updateLoginMetadataErr := service.accounts.UpdateLoginMetadata(ctx, user.ID, now, request.ClientIP, request.UserAgent, "email", now); updateLoginMetadataErr != nil {
 		return Result{Status: http.StatusInternalServerError}
 	}
 	device := map[string]string{"user_agent": request.UserAgent, "ip_address": request.ClientIP, "domain": request.BaseURL}
@@ -511,12 +511,12 @@ func (service *Service) AdminSignUp(ctx context.Context, request Request) Result
 			"company_name": request.CompanyName,
 		})
 	}
-	if _, err := service.accounts.UserByEmail(ctx, request.Email); err == nil {
+	if _, userByEmailErr := service.accounts.UserByEmail(ctx, request.Email); userByEmailErr == nil {
 		return service.failure(request, 5180, "ADMIN_USER_ALREADY_EXIST", map[string]string{
 			"email": request.Email, "first_name": request.FirstName, "last_name": request.LastName,
 			"company_name": request.CompanyName,
 		})
-	} else if !errors.Is(err, accountauthentication.ErrUserNotFound) {
+	} else if !errors.Is(userByEmailErr, accountauthentication.ErrUserNotFound) {
 		return Result{Status: http.StatusInternalServerError}
 	}
 	score, err := service.strength.Score(request.Password, "")
@@ -554,7 +554,7 @@ func (service *Service) AdminSignUp(ctx context.Context, request Request) Result
 	}
 	user := created.User
 	now := service.requestNow(request)
-	if _, err := service.accounts.UpdateLoginMetadata(ctx, user.ID, now, request.ClientIP, request.UserAgent, "email", now); err != nil {
+	if _, updateLoginMetadataErr := service.accounts.UpdateLoginMetadata(ctx, user.ID, now, request.ClientIP, request.UserAgent, "email", now); updateLoginMetadataErr != nil {
 		return Result{Status: http.StatusInternalServerError}
 	}
 	device := map[string]string{"user_agent": request.UserAgent, "ip_address": request.ClientIP, "domain": request.BaseURL}
@@ -593,12 +593,12 @@ func (service *Service) completeLogin(ctx context.Context, request Request, user
 		_ = service.activation.Task(ctx, "plane.bgtasks.user_activation_email_task.user_activation_email", []any{baseOrigin, user.ID}, map[string]any{})
 	}
 	if app && service.workflow != nil {
-		if err := service.workflow.Run(ctx, user.ID, user.Email); err != nil {
+		if runErr := service.workflow.Run(ctx, user.ID, user.Email); runErr != nil {
 			return Result{Status: http.StatusInternalServerError}
 		}
 	}
 	if medium == "magic-code" {
-		if err := service.accounts.EnsureProfile(ctx, user.ID); err != nil {
+		if ensureProfileErr := service.accounts.EnsureProfile(ctx, user.ID); ensureProfileErr != nil {
 			return Result{Status: http.StatusInternalServerError}
 		}
 	}

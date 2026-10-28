@@ -331,8 +331,8 @@ func (s *accountAuthenticationService) passwordChange(ctx context.Context, conte
 		return nil, nil, s.failure(400, authAuthenticationBody(5138, "MISSING_PASSWORD", map[string]any{"error": "Old password is missing"}))
 	}
 	if !set && !user.PasswordAutoset {
-		valid, err := s.passwords.Verify(user.Password, authenticationString(input.Fields["old_password"]))
-		if err != nil {
+		valid, verifyErr := s.passwords.Verify(user.Password, authenticationString(input.Fields["old_password"]))
+		if verifyErr != nil {
 			return nil, nil, s.internal()
 		}
 		if !valid {

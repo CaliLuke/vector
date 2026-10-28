@@ -83,14 +83,14 @@ func (repository *Repository) ReadAPIV1(ctx context.Context, user string, reques
 		}
 	}
 	for i, raw := range rows {
-		projected, err := djangoapi.Serialize(ctx, repository.database, raw.(map[string]any), apiStateFields, fields, expand, false)
-		if err != nil {
-			return nil, err
+		projected, serializeErr := djangoapi.Serialize(ctx, repository.database, raw.(map[string]any), apiStateFields, fields, expand, false)
+		if serializeErr != nil {
+			return nil, serializeErr
 		}
 		if sequence, ok := projected["sequence"].(json.Number); ok {
-			value, err := sequence.Float64()
-			if err != nil {
-				return nil, err
+			value, float64Err := sequence.Float64()
+			if float64Err != nil {
+				return nil, float64Err
 			}
 			projected["sequence"] = json.Number(pythoncompat.FloatString(value))
 		}

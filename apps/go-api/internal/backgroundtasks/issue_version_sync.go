@@ -157,8 +157,8 @@ func (store *PostgresIssueVersionSyncStore) SyncIssueVersionBatch(ctx context.Co
 	}
 	defer tx.Rollback(ctx)
 	var total int
-	if err := tx.QueryRow(ctx, `SELECT COUNT(*) FROM issues WHERE deleted_at IS NULL`).Scan(&total); err != nil {
-		return IssueVersionSyncBatchOutput{}, fmt.Errorf("count issues for version sync: %w", err)
+	if scanErr := tx.QueryRow(ctx, `SELECT COUNT(*) FROM issues WHERE deleted_at IS NULL`).Scan(&total); scanErr != nil {
+		return IssueVersionSyncBatchOutput{}, fmt.Errorf("count issues for version sync: %w", scanErr)
 	}
 	end := min(input.Offset+input.BatchSize, total)
 	result := IssueVersionSyncBatchOutput{Total: total, End: end}

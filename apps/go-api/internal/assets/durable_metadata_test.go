@@ -139,16 +139,16 @@ func TestStorageMetadataWorkflowBoundsBlockedS3Read(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := app.Start(context.Background()); err != nil {
-		t.Fatal(err)
+	if startErr := app.Start(context.Background()); startErr != nil {
+		t.Fatal(startErr)
 	}
 	t.Cleanup(func() { _ = app.Shutdown(context.Background()) })
 	runID := "asset-metadata:blocked-read"
-	if _, err := selvedge.StartWorkflow(ctx, app, workflow,
+	if _, startWorkflowErr := selvedge.StartWorkflow(ctx, app, workflow,
 		StorageMetadataWorkflowInput{AssetID: uuid.NewString(), EventID: "blocked-read"},
 		selvedge.WithInstanceID(runID),
-	); err != nil {
-		t.Fatal(err)
+	); startWorkflowErr != nil {
+		t.Fatal(startWorkflowErr)
 	}
 	select {
 	case elapsed := <-activityCancelled:
@@ -317,8 +317,8 @@ func runMetadataWorkflow(t *testing.T, store storageMetadataStore, reader object
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := app.Start(ctx); err != nil {
-		t.Fatal(err)
+	if startErr := app.Start(ctx); startErr != nil {
+		t.Fatal(startErr)
 	}
 	t.Cleanup(func() {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), time.Second)
@@ -326,8 +326,8 @@ func runMetadataWorkflow(t *testing.T, store storageMetadataStore, reader object
 		_ = app.Shutdown(shutdownCtx)
 	})
 	runID := "asset-metadata:" + suffix
-	if _, err := selvedge.StartWorkflow(ctx, app, workflow, StorageMetadataWorkflowInput{AssetID: uuid.NewString(), EventID: suffix}, selvedge.WithInstanceID(runID)); err != nil {
-		t.Fatal(err)
+	if _, startWorkflowErr := selvedge.StartWorkflow(ctx, app, workflow, StorageMetadataWorkflowInput{AssetID: uuid.NewString(), EventID: suffix}, selvedge.WithInstanceID(runID)); startWorkflowErr != nil {
+		t.Fatal(startWorkflowErr)
 	}
 	result, err := selvedge.WaitWorkflow[struct{}](ctx, app, runID)
 	if err != nil {

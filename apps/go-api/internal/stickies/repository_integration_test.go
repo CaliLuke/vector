@@ -26,8 +26,8 @@ func TestRepositoryPostgresOperationsAndIsolation(t *testing.T) {
 		t.Fatalf("start PostgreSQL fixture: %v", err)
 	}
 	t.Cleanup(func() {
-		if err := pair.Close(); err != nil {
-			t.Errorf("close PostgreSQL fixture: %v", err)
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close PostgreSQL fixture: %v", closeErr)
 		}
 	})
 	config, err := pgxpool.ParseConfig(pair.SourceURL)
@@ -64,14 +64,14 @@ func TestRepositoryPostgresOperationsAndIsolation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got, err := repository.ResolveWorkspace(ctx, "one", UserID(owner)); err != nil || uuid.UUID(got) != workspace {
-		t.Fatalf("ResolveWorkspace() = %s, %v", uuid.UUID(got), err)
+	if got, resolveWorkspaceErr := repository.ResolveWorkspace(ctx, "one", UserID(owner)); resolveWorkspaceErr != nil || uuid.UUID(got) != workspace {
+		t.Fatalf("ResolveWorkspace() = %s, %v", uuid.UUID(got), resolveWorkspaceErr)
 	}
-	if got, err := repository.ResolveAPIWorkspace(ctx, "deleted", UserID(owner)); !errors.Is(err, ErrStickyWorkspaceDeleted) || uuid.UUID(got) != deletedWorkspace {
-		t.Fatalf("ResolveAPIWorkspace(deleted) = %s, %v, want workspace ID and ErrStickyWorkspaceDeleted", uuid.UUID(got), err)
+	if got, resolveAPIWorkspaceErr := repository.ResolveAPIWorkspace(ctx, "deleted", UserID(owner)); !errors.Is(resolveAPIWorkspaceErr, ErrStickyWorkspaceDeleted) || uuid.UUID(got) != deletedWorkspace {
+		t.Fatalf("ResolveAPIWorkspace(deleted) = %s, %v, want workspace ID and ErrStickyWorkspaceDeleted", uuid.UUID(got), resolveAPIWorkspaceErr)
 	}
-	if _, err := repository.ResolveWorkspace(ctx, "one", UserID(other)); !errors.Is(err, ErrWorkspaceAccessDenied) {
-		t.Fatalf("cross tenant resolution error = %v", err)
+	if _, resolveWorkspaceErr := repository.ResolveWorkspace(ctx, "one", UserID(other)); !errors.Is(resolveWorkspaceErr, ErrWorkspaceAccessDenied) {
+		t.Fatalf("cross tenant resolution error = %v", resolveWorkspaceErr)
 	}
 	create := Scope{Operation: OperationCreate, WorkspaceID: WorkspaceID(workspace), UserID: UserID(owner), Ownership: AssignOwner, AssignCreator: true}
 	id := StickyID(uuid.MustParse("0198a28d-d227-7752-82ac-bc4c1c290717"))
@@ -105,15 +105,15 @@ func TestRepositoryPostgresOperationsAndIsolation(t *testing.T) {
 	if err != nil || owned.Name == nil || *owned.Name != ownedName {
 		t.Fatalf("PatchOwned(name-only) = %+v, %v", owned, err)
 	}
-	if _, err := repository.Retrieve(ctx, id, Scope{Operation: OperationRetrieve, WorkspaceID: WorkspaceID(workspace), UserID: UserID(other), Ownership: RequireOwner}); !errors.Is(err, ErrStickyNotFound) {
-		t.Fatalf("cross tenant Retrieve() error = %v", err)
+	if _, retrieveErr := repository.Retrieve(ctx, id, Scope{Operation: OperationRetrieve, WorkspaceID: WorkspaceID(workspace), UserID: UserID(other), Ownership: RequireOwner}); !errors.Is(retrieveErr, ErrStickyNotFound) {
+		t.Fatalf("cross tenant Retrieve() error = %v", retrieveErr)
 	}
 	deleteScope := Scope{Operation: OperationDelete, WorkspaceID: WorkspaceID(workspace), UserID: UserID(owner), Ownership: RequireOwner, RequireCreator: true}
-	if err := repository.Delete(ctx, id, deleteScope); err != nil {
-		t.Fatalf("Delete() error = %v", err)
+	if deleteErr := repository.Delete(ctx, id, deleteScope); deleteErr != nil {
+		t.Fatalf("Delete() error = %v", deleteErr)
 	}
-	if _, err := repository.Retrieve(ctx, id, Scope{Operation: OperationRetrieve, WorkspaceID: WorkspaceID(workspace), UserID: UserID(owner), Ownership: RequireOwner}); !errors.Is(err, ErrStickyNotFound) {
-		t.Fatalf("soft deleted Retrieve() error = %v", err)
+	if _, retrieveErr := repository.Retrieve(ctx, id, Scope{Operation: OperationRetrieve, WorkspaceID: WorkspaceID(workspace), UserID: UserID(owner), Ownership: RequireOwner}); !errors.Is(retrieveErr, ErrStickyNotFound) {
+		t.Fatalf("soft deleted Retrieve() error = %v", retrieveErr)
 	}
 	empty := ""
 	emptyID := StickyID(uuid.MustParse("0198a28d-d227-7752-82ac-bc4c1c290718"))

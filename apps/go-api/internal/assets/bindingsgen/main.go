@@ -582,8 +582,8 @@ func renderResultType(expr ast.Expr, imported map[string]importedPackage) (strin
 			if !ok {
 				return "", fmt.Errorf("unsupported selector base %T", value.X)
 			}
-			if importedPackage, ok := imported[alias.Name]; ok {
-				used[alias.Name] = importedPackage
+			if sourceImport, ok := imported[alias.Name]; ok {
+				used[alias.Name] = sourceImport
 			} else if alias.Name != "api" {
 				return "", fmt.Errorf("selector package %q is not imported by service source", alias.Name)
 			}

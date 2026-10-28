@@ -65,8 +65,8 @@ func (r *Repository) Patch(ctx context.Context, actor, slug, projectID, memberID
 	}
 	current := map[string]any{}
 	if len(currentRaw) > 0 {
-		if err := json.Unmarshal(currentRaw, &current); err != nil {
-			return nil, err
+		if unmarshalErr := json.Unmarshal(currentRaw, &current); unmarshalErr != nil {
+			return nil, unmarshalErr
 		}
 	}
 	for key, value := range preferences {

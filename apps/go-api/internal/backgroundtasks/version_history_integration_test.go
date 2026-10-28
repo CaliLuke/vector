@@ -116,14 +116,14 @@ func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := app.Start(ctx); err != nil {
-		t.Fatal(err)
+	if startErr := app.Start(ctx); startErr != nil {
+		t.Fatal(startErr)
 	}
 	defer func() {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutdownCancel()
-		if err := app.Shutdown(shutdownCtx); err != nil {
-			t.Errorf("shutdown version history runtime: %v", err)
+		if shutdownErr := app.Shutdown(shutdownCtx); shutdownErr != nil {
+			t.Errorf("shutdown version history runtime: %v", shutdownErr)
 		}
 	}()
 
@@ -148,14 +148,14 @@ func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 	}
 	waitVersionWorkflow(t, ctx, app, pageTransactionInstance)
 	var pageLogCount int
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM page_logs WHERE page_id=$1 AND "transaction"=ANY($2::uuid[])`, pageID, []uuid.UUID{firstMentionID, imageTransactionID}).Scan(&pageLogCount); err != nil {
-		t.Fatal(err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM page_logs WHERE page_id=$1 AND "transaction"=ANY($2::uuid[])`, pageID, []uuid.UUID{firstMentionID, imageTransactionID}).Scan(&pageLogCount); scanErr != nil {
+		t.Fatal(scanErr)
 	}
 	if pageLogCount != 2 {
 		t.Fatalf("page component logs=%d, want mention and image", pageLogCount)
 	}
-	if _, err := pageTransactionDispatcher.Admit(ctx, pageTransactionEventID, pageTransactionInput); err != nil {
-		t.Fatalf("reconcile repeated page transaction admission: %v", err)
+	if _, admitErr := pageTransactionDispatcher.Admit(ctx, pageTransactionEventID, pageTransactionInput); admitErr != nil {
+		t.Fatalf("reconcile repeated page transaction admission: %v", admitErr)
 	}
 	secondHTML := `<mention-component id="` + secondMentionID.String() + `" entity_name="page" entity_identifier="` + pageID.String() + `"></mention-component>`
 	secondTransactionID := uuid.NewString()
@@ -165,15 +165,15 @@ func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 		t.Fatalf("admit page transaction update: %v", err)
 	}
 	waitVersionWorkflow(t, ctx, app, secondInstance)
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM page_logs WHERE page_id=$1`, pageID).Scan(&pageLogCount); err != nil {
-		t.Fatal(err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM page_logs WHERE page_id=$1`, pageID).Scan(&pageLogCount); scanErr != nil {
+		t.Fatal(scanErr)
 	}
 	if pageLogCount != 1 {
 		t.Fatalf("page component logs after update=%d, want only the new mention", pageLogCount)
 	}
 	var savedEntityName string
-	if err := pool.QueryRow(ctx, `SELECT entity_name FROM page_logs WHERE page_id=$1 AND "transaction"=$2`, pageID, secondMentionID).Scan(&savedEntityName); err != nil {
-		t.Fatal(err)
+	if scanErr := pool.QueryRow(ctx, `SELECT entity_name FROM page_logs WHERE page_id=$1 AND "transaction"=$2`, pageID, secondMentionID).Scan(&savedEntityName); scanErr != nil {
+		t.Fatal(scanErr)
 	}
 	if savedEntityName != "page" {
 		t.Fatalf("page mention entity_name=%q, want page", savedEntityName)
@@ -197,8 +197,8 @@ func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 	waitVersionWorkflow(t, ctx, app, issueInstance)
 	var issueCount int
 	var gotIssueHTML, gotIssueText string
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*),MAX(description_html),MAX(description_stripped) FROM issue_description_versions WHERE issue_id=$1 AND owned_by_id=$2`, issueID, issueOwner).Scan(&issueCount, &gotIssueHTML, &gotIssueText); err != nil {
-		t.Fatal(err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*),MAX(description_html),MAX(description_stripped) FROM issue_description_versions WHERE issue_id=$1 AND owned_by_id=$2`, issueID, issueOwner).Scan(&issueCount, &gotIssueHTML, &gotIssueText); scanErr != nil {
+		t.Fatal(scanErr)
 	}
 	if issueCount != 1 || gotIssueHTML != "<p>"+issueMarker+"</p>" || gotIssueText != issueMarker {
 		t.Fatalf("issue description versions count=%d html=%q text=%q", issueCount, gotIssueHTML, gotIssueText)
@@ -208,8 +208,8 @@ func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 		t.Fatalf("admit duplicate issue snapshot: %v", err)
 	}
 	waitVersionWorkflow(t, ctx, app, issueReplay)
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_description_versions WHERE issue_id=$1 AND owned_by_id=$2`, issueID, issueOwner).Scan(&issueCount); err != nil {
-		t.Fatal(err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_description_versions WHERE issue_id=$1 AND owned_by_id=$2`, issueID, issueOwner).Scan(&issueCount); scanErr != nil {
+		t.Fatal(scanErr)
 	}
 	if issueCount != 1 {
 		t.Fatalf("replayed issue snapshot created %d rows, want coalesced one", issueCount)
@@ -219,23 +219,23 @@ func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 		t.Fatal(err)
 	}
 	operationID := uuid.NewString()
-	if err := versionAdmission.AdmitIssueDescriptionVersion(ctx, operationID, string(issueSnapshot), issueID.String(), issueOwner.String(), false); err != nil {
-		t.Fatalf("admit issue description through native producer adapter: %v", err)
+	if admitIssueErr := versionAdmission.AdmitIssueDescriptionVersion(ctx, operationID, string(issueSnapshot), issueID.String(), issueOwner.String(), false); admitIssueErr != nil {
+		t.Fatalf("admit issue description through native producer adapter: %v", admitIssueErr)
 	}
 	waitVersionWorkflow(t, ctx, app, "issue-description-version:"+operationID)
-	if err := versionAdmission.AdmitIssueDescriptionVersion(ctx, operationID, string(issueSnapshot), issueID.String(), issueOwner.String(), false); err != nil {
-		t.Fatalf("reconcile repeated native producer admission: %v", err)
+	if admitIssueErr := versionAdmission.AdmitIssueDescriptionVersion(ctx, operationID, string(issueSnapshot), issueID.String(), issueOwner.String(), false); admitIssueErr != nil {
+		t.Fatalf("reconcile repeated native producer admission: %v", admitIssueErr)
 	}
 	secondOperationID := uuid.NewString()
 	if secondOperationID == operationID {
 		t.Fatal("distinct operation IDs must not collide")
 	}
-	if err := versionAdmission.AdmitIssueDescriptionVersion(ctx, secondOperationID, string(issueSnapshot), issueID.String(), issueOwner.String(), false); err != nil {
-		t.Fatalf("admit second identical native operation: %v", err)
+	if admitIssueErr := versionAdmission.AdmitIssueDescriptionVersion(ctx, secondOperationID, string(issueSnapshot), issueID.String(), issueOwner.String(), false); admitIssueErr != nil {
+		t.Fatalf("admit second identical native operation: %v", admitIssueErr)
 	}
 	waitVersionWorkflow(t, ctx, app, "issue-description-version:"+secondOperationID)
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_description_versions WHERE issue_id=$1 AND owned_by_id=$2`, issueID, issueOwner).Scan(&issueCount); err != nil {
-		t.Fatal(err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_description_versions WHERE issue_id=$1 AND owned_by_id=$2`, issueID, issueOwner).Scan(&issueCount); scanErr != nil {
+		t.Fatal(scanErr)
 	}
 	if issueCount != 1 {
 		t.Fatalf("native producer replay created %d rows, want one coalesced row", issueCount)
@@ -243,8 +243,8 @@ func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 
 	syncRunID := uuid.NewString()
 	var totalIssues int
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issues WHERE deleted_at IS NULL`).Scan(&totalIssues); err != nil {
-		t.Fatal(err)
+	if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issues WHERE deleted_at IS NULL`).Scan(&totalIssues); scanErr != nil {
+		t.Fatal(scanErr)
 	}
 	syncInstance, err := syncDispatcher.Admit(ctx, syncRunID, 1, 0, 20*time.Millisecond)
 	if err != nil {
@@ -264,8 +264,8 @@ func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 	for _, currentIssueID := range []uuid.UUID{issueID, issueBatchID} {
 		versionID := uuid.NewSHA1(uuid.NameSpaceOID, []byte(syncRunID+":"+currentIssueID.String()))
 		var versions int
-		if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_description_versions WHERE id=$1 AND issue_id=$2 AND owned_by_id=$3`, versionID, currentIssueID, issueOwner).Scan(&versions); err != nil {
-			t.Fatal(err)
+		if scanErr := pool.QueryRow(ctx, `SELECT COUNT(*) FROM issue_description_versions WHERE id=$1 AND issue_id=$2 AND owned_by_id=$3`, versionID, currentIssueID, issueOwner).Scan(&versions); scanErr != nil {
+			t.Fatal(scanErr)
 		}
 		if versions != 1 {
 			t.Fatalf("sync version for issue %s count=%d, want one", currentIssueID, versions)
@@ -289,8 +289,8 @@ func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 		var name, priority string
 		var assignees, labels, modules []uuid.UUID
 		var owner uuid.UUID
-		if err := pool.QueryRow(ctx, `SELECT name,priority,owned_by_id,assignees,labels,modules FROM issue_versions WHERE id=$1 AND issue_id=$2`, versionID, currentIssueID).Scan(&name, &priority, &owner, &assignees, &labels, &modules); err != nil {
-			t.Fatal(err)
+		if scanErr := pool.QueryRow(ctx, `SELECT name,priority,owned_by_id,assignees,labels,modules FROM issue_versions WHERE id=$1 AND issue_id=$2`, versionID, currentIssueID).Scan(&name, &priority, &owner, &assignees, &labels, &modules); scanErr != nil {
+			t.Fatal(scanErr)
 		}
 		if name != expectedName || priority != "medium" || owner != pageOwner || len(assignees) != 0 || len(labels) != 0 || len(modules) != 0 {
 			t.Fatalf("issue version %s name=%q priority=%q owner=%s assignees=%v labels=%v modules=%v", currentIssueID, name, priority, owner, assignees, labels, modules)

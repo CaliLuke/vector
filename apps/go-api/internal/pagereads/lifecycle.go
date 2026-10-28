@@ -768,10 +768,10 @@ func (repository *Repository) updateOrDuplicatePage(ctx context.Context, db life
 	var oldDescription string
 	_ = repository.database.QueryRow(ctx, `SELECT description_html FROM pages WHERE id=$1 AND workspace_id=$2`, page, state.workspaceID).Scan(&oldDescription)
 	newDescription, descriptionChanged := fields["description_html"].(string)
-	if err := repository.writePage(ctx, db, func(tx pgx.Tx) error {
+	if writePageErr := repository.writePage(ctx, db, func(tx pgx.Tx) error {
 		if _, collaborative := input.Fields["collaboration_revision"]; collaborative || fields["name"] != nil || fields["description_html"] != nil {
-			if err := checkPageCollaborationRevision(ctx, tx, page, state.workspaceID, input.Fields); err != nil {
-				return err
+			if checkPageErr := checkPageCollaborationRevision(ctx, tx, page, state.workspaceID, input.Fields); checkPageErr != nil {
+				return checkPageErr
 			}
 		}
 		for key, column := range map[string]string{"name": "name", "color": "color", "access": "access", "parent": "parent_id", "description_html": "description_html", "view_props": "view_props", "logo_props": "logo_props", "is_locked": "is_locked", "archived_at": "archived_at"} {
@@ -783,19 +783,19 @@ func (repository *Repository) updateOrDuplicatePage(ctx context.Context, db life
 				value = nil
 			}
 			if key == "view_props" || key == "logo_props" {
-				jsonValue, _, err := input.JSONFieldValue(key)
-				if err != nil {
+				jsonValue, _, jsonFieldErr := input.JSONFieldValue(key)
+				if jsonFieldErr != nil {
 					return &djangoapi.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{key: []string{"Value must be valid JSON."}}}
 				}
-				encoded, err := json.Marshal(jsonValue)
-				if err != nil {
-					return err
+				encoded, jsonFieldErr := json.Marshal(jsonValue)
+				if jsonFieldErr != nil {
+					return jsonFieldErr
 				}
 				value = encoded
 			}
-			_, err := tx.Exec(ctx, `UPDATE pages SET `+column+`=$1, updated_by_id=$2, updated_at=now() WHERE id=$3 AND workspace_id=$4 AND deleted_at IS NULL`, value, user, page, state.workspaceID)
-			if err != nil {
-				return err
+			_, execErr := tx.Exec(ctx, `UPDATE pages SET `+column+`=$1, updated_by_id=$2, updated_at=now() WHERE id=$3 AND workspace_id=$4 AND deleted_at IS NULL`, value, user, page, state.workspaceID)
+			if execErr != nil {
+				return execErr
 			}
 		}
 		if labelList.present {
@@ -822,8 +822,8 @@ func (repository *Repository) updateOrDuplicatePage(ctx context.Context, db life
 			return err
 		}
 		return nil
-	}); err != nil {
-		return 0, nil, err
+	}); writePageErr != nil {
+		return 0, nil, writePageErr
 	}
 	if rawDescription, present := input.Fields["description_html"]; (repository.publisher != nil || repository.nativeTasks != nil) && descriptionChanged && present && pythoncompat.Truthy(rawDescription) {
 		if err := repository.admitPageTransaction(ctx, rawDescription, oldDescription, page.String()); err != nil {

@@ -75,8 +75,8 @@ func TestIntakeMixedProtocolAppliesSlashlessAndOptionsCompatibility(t *testing.T
 			t.Fatal(err)
 		}
 		var value any
-		if err := json.Unmarshal(encoded, &value); err != nil {
-			t.Fatal(err)
+		if unmarshalErr := json.Unmarshal(encoded, &value); unmarshalErr != nil {
+			t.Fatal(unmarshalErr)
 		}
 		canonical, err := json.Marshal(value)
 		if err != nil {

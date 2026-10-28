@@ -287,9 +287,9 @@ func (s *workspaceWebhooksService) PatchDetail(ctx context.Context, p *api.Patch
 	// Django's UpdateAPIView looks up the object before UpdateModelMixin reads
 	// and validates request.data. Keep malformed bodies from changing a missing
 	// resource response from 404 to 400.
-	if _, err := s.repo.Get(ctx, p.Slug, id); errors.Is(err, store.ErrNotFound) {
+	if _, getErr := s.repo.Get(ctx, p.Slug, id); errors.Is(getErr, store.ErrNotFound) {
 		return nil, webhookNotFoundError()
-	} else if err != nil {
+	} else if getErr != nil {
 		return nil, internalWebhookError()
 	}
 	request, err := parseWebhookBody[webhookPatchRequest](ctx, body)

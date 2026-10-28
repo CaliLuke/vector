@@ -36,7 +36,7 @@ func TestPublicAssetAuthorizationPostgres(t *testing.T) {
 		t.Fatalf("connect to isolated public assets database: %v", err)
 	}
 	defer database.Close()
-	if _, err := database.Exec(ctx, `
+	if _, execErr := database.Exec(ctx, `
 CREATE TEMP TABLE workspaces (id uuid PRIMARY KEY, slug text, deleted_at timestamptz);
 CREATE TEMP TABLE projects (id uuid PRIMARY KEY, workspace_id uuid, deleted_at timestamptz, archived_at timestamptz);
 CREATE TEMP TABLE deploy_boards (id uuid PRIMARY KEY, workspace_id uuid, project_id uuid, entity_name text, entity_identifier uuid, anchor text, deleted_at timestamptz, is_disabled boolean, created_at timestamptz);
@@ -47,8 +47,8 @@ CREATE TEMP TABLE file_assets (
  workspace_id uuid, project_id uuid, comment_id uuid, issue_id uuid, entity_type text, size double precision,
  is_uploaded boolean, is_deleted boolean, is_archived boolean, storage_metadata jsonb,
 	 user_id uuid, created_by_id uuid, deleted_at timestamptz
-)`); err != nil {
-		t.Fatalf("create isolated public assets TEMP tables: %v", err)
+)`); execErr != nil {
+		t.Fatalf("create isolated public assets TEMP tables: %v", execErr)
 	}
 	repository, err := NewPostgresRepository(database)
 	if err != nil {
@@ -70,8 +70,8 @@ CREATE TEMP TABLE file_assets (
 		{`INSERT INTO issue_comments(id,workspace_id,project_id,created_by_id) VALUES (@comment,@workspace,@project,@actor),(@foreign_project_comment,@workspace,@foreign_project,@actor),(@foreign_user_comment,@workspace,@project,@foreign_user),(@second_comment,@workspace,@project,@actor)`, pgx.StrictNamedArgs{"workspace": workspaceID, "project": projectID, "foreign_project": foreignProjectID, "actor": actorID, "comment": commentID, "foreign_project_comment": foreignCommentID, "foreign_user_comment": otherUserCommentID, "foreign_user": foreignID, "second_comment": newCommentID}},
 		{`INSERT INTO issues(id,workspace_id,project_id) VALUES (@issue,@workspace,@project)`, pgx.StrictNamedArgs{"issue": issueID, "workspace": workspaceID, "project": projectID}},
 	} {
-		if _, err := database.Exec(ctx, seed.query, seed.args); err != nil {
-			t.Fatalf("seed public assets authorization TEMP rows: %v", err)
+		if _, execErr := database.Exec(ctx, seed.query, seed.args); execErr != nil {
+			t.Fatalf("seed public assets authorization TEMP rows: %v", execErr)
 		}
 	}
 	gotWorkspaceID, gotProjectID, _, found, err := repository.PublicProjectBoard(ctx, anchor, false)
@@ -101,18 +101,18 @@ CREATE TEMP TABLE file_assets (
 			} else {
 				args = []any{boardID}
 			}
-			if _, err := database.Exec(ctx, disabled.setup, args...); err != nil {
-				t.Fatal(err)
+			if _, execErr := database.Exec(ctx, disabled.setup, args...); execErr != nil {
+				t.Fatal(execErr)
 			}
-			if _, _, _, found, err := repository.PublicProjectBoard(ctx, anchor, false); err != nil || found {
-				t.Fatalf("unusable board found=%t err=%v, want unavailable", found, err)
+			if _, _, _, found, publicProjectBoardErr := repository.PublicProjectBoard(ctx, anchor, false); publicProjectBoardErr != nil || found {
+				t.Fatalf("unusable board found=%t err=%v, want unavailable", found, publicProjectBoardErr)
 			}
 			clearArgs := args
 			if disabled.name == "mismatched board project" {
 				clearArgs = []any{boardID, projectID}
 			}
-			if _, err := database.Exec(ctx, disabled.clear, clearArgs...); err != nil {
-				t.Fatal(err)
+			if _, execErr := database.Exec(ctx, disabled.clear, clearArgs...); execErr != nil {
+				t.Fatal(execErr)
 			}
 		})
 	}
@@ -121,47 +121,47 @@ CREATE TEMP TABLE file_assets (
 		return repository.CreatePublicUpload(ctx, assetID, userID, workspaceID, projectID, "asset-"+assetID.String(), []byte(`{"name":"image.png"}`), 10, entityType, entityID)
 	}
 	ownedAssetID, mixedAssetID, foreignAssetID, pendingAssetID, issueAssetID := uuid.New(), uuid.New(), uuid.New(), uuid.New(), uuid.New()
-	if err := create(ownedAssetID, actorID, "COMMENT_DESCRIPTION", commentID.String()); err != nil {
-		t.Fatalf("create owner comment upload: %v", err)
+	if createErr := create(ownedAssetID, actorID, "COMMENT_DESCRIPTION", commentID.String()); createErr != nil {
+		t.Fatalf("create owner comment upload: %v", createErr)
 	}
-	if err := create(mixedAssetID, actorID, "COMMENT_DESCRIPTION", ""); err != nil {
-		t.Fatalf("create pre-comment upload: %v", err)
+	if createErr := create(mixedAssetID, actorID, "COMMENT_DESCRIPTION", ""); createErr != nil {
+		t.Fatalf("create pre-comment upload: %v", createErr)
 	}
-	if err := create(pendingAssetID, actorID, "COMMENT_DESCRIPTION", ""); err != nil {
-		t.Fatalf("create second pre-comment upload: %v", err)
+	if createErr := create(pendingAssetID, actorID, "COMMENT_DESCRIPTION", ""); createErr != nil {
+		t.Fatalf("create second pre-comment upload: %v", createErr)
 	}
-	if err := create(issueAssetID, actorID, "ISSUE_DESCRIPTION", issueID.String()); err != nil {
-		t.Fatalf("create issue description upload: %v", err)
+	if createErr := create(issueAssetID, actorID, "ISSUE_DESCRIPTION", issueID.String()); createErr != nil {
+		t.Fatalf("create issue description upload: %v", createErr)
 	}
 	var linkedIssueID, linkedCommentID *uuid.UUID
-	if err := database.QueryRow(ctx, `SELECT issue_id,comment_id FROM file_assets WHERE id=$1`, issueAssetID).Scan(&linkedIssueID, &linkedCommentID); err != nil {
-		t.Fatal(err)
+	if scanErr := database.QueryRow(ctx, `SELECT issue_id,comment_id FROM file_assets WHERE id=$1`, issueAssetID).Scan(&linkedIssueID, &linkedCommentID); scanErr != nil {
+		t.Fatal(scanErr)
 	}
 	if linkedIssueID == nil || *linkedIssueID != issueID || linkedCommentID != nil {
 		t.Fatalf("issue description relations issue=%v comment=%v, want issue %s and no comment", linkedIssueID, linkedCommentID, issueID)
 	}
-	if err := database.QueryRow(ctx, `SELECT comment_id FROM file_assets WHERE id=$1`, mixedAssetID).Scan(&linkedCommentID); err != nil {
-		t.Fatal(err)
+	if scanErr := database.QueryRow(ctx, `SELECT comment_id FROM file_assets WHERE id=$1`, mixedAssetID).Scan(&linkedCommentID); scanErr != nil {
+		t.Fatal(scanErr)
 	}
 	if linkedCommentID != nil {
 		t.Fatalf("pre-comment upload unexpectedly linked comment %s", *linkedCommentID)
 	}
-	if err := create(uuid.New(), actorID, "COMMENT_DESCRIPTION", foreignCommentID.String()); !isPublicNotFound(err) {
-		t.Fatalf("foreign-project comment upload error=%v, want not-found", err)
+	if createErr := create(uuid.New(), actorID, "COMMENT_DESCRIPTION", foreignCommentID.String()); !isPublicNotFound(createErr) {
+		t.Fatalf("foreign-project comment upload error=%v, want not-found", createErr)
 	}
-	if err := create(uuid.New(), actorID, "COMMENT_DESCRIPTION", otherUserCommentID.String()); !isPublicNotFound(err) {
-		t.Fatalf("other-user comment upload error=%v, want not-found", err)
+	if createErr := create(uuid.New(), actorID, "COMMENT_DESCRIPTION", otherUserCommentID.String()); !isPublicNotFound(createErr) {
+		t.Fatalf("other-user comment upload error=%v, want not-found", createErr)
 	}
-	if err := repository.BulkAssociatePublicAssetComments(ctx, actorID, workspaceID, projectID, otherUserCommentID, []uuid.UUID{mixedAssetID}); !isPublicNotFound(err) {
-		t.Fatalf("other-user target comment bulk association error=%v, want not-found", err)
+	if bulkAssociateErr := repository.BulkAssociatePublicAssetComments(ctx, actorID, workspaceID, projectID, otherUserCommentID, []uuid.UUID{mixedAssetID}); !isPublicNotFound(bulkAssociateErr) {
+		t.Fatalf("other-user target comment bulk association error=%v, want not-found", bulkAssociateErr)
 	}
-	if err := create(foreignAssetID, foreignID, "COMMENT_DESCRIPTION", otherUserCommentID.String()); err != nil {
-		t.Fatalf("create foreign owner's upload: %v", err)
+	if createErr := create(foreignAssetID, foreignID, "COMMENT_DESCRIPTION", otherUserCommentID.String()); createErr != nil {
+		t.Fatalf("create foreign owner's upload: %v", createErr)
 	}
 	nullOwnerAssetID := uuid.New()
-	if _, err := database.Exec(ctx, `INSERT INTO file_assets(id,created_at,updated_at,attributes,asset,workspace_id,project_id,entity_type,size,is_uploaded,is_deleted,is_archived,storage_metadata)
-		VALUES (@id,NOW(),NOW(),'{}'::jsonb,'legacy-null-owner',@workspace,@project,'COMMENT_DESCRIPTION',1,false,false,false,'{}'::jsonb)`, pgx.StrictNamedArgs{"id": nullOwnerAssetID, "workspace": workspaceID, "project": projectID}); err != nil {
-		t.Fatalf("seed legacy asset with nullable creator: %v", err)
+	if _, execErr := database.Exec(ctx, `INSERT INTO file_assets(id,created_at,updated_at,attributes,asset,workspace_id,project_id,entity_type,size,is_uploaded,is_deleted,is_archived,storage_metadata)
+		VALUES (@id,NOW(),NOW(),'{}'::jsonb,'legacy-null-owner',@workspace,@project,'COMMENT_DESCRIPTION',1,false,false,false,'{}'::jsonb)`, pgx.StrictNamedArgs{"id": nullOwnerAssetID, "workspace": workspaceID, "project": projectID}); execErr != nil {
+		t.Fatalf("seed legacy asset with nullable creator: %v", execErr)
 	}
 
 	asset, err := repository.PublicOwnedProjectAsset(ctx, actorID, workspaceID, projectID, ownedAssetID, false)

@@ -53,28 +53,28 @@ func Install(ctx context.Context, installation Installation) error {
 	if err != nil {
 		return fmt.Errorf("initialize instance configuration encryption: %w", err)
 	}
-	if _, err := InstanceConfigurations(installation.LookupEnv, cipher); err != nil {
-		return err
+	if _, instanceConfigurationsErr := InstanceConfigurations(installation.LookupEnv, cipher); instanceConfigurationsErr != nil {
+		return instanceConfigurationsErr
 	}
-	if err := MigrateSchema(ctx, installation.DatabaseURL); err != nil {
-		return err
+	if migrateSchemaErr := MigrateSchema(ctx, installation.DatabaseURL); migrateSchemaErr != nil {
+		return migrateSchemaErr
 	}
 	pool, err := pgxpool.New(ctx, installation.DatabaseURL)
 	if err != nil {
 		return fmt.Errorf("configure bootstrap PostgreSQL pool: %w", err)
 	}
 	defer pool.Close()
-	if err := pool.Ping(ctx); err != nil {
-		return fmt.Errorf("connect bootstrap PostgreSQL pool: %w", err)
+	if pingErr := pool.Ping(ctx); pingErr != nil {
+		return fmt.Errorf("connect bootstrap PostgreSQL pool: %w", pingErr)
 	}
-	if err := MigrateRuntimeSchemas(ctx, installation.DatabaseURL, pool); err != nil {
-		return err
+	if migrateRuntimeSchemasErr := MigrateRuntimeSchemas(ctx, installation.DatabaseURL, pool); migrateRuntimeSchemasErr != nil {
+		return migrateRuntimeSchemasErr
 	}
-	if err := ConfigureInstance(ctx, pool, installation.SecretKey, installation.LookupEnv); err != nil {
-		return err
+	if configureInstanceErr := ConfigureInstance(ctx, pool, installation.SecretKey, installation.LookupEnv); configureInstanceErr != nil {
+		return configureInstanceErr
 	}
-	if err := installation.EnsureBucket(ctx); err != nil {
-		return err
+	if ensureBucketErr := installation.EnsureBucket(ctx); ensureBucketErr != nil {
+		return ensureBucketErr
 	}
 	_, err = RegisterInstance(ctx, pool, Registration{
 		MachineSignature: installation.MachineSignature,

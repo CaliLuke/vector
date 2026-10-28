@@ -238,7 +238,7 @@ func (validator *Validator) validateValues(
 	if !ok {
 		return Principal{}, "", ErrBackend
 	}
-	if _, ok := validator.backends[backend]; !ok {
+	if _, supported := validator.backends[backend]; !supported {
 		return Principal{}, "", ErrBackend
 	}
 	// UUIDField.get_prep_value() retains None. ModelBackend then performs a
@@ -774,8 +774,8 @@ func decodeSessionData(sessionData string, secrets []string) (map[string]any, []
 		return nil, nil, -1, ErrInvalidData
 	}
 	if compressed {
-		reader, err := zlib.NewReader(bytes.NewReader(encoded))
-		if err != nil {
+		reader, newReaderErr := zlib.NewReader(bytes.NewReader(encoded))
+		if newReaderErr != nil {
 			return nil, nil, -1, ErrInvalidData
 		}
 		decoded, readErr := io.ReadAll(reader)

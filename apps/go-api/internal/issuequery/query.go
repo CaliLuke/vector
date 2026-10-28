@@ -194,13 +194,13 @@ func decodeOrderedIssueFilter(decoder *json.Decoder) (any, error) {
 	case '{':
 		object := make(orderedIssueFilterObject, 0)
 		for decoder.More() {
-			nameToken, err := decoder.Token()
-			if err != nil {
-				return nil, err
+			nameToken, filterErr := decoder.Token()
+			if filterErr != nil {
+				return nil, filterErr
 			}
-			value, err := decodeOrderedIssueFilter(decoder)
-			if err != nil {
-				return nil, err
+			value, filterErr := decodeOrderedIssueFilter(decoder)
+			if filterErr != nil {
+				return nil, filterErr
 			}
 			name := nameToken.(string)
 			replaced := false
@@ -220,9 +220,9 @@ func decodeOrderedIssueFilter(decoder *json.Decoder) (any, error) {
 	case '[':
 		values := make([]any, 0)
 		for decoder.More() {
-			value, err := decodeOrderedIssueFilter(decoder)
-			if err != nil {
-				return nil, err
+			value, decodeOrderedIssueFilterErr := decodeOrderedIssueFilter(decoder)
+			if decodeOrderedIssueFilterErr != nil {
+				return nil, decodeOrderedIssueFilterErr
 			}
 			values = append(values, value)
 		}

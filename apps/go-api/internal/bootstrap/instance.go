@@ -57,8 +57,8 @@ func RegisterInstance(ctx context.Context, pool *pgxpool.Pool, input Registratio
 		return false, fmt.Errorf("begin instance registration: %w", err)
 	}
 	defer tx.Rollback(ctx) //nolint:errcheck // Commit below determines the transaction result.
-	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(@lock_id)`, pgx.StrictNamedArgs{"lock_id": registrationLockID}); err != nil {
-		return false, fmt.Errorf("lock instance registration: %w", err)
+	if _, execErr := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(@lock_id)`, pgx.StrictNamedArgs{"lock_id": registrationLockID}); execErr != nil {
+		return false, fmt.Errorf("lock instance registration: %w", execErr)
 	}
 
 	var id uuid.UUID
@@ -72,12 +72,12 @@ func RegisterInstance(ctx context.Context, pool *pgxpool.Pool, input Registratio
 		if strings.TrimSpace(input.MachineSignature) == "" {
 			return false, errors.New("machine signature is required")
 		}
-		instanceID, err := newInstanceID()
-		if err != nil {
-			return false, fmt.Errorf("generate instance identifier: %w", err)
+		instanceID, registrationErr := newInstanceID()
+		if registrationErr != nil {
+			return false, fmt.Errorf("generate instance identifier: %w", registrationErr)
 		}
 		id = uuid.New()
-		_, err = tx.Exec(ctx, `INSERT INTO instances (
+		_, registrationErr = tx.Exec(ctx, `INSERT INTO instances (
 			created_at,updated_at,id,instance_name,whitelist_emails,instance_id,
 			current_version,last_checked_at,namespace,is_telemetry_enabled,
 			is_support_required,is_setup_done,is_signup_screen_visited,is_verified,
@@ -91,8 +91,8 @@ func RegisterInstance(ctx context.Context, pool *pgxpool.Pool, input Registratio
 			"now": now, "id": id, "instance_name": "Vector Community Edition", "instance_id": instanceID,
 			"current_version": input.CurrentVersion, "latest_version": latestVersion, "is_test": input.IsTest,
 		})
-		if err != nil {
-			return false, fmt.Errorf("create registered instance: %w", err)
+		if registrationErr != nil {
+			return false, fmt.Errorf("create registered instance: %w", registrationErr)
 		}
 	} else {
 		_, err = tx.Exec(ctx, `UPDATE instances SET updated_at=@now,last_checked_at=@now,

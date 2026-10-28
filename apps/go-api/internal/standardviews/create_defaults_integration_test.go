@@ -26,8 +26,8 @@ func TestCreateViewsSuppliesDjangoModelDefaults(t *testing.T) {
 	}
 	defer connection.Close(ctx)
 	// Django's default=False is supplied by the ORM, not a database default.
-	if _, err := connection.Exec(ctx, `ALTER TABLE issue_views ALTER COLUMN is_locked DROP DEFAULT, ALTER COLUMN is_locked SET NOT NULL`); err != nil {
-		t.Fatal(err)
+	if _, execErr := connection.Exec(ctx, `ALTER TABLE issue_views ALTER COLUMN is_locked DROP DEFAULT, ALTER COLUMN is_locked SET NOT NULL`); execErr != nil {
+		t.Fatal(execErr)
 	}
 	repository, err := NewRepository(connection)
 	if err != nil {

@@ -73,15 +73,15 @@ WHERE deleted_at IS NULL ORDER BY created_at ASC LIMIT 1 FOR UPDATE`).Scan(&inst
 		return InitialAdminResult{}, fmt.Errorf("lock instance for initial admin: %w", err)
 	}
 	var hasAdmins bool
-	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM instance_admins WHERE deleted_at IS NULL)`).Scan(&hasAdmins); err != nil {
-		return InitialAdminResult{}, fmt.Errorf("check existing instance admins: %w", err)
+	if scanErr := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM instance_admins WHERE deleted_at IS NULL)`).Scan(&hasAdmins); scanErr != nil {
+		return InitialAdminResult{}, fmt.Errorf("check existing instance admins: %w", scanErr)
 	}
 	if setupDone || hasAdmins {
 		return InitialAdminResult{Exists: true, SetupDone: setupDone, AlreadyExists: hasAdmins}, nil
 	}
 	var existingUser bool
-	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM users WHERE email=@email)`, pgx.StrictNamedArgs{"email": email}).Scan(&existingUser); err != nil {
-		return InitialAdminResult{}, fmt.Errorf("check existing admin user: %w", err)
+	if scanErr := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM users WHERE email=@email)`, pgx.StrictNamedArgs{"email": email}).Scan(&existingUser); scanErr != nil {
+		return InitialAdminResult{}, fmt.Errorf("check existing admin user: %w", scanErr)
 	}
 	if existingUser {
 		return InitialAdminResult{Exists: true, UserAlreadyExists: true}, nil

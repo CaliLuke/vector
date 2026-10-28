@@ -27,14 +27,14 @@ func TestPublisherTaskEmitsPersistentCeleryProtocolV2Message(t *testing.T) {
 		_ = consumer.Close()
 		t.Fatalf("open consumer channel: %v", err)
 	}
-	if err := declareCeleryQueue(channel, queue); err != nil {
+	if declareCeleryQueueErr := declareCeleryQueue(channel, queue); declareCeleryQueueErr != nil {
 		_ = channel.Close()
 		_ = consumer.Close()
-		t.Fatal(err)
+		t.Fatal(declareCeleryQueueErr)
 	}
 	t.Cleanup(func() {
-		if _, err := channel.QueueDelete(queue, false, false, false); err != nil {
-			t.Errorf("delete test queue: %v", err)
+		if _, queueDeleteErr := channel.QueueDelete(queue, false, false, false); queueDeleteErr != nil {
+			t.Errorf("delete test queue: %v", queueDeleteErr)
 		}
 		_ = channel.Close()
 		_ = consumer.Close()

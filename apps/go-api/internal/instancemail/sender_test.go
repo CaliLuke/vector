@@ -179,17 +179,17 @@ func readAttachments(header textproto.MIMEHeader, body io.Reader) ([]decodedAtta
 		reader := multipart.NewReader(body, params["boundary"])
 		var attachments []decodedAttachment
 		for {
-			part, err := reader.NextPart()
-			if err == io.EOF {
+			part, attachmentErr := reader.NextPart()
+			if attachmentErr == io.EOF {
 				return attachments, nil
 			}
-			if err != nil {
-				return nil, err
+			if attachmentErr != nil {
+				return nil, attachmentErr
 			}
-			nested, err := readAttachments(part.Header, part)
+			nested, attachmentErr := readAttachments(part.Header, part)
 			_ = part.Close()
-			if err != nil {
-				return nil, err
+			if attachmentErr != nil {
+				return nil, attachmentErr
 			}
 			attachments = append(attachments, nested...)
 		}

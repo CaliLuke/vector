@@ -36,8 +36,8 @@ func (admission *WebhookTaskAdmission) AdmitWebhookTask(ctx context.Context, eve
 		return fmt.Errorf("encode webhook task kwargs: %w", err)
 	}
 	var rawKwargs map[string]json.RawMessage
-	if err := json.Unmarshal(encoded, &rawKwargs); err != nil {
-		return fmt.Errorf("decode webhook task kwargs: %w", err)
+	if unmarshalErr := json.Unmarshal(encoded, &rawKwargs); unmarshalErr != nil {
+		return fmt.Errorf("decode webhook task kwargs: %w", unmarshalErr)
 	}
 	encodedArgs, err := json.Marshal(args)
 	if err != nil {

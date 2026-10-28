@@ -32,8 +32,8 @@ func TestConcurrentStickyCreateAllocatesDistinctIncreasingSortOrders(t *testing.
 		t.Fatalf("start PostgreSQL fixture: %v", err)
 	}
 	t.Cleanup(func() {
-		if err := pair.Close(); err != nil {
-			t.Errorf("close PostgreSQL fixture: %v", err)
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close PostgreSQL fixture: %v", closeErr)
 		}
 	})
 
@@ -42,8 +42,8 @@ func TestConcurrentStickyCreateAllocatesDistinctIncreasingSortOrders(t *testing.
 		t.Fatalf("parse PostgreSQL configuration: %v", err)
 	}
 	configuration.MaxConns = 16
-	if err := database.ConfigurePool(configuration); err != nil {
-		t.Fatalf("configure PostgreSQL pool: %v", err)
+	if configurePoolErr := database.ConfigurePool(configuration); configurePoolErr != nil {
+		t.Fatalf("configure PostgreSQL pool: %v", configurePoolErr)
 	}
 	pool, err := pgxpool.NewWithConfig(ctx, configuration)
 	if err != nil {
@@ -263,8 +263,8 @@ func assertSortTransactionRollback(
 	}
 
 	var beforeCount int
-	if err := pool.QueryRow(ctx, "SELECT count(*) FROM stickies WHERE workspace_id = $1", workspaceID).Scan(&beforeCount); err != nil {
-		t.Fatalf("count Stickies after rollback: %v", err)
+	if scanErr := pool.QueryRow(ctx, "SELECT count(*) FROM stickies WHERE workspace_id = $1", workspaceID).Scan(&beforeCount); scanErr != nil {
+		t.Fatalf("count Stickies after rollback: %v", scanErr)
 	}
 	created, err := repository.CreateWithAllocatedSort(
 		ctx,
@@ -302,8 +302,8 @@ func createSortTestSchema(ctx context.Context, databaseURL string) error {
 	if err != nil {
 		return err
 	}
-	if err := database.ConfigurePool(configuration); err != nil {
-		return err
+	if configurePoolErr := database.ConfigurePool(configuration); configurePoolErr != nil {
+		return configurePoolErr
 	}
 	pool, err := pgxpool.NewWithConfig(ctx, configuration)
 	if err != nil {

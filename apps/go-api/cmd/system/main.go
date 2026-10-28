@@ -273,16 +273,16 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return fmt.Errorf("configure database: %w", err)
 	}
-	if err := database.ConfigurePool(poolConfig); err != nil {
-		return fmt.Errorf("configure database adapters: %w", err)
+	if configurePoolErr := database.ConfigurePool(poolConfig); configurePoolErr != nil {
+		return fmt.Errorf("configure database adapters: %w", configurePoolErr)
 	}
 	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
 	if err != nil {
 		return fmt.Errorf("create database pool: %w", err)
 	}
 	defer pool.Close()
-	if err := pool.Ping(ctx); err != nil {
-		return fmt.Errorf("connect database: %w", err)
+	if pingErr := pool.Ping(ctx); pingErr != nil {
+		return fmt.Errorf("connect database: %w", pingErr)
 	}
 	var issueDescriptionVersionAdmission workitemstore.IssueDescriptionVersionAdmitter
 	var recentVisitAdmission workitemstore.RecentVisitAdmitter
@@ -311,12 +311,12 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 		defer func() {
 			shutdownContext, cancel := context.WithTimeout(context.Background(), cfg.shutdownTimeout)
 			defer cancel()
-			if err := backgroundTaskRuntime.Shutdown(shutdownContext); err != nil {
-				log.Error(ctx, err)
+			if shutdownErr := backgroundTaskRuntime.Shutdown(shutdownContext); shutdownErr != nil {
+				log.Error(ctx, shutdownErr)
 			}
 		}()
-		if err := backgroundTaskRuntime.Start(ctx); err != nil {
-			return err
+		if startErr := backgroundTaskRuntime.Start(ctx); startErr != nil {
+			return startErr
 		}
 		pageTaskAdmission, err = backgroundtasks.NewPageTaskAdmission(backgroundTaskRuntime.PageTransactions, backgroundTaskRuntime.Versions, backgroundTaskRuntime.DescriptionAssets)
 		if err != nil {
@@ -350,20 +350,20 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	}
 	activityReadsPool := pool
 	if cfg.readReplicaDatabaseURL != "" {
-		readReplicaConfig, err := pgxpool.ParseConfig(cfg.readReplicaDatabaseURL)
-		if err != nil {
-			return fmt.Errorf("configure read replica database: %w", err)
+		readReplicaConfig, poolErr := pgxpool.ParseConfig(cfg.readReplicaDatabaseURL)
+		if poolErr != nil {
+			return fmt.Errorf("configure read replica database: %w", poolErr)
 		}
-		if err := database.ConfigurePool(readReplicaConfig); err != nil {
-			return fmt.Errorf("configure read replica database adapters: %w", err)
+		if configurePoolErr := database.ConfigurePool(readReplicaConfig); configurePoolErr != nil {
+			return fmt.Errorf("configure read replica database adapters: %w", configurePoolErr)
 		}
-		activityReadsPool, err = pgxpool.NewWithConfig(ctx, readReplicaConfig)
-		if err != nil {
-			return fmt.Errorf("create read replica database pool: %w", err)
+		activityReadsPool, poolErr = pgxpool.NewWithConfig(ctx, readReplicaConfig)
+		if poolErr != nil {
+			return fmt.Errorf("create read replica database pool: %w", poolErr)
 		}
 		defer activityReadsPool.Close()
-		if err := activityReadsPool.Ping(ctx); err != nil {
-			return fmt.Errorf("connect read replica database: %w", err)
+		if pingErr := activityReadsPool.Ping(ctx); pingErr != nil {
+			return fmt.Errorf("connect read replica database: %w", pingErr)
 		}
 	}
 	var taskFallback backgroundtasks.TaskFallback
@@ -371,9 +371,9 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if cfg.goBackgroundTasks {
 		taskFallback = rejectingTaskPublisher{}
 	} else {
-		activityPublisher, err := celery.NewPublisherPool(cfg.amqpURL)
-		if err != nil {
-			return err
+		activityPublisher, newPublisherPoolErr := celery.NewPublisherPool(cfg.amqpURL)
+		if newPublisherPoolErr != nil {
+			return newPublisherPoolErr
 		}
 		closeActivityPublisher = func() { _ = activityPublisher.Close() }
 		taskFallback = activityPublisher
@@ -1031,9 +1031,9 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	var notificationTaskFallback backgroundtasks.TaskFallback = taskFallback
 	var closeNotificationPublisher func()
 	if !cfg.goBackgroundTasks {
-		notificationPublisher, err := celery.NewPublisher(cfg.amqpURL)
-		if err != nil {
-			return err
+		notificationPublisher, newPublisherErr := celery.NewPublisher(cfg.amqpURL)
+		if newPublisherErr != nil {
+			return newPublisherErr
 		}
 		closeNotificationPublisher = func() { _ = notificationPublisher.Close() }
 		notificationTaskFallback = notificationPublisher
@@ -1317,15 +1317,15 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 		return err
 	}
 	defer func() { _ = authThrottleCache.Close() }()
-	if err := authRedirectService.SetMagicCodeDependencies(magicCodeVerifier, authThrottle); err != nil {
-		return err
+	if setMagicCodeDependenciesErr := authRedirectService.SetMagicCodeDependencies(magicCodeVerifier, authThrottle); setMagicCodeDependenciesErr != nil {
+		return setMagicCodeDependenciesErr
 	}
 	magicIssuer, err := newRedisMagicCodeIssuer(authRedis, func(ctx context.Context, email string) (bool, error) {
-		_, err := accountRepository.UserByEmail(ctx, email)
-		if errors.Is(err, accountauthentication.ErrUserNotFound) {
+		_, userByEmailErr := accountRepository.UserByEmail(ctx, email)
+		if errors.Is(userByEmailErr, accountauthentication.ErrUserNotFound) {
 			return false, nil
 		}
-		return err == nil, err
+		return userByEmailErr == nil, userByEmailErr
 	})
 	if err != nil {
 		return err
@@ -1334,8 +1334,8 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	if err := authRedirectService.SetPasswordResetTokenVerifier(resetTokenIssuer); err != nil {
-		return err
+	if setPasswordErr := authRedirectService.SetPasswordResetTokenVerifier(resetTokenIssuer); setPasswordErr != nil {
+		return setPasswordErr
 	}
 	accountBaseURL := os.Getenv("APP_BASE_URL")
 	if accountBaseURL == "" {
@@ -1741,18 +1741,18 @@ func parseConfig(args []string) (config, error) {
 	flags.StringVar(&cfg.adminSessionCookie, "django-admin-session-cookie-name", "admin-session-id", "Django admin session cookie name")
 	flags.StringVar(&cfg.cookieDomain, "django-session-cookie-domain", os.Getenv("COOKIE_DOMAIN"), "Django session cookie domain")
 	flags.Func("django-session-cookie-age", "Django session cookie age", func(value string) error {
-		age, err := sessionAgeFlag(value)
-		if err == nil {
+		age, sessionAgeFlagErr := sessionAgeFlag(value)
+		if sessionAgeFlagErr == nil {
 			cfg.sessionCookieAge = age
 		}
-		return err
+		return sessionAgeFlagErr
 	})
 	flags.Func("django-admin-session-cookie-age", "Django admin session cookie age", func(value string) error {
-		age, err := sessionAgeFlag(value)
-		if err == nil {
+		age, sessionAgeFlagErr := sessionAgeFlag(value)
+		if sessionAgeFlagErr == nil {
 			cfg.adminSessionCookieAge = age
 		}
-		return err
+		return sessionAgeFlagErr
 	})
 	flags.BoolVar(&cfg.saveEveryRequest, "django-session-save-every-request", os.Getenv("SESSION_SAVE_EVERY_REQUEST") == "1", "refresh Django sessions after every successful request")
 	flags.StringVar(&cfg.secretKey, "django-secret-key", os.Getenv("SECRET_KEY"), "Django session signing key")
@@ -1760,8 +1760,8 @@ func parseConfig(args []string) (config, error) {
 	flags.StringVar(&fallbackKeys, "django-fallback-secret-keys", os.Getenv("SECRET_KEY_FALLBACKS"), "comma-separated Django fallback signing keys")
 	flags.Int64Var(&cfg.fileSizeLimit, "file-size-limit", fileSizeLimit, "Django request body size limit")
 
-	if err := flags.Parse(args); err != nil {
-		return config{}, fmt.Errorf("parse flags: %w", err)
+	if parseErr := flags.Parse(args); parseErr != nil {
+		return config{}, fmt.Errorf("parse flags: %w", parseErr)
 	}
 	if flags.NArg() != 0 {
 		return config{}, fmt.Errorf("unexpected arguments: %v", flags.Args())

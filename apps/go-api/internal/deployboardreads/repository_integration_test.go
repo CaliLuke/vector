@@ -111,8 +111,8 @@ INSERT INTO deploy_boards (
 		t.Fatal(err)
 	}
 	var board map[string]any
-	if err := json.Unmarshal(body, &board); err != nil {
-		t.Fatal(err)
+	if unmarshalErr := json.Unmarshal(body, &board); unmarshalErr != nil {
+		t.Fatal(unmarshalErr)
 	}
 	if board["id"] != boardID.String() || board["anchor"] != "demo-anchor" {
 		t.Fatalf("collection board = %s", body)

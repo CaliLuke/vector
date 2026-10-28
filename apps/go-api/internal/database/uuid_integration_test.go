@@ -31,8 +31,8 @@ func TestGeneratedUUIDQueriesRoundTrip(t *testing.T) {
 		t.Fatalf("start PostgreSQL fixture: %v", err)
 	}
 	t.Cleanup(func() {
-		if err := pair.Close(); err != nil {
-			t.Errorf("close PostgreSQL fixture: %v", err)
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close PostgreSQL fixture: %v", closeErr)
 		}
 	})
 
@@ -40,8 +40,8 @@ func TestGeneratedUUIDQueriesRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("parse PostgreSQL pool configuration: %v", err)
 	}
-	if err := ConfigurePool(config); err != nil {
-		t.Fatalf("configure PostgreSQL pool: %v", err)
+	if configurePoolErr := ConfigurePool(config); configurePoolErr != nil {
+		t.Fatalf("configure PostgreSQL pool: %v", configurePoolErr)
 	}
 	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
@@ -68,12 +68,12 @@ func TestGeneratedUUIDQueriesRoundTrip(t *testing.T) {
 	}
 	assertUUIDProbe(t, inserted, nonnullID, nullableID, relatedIDs)
 
-	if _, err := queries.PutUUIDProbe(ctx, generated.PutUUIDProbeParams{
+	if _, putUUIDProbeErr := queries.PutUUIDProbe(ctx, generated.PutUUIDProbeParams{
 		ID:         nullID,
 		NullableID: pgtype.UUID{},
 		RelatedIDs: []uuid.UUID{},
-	}); err != nil {
-		t.Fatalf("insert NULL UUID probe: %v", err)
+	}); putUUIDProbeErr != nil {
+		t.Fatalf("insert NULL UUID probe: %v", putUUIDProbeErr)
 	}
 	nullableRow, err := queries.GetUUIDProbe(ctx, nullID)
 	if err != nil {

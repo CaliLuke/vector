@@ -471,9 +471,9 @@ func (service *LifecycleService) patchProjectAsset(ctx context.Context, slug, ra
 	}
 	assetID, _ := uuid.Parse(rawAssetID)
 	if privateDraftAsset(asset) {
-		actor, err := assetUserID(ctx)
-		if err != nil {
-			return err
+		actor, assetUserIDErr := assetUserID(ctx)
+		if assetUserIDErr != nil {
+			return assetUserIDErr
 		}
 		return service.assets.repository.MutateDraftAsset(ctx, workspaceID, actor, assetID, "confirm", attributes, true)
 	}
@@ -491,9 +491,9 @@ func (service *LifecycleService) deleteProjectAsset(ctx context.Context, slug, r
 	}
 	assetID, _ := uuid.Parse(rawAssetID)
 	if privateDraftAsset(asset) {
-		actor, err := assetUserID(ctx)
-		if err != nil {
-			return err
+		actor, assetUserIDErr := assetUserID(ctx)
+		if assetUserIDErr != nil {
+			return assetUserIDErr
 		}
 		return service.assets.repository.MutateDraftAsset(ctx, workspaceID, actor, assetID, "delete", nil, false)
 	}
@@ -1035,8 +1035,8 @@ func (service *LifecycleService) duplicateWorkspaceAsset(ctx context.Context, sl
 	if err != nil {
 		return nil, err
 	}
-	if err := service.authorizeV2Workspace(ctx, userID, slug); err != nil {
-		return nil, err
+	if authorizeV2WorkspaceErr := service.authorizeV2Workspace(ctx, userID, slug); authorizeV2WorkspaceErr != nil {
+		return nil, authorizeV2WorkspaceErr
 	}
 	request, err := service.decodeUploadRequest(ctx, body)
 	if err != nil {
@@ -1143,8 +1143,8 @@ func (service *LifecycleService) createV2WorkspaceUpload(ctx context.Context, sl
 	if err != nil {
 		return nil, err
 	}
-	if err := service.authorizeV2Workspace(ctx, userID, slug); err != nil {
-		return nil, err
+	if authorizeV2WorkspaceErr := service.authorizeV2Workspace(ctx, userID, slug); authorizeV2WorkspaceErr != nil {
+		return nil, authorizeV2WorkspaceErr
 	}
 	request, err := service.decodeUploadRequest(ctx, body)
 	if err != nil {

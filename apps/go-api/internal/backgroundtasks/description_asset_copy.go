@@ -141,9 +141,9 @@ func RegisterDescriptionAssetCopyWorkflow(app *selvedge.App, store descriptionAs
 		}
 		mapping := make(map[string]string, len(preparation.Assets))
 		for _, asset := range preparation.Assets {
-			copied, err := copyAsset.Execute(ctx.Context(), activities.Scope(ctx), descriptionAssetCopyInput{Input: input, Asset: asset}, execution.ActivityOptions{})
-			if err != nil {
-				return struct{}{}, err
+			copied, executeErr := copyAsset.Execute(ctx.Context(), activities.Scope(ctx), descriptionAssetCopyInput{Input: input, Asset: asset}, execution.ActivityOptions{})
+			if executeErr != nil {
+				return struct{}{}, executeErr
 			}
 			mapping[copied.OriginalID] = copied.CopyID
 		}
@@ -338,8 +338,8 @@ func (store *PostgresDescriptionAssetCopyStore) Convert(ctx context.Context, inp
 		DescriptionJSON   json.RawMessage `json:"description_json"`
 		DescriptionBinary string          `json:"description_binary"`
 	}
-	if err := json.NewDecoder(io.LimitReader(response.Body, 16<<20)).Decode(&converted); err != nil {
-		return fmt.Errorf("decode description conversion response: %w", err)
+	if decodeErr := json.NewDecoder(io.LimitReader(response.Body, 16<<20)).Decode(&converted); decodeErr != nil {
+		return fmt.Errorf("decode description conversion response: %w", decodeErr)
 	}
 	binary, err := base64.StdEncoding.DecodeString(converted.DescriptionBinary)
 	if err != nil {

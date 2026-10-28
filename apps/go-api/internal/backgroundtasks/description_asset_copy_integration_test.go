@@ -95,14 +95,14 @@ func TestPostgresDescriptionAssetCopyUsesDurableWorkflowAndStableS3Key(t *testin
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := app.Start(ctx); err != nil {
-		t.Fatal(err)
+	if startErr := app.Start(ctx); startErr != nil {
+		t.Fatal(startErr)
 	}
 	defer func() {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutdownCancel()
-		if err := app.Shutdown(shutdownCtx); err != nil {
-			t.Errorf("shutdown description asset copy worker: %v", err)
+		if shutdownErr := app.Shutdown(shutdownCtx); shutdownErr != nil {
+			t.Errorf("shutdown description asset copy worker: %v", shutdownErr)
 		}
 	}()
 
@@ -125,8 +125,8 @@ func TestPostgresDescriptionAssetCopyUsesDurableWorkflowAndStableS3Key(t *testin
 	var copiedKey string
 	var uploaded bool
 	var copiedPageID uuid.UUID
-	if err := pool.QueryRow(ctx, `SELECT asset,is_uploaded,page_id FROM file_assets WHERE id=$1`, copyAssetID).Scan(&copiedKey, &uploaded, &copiedPageID); err != nil {
-		t.Fatalf("read copied FileAsset: %v", err)
+	if scanErr := pool.QueryRow(ctx, `SELECT asset,is_uploaded,page_id FROM file_assets WHERE id=$1`, copyAssetID).Scan(&copiedKey, &uploaded, &copiedPageID); scanErr != nil {
+		t.Fatalf("read copied FileAsset: %v", scanErr)
 	}
 	if !uploaded || copiedPageID != targetPageID || !strings.Contains(copiedKey, copyAssetID.String()[:8]) {
 		t.Fatalf("copied FileAsset key=%q uploaded=%t page=%s", copiedKey, uploaded, copiedPageID)
@@ -134,15 +134,15 @@ func TestPostgresDescriptionAssetCopyUsesDurableWorkflowAndStableS3Key(t *testin
 	var updatedHTML string
 	var binary []byte
 	var descriptionJSON []byte
-	if err := pool.QueryRow(ctx, `SELECT description_html,description_binary,description_json FROM pages WHERE id=$1`, targetPageID).Scan(&updatedHTML, &binary, &descriptionJSON); err != nil {
-		t.Fatalf("read rewritten page description: %v", err)
+	if scanErr := pool.QueryRow(ctx, `SELECT description_html,description_binary,description_json FROM pages WHERE id=$1`, targetPageID).Scan(&updatedHTML, &binary, &descriptionJSON); scanErr != nil {
+		t.Fatalf("read rewritten page description: %v", scanErr)
 	}
 	if !strings.Contains(updatedHTML, `src="`+copyAssetID.String()+`"`) || strings.Contains(updatedHTML, assetID.String()) {
 		t.Fatalf("rewritten page HTML=%q", updatedHTML)
 	}
 	var decodedDescription map[string]any
-	if err := json.Unmarshal(descriptionJSON, &decodedDescription); err != nil {
-		t.Fatalf("decode converted page description JSON: %v", err)
+	if unmarshalErr := json.Unmarshal(descriptionJSON, &decodedDescription); unmarshalErr != nil {
+		t.Fatalf("decode converted page description JSON: %v", unmarshalErr)
 	}
 	if string(binary) != "converted" || decodedDescription["type"] != "doc" {
 		t.Fatalf("converted page binary=%q JSON=%s", binary, descriptionJSON)

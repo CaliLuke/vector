@@ -224,8 +224,8 @@ func TestNotificationRepositoryOversizedCursorMatchesDjango(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, cursor := range []string{"2:4611686018427387904:0", "2:100000000000000000000:0"} {
-		_, err := repository.List(t.Context(), notificationPrincipal, "test", url.Values{"per_page": {"2"}, "cursor": {cursor}})
-		assertNotificationStatus(t, err, 500)
+		_, listErr := repository.List(t.Context(), notificationPrincipal, "test", url.Values{"per_page": {"2"}, "cursor": {cursor}})
+		assertNotificationStatus(t, listErr, 500)
 	}
 	result, err := repository.List(t.Context(), notificationPrincipal, "test", url.Values{"per_page": {"1"}, "cursor": {"1:9223372036854775807:0"}})
 	if err != nil || result.(map[string]any)["count"] != 0 {

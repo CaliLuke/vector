@@ -466,8 +466,8 @@ func TestIntakeInboxTimesNormalizesModeledTimestampsWithoutChangingArbitraryJSON
 		t.Fatal(err)
 	}
 	var container map[string]any
-	if err := json.Unmarshal(normalized, &container); err != nil {
-		t.Fatal(err)
+	if unmarshalErr := json.Unmarshal(normalized, &container); unmarshalErr != nil {
+		t.Fatal(unmarshalErr)
 	}
 	if container["created_at"] != "2026-01-02T03:04:05.123000Z" || container["updated_at"] != "2026-01-02T03:04:05Z" {
 		t.Fatalf("modeled UTC timestamps=%v", container)

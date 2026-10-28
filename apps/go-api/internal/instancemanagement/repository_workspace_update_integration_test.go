@@ -64,8 +64,8 @@ INSERT INTO file_assets VALUES ('00000000-0000-4000-8000-000000000002','WORKSPAC
 			if err != nil {
 				t.Fatal(err)
 			}
-			if _, err := pool.Exec(ctx, `INSERT INTO workspace_members VALUES(@workspace,@actor,20,true,NULL),(@workspace,'00000000-0000-4000-8000-000000000004',15,true,NULL),(@workspace,'00000000-0000-4000-8000-000000000005',15,false,NULL),(@workspace,'00000000-0000-4000-8000-000000000006',15,true,NOW())`, pgx.StrictNamedArgs{"workspace": id, "actor": actor}); err != nil {
-				t.Fatal(err)
+			if _, execErr := pool.Exec(ctx, `INSERT INTO workspace_members VALUES(@workspace,@actor,20,true,NULL),(@workspace,'00000000-0000-4000-8000-000000000004',15,true,NULL),(@workspace,'00000000-0000-4000-8000-000000000005',15,false,NULL),(@workspace,'00000000-0000-4000-8000-000000000006',15,true,NOW())`, pgx.StrictNamedArgs{"workspace": id, "actor": actor}); execErr != nil {
+				t.Fatal(execErr)
 			}
 			body, err := repository.UpdateWorkspace(ctx, actor, test.slug, map[string]json.RawMessage{"name": json.RawMessage(`"Updated workspace"`)})
 			if err != nil {

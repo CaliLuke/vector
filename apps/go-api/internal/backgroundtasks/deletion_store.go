@@ -162,8 +162,8 @@ func (s *PostgresDeletionStore) Apply(ctx context.Context, plan deletionPlan) ([
 	}
 	defer tx.Rollback(ctx)
 	for _, id := range plan.IDs {
-		if _, err := uuid.Parse(id); err != nil {
-			return nil, err
+		if _, parseErr := uuid.Parse(id); parseErr != nil {
+			return nil, parseErr
 		}
 		where := " WHERE " + pgx.Identifier{r.model.PK}.Sanitize() + "=$1::uuid AND " + pgx.Identifier{r.relation.Column}.Sanitize() + "=$2::uuid"
 		if r.relation.OnDelete == "SET_NULL" {

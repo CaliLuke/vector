@@ -43,8 +43,8 @@ func snapshotDatabase(
 		return Snapshot{}, safeDatabaseError(role, "configure connection", err)
 	}
 	defer pool.Close()
-	if err := pool.Ping(ctx); err != nil {
-		return Snapshot{}, safeDatabaseError(role, "connect", err)
+	if pingErr := pool.Ping(ctx); pingErr != nil {
+		return Snapshot{}, safeDatabaseError(role, "connect", pingErr)
 	}
 
 	tx, err := pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})

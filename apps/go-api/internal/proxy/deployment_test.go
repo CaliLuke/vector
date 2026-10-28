@@ -30,8 +30,8 @@ func TestShippingTopologiesRunNativeBackendOnly(t *testing.T) {
 			// Several unrelated services use string commands; inspect only the backend
 			// through YAML nodes after resolving the real top-level service map.
 			var document map[string]any
-			if err := yaml.Unmarshal(data, &document); err != nil {
-				t.Fatal(err)
+			if unmarshalErr := yaml.Unmarshal(data, &document); unmarshalErr != nil {
+				t.Fatal(unmarshalErr)
 			}
 			services, ok := document["services"].(map[string]any)
 			if !ok {

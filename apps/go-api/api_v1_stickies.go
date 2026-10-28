@@ -102,8 +102,8 @@ func (service *apiV1StickiesService) List(ctx context.Context, payload *api.List
 	if err != nil {
 		return nil, nil, err
 	}
-	if err := service.throttleRequest(ctx); err != nil {
-		return nil, nil, err
+	if throttleRequestErr := service.throttleRequest(ctx); throttleRequestErr != nil {
+		return nil, nil, throttleRequestErr
 	}
 	params := map[string]string{}
 	present := map[string]bool{}
@@ -154,19 +154,19 @@ func (service *apiV1StickiesService) Create(ctx context.Context, payload *api.Cr
 	if err != nil {
 		return nil, nil, err
 	}
-	if err := service.throttleRequest(ctx); err != nil {
-		return nil, nil, err
+	if throttleRequestErr := service.throttleRequest(ctx); throttleRequestErr != nil {
+		return nil, nil, throttleRequestErr
 	}
 	input, err := apiV1StickyParseBody(ctx, body)
 	if err != nil {
 		return nil, nil, apiV1StickyMapError(err)
 	}
-	if err := apiV1StickyRequireObject(input); err != nil {
-		return nil, nil, err
+	if apiV1StickyRequireObjectErr := apiV1StickyRequireObject(input); apiV1StickyRequireObjectErr != nil {
+		return nil, nil, apiV1StickyRequireObjectErr
 	}
 	values, failures := apiV1StickyCreateFields(input, apiV1StickyTimezoneLocation(ctx))
-	if err := service.validateAuditUsers(ctx, input, failures); err != nil {
-		return nil, nil, apiV1StickyMapError(err)
+	if validateAuditUsersErr := service.validateAuditUsers(ctx, input, failures); validateAuditUsersErr != nil {
+		return nil, nil, apiV1StickyMapError(validateAuditUsersErr)
 	}
 	if len(failures) != 0 {
 		return nil, nil, apiV1StickyError(http.StatusBadRequest, failures)
@@ -193,8 +193,8 @@ func (service *apiV1StickiesService) DetailOptions(ctx context.Context, payload 
 	if err != nil {
 		return nil, nil, err
 	}
-	if err := service.throttleRequest(ctx); err != nil {
-		return nil, nil, err
+	if throttleRequestErr := service.throttleRequest(ctx); throttleRequestErr != nil {
+		return nil, nil, throttleRequestErr
 	}
 	id, err := uuid.Parse(payload.Pk)
 	if err != nil {
@@ -214,8 +214,8 @@ func (service *apiV1StickiesService) Retrieve(ctx context.Context, payload *api.
 	if err != nil {
 		return nil, nil, err
 	}
-	if err := service.throttleRequest(ctx); err != nil {
-		return nil, nil, err
+	if throttleRequestErr := service.throttleRequest(ctx); throttleRequestErr != nil {
+		return nil, nil, throttleRequestErr
 	}
 	id, err := uuid.Parse(payload.Pk)
 	if err != nil {
@@ -242,8 +242,8 @@ func (service *apiV1StickiesService) update(ctx context.Context, slug, rawID str
 	if err != nil {
 		return nil, nil, err
 	}
-	if err := service.throttleRequest(ctx); err != nil {
-		return nil, nil, err
+	if throttleRequestErr := service.throttleRequest(ctx); throttleRequestErr != nil {
+		return nil, nil, throttleRequestErr
 	}
 	id, err := uuid.Parse(rawID)
 	if err != nil {
@@ -259,12 +259,12 @@ func (service *apiV1StickiesService) update(ctx context.Context, slug, rawID str
 	if err != nil {
 		return nil, nil, apiV1StickyMapError(err)
 	}
-	if err := apiV1StickyRequireObject(input); err != nil {
-		return nil, nil, err
+	if apiV1StickyRequireObjectErr := apiV1StickyRequireObject(input); apiV1StickyRequireObjectErr != nil {
+		return nil, nil, apiV1StickyRequireObjectErr
 	}
 	patch, failures := apiV1StickyPatchFields(input, current, full, apiV1StickyTimezoneLocation(ctx))
-	if err := service.validateAuditUsers(ctx, input, failures); err != nil {
-		return nil, nil, apiV1StickyMapError(err)
+	if validateAuditUsersErr := service.validateAuditUsers(ctx, input, failures); validateAuditUsersErr != nil {
+		return nil, nil, apiV1StickyMapError(validateAuditUsersErr)
 	}
 	if len(failures) != 0 {
 		return nil, nil, apiV1StickyError(http.StatusBadRequest, failures)
@@ -303,8 +303,8 @@ func (service *apiV1StickiesService) Delete(ctx context.Context, payload *api.De
 	if err != nil {
 		return err
 	}
-	if err := service.throttleRequest(ctx); err != nil {
-		return err
+	if throttleRequestErr := service.throttleRequest(ctx); throttleRequestErr != nil {
+		return throttleRequestErr
 	}
 	id, err := uuid.Parse(payload.Pk)
 	if err != nil {

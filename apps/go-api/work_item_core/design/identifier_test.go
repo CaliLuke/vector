@@ -31,8 +31,8 @@ func TestWorkItemGeneratedIdentifierSchemaPreservesSourceSpelling(t *testing.T) 
 				t.Fatal(err)
 			}
 			var fixture struct{ Request struct{ Path string } }
-			if err := json.Unmarshal(data, &fixture); err != nil {
-				t.Fatal(err)
+			if unmarshalErr := json.Unmarshal(data, &fixture); unmarshalErr != nil {
+				t.Fatal(unmarshalErr)
 			}
 			path, err := url.PathUnescape(strings.TrimSuffix(fixture.Request.Path, "/"))
 			if err != nil {

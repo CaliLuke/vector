@@ -301,14 +301,14 @@ func (service *pageReadsService) pageLifecycle(ctx context.Context, operation, s
 	if !ok {
 		return 0, nil, pageLifecycleError(http.StatusInternalServerError, map[string]any{"error": "Something went wrong please try again later"})
 	}
-	if err := repository.AuthorizeLifecycle(ctx, operation, principal.userID, slug, projectID, pageID); err != nil {
-		return 0, nil, pageLifecycleStoreError(err)
+	if authorizeLifecycleErr := repository.AuthorizeLifecycle(ctx, operation, principal.userID, slug, projectID, pageID); authorizeLifecycleErr != nil {
+		return 0, nil, pageLifecycleStoreError(authorizeLifecycleErr)
 	}
-	if err := pageLifecycleValidateTimezone(ctx); err != nil {
-		return 0, nil, err
+	if pageLifecycleErr := pageLifecycleValidateTimezone(ctx); pageLifecycleErr != nil {
+		return 0, nil, pageLifecycleErr
 	}
-	if err := repository.ValidateLifecycleHandler(ctx, operation, principal.userID, slug, projectID, pageID); err != nil {
-		return 0, nil, pageLifecycleStoreError(err)
+	if validateLifecycleHandlerErr := repository.ValidateLifecycleHandler(ctx, operation, principal.userID, slug, projectID, pageID); validateLifecycleHandlerErr != nil {
+		return 0, nil, pageLifecycleStoreError(validateLifecycleHandlerErr)
 	}
 	input := djangoinput.Input{Fields: map[string]any{}, Surrogates: map[string][]string{}}
 	if operation == "duplicate" {

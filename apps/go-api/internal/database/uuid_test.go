@@ -31,13 +31,13 @@ func TestRegisterUUIDTypesSupportsScalarAndArrayPlans(t *testing.T) {
 		t.Fatalf("encode scalar UUID: %v", err)
 	}
 	var scalar uuid.UUID
-	if err := typeMap.Scan(pgtype.UUIDOID, pgtype.BinaryFormatCode, scalarBytes, &scalar); err != nil {
-		t.Fatalf("scan scalar UUID: %v", err)
+	if scanErr := typeMap.Scan(pgtype.UUIDOID, pgtype.BinaryFormatCode, scalarBytes, &scalar); scanErr != nil {
+		t.Fatalf("scan scalar UUID: %v", scanErr)
 	}
 	if scalar != identifiers[0] {
 		t.Fatalf("scalar UUID = %s, want %s", scalar, identifiers[0])
 	}
-	if err := typeMap.Scan(pgtype.UUIDOID, pgtype.BinaryFormatCode, nil, &scalar); err == nil {
+	if scanErr := typeMap.Scan(pgtype.UUIDOID, pgtype.BinaryFormatCode, nil, &scalar); scanErr == nil {
 		t.Fatal("scan NULL scalar UUID error = nil, want non-null type error")
 	}
 

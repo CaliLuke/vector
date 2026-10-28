@@ -40,20 +40,20 @@ func TestPostgresSchemaBootstrapFreshAdoptAndRejectPartial(t *testing.T) {
 	}
 	defer connection.Close(context.WithoutCancel(ctx))
 	var tableCount int
-	if err := connection.QueryRow(ctx, `SELECT count(*) FROM pg_catalog.pg_tables WHERE schemaname='public'`).Scan(&tableCount); err != nil || tableCount != 0 {
-		t.Fatalf("dedicated schema test database must be empty: tables=%d error=%v", tableCount, err)
+	if scanErr := connection.QueryRow(ctx, `SELECT count(*) FROM pg_catalog.pg_tables WHERE schemaname='public'`).Scan(&tableCount); scanErr != nil || tableCount != 0 {
+		t.Fatalf("dedicated schema test database must be empty: tables=%d error=%v", tableCount, scanErr)
 	}
-	if err := MigrateSchema(ctx, databaseURL); err != nil {
-		t.Fatal(err)
+	if migrateSchemaErr := MigrateSchema(ctx, databaseURL); migrateSchemaErr != nil {
+		t.Fatal(migrateSchemaErr)
 	}
 	for table, want := range map[string]int{"auth_permission": 424, "django_content_type": 106, "django_migrations": 164} {
 		var got int
-		if err := connection.QueryRow(ctx, "SELECT count(*) FROM "+pgx.Identifier{"public", table}.Sanitize()).Scan(&got); err != nil || got != want {
-			t.Fatalf("source metadata %s: count=%d want=%d error=%v", table, got, want, err)
+		if scanErr := connection.QueryRow(ctx, "SELECT count(*) FROM "+pgx.Identifier{"public", table}.Sanitize()).Scan(&got); scanErr != nil || got != want {
+			t.Fatalf("source metadata %s: count=%d want=%d error=%v", table, got, want, scanErr)
 		}
 	}
-	if err := MigrateSchema(ctx, databaseURL); err != nil {
-		t.Fatalf("repeat: %v", err)
+	if migrateSchemaErr := MigrateSchema(ctx, databaseURL); migrateSchemaErr != nil {
+		t.Fatalf("repeat: %v", migrateSchemaErr)
 	}
 	// Reconstruct the exact source FK policy before testing legacy adoption.
 	// The later empty-ledger case covers recovery of an already migrated schema.

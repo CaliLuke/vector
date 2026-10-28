@@ -352,13 +352,13 @@ func (s *moduleLifecycleService) moduleCreate(ctx context.Context, slug, project
 		return nil, err
 	}
 	if !app {
-		if err := s.moduleAPILimit(ctx, p); err != nil {
-			return nil, err
+		if moduleAPILimitErr := s.moduleAPILimit(ctx, p); moduleAPILimitErr != nil {
+			return nil, moduleAPILimitErr
 		}
 	}
 	if app {
-		if err := s.repo.CheckModuleProject(ctx, slug, project, false); err != nil {
-			return nil, moduleLifecycleRepoError(ctx, err, false)
+		if checkModuleProjectErr := s.repo.CheckModuleProject(ctx, slug, project, false); checkModuleProjectErr != nil {
+			return nil, moduleLifecycleRepoError(ctx, checkModuleProjectErr, false)
 		}
 	}
 	in, err := s.parse(ctx, body)
@@ -453,8 +453,8 @@ func (s *moduleLifecycleService) moduleUpdate(ctx context.Context, slug, project
 	if err = s.authorize(ctx, p, slug, project, true); err != nil {
 		return nil, err
 	}
-	if err := s.repo.CheckModule(ctx, slug, project, id, false, replace); err != nil {
-		return nil, moduleLifecycleRepoError(ctx, err, false)
+	if checkModuleErr := s.repo.CheckModule(ctx, slug, project, id, false, replace); checkModuleErr != nil {
+		return nil, moduleLifecycleRepoError(ctx, checkModuleErr, false)
 	}
 	in, err := s.parse(ctx, body)
 	if err != nil {
@@ -530,9 +530,9 @@ func (s *moduleLifecycleService) link(ctx context.Context, slug, project, module
 		return nil, err
 	}
 	if method == "POST" {
-		raw, err := s.repo.CreateLink(ctx, p.userID.String(), slug, project, module, in.Fields, in.Surrogates)
-		if err != nil {
-			return nil, moduleLifecycleRepoError(ctx, err, false)
+		raw, createLinkErr := s.repo.CreateLink(ctx, p.userID.String(), slug, project, module, in.Fields, in.Surrogates)
+		if createLinkErr != nil {
+			return nil, moduleLifecycleRepoError(ctx, createLinkErr, false)
 		}
 		return raw, nil
 	}

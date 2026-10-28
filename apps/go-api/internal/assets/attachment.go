@@ -146,22 +146,22 @@ func (service *LifecycleService) createLegacyIssueAttachment(ctx context.Context
 	}
 	fields["workspace"], fields["project"], fields["issue"] = workspaceID, projectID, issueID
 	fields["entity_type"] = "ISSUE_ATTACHMENT"
-	if err := service.validateLegacyRelations(ctx, fields); err != nil {
-		return nil, err
+	if validateLegacyRelationsErr := service.validateLegacyRelations(ctx, fields); validateLegacyRelationsErr != nil {
+		return nil, validateLegacyRelationsErr
 	}
 	name := sanitizeFilename(file.Name)
 	if name == "" {
 		name = randomHex32()
 	}
 	key := workspaceID.String() + "/" + randomHex32() + "-" + name
-	if err := service.assets.storage.Put(ctx, key, file.ContentType, file.Contents); err != nil {
-		return nil, fmt.Errorf("store legacy issue attachment: %w", err)
+	if putErr := service.assets.storage.Put(ctx, key, file.ContentType, file.Contents); putErr != nil {
+		return nil, fmt.Errorf("store legacy issue attachment: %w", putErr)
 	}
 	assetID := uuid.New()
 	assetURL := issueAttachmentURL(slug, projectID, issueID, assetID)
 	activity := map[string]any{"type": "attachment.activity.created", "requested_data": nil, "actor_id": userID.String(), "issue_id": issueID.String(), "project_id": projectID.String(), "epoch": time.Now().Unix(), "notification": true, "origin": service.assets.taskOrigin(ctx)}
-	if err := service.assets.repository.CreateLegacyIssueAttachment(ctx, assetID, userID, workspaceID, projectID, issueID, fields, key, assetURL, activity); err != nil {
-		return nil, err
+	if createLegacyErr := service.assets.repository.CreateLegacyIssueAttachment(ctx, assetID, userID, workspaceID, projectID, issueID, fields, key, assetURL, activity); createLegacyErr != nil {
+		return nil, createLegacyErr
 	}
 	rows, err := service.assets.repository.IssueAttachments(ctx, workspaceID, projectID, issueID, false)
 	if err != nil {
@@ -359,8 +359,8 @@ func (service *LifecycleService) createIssueAttachmentAPI(ctx context.Context, s
 	assetID := uuid.New()
 	key := workspaceID.String() + "/" + compactUUID(uuid.NewString()) + "-" + name
 	attributes := uploadRequest{Name: name, Type: contentType}.Attributes(name, contentType, size)
-	if err := service.assets.repository.CreateIssueAttachment(ctx, assetID, userID, workspaceID, projectID, issueID, key, attributes, size, externalID, externalSource); err != nil {
-		return nil, fmt.Errorf("create issue attachment FileAsset: %w", err)
+	if createIssueAttachmentErr := service.assets.repository.CreateIssueAttachment(ctx, assetID, userID, workspaceID, projectID, issueID, key, attributes, size, externalID, externalSource); createIssueAttachmentErr != nil {
+		return nil, fmt.Errorf("create issue attachment FileAsset: %w", createIssueAttachmentErr)
 	}
 	assetURL := issueAttachmentURL(slug, projectID, issueID, assetID)
 	created, serialized, err := service.assets.repository.IssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID)

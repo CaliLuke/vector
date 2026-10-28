@@ -90,8 +90,8 @@ func TestNewRuntimeTransitionDetectsWriteInNormalizedField(t *testing.T) {
 	normalizations := Normalizations{VolatileFields: []VolatileFieldRule{{
 		Table: "users", Column: "updated_at", Replacement: json.RawMessage(`"<timestamp>"`),
 	}}}
-	if err := normalizations.Validate(); err != nil {
-		t.Fatalf("Validate() error = %v", err)
+	if validationErr := normalizations.Validate(); validationErr != nil {
+		t.Fatalf("Validate() error = %v", validationErr)
 	}
 	option := DeclaredNormalizationsOption(normalizations)
 	source, err := NewRuntimeTransition(

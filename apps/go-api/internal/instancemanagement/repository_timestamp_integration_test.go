@@ -64,20 +64,20 @@ INSERT INTO instance_configurations (id,key,value,category,is_encrypted,created_
 	}
 	wantUpdatedAt := time.Date(2001, time.January, 1, 0, 0, 0, 0, time.UTC)
 
-	if _, err := repository.PatchConfigurations(ctx, map[string]json.RawMessage{"EMAIL_HOST": json.RawMessage(`"mail.example.test"`)}); err != nil {
-		t.Fatalf("PatchConfigurations: %v", err)
+	if _, patchConfigurationsErr := repository.PatchConfigurations(ctx, map[string]json.RawMessage{"EMAIL_HOST": json.RawMessage(`"mail.example.test"`)}); patchConfigurationsErr != nil {
+		t.Fatalf("PatchConfigurations: %v", patchConfigurationsErr)
 	}
 	var value string
 	var updatedAt time.Time
-	if err := pool.QueryRow(ctx, `SELECT value,updated_at FROM instance_configurations WHERE key='EMAIL_HOST'`).Scan(&value, &updatedAt); err != nil {
-		t.Fatal(err)
+	if scanErr := pool.QueryRow(ctx, `SELECT value,updated_at FROM instance_configurations WHERE key='EMAIL_HOST'`).Scan(&value, &updatedAt); scanErr != nil {
+		t.Fatal(scanErr)
 	}
 	if value != "mail.example.test" || !updatedAt.Equal(wantUpdatedAt) {
 		t.Fatalf("patch persisted value=%q updated_at=%s; want value mail.example.test and unchanged updated_at=%s", value, updatedAt, wantUpdatedAt)
 	}
 
-	if err := repository.DisableEmail(ctx); err != nil {
-		t.Fatalf("DisableEmail: %v", err)
+	if disableEmailErr := repository.DisableEmail(ctx); disableEmailErr != nil {
+		t.Fatalf("DisableEmail: %v", disableEmailErr)
 	}
 	rows, err := pool.Query(ctx, `SELECT key,value,updated_at FROM instance_configurations ORDER BY key`)
 	if err != nil {

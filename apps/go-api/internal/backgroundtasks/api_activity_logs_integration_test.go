@@ -27,8 +27,8 @@ func TestPostgresAPIActivityLogAdmissionRollback(t *testing.T) {
 	}
 	app, workflow, cleanup := newAPIActivityLogTestApp(t, databaseURL, executionURL, store, nil)
 	defer cleanup()
-	if err := app.Start(ctx); err != nil {
-		t.Fatal(err)
+	if startErr := app.Start(ctx); startErr != nil {
+		t.Fatal(startErr)
 	}
 
 	transactionContext, err := app.Storage().BeginTransaction(ctx)
@@ -65,14 +65,14 @@ func TestPostgresAPIActivityLogRestartAndRetryAfterCommit(t *testing.T) {
 	producer, producerWorkflow, stopProducer := newAPIActivityLogTestApp(t, databaseURL, executionURL, store, []selvedge.Option{
 		selvedge.WithActivityQueues("background-test-producer-does-not-work"),
 	})
-	if err := producer.Start(ctx); err != nil {
+	if startErr := producer.Start(ctx); startErr != nil {
 		stopProducer()
-		t.Fatal(err)
+		t.Fatal(startErr)
 	}
 	t.Cleanup(stopProducer)
-	if _, err := selvedge.StartWorkflow(ctx, producer, producerWorkflow, input, selvedge.WithInstanceID(instanceID)); err != nil {
+	if _, startWorkflowErr := selvedge.StartWorkflow(ctx, producer, producerWorkflow, input, selvedge.WithInstanceID(instanceID)); startWorkflowErr != nil {
 		stopProducer()
-		t.Fatalf("admit API activity log: %v", err)
+		t.Fatalf("admit API activity log: %v", startWorkflowErr)
 	}
 	waitForQueuedActivity(t, ctx, pool, instanceID)
 	stopProducer()
@@ -83,8 +83,8 @@ func TestPostgresAPIActivityLogRestartAndRetryAfterCommit(t *testing.T) {
 	if workerWorkflow.Name() != producerWorkflow.Name() {
 		t.Fatalf("workflow names differ after restart: producer=%q worker=%q", producerWorkflow.Name(), workerWorkflow.Name())
 	}
-	if err := worker.Start(ctx); err != nil {
-		t.Fatal(err)
+	if startErr := worker.Start(ctx); startErr != nil {
+		t.Fatal(startErr)
 	}
 	result, err := selvedge.WaitWorkflow[struct{}](ctx, worker, instanceID)
 	if err != nil {

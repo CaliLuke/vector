@@ -131,14 +131,14 @@ func TestPostgresLinkPreviewDurableRetryAndStaleRowGuards(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := app.Start(ctx); err != nil {
-		t.Fatal(err)
+	if startErr := app.Start(ctx); startErr != nil {
+		t.Fatal(startErr)
 	}
 	defer func() {
 		shutdown, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutdownCancel()
-		if err := app.Shutdown(shutdown); err != nil {
-			t.Errorf("shutdown link preview worker: %v", err)
+		if shutdownErr := app.Shutdown(shutdown); shutdownErr != nil {
+			t.Errorf("shutdown link preview worker: %v", shutdownErr)
 		}
 	}()
 	instanceID, err := dispatcher.Admit(ctx, LinkPreviewInput{ID: retryLinkID.String(), URL: retryURL})

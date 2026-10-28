@@ -265,9 +265,9 @@ func (r *Repository) issueDates(ctx context.Context, q Request, body io.Reader, 
 	// Model date preparation happens only after every activity has been queued.
 	for id := range changed {
 		for _, field := range []string{"start_date", "target_date"} {
-			value, err := prepareBulkDateForPersistence(byID[id][field])
-			if err != nil {
-				return Result{}, err
+			value, prepareBulkErr := prepareBulkDateForPersistence(byID[id][field])
+			if prepareBulkErr != nil {
+				return Result{}, prepareBulkErr
 			}
 			byID[id][field] = value
 		}

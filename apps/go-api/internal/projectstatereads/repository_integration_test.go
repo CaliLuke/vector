@@ -104,35 +104,35 @@ INSERT INTO states (
 		Name  string  `json:"name"`
 		Order float64 `json:"order"`
 	}
-	if err := json.Unmarshal(data, &states); err != nil {
-		t.Fatal(err)
+	if unmarshalErr := json.Unmarshal(data, &states); unmarshalErr != nil {
+		t.Fatal(unmarshalErr)
 	}
 	if len(states) != 2 || states[0].Name != "Backlog A" || states[0].Order != 0.5 || states[1].Order != 1 {
 		t.Fatalf("list=%s", data)
 	}
-	if _, err := repository.Detail(ctx, userID, "demo", projectID, stateID); err != nil {
-		t.Fatal(err)
+	if _, detailErr := repository.Detail(ctx, userID, "demo", projectID, stateID); detailErr != nil {
+		t.Fatal(detailErr)
 	}
 	intake, err := repository.Intake(ctx, userID, "demo", projectID)
 	if err != nil || !json.Valid(intake) {
 		t.Fatalf("intake=%s err=%v", intake, err)
 	}
 
-	if _, err := connection.Exec(ctx, "UPDATE project_members SET deleted_at=NOW() WHERE member_id=$1", userID); err != nil {
-		t.Fatal(err)
+	if _, execErr := connection.Exec(ctx, "UPDATE project_members SET deleted_at=NOW() WHERE member_id=$1", userID); execErr != nil {
+		t.Fatal(execErr)
 	}
-	if _, err := repository.Detail(ctx, userID, "demo", projectID, stateID); err != nil {
-		t.Fatalf("active soft-deleted membership detail err=%v", err)
+	if _, detailErr := repository.Detail(ctx, userID, "demo", projectID, stateID); detailErr != nil {
+		t.Fatalf("active soft-deleted membership detail err=%v", detailErr)
 	}
-	if _, err := repository.List(ctx, userID, "demo", projectID); !errors.Is(err, ErrForbidden) {
-		t.Fatalf("active soft-deleted membership list err=%v", err)
+	if _, listErr := repository.List(ctx, userID, "demo", projectID); !errors.Is(listErr, ErrForbidden) {
+		t.Fatalf("active soft-deleted membership list err=%v", listErr)
 	}
-	if _, err := connection.Exec(ctx, "UPDATE project_members SET deleted_at=NULL WHERE member_id=$1", userID); err != nil {
-		t.Fatal(err)
+	if _, execErr := connection.Exec(ctx, "UPDATE project_members SET deleted_at=NULL WHERE member_id=$1", userID); execErr != nil {
+		t.Fatal(execErr)
 	}
 
-	if _, err := connection.Exec(ctx, "UPDATE projects SET archived_at=NOW() WHERE id=$1", projectID); err != nil {
-		t.Fatal(err)
+	if _, execErr := connection.Exec(ctx, "UPDATE projects SET archived_at=NOW() WHERE id=$1", projectID); execErr != nil {
+		t.Fatal(execErr)
 	}
 	data, err = repository.List(ctx, userID, "demo", projectID)
 	if err != nil || string(data) != "[]" {

@@ -112,8 +112,8 @@ func (r *Repository) Root(ctx context.Context) (json.RawMessage, error) {
 		return nil, fmt.Errorf("read instance management root: %w", err)
 	}
 	var projected map[string]any
-	if err := json.Unmarshal(instance, &projected); err != nil {
-		return nil, err
+	if unmarshalErr := json.Unmarshal(instance, &projected); unmarshalErr != nil {
+		return nil, unmarshalErr
 	}
 	projected["workspaces_exist"] = workspaceExists
 	config, err := r.rootConfiguration(ctx)
@@ -401,9 +401,9 @@ func (r *Repository) PatchConfigurations(ctx context.Context, fields map[string]
 	var configs []config
 	for rows.Next() {
 		var c config
-		if err := rows.Scan(&c.id, &c.key, &c.value, &c.category, &c.encrypted); err != nil {
+		if scanErr := rows.Scan(&c.id, &c.key, &c.value, &c.category, &c.encrypted); scanErr != nil {
 			rows.Close()
-			return nil, err
+			return nil, scanErr
 		}
 		configs = append(configs, c)
 	}
@@ -504,8 +504,8 @@ func (r *Repository) Workspaces(ctx context.Context, search, perPage, cursor str
 	}
 	pattern := "%" + issuequery.EscapeLikePattern(search) + "%"
 	var count int64
-	if err := r.db.QueryRow(ctx, `SELECT count(*) FROM workspaces WHERE deleted_at IS NULL AND (@search='' OR name ILIKE @pattern ESCAPE '\')`, pgx.StrictNamedArgs{"search": search, "pattern": pattern}).Scan(&count); err != nil {
-		return nil, err
+	if scanErr := r.db.QueryRow(ctx, `SELECT count(*) FROM workspaces WHERE deleted_at IS NULL AND (@search='' OR name ILIKE @pattern ESCAPE '\')`, pgx.StrictNamedArgs{"search": search, "pattern": pattern}).Scan(&count); scanErr != nil {
+		return nil, scanErr
 	}
 	rows, err := r.db.Query(ctx, `SELECT json_build_object('id',w.id,'created_at',w.created_at,'updated_at',w.updated_at,'deleted_at',w.deleted_at,'name',w.name,'logo',w.logo,'logo_asset',w.logo_asset_id,'logo_url',CASE WHEN w.logo_asset_id IS NULL THEN NULLIF(w.logo,'') WHEN f.entity_type IN ('WORKSPACE_LOGO','USER_AVATAR','USER_COVER','PROJECT_COVER') THEN '/api/assets/v2/static/'||w.logo_asset_id::text||'/' WHEN f.entity_type='ISSUE_ATTACHMENT' THEN '/api/assets/v2/workspaces/'||asset_workspace.slug||'/projects/'||COALESCE(f.project_id::text,'None')||'/issues/'||COALESCE(f.issue_id::text,'None')||'/attachments/'||f.id::text||'/' WHEN f.entity_type IN ('ISSUE_DESCRIPTION','COMMENT_DESCRIPTION','PAGE_DESCRIPTION','DRAFT_ISSUE_DESCRIPTION') THEN '/api/assets/v2/workspaces/'||asset_workspace.slug||'/projects/'||COALESCE(f.project_id::text,'None')||'/'||f.id::text||'/' ELSE NULL END,'owner',json_build_object('id',u.id,'email',u.email,'first_name',u.first_name,'last_name',u.last_name),'slug',w.slug,'organization_size',w.organization_size,'timezone',w.timezone,'background_color',w.background_color,'created_by',w.created_by_id,'updated_by',w.updated_by_id,'total_projects',(SELECT count(*) FROM projects p WHERE p.workspace_id=w.id AND p.deleted_at IS NULL),'total_members',(SELECT count(*) FROM workspace_members wm JOIN users mu ON mu.id=wm.member_id WHERE wm.workspace_id=w.id AND wm.deleted_at IS NULL AND wm.is_active AND NOT mu.is_bot)) FROM workspaces w JOIN users u ON u.id=w.owner_id LEFT JOIN file_assets f ON f.id=w.logo_asset_id LEFT JOIN workspaces asset_workspace ON asset_workspace.id=f.workspace_id WHERE w.deleted_at IS NULL AND (@search='' OR w.name ILIKE @pattern ESCAPE '\') ORDER BY w.created_at DESC LIMIT @limit OFFSET @offset`, pgx.StrictNamedArgs{"search": search, "pattern": pattern, "limit": limit, "offset": offset})
 	if err != nil {

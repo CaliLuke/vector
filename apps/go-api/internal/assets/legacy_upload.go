@@ -59,8 +59,8 @@ func (service *LifecycleService) createLegacyAsset(ctx context.Context, userID u
 			workspaceID = &id
 		}
 	}
-	if err := service.validateLegacyRelations(ctx, fields); err != nil {
-		return nil, err
+	if validateLegacyRelationsErr := service.validateLegacyRelations(ctx, fields); validateLegacyRelationsErr != nil {
+		return nil, validateLegacyRelationsErr
 	}
 	name := sanitizeFilename(file.Name)
 	if name == "" {
@@ -70,8 +70,8 @@ func (service *LifecycleService) createLegacyAsset(ctx context.Context, userID u
 	if workspaceID != nil {
 		key = workspaceID.String() + "/" + randomHex32() + "-" + name
 	}
-	if err := service.assets.storage.Put(ctx, key, file.ContentType, file.Contents); err != nil {
-		return nil, fmt.Errorf("store legacy FileAsset %s: %w", key, err)
+	if putErr := service.assets.storage.Put(ctx, key, file.ContentType, file.Contents); putErr != nil {
+		return nil, fmt.Errorf("store legacy FileAsset %s: %w", key, putErr)
 	}
 	asset, err := service.assets.repository.CreateLegacyFileAsset(ctx, uuid.New(), userID, fields, key)
 	if err != nil {

@@ -90,8 +90,8 @@ func (r *Repository) CreateEstimate(ctx context.Context, user, slug, project str
 	if err != nil {
 		return nil, err
 	}
-	if err := requireObjectInput(input); err != nil {
-		return nil, err
+	if requireObjectInputErr := requireObjectInput(input); requireObjectInputErr != nil {
+		return nil, requireObjectInputErr
 	}
 	estimate, ok := input.Fields["estimate"].(map[string]any)
 	if !ok {

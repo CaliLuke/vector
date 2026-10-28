@@ -165,11 +165,11 @@ func (service *moduleReadsService) Issues(ctx context.Context, payload *api.Issu
 	if groupBy == "" {
 		responseSubGroupBy = ""
 	}
-	if err := validateModuleIssueGrouping(groupBy, subGroupBy); err != nil {
-		if strings.HasPrefix(err.Error(), "Invalid ") {
-			return nil, nil, moduleIssueParseError(err.Error())
+	if validateModuleErr := validateModuleIssueGrouping(groupBy, subGroupBy); validateModuleErr != nil {
+		if strings.HasPrefix(validateModuleErr.Error(), "Invalid ") {
+			return nil, nil, moduleIssueParseError(validateModuleErr.Error())
 		}
-		return nil, nil, moduleIssueBadRequest(err.Error())
+		return nil, nil, moduleIssueBadRequest(validateModuleErr.Error())
 	}
 	if groupBy != "" && float64(page)*cursorValue < 0 {
 		return nil, nil, moduleIssueParseError("Error in parsing")
@@ -225,8 +225,8 @@ func (service *moduleReadsService) Issues(ctx context.Context, payload *api.Issu
 		return nil, nil, moduleReadFailure(ctx, "issues", err, moduleReadsRepositoryError(err))
 	}
 	var issues []map[string]any
-	if err := json.Unmarshal(issuePage.Items, &issues); err != nil {
-		return nil, nil, moduleReadFailure(ctx, "issues", err, moduleReadsInternalError())
+	if unmarshalErr := json.Unmarshal(issuePage.Items, &issues); unmarshalErr != nil {
+		return nil, nil, moduleReadFailure(ctx, "issues", unmarshalErr, moduleReadsInternalError())
 	}
 	results := any(issues)
 	count := len(issues)

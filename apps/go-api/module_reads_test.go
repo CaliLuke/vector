@@ -297,14 +297,14 @@ func TestModuleIssueParsingPreservesDjangoErrorBodies(t *testing.T) {
 	if err != nil || page != 2 || cursorValue != 5 {
 		t.Fatalf("cursor parse page=%d value=%v err=%v", page, cursorValue, err)
 	}
-	if totalPages, err := moduleIssueTotalPages(10, -5); err != nil || totalPages != -2 {
-		t.Fatalf("negative grouped total_pages=%d error=%v", totalPages, err)
+	if totalPages, moduleIssueTotalPagesErr := moduleIssueTotalPages(10, -5); moduleIssueTotalPagesErr != nil || totalPages != -2 {
+		t.Fatalf("negative grouped total_pages=%d error=%v", totalPages, moduleIssueTotalPagesErr)
 	}
-	if _, err := moduleIssueTotalPages(1, 0); err == nil {
+	if _, moduleIssueTotalPagesErr := moduleIssueTotalPages(1, 0); moduleIssueTotalPagesErr == nil {
 		t.Fatal("zero per_page with selected grouped rows must preserve Django's division error")
 	}
-	if totalPages, err := moduleIssueTotalPages(0, 0); err != nil || totalPages != 0 {
-		t.Fatalf("empty zero-size grouped page total_pages=%d error=%v", totalPages, err)
+	if totalPages, moduleIssueTotalPagesErr := moduleIssueTotalPages(0, 0); moduleIssueTotalPagesErr != nil || totalPages != 0 {
+		t.Fatalf("empty zero-size grouped page total_pages=%d error=%v", totalPages, moduleIssueTotalPagesErr)
 	}
 	service, ctx := authenticatedModuleReads(t, &moduleReadsRepositoryStub{}, &moduleRecentVisitsStub{})
 	invalidGroup := "not-a-group"
@@ -362,8 +362,8 @@ func TestModuleListFieldsPreservesIgnoredFieldBehavior(t *testing.T) {
 		t.Fatal(err)
 	}
 	var modules []map[string]any
-	if err := json.Unmarshal(filtered, &modules); err != nil {
-		t.Fatal(err)
+	if unmarshalErr := json.Unmarshal(filtered, &modules); unmarshalErr != nil {
+		t.Fatal(unmarshalErr)
 	}
 	if len(modules) != 1 || len(modules[0]) < 20 || modules[0]["archived_at"] != nil {
 		t.Fatalf("fields branch did not preserve full ModuleSerializer object: %#v", modules)

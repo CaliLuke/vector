@@ -104,14 +104,14 @@ func TestPostgresWebhookModelActivityDeliversSignedPayloadRetriesAndDeactivates(
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := app.Start(ctx); err != nil {
-		t.Fatal(err)
+	if startErr := app.Start(ctx); startErr != nil {
+		t.Fatal(startErr)
 	}
 	defer func() {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutdownCancel()
-		if err := app.Shutdown(shutdownCtx); err != nil {
-			t.Errorf("shutdown webhook workflow runtime: %v", err)
+		if shutdownErr := app.Shutdown(shutdownCtx); shutdownErr != nil {
+			t.Errorf("shutdown webhook workflow runtime: %v", shutdownErr)
 		}
 	}()
 	fallback := &recordingWebhookFallback{}
@@ -123,11 +123,11 @@ func TestPostgresWebhookModelActivityDeliversSignedPayloadRetriesAndDeactivates(
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := publisher.Task(ctx, webhookModelActivityTask, nil, map[string]any{
+	if taskErr := publisher.Task(ctx, webhookModelActivityTask, nil, map[string]any{
 		"model_name": "project", "model_id": projectID.String(), "requested_data": map[string]any{"name": "Webhook Project"},
 		"current_instance": nil, "actor_id": ownerID.String(), "slug": slug, "origin": "https://plane.example.test",
-	}); err != nil {
-		t.Fatalf("admit model_activity producer: %v", err)
+	}); taskErr != nil {
+		t.Fatalf("admit model_activity producer: %v", taskErr)
 	}
 	waitForWebhookRequests(t, ctx, &requestCount, 2)
 	waitForWebhookLogCount(t, ctx, pool, webhookID, 2)
@@ -141,23 +141,23 @@ func TestPostgresWebhookModelActivityDeliversSignedPayloadRetriesAndDeactivates(
 	if observedEvent != "project" || observedAgent != "Autopilot" || observedDelivery == "" {
 		t.Fatalf("webhook headers event=%q agent=%q delivery=%q", observedEvent, observedAgent, observedDelivery)
 	}
-	if _, err := uuid.Parse(observedDelivery); err != nil {
+	if _, parseErr := uuid.Parse(observedDelivery); parseErr != nil {
 		t.Fatalf("delivery header is not a UUID: %q", observedDelivery)
 	}
 	var payload webhookPayload
-	if err := json.Unmarshal(receivedBody, &payload); err != nil {
-		t.Fatalf("decode delivered payload: %v (%s)", err, receivedBody)
+	if unmarshalErr := json.Unmarshal(receivedBody, &payload); unmarshalErr != nil {
+		t.Fatalf("decode delivered payload: %v (%s)", unmarshalErr, receivedBody)
 	}
 	if payload.Event != "project" || payload.Action != "created" || payload.WebhookID != webhookID.String() || payload.WorkspaceID != workspaceID.String() || payload.WorkspaceSlug != slug {
 		t.Fatalf("delivered payload identity = %#v", payload)
 	}
 	var projectData map[string]json.RawMessage
-	if err := json.Unmarshal(payload.Data, &projectData); err != nil || string(projectData["id"]) != `"`+projectID.String()+`"` {
-		t.Fatalf("serialized model data = %s, err=%v", payload.Data, err)
+	if unmarshalErr := json.Unmarshal(payload.Data, &projectData); unmarshalErr != nil || string(projectData["id"]) != `"`+projectID.String()+`"` {
+		t.Fatalf("serialized model data = %s, err=%v", payload.Data, unmarshalErr)
 	}
 	var signingPayload webhookPayload
-	if err := json.Unmarshal(receivedBody, &signingPayload); err != nil {
-		t.Fatal(err)
+	if unmarshalErr := json.Unmarshal(receivedBody, &signingPayload); unmarshalErr != nil {
+		t.Fatal(unmarshalErr)
 	}
 	bytesToSign, err := marshalWebhookJSON(signingPayload, true)
 	if err != nil {

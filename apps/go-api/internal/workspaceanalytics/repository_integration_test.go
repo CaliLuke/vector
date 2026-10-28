@@ -61,8 +61,8 @@ INSERT INTO project_members(project_id,member_id,role,is_active) VALUES
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
-		if err := pair.Close(); err != nil {
-			t.Errorf("close PostgreSQL testcontainer: %v", err)
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close PostgreSQL testcontainer: %v", closeErr)
 		}
 	})
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
@@ -87,16 +87,16 @@ INSERT INTO project_members(project_id,member_id,role,is_active) VALUES
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
 			user := uuid.MustParse(test.user)
-			allowed, err := repository.Authorized(ctx, user, "demo", project)
-			if err != nil {
-				t.Fatal(err)
+			allowed, authorizationErr := repository.Authorized(ctx, user, "demo", project)
+			if authorizationErr != nil {
+				t.Fatal(authorizationErr)
 			}
 			if allowed != test.standard {
 				t.Fatalf("standard project permission = %v, want %v", allowed, test.standard)
 			}
-			allowed, err = repository.AuthorizedProjectChart(ctx, user, "demo", project)
-			if err != nil {
-				t.Fatal(err)
+			allowed, authorizationErr = repository.AuthorizedProjectChart(ctx, user, "demo", project)
+			if authorizationErr != nil {
+				t.Fatal(authorizationErr)
 			}
 			if allowed != test.chart {
 				t.Fatalf("project chart permission = %v, want %v", allowed, test.chart)
@@ -154,8 +154,8 @@ INSERT INTO intake_issues(issue_id,status,created_at) VALUES ('00000000-0000-400
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
-		if err := pair.Close(); err != nil {
-			t.Errorf("close PostgreSQL testcontainer: %v", err)
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close PostgreSQL testcontainer: %v", closeErr)
 		}
 	})
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
@@ -177,8 +177,8 @@ INSERT INTO intake_issues(issue_id,status,created_at) VALUES ('00000000-0000-400
 	var counts map[string]struct {
 		Count int `json:"count"`
 	}
-	if err := json.Unmarshal(stats, &counts); err != nil {
-		t.Fatal(err)
+	if unmarshalErr := json.Unmarshal(stats, &counts); unmarshalErr != nil {
+		t.Fatal(unmarshalErr)
 	}
 	if got := counts["total_work_items"].Count; got != 1 {
 		t.Errorf("total_work_items = %d, want only the non-triage issue", got)
@@ -188,8 +188,8 @@ INSERT INTO intake_issues(issue_id,status,created_at) VALUES ('00000000-0000-400
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := json.Unmarshal(overview, &counts); err != nil {
-		t.Fatal(err)
+	if unmarshalErr := json.Unmarshal(overview, &counts); unmarshalErr != nil {
+		t.Fatal(unmarshalErr)
 	}
 	if got := counts["total_intake"].Count; got != 1 {
 		t.Errorf("total_intake = %d, want triage intake retained", got)

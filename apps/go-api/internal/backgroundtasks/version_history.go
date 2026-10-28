@@ -151,7 +151,7 @@ func (store *PostgresVersionHistoryStore) TrackPageVersion(ctx context.Context, 
 	}
 	var original map[string]json.RawMessage
 	if input.ExistingInstance != "" {
-		if err := json.Unmarshal([]byte(input.ExistingInstance), &original); err != nil {
+		if unmarshalErr := json.Unmarshal([]byte(input.ExistingInstance), &original); unmarshalErr != nil {
 			return fmt.Errorf("%w: invalid existing page snapshot JSON", ErrPermanentVersionHistory)
 		}
 	}
@@ -207,7 +207,7 @@ func (store *PostgresVersionHistoryStore) TrackIssueDescriptionVersion(ctx conte
 	}
 	var original map[string]json.RawMessage
 	if input.UpdatedIssue != "" {
-		if err := json.Unmarshal([]byte(input.UpdatedIssue), &original); err != nil {
+		if unmarshalErr := json.Unmarshal([]byte(input.UpdatedIssue), &original); unmarshalErr != nil {
 			return fmt.Errorf("%w: invalid updated issue JSON", ErrPermanentVersionHistory)
 		}
 	}

@@ -1115,13 +1115,13 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 			if bodySizeLimit <= 0 {
 				bodySizeLimit = defaultFileSizeLimit
 			}
-			options := apiV1CompatibilityOptions{activityLogger: pending.activityReadsActivity, activitySecret: pending.activityReadsSecret, bodySizeLimit: bodySizeLimit}
+			compatibilityOptions := apiV1CompatibilityOptions{activityLogger: pending.activityReadsActivity, activitySecret: pending.activityReadsSecret, bodySizeLimit: bodySizeLimit}
 			server.Use(accountAuthenticationGzipMiddleware)
 			server.Use(passwordLoginCSRFCookieMiddleware(pending.csrfTokenCookie))
 			server.Use(accountAuthenticationProtocolMiddleware)
 			server.Use(accountAuthenticationCSRFMiddleware(pending.accountAuthenticationCSRFTrustedOrigins))
 			server.Use(djangoAuthSessionMiddleware(pending.readServicesAuthSession, pending.readServicesAuthCookie, accountAuthenticationSessionPath))
-			server.Use(activityReadsAuditFallbackMiddleware(options))
+			server.Use(activityReadsAuditFallbackMiddleware(compatibilityOptions))
 			server.Use(activityReadsRequestSizeMiddleware(bodySizeLimit))
 			accountauthsvr.Mount(mux, server)
 			for _, mount := range server.Mounts {
@@ -2954,8 +2954,8 @@ func djangoSessionLifecycleMiddleware(
 			request = normalizeDjangoCookie(request, sessionCookieName(sessionCookie))
 			expireSession, refreshSession, prepared, principal, err := sessions.InspectReadServiceSession(request.Context(), request)
 			if expireSession {
-				if err := expireDjangoSessionCookie(response.Header(), sessionCookie); err != nil {
-					logPublicProjectMetadataCompatibilityError(request.Context(), err)
+				if expireDjangoErr := expireDjangoSessionCookie(response.Header(), sessionCookie); expireDjangoErr != nil {
+					logPublicProjectMetadataCompatibilityError(request.Context(), expireDjangoErr)
 					writeReadServicesSessionError(response, request)
 					return
 				}

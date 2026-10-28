@@ -106,8 +106,8 @@ INSERT INTO issue_activities(id,created_at,updated_at,workspace_id,project_id,is
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
-		if err := pair.Close(); err != nil {
-			t.Errorf("close PostgreSQL testcontainer: %v", err)
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close PostgreSQL testcontainer: %v", closeErr)
 		}
 	})
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
@@ -124,14 +124,14 @@ func TestWorkspaceAuthorizationAndActivityQueryUseSourceScopeAndCTEAliases(t *te
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := repository.AuthorizeWorkspace(ctx, insightsRequesterID, "demo", false); err != nil {
-		t.Fatalf("safe workspace member permission: %v", err)
+	if authorizeWorkspaceErr := repository.AuthorizeWorkspace(ctx, insightsRequesterID, "demo", false); authorizeWorkspaceErr != nil {
+		t.Fatalf("safe workspace member permission: %v", authorizeWorkspaceErr)
 	}
 	if err := repository.AuthorizeWorkspace(ctx, insightsRequesterID, "demo", true); err != ErrForbidden {
 		t.Fatalf("viewer unsafe permission = %v, want ErrForbidden", err)
 	}
-	if err := repository.AuthorizeWorkspace(ctx, insightsTargetID, "demo", true); err != nil {
-		t.Fatalf("Admin/Member unsafe permission: %v", err)
+	if authorizeWorkspaceErr := repository.AuthorizeWorkspace(ctx, insightsTargetID, "demo", true); authorizeWorkspaceErr != nil {
+		t.Fatalf("Admin/Member unsafe permission: %v", authorizeWorkspaceErr)
 	}
 	allowed, err := repository.CanExportActivity(ctx, insightsTargetID, "demo")
 	if err != nil || !allowed {
@@ -149,8 +149,8 @@ func TestWorkspaceAuthorizationAndActivityQueryUseSourceScopeAndCTEAliases(t *te
 	var response struct {
 		Results []map[string]any `json:"results"`
 	}
-	if err := json.Unmarshal(body, &response); err != nil {
-		t.Fatalf("decode activity JSON: %v", err)
+	if unmarshalErr := json.Unmarshal(body, &response); unmarshalErr != nil {
+		t.Fatalf("decode activity JSON: %v", unmarshalErr)
 	}
 	if len(response.Results) != 1 || response.Results[0]["id"] != insightsActivity2ID {
 		t.Fatalf("project-filtered activity result = %s", body)
@@ -181,8 +181,8 @@ func TestWorkspaceAuthorizationAndActivityQueryUseSourceScopeAndCTEAliases(t *te
 			DateJoined string `json:"date_joined"`
 		} `json:"user_data"`
 	}
-	if err := json.Unmarshal(profile, &profileBody); err != nil {
-		t.Fatalf("decode profile JSON: %v", err)
+	if unmarshalErr := json.Unmarshal(profile, &profileBody); unmarshalErr != nil {
+		t.Fatalf("decode profile JSON: %v", unmarshalErr)
 	}
 	if profileBody.UserData.DateJoined != "2026-01-01T00:00:00Z" {
 		t.Errorf("profile date_joined = %q, want DRF UTC Z format", profileBody.UserData.DateJoined)

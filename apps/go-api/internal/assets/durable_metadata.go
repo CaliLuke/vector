@@ -68,30 +68,30 @@ func registerStorageMetadataWorkflow(app *selvedge.App, repository storageMetada
 	}
 	activity := execution.Activity[StorageMetadataWorkflowInput, struct{}]{Name: StorageMetadataActivityName}
 	err = executionSelvedge.Register(activities, activity, func(ctx context.Context, input StorageMetadataWorkflowInput) (struct{}, error) {
-		assetID, err := uuid.Parse(input.AssetID)
-		if err != nil {
-			return struct{}{}, fmt.Errorf("%w: parse FileAsset ID: %v", ErrPermanentStorageMetadata, err)
+		assetID, metadataErr := uuid.Parse(input.AssetID)
+		if metadataErr != nil {
+			return struct{}{}, fmt.Errorf("%w: parse FileAsset ID: %v", ErrPermanentStorageMetadata, metadataErr)
 		}
-		key, found, err := repository.AssetKey(ctx, assetID)
-		if err != nil {
-			return struct{}{}, classifyStorageMetadataError(err)
+		key, found, metadataErr := repository.AssetKey(ctx, assetID)
+		if metadataErr != nil {
+			return struct{}{}, classifyStorageMetadataError(metadataErr)
 		}
 		if !found {
 			return struct{}{}, nil
 		}
-		head, err := storage.Head(ctx, key)
-		if isObjectNotFound(err) {
+		head, metadataErr := storage.Head(ctx, key)
+		if isObjectNotFound(metadataErr) {
 			// Django's S3 helper converts ClientError into None and saves it.
 			if saveErr := repository.SaveMetadataForKey(ctx, assetID, key, nil); saveErr != nil {
 				return struct{}{}, classifyStorageMetadataError(saveErr)
 			}
 			return struct{}{}, nil
 		}
-		if err != nil {
-			return struct{}{}, classifyStorageMetadataError(fmt.Errorf("head FileAsset object %q: %w", key, err))
+		if metadataErr != nil {
+			return struct{}{}, classifyStorageMetadataError(fmt.Errorf("head FileAsset object %q: %w", key, metadataErr))
 		}
-		if err := repository.SaveMetadataForKey(ctx, assetID, key, metadataFromHead(head)); err != nil {
-			return struct{}{}, classifyStorageMetadataError(err)
+		if saveMetadataForKeyErr := repository.SaveMetadataForKey(ctx, assetID, key, metadataFromHead(head)); saveMetadataForKeyErr != nil {
+			return struct{}{}, classifyStorageMetadataError(saveMetadataForKeyErr)
 		}
 		return struct{}{}, nil
 	}, selvedge.ActivityOptions{StartToCloseTimeout: activityTimeout, RetryPolicy: &policyCopy})

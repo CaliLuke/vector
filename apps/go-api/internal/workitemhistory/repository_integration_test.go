@@ -93,9 +93,9 @@ INSERT INTO comment_reactions(id,workspace_id,project_id,comment_id,actor_id,cre
 			} else if operation == "description_version_detail" {
 				request.VersionID = uuid.MustParse(historyDescVer)
 			}
-			data, err := repository.Read(ctx, request)
-			if err != nil {
-				t.Fatalf("Read(%s): %v", operation, err)
+			data, readErr := repository.Read(ctx, request)
+			if readErr != nil {
+				t.Fatalf("Read(%s): %v", operation, readErr)
 			}
 			if !json.Valid(data) {
 				t.Fatalf("Read(%s) returned invalid JSON: %s", operation, data)

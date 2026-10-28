@@ -751,9 +751,9 @@ func (r *InvitationsRepository) mutateWorkspaceMember(ctx context.Context, c Inv
 		if userID == c.UserID {
 			return nil, inviteFailure(400, "You cannot update your own role")
 		}
-		fields, err := invitationMemberPatchFields(c)
-		if err != nil {
-			return nil, err
+		fields, memberUpdateErr := invitationMemberPatchFields(c)
+		if memberUpdateErr != nil {
+			return nil, memberUpdateErr
 		}
 		// Keep source int coercion before serializer validation, but make validated
 		// role and every cascade one transaction (ACCESS-001).
@@ -766,26 +766,26 @@ func (r *InvitationsRepository) mutateWorkspaceMember(ctx context.Context, c Inv
 			cascade = n == 5
 		}
 		updates, args, fieldError := workspaceMemberUpdates(fields, id, c.UserID, c.Timezone)
-		err = invitationValidationErrors(fieldError, r.invitationRelationErrors(ctx, fields, workspaceMembershipFields))
-		if err != nil {
-			return nil, err
+		memberUpdateErr = invitationValidationErrors(fieldError, r.invitationRelationErrors(ctx, fields, workspaceMembershipFields))
+		if memberUpdateErr != nil {
+			return nil, memberUpdateErr
 		}
-		tx, err := r.writer.Begin(ctx)
-		if err != nil {
-			return nil, err
+		tx, memberUpdateErr := r.writer.Begin(ctx)
+		if memberUpdateErr != nil {
+			return nil, memberUpdateErr
 		}
 		// Commit or the returned error closes the transaction; rollback is best-effort cleanup.
 		defer func() { _ = tx.Rollback(ctx) }()
 		if cascade {
-			if _, err = tx.Exec(ctx, `UPDATE project_members SET role=5 WHERE workspace_id=$1 AND member_id=$2 AND deleted_at IS NULL`, workspace, userID); err != nil {
-				return nil, err
+			if _, memberUpdateErr = tx.Exec(ctx, `UPDATE project_members SET role=5 WHERE workspace_id=$1 AND member_id=$2 AND deleted_at IS NULL`, workspace, userID); memberUpdateErr != nil {
+				return nil, memberUpdateErr
 			}
 		}
-		if _, err = tx.Exec(ctx, `UPDATE workspace_members SET `+strings.Join(updates, ",")+` WHERE id=$1`, args...); err != nil {
-			return nil, err
+		if _, memberUpdateErr = tx.Exec(ctx, `UPDATE workspace_members SET `+strings.Join(updates, ",")+` WHERE id=$1`, args...); memberUpdateErr != nil {
+			return nil, memberUpdateErr
 		}
-		if err = tx.Commit(ctx); err != nil {
-			return nil, err
+		if memberUpdateErr = tx.Commit(ctx); memberUpdateErr != nil {
+			return nil, memberUpdateErr
 		}
 		return inviteJSON(ctx, r.writer, `SELECT `+workspaceMemberProjection()+` FROM workspace_members m JOIN users u ON u.id=m.member_id WHERE m.id=$1`, id)
 	}

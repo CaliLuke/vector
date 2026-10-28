@@ -51,8 +51,8 @@ func TestRepositoryListsWorkspaceLabelsWithProjectVisibilityAndDjangoOrdering(t 
 		t.Fatal(err)
 	}
 	user := uuid.MustParse("00000000-0000-4000-8000-000000000001")
-	if ok, err := r.Authorized(context.Background(), user, "workspace-metadata"); err != nil || !ok {
-		t.Fatalf("Authorized() = %v, %v", ok, err)
+	if ok, authorizedErr := r.Authorized(context.Background(), user, "workspace-metadata"); authorizedErr != nil || !ok {
+		t.Fatalf("Authorized() = %v, %v", ok, authorizedErr)
 	}
 	body, err := r.ListLabels(context.Background(), user, "workspace-metadata")
 	if err != nil || string(body) != `[{"name":"Newer"}]` {

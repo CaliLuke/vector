@@ -1202,8 +1202,8 @@ func TestPaginationDistinguishesOmittedEmptyZeroNegativeAndFloatValues(t *testin
 	if err != nil || limit != 0 || cursorLimit != 0 || windowLimit != 0 || page != 0 || previous {
 		t.Fatalf("explicit zero pagination=(%v,%v,%v,%v,%v,%v)", limit, cursorLimit, windowLimit, page, previous, err)
 	}
-	if _, _, _, _, _, err := pagination(25, true, "", true); !errors.Is(err, ErrInvalidPagination) {
-		t.Fatalf("empty cursor err=%v", err)
+	if _, _, _, _, _, paginationErr := pagination(25, true, "", true); !errors.Is(paginationErr, ErrInvalidPagination) {
+		t.Fatalf("empty cursor err=%v", paginationErr)
 	}
 	limit, cursorLimit, windowLimit, page, previous, err = pagination(25, true, "0:1:0", true)
 	if err != nil || limit != 25 || cursorLimit != 0 || windowLimit != 25 || page != 1 || previous {
@@ -1491,18 +1491,18 @@ func TestZeroPerPageMatchesUngroupedFailureAndGroupedEmptyPages(t *testing.T) {
 			boolRow(true), groupedPageRow(`{}`, 4, 0, 0, false),
 		}}
 		repository, _ := NewRepository(database)
-		data, err := repository.Issues(
+		data, issuesErr := repository.Issues(
 			context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(), options,
 		)
-		if err != nil {
-			t.Fatalf("options=%+v err=%v", options, err)
+		if issuesErr != nil {
+			t.Fatalf("options=%+v err=%v", options, issuesErr)
 		}
 		var envelope struct {
 			Results    map[string]any `json:"results"`
 			TotalPages int            `json:"total_pages"`
 		}
-		if err := json.Unmarshal(data, &envelope); err != nil {
-			t.Fatal(err)
+		if unmarshalErr := json.Unmarshal(data, &envelope); unmarshalErr != nil {
+			t.Fatal(unmarshalErr)
 		}
 		if len(envelope.Results) != 0 || envelope.TotalPages != 0 {
 			t.Fatalf("options=%+v envelope=%s", options, data)

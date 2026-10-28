@@ -20,8 +20,8 @@ func TestTimezonesMatchRecordedDjangoResponse(t *testing.T) {
 			Body timezoneapi.TimezoneList `json:"body"`
 		} `json:"response"`
 	}
-	if err := json.Unmarshal(fixtureBytes, &fixture); err != nil {
-		t.Fatalf("decode Django timezone fixture: %v", err)
+	if unmarshalErr := json.Unmarshal(fixtureBytes, &fixture); unmarshalErr != nil {
+		t.Fatalf("decode Django timezone fixture: %v", unmarshalErr)
 	}
 
 	frozen := time.Date(2026, time.January, 15, 12, 0, 0, 0, time.UTC)

@@ -152,8 +152,8 @@ func openStickyProofPool(t *testing.T, ctx context.Context, databaseURL string) 
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := database.ConfigurePool(config); err != nil {
-		t.Fatal(err)
+	if configurePoolErr := database.ConfigurePool(config); configurePoolErr != nil {
+		t.Fatal(configurePoolErr)
 	}
 	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {

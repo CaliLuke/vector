@@ -50,7 +50,7 @@ func TestLastVisitedWorkspaceAuthenticationAndRepositoryFailures(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := service.(api.Authorizer).APIKeyAuth(context.Background(), "bad", nil); err == nil {
+	if _, apiKeyAuthErr := service.(api.Authorizer).APIKeyAuth(context.Background(), "bad", nil); apiKeyAuthErr == nil {
 		t.Fatal("expected authentication error")
 	}
 

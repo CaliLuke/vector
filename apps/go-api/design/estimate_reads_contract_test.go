@@ -54,7 +54,7 @@ func TestGeneratedEstimateSchemasIncludeRequiredOrderedPointsAndNullability(t *t
 		"id", "created_at", "updated_at", "created_by", "updated_by", "deleted_at",
 		"workspace", "project", "name", "description", "type", "last_used", "points",
 	} {
-		if _, exists := estimate.Properties[field]; !exists {
+		if _, hasProperty := estimate.Properties[field]; !hasProperty {
 			t.Errorf("EstimateRead schema missing %q", field)
 		}
 		if !slices.Contains(estimate.Required, field) {

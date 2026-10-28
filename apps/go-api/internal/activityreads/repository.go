@@ -284,15 +284,15 @@ func (repository *Repository) apiActivities(ctx context.Context, principal Princ
 	}
 	serializer := activityAPISerializer(request)
 	if detail {
-		pk, err := uuid.Parse(param(request, "pk"))
-		if err != nil {
+		pk, activityLookupErr := uuid.Parse(param(request, "pk"))
+		if activityLookupErr != nil {
 			return Result{}, ErrNotFound
 		}
-		value, err := repository.json(ctx, `SELECT `+serializer+` FROM issue_activities a JOIN workspaces w ON w.id=a.workspace_id JOIN projects p ON p.id=a.project_id WHERE a.id=$1 AND a.issue_id=$2 AND a.project_id=$3 AND w.slug=$4 AND a.deleted_at IS NULL AND p.archived_at IS NULL AND (a.field IS NULL OR a.field NOT IN ('comment','vote','reaction','draft')) AND EXISTS (SELECT 1 FROM project_members membership WHERE membership.project_id=p.id AND membership.member_id=$5 AND membership.is_active=true) AND `+issuequery.MilestoneActivityVisibleSQL("a.field", "a.issue_id", "a.project_id", "a.workspace_id", "$5::uuid")+` LIMIT 1`, pk, issueID, projectID, param(request, "slug"), principal.UserID)
-		if errors.Is(err, pgx.ErrNoRows) {
+		value, activityLookupErr := repository.json(ctx, `SELECT `+serializer+` FROM issue_activities a JOIN workspaces w ON w.id=a.workspace_id JOIN projects p ON p.id=a.project_id WHERE a.id=$1 AND a.issue_id=$2 AND a.project_id=$3 AND w.slug=$4 AND a.deleted_at IS NULL AND p.archived_at IS NULL AND (a.field IS NULL OR a.field NOT IN ('comment','vote','reaction','draft')) AND EXISTS (SELECT 1 FROM project_members membership WHERE membership.project_id=p.id AND membership.member_id=$5 AND membership.is_active=true) AND `+issuequery.MilestoneActivityVisibleSQL("a.field", "a.issue_id", "a.project_id", "a.workspace_id", "$5::uuid")+` LIMIT 1`, pk, issueID, projectID, param(request, "slug"), principal.UserID)
+		if errors.Is(activityLookupErr, pgx.ErrNoRows) {
 			return Result{}, &HTTPError{Status: 404, Body: map[string]any{"message": "Activity not found.", "code": "NOT_FOUND"}}
 		}
-		return Result{Body: value}, err
+		return Result{Body: value}, activityLookupErr
 	}
 	limit, page, offset, err := pageWindow(request)
 	if err != nil {

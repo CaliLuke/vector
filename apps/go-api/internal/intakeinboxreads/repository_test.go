@@ -608,8 +608,8 @@ func TestPaginationErrorsPreserveDjangoParameterDetail(t *testing.T) {
 		t.Fatalf("huge description page_size=%d page=%s err=%v", pageSize, page, err)
 	}
 	hugeNegativeDescriptionPageSize := "-999999999999999999999999:0:0"
-	if _, _, err := parseDescriptionCursor(&hugeNegativeDescriptionPageSize); !errors.Is(err, ErrInvalidDescriptionCursor) {
-		t.Fatalf("huge negative description page size err=%v", err)
+	if _, _, parseDescriptionCursorErr := parseDescriptionCursor(&hugeNegativeDescriptionPageSize); !errors.Is(parseDescriptionCursorErr, ErrInvalidDescriptionCursor) {
+		t.Fatalf("huge negative description page size err=%v", parseDescriptionCursorErr)
 	}
 	hugeIgnoredComponent := "1000:0:999999999999999999999999"
 	pageSize, page, err = parseDescriptionCursor(&hugeIgnoredComponent)

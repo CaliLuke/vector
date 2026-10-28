@@ -146,8 +146,8 @@ func (r *Repository) Update(ctx context.Context, userID, slug, projectID, boardI
 		return nil, err
 	}
 	if value, present := patch.Fields["intake"]; present {
-		if _, err := r.intakeID(ctx, slug, projectID, value); err != nil {
-			return nil, err
+		if _, intakeIDErr := r.intakeID(ctx, slug, projectID, value); intakeIDErr != nil {
+			return nil, intakeIDErr
 		}
 	}
 	intake, hasIntake, err := parameter("intake")

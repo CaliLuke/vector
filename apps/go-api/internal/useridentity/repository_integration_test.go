@@ -80,8 +80,8 @@ INSERT INTO users VALUES (
 		CoverImageURL *string `json:"cover_image_url"`
 		Email         *string `json:"email"`
 	}
-	if err := json.Unmarshal(body, &user); err != nil {
-		t.Fatal(err)
+	if unmarshalErr := json.Unmarshal(body, &user); unmarshalErr != nil {
+		t.Fatal(unmarshalErr)
 	}
 	const expected = "2026-07-01T20:04:05.123456-07:00"
 	if user.DateJoined != expected || user.LastLoginTime != expected {
@@ -108,20 +108,20 @@ INSERT INTO users VALUES (
 		{name: "missing scoped workspace", entityType: "ISSUE_ATTACHMENT", projectID: "00000000-0000-4000-8000-000000000b12", issueID: "00000000-0000-4000-8000-000000000b13", omitURL: true},
 	}
 	for _, testCase := range assetCases {
-		if _, err := connection.Exec(ctx, "UPDATE file_assets SET entity_type=$1, workspace_id=$2, project_id=$3, issue_id=$4", testCase.entityType, testCase.workspaceID, testCase.projectID, testCase.issueID); err != nil {
-			t.Fatal(err)
+		if _, execErr := connection.Exec(ctx, "UPDATE file_assets SET entity_type=$1, workspace_id=$2, project_id=$3, issue_id=$4", testCase.entityType, testCase.workspaceID, testCase.projectID, testCase.issueID); execErr != nil {
+			t.Fatal(execErr)
 		}
-		assetBody, err := repository.SessionUser(ctx, uuid.MustParse("00000000-0000-4000-8000-000000000b01"))
-		if err != nil {
-			t.Fatalf("%s SessionUser(): %v", testCase.name, err)
+		assetBody, sessionUserErr := repository.SessionUser(ctx, uuid.MustParse("00000000-0000-4000-8000-000000000b01"))
+		if sessionUserErr != nil {
+			t.Fatalf("%s SessionUser(): %v", testCase.name, sessionUserErr)
 		}
-		if err := json.Unmarshal(assetBody, &user); err != nil {
-			t.Fatal(err)
+		if unmarshalErr := json.Unmarshal(assetBody, &user); unmarshalErr != nil {
+			t.Fatal(unmarshalErr)
 		}
 		if testCase.omitURL {
 			var fields map[string]json.RawMessage
-			if err := json.Unmarshal(assetBody, &fields); err != nil {
-				t.Fatal(err)
+			if unmarshalErr := json.Unmarshal(assetBody, &fields); unmarshalErr != nil {
+				t.Fatal(unmarshalErr)
 			}
 			if _, avatarExists := fields["avatar_url"]; avatarExists {
 				t.Fatalf("%s unexpectedly returned avatar_url: %s", testCase.name, assetBody)

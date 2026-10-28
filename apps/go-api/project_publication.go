@@ -174,9 +174,9 @@ func (s *projectPublicationService) Update(ctx context.Context, p *api.UpdatePay
 		closeCustomViewBody(body)
 		return nil, nil, s.notFound()
 	}
-	if err := s.repo.Exists(ctx, p.Slug, p.ProjectID, p.Pk); err != nil {
+	if existsErr := s.repo.Exists(ctx, p.Slug, p.ProjectID, p.Pk); existsErr != nil {
 		closeCustomViewBody(body)
-		return nil, nil, s.mapError(err)
+		return nil, nil, s.mapError(existsErr)
 	}
 	input, err := publicationInput(ctx, body)
 	if err != nil {
@@ -198,8 +198,8 @@ func (s *projectPublicationService) Update(ctx context.Context, p *api.UpdatePay
 				fields[name] = nil
 				continue
 			}
-			parsed, err := djangoinput.UUID(value)
-			if err != nil {
+			parsed, uUIDErr := djangoinput.UUID(value)
+			if uUIDErr != nil {
 				message := "Must be a valid UUID."
 				if name == "intake" {
 					message = "Invalid pk \"" + fmt.Sprint(value) + "\" - object does not exist."

@@ -59,13 +59,13 @@ func TestRepositoryFirstAccessAndRepeatUseDjangoDefaultsForEveryKind(t *testing.
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			first, err := tc.get()
-			if err != nil {
-				t.Fatalf("first get: %v", err)
+			first, getErr := tc.get()
+			if getErr != nil {
+				t.Fatalf("first get: %v", getErr)
 			}
-			second, err := tc.get()
-			if err != nil {
-				t.Fatalf("repeat get: %v", err)
+			second, getErr := tc.get()
+			if getErr != nil {
+				t.Fatalf("repeat get: %v", getErr)
 			}
 			firstFields, secondFields := propertyFields(t, first), propertyFields(t, second)
 			if firstFields["id"] != secondFields["id"] {
@@ -77,8 +77,8 @@ func TestRepositoryFirstAccessAndRepeatUseDjangoDefaultsForEveryKind(t *testing.
 			if firstFields["created_by"] != userID || firstFields["updated_by"] != nil {
 				t.Fatalf("creation audit fields = created_by:%v updated_by:%v", firstFields["created_by"], firstFields["updated_by"])
 			}
-			if _, err := time.Parse(time.RFC3339Nano, firstFields["created_at"].(string)); err != nil {
-				t.Fatalf("created_at is invalid: %v", err)
+			if _, parseErr := time.Parse(time.RFC3339Nano, firstFields["created_at"].(string)); parseErr != nil {
+				t.Fatalf("created_at is invalid: %v", parseErr)
 			}
 			for key, expected := range tc.defaults {
 				if !jsonEqual(firstFields[key], expected) {
@@ -86,8 +86,8 @@ func TestRepositoryFirstAccessAndRepeatUseDjangoDefaultsForEveryKind(t *testing.
 				}
 			}
 			var count int
-			if err := pool.QueryRow(ctx, "SELECT count(*) FROM "+tc.table).Scan(&count); err != nil || count != 1 {
-				t.Fatalf("%s rows = %d, err=%v", tc.table, count, err)
+			if scanErr := pool.QueryRow(ctx, "SELECT count(*) FROM "+tc.table).Scan(&count); scanErr != nil || count != 1 {
+				t.Fatalf("%s rows = %d, err=%v", tc.table, count, scanErr)
 			}
 		})
 	}
@@ -142,8 +142,8 @@ func TestRepositoryPatchesOnlyProvidedFieldsAndIsolatesUsers(t *testing.T) {
 		}
 	}
 
-	if _, err := repository.GetWorkspace(ctx, user, "demo"); err != nil {
-		t.Fatalf("create workspace properties before patch: %v", err)
+	if _, getWorkspaceErr := repository.GetWorkspace(ctx, user, "demo"); getWorkspaceErr != nil {
+		t.Fatalf("create workspace properties before patch: %v", getWorkspaceErr)
 	}
 	workspaceBefore, err := repository.GetWorkspace(ctx, user, "demo")
 	if err != nil {
@@ -315,8 +315,8 @@ CREATE UNIQUE INDEX module_user_properties_active_unique ON module_user_properti
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
-		if err := pair.Close(); err != nil {
-			t.Errorf("close postgres test container: %v", err)
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close postgres test container: %v", closeErr)
 		}
 	})
 	pool, err := pgxpool.New(ctx, pair.SeedURL())

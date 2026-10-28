@@ -221,8 +221,8 @@ func newPublisher(brokerSetting, queue string) (*Publisher, error) {
 			brokerURL = parsedURL.String()
 		}
 		if port := parsedURL.Port(); port != "" {
-			value, err := strconv.Atoi(port)
-			if err != nil || value < 1 || value > 1<<16-1 {
+			value, atoiErr := strconv.Atoi(port)
+			if atoiErr != nil || value < 1 || value > 1<<16-1 {
 				return nil, fmt.Errorf("invalid Celery broker URL")
 			}
 		}

@@ -25,8 +25,8 @@ func pinnedTaskRequest(ctx context.Context, method, rawURL string, headers http.
 		return nil, &webhookURLPolicyError{message: "invalid URL"}
 	}
 	resolver := &webhookPinnedResolver{resolved: make(map[string][]netip.Addr), upstream: upstream}
-	if _, err := (workspacewebhooks.URLValidator{Resolver: resolver, PublicOnly: publicOnly}).Validate(ctx, rawURL, ""); err != nil {
-		return nil, &webhookURLPolicyError{message: err.Error()}
+	if _, validationErr := (workspacewebhooks.URLValidator{Resolver: resolver, PublicOnly: publicOnly}).Validate(ctx, rawURL, ""); validationErr != nil {
+		return nil, &webhookURLPolicyError{message: validationErr.Error()}
 	}
 	ips, err := resolver.lookup(ctx, parsed.Hostname())
 	if err != nil {

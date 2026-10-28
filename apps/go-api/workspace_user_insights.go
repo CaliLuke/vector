@@ -163,7 +163,7 @@ func (s *workspaceUserInsightsService) Profile(ctx context.Context, p *api.Profi
 	if err != nil {
 		return nil, nil, err
 	}
-	if err := workspaceUserInsightsValidateTimezone(actor.timezone); err != nil {
+	if workspaceUserErr := workspaceUserInsightsValidateTimezone(actor.timezone); workspaceUserErr != nil {
 		return nil, nil, s.error(500, map[string]any{"error": "Something went wrong please try again later"})
 	}
 	body, err := s.repo.Profile(ctx, actor.userID, p.Slug, p.UserID)
@@ -181,11 +181,11 @@ func (s *workspaceUserInsightsService) Activity(ctx context.Context, p *api.Acti
 	if err != nil {
 		return nil, nil, err
 	}
-	if err := s.repo.AuthorizeWorkspace(ctx, actor.userID, p.Slug, false); err != nil {
-		status, response := workspaceUserInsightsPermissionError(err)
+	if authorizeWorkspaceErr := s.repo.AuthorizeWorkspace(ctx, actor.userID, p.Slug, false); authorizeWorkspaceErr != nil {
+		status, response := workspaceUserInsightsPermissionError(authorizeWorkspaceErr)
 		return nil, nil, s.error(status, response)
 	}
-	if err := workspaceUserInsightsValidateTimezone(actor.timezone); err != nil {
+	if workspaceUserErr := workspaceUserInsightsValidateTimezone(actor.timezone); workspaceUserErr != nil {
 		return nil, nil, s.error(500, map[string]any{"error": "Something went wrong please try again later"})
 	}
 	params := map[string]string{}
@@ -224,7 +224,7 @@ func (s *workspaceUserInsightsService) Stats(ctx context.Context, p *api.StatsPa
 	if err != nil {
 		return nil, nil, err
 	}
-	if err := workspaceUserInsightsValidateTimezone(actor.timezone); err != nil {
+	if workspaceUserErr := workspaceUserInsightsValidateTimezone(actor.timezone); workspaceUserErr != nil {
 		return nil, nil, s.error(500, map[string]any{"error": "Something went wrong please try again later"})
 	}
 	filters := map[string]string{}
@@ -255,7 +255,7 @@ func (s *workspaceUserInsightsService) ExportActivity(ctx context.Context, p *ap
 	if !allowed {
 		return nil, nil, s.error(403, map[string]any{"detail": "You do not have permission to perform this action."})
 	}
-	if err := workspaceUserInsightsValidateTimezone(actor.timezone); err != nil {
+	if workspaceUserErr := workspaceUserInsightsValidateTimezone(actor.timezone); workspaceUserErr != nil {
 		return nil, nil, s.error(500, map[string]any{"error": "Something went wrong please try again later"})
 	}
 	contentType := ""

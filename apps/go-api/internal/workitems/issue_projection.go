@@ -133,8 +133,8 @@ func (r *Repository) readIssue(ctx context.Context, q Request) (Result, error) {
 		if err = r.authorizeGuestItemRead(ctx, q, row); err != nil {
 			return Result{}, err
 		}
-		body, err := r.serializeVisibleIssue(ctx, row, q, q.Params["fields"], q.Params["expand"])
-		return Result{200, body}, err
+		body, serializeVisibleIssueErr := r.serializeVisibleIssue(ctx, row, q, q.Params["fields"], q.Params["expand"])
+		return Result{200, body}, serializeVisibleIssueErr
 	}
 	project, err := r.project(ctx, q.ProjectID)
 	if err != nil {

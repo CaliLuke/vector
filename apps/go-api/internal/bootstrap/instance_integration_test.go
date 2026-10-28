@@ -36,8 +36,8 @@ func TestPostgresBootstrapRegistrationAndConfiguration(t *testing.T) {
 	defer adminPool.Close()
 
 	schema := "bootstrap_test_" + strings.ReplaceAll(uuid.NewString(), "-", "")
-	if _, err := adminPool.Exec(ctx, "CREATE SCHEMA "+pgx.Identifier{schema}.Sanitize()); err != nil {
-		t.Fatal(err)
+	if _, execErr := adminPool.Exec(ctx, "CREATE SCHEMA "+pgx.Identifier{schema}.Sanitize()); execErr != nil {
+		t.Fatal(execErr)
 	}
 	t.Cleanup(func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -111,8 +111,8 @@ func TestPostgresBootstrapRegistrationAndConfiguration(t *testing.T) {
 	if createdCount != 1 || metricsAdmissions.Load() != callers {
 		t.Fatalf("concurrent registration results: created rows=%d (want one), metrics admissions=%d (want %d)", createdCount, metricsAdmissions.Load(), callers)
 	}
-	if _, err := RegisterInstance(ctx, pool, Registration{CurrentVersion: "v1.2.3", IsTest: true}, func(context.Context, string) string { return "v9.8.7" }, nil); !errors.Is(err, ErrMetricsAdmissionUnavailable) {
-		t.Fatalf("missing native metrics queue should be an explicit gap, got %v", err)
+	if _, registerInstanceErr := RegisterInstance(ctx, pool, Registration{CurrentVersion: "v1.2.3", IsTest: true}, func(context.Context, string) string { return "v9.8.7" }, nil); !errors.Is(registerInstanceErr, ErrMetricsAdmissionUnavailable) {
+		t.Fatalf("missing native metrics queue should be an explicit gap, got %v", registerInstanceErr)
 	}
 	var instanceCount int
 	var instanceID string
@@ -152,21 +152,21 @@ func TestPostgresBootstrapRegistrationAndConfiguration(t *testing.T) {
 			t.Error(err)
 		}
 	}
-	if _, err := pool.Exec(ctx, `UPDATE instance_configurations SET value='user-selected' WHERE key='ENABLE_SIGNUP'`); err != nil {
-		t.Fatal(err)
+	if _, execErr := pool.Exec(ctx, `UPDATE instance_configurations SET value='user-selected' WHERE key='ENABLE_SIGNUP'`); execErr != nil {
+		t.Fatal(execErr)
 	}
 	environment["ENABLE_SIGNUP"] = "1"
 	environment["EMAIL_HOST_PASSWORD"] = "replacement-password"
-	if err := configure(); err != nil {
-		t.Fatal(err)
+	if configureErr := configure(); configureErr != nil {
+		t.Fatal(configureErr)
 	}
 	var savedValue, encryptedPassword string
 	var isEncrypted bool
-	if err := pool.QueryRow(ctx, `SELECT value FROM instance_configurations WHERE key='ENABLE_SIGNUP'`).Scan(&savedValue); err != nil {
-		t.Fatal(err)
+	if scanErr := pool.QueryRow(ctx, `SELECT value FROM instance_configurations WHERE key='ENABLE_SIGNUP'`).Scan(&savedValue); scanErr != nil {
+		t.Fatal(scanErr)
 	}
-	if err := pool.QueryRow(ctx, `SELECT value,is_encrypted FROM instance_configurations WHERE key='EMAIL_HOST_PASSWORD'`).Scan(&encryptedPassword, &isEncrypted); err != nil {
-		t.Fatal(err)
+	if scanErr := pool.QueryRow(ctx, `SELECT value,is_encrypted FROM instance_configurations WHERE key='EMAIL_HOST_PASSWORD'`).Scan(&encryptedPassword, &isEncrypted); scanErr != nil {
+		t.Fatal(scanErr)
 	}
 	cipher, err := instancecipher.New("bootstrap-test-secret")
 	if err != nil {

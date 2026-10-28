@@ -146,8 +146,8 @@ func install(ctx context.Context) error {
 			defer cancel()
 			_ = runtime.Shutdown(shutdownCtx)
 		}()
-		if err := runtime.Start(ctx); err != nil {
-			return fmt.Errorf("start durable task runtime: %w", err)
+		if startErr := runtime.Start(ctx); startErr != nil {
+			return fmt.Errorf("start durable task runtime: %w", startErr)
 		}
 		if runtime.InstanceMetrics == nil {
 			return fmt.Errorf("durable instance metrics dispatcher is unavailable")

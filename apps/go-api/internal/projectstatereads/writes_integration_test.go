@@ -72,11 +72,11 @@ func TestMarkDefaultAllowsOrdinaryGroupStateWithTriageFlag(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := repository.MarkDefault(ctx, StateWriteInput{
+	if markDefaultErr := repository.MarkDefault(ctx, StateWriteInput{
 		UserID: writeTestUserID, Slug: "demo", ProjectID: writeTestProjectID,
 		StateID: "00000000-0000-4000-8000-000000000011", Method: "POST", App: true,
-	}); err != nil {
-		t.Fatalf("MarkDefault returned %v", err)
+	}); markDefaultErr != nil {
+		t.Fatalf("MarkDefault returned %v", markDefaultErr)
 	}
 	rows, err := connection.Query(ctx, `SELECT id::text,"default" FROM states ORDER BY id`)
 	if err != nil {

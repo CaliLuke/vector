@@ -148,8 +148,8 @@ func TestCreateWorkspaceReturnsSourceValidationFailuresBeforeDatabaseAccess(t *t
 		{name: json.RawMessage(`"Workspace"`), slug: json.RawMessage(`true`), field: "slug"},
 	} {
 		_, err := (&Repository{}).CreateWorkspace(t.Context(), uuid.Nil(), map[string]json.RawMessage{"name": test.name, "slug": test.slug}, "UTC")
-		var validation *WorkspaceValidationError
-		if !errors.As(err, &validation) || workspaceValidationMessage(validation, test.field) != "Not a valid string." {
+		var fieldValidation *WorkspaceValidationError
+		if !errors.As(err, &fieldValidation) || workspaceValidationMessage(fieldValidation, test.field) != "Not a valid string." {
 			t.Fatalf("CreateWorkspace(%s,%s) error = %#v, want %s Not a valid string validation", test.name, test.slug, err, test.field)
 		}
 	}

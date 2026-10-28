@@ -115,15 +115,15 @@ func (repository *LifecycleRepository) CreateModule(ctx context.Context, actor, 
 	}
 	name, _ := values["name"].(string)
 	var duplicate bool
-	if err := repository.database.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM modules WHERE project_id=$1 AND name=$2 AND deleted_at IS NULL)`, projectID, name).Scan(&duplicate); err != nil {
-		return nil, fmt.Errorf("check module name: %w", err)
+	if scanErr := repository.database.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM modules WHERE project_id=$1 AND name=$2 AND deleted_at IS NULL)`, projectID, name).Scan(&duplicate); scanErr != nil {
+		return nil, fmt.Errorf("check module name: %w", scanErr)
 	}
 	if duplicate {
 		return nil, &ModuleValidationError{Body: map[string]any{"error": "Module with this name already exists"}}
 	}
 	var minimum pgtype.Float8
-	if err := repository.database.QueryRow(ctx, `SELECT MIN(sort_order)-10000 FROM modules WHERE project_id=$1 AND deleted_at IS NULL`, projectID).Scan(&minimum); err != nil {
-		return nil, fmt.Errorf("calculate module sort order: %w", err)
+	if scanErr := repository.database.QueryRow(ctx, `SELECT MIN(sort_order)-10000 FROM modules WHERE project_id=$1 AND deleted_at IS NULL`, projectID).Scan(&minimum); scanErr != nil {
+		return nil, fmt.Errorf("calculate module sort order: %w", scanErr)
 	}
 	sortOrder, _ := values["sort_order"].(float64)
 	if minimum.Valid {
@@ -134,8 +134,8 @@ func (repository *LifecycleRepository) CreateModule(ctx context.Context, actor, 
 		return nil, err
 	}
 	if members, present := values["member_ids"]; present {
-		if err := repository.replaceModuleMembers(ctx, workspaceID, projectID, moduleID, members.([]string)); err != nil {
-			return nil, err
+		if replaceModuleMembersErr := repository.replaceModuleMembers(ctx, workspaceID, projectID, moduleID, members.([]string)); replaceModuleMembersErr != nil {
+			return nil, replaceModuleMembersErr
 		}
 	}
 	result, err := repository.moduleMutationProjection(ctx, actor, slug, projectID, moduleID)
@@ -194,12 +194,12 @@ func (repository *LifecycleRepository) CreateModuleV1(ctx context.Context, actor
 	externalSource, hasExternalSource := values["external_source"].(string)
 	if hasExternalID && hasExternalSource && externalID != "" && externalSource != "" {
 		var duplicateID string
-		err := repository.database.QueryRow(ctx, `SELECT id::text FROM modules WHERE project_id=$1 AND workspace_id=$2 AND external_source=$3 AND external_id=$4 AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1`, projectID, workspaceID, externalSource, externalID).Scan(&duplicateID)
-		if err == nil {
+		scanErr := repository.database.QueryRow(ctx, `SELECT id::text FROM modules WHERE project_id=$1 AND workspace_id=$2 AND external_source=$3 AND external_id=$4 AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1`, projectID, workspaceID, externalSource, externalID).Scan(&duplicateID)
+		if scanErr == nil {
 			return nil, &djangoapi.HTTPError{Status: 409, Body: map[string]any{"error": "Module with the same external id and external source already exists", "id": duplicateID}}
 		}
-		if !errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("check API module external identifier: %w", err)
+		if !errors.Is(scanErr, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("check API module external identifier: %w", scanErr)
 		}
 	}
 	name := values["name"].(string)
@@ -212,8 +212,8 @@ func (repository *LifecycleRepository) CreateModuleV1(ctx context.Context, actor
 		return nil, fmt.Errorf("check API module name: %w", err)
 	}
 	var minimum pgtype.Float8
-	if err := repository.database.QueryRow(ctx, `SELECT MIN(sort_order)-10000 FROM modules WHERE project_id=$1 AND deleted_at IS NULL`, projectID).Scan(&minimum); err != nil {
-		return nil, fmt.Errorf("calculate API module sort order: %w", err)
+	if scanErr := repository.database.QueryRow(ctx, `SELECT MIN(sort_order)-10000 FROM modules WHERE project_id=$1 AND deleted_at IS NULL`, projectID).Scan(&minimum); scanErr != nil {
+		return nil, fmt.Errorf("calculate API module sort order: %w", scanErr)
 	}
 	sortOrder, _ := values["sort_order"].(float64)
 	if minimum.Valid {
@@ -262,8 +262,8 @@ func (repository *LifecycleRepository) UpdateModuleV1(ctx context.Context, actor
 	}
 	delete(currentValue, "member_ids")
 	delete(currentValue, "lead_id")
-	if err := moduleActivityFloatFields(currentValue, "sort_order"); err != nil {
-		return nil, err
+	if moduleActivityErr := moduleActivityFloatFields(currentValue, "sort_order"); moduleActivityErr != nil {
+		return nil, moduleActivityErr
 	}
 	currentJSONText, err := pythoncompat.Dumps(currentValue, currentRaw)
 	if err != nil {
@@ -280,8 +280,8 @@ func (repository *LifecycleRepository) UpdateModuleV1(ctx context.Context, actor
 		return nil, &ModuleValidationError{Body: validation}
 	}
 	var enabled bool
-	if err := repository.database.QueryRow(ctx, `SELECT module_view FROM projects WHERE id=$1`, projectID).Scan(&enabled); err != nil {
-		return nil, fmt.Errorf("check API module feature: %w", err)
+	if scanErr := repository.database.QueryRow(ctx, `SELECT module_view FROM projects WHERE id=$1`, projectID).Scan(&enabled); scanErr != nil {
+		return nil, fmt.Errorf("check API module feature: %w", scanErr)
 	}
 	if !enabled {
 		return nil, &ModuleValidationError{Body: map[string]any{"non_field_errors": []string{"Modules are not enabled for this project"}}}
@@ -303,30 +303,30 @@ func (repository *LifecycleRepository) UpdateModuleV1(ctx context.Context, actor
 			externalSource = current["external_source"]
 		}
 		var duplicateID string
-		err := repository.database.QueryRow(ctx, `SELECT id::text FROM modules WHERE project_id=$1 AND workspace_id=$2 AND id<>$3 AND external_source IS NOT DISTINCT FROM $4 AND external_id=$5 AND deleted_at IS NULL LIMIT 1`, projectID, current["workspace_id"], moduleID, externalSource, externalID).Scan(&duplicateID)
-		if err == nil {
+		scanErr := repository.database.QueryRow(ctx, `SELECT id::text FROM modules WHERE project_id=$1 AND workspace_id=$2 AND id<>$3 AND external_source IS NOT DISTINCT FROM $4 AND external_id=$5 AND deleted_at IS NULL LIMIT 1`, projectID, current["workspace_id"], moduleID, externalSource, externalID).Scan(&duplicateID)
+		if scanErr == nil {
 			return nil, &djangoapi.HTTPError{Status: 409, Body: map[string]any{"error": "Module with the same external id and external source already exists", "id": moduleID}}
 		}
-		if !errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("check API module external identifier: %w", err)
+		if !errors.Is(scanErr, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("check API module external identifier: %w", scanErr)
 		}
 	}
 	if _, present := values["name"]; present {
 		var duplicate bool
-		if err := repository.database.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM modules WHERE project_id=$1 AND name=$2 AND id<>$3 AND deleted_at IS NULL)`, projectID, values["name"], moduleID).Scan(&duplicate); err != nil {
-			return nil, err
+		if scanErr := repository.database.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM modules WHERE project_id=$1 AND name=$2 AND id<>$3 AND deleted_at IS NULL)`, projectID, values["name"], moduleID).Scan(&duplicate); scanErr != nil {
+			return nil, scanErr
 		}
 		if duplicate {
 			return nil, &ModuleValidationError{Body: map[string]any{"error": "Module with this name already exists"}}
 		}
 	}
 	if members, present := values["member_ids"]; present {
-		if err := repository.replaceModuleMembers(ctx, current["workspace_id"].(string), projectID, moduleID, members.([]string)); err != nil {
-			return nil, err
+		if replaceModuleMembersErr := repository.replaceModuleMembers(ctx, current["workspace_id"].(string), projectID, moduleID, members.([]string)); replaceModuleMembersErr != nil {
+			return nil, replaceModuleMembersErr
 		}
 	}
-	if err := repository.updateModuleFields(ctx, actor, slug, projectID, moduleID, values); err != nil {
-		return nil, err
+	if updateModuleFieldsErr := repository.updateModuleFields(ctx, actor, slug, projectID, moduleID, values); updateModuleFieldsErr != nil {
+		return nil, updateModuleFieldsErr
 	}
 	result, err := repository.moduleWriteProjection(ctx, actor, slug, projectID, moduleID)
 	if err != nil {
@@ -454,20 +454,20 @@ func (repository *LifecycleRepository) UpdateModule(ctx context.Context, actor, 
 	}
 	if name, present := values["name"]; present {
 		var duplicate bool
-		if err := repository.database.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM modules WHERE project_id=$1 AND name=$2 AND id<>$3 AND deleted_at IS NULL)`, projectID, name, moduleID).Scan(&duplicate); err != nil {
-			return nil, fmt.Errorf("check module name: %w", err)
+		if scanErr := repository.database.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM modules WHERE project_id=$1 AND name=$2 AND id<>$3 AND deleted_at IS NULL)`, projectID, name, moduleID).Scan(&duplicate); scanErr != nil {
+			return nil, fmt.Errorf("check module name: %w", scanErr)
 		}
 		if duplicate {
 			return nil, &ModuleValidationError{Body: map[string]any{"error": "Module with this name already exists"}}
 		}
 	}
 	if members, present := values["member_ids"]; present {
-		if err := repository.replaceModuleMembers(ctx, current["workspace_id"].(string), projectID, moduleID, members.([]string)); err != nil {
-			return nil, err
+		if replaceModuleMembersErr := repository.replaceModuleMembers(ctx, current["workspace_id"].(string), projectID, moduleID, members.([]string)); replaceModuleMembersErr != nil {
+			return nil, replaceModuleMembersErr
 		}
 	}
-	if err := repository.updateModuleFields(ctx, actor, slug, projectID, moduleID, values); err != nil {
-		return nil, err
+	if updateModuleFieldsErr := repository.updateModuleFields(ctx, actor, slug, projectID, moduleID, values); updateModuleFieldsErr != nil {
+		return nil, updateModuleFieldsErr
 	}
 	var result json.RawMessage
 	if replace {
@@ -484,8 +484,8 @@ func (repository *LifecycleRepository) UpdateModule(ctx context.Context, actor, 
 		if err != nil {
 			return nil, err
 		}
-		if err := moduleActivityFloatFields(currentValue, "sort_order", "total_estimate_points", "completed_estimate_points"); err != nil {
-			return nil, err
+		if moduleActivityErr := moduleActivityFloatFields(currentValue, "sort_order", "total_estimate_points", "completed_estimate_points"); moduleActivityErr != nil {
+			return nil, moduleActivityErr
 		}
 		currentInstance, err = moduleActivitySnapshotJSON(currentValue, currentProjection)
 		if err != nil {
@@ -592,8 +592,8 @@ func (repository *LifecycleRepository) CheckDeleteModule(ctx context.Context, ac
 		return fmt.Errorf("check app module creator: %w", err)
 	}
 	if isCreator {
-		_, err := repository.rawModule(ctx, slug, projectID, moduleID)
-		return err
+		_, rawModuleErr := repository.rawModule(ctx, slug, projectID, moduleID)
+		return rawModuleErr
 	}
 	var isAdmin bool
 	err = repository.database.QueryRow(ctx, `SELECT EXISTS (
@@ -635,8 +635,8 @@ func (repository *LifecycleRepository) DeleteModule(ctx context.Context, actor, 
 		return fmt.Errorf("list module issues for deletion: %w", err)
 	}
 	var issueIDs []string
-	if err := json.Unmarshal(rawIssueIDs, &issueIDs); err != nil {
-		return fmt.Errorf("decode module issue IDs: %w", err)
+	if unmarshalErr := json.Unmarshal(rawIssueIDs, &issueIDs); unmarshalErr != nil {
+		return fmt.Errorf("decode module issue IDs: %w", unmarshalErr)
 	}
 	now := repository.now()
 	current, err := pythoncompat.Dumps(map[string]any{"module_name": name}, nil)
@@ -644,28 +644,28 @@ func (repository *LifecycleRepository) DeleteModule(ctx context.Context, actor, 
 		return err
 	}
 	if api {
-		requested, err := pythoncompat.Dumps(map[string]any{"module_id": moduleID, "module_name": name, "issues": issueIDs}, nil)
-		if err != nil {
-			return err
+		requested, dumpsErr := pythoncompat.Dumps(map[string]any{"module_id": moduleID, "module_name": name, "issues": issueIDs}, nil)
+		if dumpsErr != nil {
+			return dumpsErr
 		}
-		if err := repository.effects.Task(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, map[string]any{
+		if taskErr := repository.effects.Task(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, map[string]any{
 			"type": "module.activity.deleted", "requested_data": requested, "actor_id": actor,
 			"issue_id": nil, "project_id": projectID, "current_instance": current, "epoch": now.Unix(), "origin": origin,
-		}); err != nil {
-			return err
+		}); taskErr != nil {
+			return taskErr
 		}
 	} else {
-		requested, err := pythoncompat.Dumps(map[string]any{"module_id": moduleID}, nil)
-		if err != nil {
-			return err
+		requested, dumpsErr := pythoncompat.Dumps(map[string]any{"module_id": moduleID}, nil)
+		if dumpsErr != nil {
+			return dumpsErr
 		}
 		for _, issueID := range issueIDs {
-			if err := repository.effects.Task(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, map[string]any{
+			if taskErr := repository.effects.Task(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, map[string]any{
 				"type": "module.activity.deleted", "requested_data": requested,
 				"actor_id": actor, "issue_id": issueID, "project_id": projectID,
 				"current_instance": current, "epoch": now.Unix(), "notification": true, "origin": origin,
-			}); err != nil {
-				return err
+			}); taskErr != nil {
+				return taskErr
 			}
 		}
 	}
@@ -1122,8 +1122,8 @@ func (repository *LifecycleRepository) moduleWriteProjection(ctx context.Context
 	if err != nil {
 		return nil, err
 	}
-	if err := moduleActivityFloatFields(values, "sort_order"); err != nil {
-		return nil, err
+	if moduleActivityErr := moduleActivityFloatFields(values, "sort_order"); moduleActivityErr != nil {
+		return nil, moduleActivityErr
 	}
 	serialized, err := pythoncompat.Dumps(values, raw)
 	if err != nil {

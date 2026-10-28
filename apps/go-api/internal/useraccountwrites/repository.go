@@ -175,18 +175,18 @@ GROUP BY mine.id,mine.role,mine.member_id`, userID)
 	for rows.Next() {
 		var role int
 		var members, otherAdmins int
-		if err := rows.Scan(&role, &members, &otherAdmins); err != nil {
+		if scanErr := rows.Scan(&role, &members, &otherAdmins); scanErr != nil {
 			rows.Close()
-			return "", err
+			return "", scanErr
 		}
 		if role == 20 && otherAdmins == 0 && members > 1 {
 			rows.Close()
 			return "You cannot deactivate account as you are the only admin in some projects.", nil
 		}
 	}
-	if err := rows.Err(); err != nil {
+	if rowsErr := rows.Err(); rowsErr != nil {
 		rows.Close()
-		return "", err
+		return "", rowsErr
 	}
 	rows.Close()
 	rows, err = repository.db.Query(ctx, `

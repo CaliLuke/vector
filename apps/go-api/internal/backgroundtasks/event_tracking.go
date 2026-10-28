@@ -176,12 +176,12 @@ func (store *eventTrackingStore) Track(ctx context.Context, input EventTrackingI
 	}
 	if input.EventName == "user_invited_to_workspace" || input.EventName == "workspace_deleted" {
 		var ownerID string
-		err := store.pool.QueryRow(ctx, `SELECT owner_id::text FROM workspaces WHERE slug=$1 AND deleted_at IS NULL`, input.Slug).Scan(&ownerID)
-		if errors.Is(err, pgx.ErrNoRows) {
+		scanErr := store.pool.QueryRow(ctx, `SELECT owner_id::text FROM workspaces WHERE slug=$1 AND deleted_at IS NULL`, input.Slug).Scan(&ownerID)
+		if errors.Is(scanErr, pgx.ErrNoRows) {
 			slog.WarnContext(ctx, "workspace is missing while preparing event properties", "slug", input.Slug, "user_id", input.UserID, "event", input.EventName)
 			input.EventProperties["role"] = "unknown"
-		} else if err != nil {
-			return fmt.Errorf("read workspace owner for event properties: %w", err)
+		} else if scanErr != nil {
+			return fmt.Errorf("read workspace owner for event properties: %w", scanErr)
 		} else if ownerID == input.UserID {
 			input.EventProperties["role"] = "owner"
 		} else {
@@ -218,8 +218,8 @@ func (store *eventTrackingStore) configuration(ctx context.Context) (string, str
 	for rows.Next() {
 		var key, value string
 		var encrypted bool
-		if err := rows.Scan(&key, &value, &encrypted); err != nil {
-			return "", "", err
+		if scanErr := rows.Scan(&key, &value, &encrypted); scanErr != nil {
+			return "", "", scanErr
 		}
 		if encrypted {
 			value, err = store.cipher.Decrypt(value)

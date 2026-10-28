@@ -49,8 +49,8 @@ func (service *projectStateReadsService) appStateWrite(ctx context.Context, oper
 	}
 	input := store.StateWriteInput{UserID: userID.String(), Slug: slug, ProjectID: projectID, StateID: stateID, Method: method, App: true}
 	if operation == "update" {
-		if err := writes.ResolveForUpdate(ctx, input); err != nil {
-			return nil, nil, projectStateAppError(err)
+		if resolveForUpdateErr := writes.ResolveForUpdate(ctx, input); resolveForUpdateErr != nil {
+			return nil, nil, projectStateAppError(resolveForUpdateErr)
 		}
 	}
 	parsed := djangoinput.Input{Fields: map[string]any{}}

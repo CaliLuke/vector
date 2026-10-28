@@ -67,11 +67,11 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 			pool.Close()
 		}
 	}()
-	if err := pool.Ping(ctx); err != nil {
-		return nil, fmt.Errorf("connect background task PostgreSQL pool: %w", err)
+	if pingErr := pool.Ping(ctx); pingErr != nil {
+		return nil, fmt.Errorf("connect background task PostgreSQL pool: %w", pingErr)
 	}
-	if _, err := pool.Exec(ctx, `CREATE SCHEMA IF NOT EXISTS plane_execution`); err != nil {
-		return nil, fmt.Errorf("ensure dedicated Selvedge schema: %w", err)
+	if _, execErr := pool.Exec(ctx, `CREATE SCHEMA IF NOT EXISTS plane_execution`); execErr != nil {
+		return nil, fmt.Errorf("ensure dedicated Selvedge schema: %w", execErr)
 	}
 	selvedgeURL, err := withExecutionSearchPath(databaseURL)
 	if err != nil {

@@ -60,14 +60,14 @@ func TestPostgresDeletionDurableCascadeRetryAndRetention(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := app.Start(ctx); err != nil {
-		t.Fatal(err)
+	if startErr := app.Start(ctx); startErr != nil {
+		t.Fatal(startErr)
 	}
 	defer func() {
 		stop, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		if err := app.Shutdown(stop); err != nil {
-			t.Error(err)
+		if shutdownErr := app.Shutdown(stop); shutdownErr != nil {
+			t.Error(shutdownErr)
 		}
 	}()
 	input := DeletionInput{EventID: uuid.NewString(), App: "db", Model: "workspace", ID: workspace.String()}
@@ -82,17 +82,17 @@ func TestPostgresDeletionDurableCascadeRetryAndRetention(t *testing.T) {
 	for table, id := range map[string]uuid.UUID{"workspaces": workspace, "projects": project, "states": state} {
 		var deleted bool
 		var creator uuid.UUID
-		if err := pool.QueryRow(ctx, "SELECT deleted_at IS NOT NULL,created_by_id FROM "+table+" WHERE id=$1", id).Scan(&deleted, &creator); err != nil || !deleted || creator != owner {
-			t.Fatalf("%s deleted=%v creator=%s err=%v", table, deleted, creator, err)
+		if scanErr := pool.QueryRow(ctx, "SELECT deleted_at IS NOT NULL,created_by_id FROM "+table+" WHERE id=$1", id).Scan(&deleted, &creator); scanErr != nil || !deleted || creator != owner {
+			t.Fatalf("%s deleted=%v creator=%s err=%v", table, deleted, creator, scanErr)
 		}
 	}
 	var untouched bool
-	if err := pool.QueryRow(ctx, `SELECT deleted_at IS NULL FROM workspaces WHERE id=$1`, sibling).Scan(&untouched); err != nil || !untouched {
-		t.Fatalf("sibling changed: %v %v", untouched, err)
+	if scanErr := pool.QueryRow(ctx, `SELECT deleted_at IS NULL FROM workspaces WHERE id=$1`, sibling).Scan(&untouched); scanErr != nil || !untouched {
+		t.Fatalf("sibling changed: %v %v", untouched, scanErr)
 	}
 	// A separate state deletion exercises SET NULL even on a live project.
-	if _, err := pool.Exec(ctx, `UPDATE projects SET deleted_at=NULL,default_state_id=$2 WHERE id=$1;`, project, state); err != nil {
-		t.Fatal(err)
+	if _, execErr := pool.Exec(ctx, `UPDATE projects SET deleted_at=NULL,default_state_id=$2 WHERE id=$1;`, project, state); execErr != nil {
+		t.Fatal(execErr)
 	}
 	stateRun, err := dispatcher.Admit(ctx, DeletionInput{EventID: uuid.NewString(), App: "db", Model: "state", ID: state.String()})
 	if err != nil {
@@ -100,16 +100,16 @@ func TestPostgresDeletionDurableCascadeRetryAndRetention(t *testing.T) {
 	}
 	waitVersionWorkflow(t, ctx, app, stateRun)
 	var nulled bool
-	if err := pool.QueryRow(ctx, `SELECT default_state_id IS NULL FROM projects WHERE id=$1`, project).Scan(&nulled); err != nil || !nulled {
-		t.Fatalf("SET NULL not applied: %v %v", nulled, err)
+	if scanErr := pool.QueryRow(ctx, `SELECT default_state_id IS NULL FROM projects WHERE id=$1`, project).Scan(&nulled); scanErr != nil || !nulled {
+		t.Fatalf("SET NULL not applied: %v %v", nulled, scanErr)
 	}
 	// An old root physically cascades to a still-live child. Young soft-deleted
 	// siblings survive. This proves native FK behavior, not a mocked collector.
-	if _, err := pool.Exec(ctx, `UPDATE workspaces SET deleted_at=$2 WHERE id=$1`, workspace, now.Add(-61*24*time.Hour)); err != nil {
-		t.Fatal(err)
+	if _, execErr := pool.Exec(ctx, `UPDATE workspaces SET deleted_at=$2 WHERE id=$1`, workspace, now.Add(-61*24*time.Hour)); execErr != nil {
+		t.Fatal(execErr)
 	}
-	if _, err := pool.Exec(ctx, `UPDATE workspaces SET deleted_at=$2 WHERE id=$1`, sibling, now); err != nil {
-		t.Fatal(err)
+	if _, execErr := pool.Exec(ctx, `UPDATE workspaces SET deleted_at=$2 WHERE id=$1`, sibling, now); execErr != nil {
+		t.Fatal(execErr)
 	}
 	hard, err := dispatcher.AdmitHardDelete(ctx, now)
 	if err != nil {

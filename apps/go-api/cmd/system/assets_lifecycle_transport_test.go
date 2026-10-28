@@ -623,7 +623,7 @@ func TestAssetsLifecycleProductionHandlerRejectsDeclaredInvalidMethods(t *testin
 	for _, route := range decision.Routes {
 		path := assetsTransportConcretePath(route.Path)
 		for _, method := range route.InvalidMethods {
-			method, path, wantAllow := method, path, route.TargetAllow
+			wantAllow := route.TargetAllow
 			t.Run(method+" "+route.Path, func(t *testing.T) {
 				request := httptest.NewRequest(method, path, nil)
 				request.Host = "assets.example.test"

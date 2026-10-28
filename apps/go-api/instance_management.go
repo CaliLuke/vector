@@ -287,7 +287,7 @@ func (service *instanceManagementService) RootPatch(ctx context.Context, _ *api.
 	if err != nil {
 		return nil, nil, err
 	}
-	if err := service.invalidate(ctx, "/api/instances/"); err != nil {
+	if invalidateErr := service.invalidate(ctx, "/api/instances/"); invalidateErr != nil {
 		return nil, nil, instanceManagementInternal()
 	}
 	fields, err := parseInstanceManagementBody(ctx, bodyReader)
@@ -314,7 +314,7 @@ func (service *instanceManagementService) AdminsPost(ctx context.Context, _ *api
 	if err != nil {
 		return nil, nil, err
 	}
-	if err := service.invalidate(ctx, "/api/instances/"); err != nil {
+	if invalidateErr := service.invalidate(ctx, "/api/instances/"); invalidateErr != nil {
 		return nil, nil, instanceManagementInternal()
 	}
 	fields, err := parseInstanceManagementBody(ctx, bodyReader)

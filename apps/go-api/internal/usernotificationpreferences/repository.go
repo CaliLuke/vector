@@ -49,8 +49,8 @@ func (repository *Repository) Patch(ctx context.Context, userID uuid.UUID, value
 				converted = nil
 				break
 			}
-			parsed, err := time.Parse(time.RFC3339Nano, fmt.Sprint(value))
-			if err != nil {
+			parsed, parseErr := time.Parse(time.RFC3339Nano, fmt.Sprint(value))
+			if parseErr != nil {
 				return uuid.Nil(), &FieldError{Field: field, Message: "Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."}
 			}
 			converted = parsed
@@ -61,12 +61,12 @@ func (repository *Repository) Patch(ctx context.Context, userID uuid.UUID, value
 				}
 				converted = nil
 			} else {
-				parsed, err := uuid.Parse(fmt.Sprint(value))
-				if err != nil {
+				parsed, parseErr := uuid.Parse(fmt.Sprint(value))
+				if parseErr != nil {
 					return uuid.Nil(), &FieldError{Field: field, Message: fmt.Sprintf("\u201c%v\u201d is not a valid UUID.", value)}
 				}
-				if err := repository.validateRelation(ctx, field, parsed); err != nil {
-					return uuid.Nil(), err
+				if validateRelationErr := repository.validateRelation(ctx, field, parsed); validateRelationErr != nil {
+					return uuid.Nil(), validateRelationErr
 				}
 				converted = parsed
 			}

@@ -69,8 +69,8 @@ INSERT INTO users(id,email,first_name,last_name,is_bot) VALUES('00000000-0000-40
 		NextCursor string           `json:"next_cursor"`
 		Results    []map[string]any `json:"results"`
 	}
-	if err := json.Unmarshal(page, &pageResult); err != nil {
-		t.Fatal(err)
+	if unmarshalErr := json.Unmarshal(page, &pageResult); unmarshalErr != nil {
+		t.Fatal(unmarshalErr)
 	}
 	if pageResult.TotalCount != 12 || pageResult.Count != 2 || pageResult.NextCursor != "10:2:0" || len(pageResult.Results) != 2 {
 		t.Fatalf("cursor page projection = %#v, want 2 rows from page two of 12 with next cursor 10:2:0", pageResult)
@@ -84,8 +84,8 @@ INSERT INTO users(id,email,first_name,last_name,is_bot) VALUES('00000000-0000-40
 		TotalCount int `json:"total_count"`
 		Count      int `json:"count"`
 	}
-	if err := json.Unmarshal(literalPercent, &filtered); err != nil {
-		t.Fatal(err)
+	if unmarshalErr := json.Unmarshal(literalPercent, &filtered); unmarshalErr != nil {
+		t.Fatal(unmarshalErr)
 	}
 	if filtered.TotalCount != 0 || filtered.Count != 0 {
 		t.Fatalf("literal percent search = %#v, want zero rows", filtered)

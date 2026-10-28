@@ -52,32 +52,32 @@ CREATE TABLE sessions (
 		t.Fatalf("connect PostgreSQL: %v", err)
 	}
 	defer connection.Close(context.WithoutCancel(ctx))
-	if err := database.RegisterUUIDTypes(connection.TypeMap()); err != nil {
-		t.Fatalf("register UUID types: %v", err)
+	if registerUUIDTypesErr := database.RegisterUUIDTypes(connection.TypeMap()); registerUUIDTypesErr != nil {
+		t.Fatalf("register UUID types: %v", registerUUIDTypesErr)
 	}
-	if _, err := connection.Exec(ctx, "INSERT INTO users (id, password, is_active) VALUES ($1, $2, true)", fixtureUserID, fixturePassword); err != nil {
-		t.Fatalf("seed user: %v", err)
+	if _, execErr := connection.Exec(ctx, "INSERT INTO users (id, password, is_active) VALUES ($1, $2, true)", fixtureUserID, fixturePassword); execErr != nil {
+		t.Fatalf("seed user: %v", execErr)
 	}
-	if _, err := connection.Exec(ctx, `
+	if _, execErr := connection.Exec(ctx, `
 INSERT INTO sessions (session_key, session_data, expire_date, user_id)
 VALUES ($1, $2, CURRENT_TIMESTAMP + interval '5 minutes', $3)
-`, fixtureSessionKey, fixtureCurrentSession, fixtureUserID); err != nil {
-		t.Fatalf("seed session: %v", err)
+`, fixtureSessionKey, fixtureCurrentSession, fixtureUserID); execErr != nil {
+		t.Fatalf("seed session: %v", execErr)
 	}
 	validator := configuredValidator(t, NewPostgreSQLReader(connection))
-	if _, err := NewPostgreSQLReader(connection).ReadUser(ctx, "not-a-uuid"); !errors.Is(err, ErrInvalidUserID) {
-		t.Fatalf("malformed ReadUser() error = %v, want ErrInvalidUserID", err)
+	if _, readUserErr := NewPostgreSQLReader(connection).ReadUser(ctx, "not-a-uuid"); !errors.Is(readUserErr, ErrInvalidUserID) {
+		t.Fatalf("malformed ReadUser() error = %v, want ErrInvalidUserID", readUserErr)
 	}
-	if _, err := validator.Validate(ctx, fixtureSessionKey); err != nil {
-		t.Fatalf("Validate() error = %v", err)
+	if _, validationErr := validator.Validate(ctx, fixtureSessionKey); validationErr != nil {
+		t.Fatalf("Validate() error = %v", validationErr)
 	}
-	if _, err := connection.Exec(ctx, "UPDATE sessions SET expire_date = $2 WHERE session_key = $1", fixtureSessionKey, time.Now().Add(-time.Minute)); err != nil {
-		t.Fatalf("expire session between validation and refresh: %v", err)
+	if _, execErr := connection.Exec(ctx, "UPDATE sessions SET expire_date = $2 WHERE session_key = $1", fixtureSessionKey, time.Now().Add(-time.Minute)); execErr != nil {
+		t.Fatalf("expire session between validation and refresh: %v", execErr)
 	}
 	// Refresh and expiry validation must use the same clock as PostgreSQL.
 	var refreshNow time.Time
-	if err := connection.QueryRow(ctx, "SELECT CURRENT_TIMESTAMP").Scan(&refreshNow); err != nil {
-		t.Fatalf("read database time: %v", err)
+	if scanErr := connection.QueryRow(ctx, "SELECT CURRENT_TIMESTAMP").Scan(&refreshNow); scanErr != nil {
+		t.Fatalf("read database time: %v", scanErr)
 	}
 	refresh, err := validator.Refresh(ctx, fixtureSessionKey, 86400, refreshNow)
 	if err != nil {
@@ -85,21 +85,21 @@ VALUES ($1, $2, CURRENT_TIMESTAMP + interval '5 minutes', $3)
 	}
 	var refreshedData string
 	var refreshedExpiry time.Time
-	if err := connection.QueryRow(ctx, "SELECT session_data, expire_date FROM sessions WHERE session_key = $1", fixtureSessionKey).Scan(&refreshedData, &refreshedExpiry); err != nil {
-		t.Fatalf("read refreshed session: %v", err)
+	if scanErr := connection.QueryRow(ctx, "SELECT session_data, expire_date FROM sessions WHERE session_key = $1", fixtureSessionKey).Scan(&refreshedData, &refreshedExpiry); scanErr != nil {
+		t.Fatalf("read refreshed session: %v", scanErr)
 	}
 	if refreshedData == fixtureCurrentSession || !refreshedExpiry.Equal(refresh.ExpiresAt) {
 		t.Fatalf("refresh did not persist: data changed=%v expiry=%v want=%v", refreshedData != fixtureCurrentSession, refreshedExpiry, refresh.ExpiresAt)
 	}
-	if _, err := validator.Validate(ctx, fixtureSessionKey); err != nil {
-		t.Fatalf("refreshed Validate() error = %v", err)
+	if _, validationErr := validator.Validate(ctx, fixtureSessionKey); validationErr != nil {
+		t.Fatalf("refreshed Validate() error = %v", validationErr)
 	}
 	fallbackKey := "fallback-session-key"
-	if _, err := connection.Exec(ctx, `
+	if _, execErr := connection.Exec(ctx, `
 INSERT INTO sessions (session_key, session_data, expire_date, user_id)
 VALUES ($1, $2, CURRENT_TIMESTAMP + interval '5 minutes', $3)
-`, fallbackKey, fixtureFallbackSession, fixtureUserID); err != nil {
-		t.Fatalf("seed fallback session: %v", err)
+`, fallbackKey, fixtureFallbackSession, fixtureUserID); execErr != nil {
+		t.Fatalf("seed fallback session: %v", execErr)
 	}
 	rotated, err := validator.Refresh(ctx, fallbackKey, 86400, refreshNow)
 	if err != nil {
@@ -109,30 +109,30 @@ VALUES ($1, $2, CURRENT_TIMESTAMP + interval '5 minutes', $3)
 		t.Fatalf("rotated session=%#v", rotated)
 	}
 	var oldCount int
-	if err := connection.QueryRow(ctx, "SELECT count(*) FROM sessions WHERE session_key = $1", fallbackKey).Scan(&oldCount); err != nil || oldCount != 0 {
-		t.Fatalf("old fallback session count=%d err=%v", oldCount, err)
+	if scanErr := connection.QueryRow(ctx, "SELECT count(*) FROM sessions WHERE session_key = $1", fallbackKey).Scan(&oldCount); scanErr != nil || oldCount != 0 {
+		t.Fatalf("old fallback session count=%d err=%v", oldCount, scanErr)
 	}
-	if principal, err := validator.Validate(ctx, rotated.SessionKey); err != nil || principal.UsedFallback {
-		t.Fatalf("rotated fallback principal=%#v err=%v", principal, err)
+	if principal, validationErr := validator.Validate(ctx, rotated.SessionKey); validationErr != nil || principal.UsedFallback {
+		t.Fatalf("rotated fallback principal=%#v err=%v", principal, validationErr)
 	}
 	concurrentKey := "concurrent-cycle-new-key"
-	if err := NewPostgreSQLReader(connection).CycleSession(
+	if cycleSessionErr := NewPostgreSQLReader(connection).CycleSession(
 		ctx, "already-deleted-old-key", concurrentKey, fixtureCurrentSession,
 		time.Now().Add(time.Hour), fixtureUserID, nil,
-	); err != nil {
-		t.Fatalf("cycle after concurrent old-key deletion: %v", err)
+	); cycleSessionErr != nil {
+		t.Fatalf("cycle after concurrent old-key deletion: %v", cycleSessionErr)
 	}
-	if _, err := validator.Validate(ctx, concurrentKey); err != nil {
-		t.Fatalf("new session missing after concurrent old-key deletion: %v", err)
+	if _, validationErr := validator.Validate(ctx, concurrentKey); validationErr != nil {
+		t.Fatalf("new session missing after concurrent old-key deletion: %v", validationErr)
 	}
-	if _, err := connection.Exec(ctx, `
+	if _, execErr := connection.Exec(ctx, `
 INSERT INTO sessions (session_key, session_data, expire_date, user_id)
 VALUES ('null-user-session', $1, CURRENT_TIMESTAMP + interval '5 minutes', NULL)
-`, fixtureCurrentSession); err != nil {
-		t.Fatalf("seed NULL-user session: %v", err)
+`, fixtureCurrentSession); execErr != nil {
+		t.Fatalf("seed NULL-user session: %v", execErr)
 	}
-	if _, err := validator.Validate(ctx, "null-user-session"); err != nil {
-		t.Fatalf("NULL denormalized user must not affect Django validation: %v", err)
+	if _, validationErr := validator.Validate(ctx, "null-user-session"); validationErr != nil {
+		t.Fatalf("NULL denormalized user must not affect Django validation: %v", validationErr)
 	}
 	for _, invalidDevice := range []struct {
 		key  string
@@ -144,29 +144,29 @@ VALUES ('null-user-session', $1, CURRENT_TIMESTAMP + interval '5 minutes', NULL)
 		{key: "invalid-user-surrogate", data: `{"_auth_user_id":"\ud800"}`},
 	} {
 		invalidDeviceData := signPayloadForTest([]byte(invalidDevice.data), false, fixtureCurrentSecret)
-		if _, err := connection.Exec(ctx, `
+		if _, execErr := connection.Exec(ctx, `
 INSERT INTO sessions (session_key, session_data, expire_date)
 VALUES ($1, $2, CURRENT_TIMESTAMP + interval '5 minutes')
-`, invalidDevice.key, invalidDeviceData); err != nil {
-			t.Fatalf("seed invalid device session: %v", err)
+`, invalidDevice.key, invalidDeviceData); execErr != nil {
+			t.Fatalf("seed invalid device session: %v", execErr)
 		}
-		if _, err := validator.RefreshUnaccessed(ctx, invalidDevice.key, 3600, time.Now()); !errors.Is(err, ErrStore) || !errors.Is(err, ErrSessionUpdate) {
-			t.Fatalf("invalid JSONField refresh for %s error=%v", invalidDevice.key, err)
+		if _, refreshUnaccessedErr := validator.RefreshUnaccessed(ctx, invalidDevice.key, 3600, time.Now()); !errors.Is(refreshUnaccessedErr, ErrStore) || !errors.Is(refreshUnaccessedErr, ErrSessionUpdate) {
+			t.Fatalf("invalid JSONField refresh for %s error=%v", invalidDevice.key, refreshUnaccessedErr)
 		}
 	}
 	var sessionData string
 	var rowCount int
-	if err := connection.QueryRow(ctx, "SELECT session_data, count(*) OVER () FROM sessions WHERE session_key = $1", fixtureSessionKey).Scan(&sessionData, &rowCount); err != nil {
-		t.Fatalf("read session after validation: %v", err)
+	if scanErr := connection.QueryRow(ctx, "SELECT session_data, count(*) OVER () FROM sessions WHERE session_key = $1", fixtureSessionKey).Scan(&sessionData, &rowCount); scanErr != nil {
+		t.Fatalf("read session after validation: %v", scanErr)
 	}
 	if sessionData != refreshedData || rowCount != 1 {
 		t.Fatalf("validation mutated refreshed session: data match = %t, count = %d", sessionData == refreshedData, rowCount)
 	}
-	if _, err := connection.Exec(ctx, "UPDATE sessions SET expire_date = $2 WHERE session_key = $1", fixtureSessionKey, time.Now().Add(-time.Minute)); err != nil {
-		t.Fatalf("expire session: %v", err)
+	if _, execErr := connection.Exec(ctx, "UPDATE sessions SET expire_date = $2 WHERE session_key = $1", fixtureSessionKey, time.Now().Add(-time.Minute)); execErr != nil {
+		t.Fatalf("expire session: %v", execErr)
 	}
-	if _, err := validator.Validate(ctx, fixtureSessionKey); !errors.Is(err, ErrSessionNotFound) {
-		t.Fatalf("expired Validate() error = %v, want ErrSessionNotFound", err)
+	if _, validationErr := validator.Validate(ctx, fixtureSessionKey); !errors.Is(validationErr, ErrSessionNotFound) {
+		t.Fatalf("expired Validate() error = %v, want ErrSessionNotFound", validationErr)
 	}
 	replacement, err := validator.RefreshUnaccessed(ctx, fixtureSessionKey, 3600, time.Now())
 	if err != nil || replacement.SessionKey == fixtureSessionKey || len(replacement.SessionKey) != 128 {

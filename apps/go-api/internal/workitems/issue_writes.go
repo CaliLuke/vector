@@ -303,12 +303,12 @@ func (r *Repository) finishIssueWrite(ctx context.Context, q Request, input djan
 		}
 	}
 	if q.API {
-		projection, err := r.serializeVisibleIssue(ctx, row, q, "", "")
+		projection, serializeVisibleIssueErr := r.serializeVisibleIssue(ctx, row, q, "", "")
 		status := 200
 		if old == nil {
 			status = 201
 		}
-		return Result{status, projection}, err
+		return Result{status, projection}, serializeVisibleIssueErr
 	}
 	if q.Method == "PATCH" {
 		return Result{Status: 204}, nil
@@ -525,13 +525,13 @@ func (r *Repository) destroyIssue(ctx context.Context, q Request) (Result, error
 		if !admin && row["created_by_id"] != q.ActorID {
 			return Result{}, failure(403, "error", "Only admin or creator can delete the work item")
 		}
-		projection, err := r.serializeVisibleIssue(ctx, row, q, "", "")
-		if err != nil {
-			return Result{}, err
+		projection, snapshotErr := r.serializeVisibleIssue(ctx, row, q, "", "")
+		if snapshotErr != nil {
+			return Result{}, snapshotErr
 		}
-		previous, err = orderedDump(timestampProjection(projection, q.Timezone).(map[string]any), apiIssueOrder)
-		if err != nil {
-			return Result{}, err
+		previous, snapshotErr = orderedDump(timestampProjection(projection, q.Timezone).(map[string]any), apiIssueOrder)
+		if snapshotErr != nil {
+			return Result{}, snapshotErr
 		}
 	}
 	if err = r.deleteIssue(ctx, q.ActorID, row); err != nil {

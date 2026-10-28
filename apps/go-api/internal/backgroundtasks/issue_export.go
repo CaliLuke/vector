@@ -203,9 +203,9 @@ func (store *issueExportStore) Generate(ctx context.Context, input IssueExportIn
 	}
 	projectIDs := make([]uuid.UUID, 0, len(input.ProjectIDs))
 	for _, raw := range input.ProjectIDs {
-		projectID, err := uuid.Parse(raw)
-		if err != nil {
-			return fmt.Errorf("invalid export project id: %w", err)
+		projectID, parseErr := uuid.Parse(raw)
+		if parseErr != nil {
+			return fmt.Errorf("invalid export project id: %w", parseErr)
 		}
 		projectIDs = append(projectIDs, projectID)
 	}
@@ -219,9 +219,9 @@ func (store *issueExportStore) Generate(ctx context.Context, input IssueExportIn
 		data []byte
 	}, 0, len(groups))
 	for _, group := range groups {
-		name, data, err := formatIssueExportColumns(group.name, input.Provider, group.data.rows, group.data.columns)
-		if err != nil {
-			return err
+		name, data, formatIssueExportColumnsErr := formatIssueExportColumns(group.name, input.Provider, group.data.rows, group.data.columns)
+		if formatIssueExportColumnsErr != nil {
+			return formatIssueExportColumnsErr
 		}
 		files = append(files, struct {
 			name string
@@ -233,8 +233,8 @@ func (store *issueExportStore) Generate(ctx context.Context, input IssueExportIn
 		return err
 	}
 	key := fmt.Sprintf("%s/export-%s-%s-%s.zip", input.WorkspaceID, input.Slug, input.TokenID[:6], time.Now().UTC().Format("2006-01-02"))
-	if err := store.objects.Put(ctx, key, "application/zip", archive); err != nil {
-		return fmt.Errorf("upload issue export: %w", err)
+	if putErr := store.objects.Put(ctx, key, "application/zip", archive); putErr != nil {
+		return fmt.Errorf("upload issue export: %w", putErr)
 	}
 	filename := fmt.Sprintf("export-%s-%s-%s.zip", input.Slug, input.TokenID[:6], time.Now().UTC().Format("2006-01-02"))
 	url, err := store.objects.PresignGet(ctx, key, "attachment", &filename, "", "")

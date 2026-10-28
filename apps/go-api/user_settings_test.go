@@ -47,7 +47,7 @@ func TestUserSettingsMapsAuthenticationAndRepositoryFailures(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := service.(api.Authorizer).APIKeyAuth(context.Background(), "expired", nil); err == nil {
+	if _, apiKeyAuthErr := service.(api.Authorizer).APIKeyAuth(context.Background(), "expired", nil); apiKeyAuthErr == nil {
 		t.Fatal("APIKeyAuth() returned nil error for expired session")
 	}
 

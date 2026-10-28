@@ -70,8 +70,8 @@ INSERT INTO workspaces (id,slug) VALUES
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
-		if err := pair.Close(); err != nil {
-			t.Errorf("close PostgreSQL testcontainer: %v", err)
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close PostgreSQL testcontainer: %v", closeErr)
 		}
 	})
 	connection, err := pgx.Connect(ctx, pair.SeedURL())

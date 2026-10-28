@@ -108,8 +108,8 @@ func (repository *LifecycleRepository) CreateLink(ctx context.Context, userID, s
 		}
 		return nil, err
 	}
-	if err := repository.duplicateLink(ctx, moduleIDValue, values["url"].(string), ""); err != nil {
-		return nil, err
+	if duplicateLinkErr := repository.duplicateLink(ctx, moduleIDValue, values["url"].(string), ""); duplicateLinkErr != nil {
+		return nil, duplicateLinkErr
 	}
 	id := uuid.NewString()
 	var result []byte
@@ -154,8 +154,8 @@ func (repository *LifecycleRepository) UpdateLink(ctx context.Context, userID, s
 	if next, exists := values["url"]; exists {
 		urlValue = next.(string)
 	}
-	if err := repository.duplicateLink(ctx, moduleID, urlValue, linkID); err != nil {
-		return nil, err
+	if duplicateLinkErr := repository.duplicateLink(ctx, moduleID, urlValue, linkID); duplicateLinkErr != nil {
+		return nil, duplicateLinkErr
 	}
 	metadata, err := moduleJSONValue(values["metadata"])
 	if err != nil {
@@ -327,14 +327,14 @@ func validateModuleLinkFields(fields map[string]any, surrogates map[string][]str
 		if text != "" && !strings.HasPrefix(text, "http://") && !strings.HasPrefix(text, "https://") {
 			text = "http://" + text
 		}
-		if text, messages := djangoinput.TextField(text, false, 200, surrogates["url"]); len(messages) > 0 {
+		if validatedURL, messages := djangoinput.TextField(text, false, 200, surrogates["url"]); len(messages) > 0 {
 			failures["url"] = messages
-		} else if text == "" {
+		} else if validatedURL == "" {
 			failures["url"] = []string{"This field may not be blank."}
-		} else if !djangoinput.ValidURL(text) {
+		} else if !djangoinput.ValidURL(validatedURL) {
 			failures["url"] = []string{"Enter a valid URL."}
 		} else {
-			values["url"] = text
+			values["url"] = validatedURL
 		}
 	} else if _, messages := djangoinput.TextField(value, false, 200, surrogates["url"]); len(messages) > 0 {
 		failures["url"] = messages

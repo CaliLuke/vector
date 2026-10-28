@@ -87,16 +87,16 @@ func (repository *oauthRedirectPostgresRepository) AuthenticateOAuth(ctx context
 		if user.ID == "" {
 			return oauthLoginUser{}, errors.New("OAuth user query returned an empty ID")
 		}
-		providerSync, err := repository.ConfigValue(ctx, "ENABLE_"+strings.ToUpper(request.Provider)+"_SYNC", "0")
-		if err != nil {
-			return oauthLoginUser{}, err
+		providerSync, configValueErr := repository.ConfigValue(ctx, "ENABLE_"+strings.ToUpper(request.Provider)+"_SYNC", "0")
+		if configValueErr != nil {
+			return oauthLoginUser{}, configValueErr
 		}
 		if providerSync == "1" {
-			if _, err := repository.db.Exec(ctx, `UPDATE users SET first_name=@first_name,last_name=@last_name,display_name=COALESCE(NULLIF(@display_name,''),split_part(email,'@',1)),avatar=@avatar,updated_at=@now WHERE id=@user_id`, pgx.StrictNamedArgs{
+			if _, execErr := repository.db.Exec(ctx, `UPDATE users SET first_name=@first_name,last_name=@last_name,display_name=COALESCE(NULLIF(@display_name,''),split_part(email,'@',1)),avatar=@avatar,updated_at=@now WHERE id=@user_id`, pgx.StrictNamedArgs{
 				"first_name": request.Identity.FirstName, "last_name": request.Identity.LastName,
 				"display_name": strings.SplitN(user.Email, "@", 2)[0], "avatar": request.Identity.Avatar, "now": request.Now, "user_id": user.ID,
-			}); err != nil {
-				return oauthLoginUser{}, fmt.Errorf("sync OAuth profile: %w", err)
+			}); execErr != nil {
+				return oauthLoginUser{}, fmt.Errorf("sync OAuth profile: %w", execErr)
 			}
 		}
 	}
@@ -118,8 +118,8 @@ func (repository *oauthRedirectPostgresRepository) createOAuthUser(ctx context.C
 	}
 	if allowSignup == "0" {
 		var invited bool
-		if err := repository.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM workspace_member_invites WHERE lower(email)=@email)`, pgx.StrictNamedArgs{"email": email}).Scan(&invited); err != nil {
-			return oauthLoginUser{}, fmt.Errorf("check OAuth signup invitation: %w", err)
+		if scanErr := repository.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM workspace_member_invites WHERE lower(email)=@email)`, pgx.StrictNamedArgs{"email": email}).Scan(&invited); scanErr != nil {
+			return oauthLoginUser{}, fmt.Errorf("check OAuth signup invitation: %w", scanErr)
 		}
 		if !invited {
 			return oauthLoginUser{}, &oauthFailure{code: errOAuthSignupDisabled.code, name: errOAuthSignupDisabled.name, email: email}
@@ -156,8 +156,8 @@ func (repository *oauthRedirectPostgresRepository) createOAuthUser(ctx context.C
 	if err != nil {
 		return oauthLoginUser{}, fmt.Errorf("create OAuth user: %w", err)
 	}
-	if err := repository.createDefaultProfile(ctx, userID, request.Now); err != nil {
-		return oauthLoginUser{}, err
+	if createDefaultProfileErr := repository.createDefaultProfile(ctx, userID, request.Now); createDefaultProfileErr != nil {
+		return oauthLoginUser{}, createDefaultProfileErr
 	}
 	// User.post_save creates this preference row for non-bot accounts.
 	_, err = repository.db.Exec(ctx, `INSERT INTO user_notification_preferences (id,user_id,workspace_id,project_id,property_change,state,comment,mention,issue_completed,created_at,updated_at) VALUES (@id,@user_id,NULL,NULL,true,true,true,true,true,@now,@now)`, pgx.StrictNamedArgs{"id": uuid.New(), "user_id": userID, "now": request.Now})
@@ -218,8 +218,8 @@ func (repository *oauthRedirectPostgresRepository) LoginRedirectPath(ctx context
 	var lastWorkspace *uuid.UUID
 	err := repository.db.QueryRow(ctx, `SELECT is_onboarded,last_workspace_id FROM profiles WHERE user_id=@user_id`, pgx.StrictNamedArgs{"user_id": user.ID}).Scan(&onboarded, &lastWorkspace)
 	if errors.Is(err, pgx.ErrNoRows) {
-		if err := repository.createDefaultProfile(ctx, uuid.MustParse(user.ID), time.Now()); err != nil {
-			return "", err
+		if createDefaultProfileErr := repository.createDefaultProfile(ctx, uuid.MustParse(user.ID), time.Now()); createDefaultProfileErr != nil {
+			return "", createDefaultProfileErr
 		}
 		onboarded = false
 	} else if err != nil {
@@ -230,12 +230,12 @@ func (repository *oauthRedirectPostgresRepository) LoginRedirectPath(ctx context
 	}
 	if lastWorkspace != nil {
 		var slug string
-		err := repository.db.QueryRow(ctx, `SELECT w.slug FROM workspaces w JOIN workspace_members wm ON wm.workspace_id=w.id WHERE w.id=@workspace_id AND wm.member_id=@user_id AND wm.is_active=true LIMIT 1`, pgx.StrictNamedArgs{"workspace_id": *lastWorkspace, "user_id": user.ID}).Scan(&slug)
-		if err == nil {
+		scanErr := repository.db.QueryRow(ctx, `SELECT w.slug FROM workspaces w JOIN workspace_members wm ON wm.workspace_id=w.id WHERE w.id=@workspace_id AND wm.member_id=@user_id AND wm.is_active=true LIMIT 1`, pgx.StrictNamedArgs{"workspace_id": *lastWorkspace, "user_id": user.ID}).Scan(&slug)
+		if scanErr == nil {
 			return slug, nil
 		}
-		if !errors.Is(err, pgx.ErrNoRows) {
-			return "", fmt.Errorf("resolve OAuth last workspace: %w", err)
+		if !errors.Is(scanErr, pgx.ErrNoRows) {
+			return "", fmt.Errorf("resolve OAuth last workspace: %w", scanErr)
 		}
 	}
 	var slug string

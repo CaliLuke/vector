@@ -97,8 +97,8 @@ func TestWorkspaceFavoritesRepositoryScopesAndResponse(t *testing.T) {
 	parent := uuid.MustParse("00000000-0000-4000-8000-000000000011")
 	id := uuid.MustParse("00000000-0000-4000-8000-000000000012")
 
-	if ok, err := repository.Authorized(context.Background(), user, "demo"); err != nil || !ok {
-		t.Fatalf("Authorized() = %v, %v", ok, err)
+	if ok, authorizedErr := repository.Authorized(context.Background(), user, "demo"); authorizedErr != nil || !ok {
+		t.Fatalf("Authorized() = %v, %v", ok, authorizedErr)
 	}
 	if _, err = repository.List(context.Background(), user, "demo", false); err != nil {
 		t.Fatal(err)

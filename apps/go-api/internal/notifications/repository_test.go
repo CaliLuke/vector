@@ -24,8 +24,8 @@ func TestPaginationErrorsMatchDjangoFixtures(t *testing.T) {
 					Body   map[string]any
 				}
 			}
-			if err := json.Unmarshal(raw, &fixture); err != nil {
-				t.Fatal(err)
+			if unmarshalErr := json.Unmarshal(raw, &fixture); unmarshalErr != nil {
+				t.Fatal(unmarshalErr)
 			}
 			query := url.Values{}
 			for key, value := range fixture.Request.Query {

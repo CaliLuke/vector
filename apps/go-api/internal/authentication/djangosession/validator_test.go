@@ -352,8 +352,8 @@ func TestDjangoJSONSerializerPreservesPythonConstantsAndLoneSurrogates(t *testin
 	if err != nil {
 		t.Fatalf("Validate() error = %v", err)
 	}
-	if _, err := validator.RefreshPrincipal(context.Background(), principal, 3600, time.Now()); err != nil {
-		t.Fatalf("RefreshPrincipal() error = %v", err)
+	if _, refreshPrincipalErr := validator.RefreshPrincipal(context.Background(), principal, 3600, time.Now()); refreshPrincipalErr != nil {
+		t.Fatalf("RefreshPrincipal() error = %v", refreshPrincipalErr)
 	}
 	_, refreshed, _, err := decodeSessionData(reader.sessions[fixtureSessionKey].Data, []string{fixtureCurrentSecret})
 	if err != nil {
@@ -473,8 +473,8 @@ func TestFallbackHashRotationWritesOldHashUntilResponseRefresh(t *testing.T) {
 	if err != nil || values["_auth_user_hash"] != fixtureFallbackHash {
 		t.Fatalf("cycle_key values=%#v err=%v", values, err)
 	}
-	if _, err := validator.RefreshPrepared(context.Background(), rotated, 604800, now); err != nil {
-		t.Fatal(err)
+	if _, refreshPreparedErr := validator.RefreshPrepared(context.Background(), rotated, 604800, now); refreshPreparedErr != nil {
+		t.Fatal(refreshPreparedErr)
 	}
 	values, _, err = decode(reader.sessions[rotated.SessionKey].Data, []string{fixtureCurrentSecret})
 	if err != nil || values["_auth_user_hash"] != fixtureCurrentHash {
@@ -542,8 +542,8 @@ func TestRefreshPrincipalPersistsRequestLocalSnapshotAfterConcurrentUpdate(t *te
 	concurrent := claims(fixtureUserID, fixtureBackend, fixtureCurrentHash)
 	concurrent["note"] = "concurrent database update"
 	reader.sessions[fixtureSessionKey] = Session{Data: encodeValuesForTest(t, fixtureCurrentSecret, concurrent, false)}
-	if _, err := validator.RefreshPrincipal(context.Background(), principal, 3600, time.Now()); err != nil {
-		t.Fatal(err)
+	if _, refreshPrincipalErr := validator.RefreshPrincipal(context.Background(), principal, 3600, time.Now()); refreshPrincipalErr != nil {
+		t.Fatal(refreshPrincipalErr)
 	}
 	values, _, err := decode(reader.sessions[fixtureSessionKey].Data, []string{fixtureCurrentSecret})
 	if err != nil || values["note"] != "request snapshot" {
@@ -562,8 +562,8 @@ func TestInspectPreservesAnonymousRequestLocalSnapshot(t *testing.T) {
 	reader.sessions[fixtureSessionKey] = Session{Data: encodeValuesForTest(
 		t, fixtureCurrentSecret, map[string]any{"anonymous-note": "concurrent database update"}, false,
 	)}
-	if _, err := validator.RefreshPrepared(context.Background(), prepared, 3600, time.Now()); err != nil {
-		t.Fatal(err)
+	if _, refreshPreparedErr := validator.RefreshPrepared(context.Background(), prepared, 3600, time.Now()); refreshPreparedErr != nil {
+		t.Fatal(refreshPreparedErr)
 	}
 	values, _, err := decode(reader.sessions[fixtureSessionKey].Data, []string{fixtureCurrentSecret})
 	if err != nil || values["anonymous-note"] != "request snapshot" {
@@ -596,8 +596,8 @@ func TestRefreshReSignsAndExtendsDjangoSession(t *testing.T) {
 	if reader.updatedUserID != fixtureUserID || reader.updatedDeviceInfo == nil {
 		t.Fatalf("updated denormalized fields: user=%#v device=%#v", reader.updatedUserID, reader.updatedDeviceInfo)
 	}
-	if _, err := validator.Validate(context.Background(), fixtureSessionKey); err != nil {
-		t.Fatalf("refreshed session does not validate: %v", err)
+	if _, validationErr := validator.Validate(context.Background(), fixtureSessionKey); validationErr != nil {
+		t.Fatalf("refreshed session does not validate: %v", validationErr)
 	}
 	decoded, secretIndex, err := decode(reader.sessions[fixtureSessionKey].Data, []string{fixtureCurrentSecret})
 	if err != nil || secretIndex != 0 || decoded["note"] != "Plane ✈" {

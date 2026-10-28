@@ -69,8 +69,8 @@ func TestNotificationsGeneratedResultsPreserveArbitraryJSONAndNulls(t *testing.T
 			if err != nil {
 				t.Fatal(err)
 			}
-			if err := api.ValidateNotification(detail); err != nil {
-				t.Fatal(err)
+			if validateNotificationErr := api.ValidateNotification(detail); validateNotificationErr != nil {
+				t.Fatal(validateNotificationErr)
 			}
 			assertNotificationJSON(t, detail, record)
 			list, err := service.List(ctx, &api.ListPayload{Slug: "demo"})

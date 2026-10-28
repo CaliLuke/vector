@@ -136,45 +136,45 @@ SELECT (SELECT count(*) FROM profiles WHERE user_id=$1),
 	if err != nil {
 		t.Fatal(err)
 	}
-	if invited, err := repository.HasWorkspaceInvite(ctx, created.Email); err != nil || !invited {
-		t.Fatalf("active invite existence=%v err=%v", invited, err)
+	if invited, hasWorkspaceInviteErr := repository.HasWorkspaceInvite(ctx, created.Email); hasWorkspaceInviteErr != nil || !invited {
+		t.Fatalf("active invite existence=%v err=%v", invited, hasWorkspaceInviteErr)
 	}
-	if invited, err := repository.HasWorkspaceInvite(ctx, "deleted-only@example.test"); err != nil || invited {
-		t.Fatalf("deleted-only invite existence=%v err=%v", invited, err)
+	if invited, hasWorkspaceInviteErr := repository.HasWorkspaceInvite(ctx, "deleted-only@example.test"); hasWorkspaceInviteErr != nil || invited {
+		t.Fatalf("deleted-only invite existence=%v err=%v", invited, hasWorkspaceInviteErr)
 	}
 	onboarded, lastWorkspace, earliestWorkspace, inviteCount, err := repository.RedirectProfile(ctx, created.ID)
 	if err != nil || !onboarded || lastWorkspace != "last-active" || earliestWorkspace != "earliest-active" || inviteCount != 2 {
 		t.Fatalf("redirect profile onboarded=%v last=%q earliest=%q invites=%d err=%v", onboarded, lastWorkspace, earliestWorkspace, inviteCount, err)
 	}
-	if err := repository.EnsureProfile(ctx, created.ID); err != nil {
-		t.Fatal(err)
+	if ensureProfileErr := repository.EnsureProfile(ctx, created.ID); ensureProfileErr != nil {
+		t.Fatal(ensureProfileErr)
 	}
 	var preservedOnboarded bool
-	if err := connection.QueryRow(ctx, `SELECT is_onboarded FROM profiles WHERE user_id=$1`, created.ID).Scan(&preservedOnboarded); err != nil || !preservedOnboarded {
-		t.Fatalf("ensure changed existing profile onboarded=%v err=%v", preservedOnboarded, err)
+	if scanErr := connection.QueryRow(ctx, `SELECT is_onboarded FROM profiles WHERE user_id=$1`, created.ID).Scan(&preservedOnboarded); scanErr != nil || !preservedOnboarded {
+		t.Fatalf("ensure changed existing profile onboarded=%v err=%v", preservedOnboarded, scanErr)
 	}
-	if _, err := connection.Exec(ctx, `DELETE FROM profiles WHERE user_id=$1`, created.ID); err != nil {
-		t.Fatal(err)
+	if _, execErr := connection.Exec(ctx, `DELETE FROM profiles WHERE user_id=$1`, created.ID); execErr != nil {
+		t.Fatal(execErr)
 	}
-	if err := repository.EnsureProfile(ctx, created.ID); err != nil {
-		t.Fatal(err)
+	if ensureProfileErr := repository.EnsureProfile(ctx, created.ID); ensureProfileErr != nil {
+		t.Fatal(ensureProfileErr)
 	}
 	var defaultCountry, defaultLanguage string
-	if err := connection.QueryRow(ctx, `SELECT billing_address_country,language FROM profiles WHERE user_id=$1`, created.ID).Scan(&defaultCountry, &defaultLanguage); err != nil {
-		t.Fatal(err)
+	if scanErr := connection.QueryRow(ctx, `SELECT billing_address_country,language FROM profiles WHERE user_id=$1`, created.ID).Scan(&defaultCountry, &defaultLanguage); scanErr != nil {
+		t.Fatal(scanErr)
 	}
 	if defaultCountry != "INDIA" || defaultLanguage != "en" {
 		t.Fatalf("ensured profile defaults country=%q language=%q", defaultCountry, defaultLanguage)
 	}
 
 	logoutAt := time.Date(2026, 10, 21, 13, 0, 0, 0, time.UTC)
-	if err := repository.UpdateLogoutMetadata(ctx, created.ID, "192.0.2.9", logoutAt); err != nil {
-		t.Fatal(err)
+	if updateLogoutMetadataErr := repository.UpdateLogoutMetadata(ctx, created.ID, "192.0.2.9", logoutAt); updateLogoutMetadataErr != nil {
+		t.Fatal(updateLogoutMetadataErr)
 	}
 	var logoutIP string
 	var lastLogout time.Time
-	if err := connection.QueryRow(ctx, `SELECT last_logout_ip,last_logout_time FROM users WHERE id=$1`, created.ID).Scan(&logoutIP, &lastLogout); err != nil {
-		t.Fatal(err)
+	if scanErr := connection.QueryRow(ctx, `SELECT last_logout_ip,last_logout_time FROM users WHERE id=$1`, created.ID).Scan(&logoutIP, &lastLogout); scanErr != nil {
+		t.Fatal(scanErr)
 	}
 	if logoutIP != "192.0.2.9" || !lastLogout.Equal(logoutAt) {
 		t.Fatalf("logout metadata ip=%q time=%v", logoutIP, lastLogout)

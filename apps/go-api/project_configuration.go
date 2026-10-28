@@ -125,8 +125,8 @@ func (service *projectConfigurationService) AuthorizeAPIV1LabelProtocol(ctx cont
 		return protocolError(err)
 	}
 	identity := principalFrom(authorized)
-	if err := service.repository.AuthorizeAPIV1(authorized, identity.userID, slug, projectID); err != nil {
-		return protocolError(service.mapError(err))
+	if authorizeAPIV1Err := service.repository.AuthorizeAPIV1(authorized, identity.userID, slug, projectID); authorizeAPIV1Err != nil {
+		return protocolError(service.mapError(authorizeAPIV1Err))
 	}
 	rate, err := service.throttle.Allow(authorized, key)
 	if err != nil {

@@ -29,20 +29,20 @@ func TestPublisherEmitsCeleryConsumableProcessLogsMessage(t *testing.T) {
 		_ = consumerConnection.Close()
 		t.Fatalf("open consumer channel: %v", err)
 	}
-	if err := declareCeleryQueue(consumerChannel, queue); err != nil {
+	if declareCeleryQueueErr := declareCeleryQueue(consumerChannel, queue); declareCeleryQueueErr != nil {
 		_ = consumerChannel.Close()
 		_ = consumerConnection.Close()
-		t.Fatal(err)
+		t.Fatal(declareCeleryQueueErr)
 	}
 	t.Cleanup(func() {
-		if _, err := consumerChannel.QueueDelete(queue, false, false, false); err != nil {
-			t.Errorf("delete disposable queue: %v", err)
+		if _, queueDeleteErr := consumerChannel.QueueDelete(queue, false, false, false); queueDeleteErr != nil {
+			t.Errorf("delete disposable queue: %v", queueDeleteErr)
 		}
-		if err := consumerChannel.Close(); err != nil {
-			t.Errorf("close consumer channel: %v", err)
+		if closeErr := consumerChannel.Close(); closeErr != nil {
+			t.Errorf("close consumer channel: %v", closeErr)
 		}
-		if err := consumerConnection.Close(); err != nil {
-			t.Errorf("close consumer connection: %v", err)
+		if closeErr := consumerConnection.Close(); closeErr != nil {
+			t.Errorf("close consumer connection: %v", closeErr)
 		}
 	})
 
@@ -51,23 +51,23 @@ func TestPublisherEmitsCeleryConsumableProcessLogsMessage(t *testing.T) {
 		t.Fatalf("newPublisher() error = %v", err)
 	}
 	t.Cleanup(func() {
-		if err := publisher.Close(); err != nil {
-			t.Errorf("close publisher: %v", err)
+		if closeErr := publisher.Close(); closeErr != nil {
+			t.Errorf("close publisher: %v", closeErr)
 		}
 	})
 
 	publishCtx, cancelPublish := context.WithTimeout(ctx, 5*time.Second)
 	defer cancelPublish()
 	record := activitylog.APIActivityLog{Path: "/api/v1/example/", ResponseCode: 200}
-	if err := publisher.Log(publishCtx, record); err != nil {
-		t.Fatalf("Log() error = %v", err)
+	if logErr := publisher.Log(publishCtx, record); logErr != nil {
+		t.Fatalf("Log() error = %v", logErr)
 	}
-	if _, err := consumerChannel.QueueDelete(queue, false, false, false); err != nil {
-		t.Fatalf("delete queue between publishes: %v", err)
+	if _, queueDeleteErr := consumerChannel.QueueDelete(queue, false, false, false); queueDeleteErr != nil {
+		t.Fatalf("delete queue between publishes: %v", queueDeleteErr)
 	}
 	record.Path = "/api/v1/redeclared-queue/"
-	if err := publisher.Log(publishCtx, record); err != nil {
-		t.Fatalf("Log() after queue deletion error = %v", err)
+	if logErr := publisher.Log(publishCtx, record); logErr != nil {
+		t.Fatalf("Log() after queue deletion error = %v", logErr)
 	}
 
 	delivery := consumeDelivery(t, consumerChannel, queue)
@@ -88,8 +88,8 @@ func TestPublisherEmitsCeleryConsumableProcessLogsMessage(t *testing.T) {
 	}
 
 	var body []any
-	if err := json.Unmarshal(delivery.Body, &body); err != nil {
-		t.Fatalf("decode body: %v", err)
+	if unmarshalErr := json.Unmarshal(delivery.Body, &body); unmarshalErr != nil {
+		t.Fatalf("decode body: %v", unmarshalErr)
 	}
 	kwargs := body[1].(map[string]any)
 	got := kwargs["log_data"].(map[string]any)

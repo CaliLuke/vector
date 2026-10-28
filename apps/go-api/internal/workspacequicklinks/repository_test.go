@@ -45,8 +45,8 @@ func TestWorkspaceQuickLinksRepositoryScopeDefaultsAndDelete(t *testing.T) {
 	}
 	u := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	id := uuid.MustParse("00000000-0000-4000-8000-000000000011")
-	if ok, e := r.Authorized(context.Background(), u, "demo"); e != nil || !ok {
-		t.Fatal(ok, e)
+	if ok, authorizedErr := r.Authorized(context.Background(), u, "demo"); authorizedErr != nil || !ok {
+		t.Fatal(ok, authorizedErr)
 	}
 	if _, e = r.List(context.Background(), u, "demo"); e != nil {
 		t.Fatal(e)

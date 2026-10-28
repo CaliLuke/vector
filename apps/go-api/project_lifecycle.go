@@ -128,7 +128,7 @@ func (s *projectLifecycleService) read(ctx context.Context, operation string, pa
 	if !rate.Allowed {
 		return nil, nil, projectLifecycleError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))})
 	}
-	if err := djangosession.ValidateUserTimezone(p.timezone); err != nil {
+	if validateUserTimezoneErr := djangosession.ValidateUserTimezone(p.timezone); validateUserTimezoneErr != nil {
 		return nil, nil, projectLifecycleError(400, map[string]any{"error": "The required key does not exist."})
 	}
 	get := func(key string) *string {

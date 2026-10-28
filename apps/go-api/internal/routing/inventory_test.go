@@ -304,14 +304,14 @@ func TestProtocolCompanionMetadataJSONPresence(t *testing.T) {
 	if !strings.Contains(string(encoded), `"protocol_companions":[]`) {
 		t.Fatalf("explicit empty companion metadata was omitted: %s", encoded)
 	}
-	if _, err := Parse(encoded); err != nil {
-		t.Fatalf("Parse() after explicit-empty round trip: %v", err)
+	if _, parseErr := Parse(encoded); parseErr != nil {
+		t.Fatalf("Parse() after explicit-empty round trip: %v", parseErr)
 	}
 
 	nullNonGET := strings.Replace(string(encoded), `"method":"GET"`, `"method":"POST"`, 1)
 	nullNonGET = strings.Replace(nullNonGET, `"protocol_companions":[]`, `"protocol_companions":null`, 1)
-	if _, err := Parse([]byte(nullNonGET)); err == nil || !strings.Contains(err.Error(), "protocol companions cannot be null") {
-		t.Fatalf("Parse() null non-GET metadata error = %v", err)
+	if _, parseErr := Parse([]byte(nullNonGET)); parseErr == nil || !strings.Contains(parseErr.Error(), "protocol companions cannot be null") {
+		t.Fatalf("Parse() null non-GET metadata error = %v", parseErr)
 	}
 
 	operation.State = StateDjangoOnly

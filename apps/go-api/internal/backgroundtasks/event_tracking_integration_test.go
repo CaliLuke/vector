@@ -55,14 +55,14 @@ func TestPostgresEventTrackingWorkflowDeliversPostHogCaptureOverHTTP(t *testing.
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := app.Start(ctx); err != nil {
-		t.Fatal(err)
+	if startErr := app.Start(ctx); startErr != nil {
+		t.Fatal(startErr)
 	}
 	defer func() {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutdownCancel()
-		if err := app.Shutdown(shutdownCtx); err != nil {
-			t.Errorf("shutdown event tracking runtime: %v", err)
+		if shutdownErr := app.Shutdown(shutdownCtx); shutdownErr != nil {
+			t.Errorf("shutdown event tracking runtime: %v", shutdownErr)
 		}
 	}()
 
@@ -71,11 +71,11 @@ func TestPostgresEventTrackingWorkflowDeliversPostHogCaptureOverHTTP(t *testing.
 	slug := "event-proof-" + userID[:8]
 	now := time.Now().UTC()
 	username := "event-proof-" + userID
-	if _, err := pool.Exec(ctx, `INSERT INTO users (id,password,username,display_name,first_name,last_name,avatar,date_joined,created_at,updated_at,last_location,created_location,is_superuser,is_managed,is_password_expired,is_active,is_staff,is_email_verified,is_password_autoset,is_password_reset_required,token,last_login_ip,last_logout_ip,last_login_medium,last_login_uagent,is_bot,user_timezone,is_email_valid) VALUES ($1,'!',$2,'Event Owner','Event','Owner','',$3,$3,$3,'','',false,false,false,true,false,true,false,false,$2,'','','','',false,'UTC',true)`, userID, username, now); err != nil {
-		t.Fatalf("insert event owner: %v", err)
+	if _, execErr := pool.Exec(ctx, `INSERT INTO users (id,password,username,display_name,first_name,last_name,avatar,date_joined,created_at,updated_at,last_location,created_location,is_superuser,is_managed,is_password_expired,is_active,is_staff,is_email_verified,is_password_autoset,is_password_reset_required,token,last_login_ip,last_logout_ip,last_login_medium,last_login_uagent,is_bot,user_timezone,is_email_valid) VALUES ($1,'!',$2,'Event Owner','Event','Owner','',$3,$3,$3,'','',false,false,false,true,false,true,false,false,$2,'','','','',false,'UTC',true)`, userID, username, now); execErr != nil {
+		t.Fatalf("insert event owner: %v", execErr)
 	}
-	if _, err := pool.Exec(ctx, `INSERT INTO workspaces (id,name,owner_id,slug,timezone,background_color,created_at,updated_at) VALUES ($1,'Event Workspace',$2,$3,'UTC','',$4,$4)`, workspaceID, userID, slug, now); err != nil {
-		t.Fatalf("insert event workspace: %v", err)
+	if _, execErr := pool.Exec(ctx, `INSERT INTO workspaces (id,name,owner_id,slug,timezone,background_color,created_at,updated_at) VALUES ($1,'Event Workspace',$2,$3,'UTC','',$4,$4)`, workspaceID, userID, slug, now); execErr != nil {
+		t.Fatalf("insert event workspace: %v", execErr)
 	}
 	t.Cleanup(func() {
 		_, _ = pool.Exec(context.Background(), `DELETE FROM workspaces WHERE id=$1`, workspaceID)

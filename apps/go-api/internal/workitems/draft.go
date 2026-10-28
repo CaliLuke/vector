@@ -498,41 +498,41 @@ func (r *Repository) publishDraft(ctx context.Context, q Request, draft map[stri
 		if err != nil {
 			return Result{}, err
 		}
-		serialized, err := serializePlanningRecords("cycle", []map[string]any{record})
-		if err != nil {
-			return Result{}, err
+		serialized, cycleActivityErr := serializePlanningRecords("cycle", []map[string]any{record})
+		if cycleActivityErr != nil {
+			return Result{}, cycleActivityErr
 		}
 		current, _ := orderedDump(map[string]any{"updated_cycle_issues": nil, "created_cycle_issues": serialized}, []string{"updated_cycle_issues", "created_cycle_issues"})
-		if err = r.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, map[string]any{"type": "cycle.activity.created", "requested_data": nil, "actor_id": q.ActorID, "issue_id": nil, "project_id": q.ProjectID, "current_instance": current, "epoch": r.now().Unix(), "notification": true, "origin": r.origin}); err != nil {
-			return Result{}, err
+		if cycleActivityErr = r.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, map[string]any{"type": "cycle.activity.created", "requested_data": nil, "actor_id": q.ActorID, "issue_id": nil, "project_id": q.ProjectID, "current_instance": current, "epoch": r.now().Unix(), "notification": true, "origin": r.origin}); cycleActivityErr != nil {
+			return Result{}, cycleActivityErr
 		}
 	}
 	if truthy(input.Fields["module_ids"]) {
-		ids, err := rawIDs(input.Fields["module_ids"])
-		if err != nil {
-			return Result{}, err
+		ids, moduleAssignmentErr := rawIDs(input.Fields["module_ids"])
+		if moduleAssignmentErr != nil {
+			return Result{}, moduleAssignmentErr
 		}
-		tx, err := r.db.Begin(ctx)
-		if err != nil {
-			return Result{}, err
+		tx, moduleAssignmentErr := r.db.Begin(ctx)
+		if moduleAssignmentErr != nil {
+			return Result{}, moduleAssignmentErr
 		}
 		for _, id := range ids {
-			_, err = tx.Exec(ctx, `INSERT INTO module_issues(id,issue_id,module_id,project_id,workspace_id,created_at,updated_at,created_by_id,updated_by_id) VALUES($1,$2,$3,$4,$5,$6,$6,$7,$8)`, uuid.NewString(), q.IssueID, id, q.ProjectID, draft["workspace_id"], timestamp(r.now()), draft["created_by_id"], draft["updated_by_id"])
-			if err != nil {
+			_, moduleAssignmentErr = tx.Exec(ctx, `INSERT INTO module_issues(id,issue_id,module_id,project_id,workspace_id,created_at,updated_at,created_by_id,updated_by_id) VALUES($1,$2,$3,$4,$5,$6,$6,$7,$8)`, uuid.NewString(), q.IssueID, id, q.ProjectID, draft["workspace_id"], timestamp(r.now()), draft["created_by_id"], draft["updated_by_id"])
+			if moduleAssignmentErr != nil {
 				break
 			}
 		}
-		if err != nil {
+		if moduleAssignmentErr != nil {
 			_ = tx.Rollback(ctx)
-			return Result{}, err
+			return Result{}, moduleAssignmentErr
 		}
-		if err = tx.Commit(ctx); err != nil {
-			return Result{}, err
+		if moduleAssignmentErr = tx.Commit(ctx); moduleAssignmentErr != nil {
+			return Result{}, moduleAssignmentErr
 		}
 		for _, id := range ids {
 			requested, _ := pythoncompat.Dumps(map[string]any{"module_id": id}, nil)
-			if err = r.activity(ctx, q, "module.activity.created", requested, nil, false); err != nil {
-				return Result{}, err
+			if moduleAssignmentErr = r.activity(ctx, q, "module.activity.created", requested, nil, false); moduleAssignmentErr != nil {
+				return Result{}, moduleAssignmentErr
 			}
 		}
 	}

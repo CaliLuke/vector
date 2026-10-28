@@ -243,12 +243,12 @@ func (s *oauthRedirectService) callback(ctx context.Context, provider string, sp
 		return nil, nil, err
 	}
 	if !space {
-		if err := s.workflow.Run(ctx, loginUser.ID, loginUser.Email); err != nil {
-			return nil, nil, err
+		if runErr := s.workflow.Run(ctx, loginUser.ID, loginUser.Email); runErr != nil {
+			return nil, nil, runErr
 		}
 	}
-	if err := s.repository.SaveOAuthAccount(ctx, loginUser, provider, identity.ProviderID, oauthTokens{AccessToken: token.AccessToken, RefreshToken: token.RefreshToken, ExpiresAt: oauthExpiry(token), IDToken: oauthExtraString(token, "id_token")}, time.Now()); err != nil {
-		return nil, nil, err
+	if saveOAuthAccountErr := s.repository.SaveOAuthAccount(ctx, loginUser, provider, identity.ProviderID, oauthTokens{AccessToken: token.AccessToken, RefreshToken: token.RefreshToken, ExpiresAt: oauthExpiry(token), IDToken: oauthExtraString(token, "id_token")}, time.Now()); saveOAuthAccountErr != nil {
+		return nil, nil, saveOAuthAccountErr
 	}
 	path := nextPath
 	if path == "" && !space {

@@ -170,8 +170,8 @@ func (store *PostgresIssueVersionTaskStore) TrackIssueVersion(ctx context.Contex
 		return fmt.Errorf("load issue for version task: %w", err)
 	}
 	var current map[string]json.RawMessage
-	if err := json.Unmarshal(currentJSON, &current); err != nil {
-		return fmt.Errorf("decode current issue for version task: %w", err)
+	if unmarshalErr := json.Unmarshal(currentJSON, &current); unmarshalErr != nil {
+		return fmt.Errorf("decode current issue for version task: %w", unmarshalErr)
 	}
 	changed := make([]issueVersionChangedField, 0, len(requested))
 	for key, value := range requested {
@@ -185,7 +185,7 @@ func (store *PostgresIssueVersionTaskStore) TrackIssueVersion(ctx context.Contex
 		}
 		var parsed any
 		if string(value) != "null" {
-			if err := json.Unmarshal(value, &parsed); err != nil {
+			if unmarshalErr := json.Unmarshal(value, &parsed); unmarshalErr != nil {
 				return fmt.Errorf("%w: invalid issue version field %q", ErrPermanentIssueVersionTask, key)
 			}
 		}

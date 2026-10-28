@@ -48,7 +48,7 @@ func TestRepositoryErrors(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := repository.UpdateOnboarded(context.Background(), uuid.Nil(), true); err == nil {
+	if updateOnboardedErr := repository.UpdateOnboarded(context.Background(), uuid.Nil(), true); updateOnboardedErr == nil {
 		t.Fatal("update returned nil error")
 	}
 	zeroRows := &databaseStub{tag: pgconn.NewCommandTag("UPDATE 0")}
