@@ -428,6 +428,15 @@ maintainability floor, retiring one allowance and leaving 29. Configured lint an
 duplication remain at 516 and 488. Fresh combined cycle coverage is 75.96%; the
 75.40% floor is retained and its statement inventory is updated to 1,805.
 
+Page-command normalization now delegates permitted field values and HTML
+sanitization to one helper over the cloned field map and allowed names. Command
+routing, required identifiers, authorization, and transactions keep their existing
+owners and ordering. Boundary tests cover strict value types, Unicode limits,
+sanitization, and caller-map isolation before and after the move. All 274 affected
+tests/subtests pass without skips. This retires another maintainability allowance,
+leaving 28; lint and duplication remain unchanged. Fresh combined page coverage
+is 64.12%, retaining the 63.48% floor with 1,572 owned statements.
+
 HTTP response bodies retain explicit checked closes where the current bodyclose
 analyzer cannot follow a cross-package cleanup helper. This limitation is tracked
 in [timakin/bodyclose#60](https://github.com/timakin/bodyclose/issues/60), with a

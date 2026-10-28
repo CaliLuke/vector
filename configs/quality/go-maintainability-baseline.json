@@ -113,12 +113,6 @@
       "score": 9
     },
     {
-      "file": "internal/pagereads/api_mutations.go",
-      "package": "pagereads",
-      "function": "normalizePageAPI",
-      "score": 18
-    },
-    {
       "file": "internal/pagereads/lifecycle.go",
       "package": "pagereads",
       "function": "(*Repository).createPage",

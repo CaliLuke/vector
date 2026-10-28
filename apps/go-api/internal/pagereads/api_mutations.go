@@ -56,48 +56,8 @@ func normalizePageAPI(in *PageAPICommand) error {
 	if in.Fields == nil {
 		in.Fields = map[string]any{}
 	}
-	for key, value := range in.Fields {
-		if !slices.Contains(allowed, key) {
-			return projectmutations.ErrInvalid
-		}
-		switch key {
-		case "access", "member_access":
-			n, ok := value.(int)
-			max := 1
-			if key == "member_access" {
-				max = 2
-			}
-			if !ok || n < 0 || n > max {
-				return projectmutations.ErrInvalid
-			}
-		case "is_locked", "archive", "archive_pages":
-			if _, ok := value.(bool); !ok {
-				return projectmutations.ErrInvalid
-			}
-		case "sort_order":
-			n, ok := value.(float64)
-			if !ok || math.IsNaN(n) || math.IsInf(n, 0) {
-				return projectmutations.ErrInvalid
-			}
-		default:
-			text, ok := value.(string)
-			if !ok || strings.ContainsRune(text, 0) {
-				return projectmutations.ErrInvalid
-			}
-			if key != "description_html" && utf8.RuneCountInString(text) > 255 {
-				return projectmutations.ErrInvalid
-			}
-			if key == "name" && strings.TrimSpace(text) == "" {
-				return projectmutations.ErrInvalid
-			}
-			if key == "description_html" {
-				clean, _, err := content.ValidateHTML(text)
-				if err != nil {
-					return projectmutations.ErrInvalid
-				}
-				in.Fields[key] = clean
-			}
-		}
+	if err := normalizePageAPIFields(in.Fields, allowed); err != nil {
+		return err
 	}
 	if in.ExpectedRevision != nil && *in.ExpectedRevision == "" {
 		return projectmutations.ErrInvalid
@@ -146,6 +106,55 @@ func normalizePageAPI(in *PageAPICommand) error {
 	in.PageIDs = slices.Compact(in.PageIDs)
 	return nil
 }
+
+// normalizePageAPIFields validates and sanitizes the command's cloned field map.
+func normalizePageAPIFields(fields map[string]any, allowed []string) error {
+	for key, value := range fields {
+		if !slices.Contains(allowed, key) {
+			return projectmutations.ErrInvalid
+		}
+		switch key {
+		case "access", "member_access":
+			n, ok := value.(int)
+			max := 1
+			if key == "member_access" {
+				max = 2
+			}
+			if !ok || n < 0 || n > max {
+				return projectmutations.ErrInvalid
+			}
+		case "is_locked", "archive", "archive_pages":
+			if _, ok := value.(bool); !ok {
+				return projectmutations.ErrInvalid
+			}
+		case "sort_order":
+			n, ok := value.(float64)
+			if !ok || math.IsNaN(n) || math.IsInf(n, 0) {
+				return projectmutations.ErrInvalid
+			}
+		default:
+			text, ok := value.(string)
+			if !ok || strings.ContainsRune(text, 0) {
+				return projectmutations.ErrInvalid
+			}
+			if key != "description_html" && utf8.RuneCountInString(text) > 255 {
+				return projectmutations.ErrInvalid
+			}
+			if key == "name" && strings.TrimSpace(text) == "" {
+				return projectmutations.ErrInvalid
+			}
+			if key == "description_html" {
+				clean, _, err := content.ValidateHTML(text)
+				if err != nil {
+					return projectmutations.ErrInvalid
+				}
+				fields[key] = clean
+			}
+		}
+	}
+	return nil
+}
+
 func authorizePageAPI(ctx context.Context, tx pgx.Tx, in PageAPICommand) error {
 	if _, err := tx.Exec(ctx, `SELECT work_item_schema_lock($1::uuid)`, in.WorkspaceID); err != nil {
 		return err
