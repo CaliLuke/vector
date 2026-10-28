@@ -339,6 +339,22 @@ leaving 32. Removing an overwritten assignment, an empty branch, and an unused
 timestamp success flag retires three lint findings, leaving 647. No duplicate
 report or source exclusion was added.
 
+The full integration checkpoint after the cycle date extraction passes 12,215
+tests/subtests across 167 packages with zero test skips. Fresh cross-package
+coverage passes all existing floors. Review of all 166 measured packages raises
+67 percentage floors without lowering any; the five file floors stay unchanged.
+Four former zero floors now enforce measured coverage: bootstrap CLI 31%, password
+strength 66.67%, personal dashboard 66.67%, and workspace search 61%. There are
+still 41 zero package floors. Statement counts are refreshed from this complete
+run, including owned designs and CLI packages.
+
+A separate strict errcheck audit with `check-blank: true` identifies 1,294
+additional discarded-error findings (467 production, 827 test) beyond the 303
+errcheck findings in the configured gate. The current configuration does not
+enforce these yet. They remain outstanding work for the zero-exceptions goal;
+no baseline allowance was added for them. The configured lint baseline remains
+647 occurrences, distinct from this additional audit inventory.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML
