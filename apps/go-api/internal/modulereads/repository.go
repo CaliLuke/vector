@@ -202,15 +202,6 @@ func (repository *Repository) issueResults(ctx context.Context, userID uuid.UUID
 	if err := repository.authorizeProject(ctx, userID, slug, projectID, true); err != nil {
 		return IssuePage{}, err
 	}
-	limit := options.Limit
-	if limit > 1000 {
-		limit = 1000
-	}
-	page := options.Page
-	if page < 0 {
-		page = 0
-	}
-
 	estimatePoints, validEstimatePoints := normalizeLegacyUUIDList(options.EstimatePoint)
 	if !validEstimatePoints {
 		return IssuePage{}, ErrInvalidDetail
@@ -364,6 +355,22 @@ func (repository *Repository) issueResults(ctx context.Context, userID uuid.UUID
 	if err != nil {
 		return IssuePage{}, err
 	}
+	query, args := moduleIssuePageSQL(options, where, order, args)
+	return repository.readIssuePage(ctx, query, args)
+}
+
+// moduleIssuePageSQL applies ordering, grouping and pagination to the selected
+// issues. Filtering and property evaluation must be complete before this phase.
+func moduleIssuePageSQL(options IssueListOptions, where []string, order string, args []any) (string, []any) {
+	limit := options.Limit
+	if limit > 1000 {
+		limit = 1000
+	}
+	page := options.Page
+	if page < 0 {
+		page = 0
+	}
+
 	issueProjection := issueJSON
 	if options.GroupBy != "" && (options.GroupBy == "issue_module__module_id" || options.SubGroupBy == "issue_module__module_id") {
 		issueProjection = `(` + issueProjection + `)::jsonb || jsonb_build_object(
@@ -525,6 +532,10 @@ SELECT COALESCE(json_agg(matching.item ORDER BY matching.group_key, matching.sub
 FROM matching
 `
 	}
+	return query, args
+}
+
+func (repository *Repository) readIssuePage(ctx context.Context, query string, args []any) (IssuePage, error) {
 	var data, groupsData, subgroupsData, groupCountsData, subgroupCountsData []byte
 	var total int
 	var groupedHasNext bool

@@ -107,12 +107,6 @@
       "score": 19
     },
     {
-      "file": "internal/modulereads/repository.go",
-      "package": "modulereads",
-      "function": "(*Repository).issueResults",
-      "score": 9
-    },
-    {
       "file": "internal/pagereads/lifecycle.go",
       "package": "pagereads",
       "function": "(*Repository).createPage",

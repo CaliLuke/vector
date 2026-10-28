@@ -514,6 +514,16 @@ at 26. The assembly-file hash review confirms only the unused middleware closure
 call changed inside the assembly function. Coverage policy is unchanged; the
 complete repository gate remains required before this cleanup goal is complete.
 
+Module issue listing now separates page SQL construction from query execution and
+result decoding. The two extracted operations own complete responsibilities;
+filtering, authorization, and property binding retain their order. Source
+comparison confirms the SQL and decoding bodies are unchanged. This retires the
+module listing allowance, leaving 25 maintainability allowances; lint and
+duplication remain at 459 and 488. All 4,330 tests/subtests across the five affected
+packages pass with no skips. Fresh module coverage is 65.59%, above its retained
+65.51% floor; the statement inventory grows from 1,447 to 1,450 for the extracted
+calls and return. The complete repository gate remains pending.
+
 HTTP response bodies retain explicit checked closes where the current bodyclose
 analyzer cannot follow a cross-package cleanup helper. This limitation is tracked
 in [timakin/bodyclose#60](https://github.com/timakin/bodyclose/issues/60), with a
