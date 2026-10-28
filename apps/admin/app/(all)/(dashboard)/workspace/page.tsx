@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useInstanceConfigurations } from "@/hooks/use-instance-configurations";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { instanceWorkspacesOptions } from "@/queries/workspaces";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { instanceConfigurationsOptions, updateConfigurationsOptions } from "@/queries/instance";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateConfigurationsOptions } from "@/queries/instance";
 import { notifyConfigurationSave } from "@/helpers/configuration-save";
 import { Link } from "react-router";
 import { Loader as LoaderIcon } from "lucide-react";
@@ -25,7 +26,7 @@ import type { Route } from "./+types/page";
 
 const WorkspaceManagementPage = function WorkspaceManagementPage(_props: Route.ComponentProps) {
   // states
-  const { data: formattedConfig } = useQuery(instanceConfigurationsOptions);
+  const { data: formattedConfig } = useInstanceConfigurations();
   const queryClient = useQueryClient();
   const { mutateAsync: updateInstanceConfigurations, isPending: isSubmitting } = useMutation(
     updateConfigurationsOptions(queryClient)

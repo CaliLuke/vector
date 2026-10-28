@@ -8,9 +8,10 @@ export async function createQueryDomFixture(t, options = { defaultOptions: { que
   const env = await createReactDomTestEnvironment();
   const client = new QueryClient(options);
   t.after(async () => {
-    await env.unmount();
+    await env.render(null);
     await client.cancelQueries();
     client.clear();
+    await env.unmount();
   });
   return {
     env,

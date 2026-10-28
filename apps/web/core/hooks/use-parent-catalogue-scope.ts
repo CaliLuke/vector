@@ -130,3 +130,12 @@ export function useParentCatalogueScope(workspaceSlug: string | undefined, proje
     retry,
   };
 }
+
+/** Recover the catalogue first; its accepted revision enables the detail query. */
+export async function retryParentDetail(
+  estimates: { estimates: readonly unknown[] | undefined; retry: () => Promise<unknown> },
+  loadDetail: () => Promise<unknown>
+) {
+  if (estimates.estimates === undefined) await estimates.retry();
+  else await loadDetail();
+}

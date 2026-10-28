@@ -25,11 +25,10 @@ export function SpreadsheetLabelColumn(props: Props) {
   // hooks
   const { workspaceSlug } = useParams({ strict: false });
   const { labelsById } = useProjectLabels(workspaceSlug, issue.project_id);
-  const labelMap = labelsById ?? {};
 
   const defaultLabelOptions =
     issue?.label_ids?.flatMap((id) => {
-      const label = labelMap[id];
+      const label = labelsById?.get(id);
       return label ? [label] : [];
     }) || [];
 

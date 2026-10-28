@@ -5,7 +5,7 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 
 // plane imports
 import type { TNotificationTab } from "@plane/constants";
@@ -27,6 +27,7 @@ import { NotificationsLoader } from "./loader";
 import { NotificationCardListRoot } from "../notification-card/root";
 
 export const NotificationsSidebarRoot = function NotificationsSidebarRoot() {
+  const scrollRef = useRef<HTMLDivElement>(null);
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // hooks
   const { data: workspace } = useWorkspaceBySlug(workspaceSlug);
@@ -118,8 +119,8 @@ export const NotificationsSidebarRoot = function NotificationsSidebarRoot() {
         ) : (
           <>
             {notificationIds && notificationIds.length > 0 ? (
-              <ContentWrapper variant={ERowVariant.HUGGING}>
-                <NotificationCardListRoot workspaceSlug={workspaceSlug.toString()} />
+              <ContentWrapper variant={ERowVariant.HUGGING} ref={scrollRef}>
+                <NotificationCardListRoot workspaceSlug={workspaceSlug.toString()} scrollRef={scrollRef} />
               </ContentWrapper>
             ) : (
               <div className="relative flex h-full w-full items-center justify-center">

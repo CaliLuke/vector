@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useQuery } from "@tanstack/react-query";
+import { useRecordCollection } from "@plane/hooks";
 import { useParams } from "react-router";
 
 // plane ui
@@ -32,7 +32,7 @@ type Props = {
 
 export const IssueBlockState = function IssueBlockState(props: Props) {
   const { shouldShowBorder = true } = props;
-  const { data: states = [] } = useQuery(statesOptions(useParams().anchor));
+  const { data: states = [] } = useRecordCollection(statesOptions(useParams().anchor));
   // derived values
   const state = "stateId" in props ? states.find((item) => item.id === props.stateId) : props.stateDetails;
   if (!state) return null;

@@ -128,6 +128,8 @@ export const InboxSidebar = function InboxSidebar(props: IInboxSidebarProps) {
           >
             {filteredInboxIssueIds.length > 0 ? (
               <InboxIssueList
+                key={`${workspaceSlug}/${projectId}/${currentTab}`}
+                scrollRef={containerRef}
                 setIsMobileSidebar={setIsMobileSidebar}
                 workspaceSlug={workspaceSlug}
                 projectId={projectId}

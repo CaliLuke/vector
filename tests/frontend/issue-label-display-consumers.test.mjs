@@ -72,9 +72,7 @@ function read() {
   };
 }
 function labelsById(queryClient) {
-  return Object.fromEntries(
-    (queryClient.getQueryData(labelKeys.project(labelsScope)) ?? []).map((label) => [label.id, label])
-  );
+  return new Map((queryClient.getQueryData(labelKeys.project(labelsScope)) ?? []).map((label) => [label.id, label]));
 }
 
 await test("native list rows reproject when the scoped label Query is renamed or cleared", async (t) => {
@@ -119,7 +117,10 @@ await test("native list rows reproject when the scoped label Query is renamed or
 await test("native workspace rows sort by current label names and preserve Query order when labels disappear", async () => {
   const rows = [issueB, issueA];
   const byId = Object.fromEntries(rows.map((issue) => [issue.id, issue]));
-  let labels = { [labelA.id]: labelA, [labelB.id]: labelB };
+  let labels = new Map([
+    [labelA.id, labelA],
+    [labelB.id, labelB],
+  ]);
   assert.deepEqual(
     projectIssueIdsByDisplayOrder(
       rows.map((issue) => issue.id),
@@ -130,7 +131,10 @@ await test("native workspace rows sort by current label names and preserve Query
     ),
     ["issue-a", "issue-b"]
   );
-  labels = { [labelA.id]: { ...labelA, name: "Zulu" }, [labelB.id]: { ...labelB, name: "Alpha" } };
+  labels = new Map([
+    [labelA.id, { ...labelA, name: "Zulu" }],
+    [labelB.id, { ...labelB, name: "Alpha" }],
+  ]);
   assert.deepEqual(
     projectIssueIdsByDisplayOrder(
       rows.map((issue) => issue.id),
@@ -141,7 +145,7 @@ await test("native workspace rows sort by current label names and preserve Query
     ),
     ["issue-b", "issue-a"]
   );
-  labels = {};
+  labels = new Map();
   assert.deepEqual(
     projectIssueIdsByDisplayOrder(
       rows.map((issue) => issue.id),

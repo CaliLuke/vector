@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useCallback, useMemo, useState } from "react";
 import type { IWorkspaceMemberMe, TIssueLink, TIssueRelation, TIssueServiceType } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
@@ -184,7 +185,7 @@ export function useIssueAttachments({
 }: IssueResourceArgs) {
   const access = useIssueResourceScope(workspaceSlug, projectId, issueId, serviceType);
   const options = issueAttachmentsOptions(access.client, access.scope);
-  const query = useQuery(options);
+  const query = useRecordCollection(options);
   const attachments = query.isSuccess && access.isReady ? query.data : undefined;
   const [uploadStatusByScope, setUploadStatusByScope] = useState<Record<string, readonly TAttachmentUploadStatus[]>>(
     {}
@@ -246,7 +247,7 @@ export function useIssueLinks({
 }: IssueResourceArgs) {
   const access = useIssueResourceScope(workspaceSlug, projectId, issueId, serviceType);
   const options = issueLinksOptions(access.client, access.scope);
-  const query = useQuery(options);
+  const query = useRecordCollection(options);
   const links = query.isSuccess && access.isReady ? query.data : undefined;
   const { mutateAsync: mutateLink, isPending } = useMutation(issueLinkMutationOptions(access.client, access.scope));
   const create = useCallback(

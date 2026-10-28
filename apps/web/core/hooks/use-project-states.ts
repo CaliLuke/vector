@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useCallback, useMemo } from "react";
 import { useParams } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -101,7 +102,7 @@ export function useProjectStates(
       workspace,
     ]
   );
-  const query = useQuery({ ...projectStateOptions(client, scope), enabled });
+  const query = useRecordCollection({ ...projectStateOptions(client, scope), enabled });
   const intakeQuery = useQuery({ ...projectIntakeStateOptions(client, scope), enabled: includeIntake && enabled });
   const mutation = useMutation(projectStateMutationOptions(client, scope));
   const access = stateReadAccess(account, permissions, canReadProjectStates(scope.projectRole));
@@ -231,7 +232,7 @@ export function useWorkspaceStates(workspaceSlug: string | null | undefined, ena
     }),
     [accountId, membership?.updated_at, permissions.workspaceRole, projectRoles, sessionGeneration, workspace]
   );
-  const query = useQuery({ ...workspaceStateOptions(client, scope), enabled });
+  const query = useRecordCollection({ ...workspaceStateOptions(client, scope), enabled });
   const access = stateReadAccess(account, permissions, Boolean(scope.workspaceRole && projectRoles !== undefined));
   const states = useMemo(() => (access.canRead ? currentStateRows(query) : undefined), [access.canRead, query]);
   const byId = useMemo(() => stateRowsById(states), [states]);

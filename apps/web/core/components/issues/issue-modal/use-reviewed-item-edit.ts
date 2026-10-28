@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useMutationState, useQueryClient } from "@tanstack/react-query";
 import type { TIssue } from "@plane/types";
 import type { Mutation } from "@tanstack/react-query";
+import { useIdentityGeneration } from "@/hooks/use-identity-generation";
 import { useCurrentUserId } from "@/hooks/use-current-user";
 import { capturePermissionChanges } from "@/queries/permission-mutations";
 import {
@@ -9,7 +10,6 @@ import {
   getIdentitySessionGeneration,
   isIdentityScopeCurrent,
   isIdentityScopeVerified,
-  subscribeIdentitySession,
 } from "@/queries/identity";
 import type {
   ItemEditCommand,
@@ -71,9 +71,7 @@ function latestSnapshot(history: Snapshot[]) {
 export function useReviewedItemEdit(workspaceSlug: string, itemId: string | undefined, operations: Operations) {
   const client = useQueryClient();
   const userId = useCurrentUserId();
-  const subscribe = useCallback((listener: () => void) => subscribeIdentitySession(client, listener), [client]);
-  const snapshot = useCallback(() => getIdentitySessionGeneration(client), [client]);
-  const generation = useSyncExternalStore(subscribe, snapshot, snapshot);
+  const generation = useIdentityGeneration(client);
   const scope = useMemo(
     () => ({ client, userId, generation, workspaceSlug, itemId }),
     [client, userId, generation, workspaceSlug, itemId]

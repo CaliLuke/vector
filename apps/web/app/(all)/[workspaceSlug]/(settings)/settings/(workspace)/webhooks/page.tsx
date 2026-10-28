@@ -4,9 +4,10 @@
  * See the LICENSE file in the project root for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+
 import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
@@ -29,7 +30,7 @@ function WebhooksListPage(): React.JSX.Element | null {
   const { data: currentWorkspace } = useCurrentWorkspace();
   const { can: canWorkspace, isPending, isError } = useWorkspacePermissions(workspaceSlug);
   const canPerformWorkspaceAdminActions = canWorkspace([EUserPermissions.ADMIN]);
-  const webhooksQuery = useQuery(webhooksListOptions(workspaceSlug, canPerformWorkspaceAdminActions));
+  const webhooksQuery = useRecordCollection(webhooksListOptions(workspaceSlug, canPerformWorkspaceAdminActions));
 
   const pageTitle = currentWorkspace?.name
     ? `${currentWorkspace.name} - ${t("workspace_settings.settings.webhooks.title")}`

@@ -53,8 +53,9 @@ async function titleFixture(t, updateText, saveDescription) {
   };
   t.mock.timers.enable({ apis: ["setTimeout", "Date"] });
   t.after(async () => {
-    await env.unmount();
+    await env.render(null);
     client.clear();
+    await env.unmount();
     t.mock.timers.reset();
   });
   const render = (overrides, visible = true, extraTitle = false) =>

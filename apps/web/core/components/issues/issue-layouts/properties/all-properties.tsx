@@ -174,7 +174,7 @@ export function IssueProperties(props: IIssueProperties) {
 
   const defaultLabelOptions =
     issue?.label_ids?.flatMap((id) => {
-      const label = labelsById?.[id];
+      const label = labelsById?.get(id);
       return label ? [label] : [];
     }) || [];
 

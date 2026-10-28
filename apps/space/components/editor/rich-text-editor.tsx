@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useQuery } from "@tanstack/react-query";
+import { useRecordCollection } from "@plane/hooks";
 import { forwardRef } from "react";
 // plane imports
 import { RichTextEditorWithRef } from "@plane/editor";
@@ -46,7 +46,7 @@ export const RichTextEditor = forwardRef(function RichTextEditor(
     disabledExtensions: additionalDisabledExtensions = [],
     ...rest
   } = props;
-  const { data: members = [] } = useQuery(membersOptions(anchor));
+  const { data: members = [] } = useRecordCollection(membersOptions(anchor));
   // parse content
   const { getEditorMetaData } = useParseEditorContent({
     anchor,

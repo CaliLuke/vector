@@ -48,9 +48,9 @@ function stateNameOrderValue(issue: TIssue, states: TStateProjection | undefined
   return name ? [name.toLocaleLowerCase()] : [];
 }
 
-function labelNameOrderValue(issue: TIssue, labelsById: Readonly<Record<string, IIssueLabel>> | undefined) {
+function labelNameOrderValue(issue: TIssue, labelsById: ReadonlyMap<string, IIssueLabel> | undefined) {
   return (issue.label_ids ?? []).flatMap((labelId) => {
-    const label = labelsById?.[labelId];
+    const label = labelsById?.get(labelId);
     return label?.name && label.project_id === issue.project_id ? [label.name.toLocaleLowerCase()] : [];
   });
 }
@@ -68,7 +68,7 @@ function issueOrderValue(
   byEstimate: boolean,
   byLabel: boolean,
   byState: boolean,
-  labelsById: Readonly<Record<string, IIssueLabel>> | undefined,
+  labelsById: ReadonlyMap<string, IIssueLabel> | undefined,
   membersById: ReadonlyMap<string, IWorkspaceMember> | undefined,
   estimates: TEstimatePointProjection | undefined,
   states: TStateProjection | undefined
@@ -81,7 +81,7 @@ function issueOrderValue(
 function canOrderIssueIds(
   issueIds: string[] | undefined,
   orderByKey: TIssueOrderByOptions | undefined,
-  labelsById: Readonly<Record<string, IIssueLabel>> | undefined,
+  labelsById: ReadonlyMap<string, IIssueLabel> | undefined,
   estimates: TEstimatePointProjection | undefined,
   states: TStateProjection | undefined,
   parents: ParentNameProjections | undefined
@@ -95,7 +95,7 @@ function canOrderIssueIds(
 
 function hasCurrentOrderingCatalogues(
   orderByKey: TIssueOrderByOptions | undefined,
-  labelsById: Readonly<Record<string, IIssueLabel>> | undefined,
+  labelsById: ReadonlyMap<string, IIssueLabel> | undefined,
   estimates: TEstimatePointProjection | undefined,
   states: TStateProjection | undefined,
   parents: ParentNameProjections | undefined
@@ -150,7 +150,7 @@ export function projectIssueIdsByDisplayOrder(
   getIssueById: (issueId: string) => TIssue | undefined,
   membersById: ReadonlyMap<string, IWorkspaceMember> | undefined,
   orderByKey: TIssueOrderByOptions | undefined,
-  labelsById?: Readonly<Record<string, IIssueLabel>>,
+  labelsById?: ReadonlyMap<string, IIssueLabel>,
   estimates?: TEstimatePointProjection,
   states?: TStateProjection,
   parents?: ParentNameProjections
@@ -195,7 +195,7 @@ export function projectAllIssueIdsByDisplayOrder(
   getIssueById: (issueId: string) => TIssue | undefined,
   membersById: ReadonlyMap<string, IWorkspaceMember> | undefined,
   orderByKey: TIssueOrderByOptions | undefined,
-  labelsById?: Readonly<Record<string, IIssueLabel>>,
+  labelsById?: ReadonlyMap<string, IIssueLabel>,
   estimates?: TEstimatePointProjection,
   states?: TStateProjection,
   parents?: ParentNameProjections
@@ -217,7 +217,7 @@ export function projectGroupedIssueIdsByDisplayOrder(
   getIssueById: (issueId: string) => TIssue | undefined,
   membersById: ReadonlyMap<string, IWorkspaceMember> | undefined,
   orderByKey: TIssueOrderByOptions | undefined,
-  labelsById?: Readonly<Record<string, IIssueLabel>>,
+  labelsById?: ReadonlyMap<string, IIssueLabel>,
   estimates?: TEstimatePointProjection,
   states?: TStateProjection,
   parents?: ParentNameProjections

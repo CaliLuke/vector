@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useRef } from "react";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 // types
@@ -42,7 +43,7 @@ function UserInvitationsPage(): React.JSX.Element | null {
   const routeHref = router.state.location.href;
   const lastWorkspacePreferenceSaved = useRef<string | undefined>(undefined);
 
-  const { data: invitations } = useQuery({
+  const { data: invitations } = useRecordCollection({
     queryKey: ["USER_WORKSPACE_INVITATIONS"],
     queryFn: () => workspaceService.userWorkspaceInvitations(),
   });

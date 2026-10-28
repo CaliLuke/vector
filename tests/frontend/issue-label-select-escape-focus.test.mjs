@@ -5,8 +5,9 @@ import { registerHooks } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import test from "node:test";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { createQueryDomFixture } from "./helpers/query-dom.mjs";
 import { React } from "./helpers/react.mjs";
 import { seedPermissionQueries } from "./helpers/permission-query-fixture.mjs";
 import { openSearchCombobox } from "./helpers/combobox.mjs";
@@ -17,7 +18,7 @@ registerWebModuleHooks();
 
 const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
 const packageStubs = {
-  "@plane/hooks": "export const useOutsideClickDetector = () => {};",
+  "@plane/hooks": `export { useRecordCollection } from "${new URL("../../packages/hooks/src/use-record-collection.ts", import.meta.url).href}"; export const useOutsideClickDetector = () => {};`,
   "@plane/i18n": `export const useTranslation = () => ({ t: key => ({ search: "Search", loading: "Loading", labels: "Labels" })[key] ?? key });`,
   "@plane/propel/icons":
     "export const CheckIcon = () => null; export const SearchIcon = () => null; export const LabelPropertyIcon = () => null; export const PlusIcon = () => null; export const ChevronDownIcon = () => null;",
@@ -59,22 +60,23 @@ function assertPositionedLabelListbox() {
   assert.equal(menu.style.transform, "translate(400px, 132px)");
 }
 
-await test("ticket detail label picker returns focus to its real trigger on Escape", async (t) => {
-  const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
-  const { IssueLabelSelect } =
-    await import("../../apps/web/core/components/issues/issue-detail/label/select/label-select.tsx");
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
+async function labelFixture(t) {
+  const fixture = await createQueryDomFixture(t, {
+    defaultOptions: { queries: { retry: false, gcTime: Infinity } },
+  });
+  const { client } = fixture;
   const { currentUserOptions } = await import("../../apps/web/core/queries/identity.ts");
   client.setQueryData(currentUserOptions().queryKey, { id: "alice" });
-  await seedPermissionQueries(client, {
-    userId: "alice",
-    workspaceSlug: "workspace",
-    projectRoles: { project: 20 },
-  });
+  await seedPermissionQueries(client, { userId: "alice", workspaceSlug: "workspace", projectRoles: { project: 20 } });
   const { IssueLabelService } = await import("../../apps/web/core/services/issue/issue_label.service.ts");
   t.mock.method(IssueLabelService.prototype, "getProjectLabels", async () => []);
-  t.after(() => client.clear());
+  return { ...fixture, IssueLabelService };
+}
+
+await test("ticket detail label picker returns focus to its real trigger on Escape", async (t) => {
+  const { env: environment, client } = await labelFixture(t);
+  const { IssueLabelSelect } =
+    await import("../../apps/web/core/components/issues/issue-detail/label/select/label-select.tsx");
   await environment.render(
     React.createElement(
       QueryClientProvider,
@@ -186,19 +188,11 @@ await test("label creation stays keyboard accessible and empty search keeps crea
 });
 
 await test("layout label creation preserves its draft after failure and permits a retry", async (t) => {
-  const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
+  const { env: environment, client, IssueLabelService } = await labelFixture(t);
   const { LabelDropdown } =
     await import("../../apps/web/core/components/issues/issue-layouts/properties/label-dropdown.tsx");
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
-  const { currentUserOptions } = await import("../../apps/web/core/queries/identity.ts");
-  client.setQueryData(currentUserOptions().queryKey, { id: "alice" });
-  await seedPermissionQueries(client, { userId: "alice", workspaceSlug: "workspace", projectRoles: { project: 20 } });
-  t.after(() => client.clear());
   let fail = true;
   let selected;
-  const { IssueLabelService } = await import("../../apps/web/core/services/issue/issue_label.service.ts");
-  t.mock.method(IssueLabelService.prototype, "getProjectLabels", async () => []);
   t.mock.method(IssueLabelService.prototype, "createIssueLabel", async (_workspace, _project, label) => {
     if (fail) throw new Error("Offline");
     return { id: "created", project_id: "project", ...label };
@@ -308,17 +302,9 @@ await test("new-work-item label creation keeps rejected drafts and retries witho
 });
 
 await test("detail label creation releases a rejected submission and retains the label name for retry", async (t) => {
-  const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
+  const { env: environment, client } = await labelFixture(t);
   const { IssueLabelSelect } =
     await import("../../apps/web/core/components/issues/issue-detail/label/select/label-select.tsx");
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
-  t.after(() => client.clear());
-  const { currentUserOptions } = await import("../../apps/web/core/queries/identity.ts");
-  client.setQueryData(currentUserOptions().queryKey, { id: "alice" });
-  await seedPermissionQueries(client, { userId: "alice", workspaceSlug: "workspace", projectRoles: { project: 20 } });
-  const { IssueLabelService } = await import("../../apps/web/core/services/issue/issue_label.service.ts");
-  t.mock.method(IssueLabelService.prototype, "getProjectLabels", async () => []);
   const create = creationFixture();
   await environment.render(
     React.createElement(

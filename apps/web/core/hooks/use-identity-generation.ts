@@ -4,12 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import { useCallback, useSyncExternalStore } from "react";
+import { useSelector } from "@tanstack/react-store";
 import type { QueryClient } from "@tanstack/react-query";
-import { getIdentitySessionGeneration, subscribeIdentitySession } from "@/queries/identity";
+import { identitySession } from "@/queries/identity";
 
 export function useIdentityGeneration(client: QueryClient) {
-  const subscribe = useCallback((listener: () => void) => subscribeIdentitySession(client, listener), [client]);
-  const getSnapshot = useCallback(() => getIdentitySessionGeneration(client), [client]);
-  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  return useSelector(identitySession(client), (generation) => generation);
 }

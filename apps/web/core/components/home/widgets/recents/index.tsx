@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useRef, useState } from "react";
-import { useQuery, skipToken } from "@tanstack/react-query";
+import { skipToken } from "@tanstack/react-query";
 import { useTranslation } from "@plane/i18n";
 // plane types
 import { PageIcon, ProjectIcon, WorkItemsIcon } from "@plane/propel/icons";
@@ -44,7 +45,7 @@ export const RecentActivityWidget = function RecentActivityWidget(props: TRecent
   // ref
   const ref = useRef<HTMLDivElement>(null);
 
-  const { data: recents, isLoading } = useQuery({
+  const { data: recents, isLoading } = useRecordCollection({
     queryKey: ["WORKSPACE_RECENT_ACTIVITY", workspaceSlug, filter],
     queryFn: workspaceSlug
       ? () =>

@@ -32,7 +32,7 @@ type TProjectMemberListProps = {
 
 function getProjectMemberDetails(
   memberships: TProjectMembership[],
-  membersById: Map<string, IWorkspaceMember>,
+  membersById: ReadonlyMap<string, IWorkspaceMember>,
   filters: IMemberFilters,
   searchQuery: string
 ): RowData[] {

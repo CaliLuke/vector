@@ -4,7 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { useQuery, skipToken } from "@tanstack/react-query";
+import { useRecordCollection } from "@plane/hooks";
+import { skipToken } from "@tanstack/react-query";
 // components
 import { EUserPermissions } from "@plane/constants";
 import { NotAuthorizedView } from "@/components/auth-screens/not-authorized-view";
@@ -30,7 +31,7 @@ function WorkspaceIntegrationsPage() {
   // derived values
   const isAdmin = canWorkspace([EUserPermissions.ADMIN]);
   const pageTitle = currentWorkspace?.name ? `${currentWorkspace.name} - Integrations` : undefined;
-  const { data: appIntegrations } = useQuery({
+  const { data: appIntegrations } = useRecordCollection({
     queryKey: APP_INTEGRATIONS,
     queryFn: isAdmin ? () => integrationService.getAppIntegrationsList() : skipToken,
   });

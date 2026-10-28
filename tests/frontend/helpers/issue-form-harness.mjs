@@ -147,8 +147,9 @@ export async function setup(t) {
     projects.find((project) => project.id === id)
   );
   t.after(async () => {
-    await env.unmount();
+    await env.render(null);
     client.clear();
+    await env.unmount();
   });
   state.editorReady = true;
   state.editorWrites = [];

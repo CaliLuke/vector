@@ -46,6 +46,44 @@ Query keys are structured arrays that include request scope and parameters. Quer
 required inputs are available. Shared keys live in `packages/constants/src/query-keys.ts`. Axios is the transport;
 new query functions pass the cancellation signal to it.
 
+TanStack DB owns normalized views of complete record collections through the shared
+`useRecordCollection` hook. One Query-backed collection and ordered live view belong to
+each exact Query instance; consumers share its canonical Query cache. Native Query observers retain per-consumer
+freshness and retry policy; the DB observer synchronizes that cache without fetching. Replacing a query
+retires that collection, even when the replacement has the same key. On-demand sync
+subscribes while a live view is mounted and preserves the pre-existing Query cache on
+teardown, so an accepted write can still reconcile after navigation. Full-list endpoints
+keep their existing keys and apply ordering locally. Records are wrapped internally so
+DB metadata cannot leak into forms or API payloads. Failed reads hide current lookups;
+recovery restarts a failed initial live graph after Query accepts a successful result.
+
+This covers workspace/project catalogues, member rosters, states, labels, estimates,
+cycles, modules, favorites, views, pages and page versions, activity, comments, reactions, attachments,
+links, home widgets, recents, quick links, invitations, integrations, API tokens, webhooks,
+public lookups and admin configurations. Existing scoped mutation options remain the
+write boundary. Cursor pages, singleton details, permissions, searches, and atomic
+schema/statistics envelopes stay in Query; splitting their rows would lose pagination,
+revision, or authorization context. A collection is a view of the canonical transport
+cache, not a second mutable server-data owner.
+
+TanStack Store owns the web session generation, item-editor ownership/status and sidebar
+UI preferences. Session stores belong to each QueryClient, editor stores also include the
+session and item scope, and sidebar stores belong to the mounted session provider.
+React selectors subscribe to the relevant state; listener sets and the per-field sidebar
+context tree are gone. Form/editor drafts and server mutation receipts keep their existing
+owners. Other local component state stays in React.
+
+TanStack Virtual measures the accumulating notification and intake rows through one
+shared list component. Record IDs preserve identity through reorder and deletion; the
+focused row stays mounted when it leaves the visible range, including its portaled menus.
+Existing scroll containers and pagination controls remain in charge of navigation and
+loading. Lists expose native list markup and each row's position and total count. The
+virtual list opts out of React Compiler memoization while
+[Virtual issue #736](https://github.com/TanStack/virtual/issues/736) remains unresolved;
+[issue #1119](https://github.com/TanStack/virtual/issues/1119) tracks the diagnostic that persists
+despite this opt-out. Remove the directive and its local diagnostic exception when a
+released adapter supports the compiler.
+
 Admin no longer uses MobX. Instance information, configurations, authenticated users, and paginated workspaces
 live in Query. React owns sidebar collapse and dialog visibility; next-themes owns the theme. OAuth providers
 share one form and settings page, with provider-specific fields and callback instructions supplied as data.
@@ -59,8 +97,8 @@ script warning tracked in [next-themes issue #385](https://github.com/pacocourse
 Theme changes still apply through the provider's client effects. Remove this note when an upstream release avoids
 rendering the bootstrap script on the client.
 
-Web instance information, notifications, home widgets, quick links, and stickies also use Query as their only
-server-data owner. Instance consumers share a cancellable query through the existing instance service;
+Web instance information, notifications and stickies use Query directly; home widgets and quick links use
+Query-backed DB collections. Query remains their canonical server-data cache. Instance consumers share a cancellable query through the existing instance service;
 there is no instance store or store hook. The instance gate renders loading, maintenance, or setup from
 the query state, and cached configuration updates reach authentication, onboarding, uploads, and integrations.
 Notification filters, selected notifications, widget settings visibility, and sticky searches live in scoped React
@@ -108,7 +146,7 @@ canonical workspace and project permissions, including actor rank and guest role
 searches, and unsent invitation dialogs live in React state scoped to the workspace or project. Failed prerequisite
 permission reads expose retry controls instead of appearing as empty member lists.
 
-Workspace catalogue records also live only in Query, keyed by the current account. Screens select workspace
+Workspace catalogue records use Query-backed DB collections, keyed by the current account. Screens select workspace
 metadata by route slug or record ID from the shared list; a refresh replaces the full catalogue so removed
 memberships do not linger. Create, update and delete mutations preserve canonical server records and guard
 cache writes against replaced queries and account sessions. Project, label, view and favorite selectors receive
@@ -233,7 +271,7 @@ query instances before transport, cancel older reads, and apply accepted canonic
 before ancillary invalidation. The generic rich-filter editor owns its immutable expression
 and unsaved draft in React.
 
-Sidebar preferences and transient open/peek state live in React contexts. Persisted choices retain
+Sidebar preferences and transient open/peek state live in a provider-scoped TanStack Store. Persisted choices retain
 their browser-local storage keys across session remounts; transient values reset. Hydration preserves
 viewport defaults already chosen by mounted consumers, so a saved desktop preference cannot reopen
 the mobile sidebar. There is no sidebar ThemeStore.

@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import { useRouter, useRouterState } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { permissionKeys, workspaceMembershipOptions } from "@/queries/permissions";
 import {
   captureIdentityScope,
@@ -51,7 +52,7 @@ function useWorkspaceViewsScope(workspaceSlug: string | undefined) {
 
 export function useWorkspaceViews(workspaceSlug: string | undefined) {
   const state = useWorkspaceViewsScope(workspaceSlug);
-  const query = useQuery(workspaceViewsOptions(state.client, state.scope));
+  const query = useRecordCollection(workspaceViewsOptions(state.client, state.scope));
   const currentMembership = state.permissions.membershipQuery.isSuccess
     ? state.permissions.membershipQuery.data
     : undefined;

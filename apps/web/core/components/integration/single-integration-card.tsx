@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -67,7 +68,7 @@ export const SingleIntegrationCard = function SingleIntegrationCard({ integratio
     slack_client_id: config?.slack_client_id || "",
   });
 
-  const { data: workspaceIntegrations } = useQuery({
+  const { data: workspaceIntegrations } = useRecordCollection({
     queryKey: WORKSPACE_INTEGRATIONS(workspaceSlug),
     queryFn: workspaceSlug ? () => integrationService.getWorkspaceIntegrationsList(workspaceSlug) : skipToken,
   });

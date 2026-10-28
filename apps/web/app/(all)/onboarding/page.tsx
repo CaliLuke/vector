@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { useQuery, skipToken } from "@tanstack/react-query";
+import { skipToken } from "@tanstack/react-query";
 
 // components
 import { LogoSpinner } from "@/components/common/logo-spinner";
@@ -28,7 +29,7 @@ function OnboardingPage(): React.JSX.Element | null {
   const { data: user } = useCurrentUser();
 
   // fetching user workspace invitations
-  const { isLoading: invitationsLoader, data: invitations } = useQuery({
+  const { isLoading: invitationsLoader, data: invitations } = useRecordCollection({
     queryKey: ["USER_WORKSPACE_INVITATIONS_LIST", user?.id],
     queryFn: user?.id ? () => workspaceService.userWorkspaceInvitations() : skipToken,
   });

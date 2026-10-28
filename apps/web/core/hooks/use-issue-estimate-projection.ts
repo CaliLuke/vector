@@ -28,7 +28,6 @@ export function useIssueEstimateProjection(
     if (project.estimates === undefined) return undefined;
     return project.activeEstimate ? [project.activeEstimate] : [];
   }, [isWorkspaceLevel, workspace.estimates, project.estimates, project.activeEstimate]);
-  const data = source.data;
   const captured = captureEstimateScope(client, source.scope);
   const selectionIsCurrent = () => isWorkspaceLevel || project.isSelectionCurrent();
   const pointsByProject = useMemo(() => {
@@ -54,7 +53,7 @@ export function useIssueEstimateProjection(
       selectionIsCurrent() &&
       captured.query?.state.status === "success" &&
       !captured.query.state.isInvalidated &&
-      captured.query.state.data === data,
+      source.isCurrent(),
   };
   return {
     ...source,

@@ -4,8 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useRecordCollection } from "@plane/hooks";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useProjectPermissions, useWorkspacePermissions } from "@/hooks/use-permissions";
 import { projectMemberRosterOptions, workspaceMemberRosterOptions } from "@/queries/member-rosters";
@@ -14,20 +13,18 @@ export function useWorkspaceMemberRoster(workspaceSlug: string | undefined) {
   const { data: user } = useCurrentUser();
   const permissions = useWorkspacePermissions(workspaceSlug);
   const membership = permissions.membershipQuery.isSuccess ? permissions.membershipQuery.data : undefined;
-  const query = useQuery(
+  const query = useRecordCollection(
     workspaceMemberRosterOptions({
       accountId: user?.id,
       workspaceSlug,
       membershipRole: permissions.workspaceRole,
       membershipRevision: membership?.updated_at,
-    })
+    }),
+    (row) => row.member.id
   );
   const members = query.isSuccess ? query.data : undefined;
-  const membersById = useMemo(
-    () => (members ? new Map(members.map((row) => [row.member.id, row])) : undefined),
-    [members]
-  );
-  const memberById = (memberId: string | undefined) => (memberId ? membersById?.get(memberId) : undefined);
+  const membersById = query.byId;
+  const memberById = query.get;
   const retry = async () => {
     if (permissions.membershipQuery.isError) {
       await permissions.membershipQuery.refetch();
@@ -54,7 +51,7 @@ export function useProjectMemberRoster(
   const { data: user } = useCurrentUser();
   const permissions = useProjectPermissions(workspaceSlug, projectId);
   const membership = permissions.membershipQuery.isSuccess ? permissions.membershipQuery.data : undefined;
-  const query = useQuery(
+  const query = useRecordCollection(
     projectMemberRosterOptions(
       {
         accountId: user?.id,
@@ -65,13 +62,11 @@ export function useProjectMemberRoster(
         projectRole: permissions.projectRole,
       },
       canLoad
-    )
+    ),
+    (row) => row.member
   );
   const memberships = canLoad && query.isSuccess ? query.data : undefined;
-  const membershipsByMemberId = useMemo(
-    () => (memberships ? new Map(memberships.map((row) => [row.member, row])) : undefined),
-    [memberships]
-  );
+  const membershipsByMemberId = canLoad ? query.byId : undefined;
   const memberIds = memberships ? new Set(memberships.map((row) => row.member)) : undefined;
   const retry = async () => {
     if (permissions.membershipQuery.isError) {

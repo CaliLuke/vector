@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useQuery } from "@tanstack/react-query";
+import { useRecordCollection } from "@plane/hooks";
 import { useParams } from "react-router";
 
 import { LabelPropertyIcon } from "@plane/propel/icons";
@@ -19,7 +19,7 @@ type Props = {
 };
 
 export const IssueBlockLabels = function IssueBlockLabels({ labelIds, shouldShowLabel = false }: Props) {
-  const { data: labels = [] } = useQuery(labelsOptions(useParams().anchor));
+  const { data: labels = [] } = useRecordCollection(labelsOptions(useParams().anchor));
 
   const selectedLabels = labels.filter((item) => labelIds.includes(item.id));
 

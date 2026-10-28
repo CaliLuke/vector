@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useProjectPermissions } from "@/hooks/use-permissions";
@@ -63,7 +64,7 @@ function useProjectPageScope(workspaceSlug: string | undefined, projectId: strin
 
 export function useProjectPages(workspaceSlug: string | undefined, projectId: string | undefined) {
   const { client, scope, ...access } = useProjectPageScope(workspaceSlug, projectId);
-  const query = useQuery(projectPagesOptions(client, scope));
+  const query = useRecordCollection(projectPagesOptions(client, scope));
   return { ...query, access: { ...access, scope } };
 }
 

@@ -4,13 +4,14 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useCallback } from "react";
 // helpers
 import type { TCustomComponentsMetaData } from "@plane/utils/editor/markdown-parser";
 // helpers
 import { getEditorAssetSrc } from "@/helpers/editor.helper";
 // hooks
-import { useQuery } from "@tanstack/react-query";
+
 import { membersOptions } from "@/queries/lookups";
 
 type TArgs = {
@@ -20,7 +21,7 @@ type TArgs = {
 export const useParseEditorContent = (args: TArgs) => {
   const { anchor } = args;
   // store hooks
-  const { data: members = [] } = useQuery(membersOptions(anchor));
+  const { data: members = [] } = useRecordCollection(membersOptions(anchor));
 
   const getEditorMetaData = useCallback(
     (htmlContent: string): TCustomComponentsMetaData => {

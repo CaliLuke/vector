@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useQuery } from "@tanstack/react-query";
+import { useRecordCollection } from "@plane/hooks";
 import { useParams } from "react-router";
 
 // plane ui
@@ -21,7 +21,7 @@ type Props = {
 };
 
 export const IssueBlockModules = function IssueBlockModules({ moduleIds, shouldShowBorder = true }: Props) {
-  const { data: modules = [] } = useQuery(modulesOptions(useParams().anchor));
+  const { data: modules = [] } = useRecordCollection(modulesOptions(useParams().anchor));
 
   const selectedModules = modules.filter((item) => (moduleIds ?? []).includes(item.id));
 

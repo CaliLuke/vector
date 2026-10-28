@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { currentUserOptions } from "@/queries/session";
 import { publishSettingsOptions } from "@/queries/publishing";
@@ -31,7 +32,7 @@ export const PeekOverviewIssueActivity = function PeekOverviewIssueActivity(prop
   const { anchor, issueDetails } = props;
   // router
   const { pathname } = useLocation();
-  const commentsQuery = useQuery(commentsOptions(anchor, issueDetails.id));
+  const commentsQuery = useRecordCollection(commentsOptions(anchor, issueDetails.id));
   const { data: currentUser } = useQuery(currentUserOptions);
   const { data: publishSettings } = useQuery(publishSettingsOptions(anchor));
   const { is_comments_enabled: canComment } = publishSettings ?? {};

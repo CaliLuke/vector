@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { LogoSpinner } from "@/components/common/logo-spinner";
 import { IssueAppliedFilters } from "@/components/issues/filters/applied-filters/root";
@@ -17,7 +18,7 @@ type Props = { anchor: string; peekId: string | undefined };
 export function IssuesLayoutsRoot({ anchor, peekId }: Props) {
   const { layout, filters } = usePublicIssueView(anchor);
   const issues = useQuery(publicIssuesOptions(anchor, filters));
-  const states = useQuery(statesOptions(anchor));
+  const states = useRecordCollection(statesOptions(anchor));
   const retry = () => {
     void issues.refetch();
     void states.refetch();

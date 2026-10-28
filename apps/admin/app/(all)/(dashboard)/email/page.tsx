@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { useIsMutating, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { disableEmailOptions, instanceConfigurationsOptions, instanceKeys } from "@/queries/instance";
+import { useInstanceConfigurations } from "@/hooks/use-instance-configurations";
+import { useIsMutating, useMutation, useQueryClient } from "@tanstack/react-query";
+import { disableEmailOptions, instanceKeys } from "@/queries/instance";
 import { useState } from "react";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Button } from "@plane/propel/button";
@@ -19,7 +20,7 @@ import type { Route } from "./+types/page";
 import { InstanceEmailForm } from "./email-config-form";
 
 const InstanceEmailPage = function InstanceEmailPage(_props: Route.ComponentProps) {
-  const { data: formattedConfig, isLoading, isError, refetch } = useQuery(instanceConfigurationsOptions);
+  const { data: formattedConfig, isLoading, isError, refetch } = useInstanceConfigurations();
   const queryClient = useQueryClient();
   const { mutateAsync: disableEmail } = useMutation(disableEmailOptions(queryClient));
 

@@ -177,7 +177,11 @@ function DraftAssignmentProperties({
   isMobile: boolean;
 }) {
   const { labelsById } = useProjectLabels(workspaceSlug, issue.project_id);
-  const defaultLabelOptions = issue.label_ids?.flatMap((id) => (labelsById?.[id] ? [labelsById[id]] : [])) ?? [];
+  const defaultLabelOptions =
+    issue.label_ids?.flatMap((id) => {
+      const label = labelsById?.get(id);
+      return label ? [label] : [];
+    }) ?? [];
 
   return (
     <>
