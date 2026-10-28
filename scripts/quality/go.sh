@@ -11,15 +11,17 @@ mkdir -p "$REPORTS"
 
 usage() {
   cat <<'USAGE'
-Usage: scripts/quality/go.sh [--fast|--full|--tests|--fix|--write-lint-baseline|--write-static-baselines|--write-coverage-baseline|--check-tools]
+Usage: scripts/quality/go.sh [--fast|--full|--tests|--maintainability|--fix|--write-lint-baseline|--write-static-baselines|--write-coverage-baseline|--write-maintainability-baseline|--check-tools]
   --fast                  Format, build, vet, and lint with the existing-issue ratchet.
   --full                  Run all fast gates, mod tidy drift, deadcode, duplication,
-                          integration-tagged tests with coverage, and complexity report.
+                          integration-tagged tests with coverage. Maintainability scores are enforced.
   --tests                 Run only integration-tagged tests and write fresh coverage output.
+  --maintainability            Enforce maintainability index floors and reviewed function allowances.
   --fix                   Apply goimports formatting, then rerun formatting and lint checks.
   --write-lint-baseline   Explicitly replace the reviewed golangci diagnostic baseline.
   --write-static-baselines Rerun deadcode and dupl and explicitly refresh their baselines.
   --write-coverage-baseline Rerun integration tests and explicitly replace coverage floors.
+  --write-maintainability-baseline Explicitly refresh measured maintainability allowances for review.
   --check-tools           Verify that all pinned quality tools are installed.
 USAGE
 }
@@ -94,7 +96,8 @@ tidy_gate() {
 
 test_gate() {
   local coverage="$REPORTS/go-integration.cover" test_json="$REPORTS/go-test.jsonl" test_status=0 result_mode="${1:-check}"
-  node --test "$ROOT/scripts/quality/go-test-results.test.mjs" "$ROOT/scripts/quality/go-ratchets.test.mjs"
+  node --test "$ROOT/scripts/quality/go-test-results.test.mjs" "$ROOT/scripts/quality/go-ratchets.test.mjs" \
+    "$ROOT/scripts/quality/go-maintainability-ratchet.test.mjs"
   local coverage_packages
   coverage_packages="$(node "$ROOT/scripts/quality/go-coverage-inventory.mjs" "$MODULE")"
   rm -f "$coverage" "$test_json"
@@ -152,17 +155,18 @@ write_static_baselines() {
     "$ROOT/configs/quality/go-dupl-baseline.json" "$MODULE"
 }
 
-complexity_report() {
-  local report="$REPORTS/go-complexity.txt"
+maintainability_gate() {
+  local mode="${1:-check}" inventory="$REPORTS/go-maintainability-files.txt"
+  go_files >"$inventory"
+  local report="$REPORTS/go-maintainability.json"
+  rm -f "$report"
   (
     cd "$MODULE"
-    files="$(go_files | tr '\n' ' ')"
-    if [[ -n "$files" ]]; then
-      gocyclo -over 15 $files >"$report" || [[ $? -eq 1 ]]
-      gocyclo -avg $files >>"$report"
-    fi
+    golangci-lint run --allow-serial-runners --enable-only maintidx --config .golangci.yml \
+      --issues-exit-code=0 --output.json.path="$report" --output.text.path=stderr --output.text.colors=false
   )
-  printf 'Complexity report: %s (functions over 15 are reported; informational only).\n' "$report"
+  node "$ROOT/scripts/quality/go-maintainability-ratchet.mjs" "$mode" "$MODULE" "$inventory" \
+    "$ROOT/configs/quality/go-maintainability-baseline.json" "$report"
 }
 
 run_fast() {
@@ -171,6 +175,7 @@ run_fast() {
   build_gate
   vet_gate
   lint_gate
+  maintainability_gate
 }
 
 mode="${1:---fast}"
@@ -184,11 +189,14 @@ case "$mode" in
     deadcode_gate
     dupl_gate
     test_gate
-    complexity_report
     ;;
   --tests)
     require_tools
     test_gate
+    ;;
+  --maintainability)
+    require_tools
+    maintainability_gate
     ;;
   --fix)
     require_tools
@@ -207,6 +215,10 @@ case "$mode" in
   --write-coverage-baseline)
     require_tools
     test_gate write
+    ;;
+  --write-maintainability-baseline)
+    require_tools
+    maintainability_gate write
     ;;
   --check-tools)
     require_tools

@@ -135,12 +135,41 @@ CI selects the same full hooks with `--group ci`, using `--require-group go` or
 `scripts/quality/go-tools.sh`; frontend tools are pinned in the pnpm lockfile.
 
 Go checks cover build, vet, formatting/imports, module-tidy drift, lint, dead code,
-duplication, and integration-tagged tests with coverage. Docker is required for
+duplication, enforced function complexity, and integration-tagged tests with coverage. Docker is required for
 disposable PostgreSQL, proxy, and broker tests. Package concurrency is bounded.
 The test-result guard rejects failures, incomplete reports, and unreviewed skips.
 `.quality/go-test-skips.json` records tests that need explicitly provisioned
 fixtures; each entry states its prerequisite. Never point these tests at a database
 with valuable data.
+
+Both fast and full Go gates enforce a maintainability index floor of 20 for new
+functions. Higher scores are better. `configs/quality/go-maintainability-baseline.json`
+records numeric floors for existing functions; any score decline fails even if
+that function was already flagged. Identity uses file, package and receiver/function
+name, not the source line. The pinned `maintidx` analyzer runs under the same
+integration tags and generated-source exclusions as lint. The existing AST-based
+function inventory resolves receiver identity; its complexity values are not gates.
+Missing tools, analyzer failures, malformed reports and unknown functions fail.
+
+The initial inventory at `4d7deab2` contains 54 allowances below 20, including
+35 production functions and the current MCP delivery. Five functions already
+score zero: startup assembly, HTTP assembly, activity-row construction, HTML
+parsing, and work-item listing. A zero cannot decline further, so changes to
+those files require explicit review through a source fingerprint; this is a
+conservative file-level review trigger, not a claim that every edit worsens the code.
+
+These allowances expose existing debt rather than establish structural health.
+[Draft lifecycle extraction](https://github.com/CaliLuke/vector/issues/2),
+[HTTP registration separation](https://github.com/CaliLuke/vector/issues/3), and
+[invitation responsibility separation](https://github.com/CaliLuke/vector/issues/4)
+track confirmed structural refactors. Function scores do not replace those reviews;
+automated structural analysis remains blocked by
+[Lagotto's Go 1.27 loader incompatibility](https://github.com/CaliLuke/lagotto/issues/58).
+
+Run `bash scripts/quality/go.sh --maintainability` for the focused gate. An explicit
+`--write-maintainability-baseline` regenerates allowances for review; normal checks
+never change the baseline. Improvements are reported so their floors can be
+raised. Do not refresh the baseline to accept a newly failing implementation.
 
 Coverage instruments the same owned Go packages that the ratchet measures, so
 integration tests also count calls into other packages. Repeated coverage blocks

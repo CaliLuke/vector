@@ -16,7 +16,7 @@ function cacheFixture(t) {
   return directory;
 }
 
-test("cached transforms preserve source and compiler option changes", (t) => {
+void test("cached transforms preserve source and compiler option changes", (t) => {
   const directory = cacheFixture(t);
   const source = "export const value: number = 1;";
   const first = transformFrontendSource(source, options, directory);
@@ -31,7 +31,7 @@ test("cached transforms preserve source and compiler option changes", (t) => {
   assert.equal(readdirSync(directory).length, 3, "failed compilation must not publish a cache entry");
 });
 
-test("independent workers publish complete interchangeable transforms", async (t) => {
+void test("independent workers publish complete interchangeable transforms", async (t) => {
   const directory = cacheFixture(t);
   const source = "export const value: number = 42;";
   const script = `import { transformFrontendSource } from ${JSON.stringify(new URL("./helpers/source-transform.mjs", import.meta.url).href)};

@@ -34,6 +34,16 @@ function cleanupWorker(pid) {
     if (error.code !== "ESRCH") throw error;
   }
 }
+async function verifyWorkerCleanup(result, pidPath) {
+  let pid;
+  try {
+    pid = Number(readFileSync(pidPath, "utf8"));
+    assert.equal(result.status, 0, result.stderr);
+    await assertWorkerStopped(pid);
+  } finally {
+    cleanupWorker(pid);
+  }
+}
 void test("preserves the child exit status", () => {
   assert.equal(run("process.exit(7)").status, 7);
 });
@@ -60,7 +70,6 @@ void test("memory ceiling includes native buffer allocations", () => {
 for (const detached of [false, true]) {
   void test(`cleans up a ${detached ? "detached" : "shared-group"} worker when its parent exits`, async () => {
     const directory = mkdtempSync(path.join(tmpdir(), "vector-process-guard-"));
-    let pid;
     try {
       const pidPath = path.join(directory, "worker.pid");
       const result = run(`
@@ -71,12 +80,8 @@ for (const detached of [false, true]) {
       // Allow a complete two-second sampling window before parent exit.
       setTimeout(()=>{},2200);
     `);
-      pid = Number(readFileSync(pidPath, "utf8"));
-      assert.equal(result.status, 0, result.stderr);
-      // Give the kernel a bounded opportunity to reap the signalled child.
-      await assertWorkerStopped(pid);
+      await verifyWorkerCleanup(result, pidPath);
     } finally {
-      cleanupWorker(pid);
       rmSync(directory, { recursive: true, force: true });
     }
   });
@@ -86,20 +91,18 @@ void test("a process snapshot delivered after parent exit still reaps its detach
   const directory = mkdtempSync(path.join(tmpdir(), "vector-process-late-sample-"));
   const pidPath = path.join(directory, "worker.pid");
   const capturedPath = path.join(directory, "captured");
-  let pid;
   try {
     writeFileSync(
       path.join(directory, "ps"),
-      `#!/usr/bin/env node
-const fs = require('node:fs');
-const {spawnSync} = require('node:child_process');
-const timer = setInterval(() => {
-  if (!fs.existsSync(${JSON.stringify(pidPath)})) return;
-  clearInterval(timer);
-  const sample = spawnSync('/bin/ps', process.argv.slice(2), {encoding: 'utf8'});
-  fs.writeFileSync(${JSON.stringify(capturedPath)}, 'captured');
-  setTimeout(() => { process.stdout.write(sample.stdout); process.exitCode = sample.status ?? 1; }, 200);
-}, 10);
+      `#!/bin/sh
+# Early samples must not wait for the application to start inside ps's deadline.
+if [ ! -f '${pidPath}' ] || [ -f '${capturedPath}' ]; then
+  exec /bin/ps "$@"
+fi
+/bin/ps "$@" > '${directory}/sample' || exit "$?"
+touch '${capturedPath}'
+sleep 0.2
+cat '${directory}/sample'
 `,
       { mode: 0o700 }
     );
@@ -116,11 +119,8 @@ const timer = setInterval(() => { if (fs.existsSync(${JSON.stringify(capturedPat
       timeout: 7000,
       env: { ...process.env, PATH: `${directory}${path.delimiter}${process.env.PATH}` },
     });
-    pid = Number(readFileSync(pidPath, "utf8"));
-    assert.equal(result.status, 0, result.stderr);
-    await assertWorkerStopped(pid);
+    await verifyWorkerCleanup(result, pidPath);
   } finally {
-    cleanupWorker(pid);
     rmSync(directory, { recursive: true, force: true });
   }
 });

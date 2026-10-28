@@ -29,7 +29,7 @@ function invoke(script, args) {
   return spawnSync(process.execPath, [path.join(scripts, script), ...args], { encoding: "utf8" });
 }
 
-test("lint ratchet rejects malformed reports and new diagnostics, and normalizes line-only message changes", () => {
+void test("lint ratchet rejects malformed reports and new diagnostics, and normalizes line-only message changes", () => {
   fixture((directory) => {
     const baseline = write(directory, "lint-baseline.json", {
       version: 1,
@@ -60,7 +60,7 @@ test("lint ratchet rejects malformed reports and new diagnostics, and normalizes
   });
 });
 
-test("deadcode ratchet rejects malformed reports and newly unreachable functions", () => {
+void test("deadcode ratchet rejects malformed reports and newly unreachable functions", () => {
   fixture((directory) => {
     const baseline = write(directory, "deadcode-baseline.json", { version: 1, entries: [] });
     const report = write(directory, "deadcode.json", [{ Path: "example/module", Funcs: [{ Name: "unused" }] }]);
@@ -73,7 +73,7 @@ test("deadcode ratchet rejects malformed reports and newly unreachable functions
   });
 });
 
-test("dupl ratchet rejects malformed records and new clone pairs", () => {
+void test("dupl ratchet rejects malformed records and new clone pairs", () => {
   fixture((directory) => {
     write(directory, "a.go", "func a() {\n return 1\n}\n");
     write(directory, "b.go", "func b() {\n return 1\n}\n");
@@ -88,7 +88,7 @@ test("dupl ratchet rejects malformed records and new clone pairs", () => {
   });
 });
 
-test("coverage ratchet rejects package omissions, regressions, and invalid floors", () => {
+void test("coverage ratchet rejects package omissions, regressions, and invalid floors", () => {
   fixture((directory) => {
     write(directory, "go.mod", "module example.test/fixture\n\ngo 1.27.3\n");
     write(directory, "p/p.go", "package p\nfunc F(value bool) int {\n if value { return 1 }\n return 0\n}\n");
@@ -132,7 +132,7 @@ test("coverage ratchet rejects package omissions, regressions, and invalid floor
   });
 });
 
-test("file floors retain established coverage when aggregate package coverage passes", () => {
+void test("file floors retain established coverage when aggregate package coverage passes", () => {
   fixture((directory) => {
     write(directory, "go.mod", "module example.test/fixture\n\ngo 1.27.3\n");
     write(directory, "old.go", "package fixture\nfunc Old() int { return 1 }\n");
@@ -163,7 +163,7 @@ test("file floors retain established coverage when aggregate package coverage pa
   });
 });
 
-test("coverage profiles larger than the parser heap retain hits across repeated blocks", () => {
+void test("coverage profiles larger than the parser heap retain hits across repeated blocks", () => {
   fixture((directory) => {
     write(directory, "go.mod", "module example.test/fixture\n\ngo 1.27.3\n");
     write(directory, "p.go", "package fixture\nfunc F() int { return 1 }\n");
