@@ -18,4 +18,6 @@ Optional receipts recheck current membership and action rights before replay.
 Revision tokens use the underlying item identity and advance for both item and
 intake-association changes, including native writers. Creation and triage reuse
 the existing transactional effects path. Deletion keeps native soft deletion and
-cleanup behavior. These additions await the consolidated integration pass.
+cleanup behavior. The generated-server core workflow batch covers all five actions
+under both authentication modes and protocol revisions. The [parity tracker](mcp-parity.md)
+records the remaining acceptance checks.

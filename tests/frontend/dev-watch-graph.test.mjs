@@ -2,11 +2,54 @@ import assert from "node:assert/strict";
 import { spawn, execFileSync } from "node:child_process";
 import { once } from "node:events";
 import { watch } from "node:fs";
-import { mkdtemp, mkdir, readFile, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, realpath, writeFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+
+function fixtureGitEnvironment(environment = process.env) {
+  // Hooks export repository-specific settings even when a child changes cwd.
+  // Both Git and Turbo must discover the disposable fixture independently.
+  return Object.fromEntries(Object.entries(environment).filter(([name]) => !name.startsWith("GIT_")));
+}
+
+await test("watch fixtures cannot reinitialize the repository that invoked a Git hook", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "vector-hook-fixture-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const parent = path.join(root, "parent");
+  const hook = path.join(root, "hook");
+  const fixture = path.join(root, "fixture");
+  await mkdir(parent);
+  await mkdir(fixture);
+  // Bootstrap only disposable repositories, independently of the helper under test.
+  const cleanEnvironment = { PATH: process.env.PATH, HOME: root };
+  const git = (cwd, args, env = cleanEnvironment) => execFileSync("git", args, { cwd, env, encoding: "utf8" }).trim();
+  git(parent, ["init", "--quiet"]);
+  git(parent, [
+    "-c",
+    "user.name=Fixture",
+    "-c",
+    "user.email=fixture@example.invalid",
+    "-c",
+    "core.hooksPath=/dev/null",
+    "commit",
+    "--allow-empty",
+    "--quiet",
+    "-m",
+    "fixture",
+  ]);
+  git(parent, ["-c", "core.hooksPath=/dev/null", "worktree", "add", "--quiet", "--detach", hook]);
+  const parentConfig = path.join(parent, ".git/config");
+  const originalConfig = await readFile(parentConfig, "utf8");
+  const inheritedEnvironment = { ...cleanEnvironment, GIT_DIR: git(hook, ["rev-parse", "--absolute-git-dir"]) };
+
+  git(fixture, ["init", "--quiet"], fixtureGitEnvironment(inheritedEnvironment));
+
+  assert.equal(await readFile(parentConfig, "utf8"), originalConfig);
+  assert.equal(git(parent, ["config", "--bool", "core.bare"]), "false");
+  assert.equal(git(fixture, ["rev-parse", "--show-toplevel"]), await realpath(fixture));
+});
 
 function waitFor(directory, read, expected) {
   return new Promise((resolve, reject) => {
@@ -49,7 +92,8 @@ await test("development watches dependency rebuilds without starting per-package
   await mkdir(path.join(root, "packages/shared"), { recursive: true });
   await mkdir(path.join(root, "apps/web"), { recursive: true });
   await writeFile(path.join(root, ".gitignore"), "**/dist\n**/.turbo\n.turbo\nevents.txt\n");
-  execFileSync("git", ["init", "--quiet"], { cwd: root });
+  const fixtureEnvironment = fixtureGitEnvironment();
+  execFileSync("git", ["init", "--quiet"], { cwd: root, env: fixtureEnvironment });
   await writeFile(
     path.join(root, "package.json"),
     JSON.stringify({ name: "watch-fixture", private: true, packageManager: manifest.packageManager })
@@ -92,7 +136,7 @@ await test("development watches dependency rebuilds without starting per-package
   const turbo = fileURLToPath(new URL("../../node_modules/.bin/turbo", import.meta.url));
   child = spawn(turbo, ["watch", "dev", "--filter=./apps/*", "--concurrency=5", "--ui=stream"], {
     cwd: root,
-    env: { ...process.env, TURBO_TELEMETRY_DISABLED: "1" },
+    env: { ...fixtureEnvironment, TURBO_TELEMETRY_DISABLED: "1" },
     stdio: ["ignore", "pipe", "pipe"],
   });
   child.stdout.on("data", (data) => {

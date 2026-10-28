@@ -266,7 +266,7 @@ The five `workitem_attachment` actions are wired. URL imports allow public HTTP(
 
 The four `work_log` actions are wired through the [native work-log domain](mcp-work-logs.md). Durations are positive integer minutes. Lists return the pinned flat array shape; `include_revision` supplies current tokens. Updates omit zero durations and empty descriptions. Creation, edits and deletion retain durable activity snapshots. The generated-server core workflow batch covers this lifecycle under both authentication modes and protocol revisions.
 
-The seven `workitem_relation` actions implement dependency directions, custom edges and workspace definition management through the [native relation contract](mcp-work-item-relations.md). Both lists support `include_revision`; all mutations accept receipts and workspace relation revision guards. Endpoint authorization, directional projection and activity delivery await combined validation.
+The seven `workitem_relation` actions implement dependency directions, custom edges and workspace definition management through the [native relation contract](mcp-work-item-relations.md). Both lists support `include_revision`; all mutations accept receipts and workspace relation revision guards. The generated-server core workflow batch covers all seven actions under both authentication modes and protocol revisions. The parity tracker records the remaining permission and concurrency checks.
 
 `project.worklog_summary` returns each visible work item's live logged duration in seconds, using the native work-log repository and one authorized read snapshot. The core workflow batch verifies this summary under both authentication modes and protocol revisions.
 

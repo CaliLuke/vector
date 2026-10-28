@@ -25,7 +25,9 @@ include_revision on either list returns that token. Authorization precedes recei
 replay, and mutation transactions retain current memberships and endpoint locks.
 Edge changes enqueue immutable per-endpoint activity snapshots in the same transaction.
 
-This contract and implementation await the consolidated integration pass. No new
-browser editor or independent HTTP route is introduced in this MCP batch.
+The generated-server core workflow batch covers all seven actions under both
+authentication modes and protocol revisions. The [parity tracker](mcp-parity.md)
+records the remaining acceptance checks. This MCP batch adds no browser editor
+or independent HTTP route.
 
 The generated custom-label dictionary temporarily uses a JSON carrier for [Loom #1041](https://github.com/CaliLuke/loom/issues/1041); the receipt result uses a JSON carrier for the nested-union limitation in [Loom #1036](https://github.com/CaliLuke/loom/issues/1036). Restore the typed map and nested union when released generator support is available and the combined wire-contract checks pass. Domain projections retain the pinned record shapes.
