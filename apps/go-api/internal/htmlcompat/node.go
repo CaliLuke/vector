@@ -215,11 +215,8 @@ func (s *nodeStack) remove(n *Node) {
 
 type insertionModeStack []insertionMode
 
-func (s *insertionModeStack) pop() (im insertionMode) {
-	i := len(*s)
-	im = (*s)[i-1]
-	*s = (*s)[:i-1]
-	return im
+func (s *insertionModeStack) pop() {
+	*s = (*s)[:len(*s)-1]
 }
 
 func (s *insertionModeStack) top() insertionMode {

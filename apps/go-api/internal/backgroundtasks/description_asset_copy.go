@@ -258,10 +258,7 @@ func (store *PostgresDescriptionAssetCopyStore) Copy(ctx context.Context, input 
 		return descriptionAssetCopyOutput{}, err
 	}
 	copyKey := workspaceID.String() + "/" + strings.ReplaceAll(copyID.String(), "-", "") + "-" + filename
-	entityColumn, err := descriptionAssetEntityColumn(source.EntityType)
-	if err != nil {
-		return descriptionAssetCopyOutput{}, err
-	}
+	entityColumn := descriptionAssetEntityColumn(source.EntityType)
 	var pageID, issueID, commentID, draftIssueID, assetUserID any
 	switch entityColumn {
 	case "page_id":
@@ -434,28 +431,28 @@ func descriptionAssetFilename(raw json.RawMessage) (string, error) {
 	return fmt.Sprint(name), nil
 }
 
-func descriptionAssetEntityColumn(entityType string) (string, error) {
+func descriptionAssetEntityColumn(entityType string) string {
 	switch entityType {
 	case "WORKSPACE_LOGO":
-		return "workspace_id", nil
+		return "workspace_id"
 	case "PROJECT_COVER":
-		return "project_id", nil
+		return "project_id"
 	case "USER_AVATAR", "USER_COVER":
-		return "user_id", nil
+		return "user_id"
 	case "ISSUE_ATTACHMENT", "ISSUE_DESCRIPTION":
-		return "issue_id", nil
+		return "issue_id"
 	case "COMMENT_DESCRIPTION":
-		return "comment_id", nil
+		return "comment_id"
 	case "PAGE_DESCRIPTION":
-		return "page_id", nil
+		return "page_id"
 	case "DRAFT_ISSUE_DESCRIPTION":
-		return "draft_issue_id", nil
+		return "draft_issue_id"
 	case "DRAFT_ISSUE_ATTACHMENT":
-		return "", nil
+		return ""
 	case "":
-		return "", nil
+		return ""
 	default:
-		return "", nil
+		return ""
 	}
 }
 

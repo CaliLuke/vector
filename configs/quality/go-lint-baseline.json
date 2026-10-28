@@ -1750,14 +1750,6 @@
       "count": 1
     },
     {
-      "fingerprint": [
-        "unparam",
-        "cmd/system/custom_view_creation_http.go",
-        "mountCustomViewCreation - result 0 (*github.com/CaliLuke/go-plane/customviewcreation/gen/http/custom_view_creation/server.Server) is never used"
-      ],
-      "count": 1
-    },
-    {
       "fingerprint": ["unparam", "cmd/system/http.go", "(*csrfTokenResponseWriter).finish - method is unused"],
       "count": 1
     },
@@ -1804,14 +1796,6 @@
     {
       "fingerprint": [
         "unparam",
-        "cmd/system/http.go",
-        "resolveActivityReadProtocol - result 0 (github.com/CaliLuke/go-plane/cmd/system.readServiceProtocol) is never used"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "unparam",
         "cmd/system/project_intake_protocol.go",
         "newIntakeMixedProtocol - name always receives \"Intake\""
       ],
@@ -1822,14 +1806,6 @@
         "unparam",
         "cmd/system/project_publication_http.go",
         "newProjectPublicationProtocol - name is unused"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "unparam",
-        "cycle_lifecycle.go",
-        "(*cycleLifecycleService).create - result 1 (github.com/CaliLuke/go-plane.cycleLifecyclePrincipal) is never used"
       ],
       "count": 1
     },
@@ -1856,14 +1832,6 @@
     {
       "fingerprint": [
         "unparam",
-        "internal/backgroundtasks/description_asset_copy.go",
-        "descriptionAssetEntityColumn - result 1 (error) is always nil"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "unparam",
         "internal/cyclereads/repository.go",
         "(*Repository).groupedIssues - previous is unused"
       ],
@@ -1878,19 +1846,11 @@
       "count": 1
     },
     {
-      "fingerprint": ["unparam", "internal/htmlcompat/node.go", "(*insertionModeStack).pop - result im is never used"],
-      "count": 1
-    },
-    {
       "fingerprint": [
         "unparam",
         "internal/htmlcompat/node.go",
         "(*nodeStack).contains - a always receives a.Template (465160)"
       ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unparam", "internal/litelists/repository.go", "paging - result 1 ([]any) is always nil"],
       "count": 1
     },
     {
@@ -1906,14 +1866,6 @@
         "unparam",
         "internal/pagereads/lifecycle.go",
         "(*Repository).updatePageDescription - slug is unused"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "unparam",
-        "internal/pagereads/lifecycle.go",
-        "lifecycleJSONField - result 0 (any) is never used"
       ],
       "count": 1
     },

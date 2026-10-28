@@ -2588,7 +2588,7 @@ func activityReadsSessionFinalizationMiddleware(sessions readServicesSessionLife
 				next.ServeHTTP(response, request)
 				return
 			}
-			_, activityRoute := resolveActivityReadProtocol(request.URL.Path)
+			activityRoute := isActivityReadPath(request.URL.Path)
 			if protocol, matched := resolveReadServiceProtocolForMethod(strings.TrimSuffix(request.URL.Path, "/")+"/", request.Method); matched && protocol.authenticateMethod {
 				activityRoute = true
 			}
@@ -2611,7 +2611,7 @@ func activityReadsSessionFinalizationMiddleware(sessions readServicesSessionLife
 	}
 }
 
-func resolveActivityReadProtocol(path string) (readServiceProtocol, bool) {
+func isActivityReadPath(path string) bool {
 	protocol, matched := resolveReadServiceProtocol(path)
 	if !matched && !strings.HasSuffix(path, "/") {
 		protocol, matched = resolveReadServiceProtocol(path + "/")
@@ -2626,16 +2626,15 @@ func resolveActivityReadProtocol(path string) (readServiceProtocol, bool) {
 		}
 	}
 	if !matched || (!activityReadsAPIProtocol(protocol.pattern) && protocol.pattern != "/api/users/me/activities/") {
-		return readServiceProtocol{}, false
+		return false
 	}
-	return protocol, true
+	return true
 }
 func activityReadsSlashlessProtocol(path string) bool {
 	if strings.HasSuffix(path, "/") {
 		return false
 	}
-	_, matched := resolveActivityReadProtocol(path + "/")
-	return matched
+	return isActivityReadPath(path + "/")
 }
 
 func activityReadsSlashRedirectMiddleware(next http.Handler, debugMode bool) http.Handler {
@@ -2648,7 +2647,7 @@ func activityReadsSlashRedirectMiddleware(next http.Handler, debugMode bool) htt
 			next.ServeHTTP(response, request)
 			return
 		}
-		if _, matched := resolveActivityReadProtocol(request.URL.Path); !matched {
+		if !isActivityReadPath(request.URL.Path) {
 			next.ServeHTTP(response, request)
 			return
 		}

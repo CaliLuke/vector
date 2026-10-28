@@ -296,7 +296,7 @@ func TestCycleCreateChecksRawPairedDatesBeforeSerializerValidation(t *testing.T)
 			ctx := context.WithValue(context.Background(), cycleLifecyclePrincipalKey{}, cycleLifecyclePrincipal{
 				userID: userID, timezone: "UTC", key: "api-token", apiKey: apiV1,
 			})
-			_, _, err := service.create(ctx, "workspace", "project", io.NopCloser(strings.NewReader(`{"start_date":"2026-10-20"}`)), apiV1)
+			_, err := service.create(ctx, "workspace", "project", io.NopCloser(strings.NewReader(`{"start_date":"2026-10-20"}`)), apiV1)
 			var lifecycleError *api.CycleLifecycleError
 			if !errors.As(err, &lifecycleError) || lifecycleError.Kind != "status_400" {
 				t.Fatalf("create error=%v, want source 400 pair error", err)

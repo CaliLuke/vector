@@ -3,11 +3,33 @@ package notionsync
 import (
 	"context"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 )
+
+func TestNotionPageRejectsTruncatedResponse(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Length", "2")
+		if _, err := w.Write([]byte("{")); err != nil {
+			t.Errorf("write truncated response: %v", err)
+		}
+	}))
+	defer server.Close()
+	notion, err := NewNotion("test-token", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	notion.api.base = server.URL
+
+	_, err = notion.Page(context.Background(), rootID)
+
+	if !errors.Is(err, io.ErrUnexpectedEOF) {
+		t.Fatalf("truncated page response error = %v, want unexpected EOF", err)
+	}
+}
 
 func TestTransientReadRetriesButUncertainWriteDoesNot(t *testing.T) {
 	reads, writes := 0, 0

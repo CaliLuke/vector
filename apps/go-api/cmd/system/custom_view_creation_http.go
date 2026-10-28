@@ -29,9 +29,8 @@ func mountCustomViewCreation(
 	sessions readServicesSessionLifecycle,
 	cookie djangoSessionCookieConfig,
 	policy loomhttp.RuntimeCORSPolicy,
-) *customviewcreationsvr.Server {
+) {
 	server := customviewcreationsvr.New(endpoints, mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil, policy)
 	server.Use(sessionServiceMiddlewareStack(options, sessions, cookie))
 	customviewcreationsvr.Mount(mux, server)
-	return server
 }

@@ -541,11 +541,11 @@ func (repository *Repository) createPage(ctx context.Context, db lifecycleDataba
 			parent = parentValue
 		}
 	}
-	_, viewPropsRaw, viewPropsErr := lifecycleJSONField(input, "view_props", map[string]any{"full_width": false})
+	viewPropsRaw, viewPropsErr := lifecycleJSONField(input, "view_props", map[string]any{"full_width": false})
 	if viewPropsErr != nil {
 		validationErrors["view_props"] = []string{lifecycleJSONFieldMessage(viewPropsErr)}
 	}
-	_, logoPropsRaw, logoPropsErr := lifecycleJSONField(input, "logo_props", map[string]any{})
+	logoPropsRaw, logoPropsErr := lifecycleJSONField(input, "logo_props", map[string]any{})
 	if logoPropsErr != nil {
 		validationErrors["logo_props"] = []string{lifecycleJSONFieldMessage(logoPropsErr)}
 	}
@@ -645,19 +645,18 @@ func (repository *Repository) createPage(ctx context.Context, db lifecycleDataba
 	return repository.pageLifecycleDetail(ctx, user, slug, project, page, timezone, http.StatusCreated, "create")
 }
 
-func lifecycleJSONField(input djangoinput.Input, key string, fallback any) (any, []byte, error) {
+func lifecycleJSONField(input djangoinput.Input, key string, fallback any) ([]byte, error) {
 	value, present, err := input.JSONFieldValue(key)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	if present && value == nil {
-		return nil, nil, fmt.Errorf("null")
+		return nil, fmt.Errorf("null")
 	}
 	if !present {
 		value = fallback
 	}
-	encoded, err := json.Marshal(value)
-	return value, encoded, err
+	return json.Marshal(value)
 }
 
 func lifecycleJSONFieldMessage(err error) string {

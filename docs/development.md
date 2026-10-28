@@ -478,6 +478,26 @@ skips in the default suite. The reviewed baseline removes seven `nilerr`
 occurrences, leaving 495 lint findings; maintainability and duplication stay at
 26 and 488. Production coverage floors are unchanged.
 
+Private helper results now match their consumers: route matching returns a
+predicate, mounting and stack popping expose only their effects, and cycle
+creation, page JSON encoding, list paging, and asset-column mapping drop unused
+results. Cycle create and patch reuse the existing API throttle operation,
+preserving permission-before-throttle order and rate response effects. No helper
+functions are added. The reviewed lint baseline retires seven `unparam` findings,
+leaving 488 occurrences and 295 fingerprints. Duplication remains at 488 and
+maintainability at 26. The HTTP assembly allowance only refreshes its file hash;
+the assembly function itself is byte-for-byte unchanged. The full integration
+suite passes 12,255 tests/subtests with no skips. Its coverage check exposed a
+0.01-point HTML compatibility shortfall after statement removal and a 0.12-point
+shortfall in unchanged Notion sync code. Focused tests now protect HTML tree
+ownership on rejected mutations and reject truncated Notion page responses; both
+package suites pass another 1,838 tests/subtests. Combined current-source coverage
+passes all 166 package floors and five file floors (HTML 93.85%, Notion sync
+80.90%). All percentage floors are retained. Six statement inventories are
+refreshed, including the six cleanup-helper statements added earlier in
+`1f460c6e` that were absent from the test-support inventory. The strict error audit
+still reports 1,289 findings, including 1,117 beyond configured errcheck coverage.
+
 HTTP response bodies retain explicit checked closes where the current bodyclose
 analyzer cannot follow a cross-package cleanup helper. This limitation is tracked
 in [timakin/bodyclose#60](https://github.com/timakin/bodyclose/issues/60), with a

@@ -38,9 +38,9 @@ func TestDescriptionAssetCopyFilenameAndEntityMappingMatchSource(t *testing.T) {
 		{"DRAFT_ISSUE_ATTACHMENT", ""},
 		{"future", ""},
 	} {
-		got, err := descriptionAssetEntityColumn(test.entity)
-		if err != nil || got != test.column {
-			t.Fatalf("descriptionAssetEntityColumn(%q) = %q, %v; want %q", test.entity, got, err, test.column)
+		got := descriptionAssetEntityColumn(test.entity)
+		if got != test.column {
+			t.Fatalf("descriptionAssetEntityColumn(%q) = %q; want %q", test.entity, got, test.column)
 		}
 	}
 }

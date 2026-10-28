@@ -237,27 +237,17 @@ func NewCycleLifecycle(repository cycleLifecycleRepository, sessions activityRea
 	return &cycleLifecycleService{repo: repository, sessions: sessions, keys: keys, throttle: throttle}, nil
 }
 
-func (service *cycleLifecycleService) create(ctx context.Context, slug, projectID string, body io.ReadCloser, apiV1 bool) (*map[string]any, cycleLifecyclePrincipal, error) {
+func (service *cycleLifecycleService) create(ctx context.Context, slug, projectID string, body io.ReadCloser, apiV1 bool) (*map[string]any, error) {
 	principal, err := cycleLifecycleActor(ctx)
 	if err != nil {
-		return nil, cycleLifecyclePrincipal{}, err
+		return nil, err
 	}
 	if authorizeProjectErr := service.authorizeProjectRepository(ctx, principal.userID.String(), slug, projectID, apiV1); authorizeProjectErr != nil {
-		return nil, principal, cycleLifecycleRepoError(ctx, authorizeProjectErr, apiV1)
+		return nil, cycleLifecycleRepoError(ctx, authorizeProjectErr, apiV1)
 	}
 	if apiV1 {
-		rate, allowErr := service.throttle.Allow(ctx, principal.key)
-		if allowErr != nil {
-			return nil, principal, cycleLifecycleError(500, map[string]any{"detail": "Something went wrong please try again later"})
-		}
-		if effects := apikey.EffectsFromContext(ctx); effects != nil {
-			effects.Rate = &rate
-		}
-		if !rate.Allowed {
-			return nil, principal, cycleLifecycleError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))})
-		}
-		if validateUserTimezoneErr := djangosession.ValidateUserTimezone(principal.timezone); validateUserTimezoneErr != nil {
-			return nil, principal, cycleLifecycleError(400, map[string]any{"error": "The required key does not exist."})
+		if allowErr := service.allowAPIRequest(ctx, principal); allowErr != nil {
+			return nil, allowErr
 		}
 	}
 	metadata, hasMetadata := loomhttp.RequestMetadataFromContext(ctx)
@@ -267,24 +257,24 @@ func (service *cycleLifecycleService) create(ctx context.Context, slug, projectI
 	}
 	input, err := djangoinput.Parse(body, contentType)
 	if err != nil {
-		return nil, principal, cycleLifecycleRepoError(ctx, err, apiV1)
+		return nil, cycleLifecycleRepoError(ctx, err, apiV1)
 	}
 	if input.Kind != "" || input.Null {
-		return nil, principal, cycleLifecycleError(400, map[string]any{"non_field_errors": []string{"Invalid data. Expected a dictionary, but got " + strings.ToLower(input.Kind) + "."}})
+		return nil, cycleLifecycleError(400, map[string]any{"non_field_errors": []string{"Invalid data. Expected a dictionary, but got " + strings.ToLower(input.Kind) + "."}})
 	}
 	fields := input.Fields
 	if (fields["start_date"] != nil) != (fields["end_date"] != nil) {
-		return nil, principal, cycleLifecycleError(400, map[string]any{"error": "Both start date and end date are either required or are to be null"})
+		return nil, cycleLifecycleError(400, map[string]any{"error": "Both start date and end date are either required or are to be null"})
 	}
 	validated, validationErrors := validateCycleCreateInput(fields, input.Surrogates, apiV1)
 	if len(validationErrors) > 0 {
-		return nil, principal, cycleLifecycleError(400, validationErrors)
+		return nil, cycleLifecycleError(400, validationErrors)
 	}
 	cycle, err := service.repo.Create(ctx, principal.userID.String(), slug, projectID, validated, apiV1, fields)
 	if err != nil {
-		return nil, principal, cycleLifecycleRepoError(ctx, err, apiV1)
+		return nil, cycleLifecycleRepoError(ctx, err, apiV1)
 	}
-	return &cycle, principal, nil
+	return &cycle, nil
 }
 
 // cycleLifecycleLogError records only failure classification and PostgreSQL
@@ -369,7 +359,7 @@ func validateCyclePatchInput(fields map[string]any, surrogates map[string][]stri
 }
 
 func (service *cycleLifecycleService) PostAPIWorkspacesBySlugProjectsByProjectIDCycles(ctx context.Context, payload *api.PostAPIWorkspacesBySlugProjectsByProjectIDCyclesPayload, body io.ReadCloser) (*api.PlaneAppSerializersCycleCycleserializerResponse, error) {
-	cycle, _, err := service.create(ctx, payload.Slug, payload.ProjectID, body, false)
+	cycle, err := service.create(ctx, payload.Slug, payload.ProjectID, body, false)
 	if err != nil {
 		return nil, err
 	}
@@ -380,7 +370,7 @@ func (service *cycleLifecycleService) PostAPIWorkspacesBySlugProjectsByProjectID
 }
 
 func (service *cycleLifecycleService) PostAPIV1WorkspacesBySlugProjectsByProjectIDCycles(ctx context.Context, payload *api.PostAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload, body io.ReadCloser) (*api.PlaneAPISerializersCycleCycleserializerResponse, error) {
-	cycle, _, err := service.create(ctx, payload.Slug, payload.ProjectID, body, true)
+	cycle, err := service.create(ctx, payload.Slug, payload.ProjectID, body, true)
 	if err != nil {
 		return nil, err
 	}
@@ -590,18 +580,8 @@ func (service *cycleLifecycleService) patch(ctx context.Context, slug, projectID
 		return nil, err
 	}
 	if apiV1 {
-		rate, allowErr := service.throttle.Allow(ctx, principal.key)
-		if allowErr != nil {
-			return nil, cycleLifecycleError(500, map[string]any{"detail": "Something went wrong please try again later"})
-		}
-		if effects := apikey.EffectsFromContext(ctx); effects != nil {
-			effects.Rate = &rate
-		}
-		if !rate.Allowed {
-			return nil, cycleLifecycleError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))})
-		}
-		if validateUserTimezoneErr := djangosession.ValidateUserTimezone(principal.timezone); validateUserTimezoneErr != nil {
-			return nil, cycleLifecycleError(400, map[string]any{"error": "The required key does not exist."})
+		if allowErr := service.allowAPIRequest(ctx, principal); allowErr != nil {
+			return nil, allowErr
 		}
 	}
 	cycle, err := service.repo.Cycle(ctx, slug, projectID, cycleID)

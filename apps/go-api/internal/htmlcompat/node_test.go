@@ -6,7 +6,37 @@ package html
 
 import (
 	"fmt"
+	"testing"
+
+	"github.com/stretchr/testify/require"
 )
+
+func TestNodeRejectsCrossParentMutation(t *testing.T) {
+	for _, test := range []struct {
+		name   string
+		mutate func(parent, child *Node)
+	}{
+		{"append attached child", (*Node).AppendChild},
+		{"insert attached child", func(parent, child *Node) { parent.InsertBefore(child, nil) }},
+		{"remove foreign child", (*Node).RemoveChild},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			source, destination := &Node{Type: DocumentNode}, &Node{Type: DocumentNode}
+			child := &Node{Type: TextNode, Data: "retained"}
+			source.AppendChild(child)
+
+			require.Panics(t, func() { test.mutate(destination, child) })
+
+			require.Same(t, source, child.Parent)
+			require.Same(t, child, source.FirstChild)
+			require.Same(t, child, source.LastChild)
+			require.Nil(t, destination.FirstChild)
+			require.Nil(t, destination.LastChild)
+			require.NoError(t, checkTreeConsistency(source))
+			require.NoError(t, checkTreeConsistency(destination))
+		})
+	}
+}
 
 // checkTreeConsistency checks that a node and its descendants are all
 // consistent in their parent/child/sibling relationships.
