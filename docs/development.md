@@ -146,6 +146,16 @@ Coverage instruments the same owned Go packages that the ratchet measures, so
 integration tests also count calls into other packages. Repeated coverage blocks
 from separate test binaries are merged by source location; a hit in either binary
 covers the block once. Generated-source exclusions and package floors still apply.
+The parser streams large profiles instead of loading their complete text into memory.
+Optional file floors protect established contracts independently of the package average.
+The baseline refresh command preserves those file floors.
+
+The initial MCP floor covered 30 identity statements at 100%.
+The expanded package contains 3,547 statements, with a reviewed aggregate floor of 82.94%.
+Identity, member directory, project reads, project members and service construction retain explicit 100% file floors.
+New domain, design and test-support packages have explicit initial floors, including visible zero-coverage entries.
+Other existing package floors remain unchanged.
+
 The work-item type tests and full-schema MCP workflows migrate one disposable
 template per package and clone a separate database for each test. Test data and
 connections are never shared between those clones. Migration-specific tests still
@@ -178,6 +188,13 @@ component Storybooks. Coverage reports must be freshly generated
 before their ratchets run. Existing debt is recorded as explicit baselines rather
 than hidden by excluding application source. Review and tighten those baselines
 as findings are fixed; do not regenerate them simply to accept a failing change.
+
+The frontend behavior suite uses Node's compilation cache and a shared TypeScript transform cache.
+Transform keys include source content, compiler version and every transform option.
+Workers publish cache entries atomically under ignored `node_modules/.cache` directories.
+These caches preserve worker isolation and do not cache test results.
+Node's compilation cache is scoped to behavior tests, because it can reduce V8 coverage precision.
+Coverage suites use separate commands without that cache setting.
 
 Initial static-analysis debt includes 2,395 syntax-lint findings and 5,681 full
 TypeScript-aware lint findings (the full count includes syntax findings), plus

@@ -132,6 +132,58 @@ test("coverage ratchet rejects package omissions, regressions, and invalid floor
   });
 });
 
+test("file floors retain established coverage when aggregate package coverage passes", () => {
+  fixture((directory) => {
+    write(directory, "go.mod", "module example.test/fixture\n\ngo 1.27.3\n");
+    write(directory, "old.go", "package fixture\nfunc Old() int { return 1 }\n");
+    write(directory, "new.go", "package fixture\nfunc New() int { return 2 }\n");
+    const fileFloors = { "example.test/fixture/old.go": { statements: 1, percent: 100 } };
+    const baseline = write(directory, "baseline.json", {
+      version: 1,
+      packages: { "example.test/fixture": { statements: 2, percent: 50 } },
+      files: fileFloors,
+    });
+    const profile = write(
+      directory,
+      "coverage.out",
+      "mode: set\nexample.test/fixture/old.go:2.1,2.25 1 0\nexample.test/fixture/new.go:2.1,2.25 1 1\n"
+    );
+    const regression = invoke("go-coverage-ratchet.mjs", ["check", profile, baseline, directory]);
+    assert.equal(regression.status, 1, regression.stderr);
+    assert.match(regression.stderr, /below file floor 100%/);
+
+    const refreshed = invoke("go-coverage-ratchet.mjs", ["write", profile, baseline, directory]);
+    assert.equal(refreshed.status, 0, refreshed.stderr);
+    assert.deepEqual(JSON.parse(fs.readFileSync(baseline, "utf8")).files, fileFloors);
+
+    write(directory, "coverage.out", "mode: set\nexample.test/fixture/new.go:2.1,2.25 1 1\n");
+    const missing = invoke("go-coverage-ratchet.mjs", ["check", profile, baseline, directory]);
+    assert.equal(missing.status, 1, missing.stderr);
+    assert.match(missing.stderr, /file floor is missing/);
+  });
+});
+
+test("coverage profiles larger than the parser heap retain hits across repeated blocks", () => {
+  fixture((directory) => {
+    write(directory, "go.mod", "module example.test/fixture\n\ngo 1.27.3\n");
+    write(directory, "p.go", "package fixture\nfunc F() int { return 1 }\n");
+    const baseline = write(directory, "baseline.json", {
+      version: 1,
+      packages: { "example.test/fixture": { statements: 1, percent: 100 } },
+    });
+    const profile = write(directory, "coverage.out", "mode: set\nexample.test/fixture/p.go:2.1,2.25 1 1\n");
+    const chunk = "example.test/fixture/p.go:2.1,2.25 1 0\n".repeat(4096);
+    for (let index = 0; index < 256; index++) fs.appendFileSync(profile, chunk);
+    const checked = spawnSync(
+      process.execPath,
+      ["--max-old-space-size=32", path.join(scripts, "go-coverage-ratchet.mjs"), "check", profile, baseline, directory],
+      { encoding: "utf8" }
+    );
+    assert.equal(checked.status, 0, checked.stderr);
+    assert.match(checked.stdout, /coverage ratchet passed/);
+  });
+});
+
 await test("coverage counts repository code exercised by another package's integration test", () => {
   fixture((directory) => {
     write(directory, "go.mod", "module example.test/fixture\n\ngo 1.27.3\n");

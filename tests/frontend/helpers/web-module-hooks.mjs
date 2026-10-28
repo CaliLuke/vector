@@ -1,6 +1,6 @@
 import { createRequire, registerHooks } from "node:module";
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { transformSync } from "esbuild";
+import { transformFrontendSource } from "./source-transform.mjs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -90,14 +90,14 @@ function registerAppModuleHooks(appRoot, aliasRoot, { stubEmojiRoot = false } = 
         /\.tsx?$/.test(url)
       ) {
         const source = readFileSync(fileURLToPath(url), "utf8");
-        const output = transformSync(source, {
+        const output = transformFrontendSource(source, {
           format: "esm",
           loader: url.endsWith(".tsx") ? "tsx" : "ts",
           sourcefile: fileURLToPath(url),
           target: "es2022",
           tsconfigRaw: { compilerOptions: { useDefineForClassFields: true } },
           ...(url.endsWith(".tsx") ? { jsx: "automatic", jsxImportSource: "react" } : {}),
-        }).code;
+        });
         return { format: "module", shortCircuit: true, source: output };
       }
 

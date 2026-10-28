@@ -112,9 +112,16 @@ async function groupMemory() {
       const [pid, parent, group, rss] = row.trim().split(/\s+/).map(Number);
       return { pid, parent, group, rss };
     });
-  if (finished) return 0;
-  return descendants(rows).reduce((total, row) => total + row.rss, 0);
+  // A snapshot captured before exit can arrive after the child's close event.
+  // Keep that ownership evidence and reap workers discovered by the final sample.
+  const owned = descendants(rows);
+  if (finished) {
+    signalGroup("SIGKILL");
+    return 0;
+  }
+  return owned.reduce((total, row) => total + row.rss, 0);
 }
+
 async function checkMemory() {
   if (monitoring || finished) return;
   monitoring = true;

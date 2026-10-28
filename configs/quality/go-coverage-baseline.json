@@ -161,6 +161,14 @@
       "statements": 326,
       "percent": 70.55
     },
+    "github.com/CaliLuke/go-plane/internal/commentmentions": {
+      "statements": 63,
+      "percent": 55.56
+    },
+    "github.com/CaliLuke/go-plane/internal/customers": {
+      "statements": 729,
+      "percent": 68.31
+    },
     "github.com/CaliLuke/go-plane/internal/customviewcreation": {
       "statements": 49,
       "percent": 67.35
@@ -209,9 +217,17 @@
       "statements": 59,
       "percent": 0
     },
+    "github.com/CaliLuke/go-plane/internal/features": {
+      "statements": 131,
+      "percent": 80.92
+    },
     "github.com/CaliLuke/go-plane/internal/htmlcompat": {
       "statements": 2202,
       "percent": 91.19
+    },
+    "github.com/CaliLuke/go-plane/internal/initiatives": {
+      "statements": 315,
+      "percent": 73.97
     },
     "github.com/CaliLuke/go-plane/internal/instanceadminsession": {
       "statements": 20,
@@ -258,8 +274,8 @@
       "percent": 90
     },
     "github.com/CaliLuke/go-plane/internal/mcpactions": {
-      "statements": 30,
-      "percent": 100
+      "statements": 3547,
+      "percent": 82.94
     },
     "github.com/CaliLuke/go-plane/internal/mcpauth": {
       "statements": 73,
@@ -272,6 +288,10 @@
     "github.com/CaliLuke/go-plane/internal/mcptransport": {
       "statements": 80,
       "percent": 95
+    },
+    "github.com/CaliLuke/go-plane/internal/milestones": {
+      "statements": 407,
+      "percent": 85.75
     },
     "github.com/CaliLuke/go-plane/internal/modulereads": {
       "statements": 1317,
@@ -329,6 +349,10 @@
       "statements": 1436,
       "percent": 64.07
     },
+    "github.com/CaliLuke/go-plane/internal/projectmutations": {
+      "statements": 101,
+      "percent": 82.18
+    },
     "github.com/CaliLuke/go-plane/internal/projectpublication": {
       "statements": 100,
       "percent": 69
@@ -344,6 +368,10 @@
     "github.com/CaliLuke/go-plane/internal/pythoncompat": {
       "statements": 631,
       "percent": 62.6
+    },
+    "github.com/CaliLuke/go-plane/internal/releases": {
+      "statements": 459,
+      "percent": 76.25
     },
     "github.com/CaliLuke/go-plane/internal/routing": {
       "statements": 257,
@@ -365,9 +393,17 @@
       "statements": 19,
       "percent": 84.21
     },
+    "github.com/CaliLuke/go-plane/internal/templates": {
+      "statements": 188,
+      "percent": 72.34
+    },
     "github.com/CaliLuke/go-plane/internal/testsupport": {
       "statements": 37,
       "percent": 75.68
+    },
+    "github.com/CaliLuke/go-plane/internal/testsupport/mcpstub": {
+      "statements": 30,
+      "percent": 0
     },
     "github.com/CaliLuke/go-plane/internal/testsupport/postgres": {
       "statements": 79,
@@ -413,6 +449,10 @@
       "statements": 160,
       "percent": 78.13
     },
+    "github.com/CaliLuke/go-plane/internal/workitemrelations": {
+      "statements": 331,
+      "percent": 75.23
+    },
     "github.com/CaliLuke/go-plane/internal/workitems": {
       "statements": 4617,
       "percent": 18.56
@@ -432,6 +472,10 @@
     "github.com/CaliLuke/go-plane/internal/workitemtypes/property": {
       "statements": 297,
       "percent": 82.15
+    },
+    "github.com/CaliLuke/go-plane/internal/worklogs": {
+      "statements": 135,
+      "percent": 72.59
     },
     "github.com/CaliLuke/go-plane/internal/workspaceanalytics": {
       "statements": 51,
@@ -516,6 +560,14 @@
     "github.com/CaliLuke/go-plane/mcpoauthlinks/design": {
       "statements": 105,
       "percent": 100.0
+    },
+    "github.com/CaliLuke/go-plane/milestones/design": {
+      "statements": 158,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/milestones/design/types": {
+      "statements": 40,
+      "percent": 0
     },
     "github.com/CaliLuke/go-plane/modulelifecycle/design": {
       "statements": 1091,
@@ -612,6 +664,28 @@
     "github.com/CaliLuke/go-plane/workspaceuserinsights/design": {
       "statements": 105,
       "percent": 0
+    }
+  },
+  "files": {
+    "github.com/CaliLuke/go-plane/internal/mcpactions/member.go": {
+      "statements": 64,
+      "percent": 100
+    },
+    "github.com/CaliLuke/go-plane/internal/mcpactions/member_directory.go": {
+      "statements": 71,
+      "percent": 100
+    },
+    "github.com/CaliLuke/go-plane/internal/mcpactions/project.go": {
+      "statements": 78,
+      "percent": 100
+    },
+    "github.com/CaliLuke/go-plane/internal/mcpactions/project_members.go": {
+      "statements": 22,
+      "percent": 100
+    },
+    "github.com/CaliLuke/go-plane/internal/mcpactions/service.go": {
+      "statements": 9,
+      "percent": 100
     }
   }
 }

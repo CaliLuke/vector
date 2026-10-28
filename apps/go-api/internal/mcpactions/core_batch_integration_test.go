@@ -29,6 +29,24 @@ func catalogueRows(t *testing.T, result rpcResult) []any {
 	return rows
 }
 
+func catalogueCreatedWithReceipt(t *testing.T, call catalogueCall, tool string, input map[string]any) map[string]any {
+	t.Helper()
+	fields := maps.Clone(input)
+	fields["request_id"] = uuid.NewString()
+	created := milestoneObject(t, call(tool, fields))
+	require.Equal(t, fields["request_id"], created["request_id"])
+	require.Equal(t, false, created["replayed"])
+	require.NotEmpty(t, created["revision"])
+	require.NotEmpty(t, created["replay_expires_at"])
+	replayed := milestoneObject(t, call(tool, fields))
+	require.Equal(t, true, replayed["replayed"])
+	require.Equal(t, created["result"], replayed["result"])
+	require.Equal(t, created["revision"], replayed["revision"])
+	record, ok := created["result"].(map[string]any)
+	require.True(t, ok, created)
+	return record
+}
+
 func TestMCPCoreCatalogueBatch(t *testing.T) {
 	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
 		t.Run("project and workspace", func(t *testing.T) { catalogueProjectWrites(t, call) })
@@ -111,7 +129,7 @@ func cataloguePlanning(t *testing.T, f milestoneFixture, root catalogueCall) {
 	milestoneObject(t, call("project", map[string]any{"action": "update_features", "cycles": true, "modules": true}))
 	state := milestoneObject(t, call("state", map[string]any{"action": "create", "name": "Planning " + uuid.NewString(), "color": "#123456", "group": "unstarted"}))
 	milestoneObject(t, call("workitem", map[string]any{"action": "update", "workitem_id": item, "state": state["id"]}))
-	cycle := milestoneObject(t, call("cycle", map[string]any{"action": "create", "name": "First cycle", "owned_by": testsupport.LabelActor}))
+	cycle := catalogueCreatedWithReceipt(t, call, "cycle", map[string]any{"action": "create", "name": "First cycle", "owned_by": testsupport.LabelActor})
 	id := cycle["id"].(string)
 	require.Equal(t, "First revised", milestoneObject(t, call("cycle", map[string]any{"action": "update", "cycle_id": id, "name": "First revised"}))["name"])
 	catalogueNull(t, call("cycle", map[string]any{"action": "manage_workitems", "cycle_id": id, "add_ids": item}))
@@ -124,7 +142,7 @@ func cataloguePlanning(t *testing.T, f milestoneFixture, root catalogueCall) {
 	for _, action := range []string{"archive", "unarchive", "delete"} {
 		catalogueNull(t, call("cycle", map[string]any{"action": action, "cycle_id": id}))
 	}
-	module := milestoneObject(t, call("module", map[string]any{"action": "create", "name": "Module", "members": testsupport.LabelActor}))
+	module := catalogueCreatedWithReceipt(t, call, "module", map[string]any{"action": "create", "name": "Module", "members": testsupport.LabelActor})
 	moduleID := module["id"].(string)
 	require.Equal(t, "completed", milestoneObject(t, call("module", map[string]any{"action": "update", "module_id": moduleID, "status": "completed"}))["status"])
 	catalogueNull(t, call("module", map[string]any{"action": "manage_workitems", "module_id": moduleID, "add_ids": item}))

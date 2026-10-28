@@ -73,7 +73,7 @@ func catalogueTypesAndProperties(t *testing.T, root catalogueCall) {
 	catalogueNull(t, optionCall("workitem_property", map[string]any{"action": "delete_option", "option_id": optionID}))
 	catalogueNull(t, root("workitem_property", map[string]any{"action": "manage_type_properties", "workitem_type_id": typeID, "detach_ids": propertyID}))
 	catalogueNull(t, root("workitem_property", map[string]any{"action": "delete", "workitem_property_id": propertyID}))
-	number := milestoneObject(t, root("workitem_property", map[string]any{"action": "create", "display_name": "Effort " + uuid.NewString(), "property_type": "DECIMAL", "workitem_type_id": typeID}))
+	number := catalogueCreatedWithReceipt(t, root, "workitem_property", map[string]any{"action": "create", "display_name": "Effort " + uuid.NewString(), "property_type": "DECIMAL", "workitem_type_id": typeID})
 	propertyID = number["id"].(string)
 	require.Equal(t, "Measured effort", milestoneObject(t, root("workitem_property", map[string]any{"action": "update", "workitem_property_id": propertyID, "description": "Measured effort"}))["description"])
 	require.Equal(t, propertyID, milestoneObject(t, root("workitem_property", map[string]any{"action": "retrieve", "workitem_property_id": propertyID}))["id"])

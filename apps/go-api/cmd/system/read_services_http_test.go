@@ -889,12 +889,16 @@ func TestReadServiceProtocolRegistryOwnsDeclaredRoutes(t *testing.T) {
 	// Membership lifecycle, the 36 legacy assets paths plus draft association, the 16 invitation/membership and role catalogue
 	// paths, custom view creation, API-v1 Sticky format-suffix companions,
 	// administration paths, four workspace user-insights routes, and three custom-property
-	// history routes contribute here.
+	// history routes and the instance telemetry route contribute here.
 	if len(assetsProtocolMetadata) != 36 {
 		t.Fatalf("assets protocol paths = %d, want 36", len(assetsProtocolMetadata))
 	}
-	if len(readServiceProtocols) != 278 {
-		t.Fatalf("protocol routes = %d, want 278", len(readServiceProtocols))
+	if len(readServiceProtocols) != 279 {
+		t.Fatalf("protocol routes = %d, want 279", len(readServiceProtocols))
+	}
+	telemetry := mustReadServiceProtocol("/api/instances/telemetry/")
+	if !telemetry.authenticateMethod || !telemetry.derivedHead || telemetry.allow != "GET, HEAD, OPTIONS" {
+		t.Fatal("instance telemetry must enforce authenticated reads with HEAD and OPTIONS")
 	}
 	for _, path := range []string{"/api/v1/workspaces/{slug}/roles/", "/api/v1/workspaces/{slug}/roles/{role_id}/"} {
 		protocol := mustReadServiceProtocol(path)
@@ -967,11 +971,11 @@ func TestReadServiceProtocolRegistryOwnsDeclaredRoutes(t *testing.T) {
 		}
 	}
 	// Invitations add 10 HEAD owners; the existing member-detail read mounts its own HEAD.
-	// The two API rosters remain GET-only. Administration adds nine HEAD owners,
+	// The two API rosters remain GET-only. Administration adds ten HEAD owners,
 	// workspace user insights adds three, and work item history adds nine derived routes.
 	// Member preference writes also preserve the existing member-detail GET/HEAD.
-	if derivedHeads != 141 {
-		t.Errorf("derived HEAD owners = %d, want 141", derivedHeads)
+	if derivedHeads != 142 {
+		t.Errorf("derived HEAD owners = %d, want 142", derivedHeads)
 	}
 	for _, path := range []string{
 		"/api/workspaces/{slug}/projects/{project_id}/issue-labels/",

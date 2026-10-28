@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
+import { createInterface } from "node:readline";
 import { coverageInventory } from "./go-coverage-inventory.mjs";
 
 const [mode, profilePath, baselinePath, moduleRoot] = process.argv.slice(2);
@@ -10,13 +11,20 @@ if (!["check", "write"].includes(mode) || !profilePath || !baselinePath || !modu
 }
 
 const { filePackages, expectedPackages } = coverageInventory(moduleRoot);
-const profileLines = fs.readFileSync(profilePath, "utf8").split(/\r?\n/);
-if (!/^mode: (set|count|atomic)$/.test(profileLines[0] ?? "")) {
-  console.error(`coverage profile has an invalid mode header: ${profileLines[0] ?? "(empty)"}`);
-  process.exit(2);
-}
+// Cross-package profiles repeat blocks from each test binary and can exceed
+// V8's maximum string size. Retain unique blocks, not the complete input text.
+const profileLines = createInterface({ input: fs.createReadStream(profilePath), crlfDelay: Infinity });
+let headerRead = false;
 const blocks = new Map();
-for (const line of profileLines.slice(1)) {
+for await (const line of profileLines) {
+  if (!headerRead) {
+    if (!/^mode: (set|count|atomic)$/.test(line)) {
+      console.error(`coverage profile has an invalid mode header: ${line || "(empty)"}`);
+      process.exit(2);
+    }
+    headerRead = true;
+    continue;
+  }
   if (!line) continue;
   const match = line.match(/^((.+):\d+\.\d+,\d+\.\d+) (\d+) (\d+)$/);
   if (!match) {
@@ -47,14 +55,24 @@ for (const line of profileLines.slice(1)) {
   }
   // -coverpkg emits the same block from each test binary that imports it.
   // Count its statements once and retain hits from any of those binaries.
-  blocks.set(location, { importPath, statements, covered: count > 0 || previous?.covered === true });
+  blocks.set(location, { importPath, filename, statements, covered: count > 0 || previous?.covered === true });
+}
+if (!headerRead) {
+  console.error("coverage profile has an invalid mode header: (empty)");
+  process.exit(2);
 }
 const totals = new Map();
-for (const { importPath, statements, covered } of blocks.values()) {
-  const value = totals.get(importPath) ?? { statements: 0, covered: 0 };
-  value.statements += statements;
-  if (covered) value.covered += statements;
-  totals.set(importPath, value);
+const fileTotals = new Map();
+for (const { importPath, filename, statements, covered } of blocks.values()) {
+  for (const [target, key] of [
+    [totals, importPath],
+    [fileTotals, filename],
+  ]) {
+    const value = target.get(key) ?? { statements: 0, covered: 0 };
+    value.statements += statements;
+    if (covered) value.covered += statements;
+    target.set(key, value);
+  }
 }
 if (totals.size === 0) {
   console.error("coverage profile contains no non-generated production statements");
@@ -78,8 +96,14 @@ const measured = Object.fromEntries(
     ])
 );
 if (mode === "write") {
+  // File floors protect established contracts when a package grows. Refreshing
+  // aggregate measurements must not silently lower those independent floors.
+  const fileFloors = fs.existsSync(baselinePath) ? JSON.parse(fs.readFileSync(baselinePath, "utf8")).files : undefined;
   fs.mkdirSync(path.dirname(baselinePath), { recursive: true });
-  fs.writeFileSync(baselinePath, `${JSON.stringify({ version: 1, packages: measured }, null, 2)}\n`);
+  fs.writeFileSync(
+    baselinePath,
+    `${JSON.stringify({ version: 1, packages: measured, ...(fileFloors ? { files: fileFloors } : {}) }, null, 2)}\n`
+  );
   console.log(`wrote coverage floors for ${Object.keys(measured).length} production packages to ${baselinePath}`);
   process.exit(0);
 }
@@ -89,12 +113,14 @@ if (
   baseline.version !== 1 ||
   !baseline.packages ||
   typeof baseline.packages !== "object" ||
-  Array.isArray(baseline.packages)
+  Array.isArray(baseline.packages) ||
+  (baseline.files !== undefined &&
+    (!baseline.files || typeof baseline.files !== "object" || Array.isArray(baseline.files)))
 ) {
   console.error(`unsupported coverage baseline format: ${baselinePath}`);
   process.exit(2);
 }
-for (const [name, floor] of Object.entries(baseline.packages)) {
+for (const [name, floor] of [...Object.entries(baseline.packages), ...Object.entries(baseline.files ?? {})]) {
   if (
     !name ||
     !floor ||
@@ -118,6 +144,14 @@ for (const [name, current] of Object.entries(measured)) {
 }
 for (const name of Object.keys(baseline.packages)) {
   if (!(name in measured)) failures.push(`${name}: stale baseline entry; remove it after review`);
+}
+for (const [name, floor] of Object.entries(baseline.files ?? {})) {
+  const current = fileTotals.get(name);
+  if (!current) failures.push(`${name}: file floor is missing from coverage; remove it only after review`);
+  else {
+    const percent = Number(((current.covered / current.statements) * 100).toFixed(2));
+    if (percent < floor.percent) failures.push(`${name}: ${percent}% is below file floor ${floor.percent}%`);
+  }
 }
 if (failures.length) {
   console.error(failures.join("\n"));
