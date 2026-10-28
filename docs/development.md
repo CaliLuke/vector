@@ -396,6 +396,16 @@ corrected-package reruns exercise 12,219 tests/subtests with zero test skips;
 the five initial cleanup failures pass after their ownership fixes. The complete
 repository gate remains required before the zero-exceptions goal can be complete.
 
+Runtime construction and shutdown now share one resource owner for the activity
+store, email store, and database pool. It removes 27 discarded cleanup errors,
+covers partial construction, and preserves all shutdown failures. The stricter
+audit now has 1,117 findings beyond the configured gate (440 production, 677 test).
+The constructor allowance tightens from score 7 to 8; it remains one of 31
+allowances. The background-task suite passes 187 tests/subtests and its command
+and focused cross-package consumers pass another 2,226, with zero test skips.
+Combined fresh coverage raises the package floor from 66.10% to 66.69%; configured
+lint stays at 516 and duplication at 488, with no new exceptions.
+
 HTTP response bodies retain explicit checked closes where the current bodyclose
 analyzer cannot follow a cross-package cleanup helper. This limitation is tracked
 in [timakin/bodyclose#60](https://github.com/timakin/bodyclose/issues/60), with a

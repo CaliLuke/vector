@@ -150,8 +150,8 @@
       "percent": 35.51
     },
     "github.com/CaliLuke/go-plane/internal/backgroundtasks": {
-      "statements": 5740,
-      "percent": 66.1
+      "statements": 5719,
+      "percent": 66.69
     },
     "github.com/CaliLuke/go-plane/internal/bootstrap": {
       "statements": 289,

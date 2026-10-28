@@ -92,7 +92,7 @@
       "file": "internal/backgroundtasks/runtime.go",
       "package": "backgroundtasks",
       "function": "NewRuntime",
-      "score": 7
+      "score": 8
     },
     {
       "file": "internal/backgroundtasks/version_history_integration_test.go",

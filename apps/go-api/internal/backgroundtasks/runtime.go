@@ -53,7 +53,7 @@ type Runtime struct {
 // NewRuntime uses the application database but places Selvedge's migration
 // journal and runtime tables in a dedicated schema. It only creates that
 // schema; it never drops or replaces application data.
-func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Option) (*Runtime, error) {
+func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Option) (_ *Runtime, err error) {
 	if strings.TrimSpace(databaseURL) == "" {
 		return nil, errors.New("Plane PostgreSQL URL is required")
 	}
@@ -61,10 +61,13 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 	if err != nil {
 		return nil, fmt.Errorf("configure background task PostgreSQL pool: %w", err)
 	}
+	resources := runtimeResources{database: pool}
 	closeOnError := true
 	defer func() {
 		if closeOnError {
-			pool.Close()
+			if closeErr := resources.close(); closeErr != nil {
+				err = errors.Join(err, closeErr)
+			}
 		}
 	}()
 	if pingErr := pool.Ping(ctx); pingErr != nil {
@@ -199,6 +202,7 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 	if err != nil {
 		return nil, err
 	}
+	resources.activities = issueActivityStore
 	issueActivities, err := RegisterIssueActivityWorkflow(app, issueActivityStore, nil)
 	if err != nil {
 		return nil, err
@@ -223,131 +227,107 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 	if err != nil {
 		return nil, err
 	}
+	resources.emails = emailStore
 	emailNotifications, err := RegisterIssueEmailNotificationWorkflow(app, emailStore, nil)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	templatedEmailStore, err := NewPostgresTemplatedEmailStore(pool, instanceRepository, instancemail.Sender{})
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	templatedEmails, err := RegisterTemplatedEmailTaskWorkflow(app, templatedEmailStore, nil)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	emailTaskAdmission, err := NewTemplatedEmailTaskAdmission(templatedEmails)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	instanceMetricsStore, err := NewPostgresInstanceMetricsStore(pool, otlpInstanceMetricsExporter{})
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	instanceMetrics, err := RegisterInstanceMetricsWorkflow(app, instanceMetricsStore, nil)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	eventTrackingStore, err := NewPostgresEventTrackingStore(pool, cipher)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	eventTracking, err := RegisterEventTrackingWorkflow(app, eventTrackingStore, nil)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	workspaceSeedStore, err := NewPostgresWorkspaceSeedStore(pool, os.Getenv("WEB_URL"))
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	workspaceSeed, err := RegisterWorkspaceSeedWorkflow(app, workspaceSeedStore, nil)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	linkPreviewStore, err := NewPostgresLinkPreviewStore(pool)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	linkPreviews, err := RegisterLinkPreviewWorkflow(app, linkPreviewStore, nil)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	exportStorageConfig := storageConfig
 	exportStorageConfig.SignedURLTTL = 7 * 24 * time.Hour
 	exportStorage, err := assets.NewStorage(exportStorageConfig)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, fmt.Errorf("create issue export S3 client: %w", err)
 	}
 	issueExportStore, err := NewPostgresIssueExportStore(pool, exportStorage)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	issueExports, err := RegisterIssueExportWorkflow(app, issueExportStore, nil)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	analyticsExportStore, err := NewPostgresAnalyticsExportStore(pool, instanceRepository, instancemail.Sender{})
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	analyticsExports, err := RegisterAnalyticsExportWorkflow(app, analyticsExportStore, nil)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	webhookStore, err := NewPostgresWebhookTaskStore(pool, emailTaskAdmission)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	webhooks, err := RegisterWebhookTaskWorkflows(app, webhookStore, nil)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	deletionStore, err := NewPostgresDeletionStore(pool)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	deleteDays, err := HardDeleteDaysFromEnv()
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	deletion, err := RegisterDeletionWorkflows(app, deletionStore, deleteDays, nil)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	effectActivities, err := NewIssueActivityAdmission(issueActivities)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	effectVersions, err := NewIssueDescriptionVersionAdmission(versions)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	effectWebhooks, err := NewWebhookTaskAdmission(webhooks)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	attachmentUploads, err := assets.NewAttachmentApplication(assetRepository, storage, nil, "", assets.AttachmentUploadLimit)
@@ -356,12 +336,10 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 	}
 	effectPages, err := NewPageTaskAdmission(pageTransactions, versions, descriptionAssets)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	effectStore, err := NewPostgresWorkItemEffectStore(pool, effectActivities, effectVersions, deletion, effectWebhooks, assetDeleteDispatcher, assetDispatcher, linkPreviews, attachmentUploads, effectPages)
 	if err != nil {
-		_ = emailStore.Close()
 		return nil, err
 	}
 	workItemEffects := &workItemEffectWorker{store: effectStore}
@@ -425,19 +403,8 @@ func (runtime *Runtime) Shutdown(ctx context.Context) error {
 	if runtime.App != nil {
 		shutdownErr = errors.Join(shutdownErr, runtime.App.Shutdown(ctx))
 	}
-	if runtime.IssueActivities != nil {
-		if err := runtime.IssueActivities.Close(); err != nil && shutdownErr == nil {
-			shutdownErr = err
-		}
-	}
-	if runtime.emailStore != nil {
-		if err := runtime.emailStore.Close(); err != nil && shutdownErr == nil {
-			shutdownErr = err
-		}
-	}
-	if runtime.pool != nil {
-		runtime.pool.Close()
-	}
+	resources := runtimeResources{database: runtime.pool, activities: runtime.IssueActivities, emails: runtime.emailStore}
+	shutdownErr = errors.Join(shutdownErr, resources.close())
 	if shutdownErr != nil {
 		return fmt.Errorf("stop Selvedge background task runtime: %w", shutdownErr)
 	}
