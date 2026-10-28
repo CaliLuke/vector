@@ -1,5 +1,3 @@
-//go:build integration
-
 package postgres
 
 import (
@@ -9,6 +7,24 @@ import (
 
 	"github.com/jackc/pgx/v5"
 )
+
+// EmptyDatabase owns a disposable PostgreSQL container without installing a
+// schema. Tests can exercise installation or define only their required tables.
+func EmptyDatabase(t testing.TB) string {
+	t.Helper()
+	ctx, cancel := context.WithTimeout(t.Context(), time.Minute)
+	defer cancel()
+	pair, err := StartUncloned(ctx, func(context.Context, string) error { return nil })
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close empty PostgreSQL fixture: %v", closeErr)
+		}
+	})
+	return pair.SeedURL()
+}
 
 // OpenSQL starts an isolated integration database with the supplied schema.
 func OpenSQL(t testing.TB, schema string) (context.Context, *pgx.Conn) {

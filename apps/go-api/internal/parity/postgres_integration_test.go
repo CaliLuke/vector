@@ -3,31 +3,51 @@ package parity
 import (
 	"context"
 	"encoding/json"
-	"os"
+	"errors"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
 
 const proofRowID = "11111111-1111-4111-8111-111111111111"
 
 func TestPostgresTwoDatabaseTransition(t *testing.T) {
-	sourceURL := os.Getenv("PARITY_SOURCE_POSTGRES_URL")
-	targetURL := os.Getenv("PARITY_TARGET_POSTGRES_URL")
-	if sourceURL == "" || targetURL == "" {
-		t.Skip("set PARITY_SOURCE_POSTGRES_URL and PARITY_TARGET_POSTGRES_URL for the PostgreSQL proof")
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
-	cleanupProofRows(t, ctx, sourceURL, targetURL)
-	t.Cleanup(func() {
-		cleanupContext, cleanupCancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cleanupCancel()
-		cleanupProofRows(t, cleanupContext, sourceURL, targetURL)
+	migrationCalls := 0
+	pair, err := postgres.Start(ctx, func(ctx context.Context, seedURL string) error {
+		migrationCalls++
+		return installParitySeed(ctx, seedURL)
 	})
-	runPostgresTwoDatabaseTransition(t, ctx, sourceURL, targetURL)
+	if err != nil {
+		t.Fatalf("postgres.Start() error = %v", err)
+	}
+	t.Cleanup(func() {
+		if err := pair.Close(); err != nil {
+			t.Errorf("close PostgreSQL testcontainer: %v", err)
+		}
+	})
+	if pair.SourceURL == pair.TargetURL {
+		t.Fatal("testcontainer returned identical source and target URLs")
+	}
+
+	for run := 1; run <= 2; run++ {
+		if run > 1 {
+			if err := pair.Reset(ctx); err != nil {
+				t.Fatalf("Reset() run %d error = %v", run, err)
+			}
+		}
+		assertProofRowCount(t, ctx, pair.SourceURL, 0)
+		assertProofRowCount(t, ctx, pair.TargetURL, 0)
+		runPostgresTwoDatabaseTransition(t, ctx, pair.SourceURL, pair.TargetURL)
+	}
+	if migrationCalls != 1 {
+		t.Fatalf("seed migration calls = %d, want 1 across resets", migrationCalls)
+	}
 }
 
 func runPostgresTwoDatabaseTransition(t *testing.T, ctx context.Context, sourceURL string, targetURL string) {
@@ -69,10 +89,7 @@ INSERT INTO instance_configurations (
 }
 
 func TestPostgresIdentityRejectsSameDatabase(t *testing.T) {
-	postgresURL := os.Getenv("PARITY_SOURCE_POSTGRES_URL")
-	if postgresURL == "" {
-		t.Skip("set PARITY_SOURCE_POSTGRES_URL for the PostgreSQL identity proof")
-	}
+	postgresURL := postgres.EmptyDatabase(t)
 	config, err := pgx.ParseConfig(postgresURL)
 	if err != nil {
 		t.Fatalf("parse PostgreSQL URL: %v", err)
@@ -87,19 +104,54 @@ func TestPostgresIdentityRejectsSameDatabase(t *testing.T) {
 	}
 }
 
-func cleanupProofRows(t *testing.T, ctx context.Context, databaseURLs ...string) {
+func installParitySeed(ctx context.Context, seedURL string) (err error) {
+	tables, err := PlaneTables()
+	if err != nil {
+		return err
+	}
+	connection, err := pgx.Connect(ctx, seedURL)
+	if err != nil {
+		return err
+	}
+	defer func() { err = errors.Join(err, connection.Close(context.WithoutCancel(ctx))) }()
+	for _, table := range tables {
+		identifier := pgx.Identifier{table}.Sanitize()
+		statement := "CREATE TABLE " + identifier + " (id uuid PRIMARY KEY)"
+		if table == "instance_configurations" {
+			statement = `CREATE TABLE instance_configurations (
+    created_at timestamptz NOT NULL,
+    updated_at timestamptz NOT NULL,
+    id uuid PRIMARY KEY,
+    key text NOT NULL,
+    value text,
+    category text NOT NULL,
+    is_encrypted boolean NOT NULL
+)`
+		}
+		if _, execErr := connection.Exec(ctx, statement); execErr != nil {
+			return fmt.Errorf("apply migrated seed table %s: %w", table, execErr)
+		}
+	}
+	_, err = connection.Exec(ctx, `INSERT INTO accounts (id) VALUES ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')`)
+	return err
+}
+
+func assertProofRowCount(t *testing.T, ctx context.Context, databaseURL string, want int) {
 	t.Helper()
-	for _, databaseURL := range databaseURLs {
-		connection, err := pgx.Connect(ctx, databaseURL)
-		if err != nil {
-			t.Errorf("connect for proof cleanup: %v", err)
-			continue
+	connection, err := pgx.Connect(ctx, databaseURL)
+	if err != nil {
+		t.Fatalf("connect for proof-row count: %v", err)
+	}
+	t.Cleanup(func() {
+		if closeErr := connection.Close(context.WithoutCancel(ctx)); closeErr != nil {
+			t.Error(closeErr)
 		}
-		if _, err := connection.Exec(ctx, "DELETE FROM instance_configurations WHERE id = '11111111-1111-4111-8111-111111111111'"); err != nil {
-			t.Errorf("delete proof row: %v", err)
-		}
-		if err := connection.Close(ctx); err != nil {
-			t.Errorf("close proof cleanup connection: %v", err)
-		}
+	})
+	var got int
+	if err := connection.QueryRow(ctx, "SELECT count(*) FROM instance_configurations WHERE id = $1", proofRowID).Scan(&got); err != nil {
+		t.Fatalf("query proof-row count: %v", err)
+	}
+	if got != want {
+		t.Fatalf("proof-row count = %d, want %d", got, want)
 	}
 }

@@ -281,6 +281,18 @@ errors in instance management. No threshold, exclusion, or suppression changes.
 The untagged Go suite passes 9,117 tests/subtests across 105 packages; its seven
 existing opt-in skips remain tracked separately for removal.
 
+Ten more opt-in skips are removed by giving database proofs disposable fixtures.
+UUID and three sticky proofs already owned their containers; their redundant
+flags are deleted. Bootstrap and public-asset proofs share empty-database
+ownership, sticky differential comparison uses two clones of the migrated schema,
+and parity keeps one repeatability proof instead of two copies. Adoption tests
+start from the historical Django schema and cover missing/empty ledgers and
+partial-schema rejection independently of fresh installation. The asset fixture
+includes the draft-issue column now read by the repository. All 24 affected
+tests/subtests pass without skips. Four service-backed skip allowances remain.
+Maintainability drops to 35 allowances, three checked connection closures reduce
+lint to 651 occurrences, and the 488 duplicate reports need no baseline changes.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML

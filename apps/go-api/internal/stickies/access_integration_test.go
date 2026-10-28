@@ -5,7 +5,6 @@ package stickies
 import (
 	"context"
 	"errors"
-	"os"
 	"testing"
 	"time"
 	"uuid"
@@ -16,9 +15,6 @@ import (
 )
 
 func TestPostgresMembershipScopeForEveryStickyOperation(t *testing.T) {
-	if os.Getenv("PLANE_RUN_STICKY_MEMBERSHIP_PROOF") != "1" {
-		t.Skip("set PLANE_RUN_STICKY_MEMBERSHIP_PROOF=1 to run the Sticky membership proof")
-	}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 

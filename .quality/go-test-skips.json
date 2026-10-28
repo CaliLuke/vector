@@ -21,69 +21,9 @@
     },
     {
       "package": "github.com/CaliLuke/go-plane/internal/assets",
-      "test": "TestPublicAssetAuthorizationPostgres",
-      "reason": "Requires an explicitly configured disposable PostgreSQL database.",
-      "scope": "internal/assets; PLANE_PUBLIC_ASSETS_TEST_DATABASE_URL"
-    },
-    {
-      "package": "github.com/CaliLuke/go-plane/internal/assets",
       "test": "TestStorageRustFSPresignedPostGetCopyHeadDelete",
       "reason": "Requires an explicitly configured RustFS endpoint and disposable bucket.",
       "scope": "internal/assets; RustFS test endpoint environment"
-    },
-    {
-      "package": "github.com/CaliLuke/go-plane/internal/bootstrap",
-      "test": "TestPostgresBootstrapRegistrationAndConfiguration",
-      "reason": "Requires an explicitly configured disposable PostgreSQL database.",
-      "scope": "internal/bootstrap; PLANE_SCHEMA_BOOTSTRAP_TEST_DATABASE_URL"
-    },
-    {
-      "package": "github.com/CaliLuke/go-plane/internal/bootstrap",
-      "test": "TestPostgresSchemaBootstrapFreshAdoptAndRejectPartial",
-      "reason": "Requires an explicitly configured disposable PostgreSQL database.",
-      "scope": "internal/bootstrap; PLANE_SCHEMA_BOOTSTRAP_TEST_DATABASE_URL"
-    },
-    {
-      "package": "github.com/CaliLuke/go-plane/internal/database",
-      "test": "TestGeneratedUUIDQueriesRoundTrip",
-      "reason": "Requires an explicitly configured disposable PostgreSQL database.",
-      "scope": "internal/database; PostgreSQL test URL environment"
-    },
-    {
-      "package": "github.com/CaliLuke/go-plane/internal/parity",
-      "test": "TestPostgresTwoDatabaseTransition",
-      "reason": "Requires two explicitly configured disposable migrated PostgreSQL databases and mutates a proof row.",
-      "scope": "internal/parity; source/target test database URL environment"
-    },
-    {
-      "package": "github.com/CaliLuke/go-plane/internal/parity",
-      "test": "TestPostgresIdentityRejectsSameDatabase",
-      "reason": "Requires explicitly configured disposable migrated PostgreSQL databases.",
-      "scope": "internal/parity; source/target test database URL environment"
-    },
-    {
-      "package": "github.com/CaliLuke/go-plane/internal/stickies",
-      "test": "TestPostgresMembershipScopeForEveryStickyOperation",
-      "reason": "Requires an explicitly configured disposable PostgreSQL database.",
-      "scope": "internal/stickies; sticky PostgreSQL proof environment"
-    },
-    {
-      "package": "github.com/CaliLuke/go-plane/internal/stickies",
-      "test": "TestRepositoryPostgresOperationsAndIsolation",
-      "reason": "Requires an explicitly configured disposable PostgreSQL database.",
-      "scope": "internal/stickies; sticky PostgreSQL proof environment"
-    },
-    {
-      "package": "github.com/CaliLuke/go-plane/internal/stickies",
-      "test": "TestStickyCreateDifferentialTransition",
-      "reason": "Requires explicitly configured migrated source and target PostgreSQL databases.",
-      "scope": "internal/stickies; differential proof flag and database URL environment"
-    },
-    {
-      "package": "github.com/CaliLuke/go-plane/internal/stickies",
-      "test": "TestConcurrentStickyCreateAllocatesDistinctIncreasingSortOrders",
-      "reason": "Requires an explicitly configured disposable PostgreSQL database.",
-      "scope": "internal/stickies; sticky PostgreSQL proof environment"
     }
   ]
 }

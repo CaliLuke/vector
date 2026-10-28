@@ -62,7 +62,7 @@
       "file": "internal/assets/public_authorization_integration_test.go",
       "package": "assets",
       "function": "TestPublicAssetAuthorizationPostgres",
-      "score": 13
+      "score": 14
     },
     {
       "file": "internal/assets/service.go",
@@ -105,12 +105,6 @@
       "package": "backgroundtasks",
       "function": "TestPostgresWebhookModelActivityDeliversSignedPayloadRetriesAndDeactivates",
       "score": 16
-    },
-    {
-      "file": "internal/bootstrap/instance_integration_test.go",
-      "package": "bootstrap",
-      "function": "TestPostgresBootstrapRegistrationAndConfiguration",
-      "score": 18
     },
     {
       "file": "internal/customers/input.go",

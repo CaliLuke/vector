@@ -20,9 +20,6 @@ import (
 )
 
 func TestGeneratedUUIDQueriesRoundTrip(t *testing.T) {
-	if os.Getenv("PLANE_RUN_UUID_ROUNDTRIP") != "1" {
-		t.Skip("set PLANE_RUN_UUID_ROUNDTRIP=1 to run the UUID round-trip proof")
-	}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 

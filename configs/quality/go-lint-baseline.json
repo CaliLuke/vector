@@ -524,14 +524,6 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/bootstrap/schema_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/bootstrap/schema.go",
         "Error return value of `connection.Close` is not checked"
       ],
@@ -716,14 +708,6 @@
     {
       "fingerprint": ["errcheck", "internal/parity/response.go", "Error return value of `file.Close` is not checked"],
       "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/parity/testcontainers_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 2
     },
     {
       "fingerprint": [

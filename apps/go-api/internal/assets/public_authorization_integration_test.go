@@ -5,28 +5,22 @@ package assets
 import (
 	"context"
 	"errors"
-	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestPublicAssetAuthorizationPostgres(t *testing.T) {
-	databaseURL := os.Getenv("PLANE_PUBLIC_ASSETS_TEST_DATABASE_URL")
-	if databaseURL == "" {
-		t.Skip("set PLANE_PUBLIC_ASSETS_TEST_DATABASE_URL to an isolated test database")
-	}
+	databaseURL := postgresfixture.EmptyDatabase(t)
 	config, err := pgxpool.ParseConfig(databaseURL)
 	if err != nil {
 		t.Fatalf("parse isolated public assets database URL: %v", err)
-	}
-	if !strings.HasPrefix(config.ConnConfig.Database, "test_") {
-		t.Fatalf("public assets authorization test requires an isolated test_ database, got %q", config.ConnConfig.Database)
 	}
 	config.MaxConns = 1 // Keep PostgreSQL TEMP tables visible to each repository call.
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -44,7 +38,7 @@ CREATE TEMP TABLE issue_comments (id uuid PRIMARY KEY, workspace_id uuid, projec
 CREATE TEMP TABLE issues (id uuid PRIMARY KEY, workspace_id uuid, project_id uuid, deleted_at timestamptz);
 CREATE TEMP TABLE file_assets (
  id uuid PRIMARY KEY, created_at timestamptz, updated_at timestamptz, attributes jsonb, asset text,
- workspace_id uuid, project_id uuid, comment_id uuid, issue_id uuid, entity_type text, size double precision,
+ workspace_id uuid, project_id uuid, comment_id uuid, issue_id uuid, draft_issue_id uuid, entity_type text, size double precision,
  is_uploaded boolean, is_deleted boolean, is_archived boolean, storage_metadata jsonb,
 	 user_id uuid, created_by_id uuid, deleted_at timestamptz
 )`); execErr != nil {

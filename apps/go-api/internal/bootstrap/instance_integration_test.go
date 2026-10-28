@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/url"
-	"os"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -13,20 +11,14 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/instancecipher"
+	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestPostgresBootstrapRegistrationAndConfiguration(t *testing.T) {
-	databaseURL := os.Getenv("PLANE_BOOTSTRAP_TEST_DATABASE_URL")
-	if databaseURL == "" {
-		t.Skip("set PLANE_BOOTSTRAP_TEST_DATABASE_URL to a dedicated bootstrap test database")
-	}
-	parsed, err := url.Parse(databaseURL)
-	if err != nil || !strings.Contains(strings.ToLower(parsed.Path), "bootstrap_test") {
-		t.Fatal("PLANE_BOOTSTRAP_TEST_DATABASE_URL must name a dedicated database containing 'bootstrap_test'")
-	}
+	databaseURL := postgresfixture.EmptyDatabase(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	adminPool, err := pgxpool.New(ctx, databaseURL)
@@ -39,11 +31,7 @@ func TestPostgresBootstrapRegistrationAndConfiguration(t *testing.T) {
 	if _, execErr := adminPool.Exec(ctx, "CREATE SCHEMA "+pgx.Identifier{schema}.Sanitize()); execErr != nil {
 		t.Fatal(execErr)
 	}
-	t.Cleanup(func() {
-		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cleanupCancel()
-		_, _ = adminPool.Exec(cleanupCtx, "DROP SCHEMA "+pgx.Identifier{schema}.Sanitize()+" CASCADE")
-	})
+
 	_, err = adminPool.Exec(ctx, `CREATE TABLE `+pgx.Identifier{schema}.Sanitize()+`.instances (
 		created_at timestamptz NOT NULL, updated_at timestamptz NOT NULL, id uuid PRIMARY KEY,
 		instance_name varchar(255) NOT NULL, whitelist_emails text, instance_id varchar(255) NOT NULL UNIQUE,

@@ -10,8 +10,10 @@ import (
 	"time"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/bootstrap"
 	"github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/parity"
+	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -23,15 +25,18 @@ type recordedCreateFixture struct {
 // transitions. The source action applies the recorded Django row contract. The
 // target action uses the real Go repository.
 func TestStickyCreateDifferentialTransition(t *testing.T) {
-	if os.Getenv("PLANE_RUN_STICKY_DIFFERENTIAL_PROOF") != "1" {
-		t.Skip("set PLANE_RUN_STICKY_DIFFERENTIAL_PROOF=1 to run the Sticky differential proof")
-	}
-	sourceURL, targetURL := os.Getenv("PLANE_STICKY_SOURCE_POSTGRES_URL"), os.Getenv("PLANE_STICKY_TARGET_POSTGRES_URL")
-	if sourceURL == "" || targetURL == "" {
-		t.Skip("set distinct migrated PLANE_STICKY_SOURCE_POSTGRES_URL and PLANE_STICKY_TARGET_POSTGRES_URL values")
-	}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
+	pair, startErr := postgresfixture.Start(ctx, bootstrap.MigrateSchema)
+	if startErr != nil {
+		t.Fatalf("start migrated sticky databases: %v", startErr)
+	}
+	t.Cleanup(func() {
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close sticky differential fixture: %v", closeErr)
+		}
+	})
+	sourceURL, targetURL := pair.SourceURL, pair.TargetURL
 	seedDifferentialDatabase(t, ctx, sourceURL)
 	seedDifferentialDatabase(t, ctx, targetURL)
 	fixture := loadRecordedCreateFixture(t)

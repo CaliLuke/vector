@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"sort"
 	"sync"
 	"testing"
@@ -21,9 +20,6 @@ import (
 const sortProofConcurrentCreates = 8
 
 func TestConcurrentStickyCreateAllocatesDistinctIncreasingSortOrders(t *testing.T) {
-	if os.Getenv("PLANE_RUN_STICKY_SORT_PROOF") != "1" {
-		t.Skip("set PLANE_RUN_STICKY_SORT_PROOF=1 to run the Sticky sort-order proof")
-	}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 
