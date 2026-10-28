@@ -307,6 +307,16 @@ fuzzing now exercises inputs above the old 64 KiB cutoff under the production
 size limit. Checked Redis-client cleanup reduces lint to 650 occurrences;
 maintainability and duplication remain at 35 and 488 respectively.
 
+Customer and release command normalization now separates command shape from
+field conversion. Each domain has one contract validator and one field normalizer
+that owns its map copy; receipt preparation and rich-text processing retain their
+existing order. Required identities, allowed fields, canonical property IDs,
+collection ownership, and JSON encodability keep their existing behavior. Twenty
+public mutation-contract tests and 38 catalogue tests pass before and after the
+change, including retry replay and changelog escaping. The two production
+maintainability allowances are retired, leaving 33; lint and duplication remain
+unchanged at 650 occurrences and 488 directed reports.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML

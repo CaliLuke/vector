@@ -18,110 +18,13 @@ import (
 var colorPattern = regexp.MustCompile(`^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$`)
 
 func normalize(in *Command) error {
-	if table(in.Tool) == "" || in.ExpectedRevision != nil && *in.ExpectedRevision == "" {
-		return projectmutations.ErrInvalid
+	allowed, contractErr := validateCommand(in)
+	if contractErr != nil {
+		return contractErr
 	}
-	fields := maps.Clone(in.Fields)
-	if fields == nil {
-		fields = map[string]any{}
-	}
-	allowed := []string{}
-	switch in.Action {
-	case "create", "update":
-		switch in.Tool {
-		case "release":
-			allowed = []string{"name", "description_html", "status", "target_date", "release_date", "tag_id", "lead_id", "is_prerelease"}
-			if in.Action == "create" {
-				allowed = append(allowed, "external_source", "external_id")
-			}
-		case "release_tag":
-			allowed = []string{"version", "description", "commit_hash", "git_tag"}
-		case "release_label":
-			allowed = []string{"name", "color", "sort_order"}
-		}
-	case "delete":
-	case "update_changelog":
-		if in.Tool != "release" {
-			return projectmutations.ErrInvalid
-		}
-		allowed = []string{"description_html", "description_stripped"}
-	case "manage_workitems":
-		if in.Tool != "release" || len(in.Add)+len(in.Remove) == 0 {
-			return projectmutations.ErrInvalid
-		}
-	case "attach", "detach":
-		if in.Tool != "release_label" || in.ReleaseID == uuid.Nil || len(in.Add) == 0 {
-			return projectmutations.ErrInvalid
-		}
-	default:
-		return projectmutations.ErrInvalid
-	}
-	if in.Action == "create" {
-		if in.ID != uuid.Nil {
-			return projectmutations.ErrInvalid
-		}
-		key := "name"
-		if in.Tool == "release_tag" {
-			key = "version"
-		}
-		if _, ok := fields[key]; !ok {
-			return projectmutations.ErrInvalid
-		}
-	} else if in.Action != "attach" && in.Action != "detach" && in.ID == uuid.Nil {
-		return projectmutations.ErrInvalid
-	}
-	for key, value := range fields {
-		if !slices.Contains(allowed, key) {
-			return projectmutations.ErrInvalid
-		}
-		if key == "is_prerelease" {
-			if _, ok := value.(bool); !ok {
-				return projectmutations.ErrInvalid
-			}
-			continue
-		}
-		if key == "sort_order" {
-			if _, ok := value.(int64); !ok {
-				return projectmutations.ErrInvalid
-			}
-			continue
-		}
-		text, ok := value.(string)
-		if !ok || strings.ContainsRune(text, 0) {
-			return projectmutations.ErrInvalid
-		}
-		if key != "description_html" && key != "description_stripped" && key != "description" && utf8.RuneCountInString(text) > 255 {
-			return projectmutations.ErrInvalid
-		}
-		if key == "description" && utf8.RuneCountInString(text) > 10000 {
-			return projectmutations.ErrInvalid
-		}
-		if key == "name" || key == "version" {
-			text = strings.TrimSpace(text)
-			if text == "" {
-				return projectmutations.ErrInvalid
-			}
-			fields[key] = text
-		}
-		if key == "status" && !slices.Contains([]string{"unreleased", "released", "cancelled"}, text) {
-			return projectmutations.ErrInvalid
-		}
-		if key == "color" && !colorPattern.MatchString(text) {
-			return projectmutations.ErrInvalid
-		}
-		if key == "release_date" || key == "target_date" {
-			parsed, err := time.Parse(time.DateOnly, text)
-			if err != nil || parsed.Year() < 1 || parsed.Format(time.DateOnly) != text {
-				return projectmutations.ErrInvalid
-			}
-		}
-		if key == "tag_id" || key == "lead_id" {
-			id, err := uuid.Parse(text)
-			if err != nil || id == uuid.Nil {
-				return projectmutations.ErrInvalid
-			}
-			fields[key] = id.String()
-		}
+	fields, fieldsErr := normalizeFields(in.Fields, allowed)
+	if fieldsErr != nil {
+		return fieldsErr
 	}
 	if in.Action == "update_changelog" {
 		body, _ := fields["description_html"].(string)
@@ -180,4 +83,119 @@ func normalize(in *Command) error {
 	}
 	in.Fields = fields
 	return nil
+}
+
+// validateCommand checks the tool, action, identity, and required field shape.
+func validateCommand(in *Command) ([]string, error) {
+	if table(in.Tool) == "" || in.ExpectedRevision != nil && *in.ExpectedRevision == "" {
+		return nil, projectmutations.ErrInvalid
+	}
+	allowed := []string{}
+	switch in.Action {
+	case "create", "update":
+		switch in.Tool {
+		case "release":
+			allowed = []string{"name", "description_html", "status", "target_date", "release_date", "tag_id", "lead_id", "is_prerelease"}
+			if in.Action == "create" {
+				allowed = append(allowed, "external_source", "external_id")
+			}
+		case "release_tag":
+			allowed = []string{"version", "description", "commit_hash", "git_tag"}
+		case "release_label":
+			allowed = []string{"name", "color", "sort_order"}
+		}
+	case "delete":
+	case "update_changelog":
+		if in.Tool != "release" {
+			return nil, projectmutations.ErrInvalid
+		}
+		allowed = []string{"description_html", "description_stripped"}
+	case "manage_workitems":
+		if in.Tool != "release" || len(in.Add)+len(in.Remove) == 0 {
+			return nil, projectmutations.ErrInvalid
+		}
+	case "attach", "detach":
+		if in.Tool != "release_label" || in.ReleaseID == uuid.Nil || len(in.Add) == 0 {
+			return nil, projectmutations.ErrInvalid
+		}
+	default:
+		return nil, projectmutations.ErrInvalid
+	}
+	if in.Action == "create" {
+		if in.ID != uuid.Nil {
+			return nil, projectmutations.ErrInvalid
+		}
+		key := "name"
+		if in.Tool == "release_tag" {
+			key = "version"
+		}
+		if _, ok := in.Fields[key]; !ok {
+			return nil, projectmutations.ErrInvalid
+		}
+	} else if in.Action != "attach" && in.Action != "detach" && in.ID == uuid.Nil {
+		return nil, projectmutations.ErrInvalid
+	}
+	return allowed, nil
+}
+
+// normalizeFields owns a field-map copy and converts scalar catalogue values.
+func normalizeFields(fields map[string]any, allowed []string) (map[string]any, error) {
+	fields = maps.Clone(fields)
+	if fields == nil {
+		fields = map[string]any{}
+	}
+	for key, value := range fields {
+		if !slices.Contains(allowed, key) {
+			return nil, projectmutations.ErrInvalid
+		}
+		if key == "is_prerelease" {
+			if _, ok := value.(bool); !ok {
+				return nil, projectmutations.ErrInvalid
+			}
+			continue
+		}
+		if key == "sort_order" {
+			if _, ok := value.(int64); !ok {
+				return nil, projectmutations.ErrInvalid
+			}
+			continue
+		}
+		text, ok := value.(string)
+		if !ok || strings.ContainsRune(text, 0) {
+			return nil, projectmutations.ErrInvalid
+		}
+		if key != "description_html" && key != "description_stripped" && key != "description" && utf8.RuneCountInString(text) > 255 {
+			return nil, projectmutations.ErrInvalid
+		}
+		if key == "description" && utf8.RuneCountInString(text) > 10000 {
+			return nil, projectmutations.ErrInvalid
+		}
+		if key == "name" || key == "version" {
+			text = strings.TrimSpace(text)
+			if text == "" {
+				return nil, projectmutations.ErrInvalid
+			}
+			fields[key] = text
+		}
+		if key == "status" && !slices.Contains([]string{"unreleased", "released", "cancelled"}, text) {
+			return nil, projectmutations.ErrInvalid
+		}
+		if key == "color" && !colorPattern.MatchString(text) {
+			return nil, projectmutations.ErrInvalid
+		}
+		if key == "release_date" || key == "target_date" {
+			parsed, err := time.Parse(time.DateOnly, text)
+			if err != nil || parsed.Year() < 1 || parsed.Format(time.DateOnly) != text {
+				return nil, projectmutations.ErrInvalid
+			}
+		}
+		if key == "tag_id" || key == "lead_id" {
+			id, err := uuid.Parse(text)
+			if err != nil || id == uuid.Nil {
+				return nil, projectmutations.ErrInvalid
+			}
+			fields[key] = id.String()
+		}
+	}
+	return fields, nil
 }
