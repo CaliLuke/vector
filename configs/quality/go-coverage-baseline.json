@@ -346,7 +346,7 @@
       "percent": 0
     },
     "github.com/CaliLuke/go-plane/internal/projectmembershipreads": {
-      "statements": 1570,
+      "statements": 1575,
       "percent": 69.24
     },
     "github.com/CaliLuke/go-plane/internal/projectmutations": {

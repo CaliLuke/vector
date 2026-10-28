@@ -449,6 +449,17 @@ coverage omitted by the focused selection: combined coverage is 55.43%, retainin
 the 55.16% floor with 857 statements. Lint, duplication, and strict error findings
 remain at 516, 488, and 1,289 respectively.
 
+Workspace invitation eligibility now has one operation owning the actor lookup,
+role ceiling, live-workspace lookup, and existing-member check. A source comparison
+confirms the query/check order and inputs are unchanged. Shared email validation,
+whole-batch insertion, commit-before-publish behavior, and project invitation rules
+retain their existing boundaries. Both functions meet the maintainability floor,
+retiring another allowance and leaving 26. Final affected runs pass 643
+tests/subtests without skips. A consumer run stopped after PostgreSQL startup
+timeouts under host pressure; serial reruns passed. Including cache TLS and
+project/workspace creation consumers yields 69.33% fresh coverage, retaining the
+69.24% floor with 1,575 statements. Lint and duplication remain at 516 and 488.
+
 HTTP response bodies retain explicit checked closes where the current bodyclose
 analyzer cannot follow a cross-package cleanup helper. This limitation is tracked
 in [timakin/bodyclose#60](https://github.com/timakin/bodyclose/issues/60), with a
