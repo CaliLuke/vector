@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	OAuthPath  = "/mcp"
-	HeaderPath = "/mcp/api-key"
+	ResourcePath = "/mcp"
+	OAuthPath    = ResourcePath
+	HeaderPath   = "/mcp/api-key"
 )
 
 // Config is deliberately disabled by default. Authentication implementations

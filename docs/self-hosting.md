@@ -121,6 +121,38 @@ Keep optional external analytics separate from local observability. PostHog is n
 logs, traces, or usage metrics to SigNoz. Do not enable analytics merely to make every status row Enabled.
 See [privacy and external services](privacy.md) for the data-sharing boundary.
 
+## Remote MCP
+
+The API includes a remote MCP server, disabled by default. Enable personal-token authentication in
+`apps/go-api/.env`:
+
+```dotenv
+MCP_ENABLED=true
+MCP_AUTH_MODE=header
+MCP_RESOURCE_URL=https://vector.example.com/mcp
+```
+
+Replace the example origin with your instance's canonical HTTPS origin, then recreate the API container
+as described above. Forward `/mcp` unchanged through your reverse proxy to the Go API. An HTML frontend
+response at that URL does not indicate a working MCP server.
+
+Connect a Streamable HTTP MCP client to `https://vector.example.com/mcp`, with these headers:
+
+```http
+Authorization: Bearer <personal-api-token>
+X-Workspace-Slug: <workspace-slug>
+```
+
+Create a personal token under Profile settings → API tokens. Keep it in your MCP client's secret storage;
+never include it in a URL or committed configuration. The token owner must be an active member of the
+selected workspace, and every action rechecks current permissions. Browser sessions do not authenticate MCP.
+The legacy `/mcp/api-key` endpoint remains available for existing personal-token clients.
+
+Server enablement is deployment configuration, not a UI toggle. The profile's MCP connection section
+is for OAuth account linking and is hidden when OAuth is unavailable. For OAuth or simultaneous OAuth
+and personal-token operation, see [MCP OAuth configuration](mcp-oauth.md): OAuth uses `/mcp`, while
+personal tokens use `/mcp/api-key` in `both` mode. Authentication never falls back between token classes.
+
 ## Data and upgrades
 
 Back up PostgreSQL, uploaded objects, and deployment secrets before upgrades.
