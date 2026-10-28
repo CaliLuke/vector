@@ -389,7 +389,7 @@ func (service *Service) signUpload(ctx context.Context, assetID, key, contentTyp
 func dataField(data []byte, key string) loom.JSONValue {
 	var values map[string]json.RawMessage
 	_ = json.Unmarshal(data, &values)
-	return loom.JSONValue(values[key])
+	return values[key]
 }
 
 func nullableText(value, fallback string) string {

@@ -1786,54 +1786,6 @@
       "count": 1
     },
     {
-      "fingerprint": ["unconvert", "account_authentication.go", "unnecessary conversion"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unconvert", "api_state_reads.go", "unnecessary conversion"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unconvert", "cmd/system/public_feedback_options.go", "unnecessary conversion"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unconvert", "cmd/system/work_item_core_http_test.go", "unnecessary conversion"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unconvert", "cmd/system/work_item_core_http.go", "unnecessary conversion"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unconvert", "internal/assets/domain.go", "unnecessary conversion"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unconvert", "internal/assets/service.go", "unnecessary conversion"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unconvert", "internal/projectintakewrites/repository.go", "unnecessary conversion"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unconvert", "internal/projectstatereads/writes.go", "unnecessary conversion"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unconvert", "project_state_reads.go", "unnecessary conversion"],
-      "count": 2
-    },
-    {
-      "fingerprint": ["unconvert", "project_state_writes.go", "unnecessary conversion"],
-      "count": 2
-    },
-    {
-      "fingerprint": ["unconvert", "work_item_core/design/transport_test.go", "unnecessary conversion"],
-      "count": 1
-    },
-    {
       "fingerprint": ["unparam", "api_v1_stickies.go", "apiV1StickyString - allowBlank always receives true"],
       "count": 1
     },

@@ -584,7 +584,7 @@ func (service *LifecycleService) invalidateWorkspaceAssetCaches(ctx context.Cont
 }
 
 func assetAttributes(ctx context.Context, body io.ReadCloser, current any) ([]byte, error) {
-	value := any(current)
+	value := current
 	if body != nil {
 		defer body.Close()
 		contentType := RequestContentType(ctx)

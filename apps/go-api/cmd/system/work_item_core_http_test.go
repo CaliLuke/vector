@@ -342,7 +342,7 @@ func TestWorkItemProtocolMiddlewareReturnsAuthorizationErrorBeforeMethodResponse
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)
 
-	if response.Code != http.StatusForbidden || response.Header().Get("Content-Type") != "application/json" || !reflect.DeepEqual(json.RawMessage(response.Body.Bytes()), json.RawMessage(body)) {
+	if response.Code != http.StatusForbidden || response.Header().Get("Content-Type") != "application/json" || !reflect.DeepEqual(json.RawMessage(response.Body.Bytes()), body) {
 		t.Fatalf("status=%d content-type=%q body=%q", response.Code, response.Header().Get("Content-Type"), response.Body.String())
 	}
 }

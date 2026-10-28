@@ -241,7 +241,7 @@ func apiStateWriteMethod(ctx context.Context) bool {
 func apiStateWriteError(status int, body map[string]any) error {
 	result := &api.APIStateWritesErrorResponseBody{Kind: fmt.Sprintf("status_%d", status)}
 	raw, _ := json.Marshal(body)
-	result.Body = loom.JSONValue(json.RawMessage(raw))
+	result.Body = json.RawMessage(raw)
 	return result
 }
 

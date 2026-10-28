@@ -460,6 +460,15 @@ timeouts under host pressure; serial reruns passed. Including cache TLS and
 project/workspace creation consumers yields 69.33% fresh coverage, retaining the
 69.24% floor with 1,575 statements. Lint and duplication remain at 516 and 488.
 
+Fourteen redundant type conversions are removed across twelve owned source/test
+files. The cleanup preserves the conversions that turn bytes into raw JSON and
+leaves response encoding, interfaces, and transport generation unchanged. The six
+affected package suites pass 3,549 tests/subtests without the integration build
+tag or any skips, including the asset bindings generator check. The reviewed lint
+baseline removes only twelve `unconvert` fingerprints (fourteen occurrences),
+leaving 307 fingerprints and 502 occurrences. The linter remains enabled with no
+allowances; maintainability stays at 26 and duplication at 488.
+
 HTTP response bodies retain explicit checked closes where the current bodyclose
 analyzer cannot follow a cross-package cleanup helper. This limitation is tracked
 in [timakin/bodyclose#60](https://github.com/timakin/bodyclose/issues/60), with a

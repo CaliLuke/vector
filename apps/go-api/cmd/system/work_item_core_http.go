@@ -469,7 +469,7 @@ func writeWorkItemProtocolError(response http.ResponseWriter, request *http.Requ
 	if parseErr != nil || status < 100 || status > 599 {
 		status = http.StatusInternalServerError
 	}
-	body := json.RawMessage(apiError.Body)
+	body := apiError.Body
 	if !json.Valid(body) {
 		body = json.RawMessage(`{"error":"Something went wrong please try again later"}`)
 		status = http.StatusInternalServerError

@@ -127,10 +127,10 @@ func (service *projectStateReadsService) List(
 			return nil, &api.ProjectStateReadsInternalError{Message: projectStateReadsInternalErrorDetail}
 		}
 		service.capture(ctx, encoded)
-		return loom.JSONValue(encoded), nil
+		return encoded, nil
 	}
 	service.capture(ctx, data)
-	return loom.JSONValue(data), nil
+	return data, nil
 }
 
 func (service *projectStateReadsService) Detail(

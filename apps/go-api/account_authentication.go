@@ -372,7 +372,7 @@ func (s *accountAuthenticationService) passwordChange(ctx context.Context, conte
 		if err != nil {
 			return nil, nil, s.internal()
 		}
-		return accountAuthenticationRaw(json.RawMessage(encoded))
+		return accountAuthenticationRaw(encoded)
 	}
 	return accountAuthenticationRaw(map[string]any{"message": "Password updated successfully"})
 }

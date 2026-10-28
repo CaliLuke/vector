@@ -340,7 +340,7 @@ func (repository *WriteRepository) MarkDefault(ctx context.Context, input StateW
 func addAppOrderToResponse(data json.RawMessage, input StateWriteInput, fields map[string]any) (json.RawMessage, error) {
 	order, present := fields["order"]
 	if !input.App || !present {
-		return json.RawMessage(data), nil
+		return data, nil
 	}
 	encodedOrder, err := json.Marshal(order)
 	if err != nil {

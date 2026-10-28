@@ -29,6 +29,6 @@ func publicFeedbackOptionsHandler(middleware func(http.Handler) http.Handler, ro
 			writeStickyJSON(response, http.StatusUnauthorized, map[string]string{"detail": "Authentication credentials were not provided."})
 			return
 		}
-		writeStickyJSON(response, http.StatusOK, json.RawMessage(metadata))
+		writeStickyJSON(response, http.StatusOK, metadata)
 	}))
 }

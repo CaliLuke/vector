@@ -204,7 +204,7 @@ func TestWorkItemGeneratedErrorsPreserveRecordedClientErrorBodies(t *testing.T) 
 		checked++
 		t.Run(filepath.Base(path), func(t *testing.T) {
 			handler, service := transport(t)
-			failure := &api.WorkItemError{Kind: fmt.Sprintf("status_%d", fixture.Response.Status), Body: loom.JSONValue(fixture.Response.Body)}
+			failure := &api.WorkItemError{Kind: fmt.Sprintf("status_%d", fixture.Response.Status), Body: fixture.Response.Body}
 			service.failure = failure
 			request := httptest.NewRequest("POST", "/api/workspaces/demo/projects/01234567-89ab-4def-8123-456789abcdef/issues/", strings.NewReader(`{}`))
 			response := httptest.NewRecorder()

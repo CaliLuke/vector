@@ -13,7 +13,6 @@ import (
 	api "github.com/CaliLuke/go-plane/gen/project_state_reads"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/projectstatereads"
-	loom "github.com/CaliLuke/loom/pkg"
 )
 
 type projectStateWritesRepository interface {
@@ -33,7 +32,7 @@ func (service *projectStateReadsService) appStateWrite(ctx context.Context, oper
 	}
 	userID, err := service.userID(ctx)
 	if err != nil {
-		return nil, nil, &api.ProjectStateWritesAppError{Kind: "unauthenticated", Body: loom.JSONValue(json.RawMessage(`{"detail":"Authentication credentials were not provided."}`))}
+		return nil, nil, &api.ProjectStateWritesAppError{Kind: "unauthenticated", Body: json.RawMessage(`{"detail":"Authentication credentials were not provided."}`)}
 	}
 	// Django authentication runs before the view decorator; after that,
 	// invalidate_cache wraps permission checks, parsing, and the handler.
@@ -92,7 +91,7 @@ func projectStateAppFailure(status int, body any) error {
 	if err != nil {
 		raw = []byte(`{"error":"Something went wrong please try again later"}`)
 	}
-	return &api.ProjectStateWritesAppError{Kind: kind, Body: loom.JSONValue(json.RawMessage(raw))}
+	return &api.ProjectStateWritesAppError{Kind: kind, Body: json.RawMessage(raw)}
 }
 
 func projectStateAppError(err error) error {

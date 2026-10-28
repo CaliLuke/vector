@@ -236,7 +236,7 @@ func (r *Repository) detail(ctx context.Context, slug, project, id string) (json
 	if err != nil {
 		return nil, err
 	}
-	return json.RawMessage(data), nil
+	return data, nil
 }
 
 func createdContainerResponse(data json.RawMessage) (json.RawMessage, error) {
