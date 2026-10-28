@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,6 +17,7 @@ type cycleLifecycleOptionsAuthorizerStub struct {
 	exists       bool
 	lookupCalls  int
 	lookupTarget systemapi.SessionProtocolResource
+	lookupErr    error
 }
 
 func (*cycleLifecycleOptionsAuthorizerStub) AuthorizeSessionProtocol(context.Context, string) (int, map[string]any) {
@@ -33,7 +35,28 @@ func (*cycleLifecycleOptionsAuthorizerStub) OwnsSessionProtocolMethod(string, st
 func (stub *cycleLifecycleOptionsAuthorizerStub) SessionProtocolResourceExists(_ context.Context, resource systemapi.SessionProtocolResource) (bool, error) {
 	stub.lookupCalls++
 	stub.lookupTarget = resource
-	return stub.exists, nil
+	return stub.exists, stub.lookupErr
+}
+
+func TestCycleOptionsLookupFailureDoesNotReturnSuccessMetadata(t *testing.T) {
+	cycles := &cycleLifecycleOptionsAuthorizerStub{lookupErr: errors.New("database unavailable")}
+	dispatch := labelSessionProtocolDispatch{cycles: cycles}
+	stack := func(next http.Handler) http.Handler { return next }
+	handler := newSessionServiceProtocolMiddleware(notificationProtocolMetadata, dispatch, loomhttp.RuntimeCORSPolicy{}, stack, djangoSessionCookieConfig{}, false, apiV1CompatibilityOptions{})(http.NotFoundHandler())
+	request := httptest.NewRequest(http.MethodOptions, "/api/workspaces/acme/projects/11111111-1111-4111-8111-111111111111/cycles/22222222-2222-4222-8222-222222222222/", nil)
+	request.AddCookie(&http.Cookie{Name: "session-id", Value: "validated"})
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, request)
+	var body map[string]any
+	if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	if response.Code != http.StatusInternalServerError || body["error"] != "Something went wrong please try again later" || len(body) != 1 {
+		t.Fatalf("lookup failure status=%d body=%s", response.Code, response.Body.String())
+	}
+	if cycles.lookupCalls != 1 {
+		t.Fatalf("lookup calls=%d, want 1", cycles.lookupCalls)
+	}
 }
 
 func TestCycleDetailOptionsUsesSourceMetadataAndOmitsActionsForMissingObject(t *testing.T) {

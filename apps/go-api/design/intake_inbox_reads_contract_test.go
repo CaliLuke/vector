@@ -111,7 +111,7 @@ func TestDescriptionVersionPathsExposeAuthenticatedOptions(t *testing.T) {
 
 func TestIntakeAndInboxAliasesHaveEquivalentContracts(t *testing.T) {
 	document := readIntakeContract(t)
-	generated := readOpenAPI(t, "../gen/http/openapi.json")
+	generated := readOpenAPI(t)
 	pairs := [][2]string{
 		{"/api/workspaces/{slug}/projects/{project_id}/inbox-issues/", "/api/workspaces/{slug}/projects/{project_id}/intake-issues/"},
 		{"/api/workspaces/{slug}/projects/{project_id}/inbox-issues/{pk}/", "/api/workspaces/{slug}/projects/{project_id}/intake-issues/{pk}/"},
@@ -162,7 +162,7 @@ func TestIntakeInboxReadSchemasCorrectArchivedContractGaps(t *testing.T) {
 		}
 	}
 	listOperation := document.Paths["/api/workspaces/{slug}/projects/{project_id}/intake-work-items/{work_item_id}/description-versions/"]["get"]
-	generated := readOpenAPI(t, "../gen/http/openapi.json")
+	generated := readOpenAPI(t)
 	if !slices.Contains(parameterNames(generated, listOperation.Parameters), "cursor") {
 		t.Error("description-version list omits cursor")
 	}

@@ -123,7 +123,7 @@ func TestDjango5215FixturesValidateCurrentAndFallbackSecrets(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			validator, key := newFixtureValidator(t, test.data, fixturePassword, true)
+			validator, key := newFixtureValidator(t, test.data, fixturePassword)
 			request := httptest.NewRequest("GET", "/api/workspaces/example/stickies/", nil)
 			request.Header.Set("Cookie", DefaultCookieName+"="+key)
 			principal, err := validator.ValidateRequest(request.Context(), request)
@@ -145,7 +145,7 @@ func TestValidateAcceptsDjangoPaddedBase64Payload(t *testing.T) {
 	serialized = djangoASCIIJSON(serialized)
 	payload := base64.URLEncoding.EncodeToString(serialized)
 	data := signForTest(payload+":1AbC", fixtureCurrentSecret)
-	validator, _ := newFixtureValidator(t, data, fixturePassword, true)
+	validator, _ := newFixtureValidator(t, data, fixturePassword)
 	principal, err := validator.Validate(context.Background(), fixtureSessionKey)
 	if err != nil || principal.UserID != fixtureUserID {
 		t.Fatalf("Validate() principal=%#v error=%v", principal, err)
@@ -813,7 +813,7 @@ func TestPasswordChangesInvalidateExistingSessions(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			validator, _ := newFixtureValidator(t, fixtureCurrentSession, test.password, true)
+			validator, _ := newFixtureValidator(t, fixtureCurrentSession, test.password)
 			_, err := validator.Validate(context.Background(), fixtureSessionKey)
 			if !errors.Is(err, ErrInvalidAuthHash) {
 				t.Fatalf("Validate() error = %v, want ErrInvalidAuthHash", err)
@@ -842,7 +842,7 @@ func TestMalformedAndCorruptSessionsAreRejected(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			validator, _ := newFixtureValidator(t, test.data, fixturePassword, true)
+			validator, _ := newFixtureValidator(t, test.data, fixturePassword)
 			_, err := validator.Validate(context.Background(), fixtureSessionKey)
 			if err == nil {
 				t.Fatal("Validate() accepted malformed session")
@@ -896,7 +896,7 @@ func TestWrongBackendAndUserClaimsAreRejected(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			data := encodeValuesForTest(t, fixtureCurrentSecret, test.values, false)
-			validator, _ := newFixtureValidator(t, data, fixturePassword, true)
+			validator, _ := newFixtureValidator(t, data, fixturePassword)
 			_, err := validator.Validate(context.Background(), fixtureSessionKey)
 			if !errors.Is(err, test.want) {
 				t.Fatalf("Validate() error = %v, want %v", err, test.want)
@@ -922,9 +922,9 @@ func TestCookieAndConfigurationValidation(t *testing.T) {
 
 const fixtureSessionKey = "fixture-session-key"
 
-func newFixtureValidator(t *testing.T, data string, password string, active bool) (*Validator, string) {
+func newFixtureValidator(t *testing.T, data string, password string) (*Validator, string) {
 	t.Helper()
-	return configuredValidator(t, fixtureReader(data, password, active)), fixtureSessionKey
+	return configuredValidator(t, fixtureReader(data, password, true)), fixtureSessionKey
 }
 
 func fixtureReader(data string, password string, active bool) *memoryReader {

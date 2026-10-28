@@ -2091,42 +2091,6 @@
     },
     {
       "fingerprint": [
-        "internal/proxy/assets_lifecycle_proxy_policy_integration_test.go",
-        "internal/proxy/ticket_collaboration_proxy_policy_integration_test.go",
-        "8dfa2d144857659b6307270dc18def2a059e77b49a06ebd4de5db8c06c01305e",
-        "9fce1b3863c0627b46679b92672a08ab1c6b4d8de392dd2ad5bb517eeb62122f"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "internal/publicprojectmetadatareads/repository_test.go",
-        "internal/publicprojectmetadatareads/repository_test.go",
-        "5916ea3a94274770c83844a46397e91fdf8c5e49853e8f397d366fb3c4e43c1a",
-        "a8c3876905e9d6049df07b8a87553dedfa6f4ad6eba468ba36c43ab54f31c37c"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "internal/publicprojectmetadatareads/repository_test.go",
-        "internal/publicprojectmetadatareads/repository_test.go",
-        "5916ea3a94274770c83844a46397e91fdf8c5e49853e8f397d366fb3c4e43c1a",
-        "aed0798ebf2a80a4a18d87419b5971155fac5c9e02e79f158b8051407fac3b74"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "internal/publicprojectmetadatareads/repository_test.go",
-        "internal/publicprojectmetadatareads/repository_test.go",
-        "a8c3876905e9d6049df07b8a87553dedfa6f4ad6eba468ba36c43ab54f31c37c",
-        "aed0798ebf2a80a4a18d87419b5971155fac5c9e02e79f158b8051407fac3b74"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
         "internal/workitemhistory/repository_integration_test.go",
         "internal/workspaceuserinsights/repository_integration_test.go",
         "dcda54cfc2e2446cc190df60152a9ac6f9fc961eeef943f9dbc1d15f4641c420",
@@ -2905,15 +2869,6 @@
         "user_properties.go",
         "220d5af0c0169bb65828acac6529cafd580fe08948898253938b5dbaf7598d1b",
         "c2e69984edf7bb704fdd4e0867a3c8dd641b1b0300a9f38c9344563097ebe4c9"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "work_item_core_test.go",
-        "work_item_core_test.go",
-        "1e66aca2cb0d8a22c47b280d810a0e9051269857a6dde09415c15737507a0968",
-        "9981e2d26bb7407b0bca5ce58e7cefb07e3c37ef5e381d3fed6374c004c5b48b"
       ],
       "count": 2
     },

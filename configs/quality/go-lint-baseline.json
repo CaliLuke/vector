@@ -800,26 +800,10 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/proxy/assets_lifecycle_proxy_policy_integration_test.go",
-        "Error return value of `response.Body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/proxy/caddy_integration_test.go",
         "Error return value of `response.Body.Close` is not checked"
       ],
-      "count": 6
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/proxy/ticket_collaboration_proxy_policy_integration_test.go",
-        "Error return value of `response.Body.Close` is not checked"
-      ],
-      "count": 1
+      "count": 5
     },
     {
       "fingerprint": [

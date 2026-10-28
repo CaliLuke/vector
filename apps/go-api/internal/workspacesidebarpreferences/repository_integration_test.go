@@ -79,9 +79,10 @@ INSERT INTO workspaces (id,slug) VALUES
 	return connection, ctx
 }
 
-func readSidebarPreferences(t *testing.T, repository *Repository, ctx context.Context, userID, slug string) map[string]preferenceValue {
+func readSidebarPreferences(t *testing.T, repository *Repository, ctx context.Context) map[string]preferenceValue {
 	t.Helper()
-	body, err := repository.List(ctx, uuid.MustParse(userID), slug)
+	const slug = "demo"
+	body, err := repository.List(ctx, uuid.MustParse(sidebarUserID), slug)
 	if err != nil {
 		t.Fatalf("List(%q) error = %v", slug, err)
 	}
@@ -99,7 +100,7 @@ func TestListCreatesSevenDefaultsOnFirstRead(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got := readSidebarPreferences(t, repository, ctx, sidebarUserID, "demo")
+	got := readSidebarPreferences(t, repository, ctx)
 	want := map[string]preferenceValue{
 		"views":         {IsPinned: false, SortOrder: 65535},
 		"active_cycles": {IsPinned: false, SortOrder: 75535},
@@ -112,7 +113,7 @@ func TestListCreatesSevenDefaultsOnFirstRead(t *testing.T) {
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("first List() = %#v, want Django defaults %#v", got, want)
 	}
-	if repeated := readSidebarPreferences(t, repository, ctx, sidebarUserID, "demo"); !reflect.DeepEqual(repeated, want) {
+	if repeated := readSidebarPreferences(t, repository, ctx); !reflect.DeepEqual(repeated, want) {
 		t.Fatalf("repeated List() = %#v, want unchanged Django defaults %#v", repeated, want)
 	}
 }
@@ -128,7 +129,7 @@ func TestPatchBeforeListCreatesKnownDefaultAndPreservesOmittedField(t *testing.T
 		t.Fatalf("Patch() before first List() error = %v", err)
 	}
 
-	preferences := readSidebarPreferences(t, repository, ctx, sidebarUserID, "demo")
+	preferences := readSidebarPreferences(t, repository, ctx)
 	if len(preferences) != 7 || !preferences["views"].IsPinned {
 		t.Fatalf("first List() after Patch() = %#v, want seven keys and pinned views", preferences)
 	}
@@ -136,7 +137,7 @@ func TestPatchBeforeListCreatesKnownDefaultAndPreservesOmittedField(t *testing.T
 	if _, err := repository.Patch(ctx, uuid.MustParse(sidebarUserID), "demo", []Patch{{Key: "views", SortOrder: &sortOrder}, {Key: "unknown"}}); err != nil {
 		t.Fatalf("partial Patch() error = %v", err)
 	}
-	preferences = readSidebarPreferences(t, repository, ctx, sidebarUserID, "demo")
+	preferences = readSidebarPreferences(t, repository, ctx)
 	if !preferences["views"].IsPinned || preferences["views"].SortOrder != sortOrder {
 		t.Fatalf("partial update of views = %#v, want pinned=true and sort_order=%v", preferences["views"], sortOrder)
 	}

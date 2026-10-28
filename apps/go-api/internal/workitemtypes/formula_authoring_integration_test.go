@@ -18,8 +18,8 @@ import (
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 )
 
-func authoringFormula(expression string, result formula.Kind) property.Definition {
-	return property.Definition{ID: uuid.New().String(), Title: "Calculation", Kind: property.Formula, Configuration: property.Configuration{Active: true, Expression: expression, Result: result}}
+func numericAuthoringFormula(expression string) property.Definition {
+	return property.Definition{ID: uuid.New().String(), Title: "Calculation", Kind: property.Formula, Configuration: property.Configuration{Active: true, Expression: expression, Result: formula.Number}}
 }
 
 func TestFormulaAuthoringEvaluatesUnsavedDefinitionWithoutChangingItsSample(t *testing.T) {
@@ -52,7 +52,7 @@ func TestFormulaAuthoringEvaluatesUnsavedDefinitionWithoutChangingItsSample(t *t
 	if err != nil {
 		t.Fatal(err)
 	}
-	command := types.FormulaAuthoringInput{Revision: catalog.Revision, Definition: authoringFormula("{{effort}} * 2", formula.Number), TypeID: f.task, ProjectID: f.project, IssueID: item}
+	command := types.FormulaAuthoringInput{Revision: catalog.Revision, Definition: numericAuthoringFormula("{{effort}} * 2"), TypeID: f.task, ProjectID: f.project, IssueID: item}
 	var original, after string
 	if err = f.db.QueryRow(f.ctx, `SELECT row_to_json(i)::text FROM issues i WHERE id=$1`, item).Scan(&original); err != nil {
 		t.Fatal(err)
@@ -103,7 +103,7 @@ func TestFormulaAuthoringEvaluatesUnsavedDefinitionWithoutChangingItsSample(t *t
 
 func TestFormulaAuthoringUsesContextAndValidatesEveryAttachedType(t *testing.T) {
 	f := newProjectTypeFixture(t)
-	effort, calculation := uuid.New().String(), authoringFormula("LEN({{name}})", formula.Number)
+	effort, calculation := uuid.New().String(), numericAuthoringFormula("LEN({{name}})")
 	attachValueProperties(t, f,
 		property.Definition{ID: effort, Title: "Effort", Kind: property.Number, Configuration: property.Configuration{Active: true, Default: float64(7)}, Contexts: []property.Context{{ID: uuid.New().String(), Name: "Project effort", Projects: []string{f.project}, Overrides: []string{"default_value"}, Configuration: property.Configuration{Default: float64(3)}}}}, calculation)
 	catalog, err := f.repo.PropertyCatalog(f.ctx, f.owner, "types")
@@ -157,7 +157,7 @@ func TestFormulaAuthoringRejectsPrivateSamplesAndStaleConfiguration(t *testing.T
 	if err != nil {
 		t.Fatal(err)
 	}
-	command := types.FormulaAuthoringInput{Revision: catalog.Revision, Definition: authoringFormula("LEN({{name}})", formula.Number), TypeID: f.task, ProjectID: f.project, IssueID: resultIssueID(t, created)}
+	command := types.FormulaAuthoringInput{Revision: catalog.Revision, Definition: numericAuthoringFormula("LEN({{name}})"), TypeID: f.task, ProjectID: f.project, IssueID: resultIssueID(t, created)}
 	for _, actor := range []string{f.member, f.outsider} {
 		_, err = f.repo.PreviewFormula(f.ctx, actor, "types", command)
 		requireTypeStatus(t, err, 403)
@@ -188,14 +188,14 @@ func TestFormulaAuthoringSharesWriterCatalogValidation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	duplicate := authoringFormula("{{effort}} * 2", formula.Number)
+	duplicate := numericAuthoringFormula("{{effort}} * 2")
 	duplicate.Title = "Effort"
 	input := types.FormulaAuthoringInput{Revision: catalog.Revision, Definition: duplicate, TypeID: f.task}
 	preview, err := f.repo.PreviewFormula(f.ctx, f.owner, "types", input)
 	if err != nil || preview.Valid || !strings.Contains(preview.ValidationError, "internal name") {
 		t.Fatalf("duplicate name preview: %+v %v", preview, err)
 	}
-	dependent := authoringFormula("{{effort}} * 2", formula.Number)
+	dependent := numericAuthoringFormula("{{effort}} * 2")
 	catalog, err = f.repo.MutateProperty(f.ctx, f.owner, "types", types.PropertyInput{Revision: catalog.Revision, Action: "create", Definition: dependent})
 	if err != nil {
 		t.Fatal(err)

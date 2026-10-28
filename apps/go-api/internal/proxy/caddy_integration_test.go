@@ -46,13 +46,13 @@ func TestInventoryRoutesRetiredOperationsToGo(t *testing.T) {
 			proxyURL := startCaddy(t, ctx, django.port, goAPI.port, state.enabled)
 			detail := stickyCollection + "00000000-0000-4000-8000-000000000000"
 			assertTarget(t, http.MethodGet, proxyURL+"/api/users/me/", "go")
-			assertHeadTarget(t, proxyURL+"/api/users/me/", "go")
+			assertGoProxyResponse(t, http.MethodHead, proxyURL+"/api/users/me/")
 			assertTarget(t, http.MethodPatch, proxyURL+"/api/users/me/", "go")
 			assertTarget(t, http.MethodDelete, proxyURL+"/api/users/me/", "go")
-			assertTargetWithAllow(t, http.MethodOptions, proxyURL+"/api/users/me/", "go", "GET, PATCH, DELETE, HEAD, OPTIONS")
-			assertTargetWithAllow(t, http.MethodPost, proxyURL+"/api/users/me/", "go", "GET, PATCH, DELETE, HEAD, OPTIONS")
-			assertTargetWithAllow(t, http.MethodTrace, proxyURL+"/api/users/me/", "go", "GET, PATCH, DELETE, HEAD, OPTIONS")
-			assertTargetWithoutAllow(t, http.MethodOptions, proxyURL+"/api/users/me/", "go", map[string]string{
+			assertGoResponseWithAllow(t, http.MethodOptions, proxyURL+"/api/users/me/", "GET, PATCH, DELETE, HEAD, OPTIONS")
+			assertGoResponseWithAllow(t, http.MethodPost, proxyURL+"/api/users/me/", "GET, PATCH, DELETE, HEAD, OPTIONS")
+			assertGoResponseWithAllow(t, http.MethodTrace, proxyURL+"/api/users/me/", "GET, PATCH, DELETE, HEAD, OPTIONS")
+			assertGoPreflightWithoutAllow(t, proxyURL+"/api/users/me/", map[string]string{
 				"Origin":                        "http://localhost:3000",
 				"Access-Control-Request-Method": http.MethodGet,
 			})
@@ -72,15 +72,15 @@ func TestInventoryRoutesRetiredOperationsToGo(t *testing.T) {
 			assertTarget(t, http.MethodDelete, proxyURL+detail, "go")
 			assertTarget(t, http.MethodOptions, proxyURL+"/api/timezones", "go")
 			assertTarget(t, http.MethodOptions, proxyURL+"/api/timezones?format=json", "go")
-			assertTargetWithoutAllow(t, http.MethodOptions, proxyURL+"/api/timezones", "go", map[string]string{
+			assertGoPreflightWithoutAllow(t, proxyURL+"/api/timezones", map[string]string{
 				"Origin":                        "http://localhost:3000",
 				"Access-Control-Request-Method": http.MethodGet,
 			})
-			assertTargetWithoutAllow(t, http.MethodOptions, proxyURL+"/api/timezones", "go", map[string]string{
+			assertGoPreflightWithoutAllow(t, proxyURL+"/api/timezones", map[string]string{
 				"Access-Control-Request-Method": "",
 			})
 			assertTarget(t, http.MethodOptions, proxyURL+strings.TrimSuffix(stickyCollection, "/"), "go")
-			assertTargetWithoutAllow(t, http.MethodOptions, proxyURL+strings.TrimSuffix(stickyCollection, "/"), "go", map[string]string{
+			assertGoPreflightWithoutAllow(t, proxyURL+strings.TrimSuffix(stickyCollection, "/"), map[string]string{
 				"Origin":                        "http://localhost:3000",
 				"Access-Control-Request-Method": http.MethodGet,
 			})
@@ -111,40 +111,16 @@ func TestInventoryRoutesRetiredOperationsToGo(t *testing.T) {
 				"go",
 				"",
 			)
-			assertTargetWithAllow(
-				t,
-				http.MethodPatch,
-				proxyURL+"/api/workspaces/example/members/"+workspaceMemberID+"/",
-				"go",
-				"GET, PATCH, DELETE, HEAD, OPTIONS",
-			)
-			assertTargetWithAllow(
-				t,
-				http.MethodPost,
-				proxyURL+"/api/workspaces/example/projects/"+projectID+"/members/",
-				"go",
-				"GET, POST, HEAD, OPTIONS",
-			)
-			assertTargetWithAllow(
-				t,
-				http.MethodPatch,
-				proxyURL+"/api/workspaces/example/projects/"+projectID+"/members/"+workspaceMemberID+"/",
-				"go",
-				"GET, PATCH, DELETE, HEAD, OPTIONS",
-			)
-			assertTargetWithAllow(
-				t,
-				http.MethodPatch,
-				proxyURL+"/api/workspaces/example/projects/"+projectID+"/preferences/member/"+workspaceMemberID+"/",
-				"go",
-				"GET, PATCH, HEAD, OPTIONS",
-			)
+			assertGoResponseWithAllow(t, http.MethodPatch, proxyURL+"/api/workspaces/example/members/"+workspaceMemberID+"/", "GET, PATCH, DELETE, HEAD, OPTIONS")
+			assertGoResponseWithAllow(t, http.MethodPost, proxyURL+"/api/workspaces/example/projects/"+projectID+"/members/", "GET, POST, HEAD, OPTIONS")
+			assertGoResponseWithAllow(t, http.MethodPatch, proxyURL+"/api/workspaces/example/projects/"+projectID+"/members/"+workspaceMemberID+"/", "GET, PATCH, DELETE, HEAD, OPTIONS")
+			assertGoResponseWithAllow(t, http.MethodPatch, proxyURL+"/api/workspaces/example/projects/"+projectID+"/preferences/member/"+workspaceMemberID+"/", "GET, PATCH, HEAD, OPTIONS")
 			for _, path := range []string{
 				"/api/workspaces/example/members",
 				"/api/workspaces/example/project-members",
 			} {
 				assertTarget(t, http.MethodGet, proxyURL+path, "go")
-				assertHeadTarget(t, proxyURL+path, "go")
+				assertGoProxyResponse(t, http.MethodHead, proxyURL+path)
 				assertTarget(t, http.MethodOptions, proxyURL+path, "go")
 				assertTarget(t, http.MethodGet, proxyURL+path+"?search=Alex%20Smith", "go")
 			}
@@ -163,7 +139,7 @@ func assertAPIV1StickyRouting(t *testing.T, proxyURL string) {
 				// The complete route belongs to Go, including unsupported methods.
 				assertTarget(t, method, proxyURL+variant, "go")
 			}
-			assertHeadTarget(t, proxyURL+variant, "go")
+			assertGoProxyResponse(t, http.MethodHead, proxyURL+variant)
 		}
 	}
 	// Unknown API paths reach Go, which owns the application 404 response.
@@ -201,7 +177,7 @@ func assertProjectLifecycleRouting(t *testing.T, proxyURL, projectID string) {
 	for _, path := range []string{apiCollection, apiCollection + projectID + "/"} {
 		assertTarget(t, http.MethodGet, proxyURL+path, "go")
 		assertTarget(t, http.MethodGet, proxyURL+strings.TrimSuffix(path, "/"), "go")
-		assertHeadTarget(t, proxyURL+path, "go")
+		assertGoProxyResponse(t, http.MethodHead, proxyURL+path)
 	}
 	assertTarget(t, http.MethodPatch, proxyURL+apiCollection+"not-a-uuid/", "go")
 	assertTarget(t, http.MethodPost, proxyURL+appCollection+"not-a-uuid/archive/", "go")
@@ -354,7 +330,7 @@ func TestAIOInventoryRoutesRetiredActivityReadsToGo(t *testing.T) {
 		for _, routedPath := range []string{path, strings.TrimSuffix(path, "/")} {
 			assertTarget(t, http.MethodGet, proxyURL+routedPath, "go")
 			assertTarget(t, http.MethodPost, proxyURL+routedPath, "go")
-			assertTargetWithoutAllow(t, http.MethodOptions, proxyURL+routedPath, "go", map[string]string{
+			assertGoPreflightWithoutAllow(t, proxyURL+routedPath, map[string]string{
 				"Origin":                        "http://localhost:3000",
 				"Access-Control-Request-Method": http.MethodGet,
 			})
@@ -476,15 +452,6 @@ func newNamedUpstream(t *testing.T, name string) namedUpstream {
 	return namedUpstream{port: port}
 }
 
-func assertHeadTarget(t *testing.T, url, want string) {
-	t.Helper()
-	response := proxyRequestWithRetry(t, http.MethodHead, url, nil)
-	defer response.Body.Close()
-	if response.StatusCode != http.StatusOK || response.Header.Get("X-Test-Upstream") != want {
-		t.Fatalf("HEAD %s = status %d target %q, want status 200 target %q", url, response.StatusCode, response.Header.Get("X-Test-Upstream"), want)
-	}
-}
-
 func startCaddy(t *testing.T, ctx context.Context, djangoPort, goPort int, enabled *bool) string {
 	t.Helper()
 	return startCaddyWithConfig(t, ctx, "../../../proxy/Caddyfile.ce", djangoPort, goPort, enabled)
@@ -595,7 +562,25 @@ func assertTarget(t *testing.T, method, url, want string) {
 	}
 }
 
-func assertTargetWithAllow(t *testing.T, method, url, wantTarget, wantAllow string) {
+func assertGoProxyResponse(t *testing.T, method, url string) {
+	t.Helper()
+	response := proxyRequestWithRetry(t, method, url, nil)
+	t.Cleanup(func() {
+		if err := response.Body.Close(); err != nil {
+			t.Errorf("close proxy response: %v", err)
+		}
+	})
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		t.Fatalf("read %s %s: %v", method, url, err)
+	}
+	if response.StatusCode != http.StatusOK || response.Header.Get("X-Test-Upstream") != "go" || (method != http.MethodHead && string(body) != "go") {
+		t.Fatalf("%s %s status=%d upstream=%q body=%q, want Go upstream", method, url, response.StatusCode, response.Header.Get("X-Test-Upstream"), body)
+	}
+}
+
+func assertGoResponseWithAllow(t *testing.T, method, url, wantAllow string) {
+	const wantTarget = "go"
 	t.Helper()
 	response := proxyRequestWithRetry(t, method, url, map[string]string{
 		"X-Test-Emit-Allow": "django-owned methods",
@@ -619,7 +604,8 @@ func assertTargetWithAllow(t *testing.T, method, url, wantTarget, wantAllow stri
 	}
 }
 
-func assertTargetWithoutAllow(t *testing.T, method, url, wantTarget string, headers map[string]string) {
+func assertGoPreflightWithoutAllow(t *testing.T, url string, headers map[string]string) {
+	const method, wantTarget = http.MethodOptions, "go"
 	t.Helper()
 	response := proxyRequestWithRetry(t, method, url, headers)
 	defer response.Body.Close()
@@ -670,13 +656,13 @@ func TestAPIModuleRoutingIncludesLifecycleWriters(t *testing.T) {
 	detail := moduleAPIBase + "modules/00000000-0000-4000-8000-000000000003/"
 	for _, path := range []string{moduleAPIBase + "archived-modules/", moduleAPIBase + "modules-lite/", moduleAPIBase + "modules/", detail, detail + "module-issues/"} {
 		assertTarget(t, http.MethodGet, proxyURL+path, "go")
-		assertHeadTarget(t, proxyURL+path, "go")
+		assertGoProxyResponse(t, http.MethodHead, proxyURL+path)
 		assertTarget(t, http.MethodOptions, proxyURL+path, "go")
 	}
-	assertTargetWithAllow(t, http.MethodPost, proxyURL+moduleAPIBase+"modules/", "go", "GET, POST")
-	assertTargetWithAllow(t, http.MethodPatch, proxyURL+detail, "go", "GET, PATCH, DELETE")
-	assertTargetWithAllow(t, http.MethodDelete, proxyURL+detail, "go", "GET, PATCH, DELETE")
-	assertTargetWithAllow(t, http.MethodPost, proxyURL+detail+"module-issues/", "go", "GET, POST")
+	assertGoResponseWithAllow(t, http.MethodPost, proxyURL+moduleAPIBase+"modules/", "GET, POST")
+	assertGoResponseWithAllow(t, http.MethodPatch, proxyURL+detail, "GET, PATCH, DELETE")
+	assertGoResponseWithAllow(t, http.MethodDelete, proxyURL+detail, "GET, PATCH, DELETE")
+	assertGoResponseWithAllow(t, http.MethodPost, proxyURL+detail+"module-issues/", "GET, POST")
 	assertTarget(t, http.MethodDelete, proxyURL+detail+"module-issues/00000000-0000-4000-8000-000000000004/", "go")
 	assertTarget(t, http.MethodPost, proxyURL+detail+"archive/", "go")
 	assertTarget(t, http.MethodDelete, proxyURL+moduleAPIBase+"archived-modules/00000000-0000-4000-8000-000000000003/unarchive/", "go")
@@ -708,7 +694,7 @@ func TestAppModuleLifecycleRoutingOwnsWritesAndProtocolCompanions(t *testing.T) 
 			for _, method := range append(route.methods, http.MethodGet, http.MethodOptions, http.MethodTrace) {
 				assertTarget(t, method, proxyURL+form, "go")
 			}
-			assertHeadTarget(t, proxyURL+form, "go")
+			assertGoProxyResponse(t, http.MethodHead, proxyURL+form)
 		}
 	}
 	// Neighboring module paths are not covered by a broad prefix matcher.
@@ -725,10 +711,10 @@ func TestAPILabelRoutingRetiresWriters(t *testing.T) {
 	labelDetail := labelBase + "00000000-0000-4000-8000-000000000003/"
 	for _, path := range []string{labelBase, labelDetail} {
 		assertTarget(t, http.MethodGet, proxyURL+path, "go")
-		assertHeadTarget(t, proxyURL+path, "go")
+		assertGoProxyResponse(t, http.MethodHead, proxyURL+path)
 		assertTarget(t, http.MethodOptions, proxyURL+path, "go")
 	}
-	assertTargetWithAllow(t, http.MethodPost, proxyURL+labelBase, "go", "GET, POST")
-	assertTargetWithAllow(t, http.MethodPatch, proxyURL+labelDetail, "go", "GET, PATCH, DELETE")
-	assertTargetWithAllow(t, http.MethodDelete, proxyURL+labelDetail, "go", "GET, PATCH, DELETE")
+	assertGoResponseWithAllow(t, http.MethodPost, proxyURL+labelBase, "GET, POST")
+	assertGoResponseWithAllow(t, http.MethodPatch, proxyURL+labelDetail, "GET, PATCH, DELETE")
+	assertGoResponseWithAllow(t, http.MethodDelete, proxyURL+labelDetail, "GET, PATCH, DELETE")
 }

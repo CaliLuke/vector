@@ -77,9 +77,6 @@ func (assetsTransportRepo) WorkspaceIDBySlug(context.Context, string) (uuid.UUID
 func (assetsTransportRepo) RelatedWorkspaceIDBySlug(context.Context, string) (uuid.UUID, error) {
 	return uuid.MustParse(assetsTransportWorkspaceID), nil
 }
-func (repo assetsTransportRepo) IssueAttachmentsBySlug(context.Context, string, uuid.UUID, uuid.UUID, bool) ([]map[string]any, error) {
-	return repo.legacyAssets, nil
-}
 func (repo assetsTransportRepo) WorkspaceAssetsByKey(context.Context, string, uuid.UUID, uuid.UUID) ([]map[string]any, error) {
 	return repo.legacyAssets, nil
 }
@@ -633,9 +630,9 @@ func TestAssetsLifecycleProductionHandlerRejectsDeclaredInvalidMethods(t *testin
 				// EntityAssetEndpoint allows anonymous requests only for GET;
 				// DRF authenticates the other verbs before method dispatch.
 				publicAnchorNeedsSession := strings.HasPrefix(route.Path, "/api/public/assets/v2/anchor/") && method != http.MethodGet
-				if publicAnchorNeedsSession || assetsTransportNeedsSession(manifest.Operations, method, route.Path) {
+				if publicAnchorNeedsSession || assetsTransportNeedsSession(manifest.Operations, route.Path) {
 					request.AddCookie(&http.Cookie{Name: "session-id", Value: "assets-transport-session"})
-				} else if assetsTransportNeedsAPIKey(manifest.Operations, method, route.Path) {
+				} else if assetsTransportNeedsAPIKey(manifest.Operations, route.Path) {
 					request.Header.Set("X-Api-Key", "assets-transport-valid")
 				}
 				response := httptest.NewRecorder()
@@ -939,7 +936,7 @@ func assetsTransportNeedsAPIKey(operations map[string]struct {
 	Method      string `json:"method"`
 	Path        string `json:"path"`
 	AuthProfile string `json:"auth_profile"`
-}, method, path string) bool {
+}, path string) bool {
 	for _, operation := range operations {
 		if operation.Path == path && strings.Contains(operation.AuthProfile, "api-key") {
 			return true
@@ -952,7 +949,7 @@ func assetsTransportNeedsSession(operations map[string]struct {
 	Method      string `json:"method"`
 	Path        string `json:"path"`
 	AuthProfile string `json:"auth_profile"`
-}, method, path string) bool {
+}, path string) bool {
 	for _, operation := range operations {
 		if operation.Path == path && operation.AuthProfile == "session" {
 			return true

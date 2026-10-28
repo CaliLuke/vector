@@ -2,6 +2,7 @@ package publicprojectmetadatareads
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"math"
 	"strings"
@@ -30,9 +31,9 @@ func (database *databaseStub) QueryRow(_ context.Context, query string, args ...
 	return row
 }
 
-func anchorRow(slug string, projectID *uuid.UUID) pgx.Row {
+func anchorRow(projectID *uuid.UUID) pgx.Row {
 	return rowFunc(func(destinations ...any) error {
-		*destinations[0].(*string) = slug
+		*destinations[0].(*string) = "demo"
 		*destinations[1].(**uuid.UUID) = projectID
 		return nil
 	})
@@ -58,48 +59,33 @@ func TestNewRepositoryRequiresDatabase(t *testing.T) {
 	}
 }
 
-func TestCyclesResolveAnchorAndPreserveDjangoOrdering(t *testing.T) {
-	projectID := uuid.New()
-	database := &databaseStub{rows: []pgx.Row{anchorRow("demo", &projectID), jsonRow(`[]`)}}
-	repository, _ := NewRepository(database)
-	data, err := repository.Cycles(context.Background(), "anchor")
-	if err != nil || string(data) != `[]` {
-		t.Fatalf("data=%s err=%v", data, err)
-	}
-	for _, fragment := range []string{"cycle.deleted_at IS NULL", "ORDER BY cycle.created_at DESC", "cycle.project_id IS NOT DISTINCT FROM $2"} {
-		if !strings.Contains(database.queries[1], fragment) {
-			t.Errorf("cycles query missing %q", fragment)
-		}
-	}
-}
-
-func TestLabelsResolveAnchorAndPreserveDjangoOrdering(t *testing.T) {
-	projectID := uuid.New()
-	database := &databaseStub{rows: []pgx.Row{anchorRow("demo", &projectID), jsonRow(`[]`)}}
-	repository, _ := NewRepository(database)
-	data, err := repository.Labels(context.Background(), "anchor")
-	if err != nil || string(data) != `[]` {
-		t.Fatalf("data=%s err=%v", data, err)
-	}
-	for _, fragment := range []string{"label.deleted_at IS NULL", "ORDER BY label.created_at DESC", "label.project_id IS NOT DISTINCT FROM $2"} {
-		if !strings.Contains(database.queries[1], fragment) {
-			t.Errorf("labels query missing %q", fragment)
-		}
-	}
-}
-
-func TestModulesResolveAnchorAndPreserveDjangoOrdering(t *testing.T) {
-	projectID := uuid.New()
-	database := &databaseStub{rows: []pgx.Row{anchorRow("demo", &projectID), jsonRow(`[]`)}}
-	repository, _ := NewRepository(database)
-	data, err := repository.Modules(context.Background(), "anchor")
-	if err != nil || string(data) != `[]` {
-		t.Fatalf("data=%s err=%v", data, err)
-	}
-	for _, fragment := range []string{"module.deleted_at IS NULL", "ORDER BY module.created_at DESC", "module.project_id IS NOT DISTINCT FROM $2"} {
-		if !strings.Contains(database.queries[1], fragment) {
-			t.Errorf("modules query missing %q", fragment)
-		}
+func TestPublicCataloguesResolveAnchorAndPreserveDjangoOrdering(t *testing.T) {
+	for _, test := range []struct {
+		name      string
+		read      func(*Repository, context.Context, string) (json.RawMessage, error)
+		fragments []string
+	}{
+		{"cycles", (*Repository).Cycles, []string{"cycle.deleted_at IS NULL", "ORDER BY cycle.created_at DESC", "cycle.project_id IS NOT DISTINCT FROM $2"}},
+		{"labels", (*Repository).Labels, []string{"label.deleted_at IS NULL", "ORDER BY label.created_at DESC", "label.project_id IS NOT DISTINCT FROM $2"}},
+		{"modules", (*Repository).Modules, []string{"module.deleted_at IS NULL", "ORDER BY module.created_at DESC", "module.project_id IS NOT DISTINCT FROM $2"}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			projectID := uuid.New()
+			database := &databaseStub{rows: []pgx.Row{anchorRow(&projectID), jsonRow(`[]`)}}
+			repository, err := NewRepository(database)
+			if err != nil {
+				t.Fatal(err)
+			}
+			data, err := test.read(repository, context.Background(), "anchor")
+			if err != nil || string(data) != `[]` {
+				t.Fatalf("data=%s err=%v", data, err)
+			}
+			for _, fragment := range test.fragments {
+				if !strings.Contains(database.queries[1], fragment) {
+					t.Errorf("query missing %q", fragment)
+				}
+			}
+		})
 	}
 }
 
@@ -195,7 +181,7 @@ func TestIssueDetailUsesPublicScopeAndReactionActorForAvatarURL(t *testing.T) {
 
 func TestMembersApplyDjangoManagerAndEndpointFilters(t *testing.T) {
 	projectID := uuid.New()
-	database := &databaseStub{rows: []pgx.Row{anchorRow("demo", &projectID), jsonRow(`[]`)}}
+	database := &databaseStub{rows: []pgx.Row{anchorRow(&projectID), jsonRow(`[]`)}}
 	repository, _ := NewRepository(database)
 	data, err := repository.Members(context.Background(), "anchor")
 	if err != nil || string(data) != `[]` {
@@ -329,7 +315,7 @@ func TestSettingsMissingObjectMapsToRequiredObject(t *testing.T) {
 
 func TestStatesApplyManagerAndEndpointFilters(t *testing.T) {
 	projectID := uuid.New()
-	database := &databaseStub{rows: []pgx.Row{anchorRow("demo", &projectID), jsonRow(`[]`)}}
+	database := &databaseStub{rows: []pgx.Row{anchorRow(&projectID), jsonRow(`[]`)}}
 	repository, _ := NewRepository(database)
 	if _, err := repository.States(context.Background(), "anchor"); err != nil {
 		t.Fatal(err)
@@ -345,7 +331,7 @@ func TestStatesApplyManagerAndEndpointFilters(t *testing.T) {
 func TestStatesPreserveDjangoStringAndFloatEncoding(t *testing.T) {
 	projectID := uuid.New()
 	database := &databaseStub{rows: []pgx.Row{
-		anchorRow("demo", &projectID),
+		anchorRow(&projectID),
 		jsonRow(`[{"name":"<&>","group":"backlog","color":"#000","id":"00000000-0000-4000-8000-000000000001","sequence":"100"}]`),
 	}}
 	repository, _ := NewRepository(database)
@@ -401,7 +387,7 @@ func TestMissingAnchorMapsToInvalidAnchor(t *testing.T) {
 
 func TestMetadataQueryFailureIsMarkedAsRenderPhase(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{
-		anchorRow("demo", nil),
+		anchorRow(nil),
 		rowFunc(func(...any) error { return errors.New("database unavailable") }),
 	}}
 	repository, _ := NewRepository(database)

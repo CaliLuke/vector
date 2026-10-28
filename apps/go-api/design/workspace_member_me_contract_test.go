@@ -6,7 +6,7 @@ import (
 )
 
 func TestWorkspaceMemberMeSchemaUsesConcreteWireTypes(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	schema, exists := document.Components.Schemas["WorkspaceMemberMe"]
 	if !exists {
 		t.Fatal("generated OpenAPI does not define WorkspaceMemberMe")

@@ -33,9 +33,6 @@ linters:
     paths:
       - (^|/)gen/
     rules:
-      - path: _test\.go
-        linters:
-          - unparam
       # The DSL requires dot imports to expose its declarative API.
       - path: (^|/)design(/.*\.go|\.go)$
         text: ST1001

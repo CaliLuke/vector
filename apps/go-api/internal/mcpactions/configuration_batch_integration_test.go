@@ -23,7 +23,7 @@ func TestMCPConfigurationCatalogueBatch(t *testing.T) {
 		}
 		t.Run("estimates", func(t *testing.T) { catalogueEstimates(t, call) })
 		t.Run("types and properties", func(t *testing.T) { catalogueTypesAndProperties(t, call) })
-		t.Run("relations", func(t *testing.T) { catalogueRelations(t, f, call) })
+		t.Run("relations", func(t *testing.T) { catalogueRelations(t, call) })
 		t.Run("intake", func(t *testing.T) { catalogueIntake(t, call) })
 	})
 }
@@ -89,7 +89,7 @@ func catalogueTypesAndProperties(t *testing.T, root catalogueCall) {
 	milestoneFailure(t, valueCall("workitem_property", map[string]any{"action": "get_value"}), "not_found")
 }
 
-func catalogueRelations(t *testing.T, f milestoneFixture, root catalogueCall) {
+func catalogueRelations(t *testing.T, root catalogueCall) {
 	definition := milestoneObject(t, root("workitem_relation", map[string]any{"action": "create_definition", "name": "Dependency " + uuid.NewString(), "outward": "supports", "inward": "supported by", "is_active": true}))
 	id := definition["id"].(string)
 	require.Equal(t, "delivers", milestoneObject(t, root("workitem_relation", map[string]any{"action": "update_definition", "definition_id": id, "outward": "delivers"}))["outward"])

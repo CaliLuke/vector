@@ -51,7 +51,8 @@ func moduleJSONRow(value string) pgx.Row {
 	})
 }
 
-func modulePageRow(value string, total int) pgx.Row {
+func emptyModulePageRow(total int) pgx.Row {
+	const value = `[]`
 	return moduleRowFunc(func(destinations ...any) error {
 		*destinations[0].(*[]byte) = []byte(value)
 		*destinations[1].(*int) = total
@@ -123,7 +124,7 @@ func TestWorkspaceListRequiresWorkspaceAndProjectMembership(t *testing.T) {
 func TestProjectAuthorizationDistinguishesGuestAndElevatedReads(t *testing.T) {
 	database := &moduleDatabaseStub{rows: []pgx.Row{
 		moduleBoolRow(true), moduleJSONRow(`[]`),
-		moduleBoolRow(true), modulePageRow(`[]`, 0),
+		moduleBoolRow(true), emptyModulePageRow(0),
 	}}
 	repository, _ := NewRepository(database)
 	userID, projectID, moduleID := uuid.New(), uuid.New(), uuid.New()
@@ -227,7 +228,7 @@ func TestArchivedDetailBurndownKeepsZeroSeriesForValidDates(t *testing.T) {
 }
 
 func TestIssueListAppliesScopedFiltersOrderingAndPagination(t *testing.T) {
-	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), modulePageRow(`[]`, 17)}}
+	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), emptyModulePageRow(17)}}
 	repository, _ := NewRepository(database)
 	userID, projectID, moduleID := uuid.New(), uuid.New(), uuid.New()
 	page, err := repository.Issues(context.Background(), userID, "demo", projectID, moduleID, IssueListOptions{
@@ -295,7 +296,7 @@ func TestGroupedIssueListFetchesTheFullSetAndReturnsFieldDomains(t *testing.T) {
 }
 
 func TestIssueListHandlesNullFiltersAndIndependentModuleFilter(t *testing.T) {
-	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), modulePageRow(`[]`, 0)}}
+	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), emptyModulePageRow(0)}}
 	repository, _ := NewRepository(database)
 	_, err := repository.Issues(
 		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(),
@@ -327,7 +328,7 @@ func TestIssueFiltersMatchDjangoSanitizingAndDateSemantics(t *testing.T) {
 		t.Fatalf("date args=%#v", args)
 	}
 
-	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), modulePageRow(`[]`, 0)}}
+	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), emptyModulePageRow(0)}}
 	repository, _ := NewRepository(database)
 	_, err := repository.Issues(
 		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(),
@@ -351,7 +352,7 @@ func TestIssueFiltersMatchDjangoSanitizingAndDateSemantics(t *testing.T) {
 }
 
 func TestIssueNameEscapesLikeWildcardsAndInboxOverridesIntake(t *testing.T) {
-	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), modulePageRow(`[]`, 0)}}
+	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), emptyModulePageRow(0)}}
 	repository, _ := NewRepository(database)
 	_, err := repository.Issues(
 		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(),
@@ -375,7 +376,7 @@ func TestIssueNameEscapesLikeWildcardsAndInboxOverridesIntake(t *testing.T) {
 
 func TestComplexIssueFiltersSupportLogicalTreesAndRelationScopes(t *testing.T) {
 	assigneeID := uuid.New().String()
-	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), modulePageRow(`[]`, 0)}}
+	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), emptyModulePageRow(0)}}
 	repository, _ := NewRepository(database)
 	_, err := repository.Issues(
 		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(),
@@ -569,7 +570,7 @@ func TestModuleIssueFilterCanonicalizationAndUngroupedM2MSubgroup(t *testing.T) 
 		t.Fatalf("integer normalization=%q valid=%v", normalized, valid)
 	}
 
-	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), modulePageRow(`[]`, 1)}}
+	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), emptyModulePageRow(1)}}
 	repository, _ := NewRepository(database)
 	_, err = repository.Issues(
 		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(),
@@ -668,7 +669,7 @@ func TestRelatedOrderingUsesDjangoFilterAliases(t *testing.T) {
 }
 
 func TestUngroupedLabelSubgroupUsesCanonicalAxisForPageMetadata(t *testing.T) {
-	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), modulePageRow(`[]`, 1)}}
+	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), emptyModulePageRow(1)}}
 	repository, _ := NewRepository(database)
 	_, err := repository.Issues(
 		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(),

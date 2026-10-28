@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,8 +29,9 @@ func (invitationsHTTPCache) Invalidate(context.Context, string, string, bool) er
 
 type invitationsHTTPRepository struct {
 	*store.InvitationsRepository
-	events *[]string
-	denied bool
+	events        *[]string
+	denied        bool
+	invitationErr error
 }
 
 func (r *invitationsHTTPRepository) AuthorizeWorkspaceRole(context.Context, uuid.UUID, string, ...int) error {
@@ -54,9 +56,9 @@ func (r *invitationsHTTPRepository) WorkspaceMemberUsers(context.Context, string
 	return json.RawMessage(`[]`), nil
 }
 
-func (r *invitationsHTTPRepository) Invitation(_ context.Context, c store.InvitationCommand) (json.RawMessage, error) {
+func (r *invitationsHTTPRepository) Invitation(context.Context, store.InvitationCommand) (json.RawMessage, error) {
 	*r.events = append(*r.events, "dispatch")
-	return json.RawMessage(`[]`), nil
+	return json.RawMessage(`[]`), r.invitationErr
 }
 
 func TestInvitationsMembershipProductionMiddleware(t *testing.T) {
@@ -66,6 +68,7 @@ func TestInvitationsMembershipProductionMiddleware(t *testing.T) {
 		limit                                  int64
 		status, audit                          int
 		events                                 []string
+		invitationErr                          error
 	}{
 		{name: "role list rejects anonymous", method: "GET", suffix: "roles/", zone: "UTC", status: 401, events: []string{"authentication"}},
 		{name: "role scope denied", method: "GET", suffix: "roles/", key: "valid", zone: "UTC", denied: true, status: 403, audit: 1, events: []string{"authentication", "authorization"}},
@@ -87,12 +90,13 @@ func TestInvitationsMembershipProductionMiddleware(t *testing.T) {
 		{name: "session permission-classes before timezone", method: "GET", suffix: "invitations/", key: "valid", zone: "Not/AZone", denied: true, session: true, status: 403, audit: 1, events: []string{"authorization"}},
 		{name: "session timezone before dispatch", method: "GET", suffix: "invitations/", key: "valid", zone: "Not/AZone", session: true, status: 400, audit: 1, events: []string{"authorization"}},
 		{name: "session authorized dispatch", method: "GET", suffix: "invitations/", key: "valid", zone: "UTC", session: true, status: 200, audit: 1, events: []string{"authorization", "dispatch"}},
+		{name: "session query failure returns an error", method: "GET", suffix: "invitations/", key: "valid", zone: "UTC", session: true, invitationErr: errors.New("database unavailable"), status: 500, audit: 1, events: []string{"authorization", "dispatch"}},
 		{name: "session OPTIONS permission-classes", method: "OPTIONS", suffix: "invitations/", key: "valid", zone: "UTC", session: true, status: 200, audit: 1, events: []string{"authorization"}},
 		{name: "preflight has no auth effects", method: "OPTIONS", suffix: "invitations/", key: "valid", zone: "Not/AZone", preflight: true, status: 200},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			var events []string
-			repository := &invitationsHTTPRepository{events: &events, denied: test.denied}
+			repository := &invitationsHTTPRepository{events: &events, denied: test.denied, invitationErr: test.invitationErr}
 			service, err := systemapi.NewInvitationsMembership(repository, membershipHTTPKeys{&events, test.zone}, membershipHTTPSessions{}, membershipHTTPThrottle{&events}, invitationsHTTPCache{})
 			if err != nil {
 				t.Fatal(err)

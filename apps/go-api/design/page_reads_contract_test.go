@@ -10,7 +10,7 @@ import (
 
 func TestPageReadsExposeSixAuthenticatedGetOperations(t *testing.T) {
 	const descriptionPath = "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/description/"
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	expected := map[string][]string{
 		"/api/workspaces/{slug}/projects/{project_id}/pages-summary/":   {"project_id", "slug"},
 		"/api/workspaces/{slug}/projects/{project_id}/pages/":           {"order_by", "project_id", "search", "slug"},
@@ -80,7 +80,7 @@ func TestPageReadsExposeSixAuthenticatedGetOperations(t *testing.T) {
 	}
 }
 func TestPageReadsExposeAuthenticatedOrdinaryOptionsOperations(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	expected := map[string][]string{
 		"/api/workspaces/{slug}/projects/{project_id}/pages-summary/": {
 			"project_id", "slug",
@@ -109,7 +109,7 @@ func TestPageReadsExposeAuthenticatedOrdinaryOptionsOperations(t *testing.T) {
 }
 
 func TestPageSummaryAndDetailSchemasCorrectGeneratedContractGaps(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 
 	summary, exists := document.Components.Schemas["PageSummaryRead"]
 	if !exists {
@@ -170,7 +170,7 @@ func TestPageDetailIssueIDsAllowNullArrayItems(t *testing.T) {
 }
 
 func TestPageReadSchemaPreservesStoredAndNullableFields(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	page := document.Components.Schemas["PageRead"]
 	for _, field := range []string{
 		"id", "name", "owned_by", "access", "color", "parent", "is_favorite", "is_locked",
@@ -192,7 +192,7 @@ func TestPageReadSchemaPreservesStoredAndNullableFields(t *testing.T) {
 }
 
 func TestPageVersionDetailPreservesHTMLJSONAndBinaryNullability(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	version := document.Components.Schemas["PageVersionDetailRead"]
 	for _, field := range []string{"description_binary", "description_html", "description_json"} {
 		if _, exists := version.Properties[field]; !exists {
@@ -225,7 +225,7 @@ func TestPageVersionDetailPreservesHTMLJSONAndBinaryNullability(t *testing.T) {
 }
 
 func TestPageDescriptionGETAndHEADAreRawAttachments(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	path := "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/description/"
 	for _, method := range []string{"get", "head"} {
 		operation, exists := document.Paths[path][method]

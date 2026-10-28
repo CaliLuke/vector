@@ -99,7 +99,7 @@ func (value *openAPIType) UnmarshalJSON(data []byte) error {
 }
 
 func TestGeneratedStickySurfaceMatchesDesignContract(t *testing.T) {
-	generated := readOpenAPI(t, "../gen/http/openapi.json")
+	generated := readOpenAPI(t)
 
 	expected := map[string]map[string][]string{
 		"/api/workspaces/{slug}/stickies/": {
@@ -284,8 +284,9 @@ func (schema openAPISchema) MaxLengthValue() int {
 	return *schema.MaxLength
 }
 
-func readOpenAPI(t *testing.T, path string) openAPIDocument {
+func readOpenAPI(t *testing.T) openAPIDocument {
 	t.Helper()
+	const path = "../gen/http/openapi.json"
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("read OpenAPI %s: %v", path, err)

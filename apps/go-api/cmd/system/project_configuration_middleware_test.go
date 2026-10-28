@@ -60,10 +60,19 @@ func (db configurationMiddlewareDB) QueryRow(_ context.Context, query string, _ 
 
 type configurationMiddlewareEffects struct{ t *testing.T }
 
-type configurationMiddlewareSessions struct{ *cycleMiddlewareSessions }
+type configurationMiddlewareSessions struct {
+	*cycleMiddlewareSessions
+	expired bool
+}
+
+// The middleware discovers this optional contract through a type assertion.
+var _ sessionPrincipalInspector = configurationMiddlewareSessions{}
 
 func (sessions configurationMiddlewareSessions) InspectReadServiceSessionWithoutTimezone(_ context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
 	sessions.recorder.add("session-inspection")
+	if sessions.expired {
+		return true, false, nil, djangosession.Principal{}, nil
+	}
 	if _, err := request.Cookie("session-id"); err != nil {
 		return false, false, nil, djangosession.Principal{}, nil
 	}
@@ -89,11 +98,13 @@ func TestProjectConfigurationMiddlewareRequestSizeAuthenticationTimezoneAuthoriz
 	for _, tc := range []struct {
 		name, method, suffix, body             string
 		apiKey, anonymous, denied, invalidZone bool
+		expired                                bool
 		status                                 int
 		events                                 []string
 	}{
 		{name: "request-size precedes authentication", method: "POST", suffix: "estimates/", body: strings.Repeat("x", 65), status: 413},
 		{name: "anonymous write", method: "POST", suffix: "estimates/", body: `{`, anonymous: true, status: 401, events: []string{"session-inspection"}},
+		{name: "expired session clears cookie before rejecting write", method: "POST", suffix: "estimates/", body: `{`, expired: true, status: 401, events: []string{"session-inspection"}},
 		{name: "permission-classes precede timezone", method: "POST", suffix: "estimates/", body: `{`, denied: true, invalidZone: true, status: 403, events: []string{"session-inspection", "authorization"}},
 		{name: "allowed class permission reaches timezone", method: "POST", suffix: "estimates/", body: `{`, invalidZone: true, status: 400, events: []string{"session-inspection", "authorization"}},
 		{name: "method permission follows timezone", method: "POST", suffix: "bulk-create-labels/", body: `{`, denied: true, invalidZone: true, status: 400, events: []string{"session-inspection", "timezone"}},
@@ -105,7 +116,7 @@ func TestProjectConfigurationMiddlewareRequestSizeAuthenticationTimezoneAuthoriz
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			recorder := &cycleMiddlewareRecorder{denied: tc.denied}
-			sessions := configurationMiddlewareSessions{&cycleMiddlewareSessions{recorder: recorder, userTimezone: "UTC", invalidZone: tc.invalidZone}}
+			sessions := configurationMiddlewareSessions{cycleMiddlewareSessions: &cycleMiddlewareSessions{recorder: recorder, userTimezone: "UTC", invalidZone: tc.invalidZone}, expired: tc.expired}
 			audit := &cycleMiddlewareActivity{recorder: recorder}
 			repository, err := store.NewRepository(configurationMiddlewareDB{recorder: recorder})
 			if err != nil {
@@ -133,6 +144,12 @@ func TestProjectConfigurationMiddlewareRequestSizeAuthenticationTimezoneAuthoriz
 			handler.ServeHTTP(response, request)
 			if response.Code != tc.status || !slices.Equal(recorder.events, tc.events) {
 				t.Fatalf("status=%d events=%v body=%s; want status=%d events=%v", response.Code, recorder.events, response.Body.String(), tc.status, tc.events)
+			}
+			if tc.expired {
+				cookies := (&http.Response{Header: response.Header()}).Cookies()
+				if len(cookies) != 1 || cookies[0].Name != "session-id" || cookies[0].MaxAge != -1 {
+					t.Fatalf("expired session cookies=%v", cookies)
+				}
 			}
 			wantAudits := 0
 			if tc.apiKey {

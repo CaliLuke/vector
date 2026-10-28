@@ -8,7 +8,7 @@ import (
 )
 
 func TestSaveValuesPreservesOtherDjangoSessionValues(t *testing.T) {
-	validator, key := newFixtureValidator(t, fixtureCurrentSession, fixturePassword, true)
+	validator, key := newFixtureValidator(t, fixtureCurrentSession, fixturePassword)
 	principal, prepared, err := validator.Inspect(context.Background(), key)
 	if err != nil {
 		t.Fatal(err)
@@ -31,7 +31,7 @@ func TestSaveValuesPreservesOtherDjangoSessionValues(t *testing.T) {
 }
 
 func TestLoginCyclesAnonymousSessionAndPreservesOAuthState(t *testing.T) {
-	validator, _ := newFixtureValidator(t, fixtureCurrentSession, fixturePassword, true)
+	validator, _ := newFixtureValidator(t, fixtureCurrentSession, fixturePassword)
 	ctx := context.Background()
 	initial, err := validator.SaveValues(ctx, nil, map[string]any{
 		"host":      "app.example.test",
@@ -102,7 +102,7 @@ func TestLoginMatchesDjangoExistingAuthenticationDecision(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			validator, _ := newFixtureValidator(t, fixtureCurrentSession, fixturePassword, true)
+			validator, _ := newFixtureValidator(t, fixtureCurrentSession, fixturePassword)
 			current, err := validator.SaveValues(ctx, nil, test.values, 3600, time.Now())
 			if err != nil {
 				t.Fatal(err)
@@ -130,7 +130,7 @@ func TestLoginMatchesDjangoExistingAuthenticationDecision(t *testing.T) {
 }
 
 func TestFlushDeletesOldRowWithoutCreatingReplacement(t *testing.T) {
-	validator, _ := newFixtureValidator(t, fixtureCurrentSession, fixturePassword, true)
+	validator, _ := newFixtureValidator(t, fixtureCurrentSession, fixturePassword)
 	ctx := context.Background()
 	initial, err := validator.SaveValues(ctx, nil, map[string]any{"state": "temporary"}, 3600, time.Now())
 	if err != nil {

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -23,7 +24,10 @@ import (
 
 const stateMiddlewareProject = "22222222-2222-4222-8222-222222222222"
 
-type stateWritesMiddlewareRepository struct{ recorder *cycleMiddlewareRecorder }
+type stateWritesMiddlewareRepository struct {
+	recorder     *cycleMiddlewareRecorder
+	authorizeErr error
+}
 
 func (r stateWritesMiddlewareRepository) AuthorizeProject(context.Context, uuid.UUID, string, uuid.UUID) error {
 	return nil
@@ -40,7 +44,7 @@ func (r stateWritesMiddlewareRepository) Intake(context.Context, uuid.UUID, stri
 func (r stateWritesMiddlewareRepository) InvalidateAppCache(context.Context, string) {}
 func (r stateWritesMiddlewareRepository) AuthorizeApp(context.Context, string, string, string, string) (bool, error) {
 	r.recorder.add("authorization")
-	return !r.recorder.denied, nil
+	return !r.recorder.denied, r.authorizeErr
 }
 func (r stateWritesMiddlewareRepository) AuthorizeAPIV1(context.Context, string, string, string, bool) error {
 	r.recorder.add("authorization")
@@ -75,14 +79,13 @@ func (r stateWritesMiddlewareRepository) SerializeAPIV1(_ context.Context, raw j
 	return result, err
 }
 
-func newStateWritesMiddlewareTestHandler(t *testing.T, recorder *cycleMiddlewareRecorder, sessions *cycleMiddlewareSessions, timezone string, activity *cycleMiddlewareActivity, bodyLimit int64) http.Handler {
+func newStateWritesMiddlewareTestHandler(t *testing.T, repo stateWritesMiddlewareRepository, sessions *cycleMiddlewareSessions, timezone string, activity *cycleMiddlewareActivity, bodyLimit int64) http.Handler {
 	t.Helper()
-	repo := stateWritesMiddlewareRepository{recorder: recorder}
 	appService, err := systemapi.NewProjectStateReads(repo, sessions)
 	if err != nil {
 		t.Fatal(err)
 	}
-	apiService, err := systemapi.NewAPIStateReads(repo, cycleMiddlewareAPIKeys{recorder: recorder, timezone: timezone}, cycleMiddlewareThrottle{recorder: recorder})
+	apiService, err := systemapi.NewAPIStateReads(repo, cycleMiddlewareAPIKeys{recorder: repo.recorder, timezone: timezone}, cycleMiddlewareThrottle{recorder: repo.recorder})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,6 +100,28 @@ func newStateWritesMiddlewareTestHandler(t *testing.T, recorder *cycleMiddleware
 			readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true},
 			activityReadsActivity: activity, activityReadsSecret: "state-writes-test-secret", activityReadsBodyLimit: bodyLimit,
 		})
+}
+
+func TestStateWriteAuthorizationFailurePrecedesBodyParsingAndDispatch(t *testing.T) {
+	recorder := &cycleMiddlewareRecorder{}
+	repository := stateWritesMiddlewareRepository{recorder: recorder, authorizeErr: errors.New("database unavailable")}
+	sessions := &cycleMiddlewareSessions{recorder: recorder, userTimezone: "UTC"}
+	activity := &cycleMiddlewareActivity{recorder: recorder}
+	handler := newStateWritesMiddlewareTestHandler(t, repository, sessions, "UTC", activity, 1024)
+	request := httptest.NewRequest(http.MethodPost, "/api/workspaces/demo/projects/"+stateMiddlewareProject+"/states/", strings.NewReader(`{`))
+	request.Header.Set("Content-Type", "application/json")
+	request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, request)
+	if response.Code != http.StatusInternalServerError {
+		t.Fatalf("authorization failure status=%d body=%s", response.Code, response.Body.String())
+	}
+	if !reflect.DeepEqual(recorder.events, []string{"session-inspection", "timezone", "authorization"}) {
+		t.Fatalf("authorization failure events=%v", recorder.events)
+	}
+	if len(activity.records) != 0 {
+		t.Fatalf("session write unexpectedly produced API-key audit records: %v", activity.records)
+	}
 }
 
 func TestProjectStateWritesProductionMiddlewareOrderRequestSizeSessionAPIThrottleDispatchAudit(t *testing.T) {
@@ -133,7 +158,7 @@ func TestProjectStateWritesProductionMiddlewareOrderRequestSizeSessionAPIThrottl
 				keyTimezone = "Not/AZone"
 			}
 			activity := &cycleMiddlewareActivity{recorder: recorder}
-			handler := newStateWritesMiddlewareTestHandler(t, recorder, sessions, keyTimezone, activity, bodyLimit)
+			handler := newStateWritesMiddlewareTestHandler(t, stateWritesMiddlewareRepository{recorder: recorder}, sessions, keyTimezone, activity, bodyLimit)
 			body := `{}`
 			if test.oversized {
 				body = strings.Repeat("x", bodyLimit+1)
@@ -198,7 +223,7 @@ func TestProjectStateWriteHeadersMatchRetainedDjangoMethods(t *testing.T) {
 		t.Run(test.method+test.suffix, func(t *testing.T) {
 			recorder := &cycleMiddlewareRecorder{}
 			sessions := &cycleMiddlewareSessions{recorder: recorder, userTimezone: "UTC"}
-			handler := newStateWritesMiddlewareTestHandler(t, recorder, sessions, "UTC", &cycleMiddlewareActivity{recorder: recorder}, 1024)
+			handler := newStateWritesMiddlewareTestHandler(t, stateWritesMiddlewareRepository{recorder: recorder}, sessions, "UTC", &cycleMiddlewareActivity{recorder: recorder}, 1024)
 			req := httptest.NewRequest(test.method, "/api/workspaces/demo/projects/"+stateMiddlewareProject+test.suffix, strings.NewReader(`{}`))
 			req.Header.Set("Content-Type", "application/json")
 			req.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
@@ -229,7 +254,7 @@ func TestProjectStateProtocolAuthenticatesOptionsAndUnsupportedMethods(t *testin
 			for _, authenticated := range []bool{false, true} {
 				recorder := &cycleMiddlewareRecorder{}
 				sessions := &cycleMiddlewareSessions{recorder: recorder, userTimezone: "UTC"}
-				handler := newStateWritesMiddlewareTestHandler(t, recorder, sessions, "UTC", &cycleMiddlewareActivity{recorder: recorder}, 1024)
+				handler := newStateWritesMiddlewareTestHandler(t, stateWritesMiddlewareRepository{recorder: recorder}, sessions, "UTC", &cycleMiddlewareActivity{recorder: recorder}, 1024)
 				req := httptest.NewRequest(method, "/api/workspaces/demo/projects/"+stateMiddlewareProject+suffix, nil)
 				if authenticated {
 					req.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
@@ -276,7 +301,7 @@ func TestProjectStateOptionsMatchesCapturedSource(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			recorder := &cycleMiddlewareRecorder{}
 			sessions := &cycleMiddlewareSessions{recorder: recorder, userTimezone: "UTC"}
-			handler := newStateWritesMiddlewareTestHandler(t, recorder, sessions, "UTC", &cycleMiddlewareActivity{recorder: recorder}, 1024)
+			handler := newStateWritesMiddlewareTestHandler(t, stateWritesMiddlewareRepository{recorder: recorder}, sessions, "UTC", &cycleMiddlewareActivity{recorder: recorder}, 1024)
 			req := httptest.NewRequest(http.MethodOptions, "/api/workspaces/demo/projects/"+stateMiddlewareProject+suffix, nil)
 			req.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
 			response := httptest.NewRecorder()

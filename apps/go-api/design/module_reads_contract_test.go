@@ -8,7 +8,7 @@ import (
 )
 
 func TestModuleReadsExposeTenAuthenticatedGetOperations(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	expected := map[string][]string{
 		"/api/workspaces/{slug}/modules/":                                                     {"slug"},
 		"/api/workspaces/{slug}/projects/{project_id}/archived-modules/":                      {"project_id", "slug"},
@@ -41,7 +41,7 @@ func TestModuleReadsExposeTenAuthenticatedGetOperations(t *testing.T) {
 }
 
 func TestModuleDetailContractsIncludeRuntimeFields(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	detail := document.Components.Schemas["ModuleDetailRead"]
 	for _, field := range []string{
 		"link_module", "sub_issues", "backlog_estimate_points", "unstarted_estimate_points",
@@ -77,7 +77,7 @@ func TestModuleDetailContractsIncludeRuntimeFields(t *testing.T) {
 }
 
 func TestModuleIssueListUsesPaginatorEnvelope(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	page := document.Components.Schemas["ModuleIssuePage"]
 	for _, field := range []string{
 		"grouped_by", "sub_grouped_by", "total_count", "next_cursor", "prev_cursor",
@@ -101,7 +101,7 @@ func TestModuleIssueListUsesPaginatorEnvelope(t *testing.T) {
 }
 
 func TestModuleIssueListBadRequestRepresentsEverySourceEnvelope(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	path := "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/issues/"
 	operation := document.Paths[path]["get"]
 	if got := responseSchemaRef(operation.Responses["400"]); got != "#/components/schemas/ModuleIssueListBadRequest" {
@@ -119,7 +119,7 @@ func TestModuleIssueListBadRequestRepresentsEverySourceEnvelope(t *testing.T) {
 }
 
 func TestModuleIssueDetailReturnsRelationshipAndUsesIssueID(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	path := "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/issues/{issue_id}/"
 	operation := document.Paths[path]["get"]
 	if !slices.Contains(parameterNames(document, operation.Parameters), "issue_id") {
@@ -143,7 +143,7 @@ func TestModuleIssueDetailReturnsRelationshipAndUsesIssueID(t *testing.T) {
 }
 
 func TestArchivedListAndLinkSchemasPreserveDistinctContainers(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	archived := document.Components.Schemas["ArchivedModuleRead"]
 	for _, field := range []string{"archived_at", "member_ids", "total_issues", "is_favorite"} {
 		if _, exists := archived.Properties[field]; !exists {
@@ -223,7 +223,7 @@ func responseComponentSchema(
 }
 
 func TestModuleAndLinkDetailPreserveDistinctNotFoundEnvelopes(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	moduleOperation := document.Paths["/api/workspaces/{slug}/projects/{project_id}/modules/{pk}/"]["get"]
 	if got := responseSchemaRef(moduleOperation.Responses["404"]); got != "#/components/schemas/ModuleReadsModuleNotFound" {
 		t.Errorf("module detail 404 schema = %q", got)
@@ -243,7 +243,7 @@ func TestModuleAndLinkDetailPreserveDistinctNotFoundEnvelopes(t *testing.T) {
 }
 
 func TestModulePermissionClassEndpointsUseDRFPermissionEnvelope(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	permissionPaths := []string{
 		"/api/workspaces/{slug}/modules/",
 		"/api/workspaces/{slug}/projects/{project_id}/archived-modules/",

@@ -8,7 +8,7 @@ import (
 )
 
 func TestGeneratedEstimateReadSurfaceHasThreeDistinctOperations(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	expected := map[string][]string{
 		"/api/workspaces/{slug}/estimates/":                                     {"search", "slug"},
 		"/api/workspaces/{slug}/projects/{project_id}/estimates/":               {"project_id", "search", "slug"},
@@ -90,7 +90,7 @@ func TestGeneratedEstimateSchemasIncludeRequiredOrderedPointsAndNullability(t *t
 }
 
 func TestEstimateDetailNotFoundContractUsesExactDjangoBody(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	notFound, exists := document.Components.Schemas["EstimateReadsNotFound"]
 	if !exists {
 		t.Fatal("EstimateReadsNotFound schema is missing")

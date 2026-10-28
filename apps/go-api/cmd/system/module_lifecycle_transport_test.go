@@ -33,6 +33,7 @@ type moduleLifecycleTransportRepository struct {
 	denyEntity     bool
 	missingModule  bool
 	missingLink    bool
+	lookupErr      error
 	appAuthCalls   int
 	createCalls    int
 	updateCalls    int
@@ -67,11 +68,31 @@ func (*moduleLifecycleTransportRepository) CheckModule(context.Context, string, 
 }
 
 func (repo *moduleLifecycleTransportRepository) ModuleExists(context.Context, string, string, string) (bool, error) {
-	return !repo.missingModule, nil
+	return !repo.missingModule, repo.lookupErr
 }
 
 func (repo *moduleLifecycleTransportRepository) LinkExists(context.Context, string, string, string, string) (bool, error) {
-	return !repo.missingLink, nil
+	return !repo.missingLink, repo.lookupErr
+}
+
+func TestModuleOptionsLookupFailuresDoNotReturnSuccessMetadata(t *testing.T) {
+	base := "/api/workspaces/acme/projects/" + moduleLifecycleTransportProject + "/modules/" + moduleLifecycleTransportModule + "/"
+	for _, path := range []string{base, base + "module-links/" + moduleLifecycleTransportModule + "/"} {
+		t.Run(path, func(t *testing.T) {
+			handler := moduleLifecycleTransportHandler(t, &moduleLifecycleTransportRepository{lookupErr: errors.New("database unavailable")}, nil)
+			request := httptest.NewRequest(http.MethodOptions, path, nil)
+			request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, request)
+			var body map[string]any
+			if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil {
+				t.Fatal(err)
+			}
+			if response.Code != http.StatusInternalServerError || body["error"] != "Something went wrong please try again later" || len(body) != 1 {
+				t.Fatalf("lookup failure status=%d body=%s", response.Code, response.Body.String())
+			}
+		})
+	}
 }
 
 func (repo *moduleLifecycleTransportRepository) CreateModule(context.Context, string, string, string, map[string]any, map[string][]string, string) (json.RawMessage, error) {

@@ -46,6 +46,9 @@ type workspaceLifecycleMiddlewareSessions struct {
 	trace *workspaceLifecycleMiddlewareTrace
 }
 
+// Catch signature drift before the middleware's optional type assertion fails.
+var _ sessionPrincipalInspector = workspaceLifecycleMiddlewareSessions{}
+
 func (sessions workspaceLifecycleMiddlewareSessions) Validate(context.Context, string) (djangosession.Principal, error) {
 	sessions.trace.add("session-authentication")
 	return djangosession.Principal{UserID: cycleMiddlewareActor, UserTimezone: "UTC"}, nil
@@ -63,7 +66,7 @@ func (sessions workspaceLifecycleMiddlewareSessions) InspectReadServiceSession(_
 	return false, false, nil, djangosession.Principal{UserID: cycleMiddlewareActor, UserTimezone: "UTC"}, nil
 }
 
-func (sessions workspaceLifecycleMiddlewareSessions) InspectReadServiceSessionWithoutTimezone(ctx context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
+func (sessions workspaceLifecycleMiddlewareSessions) InspectReadServiceSessionWithoutTimezone(_ context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
 	sessions.trace.add("session-authentication")
 	if _, err := request.Cookie("session-id"); err != nil {
 		return false, false, nil, djangosession.Principal{}, nil

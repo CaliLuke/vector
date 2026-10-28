@@ -5,7 +5,6 @@ package proxy_test
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -110,7 +109,7 @@ func TestAssetsLifecycleGoOnlyProductionProxyPolicy(t *testing.T) {
 	for _, operation := range operations {
 		operation := operation
 		t.Run(operation.Method+" "+operation.Path, func(t *testing.T) {
-			assetsLifecycleProxyAssertTarget(t, proxyURL, operation.Method, assetsLifecycleProxyConcretePath(operation.Path), "go")
+			assertGoProxyResponse(t, operation.Method, proxyURL+assetsLifecycleProxyConcretePath(operation.Path))
 		})
 	}
 
@@ -135,7 +134,7 @@ func TestAssetsLifecycleGoOnlyProductionProxyPolicy(t *testing.T) {
 		for _, method := range route.InvalidMethods {
 			method := method
 			t.Run("ASSET-001 "+method+" "+route.Path, func(t *testing.T) {
-				assetsLifecycleProxyAssertTarget(t, proxyURL, method, assetsLifecycleProxyConcretePath(route.Path), "go")
+				assertGoProxyResponse(t, method, proxyURL+assetsLifecycleProxyConcretePath(route.Path))
 			})
 		}
 	}
@@ -161,7 +160,7 @@ func TestAssetsLifecycleGoOnlyProductionProxyPolicy(t *testing.T) {
 			if len(pathOperations) == 0 {
 				t.Fatalf("control request %s %s does not match an assets lifecycle path", fixture.Request.Method, path)
 			}
-			assetsLifecycleProxyAssertTarget(t, proxyURL, fixture.Request.Method, path, "go")
+			assertGoProxyResponse(t, fixture.Request.Method, proxyURL+path)
 		})
 	}
 
@@ -172,24 +171,24 @@ func TestAssetsLifecycleGoOnlyProductionProxyPolicy(t *testing.T) {
 				continue
 			}
 			t.Run("unsupported "+method+" "+template, func(t *testing.T) {
-				assetsLifecycleProxyAssertTarget(t, proxyURL, method, path, "go")
+				assertGoProxyResponse(t, method, proxyURL+path)
 			})
 		}
 		for _, method := range []string{http.MethodHead, http.MethodOptions} {
 			t.Run("protocol "+method+" "+template, func(t *testing.T) {
-				assetsLifecycleProxyAssertTarget(t, proxyURL, method, path, "go")
+				assertGoProxyResponse(t, method, proxyURL+path)
 			})
 		}
 		t.Run("slashless "+template, func(t *testing.T) {
-			assetsLifecycleProxyAssertTarget(t, proxyURL, http.MethodGet, strings.TrimSuffix(path, "/"), "go")
+			assertGoProxyResponse(t, http.MethodGet, proxyURL+strings.TrimSuffix(path, "/"))
 		})
 		t.Run("extra segment "+template, func(t *testing.T) {
 			// Two extra segments avoid matching one-segment sibling routes such as asset details.
-			assetsLifecycleProxyAssertTarget(t, proxyURL, http.MethodGet, path+"unowned/extra/", "go")
+			assertGoProxyResponse(t, http.MethodGet, proxyURL+path+"unowned/extra/")
 		})
 	}
 	t.Run("unknown API path routes to Go", func(t *testing.T) {
-		assetsLifecycleProxyAssertTarget(t, proxyURL, http.MethodGet, "/api/not-migrated/", "go")
+		assertGoProxyResponse(t, http.MethodGet, proxyURL+"/api/not-migrated/")
 	})
 }
 
@@ -271,19 +270,6 @@ func assetsLifecycleProxyOwnsMethod(operations []routing.Operation, method strin
 		}
 	}
 	return false
-}
-
-func assetsLifecycleProxyAssertTarget(t *testing.T, baseURL, method, path, want string) {
-	t.Helper()
-	response := proxyRequestWithRetry(t, method, baseURL+path, nil)
-	defer response.Body.Close()
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		t.Fatalf("read %s %s: %v", method, path, err)
-	}
-	if response.StatusCode != http.StatusOK || response.Header.Get("X-Test-Upstream") != want || (method != http.MethodHead && string(body) != want) {
-		t.Fatalf("%s %s status=%d upstream=%q body=%q, want upstream %q", method, path, response.StatusCode, response.Header.Get("X-Test-Upstream"), body, want)
-	}
 }
 
 func assetsLifecycleProxyRepositoryRoot(t *testing.T) string {

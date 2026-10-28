@@ -18,7 +18,7 @@ type deployBoardResponseEnvelope struct {
 }
 
 func TestDeployBoardReadRoutesHaveDistinctObjectContracts(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	collectionPath := "/api/workspaces/{slug}/projects/{project_id}/project-deploy-boards/"
 	detailPath := "/api/workspaces/{slug}/projects/{project_id}/project-deploy-boards/{pk}/"
 	collection, exists := document.Paths[collectionPath]["get"]
@@ -53,7 +53,7 @@ func TestDeployBoardReadRoutesHaveDistinctObjectContracts(t *testing.T) {
 }
 
 func TestDeployBoardSchemasPreserveUnsavedCollectionDefaults(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	collection := document.Components.Schemas["DeployBoardCollectionRead"]
 	detail := document.Components.Schemas["DeployBoardRead"]
 	if collection.Type.Value != "object" || detail.Type.Value != "object" {

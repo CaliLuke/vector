@@ -90,11 +90,11 @@ func newWorkItemCoreTestService(t *testing.T, repository *workItemCoreRepository
 	return service
 }
 
-func workItemCoreAPICtx(t *testing.T, service api.Service, key string) context.Context {
+func workItemCoreAPICtx(t *testing.T, service api.Service) context.Context {
 	t.Helper()
 	ctx, err := service.(interface {
 		APIKeyAuth(context.Context, string, *security.APIKeyScheme) (context.Context, error)
-	}).APIKeyAuth(context.Background(), key, &security.APIKeyScheme{Name: "ApiKeyAuth"})
+	}).APIKeyAuth(context.Background(), "valid", &security.APIKeyScheme{Name: "ApiKeyAuth"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -151,66 +151,44 @@ func TestWorkItemCoreAuthenticationFailureDoesNotEnterDomain(t *testing.T) {
 	}
 }
 
-func TestWorkItemCorePermissionFailurePrecedesThrottleAndExecution(t *testing.T) {
-	repository := &workItemCoreRepositoryStub{authorizeErr: &djangoapi.HTTPError{Status: http.StatusForbidden, Body: map[string]any{"error": "You don't have the required permissions."}}}
-	throttle := &activityThrottleStub{rate: apikey.Rate{Allowed: true}}
-	service := newWorkItemCoreTestService(t, repository, nil, throttle)
-	ctx := workItemCoreAPICtx(t, service, "valid")
-	_, body, err := service.GetAPIV1WorkspacesBySlugProjectsByProjectIDIssues(ctx, &api.GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesPayload{Slug: "demo", ProjectID: uuid.NewString()})
-	if body != nil {
-		_ = body.Close()
-	}
-	var apiError *api.WorkItemError
-	if !errors.As(err, &apiError) || apiError.LoomErrorName() != "status_403" {
-		t.Fatalf("error=%T %#v", err, err)
-	}
-	if repository.authorizeCalls != 1 || throttle.calls != 0 || repository.executeCalls != 0 {
-		t.Fatalf("authorize=%d throttle=%d execute=%d", repository.authorizeCalls, throttle.calls, repository.executeCalls)
-	}
-}
-
-func TestWorkItemCoreThrottleRunsBeforeTimezoneValidation(t *testing.T) {
-	repository := &workItemCoreRepositoryStub{}
-	throttle := &activityThrottleStub{rate: apikey.Rate{Allowed: false}}
-	keys := &activityAPIKeyStub{principal: apikey.Principal{UserID: uuid.New(), Timezone: "Not/A_Timezone"}}
-	service := newWorkItemCoreTestService(t, repository, keys, throttle)
-	ctx := workItemCoreAPICtx(t, service, "valid")
-	_, body, err := service.GetAPIV1WorkspacesBySlugProjectsByProjectIDIssues(ctx, &api.GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesPayload{Slug: "demo", ProjectID: uuid.NewString()})
-	if body != nil {
-		_ = body.Close()
-	}
-	var apiError *api.WorkItemError
-	if !errors.As(err, &apiError) || apiError.LoomErrorName() != "status_429" {
-		t.Fatalf("error=%T %#v", err, err)
-	}
-	if repository.authorizeCalls != 1 || throttle.calls != 1 || repository.executeCalls != 0 {
-		t.Fatalf("authorize=%d throttle=%d execute=%d", repository.authorizeCalls, throttle.calls, repository.executeCalls)
-	}
-}
-
-func TestWorkItemCoreTimezoneValidationFollowsAuthorizationAndThrottle(t *testing.T) {
-	repository := &workItemCoreRepositoryStub{}
-	throttle := &activityThrottleStub{rate: apikey.Rate{Allowed: true}}
-	keys := &activityAPIKeyStub{principal: apikey.Principal{UserID: uuid.New(), Timezone: "Not/A_Timezone"}}
-	service := newWorkItemCoreTestService(t, repository, keys, throttle)
-	ctx := workItemCoreAPICtx(t, service, "valid")
-	_, body, err := service.GetAPIV1WorkspacesBySlugProjectsByProjectIDIssues(ctx, &api.GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesPayload{Slug: "demo", ProjectID: uuid.NewString()})
-	if body != nil {
-		_ = body.Close()
-	}
-	var apiError *api.WorkItemError
-	if !errors.As(err, &apiError) || apiError.LoomErrorName() != "status_400" {
-		t.Fatalf("error=%T %#v", err, err)
-	}
-	if repository.authorizeCalls != 1 || throttle.calls != 1 || repository.executeCalls != 0 {
-		t.Fatalf("authorize=%d throttle=%d execute=%d", repository.authorizeCalls, throttle.calls, repository.executeCalls)
+func TestWorkItemCoreRejectionOrderStopsBeforeExecution(t *testing.T) {
+	for _, test := range []struct {
+		name, timezone, errorName string
+		authorizationErr          error
+		throttleAllowed           bool
+		throttleCalls             int
+	}{
+		{name: "permission precedes throttle", timezone: "UTC", authorizationErr: &djangoapi.HTTPError{Status: http.StatusForbidden, Body: map[string]any{"error": "You don't have the required permissions."}}, throttleAllowed: true, errorName: "status_403"},
+		{name: "throttle precedes timezone", timezone: "Not/A_Timezone", errorName: "status_429", throttleCalls: 1},
+		{name: "timezone follows authorization and throttle", timezone: "Not/A_Timezone", throttleAllowed: true, errorName: "status_400", throttleCalls: 1},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			repository := &workItemCoreRepositoryStub{authorizeErr: test.authorizationErr}
+			throttle := &activityThrottleStub{rate: apikey.Rate{Allowed: test.throttleAllowed}}
+			keys := &activityAPIKeyStub{principal: apikey.Principal{UserID: uuid.New(), Timezone: test.timezone}}
+			service := newWorkItemCoreTestService(t, repository, keys, throttle)
+			ctx := workItemCoreAPICtx(t, service)
+			_, body, err := service.GetAPIV1WorkspacesBySlugProjectsByProjectIDIssues(ctx, &api.GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesPayload{Slug: "demo", ProjectID: uuid.NewString()})
+			if body != nil {
+				if closeErr := body.Close(); closeErr != nil {
+					t.Fatal(closeErr)
+				}
+			}
+			var apiError *api.WorkItemError
+			if !errors.As(err, &apiError) || apiError.LoomErrorName() != test.errorName {
+				t.Fatalf("error=%T %#v", err, err)
+			}
+			if repository.authorizeCalls != 1 || throttle.calls != test.throttleCalls || repository.executeCalls != 0 {
+				t.Fatalf("authorize=%d throttle=%d execute=%d", repository.authorizeCalls, throttle.calls, repository.executeCalls)
+			}
+		})
 	}
 }
 
 func TestWorkItemCorePathValuesOverrideConflictingQueryValues(t *testing.T) {
 	repository := &workItemCoreRepositoryStub{result: workitemstore.Result{Status: http.StatusOK, Body: map[string]any{}}}
 	service := newWorkItemCoreTestService(t, repository, nil, nil)
-	ctx := workItemCoreAPICtx(t, service, "valid")
+	ctx := workItemCoreAPICtx(t, service)
 	ctx = WithReadServiceQueryPresence(ctx, url.Values{
 		"slug": {"query-workspace"}, "identifier": {"OTHER-999"}, "search": {"term"},
 	})

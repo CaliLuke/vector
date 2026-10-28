@@ -48,7 +48,7 @@ func TestAdministrationBatchGoOnlyProductionProxyPolicy(t *testing.T) {
 				}
 			}
 			for path := range paths {
-				assertHeadTarget(t, proxyURL+path, "go")
+				assertGoProxyResponse(t, http.MethodHead, proxyURL+path)
 				assertTarget(t, http.MethodOptions, proxyURL+path, "go")
 				assertTarget(t, http.MethodPut, proxyURL+path, "go")
 			}

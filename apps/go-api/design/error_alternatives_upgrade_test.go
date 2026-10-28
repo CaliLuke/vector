@@ -12,7 +12,7 @@ import (
 // distinguish a missing preference from field validation, or an invalid intake
 // lookup from a bad request. Older Loom generation silently kept only one.
 func TestOpenAPIKeepsSameStatusErrorAlternatives(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	for _, tc := range []struct {
 		name, path, method string
 		schemas            []string

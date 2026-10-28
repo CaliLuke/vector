@@ -20,15 +20,15 @@ func TestAPIStateRoutingIncludesRetiredWriters(t *testing.T) {
 
 	for _, path := range []string{list, detail} {
 		assertTarget(t, http.MethodGet, proxyURL+path, "go")
-		assertHeadTarget(t, proxyURL+path, "go")
+		assertGoProxyResponse(t, http.MethodHead, proxyURL+path)
 	}
-	assertTargetWithAllow(t, http.MethodOptions, proxyURL+list, "go", "GET, POST")
-	assertTargetWithAllow(t, http.MethodOptions, proxyURL+detail, "go", "GET, PATCH, DELETE")
-	assertTargetWithoutAllow(t, http.MethodOptions, proxyURL+list, "go", map[string]string{
+	assertGoResponseWithAllow(t, http.MethodOptions, proxyURL+list, "GET, POST")
+	assertGoResponseWithAllow(t, http.MethodOptions, proxyURL+detail, "GET, PATCH, DELETE")
+	assertGoPreflightWithoutAllow(t, proxyURL+list, map[string]string{
 		"Origin":                        "http://localhost:3000",
 		"Access-Control-Request-Method": http.MethodGet,
 	})
-	assertTargetWithAllow(t, http.MethodPost, proxyURL+list, "go", "GET, POST")
-	assertTargetWithAllow(t, http.MethodPatch, proxyURL+detail, "go", "GET, PATCH, DELETE")
-	assertTargetWithAllow(t, http.MethodDelete, proxyURL+detail, "go", "GET, PATCH, DELETE")
+	assertGoResponseWithAllow(t, http.MethodPost, proxyURL+list, "GET, POST")
+	assertGoResponseWithAllow(t, http.MethodPatch, proxyURL+detail, "GET, PATCH, DELETE")
+	assertGoResponseWithAllow(t, http.MethodDelete, proxyURL+detail, "GET, PATCH, DELETE")
 }

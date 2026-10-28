@@ -21,7 +21,7 @@ func TestMCPRoutesReachGoInEveryTopology(t *testing.T) {
 				for _, method := range []string{http.MethodGet, http.MethodPost, http.MethodDelete, http.MethodOptions} {
 					assertTarget(t, method, proxyURL+path, "go")
 				}
-				assertHeadTarget(t, proxyURL+path, "go")
+				assertGoProxyResponse(t, http.MethodHead, proxyURL+path)
 			}
 		})
 	}

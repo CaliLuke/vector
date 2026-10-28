@@ -5,7 +5,6 @@ package proxy_test
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -82,7 +81,7 @@ func TestTicketCollaborationGoOnlyProductionProxyPolicy(t *testing.T) {
 		path := ticketCollaborationConcretePath(operation.Path)
 		paths[operation.Path] = append(paths[operation.Path], policy)
 		t.Run(operation.Method+" "+operation.Path, func(t *testing.T) {
-			ticketCollaborationAssertTarget(t, proxyURL, operation.Method, path, "go")
+			assertGoProxyResponse(t, operation.Method, proxyURL+path)
 		})
 	}
 
@@ -93,22 +92,22 @@ func TestTicketCollaborationGoOnlyProductionProxyPolicy(t *testing.T) {
 				continue
 			}
 			t.Run("unsupported "+method+" "+template, func(t *testing.T) {
-				ticketCollaborationAssertTarget(t, proxyURL, method, path, "go")
+				assertGoProxyResponse(t, method, proxyURL+path)
 			})
 		}
 		for _, method := range []string{http.MethodHead, http.MethodOptions} {
 			t.Run("protocol "+method+" "+template, func(t *testing.T) {
-				ticketCollaborationAssertTarget(t, proxyURL, method, path, "go")
+				assertGoProxyResponse(t, method, proxyURL+path)
 			})
 		}
 		withoutSlash := strings.TrimSuffix(path, "/")
 		t.Run("slashless "+template, func(t *testing.T) {
-			ticketCollaborationAssertTarget(t, proxyURL, http.MethodGet, withoutSlash, "go")
+			assertGoProxyResponse(t, http.MethodGet, proxyURL+withoutSlash)
 		})
 	}
 
 	t.Run("unknown API paths route to Go", func(t *testing.T) {
-		ticketCollaborationAssertTarget(t, proxyURL, http.MethodGet, "/api/not-migrated/", "go")
+		assertGoProxyResponse(t, http.MethodGet, proxyURL+"/api/not-migrated/")
 	})
 	t.Run("query string does not change owner", func(t *testing.T) {
 		var read routing.Operation
@@ -121,8 +120,7 @@ func TestTicketCollaborationGoOnlyProductionProxyPolicy(t *testing.T) {
 		if read.Path == "" {
 			t.Fatal("ticket_collaboration has no comments collection GET")
 		}
-		ticketCollaborationAssertTarget(t, proxyURL, http.MethodGet,
-			ticketCollaborationConcretePath(read.Path)+"?per_page=1&fields=id", "go")
+		assertGoProxyResponse(t, http.MethodGet, proxyURL+ticketCollaborationConcretePath(read.Path)+"?per_page=1&fields=id")
 	})
 }
 
@@ -171,19 +169,6 @@ func ticketCollaborationOwnsMethod(operations []routing.Operation, method string
 		}
 	}
 	return false
-}
-
-func ticketCollaborationAssertTarget(t *testing.T, baseURL, method, path, want string) {
-	t.Helper()
-	response := proxyRequestWithRetry(t, method, baseURL+path, nil)
-	defer response.Body.Close()
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		t.Fatalf("read %s %s: %v", method, path, err)
-	}
-	if response.StatusCode != http.StatusOK || response.Header.Get("X-Test-Upstream") != want || (method != http.MethodHead && string(body) != want) {
-		t.Fatalf("%s %s status=%d upstream=%q body=%q, want %q", method, path, response.StatusCode, response.Header.Get("X-Test-Upstream"), body, want)
-	}
 }
 
 func ticketCollaborationRepositoryRoot(t *testing.T) string {

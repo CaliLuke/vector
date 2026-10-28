@@ -6,7 +6,7 @@ import (
 )
 
 func TestMemberListSchemasMatchTheirDistinctWireShapes(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 
 	aggregate := document.Components.Schemas["WorkspaceProjectMembershipRole"]
 	if _, exists := aggregate.Properties["project"]; exists {

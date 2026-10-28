@@ -257,6 +257,16 @@ removed, and all owned Go source now has zero `unused` findings. Seventeen lint
 allowances are retired, leaving 1,250. The remaining test-file `unparam` exclusion
 hides 24 findings and still requires removal; it is not covered by that lint count.
 
+The test-file `unparam` exclusion is now removed too. Fixture helpers accept only
+values their cases vary, and session doubles explicitly satisfy the optional
+production interface that middleware discovers at runtime. New failure cases
+cover cycle/module metadata lookups, state authorization, invitation reads, and
+expired-session cookies. Shared proxy assertions and table-driven catalogue and
+work-item precedence proofs remove seven duplicate reports, leaving 488; checked
+response closure retires three lint occurrences, leaving 1,247. The proxy suite
+passes 847 tests/subtests; affected database workflows and unit suites also pass.
+Neither test-file exclusion is replaced by a baseline or inline suppression.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML

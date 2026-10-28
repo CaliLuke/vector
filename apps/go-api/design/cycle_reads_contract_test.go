@@ -9,7 +9,7 @@ import (
 )
 
 func TestCycleReadsExposeExactlyTenSessionProtectedOperations(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	paths := []string{
 		"/api/workspaces/{slug}/cycles/",
 		"/api/workspaces/{slug}/projects/{project_id}/archived-cycles/",
@@ -40,7 +40,7 @@ func TestCycleReadsExposeExactlyTenSessionProtectedOperations(t *testing.T) {
 }
 
 func TestCycleReadsOwnPermissionAwareOptionsOperations(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	for path, statuses := range map[string][]string{
 		"/api/workspaces/{slug}/cycles/":                                            {"200", "401", "403", "500"},
 		"/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/analytics/": {"200", "401"},
@@ -81,7 +81,7 @@ func TestCycleReadsOwnPermissionAwareOptionsOperations(t *testing.T) {
 }
 
 func TestCycleReadsContractIncludesRealFiltersAndRepairedIdentifiers(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	list := document.Paths["/api/workspaces/{slug}/projects/{project_id}/cycles/"]["get"]
 	if names := parameterNames(document, list.Parameters); !slices.Contains(names, "cycle_view") {
 		t.Fatalf("cycle list parameters=%v, want cycle_view", names)
@@ -132,7 +132,7 @@ func TestCycleReadsContractIncludesRealFiltersAndRepairedIdentifiers(t *testing.
 }
 
 func TestCycleIssueListUsesPaginatorEnvelopeNotBareCycleIssueArray(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	operation := document.Paths["/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/cycle-issues/"]["get"]
 	schemaName := responseSchemaName(t, operation.Responses["200"])
 	if schemaName != "CycleIssuePage" {
@@ -156,7 +156,7 @@ func TestCycleIssueListUsesPaginatorEnvelopeNotBareCycleIssueArray(t *testing.T)
 }
 
 func TestCycleIssueListBadRequestSchemaCoversEveryRuntimeBody(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	operation := document.Paths["/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/cycle-issues/"]["get"]
 	names := responseAlternativeSchemaNames(t, operation.Responses["400"])
 	if len(names) != 5 {
@@ -176,7 +176,7 @@ func TestCycleIssueListBadRequestSchemaCoversEveryRuntimeBody(t *testing.T) {
 }
 
 func TestCycleSchemasContainCorrectedResponseFields(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	cycle := document.Components.Schemas["CycleRead"]
 	for _, field := range []string{
 		"progress_snapshot", "logo_props", "version", "created_by", "assignee_ids", "sub_issues",
@@ -208,7 +208,7 @@ func TestCycleSchemasContainCorrectedResponseFields(t *testing.T) {
 }
 
 func TestWorkspaceCycleForbiddenUsesDRFDetailEnvelope(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	operation := document.Paths["/api/workspaces/{slug}/cycles/"]["get"]
 	schemaName := responseSchemaName(t, operation.Responses["403"])
 	if schemaName != "CycleReadsWorkspaceForbidden" {
@@ -224,7 +224,7 @@ func TestWorkspaceCycleForbiddenUsesDRFDetailEnvelope(t *testing.T) {
 }
 
 func TestCycleAnalyticsResponseUsesUnconstrainedItems(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	operation := document.Paths["/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/analytics/"]["get"]
 	if schemaName := responseSchemaName(t, operation.Responses["200"]); schemaName != "CycleAnalytics" {
 		t.Fatalf("analytics response schema=%q, want CycleAnalytics", schemaName)
@@ -265,7 +265,7 @@ func TestCycleAnalyticsResponseUsesUnconstrainedItems(t *testing.T) {
 }
 
 func TestCycleDetailAndAggregateFailuresAreDocumented(t *testing.T) {
-	document := readOpenAPI(t, "../gen/http/openapi.json")
+	document := readOpenAPI(t)
 	for _, path := range []string{
 		"/api/workspaces/{slug}/projects/{project_id}/archived-cycles/{pk}/",
 		"/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/analytics/",

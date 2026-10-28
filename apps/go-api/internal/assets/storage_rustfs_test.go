@@ -121,7 +121,7 @@ func checkStorageRustFS(t *testing.T, config StorageConfig) {
 	}
 
 	checkStoragePostCORS(t, ctx, postURL, "http://localhost:8000")
-	checkStoragePostRejections(t, ctx, storage, config, key, content, badSignatureKey, keyEscape, escapedKey, wrongContentTypeKey, oversizeKey, expiredKey)
+	checkStoragePostRejections(t, ctx, storage, config, content, badSignatureKey, keyEscape, escapedKey, wrongContentTypeKey, oversizeKey, expiredKey)
 
 	if err := storage.Copy(ctx, key, copyKey); err != nil {
 		t.Fatal(err)
@@ -167,7 +167,7 @@ func checkStoragePostCORS(t *testing.T, ctx context.Context, postURL, origin str
 	}
 }
 
-func checkStoragePostRejections(t *testing.T, ctx context.Context, storage *Storage, config StorageConfig, key string, content []byte, badSignatureKey, keyEscape, escapedKey, wrongContentTypeKey, oversizeKey, expiredKey string) {
+func checkStoragePostRejections(t *testing.T, ctx context.Context, storage *Storage, config StorageConfig, content []byte, badSignatureKey, keyEscape, escapedKey, wrongContentTypeKey, oversizeKey, expiredKey string) {
 	t.Helper()
 	type invalidPost struct {
 		name      string

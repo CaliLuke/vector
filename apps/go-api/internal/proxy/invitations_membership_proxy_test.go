@@ -78,13 +78,13 @@ func TestInvitationsMembershipProxyRoutesAllMethodsToGo(t *testing.T) {
 				})
 			}
 			t.Run(form.name+" HEAD "+template, func(t *testing.T) {
-				assertHeadTarget(t, proxyURL+form.path, "go")
+				assertGoProxyResponse(t, http.MethodHead, proxyURL+form.path)
 			})
 			t.Run(form.name+" OPTIONS "+template, func(t *testing.T) {
 				assertTarget(t, http.MethodOptions, proxyURL+form.path, "go")
 			})
 			t.Run(form.name+" preflight "+template, func(t *testing.T) {
-				assertTargetWithoutAllow(t, http.MethodOptions, proxyURL+form.path, "go", map[string]string{
+				assertGoPreflightWithoutAllow(t, proxyURL+form.path, map[string]string{
 					"Origin":                        "http://localhost:3000",
 					"Access-Control-Request-Method": http.MethodPost,
 				})

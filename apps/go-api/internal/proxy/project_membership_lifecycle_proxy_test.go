@@ -27,8 +27,8 @@ func TestProjectMembershipLifecycleRoutesAllMethodsAndNeighborsToGo(t *testing.T
 			for _, method := range []string{http.MethodGet, http.MethodPost, http.MethodPatch, http.MethodDelete, http.MethodPut, http.MethodOptions} {
 				assertTarget(t, method, proxyURL+form, "go")
 			}
-			assertHeadTarget(t, proxyURL+form, "go")
-			assertTargetWithoutAllow(t, http.MethodOptions, proxyURL+form, "go", map[string]string{"Origin": "http://localhost:3000", "Access-Control-Request-Method": http.MethodPost})
+			assertGoProxyResponse(t, http.MethodHead, proxyURL+form)
+			assertGoPreflightWithoutAllow(t, proxyURL+form, map[string]string{"Origin": "http://localhost:3000", "Access-Control-Request-Method": http.MethodPost})
 		}
 	}
 	for _, path := range []string{"/api/v1/workspaces/membership/projects/not-a-uuid/members/", "/api/v1/workspaces/membership/projects/" + id + "/members/not-a-uuid/", "/api/workspaces/membership/projects/not-a-uuid/members/", "/api/workspaces/membership/projects/" + id + "/members/not-a-uuid/", "/api/workspaces/membership/projects/" + id + "/preferences/member/" + id + "/"} {
@@ -37,6 +37,6 @@ func TestProjectMembershipLifecycleRoutesAllMethodsAndNeighborsToGo(t *testing.T
 	// Workspace rosters now belong to invitations_membership rather than this family.
 	for _, path := range []string{"/api/v1/workspaces/membership/members/", "/api/v1/workspaces/membership/members-lite/"} {
 		assertTarget(t, http.MethodGet, proxyURL+path, "go")
-		assertHeadTarget(t, proxyURL+path, "go")
+		assertGoProxyResponse(t, http.MethodHead, proxyURL+path)
 	}
 }
