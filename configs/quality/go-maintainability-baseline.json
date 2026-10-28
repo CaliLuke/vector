@@ -324,12 +324,6 @@
       "package": "workspacefavorites",
       "function": "TestFavoriteWritesAndReadsEnforceEntityAndFolderScope",
       "score": 6
-    },
-    {
-      "file": "internal/workspaceprojectreads/lifecycle_validation.go",
-      "package": "workspaceprojectreads",
-      "function": "(*LifecycleRepository).validateProjectFields",
-      "score": 2
     }
   ]
 }

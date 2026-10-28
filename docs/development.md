@@ -151,6 +151,13 @@ integration tags and generated-source exclusions as lint. The existing AST-based
 function inventory resolves receiver identity; its complexity values are not gates.
 Missing tools, analyzer failures, malformed reports and unknown functions fail.
 
+Project-field validation now separates field parsing, reference existence,
+cover-asset authorization, name validation, relationship scope, and HTML cleanup.
+The coordinator's cyclomatic complexity falls from 106 to 12; each extracted
+helper is at most 11. The refactor retires its maintainability allowance of 2,
+and all extracted functions meet the floor of 20. Characterization tests preserve
+field-error precedence and the session/API distinction in relationship errors.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML
