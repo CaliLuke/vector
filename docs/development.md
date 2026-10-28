@@ -406,6 +406,19 @@ and focused cross-package consumers pass another 2,226, with zero test skips.
 Combined fresh coverage raises the package floor from 66.10% to 66.69%; configured
 lint stays at 516 and duplication at 488, with no new exceptions.
 
+Workflow assembly now follows five responsibilities: asset storage, content
+history and synchronization, email delivery, exports, and work-item effect
+delivery. The runtime object stays private until every registration succeeds;
+its public fields and outer resource ownership are unchanged. A source audit
+confirmed all 28 field bindings and 86 factory/call expressions retain their
+order and inputs after expanding the methods. The constructor and every extracted
+method meet the existing maintainability floor, leaving 30 allowances.
+The lifecycle integration test now starts the assembled runtime and verifies its
+durable periodic schedules before shutdown. Fresh combined coverage is 66.79%;
+the 66.69% floor is retained, with its statement inventory updated for the new
+boundaries. Configured lint, duplication, and the stricter error inventory remain
+unchanged; no new exceptions were introduced.
+
 HTTP response bodies retain explicit checked closes where the current bodyclose
 analyzer cannot follow a cross-package cleanup helper. This limitation is tracked
 in [timakin/bodyclose#60](https://github.com/timakin/bodyclose/issues/60), with a

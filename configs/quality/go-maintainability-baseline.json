@@ -89,12 +89,6 @@
       "score": 9
     },
     {
-      "file": "internal/backgroundtasks/runtime.go",
-      "package": "backgroundtasks",
-      "function": "NewRuntime",
-      "score": 8
-    },
-    {
       "file": "internal/backgroundtasks/version_history_integration_test.go",
       "package": "backgroundtasks",
       "function": "TestPostgresVersionHistoryWorkflowsTrackAndCoalesce",

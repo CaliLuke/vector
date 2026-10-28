@@ -3,11 +3,13 @@
 package backgroundtasks
 
 import (
+	"context"
 	"errors"
 	"net/url"
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/selvedge"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
@@ -39,13 +41,29 @@ func TestRuntimeConstructionTransfersResourcesUntilShutdown(t *testing.T) {
 	databaseURL, _, observer := openBackgroundTaskDatabase(t)
 	_, err := observer.Exec(t.Context(), `CREATE TABLE runtime_fixture_probe(value text); INSERT INTO runtime_fixture_probe VALUES ('keep')`)
 	require.NoError(t, err)
-	runtime, err := NewRuntime(t.Context(), databaseURL)
+	runtime, err := NewRuntime(t.Context(), databaseURL,
+		selvedge.WithActivityPollInterval(20*time.Millisecond),
+		selvedge.WithWorkflowResumptionInterval(20*time.Millisecond),
+		selvedge.WithTimerCheckInterval(20*time.Millisecond),
+	)
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		if runtime != nil {
-			require.NoError(t, runtime.Shutdown(t.Context()))
+			cleanup, cancel := context.WithTimeout(context.WithoutCancel(t.Context()), 30*time.Second)
+			defer cancel()
+			require.NoError(t, runtime.Shutdown(cleanup))
 		}
 	})
+	require.NoError(t, runtime.Start(t.Context()))
+	for _, scheduleID := range []string{issueEmailBeatScheduleID, issueAutomationScheduleID, instanceMetricsScheduleID, "plane-beat:hard-delete"} {
+		waitForBeatTimer(t, t.Context(), observer, scheduleID)
+	}
+	for _, schedule := range cleanupBeatSchedules {
+		waitForBeatTimer(t, t.Context(), observer, "plane-beat:"+schedule.name)
+	}
+	for _, schedule := range exporterHistoryBeatSchedules {
+		waitForBeatTimer(t, t.Context(), observer, "plane-beat:"+schedule.name)
+	}
 	activityStore, ok := runtime.IssueActivities.store.(*PostgresIssueActivityStore)
 	require.True(t, ok)
 	emailOrigin, activityOrigin, database := runtime.emailStore.origin, activityStore.origin, runtime.pool

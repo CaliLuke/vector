@@ -7,9 +7,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
-	"time"
 
-	"github.com/CaliLuke/go-plane/internal/assets"
 	"github.com/CaliLuke/go-plane/internal/instancecipher"
 	"github.com/CaliLuke/go-plane/internal/instancemail"
 	"github.com/CaliLuke/go-plane/internal/instancemanagement"
@@ -86,6 +84,7 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 	}
 	appOptions = append(appOptions, options...)
 	app := selvedge.NewApp(appOptions...)
+	runtime := &Runtime{App: app, pool: pool}
 	store, err := NewPostgresAPIActivityLogStore(pool)
 	if err != nil {
 		return nil, err
@@ -94,7 +93,7 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 	if err != nil {
 		return nil, err
 	}
-	logger, err := NewAPIActivityLogger(app, workflow)
+	runtime.Logger, err = NewAPIActivityLogger(app, workflow)
 	if err != nil {
 		return nil, err
 	}
@@ -102,99 +101,22 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 	if err != nil {
 		return nil, err
 	}
-	cleanup, err := RegisterCleanupWorkflows(app, cleanupStore, nil)
+	runtime.Cleanup, err = RegisterCleanupWorkflows(app, cleanupStore, nil)
 	if err != nil {
 		return nil, err
 	}
-	assetRepository, err := assets.NewPostgresRepository(pool)
+	assetWorkflows, err := runtime.registerAssetWorkflows()
 	if err != nil {
 		return nil, err
 	}
-	storageConfig, err := assets.StorageConfigFromEnv()
-	if err != nil {
-		return nil, fmt.Errorf("configure FileAsset S3 metadata activity: %w", err)
-	}
-	storage, err := assets.NewStorage(storageConfig)
-	if err != nil {
-		return nil, fmt.Errorf("create FileAsset S3 metadata client: %w", err)
-	}
-	metadataWorkflow, err := assets.RegisterStorageMetadataWorkflow(app, assetRepository, storage, nil)
-	if err != nil {
-		return nil, err
-	}
-	assetDispatcher, err := NewFileAssetMetadataDispatcher(app, metadataWorkflow)
-	if err != nil {
-		return nil, err
-	}
-	assetDeleteWorkflow, err := assets.RegisterStorageObjectDeleteWorkflow(app, assetRepository, storage, nil)
-	if err != nil {
-		return nil, err
-	}
-	assetDeleteDispatcher, err := NewFileAssetStorageDeleteDispatcher(app, assetDeleteWorkflow)
-	if err != nil {
-		return nil, err
-	}
-	exporterStore, err := NewPostgresExporterHistoryStore(pool, storage)
-	if err != nil {
-		return nil, err
-	}
-	exporterHistory, err := RegisterExporterHistoryWorkflow(app, exporterStore, nil)
-	if err != nil {
-		return nil, err
-	}
-	versionStore, err := NewPostgresVersionHistoryStore(pool)
-	if err != nil {
-		return nil, err
-	}
-	versions, err := RegisterVersionHistoryWorkflows(app, versionStore, nil)
-	if err != nil {
-		return nil, err
-	}
-	issueDescriptionSyncStore, err := NewPostgresIssueDescriptionSyncStore(pool)
-	if err != nil {
-		return nil, err
-	}
-	issueDescriptionSync, err := RegisterIssueDescriptionSyncWorkflow(app, issueDescriptionSyncStore, nil)
-	if err != nil {
-		return nil, err
-	}
-	issueVersionSyncStore, err := NewPostgresIssueVersionSyncStore(pool)
-	if err != nil {
-		return nil, err
-	}
-	issueVersionSync, err := RegisterIssueVersionSyncWorkflow(app, issueVersionSyncStore, nil)
-	if err != nil {
-		return nil, err
-	}
-	issueVersionTaskStore, err := NewPostgresIssueVersionTaskStore(pool)
-	if err != nil {
-		return nil, err
-	}
-	issueVersions, err := RegisterIssueVersionTaskWorkflow(app, issueVersionTaskStore, nil)
-	if err != nil {
-		return nil, err
-	}
-	pageTransactionStore, err := NewPostgresPageTransactionStore(pool)
-	if err != nil {
-		return nil, err
-	}
-	pageTransactions, err := RegisterPageTransactionWorkflow(app, pageTransactionStore, nil)
-	if err != nil {
-		return nil, err
-	}
-	descriptionAssetStore, err := NewPostgresDescriptionAssetCopyStore(pool, storage)
-	if err != nil {
-		return nil, err
-	}
-	descriptionAssets, err := RegisterDescriptionAssetCopyWorkflow(app, descriptionAssetStore, nil)
-	if err != nil {
+	if err = runtime.registerContentWorkflows(assetWorkflows.storage); err != nil {
 		return nil, err
 	}
 	recentVisitStore, err := NewPostgresRecentVisitStore(pool)
 	if err != nil {
 		return nil, err
 	}
-	recentVisits, err := RegisterRecentVisitWorkflow(app, recentVisitStore, nil)
+	runtime.RecentVisits, err = RegisterRecentVisitWorkflow(app, recentVisitStore, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +125,7 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 		return nil, err
 	}
 	resources.activities = issueActivityStore
-	issueActivities, err := RegisterIssueActivityWorkflow(app, issueActivityStore, nil)
+	runtime.IssueActivities, err = RegisterIssueActivityWorkflow(app, issueActivityStore, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +133,7 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 	if err != nil {
 		return nil, err
 	}
-	issueAutomation, err := RegisterIssueAutomationWorkflow(app, issueAutomationStore, issueActivities, nil)
+	runtime.IssueAutomation, err = RegisterIssueAutomationWorkflow(app, issueAutomationStore, runtime.IssueActivities, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -223,32 +145,19 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 	if err != nil {
 		return nil, fmt.Errorf("configure instance email settings repository: %w", err)
 	}
-	emailStore, err := NewPostgresIssueEmailStore(pool, instanceRepository, instancemail.Sender{})
+	runtime.emailStore, err = NewPostgresIssueEmailStore(pool, instanceRepository, instancemail.Sender{})
 	if err != nil {
 		return nil, err
 	}
-	resources.emails = emailStore
-	emailNotifications, err := RegisterIssueEmailNotificationWorkflow(app, emailStore, nil)
-	if err != nil {
-		return nil, err
-	}
-	templatedEmailStore, err := NewPostgresTemplatedEmailStore(pool, instanceRepository, instancemail.Sender{})
-	if err != nil {
-		return nil, err
-	}
-	templatedEmails, err := RegisterTemplatedEmailTaskWorkflow(app, templatedEmailStore, nil)
-	if err != nil {
-		return nil, err
-	}
-	emailTaskAdmission, err := NewTemplatedEmailTaskAdmission(templatedEmails)
-	if err != nil {
+	resources.emails = runtime.emailStore
+	if err = runtime.registerEmailWorkflows(instanceRepository); err != nil {
 		return nil, err
 	}
 	instanceMetricsStore, err := NewPostgresInstanceMetricsStore(pool, otlpInstanceMetricsExporter{})
 	if err != nil {
 		return nil, err
 	}
-	instanceMetrics, err := RegisterInstanceMetricsWorkflow(app, instanceMetricsStore, nil)
+	runtime.InstanceMetrics, err = RegisterInstanceMetricsWorkflow(app, instanceMetricsStore, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -256,7 +165,7 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 	if err != nil {
 		return nil, err
 	}
-	eventTracking, err := RegisterEventTrackingWorkflow(app, eventTrackingStore, nil)
+	runtime.EventTracking, err = RegisterEventTrackingWorkflow(app, eventTrackingStore, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -264,7 +173,7 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 	if err != nil {
 		return nil, err
 	}
-	workspaceSeed, err := RegisterWorkspaceSeedWorkflow(app, workspaceSeedStore, nil)
+	runtime.WorkspaceSeed, err = RegisterWorkspaceSeedWorkflow(app, workspaceSeedStore, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -272,37 +181,18 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 	if err != nil {
 		return nil, err
 	}
-	linkPreviews, err := RegisterLinkPreviewWorkflow(app, linkPreviewStore, nil)
+	runtime.LinkPreviews, err = RegisterLinkPreviewWorkflow(app, linkPreviewStore, nil)
 	if err != nil {
 		return nil, err
 	}
-	exportStorageConfig := storageConfig
-	exportStorageConfig.SignedURLTTL = 7 * 24 * time.Hour
-	exportStorage, err := assets.NewStorage(exportStorageConfig)
-	if err != nil {
-		return nil, fmt.Errorf("create issue export S3 client: %w", err)
+	if err = runtime.registerExportWorkflows(assetWorkflows.config, instanceRepository); err != nil {
+		return nil, err
 	}
-	issueExportStore, err := NewPostgresIssueExportStore(pool, exportStorage)
+	webhookStore, err := NewPostgresWebhookTaskStore(pool, runtime.EmailTaskAdmission)
 	if err != nil {
 		return nil, err
 	}
-	issueExports, err := RegisterIssueExportWorkflow(app, issueExportStore, nil)
-	if err != nil {
-		return nil, err
-	}
-	analyticsExportStore, err := NewPostgresAnalyticsExportStore(pool, instanceRepository, instancemail.Sender{})
-	if err != nil {
-		return nil, err
-	}
-	analyticsExports, err := RegisterAnalyticsExportWorkflow(app, analyticsExportStore, nil)
-	if err != nil {
-		return nil, err
-	}
-	webhookStore, err := NewPostgresWebhookTaskStore(pool, emailTaskAdmission)
-	if err != nil {
-		return nil, err
-	}
-	webhooks, err := RegisterWebhookTaskWorkflows(app, webhookStore, nil)
+	runtime.Webhooks, err = RegisterWebhookTaskWorkflows(app, webhookStore, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -314,37 +204,15 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 	if err != nil {
 		return nil, err
 	}
-	deletion, err := RegisterDeletionWorkflows(app, deletionStore, deleteDays, nil)
+	runtime.Deletion, err = RegisterDeletionWorkflows(app, deletionStore, deleteDays, nil)
 	if err != nil {
 		return nil, err
 	}
-	effectActivities, err := NewIssueActivityAdmission(issueActivities)
-	if err != nil {
+	if err = runtime.configureWorkItemEffects(assetWorkflows); err != nil {
 		return nil, err
 	}
-	effectVersions, err := NewIssueDescriptionVersionAdmission(versions)
-	if err != nil {
-		return nil, err
-	}
-	effectWebhooks, err := NewWebhookTaskAdmission(webhooks)
-	if err != nil {
-		return nil, err
-	}
-	attachmentUploads, err := assets.NewAttachmentApplication(assetRepository, storage, nil, "", assets.AttachmentUploadLimit)
-	if err != nil {
-		return nil, err
-	}
-	effectPages, err := NewPageTaskAdmission(pageTransactions, versions, descriptionAssets)
-	if err != nil {
-		return nil, err
-	}
-	effectStore, err := NewPostgresWorkItemEffectStore(pool, effectActivities, effectVersions, deletion, effectWebhooks, assetDeleteDispatcher, assetDispatcher, linkPreviews, attachmentUploads, effectPages)
-	if err != nil {
-		return nil, err
-	}
-	workItemEffects := &workItemEffectWorker{store: effectStore}
 	closeOnError = false
-	return &Runtime{App: app, Logger: logger, Cleanup: cleanup, Assets: assetDispatcher, Exporter: exporterHistory, Versions: versions, IssueDescriptionSync: issueDescriptionSync, IssueVersionSync: issueVersionSync, IssueVersions: issueVersions, PageTransactions: pageTransactions, DescriptionAssets: descriptionAssets, RecentVisits: recentVisits, IssueActivities: issueActivities, IssueAutomation: issueAutomation, EmailNotifications: emailNotifications, TemplatedEmails: templatedEmails, EmailTaskAdmission: emailTaskAdmission, InstanceMetrics: instanceMetrics, IssueExports: issueExports, AnalyticsExports: analyticsExports, EventTracking: eventTracking, WorkspaceSeed: workspaceSeed, LinkPreviews: linkPreviews, Webhooks: webhooks, Deletion: deletion, workItemEffects: workItemEffects, emailStore: emailStore, pool: pool}, nil
+	return runtime, nil
 }
 
 func (runtime *Runtime) Start(ctx context.Context) error {
