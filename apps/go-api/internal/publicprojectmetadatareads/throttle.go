@@ -435,11 +435,6 @@ func redisThrottleOptions(redisURL string) (*redis.Options, error) {
 	if err != nil {
 		return nil, fmt.Errorf("parse Redis URL: %w", err)
 	}
-	// Django's cache URL sets ssl_cert_reqs=False for rediss:// connections.
-	// Preserve that compatibility policy while this service shares the cache.
-	if options.TLSConfig != nil {
-		options.TLSConfig.InsecureSkipVerify = true //nolint:gosec // Matches the Django deployment configuration.
-	}
 	return options, nil
 }
 

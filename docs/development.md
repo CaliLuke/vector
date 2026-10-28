@@ -317,6 +317,17 @@ change, including retry replay and changelog escaping. The two production
 maintainability allowances are retired, leaving 33; lint and duplication remain
 unchanged at 650 occurrences and 488 directed reports.
 
+All owned Go inline lint suppressions are now removed. Bootstrap transaction
+cleanup checks rollback failures, preserves the original operation error, and
+uses a bounded cleanup context even after caller cancellation. All five Redis
+cache clients now use standard TLS certificate verification for `rediss` URLs.
+Private deployments must install their CA in the host/container trust store and
+use a certificate matching the Redis hostname. This intentionally rejects
+previously accepted untrusted certificates. The bootstrap and public-metadata
+packages pass 104 tests/subtests, and application-level probes verify certificate
+rejection through each cache client (six tests/subtests). Lint, maintainability,
+and duplication remain at 650, 33, and 488 respectively without baseline changes.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML

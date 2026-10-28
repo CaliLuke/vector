@@ -60,9 +60,6 @@ func NewStateWriteCache(redisURL string) (*redisStateWriteCache, error) {
 	if err != nil {
 		return nil, err
 	}
-	if options.TLSConfig != nil {
-		options.TLSConfig.InsecureSkipVerify = true // shared Django cache uses ssl_cert_reqs=False
-	}
 	return &redisStateWriteCache{client: redis.NewClient(options)}, nil
 }
 

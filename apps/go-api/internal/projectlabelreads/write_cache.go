@@ -13,9 +13,6 @@ func NewWriteCache(redisURL string) (*WriteCache, error) {
 	if err != nil {
 		return nil, err
 	}
-	if options.TLSConfig != nil {
-		options.TLSConfig.InsecureSkipVerify = true
-	} // Django uses ssl_cert_reqs=False for this shared cache.
 	return &WriteCache{client: redis.NewClient(options)}, nil
 }
 

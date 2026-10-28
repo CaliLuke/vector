@@ -14,9 +14,6 @@ func NewRedisCacheInvalidator(redisURL string) (*RedisCacheInvalidator, error) {
 	if err != nil {
 		return nil, fmt.Errorf("parse assets cache Redis URL: %w", err)
 	}
-	if options.TLSConfig != nil {
-		options.TLSConfig.InsecureSkipVerify = true
-	}
 	return &RedisCacheInvalidator{client: redis.NewClient(options)}, nil
 }
 

@@ -2,9 +2,12 @@ package publicprojectmetadatareads
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -835,12 +838,12 @@ func TestPostgreSQLSessionInvalidatorDeletesDjangoSession(t *testing.T) {
 	}
 }
 
-func TestRedisThrottleOptionsMatchDjangoTLSVerificationPolicy(t *testing.T) {
+func TestRedisThrottleOptionsVerifyTLSPeersByDefault(t *testing.T) {
 	options, err := redisThrottleOptions("rediss://cache.example.test:6380/1")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if options.TLSConfig == nil || !options.TLSConfig.InsecureSkipVerify {
+	if options.TLSConfig == nil || options.TLSConfig.InsecureSkipVerify || options.TLSConfig.ServerName != "cache.example.test" {
 		t.Fatalf("TLSConfig=%+v", options.TLSConfig)
 	}
 	plainOptions, err := redisThrottleOptions("redis://cache.example.test:6379/1")
@@ -849,6 +852,39 @@ func TestRedisThrottleOptionsMatchDjangoTLSVerificationPolicy(t *testing.T) {
 	}
 	if plainOptions.TLSConfig != nil {
 		t.Fatalf("plain Redis TLSConfig=%+v", plainOptions.TLSConfig)
+	}
+}
+
+func TestRedisThrottleTLSRejectsUntrustedCertificates(t *testing.T) {
+	server := httptest.NewTLSServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	defer server.Close()
+	address := server.Listener.Addr().String()
+	options, err := redisThrottleOptions("rediss://" + address + "/1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dialer := &net.Dialer{Timeout: 5 * time.Second}
+	connection, err := tls.DialWithDialer(dialer, "tcp", address, options.TLSConfig)
+	if err == nil {
+		if closeErr := connection.Close(); closeErr != nil {
+			t.Error(closeErr)
+		}
+		t.Fatal("Redis TLS accepted a certificate outside the trust store")
+	}
+	var untrusted x509.UnknownAuthorityError
+	if !errors.As(err, &untrusted) {
+		t.Fatalf("TLS error = %v, want an untrusted-certificate failure", err)
+	}
+	// A deployment can trust its private CA without disabling peer verification.
+	trusted := options.TLSConfig.Clone()
+	trusted.RootCAs = x509.NewCertPool()
+	trusted.RootCAs.AddCert(server.Certificate())
+	connection, err = tls.DialWithDialer(dialer, "tcp", address, trusted)
+	if err != nil {
+		t.Fatalf("TLS handshake with a trusted certificate: %v", err)
+	}
+	if closeErr := connection.Close(); closeErr != nil {
+		t.Error(closeErr)
 	}
 }
 

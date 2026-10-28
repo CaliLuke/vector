@@ -37,7 +37,7 @@ var ErrMetricsAdmissionUnavailable = errors.New("instance metrics admission requ
 // RegisterInstance mirrors the Django management command's instance defaults.
 // The transaction lock makes concurrent startup processes converge on the
 // same newest active instance row.
-func RegisterInstance(ctx context.Context, pool *pgxpool.Pool, input Registration, latest LatestVersion, admitMetrics MetricsAdmission) (bool, error) {
+func RegisterInstance(ctx context.Context, pool *pgxpool.Pool, input Registration, latest LatestVersion, admitMetrics MetricsAdmission) (_ bool, resultErr error) {
 	if pool == nil {
 		return false, errors.New("database pool is required")
 	}
@@ -56,7 +56,7 @@ func RegisterInstance(ctx context.Context, pool *pgxpool.Pool, input Registratio
 	if err != nil {
 		return false, fmt.Errorf("begin instance registration: %w", err)
 	}
-	defer tx.Rollback(ctx) //nolint:errcheck // Commit below determines the transaction result.
+	defer func() { resultErr = rollbackBootstrapTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, execErr := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(@lock_id)`, pgx.StrictNamedArgs{"lock_id": registrationLockID}); execErr != nil {
 		return false, fmt.Errorf("lock instance registration: %w", execErr)
 	}
@@ -149,7 +149,7 @@ func latestReleaseVersion(ctx context.Context, fallback string) string {
 	return release.TagName
 }
 
-func ConfigureInstance(ctx context.Context, pool *pgxpool.Pool, secret string, lookupEnv func(string) (string, bool)) error {
+func ConfigureInstance(ctx context.Context, pool *pgxpool.Pool, secret string, lookupEnv func(string) (string, bool)) (resultErr error) {
 	if pool == nil {
 		return errors.New("database pool is required")
 	}
@@ -171,7 +171,7 @@ func ConfigureInstance(ctx context.Context, pool *pgxpool.Pool, secret string, l
 	if err != nil {
 		return fmt.Errorf("begin instance configuration: %w", err)
 	}
-	defer tx.Rollback(ctx) //nolint:errcheck // Commit below determines the transaction result.
+	defer func() { resultErr = rollbackBootstrapTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(@lock_id)`, pgx.StrictNamedArgs{"lock_id": registrationLockID + 1}); err != nil {
 		return fmt.Errorf("lock instance configuration: %w", err)
 	}
@@ -201,6 +201,17 @@ func ConfigureInstance(ctx context.Context, pool *pgxpool.Pool, secret string, l
 		return fmt.Errorf("commit instance configuration: %w", err)
 	}
 	return nil
+}
+
+// Rollback must release a failed transaction even after caller cancellation.
+// Commit already closes the transaction; other cleanup failures remain observable.
+func rollbackBootstrapTransaction(ctx context.Context, rollback func(context.Context) error, operationErr error) error {
+	cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	defer cancel()
+	if rollbackErr := rollback(cleanup); rollbackErr != nil && !errors.Is(rollbackErr, pgx.ErrTxClosed) {
+		return errors.Join(operationErr, fmt.Errorf("rollback bootstrap transaction: %w", rollbackErr))
+	}
+	return operationErr
 }
 
 // ValidateDatabaseURL is shared by bootstrap commands that need PostgreSQL.

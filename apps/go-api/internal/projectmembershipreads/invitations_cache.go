@@ -17,10 +17,6 @@ func NewInvitationCache(redisURL string) (*InvitationCache, error) {
 	if err != nil {
 		return nil, fmt.Errorf("parse invitation cache Redis URL: %w", err)
 	}
-	if options.TLSConfig != nil {
-		// Match Django's ssl_cert_reqs=False for the shared application cache.
-		options.TLSConfig.InsecureSkipVerify = true
-	}
 	return &InvitationCache{client: redis.NewClient(options)}, nil
 }
 
