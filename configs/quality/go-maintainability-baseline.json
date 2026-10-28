@@ -125,12 +125,6 @@
       "score": 19
     },
     {
-      "file": "internal/projectconfiguration/operations.go",
-      "package": "projectconfiguration",
-      "function": "(*Repository).writeAPILabel",
-      "score": 15
-    },
-    {
       "file": "internal/projectmembershipreads/invitations_commands.go",
       "package": "projectmembershipreads",
       "function": "(*InvitationsRepository).invitationCreate",

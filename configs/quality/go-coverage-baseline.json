@@ -326,7 +326,7 @@
       "percent": 100
     },
     "github.com/CaliLuke/go-plane/internal/projectconfiguration": {
-      "statements": 852,
+      "statements": 857,
       "percent": 55.16
     },
     "github.com/CaliLuke/go-plane/internal/projectidentifiers": {

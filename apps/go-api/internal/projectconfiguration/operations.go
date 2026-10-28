@@ -386,24 +386,7 @@ func (r *Repository) writeAPILabel(ctx context.Context, tx pgx.Tx, user, slug, p
 		}
 	}
 	if method == http.MethodDelete {
-		workspaceID, err := labelhierarchy.LockProject(ctx, tx, project, slug)
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, failure(404, "error", "The requested resource does not exist.")
-		}
-		if err != nil {
-			return nil, err
-		}
-		deleted, err := labelhierarchy.SoftDeleteTree(ctx, tx, labelID, user, project, workspaceID)
-		if errors.Is(err, labelhierarchy.ErrOutOfScopeChild) {
-			return nil, failure(409, "error", "The label hierarchy contains an out-of-scope child.")
-		}
-		if err != nil {
-			return nil, err
-		}
-		if !deleted {
-			return nil, failure(404, "error", "The requested resource does not exist.")
-		}
-		return nil, nil
+		return nil, deleteAPILabelTree(ctx, tx, user, slug, project, labelID)
 	}
 	input, err := djangoinput.Parse(body, contentType)
 	if err != nil {
@@ -419,57 +402,11 @@ func (r *Repository) writeAPILabel(ctx context.Context, tx pgx.Tx, user, slug, p
 	if method == http.MethodPost {
 		targetID = uuid.NewString()
 	}
-	values := map[string]any{}
-	fieldErrors := map[string][]string{}
-	parentID := ""
-	validateText := func(field string, required, allowBlank, allowNull bool, maximum int) {
-		value, present := input.FieldValue(field, required, allowBlank, allowNull)
-		if !present {
-			if required {
-				fieldErrors[field] = []string{"This field is required."}
-			}
-			return
-		}
-		if value == nil && allowNull {
-			values[field] = nil
-			return
-		}
-		text, problems := djangoinput.TextField(value, allowBlank, maximum, nil)
-		if len(problems) != 0 {
-			fieldErrors[field] = problems
-			return
-		}
-		values[field] = text
+	values, parentID, err := validateAPILabelFields(input, method == http.MethodPost)
+	if err != nil {
+		return nil, err
 	}
-	validateText("name", method == http.MethodPost, false, false, 255)
-	validateText("color", false, true, false, 255)
-	validateText("description", false, true, false, 0)
-	validateText("external_source", false, true, true, 255)
-	validateText("external_id", false, true, true, 255)
-	if parent, present := input.FieldValue("parent", false, false, true); present {
-		if parent == nil {
-			values["parent_id"] = nil
-		} else {
-			parsedParentID, parseErr := djangoinput.UUID(parent)
-			if parseErr != nil {
-				fieldErrors["parent"] = []string{"“" + djangoinput.ScalarString(parent) + "” is not a valid UUID."}
-			} else {
-				parentID = parsedParentID.String()
-			}
-		}
-	}
-	if sortOrder, present := input.FieldValue("sort_order", false, false, false); present {
-		if sortOrder == nil {
-			fieldErrors["sort_order"] = []string{"This field may not be null."}
-		} else if parsed, message := djangoinput.FloatField(sortOrder); message != "" {
-			fieldErrors["sort_order"] = []string{message}
-		} else {
-			values["sort_order"] = parsed
-		}
-	}
-	if len(fieldErrors) != 0 {
-		return nil, &HTTPError{Status: http.StatusBadRequest, Body: fieldErrors}
-	}
+
 	db := tx
 	workspaceID, err := labelhierarchy.LockProject(ctx, tx, project, slug)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -572,6 +509,84 @@ func (r *Repository) writeAPILabel(ctx context.Context, tx pgx.Tx, user, slug, p
 		return nil, err
 	}
 	return data, nil
+}
+
+func deleteAPILabelTree(ctx context.Context, tx pgx.Tx, user, slug, project, labelID string) error {
+	workspaceID, err := labelhierarchy.LockProject(ctx, tx, project, slug)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return failure(404, "error", "The requested resource does not exist.")
+	}
+	if err != nil {
+		return err
+	}
+	deleted, err := labelhierarchy.SoftDeleteTree(ctx, tx, labelID, user, project, workspaceID)
+	if errors.Is(err, labelhierarchy.ErrOutOfScopeChild) {
+		return failure(409, "error", "The label hierarchy contains an out-of-scope child.")
+	}
+	if err != nil {
+		return err
+	}
+	if !deleted {
+		return failure(404, "error", "The requested resource does not exist.")
+	}
+	return nil
+}
+
+// validateAPILabelFields applies serializer rules without querying the database.
+// The parsed parent remains separate until the transaction validates its scope.
+func validateAPILabelFields(input djangoinput.Input, requireName bool) (map[string]any, string, error) {
+	values := map[string]any{}
+	fieldErrors := map[string][]string{}
+	parentID := ""
+	validateText := func(field string, required, allowBlank, allowNull bool, maximum int) {
+		value, present := input.FieldValue(field, required, allowBlank, allowNull)
+		if !present {
+			if required {
+				fieldErrors[field] = []string{"This field is required."}
+			}
+			return
+		}
+		if value == nil && allowNull {
+			values[field] = nil
+			return
+		}
+		text, problems := djangoinput.TextField(value, allowBlank, maximum, nil)
+		if len(problems) != 0 {
+			fieldErrors[field] = problems
+			return
+		}
+		values[field] = text
+	}
+	validateText("name", requireName, false, false, 255)
+	validateText("color", false, true, false, 255)
+	validateText("description", false, true, false, 0)
+	validateText("external_source", false, true, true, 255)
+	validateText("external_id", false, true, true, 255)
+	if parent, present := input.FieldValue("parent", false, false, true); present {
+		if parent == nil {
+			values["parent_id"] = nil
+		} else {
+			parsedParentID, parseErr := djangoinput.UUID(parent)
+			if parseErr != nil {
+				fieldErrors["parent"] = []string{"“" + djangoinput.ScalarString(parent) + "” is not a valid UUID."}
+			} else {
+				parentID = parsedParentID.String()
+			}
+		}
+	}
+	if sortOrder, present := input.FieldValue("sort_order", false, false, false); present {
+		if sortOrder == nil {
+			fieldErrors["sort_order"] = []string{"This field may not be null."}
+		} else if parsed, message := djangoinput.FloatField(sortOrder); message != "" {
+			fieldErrors["sort_order"] = []string{message}
+		} else {
+			values["sort_order"] = parsed
+		}
+	}
+	if len(fieldErrors) != 0 {
+		return nil, "", &HTTPError{Status: http.StatusBadRequest, Body: fieldErrors}
+	}
+	return values, parentID, nil
 }
 
 func stringValueOrDefault(values map[string]any, key, fallback string) string {

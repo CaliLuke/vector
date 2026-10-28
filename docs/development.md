@@ -437,6 +437,18 @@ tests/subtests pass without skips. This retires another maintainability allowanc
 leaving 28; lint and duplication remain unchanged. Fresh combined page coverage
 is 64.12%, retaining the 63.48% floor with 1,572 owned statements.
 
+API label mutations now separate serializer validation and whole-tree deletion
+from create/update persistence. The serializer has no database access; parent
+scope checks and hierarchy locks remain inside the existing transaction. Source
+comparisons confirm both extracted bodies preserve the original operations and
+error mapping. All three functions meet the maintainability floor, leaving 27
+allowances (10 production, 17 test). Final affected runs pass 1,042 tests/subtests
+without skips; one PostgreSQL fixture connection failure passed on a complete
+label-read package rerun. Including MCP discovery preserves the visibility
+coverage omitted by the focused selection: combined coverage is 55.43%, retaining
+the 55.16% floor with 857 statements. Lint, duplication, and strict error findings
+remain at 516, 488, and 1,289 respectively.
+
 HTTP response bodies retain explicit checked closes where the current bodyclose
 analyzer cannot follow a cross-package cleanup helper. This limitation is tracked
 in [timakin/bodyclose#60](https://github.com/timakin/bodyclose/issues/60), with a
