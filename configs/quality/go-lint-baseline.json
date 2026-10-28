@@ -2060,14 +2060,6 @@
     {
       "fingerprint": [
         "govet",
-        "internal/backgroundtasks/templated_email_tasks.go",
-        "shadow: declaration of \"err\" shadows declaration at line #"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "govet",
         "internal/backgroundtasks/version_history_integration_test.go",
         "shadow: declaration of \"err\" shadows declaration at line #"
       ],

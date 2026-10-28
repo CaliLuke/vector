@@ -107,12 +107,6 @@
       "score": 7
     },
     {
-      "file": "internal/backgroundtasks/templated_email_tasks.go",
-      "package": "backgroundtasks",
-      "function": "(*templatedEmailStore).prepare",
-      "score": 12
-    },
-    {
       "file": "internal/backgroundtasks/version_history_integration_test.go",
       "package": "backgroundtasks",
       "function": "TestPostgresVersionHistoryWorkflowsTrackAndCoalesce",

@@ -225,6 +225,14 @@ the existing rollback and replay proof verifies empty custom properties on all
 seven seeded issues. Removing obsolete fixture setup also retires two lint
 occurrences and one maintainability allowance, leaving 1,274 and 39 respectively.
 
+Email preparation decodes positional arguments once before recipient lookups or
+message construction. Task metadata owns the expected argument counts; the
+decoder preserves count-before-type errors, argument order, and null-to-empty
+values. Template-specific subjects, URLs, and database effects remain together.
+Characterization tests and the database/SMTP proofs pass. This removes one lint
+occurrence and one maintainability allowance, leaving 1,273 and 38 respectively;
+the duplicate baseline remains at 495 directed reports.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML

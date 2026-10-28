@@ -33,10 +33,10 @@ const (
 	templatedEmailActivityName   = "plane.notifications.render_and_send_templated_email"
 )
 
-var supportedTemplatedEmailTasks = map[string]struct{}{
-	forgotPasswordTask: {}, magicLinkTask: {}, emailUpdateMagicCodeTask: {}, emailUpdateConfirmationTask: {},
-	userActivationEmailTask: {}, userDeactivationEmailTask: {}, projectAddUserEmailTask: {}, webhookDeactivationEmailTask: {},
-	workspaceInvitationEmailTask: {}, projectInvitationEmailTask: {},
+var templatedEmailArgumentCounts = map[string]int{
+	forgotPasswordTask: 5, magicLinkTask: 3, emailUpdateMagicCodeTask: 2, emailUpdateConfirmationTask: 1,
+	userActivationEmailTask: 2, userDeactivationEmailTask: 2, projectAddUserEmailTask: 3, webhookDeactivationEmailTask: 4,
+	workspaceInvitationEmailTask: 5, projectInvitationEmailTask: 5,
 }
 
 type TemplatedEmailTaskDispatcher struct {
@@ -99,7 +99,7 @@ func RegisterTemplatedEmailTaskWorkflow(app *selvedge.App, store *templatedEmail
 		return nil, fmt.Errorf("register templated email activity: %w", err)
 	}
 	workflow := selvedge.DefineWorkflow(templatedEmailWorkflowName, func(ctx *selvedge.WorkflowContext, input templatedEmailTaskInput) (struct{}, error) {
-		if _, ok := supportedTemplatedEmailTasks[input.TaskName]; !ok {
+		if _, ok := templatedEmailArgumentCounts[input.TaskName]; !ok {
 			return struct{}{}, fmt.Errorf("unsupported templated email task %q", input.TaskName)
 		}
 		return activity.Execute(ctx.Context(), activities.Scope(ctx), input, execution.ActivityOptions{})
@@ -122,7 +122,7 @@ func (admission *TemplatedEmailTaskAdmission) AdmitTemplatedEmailTask(ctx contex
 	if _, err := uuid.Parse(eventID); err != nil {
 		return fmt.Errorf("templated email event ID must be a UUID: %w", err)
 	}
-	if _, ok := supportedTemplatedEmailTasks[taskName]; !ok {
+	if _, ok := templatedEmailArgumentCounts[taskName]; !ok {
 		return fmt.Errorf("unsupported templated email task %q", taskName)
 	}
 	encoded, err := json.Marshal(args)
@@ -158,7 +158,7 @@ func (publisher *TemplatedEmailTaskPublisher) Task(ctx context.Context, name str
 	if publisher == nil || publisher.fallback == nil || publisher.admission == nil {
 		return errors.New("templated email task publisher is not configured")
 	}
-	if _, ok := supportedTemplatedEmailTasks[name]; !ok {
+	if _, ok := templatedEmailArgumentCounts[name]; !ok {
 		return publisher.fallback.Task(ctx, name, args, kwargs)
 	}
 	if len(kwargs) != 0 {
@@ -206,107 +206,36 @@ func (store *templatedEmailStore) Deliver(ctx context.Context, input templatedEm
 var errEmailTaskSourceRowMissing = errors.New("email source row is missing")
 
 func (store *templatedEmailStore) prepare(ctx context.Context, input templatedEmailTaskInput) (*preparedEmail, error) {
-	args := input.Args
-	arg := func(index int) (string, error) {
-		if index >= len(args) {
-			return "", fmt.Errorf("%s requires argument %d", input.TaskName, index+1)
-		}
-		if string(args[index]) == "null" {
-			return "", nil
-		}
-		var value string
-		if err := json.Unmarshal(args[index], &value); err != nil {
-			return "", fmt.Errorf("%s argument %d must be a string: %w", input.TaskName, index+1, err)
-		}
-		return value, nil
-	}
-	exact := func(count int) error {
-		if len(args) != count {
-			return fmt.Errorf("%s received %d arguments, want %d", input.TaskName, len(args), count)
-		}
-		return nil
+	args, decodeErr := decodeTemplatedEmailArguments(input)
+	if decodeErr != nil {
+		return nil, decodeErr
 	}
 	makeEmail := func(to, subject, template string, values map[string]string) *preparedEmail {
 		return &preparedEmail{To: to, Subject: subject, Template: template, Values: values}
 	}
 	switch input.TaskName {
 	case forgotPasswordTask:
-		if err := exact(5); err != nil {
-			return nil, err
-		}
-		firstName, err := arg(0)
-		if err != nil {
-			return nil, err
-		}
-		email, err := arg(1)
-		if err != nil {
-			return nil, err
-		}
-		uid, err := arg(2)
-		if err != nil {
-			return nil, err
-		}
-		token, err := arg(3)
-		if err != nil {
-			return nil, err
-		}
-		currentSite, err := arg(4)
-		if err != nil {
-			return nil, err
-		}
+		firstName := args[0]
+		email := args[1]
+		uid := args[2]
+		token := args[3]
+		currentSite := args[4]
 		absURL := currentSite + "/accounts/reset-password/?uidb64=" + uid + "&token=" + token + "&email=" + email
 		return makeEmail(email, "A new password to your Vector account has been requested", "auth/forgot_password.html", map[string]string{"first_name": firstName, "forgot_password_url": absURL, "email": email}), nil
 	case magicLinkTask:
-		if err := exact(3); err != nil {
-			return nil, err
-		}
-		email, err := arg(0)
-		if err != nil {
-			return nil, err
-		}
-		_, err = arg(1)
-		if err != nil {
-			return nil, err
-		}
-		token, err := arg(2)
-		if err != nil {
-			return nil, err
-		}
+		email := args[0]
+		token := args[2]
 		return makeEmail(email, "Your unique Vector login code is "+token, "auth/magic_signin.html", map[string]string{"code": token, "email": email}), nil
 	case emailUpdateMagicCodeTask:
-		if err := exact(2); err != nil {
-			return nil, err
-		}
-		email, err := arg(0)
-		if err != nil {
-			return nil, err
-		}
-		token, err := arg(1)
-		if err != nil {
-			return nil, err
-		}
+		email := args[0]
+		token := args[1]
 		return makeEmail(email, "Verify your new email address", "auth/magic_signin.html", map[string]string{"code": token, "email": email}), nil
 	case emailUpdateConfirmationTask:
-		if err := exact(1); err != nil {
-			return nil, err
-		}
-		email, err := arg(0)
-		if err != nil {
-			return nil, err
-		}
+		email := args[0]
 		return makeEmail(email, "Vector email address successfully updated", "user/email_updated.html", map[string]string{"email": email}), nil
 	case userActivationEmailTask, userDeactivationEmailTask:
-		if err := exact(2); err != nil {
-			return nil, err
-		}
-		currentSite, err := arg(0)
-		if err != nil {
-			return nil, err
-		}
-		userID, err := arg(1)
-		if err != nil {
-			return nil, err
-		}
+		currentSite := args[0]
+		userID := args[1]
 		user, err := store.userForEmail(ctx, userID)
 		if err != nil {
 			return nil, err
@@ -316,23 +245,11 @@ func (store *templatedEmailStore) prepare(ctx context.Context, input templatedEm
 		}
 		return makeEmail(user.email, user.displayName+" has been deactivated on Vector", "user/user_deactivation.html", map[string]string{"email": user.email, "login_url": currentSite + "/login"}), nil
 	case projectAddUserEmailTask:
-		if err := exact(3); err != nil {
-			return nil, err
-		}
-		currentSite, err := arg(0)
-		if err != nil {
-			return nil, err
-		}
-		memberID, err := arg(1)
-		if err != nil {
-			return nil, err
-		}
-		inviterID, err := arg(2)
-		if err != nil {
-			return nil, err
-		}
+		currentSite := args[0]
+		memberID := args[1]
+		inviterID := args[2]
 		var projectName, workspaceName, workspaceSlug, projectID, memberEmail, inviterFirstName string
-		err = store.pool.QueryRow(ctx, `SELECT p.name,w.name,w.slug,p.id::text,member.email,inviter.first_name FROM project_members pm JOIN projects p ON p.id=pm.project_id JOIN workspaces w ON w.id=pm.workspace_id JOIN users member ON member.id=pm.member_id JOIN users inviter ON inviter.id=$2 WHERE pm.id=$1`, memberID, inviterID).Scan(&projectName, &workspaceName, &workspaceSlug, &projectID, &memberEmail, &inviterFirstName)
+		err := store.pool.QueryRow(ctx, `SELECT p.name,w.name,w.slug,p.id::text,member.email,inviter.first_name FROM project_members pm JOIN projects p ON p.id=pm.project_id JOIN workspaces w ON w.id=pm.workspace_id JOIN users member ON member.id=pm.member_id JOIN users inviter ON inviter.id=$2 WHERE pm.id=$1`, memberID, inviterID).Scan(&projectName, &workspaceName, &workspaceSlug, &projectID, &memberEmail, &inviterFirstName)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, errEmailTaskSourceRowMissing
 		}
@@ -342,26 +259,11 @@ func (store *templatedEmailStore) prepare(ctx context.Context, input templatedEm
 		projectURL := currentSite + "/" + workspaceSlug + "/projects/" + projectID + "/issues"
 		return makeEmail(memberEmail, "You have been invited to a Vector project", "notifications/project_addition.html", map[string]string{"project_name": projectName, "workspace_name": workspaceName, "email": memberEmail, "inviter_first_name": inviterFirstName, "project_url": projectURL}), nil
 	case webhookDeactivationEmailTask:
-		if err := exact(4); err != nil {
-			return nil, err
-		}
-		webhookID, err := arg(0)
-		if err != nil {
-			return nil, err
-		}
-		receiverID, err := arg(1)
-		if err != nil {
-			return nil, err
-		}
-		currentSite, err := arg(2)
-		if err != nil {
-			return nil, err
-		}
+		webhookID := args[0]
+		receiverID := args[1]
+		currentSite := args[2]
 		// The source task accepts this reason but its current template/message
 		// intentionally uses the fixed failed-request wording.
-		if _, err := arg(3); err != nil {
-			return nil, err
-		}
 		user, err := store.userForEmail(ctx, receiverID)
 		if err != nil {
 			return nil, err
@@ -378,29 +280,11 @@ func (store *templatedEmailStore) prepare(ctx context.Context, input templatedEm
 		settingsURL := currentSite + "/" + slug + "/settings/webhooks/" + webhookID
 		return makeEmail(user.email, "Webhook Deactivated", "notifications/webhook-deactivate.html", map[string]string{"email": user.email, "message": message, "webhook_url": settingsURL}), nil
 	case workspaceInvitationEmailTask, projectInvitationEmailTask:
-		if err := exact(5); err != nil {
-			return nil, err
-		}
-		email, err := arg(0)
-		if err != nil {
-			return nil, err
-		}
-		entityID, err := arg(1)
-		if err != nil {
-			return nil, err
-		}
-		token, err := arg(2)
-		if err != nil {
-			return nil, err
-		}
-		currentSite, err := arg(3)
-		if err != nil {
-			return nil, err
-		}
-		inviterEmail, err := arg(4)
-		if err != nil {
-			return nil, err
-		}
+		email := args[0]
+		entityID := args[1]
+		token := args[2]
+		currentSite := args[3]
+		inviterEmail := args[4]
 		inviter, err := store.userByEmail(ctx, inviterEmail)
 		if err != nil {
 			return nil, err
@@ -483,4 +367,21 @@ func firstNonEmpty(values ...string) string {
 		}
 	}
 	return ""
+}
+
+func decodeTemplatedEmailArguments(input templatedEmailTaskInput) ([]string, error) {
+	count, supported := templatedEmailArgumentCounts[input.TaskName]
+	if !supported {
+		return nil, fmt.Errorf("unsupported templated email task %q", input.TaskName)
+	}
+	if len(input.Args) != count {
+		return nil, fmt.Errorf("%s received %d arguments, want %d", input.TaskName, len(input.Args), count)
+	}
+	args := make([]string, count)
+	for index, raw := range input.Args {
+		if err := json.Unmarshal(raw, &args[index]); err != nil {
+			return nil, fmt.Errorf("%s argument %d must be a string: %w", input.TaskName, index+1, err)
+		}
+	}
+	return args, nil
 }
