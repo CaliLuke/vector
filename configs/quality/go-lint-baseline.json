@@ -3575,7 +3575,7 @@
     },
     {
       "fingerprint": ["staticcheck", "internal/htmlcompat/parse.go", "QF1004: could use strings.ReplaceAll instead"],
-      "count": 3
+      "count": 2
     },
     {
       "fingerprint": [

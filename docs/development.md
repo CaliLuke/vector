@@ -195,6 +195,13 @@ test skips and three inline suppressions in owned source; coverage retains 166
 package floors (45 at zero) and five file floors. These remain subject to the
 debt-removal work, not evidence that all quality debt is resolved.
 
+The HTML compatibility refactor retires all three of its maintainability
+allowances, leaving 41 across Go. Body-token dispatch falls from complexity 123
+to 6; rendering separates node dispatch, doctypes, and elements; script tokenization
+separates double-escaped states. Every extracted function meets the existing floor.
+The unchanged parser corpus and added short-read script cases verify tree and token
+behavior. One resolved lint occurrence lowers the Go lint baseline to 1,276.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML

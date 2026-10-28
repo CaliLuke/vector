@@ -168,25 +168,6 @@
       "score": 19
     },
     {
-      "file": "internal/htmlcompat/parse.go",
-      "package": "html",
-      "function": "inBodyIM",
-      "score": 0,
-      "sourceHash": "c866d06fa2e6cadfbd3ffef50357102e13f2c08a12ed65943f316e64876182ff"
-    },
-    {
-      "file": "internal/htmlcompat/render.go",
-      "package": "html",
-      "function": "render1",
-      "score": 18
-    },
-    {
-      "file": "internal/htmlcompat/token.go",
-      "package": "html",
-      "function": "(*Tokenizer).readScript",
-      "score": 18
-    },
-    {
       "file": "internal/mcpactions/discovery.go",
       "package": "mcpactions",
       "function": "(*Service).DiscoverActions",

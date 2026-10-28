@@ -470,9 +470,25 @@ scriptDataDoubleEscapeStart:
 	goto scriptDataEscaped
 
 scriptDataDoubleEscaped:
-	c = z.readByte()
+	if z.readScriptDoubleEscaped() {
+		goto scriptDataEscaped
+	}
 	if z.err != nil {
 		return
+	}
+	goto scriptData
+}
+
+// readScriptDoubleEscaped consumes the double-escaped states and reports
+// whether tokenization should resume in escaped script data. A false result
+// resumes ordinary script data unless the reader has reached an error.
+func (z *Tokenizer) readScriptDoubleEscaped() bool {
+	var c byte
+
+scriptDataDoubleEscaped:
+	c = z.readByte()
+	if z.err != nil {
+		return false
 	}
 	switch c {
 	case '-':
@@ -485,7 +501,7 @@ scriptDataDoubleEscaped:
 scriptDataDoubleEscapedDash:
 	c = z.readByte()
 	if z.err != nil {
-		return
+		return false
 	}
 	switch c {
 	case '-':
@@ -498,7 +514,7 @@ scriptDataDoubleEscapedDash:
 scriptDataDoubleEscapedDashDash:
 	c = z.readByte()
 	if z.err != nil {
-		return
+		return false
 	}
 	switch c {
 	case '-':
@@ -506,14 +522,14 @@ scriptDataDoubleEscapedDashDash:
 	case '<':
 		goto scriptDataDoubleEscapedLessThanSign
 	case '>':
-		goto scriptData
+		return false
 	}
 	goto scriptDataDoubleEscaped
 
 scriptDataDoubleEscapedLessThanSign:
 	c = z.readByte()
 	if z.err != nil {
-		return
+		return false
 	}
 	if c == '/' {
 		goto scriptDataDoubleEscapeEnd
@@ -524,10 +540,10 @@ scriptDataDoubleEscapedLessThanSign:
 scriptDataDoubleEscapeEnd:
 	if z.readRawEndTag() {
 		z.raw.end += len("</script>")
-		goto scriptDataEscaped
+		return true
 	}
 	if z.err != nil {
-		return
+		return false
 	}
 	goto scriptDataDoubleEscaped
 }

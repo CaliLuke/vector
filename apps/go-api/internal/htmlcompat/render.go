@@ -80,7 +80,7 @@ func render1(w writer, n *Node) error {
 		}
 		return nil
 	case ElementNode:
-		// No-op.
+		return renderElement(w, n)
 	case CommentNode:
 		if _, err := w.WriteString("<!--"); err != nil {
 			return err
@@ -93,47 +93,7 @@ func render1(w writer, n *Node) error {
 		}
 		return nil
 	case DoctypeNode:
-		if _, err := w.WriteString("<!DOCTYPE "); err != nil {
-			return err
-		}
-		if err := escape(w, n.Data); err != nil {
-			return err
-		}
-		if n.Attr != nil {
-			var p, s string
-			for _, a := range n.Attr {
-				switch a.Key {
-				case "public":
-					p = a.Val
-				case "system":
-					s = a.Val
-				}
-			}
-			if p != "" {
-				if _, err := w.WriteString(" PUBLIC "); err != nil {
-					return err
-				}
-				if err := writeDoctypeQuoted(w, p); err != nil {
-					return err
-				}
-				if s != "" {
-					if err := w.WriteByte(' '); err != nil {
-						return err
-					}
-					if err := writeDoctypeQuoted(w, s); err != nil {
-						return err
-					}
-				}
-			} else if s != "" {
-				if _, err := w.WriteString(" SYSTEM "); err != nil {
-					return err
-				}
-				if err := writeDoctypeQuoted(w, s); err != nil {
-					return err
-				}
-			}
-		}
-		return w.WriteByte('>')
+		return renderDoctype(w, n)
 	case RawNode:
 		_, err := w.WriteString(n.Data)
 		return err
@@ -141,6 +101,53 @@ func render1(w writer, n *Node) error {
 		return errors.New("html: unknown node type")
 	}
 
+}
+
+func renderDoctype(w writer, n *Node) error {
+	if _, err := w.WriteString("<!DOCTYPE "); err != nil {
+		return err
+	}
+	if err := escape(w, n.Data); err != nil {
+		return err
+	}
+	if n.Attr != nil {
+		var p, s string
+		for _, a := range n.Attr {
+			switch a.Key {
+			case "public":
+				p = a.Val
+			case "system":
+				s = a.Val
+			}
+		}
+		if p != "" {
+			if _, err := w.WriteString(" PUBLIC "); err != nil {
+				return err
+			}
+			if err := writeDoctypeQuoted(w, p); err != nil {
+				return err
+			}
+			if s != "" {
+				if err := w.WriteByte(' '); err != nil {
+					return err
+				}
+				if err := writeDoctypeQuoted(w, s); err != nil {
+					return err
+				}
+			}
+		} else if s != "" {
+			if _, err := w.WriteString(" SYSTEM "); err != nil {
+				return err
+			}
+			if err := writeDoctypeQuoted(w, s); err != nil {
+				return err
+			}
+		}
+	}
+	return w.WriteByte('>')
+}
+
+func renderElement(w writer, n *Node) error {
 	// Render the <xxx> opening tag.
 	if err := w.WriteByte('<'); err != nil {
 		return err
