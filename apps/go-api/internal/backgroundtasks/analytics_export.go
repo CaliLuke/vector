@@ -216,10 +216,16 @@ func writeAnalyticsCSVRow(output io.Writer, row []string) error {
 	return writer.Error()
 }
 
-func (store *analyticsExportStore) rows(ctx context.Context, slug string, raw json.RawMessage) ([][]string, error) {
+type analyticsExportQuery struct {
+	sql                   string
+	args                  []any
+	xAxis, yAxis, segment string
+}
+
+func prepareAnalyticsExportQuery(slug string, raw json.RawMessage) (analyticsExportQuery, error) {
 	var data map[string]json.RawMessage
 	if err := json.Unmarshal(raw, &data); err != nil {
-		return nil, fmt.Errorf("decode analytics filter data: %w", err)
+		return analyticsExportQuery{}, fmt.Errorf("decode analytics filter data: %w", err)
 	}
 	stringValue := func(key string) string {
 		var value string
@@ -241,7 +247,7 @@ func (store *analyticsExportStore) rows(ctx context.Context, slug string, raw js
 	xAxis, yAxis, segment := stringValue("x_axis"), stringValue("y_axis"), stringValue("segment")
 	xExpr := analyticsAxisExpressions[xAxis]
 	if xExpr == "" || (yAxis != "issue_count" && yAxis != "estimate") || (segment != "" && (analyticsAxisExpressions[segment] == "" || segment == xAxis)) {
-		return nil, errors.New("invalid analytics axis configuration")
+		return analyticsExportQuery{}, errors.New("invalid analytics axis configuration")
 	}
 	filters := make(map[string]string)
 	present := make(map[string]bool)
@@ -254,7 +260,7 @@ func (store *analyticsExportStore) rows(ctx context.Context, slug string, raw js
 	where := []string{"workspace.slug=$1", "issue.deleted_at IS NULL", "issue.archived_at IS NULL", "issue.is_draft IS NOT TRUE", "project.deleted_at IS NULL", "project.archived_at IS NULL", `NOT EXISTS (SELECT 1 FROM states manager_state WHERE manager_state.id=issue.state_id AND manager_state."group"='triage')`}
 	where, args, err := workitems.BuildAppIssueFilters(filters, present, where, []any{slug})
 	if err != nil {
-		return nil, err
+		return analyticsExportQuery{}, err
 	}
 	joins := ` LEFT JOIN states state ON state.id=issue.state_id LEFT JOIN estimate_points estimate_point ON estimate_point.id=issue.estimate_point_id`
 	if xAxis == "labels__id" || segment == "labels__id" {
@@ -269,10 +275,10 @@ func (store *analyticsExportStore) rows(ctx context.Context, slug string, raw js
 	if xAxis == "issue_module__module_id" || segment == "issue_module__module_id" {
 		joins += ` LEFT JOIN module_issues module_link ON module_link.issue_id=issue.id AND module_link.deleted_at IS NULL LEFT JOIN modules module ON module.id=module_link.module_id`
 	}
-	axisLabel := func(axis, prefix string) string {
+	axisLabel := func(axis string) string {
 		switch axis {
 		case "labels__id":
-			return "COALESCE(" + prefix + "label.name," + analyticsAxisExpressions[axis] + ")"
+			return "COALESCE(label.name," + analyticsAxisExpressions[axis] + ")"
 		case "state_id":
 			return "COALESCE(state.name," + analyticsAxisExpressions[axis] + ")"
 		case "assignees__id":
@@ -285,17 +291,27 @@ func (store *analyticsExportStore) rows(ctx context.Context, slug string, raw js
 			return analyticsAxisExpressions[axis]
 		}
 	}
-	xLabel := axisLabel(xAxis, "")
+	xLabel := axisLabel(xAxis)
 	segmentExpr, segmentLabel := "NULL::text", "NULL::text"
 	if segment != "" {
-		segmentExpr, segmentLabel = analyticsAxisExpressions[segment], axisLabel(segment, "")
+		segmentExpr, segmentLabel = analyticsAxisExpressions[segment], axisLabel(segment)
 	}
 	metric := "count(*)::double precision"
 	if yAxis == "estimate" {
 		metric = "sum(estimate_point.value::double precision)"
 	}
 	query := `SELECT ` + xExpr + `::text,` + xLabel + `::text,` + segmentExpr + `::text,` + segmentLabel + `::text,` + metric + ` FROM issues issue JOIN workspaces workspace ON workspace.id=issue.workspace_id JOIN projects project ON project.id=issue.project_id` + joins + ` WHERE ` + strings.Join(where, " AND ") + ` GROUP BY 1,2,3,4 ORDER BY 1 NULLS LAST,3 NULLS LAST`
-	rowsResult, err := store.pool.Query(ctx, query, args...)
+	return analyticsExportQuery{sql: query, args: args, xAxis: xAxis, yAxis: yAxis, segment: segment}, nil
+}
+
+func (store *analyticsExportStore) rows(ctx context.Context, slug string, raw json.RawMessage) ([][]string, error) {
+	plan, err := prepareAnalyticsExportQuery(slug, raw)
+	if err != nil {
+		return nil, err
+	}
+	xAxis, yAxis, segment := plan.xAxis, plan.yAxis, plan.segment
+
+	rowsResult, err := store.pool.Query(ctx, plan.sql, plan.args...)
 	if err != nil {
 		return nil, fmt.Errorf("query analytics distribution: %w", err)
 	}

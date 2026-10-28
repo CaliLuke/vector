@@ -83,12 +83,6 @@
       "score": 18
     },
     {
-      "file": "internal/backgroundtasks/analytics_export.go",
-      "package": "backgroundtasks",
-      "function": "(*analyticsExportStore).rows",
-      "score": 16
-    },
-    {
       "file": "internal/backgroundtasks/issue_activities_integration_test.go",
       "package": "backgroundtasks",
       "function": "TestPostgresIssueActivityWorkflowIsIdempotentPerEvent",

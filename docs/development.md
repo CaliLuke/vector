@@ -233,6 +233,12 @@ Characterization tests and the database/SMTP proofs pass. This removes one lint
 occurrence and one maintainability allowance, leaving 1,273 and 38 respectively;
 the duplicate baseline remains at 495 directed reports.
 
+Analytics export separates filter/SQL preparation from distribution reading and
+table formatting with one query-plan value. Segment totals, null estimates,
+missing dimensions, array filters, and priority ordering are characterized against
+PostgreSQL before and after the extraction. The analytics allowance is retired,
+leaving 37; lint and duplication baselines are unchanged.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML
