@@ -56,7 +56,7 @@ func (sessions workspaceLifecycleMiddlewareSessions) Validate(context.Context, s
 
 func (sessions workspaceLifecycleMiddlewareSessions) InspectReadServiceSession(_ context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
 	sessions.trace.add("session-authentication")
-	if _, err := request.Cookie("session-id"); err != nil {
+	if len(request.CookiesNamed("session-id")) == 0 {
 		return false, false, nil, djangosession.Principal{}, nil
 	}
 	sessions.trace.add("timezone")
@@ -68,7 +68,7 @@ func (sessions workspaceLifecycleMiddlewareSessions) InspectReadServiceSession(_
 
 func (sessions workspaceLifecycleMiddlewareSessions) InspectReadServiceSessionWithoutTimezone(_ context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
 	sessions.trace.add("session-authentication")
-	if _, err := request.Cookie("session-id"); err != nil {
+	if len(request.CookiesNamed("session-id")) == 0 {
 		return false, false, nil, djangosession.Principal{}, nil
 	}
 	return false, false, nil, djangosession.Principal{UserID: cycleMiddlewareActor, UserTimezone: "UTC"}, nil

@@ -469,6 +469,15 @@ baseline removes only twelve `unconvert` fingerprints (fourteen occurrences),
 leaving 307 fingerprints and 502 occurrences. The linter remains enabled with no
 allowances; maintainability stays at 26 and duplication at 488.
 
+Session test fakes use `Request.CookiesNamed` when missing cookies are ordinary
+absence. The pinned standard library uses the same parser and ordering as
+`Request.Cookie`; the admin fake still selects the first matching cookie before
+validating its value. This removes seven error-shaped presence checks without a
+new helper or suppression. All 2,196 HTTP assembly tests/subtests pass without
+skips in the default suite. The reviewed baseline removes seven `nilerr`
+occurrences, leaving 495 lint findings; maintainability and duplication stay at
+26 and 488. Production coverage floors are unchanged.
+
 HTTP response bodies retain explicit checked closes where the current bodyclose
 analyzer cannot follow a cross-package cleanup helper. This limitation is tracked
 in [timakin/bodyclose#60](https://github.com/timakin/bodyclose/issues/60), with a

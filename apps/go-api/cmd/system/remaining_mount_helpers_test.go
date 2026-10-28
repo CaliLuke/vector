@@ -13,7 +13,7 @@ import (
 type searchMountSessions struct{ *cycleMiddlewareSessions }
 
 func (s searchMountSessions) InspectReadServiceSessionWithoutTimezone(_ context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
-	if _, err := request.Cookie("session-id"); err != nil {
+	if len(request.CookiesNamed("session-id")) == 0 {
 		return false, false, nil, djangosession.Principal{}, nil
 	}
 	zone := s.userTimezone

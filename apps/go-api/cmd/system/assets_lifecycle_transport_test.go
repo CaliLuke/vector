@@ -51,7 +51,7 @@ type assetsTransportSession struct {
 }
 
 func (session *assetsTransportSession) InspectReadServiceSession(ctx context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
-	if _, err := request.Cookie("session-id"); err != nil {
+	if len(request.CookiesNamed("session-id")) == 0 {
 		return false, false, nil, djangosession.Principal{}, nil
 	}
 	return false, false, nil, djangosession.Principal{UserID: session.userID, UserTimezone: session.userTimezone}, nil

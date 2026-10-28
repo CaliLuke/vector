@@ -99,7 +99,7 @@ func (sessions *cycleMiddlewareSessions) Validate(_ context.Context, key string)
 }
 func (sessions *cycleMiddlewareSessions) InspectReadServiceSession(_ context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
 	sessions.recorder.add("session-inspection")
-	if _, err := request.Cookie("session-id"); err != nil {
+	if len(request.CookiesNamed("session-id")) == 0 {
 		return false, false, nil, djangosession.Principal{}, nil
 	}
 	if sessions.invalidZone {

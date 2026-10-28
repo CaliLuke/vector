@@ -964,50 +964,10 @@
     {
       "fingerprint": [
         "nilerr",
-        "cmd/system/assets_lifecycle_transport_test.go",
-        "error is not nil (line #) but it returns nil"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "nilerr",
-        "cmd/system/cycle_lifecycle_middleware_test.go",
-        "error is not nil (line #) but it returns nil"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "nilerr",
         "cmd/system/instance_management_http_test.go",
         "error is not nil (line #) but it returns nil"
       ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "nilerr",
-        "cmd/system/project_configuration_middleware_test.go",
-        "error is not nil (line #) but it returns nil"
-      ],
       "count": 1
-    },
-    {
-      "fingerprint": [
-        "nilerr",
-        "cmd/system/remaining_mount_helpers_test.go",
-        "error is not nil (line #) but it returns nil"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "nilerr",
-        "cmd/system/workspace_lifecycle_middleware_test.go",
-        "error is not nil (line #) but it returns nil"
-      ],
-      "count": 2
     },
     {
       "fingerprint": ["nilerr", "instance_admin_session.go", "error is not nil (line #) but it returns nil"],

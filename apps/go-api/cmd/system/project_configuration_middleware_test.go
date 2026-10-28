@@ -73,7 +73,7 @@ func (sessions configurationMiddlewareSessions) InspectReadServiceSessionWithout
 	if sessions.expired {
 		return true, false, nil, djangosession.Principal{}, nil
 	}
-	if _, err := request.Cookie("session-id"); err != nil {
+	if len(request.CookiesNamed("session-id")) == 0 {
 		return false, false, nil, djangosession.Principal{}, nil
 	}
 	zone := sessions.userTimezone

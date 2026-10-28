@@ -46,11 +46,11 @@ func (r instanceHTTPRepository) ListAdmins(context.Context) (json.RawMessage, er
 type instanceHTTPSessions struct{ *cycleMiddlewareSessions }
 
 func (s instanceHTTPSessions) InspectReadServiceSession(ctx context.Context, r *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
-	cookie, err := r.Cookie("admin-session-id")
-	if err != nil {
+	cookies := r.CookiesNamed("admin-session-id")
+	if len(cookies) == 0 {
 		return false, false, nil, djangosession.Principal{}, nil
 	}
-	principal, err := s.Validate(ctx, cookie.Value)
+	principal, err := s.Validate(ctx, cookies[0].Value)
 	if err != nil {
 		return true, false, nil, djangosession.Principal{}, nil
 	}
