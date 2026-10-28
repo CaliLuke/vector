@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useQuery } from "@tanstack/react-query";
+import { useRecordCollection } from "@plane/hooks";
 import { useParams } from "react-router";
 
 // plane imports
@@ -21,7 +21,7 @@ type Props = {
 export const AppliedStateFilters = function AppliedStateFilters(props: Props) {
   const { handleRemove, values } = props;
 
-  const { data: states = [] } = useQuery(statesOptions(useParams().anchor));
+  const { data: states = [] } = useRecordCollection(statesOptions(useParams().anchor));
 
   return (
     <>

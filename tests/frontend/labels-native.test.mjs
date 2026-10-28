@@ -16,7 +16,6 @@ const { advanceIdentitySession, currentUserOptions } = await import("../../apps/
 const { default: userService } = await import("../../apps/web/core/services/user.service.ts");
 const {
   labelKeys,
-  currentLabelRows,
   projectLabelMutationOptions,
   projectLabelOptions,
   projectLabelPositionPatch,
@@ -158,13 +157,6 @@ await test("a failed project-role read cannot expose labels from the previous pe
 
   assert.notDeepEqual(unavailable.queryKey, allowed.queryKey);
   assert.equal(client.getQueryData(unavailable.queryKey), undefined);
-});
-
-await test("a failed refetch does not expose retained query rows through label selectors", () => {
-  const cached = [{ id: "stale-label", name: "Stale", sort_order: 1 }];
-
-  assert.equal(currentLabelRows({ isSuccess: false, data: cached }), undefined);
-  assert.deepEqual(currentLabelRows({ isSuccess: true, data: [] }), []);
 });
 
 await test("a project label response arriving after membership replacement is discarded", async (t) => {

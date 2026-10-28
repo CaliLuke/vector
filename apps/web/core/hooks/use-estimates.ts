@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import sortBy from "lodash-es/sortBy.js";
 import { useCallback, useMemo } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCommittedScope } from "@/hooks/use-committed-scope";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useIdentityGeneration } from "@/hooks/use-identity-generation";
@@ -123,7 +124,7 @@ function useEstimateRetry(scope: TEstimateScope) {
 
 export function useWorkspaceEstimates(workspaceSlug: string | undefined) {
   const access = useEstimateScope("workspace", workspaceSlug);
-  const query = useQuery(estimateListOptions(access.scope));
+  const query = useRecordCollection(estimateListOptions(access.scope));
   const retry = useEstimateRetry(access.scope);
   const { isError, isPending } = estimateReadState(access.isAccessDenied, access.account, access.permissions, query);
   return {
@@ -140,7 +141,7 @@ export function useWorkspaceEstimates(workspaceSlug: string | undefined) {
 export function useProjectEstimates(workspaceSlug: string | undefined, projectId: string | null | undefined) {
   const client = useQueryClient();
   const access = useEstimateScope("project", workspaceSlug, projectId ?? undefined);
-  const query = useQuery(estimateListOptions(access.scope));
+  const query = useRecordCollection(estimateListOptions(access.scope));
   const retryEstimates = useEstimateRetry(access.scope);
   const projectQuery = useProjectDetail(workspaceSlug, projectId ?? undefined);
   const project = projectQuery.project;

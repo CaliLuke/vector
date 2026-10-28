@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { currentUserOptions } from "@/queries/session";
@@ -20,7 +21,7 @@ type Props = {
 export const EditorUserMention = function EditorUserMention(props: Props) {
   const { id } = props;
   const { data: currentUser } = useQuery(currentUserOptions);
-  const { data: members = [] } = useQuery(membersOptions(useParams().anchor));
+  const { data: members = [] } = useRecordCollection(membersOptions(useParams().anchor));
   // derived values
   const userDetails = members.find((item) => item.member === id);
 

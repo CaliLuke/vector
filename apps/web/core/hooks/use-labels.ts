@@ -4,16 +4,15 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useCallback, useMemo } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { EUserWorkspaceRoles } from "@plane/types";
 import type { IIssueLabel, IUserProjectsRole } from "@plane/types";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useIdentityGeneration } from "@/hooks/use-identity-generation";
 import { useProjectPermissions, useWorkspaceProjectRoles } from "@/hooks/use-permissions";
 import {
-  labelsById,
-  currentLabelRows,
   projectLabelMutationOptions,
   projectLabelOptions,
   projectLabelTree,
@@ -53,10 +52,9 @@ export function useProjectLabels(workspaceSlug: string | undefined, projectId: s
       workspaceSlug,
     ]
   );
-  const query = useQuery(projectLabelOptions(scope));
-  const { data: queryData, isSuccess } = query;
-  const labels = useMemo(() => currentLabelRows({ data: queryData, isSuccess }), [queryData, isSuccess]);
-  const byId = useMemo(() => labelsById(labels), [labels]);
+  const query = useRecordCollection(projectLabelOptions(scope));
+  const labels = query.isSuccess ? query.data : undefined;
+  const byId = query.byId;
   const tree = useMemo(() => projectLabelTree(labels), [labels]);
   const canCreate =
     (permissions.workspaceRole === EUserWorkspaceRoles.ADMIN ||
@@ -70,7 +68,7 @@ export function useProjectLabels(workspaceSlug: string | undefined, projectId: s
     labelsById: byId,
     labelTree: tree,
     labelIds: labels?.map((label) => label.id),
-    getLabelById: (labelId: string) => byId?.[labelId] ?? null,
+    getLabelById: (labelId: string) => query.get(labelId) ?? null,
     canCreate,
   };
 }
@@ -106,10 +104,9 @@ export function useWorkspaceLabels(workspaceSlug: string | undefined) {
       workspaceSlug,
     ]
   );
-  const query = useQuery(workspaceLabelOptions(scope));
-  const { data: queryData, isSuccess } = query;
-  const labels = useMemo(() => currentLabelRows({ data: queryData, isSuccess }), [queryData, isSuccess]);
-  const byId = useMemo(() => labelsById(labels), [labels]);
+  const query = useRecordCollection(workspaceLabelOptions(scope));
+  const labels = query.isSuccess ? query.data : undefined;
+  const byId = query.byId;
   return {
     ...query,
     data: labels,
@@ -117,7 +114,7 @@ export function useWorkspaceLabels(workspaceSlug: string | undefined) {
     labels,
     labelsById: byId,
     labelIds: labels?.map((label) => label.id),
-    getLabelById: (labelId: string) => byId?.[labelId] ?? null,
+    getLabelById: (labelId: string) => query.get(labelId) ?? null,
     getProjectLabels: (projectId: string | undefined | null) =>
       projectId ? labels?.filter((label) => label.project_id === projectId) : undefined,
     getProjectLabelIds: (projectId: string | undefined | null) =>

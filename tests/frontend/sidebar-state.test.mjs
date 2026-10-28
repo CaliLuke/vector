@@ -218,3 +218,27 @@ await test("mobile sidebar starts closed without a saved preference", (t) => ver
 await test("mobile sidebar remains closed after hydrating a saved-open preference", (t) =>
   verifyMobileSidebar(t, "false"));
 await test("mobile sidebar preserves a saved-closed preference", (t) => verifyMobileSidebar(t, "true"));
+
+await test("changing peek state does not rerender an unrelated sidebar selector", async (t) => {
+  const environment = await setup(t);
+  let collapsedRenders = 0;
+  let actions;
+  function CollapsedOnly() {
+    collapsedRenders++;
+    return React.createElement("output", null, String(useSidebarCollapsed()));
+  }
+  function Controls() {
+    const current = useSidebarActions();
+    React.useLayoutEffect(() => {
+      actions = current;
+    });
+    return React.createElement("output", { "data-peek": "" }, String(useSidebarPeek()));
+  }
+  await environment.render(
+    React.createElement(SidebarStateProvider, null, React.createElement(CollapsedOnly), React.createElement(Controls))
+  );
+  const before = collapsedRenders;
+  await act(async () => actions.toggleSidebarPeek(true));
+  assert.equal(environment.container.querySelector("[data-peek]").textContent, "true");
+  assert.equal(collapsedRenders, before);
+});

@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useQuery } from "@tanstack/react-query";
+import { useRecordCollection } from "@plane/hooks";
 import { useParams } from "react-router";
 
 import { DueDatePropertyIcon } from "@plane/propel/icons";
@@ -25,7 +25,7 @@ type Props = {
 
 export const IssueBlockDate = function IssueBlockDate(props: Props) {
   const { due_date, stateId, shouldHighLight = true, shouldShowBorder = true } = props;
-  const { data: states = [] } = useQuery(statesOptions(useParams().anchor));
+  const { data: states = [] } = useRecordCollection(statesOptions(useParams().anchor));
 
   const state = states.find((item) => item.id === stateId);
 

@@ -1,16 +1,19 @@
 import { seedPermissionQueries } from "./permission-query-fixture.mjs";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { notifyManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createReactDomTestEnvironment } from "./react-dom.mjs";
-import { React } from "./react.mjs";
+import { React, act } from "./react.mjs";
 
 /** Query observers unmount before cancellation and cache teardown. */
 export async function createQueryDomFixture(t, options = { defaultOptions: { queries: { retry: false } } }) {
   const env = await createReactDomTestEnvironment();
   const client = new QueryClient(options);
   t.after(async () => {
-    await env.unmount();
+    await env.render(null);
     await client.cancelQueries();
     client.clear();
+    // Drain already queued observer notifications before removing DOM globals.
+    await act(async () => new Promise((resolve) => notifyManager.schedule(resolve)));
+    await env.unmount();
   });
   return {
     env,

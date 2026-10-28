@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
+
+import { useRecordCollection } from "@plane/hooks";
 import { usePageRecord } from "@/components/pages/page-record-context";
 import { projectPageVersionsOptions } from "@/queries/pages";
 
@@ -11,7 +13,7 @@ import type { TPage } from "@plane/types";
 import { Link, useLocation } from "@tanstack/react-router";
 import { useCallback } from "react";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import type { IUserLite, TPageVersion } from "@plane/types";
@@ -89,7 +91,7 @@ export function PageNavigationPaneInfoTabVersionHistory(props: Props) {
   // fetch all versions
   const { scope } = usePageRecord();
   const client = useQueryClient();
-  const { data: versionsList } = useQuery(projectPageVersionsOptions(client, scope, id));
+  const { data: versionsList } = useRecordCollection(projectPageVersionsOptions(client, scope, id));
 
   const getVersionLink = useCallback(
     (versionID?: string) => {

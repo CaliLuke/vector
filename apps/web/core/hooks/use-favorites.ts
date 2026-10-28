@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useCallback, useMemo } from "react";
-import { useMutation, useMutationState, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useMutationState, useQueryClient } from "@tanstack/react-query";
 import { EUserWorkspaceRoles } from "@plane/types";
 import type { IFavorite } from "@plane/types";
 import orderBy from "lodash-es/orderBy.js";
@@ -93,7 +94,7 @@ export function useFavorites(workspaceSlug: string | undefined) {
     membershipRevision: membership?.updated_at,
     projectRolesRevision: rolesReady ? favoriteProjectRolesRevision(permissions.roles) : undefined,
   };
-  const query = useQuery(workspaceFavoritesOptions(scope));
+  const query = useRecordCollection(workspaceFavoritesOptions(scope));
   const canAccess =
     membership?.is_active === true &&
     (permissions.workspaceRole === EUserWorkspaceRoles.ADMIN ||

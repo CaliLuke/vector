@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 // computed
 import { ContentOverflowWrapper } from "@/components/core/content-overflow-HOC";
-import { useQuery } from "@tanstack/react-query";
+
 import type { TLink } from "@plane/types";
 import { homeLinksOptions } from "@/queries/home";
 import { LinksEmptyState } from "../empty-states/links";
@@ -26,7 +27,7 @@ export const ProjectLinkList = function ProjectLinkList(props: TProjectLinkList)
   // props
   const { linkOperations, workspaceSlug, onEdit } = props;
   // hooks
-  const query = useQuery(homeLinksOptions(workspaceSlug));
+  const query = useRecordCollection(homeLinksOptions(workspaceSlug));
   const links = query.data;
   if (query.isError)
     return (

@@ -25,8 +25,9 @@ async function fixture(t, save) {
   await seedWorkspaceQuery(client);
   t.mock.timers.enable({ apis: ["setTimeout", "Date"] });
   t.after(async () => {
-    await env.unmount();
+    await env.render(null);
     client.clear();
+    await env.unmount();
     t.mock.timers.reset();
   });
   const { DescriptionInput } =

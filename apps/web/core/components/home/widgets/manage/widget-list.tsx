@@ -4,19 +4,20 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import orderBy from "lodash-es/orderBy.js";
 import { isTreeDropTargetData, getTreeDropInstruction as getInstructionFromPayload } from "@/lib/tree-drop-instruction";
 import type { DragLocationHistory, DropTargetRecord } from "@atlaskit/pragmatic-drag-and-drop/types";
 import type { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { homeWidgetsOptions, updateHomeWidgetOptions } from "@/queries/home";
 import { reorderedSortOrder } from "@/lib/reorder";
 import { WidgetItem } from "./widget-item";
 
 export const WidgetList = function WidgetList({ workspaceSlug }: { workspaceSlug: string }) {
-  const { data = [] } = useQuery(homeWidgetsOptions(workspaceSlug));
+  const { data = [] } = useRecordCollection(homeWidgetsOptions(workspaceSlug), (widget) => widget.key);
   const widgets = orderBy(data, "sort_order", "desc");
   const update = useMutation(updateHomeWidgetOptions(useQueryClient(), workspaceSlug));
   const { t } = useTranslation();

@@ -79,7 +79,7 @@ await test("workspace spreadsheet projects assignee order from the scoped native
   const readState = {
     issuesById,
     groupedIssueIds: { [ALL_ISSUES]: ["unassigned", "bob", "alice"] },
-    labelsById: {},
+    labelsById: new Map(),
     stateProjection: undefined,
     parentProjection: undefined,
     isPending: false,

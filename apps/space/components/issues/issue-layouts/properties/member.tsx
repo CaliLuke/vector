@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useQuery } from "@tanstack/react-query";
+import { useRecordCollection } from "@plane/hooks";
 import { useParams } from "react-router";
 
 // icons
@@ -63,7 +63,7 @@ export const ButtonAvatars = function ButtonAvatars(props: AvatarProps) {
 };
 
 export const IssueBlockMembers = function IssueBlockMembers({ memberIds, shouldShowBorder = true }: Props) {
-  const { data: members = [] } = useQuery(membersOptions(useParams().anchor));
+  const { data: members = [] } = useRecordCollection(membersOptions(useParams().anchor));
 
   const selectedMembers = members.filter((item) => memberIds.includes(item.member));
 

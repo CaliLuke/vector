@@ -43,7 +43,7 @@ function Probe({ workspaceLevel }) {
       JSON.stringify({
         labels: result.labels?.map((label) => label.id),
         names: result.labels?.map((label) => label.name),
-        byId: Object.keys(result.labelsById ?? {}),
+        byId: [...(result.labelsById?.keys() ?? [])],
         scopeKey: result.scopeKey,
         idsRevision: result.idsRevision,
         isPending: result.isPending,
@@ -156,10 +156,13 @@ void test("project layout exposes only successful canonical labels and their sor
   assert.equal(state.idsRevision, '["label-a","label-z"]');
   assert.equal(state.isPending, false);
   completeRefresh.resolve([
-    { id: "label-z", name: "Z updated", sort_order: 2 },
+    { id: "label-z", name: "Z updated", sort_order: 0 },
     { id: "label-a", name: "A updated", sort_order: 1 },
   ]);
   await React.act(async () => waitForStatus(environment, (current) => current?.names.includes("A updated")));
+  state = readStatus(environment);
+  assert.deepEqual(state.labels, ["label-z", "label-a"]);
+  assert.deepEqual(state.byId, ["label-z", "label-a"]);
 });
 
 void test("workspace layout retries a failed role prerequisite and then exposes canonical empty labels", async (t) => {

@@ -3,7 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { useRecordCollection } from "@plane/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 import sortBy from "lodash-es/sortBy.js";
 import type { IIssueDisplayFilterOptions } from "@plane/types";
 import type { ICycle, IModule } from "@plane/types";
@@ -28,13 +30,13 @@ type CatalogueRequirements = {
 type ParentCatalogueAccess = ReturnType<typeof useParentCatalogueScope>;
 
 function useParentQueries(workspaceLevel: boolean, access: ParentCatalogueAccess, required: CatalogueRequirements) {
-  const cycle = useQuery({
+  const cycle = useRecordCollection({
     ...(workspaceLevel
       ? workspaceCycleUniverseOptions(access.workspaceScope)
       : projectCycleUniverseOptions(access.projectScope)),
     enabled: required.cycleRequired,
   });
-  const module = useQuery({
+  const module = useRecordCollection({
     ...(workspaceLevel
       ? workspaceModuleUniverseOptions(access.workspaceScope)
       : projectModuleUniverseOptions(access.projectScope)),
@@ -143,14 +145,16 @@ export function useIssueParentCatalogues(
     "cycle",
     scope,
     access.isReady && cycle.isSuccess ? cycle.data : undefined,
-    "universe"
+    "universe",
+    cycle.isCurrent
   );
   const modules = captureParentCatalogueProjection(
     client,
     "module",
     scope,
     access.isReady && module.isSuccess ? module.data : undefined,
-    "universe"
+    "universe",
+    module.isCurrent
   );
   const { failed, pending } = parentCatalogueReadStatus(required, access, cycle, module, cycles, modules);
   return {

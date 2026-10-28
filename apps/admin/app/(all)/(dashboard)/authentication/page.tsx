@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { instanceConfigurationsOptions, updateConfigurationsOptions } from "@/queries/instance";
+import { useInstanceConfigurations } from "@/hooks/use-instance-configurations";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateConfigurationsOptions } from "@/queries/instance";
 import { notifyConfigurationSave } from "@/helpers/configuration-save";
 import { useTheme } from "next-themes";
 // plane internal packages
@@ -29,7 +30,7 @@ const InstanceAuthenticationPage = function InstanceAuthenticationPage(_props: R
   const { resolvedTheme: resolvedThemeAdmin } = useTheme();
   const resolvedTheme = resolveGeneralTheme(resolvedThemeAdmin);
   // state
-  const { data: formattedConfig } = useQuery(instanceConfigurationsOptions);
+  const { data: formattedConfig } = useInstanceConfigurations();
   const queryClient = useQueryClient();
   const { mutateAsync: updateInstanceConfigurations, isPending: isSubmitting } = useMutation(
     updateConfigurationsOptions(queryClient)

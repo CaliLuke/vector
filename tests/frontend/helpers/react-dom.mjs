@@ -1,3 +1,4 @@
+import { setTimeout as settleCleanup } from "node:timers/promises";
 import { JSDOM } from "jsdom";
 
 import { React, act, webRequire } from "./react.mjs";
@@ -98,6 +99,9 @@ export async function createReactDomTestEnvironment() {
       if (disposed) return;
       disposed = true;
       await act(async () => root.unmount());
+      // Allow live-view and source-collection idle cleanup before removing window.
+      // The captured real timer also works in tests with mocked application timers.
+      await settleCleanup(20);
       resizeObservers.clear();
       dom.window.close();
       for (const [name, descriptor] of originalGlobals) {

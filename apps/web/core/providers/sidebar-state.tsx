@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from "react";
-import type { Context, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import type { ReactNode } from "react";
+import { createStore, useSelector } from "@tanstack/react-store";
 
 type TSidebarValues = {
   isAnySidebarDropdownOpen: boolean | undefined;
@@ -80,106 +81,77 @@ function sidebarReducer(state: TSidebarValues, action: TSidebarAction): TSidebar
   return { ...state, [action.key]: action.value ?? !state[action.key] };
 }
 
-const SidebarProviderContext = createContext(false);
-const SidebarActionsContext = createContext<TSidebarActions | undefined>(undefined);
-const SidebarDropdownContext = createContext<boolean | undefined>(undefined);
-const SidebarCollapsedContext = createContext<boolean | undefined>(undefined);
-const SidebarPeekContext = createContext<boolean | undefined>(undefined);
-const ExtendedSidebarContext = createContext<boolean | undefined>(undefined);
-const ExtendedProjectSidebarContext = createContext<boolean | undefined>(undefined);
-const ProfileSidebarCollapsedContext = createContext<boolean | undefined>(undefined);
-const IssueDetailSidebarCollapsedContext = createContext<boolean | undefined>(undefined);
+const SidebarContext = createContext<ReturnType<typeof createSidebarState> | undefined>(undefined);
+
+function createSidebarState() {
+  const store = createStore(initialValues);
+  const toggle = (key: TSidebarKey, value?: boolean) =>
+    store.setState((state) => sidebarReducer(state, { type: "toggle", key, value }));
+  const actions: TSidebarActions = {
+    toggleAnySidebarDropdown: (open) => toggle("isAnySidebarDropdownOpen", open),
+    toggleSidebar: (collapsed) => toggle("sidebarCollapsed", collapsed),
+    toggleSidebarPeek: (peek) => toggle("sidebarPeek", peek),
+    toggleExtendedSidebar: (opened) => toggle("isExtendedSidebarOpened", opened),
+    toggleExtendedProjectSidebar: (opened) => toggle("isExtendedProjectSidebarOpened", opened),
+    toggleProfileSidebar: (collapsed) => toggle("profileSidebarCollapsed", collapsed),
+    toggleIssueDetailSidebar: (collapsed) => toggle("issueDetailSidebarCollapsed", collapsed),
+  };
+  return { store, actions };
+}
 
 export function SidebarStateProvider({ children }: { children: ReactNode }) {
-  const [values, dispatch] = useReducer(sidebarReducer, initialValues);
-
+  const [sidebar] = useState(createSidebarState);
   useEffect(() => {
-    dispatch({ type: "hydrate", values: readPersistedValues() });
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    for (const { stateKey, storageKey } of persistedSidebarPreferences) {
-      const value = values[stateKey];
-      if (value !== undefined) window.localStorage.setItem(storageKey, String(value));
-    }
-  }, [values]);
-
-  const toggle = useCallback((key: TSidebarKey, value?: boolean) => {
-    dispatch({ type: "toggle", key, value });
-  }, []);
-  const actions = useMemo<TSidebarActions>(
-    () => ({
-      toggleAnySidebarDropdown: (open) => toggle("isAnySidebarDropdownOpen", open),
-      toggleSidebar: (collapsed) => toggle("sidebarCollapsed", collapsed),
-      toggleSidebarPeek: (peek) => toggle("sidebarPeek", peek),
-      toggleExtendedSidebar: (opened) => toggle("isExtendedSidebarOpened", opened),
-      toggleExtendedProjectSidebar: (opened) => toggle("isExtendedProjectSidebarOpened", opened),
-      toggleProfileSidebar: (collapsed) => toggle("profileSidebarCollapsed", collapsed),
-      toggleIssueDetailSidebar: (collapsed) => toggle("issueDetailSidebarCollapsed", collapsed),
-    }),
-    [toggle]
-  );
-
-  return (
-    <SidebarProviderContext.Provider value={true}>
-      <SidebarActionsContext.Provider value={actions}>
-        <SidebarDropdownContext.Provider value={values.isAnySidebarDropdownOpen}>
-          <SidebarCollapsedContext.Provider value={values.sidebarCollapsed}>
-            <SidebarPeekContext.Provider value={values.sidebarPeek}>
-              <ExtendedSidebarContext.Provider value={values.isExtendedSidebarOpened}>
-                <ExtendedProjectSidebarContext.Provider value={values.isExtendedProjectSidebarOpened}>
-                  <ProfileSidebarCollapsedContext.Provider value={values.profileSidebarCollapsed}>
-                    <IssueDetailSidebarCollapsedContext.Provider value={values.issueDetailSidebarCollapsed}>
-                      {children}
-                    </IssueDetailSidebarCollapsedContext.Provider>
-                  </ProfileSidebarCollapsedContext.Provider>
-                </ExtendedProjectSidebarContext.Provider>
-              </ExtendedSidebarContext.Provider>
-            </SidebarPeekContext.Provider>
-          </SidebarCollapsedContext.Provider>
-        </SidebarDropdownContext.Provider>
-      </SidebarActionsContext.Provider>
-    </SidebarProviderContext.Provider>
-  );
+    sidebar.store.setState((state) => sidebarReducer(state, { type: "hydrate", values: readPersistedValues() }));
+    const persist = () => {
+      for (const { stateKey, storageKey } of persistedSidebarPreferences) {
+        const value = sidebar.store.state[stateKey];
+        if (value !== undefined) window.localStorage.setItem(storageKey, String(value));
+      }
+    };
+    persist();
+    const subscription = sidebar.store.subscribe(persist);
+    return () => subscription.unsubscribe();
+  }, [sidebar]);
+  return <SidebarContext.Provider value={sidebar}>{children}</SidebarContext.Provider>;
 }
 
-function useSidebarContextValue<T>(context: Context<T | undefined>): T | undefined {
-  if (!useContext(SidebarProviderContext))
-    throw new Error("Sidebar state hooks must be used within SidebarStateProvider");
-  return useContext(context);
+function useSidebarState() {
+  const sidebar = useContext(SidebarContext);
+  if (!sidebar) throw new Error("Sidebar state hooks must be used within SidebarStateProvider");
+  return sidebar;
 }
-
+function useSidebarValue(key: TSidebarKey) {
+  return useSelector(useSidebarState().store, (state) => state[key]);
+}
 export function useSidebarActions(): TSidebarActions {
-  const actions = useSidebarContextValue(SidebarActionsContext);
-  if (!actions) throw new Error("Sidebar state hooks must be used within SidebarStateProvider");
-  return actions;
+  return useSidebarState().actions;
 }
 
 export function useSidebarDropdownOpen(): boolean | undefined {
-  return useSidebarContextValue(SidebarDropdownContext);
+  return useSidebarValue("isAnySidebarDropdownOpen");
 }
 
 export function useSidebarCollapsed(): boolean | undefined {
-  return useSidebarContextValue(SidebarCollapsedContext);
+  return useSidebarValue("sidebarCollapsed");
 }
 
 export function useSidebarPeek(): boolean | undefined {
-  return useSidebarContextValue(SidebarPeekContext);
+  return useSidebarValue("sidebarPeek");
 }
 
 export function useExtendedSidebarOpen(): boolean | undefined {
-  return useSidebarContextValue(ExtendedSidebarContext);
+  return useSidebarValue("isExtendedSidebarOpened");
 }
 
 export function useExtendedProjectSidebarOpen(): boolean | undefined {
-  return useSidebarContextValue(ExtendedProjectSidebarContext);
+  return useSidebarValue("isExtendedProjectSidebarOpened");
 }
 
 export function useProfileSidebarCollapsed(): boolean | undefined {
-  return useSidebarContextValue(ProfileSidebarCollapsedContext);
+  return useSidebarValue("profileSidebarCollapsed");
 }
 
 export function useIssueDetailSidebarCollapsed(): boolean | undefined {
-  return useSidebarContextValue(IssueDetailSidebarCollapsedContext);
+  return useSidebarValue("issueDetailSidebarCollapsed");
 }

@@ -13,7 +13,7 @@ globalThis.favoriteMenuChanges = [];
 globalThis.favoriteMenuStored = false;
 
 const packageStubs = {
-  "@plane/hooks": `export const useLocalStorage = () => ({ storedValue: globalThis.favoriteMenuStored, setValue: value => globalThis.favoriteMenuChanges.push(value) });`,
+  "@plane/hooks": `export { useRecordCollection } from "${new URL("../../packages/hooks/src/use-record-collection.ts", import.meta.url).href}"; export const useLocalStorage = () => ({ storedValue: globalThis.favoriteMenuStored, setValue: value => globalThis.favoriteMenuChanges.push(value) });`,
   "@plane/propel/toast": `export const TOAST_TYPE = { SUCCESS: 'success', ERROR: 'error' }; export const setToast = value => globalThis.moduleActionToasts.push(value); export const setPromiseToast = (promise, options) => globalThis.moduleActionToasts.push({ promise, options });`,
 
   "@/hooks/use-favorites": `export const useFavorites = workspaceSlug => ({ favorites: [], favoritesByEntity: new Map(), toggleFavorite: (...args) => { globalThis.moduleActionCalls.push(['toggle', workspaceSlug, ...args]); return globalThis.addModulePromise; } });`,

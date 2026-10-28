@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useParams } from "@tanstack/react-router";
-import { useQuery, skipToken, useQueryClient } from "@tanstack/react-query";
+import { skipToken, useQueryClient } from "@tanstack/react-query";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IGithubRepository, IWorkspaceIntegration } from "@plane/types";
 // assets
@@ -42,13 +43,17 @@ export function IntegrationCard({ integration }: Props) {
   const queryClient = useQueryClient();
   const { workspaceSlug, projectId } = useParams({ strict: false });
 
-  const { data: syncedGithubRepository } = useQuery<SyncedGithubRepository[]>({
-    queryKey: PROJECT_GITHUB_REPOSITORY(workspaceSlug, projectId, integration.id),
-    queryFn:
-      workspaceSlug && projectId
-        ? () => projectService.getProjectGithubRepository(workspaceSlug, projectId, integration.id)
-        : skipToken,
-  });
+  const { data: syncedGithubRepository } = useRecordCollection(
+    {
+      queryKey: PROJECT_GITHUB_REPOSITORY(workspaceSlug, projectId, integration.id),
+      queryFn:
+        workspaceSlug && projectId
+          ? (): Promise<SyncedGithubRepository[]> =>
+              projectService.getProjectGithubRepository(workspaceSlug, projectId, integration.id)
+          : skipToken,
+    },
+    (row) => `${row.repo_detail.owner}/${row.repo_detail.name}`
+  );
 
   const handleChange = async (repo: IGithubRepository | undefined) => {
     if (!workspaceSlug || !projectId || !repo) return;

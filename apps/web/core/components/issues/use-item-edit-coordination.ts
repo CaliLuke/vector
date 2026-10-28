@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useEffectEvent, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useEffectEvent, useMemo, useState } from "react";
+import { createStore, useSelector } from "@tanstack/react-store";
 import { useIsMutating, useQueryClient } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 import type { TNameDescriptionLoader } from "@plane/types";
@@ -10,20 +11,12 @@ import { captureIdentityScope, isIdentityScopeCurrent, isIdentityScopeVerified }
  * accepted items stay in their native cache, and writes stay in the mutation cache. */
 type TextOwner = { id: symbol; status: TNameDescriptionLoader; closed: boolean };
 class ItemEditors {
-  readonly owners = new Map<symbol, TNameDescriptionLoader>();
-  lease: symbol | undefined;
-  private revision = 0;
-  private listeners = new Set<() => void>();
-  subscribe = (listener: () => void) => {
-    this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
-  };
-  snapshot = () => this.revision;
-  changed() {
-    this.revision++;
-    this.listeners.forEach((listener) => listener());
+  readonly state = createStore<{ owners: ReadonlyMap<symbol, TNameDescriptionLoader>; lease: symbol | undefined }>({
+    owners: new Map(),
+    lease: undefined,
+  });
+  get lease() {
+    return this.state.state.lease;
   }
   newOwner(): TextOwner {
     return { id: Symbol("text-editor"), status: "saved", closed: false };
@@ -34,31 +27,31 @@ class ItemEditors {
   }
   unregister(owner: TextOwner) {
     owner.closed = true;
-    this.owners.delete(owner.id);
-    this.changed();
+    this.state.setState((state) => {
+      const owners = new Map(state.owners);
+      owners.delete(owner.id);
+      return { ...state, owners };
+    });
   }
   report(owner: TextOwner, value: TNameDescriptionLoader) {
     if (owner.closed) return false;
     owner.status = value;
-    if (this.owners.get(owner.id) !== value) {
-      this.owners.set(owner.id, value);
-      this.changed();
+    if (this.state.state.owners.get(owner.id) !== value) {
+      this.state.setState((state) => ({ ...state, owners: new Map(state.owners).set(owner.id, value) }));
     }
     return true;
   }
   acquire(owner: symbol) {
     if (this.lease || this.unsaved()) return false;
-    this.lease = owner;
-    this.changed();
+    this.state.setState((state) => ({ ...state, lease: owner }));
     return true;
   }
   release(owner: symbol) {
     if (this.lease !== owner) return;
-    this.lease = undefined;
-    this.changed();
+    this.state.setState((state) => ({ ...state, lease: undefined }));
   }
   unsaved() {
-    return [...this.owners.values()].some((status) => status === "submitting" || status === "error");
+    return [...this.state.state.owners.values()].some((status) => status === "submitting" || status === "error");
   }
 }
 const editors = new WeakMap<QueryClient, Map<string, ItemEditors>>();
@@ -90,7 +83,7 @@ export function useItemTextSession() {
 function useItemEditors(scope: string) {
   const { client, key, current, verified } = useItemTextSession();
   const entry = useMemo(() => itemEditors(client, JSON.stringify([key, scope])), [client, key, scope]);
-  useSyncExternalStore(entry.subscribe, entry.snapshot, entry.snapshot);
+  useSelector(entry.state, (state) => state);
   return { client, entry, current, verified };
 }
 export function useItemTextEditor(scope: string, onStatus: (status: TNameDescriptionLoader) => void) {

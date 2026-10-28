@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useCommittedScope } from "./use-committed-scope";
 import { useItemAccess } from "./use-item-access";
 import { retryItemAccess } from "@/queries/work-item-access";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { EIssueServiceType } from "@plane/types";
 import { useCurrentUser } from "./use-current-user";
 import { useProjectPermissions } from "./use-permissions";
@@ -95,8 +96,8 @@ function useDiscussionScope(target: DiscussionTarget) {
 export function useIssueDiscussion(target: DiscussionTarget) {
   const client = useQueryClient();
   const access = useDiscussionScope(target);
-  const activity = useQuery(issueActivityOptions(access.scope));
-  const comments = useQuery(issueCommentsOptions(access.scope));
+  const activity = useRecordCollection(issueActivityOptions(access.scope));
+  const comments = useRecordCollection(issueCommentsOptions(access.scope));
   const commentMutation = useMutation(commentMutationOptions(client, access.scope));
   const reactions = useMutation(reactionMutationOptions(client, access.scope, "comments"));
   return {
@@ -118,7 +119,7 @@ export function useIssueDiscussion(target: DiscussionTarget) {
 export function useIssueReactions(target: DiscussionTarget) {
   const client = useQueryClient();
   const access = useDiscussionScope(target);
-  const query = useQuery(issueReactionsOptions(access.scope));
+  const query = useRecordCollection(issueReactionsOptions(access.scope));
   const mutation = useMutation(reactionMutationOptions(client, access.scope, "reactions"));
   return {
     ...access,

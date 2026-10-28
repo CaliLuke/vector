@@ -4,11 +4,14 @@
  * See the LICENSE file for details.
  */
 
+import type { RefObject } from "react";
+import { VirtualList } from "@/components/common/virtual-list";
 import type { TInboxIssue } from "@plane/types";
 // local imports
 import { InboxIssueListItem } from "./inbox-list-item";
 
 export type InboxIssueListProps = {
+  scrollRef: RefObject<HTMLDivElement | null>;
   workspaceSlug: string;
   projectId: string;
   projectIdentifier?: string;
@@ -17,11 +20,16 @@ export type InboxIssueListProps = {
 };
 
 export const InboxIssueList = function InboxIssueList(props: InboxIssueListProps) {
-  const { workspaceSlug, projectId, projectIdentifier, inboxIssues, setIsMobileSidebar } = props;
+  const { workspaceSlug, projectId, projectIdentifier, inboxIssues, setIsMobileSidebar, scrollRef } = props;
 
   return (
-    <>
-      {inboxIssues.map((inboxIssue) => (
+    <VirtualList
+      items={inboxIssues}
+      getKey={(item) => item.issue.id}
+      scrollRef={scrollRef}
+      estimateSize={112}
+      label="Intake work items"
+      renderItem={(inboxIssue) => (
         <InboxIssueListItem
           key={inboxIssue.issue.id}
           setIsMobileSidebar={setIsMobileSidebar}
@@ -30,7 +38,7 @@ export const InboxIssueList = function InboxIssueList(props: InboxIssueListProps
           projectIdentifier={projectIdentifier}
           inboxIssue={inboxIssue}
         />
-      ))}
-    </>
+      )}
+    />
   );
 };

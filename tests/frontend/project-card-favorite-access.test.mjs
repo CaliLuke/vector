@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { createQueryDomFixture } from "./helpers/query-dom.mjs";
 import { React, act } from "./helpers/react.mjs";
 import { createRouterFixture } from "./helpers/router.mjs";
 import { seedPermissionQueries } from "./helpers/permission-query-fixture.mjs";
@@ -12,17 +12,19 @@ registerProjectCardModuleHooks({ React, state: {}, showModalContents: false });
 const project = { id: "project-id", name: "Go Plane", identifier: "GOPLANE", members: [], network: 2 };
 
 async function renderProjectCard(t, projectRoles) {
-  const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
+  const { env: environment, client } = await createQueryDomFixture(t, {
+    defaultOptions: { queries: { retry: false, gcTime: Infinity } },
+  });
   const errors = [];
   t.mock.method(console, "error", (...args) => errors.push(args.join(" ")));
   t.after(() => assert.deepEqual(errors, []));
   const fixture = createRouterFixture("/default/projects/");
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   const { currentUserOptions } = await import("../../apps/web/core/queries/identity.ts");
   const { FavoriteService } = await import("../../apps/web/core/services/favorite/favorite.service.ts");
   const { EUserWorkspaceRoles } = await import("../../packages/types/dist/index.mjs");
   t.mock.method(FavoriteService.prototype, "getFavorites", async () => []);
+  const { WorkspaceService } = await import("../../apps/web/core/services/workspace.service.ts");
+  t.mock.method(WorkspaceService.prototype, "fetchWorkspaceMembers", async () => []);
   client.setQueryData(currentUserOptions().queryKey, { id: "alice" });
   await seedPermissionQueries(client, {
     userId: "alice",
@@ -30,7 +32,6 @@ async function renderProjectCard(t, projectRoles) {
     workspaceRole: EUserWorkspaceRoles.ADMIN,
     projectRoles,
   });
-  t.after(() => client.clear());
   const { ProjectCard } = await import("../../apps/web/core/components/project/card.tsx");
   await fixture.render(
     environment,

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createStore } from "@tanstack/react-store";
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 import type { IUser } from "@plane/types";
@@ -16,23 +17,23 @@ export const identityKeys = {
   emailNotificationSettings: (userId: string | undefined) => ["identity", userId, "email-notifications"] as const,
 };
 
-const generations = new WeakMap<QueryClient, number>();
-const sessionListeners = new WeakMap<QueryClient, Set<() => void>>();
+const sessions = new WeakMap<QueryClient, ReturnType<typeof createStore<number>>>();
 
-export function subscribeIdentitySession(client: QueryClient, listener: () => void) {
-  const listeners = sessionListeners.get(client) ?? new Set<() => void>();
-  listeners.add(listener);
-  sessionListeners.set(client, listeners);
-  return () => listeners.delete(listener);
+export function identitySession(client: QueryClient) {
+  let session = sessions.get(client);
+  if (!session) {
+    session = createStore(0);
+    sessions.set(client, session);
+  }
+  return session;
 }
 
 export function getIdentitySessionGeneration(client: QueryClient) {
-  return generations.get(client) ?? 0;
+  return identitySession(client).state;
 }
 
 export function advanceIdentitySession(client: QueryClient) {
-  generations.set(client, getIdentitySessionGeneration(client) + 1);
-  sessionListeners.get(client)?.forEach((listener) => listener());
+  identitySession(client).setState((generation) => generation + 1);
 }
 
 export function currentUserOptions() {

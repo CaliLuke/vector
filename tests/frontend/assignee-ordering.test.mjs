@@ -101,11 +101,13 @@ await test("label display order uses only the supplied project catalogue and doe
     ["unknown", { ...issue("unknown", []), project_id: "p1", label_ids: ["foreign"] }],
     ["empty", { ...issue("empty", []), project_id: "p1", label_ids: [] }],
   ]);
-  const labels = Object.freeze({
-    z: Object.freeze({ id: "z", project_id: "p1", name: "Zulu" }),
-    a: Object.freeze({ id: "a", project_id: "p1", name: "Alpha" }),
-    foreign: Object.freeze({ id: "foreign", project_id: "other-project", name: "SECRET" }),
-  });
+  const labels = new Map(
+    Object.entries({
+      z: Object.freeze({ id: "z", project_id: "p1", name: "Zulu" }),
+      a: Object.freeze({ id: "a", project_id: "p1", name: "Alpha" }),
+      foreign: Object.freeze({ id: "foreign", project_id: "other-project", name: "SECRET" }),
+    })
+  );
   const grouped = Object.freeze({ open: Object.freeze(["z", "a", "unknown", "empty"]) });
   const read = (id) => issues.get(id);
   assert.deepEqual(projectGroupedIssueIdsByDisplayOrder(grouped, read, undefined, "labels__name", labels), {
@@ -129,18 +131,34 @@ await test("canonical label replacement and an empty catalogue immediately repla
   const groups = { high: { urgent: ["b", "a"] } };
   const read = (id) => issues.get(id);
   assert.deepEqual(
-    projectGroupedIssueIdsByDisplayOrder(groups, read, undefined, "labels__name", {
-      a: { name: "Alpha", project_id: "p1" },
-      b: { name: "Zulu", project_id: "p1" },
-    }),
+    projectGroupedIssueIdsByDisplayOrder(
+      groups,
+      read,
+      undefined,
+      "labels__name",
+      new Map(
+        Object.entries({
+          a: { name: "Alpha", project_id: "p1" },
+          b: { name: "Zulu", project_id: "p1" },
+        })
+      )
+    ),
     { high: { urgent: ["a", "b"] } }
   );
   assert.deepEqual(
-    projectGroupedIssueIdsByDisplayOrder(groups, read, undefined, "labels__name", {
-      a: { name: "Zulu", project_id: "p1" },
-      b: { name: "Alpha", project_id: "p1" },
-    }),
+    projectGroupedIssueIdsByDisplayOrder(
+      groups,
+      read,
+      undefined,
+      "labels__name",
+      new Map(
+        Object.entries({
+          a: { name: "Zulu", project_id: "p1" },
+          b: { name: "Alpha", project_id: "p1" },
+        })
+      )
+    ),
     { high: { urgent: ["b", "a"] } }
   );
-  assert.deepEqual(projectGroupedIssueIdsByDisplayOrder(groups, read, undefined, "labels__name", {}), groups);
+  assert.deepEqual(projectGroupedIssueIdsByDisplayOrder(groups, read, undefined, "labels__name", new Map()), groups);
 });

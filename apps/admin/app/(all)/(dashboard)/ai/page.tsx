@@ -4,8 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useQuery } from "@tanstack/react-query";
-import { instanceConfigurationsOptions } from "@/queries/instance";
+import { useInstanceConfigurations } from "@/hooks/use-instance-configurations";
 import { Loader } from "@plane/ui";
 // components
 import { PageWrapper } from "@/components/common/page-wrapper";
@@ -16,7 +15,7 @@ import type { Route } from "./+types/page";
 import { InstanceAIForm } from "./form";
 
 const InstanceAIPage = function InstanceAIPage(_props: Route.ComponentProps) {
-  const { data: formattedConfig } = useQuery(instanceConfigurationsOptions);
+  const { data: formattedConfig } = useInstanceConfigurations();
 
   return (
     <PageWrapper

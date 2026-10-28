@@ -24,7 +24,8 @@ export function captureParentCatalogueProjection<T>(
   domain: ParentDomain,
   scope: ParentCatalogueScope,
   rows: readonly T[] | undefined,
-  collection: ParentCatalogueCollection = "active"
+  collection: ParentCatalogueCollection = "active",
+  isCollectionCurrent?: () => boolean
 ): ParentCatalogueProjection<T> {
   const key = parentCatalogueKeys.list(domain, scope, collection),
     query = client.getQueryCache().find({ queryKey: key, exact: true }),
@@ -36,7 +37,7 @@ export function captureParentCatalogueProjection<T>(
       rows !== undefined &&
       access.isVerified() &&
       query?.state.status === "success" &&
-      query.state.data === rows &&
+      (isCollectionCurrent ? isCollectionCurrent() : query.state.data === rows) &&
       client.getQueryCache().find({ queryKey: key, exact: true }) === query,
   };
 }

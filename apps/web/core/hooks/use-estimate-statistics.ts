@@ -30,10 +30,6 @@ function estimateStatisticsFailed(
   );
 }
 
-async function retryStatistics(estimates: ParentEstimateRead["estimates"], retryParent: () => Promise<unknown>) {
-  if (estimates.isError || estimates.isAccessDenied) await estimates.retry();
-  await retryParent();
-}
 /** Native detail query inputs include all live numeric systems, including inactive systems referenced by issues. */
 export function useEstimateStatistics(
   domain: "cycle" | "module",
@@ -62,7 +58,7 @@ export function useEstimateStatistics(
     statistics: {
       isError: error,
       isPending: !error && Boolean(parentId && (parent.isPending || parent.query.isFetching || estimates.isPending)),
-      retry: () => retryStatistics(estimates, parent.retry),
+      retry: parent.retry,
     },
   };
 }

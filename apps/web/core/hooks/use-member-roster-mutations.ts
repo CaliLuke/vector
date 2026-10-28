@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { EUserWorkspaceRoles } from "@plane/types";
 import type { EUserPermissions as TProjectRole } from "@plane/types";
@@ -37,7 +38,7 @@ export function useWorkspaceInvitations(workspaceSlug: string | undefined) {
   const membership = membershipQuery.isSuccess && membershipQuery.data.is_active ? membershipQuery.data : undefined;
   const membershipRole = membership?.role ?? undefined;
   const canRead = membershipRole === EUserWorkspaceRoles.MEMBER || membershipRole === EUserWorkspaceRoles.ADMIN;
-  const query = useQuery(
+  const query = useRecordCollection(
     workspaceInvitationListOptions({
       accountId,
       workspaceSlug,

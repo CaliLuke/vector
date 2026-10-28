@@ -27,7 +27,7 @@ export const ProjectInboxHeader = function ProjectInboxHeader() {
   const [createIssueModal, setCreateIssueModal] = useState(false);
   // router
   const { workspaceSlug, projectId } = useParams({
-    from: "/_authenticated/$workspaceSlug/settings/projects/$projectId",
+    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/intake",
   });
   // store hooks
   const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);

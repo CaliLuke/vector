@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { Button } from "@plane/propel/button";
 import { Loader } from "@plane/ui";
 import { useQuery } from "@tanstack/react-query";
@@ -18,7 +19,7 @@ import type { Route } from "./+types/page";
 
 function GeneralPage() {
   const info = useQuery(instanceInfoOptions);
-  const admins = useQuery(instanceAdminsOptions);
+  const admins = useRecordCollection(instanceAdminsOptions);
 
   return (
     <PageWrapper

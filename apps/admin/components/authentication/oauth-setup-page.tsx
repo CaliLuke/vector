@@ -4,12 +4,13 @@
  * See the LICENSE file for details.
  */
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInstanceConfigurations } from "@/hooks/use-instance-configurations";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTheme } from "next-themes";
 import { Loader, ToggleSwitch } from "@plane/ui";
 import { setPromiseToast } from "@plane/propel/toast";
 import { Button } from "@plane/propel/button";
-import { instanceConfigurationsOptions, updateConfigurationsOptions } from "@/queries/instance";
+import { updateConfigurationsOptions } from "@/queries/instance";
 import { PageWrapper } from "@/components/common/page-wrapper";
 import { AuthenticationMethodCard } from "./authentication-method-card";
 import { OAuthConfigurationForm } from "./oauth-configuration-form";
@@ -18,7 +19,7 @@ import type { OAuthProvider } from "./oauth-settings";
 
 export function OAuthSetupPage({ provider }: { provider: OAuthProvider }) {
   const settings = oauthSettings[provider];
-  const query = useQuery(instanceConfigurationsOptions);
+  const query = useInstanceConfigurations();
   const client = useQueryClient();
   const update = useMutation(updateConfigurationsOptions(client));
   const { resolvedTheme } = useTheme();

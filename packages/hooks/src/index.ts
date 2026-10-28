@@ -11,3 +11,4 @@ export * from "./use-outside-click-detector";
 export * from "./use-platform-os";
 export * from "./use-resend-code-form";
 export * from "./query-client";
+export * from "./use-record-collection";

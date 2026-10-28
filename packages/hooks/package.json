@@ -23,6 +23,8 @@
   },
   "dependencies": {
     "@plane/utils": "workspace:*",
+    "@tanstack/query-db-collection": "catalog:",
+    "@tanstack/react-db": "catalog:",
     "@tanstack/react-form": "catalog:",
     "@tanstack/react-query": "catalog:",
     "react": "catalog:"

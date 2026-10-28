@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
@@ -213,7 +214,7 @@ function useProjectScope(workspaceSlug: string | undefined, projectId?: string) 
 
 export function useWorkspaceProjects(workspaceSlug: string | undefined, enabled = true) {
   const { client, account, permissions, scope, access } = useProjectScope(workspaceSlug);
-  const query = useQuery(workspaceProjectsOptions(client, scope, enabled && access.isReady));
+  const query = useRecordCollection(workspaceProjectsOptions(client, scope, enabled && access.isReady));
   const projects = access.isReady && query.isSuccess ? query.data : undefined;
   const retryAccess = useCallback(async () => {
     if (account.isError) await client.fetchQuery({ ...currentUserOptions(), staleTime: 0 });
@@ -241,7 +242,7 @@ export function useWorkspaceProjectDetails(workspaceSlug?: string, enabled = tru
   const route = useParams({ strict: false });
   const slug = workspaceSlug ?? route.workspaceSlug;
   const { client, account, permissions, scope, access } = useProjectScope(slug);
-  const query = useQuery(workspaceProjectDetailsOptions(client, scope, enabled && access.isReady));
+  const query = useRecordCollection(workspaceProjectDetailsOptions(client, scope, enabled && access.isReady));
   const projects = access.isReady && query.isSuccess ? query.data : undefined;
   const retryAccess = useCallback(async () => {
     if (account.isError) await account.refetch();

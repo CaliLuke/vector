@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useQuery } from "@tanstack/react-query";
+import { useRecordCollection } from "@plane/hooks";
 import { useParams } from "react-router";
 
 // plane ui
@@ -21,7 +21,7 @@ type Props = {
 };
 
 export const IssueBlockCycle = function IssueBlockCycle({ cycleId, shouldShowBorder = true }: Props) {
-  const { data: cycles = [] } = useQuery(cyclesOptions(useParams().anchor));
+  const { data: cycles = [] } = useRecordCollection(cyclesOptions(useParams().anchor));
 
   const cycle = cycles.find((item) => item.id === cycleId);
 

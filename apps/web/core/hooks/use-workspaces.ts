@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useParams } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   createWorkspaceOptions,
   deleteWorkspaceOptions,
@@ -15,21 +16,17 @@ import {
 import { useCurrentUserId } from "./use-current-user";
 
 export function useWorkspaces() {
-  return useQuery(workspacesOptions(useCurrentUserId()));
+  return useRecordCollection(workspacesOptions(useCurrentUserId()));
 }
 
 export function useWorkspaceBySlug(slug: string | undefined) {
-  return useQuery({
-    ...workspacesOptions(useCurrentUserId()),
-    select: (workspaces) => workspaces.find((workspace) => workspace.slug === slug),
-  });
+  const workspaces = useWorkspaces();
+  return { ...workspaces, data: workspaces.data?.find((workspace) => workspace.slug === slug) };
 }
 
 export function useWorkspaceById(id: string | undefined) {
-  return useQuery({
-    ...workspacesOptions(useCurrentUserId()),
-    select: (workspaces) => workspaces.find((workspace) => workspace.id === id),
-  });
+  const workspaces = useWorkspaces();
+  return { ...workspaces, data: workspaces.get(id) };
 }
 
 export function useCurrentWorkspace() {

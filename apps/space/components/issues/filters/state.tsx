@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useQuery } from "@tanstack/react-query";
+import { useRecordCollection } from "@plane/hooks";
 import { useParams } from "react-router";
 import { EIconSize } from "@plane/constants";
 import { StateGroupIcon } from "@plane/propel/icons";
@@ -12,7 +12,7 @@ import { statesOptions } from "@/queries/lookups";
 import { FilterSection } from "./helpers/filter-section";
 import type { FilterSelectionProps } from "./helpers/filter-section";
 export function FilterState(props: FilterSelectionProps) {
-  const query = useQuery(statesOptions(useParams().anchor));
+  const query = useRecordCollection(statesOptions(useParams().anchor));
   const options = (query.data ?? []).map((state) => ({
     id: state.id,
     name: state.name,

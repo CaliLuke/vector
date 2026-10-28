@@ -4,6 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import type { RefObject } from "react";
+import { VirtualList } from "@/components/common/virtual-list";
+
 // plane imports
 import { useTranslation } from "@plane/i18n";
 // components
@@ -13,19 +16,28 @@ import { useNotifications } from "@/components/workspace-notifications/provider"
 
 type TNotificationCardListRoot = {
   workspaceSlug: string;
+  scrollRef: RefObject<HTMLDivElement | null>;
 };
 
 export const NotificationCardListRoot = function NotificationCardListRoot(props: TNotificationCardListRoot) {
-  const { workspaceSlug } = props;
+  const { workspaceSlug, scrollRef } = props;
   // hooks
-  const { list, notificationIds } = useNotifications();
+  const { list, notificationIds, currentNotificationTab, filters } = useNotifications();
   const { t } = useTranslation();
 
   return (
     <div>
-      {notificationIds.map((notificationId: string) => (
-        <NotificationItem key={notificationId} workspaceSlug={workspaceSlug} notificationId={notificationId} />
-      ))}
+      <VirtualList
+        key={JSON.stringify([workspaceSlug, currentNotificationTab, filters])}
+        items={notificationIds}
+        getKey={(id) => id}
+        scrollRef={scrollRef}
+        estimateSize={112}
+        label={t("notifications")}
+        renderItem={(notificationId) => (
+          <NotificationItem workspaceSlug={workspaceSlug} notificationId={notificationId} />
+        )}
+      />
 
       {/* fetch next page notifications */}
       {list.hasNextPage && (
@@ -35,9 +47,9 @@ export const NotificationCardListRoot = function NotificationCardListRoot(props:
               <div className="text-accent-secondary">{t("loading")}...</div>
             </div>
           ) : (
-            // oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions
-            <div
-              className="flex items-center justify-center py-4 text-13 font-medium"
+            <button
+              type="button"
+              className="flex w-full items-center justify-center py-4 text-13 font-medium"
               onClick={() => {
                 if (!list.isFetching) void list.fetchNextPage();
               }}
@@ -45,7 +57,7 @@ export const NotificationCardListRoot = function NotificationCardListRoot(props:
               <div className="cursor-pointer text-accent-secondary transition-all hover:text-accent-primary">
                 {t("load_more")}
               </div>
-            </div>
+            </button>
           )}
         </>
       )}

@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
@@ -31,7 +32,7 @@ export function APITokensProfileSettings() {
 function APITokensContent() {
   // states
   const [isCreateTokenModalOpen, setIsCreateTokenModalOpen] = useState(false);
-  const { data: tokens, isError, refetch } = useQuery(apiTokensOptions);
+  const { data: tokens, isError, refetch } = useRecordCollection(apiTokensOptions);
   // translation
   const { t } = useTranslation();
 

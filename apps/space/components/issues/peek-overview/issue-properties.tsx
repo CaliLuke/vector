@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { publishSettingsOptions } from "@/queries/publishing";
 
@@ -39,7 +40,7 @@ type Props = {
 export const PeekOverviewIssueProperties = function PeekOverviewIssueProperties({ issueDetails, mode }: Props) {
   // hooks
   const { t } = useTranslation();
-  const { data: states = [] } = useQuery(statesOptions(useParams().anchor));
+  const { data: states = [] } = useRecordCollection(statesOptions(useParams().anchor));
   const state = states.find((item) => item.id === issueDetails.state_id);
 
   const { anchor } = useParams();

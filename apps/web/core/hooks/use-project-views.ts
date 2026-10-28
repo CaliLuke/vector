@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import type { IProjectView } from "@plane/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
@@ -241,7 +242,7 @@ function useProjectViewsScope(workspaceSlug: string | undefined, projectId: stri
 
 export function useProjectViews(workspaceSlug: string | undefined, projectId: string | undefined) {
   const state = useProjectViewsScope(workspaceSlug, projectId);
-  const query = useQuery(projectViewsOptions(state.client, state.scope));
+  const query = useRecordCollection(projectViewsOptions(state.client, state.scope));
   const views = query.isSuccess && state.access.isVerified() ? query.data : undefined;
   return {
     ...query,

@@ -65,19 +65,12 @@ export const labelKeys = {
     ] as const,
 };
 
-export function labelsById(labels: readonly IIssueLabel[] | undefined): Record<string, IIssueLabel> | undefined {
-  return labels?.reduce<Record<string, IIssueLabel>>((result, label) => {
-    result[label.id] = label;
-    return result;
-  }, {});
-}
-
 export function projectRoleSnapshot(roles: IUserProjectsRole | undefined) {
   return sortBy(Object.entries(roles ?? {}), ([projectId]) => projectId);
 }
 
-export function currentLabelRows(query: { isSuccess: boolean; data: readonly IIssueLabel[] | undefined }) {
-  return query.isSuccess ? sortBy(query.data ?? [], "sort_order") : undefined;
+function orderedLabels(labels: readonly IIssueLabel[]) {
+  return sortBy(labels, "sort_order");
 }
 
 export function projectLabelTree(labels: readonly IIssueLabel[] | undefined): IIssueLabelTree[] | undefined {
@@ -269,6 +262,7 @@ export function projectLabelOptions(scope: ProjectCatalogueScope) {
   const queryKey = labelKeys.project(scope);
   return queryOptions({
     queryKey,
+    select: orderedLabels,
     queryFn: projectScopeIsReady(scope)
       ? async ({ client, signal }) => {
           const captured = captureProjectLabelScope(client, scope);
@@ -290,6 +284,7 @@ export function workspaceLabelOptions(scope: WorkspaceCatalogueScope) {
   const enabled = workspaceCatalogueScopeReady(scope);
   return queryOptions({
     queryKey,
+    select: orderedLabels,
     queryFn: enabled
       ? async ({ client, signal }) => {
           const captured = captureWorkspaceLabelScope(client, scope);

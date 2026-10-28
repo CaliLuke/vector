@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRecordCollection } from "@plane/hooks";
 import orderBy from "lodash-es/orderBy.js";
 import { useParams, useLocation } from "@tanstack/react-router";
 
@@ -17,7 +18,7 @@ import lightWidgetsAsset from "@/app/assets/empty-state/dashboard/widgets-light.
 // components
 import { SimpleEmptyState } from "@/components/empty-state/simple-empty-state-root";
 // hooks
-import { useQuery } from "@tanstack/react-query";
+
 import { homeWidgetsOptions } from "@/queries/home";
 import { useHomeSettings } from "./provider";
 import { useRouteProject } from "@/hooks/use-projects";
@@ -70,7 +71,7 @@ export const DashboardWidgets = function DashboardWidgets() {
   const { resolvedTheme } = useTheme();
   // store hooks
   const { showWidgetSettings, setShowWidgetSettings } = useHomeSettings();
-  const widgetsQuery = useQuery(homeWidgetsOptions(workspaceSlug));
+  const widgetsQuery = useRecordCollection(homeWidgetsOptions(workspaceSlug), (widget) => widget.key);
   const widgets = orderBy(widgetsQuery.data ?? [], "sort_order", "desc");
   const isAnyWidgetEnabled = widgets.some((widget) => widget.is_enabled);
   const loading = widgetsQuery.isPending;

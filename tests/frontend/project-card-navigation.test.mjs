@@ -1,8 +1,8 @@
 import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { notifyManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { createQueryDomFixture } from "./helpers/query-dom.mjs";
 import { React, act } from "./helpers/react.mjs";
 import { seedPermissionQueries } from "./helpers/permission-query-fixture.mjs";
 import { registerProjectCardModuleHooks } from "./helpers/project-card-module-hooks.mjs";
@@ -15,24 +15,20 @@ registerProjectCardModuleHooks({ React, state, showModalContents: true });
 const project = { id: "project-id", name: "Go Plane", identifier: "GOPLANE", member_role: 20, members: [], network: 2 };
 
 async function setup(t, overrides = {}) {
-  const environment = await createReactDomTestEnvironment();
+  const { env: environment, client } = await createQueryDomFixture(t, {
+    defaultOptions: { queries: { retry: false, gcTime: Infinity } },
+  });
   const errors = [];
   t.mock.method(console, "error", (...args) => errors.push(args.join(" ")));
+  t.after(() => assert.deepEqual(errors, []));
   state.navigations = [];
   const { ProjectCard } = await import("../../apps/web/core/components/project/card.tsx");
   const fixture = createRouterFixture("/default/projects/");
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
-  t.after(async () => {
-    await environment.render(null);
-    await client.cancelQueries();
-    client.clear();
-    // Unsubscribing does not cancel notifications already queued for React.
-    // Drain that queue while the DOM globals still exist.
-    await act(async () => new Promise((resolve) => notifyManager.schedule(resolve)));
-    await environment.unmount();
-    assert.deepEqual(errors, []);
-  });
   const { currentUserOptions } = await import("../../apps/web/core/queries/identity.ts");
+  const { WorkspaceService } = await import("../../apps/web/core/services/workspace.service.ts");
+  const { FavoriteService } = await import("../../apps/web/core/services/favorite/favorite.service.ts");
+  t.mock.method(WorkspaceService.prototype, "fetchWorkspaceMembers", async () => []);
+  t.mock.method(FavoriteService.prototype, "getFavorites", async () => []);
   client.setQueryData(currentUserOptions().queryKey, { id: "alice" });
   const memberRole = Object.hasOwn(overrides, "member_role") ? overrides.member_role : project.member_role;
   await seedPermissionQueries(client, {
