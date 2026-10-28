@@ -5,7 +5,6 @@ package backgroundtasks
 import (
 	"context"
 	"encoding/json"
-	"net"
 	"testing"
 	"time"
 
@@ -15,26 +14,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/require"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 func startMilestoneActivityRedis(t *testing.T) *redis.Client {
 	t.Helper()
-	container, err := testcontainers.GenericContainer(t.Context(), testcontainers.GenericContainerRequest{
-		ContainerRequest: testcontainers.ContainerRequest{Image: "valkey/valkey:9.1.2-alpine", ExposedPorts: []string{"6379/tcp"}, WaitingFor: wait.ForListeningPort("6379/tcp")}, Started: true,
-	})
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, testcontainers.TerminateContainer(container)) })
-	host, err := container.Host(t.Context())
-	require.NoError(t, err)
-	port, err := container.MappedPort(t.Context(), "6379/tcp")
-	require.NoError(t, err)
-	address := net.JoinHostPort(host, port.Port())
-	t.Setenv("REDIS_URL", "redis://"+address+"/0")
-	client := redis.NewClient(&redis.Options{Addr: address})
-	t.Cleanup(func() { require.NoError(t, client.Close()) })
-	require.NoError(t, client.Ping(t.Context()).Err())
+	client := testsupport.StartRedis(t)
+	t.Setenv("REDIS_URL", "redis://"+client.Options().Addr+"/0")
 	return client
 }
 

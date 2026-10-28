@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -17,6 +16,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/authentication/password"
 	"github.com/CaliLuke/go-plane/internal/authredirects"
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	loomhttp "github.com/CaliLuke/loom/http"
 	"github.com/redis/go-redis/v9"
 )
@@ -53,16 +53,7 @@ func TestDjangoPasswordResetTokenIssuerMatchesDjangoTokenFormat(t *testing.T) {
 }
 
 func TestRedisMagicCodeIssuerPayloadVerifiesAndConsumes(t *testing.T) {
-	redisURL := os.Getenv("ACCOUNT_AUTHENTICATION_TEST_REDIS_URL")
-	if redisURL == "" {
-		t.Skip("set ACCOUNT_AUTHENTICATION_TEST_REDIS_URL to run the Redis issuer/consumer round trip")
-	}
-	options, err := redis.ParseURL(redisURL)
-	if err != nil {
-		t.Fatal(err)
-	}
-	client := redis.NewClient(options)
-	defer client.Close()
+	client := testsupport.StartRedis(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if pingErr := client.Ping(ctx).Err(); pingErr != nil {

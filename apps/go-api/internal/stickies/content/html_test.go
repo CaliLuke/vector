@@ -151,10 +151,8 @@ func FuzzValidateHTMLIsIdempotent(f *testing.F) {
 	f.Add(`<mention-component data-id="1">user</mention-component>`)
 	f.Add("plain < broken > tail")
 	f.Add("<A")
+	f.Add(strings.Repeat("text", 16*1024+1))
 	f.Fuzz(func(t *testing.T, input string) {
-		if len(input) > 64*1024 {
-			t.Skip()
-		}
 		clean, hasClean, err := ValidateHTML(input)
 		if err != nil || !hasClean {
 			return

@@ -140,14 +140,6 @@
     {
       "fingerprint": [
         "errcheck",
-        "cmd/system/account_authentication_adapters_test.go",
-        "Error return value of `client.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "cmd/system/cycle_lifecycle_transport_test.go",
         "Error return value of `response.Body.Close` is not checked"
       ],

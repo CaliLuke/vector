@@ -17,8 +17,6 @@ import (
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 // Use the deployment's S3 implementation with an isolated, disposable bucket.
@@ -26,20 +24,8 @@ import (
 // rejection below calls the production public-file fetcher.
 func attachmentBatchStorage(t *testing.T) *assets.Storage {
 	t.Helper()
-	key, secret := "integration-access", uuid.NewString()
-	container, err := testcontainers.GenericContainer(t.Context(), testcontainers.GenericContainerRequest{
-		ContainerRequest: testcontainers.ContainerRequest{
-			Image:        "rustfs/rustfs:1.0.3@sha256:9ca9559533b537d10482fe923288b676ad08f92a7069d9a17327fbae3cab688b",
-			ExposedPorts: []string{"9000/tcp"}, Cmd: []string{"/data"},
-			Env:        map[string]string{"RUSTFS_ACCESS_KEY": key, "RUSTFS_SECRET_KEY": secret, "RUSTFS_ADDRESS": ":9000", "RUSTFS_CONSOLE_ENABLE": "false"},
-			WaitingFor: wait.ForHTTP("/health/ready").WithPort("9000/tcp").WithStartupTimeout(90 * time.Second),
-		}, Started: true,
-	})
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, testcontainers.TerminateContainer(container)) })
-	endpoint, err := container.PortEndpoint(t.Context(), "9000/tcp", "http")
-	require.NoError(t, err)
-	storage, err := assets.NewStorage(assets.StorageConfig{AccessKeyID: key, SecretAccessKey: secret, Bucket: "mcp-attachments", Region: "us-east-1", Endpoint: endpoint, PublicEndpoint: endpoint, PathStyle: true})
+	fixture := testsupport.StartRustFS(t)
+	storage, err := assets.NewStorage(assets.StorageConfig{AccessKeyID: fixture.AccessKey, SecretAccessKey: fixture.SecretKey, Bucket: "mcp-attachments", Region: "us-east-1", Endpoint: fixture.Endpoint, PublicEndpoint: fixture.Endpoint, PathStyle: true})
 	require.NoError(t, err)
 	require.NoError(t, storage.EnsureBucket(t.Context()))
 	return storage

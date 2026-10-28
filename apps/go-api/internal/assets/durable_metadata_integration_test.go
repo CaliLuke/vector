@@ -9,10 +9,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/CaliLuke/selvedge"
 	"github.com/CaliLuke/selvedge/retry"
 	"github.com/google/uuid"
@@ -20,38 +21,26 @@ import (
 )
 
 const (
-	crashProofOptInEnv  = "PLANE_DURABLE_METADATA_CRASH_PROOF"
 	crashProofChildEnv  = "PLANE_DURABLE_METADATA_CRASH_CHILD"
 	crashProofMarkerEnv = "PLANE_DURABLE_METADATA_CRASH_MARKER"
 	crashProofEventEnv  = "PLANE_DURABLE_METADATA_CRASH_EVENT_ID"
 )
 
 // TestStorageMetadataCrashAfterWriteBeforeCompletion exercises the actual
-// PostgreSQL repository and object store. It is opt-in because it requires a
-// seeded isolated FileAsset and isolated S3-compatible service. Run its test
-// binary in a subprocess/container with the durable-metadata fixture env.
+// PostgreSQL repository and object store in disposable fixtures. The child
+// process stops after committing metadata so SIGKILL cannot run cleanup code.
 func TestStorageMetadataCrashAfterWriteBeforeCompletion(t *testing.T) {
-	if os.Getenv(crashProofOptInEnv) != "1" {
-		t.Skip("set PLANE_DURABLE_METADATA_CRASH_PROOF=1 with isolated fixture configuration")
-	}
-	databaseURL := os.Getenv("PLANE_DURABLE_METADATA_DATABASE_URL")
-	assetID, err := uuid.Parse(os.Getenv("PLANE_DURABLE_METADATA_ASSET_ID"))
-	if databaseURL == "" || err != nil {
-		t.Fatal("isolated database URL and valid PLANE_DURABLE_METADATA_ASSET_ID are required")
-	}
-	databaseConfig, err := pgxpool.ParseConfig(databaseURL)
-	if err != nil {
-		t.Fatalf("parse isolated database URL: %v", err)
-	}
-	if !strings.HasPrefix(databaseConfig.ConnConfig.Database, "test_plane_durable_metadata_") {
-		t.Fatalf("crash proof requires an isolated test_plane_durable_metadata_* database, got %q", databaseConfig.ConnConfig.Database)
-	}
-	eventID := "crash-after-write-proof-" + uuid.NewString()
-	runID := fmt.Sprintf("asset-metadata:%s:%s", assetID, eventID)
 	if os.Getenv(crashProofChildEnv) == "1" {
-		runMetadataUntilSavedAndBlocked(t, databaseURL, assetID, os.Getenv(crashProofEventEnv))
+		assetID, err := uuid.Parse(os.Getenv("PLANE_DURABLE_METADATA_ASSET_ID"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		runMetadataUntilSavedAndBlocked(t, os.Getenv("PLANE_DURABLE_METADATA_DATABASE_URL"), assetID, os.Getenv(crashProofEventEnv))
 		return
 	}
+	databaseURL, assetID := metadataCrashFixture(t)
+	eventID := "crash-after-write-proof-" + uuid.NewString()
+	runID := fmt.Sprintf("asset-metadata:%s:%s", assetID, eventID)
 	t.Logf("crash proof workflow run_id=%s", runID)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
@@ -152,7 +141,9 @@ func TestStorageMetadataCrashAfterWriteBeforeCompletion(t *testing.T) {
 	t.Cleanup(func() {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 3*time.Second)
 		defer shutdownCancel()
-		_ = app.Shutdown(shutdownCtx)
+		if shutdownErr := app.Shutdown(shutdownCtx); shutdownErr != nil {
+			t.Errorf("shutdown restarted metadata runtime: %v", shutdownErr)
+		}
 	})
 	result, err := selvedge.WaitWorkflow[struct{}](ctx, app, runID)
 	if err != nil {
@@ -175,6 +166,54 @@ func TestStorageMetadataCrashAfterWriteBeforeCompletion(t *testing.T) {
 	if attempts < 2 {
 		t.Fatalf("activity attempts = %d, want a replay after SIGKILL", attempts)
 	}
+}
+
+// metadataCrashFixture owns both services and the committed object that the
+// subprocess must observe. Its runtime startup installs the real execution schema.
+func metadataCrashFixture(t *testing.T) (string, uuid.UUID) {
+	t.Helper()
+	databaseURL := postgresfixture.EmptyDatabase(t)
+	storage := testsupport.StartRustFS(t)
+	storage.ConfigureAssets(t, "metadata-crash-proof")
+	ctx, cancel := context.WithTimeout(t.Context(), 30*time.Second)
+	defer cancel()
+	pool, err := pgxpool.New(ctx, databaseURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer pool.Close()
+	if _, execErr := pool.Exec(ctx, `CREATE TABLE file_assets(id uuid PRIMARY KEY, asset text NOT NULL, storage_metadata jsonb, deleted_at timestamptz)`); execErr != nil {
+		t.Fatal(execErr)
+	}
+	assetID := uuid.New()
+	const key = "crash-proof/object.txt"
+	if _, execErr := pool.Exec(ctx, `INSERT INTO file_assets(id,asset) VALUES($1,$2)`, assetID, key); execErr != nil {
+		t.Fatal(execErr)
+	}
+	config, err := StorageConfigFromEnv()
+	if err != nil {
+		t.Fatal(err)
+	}
+	objects, err := NewStorage(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bucketErr := objects.EnsureBucket(ctx); bucketErr != nil {
+		t.Fatal(bucketErr)
+	}
+	if putErr := objects.Put(ctx, key, "text/plain", []byte("committed metadata proof")); putErr != nil {
+		t.Fatal(putErr)
+	}
+	app := selvedge.NewApp(selvedge.WithDatabase(databaseURL))
+	if startErr := app.Start(ctx); startErr != nil {
+		t.Fatal(startErr)
+	}
+	if shutdownErr := app.Shutdown(ctx); shutdownErr != nil {
+		t.Fatal(shutdownErr)
+	}
+	t.Setenv("PLANE_DURABLE_METADATA_DATABASE_URL", databaseURL)
+	t.Setenv("PLANE_DURABLE_METADATA_ASSET_ID", assetID.String())
+	return databaseURL, assetID
 }
 
 type metadataWriteBlocker struct {

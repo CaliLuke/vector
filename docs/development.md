@@ -293,6 +293,20 @@ tests/subtests pass without skips. Four service-backed skip allowances remain.
 Maintainability drops to 35 allowances, three checked connection closures reduce
 lint to 651 occurrences, and the 488 duplicate reports need no baseline changes.
 
+The final four service-backed skips now use owned Valkey, RustFS, and PostgreSQL
+fixtures. Existing notification and attachment tests share those service owners.
+The metadata crash proof still kills its subprocess after the committed write,
+then requires a successful replay, identical metadata, and at least two attempts.
+Bootstrap installation runs twice against an empty owned database and bucket.
+The combined service/topology/HTML run passes 30 tests/subtests, and shared
+notification/attachment checks pass six more. One initial container-reaper startup
+timeout was followed by successful isolated and combined installation runs;
+no timeout or cleanup policy was relaxed. The skip allowlist is empty, and owned
+Go tests contain no skip calls. Missing Docker fails the topology check, and HTML
+fuzzing now exercises inputs above the old 64 KiB cutoff under the production
+size limit. Checked Redis-client cleanup reduces lint to 650 occurrences;
+maintainability and duplication remain at 35 and 488 respectively.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML

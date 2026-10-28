@@ -1,29 +1,4 @@
 {
   "version": 1,
-  "skips": [
-    {
-      "package": "github.com/CaliLuke/go-plane/cmd/bootstrap",
-      "test": "TestInstallFreshDatabaseAndRepeatWithRustFS",
-      "reason": "Requires an explicitly configured empty disposable PostgreSQL database and RustFS endpoint; performs installation writes.",
-      "scope": "cmd/bootstrap; PLANE_BOOTSTRAP_CLI_TEST_DATABASE_URL"
-    },
-    {
-      "package": "github.com/CaliLuke/go-plane/cmd/system",
-      "test": "TestRedisMagicCodeIssuerPayloadVerifiesAndConsumes",
-      "reason": "Requires an explicitly configured disposable Redis instance.",
-      "scope": "cmd/system; Redis test endpoint environment"
-    },
-    {
-      "package": "github.com/CaliLuke/go-plane/internal/assets",
-      "test": "TestStorageMetadataCrashAfterWriteBeforeCompletion",
-      "reason": "Manual crash-recovery proof requires an explicitly configured disposable database, asset row, and object storage fixture.",
-      "scope": "internal/assets; PLANE_DURABLE_METADATA_CRASH_PROOF and fixture environment"
-    },
-    {
-      "package": "github.com/CaliLuke/go-plane/internal/assets",
-      "test": "TestStorageRustFSPresignedPostGetCopyHeadDelete",
-      "reason": "Requires an explicitly configured RustFS endpoint and disposable bucket.",
-      "scope": "internal/assets; RustFS test endpoint environment"
-    }
-  ]
+  "skips": []
 }

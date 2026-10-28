@@ -183,9 +183,6 @@ func composeServices(t *testing.T, root string, env map[string]string) map[strin
 	cmd.Stderr = &stderr
 	output, err := cmd.Output()
 	if err != nil {
-		if _, lookErr := exec.LookPath("docker"); lookErr != nil {
-			t.Skip("docker is required to inspect the local compose topology")
-		}
 		t.Fatalf("docker compose config failed: %v: %s", err, strings.TrimSpace(stderr.String()))
 	}
 	var config struct {

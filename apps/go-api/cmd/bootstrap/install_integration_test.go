@@ -6,23 +6,17 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
-	"os"
-	"strings"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
 
 func TestInstallFreshDatabaseAndRepeatWithRustFS(t *testing.T) {
-	databaseURL := os.Getenv("PLANE_BOOTSTRAP_CLI_TEST_DATABASE_URL")
-	if databaseURL == "" {
-		t.Skip("set PLANE_BOOTSTRAP_CLI_TEST_DATABASE_URL and storage environment for an owned empty database")
-	}
-	parsed, err := url.Parse(databaseURL)
-	if err != nil || !strings.HasPrefix(strings.TrimPrefix(parsed.Path, "/"), "plane_go_bootstrap_cli_test_") {
-		t.Fatal("bootstrap CLI test requires an owned plane_go_bootstrap_cli_test_ database")
-	}
+	databaseURL := postgresfixture.EmptyDatabase(t)
+	storage := testsupport.StartRustFS(t)
+	storage.ConfigureAssets(t, "bootstrap-proof")
 	ctx := context.Background()
 	conn, err := pgx.Connect(ctx, databaseURL)
 	if err != nil {

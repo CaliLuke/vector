@@ -8,38 +8,24 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/smithy-go"
 )
 
-// This test is an opt-in real-service proof against a disposable S3-compatible
-// test bucket. It covers RustFS POST-policy enforcement and object operations.
+// This proof covers RustFS POST-policy enforcement and object operations.
 func TestStorageRustFSPresignedPostGetCopyHeadDelete(t *testing.T) {
-	endpoint := os.Getenv("PLANE_ASSETS_STORAGE_TEST_ENDPOINT")
-	if endpoint == "" {
-		t.Skip("set PLANE_ASSETS_STORAGE_TEST_ENDPOINT to run against isolated RustFS")
-	}
+	fixture := testsupport.StartRustFS(t)
 	config := StorageConfig{
-		AccessKeyID:     os.Getenv("PLANE_ASSETS_STORAGE_TEST_ACCESS_KEY_ID"),
-		SecretAccessKey: os.Getenv("PLANE_ASSETS_STORAGE_TEST_SECRET_ACCESS_KEY"),
-		Bucket:          os.Getenv("PLANE_ASSETS_STORAGE_TEST_BUCKET"),
-		Region:          "us-east-1",
-		Endpoint:        endpoint,
-		PublicEndpoint:  endpoint,
-		PathStyle:       true,
-		SignedURLTTL:    5 * time.Minute,
-	}
-	if config.Bucket == "" {
-		config.Bucket = "plane-rustfs-sdk-spike"
-	}
-	if config.AccessKeyID == "" || config.SecretAccessKey == "" {
-		t.Fatal("RustFS fixture access key and secret are required")
+		AccessKeyID: fixture.AccessKey, SecretAccessKey: fixture.SecretKey,
+		Bucket: "storage-proof", Region: "us-east-1",
+		Endpoint: fixture.Endpoint, PublicEndpoint: fixture.Endpoint,
+		PathStyle: true, SignedURLTTL: 5 * time.Minute,
 	}
 	for _, region := range []string{"us-east-1", ""} {
 		t.Run("region="+region, func(t *testing.T) {
