@@ -419,6 +419,15 @@ the 66.69% floor is retained, with its statement inventory updated for the new
 boundaries. Configured lint, duplication, and the stricter error inventory remain
 unchanged; no new exceptions were introduced.
 
+Cycle date filters now own their temporal grammar and argument binding in one
+helper. The scalar/relation dispatcher keeps its existing responsibilities;
+requester-calendar filters and legacy exact/range database casts retain their
+separate semantics. Characterization tests pass before and after the extraction,
+and all 4,405 affected tests/subtests pass without skips. Both functions meet the
+maintainability floor, retiring one allowance and leaving 29. Configured lint and
+duplication remain at 516 and 488. Fresh combined cycle coverage is 75.96%; the
+75.40% floor is retained and its statement inventory is updated to 1,805.
+
 HTTP response bodies retain explicit checked closes where the current bodyclose
 analyzer cannot follow a cross-package cleanup helper. This limitation is tracked
 in [timakin/bodyclose#60](https://github.com/timakin/bodyclose/issues/60), with a

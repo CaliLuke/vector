@@ -1075,15 +1075,6 @@ func issueFilterPredicates(filters map[string]string, args *[]any) []string {
 			if values := UUIDs(value); len(values) > 0 {
 				add(values, "issue.logged_by_id = ANY($%d::uuid[])")
 			}
-		case "created_at", "updated_at", "start_date", "target_date", "completed_at":
-			column := map[string]string{
-				"created_at": "issue.created_at", "updated_at": "issue.updated_at", "start_date": "issue.start_date",
-				"target_date": "issue.target_date", "completed_at": "issue.completed_at",
-			}[name]
-			if name == "created_at" || name == "updated_at" || name == "completed_at" {
-				column = cycleRequesterDateSQL(column)
-			}
-			predicates = append(predicates, legacyDatePredicates(value, column, args)...)
 		case "type":
 			groups := []string{"backlog", "unstarted", "started", "completed", "cancelled"}
 			if value == "backlog" {
@@ -1122,20 +1113,41 @@ func issueFilterPredicates(filters map[string]string, args *[]any) []string {
 		case "intake_status", "inbox_status":
 			// Rendered as one join by issueLegacyRelationJoins. The later
 			// inbox_status key replaces intake_status in the Django filter map.
-		case "start_date__exact", "target_date__exact", "created_at__exact", "updated_at__exact":
-			column := map[string]string{"start_date__exact": "issue.start_date", "target_date__exact": "issue.target_date", "created_at__exact": "issue.created_at", "updated_at__exact": "issue.updated_at"}[name]
-			add(value, column+"::date = $%d::date")
-		case "start_date__range", "target_date__range", "created_at__range", "updated_at__range":
-			bounds := CSV(value)
-			if len(bounds) == 2 {
-				column := map[string]string{"start_date__range": "issue.start_date", "target_date__range": "issue.target_date", "created_at__range": "issue.created_at", "updated_at__range": "issue.updated_at"}[name]
-				*args = append(*args, bounds)
-				position := len(*args)
-				predicates = append(predicates, fmt.Sprintf(column+"::date BETWEEN ($%d::text[])[1]::date AND ($%d::text[])[2]::date", position, position))
-			}
+		default:
+			predicates = append(predicates, issueDateFilterPredicates(name, value, args)...)
 		}
 	}
 	return predicates
+}
+
+// issueDateFilterPredicates preserves the legacy date lookup grammar. Plain
+// timestamp filters use the requester's calendar; exact and range lookups retain
+// their database date casts.
+func issueDateFilterPredicates(name, value string, args *[]any) []string {
+	switch name {
+	case "created_at", "updated_at", "start_date", "target_date", "completed_at":
+		column := map[string]string{
+			"created_at": "issue.created_at", "updated_at": "issue.updated_at", "start_date": "issue.start_date",
+			"target_date": "issue.target_date", "completed_at": "issue.completed_at",
+		}[name]
+		if name == "created_at" || name == "updated_at" || name == "completed_at" {
+			column = cycleRequesterDateSQL(column)
+		}
+		return legacyDatePredicates(value, column, args)
+	case "start_date__exact", "target_date__exact", "created_at__exact", "updated_at__exact":
+		column := map[string]string{"start_date__exact": "issue.start_date", "target_date__exact": "issue.target_date", "created_at__exact": "issue.created_at", "updated_at__exact": "issue.updated_at"}[name]
+		*args = append(*args, value)
+		return []string{fmt.Sprintf(column+"::date = $%d::date", len(*args))}
+	case "start_date__range", "target_date__range", "created_at__range", "updated_at__range":
+		bounds := CSV(value)
+		if len(bounds) == 2 {
+			column := map[string]string{"start_date__range": "issue.start_date", "target_date__range": "issue.target_date", "created_at__range": "issue.created_at", "updated_at__range": "issue.updated_at"}[name]
+			*args = append(*args, bounds)
+			position := len(*args)
+			return []string{fmt.Sprintf(column+"::date BETWEEN ($%d::text[])[1]::date AND ($%d::text[])[2]::date", position, position)}
+		}
+	}
+	return nil
 }
 
 func issueLegacyRelationJoins(filters map[string]string, args *[]any) []string {
