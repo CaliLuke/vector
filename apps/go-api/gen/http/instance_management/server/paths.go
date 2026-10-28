@@ -73,6 +73,11 @@ func ConfigGetInstanceManagementPath() string {
 	return "/api/instances/configurations/"
 }
 
+// TelemetryGetInstanceManagementPath returns the URL path to the instance_management service telemetry_get HTTP endpoint.
+func TelemetryGetInstanceManagementPath() string {
+	return "/api/instances/telemetry/"
+}
+
 // ConfigPatchInstanceManagementPath returns the URL path to the instance_management service config_patch HTTP endpoint.
 func ConfigPatchInstanceManagementPath() string {
 	return "/api/instances/configurations/"

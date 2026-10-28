@@ -29,6 +29,7 @@ type Endpoints struct {
 	AdminsDetailDelete     loom.Endpoint
 	SignupVisited          loom.Endpoint
 	ConfigGet              loom.Endpoint
+	TelemetryGet           loom.Endpoint
 	ConfigPatch            loom.Endpoint
 	DisableEmail           loom.Endpoint
 	EmailCheck             loom.Endpoint
@@ -153,6 +154,15 @@ type ConfigGetResponseData struct {
 	Body io.ReadCloser
 }
 
+// TelemetryGetResponseData holds both the result and the HTTP response body
+// reader of the "telemetry_get" method.
+type TelemetryGetResponseData struct {
+	// Result is the method result.
+	Result *InstanceRootResponseMetadata
+	// Body streams the HTTP response body.
+	Body io.ReadCloser
+}
+
 // ConfigPatchRequestData holds both the payload and the HTTP request body
 // reader of the "config_patch" method.
 type ConfigPatchRequestData struct {
@@ -234,6 +244,7 @@ func NewEndpoints(s Service) *Endpoints {
 		AdminsDetailDelete:     NewAdminsDetailDeleteEndpoint(s, a.APIKeyAuth),
 		SignupVisited:          NewSignupVisitedEndpoint(s),
 		ConfigGet:              NewConfigGetEndpoint(s, a.APIKeyAuth),
+		TelemetryGet:           NewTelemetryGetEndpoint(s, a.APIKeyAuth),
 		ConfigPatch:            NewConfigPatchEndpoint(s, a.APIKeyAuth),
 		DisableEmail:           NewDisableEmailEndpoint(s, a.APIKeyAuth),
 		EmailCheck:             NewEmailCheckEndpoint(s, a.APIKeyAuth),
@@ -257,6 +268,7 @@ func (e *Endpoints) Use(m func(loom.Endpoint) loom.Endpoint) {
 	e.AdminsDetailDelete = m(e.AdminsDetailDelete)
 	e.SignupVisited = m(e.SignupVisited)
 	e.ConfigGet = m(e.ConfigGet)
+	e.TelemetryGet = m(e.TelemetryGet)
 	e.ConfigPatch = m(e.ConfigPatch)
 	e.DisableEmail = m(e.DisableEmail)
 	e.EmailCheck = m(e.EmailCheck)
@@ -497,6 +509,33 @@ func NewConfigGetEndpoint(s Service, authAPIKeyFn security.AuthAPIKeyFunc) loom.
 			return nil, err
 		}
 		return &ConfigGetResponseData{Result: res, Body: body}, nil
+	}
+}
+
+// NewTelemetryGetEndpoint returns an endpoint function that calls the method
+// "telemetry_get" of service "instance_management".
+func NewTelemetryGetEndpoint(s Service, authAPIKeyFn security.AuthAPIKeyFunc) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*TelemetryGetPayload)
+		var err error
+		sc := security.APIKeyScheme{
+			Name:           "plane_admin_session_cookie",
+			Scopes:         []string{},
+			RequiredScopes: []string{},
+		}
+		var key string
+		if p.SessionID != nil {
+			key = *p.SessionID
+		}
+		ctx, err = authAPIKeyFn(ctx, key, &sc)
+		if err != nil {
+			return nil, err
+		}
+		res, body, err := s.TelemetryGet(ctx, p)
+		if err != nil {
+			return nil, err
+		}
+		return &TelemetryGetResponseData{Result: res, Body: body}, nil
 	}
 }
 

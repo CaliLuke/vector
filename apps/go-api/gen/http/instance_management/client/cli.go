@@ -196,6 +196,21 @@ func BuildConfigGetPayload(instanceManagementConfigGetSessionID string) (*instan
 	return v, nil
 }
 
+// BuildTelemetryGetPayload builds the payload for the instance_management
+// telemetry_get endpoint from CLI flags.
+func BuildTelemetryGetPayload(instanceManagementTelemetryGetSessionID string) (*instancemanagement.TelemetryGetPayload, error) {
+	var sessionID *string
+	{
+		if instanceManagementTelemetryGetSessionID != "" {
+			sessionID = &instanceManagementTelemetryGetSessionID
+		}
+	}
+	v := &instancemanagement.TelemetryGetPayload{}
+	v.SessionID = sessionID
+
+	return v, nil
+}
+
 // BuildConfigPatchPayload builds the payload for the instance_management
 // config_patch endpoint from CLI flags.
 func BuildConfigPatchPayload(instanceManagementConfigPatchContentType string, instanceManagementConfigPatchSessionID string) (*instancemanagement.ConfigPatchPayload, error) {

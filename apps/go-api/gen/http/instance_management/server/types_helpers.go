@@ -78,6 +78,16 @@ func NewConfigGetUnauthenticatedResponseBody(res *instancemanagement.InstanceAdm
 	return body
 }
 
+// NewTelemetryGetUnauthenticatedResponseBody builds the HTTP response body
+// from the result of the "telemetry_get" endpoint of the "instance_management"
+// service.
+func NewTelemetryGetUnauthenticatedResponseBody(res *instancemanagement.InstanceAdminSessionUnauthenticated) *TelemetryGetUnauthenticatedResponseBody {
+	body := &TelemetryGetUnauthenticatedResponseBody{
+		Detail: res.Detail,
+	}
+	return body
+}
+
 // NewConfigPatchUnauthenticatedResponseBody builds the HTTP response body from
 // the result of the "config_patch" endpoint of the "instance_management"
 // service.
@@ -226,6 +236,15 @@ func NewAdminsDetailDeletePayload(pk string, sessionID *string) *instancemanagem
 // payload.
 func NewConfigGetPayload(sessionID *string) *instancemanagement.ConfigGetPayload {
 	v := &instancemanagement.ConfigGetPayload{}
+	v.SessionID = sessionID
+
+	return v
+}
+
+// NewTelemetryGetPayload builds a instance_management service telemetry_get
+// endpoint payload.
+func NewTelemetryGetPayload(sessionID *string) *instancemanagement.TelemetryGetPayload {
+	v := &instancemanagement.TelemetryGetPayload{}
 	v.SessionID = sessionID
 
 	return v

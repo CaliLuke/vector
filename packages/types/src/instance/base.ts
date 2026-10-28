@@ -102,3 +102,14 @@ export type IFormattedInstanceConfiguration = {
 };
 
 export type TLoginMediums = TCoreLoginMediums | TExtendedLoginMediums;
+
+export interface IInstanceTelemetryExporter {
+  status: "enabled" | "disabled" | "not_configured" | "invalid_configuration";
+  destination: string | null;
+}
+
+export interface IInstanceTelemetry {
+  logs_and_traces: IInstanceTelemetryExporter;
+  instance_metrics: IInstanceTelemetryExporter;
+  analytics_events: IInstanceTelemetryExporter;
+}

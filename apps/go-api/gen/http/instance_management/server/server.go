@@ -32,6 +32,7 @@ type Server struct {
 	AdminsDetailDelete     http.Handler
 	SignupVisited          http.Handler
 	ConfigGet              http.Handler
+	TelemetryGet           http.Handler
 	ConfigPatch            http.Handler
 	DisableEmail           http.Handler
 	EmailCheck             http.Handler
@@ -72,6 +73,7 @@ func New(e *instancemanagement.Endpoints, mux loomhttp.Muxer, decoder func(*http
 			{"AdminsDetailDelete", "DELETE", "/api/instances/admins/{pk}/"},
 			{"SignupVisited", "POST", "/api/instances/admins/sign-up-screen-visited/"},
 			{"ConfigGet", "GET", "/api/instances/configurations/"},
+			{"TelemetryGet", "GET", "/api/instances/telemetry/"},
 			{"ConfigPatch", "PATCH", "/api/instances/configurations/"},
 			{"DisableEmail", "DELETE", "/api/instances/configurations/disable-email-feature/"},
 			{"EmailCheck", "POST", "/api/instances/email-credentials-check/"},
@@ -87,6 +89,7 @@ func New(e *instancemanagement.Endpoints, mux loomhttp.Muxer, decoder func(*http
 			{"CORS preflight", "OPTIONS", "/api/instances/configurations/"},
 			{"CORS preflight", "OPTIONS", "/api/instances/configurations/disable-email-feature/"},
 			{"CORS preflight", "OPTIONS", "/api/instances/email-credentials-check/"},
+			{"CORS preflight", "OPTIONS", "/api/instances/telemetry/"},
 			{"CORS preflight", "OPTIONS", "/api/instances/workspaces/"},
 		},
 		AdminSignIn:            NewAdminSignInHandler(e.AdminSignIn, mux, decoder, encoder, errhandler, formatter),
@@ -101,6 +104,7 @@ func New(e *instancemanagement.Endpoints, mux loomhttp.Muxer, decoder func(*http
 		AdminsDetailDelete:     NewAdminsDetailDeleteHandler(e.AdminsDetailDelete, mux, decoder, encoder, errhandler, formatter),
 		SignupVisited:          NewSignupVisitedHandler(e.SignupVisited, mux, decoder, encoder, errhandler, formatter),
 		ConfigGet:              NewConfigGetHandler(e.ConfigGet, mux, decoder, encoder, errhandler, formatter),
+		TelemetryGet:           NewTelemetryGetHandler(e.TelemetryGet, mux, decoder, encoder, errhandler, formatter),
 		ConfigPatch:            NewConfigPatchHandler(e.ConfigPatch, mux, decoder, encoder, errhandler, formatter),
 		DisableEmail:           NewDisableEmailHandler(e.DisableEmail, mux, decoder, encoder, errhandler, formatter),
 		EmailCheck:             NewEmailCheckHandler(e.EmailCheck, mux, decoder, encoder, errhandler, formatter),
@@ -128,6 +132,7 @@ func (s *Server) Use(m func(http.Handler) http.Handler) {
 	s.AdminsDetailDelete = m(s.AdminsDetailDelete)
 	s.SignupVisited = m(s.SignupVisited)
 	s.ConfigGet = m(s.ConfigGet)
+	s.TelemetryGet = m(s.TelemetryGet)
 	s.ConfigPatch = m(s.ConfigPatch)
 	s.DisableEmail = m(s.DisableEmail)
 	s.EmailCheck = m(s.EmailCheck)
@@ -172,6 +177,9 @@ func Mount(mux loomhttp.Muxer, h *Server) {
 	mux.Handle("OPTIONS", "/api/instances/email-credentials-check/", func(w http.ResponseWriter, r *http.Request) {
 		h.corsPolicy.HandlePreflight(w, r, []string{"POST"})
 	})
+	mux.Handle("OPTIONS", "/api/instances/telemetry/", func(w http.ResponseWriter, r *http.Request) {
+		h.corsPolicy.HandlePreflight(w, r, []string{"GET"})
+	})
 	mux.Handle("OPTIONS", "/api/instances/workspaces/", func(w http.ResponseWriter, r *http.Request) {
 		h.corsPolicy.HandlePreflight(w, r, []string{"GET", "POST"})
 	})
@@ -187,6 +195,7 @@ func Mount(mux loomhttp.Muxer, h *Server) {
 	MountAdminsDetailDeleteHandler(mux, h.AdminsDetailDelete, h.corsPolicy)
 	MountSignupVisitedHandler(mux, h.SignupVisited, h.corsPolicy)
 	MountConfigGetHandler(mux, h.ConfigGet, h.corsPolicy)
+	MountTelemetryGetHandler(mux, h.TelemetryGet, h.corsPolicy)
 	MountConfigPatchHandler(mux, h.ConfigPatch, h.corsPolicy)
 	MountDisableEmailHandler(mux, h.DisableEmail, h.corsPolicy)
 	MountEmailCheckHandler(mux, h.EmailCheck, h.corsPolicy)
@@ -750,6 +759,51 @@ func NewConfigGetHandler(
 			return
 		}
 		o := res.(*instancemanagement.ConfigGetResponseData)
+		lifecycle.WriteRawBody(o.Body, func(ctx context.Context, w http.ResponseWriter) error {
+			return encodeResponse(ctx, w, o.Result)
+		}, encodeError, errhandler)
+		return
+	})
+}
+
+// MountTelemetryGetHandler configures the mux to serve the
+// "instance_management" service "telemetry_get" endpoint.
+func MountTelemetryGetHandler(mux loomhttp.Muxer, h http.Handler, corsPolicy loomhttp.RuntimeCORSPolicy) {
+	h = corsPolicy.Handler(loomhttp.AsHandlerFunc(h))
+	loomhttp.MountHandler(mux, "GET", "/api/instances/telemetry/", h)
+}
+
+// NewTelemetryGetHandler creates a HTTP handler which loads the HTTP request
+// and calls the "instance_management" service "telemetry_get" endpoint.
+func NewTelemetryGetHandler(
+	endpoint loom.Endpoint,
+	mux loomhttp.Muxer,
+	decoder func(*http.Request) loomhttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(ctx context.Context, err error) loomhttp.StatusCoder,
+) http.Handler {
+	var (
+		decodeRequest  = DecodeTelemetryGetRequest(mux, decoder)
+		encodeResponse = EncodeTelemetryGetResponse(encoder)
+		encodeError    = EncodeTelemetryGetError(encoder, formatter)
+	)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		lifecycle := loomhttp.NewHandlerLifecycle(w, r, "instance_management", "telemetry_get")
+		defer lifecycle.End()
+		ctx := lifecycle.Context()
+		w = lifecycle.Writer()
+		payload, err := decodeRequest(r)
+		if err != nil {
+			lifecycle.DecodeFailed(err, encodeError, errhandler)
+			return
+		}
+		res, err := endpoint(ctx, payload)
+		if err != nil {
+			lifecycle.HandlerFailed(err, false, encodeError, errhandler)
+			return
+		}
+		o := res.(*instancemanagement.TelemetryGetResponseData)
 		lifecycle.WriteRawBody(o.Body, func(ctx context.Context, w http.ResponseWriter) error {
 			return encodeResponse(ctx, w, o.Result)
 		}, encodeError, errhandler)

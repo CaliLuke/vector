@@ -56,6 +56,13 @@ type ConfigGetUnauthenticatedResponseBody struct {
 	Detail string `form:"detail" json:"detail" xml:"detail"`
 }
 
+// TelemetryGetUnauthenticatedResponseBody is the type of the
+// "instance_management" service "telemetry_get" endpoint HTTP response body
+// for the "unauthenticated" error.
+type TelemetryGetUnauthenticatedResponseBody struct {
+	Detail string `form:"detail" json:"detail" xml:"detail"`
+}
+
 // ConfigPatchUnauthenticatedResponseBody is the type of the
 // "instance_management" service "config_patch" endpoint HTTP response body for
 // the "unauthenticated" error.

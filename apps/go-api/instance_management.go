@@ -36,6 +36,7 @@ type instanceManagementRepository interface {
 	CreateAdmin(context.Context, uuid.UUID, map[string]json.RawMessage) (json.RawMessage, error)
 	DeleteAdmin(context.Context, uuid.UUID) error
 	Configurations(context.Context) (json.RawMessage, error)
+	Telemetry(context.Context) (json.RawMessage, error)
 	PatchConfigurations(context.Context, map[string]json.RawMessage) (json.RawMessage, error)
 	SMTPConfiguration(context.Context) (instancemail.SMTPConfig, string, error)
 	DisableEmail(context.Context) error
@@ -374,6 +375,17 @@ func (service *instanceManagementService) ConfigGet(ctx context.Context, payload
 	}
 	body, err := service.repository.Configurations(ctx)
 	return instanceManagementRaw(ctx, body, err)
+}
+
+func (service *instanceManagementService) TelemetryGet(ctx context.Context, _ *api.TelemetryGetPayload) (*api.InstanceRootResponseMetadata, io.ReadCloser, error) {
+	if _, err := service.admin(ctx); err != nil {
+		return nil, nil, err
+	}
+	body, err := service.repository.Telemetry(ctx)
+	if err != nil {
+		return nil, nil, instanceManagementInternal()
+	}
+	return &api.InstanceRootResponseMetadata{ContentType: "application/json", CacheControl: "no-store"}, rawJSONReadCloser(body), nil
 }
 
 func (service *instanceManagementService) ConfigPatch(ctx context.Context, _ *api.ConfigPatchPayload, bodyReader io.ReadCloser) (*api.RawJSONResponseMetadata, io.ReadCloser, error) {

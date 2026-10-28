@@ -63,7 +63,7 @@ import (
 //
 //	command (subcommand1|subcommand2|...)
 func UsageCommands() []string {
-	return []string{"analytic-views (list|create|retrieve|patch|delete)", "csrf-token (csrf-token|csrf-token-options)", "cycle-reads (workspace-list|archived-list|archived-detail|list|analytics|archive-detail|issues|issue-detail|progress|detail|workspace-list-options|analytics-options|progress-options)", "deploy-board-reads (collection|detail)", "entity-favorites (project-list|project-create|project-delete|cycle-list|cycle-create|cycle-delete|module-list|module-create|module-delete|view-list|view-create|view-delete|page-create|page-delete)", "estimate-reads (workspace-selected|workspace-selected-options|project-list|project-detail)", "instance-admin-session (me|session)", "instance-management (admin-sign-in|admin-sign-up|admin-sign-out|root-get|root-patch|admins-get|admins-post|admins-delete-collection|admins-detail-get|admins-detail-delete|signup-visited|config-get|config-patch|disable-email|email-check|workspaces-get|workspaces-post)", "instance-workspace-slug-check check", "intake-inbox-reads (draft-issue-list|draft-issue-detail|inbox-issue-list|inbox-issue-detail|inbox-list|inbox-detail|intake-issue-list|intake-issue-detail|description-version-list|description-version-detail|description-version-list-options|description-version-detail-options|intake-list|intake-detail)", "last-visited-workspace get", "module-reads (workspace-list|workspace-list-options|archived-list|archived-detail|list|archive-detail|issues|issue-detail|links|link-detail|detail)", "page-reads (summary|summary-options|list|detail|description|version-list|version-list-options|version-detail|version-detail-options|create|update|delete|access|archive|unarchive|description-update|duplicate|lock|unlock|create-options|update-options|description-options|access-options|archive-options|duplicate-options|lock-options)", "project-identifiers (get|delete)", "project-label-reads (list|detail)", "project-membership-reads (membership|roles|workspace-members|workspace-member|workspace-project-members|project-members|project-member|preference)", "project-state-reads (list|detail|intake|create|update|delete|mark-default)", "public-feedback (issue-list|issue-detail|vote-list|vote-create|vote-delete|inbox-list|inbox-create|intake-list|intake-create|intake-detail|intake-update|intake-delete|workspace-project-boards)", "public-project-metadata-reads (cycles|labels|modules|members|meta|settings|project-anchor|states)", "standard-views (list-project|create-project|retrieve-project|update-project|patch-project|delete-project|list-workspace|create-workspace|retrieve-workspace|update-workspace|patch-workspace|delete-workspace)", "stickies (list|create|retrieve|update|delete)", "system (live|ready)", "timezones list", "user-accounts (list|delete-collection|retrieve|delete)", "user-api-tokens (list|create|patch-collection|delete-collection|retrieve|patch|delete|post-detail)", "user-identity (session|me|profile|update-profile)", "user-instance-admin retrieve", "user-notification-preferences (get|patch)", "user-profile-flags (update-onboarded|update-tour-completed)", "user-properties (workspace-get|workspace-patch|project-get|project-patch|cycle-get|cycle-patch|module-get|module-patch)", "user-settings get", "workspace-favorites (list|create|patch-collection|delete-collection|retrieve|create-detail|patch|delete|group)", "workspace-home-preferences (list|patch-collection|retrieve|patch)", "workspace-member-me get", "workspace-metadata (labels|states)", "workspace-project-reads (user-workspaces|workspaces|workspace|project-stats|projects|project-details|project|user-workspaces-options|project-stats-options|project-details-options)", "workspace-quick-links (list|create|retrieve|patch|delete)", "workspace-recent-visits list", "workspace-sidebar-preferences (get|patch)", "workspace-slug-check check", "workspace-themes (list|create|retrieve|patch|delete)"}
+	return []string{"analytic-views (list|create|retrieve|patch|delete)", "csrf-token (csrf-token|csrf-token-options)", "cycle-reads (workspace-list|archived-list|archived-detail|list|analytics|archive-detail|issues|issue-detail|progress|detail|workspace-list-options|analytics-options|progress-options)", "deploy-board-reads (collection|detail)", "entity-favorites (project-list|project-create|project-delete|cycle-list|cycle-create|cycle-delete|module-list|module-create|module-delete|view-list|view-create|view-delete|page-create|page-delete)", "estimate-reads (workspace-selected|workspace-selected-options|project-list|project-detail)", "instance-admin-session (me|session)", "instance-management (admin-sign-in|admin-sign-up|admin-sign-out|root-get|root-patch|admins-get|admins-post|admins-delete-collection|admins-detail-get|admins-detail-delete|signup-visited|config-get|telemetry-get|config-patch|disable-email|email-check|workspaces-get|workspaces-post)", "instance-workspace-slug-check check", "intake-inbox-reads (draft-issue-list|draft-issue-detail|inbox-issue-list|inbox-issue-detail|inbox-list|inbox-detail|intake-issue-list|intake-issue-detail|description-version-list|description-version-detail|description-version-list-options|description-version-detail-options|intake-list|intake-detail)", "last-visited-workspace get", "module-reads (workspace-list|workspace-list-options|archived-list|archived-detail|list|archive-detail|issues|issue-detail|links|link-detail|detail)", "page-reads (summary|summary-options|list|detail|description|version-list|version-list-options|version-detail|version-detail-options|create|update|delete|access|archive|unarchive|description-update|duplicate|lock|unlock|create-options|update-options|description-options|access-options|archive-options|duplicate-options|lock-options)", "project-identifiers (get|delete)", "project-label-reads (list|detail)", "project-membership-reads (membership|roles|workspace-members|workspace-member|workspace-project-members|project-members|project-member|preference)", "project-state-reads (list|detail|intake|create|update|delete|mark-default)", "public-feedback (issue-list|issue-detail|vote-list|vote-create|vote-delete|inbox-list|inbox-create|intake-list|intake-create|intake-detail|intake-update|intake-delete|workspace-project-boards)", "public-project-metadata-reads (cycles|labels|modules|members|meta|settings|project-anchor|states)", "standard-views (list-project|create-project|retrieve-project|update-project|patch-project|delete-project|list-workspace|create-workspace|retrieve-workspace|update-workspace|patch-workspace|delete-workspace)", "stickies (list|create|retrieve|update|delete)", "system (live|ready)", "timezones list", "user-accounts (list|delete-collection|retrieve|delete)", "user-api-tokens (list|create|patch-collection|delete-collection|retrieve|patch|delete|post-detail)", "user-identity (session|me|profile|update-profile)", "user-instance-admin retrieve", "user-notification-preferences (get|patch)", "user-profile-flags (update-onboarded|update-tour-completed)", "user-properties (workspace-get|workspace-patch|project-get|project-patch|cycle-get|cycle-patch|module-get|module-patch)", "user-settings get", "workspace-favorites (list|create|patch-collection|delete-collection|retrieve|create-detail|patch|delete|group)", "workspace-home-preferences (list|patch-collection|retrieve|patch)", "workspace-member-me get", "workspace-metadata (labels|states)", "workspace-project-reads (user-workspaces|workspaces|workspace|project-stats|projects|project-details|project|user-workspaces-options|project-stats-options|project-details-options)", "workspace-quick-links (list|create|retrieve|patch|delete)", "workspace-recent-visits list", "workspace-sidebar-preferences (get|patch)", "workspace-slug-check check", "workspace-themes (list|create|retrieve|patch|delete)"}
 }
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
@@ -381,6 +381,9 @@ type commandLine struct {
 		ConfigGet     struct {
 			SessionID string `help:"" name:"session-id"`
 		} `cmd:"" help:"ConfigGet implements config_get." name:"config-get"`
+		TelemetryGet struct {
+			SessionID string `help:"" name:"session-id"`
+		} `cmd:"" help:"TelemetryGet implements telemetry_get." name:"telemetry-get"`
 		ConfigPatch struct {
 			ContentType string `help:"" name:"content-type"`
 			SessionID   string `help:"" name:"session-id"`
@@ -1841,6 +1844,7 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		instanceManagementAdminsDetailDeletePkFlag                    *string
 		instanceManagementAdminsDetailDeleteSessionIDFlag             *string
 		instanceManagementConfigGetSessionIDFlag                      *string
+		instanceManagementTelemetryGetSessionIDFlag                   *string
 		instanceManagementConfigPatchContentTypeFlag                  *string
 		instanceManagementConfigPatchSessionIDFlag                    *string
 		instanceManagementConfigPatchStreamFlag                       *string
@@ -2861,6 +2865,7 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		instanceManagementAdminsDetailDeletePkFlag = &command.InstanceManagement.AdminsDetailDelete.Pk
 		instanceManagementAdminsDetailDeleteSessionIDFlag = &command.InstanceManagement.AdminsDetailDelete.SessionID
 		instanceManagementConfigGetSessionIDFlag = &command.InstanceManagement.ConfigGet.SessionID
+		instanceManagementTelemetryGetSessionIDFlag = &command.InstanceManagement.TelemetryGet.SessionID
 		instanceManagementConfigPatchContentTypeFlag = &command.InstanceManagement.ConfigPatch.ContentType
 		instanceManagementConfigPatchSessionIDFlag = &command.InstanceManagement.ConfigPatch.SessionID
 		instanceManagementConfigPatchStreamFlag = &command.InstanceManagement.ConfigPatch.Stream
@@ -3846,6 +3851,9 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		case "instance-management config-get":
 			svcn = "instance-management"
 			epn = "config-get"
+		case "instance-management telemetry-get":
+			svcn = "instance-management"
+			epn = "telemetry-get"
 		case "instance-management config-patch":
 			svcn = "instance-management"
 			epn = "config-patch"
@@ -4626,6 +4634,9 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 			case "config-get":
 				endpoint = c.ConfigGet()
 				data, err = instancemanagementc.BuildConfigGetPayload(*instanceManagementConfigGetSessionIDFlag)
+			case "telemetry-get":
+				endpoint = c.TelemetryGet()
+				data, err = instancemanagementc.BuildTelemetryGetPayload(*instanceManagementTelemetryGetSessionIDFlag)
 			case "config-patch":
 				endpoint = c.ConfigPatch()
 				data, err = instancemanagementc.BuildConfigPatchPayload(*instanceManagementConfigPatchContentTypeFlag, *instanceManagementConfigPatchSessionIDFlag)
@@ -6475,6 +6486,7 @@ func instanceManagementUsage() {
 	fmt.Fprintln(os.Stderr, "    admins-detail-delete: AdminsDetailDelete implements admins_detail_delete.")
 	fmt.Fprintln(os.Stderr, "    signup-visited: SignupVisited implements signup_visited.")
 	fmt.Fprintln(os.Stderr, "    config-get: ConfigGet implements config_get.")
+	fmt.Fprintln(os.Stderr, "    telemetry-get: TelemetryGet implements telemetry_get.")
 	fmt.Fprintln(os.Stderr, "    config-patch: ConfigPatch implements config_patch.")
 	fmt.Fprintln(os.Stderr, "    disable-email: DisableEmail implements disable_email.")
 	fmt.Fprintln(os.Stderr, "    email-check: EmailCheck implements email_check.")
@@ -6702,6 +6714,23 @@ func instanceManagementConfigGetUsage() {
 	fmt.Fprintln(os.Stderr, "Example:")
 	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "instance-management config-get --session-id \"Amet et voluptatum ut accusantium explicabo ipsam.\"")
 }
+func instanceManagementTelemetryGetUsage() {
+	// Header with flags
+	fmt.Fprintf(os.Stderr, "%s [flags] instance-management telemetry-get", os.Args[0])
+	fmt.Fprint(os.Stderr, " -session-id STRING")
+	fmt.Fprintln(os.Stderr)
+
+	// Description
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, "TelemetryGet implements telemetry_get.")
+
+	// Flags list
+	fmt.Fprintln(os.Stderr, "    -session-id STRING: ")
+
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, "Example:")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "instance-management telemetry-get --session-id \"Alias qui ea beatae vel.\"")
+}
 func instanceManagementConfigPatchUsage() {
 	// Header with flags
 	fmt.Fprintf(os.Stderr, "%s [flags] instance-management config-patch", os.Args[0])
@@ -6721,7 +6750,7 @@ func instanceManagementConfigPatchUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "instance-management config-patch --content-type \"Alias qui ea beatae vel.\" --session-id \"Provident beatae odit est eos voluptate.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "instance-management config-patch --content-type \"Ipsa voluptatem et et quia cum totam.\" --session-id \"Voluptate rerum quia sed similique ea.\" --stream \"loom.bin\"")
 }
 func instanceManagementDisableEmailUsage() {
 	// Header with flags
@@ -6738,7 +6767,7 @@ func instanceManagementDisableEmailUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "instance-management disable-email --session-id \"Ipsa voluptatem et et quia cum totam.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "instance-management disable-email --session-id \"Natus dolorum iure rem rem eius iste.\"")
 }
 func instanceManagementEmailCheckUsage() {
 	// Header with flags
@@ -6759,7 +6788,7 @@ func instanceManagementEmailCheckUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "instance-management email-check --content-type \"Ea repellat ipsa ut numquam veritatis.\" --session-id \"Deleniti aut velit voluptatem perferendis.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "instance-management email-check --content-type \"Dolore nam quia inventore.\" --session-id \"Consectetur non aspernatur neque dicta dolorum.\" --stream \"loom.bin\"")
 }
 func instanceManagementWorkspacesGetUsage() {
 	// Header with flags
@@ -6782,7 +6811,7 @@ func instanceManagementWorkspacesGetUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "instance-management workspaces-get --search \"Itaque in aspernatur repellendus accusantium unde deleniti.\" --per-page \"Similique ut mollitia.\" --cursor \"Et sint corrupti.\" --session-id \"Et molestias enim.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "instance-management workspaces-get --search \"Quod accusamus natus autem et nisi eius.\" --per-page \"Facere at explicabo est eius.\" --cursor \"Ducimus molestias sit soluta illum eligendi repellendus.\" --session-id \"Omnis omnis officiis a consequatur reiciendis.\"")
 }
 func instanceManagementWorkspacesPostUsage() {
 	// Header with flags
@@ -6803,7 +6832,7 @@ func instanceManagementWorkspacesPostUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "instance-management workspaces-post --content-type \"Ducimus molestias sit soluta illum eligendi repellendus.\" --session-id \"Omnis omnis officiis a consequatur reiciendis.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "instance-management workspaces-post --content-type \"Facere consectetur officiis.\" --session-id \"Facilis harum et dolor voluptatem doloremque.\" --stream \"loom.bin\"")
 }
 
 // instanceWorkspaceSlugCheckUsage displays the usage of the

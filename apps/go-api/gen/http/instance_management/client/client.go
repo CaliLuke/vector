@@ -54,6 +54,9 @@ type Client struct {
 	// ConfigGet Doer is the HTTP client used to make requests to the config_get
 	// endpoint.
 	ConfigGetDoer loomhttp.Doer
+	// TelemetryGet Doer is the HTTP client used to make requests to the
+	// telemetry_get endpoint.
+	TelemetryGetDoer loomhttp.Doer
 	// ConfigPatch Doer is the HTTP client used to make requests to the
 	// config_patch endpoint.
 	ConfigPatchDoer loomhttp.Doer
@@ -233,6 +236,18 @@ func (g *APIClient) BuildConfigGetRequest(ctx context.Context, v any) (*http.Req
 	return g.client.BuildConfigGetRequest(ctx, v)
 }
 
+// TelemetryGet returns an endpoint that makes HTTP requests to the
+// instance_management service telemetry_get server.
+func (g *APIClient) TelemetryGet() loom.Endpoint {
+	return g.client.TelemetryGet()
+}
+
+// BuildTelemetryGetRequest instantiates a HTTP request object with method and
+// path set to call the "instance_management" service "telemetry_get" endpoint
+func (g *APIClient) BuildTelemetryGetRequest(ctx context.Context, v any) (*http.Request, error) {
+	return g.client.BuildTelemetryGetRequest(ctx, v)
+}
+
 // ConfigPatch returns an endpoint that makes HTTP requests to the
 // instance_management service config_patch server.
 func (g *APIClient) ConfigPatch() loom.Endpoint {
@@ -297,7 +312,7 @@ func (g *APIClient) BuildWorkspacesPostRequest(ctx context.Context, v any) (*htt
 // NewClient instantiates HTTP clients for all the instance_management service
 // servers.
 func NewClient(scheme string, host string, doer loomhttp.Doer, enc func(*http.Request) loomhttp.Encoder, dec func(*http.Response) loomhttp.Decoder, restoreBody bool) *Client {
-	client := &Client{AdminSignInDoer: doer, AdminSignUpDoer: doer, AdminSignOutDoer: doer, RootGetDoer: doer, RootPatchDoer: doer, AdminsGetDoer: doer, AdminsPostDoer: doer, AdminsDeleteCollectionDoer: doer, AdminsDetailGetDoer: doer, AdminsDetailDeleteDoer: doer, SignupVisitedDoer: doer, ConfigGetDoer: doer, ConfigPatchDoer: doer, DisableEmailDoer: doer, EmailCheckDoer: doer, WorkspacesGetDoer: doer, WorkspacesPostDoer: doer, RestoreResponseBody: restoreBody, scheme: scheme, host: host, decoder: dec, encoder: enc}
+	client := &Client{AdminSignInDoer: doer, AdminSignUpDoer: doer, AdminSignOutDoer: doer, RootGetDoer: doer, RootPatchDoer: doer, AdminsGetDoer: doer, AdminsPostDoer: doer, AdminsDeleteCollectionDoer: doer, AdminsDetailGetDoer: doer, AdminsDetailDeleteDoer: doer, SignupVisitedDoer: doer, ConfigGetDoer: doer, TelemetryGetDoer: doer, ConfigPatchDoer: doer, DisableEmailDoer: doer, EmailCheckDoer: doer, WorkspacesGetDoer: doer, WorkspacesPostDoer: doer, RestoreResponseBody: restoreBody, scheme: scheme, host: host, decoder: dec, encoder: enc}
 	client.API = &APIClient{client: client}
 	return client
 }
@@ -609,6 +624,34 @@ func (c *Client) ConfigGet() loom.Endpoint {
 			return nil, err
 		}
 		return &instancemanagement.ConfigGetResponseData{Result: res.(*instancemanagement.RawJSONResponseMetadata), Body: resp.Body}, nil
+	}
+}
+
+// TelemetryGet returns an endpoint that makes HTTP requests to the
+// instance_management service telemetry_get server.
+func (c *Client) TelemetryGet() loom.Endpoint {
+	var (
+		encodeRequest  = EncodeTelemetryGetRequest(c.encoder)
+		decodeResponse = DecodeTelemetryGetResponse(c.decoder, c.RestoreResponseBody)
+	)
+	return func(ctx context.Context, v any) (any, error) {
+		req, err := c.BuildTelemetryGetRequest(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+		err = encodeRequest(req, v)
+		if err != nil {
+			return nil, err
+		}
+		resp, err := c.TelemetryGetDoer.Do(req)
+		if err != nil {
+			return nil, loomhttp.ErrRequestError("instance_management", "telemetry_get", err)
+		}
+		res, err := decodeResponse(resp)
+		if err != nil {
+			return nil, err
+		}
+		return &instancemanagement.TelemetryGetResponseData{Result: res.(*instancemanagement.InstanceRootResponseMetadata), Body: resp.Body}, nil
 	}
 }
 

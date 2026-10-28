@@ -61,6 +61,13 @@ type ConfigGetUnauthenticatedResponseBody struct {
 	Detail *string `form:"detail,omitempty" json:"detail,omitzero" xml:"detail,omitempty"`
 }
 
+// TelemetryGetUnauthenticatedResponseBody is the type of the
+// "instance_management" service "telemetry_get" endpoint HTTP response body
+// for the "unauthenticated" error.
+type TelemetryGetUnauthenticatedResponseBody struct {
+	Detail *string `form:"detail,omitempty" json:"detail,omitzero" xml:"detail,omitempty"`
+}
+
 // ConfigPatchUnauthenticatedResponseBody is the type of the
 // "instance_management" service "config_patch" endpoint HTTP response body for
 // the "unauthenticated" error.
@@ -190,6 +197,16 @@ func NewAdminsDetailDeleteUnauthenticated(body *AdminsDetailDeleteUnauthenticate
 // NewConfigGetUnauthenticated builds a instance_management service config_get
 // endpoint unauthenticated error.
 func NewConfigGetUnauthenticated(body *ConfigGetUnauthenticatedResponseBody) *instancemanagement.InstanceAdminSessionUnauthenticated {
+	v := &instancemanagement.InstanceAdminSessionUnauthenticated{
+		Detail: *body.Detail,
+	}
+
+	return v
+}
+
+// NewTelemetryGetUnauthenticated builds a instance_management service
+// telemetry_get endpoint unauthenticated error.
+func NewTelemetryGetUnauthenticated(body *TelemetryGetUnauthenticatedResponseBody) *instancemanagement.InstanceAdminSessionUnauthenticated {
 	v := &instancemanagement.InstanceAdminSessionUnauthenticated{
 		Detail: *body.Detail,
 	}

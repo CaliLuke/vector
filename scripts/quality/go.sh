@@ -63,7 +63,7 @@ lint_gate() {
   rm -f "$json"
   (
     cd "$MODULE"
-    golangci-lint run --config .golangci.yml --issues-exit-code=0 \
+    golangci-lint run --allow-serial-runners --config .golangci.yml --issues-exit-code=0 \
       --output.json.path="$json" --output.text.path=stderr --output.text.colors=false
   )
   node "$ROOT/scripts/quality/go-lint-ratchet.mjs" check "$json" "$BASELINE" "$MODULE"

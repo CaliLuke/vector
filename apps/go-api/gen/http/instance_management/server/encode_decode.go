@@ -1598,6 +1598,179 @@ func EncodeConfigGetError(encoder func(context.Context, http.ResponseWriter) loo
 	}
 }
 
+// EncodeTelemetryGetResponse returns an encoder for responses returned by the
+// instance_management telemetry_get endpoint.
+func EncodeTelemetryGetResponse(encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder) func(context.Context, http.ResponseWriter, any) error {
+	return func(ctx context.Context, w http.ResponseWriter, v any) error {
+		res, ok := v.(*instancemanagement.InstanceRootResponseMetadata)
+		if !ok {
+			return loomhttp.ErrInvalidType("instance_management", "telemetry_get", "*instancemanagement.InstanceRootResponseMetadata", v)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Type", res.ContentType)
+		w.Header().Set("Cache-Control", res.CacheControl)
+		w.WriteHeader(http.StatusOK)
+		return nil
+	}
+}
+
+// DecodeTelemetryGetRequest returns a decoder for requests sent to the
+// instance_management telemetry_get endpoint.
+func DecodeTelemetryGetRequest(mux loomhttp.Muxer, _ func(*http.Request) loomhttp.Decoder) func(*http.Request) (*instancemanagement.TelemetryGetPayload, error) {
+	return func(r *http.Request) (*instancemanagement.TelemetryGetPayload, error) {
+		var payload *instancemanagement.TelemetryGetPayload
+		var (
+			sessionID *string
+		)
+		{
+			c, cookieErr := r.Cookie("admin-session-id")
+			if cookieErr != nil && !errors.Is(cookieErr, http.ErrNoCookie) {
+				return payload, cookieErr
+			}
+			var sessionIDRaw string
+			sessionIDPresent := c != nil
+			if sessionIDPresent {
+				sessionIDRaw = c.Value
+			}
+
+			if sessionIDPresent {
+				sessionID = &sessionIDRaw
+			}
+		}
+		payload = NewTelemetryGetPayload(sessionID)
+
+		return payload, nil
+	}
+}
+
+// EncodeTelemetryGetError returns an encoder for errors returned by the
+// telemetry_get instance_management endpoint.
+func EncodeTelemetryGetError(encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder, formatter func(ctx context.Context, err error) loomhttp.StatusCoder) func(context.Context, http.ResponseWriter, error) error {
+	encodeError := loomhttp.ErrorEncoder(encoder, formatter)
+	return func(ctx context.Context, w http.ResponseWriter, v error) error {
+		errorResponse := loom.ResolveErrorResponse(v)
+		if errorResponse.Owner == nil {
+			return encodeError(ctx, w, v)
+		}
+		switch errorResponse.Name {
+		case "unauthenticated":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*instancemanagement.InstanceAdminSessionUnauthenticated)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = NewTelemetryGetUnauthenticatedResponseBody(res)
+			}
+			w.Header().Set("loom-error", res.LoomErrorName())
+			w.WriteHeader(http.StatusUnauthorized)
+			return enc.Encode(body)
+		case "bad_request":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*instancemanagement.InstanceManagementError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusBadRequest)
+			return enc.Encode(body)
+		case "forbidden":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*instancemanagement.InstanceManagementError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusForbidden)
+			return enc.Encode(body)
+		case "not_found":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*instancemanagement.InstanceManagementError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusNotFound)
+			return enc.Encode(body)
+		case "conflict":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*instancemanagement.InstanceManagementError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusConflict)
+			return enc.Encode(body)
+		case "method_not_allowed":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*instancemanagement.InstanceManagementError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return enc.Encode(body)
+		case "internal_error":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*instancemanagement.InstanceManagementError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusInternalServerError)
+			return enc.Encode(body)
+		default:
+			return encodeError(ctx, w, v)
+		}
+	}
+}
+
 // EncodeConfigPatchResponse returns an encoder for responses returned by the
 // instance_management config_patch endpoint.
 func EncodeConfigPatchResponse(encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder) func(context.Context, http.ResponseWriter, any) error {

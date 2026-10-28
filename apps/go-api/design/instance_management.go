@@ -260,6 +260,24 @@ var _ = Service("instance_management", func() {
 			instanceManagementRawResponse(ArrayOf(Any), StatusOK)
 		})
 	})
+	Method("telemetry_get", func() {
+		Meta("openapi:operationId", "get_api_instances_telemetry")
+		Security(planeAdminSessionCookie)
+		Payload(func() { instanceAdminSessionPayload() })
+		Result(instanceRootResponseMetadata)
+		instanceManagementErrors()
+		HTTP(func() {
+			GET("/api/instances/telemetry/")
+			Cookie("session_id:admin-session-id")
+			SkipResponseBodyEncodeDecode()
+			Response(StatusOK, func() {
+				Header("content_type:Content-Type")
+				Header("cache_control:Cache-Control")
+				ContentType("application/json")
+				OpenAPIBody(Any)
+			})
+		})
+	})
 	Method("config_patch", func() {
 		Meta("openapi:operationId", "patch_api_instances_configurations")
 		Security(planeAdminSessionCookie)
