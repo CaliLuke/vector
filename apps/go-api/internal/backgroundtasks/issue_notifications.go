@@ -14,6 +14,17 @@ import (
 	"golang.org/x/net/html"
 )
 
+type issueNotificationEvent struct {
+	id uuid.UUID
+	// The producer's optional workspace binding differs from the stored
+	// workspaceID below; recipient filtering and email payloads use the binding.
+	input                                       IssueActivityInput
+	issueID, projectID, workspaceID             uuid.UUID
+	workspaceSlug, issueName, projectIdentifier string
+	sequenceID                                  int64
+	creatorID, stateName, stateGroup            *string
+}
+
 func (store *PostgresIssueActivityStore) ProcessIssueNotifications(ctx context.Context, eventID string, input IssueActivityInput, activityIDs []string) error {
 	if err := validateIssueActivityInput(eventID, input); err != nil {
 		return err
@@ -24,6 +35,7 @@ func (store *PostgresIssueActivityStore) ProcessIssueNotifications(ctx context.C
 	projectID, _ := uuid.Parse(input.ProjectID)
 	issueID, _ := uuid.Parse(*input.IssueID)
 	eventUUID, _ := uuid.Parse(eventID)
+	event := issueNotificationEvent{id: eventUUID, input: input, issueID: issueID, projectID: projectID}
 	tx, err := store.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return fmt.Errorf("begin issue notification transaction: %w", err)
@@ -34,11 +46,7 @@ func (store *PostgresIssueActivityStore) ProcessIssueNotifications(ctx context.C
 			return scopeErr
 		}
 	}
-	var workspaceID uuid.UUID
-	var workspaceSlug, issueName, projectIdentifier string
-	var sequenceID int64
-	var creatorID, stateName, stateGroup *string
-	err = tx.QueryRow(ctx, `SELECT project.workspace_id,workspace.slug,issue.name,project.identifier,issue.sequence_id,issue.created_by_id,state.name,state."group" FROM issues issue JOIN projects project ON project.id=issue.project_id JOIN workspaces workspace ON workspace.id=project.workspace_id LEFT JOIN states state ON state.id=issue.state_id WHERE issue.id=$1 AND issue.project_id=$2 AND issue.deleted_at IS NULL`, issueID, projectID).Scan(&workspaceID, &workspaceSlug, &issueName, &projectIdentifier, &sequenceID, &creatorID, &stateName, &stateGroup)
+	err = tx.QueryRow(ctx, `SELECT project.workspace_id,workspace.slug,issue.name,project.identifier,issue.sequence_id,issue.created_by_id,state.name,state."group" FROM issues issue JOIN projects project ON project.id=issue.project_id JOIN workspaces workspace ON workspace.id=project.workspace_id LEFT JOIN states state ON state.id=issue.state_id WHERE issue.id=$1 AND issue.project_id=$2 AND issue.deleted_at IS NULL`, event.issueID, event.projectID).Scan(&event.workspaceID, &event.workspaceSlug, &event.issueName, &event.projectIdentifier, &event.sequenceID, &event.creatorID, &event.stateName, &event.stateGroup)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return tx.Commit(ctx)
 	}
@@ -47,12 +55,12 @@ func (store *PostgresIssueActivityStore) ProcessIssueNotifications(ctx context.C
 	}
 	if input.Subscriber == nil || *input.Subscriber {
 		if input.ActorID != nil {
-			if _, err := tx.Exec(ctx, `INSERT INTO issue_subscribers (id,created_at,updated_at,deleted_at,created_by_id,updated_by_id,project_id,workspace_id,issue_id,subscriber_id) VALUES ($1,NOW(),NOW(),NULL,$2,$2,$3,$4,$5,$2) ON CONFLICT (issue_id,subscriber_id) WHERE deleted_at IS NULL DO NOTHING`, uuid.New(), *input.ActorID, projectID, workspaceID, issueID); err != nil {
-				return fmt.Errorf("subscribe issue activity actor: %w", err)
+			if _, subscribeErr := tx.Exec(ctx, `INSERT INTO issue_subscribers (id,created_at,updated_at,deleted_at,created_by_id,updated_by_id,project_id,workspace_id,issue_id,subscriber_id) VALUES ($1,NOW(),NOW(),NULL,$2,$2,$3,$4,$5,$2) ON CONFLICT (issue_id,subscriber_id) WHERE deleted_at IS NULL DO NOTHING`, uuid.New(), *input.ActorID, event.projectID, event.workspaceID, event.issueID); subscribeErr != nil {
+				return fmt.Errorf("subscribe issue activity actor: %w", subscribeErr)
 			}
 		}
 	}
-	activities, err := loadIssueActivities(ctx, tx, activityIDs, issueID, projectID, workspaceID)
+	activities, err := loadIssueActivities(ctx, tx, activityIDs, event.issueID, event.projectID, event.workspaceID)
 	if err != nil {
 		return err
 	}
@@ -66,22 +74,77 @@ func (store *PostgresIssueActivityStore) ProcessIssueNotifications(ctx context.C
 	}
 	newCommentRecipientIDs = uniqueUUIDs(newCommentRecipientIDs)
 	if input.Type == "issue.activity.updated" {
-		if err := syncIssueDescriptionMentions(ctx, tx, eventUUID, issueID, projectID, workspaceID, input.ActorID, newDescriptionMentions, removedDescriptionMentions); err != nil {
-			return err
+		if mentionErr := event.syncDescriptionMentions(ctx, tx, newDescriptionMentions, removedDescriptionMentions); mentionErr != nil {
+			return mentionErr
 		}
 	}
-	activeMembers, err := activeProjectMembers(ctx, tx, projectID)
+	activeMembers, err := activeProjectMembers(ctx, tx, event.projectID)
 	if err != nil {
 		return err
 	}
 	for _, mentionID := range unionUUIDs(newDescriptionMentions, allCommentMentions) {
-		if _, err := tx.Exec(ctx, `INSERT INTO issue_subscribers (id,created_at,updated_at,deleted_at,created_by_id,updated_by_id,project_id,workspace_id,issue_id,subscriber_id) SELECT $1,NOW(),NOW(),NULL,$2,$2,$3,$4,$5,$6 WHERE EXISTS(SELECT 1 FROM project_members WHERE project_id=$3 AND member_id=$6 AND is_active=true) AND NOT EXISTS(SELECT 1 FROM issue_assignees WHERE project_id=$3 AND issue_id=$5 AND assignee_id=$6 AND deleted_at IS NULL) AND NOT EXISTS(SELECT 1 FROM issues WHERE id=$5 AND created_by_id=$6) ON CONFLICT (issue_id,subscriber_id) WHERE deleted_at IS NULL DO NOTHING`, uuid.New(), nullableUUIDString(input.ActorID), projectID, workspaceID, issueID, mentionID); err != nil {
-			return fmt.Errorf("subscribe issue mention: %w", err)
+		if _, subscribeErr := tx.Exec(ctx, `INSERT INTO issue_subscribers (id,created_at,updated_at,deleted_at,created_by_id,updated_by_id,project_id,workspace_id,issue_id,subscriber_id) SELECT $1,NOW(),NOW(),NULL,$2,$2,$3,$4,$5,$6 WHERE EXISTS(SELECT 1 FROM project_members WHERE project_id=$3 AND member_id=$6 AND is_active=true) AND NOT EXISTS(SELECT 1 FROM issue_assignees WHERE project_id=$3 AND issue_id=$5 AND assignee_id=$6 AND deleted_at IS NULL) AND NOT EXISTS(SELECT 1 FROM issues WHERE id=$5 AND created_by_id=$6) ON CONFLICT (issue_id,subscriber_id) WHERE deleted_at IS NULL DO NOTHING`, uuid.New(), nullableUUIDString(input.ActorID), event.projectID, event.workspaceID, event.issueID, mentionID); subscribeErr != nil {
+			return fmt.Errorf("subscribe issue mention: %w", subscribeErr)
 		}
 	}
+	recipients, err := event.loadRecipients(ctx, tx)
+	if err != nil {
+		return err
+	}
+	for _, activity := range activities {
+		for _, receiver := range recipients {
+			if containsUUID(newDescriptionMentions, receiver.id) || containsUUID(newCommentRecipientIDs, receiver.id) {
+				continue
+			}
+			if err := event.insertSubscriberNotification(ctx, tx, activity, receiver); err != nil {
+				return err
+			}
+		}
+	}
+	for activityID, mentionIDs := range newCommentMentions {
+		activity, ok := issueActivityByID(activities, activityID)
+		if !ok || input.ActorID == nil {
+			continue
+		}
+		for _, mentionID := range mentionIDs {
+			if mentionID == *mustUUID(input.ActorID) || !activeMembers[mentionID] {
+				continue
+			}
+			if err := event.insertMentionNotification(ctx, tx, activity, mentionID, "You have been mentioned in the issue "+event.issueName); err != nil {
+				return err
+			}
+		}
+	}
+	if input.ActorID != nil && len(newDescriptionMentions) > 0 && input.Type == "issue.activity.updated" {
+		last := activities[len(activities)-1]
+		if last.field == "description" && last.actorID != nil && *last.actorID == *mustUUID(input.ActorID) {
+			for _, mentionID := range newDescriptionMentions {
+				if mentionID == *mustUUID(input.ActorID) || !activeMembers[mentionID] {
+					continue
+				}
+				if err := event.insertMentionNotification(ctx, tx, last, mentionID, "You have been mentioned in the issue "+event.issueName); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit issue notifications: %w", err)
+	}
+	return nil
+}
+
+type issueNotificationRecipient struct {
+	id                                  uuid.UUID
+	createdBy                           *uuid.UUID
+	assignee                            bool
+	property, state, comment, completed bool
+}
+
+func (event issueNotificationEvent) loadRecipients(ctx context.Context, tx pgx.Tx) ([]issueNotificationRecipient, error) {
 	var boundWorkspace any
-	if input.WorkspaceID != "" {
-		boundWorkspace = input.WorkspaceID
+	if event.input.WorkspaceID != "" {
+		boundWorkspace = event.input.WorkspaceID
 	}
 	rows, err := tx.Query(ctx, `SELECT DISTINCT subscriber.id,issue.created_by_id,
  EXISTS(SELECT 1 FROM issue_assignees assignee WHERE assignee.issue_id=issue.id AND assignee.project_id=project.id AND assignee.assignee_id=subscriber.id AND assignee.deleted_at IS NULL),
@@ -95,125 +158,87 @@ func (store *PostgresIssueActivityStore) ProcessIssueNotifications(ctx context.C
  AND member.workspace_id=$4 AND member.deleted_at IS NULL AND subscriber.is_active=true AND project.archived_at IS NULL
  AND (member.role IN (15,20) OR member.role=5 AND project.guest_view_all_features)
  AND EXISTS(SELECT 1 FROM workspace_members wm WHERE wm.workspace_id=$4 AND wm.member_id=subscriber.id AND wm.is_active=true AND wm.deleted_at IS NULL AND wm.role IN (5,15,20))))
- ORDER BY subscriber.id`, issueID, projectID, nullableUUIDString(input.ActorID), boundWorkspace)
+ ORDER BY subscriber.id`, event.issueID, event.projectID, nullableUUIDString(event.input.ActorID), boundWorkspace)
 	if err != nil {
-		return fmt.Errorf("load issue notification recipients: %w", err)
+		return nil, fmt.Errorf("load issue notification recipients: %w", err)
 	}
-	type recipient struct {
-		id                                  uuid.UUID
-		createdBy                           *uuid.UUID
-		assignee                            bool
-		property, state, comment, completed bool
-	}
-	recipients := make([]recipient, 0)
+
+	recipients := make([]issueNotificationRecipient, 0)
 	for rows.Next() {
-		var value recipient
+		var value issueNotificationRecipient
 		if err := rows.Scan(&value.id, &value.createdBy, &value.assignee, &value.property, &value.state, &value.comment, &value.completed); err != nil {
 			rows.Close()
-			return fmt.Errorf("read issue notification recipient: %w", err)
+			return nil, fmt.Errorf("read issue notification recipient: %w", err)
 		}
 		recipients = append(recipients, value)
 	}
 	if err := rows.Err(); err != nil {
 		rows.Close()
-		return fmt.Errorf("iterate issue notification recipients: %w", err)
+		return nil, fmt.Errorf("iterate issue notification recipients: %w", err)
 	}
 	rows.Close()
-	for _, activity := range activities {
-		for _, receiver := range recipients {
-			if containsUUID(newDescriptionMentions, receiver.id) || containsUUID(newCommentRecipientIDs, receiver.id) {
-				continue
-			}
-			sender := "in_app:issue_activities:subscribed"
-			if creatorID != nil && *creatorID == receiver.id.String() {
-				sender = "in_app:issue_activities:created"
-			} else if receiver.assignee && !(receiver.createdBy != nil && *receiver.createdBy == receiver.id) {
-				sender = "in_app:issue_activities:assigned"
-			}
-			issueData := map[string]any{"id": issueID.String(), "name": issueName, "identifier": projectIdentifier, "sequence_id": sequenceID, "state_name": stateName, "state_group": stateGroup}
-			commentText := ""
-			if activity.commentID != nil {
-				if err := tx.QueryRow(ctx, `SELECT comment_stripped FROM issue_comments WHERE id=$1 AND issue_id=$2 AND project_id=$3 AND workspace_id=$4`, *activity.commentID, issueID, projectID, workspaceID).Scan(&commentText); err != nil && !errors.Is(err, pgx.ErrNoRows) {
-					return fmt.Errorf("load notification comment text: %w", err)
-				}
-			}
-			activityData := map[string]any{"id": activity.id.String(), "verb": activity.verb, "field": activity.field, "actor": uuidString(activity.actorID), "new_value": notificationActivityValue(activity.field, activity.newValue), "old_value": notificationActivityValue(activity.field, activity.oldValue), "issue_comment": commentText, "old_identifier": uuidString(activity.oldIdentifier), "new_identifier": uuidString(activity.newIdentifier)}
-			data, err := json.Marshal(map[string]any{"issue": issueData, "issue_activity": activityData})
-			if err != nil {
-				return fmt.Errorf("encode issue notification: %w", err)
-			}
-			notificationID := uuid.NewSHA1(eventUUID, []byte("plane.notification:"+activity.id.String()+":"+receiver.id.String()))
-			if _, err := tx.Exec(ctx, `INSERT INTO notifications (id,created_at,updated_at,deleted_at,created_by_id,updated_by_id,workspace_id,project_id,data,entity_identifier,entity_name,title,message,message_html,message_stripped,sender,triggered_by_id,receiver_id,read_at,snoozed_till,archived_at) VALUES ($1,NOW(),NOW(),NULL,NULL,NULL,$2,$3,$4::jsonb,$5,'issue',$6,NULL,'<p></p>','',$7,$8,$9,NULL,NULL,NULL) ON CONFLICT (id) DO NOTHING`, notificationID, workspaceID, projectID, data, issueID, activity.comment, sender, nullableUUIDString(input.ActorID), receiver.id); err != nil {
-				return fmt.Errorf("insert issue notification: %w", err)
-			}
-			sendEmail := false
-			if activity.field != "description" {
-				switch activity.field {
-				case "state":
-					sendEmail = receiver.state
-					if !sendEmail && receiver.completed && activity.newIdentifier != nil {
-						var completed bool
-						if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM states WHERE id=$1 AND project_id=$2 AND "group"='completed')`, *activity.newIdentifier, projectID).Scan(&completed); err != nil {
-							return fmt.Errorf("check completed issue state preference: %w", err)
-						}
-						sendEmail = completed
-					}
-				case "comment":
-					sendEmail = receiver.comment
-				default:
-					sendEmail = receiver.property
-				}
-			}
-			if sendEmail {
-				emailData := map[string]any{"issue": map[string]any{"id": issueID.String(), "name": issueName, "identifier": projectIdentifier, "project_id": projectID.String(), "workspace_slug": workspaceSlug, "workspace_id": input.WorkspaceID, "sequence_id": sequenceID, "state_name": stateName, "state_group": stateGroup}, "issue_activity": map[string]any{"id": activity.id.String(), "verb": activity.verb, "field": activity.field, "actor": uuidString(activity.actorID), "new_value": notificationActivityValue(activity.field, activity.newValue), "old_value": notificationActivityValue(activity.field, activity.oldValue), "issue_comment": commentText, "old_identifier": uuidString(activity.oldIdentifier), "new_identifier": uuidString(activity.newIdentifier), "activity_time": activity.createdAt}}
-				emailJSON, err := json.Marshal(emailData)
-				if err != nil {
-					return fmt.Errorf("encode email notification log: %w", err)
-				}
-				logID := uuid.NewSHA1(eventUUID, []byte("plane.email_notification:"+activity.id.String()+":"+receiver.id.String()))
-				if _, err := tx.Exec(ctx, `INSERT INTO email_notification_logs (id,created_at,updated_at,deleted_at,created_by_id,updated_by_id,receiver_id,triggered_by_id,entity_identifier,entity_name,data,processed_at,sent_at,entity,old_value,new_value) VALUES ($1,NOW(),NOW(),NULL,NULL,NULL,$2,$3,$4,'issue',$5::jsonb,NULL,NULL,'',NULL,NULL) ON CONFLICT (id) DO NOTHING`, logID, receiver.id, nullableUUIDString(input.ActorID), issueID, emailJSON); err != nil {
-					return fmt.Errorf("insert email notification log: %w", err)
-				}
-			}
+	return recipients, nil
+}
+
+func (event issueNotificationEvent) insertSubscriberNotification(ctx context.Context, tx pgx.Tx, activity issueNotificationActivity, receiver issueNotificationRecipient) error {
+	sender := "in_app:issue_activities:subscribed"
+	if event.creatorID != nil && *event.creatorID == receiver.id.String() {
+		sender = "in_app:issue_activities:created"
+	} else if receiver.assignee && (receiver.createdBy == nil || *receiver.createdBy != receiver.id) {
+		sender = "in_app:issue_activities:assigned"
+	}
+	issueData := map[string]any{"id": event.issueID.String(), "name": event.issueName, "identifier": event.projectIdentifier, "sequence_id": event.sequenceID, "state_name": event.stateName, "state_group": event.stateGroup}
+	commentText := ""
+	if activity.commentID != nil {
+		if err := tx.QueryRow(ctx, `SELECT comment_stripped FROM issue_comments WHERE id=$1 AND issue_id=$2 AND project_id=$3 AND workspace_id=$4`, *activity.commentID, event.issueID, event.projectID, event.workspaceID).Scan(&commentText); err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			return fmt.Errorf("load notification comment text: %w", err)
 		}
 	}
-	for activityID, mentionIDs := range newCommentMentions {
-		activity, ok := issueActivityByID(activities, activityID)
-		if !ok || input.ActorID == nil {
-			continue
-		}
-		for _, mentionID := range mentionIDs {
-			if mentionID == *mustUUID(input.ActorID) || !activeMembers[mentionID] {
-				continue
+	activityData := map[string]any{"id": activity.id.String(), "verb": activity.verb, "field": activity.field, "actor": uuidString(activity.actorID), "new_value": notificationActivityValue(activity.field, activity.newValue), "old_value": notificationActivityValue(activity.field, activity.oldValue), "issue_comment": commentText, "old_identifier": uuidString(activity.oldIdentifier), "new_identifier": uuidString(activity.newIdentifier)}
+	data, err := json.Marshal(map[string]any{"issue": issueData, "issue_activity": activityData})
+	if err != nil {
+		return fmt.Errorf("encode issue notification: %w", err)
+	}
+	notificationID := uuid.NewSHA1(event.id, []byte("plane.notification:"+activity.id.String()+":"+receiver.id.String()))
+	if _, err := tx.Exec(ctx, `INSERT INTO notifications (id,created_at,updated_at,deleted_at,created_by_id,updated_by_id,workspace_id,project_id,data,entity_identifier,entity_name,title,message,message_html,message_stripped,sender,triggered_by_id,receiver_id,read_at,snoozed_till,archived_at) VALUES ($1,NOW(),NOW(),NULL,NULL,NULL,$2,$3,$4::jsonb,$5,'issue',$6,NULL,'<p></p>','',$7,$8,$9,NULL,NULL,NULL) ON CONFLICT (id) DO NOTHING`, notificationID, event.workspaceID, event.projectID, data, event.issueID, activity.comment, sender, nullableUUIDString(event.input.ActorID), receiver.id); err != nil {
+		return fmt.Errorf("insert issue notification: %w", err)
+	}
+	sendEmail := false
+	if activity.field != "description" {
+		switch activity.field {
+		case "state":
+			sendEmail = receiver.state
+			if !sendEmail && receiver.completed && activity.newIdentifier != nil {
+				var completed bool
+				if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM states WHERE id=$1 AND project_id=$2 AND "group"='completed')`, *activity.newIdentifier, event.projectID).Scan(&completed); err != nil {
+					return fmt.Errorf("check completed issue state preference: %w", err)
+				}
+				sendEmail = completed
 			}
-			if err := insertMentionNotification(ctx, tx, eventUUID, issueID, projectID, workspaceID, workspaceSlug, issueName, projectIdentifier, sequenceID, stateName, stateGroup, input, activity, mentionID, "You have been mentioned in the issue "+issueName); err != nil {
-				return err
-			}
+		case "comment":
+			sendEmail = receiver.comment
+		default:
+			sendEmail = receiver.property
 		}
 	}
-	if input.ActorID != nil && len(newDescriptionMentions) > 0 && input.Type == "issue.activity.updated" {
-		last := activities[len(activities)-1]
-		if last.field == "description" && last.actorID != nil && *last.actorID == *mustUUID(input.ActorID) {
-			for _, mentionID := range newDescriptionMentions {
-				if mentionID == *mustUUID(input.ActorID) || !activeMembers[mentionID] {
-					continue
-				}
-				if err := insertMentionNotification(ctx, tx, eventUUID, issueID, projectID, workspaceID, workspaceSlug, issueName, projectIdentifier, sequenceID, stateName, stateGroup, input, last, mentionID, "You have been mentioned in the issue "+issueName); err != nil {
-					return err
-				}
-			}
+	if sendEmail {
+		emailData := map[string]any{"issue": map[string]any{"id": event.issueID.String(), "name": event.issueName, "identifier": event.projectIdentifier, "project_id": event.projectID.String(), "workspace_slug": event.workspaceSlug, "workspace_id": event.input.WorkspaceID, "sequence_id": event.sequenceID, "state_name": event.stateName, "state_group": event.stateGroup}, "issue_activity": map[string]any{"id": activity.id.String(), "verb": activity.verb, "field": activity.field, "actor": uuidString(activity.actorID), "new_value": notificationActivityValue(activity.field, activity.newValue), "old_value": notificationActivityValue(activity.field, activity.oldValue), "issue_comment": commentText, "old_identifier": uuidString(activity.oldIdentifier), "new_identifier": uuidString(activity.newIdentifier), "activity_time": activity.createdAt}}
+		emailJSON, err := json.Marshal(emailData)
+		if err != nil {
+			return fmt.Errorf("encode email notification log: %w", err)
 		}
-	}
-	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("commit issue notifications: %w", err)
+		logID := uuid.NewSHA1(event.id, []byte("plane.email_notification:"+activity.id.String()+":"+receiver.id.String()))
+		if _, err := tx.Exec(ctx, `INSERT INTO email_notification_logs (id,created_at,updated_at,deleted_at,created_by_id,updated_by_id,receiver_id,triggered_by_id,entity_identifier,entity_name,data,processed_at,sent_at,entity,old_value,new_value) VALUES ($1,NOW(),NOW(),NULL,NULL,NULL,$2,$3,$4,'issue',$5::jsonb,NULL,NULL,'',NULL,NULL) ON CONFLICT (id) DO NOTHING`, logID, receiver.id, nullableUUIDString(event.input.ActorID), event.issueID, emailJSON); err != nil {
+			return fmt.Errorf("insert email notification log: %w", err)
+		}
 	}
 	return nil
 }
 
-func insertMentionNotification(ctx context.Context, tx pgx.Tx, eventID, issueID, projectID, workspaceID uuid.UUID, workspaceSlug, issueName, projectIdentifier string, sequenceID int64, stateName, stateGroup *string, input IssueActivityInput, activity issueNotificationActivity, receiver uuid.UUID, message string) error {
-	actorID := nullableUUIDString(input.ActorID)
+func (event issueNotificationEvent) insertMentionNotification(ctx context.Context, tx pgx.Tx, activity issueNotificationActivity, receiver uuid.UUID, message string) error {
+	actorID := nullableUUIDString(event.input.ActorID)
 	data, err := json.Marshal(map[string]any{
-		"issue":          map[string]any{"id": issueID.String(), "name": issueName, "identifier": projectIdentifier, "sequence_id": sequenceID, "state_name": stateName, "state_group": stateGroup},
+		"issue":          map[string]any{"id": event.issueID.String(), "name": event.issueName, "identifier": event.projectIdentifier, "sequence_id": event.sequenceID, "state_name": event.stateName, "state_group": event.stateGroup},
 		"issue_activity": map[string]any{"id": activity.id.String(), "verb": activity.verb, "field": activity.field, "actor": uuidString(activity.actorID), "new_value": notificationActivityValue(activity.field, activity.newValue), "old_value": notificationActivityValue(activity.field, activity.oldValue), "old_identifier": uuidString(activity.oldIdentifier), "new_identifier": uuidString(activity.newIdentifier)},
 	})
 	if err != nil {
@@ -223,26 +248,26 @@ func insertMentionNotification(ctx context.Context, tx pgx.Tx, eventID, issueID,
 	if err != nil {
 		return fmt.Errorf("encode mention message: %w", err)
 	}
-	notificationID := uuid.NewSHA1(eventID, []byte("plane.notification:mention:"+activity.id.String()+":"+receiver.String()))
-	if _, err := tx.Exec(ctx, `INSERT INTO notifications (id,created_at,updated_at,deleted_at,created_by_id,updated_by_id,workspace_id,project_id,data,entity_identifier,entity_name,title,message,message_html,message_stripped,sender,triggered_by_id,receiver_id,read_at,snoozed_till,archived_at) VALUES ($1,NOW(),NOW(),NULL,NULL,NULL,$2,$3,$4::jsonb,$5,'issue',$6,$7::jsonb,'<p></p>','',$8,$9,$10,NULL,NULL,NULL) ON CONFLICT (id) DO NOTHING`, notificationID, workspaceID, projectID, data, issueID, activity.comment, messageJSON, "in_app:issue_activities:mentioned", actorID, receiver); err != nil {
-		return fmt.Errorf("insert issue mention notification: %w", err)
+	notificationID := uuid.NewSHA1(event.id, []byte("plane.notification:mention:"+activity.id.String()+":"+receiver.String()))
+	if _, insertErr := tx.Exec(ctx, `INSERT INTO notifications (id,created_at,updated_at,deleted_at,created_by_id,updated_by_id,workspace_id,project_id,data,entity_identifier,entity_name,title,message,message_html,message_stripped,sender,triggered_by_id,receiver_id,read_at,snoozed_till,archived_at) VALUES ($1,NOW(),NOW(),NULL,NULL,NULL,$2,$3,$4::jsonb,$5,'issue',$6,$7::jsonb,'<p></p>','',$8,$9,$10,NULL,NULL,NULL) ON CONFLICT (id) DO NOTHING`, notificationID, event.workspaceID, event.projectID, data, event.issueID, activity.comment, messageJSON, "in_app:issue_activities:mentioned", actorID, receiver); insertErr != nil {
+		return fmt.Errorf("insert issue mention notification: %w", insertErr)
 	}
 	var sendEmail bool
-	if err := tx.QueryRow(ctx, `SELECT COALESCE((SELECT mention FROM user_notification_preferences WHERE user_id=$1 AND deleted_at IS NULL ORDER BY created_at DESC,id DESC LIMIT 1),true)`, receiver).Scan(&sendEmail); err != nil {
-		return fmt.Errorf("load mention email preference: %w", err)
+	if preferenceErr := tx.QueryRow(ctx, `SELECT COALESCE((SELECT mention FROM user_notification_preferences WHERE user_id=$1 AND deleted_at IS NULL ORDER BY created_at DESC,id DESC LIMIT 1),true)`, receiver).Scan(&sendEmail); preferenceErr != nil {
+		return fmt.Errorf("load mention email preference: %w", preferenceErr)
 	}
 	if !sendEmail {
 		return nil
 	}
 	emailData, err := json.Marshal(map[string]any{
-		"issue":          map[string]any{"id": issueID.String(), "name": issueName, "identifier": projectIdentifier, "project_id": projectID.String(), "workspace_slug": workspaceSlug, "workspace_id": input.WorkspaceID, "sequence_id": sequenceID, "state_name": stateName, "state_group": stateGroup},
+		"issue":          map[string]any{"id": event.issueID.String(), "name": event.issueName, "identifier": event.projectIdentifier, "project_id": event.projectID.String(), "workspace_slug": event.workspaceSlug, "workspace_id": event.input.WorkspaceID, "sequence_id": event.sequenceID, "state_name": event.stateName, "state_group": event.stateGroup},
 		"issue_activity": map[string]any{"id": activity.id.String(), "verb": activity.verb, "field": "mention", "actor": uuidString(activity.actorID), "new_value": notificationActivityValue(activity.field, activity.newValue), "old_value": notificationActivityValue(activity.field, activity.oldValue), "old_identifier": uuidString(activity.oldIdentifier), "new_identifier": uuidString(activity.newIdentifier), "activity_time": activity.createdAt},
 	})
 	if err != nil {
 		return fmt.Errorf("encode mention email log: %w", err)
 	}
-	logID := uuid.NewSHA1(eventID, []byte("plane.email_notification:mention:"+activity.id.String()+":"+receiver.String()))
-	if _, err := tx.Exec(ctx, `INSERT INTO email_notification_logs (id,created_at,updated_at,deleted_at,created_by_id,updated_by_id,receiver_id,triggered_by_id,entity_identifier,entity_name,data,processed_at,sent_at,entity,old_value,new_value) VALUES ($1,NOW(),NOW(),NULL,NULL,NULL,$2,$3,$4,'issue',$5::jsonb,NULL,NULL,'',NULL,NULL) ON CONFLICT (id) DO NOTHING`, logID, receiver, actorID, issueID, emailData); err != nil {
+	logID := uuid.NewSHA1(event.id, []byte("plane.email_notification:mention:"+activity.id.String()+":"+receiver.String()))
+	if _, err := tx.Exec(ctx, `INSERT INTO email_notification_logs (id,created_at,updated_at,deleted_at,created_by_id,updated_by_id,receiver_id,triggered_by_id,entity_identifier,entity_name,data,processed_at,sent_at,entity,old_value,new_value) VALUES ($1,NOW(),NOW(),NULL,NULL,NULL,$2,$3,$4,'issue',$5::jsonb,NULL,NULL,'',NULL,NULL) ON CONFLICT (id) DO NOTHING`, logID, receiver, actorID, event.issueID, emailData); err != nil {
 		return fmt.Errorf("insert issue mention email log: %w", err)
 	}
 	return nil
@@ -357,15 +382,15 @@ func extractHTMLUserMentions(raw *string) []uuid.UUID {
 	return uniqueUUIDs(mentions)
 }
 
-func syncIssueDescriptionMentions(ctx context.Context, tx pgx.Tx, eventID, issueID, projectID, workspaceID uuid.UUID, actorID *string, added, removed []uuid.UUID) error {
+func (event issueNotificationEvent) syncDescriptionMentions(ctx context.Context, tx pgx.Tx, added, removed []uuid.UUID) error {
 	for _, mentionID := range added {
-		id := uuid.NewSHA1(eventID, []byte("plane.issue_mention:"+mentionID.String()))
-		if _, err := tx.Exec(ctx, `INSERT INTO issue_mentions (id,created_at,updated_at,deleted_at,created_by_id,updated_by_id,workspace_id,project_id,issue_id,mention_id) VALUES ($1,NOW(),NOW(),NULL,$2,$2,$3,$4,$5,$6) ON CONFLICT (issue_id,mention_id) WHERE deleted_at IS NULL DO NOTHING`, id, nullableUUIDString(actorID), workspaceID, projectID, issueID, mentionID); err != nil {
+		id := uuid.NewSHA1(event.id, []byte("plane.issue_mention:"+mentionID.String()))
+		if _, err := tx.Exec(ctx, `INSERT INTO issue_mentions (id,created_at,updated_at,deleted_at,created_by_id,updated_by_id,workspace_id,project_id,issue_id,mention_id) VALUES ($1,NOW(),NOW(),NULL,$2,$2,$3,$4,$5,$6) ON CONFLICT (issue_id,mention_id) WHERE deleted_at IS NULL DO NOTHING`, id, nullableUUIDString(event.input.ActorID), event.workspaceID, event.projectID, event.issueID, mentionID); err != nil {
 			return fmt.Errorf("save issue description mention: %w", err)
 		}
 	}
 	if len(removed) > 0 {
-		if _, err := tx.Exec(ctx, `UPDATE issue_mentions SET deleted_at=NOW(),updated_at=NOW() WHERE issue_id=$1 AND mention_id=ANY($2::uuid[]) AND deleted_at IS NULL`, issueID, removed); err != nil {
+		if _, err := tx.Exec(ctx, `UPDATE issue_mentions SET deleted_at=NOW(),updated_at=NOW() WHERE issue_id=$1 AND mention_id=ANY($2::uuid[]) AND deleted_at IS NULL`, event.issueID, removed); err != nil {
 			return fmt.Errorf("remove issue description mention: %w", err)
 		}
 	}

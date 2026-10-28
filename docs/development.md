@@ -239,6 +239,15 @@ missing dimensions, array filters, and priority ordering are characterized again
 PostgreSQL before and after the extraction. The analytics allowance is retired,
 leaving 37; lint and duplication baselines are unchanged.
 
+Issue notification fanout uses one event context shared by recipient loading and
+subscriber/mention delivery. The coordinator retains the transaction and ordering
+of subscriptions, mention synchronization, delivery, and commit. The producer's
+optional workspace binding remains distinct from the stored workspace; SQL,
+recipient permissions, and replay keys are unchanged. Database proofs cover
+completion preferences, membership revocation, recipient policy, and replay.
+This retires one maintainability allowance and six lint occurrences, leaving 36
+and 1,267 respectively; the duplicate baseline remains at 495 directed reports.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML

@@ -89,12 +89,6 @@
       "score": 9
     },
     {
-      "file": "internal/backgroundtasks/issue_notifications.go",
-      "package": "backgroundtasks",
-      "function": "(*PostgresIssueActivityStore).ProcessIssueNotifications",
-      "score": 12
-    },
-    {
       "file": "internal/backgroundtasks/runtime.go",
       "package": "backgroundtasks",
       "function": "NewRuntime",

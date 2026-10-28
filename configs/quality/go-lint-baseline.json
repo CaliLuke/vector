@@ -1988,14 +1988,6 @@
     {
       "fingerprint": [
         "govet",
-        "internal/backgroundtasks/issue_notifications.go",
-        "shadow: declaration of \"err\" shadows declaration at line #"
-      ],
-      "count": 5
-    },
-    {
-      "fingerprint": [
-        "govet",
         "internal/backgroundtasks/issue_version_sync.go",
         "shadow: declaration of \"err\" shadows declaration at line #"
       ],
@@ -3398,14 +3390,6 @@
         "staticcheck",
         "internal/backgroundtasks/issue_export.go",
         "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/issue_notifications.go",
-        "QF1001: could apply De Morgan's law"
       ],
       "count": 1
     },
