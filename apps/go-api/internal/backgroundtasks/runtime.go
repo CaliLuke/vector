@@ -17,8 +17,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const executionSchema = "plane_execution"
-
 // Runtime owns the Selvedge app and the PostgreSQL connection used by task
 // handlers. The app registers its workers when Start is called.
 type Runtime struct {

@@ -163,9 +163,6 @@ func TestPostgresDescriptionAssetCopyUsesDurableWorkflowAndStableS3Key(t *testin
 	}
 }
 
-type descriptionObjectCopier interface {
-	Copy(context.Context, string, string) error
-}
 type descriptionObjectCopierFunc func(context.Context, string, string) error
 
 func (f descriptionObjectCopierFunc) Copy(ctx context.Context, source, destination string) error {

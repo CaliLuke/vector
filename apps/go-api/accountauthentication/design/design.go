@@ -67,37 +67,12 @@ func accountAuthenticationBody(schema any) {
 	Header("content_type:Content-Type")
 }
 
-func accountAuthenticationResponse(schema any) {
+func accountAuthenticationResponse() {
 	SkipResponseBodyEncodeDecode()
 	Response(200, func() {
 		Header("content_type:Content-Type")
 		ContentType("application/json")
-		OpenAPIBody(schema)
-	})
-}
-
-func accountAuthenticationMethod(method, operationID, route string, authenticated bool, response any) {
-	Method(method, func() {
-		Meta("openapi:operationId", operationID)
-		if authenticated {
-			Security(accountAuthenticationSession)
-		}
-		Payload(func() {
-			if authenticated {
-				APIKey("PlaneSessionCookie", "session_id", String)
-			}
-			Attribute("content_type", String)
-		})
-		Result(accountAuthenticationRawResponse)
-		accountAuthenticationErrors(authenticated)
-		HTTP(func() {
-			POST(route)
-			if authenticated {
-				Cookie("session_id:session-id")
-			}
-			accountAuthenticationBody(accountAuthenticationRequest)
-			accountAuthenticationResponse(response)
-		})
+		OpenAPIBody(Any)
 	})
 }
 
@@ -125,7 +100,7 @@ var _ = Service("account_authentication", func() {
 		HTTP(func() {
 			POST("/auth/email-check/")
 			accountAuthenticationBody(accountAuthenticationRequest)
-			accountAuthenticationResponse(Any)
+			accountAuthenticationResponse()
 		})
 	})
 	Method("email_check_space", func() {
@@ -138,7 +113,7 @@ var _ = Service("account_authentication", func() {
 		HTTP(func() {
 			POST("/auth/spaces/email-check/")
 			accountAuthenticationBody(accountAuthenticationRequest)
-			accountAuthenticationResponse(Any)
+			accountAuthenticationResponse()
 		})
 	})
 	Method("forgot_password", func() {
@@ -151,7 +126,7 @@ var _ = Service("account_authentication", func() {
 		HTTP(func() {
 			POST("/auth/forgot-password/")
 			accountAuthenticationBody(accountAuthenticationRequest)
-			accountAuthenticationResponse(Any)
+			accountAuthenticationResponse()
 		})
 	})
 	Method("forgot_password_space", func() {
@@ -164,7 +139,7 @@ var _ = Service("account_authentication", func() {
 		HTTP(func() {
 			POST("/auth/spaces/forgot-password/")
 			accountAuthenticationBody(accountAuthenticationRequest)
-			accountAuthenticationResponse(Any)
+			accountAuthenticationResponse()
 		})
 	})
 	Method("magic_generate", func() {
@@ -177,7 +152,7 @@ var _ = Service("account_authentication", func() {
 		HTTP(func() {
 			POST("/auth/magic-generate/")
 			accountAuthenticationBody(accountAuthenticationRequest)
-			accountAuthenticationResponse(Any)
+			accountAuthenticationResponse()
 		})
 	})
 	Method("magic_generate_space", func() {
@@ -190,7 +165,7 @@ var _ = Service("account_authentication", func() {
 		HTTP(func() {
 			POST("/auth/spaces/magic-generate/")
 			accountAuthenticationBody(accountAuthenticationRequest)
-			accountAuthenticationResponse(Any)
+			accountAuthenticationResponse()
 		})
 	})
 	Method("change_password", func() {
@@ -206,7 +181,7 @@ var _ = Service("account_authentication", func() {
 			POST("/auth/change-password/")
 			Cookie("session_id:session-id")
 			accountAuthenticationBody(accountAuthenticationRequest)
-			accountAuthenticationResponse(Any)
+			accountAuthenticationResponse()
 		})
 	})
 	Method("set_password", func() {
@@ -222,7 +197,7 @@ var _ = Service("account_authentication", func() {
 			POST("/auth/set-password/")
 			Cookie("session_id:session-id")
 			accountAuthenticationBody(accountAuthenticationRequest)
-			accountAuthenticationResponse(Any)
+			accountAuthenticationResponse()
 		})
 	})
 })

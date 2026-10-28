@@ -70,24 +70,24 @@ var pageLifecycleRequestBody = MapOf(String, Any)
 func pageLifecycleMethods() {
 	pageLifecycleDetailMethod("create", "post_api_workspaces_by_slug_projects_by_project_id_pages", "/api/workspaces/{slug}/projects/{project_id}/pages/", "POST", 201, pageLifecycleCreate)
 	pageLifecycleDetailMethod("update", "patch_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/", "PATCH", 200, pageLifecycleUpdate, true)
-	pageLifecycleEmptyMethod("delete", "delete_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/", "DELETE", true)
-	pageLifecycleEmptyMethod("access", "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_access", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/access/", "POST", true, true)
+	pageLifecycleEmptyMethod("delete", "delete_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/", "DELETE")
+	pageLifecycleEmptyMethod("access", "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_access", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/access/", "POST", true)
 	pageLifecycleJSONMethod("archive", "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_archive", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/archive/", "POST", 200, pageLifecycleArchiveResult, true, false)
-	pageLifecycleEmptyMethod("unarchive", "delete_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_archive", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/archive/", "DELETE", true)
+	pageLifecycleEmptyMethod("unarchive", "delete_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_archive", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/archive/", "DELETE")
 	pageLifecycleJSONMethod("description_update", "patch_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_description", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/description/", "PATCH", 200, pageLifecycleDescriptionResult, true)
 	pageLifecycleDetailMethod("duplicate", "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_duplicate", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/duplicate/", "POST", 201, pageLifecycleDuplicate, true)
-	pageLifecycleEmptyMethod("lock", "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_lock", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/lock/", "POST", true)
-	pageLifecycleEmptyMethod("unlock", "delete_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_lock", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/lock/", "DELETE", true)
-	pageLifecycleOptionsMethod("create_options", "options_api_workspaces_by_slug_projects_by_project_id_pages", "/api/workspaces/{slug}/projects/{project_id}/pages/", false, "collection")
-	pageLifecycleOptionsMethod("update_options", "options_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/", true, "detail")
-	pageLifecycleOptionsMethod("description_options", "options_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_description", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/description/", true, "description")
-	pageLifecycleOptionsMethod("access_options", "options_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_access", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/access/", true, "access")
-	pageLifecycleOptionsMethod("archive_options", "options_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_archive", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/archive/", true, "archive")
-	pageLifecycleOptionsMethod("duplicate_options", "options_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_duplicate", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/duplicate/", true, "duplicate")
-	pageLifecycleOptionsMethod("lock_options", "options_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_lock", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/lock/", true, "lock")
+	pageLifecycleEmptyMethod("lock", "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_lock", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/lock/", "POST")
+	pageLifecycleEmptyMethod("unlock", "delete_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_lock", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/lock/", "DELETE")
+	pageLifecycleOptionsMethod("create_options", "options_api_workspaces_by_slug_projects_by_project_id_pages", "/api/workspaces/{slug}/projects/{project_id}/pages/", false)
+	pageLifecycleOptionsMethod("update_options", "options_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/", true)
+	pageLifecycleOptionsMethod("description_options", "options_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_description", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/description/", true)
+	pageLifecycleOptionsMethod("access_options", "options_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_access", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/access/", true)
+	pageLifecycleOptionsMethod("archive_options", "options_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_archive", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/archive/", true)
+	pageLifecycleOptionsMethod("duplicate_options", "options_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_duplicate", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/duplicate/", true)
+	pageLifecycleOptionsMethod("lock_options", "options_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_lock", "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/lock/", true)
 }
 
-func pageLifecycleOptionsMethod(name, operationID, route string, pageID bool, action string) {
+func pageLifecycleOptionsMethod(name, operationID, route string, pageID bool) {
 	Method(name, func() {
 		Meta("openapi:operationId", operationID)
 		Security(planeSessionCookie)
@@ -215,12 +215,12 @@ func pageLifecycleJSONMethod(name, operationID, route, method string, status int
 	})
 }
 
-func pageLifecycleEmptyMethod(name, operationID, route, method string, pageID bool, body ...bool) {
+func pageLifecycleEmptyMethod(name, operationID, route, method string, body ...bool) {
 	withBody := len(body) > 0 && body[0]
 	Method(name, func() {
 		Meta("openapi:operationId", operationID)
 		Security(planeSessionCookie)
-		Payload(func() { pageLifecyclePayload(pageID) })
+		Payload(func() { pageLifecyclePayload(true) })
 		Result(Empty)
 		pageLifecycleErrors()
 		HTTP(func() {
@@ -232,9 +232,7 @@ func pageLifecycleEmptyMethod(name, operationID, route, method string, pageID bo
 			Cookie("session_id:session-id")
 			Param("slug")
 			Param("project_id")
-			if pageID {
-				Param("page_id")
-			}
+			Param("page_id")
 			if withBody {
 				pageLifecycleRawRequestBody()
 			}

@@ -42,10 +42,6 @@ func instanceAdminRedirect(method, operationID, route string) {
 	})
 }
 
-func instanceManagementAdminPayload() {
-	instanceAdminSessionPayload()
-}
-
 func instanceManagementRequestBody() {
 	SkipRequestBodyEncodeDecode()
 	OpenAPIRequestBodyTypes(instanceManagementBody, []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"}, false)
@@ -96,42 +92,6 @@ func instanceManagementErrors() {
 	}
 	Error("unauthenticated", instanceAdminSessionUnauthenticated)
 	HTTP(func() { Response("unauthenticated", StatusUnauthorized) })
-}
-
-func instanceManagementProtectedMethod(method, operationID, route string, body, detail bool) {
-	Method(method, func() {
-		Meta("openapi:operationId", operationID)
-		Security(planeAdminSessionCookie)
-		Payload(func() {
-			instanceAdminSessionPayload()
-			if detail {
-				Attribute("pk", String, func() { Format(FormatUUID) })
-				Required("pk")
-			}
-		})
-		Result(rawJSONResponseMetadata)
-		instanceManagementErrors()
-		HTTP(func() {
-			switch method {
-			case "GET":
-				GET(route)
-			case "POST":
-				POST(route)
-			case "PATCH":
-				PATCH(route)
-			case "DELETE":
-				DELETE(route)
-			}
-			Cookie("session_id:admin-session-id")
-			if detail {
-				Param("pk")
-			}
-			if body {
-				instanceManagementRequestBody()
-			}
-			instanceManagementRawResponse(Any, StatusOK)
-		})
-	})
 }
 
 var _ = Service("instance_management", func() {

@@ -1,5 +1,5 @@
 {
-  "loom_version": "v1.10.0-alpha.16",
+  "loom_version": "v1.10.0-alpha.17",
   "design_package": "github.com/CaliLuke/go-plane/apistatereads/design",
-  "design_digest": "521ac5fa5217af3b12cf6f6bdef6c55af471df2147126cff6017b4164998a7d1"
+  "design_digest": "1becad980a1c0345f3ce203fadc3e97271a3f6378ec616af51036f63229f1bf5"
 }

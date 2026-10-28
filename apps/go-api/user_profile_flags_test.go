@@ -12,10 +12,9 @@ import (
 )
 
 type userProfileFlagsRepositoryStub struct {
-	onboarded, tour bool
-	err             error
-	userID          uuid.UUID
-	value           bool
+	err    error
+	userID uuid.UUID
+	value  bool
 }
 
 func (stub *userProfileFlagsRepositoryStub) UpdateOnboarded(_ context.Context, userID uuid.UUID, value bool) error {

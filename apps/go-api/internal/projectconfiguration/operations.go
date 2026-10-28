@@ -18,18 +18,6 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-const estimateReadSQL = `SELECT jsonb_build_object(
- 'id',e.id,'created_at',e.created_at,'updated_at',e.updated_at,'created_by',e.created_by_id,
- 'updated_by',e.updated_by_id,'deleted_at',e.deleted_at,'workspace',e.workspace_id,
- 'project',e.project_id,'name',e.name,'description',e.description,'type',e.type,
- 'last_used',e.last_used,'points',COALESCE((SELECT jsonb_agg(jsonb_build_object(
- 'id',ep.id,'created_at',ep.created_at,'updated_at',ep.updated_at,'created_by',ep.created_by_id,
- 'updated_by',ep.updated_by_id,'deleted_at',ep.deleted_at,'estimate',ep.estimate_id,
- 'workspace',ep.workspace_id,'project',ep.project_id,'key',ep.key,'value',ep.value,
- 'description',ep.description) ORDER BY ep.value) FROM estimate_points ep
- WHERE ep.estimate_id=e.id AND ep.deleted_at IS NULL),'[]'::jsonb))
- FROM estimates e WHERE e.id=$1`
-
 const estimatePointReadSQL = `SELECT jsonb_build_object('id',ep.id,'created_at',ep.created_at,
  'updated_at',ep.updated_at,'created_by',ep.created_by_id,'updated_by',ep.updated_by_id,
  'deleted_at',ep.deleted_at,'estimate',ep.estimate_id,'workspace',ep.workspace_id,

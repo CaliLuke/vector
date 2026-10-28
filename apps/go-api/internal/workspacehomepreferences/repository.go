@@ -25,7 +25,6 @@ func NewRepository(db Database) (*Repository, error) {
 }
 
 const prefJSON = `json_build_object('key',p.key,'is_enabled',p.is_enabled,'sort_order',p.sort_order)`
-const prefListJSON = `json_build_object('key',p.key,'is_enabled',p.is_enabled,'config',p.config,'sort_order',p.sort_order)`
 
 func (r *Repository) Authorized(ctx context.Context, user uuid.UUID, slug string) (bool, error) {
 	var ok bool

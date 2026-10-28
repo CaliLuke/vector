@@ -248,6 +248,15 @@ completion preferences, membership revocation, recipient policy, and replay.
 This retires one maintainability allowance and six lint occurrences, leaving 36
 and 1,267 respectively; the duplicate baseline remains at 495 directed reports.
 
+Unused-code cleanup removes three unreachable design helpers, eight unreferenced
+schema declarations, four obsolete constants, and two unused test declarations.
+Page-lifecycle helpers also lose two redundant parameters. Fresh generation before
+and after preserves OpenAPI and transport behavior; repository regeneration changes
+only the three affected manifests. The blanket test-file `unused` exclusion is
+removed, and all owned Go source now has zero `unused` findings. Seventeen lint
+allowances are retired, leaving 1,250. The remaining test-file `unparam` exclusion
+hides 24 findings and still requires removal; it is not covered by that lint count.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML

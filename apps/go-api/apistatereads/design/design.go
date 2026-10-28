@@ -190,10 +190,6 @@ var apiStateWritesErrorResponseBody = Type("APIStateWritesErrorResponseBody", fu
 	Required("kind", "body")
 })
 
-var apiStateWritesHTTPErrorResponseBody = Type("APIStateWritesHTTPErrorResponseBody", func() {
-	Attribute("body", Any)
-})
-
 func apiStateReadsErrors() {
 	Error("status_400", apiStateReadsErrorResponseBody)
 	Error("status_401", apiStateReadsErrorResponseBody)

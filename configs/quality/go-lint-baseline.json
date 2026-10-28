@@ -3962,14 +3962,6 @@
       "count": 1
     },
     {
-      "fingerprint": ["unparam", "design/page_lifecycle.go", "pageLifecycleEmptyMethod - pageID always receives true"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unparam", "design/page_lifecycle.go", "pageLifecycleOptionsMethod - action is unused"],
-      "count": 1
-    },
-    {
       "fingerprint": [
         "unparam",
         "internal/assets/legacy_fields.go",
@@ -4107,66 +4099,6 @@
     },
     {
       "fingerprint": ["unparam", "projectintakewrites/design/design.go", "rawRequest - required always receives true"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "accountauthentication/design/design.go", "func accountAuthenticationMethod is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "apistatereads/design/design.go", "var apiStateWritesHTTPErrorResponseBody is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "design/cycle_reads.go", "var cycleIssueAnalyticsAssignee is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "design/cycle_reads.go", "var cycleIssueAnalyticsLabel is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "design/cycle_reads.go", "var cycleIssueProjection is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "design/cycle_reads.go", "var cyclePointAnalyticsAssignee is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "design/cycle_reads.go", "var cyclePointAnalyticsLabel is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "design/cycle_reads.go", "var cycleSnapshotAnalyticsAssignee is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "design/instance_management.go", "func instanceManagementAdminPayload is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "design/instance_management.go", "func instanceManagementProtectedMethod is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "design/module_reads.go", "var moduleIssueItem is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "internal/backgroundtasks/runtime.go", "const executionSchema is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "internal/notifications/repository.go", "const watching is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "internal/projectconfiguration/operations.go", "const estimateReadSQL is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "internal/workspacehomepreferences/repository.go", "const prefListJSON is unused"],
       "count": 1
     }
   ]

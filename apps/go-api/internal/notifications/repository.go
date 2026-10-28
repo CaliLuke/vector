@@ -145,7 +145,6 @@ func stateFilter(snoozed, archived bool) string {
 }
 
 const assigned = `n.entity_identifier IN(SELECT ia.issue_id FROM issue_assignees ia WHERE ia.deleted_at IS NULL AND ia.workspace_id=n.workspace_id AND ia.assignee_id=$1)`
-const watching = `n.entity_identifier IN(SELECT s.issue_id FROM issue_subscribers s WHERE s.deleted_at IS NULL AND s.workspace_id=n.workspace_id AND s.subscriber_id=$1)`
 const subscribed = `n.entity_identifier IN(SELECT s.issue_id FROM issue_subscribers s WHERE s.deleted_at IS NULL AND s.workspace_id=n.workspace_id AND s.subscriber_id=$1 AND NOT EXISTS(SELECT 1 FROM issues i WHERE i.deleted_at IS NULL AND i.id=s.issue_id AND i.created_by_id=$1) AND NOT EXISTS(SELECT 1 FROM issue_assignees ia WHERE ia.deleted_at IS NULL AND ia.id=s.issue_id AND ia.assignee_id=$1))`
 const created = `n.entity_identifier IN(SELECT i.id FROM issues i WHERE i.deleted_at IS NULL AND i.workspace_id=n.workspace_id AND i.created_by_id=$1)`
 
