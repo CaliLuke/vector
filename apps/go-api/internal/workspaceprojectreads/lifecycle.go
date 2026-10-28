@@ -146,10 +146,6 @@ func (r *LifecycleRepository) DeleteProject(ctx context.Context, user, slug, id 
 	return nil
 }
 
-func insertProjectRecord(ctx context.Context, db lifecycleDatabase, values map[string]any) error {
-	return insertProjectRecordExec(ctx, db, values)
-}
-
 type projectExecer interface {
 	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
 }

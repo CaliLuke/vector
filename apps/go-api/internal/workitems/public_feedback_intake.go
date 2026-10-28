@@ -400,12 +400,3 @@ func publicIntakePatchProjection(issue map[string]any) map[string]any {
 	}
 	return issue
 }
-
-func (repository *Repository) publicIssueWriteProjection(ctx context.Context, row map[string]any) (map[string]any, error) {
-	projection, err := djangoapi.SerializeIssue(ctx, repository.db, row, "", "")
-	if err != nil {
-		return nil, err
-	}
-	delete(projection, "sub_issues_count")
-	return projection, nil
-}

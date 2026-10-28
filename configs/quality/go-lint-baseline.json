@@ -638,10 +638,6 @@
       "count": 2
     },
     {
-      "fingerprint": ["errcheck", "internal/htmlcompat/escape.go", "Error return value is not checked"],
-      "count": 2
-    },
-    {
       "fingerprint": ["errcheck", "internal/htmlcompat/parse_test.go", "Error return value is not checked"],
       "count": 4
     },
@@ -668,10 +664,6 @@
         "Error return value of `io.WriteString` is not checked"
       ],
       "count": 7
-    },
-    {
-      "fingerprint": ["errcheck", "internal/htmlcompat/token.go", "Error return value is not checked"],
-      "count": 1
     },
     {
       "fingerprint": [
@@ -3391,7 +3383,7 @@
         "internal/backgroundtasks/issue_description_sync.go",
         "ST1005: error strings should not be capitalized"
       ],
-      "count": 2
+      "count": 1
     },
     {
       "fingerprint": [
@@ -3576,22 +3568,6 @@
     {
       "fingerprint": ["staticcheck", "internal/emailvalidation/email.go", "QF1001: could apply De Morgan's law"],
       "count": 5
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/htmlcompat/escape.go",
-        "S1003: should use !strings.ContainsAny(s, \"&>\") instead"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/htmlcompat/escape.go",
-        "S1003: should use !strings.ContainsAny(s, escapedChars) instead"
-      ],
-      "count": 1
     },
     {
       "fingerprint": ["staticcheck", "internal/htmlcompat/parse_test.go", "QF1001: could apply De Morgan's law"],
@@ -4166,30 +4142,6 @@
       "count": 1
     },
     {
-      "fingerprint": ["unused", "cmd/system/http.go", "func buildHTTPHandler is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "unused",
-        "cmd/system/http.go",
-        "func djangoProtocolAuthenticatedOptionsWithoutActionsHandler is unused"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "unused",
-        "cmd/system/http.go",
-        "func newHTTPHandlerWithWorkspaceReplacementsAndEntityFavorites is unused"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "cmd/system/main.go", "func envOrDefault is unused"],
-      "count": 1
-    },
-    {
       "fingerprint": ["unused", "design/cycle_reads.go", "var cycleIssueAnalyticsAssignee is unused"],
       "count": 1
     },
@@ -4226,27 +4178,7 @@
       "count": 1
     },
     {
-      "fingerprint": ["unused", "internal/assets/legacy_fields.go", "func legacyStringField is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "internal/authentication/djangosession/validator.go", "func encode is unused"],
-      "count": 1
-    },
-    {
       "fingerprint": ["unused", "internal/backgroundtasks/runtime.go", "const executionSchema is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "internal/issuequery/query.go", "func validLegacyIntegerList is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "internal/issuequery/query.go", "func validLegacyUUIDList is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "internal/modulereads/lifecycle_modules.go", "func mustUUID is unused"],
       "count": 1
     },
     {
@@ -4254,67 +4186,11 @@
       "count": 1
     },
     {
-      "fingerprint": ["unused", "internal/pagereads/lifecycle.go", "func fieldsString is unused"],
-      "count": 1
-    },
-    {
       "fingerprint": ["unused", "internal/projectconfiguration/operations.go", "const estimateReadSQL is unused"],
       "count": 1
     },
     {
-      "fingerprint": ["unused", "internal/projectintakewrites/repository.go", "func parseBody is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "internal/routing/caddy.go", "func caddyPathPatternWithoutTrailingSlash is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "internal/routing/caddy.go", "func hasProtocolCompanion is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "unused",
-        "internal/workitems/collaboration_authorization.go",
-        "func (*Repository).collaborationMembership is unused"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "internal/workitems/model.go", "func asObject is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "unused",
-        "internal/workitems/public_feedback_intake.go",
-        "func (*Repository).publicIssueWriteProjection is unused"
-      ],
-      "count": 1
-    },
-    {
       "fingerprint": ["unused", "internal/workspacehomepreferences/repository.go", "const prefListJSON is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "internal/workspaceprojectreads/lifecycle.go", "func insertProjectRecord is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "module_reads.go", "func moduleIssueGroupValues is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "oauth_redirects.go", "func oauthFailureCode is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "oauth_redirects.go", "func oauthFailureName is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "workspace_analytics.go", "func (*workspaceAnalyticsService).respond is unused"],
       "count": 1
     }
   ]

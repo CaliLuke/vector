@@ -7,14 +7,12 @@ import (
 	"fmt"
 	"strings"
 
-	"io"
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	intakereads "github.com/CaliLuke/go-plane/internal/intakeinboxreads"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Database interface {
@@ -45,8 +43,6 @@ func NewRepository(db Database) (*Repository, error) {
 	return &Repository{db: db, readers: readers}, nil
 }
 
-func NewPoolRepository(pool *pgxpool.Pool) (*Repository, error) { return NewRepository(pool) }
-
 func (r *Repository) Authorize(ctx context.Context, user, slug, project string) error {
 	var allowed bool
 	err := r.db.QueryRow(ctx, `SELECT EXISTS(
@@ -67,14 +63,6 @@ func (r *Repository) Authorize(ctx context.Context, user, slug, project string) 
 		return &HTTPError{403, map[string]any{"error": "You don't have the required permissions."}}
 	}
 	return nil
-}
-
-func parseBody(body io.Reader, contentType string) (map[string]any, error) {
-	parsed, err := djangoinput.Parse(body, contentType)
-	if err != nil {
-		return nil, &HTTPError{400, map[string]any{"detail": "Invalid data"}}
-	}
-	return parsed.Fields, nil
 }
 
 // ValidateCreate mirrors the IntakeSerializer checks that DRF runs before

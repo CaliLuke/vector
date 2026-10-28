@@ -89,14 +89,6 @@ func RenderCaddy(inventory Inventory) ([]byte, error) {
 	return output.Bytes(), nil
 }
 
-func hasProtocolCompanion(operation Operation, method string) bool {
-	for _, companion := range operation.ProtocolCompanions.Values() {
-		if companion == method {
-			return true
-		}
-	}
-	return false
-}
 func goOwnedPathMethods(inventory Inventory, path string) []string {
 	methods := make(map[string]bool)
 	for _, operation := range inventory.Operations {
@@ -217,11 +209,6 @@ func caddyPathPattern(operation Operation) string {
 	}
 	pattern.WriteByte('$')
 	return pattern.String()
-}
-
-func caddyPathPatternWithoutTrailingSlash(operation Operation) string {
-	operation.Path = strings.TrimSuffix(operation.Path, "/")
-	return caddyPathPattern(operation)
 }
 
 func replacementUUIDParameter(operation Operation, parameter string) bool {

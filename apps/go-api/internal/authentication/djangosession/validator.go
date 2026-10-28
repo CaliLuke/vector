@@ -677,15 +677,6 @@ func djangoJSONTruthy(value any) bool {
 	}
 }
 
-func encode(values map[string]any, secret string, now time.Time) (string, error) {
-	data, err := json.Marshal(values)
-	if err != nil {
-		return "", err
-	}
-	data = djangoASCIIJSON(data)
-	return encodeSerialized(data, secret, now)
-}
-
 func encodeSerialized(data []byte, secret string, now time.Time) (string, error) {
 	if len(data) == 0 {
 		return "", ErrInvalidData

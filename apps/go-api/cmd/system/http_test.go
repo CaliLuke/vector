@@ -1833,7 +1833,7 @@ func TestWorkspaceMemberMeAndAnalyticViewsHTTPMounts(t *testing.T) {
 		ctx, systemEndpoints, false, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 		workspacemembermeapi.NewEndpoints(workspaceMemberMeHTTPStub{}),
 		analyticviewsapi.NewEndpoints(analyticViewsHTTPStub{}),
-		workspacerecentvisitsapi.NewEndpoints(workspaceRecentVisitsHTTPStub{}), nil, nil,
+		workspacerecentvisitsapi.NewEndpoints(workspaceRecentVisitsHTTPStub{}), nil,
 	)
 	id := "00000000-0000-4000-8000-000000000011"
 	for _, testCase := range []struct {
@@ -4925,7 +4925,7 @@ func TestWorkspaceFavoritesHTTPMountsAndDjangoProtocol(t *testing.T) {
 	systemEndpoints := system.NewEndpoints(systemapi.NewSystem())
 	handler := buildHTTPHandlerWithReplacementServices(
 		ctx, systemEndpoints, false, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-		nil, nil, nil, workspacefavoritesapi.NewEndpoints(workspaceFavoritesHTTPStub{}),
+		nil, nil, workspacefavoritesapi.NewEndpoints(workspaceFavoritesHTTPStub{}),
 	)
 	id := "00000000-0000-4000-8000-000000000011"
 	collection := "/api/workspaces/acme/user-favorites/"

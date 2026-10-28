@@ -60,6 +60,25 @@ void test("lint ratchet rejects malformed reports and new diagnostics, and norma
   });
 });
 
+void test("deadcode ratchet accepts the analyzer's null report when no functions are unreachable", () => {
+  fixture((directory) => {
+    const baseline = write(directory, "deadcode-baseline.json", { version: 1, entries: [] });
+    const report = write(directory, "deadcode.json", null);
+    const result = invoke("go-deadcode-ratchet.mjs", ["check", report, baseline]);
+    assert.equal(result.status, 0, result.stderr);
+  });
+});
+
+void test("deadcode ratchet rejects empty and truncated analyzer output", () => {
+  fixture((directory) => {
+    const baseline = write(directory, "deadcode-baseline.json", { version: 1, entries: [] });
+    const empty = write(directory, "empty.json", "");
+    const truncated = write(directory, "truncated.json", '[{"Path":');
+    assert.notEqual(invoke("go-deadcode-ratchet.mjs", ["check", empty, baseline]).status, 0);
+    assert.notEqual(invoke("go-deadcode-ratchet.mjs", ["check", truncated, baseline]).status, 0);
+  });
+});
+
 void test("deadcode ratchet rejects malformed reports and newly unreachable functions", () => {
   fixture((directory) => {
     const baseline = write(directory, "deadcode-baseline.json", { version: 1, entries: [] });

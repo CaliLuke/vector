@@ -262,10 +262,6 @@ func newHTTPHandlerWithStickies(ctx context.Context, systemEndpoints *system.End
 	return buildHTTPHandlerWithSlugChecks(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, nil, nil)
 }
 
-func buildHTTPHandler(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc) http.Handler {
-	return buildHTTPHandlerWithSlugChecks(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, nil, nil)
-}
-
 func newHTTPHandlerWithStickiesAndWorkspaceSlugCheck(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, workspaceEndpoints *workspaceslugcheck.Endpoints) http.Handler {
 	return buildHTTPHandlerWithSlugChecks(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, workspaceEndpoints, nil)
 }
@@ -303,11 +299,7 @@ func newHTTPHandlerWithWorkspaceContent(ctx context.Context, systemEndpoints *sy
 }
 
 func newHTTPHandlerWithWorkspaceReplacementsAndLastVisited(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, workspaceEndpoints *workspaceslugcheck.Endpoints, instanceWorkspaceEndpoints *instanceworkspaceslugcheck.Endpoints, userInstanceAdminEndpoints *userinstanceadmin.Endpoints, userProfileFlagsEndpoints *userprofileflags.Endpoints, notificationEndpoints *usernotificationpreferences.Endpoints, userAccountsEndpoints *useraccounts.Endpoints, userAPITokensEndpoints *userapitokens.Endpoints, instanceAdminSessionEndpoints *instanceadminsession.Endpoints, quickLinkEndpoints *workspacequicklinks.Endpoints, themeEndpoints *workspacethemes.Endpoints, homePreferenceEndpoints *workspacehomepreferences.Endpoints, memberMeEndpoints *workspacememberme.Endpoints, analyticViewEndpoints *analyticviews.Endpoints, recentVisitEndpoints *workspacerecentvisits.Endpoints, lastVisitedEndpoints *lastvisitedworkspace.Endpoints, favoriteEndpoints ...*workspacefavorites.Endpoints) http.Handler {
-	return buildHTTPHandlerWithReplacementServices(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, workspaceEndpoints, instanceWorkspaceEndpoints, userInstanceAdminEndpoints, userProfileFlagsEndpoints, notificationEndpoints, userAccountsEndpoints, userAPITokensEndpoints, instanceAdminSessionEndpoints, quickLinkEndpoints, themeEndpoints, homePreferenceEndpoints, memberMeEndpoints, analyticViewEndpoints, recentVisitEndpoints, lastVisitedEndpoints, nil, favoriteEndpoints...)
-}
-
-func newHTTPHandlerWithWorkspaceReplacementsAndEntityFavorites(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, workspaceEndpoints *workspaceslugcheck.Endpoints, instanceWorkspaceEndpoints *instanceworkspaceslugcheck.Endpoints, userInstanceAdminEndpoints *userinstanceadmin.Endpoints, userProfileFlagsEndpoints *userprofileflags.Endpoints, notificationEndpoints *usernotificationpreferences.Endpoints, userAccountsEndpoints *useraccounts.Endpoints, userAPITokensEndpoints *userapitokens.Endpoints, instanceAdminSessionEndpoints *instanceadminsession.Endpoints, quickLinkEndpoints *workspacequicklinks.Endpoints, themeEndpoints *workspacethemes.Endpoints, homePreferenceEndpoints *workspacehomepreferences.Endpoints, memberMeEndpoints *workspacememberme.Endpoints, analyticViewEndpoints *analyticviews.Endpoints, recentVisitEndpoints *workspacerecentvisits.Endpoints, lastVisitedEndpoints *lastvisitedworkspace.Endpoints, entityEndpoint *entityfavorites.Endpoints, favoriteEndpoints ...*workspacefavorites.Endpoints) http.Handler {
-	return buildHTTPHandlerWithReplacementServices(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, workspaceEndpoints, instanceWorkspaceEndpoints, userInstanceAdminEndpoints, userProfileFlagsEndpoints, notificationEndpoints, userAccountsEndpoints, userAPITokensEndpoints, instanceAdminSessionEndpoints, quickLinkEndpoints, themeEndpoints, homePreferenceEndpoints, memberMeEndpoints, analyticViewEndpoints, recentVisitEndpoints, lastVisitedEndpoints, entityEndpoint, favoriteEndpoints...)
+	return buildHTTPHandlerWithReplacementServices(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, workspaceEndpoints, instanceWorkspaceEndpoints, userInstanceAdminEndpoints, userProfileFlagsEndpoints, notificationEndpoints, userAccountsEndpoints, userAPITokensEndpoints, instanceAdminSessionEndpoints, quickLinkEndpoints, themeEndpoints, homePreferenceEndpoints, memberMeEndpoints, analyticViewEndpoints, recentVisitEndpoints, lastVisitedEndpoints, favoriteEndpoints...)
 }
 
 type djangoSessionLifecycle interface {
@@ -491,11 +483,11 @@ func buildHTTPHandlerWithServices(ctx context.Context, systemEndpoints *system.E
 	if len(homePreferenceEndpoints) > 0 {
 		homePreferenceEndpoint = homePreferenceEndpoints[0]
 	}
-	return buildHTTPHandlerWithReplacementServices(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, workspaceEndpoints, instanceWorkspaceEndpoints, userInstanceAdminEndpoints, userProfileFlagsEndpoints, notificationEndpoints, userAccountsEndpoints, userAPITokensEndpoints, instanceAdminSessionEndpoints, quickLinkEndpoints, themeEndpoints, homePreferenceEndpoint, nil, nil, nil, nil, nil)
+	return buildHTTPHandlerWithReplacementServices(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, workspaceEndpoints, instanceWorkspaceEndpoints, userInstanceAdminEndpoints, userProfileFlagsEndpoints, notificationEndpoints, userAccountsEndpoints, userAPITokensEndpoints, instanceAdminSessionEndpoints, quickLinkEndpoints, themeEndpoints, homePreferenceEndpoint, nil, nil, nil, nil)
 }
 
-func buildHTTPHandlerWithReplacementServices(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, workspaceEndpoints *workspaceslugcheck.Endpoints, instanceWorkspaceEndpoints *instanceworkspaceslugcheck.Endpoints, userInstanceAdminEndpoints *userinstanceadmin.Endpoints, userProfileFlagsEndpoints *userprofileflags.Endpoints, notificationEndpoints *usernotificationpreferences.Endpoints, userAccountsEndpoints *useraccounts.Endpoints, userAPITokensEndpoints *userapitokens.Endpoints, instanceAdminSessionEndpoints *instanceadminsession.Endpoints, quickLinkEndpoints *workspacequicklinks.Endpoints, themeEndpoints *workspacethemes.Endpoints, homePreferenceEndpoints *workspacehomepreferences.Endpoints, memberMeEndpoints *workspacememberme.Endpoints, analyticViewEndpoints *analyticviews.Endpoints, recentVisitEndpoints *workspacerecentvisits.Endpoints, lastVisitedEndpoints *lastvisitedworkspace.Endpoints, entityEndpoint *entityfavorites.Endpoints, favoriteEndpoints ...*workspacefavorites.Endpoints) http.Handler {
-	return buildHTTPHandlerWithReplacementServicesAndPending(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, workspaceEndpoints, instanceWorkspaceEndpoints, userInstanceAdminEndpoints, userProfileFlagsEndpoints, notificationEndpoints, userAccountsEndpoints, userAPITokensEndpoints, instanceAdminSessionEndpoints, quickLinkEndpoints, themeEndpoints, homePreferenceEndpoints, memberMeEndpoints, analyticViewEndpoints, recentVisitEndpoints, lastVisitedEndpoints, entityEndpoint, pendingReplacementEndpoints{}, favoriteEndpoints...)
+func buildHTTPHandlerWithReplacementServices(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, workspaceEndpoints *workspaceslugcheck.Endpoints, instanceWorkspaceEndpoints *instanceworkspaceslugcheck.Endpoints, userInstanceAdminEndpoints *userinstanceadmin.Endpoints, userProfileFlagsEndpoints *userprofileflags.Endpoints, notificationEndpoints *usernotificationpreferences.Endpoints, userAccountsEndpoints *useraccounts.Endpoints, userAPITokensEndpoints *userapitokens.Endpoints, instanceAdminSessionEndpoints *instanceadminsession.Endpoints, quickLinkEndpoints *workspacequicklinks.Endpoints, themeEndpoints *workspacethemes.Endpoints, homePreferenceEndpoints *workspacehomepreferences.Endpoints, memberMeEndpoints *workspacememberme.Endpoints, analyticViewEndpoints *analyticviews.Endpoints, recentVisitEndpoints *workspacerecentvisits.Endpoints, lastVisitedEndpoints *lastvisitedworkspace.Endpoints, favoriteEndpoints ...*workspacefavorites.Endpoints) http.Handler {
+	return buildHTTPHandlerWithReplacementServicesAndPending(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, workspaceEndpoints, instanceWorkspaceEndpoints, userInstanceAdminEndpoints, userProfileFlagsEndpoints, notificationEndpoints, userAccountsEndpoints, userAPITokensEndpoints, instanceAdminSessionEndpoints, quickLinkEndpoints, themeEndpoints, homePreferenceEndpoints, memberMeEndpoints, analyticViewEndpoints, recentVisitEndpoints, lastVisitedEndpoints, nil, pendingReplacementEndpoints{}, favoriteEndpoints...)
 }
 
 func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, workspaceEndpoints *workspaceslugcheck.Endpoints, instanceWorkspaceEndpoints *instanceworkspaceslugcheck.Endpoints, userInstanceAdminEndpoints *userinstanceadmin.Endpoints, userProfileFlagsEndpoints *userprofileflags.Endpoints, notificationEndpoints *usernotificationpreferences.Endpoints, userAccountsEndpoints *useraccounts.Endpoints, userAPITokensEndpoints *userapitokens.Endpoints, instanceAdminSessionEndpoints *instanceadminsession.Endpoints, quickLinkEndpoints *workspacequicklinks.Endpoints, themeEndpoints *workspacethemes.Endpoints, homePreferenceEndpoints *workspacehomepreferences.Endpoints, memberMeEndpoints *workspacememberme.Endpoints, analyticViewEndpoints *analyticviews.Endpoints, recentVisitEndpoints *workspacerecentvisits.Endpoints, lastVisitedEndpoints *lastvisitedworkspace.Endpoints, entityEndpoint *entityfavorites.Endpoints, pending pendingReplacementEndpoints, favoriteEndpoints ...*workspacefavorites.Endpoints) http.Handler {
@@ -3543,25 +3535,6 @@ func djangoProtocolOptionsWithoutActionsHandler(middleware func(http.Handler) ht
 	}))
 }
 
-func djangoProtocolAuthenticatedOptionsWithoutActionsHandler(middleware func(http.Handler) http.Handler, name string) http.Handler {
-	return middleware(http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		if publicprojectmetadatareadsstore.UserID(request.Context()) == "" {
-			writeStickyJSON(response, http.StatusUnauthorized, map[string]string{"detail": "Authentication credentials were not provided."})
-			return
-		}
-		writeStickyJSON(response, http.StatusOK, struct {
-			Name        string   `json:"name"`
-			Description string   `json:"description"`
-			Renders     []string `json:"renders"`
-			Parses      []string `json:"parses"`
-		}{
-			Name:        name,
-			Description: "",
-			Renders:     []string{"application/json"},
-			Parses:      []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"},
-		})
-	}))
-}
 func stickyListOptionsHandler(middleware func(http.Handler) http.Handler) http.Handler {
 	return middleware(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 		writeStickyJSON(response, http.StatusOK, map[string]any{

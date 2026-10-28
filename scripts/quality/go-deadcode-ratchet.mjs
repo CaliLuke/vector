@@ -7,7 +7,8 @@ if (!["check", "write"].includes(mode) || !reportPath || !baselinePath) {
   console.error("usage: go-deadcode-ratchet.mjs <check|write> <deadcode-json> <baseline.json>");
   process.exit(2);
 }
-const report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
+// deadcode emits JSON null (a nil slice) when no functions are unreachable.
+const report = JSON.parse(fs.readFileSync(reportPath, "utf8")) ?? [];
 if (
   !Array.isArray(report) ||
   report.some((program) => !program || typeof program.Path !== "string" || !Array.isArray(program.Funcs))

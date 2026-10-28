@@ -86,7 +86,3 @@ func (r *Repository) collaborationReference(ctx context.Context, q Request, tabl
 	}
 	return nil
 }
-
-func (r *Repository) collaborationMembership(ctx context.Context, q Request) (bool, error) {
-	return djangoapi.ProjectEntityAllowed(ctx, r.db, q.ActorID, q.Slug, q.ProjectID, false)
-}

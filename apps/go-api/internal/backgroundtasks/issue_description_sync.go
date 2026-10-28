@@ -109,13 +109,6 @@ func RegisterIssueDescriptionSyncWorkflow(app *selvedge.App, store issueDescript
 	return &IssueDescriptionSyncDispatcher{app: app, workflow: workflow}, nil
 }
 
-func NewIssueDescriptionSyncDispatcher(app *selvedge.App, workflow *selvedge.WorkflowFunc[IssueDescriptionSyncInput, IssueDescriptionSyncOutput]) (*IssueDescriptionSyncDispatcher, error) {
-	if app == nil || workflow == nil {
-		return nil, errors.New("Selvedge app and issue description sync workflow are required")
-	}
-	return &IssueDescriptionSyncDispatcher{app: app, workflow: workflow}, nil
-}
-
 // Admit starts the legacy schedule_issue_description_version task and its
 // delayed, durable batch continuations. EventID identifies one explicit run.
 func (dispatcher *IssueDescriptionSyncDispatcher) Admit(ctx context.Context, eventID string, batchSize, offset int, countdown time.Duration) (string, error) {

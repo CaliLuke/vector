@@ -1228,11 +1228,3 @@ func moduleSQLJSON(value any) string {
 	}
 	return string(encoded)
 }
-
-func mustUUID(value string) uuid.UUID {
-	id, err := uuid.Parse(value)
-	if err != nil {
-		return uuid.Nil
-	}
-	return id
-}

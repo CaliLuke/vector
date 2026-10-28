@@ -859,11 +859,6 @@ func EscapeLikePattern(value string) string {
 	return strings.ReplaceAll(value, `_`, `\_`)
 }
 
-func validLegacyUUIDList(value string) bool {
-	_, valid := NormalizeLegacyUUIDList(value)
-	return valid
-}
-
 func NormalizeLegacyUUIDList(value string) (string, bool) {
 	value = FilterNullTokens(value)
 	if value == "" {
@@ -878,11 +873,6 @@ func NormalizeLegacyUUIDList(value string) (string, bool) {
 		values[index] = identifier.String()
 	}
 	return strings.Join(values, ","), true
-}
-
-func validLegacyIntegerList(value string) bool {
-	_, valid := NormalizeLegacyIntegerList(value)
-	return valid
 }
 
 func NormalizeLegacyIntegerList(value string) (string, bool) {

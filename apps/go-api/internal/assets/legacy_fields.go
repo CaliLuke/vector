@@ -130,13 +130,6 @@ func legacyUUIDField(fields map[string]any, name string) any {
 	return nil
 }
 
-func legacyStringField(fields map[string]any, name string) string {
-	if value, ok := fields[name].(string); ok {
-		return value
-	}
-	return ""
-}
-
 func legacyNullableStringField(fields map[string]any, name string) any {
 	if value, ok := fields[name].(string); ok {
 		return value

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/url"
 	"reflect"
@@ -55,22 +54,6 @@ func notificationBody() map[string]any {
 		"project": nil, "entity_identifier": nil, "entity_name": "issue", "sender": "Issue changed", "title": "", "message_html": "", "message_stripped": nil,
 		"triggered_by": nil, "triggered_by_details": nil, "data": nil, "message": nil,
 	}
-}
-func notificationErrorBody(t *testing.T, err error, status int) map[string]any {
-	t.Helper()
-	var failure *api.NotificationError
-	if !errors.As(err, &failure) || failure.Name != fmt.Sprintf("status_%d", status) {
-		t.Fatalf("want status_%d, got %#v", status, err)
-	}
-	raw, marshalErr := json.Marshal(failure)
-	if marshalErr != nil {
-		t.Fatal(marshalErr)
-	}
-	var result map[string]any
-	if err := json.Unmarshal(raw, &result); err != nil {
-		t.Fatal(err)
-	}
-	return result
 }
 
 func TestNotificationsGeneratedResultsPreserveArbitraryJSONAndNulls(t *testing.T) {

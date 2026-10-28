@@ -578,20 +578,6 @@ func oauthConfigError(provider string) int {
 func oauthConfigErrorName(provider string) string {
 	return strings.ToUpper(provider) + "_NOT_CONFIGURED"
 }
-func oauthFailureCode(err error) int {
-	var failure *oauthFailure
-	if errors.As(err, &failure) {
-		return failure.code
-	}
-	return 5999
-}
-func oauthFailureName(err error) string {
-	var failure *oauthFailure
-	if errors.As(err, &failure) {
-		return failure.name
-	}
-	return "AUTHENTICATION_FAILED"
-}
 
 func (s *oauthRedirectService) providerConfig(ctx context.Context, provider string) (oauthConfig, error) {
 	values := func(key, fallback string) (string, error) { return s.repository.ConfigValue(ctx, key, fallback) }

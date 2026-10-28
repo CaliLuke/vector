@@ -1241,8 +1241,3 @@ func lifecycleLabelValueString(value any, source []byte) string {
 	}
 	return text
 }
-
-func fieldsString(fields map[string]any, key string) string {
-	value, _ := fields[key].(string)
-	return value
-}

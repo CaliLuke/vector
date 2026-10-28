@@ -35,7 +35,7 @@ func TestWorkspaceFavoritesAllQueryUsesLastScalarValue(t *testing.T) {
 			stub := &favoriteCollectionQueryStub{}
 			handler := buildHTTPHandlerWithReplacementServices(
 				newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-				nil, nil, nil, workspacefavoritesapi.NewEndpoints(stub),
+				nil, nil, workspacefavoritesapi.NewEndpoints(stub),
 			)
 			request := httptest.NewRequest(http.MethodGet, "/api/workspaces/acme/user-favorites/?"+scenario.query, nil)
 			request.AddCookie(&http.Cookie{Name: "session-id", Value: "session-cookie"})

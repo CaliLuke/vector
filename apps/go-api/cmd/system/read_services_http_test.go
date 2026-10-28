@@ -1112,18 +1112,3 @@ func assertReadServiceProtocolHeaders(t *testing.T, response *httptest.ResponseR
 		t.Errorf("protocol headers = %#v, want Allow %q and Django security headers", headers, allow)
 	}
 }
-
-func concreteReadServicePath(pattern string) string {
-	replacer := strings.NewReplacer(
-		"{slug}", "acme",
-		"{project_id}", "00000000-0000-4000-8000-000000000001",
-		"{pk}", "00000000-0000-4000-8000-000000000002",
-		"{cycle_id}", "00000000-0000-4000-8000-000000000003",
-		"{issue_id}", "00000000-0000-4000-8000-000000000004",
-		"{module_id}", "00000000-0000-4000-8000-000000000005",
-		"{estimate_id}", "00000000-0000-4000-8000-000000000006",
-		"{page_id}", "00000000-0000-4000-8000-000000000007",
-		"{work_item_id}", "00000000-0000-4000-8000-000000000008",
-	)
-	return replacer.Replace(pattern)
-}

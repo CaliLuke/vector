@@ -142,16 +142,7 @@ func workspaceAnalyticsRaw(data json.RawMessage) (*api.WorkspaceAnalyticsRawJSON
 	}
 	return &api.WorkspaceAnalyticsRawJSON{ContentType: "application/json"}, io.NopCloser(bytes.NewReader(compact.Bytes())), nil
 }
-func (s *workspaceAnalyticsService) respond(ctx context.Context, slug, project string, query string, args ...any) (*api.WorkspaceAnalyticsRawJSON, io.ReadCloser, error) {
-	if _, err := s.actor(ctx, slug, project); err != nil {
-		return nil, nil, err
-	}
-	body, err := s.repository.JSON(ctx, query, args...)
-	if err != nil {
-		return nil, nil, s.internal()
-	}
-	return workspaceAnalyticsRaw(body)
-}
+
 func (s *workspaceAnalyticsService) error(status int, body any) error {
 	encoded, err := json.Marshal(body)
 	if err != nil {

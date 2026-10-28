@@ -1865,13 +1865,6 @@ func boundedInt64(value string) (int64, error) {
 	return integer.Int64(), nil
 }
 
-func envOrDefault(name, fallback string) string {
-	if value := os.Getenv(name); value != "" {
-		return value
-	}
-	return fallback
-}
-
 func envValueOrDefault(name, fallback string) string {
 	if value, found := os.LookupEnv(name); found {
 		return value

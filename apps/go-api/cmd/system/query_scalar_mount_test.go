@@ -31,7 +31,7 @@ func TestRecentVisitMountSelectsLastDecodedEntityName(t *testing.T) {
 	service := &recentVisitQueryContractService{}
 	handler := buildHTTPHandlerWithReplacementServices(
 		newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-		workspacerecentvisitsapi.NewEndpoints(service), nil, nil,
+		workspacerecentvisitsapi.NewEndpoints(service), nil,
 	)
 	request := httptest.NewRequest(http.MethodGet, "/api/workspaces/acme/recent-visits/?entity_name=issue&entity%5Fname=project&ignored=%ZZ", nil)
 	response := httptest.NewRecorder()

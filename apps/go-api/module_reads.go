@@ -585,7 +585,3 @@ func groupModuleIssues(
 func moduleIssueGroupArrayField(field string) string {
 	return issuequery.GroupArrayField(field)
 }
-
-func moduleIssueGroupValues(issue map[string]any, field string) []string {
-	return issuequery.GroupValues(issue, field)
-}

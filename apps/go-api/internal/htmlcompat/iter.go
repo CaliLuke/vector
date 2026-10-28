@@ -6,18 +6,6 @@ package html
 
 import "iter"
 
-// Ancestors returns an iterator over the ancestors of n, starting with n.Parent.
-//
-// Mutating a Node or its parents while iterating may have unexpected results.
-func (n *Node) Ancestors() iter.Seq[*Node] {
-	_ = n.Parent // eager nil check
-
-	return func(yield func(*Node) bool) {
-		for p := n.Parent; p != nil && yield(p); p = p.Parent {
-		}
-	}
-}
-
 // ChildNodes returns an iterator over the immediate children of n,
 // starting with n.FirstChild.
 //

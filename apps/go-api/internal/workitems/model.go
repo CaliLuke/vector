@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/json"
-	"errors"
 	"reflect"
 	"time"
 
@@ -183,11 +182,4 @@ func (r *Repository) deleteIssue(ctx context.Context, actor string, row map[stri
 		return err
 	}
 	return r.softDelete(ctx, "issue", row["id"].(string))
-}
-
-func asObject(value any) (map[string]any, error) {
-	if row, ok := value.(map[string]any); ok {
-		return row, nil
-	}
-	return nil, errors.New("expected an object")
 }

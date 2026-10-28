@@ -115,9 +115,3 @@ func (r *Repository) ListWorkspaceMembers(ctx context.Context, slug string, o Li
 	q := `SELECT COALESCE(json_agg(x.item), '[]'::json), count(*) FROM (SELECT ` + memberJSON + ` item,m.created_at FROM workspace_members m JOIN workspaces w ON w.id=m.workspace_id JOIN users u ON u.id=m.member_id WHERE w.slug=$1 AND w.deleted_at IS NULL AND m.deleted_at IS NULL` + p + `) x`
 	return r.page(ctx, q, slug)
 }
-
-func (r *Repository) ListProjectMembers(ctx context.Context, slug string, projectID uuid.UUID, o ListOptions) (Page, error) {
-	p, _ := paging(o, "m.created_at DESC", map[string]string{"-created_at": "m.created_at DESC", "created_at": "m.created_at ASC"})
-	q := `SELECT COALESCE(json_agg(x.item), '[]'::json), count(*) FROM (SELECT ` + memberJSON + ` item,m.created_at FROM project_members m JOIN projects p0 ON p0.id=m.project_id JOIN workspaces w ON w.id=p0.workspace_id JOIN users u ON u.id=m.member_id WHERE w.slug=$1 AND m.project_id=$2 AND w.deleted_at IS NULL AND p0.deleted_at IS NULL AND m.deleted_at IS NULL` + p + `) x`
-	return r.page(ctx, q, slug, projectID)
-}

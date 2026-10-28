@@ -183,6 +183,18 @@ retires four shadowing occurrences and one redundant assignment. The duplicate
 baseline remains at 499 directed pairs, without replacement fingerprints, added
 allowances, or source exclusions.
 
+The dead-code cleanup removes all 44 unreachable functions and leaves an empty,
+enforced dead-code baseline. It also retires 27 lint occurrences, leaving 1,277.
+Duplicate reports fall from 499 to 495: deleting an unused HTTP wrapper removes
+one pair, and deleting an unused sync constructor joins two existing clone ranges.
+Both retained sync ranges were compared with their original source and are unchanged.
+The two zero-score assembly functions are also byte-for-byte unchanged; their
+file fingerprints were reviewed after removing unrelated unused helpers.
+Maintainability still has 44 allowances. The separate inventory includes 35 allowed
+test skips and three inline suppressions in owned source; coverage retains 166
+package floors (45 at zero) and five file floors. These remain subject to the
+debt-removal work, not evidence that all quality debt is resolved.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML

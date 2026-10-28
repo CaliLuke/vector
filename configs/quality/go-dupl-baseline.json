@@ -1481,15 +1481,6 @@
       "fingerprint": [
         "cmd/system/http.go",
         "cmd/system/http.go",
-        "32ae488d2f6889a0351db310ebb17c807efc391a5f29ef3de1d08f1a1448e1e5",
-        "f2864b988ba531fbdca316b3aece942d4f896eabe1b3979809330480028b9e6e"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "cmd/system/http.go",
-        "cmd/system/http.go",
         "36e290bafb123f382ef50ac1e960a93d251590a591529925826ee2a8cb49889b",
         "5cc1496a9f7f1931d2eae7e788e113853e425c58b254f02773de098589273220"
       ],
@@ -1994,17 +1985,8 @@
       "fingerprint": [
         "internal/backgroundtasks/issue_description_sync.go",
         "internal/backgroundtasks/issue_version_sync.go",
-        "0ef353eda568b51ff3adefb4c3642e4c21d515cba785e7c466b7cb162fd08403",
-        "e77fb1592eb67580f286357a767d300ccb2acef9e3b61bbb970017f0b0122fd2"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "internal/backgroundtasks/issue_description_sync.go",
-        "internal/backgroundtasks/issue_version_sync.go",
-        "733b2c455c1920e7996a83e2a2b2b3ba415282f595ca52e07bada73a5cefd71a",
-        "c76ac5d1c91cd515bcf8942b0aecd0355fe2a6b4d1eadbc74b557c801ae9383d"
+        "a75a424294e44361fb83430b1864068b76c22dbfe96a4a580cf6a8cc3b8cc3b2",
+        "acbc1a650032436dab2f45c43d77a6f7ccb76d595d9c077e3f9b89f3bcc8d967"
       ],
       "count": 2
     },
