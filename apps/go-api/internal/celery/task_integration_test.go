@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -24,26 +25,26 @@ func TestPublisherTaskEmitsPersistentCeleryProtocolV2Message(t *testing.T) {
 	}
 	channel, err := consumer.Channel()
 	if err != nil {
-		_ = consumer.Close()
+		testsupport.Close(t, consumer)
 		t.Fatalf("open consumer channel: %v", err)
 	}
 	if declareCeleryQueueErr := declareCeleryQueue(channel, queue); declareCeleryQueueErr != nil {
-		_ = channel.Close()
-		_ = consumer.Close()
+		testsupport.Close(t, channel)
+		testsupport.Close(t, consumer)
 		t.Fatal(declareCeleryQueueErr)
 	}
 	t.Cleanup(func() {
 		if _, queueDeleteErr := channel.QueueDelete(queue, false, false, false); queueDeleteErr != nil {
 			t.Errorf("delete test queue: %v", queueDeleteErr)
 		}
-		_ = channel.Close()
-		_ = consumer.Close()
+		testsupport.Close(t, channel)
+		testsupport.Close(t, consumer)
 	})
 	publisher, err := newPublisher(brokerURL, queue)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = publisher.Close() })
+	t.Cleanup(func() { testsupport.Close(t, publisher) })
 
 	secret := "user supplied sensitive argument"
 	kwargs := map[string]any{"payload": map[string]any{"text": secret}, "enabled": true}

@@ -14,6 +14,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/instancecipher"
 	oauth "github.com/CaliLuke/go-plane/internal/mcpoauth"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -33,7 +34,7 @@ func linkDatabase(t *testing.T) *pgxpool.Pool {
 		if connectErr != nil {
 			return connectErr
 		}
-		defer func() { _ = db.Close(context.WithoutCancel(seedContext)) }()
+		defer func() { testsupport.CloseContext(t, db, context.WithoutCancel(seedContext)) }()
 		_, seedErr := db.Exec(seedContext, `CREATE TABLE users(id uuid PRIMARY KEY,is_active boolean NOT NULL,is_bot boolean NOT NULL,user_timezone text NOT NULL);
 INSERT INTO users VALUES ('10000000-0000-4000-8000-000000000001',true,false,'UTC'),('10000000-0000-4000-8000-000000000002',true,false,'UTC');`+string(linkSchema))
 		return seedErr

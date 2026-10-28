@@ -22,40 +22,8 @@
       "count": 2
     },
     {
-      "fingerprint": [
-        "errcheck",
-        "account_authentication_test.go",
-        "Error return value of `body.Close` is not checked"
-      ],
-      "count": 5
-    },
-    {
       "fingerprint": ["errcheck", "account_authentication.go", "Error return value of `body.Close` is not checked"],
       "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "api_cycle_reads_test.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "api_module_reads_test.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "api_project_membership_lifecycle_test.go",
-        "Error return value of `body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "api_project_membership_lifecycle_test.go",
-        "Error return value of `response.Body.Close` is not checked"
-      ],
-      "count": 2
     },
     {
       "fingerprint": [
@@ -66,18 +34,6 @@
       "count": 1
     },
     {
-      "fingerprint": ["errcheck", "api_state_reads_test.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "api_user_identity_test.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "api_v1_stickies_test.go", "Error return value of `body.Close` is not checked"],
-      "count": 3
-    },
-    {
       "fingerprint": ["errcheck", "auth_redirects.go", "Error return value of `body.Close` is not checked"],
       "count": 1
     },
@@ -86,14 +42,6 @@
         "errcheck",
         "cmd/background-worker/main.go",
         "Error return value of `fmt.Fprintln` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "cmd/bootstrap/install_integration_test.go",
-        "Error return value of `conn.Close` is not checked"
       ],
       "count": 1
     },
@@ -140,14 +88,6 @@
     {
       "fingerprint": [
         "errcheck",
-        "cmd/system/cycle_lifecycle_transport_test.go",
-        "Error return value of `response.Body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "cmd/system/main.go",
         "Error return value of `publicProjectMetadataReadsCache.Close` is not checked"
       ],
@@ -166,22 +106,6 @@
       "count": 1
     },
     {
-      "fingerprint": ["errcheck", "cycle_reads_test.go", "Error return value of `body.Close` is not checked"],
-      "count": 11
-    },
-    {
-      "fingerprint": ["errcheck", "cycle_reads_test.go", "Error return value of `cycle.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "cycle_reads_test.go", "Error return value of `result.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "external_integrations_test.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
       "fingerprint": [
         "errcheck",
         "external_integrations.go",
@@ -194,30 +118,10 @@
       "count": 2
     },
     {
-      "fingerprint": ["errcheck", "intake_inbox_reads_test.go", "Error return value of `body.Close` is not checked"],
-      "count": 2
-    },
-    {
       "fingerprint": [
         "errcheck",
         "internal/accountauthentication/admin.go",
         "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/accountauthentication/repository_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/accountauthentication/repository_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
       ],
       "count": 1
     },
@@ -252,46 +156,6 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/assets/storage_rustfs_test.go",
-        "Error return value of `response.Body.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/authentication/apikey/postgres_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/authentication/apikey/postgres_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/authentication/authworkflow/post_login_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/authentication/djangosession/postgres_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/backgroundtasks/deletion_store.go",
         "Error return value of `tx.Rollback` is not checked"
       ],
@@ -302,22 +166,6 @@
         "errcheck",
         "internal/backgroundtasks/description_asset_copy.go",
         "Error return value of `response.Body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/event_tracking_integration_test.go",
-        "Error return value of `request.Body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/instance_metrics_test.go",
-        "Error return value of `connection.Close` is not checked"
       ],
       "count": 1
     },
@@ -340,32 +188,8 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/backgroundtasks/issue_activities_integration_test.go",
-        "Error return value of `emailStore.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/issue_activities_integration_test.go",
-        "Error return value of `store.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/backgroundtasks/issue_activities.go",
         "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/issue_automation_integration_test.go",
-        "Error return value of `activityStore.Close` is not checked"
       ],
       "count": 1
     },
@@ -468,14 +292,6 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/backgroundtasks/webhook_tasks_test.go",
-        "Error return value of `response.Body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/backgroundtasks/webhook_tasks.go",
         "Error return value of `response.Body.Close` is not checked"
       ],
@@ -538,38 +354,6 @@
       "count": 1
     },
     {
-      "fingerprint": [
-        "errcheck",
-        "internal/customviewcreation/repository_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/customviewcreation/repository_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/deployboardreads/repository_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/deployboardreads/repository_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
       "fingerprint": ["errcheck", "internal/devtools/checks.go", "Error return value of `fmt.Fprintf` is not checked"],
       "count": 2
     },
@@ -586,14 +370,6 @@
         "errcheck",
         "internal/devtools/local_logs.go",
         "Error return value of `resp.Body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/devtools/runner_test.go",
-        "Error return value of `r.Body.Close` is not checked"
       ],
       "count": 1
     },
@@ -619,19 +395,11 @@
         "internal/estimatereads/repository_integration_test.go",
         "Error return value of `connection.Close` is not checked"
       ],
-      "count": 2
+      "count": 1
     },
     {
       "fingerprint": ["errcheck", "internal/htmlcompat/parse_test.go", "Error return value is not checked"],
       "count": 4
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/htmlcompat/parse_test.go",
-        "Error return value of `f.Close` is not checked"
-      ],
-      "count": 1
     },
     {
       "fingerprint": [
@@ -648,38 +416,6 @@
         "Error return value of `io.WriteString` is not checked"
       ],
       "count": 7
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/instancemanagement/repository_timestamp_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/instancemanagement/repository_workspace_deletion_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/instancemanagement/repository_workspace_update_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/instancemanagement/repository_workspaces_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
-      ],
-      "count": 2
     },
     {
       "fingerprint": [
@@ -712,62 +448,6 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/projectmembershipreads/asset_url_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/projectmembershipreads/asset_url_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/projectpublication/repository_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/projectpublication/repository_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/projectstatereads/repository_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/projectstatereads/repository_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/projectstatereads/writes_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/projectstatereads/writes.go",
         "Error return value of `tx.Rollback` is not checked"
       ],
@@ -776,56 +456,8 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/proxy/caddy_integration_test.go",
-        "Error return value of `response.Body.Close` is not checked"
-      ],
-      "count": 5
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/publicprojectmetadatareads/repository_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/publicprojectmetadatareads/repository_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/standardviews/create_defaults_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/standardviews/create_defaults_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/standardviews/mutation_validation_upgrade_integration_test.go",
         "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/standardviews/mutation_validation_upgrade_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
       ],
       "count": 1
     },
@@ -848,46 +480,6 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/useridentity/repository_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/useridentity/repository_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/userproperties/repository_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/workitemhistory/repository_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/workitemhistory/repository_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/workitems/collaboration_model.go",
         "Error return value of `tx.Rollback` is not checked"
       ],
@@ -896,40 +488,8 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/workitems/issue_writes_integration_test.go",
-        "Error return value of `conn.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/workitems/issue_writes_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/workitems/lifecycle.go",
         "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/workitems/model_integration_test.go",
-        "Error return value of `conn.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/workitems/model_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
       ],
       "count": 1
     },
@@ -956,40 +516,8 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/workspaceanalytics/repository_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/workspaceexports/repository_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 10
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/workspacehomepreferences/repository_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/workspaceprojectreads/lifecycle.go",
         "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/workspaceuserinsights/repository_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
       ],
       "count": 1
     },
@@ -1002,10 +530,6 @@
       "count": 4
     },
     {
-      "fingerprint": ["errcheck", "oauth_redirects_test.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
       "fingerprint": ["errcheck", "oauth_redirects.go", "Error return value of `resp.Body.Close` is not checked"],
       "count": 1
     },
@@ -1015,14 +539,6 @@
     },
     {
       "fingerprint": ["errcheck", "page_lifecycle_methods.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "page_reads_test.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "page_reads_test.go", "Error return value of `response.body.Close` is not checked"],
       "count": 1
     },
     {
@@ -1046,28 +562,12 @@
       "count": 2
     },
     {
-      "fingerprint": [
-        "errcheck",
-        "project_lifecycle_contract_test.go",
-        "Error return value of `body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "project_lifecycle_test.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
       "fingerprint": ["errcheck", "project_member_preferences.go", "Error return value of `body.Close` is not checked"],
       "count": 1
     },
     {
       "fingerprint": ["errcheck", "project_publication.go", "Error return value of `body.Close` is not checked"],
       "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "public_feedback_error_test.go", "Error return value of `body.Close` is not checked"],
-      "count": 2
     },
     {
       "fingerprint": ["errcheck", "ticket_collaboration.go", "Error return value of `body.Close` is not checked"],
@@ -1096,58 +596,10 @@
     {
       "fingerprint": [
         "errcheck",
-        "work_item_core/design/identifier_test.go",
-        "Error return value of `body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "work_item_core/design/transport_test.go",
         "Error return value of `body.Close` is not checked"
       ],
       "count": 2
-    },
-    {
-      "fingerprint": ["errcheck", "work_item_history_test.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "workspace_analytics_integration_test.go",
-        "Error return value of `body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "workspace_analytics_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "workspace_analytics_test.go", "Error return value of `body.Close` is not checked"],
-      "count": 3
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "workspace_analytics_test.go",
-        "Error return value of `response.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "workspace_exports_test.go",
-        "Error return value of `responseBody.Close` is not checked"
-      ],
-      "count": 1
     },
     {
       "fingerprint": ["errcheck", "workspace_exports.go", "Error return value of `body.Close` is not checked"],
@@ -1155,22 +607,6 @@
     },
     {
       "fingerprint": ["errcheck", "workspace_lifecycle.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "workspace_project_reads_test.go",
-        "Error return value of `response.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "workspace_user_insights_test.go",
-        "Error return value of `body.Close` is not checked"
-      ],
       "count": 1
     },
     {

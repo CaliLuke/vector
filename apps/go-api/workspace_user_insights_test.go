@@ -10,6 +10,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	store "github.com/CaliLuke/go-plane/internal/workspaceuserinsights"
 	api "github.com/CaliLuke/go-plane/workspaceuserinsights/gen/workspace_user_insights"
 	"github.com/CaliLuke/loom/security"
@@ -131,7 +132,7 @@ func TestWorkspaceActivityUsesRepeatedProjectQueryValues(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	if !reflect.DeepEqual(repo.projects, []string{"00000000-0000-4000-8000-000000000101", "00000000-0000-4000-8000-000000000102"}) {
 		t.Fatalf("project filter = %#v, want repeated getlist values", repo.projects)
 	}

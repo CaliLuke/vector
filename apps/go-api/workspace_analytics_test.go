@@ -11,6 +11,7 @@ import (
 
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	store "github.com/CaliLuke/go-plane/internal/workspaceanalytics"
 	api "github.com/CaliLuke/go-plane/workspaceanalytics/gen/workspace_analytics"
 )
@@ -88,7 +89,7 @@ func TestWorkspaceAnalyticsBindsFiltersAndPreservesJSON(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	encoded, err := io.ReadAll(body)
 	if err != nil {
 		t.Fatal(err)
@@ -119,7 +120,7 @@ func TestSavedAnalyticsViewUsesSavedResponseProjection(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	encoded, err := io.ReadAll(body)
 	if err != nil {
 		t.Fatal(err)
@@ -142,7 +143,7 @@ func TestWorkspaceAnalyticsRawCompactsPostgresJSONBelowCompressionThreshold(t *t
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	encoded, err := io.ReadAll(body)
 	if err != nil {
 		t.Fatal(err)
@@ -171,7 +172,7 @@ func TestWorkspaceAnalyticsRawPreservesUnicodeAndRejectsInvalidJSON(t *testing.T
 		t.Fatal(err)
 	}
 	encoded, err := io.ReadAll(body)
-	_ = body.Close()
+	testsupport.Close(t, body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -268,7 +269,7 @@ func TestProjectMonthlyChartUsesFilteredWindowAndLinkDailySeries(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			response.Close()
+			testsupport.Close(t, response)
 			for _, fragment := range test.wantQuery {
 				if !strings.Contains(repository.query, fragment) {
 					t.Errorf("query does not contain %q", fragment)

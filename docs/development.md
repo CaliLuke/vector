@@ -372,6 +372,37 @@ produce a false passing test. A standalone Go 1.27.3 reproduction was
 This batch used a forced fresh build of the applied MCP source and checked the
 coverage ranges; no compiler flag or dependency patch is retained in the gates.
 
+The test cleanup pass checks discarded errors while preserving the caller's
+close/defer timing. The shared `testsupport.Close` and `CloseContext` helpers
+report errors and allow other cleanup to continue; context cleanup preserves the
+caller-supplied context. The audit also removed duplicate listener ownership from
+metrics fixtures, made lost-commit proxy shutdown close each resource once, and
+made restart-test cleanup follow the currently open journal.
+
+This retires 131 configured lint occurrences (647 to 516), leaving 319 lint
+fingerprints. The strict errcheck inventory falls from 1,597 to 1,316 findings;
+1,144 remain beyond the configured gate (467 production, 677 test). These extra
+findings have no baseline allowance and remain part of the zero-exceptions goal.
+Maintainability remains at 31 allowances. Duplication remains at 488 directed
+reports / 376 fingerprints, with the existing fingerprints unchanged. All clone
+bodies match the original report after accounting for the reviewed cleanup edits.
+No new clones were admitted, and coverage floors were not lowered.
+
+The Go fast gate passes with the reduced baseline. The cleanup helpers cover all
+six new statements, the mutation-receipt suite passes 39 tests/subtests with the
+race detector, and 73 affected HTTP and metrics tests/subtests pass. The Notion
+suite also passes after the journal ownership fix. The integration sweep and
+corrected-package reruns exercise 12,219 tests/subtests with zero test skips;
+the five initial cleanup failures pass after their ownership fixes. The complete
+repository gate remains required before the zero-exceptions goal can be complete.
+
+HTTP response bodies retain explicit checked closes where the current bodyclose
+analyzer cannot follow a cross-package cleanup helper. This limitation is tracked
+in [timakin/bodyclose#60](https://github.com/timakin/bodyclose/issues/60), with a
+[current standalone reproduction](https://github.com/timakin/bodyclose/issues/60#issuecomment-6480673025).
+Those call sites can use the shared helper when the pinned analyzer accepts that
+reproduction. No linter suppression or dependency patch was added.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML

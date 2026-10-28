@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -26,7 +27,7 @@ func propertyFilterDatabase(t *testing.T) (context.Context, *pgx.Conn) {
 		if err != nil {
 			return err
 		}
-		defer func() { _ = db.Close(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) }()
 		_, err = db.Exec(ctx, `CREATE TABLE issues(id uuid PRIMARY KEY,row_number integer,priority text,project_id uuid,workspace_id uuid);
  CREATE TABLE labels(id uuid PRIMARY KEY,name text,project_id uuid,workspace_id uuid,deleted_at timestamptz);
  CREATE TABLE issue_labels(issue_id uuid,label_id uuid,deleted_at timestamptz);
@@ -43,12 +44,12 @@ func propertyFilterDatabase(t *testing.T) (context.Context, *pgx.Conn) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = pair.Close() })
+	t.Cleanup(func() { testsupport.Close(t, pair) })
 	db, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = db.Close(context.WithoutCancel(ctx)) })
+	t.Cleanup(func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) })
 	return ctx, db
 }
 

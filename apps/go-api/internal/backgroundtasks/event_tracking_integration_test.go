@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/selvedge"
 	"github.com/google/uuid"
 )
@@ -21,7 +22,7 @@ func TestPostgresEventTrackingWorkflowDeliversPostHogCaptureOverHTTP(t *testing.
 	defer cancel()
 	captures := make(chan map[string]any, 1)
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		defer request.Body.Close()
+		defer testsupport.Close(t, request.Body)
 		var body map[string]any
 		if err := json.NewDecoder(request.Body).Decode(&body); err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)

@@ -16,6 +16,7 @@ import (
 	store "github.com/CaliLuke/go-plane/internal/accountauthentication"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/authentication/password"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 )
 
 type accountAuthenticationTestRepo struct {
@@ -162,7 +163,7 @@ func TestAccountAuthenticationEmailCheckUsesConfiguredSourcePolicy(t *testing.T)
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer body.Close()
+			defer testsupport.Close(t, body)
 			var got struct {
 				Existing bool   `json:"existing"`
 				Status   string `json:"status"`
@@ -194,7 +195,7 @@ func TestPasswordWriteRefreshesSessionWithoutMutatingLoginMetadata(t *testing.T)
 		t.Fatalf("set password: %T %#v", err, err)
 	}
 	if body != nil {
-		defer body.Close()
+		defer testsupport.Close(t, body)
 	}
 	if repo.setPasswordCalls != 1 || repo.updateLoginCalls != 0 {
 		t.Fatalf("password writes=%d login metadata writes=%d", repo.setPasswordCalls, repo.updateLoginCalls)
@@ -303,7 +304,7 @@ func TestAccountAuthenticationThrottleIsSkippedForAuthenticatedSession(t *testin
 	if err != nil {
 		t.Fatalf("authenticated session was throttled: %v", err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	if meta == nil || throttle.calls != 0 {
 		t.Fatalf("response metadata=%+v throttle calls=%d, want no throttle", meta, throttle.calls)
 	}
@@ -342,7 +343,7 @@ func TestAccountAuthenticationForgotPasswordPublishesResetTokenInputs(t *testing
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	if meta.ContentType != "application/json" {
 		t.Fatalf("content type=%q", meta.ContentType)
 	}
@@ -363,7 +364,7 @@ func TestAccountAuthenticationMagicGenerationPersistsAndQueuesSameCode(t *testin
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	var got map[string]string
 	if err := json.NewDecoder(body).Decode(&got); err != nil {
 		t.Fatal(err)

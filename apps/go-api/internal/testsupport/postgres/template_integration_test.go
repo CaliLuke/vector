@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -22,7 +23,7 @@ func TestTemplateMigratesOnceForConcurrentIndependentDatabases(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer func() { _ = connection.Close(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) }()
 		_, err = connection.Exec(ctx, `CREATE TABLE marker(value int); INSERT INTO marker VALUES(42)`)
 		return err
 	})

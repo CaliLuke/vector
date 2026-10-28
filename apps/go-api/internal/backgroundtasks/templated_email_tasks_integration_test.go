@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/instancemail"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/selvedge"
 	"github.com/CaliLuke/selvedge/retry"
 	"github.com/google/uuid"
@@ -247,7 +248,7 @@ func startRetryOnceEmailSMTP(t *testing.T) *retryOnceEmailSMTP {
 		t.Fatal(err)
 	}
 	sink := &retryOnceEmailSMTP{listener: listener, port: listener.Addr().(*net.TCPAddr).Port}
-	t.Cleanup(func() { _ = listener.Close() })
+	t.Cleanup(func() { testsupport.Close(t, listener) })
 	go sink.serve()
 	return sink
 }

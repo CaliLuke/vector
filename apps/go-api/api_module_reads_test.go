@@ -11,6 +11,7 @@ import (
 	api "github.com/CaliLuke/go-plane/apimodulereads/gen/api_module_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	store "github.com/CaliLuke/go-plane/internal/modulereads"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/loom/security"
 	"github.com/google/uuid"
 )
@@ -68,7 +69,7 @@ func TestAPIModulePreservesPathIdentityAndOpaqueJSONTimestamps(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	data, err := io.ReadAll(body)
 	if err != nil {
 		t.Fatal(err)

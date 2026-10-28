@@ -10,6 +10,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/go-plane/internal/workitemsearch"
 )
 
@@ -41,7 +42,7 @@ func TestRichTextSearchBackfillBatchesRollbackAndRetry(t *testing.T) {
 			t.Fatal(err)
 		}
 		go func() {
-			defer func() { _ = connection.Close(context.Background()) }()
+			defer func() { testsupport.CloseContext(t, connection, context.Background()) }()
 			done <- workitemsearch.Backfill(f.ctx, connection)
 		}()
 	}
@@ -68,7 +69,7 @@ func TestRichTextSearchBackfillCancellationReleasesLockForRetry(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = connection.Close(context.Background()) }()
+	defer func() { testsupport.CloseContext(t, connection, context.Background()) }()
 	ctx, cancel := context.WithTimeout(f.ctx, 100*time.Millisecond)
 	defer cancel()
 	if err = workitemsearch.Backfill(ctx, connection); !errors.Is(err, context.DeadlineExceeded) {

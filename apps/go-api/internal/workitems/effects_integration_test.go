@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/bootstrap"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -18,12 +19,12 @@ func TestTransactionalEffectsCommitTogetherWithoutEarlyAdmission(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = pair.Close() }()
+	defer func() { testsupport.Close(t, pair) }()
 	conn, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = conn.Close(ctx) }()
+	defer func() { testsupport.CloseContext(t, conn, ctx) }()
 	for _, commit := range []bool{false, true} {
 		tx, beginErr := conn.Begin(ctx)
 		if beginErr != nil {

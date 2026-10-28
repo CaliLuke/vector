@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -23,7 +24,7 @@ func TestDraftPublicationOnlyWaitsForReferencedOwnedUploads(t *testing.T) {
 		if connectErr != nil {
 			return connectErr
 		}
-		defer func() { _ = conn.Close(ctx) }()
+		defer func() { testsupport.CloseContext(t, conn, ctx) }()
 		_, createErr := conn.Exec(ctx, `CREATE TABLE file_assets(id uuid PRIMARY KEY, draft_issue_id uuid, workspace_id uuid, created_by_id uuid, deleted_at timestamptz, is_deleted boolean DEFAULT false, is_archived boolean DEFAULT false, is_uploaded boolean DEFAULT false);
 CREATE TABLE work_item_properties(id uuid PRIMARY KEY, workspace_id uuid, definition jsonb);`)
 		return createErr
@@ -31,12 +32,12 @@ CREATE TABLE work_item_properties(id uuid PRIMARY KEY, workspace_id uuid, defini
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = pair.Close() }()
+	defer func() { testsupport.Close(t, pair) }()
 	conn, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = conn.Close(ctx) }()
+	defer func() { testsupport.CloseContext(t, conn, ctx) }()
 	draft, workspace, actor, asset := uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString()
 	richText, plainText := uuid.NewString(), uuid.NewString()
 	_, err = conn.Exec(ctx, `INSERT INTO work_item_properties(id,workspace_id,definition) VALUES($1,$2,'{"kind":"Rich text"}'),($3,$2,'{"kind":"Text"}')`, richText, workspace, plainText)

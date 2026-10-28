@@ -16,6 +16,7 @@ import (
 	api "github.com/CaliLuke/go-plane/apicyclereads/gen/api_cycle_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	store "github.com/CaliLuke/go-plane/internal/cyclereads"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/loom/security"
 	"github.com/google/uuid"
 )
@@ -92,7 +93,7 @@ func TestAPICyclePreservesPathIdentityAndOpaqueJSONTimestamps(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	data, err := io.ReadAll(body)
 	if err != nil {
 		t.Fatal(err)

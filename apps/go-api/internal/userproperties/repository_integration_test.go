@@ -11,6 +11,7 @@ import (
 
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -271,7 +272,7 @@ func propertyTestDB(t *testing.T, ctx context.Context) *pgxpool.Pool {
 		if err != nil {
 			return err
 		}
-		defer connection.Close(context.WithoutCancel(ctx))
+		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 		_, err = connection.Exec(ctx, `
 CREATE TABLE users (id uuid PRIMARY KEY);
 INSERT INTO users VALUES ('`+userID+`'), ('`+otherUserID+`');

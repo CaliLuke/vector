@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -70,7 +71,7 @@ INSERT INTO instance_configurations (
 				return ActionResult{}, err
 			}
 			if _, err := connection.Exec(ctx, statement, proofRowID, json.RawMessage(`{"same":"value"}`)); err != nil {
-				_ = connection.Close(ctx)
+				testsupport.CloseContext(t, connection, ctx)
 				return ActionResult{}, err
 			}
 			if err := connection.Close(ctx); err != nil {

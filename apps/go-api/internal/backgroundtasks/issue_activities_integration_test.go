@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/instancemail"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/selvedge"
 	"github.com/CaliLuke/selvedge/retry"
 	"github.com/google/uuid"
@@ -83,13 +84,13 @@ func TestPostgresIssueActivityWorkflowIsIdempotentPerEvent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer store.Close()
+	defer testsupport.Close(t, store)
 	emailSender := &recordingIssueEmailSender{failRemaining: 1}
 	emailStore, err := NewPostgresIssueEmailStore(pool, fixedIssueEmailConfig{}, emailSender)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer emailStore.Close()
+	defer testsupport.Close(t, emailStore)
 	app := selvedge.NewApp(
 		selvedge.WithDatabase(executionURL),
 		selvedge.WithServiceName("plane-issue-activity-integration-test"),

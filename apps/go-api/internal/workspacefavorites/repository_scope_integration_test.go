@@ -13,6 +13,7 @@ import (
 
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -34,12 +35,12 @@ func TestFavoriteWritesAndReadsEnforceEntityAndFolderScope(t *testing.T) {
 	if fixtureErr != nil {
 		t.Fatal(fixtureErr)
 	}
-	t.Cleanup(func() { _ = pair.Close() })
+	t.Cleanup(func() { testsupport.Close(t, pair) })
 	connection, connectionErr := pgx.Connect(ctx, pair.SeedURL())
 	if connectionErr != nil {
 		t.Fatal(connectionErr)
 	}
-	t.Cleanup(func() { _ = connection.Close(context.WithoutCancel(ctx)) })
+	t.Cleanup(func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) })
 	repository, repositoryErr := NewRepository(connection)
 	if repositoryErr != nil {
 		t.Fatal(repositoryErr)
@@ -173,7 +174,7 @@ func TestFavoriteWritesAndReadsEnforceEntityAndFolderScope(t *testing.T) {
 	if secondConnectionErr != nil {
 		t.Fatal(secondConnectionErr)
 	}
-	t.Cleanup(func() { _ = secondConnection.Close(context.WithoutCancel(ctx)) })
+	t.Cleanup(func() { testsupport.CloseContext(t, secondConnection, context.WithoutCancel(ctx)) })
 	secondRepository, secondRepositoryErr := NewRepository(secondConnection)
 	if secondRepositoryErr != nil {
 		t.Fatal(secondRepositoryErr)
@@ -182,7 +183,7 @@ func TestFavoriteWritesAndReadsEnforceEntityAndFolderScope(t *testing.T) {
 	if lockerConnectionErr != nil {
 		t.Fatal(lockerConnectionErr)
 	}
-	t.Cleanup(func() { _ = lockerConnection.Close(context.WithoutCancel(ctx)) })
+	t.Cleanup(func() { testsupport.CloseContext(t, lockerConnection, context.WithoutCancel(ctx)) })
 	lockerTransaction, lockerTransactionErr := lockerConnection.Begin(ctx)
 	if lockerTransactionErr != nil {
 		t.Fatal(lockerTransactionErr)

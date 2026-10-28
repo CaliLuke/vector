@@ -11,6 +11,7 @@ import (
 	"time"
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -22,12 +23,12 @@ func TestRolesExcludeUnavailableProjectsAndDeletedWorkspaces(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = pair.Close() }()
+	defer func() { testsupport.Close(t, pair) }()
 	db, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = db.Close(context.WithoutCancel(ctx)) }()
+	defer func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) }()
 	repository, err := NewRepository(db)
 	if err != nil {
 		t.Fatal(err)

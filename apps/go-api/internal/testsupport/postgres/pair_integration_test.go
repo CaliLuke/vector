@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -30,7 +31,7 @@ func TestPairResetRestoresIndependentClonesFromTheSeed(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer func() { _ = connection.Close(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) }()
 		_, err = connection.Exec(ctx, `CREATE TABLE fixture_probe(value int); INSERT INTO fixture_probe VALUES(10)`)
 		return err
 	})
@@ -46,12 +47,12 @@ func TestPairResetRestoresIndependentClonesFromTheSeed(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = source.Close(context.WithoutCancel(ctx)) }()
+	defer func() { testsupport.CloseContext(t, source, context.WithoutCancel(ctx)) }()
 	target, err := pgx.Connect(ctx, pair.TargetURL)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = target.Close(context.WithoutCancel(ctx)) }()
+	defer func() { testsupport.CloseContext(t, target, context.WithoutCancel(ctx)) }()
 	if _, err = source.Exec(ctx, `UPDATE fixture_probe SET value=20`); err != nil {
 		t.Fatal(err)
 	}
@@ -65,12 +66,12 @@ func TestPairResetRestoresIndependentClonesFromTheSeed(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = restoredSource.Close(context.WithoutCancel(ctx)) }()
+	defer func() { testsupport.CloseContext(t, restoredSource, context.WithoutCancel(ctx)) }()
 	restoredTarget, err := pgx.Connect(ctx, pair.TargetURL)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = restoredTarget.Close(context.WithoutCancel(ctx)) }()
+	defer func() { testsupport.CloseContext(t, restoredTarget, context.WithoutCancel(ctx)) }()
 	var sourceValue, targetValue int
 	if err = restoredSource.QueryRow(ctx, `SELECT value FROM fixture_probe`).Scan(&sourceValue); err != nil {
 		t.Fatal(err)
@@ -97,7 +98,7 @@ func TestPairResetRestoresIndependentClonesFromTheSeed(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer func() { _ = writer.Close(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.CloseContext(t, writer, context.WithoutCancel(ctx)) }()
 		if _, writeErr := writer.Exec(ctx, `UPDATE fixture_probe SET value=99`); writeErr != nil {
 			t.Fatal(writeErr)
 		}
@@ -109,7 +110,7 @@ func TestPairResetRestoresIndependentClonesFromTheSeed(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer func() { _ = reader.Close(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.CloseContext(t, reader, context.WithoutCancel(ctx)) }()
 		var value int
 		if err := reader.QueryRow(ctx, `SELECT value FROM fixture_probe`).Scan(&value); err != nil || value != 10 {
 			t.Fatalf("independent clone value=%d error=%v", value, err)

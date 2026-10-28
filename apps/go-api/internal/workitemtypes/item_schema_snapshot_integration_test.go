@@ -11,6 +11,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 )
@@ -112,7 +113,7 @@ func TestItemSchemaSnapshotDoesNotMixConcurrentSavedVersions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = writer.Close(context.WithoutCancel(f.ctx)) }()
+	defer func() { testsupport.CloseContext(t, writer, context.WithoutCancel(f.ctx)) }()
 	wrote := false
 	interleaved := types.NewRepository(interleavedSchemaDatabase{db: f.db, afterRead: func() error {
 		_, writeErr := writer.Exec(f.ctx, `UPDATE issues SET name='changed',custom_properties=jsonb_build_object($2::text,9),updated_at=$3 WHERE id=$1`, issue, effort, next)

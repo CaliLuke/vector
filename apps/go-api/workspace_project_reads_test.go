@@ -12,6 +12,7 @@ import (
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_project_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	store "github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	"github.com/CaliLuke/loom/security"
 )
@@ -95,7 +96,7 @@ func workspaceProjectResponseBody(t *testing.T, metadata *api.RawJSONResponseMet
 	if metadata == nil || metadata.ContentType != "application/json" {
 		t.Fatalf("raw response metadata = %#v", metadata)
 	}
-	defer response.Close()
+	defer testsupport.Close(t, response)
 	body, err := io.ReadAll(response)
 	if err != nil {
 		t.Fatal(err)

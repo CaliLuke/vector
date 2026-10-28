@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -107,7 +108,7 @@ func projectStateWriteDatabase(t *testing.T, ctx context.Context) *pgx.Conn {
 		if err != nil {
 			return err
 		}
-		defer connection.Close(context.WithoutCancel(ctx))
+		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 		_, err = connection.Exec(ctx, `
 CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text NOT NULL UNIQUE);
 CREATE TABLE projects (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, archived_at timestamptz, default_state_id uuid);
@@ -127,12 +128,12 @@ INSERT INTO projects (id,workspace_id) VALUES ('`+writeTestProjectID+`','`+write
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = pair.Close() })
+	t.Cleanup(func() { testsupport.Close(t, pair) })
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = connection.Close(context.WithoutCancel(ctx)) })
+	t.Cleanup(func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) })
 	return connection
 }
 

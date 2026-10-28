@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/notionsync"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 )
 
 const exampleID = "00000000-0000-4000-8000-000000000001"
@@ -77,7 +78,7 @@ func TestTeamPreviewUsesItsOwnScopeWithoutWriting(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = journal.Close() }()
+	defer func() { testsupport.Close(t, journal) }()
 	if len(journal.Entries) != 0 {
 		t.Fatal("preview recorded writes")
 	}

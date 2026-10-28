@@ -13,6 +13,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	api "github.com/CaliLuke/go-plane/workspaceexports/gen/workspace_exports"
 	loomhttp "github.com/CaliLuke/loom/http"
 )
@@ -113,7 +114,7 @@ func TestWorkspaceExportProjectValuesRemainOriginalInTaskPayload(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer responseBody.Close()
+			defer testsupport.Close(t, responseBody)
 			response, err := io.ReadAll(responseBody)
 			if err != nil {
 				t.Fatal(err)

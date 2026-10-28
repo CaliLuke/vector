@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
 )
 
@@ -88,7 +89,7 @@ func TestPostgresIssueExportProducesAndStoresArchive(t *testing.T) {
 		t.Fatal(err)
 	}
 	content, err := io.ReadAll(file)
-	_ = file.Close()
+	testsupport.Close(t, file)
 	if err != nil {
 		t.Fatal(err)
 	}

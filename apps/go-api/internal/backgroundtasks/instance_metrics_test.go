@@ -16,6 +16,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	colmetricpb "go.opentelemetry.io/proto/otlp/collector/metrics/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -134,14 +135,14 @@ func TestOTLPInstanceMetricsExporterIgnoresUnrelatedHTTPTraceEndpoint(t *testing
 		if acceptErr != nil {
 			return
 		}
-		defer connection.Close()
+		defer testsupport.Close(t, connection)
 		var firstByte [1]byte
 		if _, readErr := io.ReadFull(connection, firstByte[:]); readErr == nil {
 			firstRead <- firstByte[0]
 		}
 	}()
 	t.Cleanup(func() {
-		_ = listener.Close()
+		testsupport.Close(t, listener)
 	})
 
 	// The ordinary traces endpoint is HTTP. Metrics still use their configured
@@ -202,10 +203,7 @@ func TestOTLPInstanceMetricsExporterPreservesMetricsCertificate(t *testing.T) {
 	})))
 	colmetricpb.RegisterMetricsServiceServer(server, &recordingMetricsService{received: &received})
 	go func() { _ = server.Serve(listener) }()
-	t.Cleanup(func() {
-		server.Stop()
-		_ = listener.Close()
-	})
+	t.Cleanup(server.Stop)
 	t.Setenv("OTLP_METRICS_PROTOCOL", "grpc")
 	t.Setenv("OTLP_ENDPOINT", "https://127.0.0.1:"+strconv.Itoa(listener.Addr().(*net.TCPAddr).Port))
 	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://unrelated.example.test:4318")
@@ -242,10 +240,7 @@ func TestOTLPInstanceMetricsExporterHonorsMetricsInsecureSetting(t *testing.T) {
 	server := grpc.NewServer()
 	colmetricpb.RegisterMetricsServiceServer(server, &recordingMetricsService{received: &received})
 	go func() { _ = server.Serve(listener) }()
-	t.Cleanup(func() {
-		server.Stop()
-		_ = listener.Close()
-	})
+	t.Cleanup(server.Stop)
 	t.Setenv("OTLP_METRICS_PROTOCOL", "grpc")
 	t.Setenv("OTLP_ENDPOINT", "http://"+listener.Addr().String())
 	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "https://unrelated.example.test:4317")

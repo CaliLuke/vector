@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/backgroundtasks"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -56,7 +57,7 @@ func exportJSONFiles(t *testing.T, artifact *exportArtifact) [][]map[string]any 
 			t.Fatal(err)
 		}
 		data, err := io.ReadAll(reader)
-		_ = reader.Close()
+		testsupport.Close(t, reader)
 		if err != nil {
 			t.Fatal(err)
 		}

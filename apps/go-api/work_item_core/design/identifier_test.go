@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	client "github.com/CaliLuke/go-plane/work_item_core/gen/http/work_item_core/client"
 	api "github.com/CaliLuke/go-plane/work_item_core/gen/work_item_core"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -169,7 +170,7 @@ func TestWorkItemGeneratedIdentifierClientServerPreservesSpelling(t *testing.T) 
 						t.Fatal(err)
 					}
 					body := identifierResponseBody(t, result)
-					defer body.Close()
+					defer testsupport.Close(t, body)
 					data, err := io.ReadAll(body)
 					if err != nil || string(data) != `{}` {
 						t.Fatalf("response=%s error=%v", data, err)

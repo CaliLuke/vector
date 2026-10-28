@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -51,7 +52,7 @@ INSERT INTO instance_configurations (id,key,value,category,is_encrypted,created_
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pair.Close()
+	defer testsupport.Close(t, pair)
 
 	pool, err := pgxpool.New(ctx, pair.SeedURL())
 	if err != nil {

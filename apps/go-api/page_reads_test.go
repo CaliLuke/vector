@@ -18,6 +18,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/pagereads"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	loomhttp "github.com/CaliLuke/loom/http"
 	"github.com/CaliLuke/loom/security"
 )
@@ -383,7 +384,7 @@ func TestPageLifecycleOptionsPreserveSourceRenderedBodyLengths(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer body.Close()
+			defer testsupport.Close(t, body)
 			payload, err := io.ReadAll(body)
 			if err != nil {
 				t.Fatal(err)
@@ -713,7 +714,7 @@ func decodePageResponse[T any](t *testing.T, response pageResponse) T {
 	if response.metadata == nil || response.metadata.ContentType != pageJSONContentType {
 		t.Fatalf("metadata=%+v", response.metadata)
 	}
-	defer response.body.Close()
+	defer testsupport.Close(t, response.body)
 	if err := json.NewDecoder(response.body).Decode(&result); err != nil {
 		t.Fatal(err)
 	}

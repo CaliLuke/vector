@@ -10,6 +10,7 @@ import (
 	"time"
 
 	activitylog "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -26,12 +27,12 @@ func TestPublisherEmitsCeleryConsumableProcessLogsMessage(t *testing.T) {
 	}
 	consumerChannel, err := consumerConnection.Channel()
 	if err != nil {
-		_ = consumerConnection.Close()
+		testsupport.Close(t, consumerConnection)
 		t.Fatalf("open consumer channel: %v", err)
 	}
 	if declareCeleryQueueErr := declareCeleryQueue(consumerChannel, queue); declareCeleryQueueErr != nil {
-		_ = consumerChannel.Close()
-		_ = consumerConnection.Close()
+		testsupport.Close(t, consumerChannel)
+		testsupport.Close(t, consumerConnection)
 		t.Fatal(declareCeleryQueueErr)
 	}
 	t.Cleanup(func() {

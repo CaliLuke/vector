@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
 )
 
@@ -126,6 +127,7 @@ func TestServerNormalizedDescriptionIsUnchangedAfterRestart(t *testing.T) {
 	if err = runner.Journal.Close(); err != nil {
 		t.Fatal(err)
 	}
+	runner.Journal = nil
 	runner.Journal, err = OpenJournal(path, "test-scope")
 	if err != nil {
 		t.Fatal(err)
@@ -167,8 +169,13 @@ func fixtureRunner(t *testing.T) (*Runner, *apiFixture) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = journal.Close() })
-	return &Runner{Vector: vector, Journal: journal, Apply: true}, api
+	runner := &Runner{Vector: vector, Journal: journal, Apply: true}
+	t.Cleanup(func() {
+		if runner.Journal != nil {
+			testsupport.Close(t, runner.Journal)
+		}
+	})
+	return runner, api
 }
 
 func TestRepeatImportUpdatesExistingObjectWithoutDuplicates(t *testing.T) {
@@ -221,6 +228,7 @@ func TestCommittedCreateWithLostResponseRecoversAfterRestart(t *testing.T) {
 	if err = runner.Journal.Close(); err != nil {
 		t.Fatal(err)
 	}
+	runner.Journal = nil
 	runner.Journal, err = OpenJournal(path, "test-scope")
 	if err != nil {
 		t.Fatal(err)
@@ -257,10 +265,12 @@ func TestJournalRefusesConcurrentRunnerAndWrongDestination(t *testing.T) {
 	if err := runner.Journal.Save(); err != nil {
 		t.Fatal(err)
 	}
+	path := runner.Journal.path
 	if err := runner.Journal.Close(); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := OpenJournal(runner.Journal.path, "different-workspace"); err == nil {
+	runner.Journal = nil
+	if _, err := OpenJournal(path, "different-workspace"); err == nil {
 		t.Fatal("journal accepted another destination")
 	}
 }

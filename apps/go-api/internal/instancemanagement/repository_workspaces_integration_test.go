@@ -11,6 +11,7 @@ import (
 
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -47,7 +48,7 @@ INSERT INTO users(id,email,first_name,last_name,is_bot) VALUES('00000000-0000-40
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pair.Close()
+	defer testsupport.Close(t, pair)
 
 	pool, err := pgxpool.New(ctx, pair.SeedURL())
 	if err != nil {
@@ -126,7 +127,7 @@ INSERT INTO users(id,email,first_name,last_name) VALUES('00000000-0000-4000-8000
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pair.Close()
+	defer testsupport.Close(t, pair)
 
 	pool, err := pgxpool.New(ctx, pair.SeedURL())
 	if err != nil {

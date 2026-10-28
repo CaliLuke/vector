@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -32,7 +33,7 @@ func TestRepositoryReadsAllHistoryRoutesAgainstPostgres(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer connection.Close(context.WithoutCancel(ctx))
+		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 		_, err = connection.Exec(ctx, `
 CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text, name text, logo text, logo_asset_id uuid, deleted_at timestamptz);
 CREATE TABLE projects (id uuid PRIMARY KEY, workspace_id uuid, identifier text, name text, cover_image text, cover_image_asset_id uuid, logo_props jsonb, description text, archived_at timestamptz, deleted_at timestamptz, guest_view_all_features boolean);
@@ -65,12 +66,12 @@ INSERT INTO comment_reactions(id,workspace_id,project_id,comment_id,actor_id,cre
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pair.Close()
+	defer testsupport.Close(t, pair)
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer connection.Close(context.WithoutCancel(ctx))
+	defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 	repository, err := NewRepository(connection)
 	if err != nil {
 		t.Fatal(err)

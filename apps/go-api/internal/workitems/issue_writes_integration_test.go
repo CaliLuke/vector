@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -17,7 +18,7 @@ func TestAPICreateDefaultIssueTypeMatchesDjangoFirstPrimaryKey(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer conn.Close(ctx)
+		defer testsupport.CloseContext(t, conn, ctx)
 		_, err = conn.Exec(ctx, `
 CREATE TABLE work_item_type_settings(workspace_id uuid PRIMARY KEY, enabled boolean NOT NULL);
 CREATE TABLE issue_types(id uuid PRIMARY KEY, workspace_id uuid, is_default boolean NOT NULL, deleted_at timestamptz, created_at timestamptz NOT NULL);
@@ -34,13 +35,13 @@ INSERT INTO project_issue_types(project_id,issue_type_id) VALUES
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pair.Close()
+	defer testsupport.Close(t, pair)
 
 	conn, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer conn.Close(ctx)
+	defer testsupport.CloseContext(t, conn, ctx)
 
 	var selected string
 	if err := conn.QueryRow(ctx, apiDefaultIssueTypeSQL, "00000000-0000-4000-8000-000000000010").Scan(&selected); err != nil {

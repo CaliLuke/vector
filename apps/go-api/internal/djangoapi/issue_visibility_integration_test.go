@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -23,12 +24,12 @@ func visibilityDatabase(t *testing.T) (context.Context, *pgx.Conn, string, map[s
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = pair.Close() })
+	t.Cleanup(func() { testsupport.Close(t, pair) })
 	db, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = db.Close(context.WithoutCancel(ctx)) })
+	t.Cleanup(func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) })
 	_, err = db.Exec(ctx, `
  CREATE TABLE workspaces(id uuid PRIMARY KEY,deleted_at timestamptz);
  CREATE TABLE projects(id uuid PRIMARY KEY,workspace_id uuid,deleted_at timestamptz,guest_view_all_features bool DEFAULT false);

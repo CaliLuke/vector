@@ -11,6 +11,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/bootstrap"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/CaliLuke/go-plane/internal/userapitokens"
 	"github.com/jackc/pgx/v5"
@@ -23,12 +24,12 @@ func TestCreateTokenOnApplicationSchema(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = pair.Close() })
+	t.Cleanup(func() { testsupport.Close(t, pair) })
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = connection.Close(context.WithoutCancel(ctx)) })
+	t.Cleanup(func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) })
 	owner := uuid.MustParse("00000000-0000-4000-8000-000000000001")
 	_, err = connection.Exec(ctx, `INSERT INTO users
 	(id,username,email,password,first_name,last_name,avatar,date_joined,created_at,updated_at,

@@ -14,6 +14,7 @@ import (
 	api "github.com/CaliLuke/go-plane/gen/cycle_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/cyclereads"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/loom/security"
 )
 
@@ -181,60 +182,60 @@ func TestCycleReadsTenMethodsUseDistinctRepositoryPaths(t *testing.T) {
 	if _, body, err := service.WorkspaceList(ctx, &api.WorkspaceListPayload{Slug: "alpha"}); err != nil {
 		t.Fatal(err)
 	} else {
-		body.Close()
+		testsupport.Close(t, body)
 	}
 	if _, body, err := service.ArchivedList(ctx, &api.ArchivedListPayload{Slug: "alpha", ProjectID: projectID}); err != nil {
 		t.Fatal(err)
 	} else {
-		body.Close()
+		testsupport.Close(t, body)
 	}
 	repository.data = json.RawMessage(cycleFixture)
 	if _, body, err := service.ArchivedDetail(ctx, &api.ArchivedDetailPayload{Slug: "alpha", ProjectID: projectID, Pk: cycleID}); err != nil {
 		t.Fatal(err)
 	} else {
-		body.Close()
+		testsupport.Close(t, body)
 	}
 	repository.data = json.RawMessage(`[` + cycleFixture + `]`)
 	if _, body, err := service.List(ctx, &api.ListPayload{Slug: "alpha", ProjectID: projectID}); err != nil {
 		t.Fatal(err)
 	} else {
-		body.Close()
+		testsupport.Close(t, body)
 	}
 	repository.data = json.RawMessage(cycleAnalyticsFixture)
 	if _, body, err := service.Analytics(ctx, &api.AnalyticsPayload{Slug: "alpha", ProjectID: projectID, CycleID: cycleID}); err != nil {
 		t.Fatal(err)
 	} else {
-		body.Close()
+		testsupport.Close(t, body)
 	}
 	repository.data = json.RawMessage(cycleFixture)
 	if _, body, err := service.ArchiveDetail(ctx, &api.ArchiveDetailPayload{Slug: "alpha", ProjectID: projectID, CycleID: cycleID}); err != nil {
 		t.Fatal(err)
 	} else {
-		body.Close()
+		testsupport.Close(t, body)
 	}
 	repository.data = json.RawMessage(cycleIssuePageFixture)
 	if _, body, err := service.Issues(ctx, &api.IssuesPayload{Slug: "alpha", ProjectID: projectID, CycleID: cycleID}); err != nil {
 		t.Fatal(err)
 	} else {
-		body.Close()
+		testsupport.Close(t, body)
 	}
 	repository.data = json.RawMessage(cycleIssueFixture)
 	if _, body, err := service.IssueDetail(ctx, &api.IssueDetailPayload{Slug: "alpha", ProjectID: projectID, CycleID: cycleID, IssueID: issueID}); err != nil {
 		t.Fatal(err)
 	} else {
-		body.Close()
+		testsupport.Close(t, body)
 	}
 	repository.data = json.RawMessage(cycleProgressFixture)
 	if _, body, err := service.Progress(ctx, &api.ProgressPayload{Slug: "alpha", ProjectID: projectID, CycleID: cycleID}); err != nil {
 		t.Fatal(err)
 	} else {
-		body.Close()
+		testsupport.Close(t, body)
 	}
 	repository.data = json.RawMessage(cycleFixture)
 	if _, body, err := service.Detail(ctx, &api.DetailPayload{Slug: "alpha", ProjectID: projectID, Pk: cycleID}); err != nil {
 		t.Fatal(err)
 	} else {
-		body.Close()
+		testsupport.Close(t, body)
 	}
 
 	want := []string{"workspace_list", "archived_list", "archived_detail", "list", "analytics", "archive_detail", "issues", "issue_detail", "progress", "detail"}
@@ -262,7 +263,7 @@ func TestCycleAnalyticsPreservesNullablePointKeysAndSnapshotIdentifiers(t *testi
 	if metadata == nil || metadata.ContentType != "application/json" {
 		t.Fatalf("metadata=%+v", metadata)
 	}
-	defer result.Close()
+	defer testsupport.Close(t, result)
 	body, err := io.ReadAll(result)
 	if err != nil {
 		t.Fatal(err)
@@ -286,7 +287,7 @@ func TestCycleAnalyticsPreservesExplicitEmptyType(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	if repository.analyticsType != "" {
 		t.Fatalf("explicit empty analytics type=%q", repository.analyticsType)
 	}
@@ -307,7 +308,7 @@ func TestCycleDetailRecordsRecentVisitBestEffortAfterSuccess(t *testing.T) {
 	if metadata == nil || metadata.ContentType != "application/json" {
 		t.Fatalf("metadata=%+v", metadata)
 	}
-	defer cycle.Close()
+	defer testsupport.Close(t, cycle)
 	body, err := io.ReadAll(cycle)
 	if err != nil {
 		t.Fatal(err)

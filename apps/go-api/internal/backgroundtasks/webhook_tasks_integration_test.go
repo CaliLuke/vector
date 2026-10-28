@@ -18,6 +18,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/selvedge"
 	"github.com/CaliLuke/selvedge/retry"
 	"github.com/google/uuid"
@@ -47,7 +48,7 @@ func TestPostgresWebhookModelActivityDeliversSignedPayloadRetriesAndDeactivates(
 			}
 			conn, _, err := hijacker.Hijack()
 			if err == nil {
-				_ = conn.Close() // transport exception triggers one durable retry
+				testsupport.Close(t, conn) // transport exception triggers one durable retry
 			}
 			return
 		}

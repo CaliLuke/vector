@@ -14,6 +14,7 @@ import (
 
 	api "github.com/CaliLuke/go-plane/externalintegrations/gen/external_integrations"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 )
 
 type externalIntegrationsTestRepository struct {
@@ -130,7 +131,7 @@ func TestUnsplashSuccessPreservesJSONValue(t *testing.T) {
 			t.Fatal(err)
 		}
 		got, err := io.ReadAll(body)
-		body.Close()
+		testsupport.Close(t, body)
 		if err != nil || string(got) != payload {
 			t.Fatalf("body=%s error=%v, want %s", got, err, payload)
 		}

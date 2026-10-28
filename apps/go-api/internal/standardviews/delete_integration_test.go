@@ -9,6 +9,7 @@ import (
 
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -103,12 +104,12 @@ func deleteViewDatabase(t *testing.T) *pgx.Conn {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = pair.Close() })
+	t.Cleanup(func() { testsupport.Close(t, pair) })
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = connection.Close(ctx) })
+	t.Cleanup(func() { testsupport.CloseContext(t, connection, ctx) })
 	if _, err := connection.Exec(ctx, `CREATE TABLE user_recent_visits (workspace_id uuid, project_id uuid, entity_identifier uuid, entity_name text)`); err != nil {
 		t.Fatal(err)
 	}

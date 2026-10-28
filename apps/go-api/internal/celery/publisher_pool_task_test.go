@@ -8,6 +8,7 @@ import (
 	"time"
 
 	activitylog "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 )
 
 type taskPublisherWorker struct {
@@ -39,7 +40,7 @@ func TestPublisherPoolTaskForwardsRequestAndReturnsWorkerAfterError(t *testing.T
 	failure := errors.New("broker confirmation failed")
 	worker := &taskPublisherWorker{err: failure}
 	pool := newPublisherPool([]publisherWorker{worker})
-	t.Cleanup(func() { _ = pool.Close() })
+	t.Cleanup(func() { testsupport.Close(t, pool) })
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	args := []any{"asset-id"}
@@ -76,7 +77,7 @@ func TestPublisherPoolTaskSharesBoundedLanesWithLogs(t *testing.T) {
 	entered := make(chan struct{}, 1)
 	release := make(chan struct{})
 	pool := newPublisherPool([]publisherWorker{&blockingPublisherWorker{entered: entered, release: release}})
-	t.Cleanup(func() { _ = pool.Close() })
+	t.Cleanup(func() { testsupport.Close(t, pool) })
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	completed := make(chan error, 1)

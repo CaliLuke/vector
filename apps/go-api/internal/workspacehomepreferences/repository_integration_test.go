@@ -10,6 +10,7 @@ import (
 
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -36,7 +37,7 @@ func startHomePreferencesDB(t *testing.T) (*pgx.Conn, context.Context) {
 		if err != nil {
 			return err
 		}
-		defer connection.Close(context.WithoutCancel(ctx))
+		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 		_, err = connection.Exec(ctx, `
 CREATE TABLE workspaces (
 	id uuid PRIMARY KEY,
@@ -78,7 +79,7 @@ INSERT INTO workspaces (id,slug) VALUES
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = connection.Close(context.WithoutCancel(ctx)) })
+	t.Cleanup(func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) })
 	return connection, ctx
 }
 

@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/jackc/pgx/v5"
 )
@@ -16,7 +17,7 @@ func hierarchyConnection(t *testing.T, f projectTypeFixture) *pgx.Conn {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = connection.Close(context.WithoutCancel(f.ctx)) })
+	t.Cleanup(func() { testsupport.CloseContext(t, connection, context.WithoutCancel(f.ctx)) })
 	return connection
 }
 func TestHierarchyQueuedReviewRechecksAdministrator(t *testing.T) {

@@ -98,7 +98,9 @@ func checkStorageRustFS(t *testing.T, config StorageConfig) {
 		t.Fatal(err)
 	}
 	got, readErr := io.ReadAll(getResponse.Body)
-	_ = getResponse.Body.Close()
+	if closeErr := getResponse.Body.Close(); closeErr != nil {
+		t.Errorf("close HTTP response body: %v", closeErr)
+	}
 	if readErr != nil {
 		t.Fatal(readErr)
 	}
@@ -136,7 +138,11 @@ func checkStoragePostCORS(t *testing.T, ctx context.Context, postURL, origin str
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer response.Body.Close()
+	defer func() {
+		if closeErr := response.Body.Close(); closeErr != nil {
+			t.Errorf("close HTTP response body: %v", closeErr)
+		}
+	}()
 	if response.StatusCode != http.StatusOK && response.StatusCode != http.StatusNoContent {
 		body, _ := io.ReadAll(response.Body)
 		t.Fatalf("POST CORS preflight status=%d body=%s", response.StatusCode, body)
@@ -239,7 +245,11 @@ func postStorageForm(t *testing.T, ctx context.Context, postURL string, values m
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer response.Body.Close()
+	defer func() {
+		if closeErr := response.Body.Close(); closeErr != nil {
+			t.Errorf("close HTTP response body: %v", closeErr)
+		}
+	}()
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
 		t.Fatal(err)

@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -31,7 +32,7 @@ func TestIssueModelPostgresInvariants(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer conn.Close(ctx)
+		defer testsupport.CloseContext(t, conn, ctx)
 		_, err = conn.Exec(ctx, `
 CREATE FUNCTION work_item_schema_lock(workspace uuid) RETURNS void LANGUAGE sql AS $$
  SELECT pg_advisory_xact_lock(hashtextextended(workspace::text || ':work-item-schema',0));
@@ -75,7 +76,7 @@ INSERT INTO issue_sequences(id,project_id,sequence,deleted,deleted_at) VALUES
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pair.Close()
+	defer testsupport.Close(t, pair)
 	pool, err := pgxpool.New(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)

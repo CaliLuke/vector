@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/emersion/go-sasl"
 	"github.com/emersion/go-smtp"
 )
@@ -70,7 +71,7 @@ func startSink(t *testing.T, failure Kind) (SMTPConfig, <-chan string) {
 	}
 	done := make(chan struct{})
 	go func() { defer close(done); _ = server.Serve(listener) }()
-	t.Cleanup(func() { _ = server.Close(); <-done })
+	t.Cleanup(func() { testsupport.Close(t, server); <-done })
 	return SMTPConfig{Host: "127.0.0.1", Port: listener.Addr().(*net.TCPAddr).Port, Username: "fixture", Password: "fixture-password"}, messages
 }
 

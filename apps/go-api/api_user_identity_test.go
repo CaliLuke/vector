@@ -10,6 +10,7 @@ import (
 
 	api "github.com/CaliLuke/go-plane/apiuseridentity/gen/api_user_identity"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/loom/security"
 	googleuuid "github.com/google/uuid"
 )
@@ -47,7 +48,7 @@ func TestAPIIdentityRendersCompactJSONBeforeCompression(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	got, err := io.ReadAll(body)
 	if err != nil || string(got) != `{"id":"user","email":null,"first_name":"Zoë"}` {
 		t.Fatalf("body=%s err=%v", got, err)

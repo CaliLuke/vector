@@ -15,6 +15,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	workitemstore "github.com/CaliLuke/go-plane/internal/workitems"
 	server "github.com/CaliLuke/go-plane/work_item_core/gen/http/work_item_core/server"
 	api "github.com/CaliLuke/go-plane/work_item_core/gen/work_item_core"
@@ -199,7 +200,7 @@ func TestWorkItemCorePathValuesOverrideConflictingQueryValues(t *testing.T) {
 		t.Fatal(err)
 	}
 	if body != nil {
-		_ = body.Close()
+		testsupport.Close(t, body)
 	}
 	request := repository.request
 	if request.Slug != "path-workspace" || request.Params["slug"] != "path-workspace" || request.Params["identifier"] != "PROJ-17" || request.Params["search"] != "term" {

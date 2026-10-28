@@ -9,6 +9,7 @@ import (
 	"time"
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/jackc/pgx/v5"
@@ -22,7 +23,7 @@ func TestPublicIntakeEditCannotUndoPropertyPreservation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = connection.Close(context.WithoutCancel(f.ctx)) }()
+	defer func() { testsupport.CloseContext(t, connection, context.WithoutCancel(f.ctx)) }()
 	writer, err := workitems.NewRepository(connection, noRequestEffects{t}, "http://example.test")
 	if err != nil {
 		t.Fatal(err)

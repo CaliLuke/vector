@@ -9,6 +9,7 @@ import (
 
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -29,7 +30,7 @@ func TestProjectAnalyticsAuthorizationMatchesPermissionBranches(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer connection.Close(context.WithoutCancel(ctx))
+		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 		_, err = connection.Exec(ctx, `
 CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text NOT NULL);
 CREATE TABLE workspace_members (
@@ -69,7 +70,7 @@ INSERT INTO project_members(project_id,member_id,role,is_active) VALUES
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = connection.Close(context.WithoutCancel(ctx)) })
+	t.Cleanup(func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) })
 	repository, err := NewRepository(connection)
 	if err != nil {
 		t.Fatal(err)
@@ -117,7 +118,7 @@ func TestAnalyticsIssueManagerAndWorkspaceMemberScopes(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer connection.Close(context.WithoutCancel(ctx))
+		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 		_, err = connection.Exec(ctx, `
 CREATE TABLE workspaces(id uuid PRIMARY KEY,slug text NOT NULL,deleted_at timestamptz);
 CREATE TABLE workspace_members(workspace_id uuid NOT NULL,member_id uuid NOT NULL,role integer NOT NULL,is_active boolean NOT NULL,deleted_at timestamptz,created_at timestamptz NOT NULL);
@@ -162,7 +163,7 @@ INSERT INTO intake_issues(issue_id,status,created_at) VALUES ('00000000-0000-400
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = connection.Close(context.WithoutCancel(ctx)) })
+	t.Cleanup(func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) })
 	repository, err := NewRepository(connection)
 	if err != nil {
 		t.Fatal(err)

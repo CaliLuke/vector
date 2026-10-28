@@ -16,6 +16,7 @@ import (
 	activitystore "github.com/CaliLuke/go-plane/internal/activityreads"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	loomhttp "github.com/CaliLuke/loom/http"
 	"github.com/CaliLuke/loom/security"
 	"github.com/google/uuid"
@@ -116,7 +117,7 @@ func TestActivityReadsAPIKeyAuthorizationAndQueryForwarding(t *testing.T) {
 		Slug: "demo", ProjectID: projectID, IssueID: issueID,
 	})
 	if body != nil {
-		_ = body.Close()
+		testsupport.Close(t, body)
 	}
 	if err != nil {
 		t.Fatal(err)
@@ -156,7 +157,7 @@ func TestActivityReadsRoutesUserAndAPIOperationsToTheirConfiguredRepositories(t 
 		Slug: "demo", ProjectID: uuid.New().String(), IssueID: uuid.New().String(),
 	})
 	if apiBody != nil {
-		_ = apiBody.Close()
+		testsupport.Close(t, apiBody)
 	}
 	if err != nil {
 		t.Fatal(err)
@@ -167,7 +168,7 @@ func TestActivityReadsRoutesUserAndAPIOperationsToTheirConfiguredRepositories(t 
 	}
 	_, userBody, err := service.GetAPIUsersMeActivities(userCtx, &api.GetAPIUsersMeActivitiesPayload{})
 	if userBody != nil {
-		_ = userBody.Close()
+		testsupport.Close(t, userBody)
 	}
 	if err != nil {
 		t.Fatal(err)
@@ -207,7 +208,7 @@ func TestActivityReadsSessionAuthenticationAndProjection(t *testing.T) {
 	if decodeErr := json.NewDecoder(body).Decode(&decoded); decodeErr != nil {
 		t.Fatal(decodeErr)
 	}
-	_ = body.Close()
+	testsupport.Close(t, body)
 	results := decoded["results"].([]any)
 	activity := results[0].(map[string]any)
 	if len(results) != 1 || activity["created_at"] != "2026-01-10T13:30:00+05:30" || activity["icon_prop"].(map[string]any)["created_at"] != "2026-01-10T08:00:00Z" || activity["description_json"].(map[string]any)["updated_at"] != "2026-01-10T08:00:00Z" {
@@ -230,7 +231,7 @@ func TestActivityReadsRejectInvalidSessionTimezones(t *testing.T) {
 			}
 			_, body, err := service.GetAPIUsersMeActivities(ctx, &api.GetAPIUsersMeActivitiesPayload{})
 			if body != nil {
-				_ = body.Close()
+				testsupport.Close(t, body)
 			}
 			var apiError *api.ActivityErrorResponseBody
 			if !errors.As(err, &apiError) || apiError.Name != statusName || repository.authorizeCalls != 1 || repository.readCalls != 0 {
@@ -252,7 +253,7 @@ func TestActivityReadsRejectAuthenticationFailures(t *testing.T) {
 	}
 	_, body, err := service.GetAPIUsersMeActivities(context.Background(), &api.GetAPIUsersMeActivitiesPayload{})
 	if body != nil {
-		_ = body.Close()
+		testsupport.Close(t, body)
 	}
 	if !errors.As(err, &apiError) || apiError.Name != "status_401" {
 		t.Fatalf("session error=%T %#v", err, err)
@@ -297,7 +298,7 @@ func TestActivityReadsAuthorizeBeforeThrottle(t *testing.T) {
 		Slug: "demo", ProjectID: uuid.New().String(), IssueID: uuid.New().String(),
 	})
 	if body != nil {
-		_ = body.Close()
+		testsupport.Close(t, body)
 	}
 	var apiError *api.ActivityErrorResponseBody
 	if !errors.As(err, &apiError) || apiError.Name != "status_403" {
@@ -358,7 +359,7 @@ func TestActivityReadsRawJSONPreservesProjectionAndLargeIntegers(t *testing.T) {
 		t.Fatal(err)
 	}
 	raw, err := io.ReadAll(body)
-	_ = body.Close()
+	testsupport.Close(t, body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -399,7 +400,7 @@ func TestUserActivityReadsIgnoreFieldsProjection(t *testing.T) {
 		t.Fatal(err)
 	}
 	raw, err := io.ReadAll(body)
-	_ = body.Close()
+	testsupport.Close(t, body)
 	if err != nil {
 		t.Fatal(err)
 	}

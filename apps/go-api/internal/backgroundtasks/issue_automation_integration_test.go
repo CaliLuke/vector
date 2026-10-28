@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/selvedge"
 	"github.com/CaliLuke/selvedge/retry"
 	"github.com/google/uuid"
@@ -78,7 +79,7 @@ func TestPostgresIssueAutomationArchivesAndClosesWithRecoverableEffects(t *testi
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer activityStore.Close()
+	defer testsupport.Close(t, activityStore)
 	app := selvedge.NewApp(
 		selvedge.WithDatabase(executionURL),
 		selvedge.WithServiceName("plane-issue-automation-integration-test"),

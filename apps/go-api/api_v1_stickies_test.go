@@ -19,6 +19,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	stickystore "github.com/CaliLuke/go-plane/internal/stickies"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	loomhttp "github.com/CaliLuke/loom/http"
 	"github.com/google/uuid"
 )
@@ -79,7 +80,7 @@ func TestAPIV1StickyOptionsBodiesMatchRecordedDRFMetadata(t *testing.T) {
 			if err != nil {
 				t.Fatalf("OPTIONS service call failed: %v", err)
 			}
-			defer body.Close()
+			defer testsupport.Close(t, body)
 			if metadata == nil || metadata.ContentType != "application/json" {
 				t.Fatalf("OPTIONS metadata = %#v, want application/json", metadata)
 			}
@@ -475,7 +476,7 @@ func TestAPIV1StickyDetailOptionsOmitsUpdateActionForMissingObject(t *testing.T)
 	if err != nil {
 		t.Fatalf("missing object OPTIONS error = %v, want metadata without PUT action", err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	if metadata == nil || metadata.ContentType != "application/json" {
 		t.Fatalf("missing object OPTIONS metadata = %#v", metadata)
 	}
@@ -501,7 +502,7 @@ func TestAPIV1StickyMalformedDetailOptionsOmitsUpdateAction(t *testing.T) {
 	if err != nil {
 		t.Fatalf("malformed detail OPTIONS error = %v, want metadata without PUT action", err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	if metadata == nil || metadata.ContentType != "application/json" {
 		t.Fatalf("malformed detail OPTIONS metadata = %#v", metadata)
 	}

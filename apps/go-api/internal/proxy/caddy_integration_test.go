@@ -404,7 +404,11 @@ func assertMembershipAllow(t *testing.T, method, url string, emitAllow bool, wan
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer response.Body.Close()
+	defer func() {
+		if closeErr := response.Body.Close(); closeErr != nil {
+			t.Errorf("close HTTP response body: %v", closeErr)
+		}
+	}()
 	if response.StatusCode != wantStatus || response.Header.Get("Allow") != wantAllow {
 		t.Fatalf("%s %s status=%d Allow=%q, want status=%d Allow=%q", method, url, response.StatusCode, response.Header.Get("Allow"), wantStatus, wantAllow)
 	}
@@ -424,7 +428,11 @@ func assertOptionsTarget(t *testing.T, url, wantBody, wantAllow string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer response.Body.Close()
+	defer func() {
+		if closeErr := response.Body.Close(); closeErr != nil {
+			t.Errorf("close HTTP response body: %v", closeErr)
+		}
+	}()
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		t.Fatal(err)
@@ -549,7 +557,11 @@ func TestProxyHostGatewayConfiguration(t *testing.T) {
 func assertTarget(t *testing.T, method, url, want string) {
 	t.Helper()
 	response := proxyRequestWithRetry(t, method, url, nil)
-	defer response.Body.Close()
+	defer func() {
+		if closeErr := response.Body.Close(); closeErr != nil {
+			t.Errorf("close HTTP response body: %v", closeErr)
+		}
+	}()
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		t.Fatalf("read %s %s: %v", method, url, err)
@@ -566,8 +578,8 @@ func assertGoProxyResponse(t *testing.T, method, url string) {
 	t.Helper()
 	response := proxyRequestWithRetry(t, method, url, nil)
 	t.Cleanup(func() {
-		if err := response.Body.Close(); err != nil {
-			t.Errorf("close proxy response: %v", err)
+		if closeErr := response.Body.Close(); closeErr != nil {
+			t.Errorf("close proxy response: %v", closeErr)
 		}
 	})
 	body, err := io.ReadAll(response.Body)
@@ -585,7 +597,11 @@ func assertGoResponseWithAllow(t *testing.T, method, url, wantAllow string) {
 	response := proxyRequestWithRetry(t, method, url, map[string]string{
 		"X-Test-Emit-Allow": "django-owned methods",
 	})
-	defer response.Body.Close()
+	defer func() {
+		if closeErr := response.Body.Close(); closeErr != nil {
+			t.Errorf("close HTTP response body: %v", closeErr)
+		}
+	}()
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		t.Fatalf("read %s %s: %v", method, url, err)
@@ -608,7 +624,11 @@ func assertGoPreflightWithoutAllow(t *testing.T, url string, headers map[string]
 	const method, wantTarget = http.MethodOptions, "go"
 	t.Helper()
 	response := proxyRequestWithRetry(t, method, url, headers)
-	defer response.Body.Close()
+	defer func() {
+		if closeErr := response.Body.Close(); closeErr != nil {
+			t.Errorf("close HTTP response body: %v", closeErr)
+		}
+	}()
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		t.Fatalf("read %s %s: %v", method, url, err)

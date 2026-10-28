@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -44,7 +45,7 @@ func TestPostUserAuthWorkflowJoinsAcceptedInvitationsAndPublishesWorkspaceEvents
 		if err != nil {
 			return err
 		}
-		defer connection.Close(context.WithoutCancel(ctx))
+		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 		_, err = connection.Exec(ctx, `
 CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text NOT NULL);
 CREATE TABLE workspace_member_invites (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, email text NOT NULL, accepted boolean NOT NULL, role smallint NOT NULL, created_at timestamptz NOT NULL, deleted_at timestamptz);
@@ -68,7 +69,7 @@ CREATE UNIQUE INDEX project_member_active_unique ON project_members(project_id,m
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer connection.Close(context.WithoutCancel(ctx))
+	defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 	const (
 		userID      = "11111111-1111-1111-1111-111111111111"
 		creatorID   = "22222222-2222-2222-2222-222222222222"

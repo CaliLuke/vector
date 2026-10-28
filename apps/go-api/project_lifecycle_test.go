@@ -12,6 +12,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	store "github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	api "github.com/CaliLuke/go-plane/projectlifecycle/gen/project_lifecycle"
 	"github.com/CaliLuke/loom/security"
@@ -184,7 +185,7 @@ func TestProjectLifecycleLiteReadPreservesOriginalIntegerQuery(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	raw, _ := io.ReadAll(body)
 	if metadata.ContentType != "application/json" || string(raw) != `{"results":[{"id":"p"}]}` {
 		t.Fatalf("raw=%s metadata=%v", raw, metadata)

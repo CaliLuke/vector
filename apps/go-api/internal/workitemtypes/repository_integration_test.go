@@ -9,6 +9,7 @@ import (
 	"time"
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/jackc/pgx/v5"
 )
@@ -40,7 +41,7 @@ func newTypeFixture(t *testing.T) typeFixture {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = db.Close(context.WithoutCancel(ctx)) })
+	t.Cleanup(func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) })
 	owner, member, outsider, workspace, project := uuid.New().String(), uuid.New().String(), uuid.New().String(), uuid.New().String(), uuid.New().String()
 	exec := func(sql string, args ...any) {
 		t.Helper()

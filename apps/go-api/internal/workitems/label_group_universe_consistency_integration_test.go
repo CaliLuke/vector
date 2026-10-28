@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -17,7 +18,7 @@ func TestGroupedLabelSubgroupUniverseExcludesPrivateProjectLabels(t *testing.T) 
 		if err != nil {
 			return err
 		}
-		defer func() { _ = connection.Close(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) }()
 		_, err = connection.Exec(ctx, `
 CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text NOT NULL, deleted_at timestamptz);
 CREATE TABLE projects (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, deleted_at timestamptz, archived_at timestamptz);
@@ -49,13 +50,13 @@ INSERT INTO issue_labels (issue_id, label_id) VALUES
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = pair.Close() })
+	t.Cleanup(func() { testsupport.Close(t, pair) })
 
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = connection.Close(context.WithoutCancel(ctx)) })
+	t.Cleanup(func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) })
 	repository, err := NewRepository(connection, modelPublisher{}, "")
 	if err != nil {
 		t.Fatal(err)

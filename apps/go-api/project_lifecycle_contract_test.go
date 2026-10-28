@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	client "github.com/CaliLuke/go-plane/projectlifecycle/gen/http/project_lifecycle/client"
 	api "github.com/CaliLuke/go-plane/projectlifecycle/gen/project_lifecycle"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -48,7 +49,7 @@ func TestProjectLifecycleGeneratedClientPreservesSourceBodyAndMediaError(t *test
 		t.Fatal(err)
 	}
 	body := result.(*api.PostAPIWorkspacesBySlugProjectsResponseData).Body
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	got, err := io.ReadAll(body)
 	if err != nil || string(got) != raw {
 		t.Fatalf("raw response changed: %s,%v", got, err)

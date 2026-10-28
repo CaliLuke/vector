@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	oauthredirectssvr "github.com/CaliLuke/go-plane/oauthredirects/gen/http/oauth_redirects/server"
 	loomhttp "github.com/CaliLuke/loom/http"
 )
@@ -143,7 +144,7 @@ func TestOAuthGiteaAppCallbackWithoutInitiationSessionUsesRelativeErrorRedirect(
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	want := "?error_code=5123&error_message=GITEA_OAUTH_PROVIDER_ERROR"
 	if response.Location != want {
 		t.Fatalf("application Gitea callback Location=%q, want %q", response.Location, want)

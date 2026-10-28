@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
 )
 
@@ -13,7 +14,7 @@ func TestPublisherPoolSoftDeleteForwardsRequestAndReturnsWorkerAfterError(t *tes
 	failure := errors.New("broker confirmation failed")
 	worker := &taskPublisherWorker{err: failure}
 	pool := newPublisherPool([]publisherWorker{worker})
-	t.Cleanup(func() { _ = pool.Close() })
+	t.Cleanup(func() { testsupport.Close(t, pool) })
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

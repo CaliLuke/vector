@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -18,7 +19,7 @@ func TestRepositoryCreatesDjangoAccountDefaultsAndUpdatesLoginMetadata(t *testin
 		if err != nil {
 			return err
 		}
-		defer connection.Close(context.WithoutCancel(ctx))
+		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 		_, err = connection.Exec(ctx, `
 CREATE TABLE users (
   id uuid PRIMARY KEY, username varchar(128) UNIQUE NOT NULL, email varchar(255) UNIQUE NOT NULL,
@@ -71,12 +72,12 @@ CREATE TABLE workspace_member_invites (
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pair.Close()
+	defer testsupport.Close(t, pair)
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer connection.Close(context.WithoutCancel(ctx))
+	defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 	repository, err := NewRepository(connection, nil, false)
 	if err != nil {
 		t.Fatal(err)

@@ -8,6 +8,7 @@ import (
 	"time"
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/jackc/pgx/v5"
@@ -32,7 +33,7 @@ func TestDeletedItemUsageSerializesWithStructuralEdit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = editor.Close(context.WithoutCancel(f.ctx)) })
+	t.Cleanup(func() { testsupport.CloseContext(t, editor, context.WithoutCancel(f.ctx)) })
 	writer, err := f.db.Begin(f.ctx)
 	if err != nil {
 		t.Fatal(err)

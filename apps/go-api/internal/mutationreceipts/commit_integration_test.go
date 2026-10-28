@@ -10,11 +10,13 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
 
 	receipts "github.com/CaliLuke/go-plane/internal/mutationreceipts"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/require"
 )
@@ -29,11 +31,12 @@ func dropCommitAcknowledgement(t *testing.T, connection string) (*pgxpool.Pool, 
 	destination := net.JoinHostPort(config.ConnConfig.Host, strconv.Itoa(int(config.ConnConfig.Port)))
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	require.NoError(t, err)
+	closeListener := sync.OnceFunc(func() { testsupport.Close(t, listener) })
 	dropped, finished := make(chan struct{}), make(chan struct{})
 	ctx, cancel := context.WithCancel(t.Context())
 	t.Cleanup(func() {
 		cancel()
-		_ = listener.Close()
+		closeListener()
 		select {
 		case <-finished:
 		case <-time.After(5 * time.Second):
@@ -46,14 +49,19 @@ func dropCommitAcknowledgement(t *testing.T, connection string) (*pgxpool.Pool, 
 		if acceptErr != nil {
 			return
 		}
-		_ = listener.Close() // A pool replacement must fail promptly, not wait for a second accept.
-		defer func() { _ = client.Close() }()
+		closeListener() // A pool replacement must fail promptly, not wait for a second accept.
+		closeClient := sync.OnceFunc(func() { testsupport.Close(t, client) })
+		defer closeClient()
 		server, dialErr := (&net.Dialer{}).DialContext(ctx, "tcp", destination)
 		if dialErr != nil {
 			return
 		}
-		defer func() { _ = server.Close() }()
-		stop := context.AfterFunc(ctx, func() { _ = client.Close(); _ = server.Close() })
+		closeConnections := sync.OnceFunc(func() {
+			closeClient()
+			testsupport.Close(t, server)
+		})
+		defer closeConnections()
+		stop := context.AfterFunc(ctx, closeConnections)
 		defer stop()
 		// StartupMessage has a length prefix but no message type.
 		startup, readErr := readPGPacket(client)
@@ -84,7 +92,7 @@ func dropCommitAcknowledgement(t *testing.T, connection string) (*pgxpool.Pool, 
 				}
 			}
 		}()
-		defer func() { _ = client.Close(); _ = server.Close(); <-forwarding }()
+		defer func() { closeConnections(); <-forwarding }()
 		for {
 			kind := make([]byte, 1)
 			if _, readErr := io.ReadFull(server, kind); readErr != nil {

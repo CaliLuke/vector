@@ -11,6 +11,7 @@ import (
 	"testing"
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -48,19 +49,19 @@ func cycleLabelFixture(t *testing.T) *Repository {
 		if err != nil {
 			return err
 		}
-		defer func() { _ = connection.Close(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) }()
 		_, err = connection.Exec(ctx, cycleIssueQuerySchema+liveLabelSeed)
 		return err
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = pair.Close() })
+	t.Cleanup(func() { testsupport.Close(t, pair) })
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = connection.Close(context.WithoutCancel(ctx)) })
+	t.Cleanup(func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) })
 	repository, err := NewRepository(connection)
 	if err != nil {
 		t.Fatal(err)

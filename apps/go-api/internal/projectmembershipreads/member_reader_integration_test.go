@@ -10,6 +10,7 @@ import (
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
@@ -26,7 +27,7 @@ func projectRosterDatabase(t *testing.T) *pgx.Conn {
 		if err != nil {
 			return err
 		}
-		defer func() { _ = conn.Close(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.CloseContext(t, conn, context.WithoutCancel(ctx)) }()
 		_, err = conn.Exec(ctx, projectRosterSchema)
 		return err
 	})

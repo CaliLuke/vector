@@ -9,6 +9,7 @@ import (
 
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -19,12 +20,12 @@ func TestMutationValidationPreservesDjangoPrecedence(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pair.Close()
+	defer testsupport.Close(t, pair)
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer connection.Close(ctx)
+	defer testsupport.CloseContext(t, connection, ctx)
 	user := uuid.MustParse("00000000-0000-4000-8000-000000000001")
 	project := uuid.MustParse("00000000-0000-4000-8000-000000000020")
 	workspaceView := uuid.MustParse("00000000-0000-4000-8000-000000000030")

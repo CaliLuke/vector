@@ -9,6 +9,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/bootstrap"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/google/uuid"
@@ -22,12 +23,12 @@ func TestReviewedSaveRejectsExpiredReceiptAndCommitsRepairedDraftOnce(t *testing
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = pair.Close() }()
+	defer func() { testsupport.Close(t, pair) }()
 	db, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = db.Close(ctx) }()
+	defer func() { testsupport.CloseContext(t, db, ctx) }()
 	actor, workspace, project, draft := uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString()
 	exec := func(query string, args ...any) {
 		t.Helper()

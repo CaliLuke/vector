@@ -15,6 +15,7 @@ import (
 	api "github.com/CaliLuke/go-plane/gen/intake_inbox_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/intakeinboxreads"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/loom/security"
 )
 
@@ -130,7 +131,7 @@ func decodeIntakeReadsBody[T any](t *testing.T, body io.ReadCloser, err error) (
 	if body == nil {
 		t.Fatal("nil response body")
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	data, err := io.ReadAll(body)
 	if err != nil {
 		t.Fatal(err)
@@ -186,7 +187,7 @@ func TestListServicesPreserveExplicitEmptyQueryPresence(t *testing.T) {
 	if _, body, err := service.InboxIssueList(ctx, &api.InboxIssueListPayload{Slug: "demo", ProjectID: intakeReadsProjectID}); err != nil {
 		t.Fatal(err)
 	} else {
-		body.Close()
+		testsupport.Close(t, body)
 	}
 	options := repository.listOptions
 	if !options.PerPageSet || !options.CursorSet || !options.StatusSet || !options.PresentFilters["type"] || !options.PresentFilters["labels"] {

@@ -88,7 +88,11 @@ func TestWebhookPinnedPostUsesTrustedLocalHostAndDoesNotFollowRedirects(t *testi
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer response.Body.Close()
+	defer func() {
+		if closeErr := response.Body.Close(); closeErr != nil {
+			t.Errorf("close HTTP response body: %v", closeErr)
+		}
+	}()
 	if response.StatusCode != http.StatusTemporaryRedirect {
 		t.Fatalf("response status = %d, want 307", response.StatusCode)
 	}

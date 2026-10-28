@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/database"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -102,7 +103,7 @@ func TestGeneratedLinkHTTPUsesCurrentSignedInSession(t *testing.T) {
 	}
 	response := callback.Result()
 	proofs := response.Cookies()
-	_ = response.Body.Close()
+	testsupport.Close(t, response.Body)
 	if len(proofs) != 1 || !proofs[0].Secure || !proofs[0].HttpOnly || proofs[0].SameSite != http.SameSiteStrictMode || proofs[0].Domain != "" || proofs[0].Path != "/" {
 		t.Fatal("callback browser proof cookie is not protected")
 	}

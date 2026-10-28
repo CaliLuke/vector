@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/bootstrap"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	search "github.com/CaliLuke/go-plane/internal/workitemsearch"
 	"github.com/google/uuid"
@@ -29,12 +30,12 @@ func newSearchFixture(t *testing.T) searchFixture {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = pair.Close() })
+	t.Cleanup(func() { testsupport.Close(t, pair) })
 	db, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = db.Close(context.WithoutCancel(ctx)) })
+	t.Cleanup(func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) })
 	f := searchFixture{ctx: ctx, db: db, workspace: uuid.NewString(), project: uuid.NewString(), item: uuid.NewString(), itemType: uuid.NewString(), field: uuid.NewString()}
 	actor := uuid.NewString()
 	searchExec(t, f, `INSERT INTO users(id,username,email,password,first_name,last_name,avatar,date_joined,created_at,updated_at,last_location,created_location,is_superuser,is_managed,is_password_expired,is_active,is_staff,is_email_verified,is_password_autoset,token,user_timezone,last_login_ip,last_logout_ip,last_login_medium,last_login_uagent,is_bot,display_name,is_email_valid,is_password_reset_required) VALUES($1::uuid,$1::text,$1::text||'@example.test','!','','','',now(),now(),now(),'','',false,false,false,true,false,true,false,'','UTC','','','','',false,'Search',true,false)`, actor)

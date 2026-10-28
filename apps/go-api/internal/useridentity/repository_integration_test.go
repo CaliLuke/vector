@@ -9,6 +9,7 @@ import (
 
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -20,7 +21,7 @@ func TestSessionUserMatchesDjangoUserTimezoneSerialization(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer connection.Close(context.WithoutCancel(ctx))
+		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 		_, err = connection.Exec(ctx, `
 CREATE TABLE workspaces (
   id uuid PRIMARY KEY, slug text NOT NULL
@@ -61,13 +62,13 @@ INSERT INTO users VALUES (
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pair.Close()
+	defer testsupport.Close(t, pair)
 
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer connection.Close(context.WithoutCancel(ctx))
+	defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 	repository, _ := NewRepository(connection)
 	body, err := repository.SessionUser(ctx, uuid.MustParse("00000000-0000-4000-8000-000000000b01"))
 	if err != nil {

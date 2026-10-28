@@ -9,6 +9,7 @@ import (
 
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -39,7 +40,7 @@ INSERT INTO file_assets VALUES ('00000000-0000-4000-8000-000000000002','WORKSPAC
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pair.Close()
+	defer testsupport.Close(t, pair)
 	pool, err := pgxpool.New(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)

@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -26,7 +27,7 @@ func labelDeletionFixture(t *testing.T) *pgx.Conn {
 		if err != nil {
 			return err
 		}
-		defer func() { _ = db.Close(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) }()
 		_, err = db.Exec(ctx, `
 CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text NOT NULL);
 CREATE TABLE projects (id uuid PRIMARY KEY, workspace_id uuid NOT NULL);
@@ -46,12 +47,12 @@ INSERT INTO labels(id,name,color,project_id,workspace_id,sort_order) VALUES
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = pair.Close() })
+	t.Cleanup(func() { testsupport.Close(t, pair) })
 	db, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = db.Close(context.WithoutCancel(ctx)) })
+	t.Cleanup(func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) })
 	return db
 }
 

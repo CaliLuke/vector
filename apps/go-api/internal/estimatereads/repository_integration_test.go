@@ -10,6 +10,7 @@ import (
 
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -30,7 +31,7 @@ func TestRepositoryPreservesEstimateReadSemantics(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer connection.Close(context.WithoutCancel(ctx))
+	defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 	repository, _ := NewRepository(connection)
 	userID := uuid.MustParse("00000000-0000-4000-8000-000000000001")
 	workspaceID := uuid.MustParse("00000000-0000-4000-8000-000000000010")

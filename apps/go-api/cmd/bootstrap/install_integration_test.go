@@ -22,7 +22,7 @@ func TestInstallFreshDatabaseAndRepeatWithRustFS(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer conn.Close(ctx)
+	defer testsupport.CloseContext(t, conn, ctx)
 	var existing int
 	if err := conn.QueryRow(ctx, `SELECT count(*) FROM information_schema.tables WHERE table_schema='public'`).Scan(&existing); err != nil {
 		t.Fatal(err)

@@ -11,6 +11,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 )
 
 func TestRunnerMergesAndRedactsChildOutputAndUsesRepositoryRoot(t *testing.T) {
@@ -29,7 +31,7 @@ func TestRunnerMergesAndRedactsChildOutputAndUsesRepositoryRoot(t *testing.T) {
 	var recordsMu sync.Mutex
 	var exported []byte
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
+		defer testsupport.Close(t, r.Body)
 		body, _ := io.ReadAll(r.Body)
 		recordsMu.Lock()
 		exported = append(exported, body...)

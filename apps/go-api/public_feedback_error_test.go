@@ -10,6 +10,7 @@ import (
 
 	publicfeedback "github.com/CaliLuke/go-plane/gen/public_feedback"
 	metadata "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 )
 
@@ -89,7 +90,7 @@ func TestPublicVoteListMissingBoardReturnsEmptyAfterSessionAuth(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	encoded, err := io.ReadAll(body)
 	if err != nil {
 		t.Fatal(err)
@@ -127,7 +128,7 @@ func TestPublicIssueDetailMissingBodyHasNoJSONContentType(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	encoded, err := io.ReadAll(body)
 	if err != nil {
 		t.Fatal(err)

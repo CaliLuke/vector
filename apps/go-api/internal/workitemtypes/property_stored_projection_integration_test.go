@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -18,7 +19,7 @@ func TestStoredPropertyProjectionUsesCanonicalSnapshotAndDuplicates(t *testing.T
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = writer.Close(context.WithoutCancel(f.ctx)) }()
+	defer func() { testsupport.CloseContext(t, writer, context.WithoutCancel(f.ctx)) }()
 	_, err = types.WithPropertyDiscoveryRead(f.ctx, f.db, f.member, "types", f.project, func(_ pgx.Tx, snapshot *types.PropertyDiscoverySnapshot) (bool, error) {
 		refs := []types.DiscoveryItemReference{{ID: f.other, ProjectID: f.project}, {ID: f.item, ProjectID: f.project}, {ID: f.item, ProjectID: f.project}}
 		first, readErr := snapshot.ProjectStoredItems(f.ctx, refs, types.DiscoveryItemVisibility)

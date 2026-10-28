@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/database"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -21,7 +22,7 @@ func TestPostgreSQLReaderUsesDatabaseExpiryAndDoesNotMutate(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer connection.Close(context.WithoutCancel(ctx))
+		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 		_, err = connection.Exec(ctx, `
 CREATE TABLE users (
     id uuid PRIMARY KEY,
@@ -51,7 +52,7 @@ CREATE TABLE sessions (
 	if err != nil {
 		t.Fatalf("connect PostgreSQL: %v", err)
 	}
-	defer connection.Close(context.WithoutCancel(ctx))
+	defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 	if registerUUIDTypesErr := database.RegisterUUIDTypes(connection.TypeMap()); registerUUIDTypesErr != nil {
 		t.Fatalf("register UUID types: %v", registerUUIDTypesErr)
 	}

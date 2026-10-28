@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -20,7 +21,7 @@ func TestCreateIssueExportPersistsDjangoUUIDArrayValues(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer connection.Close(context.WithoutCancel(ctx))
+		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 		_, err = connection.Exec(ctx, `
 CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text NOT NULL, deleted_at timestamptz);
 CREATE TABLE users (
@@ -53,7 +54,7 @@ VALUES ('00000000-0000-4000-8000-000000000002','Test','User','Test User','',FALS
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer connection.Close(context.WithoutCancel(ctx))
+	defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 	repository, err := NewRepository(connection)
 	if err != nil {
 		t.Fatal(err)
@@ -109,7 +110,7 @@ func TestAuthorizedRejectsSoftDeletedMembership(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer connection.Close(context.WithoutCancel(ctx))
+		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 		_, err = connection.Exec(ctx, `
 CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text NOT NULL, deleted_at timestamptz);
 CREATE TABLE workspace_members (
@@ -135,7 +136,7 @@ INSERT INTO workspace_members(id,workspace_id,member_id,role,is_active,deleted_a
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer connection.Close(context.WithoutCancel(ctx))
+	defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 	repository, err := NewRepository(connection)
 	if err != nil {
 		t.Fatal(err)
@@ -167,7 +168,7 @@ func TestCreateIssueExportRejectsSoftDeletedWorkspace(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer connection.Close(context.WithoutCancel(ctx))
+		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 		_, err = connection.Exec(ctx, `
 CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text NOT NULL, deleted_at timestamptz);
 CREATE TABLE users (
@@ -201,7 +202,7 @@ VALUES ('00000000-0000-4000-8000-000000000002','Test','User','Test User','',FALS
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer connection.Close(context.WithoutCancel(ctx))
+	defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 	repository, err := NewRepository(connection)
 	if err != nil {
 		t.Fatal(err)
@@ -225,7 +226,7 @@ func TestCreateIssueExportDefaultsExcludeSoftDeletedProjects(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer connection.Close(context.WithoutCancel(ctx))
+		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 		_, err = connection.Exec(ctx, `
 CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text NOT NULL, deleted_at timestamptz);
 CREATE TABLE projects (id uuid PRIMARY KEY, workspace_id uuid NOT NULL, archived_at timestamptz, deleted_at timestamptz);
@@ -267,7 +268,7 @@ INSERT INTO project_members(project_id,member_id,is_active,deleted_at) VALUES
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer connection.Close(context.WithoutCancel(ctx))
+	defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 	repository, err := NewRepository(connection)
 	if err != nil {
 		t.Fatal(err)
@@ -288,7 +289,7 @@ func TestHistoryExcludesSoftDeletedExporterRows(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		defer connection.Close(context.WithoutCancel(ctx))
+		defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 		_, err = connection.Exec(ctx, historyVisibilityFixtureDDL+`
 CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text NOT NULL, deleted_at timestamptz);
 CREATE TABLE users (id uuid PRIMARY KEY, first_name text, last_name text, display_name text, avatar text, avatar_asset_id uuid, is_bot boolean);
@@ -317,7 +318,7 @@ INSERT INTO exporters(id,created_at,updated_at,type,workspace_id,project,provide
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer connection.Close(context.WithoutCancel(ctx))
+	defer testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
 	repository, err := NewRepository(connection)
 	if err != nil {
 		t.Fatal(err)

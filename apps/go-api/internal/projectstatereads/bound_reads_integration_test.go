@@ -9,6 +9,7 @@ import (
 	"time"
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/require"
@@ -42,7 +43,7 @@ func boundStateDatabase(t *testing.T) *pgx.Conn {
 		if err != nil {
 			return err
 		}
-		defer func() { _ = db.Close(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) }()
 		_, err = db.Exec(ctx, `
 CREATE TABLE users(id uuid PRIMARY KEY,is_active boolean NOT NULL DEFAULT true);
 CREATE TABLE workspaces(id uuid PRIMARY KEY,slug text,deleted_at timestamptz);

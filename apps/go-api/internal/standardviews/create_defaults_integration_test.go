@@ -9,6 +9,7 @@ import (
 
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -19,12 +20,12 @@ func TestCreateViewsSuppliesDjangoModelDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pair.Close()
+	defer testsupport.Close(t, pair)
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer connection.Close(ctx)
+	defer testsupport.CloseContext(t, connection, ctx)
 	// Django's default=False is supplied by the ORM, not a database default.
 	if _, execErr := connection.Exec(ctx, `ALTER TABLE issue_views ALTER COLUMN is_locked DROP DEFAULT, ALTER COLUMN is_locked SET NOT NULL`); execErr != nil {
 		t.Fatal(execErr)

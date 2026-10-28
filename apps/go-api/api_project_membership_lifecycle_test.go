@@ -15,6 +15,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/projectmembershipreads"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	client "github.com/CaliLuke/go-plane/projectmembershiplifecycle/gen/http/project_membership_lifecycle/client"
 	server "github.com/CaliLuke/go-plane/projectmembershiplifecycle/gen/http/project_membership_lifecycle/server"
 	api "github.com/CaliLuke/go-plane/projectmembershiplifecycle/gen/project_membership_lifecycle"
@@ -95,7 +96,7 @@ func TestProjectMembershipLifecycleAPIKeyAndSessionAuthenticationStayIsolated(t 
 	if err != nil {
 		t.Fatal(err)
 	}
-	_ = body.Close()
+	testsupport.Close(t, body)
 	if repository.command.UserID != userID.String() || !effects.Authenticated {
 		t.Fatalf("API-key command user=%q effects=%+v", repository.command.UserID, effects)
 	}
@@ -111,7 +112,7 @@ func TestProjectMembershipLifecycleAPIKeyAndSessionAuthenticationStayIsolated(t 
 	if err != nil {
 		t.Fatal(err)
 	}
-	_ = body.Close()
+	testsupport.Close(t, body)
 	if repository.command.UserID != "session-user" || repository.command.Operation != "legacy-create-members" {
 		t.Fatalf("session command=%+v", repository.command)
 	}
@@ -165,7 +166,7 @@ func TestProjectMembershipLifecycleReturnsRawJSONMetadataAndResponse(t *testing.
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	data, err := io.ReadAll(body)
 	if err != nil {
 		t.Fatal(err)
@@ -191,7 +192,7 @@ func TestProjectMembershipLifecycleLegacySessionDoesNotUseAPIKeyThrottleEffects(
 	if err != nil {
 		t.Fatal(err)
 	}
-	_ = body.Close()
+	testsupport.Close(t, body)
 	if throttle.calls != 0 || effects.Authenticated || effects.Rate != nil {
 		t.Fatalf("throttle=%d effects=%+v", throttle.calls, effects)
 	}
@@ -285,7 +286,7 @@ func TestProjectMembershipLifecycleGeneratedClientAndServerPreserveRawJSON(t *te
 		t.Fatalf("generated client call: %T %#v; keys=%d authorized=%d executed=%d", err, err, keys.calls, repository.authorizeCalls, repository.executeCalls)
 	}
 	response := responseValue.(*api.GetAPIV1WorkspacesBySlugProjectsByProjectIDMembersResponseData)
-	defer response.Body.Close()
+	defer testsupport.Close(t, response.Body)
 	data, err := io.ReadAll(response.Body)
 	if err != nil {
 		t.Fatal(err)
@@ -384,7 +385,7 @@ func TestProjectMembershipLifecycleGeneratedLegacyRouteAuthenticatesSessionCooki
 		t.Fatalf("generated session call: %T %#v; sessions=%d keys=%d authorized=%d executed=%d", err, err, sessions.calls, keys.calls, repository.authorizeCalls, repository.executeCalls)
 	}
 	response := responseValue.(*api.PostAPIWorkspacesBySlugProjectsByProjectIDMembersResponseData)
-	defer response.Body.Close()
+	defer testsupport.Close(t, response.Body)
 	data, err := io.ReadAll(response.Body)
 	if err != nil {
 		t.Fatal(err)

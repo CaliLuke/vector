@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -36,7 +37,7 @@ func newImageOwnershipFixture(t *testing.T) imageOwnershipFixture {
 		if err != nil {
 			return err
 		}
-		defer func() { _ = connection.Close(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) }()
 		_, err = connection.Exec(ctx, `
 CREATE TABLE users (id uuid PRIMARY KEY, avatar_asset_id uuid, cover_image_asset_id uuid, avatar text, cover_image text, updated_at timestamptz);
 CREATE TABLE workspaces (id uuid PRIMARY KEY, logo_asset_id uuid, logo text, deleted_at timestamptz, updated_at timestamptz, updated_by_id uuid);
@@ -64,7 +65,7 @@ CREATE TABLE file_assets (id uuid PRIMARY KEY, user_id uuid, workspace_id uuid, 
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = connection.Close(context.Background()) })
+	t.Cleanup(func() { testsupport.CloseContext(t, connection, context.Background()) })
 	repository, err := NewPostgresRepository(connection)
 	if err != nil {
 		t.Fatal(err)

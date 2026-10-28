@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -27,7 +28,7 @@ func newDraftAssetFixture(t *testing.T) draftAssetFixture {
 		if err != nil {
 			return err
 		}
-		defer func() { _ = db.Close(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) }()
 		_, err = db.Exec(ctx, `
 CREATE TABLE workspaces(id uuid PRIMARY KEY, slug text DEFAULT 'drafts', deleted_at timestamptz);
 CREATE TABLE workspace_members(workspace_id uuid,member_id uuid,role integer,is_active boolean,deleted_at timestamptz);
@@ -61,7 +62,7 @@ CREATE TABLE work_item_effects(id uuid PRIMARY KEY,kind text NOT NULL,payload js
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = db.Close(ctx) })
+	t.Cleanup(func() { testsupport.CloseContext(t, db, ctx) })
 	repository, err := NewPostgresRepository(db)
 	if err != nil {
 		t.Fatal(err)

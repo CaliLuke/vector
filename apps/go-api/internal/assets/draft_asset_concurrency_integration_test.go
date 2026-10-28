@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -25,7 +26,7 @@ func TestDraftAssetWritersWaitForConsumptionAndRejectConsumedDraft(t *testing.T)
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer func() { _ = worker.Close(f.ctx) }()
+			defer func() { testsupport.CloseContext(t, worker, f.ctx) }()
 			repo, err := NewPostgresRepository(worker)
 			if err != nil {
 				t.Fatal(err)

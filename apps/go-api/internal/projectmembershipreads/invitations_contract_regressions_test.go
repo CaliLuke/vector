@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -22,7 +23,7 @@ func TestV1InvitationSupportedMediaAndCompleteDocumentParsing(t *testing.T) {
 		if operation == "create" {
 			_ = writer.WriteField("email", "fresh@example.com")
 		}
-		_ = writer.Close()
+		testsupport.Close(t, writer)
 		for _, test := range []struct {
 			name, contentType, body string
 			status                  int

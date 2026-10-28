@@ -17,6 +17,7 @@ import (
 	"strings"
 	"testing"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"golang.org/x/net/html/atom"
 )
 
@@ -252,7 +253,7 @@ func TestParser(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer f.Close()
+			defer testsupport.Close(t, f)
 			r := bufio.NewReader(f)
 
 			for i := 0; ; i++ {

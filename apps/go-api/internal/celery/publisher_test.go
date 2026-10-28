@@ -11,6 +11,7 @@ import (
 	"time"
 
 	activitylog "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 )
 
 func TestNewPublisherValidatesBrokerSetting(t *testing.T) {
@@ -41,7 +42,7 @@ func TestNewPublisherValidatesBrokerSetting(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewPublisher() error = %v", err)
 	}
-	t.Cleanup(func() { _ = publisher.Close() })
+	t.Cleanup(func() { testsupport.Close(t, publisher) })
 	if publisher.queue != defaultQueue {
 		t.Fatalf("queue = %q, want %q", publisher.queue, defaultQueue)
 	}
@@ -53,7 +54,7 @@ func TestNewPublisherValidatesBrokerSetting(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewPublisher(pyamqp) error = %v", err)
 	}
-	t.Cleanup(func() { _ = aliasPublisher.Close() })
+	t.Cleanup(func() { testsupport.Close(t, aliasPublisher) })
 	if got, want := aliasPublisher.brokers[0].url, "amqp://plane:plane@rabbitmq:5672/plane"; got != want {
 		t.Fatalf("normalized broker URL = %q, want %q", got, want)
 	}
@@ -175,7 +176,7 @@ func TestPublisherConnectionErrorRedactsCredentials(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewPublisher() error = %v", err)
 	}
-	t.Cleanup(func() { _ = publisher.Close() })
+	t.Cleanup(func() { testsupport.Close(t, publisher) })
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 	err = publisher.Log(ctx, activitylog.APIActivityLog{})
@@ -195,7 +196,7 @@ func TestPublisherContextBoundsAMQPHandshake(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewPublisher() error = %v", err)
 	}
-	t.Cleanup(func() { _ = publisher.Close() })
+	t.Cleanup(func() { testsupport.Close(t, publisher) })
 
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
@@ -294,7 +295,7 @@ func TestPublisherPoolRunsIndependentLanesWithBoundedBackpressure(t *testing.T) 
 		&blockingPublisherWorker{entered: entered, release: release},
 		&blockingPublisherWorker{entered: entered, release: release},
 	})
-	t.Cleanup(func() { _ = pool.Close() })
+	t.Cleanup(func() { testsupport.Close(t, pool) })
 
 	completed := make(chan error, 2)
 	for range 2 {
@@ -330,8 +331,8 @@ func stalledAMQPListener(t *testing.T) (net.Listener, <-chan struct{}) {
 		}
 		close(accepted)
 		_, _ = io.Copy(io.Discard, connection)
-		_ = connection.Close()
+		testsupport.Close(t, connection)
 	}()
-	t.Cleanup(func() { _ = listener.Close() })
+	t.Cleanup(func() { testsupport.Close(t, listener) })
 	return listener, accepted
 }

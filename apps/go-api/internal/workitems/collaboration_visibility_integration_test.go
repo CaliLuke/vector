@@ -10,6 +10,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -100,7 +101,7 @@ func TestPrivateItemChildrenRequireCurrentParentVisibility(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = db.Close(ctx) })
+	t.Cleanup(func() { testsupport.CloseContext(t, db, ctx) })
 	actor, creator, workspace, project, issue, comment, link, target := uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString()
 	exec := func(db Database, sql string, args ...any) {
 		t.Helper()

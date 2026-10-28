@@ -8,6 +8,7 @@ import (
 	"testing"
 	"uuid"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
@@ -24,7 +25,7 @@ func directoryFixture(t *testing.T) (*DirectoryReader, *pgx.Conn) {
 		if err != nil {
 			return err
 		}
-		defer func() { _ = db.Close(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) }()
 		_, err = db.Exec(ctx, directorySchema)
 		return err
 	})

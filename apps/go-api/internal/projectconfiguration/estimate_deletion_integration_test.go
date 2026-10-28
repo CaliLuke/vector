@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -22,7 +23,7 @@ func TestEstimateDeletionRejectsForeignReplacementAndCommitsEffectsWithValues(t 
 		if err != nil {
 			return err
 		}
-		defer func() { _ = conn.Close(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.CloseContext(t, conn, context.WithoutCancel(ctx)) }()
 		_, err = conn.Exec(ctx, `
 CREATE TABLE workspaces(id uuid PRIMARY KEY,slug text);
 CREATE TABLE projects(id uuid PRIMARY KEY,workspace_id uuid);
@@ -45,12 +46,12 @@ INSERT INTO issues VALUES('00000000-0000-4000-8000-000000000007','00000000-0000-
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = pair.Close() })
+	t.Cleanup(func() { testsupport.Close(t, pair) })
 	conn, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = conn.Close(context.WithoutCancel(ctx)) })
+	t.Cleanup(func() { testsupport.CloseContext(t, conn, context.WithoutCancel(ctx)) })
 	repo, err := NewRepository(conn)
 	if err != nil {
 		t.Fatal(err)

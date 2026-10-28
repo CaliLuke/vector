@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"testing"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -37,7 +38,7 @@ func notificationTestDB(t *testing.T) pgx.Tx {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = conn.Close(context.Background()) })
+	t.Cleanup(func() { testsupport.CloseContext(t, conn, context.Background()) })
 	tx, err := conn.Begin(ctx)
 	if err != nil {
 		t.Fatal(err)

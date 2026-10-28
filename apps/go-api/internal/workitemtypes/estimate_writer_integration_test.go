@@ -9,6 +9,7 @@ import (
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/projectconfiguration"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -25,7 +26,7 @@ func TestEstimateReassignmentWaitsForPropertyPreservation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = connection.Close(context.WithoutCancel(f.ctx)) }()
+	defer func() { testsupport.CloseContext(t, connection, context.WithoutCancel(f.ctx)) }()
 	repo, err := projectconfiguration.NewRepository(connection)
 	if err != nil {
 		t.Fatal(err)

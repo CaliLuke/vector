@@ -12,6 +12,7 @@ import (
 	"time"
 
 	receipts "github.com/CaliLuke/go-plane/internal/mutationreceipts"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -38,7 +39,7 @@ func receiptDatabase(t *testing.T) fixture {
 		if connectErr != nil {
 			return connectErr
 		}
-		defer func() { _ = db.Close(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) }()
 		_, seedErr := db.Exec(ctx, string(schema)+`
 CREATE TABLE receipt_test_permission (allowed boolean NOT NULL);
 INSERT INTO receipt_test_permission VALUES(true);

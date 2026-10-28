@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 )
 
@@ -158,7 +159,7 @@ func TestItemEditSourceReadDoesNotWaitForConcurrentWriter(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = writer.Close(context.WithoutCancel(f.ctx)) }()
+	defer func() { testsupport.CloseContext(t, writer, context.WithoutCancel(f.ctx)) }()
 	tx, err := writer.Begin(f.ctx)
 	if err != nil {
 		t.Fatal(err)

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/xuri/excelize/v2"
 )
@@ -59,7 +60,7 @@ func TestFormatIssueExportSupportsSourceFormatsAndSanitizesSpreadsheetCells(t *t
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer func() { _ = book.Close() }()
+		defer func() { testsupport.Close(t, book) }()
 		rows, err := book.GetRows(book.GetSheetName(0))
 		if err != nil {
 			t.Fatal(err)
@@ -94,7 +95,7 @@ func TestIssueExportZipContainsEveryEncodedFile(t *testing.T) {
 			t.Fatal(err)
 		}
 		got, err := io.ReadAll(file)
-		_ = file.Close()
+		testsupport.Close(t, file)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -127,7 +128,7 @@ func TestCustomExportColumnsPreserveValuesAndSanitizeTitles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = book.Close() }()
+	defer func() { testsupport.Close(t, book) }()
 	cell, _ := excelize.CoordinatesToCellName(offset+1, 1)
 	formula, err := book.GetCellFormula(book.GetSheetName(0), cell)
 	if err != nil || formula != "" {

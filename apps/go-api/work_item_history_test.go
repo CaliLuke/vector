@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	store "github.com/CaliLuke/go-plane/internal/workitemhistory"
 	api "github.com/CaliLuke/go-plane/workitemhistory/gen/work_item_history"
 	"github.com/google/uuid"
@@ -53,7 +54,7 @@ func TestWorkItemHistoryReadReturnsRawJSONAndMapsAuthorization(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer body.Close()
+	defer testsupport.Close(t, body)
 	encoded, err := io.ReadAll(body)
 	if err != nil {
 		t.Fatal(err)

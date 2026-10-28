@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -20,7 +21,7 @@ func TestTypeFiltersMatchRowsAndCountsInPostgres(t *testing.T) {
 		if connectErr != nil {
 			return connectErr
 		}
-		defer func() { _ = db.Close(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) }()
 		_, seedErr := db.Exec(ctx, `CREATE TABLE issues(row_number integer PRIMARY KEY,type_id uuid,priority text);
 INSERT INTO issues VALUES(1,'`+selectedTypeA+`','low'),(2,'`+selectedTypeB+`','high'),(3,'00000000-0000-4000-8000-000000000003','low'),(4,NULL,'low')`)
 		return seedErr
@@ -28,12 +29,12 @@ INSERT INTO issues VALUES(1,'`+selectedTypeA+`','low'),(2,'`+selectedTypeB+`','h
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = pair.Close() }()
+	defer func() { testsupport.Close(t, pair) }()
 	db, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = db.Close(context.WithoutCancel(ctx)) }()
+	defer func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) }()
 	catalog := map[string]bool{selectedTypeA: true, selectedTypeB: true}
 	for _, test := range []struct {
 		name, filter string
