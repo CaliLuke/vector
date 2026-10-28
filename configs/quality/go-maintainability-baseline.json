@@ -95,13 +95,6 @@
       "score": 9
     },
     {
-      "file": "internal/backgroundtasks/issue_activities.go",
-      "package": "backgroundtasks",
-      "function": "buildIssueActivityRows",
-      "score": 0,
-      "sourceHash": "5610d88ed4c81ecbd5df3538a0151e42a0fd02195219b92f2606354e1320d5ef"
-    },
-    {
       "file": "internal/backgroundtasks/issue_notifications.go",
       "package": "backgroundtasks",
       "function": "(*PostgresIssueActivityStore).ProcessIssueNotifications",

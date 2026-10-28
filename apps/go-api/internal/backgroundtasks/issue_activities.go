@@ -323,374 +323,42 @@ func (store *PostgresIssueActivityStore) RecordIssueActivity(ctx context.Context
 }
 
 func buildIssueActivityRows(ctx context.Context, tx pgx.Tx, input IssueActivityInput) ([]issueActivityRow, error) {
-	requested := decodeActivityObject(input.RequestedData)
-	current := decodeActivityObject(input.CurrentInstance)
-	row := issueActivityRow{IssueID: input.IssueID, ActorID: input.ActorID, Epoch: input.Epoch}
-	get := func(data map[string]json.RawMessage, key string) *string { return activityString(data[key]) }
+	event := issueActivityEvent{IssueActivityInput: input, requested: decodeActivityObject(input.RequestedData), current: decodeActivityObject(input.CurrentInstance)}
 	switch input.Type {
 	case "workitem_relation.activity.created", "workitem_relation.activity.deleted":
 		return relationActivityRows(input)
 	case "work_log.activity.created", "work_log.activity.updated", "work_log.activity.deleted":
 		return workLogActivityRows(input)
-
 	case "issue.activity.created":
-		var createdAt time.Time
-		var creatorID *string
-		if err := tx.QueryRow(ctx, `SELECT created_at,created_by_id FROM issues WHERE id=$1`, *input.IssueID).Scan(&createdAt, &creatorID); err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				return nil, fmt.Errorf("%w: issue does not exist", ErrPermanentIssueActivity)
-			}
-			return nil, fmt.Errorf("load issue creation metadata: %w", err)
-		}
-		rows := []issueActivityRow{{IssueID: input.IssueID, ActorID: creatorID, Verb: "created", Comment: "created the issue", Epoch: input.Epoch, CreatedAt: &createdAt}}
-		if _, ok := requested["assignee_ids"]; ok {
-			requestedAssignees, currentAssignees := activityIDSet(requested, "assignee_ids"), activityIDSet(current, "assignee_ids")
-			for _, id := range sortedActivityIDs(requestedAssignees) {
-				if _, exists := currentAssignees[id]; exists {
-					continue
-				}
-				name, err := issueActivityRelatedName(ctx, tx, "users", "id", "display_name", id)
-				if err != nil {
-					return nil, err
-				}
-				rows = append(rows, issueActivityRow{IssueID: input.IssueID, ActorID: input.ActorID, Verb: "updated", Field: "assignees", OldValue: stringPointerValue(""), NewValue: name, Comment: "added assignee ", NewIdentifier: stringPointerValue(id), Epoch: input.Epoch})
-			}
-		}
-		return rows, nil
+		return createdIssueActivityRows(ctx, tx, event)
 	case "issue.activity.updated":
-		rows := make([]issueActivityRow, 0, 13)
-		milestoneRow, milestoneErr := milestoneActivityRow(input)
-		if milestoneErr != nil {
-			return nil, milestoneErr
-		}
-		if milestoneRow != nil {
-			rows = append(rows, *milestoneRow)
-		}
-		for _, field := range []struct{ key, column, comment string }{
-			{"name", "name", "updated the name to"},
-			{"priority", "priority", "updated the priority to"},
-			{"target_date", "target_date", "updated the target date to"},
-			{"start_date", "start_date", "updated the start date to "},
-			{"description_html", "description", "updated the description to"},
-		} {
-			requestedValue, requestedOK := requested[field.key]
-			if !requestedOK || sameActivityJSON(current[field.key], requestedValue) {
-				continue
-			}
-			oldValue := activityText(current[field.key])
-			newValue := activityText(requestedValue)
-			if field.key == "description_html" {
-				var lastID string
-				err := tx.QueryRow(ctx, `SELECT id FROM issue_activities WHERE issue_id=$1 AND deleted_at IS NULL ORDER BY created_at DESC,id DESC LIMIT 1`, *input.IssueID).Scan(&lastID)
-				if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-					return nil, fmt.Errorf("load last issue activity: %w", err)
-				}
-				if err == nil {
-					var sameActor bool
-					if err := tx.QueryRow(ctx, `SELECT field='description' AND actor_id IS NOT DISTINCT FROM $2::uuid FROM issue_activities WHERE id=$1`, lastID, nullableUUIDString(input.ActorID)).Scan(&sameActor); err != nil {
-						return nil, fmt.Errorf("inspect last description activity: %w", err)
-					}
-					if sameActor {
-						if _, err := tx.Exec(ctx, `UPDATE issue_activities SET created_at=NOW(),updated_at=NOW() WHERE id=$1`, lastID); err != nil {
-							return nil, fmt.Errorf("refresh description activity timestamp: %w", err)
-						}
-						continue
-					}
-				}
-			}
-			rows = append(rows, issueActivityRow{IssueID: input.IssueID, ActorID: input.ActorID, Verb: "updated", Field: field.column, OldValue: oldValue, NewValue: newValue, Comment: field.comment, Epoch: input.Epoch})
-		}
-		if requestedParent, ok := firstActivityValue(requested, "parent_id", "parent"); ok && !sameActivityJSON(firstActivityValueRaw(current, "parent_id", "parent"), requestedParent) {
-			oldID, newID := activityText(firstActivityValueRaw(current, "parent_id", "parent")), activityText(requestedParent)
-			oldValue, err := issueActivityIdentifier(ctx, tx, oldID)
-			if err != nil {
-				return nil, err
-			}
-			newValue, err := issueActivityIdentifier(ctx, tx, newID)
-			if err != nil {
-				return nil, err
-			}
-			rows = append(rows, issueActivityRow{IssueID: input.IssueID, ActorID: input.ActorID, Verb: "updated", Field: "parent", OldValue: oldValue, NewValue: newValue, Comment: "updated the parent issue to", OldIdentifier: oldID, NewIdentifier: newID, Epoch: input.Epoch})
-		}
-		if requestedState, ok := firstActivityValue(requested, "state_id", "state"); ok && !sameActivityJSON(firstActivityValueRaw(current, "state_id", "state"), requestedState) {
-			oldID, newID := activityText(firstActivityValueRaw(current, "state_id", "state")), activityText(requestedState)
-			oldValue, err := issueActivityStateName(ctx, tx, input.ProjectID, oldID)
-			if err != nil {
-				return nil, err
-			}
-			newValue, err := issueActivityStateName(ctx, tx, input.ProjectID, newID)
-			if err != nil {
-				return nil, err
-			}
-			rows = append(rows, issueActivityRow{IssueID: input.IssueID, ActorID: input.ActorID, Verb: "updated", Field: "state", OldValue: oldValue, NewValue: newValue, Comment: "updated the state to", OldIdentifier: oldID, NewIdentifier: newID, Epoch: input.Epoch})
-		}
-		if requestedPriority, ok := requested["closed_to"]; ok && string(requestedPriority) != "null" {
-			newID := activityText(requestedPriority)
-			newValue, err := issueActivityStateName(ctx, tx, input.ProjectID, newID)
-			if err != nil {
-				return nil, err
-			}
-			rows = append(rows, issueActivityRow{IssueID: input.IssueID, ActorID: input.ActorID, Verb: "updated", Field: "state", NewValue: newValue, Comment: "Plane updated the state to ", NewIdentifier: newID, Epoch: input.Epoch})
-		}
-		if requestedArchivedAt, ok := requested["archived_at"]; ok && !sameActivityJSON(current["archived_at"], requestedArchivedAt) {
-			if string(requestedArchivedAt) == "null" {
-				rows = append(rows, issueActivityRow{IssueID: input.IssueID, ActorID: input.ActorID, Verb: "updated", Field: "archived_at", OldValue: stringPointerValue("archive"), NewValue: stringPointerValue("restore"), Comment: "has restored the issue", Epoch: input.Epoch})
-			} else if string(requested["automation"]) == "true" {
-				rows = append(rows, issueActivityRow{IssueID: input.IssueID, ActorID: input.ActorID, Verb: "updated", Field: "archived_at", NewValue: stringPointerValue("archive"), Comment: "Plane has archived the issue", Epoch: input.Epoch})
-			} else {
-				rows = append(rows, issueActivityRow{IssueID: input.IssueID, ActorID: input.ActorID, Verb: "updated", Field: "archived_at", NewValue: stringPointerValue("manual_archive"), Comment: "Actor has archived the issue", Epoch: input.Epoch})
-			}
-		}
-		for _, collection := range []struct {
-			keys                                                          []string
-			table, idColumn, nameColumn, field, addComment, removeComment string
-		}{
-			{[]string{"label_ids", "labels"}, "labels", "id", "name", "labels", "added label ", "removed label "},
-			{[]string{"assignee_ids", "assignees"}, "users", "id", "display_name", "assignees", "added assignee ", "removed assignee "},
-		} {
-			requestedSet := activityIDSet(requested, collection.keys...)
-			currentSet := activityIDSet(current, collection.keys...)
-			for _, id := range sortedActivityIDs(requestedSet) {
-				if _, exists := currentSet[id]; exists {
-					continue
-				}
-				name, err := issueActivityRelatedName(ctx, tx, collection.table, collection.idColumn, collection.nameColumn, id)
-				if err != nil {
-					return nil, err
-				}
-				rows = append(rows, issueActivityRow{IssueID: input.IssueID, ActorID: input.ActorID, Verb: "updated", Field: collection.field, OldValue: stringPointerValue(""), NewValue: name, Comment: collection.addComment, NewIdentifier: stringPointerValue(id), Epoch: input.Epoch})
-			}
-			for _, id := range sortedActivityIDs(currentSet) {
-				if _, exists := requestedSet[id]; exists {
-					continue
-				}
-				name, err := issueActivityRelatedName(ctx, tx, collection.table, collection.idColumn, collection.nameColumn, id)
-				if err != nil {
-					return nil, err
-				}
-				rows = append(rows, issueActivityRow{IssueID: input.IssueID, ActorID: input.ActorID, Verb: "updated", Field: collection.field, OldValue: name, NewValue: stringPointerValue(""), Comment: collection.removeComment, OldIdentifier: stringPointerValue(id), Epoch: input.Epoch})
-			}
-		}
-		return rows, nil
-	case "issue.activity.deleted":
-		row.Verb, row.Field, row.Comment = "deleted", "issue", "deleted the issue"
-	case "cycle.activity.created":
-		rows := make([]issueActivityRow, 0)
-		for _, record := range rawObjectArray(current["updated_cycle_issues"]) {
-			issueID := activityText(record["issue_id"])
-			oldID := activityText(record["old_cycle_id"])
-			newID := activityText(record["new_cycle_id"])
-			oldName, err := lookupActivityName(ctx, tx, "cycles", oldID)
-			if err != nil {
-				return nil, err
-			}
-			newName, err := lookupActivityName(ctx, tx, "cycles", newID)
-			if err != nil {
-				return nil, err
-			}
-			oldText, newText := stringOrEmpty(oldName), stringOrEmpty(newName)
-			rows = append(rows, issueActivityRow{IssueID: issueID, ActorID: input.ActorID, Verb: "updated", Field: "cycles", OldValue: oldText, NewValue: newText, Comment: fmt.Sprintf("updated cycle from %s\n                to %s", *oldText, *newText), OldIdentifier: oldID, NewIdentifier: newID, Epoch: input.Epoch})
-		}
-		for _, record := range rawObjectArray(current["created_cycle_issues"]) {
-			fields := decodeActivityObject(record["fields"])
-			issueID := activityText(fields["issue"])
-			cycleID := activityText(fields["cycle"])
-			name, err := lookupActivityName(ctx, tx, "cycles", cycleID)
-			if err != nil {
-				return nil, err
-			}
-			name = stringOrEmpty(name)
-			rows = append(rows, issueActivityRow{IssueID: issueID, ActorID: input.ActorID, Verb: "created", Field: "cycles", OldValue: stringPointerValue(""), NewValue: name, Comment: "added cycle " + *name, NewIdentifier: cycleID, Epoch: input.Epoch})
-		}
-		return rows, nil
-	case "cycle.activity.deleted":
-		cycleID := activityText(requested["cycle_id"])
-		cycleName, err := lookupActivityName(ctx, tx, "cycles", cycleID)
-		if err != nil {
-			return nil, err
-		}
-		if cycleName == nil {
-			cycleName = stringOrEmpty(activityText(requested["cycle_name"]))
-		}
-		rows := make([]issueActivityRow, 0)
-		for _, issue := range rawStringArray(requested["issues"]) {
-			name := stringOrEmpty(cycleName)
-			rows = append(rows, issueActivityRow{IssueID: &issue, ActorID: input.ActorID, Verb: "deleted", Field: "cycles", OldValue: name, NewValue: stringPointerValue(""), Comment: "removed this issue from " + *name, OldIdentifier: cycleID, Epoch: input.Epoch})
-		}
-		return rows, nil
-	case "module.activity.created":
-		moduleID := activityText(requested["module_id"])
-		name, err := lookupActivityName(ctx, tx, "modules", moduleID)
-		if err != nil {
-			return nil, err
-		}
-		name = stringOrEmpty(name)
-		row.Verb, row.Field, row.OldValue, row.NewValue = "created", "modules", stringPointerValue(""), name
-		row.Comment = "added module " + *name
-		row.NewIdentifier = moduleID
-	case "module.activity.deleted":
-		name := stringOrEmpty(activityText(current["module_name"]))
-		row.Verb, row.Field, row.OldValue, row.NewValue = "deleted", "modules", name, stringPointerValue("")
-		row.Comment = "removed this issue from " + *name
-		row.OldIdentifier = activityText(requested["module_id"])
-	case "issue_relation.activity.created":
-		if len(input.CurrentInstance) == 0 || string(input.CurrentInstance) == "null" {
-			relation := stringOrEmpty(activityText(requested["relation_type"]))
-			rows := make([]issueActivityRow, 0)
-			for _, relatedID := range rawStringArray(requested["issues"]) {
-				identifier, err := issueActivityIdentifier(ctx, tx, &relatedID)
-				if err != nil {
-					return nil, err
-				}
-				rows = append(rows, issueActivityRow{IssueID: input.IssueID, ActorID: input.ActorID, Verb: "updated", Field: *relation, OldValue: stringPointerValue(""), NewValue: identifier, Comment: "added " + *relation + " relation", OldIdentifier: &relatedID, Epoch: input.Epoch})
-				currentIdentifier, err := issueActivityIdentifier(ctx, tx, input.IssueID)
-				if err != nil {
-					return nil, err
-				}
-				inverse := inverseActivityRelation(*relation)
-				rows = append(rows, issueActivityRow{IssueID: &relatedID, ActorID: input.ActorID, Verb: "updated", Field: inverse, OldValue: stringPointerValue(""), NewValue: currentIdentifier, Comment: "added " + inverse + " relation", OldIdentifier: input.IssueID, Epoch: input.Epoch})
-			}
-			return rows, nil
-		}
-		return nil, nil
-	case "issue_relation.activity.deleted":
-		relation := stringOrEmpty(activityText(requested["relation_type"]))
-		relatedID := activityText(requested["related_issue"])
-		identifier, err := issueActivityIdentifier(ctx, tx, relatedID)
-		if err != nil {
-			return nil, err
-		}
-		row.Verb, row.Field, row.OldValue, row.NewValue = "deleted", *relation, identifier, stringPointerValue("")
-		row.Comment = "deleted " + *relation + " relation"
-		row.OldIdentifier = relatedID
-		currentIdentifier, err := issueActivityIdentifier(ctx, tx, input.IssueID)
-		if err != nil {
-			return nil, err
-		}
-		inverse := inverseActivityRelation(*relation)
-		return []issueActivityRow{row, {IssueID: relatedID, ActorID: input.ActorID, Verb: "deleted", Field: inverse, OldValue: currentIdentifier, NewValue: stringPointerValue(""), Comment: "deleted " + *relation + " relation", OldIdentifier: relatedID, Epoch: input.Epoch}}, nil
-	case "comment.activity.created":
-		row.Verb, row.Field, row.Comment, row.NewValue = "created", "comment", "created a comment", stringOrEmpty(get(requested, "comment_html"))
-		row.CommentID = get(requested, "id")
-		row.NewIdentifier = row.CommentID
-	case "comment.activity.updated":
-		oldValue, newValue := stringOrEmpty(get(current, "comment_html")), stringOrEmpty(get(requested, "comment_html"))
-		if oldValue == newValue {
-			return nil, nil
-		}
-		row.Verb, row.Field, row.Comment, row.OldValue, row.NewValue = "updated", "comment", "updated a comment", oldValue, newValue
-		row.CommentID = get(current, "id")
-		row.OldIdentifier = row.CommentID
-		row.NewIdentifier = row.CommentID
-	case "comment.activity.deleted":
-		row.Verb, row.Field, row.Comment = "deleted", "comment", "deleted the comment"
-		row.CommentID = get(requested, "comment_id")
-	case "link.activity.created":
-		row.Verb, row.Field, row.Comment, row.NewValue = "created", "link", "created a link", stringOrEmpty(get(requested, "url"))
-		row.NewIdentifier = get(requested, "id")
-	case "link.activity.updated":
-		oldValue, newValue := stringOrEmpty(get(current, "url")), stringOrEmpty(get(requested, "url"))
-		if oldValue == newValue {
-			return nil, nil
-		}
-		row.Verb, row.Field, row.Comment, row.OldValue, row.NewValue = "updated", "link", "updated a link", oldValue, newValue
-		row.OldIdentifier = get(current, "id")
-		row.NewIdentifier = get(current, "id")
-	case "link.activity.deleted":
-		oldValue := stringOrEmpty(get(current, "url"))
-		row.Verb, row.Field, row.Comment, row.OldValue = "deleted", "link", "deleted the link", oldValue
-		empty := ""
-		row.NewValue = &empty
-	case "attachment.activity.created":
-		row.Verb, row.Field, row.Comment = "created", "attachment", "created an attachment"
-		row.NewValue = get(current, "asset")
-		row.NewIdentifier = get(current, "id")
-	case "attachment.activity.deleted":
-		row.Verb, row.Field, row.Comment = "deleted", "attachment", "deleted the attachment"
-	case "issue_reaction.activity.created", "comment_reaction.activity.created":
-		reaction := get(requested, "reaction")
-		if reaction == nil {
-			return nil, nil
-		}
-		row.Verb, row.Field, row.Comment, row.NewValue = "created", "reaction", "added the reaction", reaction
-		if input.Type == "issue_reaction.activity.created" {
-			var err error
-			row.NewIdentifier, err = findActivityReactionID(ctx, tx, input.ProjectID, input.ActorID, *reaction)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			var commentID *string
-			var err error
-			row.NewIdentifier, commentID, err = findCommentReaction(ctx, tx, input.ProjectID, input.ActorID, *reaction)
-			if err != nil {
-				return nil, err
-			}
-			if commentID != nil {
-				var issueID string
-				if err := tx.QueryRow(ctx, `SELECT issue_id FROM issue_comments WHERE id=$1 AND project_id=$2 AND deleted_at IS NULL`, *commentID, input.ProjectID).Scan(&issueID); err == nil {
-					row.IssueID = &issueID
-				} else if !errors.Is(err, pgx.ErrNoRows) {
-					return nil, fmt.Errorf("load comment reaction issue: %w", err)
-				}
-			}
-		}
-		if row.NewIdentifier == nil {
-			return nil, nil
-		}
-	case "issue_reaction.activity.deleted", "comment_reaction.activity.deleted":
-		reaction := get(current, "reaction")
-		if reaction == nil {
-			return nil, nil
-		}
-		id := get(current, "identifier")
-		row.Verb, row.Field, row.Comment, row.OldValue, row.OldIdentifier = "deleted", "reaction", "removed the reaction", reaction, id
-		if input.Type == "comment_reaction.activity.deleted" {
-			if commentID := get(current, "comment_id"); commentID != nil {
-				var issueID string
-				if err := tx.QueryRow(ctx, `SELECT issue_id FROM issue_comments WHERE id=$1 AND project_id=$2 AND deleted_at IS NULL`, *commentID, input.ProjectID).Scan(&issueID); err == nil {
-					row.IssueID = &issueID
-				} else if !errors.Is(err, pgx.ErrNoRows) {
-					return nil, fmt.Errorf("load comment reaction issue: %w", err)
-				}
-			}
-		}
-	case "issue_vote.activity.created":
-		if vote := get(requested, "vote"); vote != nil {
-			row.Verb, row.Field, row.Comment, row.NewValue = "updated", "vote", "added the vote", vote
-		} else {
-			return nil, nil
-		}
-	case "issue_vote.activity.deleted":
-		if vote := get(current, "vote"); vote != nil {
-			row.Verb, row.Field, row.Comment, row.OldValue = "deleted", "vote", "removed the vote", vote
-			row.OldIdentifier = get(current, "identifier")
-		} else {
-			return nil, nil
-		}
-	case "issue_draft.activity.created":
-		row.Verb, row.Field, row.Comment = "created", "draft", "drafted the issue"
-	case "issue_draft.activity.updated":
-		row.Verb = "updated"
-		if raw := requested["is_draft"]; len(raw) > 0 && string(raw) == "false" {
-			row.Comment = "created the issue"
-		} else {
-			row.Field, row.Comment = "draft", "updated the draft issue"
-		}
-	case "issue_draft.activity.deleted":
-		row.Verb, row.Field, row.Comment = "deleted", "draft", "deleted the draft issue"
-		row.IssueID = nil
+		return updatedIssueActivityRows(ctx, tx, event)
+	case "cycle.activity.created", "cycle.activity.deleted":
+		return cycleActivityRows(ctx, tx, event)
+	case "module.activity.created", "module.activity.deleted":
+		return moduleActivityRows(ctx, tx, event)
+	case "issue_relation.activity.created", "issue_relation.activity.deleted":
+		return legacyRelationActivityRows(ctx, tx, event)
+	case "comment.activity.created", "comment.activity.updated", "comment.activity.deleted":
+		return commentActivityRows(event), nil
+	case "link.activity.created", "link.activity.updated", "link.activity.deleted":
+		return linkActivityRows(event), nil
+	case "attachment.activity.created", "attachment.activity.deleted":
+		return attachmentActivityRows(event), nil
+	case "issue_reaction.activity.created", "comment_reaction.activity.created", "issue_reaction.activity.deleted", "comment_reaction.activity.deleted":
+		return reactionActivityRows(ctx, tx, event)
+	case "issue_vote.activity.created", "issue_vote.activity.deleted":
+		return voteActivityRows(event), nil
+	case "issue_draft.activity.created", "issue_draft.activity.updated", "issue_draft.activity.deleted":
+		return draftActivityRows(event), nil
 	case "intake.activity.created":
-		status := get(requested, "status")
-		if status == nil {
-			return nil, nil
-		}
-		row.Verb, row.Field, row.Comment = "updated", "intake", "updated the intake status"
-		row.Verb = *status
-		row.OldValue = intakeStatus(get(current, "status"))
-		row.NewValue = intakeStatus(status)
+		return intakeActivityRows(event), nil
+	case "issue.activity.deleted":
+		row := event.baseRow()
+		row.Verb, row.Field, row.Comment = "deleted", "issue", "deleted the issue"
+		return []issueActivityRow{row}, nil
 	}
-	return []issueActivityRow{row}, nil
+	return []issueActivityRow{event.baseRow()}, nil
 }
 
 func decodeActivityObject(raw json.RawMessage) map[string]json.RawMessage {

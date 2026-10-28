@@ -202,6 +202,19 @@ separates double-escaped states. Every extracted function meets the existing flo
 The unchanged parser corpus and added short-read script cases verify tree and token
 behavior. One resolved lint occurrence lowers the Go lint baseline to 1,276.
 
+Activity-row construction now dispatches to event-family handlers. Issue updates
+keep their ordered stages visible: milestone, scalar fields and description
+coalescing, references, archival, then collection changes. Pure handlers return
+rows without database dependencies or error plumbing. The transaction owner and
+index-derived activity IDs are unchanged; a database regression test verifies row
+order when a description edit refreshes existing history. This retires one more
+maintainability allowance, leaving 40, with lint and duplication counts unchanged.
+
+Refactoring acceptance requires coherent responsibilities, narrow interfaces,
+visible effect ordering, and less work to understand or change the behavior.
+Passing a function-size or complexity metric alone is insufficient; inline or
+regroup helpers that merely redistribute branches or introduce forwarding layers.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML
