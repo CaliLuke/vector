@@ -123,6 +123,22 @@ func ValidateConfigGetUnauthenticatedResponseBody(body *ConfigGetUnauthenticated
 	return
 }
 
+// ValidateTelemetryGetUnauthenticatedResponseBody runs the validations defined
+// on telemetry_get_unauthenticated_response_body
+func ValidateTelemetryGetUnauthenticatedResponseBody(body *TelemetryGetUnauthenticatedResponseBody, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if body.Detail == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("detail", validationPath))
+	}
+	return
+}
+
 // ValidateConfigPatchUnauthenticatedResponseBody runs the validations defined
 // on config_patch_unauthenticated_response_body
 func ValidateConfigPatchUnauthenticatedResponseBody(body *ConfigPatchUnauthenticatedResponseBody, validationContext ...string) (err error) {

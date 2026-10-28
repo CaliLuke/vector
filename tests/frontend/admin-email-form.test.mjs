@@ -174,6 +174,11 @@ await test("saved SMTP credentials can be enabled without changing another field
 await test("instance settings retain edits after a failed save and submit the same draft on retry", async (t) => {
   const { GeneralConfigurationForm } = await import("../../apps/admin/app/(all)/(dashboard)/general/form.tsx");
   const original = { instance_name: "Vector", is_telemetry_enabled: false, instance_id: "instance-1" };
+  t.mock.method(InstanceService.prototype, "telemetry", async () => ({
+    logs_and_traces: { status: "enabled", destination: "http://logal:4318" },
+    instance_metrics: { status: "not_configured", destination: null },
+    analytics_events: { status: "not_configured", destination: null },
+  }));
   let fail = true;
   const payloads = [];
   t.mock.method(InstanceService.prototype, "update", async (payload) => {
@@ -187,7 +192,7 @@ await test("instance settings retain edits after a failed save and submit the sa
   });
   const name = view.container.querySelector('[name="instance_name"]');
   await changeInput(name, "Vector Test");
-  await act(async () => view.container.querySelector('[role="switch"]').click());
+  assert.equal(view.container.querySelector('[role="switch"]'), null);
   const formApi = nativeForms.getForms(generalSource).at(-1);
   await submitAndWait(view.button("Save changes"), formApi);
   assert.equal(formApi.state.isSubmitSuccessful, false);
@@ -197,10 +202,7 @@ await test("instance settings retain edits after a failed save and submit the sa
   fail = false;
   await submitAndWait(view.button("Save changes"), formApi);
   assert.equal(formApi.state.isSubmitSuccessful, true);
-  assert.deepEqual(payloads, [
-    { instance_name: "Vector Test", is_telemetry_enabled: true },
-    { instance_name: "Vector Test", is_telemetry_enabled: true },
-  ]);
+  assert.deepEqual(payloads, [{ instance_name: "Vector Test" }, { instance_name: "Vector Test" }]);
   assert.equal(view.button("Save changes").disabled, true);
 });
 
@@ -240,4 +242,33 @@ await test("SMTP cannot be toggled while a configuration save is pending", async
   await settleForm();
   assert.equal(toggle.disabled, false);
   assert.equal(toggle.getAttribute("aria-checked"), "true");
+});
+
+await test("telemetry shows configured destinations and hides stale status on failure until retry succeeds", async (t) => {
+  const { TelemetryStatus } = await import("../../apps/admin/app/(all)/(dashboard)/general/telemetry-status.tsx");
+  const { instanceTelemetryOptions } = await import("../../apps/admin/queries/instance.ts");
+  let fail = false;
+  t.mock.method(InstanceService.prototype, "telemetry", async () => {
+    if (fail) throw new Error("offline");
+    return {
+      logs_and_traces: { status: "enabled", destination: "http://logal:4318" },
+      instance_metrics: { status: "disabled", destination: "https://metrics.example.test" },
+      analytics_events: { status: "not_configured", destination: null },
+    };
+  });
+  const view = await mount(t, TelemetryStatus, {});
+  await settleForm();
+  assert.match(view.container.textContent, /Enabled.*Destination: http:\/\/logal:4318/);
+  assert.match(view.container.textContent, /Disabled.*Configured destination: https:\/\/metrics.example.test/);
+  assert.match(view.container.textContent, /Not configured.*No destination configured/);
+  fail = true;
+  await act(async () => view.queryClient.refetchQueries({ queryKey: instanceTelemetryOptions.queryKey }));
+  await settleForm();
+  assert.match(view.container.querySelector('[role="alert"]').textContent, /Unable to load/);
+  assert.doesNotMatch(view.container.textContent, /logal:4318/);
+  fail = false;
+  await act(async () => view.button("Retry").click());
+  await settleForm();
+  assert.match(view.container.textContent, /logal:4318/);
+  assert.equal(view.container.querySelector('[role="alert"]'), null);
 });

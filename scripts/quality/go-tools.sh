@@ -30,7 +30,7 @@ check_tool() {
     printf 'missing Go quality tool %s; run scripts/quality/go-tools.sh --install\n' "$name" >&2
     return 1
   fi
-  actual="$(go version -m "$path" | awk -v module="$module" '$1 == "mod" && $2 == module {print $3; exit}')"
+  actual="$(go version -m "$path" | awk -v module="$module" '$1 == "mod" && $2 == module {print $3}')"
   if [[ "$actual" != "$version" ]]; then
     printf '%s version mismatch: found %s at %s, expected %s; run scripts/quality/go-tools.sh --install\n' "$name" "${actual:-unknown}" "$path" "$version" >&2
     return 1

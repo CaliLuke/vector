@@ -28,6 +28,7 @@ type Client struct {
 	AdminsDetailDeleteEndpoint     loom.Endpoint
 	SignupVisitedEndpoint          loom.Endpoint
 	ConfigGetEndpoint              loom.Endpoint
+	TelemetryGetEndpoint           loom.Endpoint
 	ConfigPatchEndpoint            loom.Endpoint
 	DisableEmailEndpoint           loom.Endpoint
 	EmailCheckEndpoint             loom.Endpoint
@@ -37,8 +38,8 @@ type Client struct {
 
 // NewClient initializes a "instance_management" service client given the
 // endpoints.
-func NewClient(adminSignIn, adminSignUp, adminSignOut, rootGet, rootPatch, adminsGet, adminsPost, adminsDeleteCollection, adminsDetailGet, adminsDetailDelete, signupVisited, configGet, configPatch, disableEmail, emailCheck, workspacesGet, workspacesPost loom.Endpoint) *Client {
-	return &Client{AdminSignInEndpoint: adminSignIn, AdminSignUpEndpoint: adminSignUp, AdminSignOutEndpoint: adminSignOut, RootGetEndpoint: rootGet, RootPatchEndpoint: rootPatch, AdminsGetEndpoint: adminsGet, AdminsPostEndpoint: adminsPost, AdminsDeleteCollectionEndpoint: adminsDeleteCollection, AdminsDetailGetEndpoint: adminsDetailGet, AdminsDetailDeleteEndpoint: adminsDetailDelete, SignupVisitedEndpoint: signupVisited, ConfigGetEndpoint: configGet, ConfigPatchEndpoint: configPatch, DisableEmailEndpoint: disableEmail, EmailCheckEndpoint: emailCheck, WorkspacesGetEndpoint: workspacesGet, WorkspacesPostEndpoint: workspacesPost}
+func NewClient(adminSignIn, adminSignUp, adminSignOut, rootGet, rootPatch, adminsGet, adminsPost, adminsDeleteCollection, adminsDetailGet, adminsDetailDelete, signupVisited, configGet, telemetryGet, configPatch, disableEmail, emailCheck, workspacesGet, workspacesPost loom.Endpoint) *Client {
+	return &Client{AdminSignInEndpoint: adminSignIn, AdminSignUpEndpoint: adminSignUp, AdminSignOutEndpoint: adminSignOut, RootGetEndpoint: rootGet, RootPatchEndpoint: rootPatch, AdminsGetEndpoint: adminsGet, AdminsPostEndpoint: adminsPost, AdminsDeleteCollectionEndpoint: adminsDeleteCollection, AdminsDetailGetEndpoint: adminsDetailGet, AdminsDetailDeleteEndpoint: adminsDetailDelete, SignupVisitedEndpoint: signupVisited, ConfigGetEndpoint: configGet, TelemetryGetEndpoint: telemetryGet, ConfigPatchEndpoint: configPatch, DisableEmailEndpoint: disableEmail, EmailCheckEndpoint: emailCheck, WorkspacesGetEndpoint: workspacesGet, WorkspacesPostEndpoint: workspacesPost}
 }
 
 // AdminSignIn calls the "admin_sign_in" endpoint of the "instance_management"
@@ -242,6 +243,27 @@ func (c *Client) ConfigGet(ctx context.Context, p *ConfigGetPayload) (res *RawJS
 		return
 	}
 	o := ires.(*ConfigGetResponseData)
+	return o.Result, o.Body, nil
+}
+
+// TelemetryGet calls the "telemetry_get" endpoint of the "instance_management"
+// service.
+// TelemetryGet may return the following errors:
+// - "bad_request" (type *InstanceManagementError)
+// - "forbidden" (type *InstanceManagementError)
+// - "not_found" (type *InstanceManagementError)
+// - "conflict" (type *InstanceManagementError)
+// - "method_not_allowed" (type *InstanceManagementError)
+// - "internal_error" (type *InstanceManagementError)
+// - "unauthenticated" (type *InstanceAdminSessionUnauthenticated)
+// - error: internal error
+func (c *Client) TelemetryGet(ctx context.Context, p *TelemetryGetPayload) (res *InstanceRootResponseMetadata, resp io.ReadCloser, err error) {
+	var ires any
+	ires, err = c.TelemetryGetEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	o := ires.(*TelemetryGetResponseData)
 	return o.Result, o.Body, nil
 }
 

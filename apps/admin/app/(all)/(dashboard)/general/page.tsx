@@ -25,8 +25,7 @@ function GeneralPage() {
     <PageWrapper
       header={{
         title: "General settings",
-        description:
-          "Change the name of your instance and instance admin e-mail addresses. Enable or disable telemetry in your instance.",
+        description: "Manage your instance details and view telemetry status and destinations.",
       }}
     >
       {info.data && admins.data ? (

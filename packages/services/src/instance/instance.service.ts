@@ -12,6 +12,7 @@ import type {
   IInstanceAdmin,
   IInstanceConfiguration,
   IInstanceInfo,
+  IInstanceTelemetry,
   TPage,
 } from "@plane/types";
 // api service
@@ -29,6 +30,10 @@ export class InstanceService extends APIService {
    */
   constructor() {
     super(API_BASE_URL);
+  }
+
+  async telemetry(signal?: AbortSignal): Promise<IInstanceTelemetry> {
+    return this.get("/api/instances/telemetry/", { signal }).then((response) => response.data);
   }
 
   /**

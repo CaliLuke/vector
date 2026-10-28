@@ -16,6 +16,7 @@ export const instanceKeys = {
   user: ["instance", "user"] as const,
   admins: ["instance", "admins"] as const,
   configurations: ["instance", "configurations"] as const,
+  telemetry: ["instance", "telemetry"] as const,
 };
 
 export const instanceInfoOptions = queryOptions({
@@ -84,4 +85,11 @@ export function disableEmailOptions(client: QueryClient) {
 
 export const sendTestEmailOptions = mutationOptions({
   mutationFn: (receiver: string) => instanceService.sendTestEmail(receiver),
+});
+
+export const instanceTelemetryOptions = queryOptions({
+  queryKey: instanceKeys.telemetry,
+  queryFn: ({ signal }) => instanceService.telemetry(signal),
+  staleTime: 0,
+  retry: false,
 });

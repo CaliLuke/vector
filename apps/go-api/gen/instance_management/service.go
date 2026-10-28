@@ -65,6 +65,11 @@ type Service interface {
 	// Consider [github.com/CaliLuke/loom/pkg.SkipResponseWriter] to adapt existing
 	// implementations.
 	ConfigGet(context.Context, *ConfigGetPayload) (res *RawJSONResponseMetadata, body io.ReadCloser, err error)
+	// TelemetryGet implements telemetry_get.
+	// If body implements [io.WriterTo], that implementation will be used instead.
+	// Consider [github.com/CaliLuke/loom/pkg.SkipResponseWriter] to adapt existing
+	// implementations.
+	TelemetryGet(context.Context, *TelemetryGetPayload) (res *InstanceRootResponseMetadata, body io.ReadCloser, err error)
 	// ConfigPatch implements config_patch.
 	// If body implements [io.WriterTo], that implementation will be used instead.
 	// Consider [github.com/CaliLuke/loom/pkg.SkipResponseWriter] to adapt existing
@@ -109,7 +114,7 @@ const ServiceName = "instance_management"
 // MethodNames lists the service method names as defined in the design. These
 // are the same values that are set in the endpoint request contexts under the
 // MethodKey key.
-var MethodNames = [17]string{"admin_sign_in", "admin_sign_up", "admin_sign_out", "root_get", "root_patch", "admins_get", "admins_post", "admins_delete_collection", "admins_detail_get", "admins_detail_delete", "signup_visited", "config_get", "config_patch", "disable_email", "email_check", "workspaces_get", "workspaces_post"}
+var MethodNames = [18]string{"admin_sign_in", "admin_sign_up", "admin_sign_out", "root_get", "root_patch", "admins_get", "admins_post", "admins_delete_collection", "admins_detail_get", "admins_detail_delete", "signup_visited", "config_get", "telemetry_get", "config_patch", "disable_email", "email_check", "workspaces_get", "workspaces_post"}
 
 // AdminSignInPayload is the payload type of the instance_management service
 // admin_sign_in method.
@@ -227,6 +232,12 @@ type RawJSONResponseMetadata struct {
 type RootPatchPayload struct {
 	SessionID   *string `json:"session_id,omitzero"`
 	ContentType *string `json:"content_type,omitzero"`
+}
+
+// TelemetryGetPayload is the payload type of the instance_management service
+// telemetry_get method.
+type TelemetryGetPayload struct {
+	SessionID *string `json:"session_id,omitzero"`
 }
 
 // WorkspacesGetPayload is the payload type of the instance_management service

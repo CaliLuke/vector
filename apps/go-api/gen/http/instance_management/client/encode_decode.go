@@ -1682,6 +1682,171 @@ func DecodeConfigGetResponse(decoder func(*http.Response) loomhttp.Decoder, rest
 	}
 }
 
+// BuildTelemetryGetRequest instantiates a HTTP request object with method and
+// path set to call the "instance_management" service "telemetry_get" endpoint
+func (c *Client) BuildTelemetryGetRequest(ctx context.Context, v any) (*http.Request, error) {
+	u := &url.URL{Scheme: c.scheme, Host: c.host, Path: TelemetryGetInstanceManagementPath()}
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, loomhttp.ErrInvalidURL("instance_management", "telemetry_get", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
+	}
+
+	return req, nil
+}
+
+// EncodeTelemetryGetRequest returns an encoder for requests sent to the
+// instance_management telemetry_get server.
+func EncodeTelemetryGetRequest(encoder func(*http.Request) loomhttp.Encoder) func(*http.Request, any) error {
+	return func(req *http.Request, v any) error {
+		p, ok := v.(*instancemanagement.TelemetryGetPayload)
+		if !ok {
+			return loomhttp.ErrInvalidType("instance_management", "telemetry_get", "*instancemanagement.TelemetryGetPayload", v)
+		}
+		if p.SessionID != nil {
+			v := *p.SessionID
+			if err := loomhttp.AddRequestCookie(req, "admin-session-id", v); err != nil {
+				return loomhttp.ErrEncodingError("instance_management", "telemetry_get", err)
+			}
+		}
+		return nil
+	}
+}
+
+// DecodeTelemetryGetResponse returns a decoder for responses returned by the
+// instance_management telemetry_get endpoint. restoreBody controls whether the
+// response body should be restored after having been read.
+// DecodeTelemetryGetResponse may return the following errors:
+//   - "unauthenticated" (type *instancemanagement.InstanceAdminSessionUnauthenticated): http.StatusUnauthorized
+//   - "bad_request" (type *instancemanagement.InstanceManagementError): http.StatusBadRequest
+//   - "forbidden" (type *instancemanagement.InstanceManagementError): http.StatusForbidden
+//   - "not_found" (type *instancemanagement.InstanceManagementError): http.StatusNotFound
+//   - "conflict" (type *instancemanagement.InstanceManagementError): http.StatusConflict
+//   - "method_not_allowed" (type *instancemanagement.InstanceManagementError): http.StatusMethodNotAllowed
+//   - "internal_error" (type *instancemanagement.InstanceManagementError): http.StatusInternalServerError
+//   - error: internal error
+func DecodeTelemetryGetResponse(decoder func(*http.Response) loomhttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
+	return func(resp *http.Response) (any, error) {
+		return loomhttp.DecodeResponse(resp, restoreBody, false || resp.StatusCode == http.StatusOK, func(resp *http.Response) (any, error) {
+			switch resp.StatusCode {
+			case http.StatusOK:
+				var (
+					contentType  string
+					cacheControl string
+					err          error
+				)
+				{
+					contentTypeRaw := resp.Header.Get("Content-Type")
+					contentTypePresent := len(resp.Header.Values("Content-Type")) > 0
+
+					if contentTypePresent {
+						contentType = contentTypeRaw
+					} else {
+						err = loom.MergeErrors(err, loom.MissingFieldError("content_type", "header"))
+					}
+				}
+				{
+					cacheControlRaw := resp.Header.Get("Cache-Control")
+					cacheControlPresent := len(resp.Header.Values("Cache-Control")) > 0
+
+					if cacheControlPresent {
+						cacheControl = cacheControlRaw
+					} else {
+						err = loom.MergeErrors(err, loom.MissingFieldError("cache_control", "header"))
+					}
+				}
+				if err != nil {
+					return nil, loomhttp.ErrValidationError("instance_management", "telemetry_get", err)
+				}
+				res := NewRootGetInstanceRootResponseMetadataOK(contentType, cacheControl)
+				return res, nil
+			case http.StatusUnauthorized:
+				var (
+					body TelemetryGetUnauthenticatedResponseBody
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("instance_management", "telemetry_get", err)
+				}
+				err = ValidateTelemetryGetUnauthenticatedResponseBody(&body)
+				if err != nil {
+					return nil, loomhttp.ErrValidationError("instance_management", "telemetry_get", err)
+				}
+				return nil, NewTelemetryGetUnauthenticated(&body)
+			case http.StatusBadRequest:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("instance_management", "telemetry_get", err)
+				}
+				return nil, NewAdminSignInInternalError(body, "bad_request")
+			case http.StatusForbidden:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("instance_management", "telemetry_get", err)
+				}
+				return nil, NewAdminSignInInternalError(body, "forbidden")
+			case http.StatusNotFound:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("instance_management", "telemetry_get", err)
+				}
+				return nil, NewAdminSignInInternalError(body, "not_found")
+			case http.StatusConflict:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("instance_management", "telemetry_get", err)
+				}
+				return nil, NewAdminSignInInternalError(body, "conflict")
+			case http.StatusMethodNotAllowed:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("instance_management", "telemetry_get", err)
+				}
+				return nil, NewAdminSignInInternalError(body, "method_not_allowed")
+			case http.StatusInternalServerError:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("instance_management", "telemetry_get", err)
+				}
+				return nil, NewAdminSignInInternalError(body, "internal_error")
+			default:
+				body, err := loomhttp.ReadUnexpectedResponseBody(resp)
+				if err != nil {
+					return nil, err
+				}
+				return nil, loomhttp.ErrInvalidResponse("instance_management", "telemetry_get", resp.StatusCode, string(body))
+			}
+		})
+	}
+}
+
 // BuildConfigPatchRequest instantiates a HTTP request object with method and
 // path set to call the "instance_management" service "config_patch" endpoint
 func (c *Client) BuildConfigPatchRequest(ctx context.Context, v any) (*http.Request, error) {

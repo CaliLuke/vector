@@ -1213,6 +1213,7 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 			{"/api/instances/admins/", server.AdminsGet},
 			{"/api/instances/admins/{pk}/", server.AdminsDetailGet},
 			{"/api/instances/configurations/", server.ConfigGet},
+			{"/api/instances/telemetry/", server.TelemetryGet},
 			{"/api/instances/workspaces/", server.WorkspacesGet},
 		}, readServicesCORSPolicy)
 		instanceProtocolMiddleware = newSessionServiceProtocolMiddleware(notificationProtocolMetadata, pending.instanceManagementMetadata, readServicesCORSPolicy, stack, cookie, dbg, options)
@@ -1739,6 +1740,7 @@ var readServiceProtocols = append(append(append(append(append(append(invitations
 	newInstanceManagementProtocol("/api/instances/admins/sign-up-screen-visited/", "POST, OPTIONS", "Sign Up Screen Visited Endpoint", false),
 	newInstanceManagementProtocol("/api/instances/admins/{pk}/", "GET, POST, DELETE, HEAD, OPTIONS", "Instance Admin Endpoint", true),
 	newInstanceManagementProtocol("/api/instances/configurations/", "GET, PATCH, HEAD, OPTIONS", "Instance Configuration Endpoint", true),
+	newInstanceManagementProtocol("/api/instances/telemetry/", "GET, HEAD, OPTIONS", "Instance Telemetry Endpoint", true),
 	newInstanceManagementProtocol("/api/instances/configurations/disable-email-feature/", "DELETE, OPTIONS", "Disable Email Feature Endpoint", false),
 	newInstanceManagementProtocol("/api/instances/email-credentials-check/", "POST, OPTIONS", "Email Credential Check Endpoint", false),
 	newInstanceManagementProtocol("/api/instances/workspaces/", "GET, POST, HEAD, OPTIONS", "Instance Work Space Endpoint", true),

@@ -358,3 +358,38 @@ func TestInstanceAdminRedirectProtocolMethods(t *testing.T) {
 		})
 	}
 }
+
+func (instanceHTTPRepository) Telemetry(context.Context) (json.RawMessage, error) {
+	return json.RawMessage(`{"logs_and_traces":{"status":"enabled","destination":"http://logal:4318"}}`), nil
+}
+
+func TestInstanceTelemetryRequiresAdminAndDisablesCaching(t *testing.T) {
+	for _, tc := range []struct {
+		name, cookie string
+		denied       bool
+		status       int
+	}{
+		{name: "anonymous", status: http.StatusUnauthorized},
+		{name: "ordinary session", cookie: "session-id=valid-session", status: http.StatusUnauthorized},
+		{name: "non-admin", cookie: "admin-session-id=valid-session", denied: true, status: http.StatusForbidden},
+		{name: "admin", cookie: "admin-session-id=valid-session", status: http.StatusOK},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			handler := newInstanceManagementTestHandler(t, tc.denied)
+			request := httptest.NewRequest(http.MethodGet, "/api/instances/telemetry/", nil)
+			request.Header.Set("Cookie", tc.cookie)
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, request)
+			if response.Code != tc.status {
+				t.Fatalf("status=%d body=%s", response.Code, response.Body.String())
+			}
+			if tc.status == http.StatusOK {
+				if response.Header().Get("Cache-Control") != "no-store" || !strings.Contains(response.Body.String(), "http://logal:4318") {
+					t.Fatalf("unexpected telemetry response: %v %s", response.Header(), response.Body.String())
+				}
+			} else if strings.Contains(response.Body.String(), "logal") {
+				t.Fatal("destination leaked without admin authorization")
+			}
+		})
+	}
+}
