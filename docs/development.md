@@ -355,6 +355,23 @@ enforce these yet. They remain outstanding work for the zero-exceptions goal;
 no baseline allowance was added for them. The configured lint baseline remains
 647 occurrences, distinct from this additional audit inventory.
 
+MCP discovery now separates current permission queries from the action catalogue.
+A capability value contains the existing domain grants; a pure projection applies
+token scope and builds action visibility. Query order, conditional reads, and
+failure behavior are preserved. Repeated write predicates are named once.
+The fresh applied-source build passes all 831 MCP tests/subtests, covers the
+extracted functions through their current source ranges, and raises the MCP
+coverage floor from 83.73% to 83.82%. Its maintainability allowance is retired,
+leaving 31; configured lint and duplication remain at 647 and 488.
+
+Do not combine source overlays with `-coverpkg` for verification until
+[golang/go#73802](https://github.com/golang/go/issues/73802) is fixed in the pinned
+toolchain and its reproduction passes. The issue can ignore overlaid code and
+produce a false passing test. A standalone Go 1.27.3 reproduction was
+[added upstream](https://github.com/golang/go/issues/73802#issuecomment-6480328772).
+This batch used a forced fresh build of the applied MCP source and checked the
+coverage ranges; no compiler flag or dependency patch is retained in the gates.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML

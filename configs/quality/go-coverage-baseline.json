@@ -274,8 +274,8 @@
       "percent": 90
     },
     "github.com/CaliLuke/go-plane/internal/mcpactions": {
-      "statements": 3547,
-      "percent": 83.73
+      "statements": 3566,
+      "percent": 83.82
     },
     "github.com/CaliLuke/go-plane/internal/mcpauth": {
       "statements": 141,
