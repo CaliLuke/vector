@@ -6,7 +6,6 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateConfigurationsOptions } from "@/queries/instance";
-import { Lightbulb } from "lucide-react";
 import type { IFormattedInstanceConfiguration, TInstanceAIConfigurationKeys } from "@plane/types";
 // components
 import type { SettingsInput } from "@/components/common/settings-form";
@@ -99,16 +98,6 @@ export function InstanceAIForm(props: IInstanceAIForm) {
         <form.AppForm>
           <form.SaveButton />
         </form.AppForm>
-
-        <div className="relative inline-flex items-center gap-1.5 rounded-sm border border-accent-subtle bg-accent-subtle px-4 py-2 text-caption-sm-regular text-accent-secondary">
-          <Lightbulb className="size-4" />
-          <div>
-            If you have a preferred AI models vendor, please get in{" "}
-            <a className="font-medium underline" href="https://github.com/CaliLuke/vector">
-              touch with us.
-            </a>
-          </div>
-        </div>
       </div>
     </SettingsForm>
   );
