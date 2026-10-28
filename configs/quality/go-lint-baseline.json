@@ -1486,10 +1486,6 @@
       "count": 2
     },
     {
-      "fingerprint": ["ineffassign", "internal/cyclereads/lifecycle.go", "ineffectual assignment to currentInstance"],
-      "count": 1
-    },
-    {
       "fingerprint": [
         "ineffassign",
         "internal/usernotificationpreferences/repository.go",
@@ -2038,10 +2034,6 @@
       "count": 1
     },
     {
-      "fingerprint": ["staticcheck", "internal/cyclereads/lifecycle.go", "SA9003: empty branch"],
-      "count": 1
-    },
-    {
       "fingerprint": ["staticcheck", "internal/cyclereads/repository.go", "QF1001: could apply De Morgan's law"],
       "count": 1
     },
@@ -2519,10 +2511,6 @@
         "internal/backgroundtasks/description_asset_copy.go",
         "descriptionAssetEntityColumn - result 1 (error) is always nil"
       ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unparam", "internal/cyclereads/lifecycle.go", "timestampValue - result 1 (bool) is never used"],
       "count": 1
     },
     {

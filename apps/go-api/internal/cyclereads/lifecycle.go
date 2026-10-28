@@ -140,7 +140,7 @@ func (repository *LifecycleRepository) Patch(ctx context.Context, slug, projectI
 		}
 		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": message}}
 	}
-	currentInstance := before
+	var currentInstance map[string]any
 	if !api {
 		currentInstance, err = repository.appCycleSerializerSnapshot(ctx, actor, slug, projectID, cycleID)
 		if err != nil {
@@ -157,7 +157,7 @@ func (repository *LifecycleRepository) Patch(ctx context.Context, slug, projectI
 	if scanErr := repository.database.QueryRow(ctx, `SELECT p.timezone,COALESCE(NULLIF(u.user_timezone,''),'UTC') FROM projects p JOIN users u ON u.id=$2 WHERE p.id=$1`, projectID, actor).Scan(&projectTimezone, &actorTimezone); scanErr != nil {
 		return nil, scanErr
 	}
-	end, _ := timestampValue(before["end_date"])
+	end := timestampValue(before["end_date"])
 	completed := end != nil && end.Before(repository.now())
 	effective := map[string]any{}
 	activityData := maps.Clone(activityRequested)
@@ -180,56 +180,8 @@ func (repository *LifecycleRepository) Patch(ctx context.Context, slug, projectI
 			}
 		}
 	}
-	startDate, _ := timestampValue(before["start_date"])
-	endDate, _ := timestampValue(before["end_date"])
-	pairedDateValidation := false
-	if startValue, startPresent := effective["start_date"]; startPresent && startValue != nil {
-		if endValue, endPresent := effective["end_date"]; endPresent && endValue != nil {
-			pairedDateValidation = true
-		}
-	}
-	for key, destination := range map[string]**time.Time{"start_date": &startDate, "end_date": &endDate} {
-		value, present := effective[key]
-		if !present {
-			continue
-		}
-		if value == nil {
-			*destination = nil
-			continue
-		}
-		text, ok := value.(string)
-		if !ok {
-			return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{key: []string{"Datetime has wrong format."}}}
-		}
-		var parsed *time.Time
-		var dateParseErr error
-		parsed, dateParseErr = parseCycleDateTime(text, actorTimezone)
-		if dateParseErr != nil {
-			return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{key: []string{"Datetime has wrong format."}}}
-		}
-		*destination = parsed
-		effective[key] = parsed
-	}
-	if pairedDateValidation && startDate != nil && endDate != nil {
-		if startDate.After(*endDate) {
-			return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"non_field_errors": []string{"Start date cannot exceed end date"}}}
-		}
-		actorLocation, dateRangeErr := time.LoadLocation(actorTimezone)
-		if dateRangeErr != nil {
-			return nil, dateRangeErr
-		}
-		startDay := startDate.In(actorLocation).Format("2006-01-02")
-		endDay := endDate.In(actorLocation).Format("2006-01-02")
-		startDate, dateRangeErr = parseCycleDate(&startDay, projectTimezone, true)
-		if dateRangeErr != nil {
-			return nil, dateRangeErr
-		}
-		endDate, dateRangeErr = parseCycleDate(&endDay, projectTimezone, false)
-		if dateRangeErr != nil {
-			return nil, dateRangeErr
-		}
-		effective["start_date"] = startDate
-		effective["end_date"] = endDate
+	if normalizeErr := normalizeCyclePatchDates(effective, actorTimezone, projectTimezone); normalizeErr != nil {
+		return nil, normalizeErr
 	}
 	updates := make([]string, 0, 10)
 	args := []any{actor, cycleID, projectID, slug}
@@ -245,9 +197,6 @@ func (repository *LifecycleRepository) Patch(ctx context.Context, slug, projectI
 		column, ok := allowed[key]
 		if !ok {
 			continue
-		}
-		if key == "start_date" || key == "end_date" {
-			// Values are normalized and paired-date validated above.
 		}
 		if key == "sort_order" {
 			if _, ok := value.(float64); !ok {
@@ -310,6 +259,36 @@ func (repository *LifecycleRepository) Patch(ctx context.Context, slug, projectI
 		return updated, nil
 	}
 	return repository.appCycleMutationProjection(ctx, actor, slug, projectID, cycleID, false)
+}
+
+// normalizeCyclePatchDates preserves omitted and null fields. Only a request
+// containing both dates applies range validation and project-day boundaries.
+func normalizeCyclePatchDates(effective map[string]any, actorTimezone, projectTimezone string) error {
+	var startDate, endDate *time.Time
+	for key, destination := range map[string]**time.Time{"start_date": &startDate, "end_date": &endDate} {
+		value, present := effective[key]
+		if !present || value == nil {
+			continue
+		}
+		text, ok := value.(string)
+		if !ok {
+			return &djangoapi.HTTPError{Status: 400, Body: map[string]any{key: []string{"Datetime has wrong format."}}}
+		}
+		parsed, dateParseErr := parseCycleDateTime(text, actorTimezone)
+		if dateParseErr != nil {
+			return &djangoapi.HTTPError{Status: 400, Body: map[string]any{key: []string{"Datetime has wrong format."}}}
+		}
+		*destination = parsed
+		effective[key] = parsed
+	}
+	if startDate != nil && endDate != nil {
+		start, end, err := normalizeCycleDateRange(startDate, endDate, actorTimezone, projectTimezone)
+		if err != nil {
+			return err
+		}
+		effective["start_date"], effective["end_date"] = start, end
+	}
+	return nil
 }
 
 func (repository *LifecycleRepository) checkAPIExternalIDConflict(ctx context.Context, projectID, slug, cycleID string, before, requestData map[string]any) error {
@@ -495,16 +474,16 @@ func (repository *LifecycleRepository) appCycleMutationProjection(ctx context.Co
 	return projection, nil
 }
 
-func timestampValue(value any) (*time.Time, bool) {
+func timestampValue(value any) *time.Time {
 	text, ok := value.(string)
 	if !ok || text == "" {
-		return nil, false
+		return nil
 	}
 	parsed, err := time.Parse(time.RFC3339Nano, text)
 	if err != nil {
-		return nil, false
+		return nil
 	}
-	return &parsed, true
+	return &parsed
 }
 
 func pythonCycleCurrentInstance(cycle map[string]any, api bool) (string, error) {
@@ -862,6 +841,12 @@ func parseCycleInputDates(startValue, endValue *string, actorTimezone, projectTi
 	if err != nil {
 		return nil, nil, err
 	}
+	return normalizeCycleDateRange(start, end, actorTimezone, projectTimezone)
+}
+
+// normalizeCycleDateRange checks instants before converting the actor's calendar
+// days into project-local start and end boundaries. A single date stays an instant.
+func normalizeCycleDateRange(start, end *time.Time, actorTimezone, projectTimezone string) (*time.Time, *time.Time, error) {
 	if start == nil || end == nil {
 		return start, end, nil
 	}

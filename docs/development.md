@@ -328,6 +328,17 @@ packages pass 104 tests/subtests, and application-level probes verify certificat
 rejection through each cache client (six tests/subtests). Lint, maintainability,
 and duplication remain at 650, 33, and 488 respectively without baseline changes.
 
+Cycle updates now separate date normalization from persistence and webhook
+admission. Create and patch share the same range validation and timezone
+conversion. Patch retains the distinction between omitted, null, single, and
+paired dates: only paired dates are range-checked and expanded to project-day
+boundaries. PostgreSQL proofs pass before and after the extraction, including
+unchanged state and no webhook on invalid dates; the complete cycle suite passes
+129 tests/subtests. This retires the cycle patch maintainability allowance,
+leaving 32. Removing an overwritten assignment, an empty branch, and an unused
+timestamp success flag retires three lint findings, leaving 647. No duplicate
+report or source exclusion was added.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML

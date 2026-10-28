@@ -107,12 +107,6 @@
       "score": 16
     },
     {
-      "file": "internal/cyclereads/lifecycle.go",
-      "package": "cyclereads",
-      "function": "(*LifecycleRepository).Patch",
-      "score": 15
-    },
-    {
       "file": "internal/cyclereads/live_labels_integration_test.go",
       "package": "cyclereads",
       "function": "TestCycleLiveLabelRelationContract",
