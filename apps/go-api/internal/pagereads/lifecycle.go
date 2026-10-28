@@ -146,13 +146,13 @@ func (repository *Repository) Lifecycle(
 			return 0, nil, lifecycleError(http.StatusForbidden, "You do not have permission to perform this action.")
 		}
 		if operation == "archive" {
-			if err := repository.archivePage(ctx, db, userID, projectID, state.workspaceID, pageID); err != nil {
+			if err := repository.archivePage(ctx, db, projectID, state.workspaceID, pageID); err != nil {
 				return 0, nil, err
 			}
 			data, _ := json.Marshal(map[string]any{"archived_at": time.Now().Format("2006-01-02 15:04:05.000000")})
 			return http.StatusOK, data, nil
 		}
-		if err := repository.unarchivePage(ctx, db, userID, projectID, state.workspaceID, pageID); err != nil {
+		if err := repository.unarchivePage(ctx, db, projectID, state.workspaceID, pageID); err != nil {
 			return 0, nil, err
 		}
 		return http.StatusNoContent, nil, nil
@@ -174,7 +174,7 @@ func (repository *Repository) Lifecycle(
 		return http.StatusNoContent, nil, nil
 	case "update", "description_update", "duplicate":
 		if operation == "description_update" {
-			return repository.updatePageDescription(ctx, db, userID, slug, projectID, pageID, state, timezone, input)
+			return repository.updatePageDescription(ctx, db, userID, pageID, state, input)
 		}
 		return repository.updateOrDuplicatePage(ctx, db, operation, userID, slug, projectID, pageID, state, timezone, input)
 	default:
@@ -297,7 +297,7 @@ func (repository *Repository) writePage(ctx context.Context, db lifecycleDatabas
 	return tx.Commit(ctx)
 }
 
-func (repository *Repository) archivePage(ctx context.Context, db lifecycleDatabase, user, project, workspace, page uuid.UUID) error {
+func (repository *Repository) archivePage(ctx context.Context, db lifecycleDatabase, project, workspace, page uuid.UUID) error {
 	return repository.writePage(ctx, db, func(tx pgx.Tx) error {
 		if _, err := tx.Exec(ctx, `UPDATE user_favorites SET deleted_at=now() WHERE entity_type='page' AND entity_identifier=$1 AND project_id=$2 AND workspace_id=$3 AND deleted_at IS NULL`, page, project, workspace); err != nil {
 			return err
@@ -316,7 +316,7 @@ UPDATE pages SET archived_at=CURRENT_DATE WHERE id IN (SELECT id FROM tree) AND 
 	})
 }
 
-func (repository *Repository) unarchivePage(ctx context.Context, db lifecycleDatabase, user, project, workspace, page uuid.UUID) error {
+func (repository *Repository) unarchivePage(ctx context.Context, db lifecycleDatabase, project, workspace, page uuid.UUID) error {
 	return repository.writePage(ctx, db, func(tx pgx.Tx) error {
 		if _, err := tx.Exec(ctx, `UPDATE pages p SET parent_id=NULL WHERE p.id=$1 AND p.workspace_id=$2 AND p.deleted_at IS NULL AND EXISTS (SELECT 1 FROM pages parent WHERE parent.id=p.parent_id AND parent.workspace_id=$2 AND parent.archived_at IS NOT NULL AND parent.deleted_at IS NULL)`, page, workspace); err != nil {
 			return err
@@ -733,7 +733,7 @@ func (repository *Repository) updateOrDuplicatePage(ctx context.Context, db life
 			return 0, nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"parent": []string{"Page hierarchy cannot contain a cycle."}}}
 		}
 	}
-	fields, fieldErrors, labelList := validatePageLifecycleFields(input, true, false)
+	fields, fieldErrors, labelList := validatePageLifecycleFields(input)
 	labelList, err := repository.validateLifecycleLabelReferences(ctx, state.workspaceID, labelList)
 	if err != nil {
 		return 0, nil, err
@@ -866,7 +866,7 @@ func lifecycleRawAccessChanged(raw any, state pageLifecycleState, user uuid.UUID
 	}
 }
 
-func validatePageLifecycleFields(input djangoinput.Input, partial, create bool) (map[string]any, map[string]any, lifecycleLabelList) {
+func validatePageLifecycleFields(input djangoinput.Input) (map[string]any, map[string]any, lifecycleLabelList) {
 	values := make(map[string]any, len(input.Fields))
 	errorsByField := map[string]any{}
 	for key, maximum := range map[string]int{"name": 0, "color": 255, "description_html": 0} {
@@ -889,7 +889,7 @@ func validatePageLifecycleFields(input djangoinput.Input, partial, create bool) 
 			values[key] = text
 		}
 	}
-	value, present := input.ListValue("labels", partial)
+	value, present := input.ListValue("labels", true)
 	labels := lifecycleParseLabelList(value, present, input.JSONFieldSource("labels"))
 	if labels.errors != nil {
 		errorsByField["labels"] = labels.errors
@@ -925,7 +925,7 @@ func validatePageLifecycleFields(input djangoinput.Input, partial, create bool) 
 			}
 		}
 	}
-	if value, present := input.BooleanFieldValue("is_locked", partial); present {
+	if value, present := input.BooleanFieldValue("is_locked", true); present {
 		if locked, valid := lifecycleBoolean(value); !valid {
 			errorsByField["is_locked"] = []string{"Must be a valid boolean."}
 		} else {
@@ -949,7 +949,7 @@ func validatePageLifecycleFields(input djangoinput.Input, partial, create bool) 
 	return values, errorsByField, labels
 }
 
-func (repository *Repository) updatePageDescription(ctx context.Context, db lifecycleDatabase, user uuid.UUID, slug string, project, page uuid.UUID, state pageLifecycleState, timezone string, input djangoinput.Input) (int, json.RawMessage, error) {
+func (repository *Repository) updatePageDescription(ctx context.Context, db lifecycleDatabase, user, page uuid.UUID, state pageLifecycleState, input djangoinput.Input) (int, json.RawMessage, error) {
 	fields := input.Fields
 	var oldHTML string
 	if err := repository.database.QueryRow(ctx, `SELECT description_html FROM pages WHERE id=$1 AND workspace_id=$2 AND deleted_at IS NULL`, page, state.workspaceID).Scan(&oldHTML); err != nil {

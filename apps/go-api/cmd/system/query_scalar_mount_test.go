@@ -136,7 +136,7 @@ func TestWorkspaceSlugMountSelectsLastDecodedSlug(t *testing.T) {
 	} {
 		t.Run(test.query, func(t *testing.T) {
 			service := &slugQueryContractService{}
-			handler := newHTTPHandlerWithStickiesAndWorkspaceSlugCheck(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false, nil, nil, workspaceapi.NewEndpoints(service))
+			handler := newHTTPHandlerWithWorkspaceSlugCheck(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), workspaceapi.NewEndpoints(service))
 			request := httptest.NewRequest(http.MethodGet, "/api/workspace-slug-check/?"+test.query, nil)
 			request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
 			response := httptest.NewRecorder()

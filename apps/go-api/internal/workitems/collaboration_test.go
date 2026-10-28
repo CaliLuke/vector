@@ -104,7 +104,7 @@ func TestCollaborationReferenceRequiresBothProjectAndWorkspace(t *testing.T) {
 
 func TestCollaborationMissingLinkCreatorStaysNullInActivitySnapshot(t *testing.T) {
 	r := &Repository{}
-	got, err := r.collaborationDump(context.Background(), Request{Method: "PATCH", Timezone: "UTC"}, map[string]any{"created_by_id": nil}, "link", false)
+	got, err := r.collaborationDump(context.Background(), Request{Method: "PATCH", Timezone: "UTC"}, map[string]any{"created_by_id": nil}, "link")
 	if err != nil || !strings.Contains(got, `"created_by_detail": null`) {
 		t.Fatalf("missing creator activity snapshot=%s error=%v", got, err)
 	}

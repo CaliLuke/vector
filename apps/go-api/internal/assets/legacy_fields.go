@@ -114,13 +114,13 @@ func parseDRFBool(value string) (bool, error) {
 	}
 }
 
-func legacyJSONField(fields map[string]any, name, fallback string) []byte {
+func legacyJSONField(fields map[string]any, name string) []byte {
 	if value, ok := fields[name]; ok {
 		if encoded, err := json.Marshal(value); err == nil {
 			return encoded
 		}
 	}
-	return []byte(fallback)
+	return []byte(`{}`)
 }
 
 func legacyUUIDField(fields map[string]any, name string) any {

@@ -278,7 +278,7 @@ func (repository *Repository) issueResults(
 		if float64(page)*cursorLimit < 0 {
 			return nil, ErrPaginationParsing
 		}
-		return repository.groupedIssues(ctx, userID, slug, projectID, cycleID, options, limit, cursorLimit, windowLimit, page, previous)
+		return repository.groupedIssues(ctx, userID, slug, projectID, cycleID, options, limit, cursorLimit, windowLimit, page)
 	}
 	offset, ok := checkedIntProduct(page, limit)
 	if !ok {
@@ -370,7 +370,6 @@ func (repository *Repository) groupedIssues(
 	cursorLimit float64,
 	windowLimit float64,
 	page int,
-	previous bool,
 ) (json.RawMessage, error) {
 	query, args, err := groupedIssueListQuery(userID, slug, projectID, cycleID, options, cursorLimit, windowLimit, page)
 	if err != nil {
@@ -1039,37 +1038,37 @@ func issueFilterPredicates(filters map[string]string, args *[]any) []string {
 				add(values, "issue.estimate_point_id = ANY($%d::uuid[])")
 			}
 		case "parent":
-			if hasCommaToken(value, "None") {
+			if hasNoneToken(value) {
 				predicates = append(predicates, "issue.parent_id IS NULL")
 			}
 			if values := UUIDs(value); len(values) > 0 {
 				add(values, "issue.parent_id = ANY($%d::uuid[])")
 			}
 		case "labels", "label_id", "label_id__in":
-			if hasCommaToken(value, "None") {
+			if hasNoneToken(value) {
 				predicates = append(predicates, "NOT EXISTS (SELECT 1 FROM issue_labels no_label WHERE "+issueRelationPredicate("issue_labels", "no_label", true)+")")
 			}
 		case "assignees", "assignee_id", "assignee_id__in":
-			if hasCommaToken(value, "None") {
+			if hasNoneToken(value) {
 				predicates = append(predicates, "NOT EXISTS (SELECT 1 FROM issue_assignees no_assignee WHERE no_assignee.issue_id=issue.id)")
 			}
 		case "module", "module_id", "module_id__in":
-			if hasCommaToken(value, "None") {
+			if hasNoneToken(value) {
 				predicates = append(predicates, "NOT EXISTS (SELECT 1 FROM module_issues no_module WHERE no_module.issue_id=issue.id)")
 			}
 		case "cycle", "cycle_id__in":
-			if hasCommaToken(value, "None") {
+			if hasNoneToken(value) {
 				predicates = append(predicates, "NOT EXISTS (SELECT 1 FROM cycle_issues no_cycle WHERE no_cycle.issue_id=issue.id AND no_cycle.deleted_at IS NULL)")
 			}
 		case "created_by", "created_by_id", "created_by_id__in":
-			if hasCommaToken(value, "None") {
+			if hasNoneToken(value) {
 				predicates = append(predicates, "issue.created_by_id IS NULL")
 			}
 			if values := UUIDs(value); len(values) > 0 {
 				add(values, "issue.created_by_id = ANY($%d::uuid[])")
 			}
 		case "logged_by":
-			if hasCommaToken(value, "None") {
+			if hasNoneToken(value) {
 				predicates = append(predicates, "issue.logged_by_id IS NULL")
 			}
 			if values := UUIDs(value); len(values) > 0 {
@@ -1835,9 +1834,9 @@ func slicesContain(values []string, value string) bool {
 	return false
 }
 
-func hasCommaToken(value, expected string) bool {
+func hasNoneToken(value string) bool {
 	for _, token := range strings.Split(value, ",") {
-		if token == expected {
+		if token == "None" {
 			return true
 		}
 	}

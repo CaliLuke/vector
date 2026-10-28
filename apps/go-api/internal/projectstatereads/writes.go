@@ -193,8 +193,8 @@ func createState(ctx context.Context, tx pgx.Tx, input StateWriteInput, fields m
 	color := stateString(fields, "color", "")
 	group := stateString(fields, "group", "backlog")
 	description := stateString(fields, "description", "")
-	defaultValue := stateBool(fields, "default", false)
-	isTriage := stateBool(fields, "is_triage", false)
+	defaultValue := stateBool(fields, "default")
+	isTriage := stateBool(fields, "is_triage")
 	externalID := nullableStateString(fields, "external_id")
 	externalSource := nullableStateString(fields, "external_source")
 	if source, sourceOK := externalSource.(string); sourceOK && source != "" {
@@ -270,7 +270,7 @@ func updateState(ctx context.Context, tx pgx.Tx, input StateWriteInput, fields m
 			return nil, checkStateErr
 		}
 	}
-	if hasStateField(fields, "default") && stateBool(fields, "default", false) {
+	if hasStateField(fields, "default") && stateBool(fields, "default") {
 		if _, execErr := tx.Exec(ctx, `UPDATE states SET "default"=false WHERE project_id=$1 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$2) AND deleted_at IS NULL AND "group"<>'triage'`, input.ProjectID, input.Slug); execErr != nil {
 			return nil, execErr
 		}
@@ -388,21 +388,15 @@ func stateString(fields map[string]any, key, fallback string) string {
 	}
 	return fallback
 }
-func stateBool(fields map[string]any, key string, fallback bool) bool {
-	v, ok := fields[key]
-	if !ok || v == nil {
-		return fallback
-	}
-	if value, ok := v.(bool); ok {
-		return value
-	}
-	return fallback
+func stateBool(fields map[string]any, key string) bool {
+	value, _ := fields[key].(bool)
+	return value
 }
 func stateBoolPointer(fields map[string]any, key string) any {
 	if !hasStateField(fields, key) {
 		return nil
 	}
-	return stateBool(fields, key, false)
+	return stateBool(fields, key)
 }
 func nullableStateString(fields map[string]any, key string) any {
 	if value, ok := fields[key]; ok && value != nil {

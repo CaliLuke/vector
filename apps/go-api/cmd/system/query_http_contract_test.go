@@ -17,7 +17,7 @@ import (
 
 func TestStickyHTTPAllowsMalformedUnusedQueryValues(t *testing.T) {
 	stub := stickyHTTPStub{success: true}
-	handler := newHTTPHandlerWithStickies(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false, sticky.NewEndpoints(stub), stub.APIKeyAuth)
+	handler := newHTTPHandlerWithStickies(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), sticky.NewEndpoints(stub), stub.APIKeyAuth)
 	for _, rawQuery := range []string{"per_page=20&ignored=%ZZ", "ignored=%&cursor=20:0:0", "ignored=%2", "per_page=%ZZ&per_page=20", "cursor=%ZZ&cursor=20:0:0"} {
 		t.Run(rawQuery, func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodGet, "/api/workspaces/test/stickies/?"+rawQuery, nil)
@@ -42,7 +42,7 @@ func TestStickyHTTPAllowsMalformedUnusedQueryValues(t *testing.T) {
 
 func TestStickyHEADAllowsMalformedUnusedQueryValues(t *testing.T) {
 	stub := stickyHTTPStub{success: true}
-	handler := newHTTPHandlerWithStickies(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false, sticky.NewEndpoints(stub), stub.APIKeyAuth)
+	handler := newHTTPHandlerWithStickies(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), sticky.NewEndpoints(stub), stub.APIKeyAuth)
 	for _, rawQuery := range []string{"per_page=20&ignored=%ZZ", "ignored=%&cursor=20:0:0", "ignored=%2", "per_page=%ZZ&per_page=20", "cursor=%ZZ&cursor=20:0:0"} {
 		t.Run(rawQuery, func(t *testing.T) {
 			request := httptest.NewRequest(http.MethodHead, "/api/workspaces/test/stickies/?"+rawQuery, nil)
@@ -61,7 +61,7 @@ func TestStickyHEADAllowsMalformedUnusedQueryValues(t *testing.T) {
 
 func TestStickyHTTPMalformedSupportedQueryValuesKeepDjangoErrors(t *testing.T) {
 	stub := stickyHTTPStub{success: true}
-	handler := newHTTPHandlerWithStickies(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false, sticky.NewEndpoints(stub), stub.APIKeyAuth)
+	handler := newHTTPHandlerWithStickies(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), sticky.NewEndpoints(stub), stub.APIKeyAuth)
 	for _, test := range []struct {
 		query, body, contentLength string
 	}{
@@ -98,7 +98,7 @@ func TestStickyHTTPMalformedSupportedQueryValuesKeepDjangoErrors(t *testing.T) {
 func TestWorkspaceSlugHTTPPreservesMalformedQueryValueAsLiteral(t *testing.T) {
 	// Django preserves malformed escapes as text. Dropping the slug would turn
 	// this otherwise valid nonempty slug into the missing-slug error.
-	handler := newHTTPHandlerWithStickiesAndWorkspaceSlugCheck(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false, nil, nil, workspaceapi.NewEndpoints(workspaceSlugHTTPStub{}))
+	handler := newHTTPHandlerWithWorkspaceSlugCheck(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), workspaceapi.NewEndpoints(workspaceSlugHTTPStub{}))
 	request := httptest.NewRequest(http.MethodGet, "/api/workspace-slug-check/?slug=%ZZ&ignored=%", nil)
 	request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
 	response := httptest.NewRecorder()
@@ -162,7 +162,7 @@ func TestStickySearchUsesLastDecodedScalar(t *testing.T) {
 			for _, method := range []string{http.MethodGet, http.MethodHead} {
 				t.Run(method, func(t *testing.T) {
 					stub := &stickyQuerySelectionStub{stickyHTTPStub: stickyHTTPStub{success: true}}
-					handler := newHTTPHandlerWithStickies(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false, sticky.NewEndpoints(stub), stub.APIKeyAuth)
+					handler := newHTTPHandlerWithStickies(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), sticky.NewEndpoints(stub), stub.APIKeyAuth)
 					request := httptest.NewRequest(method, "/api/workspaces/test/stickies/?"+test.query, nil)
 					request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
 					response := httptest.NewRecorder()

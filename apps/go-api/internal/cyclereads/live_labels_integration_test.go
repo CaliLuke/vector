@@ -193,7 +193,7 @@ func TestCycleLiveLabelRelationContract(t *testing.T) {
 				options.GroupBy = "priority"
 				options.SubGroupBy = "labels__id"
 			}
-			raw, err := repository.groupedIssues(ctx, user, "demo", project, cycle, options, 30, 30, 30, 0, false)
+			raw, err := repository.groupedIssues(ctx, user, "demo", project, cycle, options, 30, 30, 30, 0)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -221,7 +221,7 @@ func TestCycleLiveLabelRelationContract(t *testing.T) {
 	})
 	for field, key := range map[string]string{"priority": "low", "state_id": "None", "state__group": "None", "assignees__id": "None", "issue_module__module_id": "None", "project_id": project.String(), "cycle_id": cycle.String()} {
 		t.Run("supported subgroup "+field, func(t *testing.T) {
-			raw, err := repository.groupedIssues(ctx, user, "demo", project, cycle, IssueListOptions{GroupBy: "labels__id", SubGroupBy: field}, 30, 30, 30, 0, false)
+			raw, err := repository.groupedIssues(ctx, user, "demo", project, cycle, IssueListOptions{GroupBy: "labels__id", SubGroupBy: field}, 30, 30, 30, 0)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -256,7 +256,7 @@ func TestCycleLiveLabelRelationContract(t *testing.T) {
 	}
 
 	t.Run("group pagination", func(t *testing.T) {
-		raw, err := repository.groupedIssues(ctx, user, "demo", project, cycle, IssueListOptions{GroupBy: "labels__id"}, 1, 1, 1, 0, false)
+		raw, err := repository.groupedIssues(ctx, user, "demo", project, cycle, IssueListOptions{GroupBy: "labels__id"}, 1, 1, 1, 0)
 		if err != nil {
 			t.Fatal(err)
 		}

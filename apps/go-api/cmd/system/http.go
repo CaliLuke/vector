@@ -254,32 +254,32 @@ func djangoProtocolCORSOptionsHandler(policy loomhttp.RuntimeCORSPolicy, methods
 	})
 }
 
-func newHTTPHandler(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool) http.Handler {
-	return buildHTTPHandlerWithSlugChecks(ctx, systemEndpoints, dbg, nil, nil, nil, nil)
+func newHTTPHandler(ctx context.Context, systemEndpoints *system.Endpoints) http.Handler {
+	return buildHTTPHandlerWithSlugChecks(ctx, systemEndpoints, nil, nil, nil, nil)
 }
 
-func newHTTPHandlerWithStickies(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc) http.Handler {
-	return buildHTTPHandlerWithSlugChecks(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, nil, nil)
+func newHTTPHandlerWithStickies(ctx context.Context, systemEndpoints *system.Endpoints, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc) http.Handler {
+	return buildHTTPHandlerWithSlugChecks(ctx, systemEndpoints, stickyEndpoints, authenticate, nil, nil)
 }
 
-func newHTTPHandlerWithStickiesAndWorkspaceSlugCheck(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, workspaceEndpoints *workspaceslugcheck.Endpoints) http.Handler {
-	return buildHTTPHandlerWithSlugChecks(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, workspaceEndpoints, nil)
+func newHTTPHandlerWithWorkspaceSlugCheck(ctx context.Context, systemEndpoints *system.Endpoints, workspaceEndpoints *workspaceslugcheck.Endpoints) http.Handler {
+	return buildHTTPHandlerWithSlugChecks(ctx, systemEndpoints, nil, nil, workspaceEndpoints, nil)
 }
 
-func newHTTPHandlerWithSlugChecks(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, workspaceEndpoints *workspaceslugcheck.Endpoints, instanceWorkspaceEndpoints *instanceworkspaceslugcheck.Endpoints) http.Handler {
-	return buildHTTPHandlerWithSlugChecks(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, workspaceEndpoints, instanceWorkspaceEndpoints)
+func newHTTPHandlerWithInstanceWorkspaceSlugCheck(ctx context.Context, systemEndpoints *system.Endpoints, instanceWorkspaceEndpoints *instanceworkspaceslugcheck.Endpoints) http.Handler {
+	return buildHTTPHandlerWithSlugChecks(ctx, systemEndpoints, nil, nil, nil, instanceWorkspaceEndpoints)
 }
 
-func buildHTTPHandlerWithSlugChecks(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, workspaceEndpoints *workspaceslugcheck.Endpoints, instanceWorkspaceEndpoints *instanceworkspaceslugcheck.Endpoints) http.Handler {
-	return buildHTTPHandlerWithBackendReplacements(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, workspaceEndpoints, instanceWorkspaceEndpoints, nil, nil)
+func buildHTTPHandlerWithSlugChecks(ctx context.Context, systemEndpoints *system.Endpoints, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, workspaceEndpoints *workspaceslugcheck.Endpoints, instanceWorkspaceEndpoints *instanceworkspaceslugcheck.Endpoints) http.Handler {
+	return buildHTTPHandlerWithBackendReplacements(ctx, systemEndpoints, stickyEndpoints, authenticate, workspaceEndpoints, instanceWorkspaceEndpoints, nil, nil)
 }
 
-func newHTTPHandlerWithBackendReplacements(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, workspaceEndpoints *workspaceslugcheck.Endpoints, instanceWorkspaceEndpoints *instanceworkspaceslugcheck.Endpoints, userInstanceAdminEndpoints *userinstanceadmin.Endpoints) http.Handler {
-	return buildHTTPHandlerWithBackendReplacements(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, workspaceEndpoints, instanceWorkspaceEndpoints, userInstanceAdminEndpoints, nil)
+func newHTTPHandlerWithInstanceAdmin(ctx context.Context, systemEndpoints *system.Endpoints, userInstanceAdminEndpoints *userinstanceadmin.Endpoints) http.Handler {
+	return buildHTTPHandlerWithBackendReplacements(ctx, systemEndpoints, nil, nil, nil, nil, userInstanceAdminEndpoints, nil)
 }
 
-func newHTTPHandlerWithProfileFlags(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, workspaceEndpoints *workspaceslugcheck.Endpoints, instanceWorkspaceEndpoints *instanceworkspaceslugcheck.Endpoints, userInstanceAdminEndpoints *userinstanceadmin.Endpoints, userProfileFlagsEndpoints *userprofileflags.Endpoints) http.Handler {
-	return buildHTTPHandlerWithBackendReplacements(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, workspaceEndpoints, instanceWorkspaceEndpoints, userInstanceAdminEndpoints, userProfileFlagsEndpoints)
+func newHTTPHandlerWithProfileFlags(ctx context.Context, systemEndpoints *system.Endpoints, userProfileFlagsEndpoints *userprofileflags.Endpoints) http.Handler {
+	return buildHTTPHandlerWithBackendReplacements(ctx, systemEndpoints, nil, nil, nil, nil, nil, userProfileFlagsEndpoints)
 }
 
 func newHTTPHandlerWithNotificationPreferences(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, workspaceEndpoints *workspaceslugcheck.Endpoints, instanceWorkspaceEndpoints *instanceworkspaceslugcheck.Endpoints, userInstanceAdminEndpoints *userinstanceadmin.Endpoints, userProfileFlagsEndpoints *userprofileflags.Endpoints, notificationEndpoints *usernotificationpreferences.Endpoints) http.Handler {
@@ -474,8 +474,8 @@ func newHTTPHandlerWithPendingReplacements(ctx context.Context, systemEndpoints 
 	return buildHTTPHandlerWithReplacementServicesAndPending(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, workspaceEndpoints, instanceWorkspaceEndpoints, userInstanceAdminEndpoints, userProfileFlagsEndpoints, notificationEndpoints, userAccountsEndpoints, userAPITokensEndpoints, instanceAdminSessionEndpoints, quickLinkEndpoints, themeEndpoints, homePreferenceEndpoints, memberMeEndpoints, analyticViewEndpoints, recentVisitEndpoints, lastVisitedEndpoints, entityEndpoint, pending, favoriteEndpoints...)
 }
 
-func buildHTTPHandlerWithBackendReplacements(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, workspaceEndpoints *workspaceslugcheck.Endpoints, instanceWorkspaceEndpoints *instanceworkspaceslugcheck.Endpoints, userInstanceAdminEndpoints *userinstanceadmin.Endpoints, userProfileFlagsEndpoints *userprofileflags.Endpoints) http.Handler {
-	return buildHTTPHandlerWithServices(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, workspaceEndpoints, instanceWorkspaceEndpoints, userInstanceAdminEndpoints, userProfileFlagsEndpoints, nil, nil, nil, nil, nil, nil)
+func buildHTTPHandlerWithBackendReplacements(ctx context.Context, systemEndpoints *system.Endpoints, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, workspaceEndpoints *workspaceslugcheck.Endpoints, instanceWorkspaceEndpoints *instanceworkspaceslugcheck.Endpoints, userInstanceAdminEndpoints *userinstanceadmin.Endpoints, userProfileFlagsEndpoints *userprofileflags.Endpoints) http.Handler {
+	return buildHTTPHandlerWithServices(ctx, systemEndpoints, false, stickyEndpoints, authenticate, workspaceEndpoints, instanceWorkspaceEndpoints, userInstanceAdminEndpoints, userProfileFlagsEndpoints, nil, nil, nil, nil, nil, nil)
 }
 
 func buildHTTPHandlerWithServices(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, workspaceEndpoints *workspaceslugcheck.Endpoints, instanceWorkspaceEndpoints *instanceworkspaceslugcheck.Endpoints, userInstanceAdminEndpoints *userinstanceadmin.Endpoints, userProfileFlagsEndpoints *userprofileflags.Endpoints, notificationEndpoints *usernotificationpreferences.Endpoints, userAccountsEndpoints *useraccounts.Endpoints, userAPITokensEndpoints *userapitokens.Endpoints, instanceAdminSessionEndpoints *instanceadminsession.Endpoints, quickLinkEndpoints *workspacequicklinks.Endpoints, themeEndpoints *workspacethemes.Endpoints, homePreferenceEndpoints ...*workspacehomepreferences.Endpoints) http.Handler {
@@ -1444,7 +1444,7 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 	}
 	if pending.assetsLifecycle != nil {
 		server := assetslifecyclesvr.New(pending.assetsLifecycle, mux, djangoRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
-		server.Use(assetLifecycleProtocolHeaders(server.Mounts))
+		server.Use(assetLifecycleProtocolHeaders)
 		server.Use(assetRequestMetadataMiddleware)
 		if activityOptions != nil {
 			apiStack := assetLifecycleAPIV1Middleware(activityReadsMiddlewareStack(*activityOptions, pending.readServicesSession, pending.readServicesCookie))
@@ -1585,24 +1585,22 @@ var publicMetadataCompatibilityPathPattern = regexp.MustCompile(`^(?:` + strings
 // assetLifecycleProtocolHeaders applies the Django REST framework response
 // headers at the mounted assets boundary. Allow comes from source protocol
 // observations and documented method repairs, including on application errors.
-func assetLifecycleProtocolHeaders(mounts []*assetslifecyclesvr.MountPoint) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-			allow := assetLifecycleAllowedMethods(mounts, request.URL.Path)
-			if allow != "" {
-				response.Header().Set("Allow", allow)
-			}
-			response.Header().Set("Cross-Origin-Opener-Policy", "same-origin")
-			response.Header().Set("Referrer-Policy", "same-origin")
-			response.Header().Set("X-Content-Type-Options", "nosniff")
-			response.Header().Set("X-Frame-Options", "DENY")
-			mergeVary(response.Header(), "Cookie", "origin")
-			next.ServeHTTP(response, request)
-		})
-	}
+func assetLifecycleProtocolHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+		allow := assetLifecycleAllowedMethods(request.URL.Path)
+		if allow != "" {
+			response.Header().Set("Allow", allow)
+		}
+		response.Header().Set("Cross-Origin-Opener-Policy", "same-origin")
+		response.Header().Set("Referrer-Policy", "same-origin")
+		response.Header().Set("X-Content-Type-Options", "nosniff")
+		response.Header().Set("X-Frame-Options", "DENY")
+		mergeVary(response.Header(), "Cookie", "origin")
+		next.ServeHTTP(response, request)
+	})
 }
 
-func assetLifecycleAllowedMethods(mounts []*assetslifecyclesvr.MountPoint, path string) string {
+func assetLifecycleAllowedMethods(path string) string {
 	for pattern, protocol := range assetsProtocolMetadata {
 		if assetLifecyclePathMatches(pattern, path) {
 			return protocol.Allow
@@ -1853,17 +1851,17 @@ var readServiceProtocols = append(append(append(append(append(append(invitations
 	newReadServiceProtocol("/api/workspaces/{slug}/draft-issues/{pk}/", "GET, PATCH, DELETE, HEAD, OPTIONS", "Workspace Draft Issue", "", true),
 	newReadServiceProtocol("/api/workspaces/{slug}/projects/{project_id}/inbox-issues/", "GET, POST, HEAD, OPTIONS", "Intake Issue", http.MethodPost, true),
 	newReadServiceProtocol("/api/workspaces/{slug}/projects/{project_id}/inbox-issues/{pk}/", "GET, PATCH, DELETE, HEAD, OPTIONS", "Intake Issue", "", true),
-	newIntakeMixedProtocol("/api/workspaces/{slug}/projects/{project_id}/inboxes/", "GET, POST, HEAD, OPTIONS", "Intake", http.MethodPost, true),
-	newIntakeMixedProtocol("/api/workspaces/{slug}/projects/{project_id}/inboxes/{pk}/", "GET, PATCH, DELETE, HEAD, OPTIONS", "Intake", "", true),
+	newIntakeMixedProtocol("/api/workspaces/{slug}/projects/{project_id}/inboxes/", "GET, POST, HEAD, OPTIONS", http.MethodPost),
+	newIntakeMixedProtocol("/api/workspaces/{slug}/projects/{project_id}/inboxes/{pk}/", "GET, PATCH, DELETE, HEAD, OPTIONS", ""),
 	newReadServiceProtocol("/api/workspaces/{slug}/projects/{project_id}/intake-issues/", "GET, POST, HEAD, OPTIONS", "Intake Issue", http.MethodPost, true),
 	newReadServiceProtocol("/api/workspaces/{slug}/projects/{project_id}/intake-issues/{pk}/", "GET, PATCH, DELETE, HEAD, OPTIONS", "Intake Issue", "", true),
 	newReadServiceProtocol("/api/workspaces/{slug}/projects/{project_id}/intake-work-items/{work_item_id}/description-versions/", "GET, HEAD, OPTIONS", "Intake Work Item Description Version Endpoint", "", true),
 	newReadServiceProtocol("/api/workspaces/{slug}/projects/{project_id}/intake-work-items/{work_item_id}/description-versions/{pk}/", "GET, HEAD, OPTIONS", "Intake Work Item Description Version Endpoint", "", true),
-	newIntakeMixedProtocol("/api/workspaces/{slug}/projects/{project_id}/intakes/", "GET, POST, HEAD, OPTIONS", "Intake", http.MethodPost, true),
-	newIntakeMixedProtocol("/api/workspaces/{slug}/projects/{project_id}/intakes/{pk}/", "GET, PATCH, DELETE, HEAD, OPTIONS", "Intake", "", true),
+	newIntakeMixedProtocol("/api/workspaces/{slug}/projects/{project_id}/intakes/", "GET, POST, HEAD, OPTIONS", http.MethodPost),
+	newIntakeMixedProtocol("/api/workspaces/{slug}/projects/{project_id}/intakes/{pk}/", "GET, PATCH, DELETE, HEAD, OPTIONS", ""),
 
-	newProjectPublicationProtocol("/api/workspaces/{slug}/projects/{project_id}/project-deploy-boards/", "GET, POST, HEAD, OPTIONS", "Deploy Board", http.MethodPost, true),
-	newProjectPublicationProtocol("/api/workspaces/{slug}/projects/{project_id}/project-deploy-boards/{pk}/", "GET, PATCH, DELETE, HEAD, OPTIONS", "Deploy Board", "", true),
+	newProjectPublicationProtocol("/api/workspaces/{slug}/projects/{project_id}/project-deploy-boards/", "GET, POST, HEAD, OPTIONS"),
+	newProjectPublicationProtocol("/api/workspaces/{slug}/projects/{project_id}/project-deploy-boards/{pk}/", "GET, PATCH, DELETE, HEAD, OPTIONS"),
 }...)
 
 func pageLifecycleWriteTransportMiddleware(options apiV1CompatibilityOptions) func(http.Handler) http.Handler {
@@ -2399,7 +2397,7 @@ func (writer *readServicesGzipResponseWriter) finish(request *http.Request) {
 		protocol.pattern == "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/description/" &&
 		(request.Method == http.MethodGet || request.Method == http.MethodHead) &&
 		status == http.StatusOK && writer.Header().Get("Content-Encoding") == "" {
-		prependVary(writer.Header(), "Accept-Encoding")
+		prependAcceptEncodingVary(writer.Header())
 		if acceptsGzipEncoding(djangoJoinedHeader(request, "Accept-Encoding")) {
 			if compressed, err := djangoGzip(body, nil); err == nil {
 				writer.Header().Del("Content-Length")
@@ -2426,7 +2424,7 @@ func (writer *readServicesGzipResponseWriter) finish(request *http.Request) {
 		}
 	}
 	if representationLength >= 200 && writer.Header().Get("Content-Encoding") == "" {
-		prependVary(writer.Header(), "Accept-Encoding")
+		prependAcceptEncodingVary(writer.Header())
 		if acceptsGzipEncoding(djangoJoinedHeader(request, "Accept-Encoding")) {
 			if streamingHead {
 				writer.Header().Del("Content-Length")
@@ -4638,7 +4636,7 @@ func (writer *projectStateReadsResponseWriter) WriteHeader(status int) {
 	removeVary(writer.Header(), "Cookie", "origin")
 	mergeVary(writer.Header(), "Cookie", "origin")
 	if status == http.StatusOK {
-		prependVary(writer.Header(), "Accept-Encoding")
+		prependAcceptEncodingVary(writer.Header())
 	}
 	writer.ResponseWriter.WriteHeader(status)
 }
@@ -4926,7 +4924,7 @@ func (writer *publicProjectMetadataReadsResponseWriter) finish() {
 		if writer.appendGzipVary {
 			mergeVary(writer.Header(), "Accept-Encoding")
 		} else {
-			prependVary(writer.Header(), "Accept-Encoding")
+			prependAcceptEncodingVary(writer.Header())
 		}
 		if writer.acceptsGzip && writer.Header().Get("Content-Encoding") == "" {
 			compressed, err := djangoGzip(body, writer.gzipPadding)
@@ -5085,7 +5083,7 @@ func csrfTokenCORSPreflightMiddleware(next http.Handler) http.Handler {
 			writer.body.Reset()
 			writer.Header().Set("Content-Type", "text/html; charset=utf-8")
 			removeVary(writer.Header(), "Access-Control-Request-Method", "Access-Control-Request-Headers")
-			writer.finish(http.MethodOptions)
+			writer.finish()
 			return
 		}
 		next.ServeHTTP(response, request)
@@ -5126,7 +5124,7 @@ func csrfTokenResponseCompatibilityMiddleware(next http.Handler) http.Handler {
 				removeVary(writer.Header(), "Cookie")
 			}
 		}
-		writer.finish(request.Method)
+		writer.finish()
 	})
 }
 
@@ -5243,7 +5241,7 @@ func (writer *csrfTokenResponseWriter) Write(body []byte) (int, error) {
 	return writer.body.Write(body)
 }
 
-func (writer *csrfTokenResponseWriter) finish(method string) {
+func (writer *csrfTokenResponseWriter) finish() {
 	status := writer.status
 	if status == 0 {
 		status = http.StatusOK
@@ -6119,7 +6117,8 @@ func djangoJSONColonSpacing(body []byte) []byte {
 	return spaced
 }
 
-func prependVary(header http.Header, value string) {
+func prependAcceptEncodingVary(header http.Header) {
+	const value = "Accept-Encoding"
 	values := []string{value}
 	for _, existing := range strings.Split(header.Get("Vary"), ",") {
 		existing = strings.TrimSpace(existing)

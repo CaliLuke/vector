@@ -362,8 +362,8 @@ func collaborationTimestamps(value any, zone string) {
 	visit(value)
 }
 
-func (r *Repository) collaborationDump(ctx context.Context, q Request, row map[string]any, kind string, annotated bool) (string, error) {
-	projected, err := r.collaborationProjection(ctx, q, row, kind, annotated)
+func (r *Repository) collaborationDump(ctx context.Context, q Request, row map[string]any, kind string) (string, error) {
+	projected, err := r.collaborationProjection(ctx, q, row, kind, false)
 	if err != nil {
 		return "", err
 	}

@@ -548,8 +548,8 @@ func (repository *PostgresRepository) CreateLegacyFileAsset(ctx context.Context,
 }
 
 func (repository *PostgresRepository) insertLegacyFileAsset(ctx context.Context, id, userID uuid.UUID, fields map[string]any, key string) (map[string]any, error) {
-	attributes := legacyJSONField(fields, "attributes", `{}`)
-	metadata := legacyJSONField(fields, "storage_metadata", `{}`)
+	attributes := legacyJSONField(fields, "attributes")
+	metadata := legacyJSONField(fields, "storage_metadata")
 	result, err := repository.database.Exec(ctx, `
 		INSERT INTO file_assets
 			 (id,created_at,updated_at,attributes,asset,user_id,workspace_id,draft_issue_id,project_id,issue_id,comment_id,page_id,entity_type,entity_identifier,external_id,external_source,size,is_uploaded,is_deleted,is_archived,storage_metadata,created_by_id,deleted_at)
@@ -610,7 +610,7 @@ func (repository *PostgresRepository) CreateLegacyIssueAttachment(ctx context.Co
 	if legacyUUIDField(fields, "draft_issue") != nil {
 		return notFoundAssetError()
 	}
-	attributes, metadata := legacyJSONField(fields, "attributes", `{}`), legacyJSONField(fields, "storage_metadata", `{}`)
+	attributes, metadata := legacyJSONField(fields, "attributes"), legacyJSONField(fields, "storage_metadata")
 	tx, err := repository.database.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin legacy issue attachment creation: %w", err)
@@ -682,7 +682,7 @@ func (repository *PostgresRepository) PublicProjectBoard(ctx context.Context, an
 }
 
 func (repository *PostgresRepository) PublicProjectAsset(ctx context.Context, workspaceID, projectID, assetID uuid.UUID, includeDeleted, descriptionsOnly bool) (FileAsset, error) {
-	asset, err := repository.findAsset(ctx, assetID, workspaceID, true, !includeDeleted, false)
+	asset, err := repository.findAsset(ctx, assetID, workspaceID, true, !includeDeleted)
 	if err != nil {
 		return FileAsset{}, err
 	}
@@ -1064,7 +1064,7 @@ func (repository *PostgresRepository) IssueAttachmentDeleteAllowed(ctx context.C
 }
 
 func (repository *PostgresRepository) AssetByID(ctx context.Context, id uuid.UUID) (FileAsset, error) {
-	return repository.findAsset(ctx, id, uuid.Nil, false, true, false)
+	return repository.findAsset(ctx, id, uuid.Nil, false, true)
 }
 
 func (repository *PostgresRepository) UserAssetByID(ctx context.Context, userID, assetID uuid.UUID) (FileAsset, error) {
@@ -1301,7 +1301,7 @@ func (repository *PostgresRepository) DeleteUserAsset(ctx context.Context, userI
 }
 
 func (repository *PostgresRepository) AssetByWorkspaceAndID(ctx context.Context, workspaceID, id uuid.UUID) (FileAsset, error) {
-	return repository.findAsset(ctx, id, workspaceID, true, true, false)
+	return repository.findAsset(ctx, id, workspaceID, true, true)
 }
 
 func (repository *PostgresRepository) AssetByProjectAndID(ctx context.Context, workspaceID, projectID, id uuid.UUID) (FileAsset, error) {
@@ -1518,7 +1518,7 @@ WHERE id=$1 AND workspace_id=$2 AND draft_issue_id IS NULL AND COALESCE(entity_t
 }
 
 func (repository *PostgresRepository) AssetByWorkspaceAndIDIncludingDeleted(ctx context.Context, workspaceID, id uuid.UUID) (FileAsset, error) {
-	return repository.findAsset(ctx, id, workspaceID, true, false, false)
+	return repository.findAsset(ctx, id, workspaceID, true, false)
 }
 
 // WorkspaceAssetExists matches AssetCheckEndpoint, which uses all_objects and
@@ -1702,7 +1702,7 @@ func (repository *PostgresRepository) MarkDuplicateUploaded(ctx context.Context,
 
 const fileAssetColumns = `f.id::text, f.asset, COALESCE(f.entity_type,''), f.attributes, f.workspace_id, f.project_id, f.issue_id, f.user_id, f.draft_issue_id, f.is_uploaded, f.is_deleted, f.size, COALESCE(f.storage_metadata,'{}'::jsonb)`
 
-func (repository *PostgresRepository) findAsset(ctx context.Context, id, workspaceFilter uuid.UUID, scopeWorkspace, filterDeletedAt, filterIsDeleted bool) (FileAsset, error) {
+func (repository *PostgresRepository) findAsset(ctx context.Context, id, workspaceFilter uuid.UUID, scopeWorkspace, filterDeletedAt bool) (FileAsset, error) {
 	query := `SELECT ` + fileAssetColumns + ` FROM file_assets f WHERE id=$1`
 	args := []any{id}
 	if filterDeletedAt {
@@ -1711,9 +1711,6 @@ func (repository *PostgresRepository) findAsset(ctx context.Context, id, workspa
 	if scopeWorkspace {
 		query += ` AND workspace_id=$` + strconv.Itoa(len(args)+1)
 		args = append(args, workspaceFilter)
-	}
-	if filterIsDeleted {
-		query += ` AND is_deleted=false`
 	}
 	return scanFileAsset(repository.database.QueryRow(ctx, query, args...))
 }

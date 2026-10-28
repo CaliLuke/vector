@@ -184,10 +184,10 @@ func (s *nodeStack) index(n *Node) int {
 	return -1
 }
 
-// contains returns whether a is within s.
-func (s *nodeStack) contains(a atom.Atom) bool {
+// containsTemplate reports whether the stack contains an HTML template element.
+func (s *nodeStack) containsTemplate() bool {
 	for _, n := range *s {
-		if n.DataAtom == a && n.Namespace == "" {
+		if n.DataAtom == atom.Template && n.Namespace == "" {
 			return true
 		}
 	}

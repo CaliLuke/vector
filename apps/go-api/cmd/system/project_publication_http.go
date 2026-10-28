@@ -24,7 +24,7 @@ var projectPublicationOptions = func() map[string]json.RawMessage {
 	return metadata
 }()
 
-func newProjectPublicationProtocol(pattern, allow, name, action string, derivedHead bool) readServiceProtocol {
+func newProjectPublicationProtocol(pattern, allow string) readServiceProtocol {
 	writes, key := "POST, OPTIONS", "collection"
 	if strings.HasSuffix(pattern, "/{pk}/") {
 		writes, key = "PATCH, DELETE, OPTIONS", "detail"

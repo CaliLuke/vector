@@ -19,8 +19,8 @@ func projectMemberPreferencesProtocol() readServiceProtocol {
 
 // Reads were retired separately; the retained Django URLconf binds only writes.
 // Preserve each handler's Allow contract when they share the production path.
-func newIntakeMixedProtocol(pattern, allow, name, action string, derivedHead bool) readServiceProtocol {
-	protocol := newReadServiceProtocol(pattern, allow, name, action, derivedHead)
+func newIntakeMixedProtocol(pattern, allow, action string) readServiceProtocol {
+	protocol := newReadServiceProtocol(pattern, allow, "Intake", action, true)
 	protocol.authenticateMethod = true
 	if action == http.MethodPost {
 		protocol.methodAllow = map[string]string{http.MethodPost: "POST, OPTIONS"}

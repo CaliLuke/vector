@@ -37,7 +37,7 @@ func TestStickyHTTPPreservesJSONPresenceAndNumbers(t *testing.T) {
 	for _, value := range []string{"", "null", "{}", "[]", `{"id":9007199254740993,"nested":[]}`} {
 		t.Run(value, func(t *testing.T) {
 			stub := &stickyJSONRoundTripStub{stickyHTTPStub: stickyHTTPStub{success: true}}
-			handler := newHTTPHandlerWithStickies(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false, sticky.NewEndpoints(stub), stub.APIKeyAuth)
+			handler := newHTTPHandlerWithStickies(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), sticky.NewEndpoints(stub), stub.APIKeyAuth)
 			body := `{}`
 			if value != "" {
 				body = `{"description":` + value + `,"logo_props":` + value + `}`

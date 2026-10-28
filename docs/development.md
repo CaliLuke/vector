@@ -498,6 +498,22 @@ refreshed, including the six cleanup-helper statements added earlier in
 `1f460c6e` that were absent from the test-support inventory. The strict error audit
 still reports 1,289 findings, including 1,117 beyond configured errcheck coverage.
 
+Private parameter cleanup retires all 29 remaining `unparam` allowances while
+keeping that linter enabled. Narrow constructors expose their actual feature
+inputs, the sticky text-field forwarding wrapper is removed, and asset response
+headers no longer capture unused mount data. SQL scope predicates, authorization
+order, public session tuples, and actual runtime debug controls are preserved.
+An AST call audit checks removed arguments for evaluation effects. Two identical
+instance-read failure tests now share a table with their original routes, cookies,
+and response assertions. Final affected runs pass 5,441 tests/subtests without
+skips, including the 144-case integration-tagged cycle suite. Regenerating only
+the two changed designs leaves transport code unchanged; their manifests refresh
+the design digests and record the already-pinned generator version. Lint now has
+459 occurrences and 266 fingerprints; duplication stays at 488 and maintainability
+at 26. The assembly-file hash review confirms only the unused middleware closure
+call changed inside the assembly function. Coverage policy is unchanged; the
+complete repository gate remains required before this cleanup goal is complete.
+
 HTTP response bodies retain explicit checked closes where the current bodyclose
 analyzer cannot follow a cross-package cleanup helper. This limitation is tracked
 in [timakin/bodyclose#60](https://github.com/timakin/bodyclose/issues/60), with a

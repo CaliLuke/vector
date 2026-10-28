@@ -57,9 +57,7 @@ func TestIntakeMixedProtocolAppliesSlashlessAndOptionsCompatibility(t *testing.T
 	protocol := newIntakeMixedProtocol(
 		"/api/workspaces/{slug}/projects/{project_id}/inboxes/",
 		"GET, POST, HEAD, OPTIONS",
-		"Intake",
 		http.MethodPost,
-		true,
 	)
 	if !protocol.authenticateMethod {
 		t.Fatal("intake transport protocol must handle slashless and OPTIONS requests")
@@ -68,7 +66,7 @@ func TestIntakeMixedProtocolAppliesSlashlessAndOptionsCompatibility(t *testing.T
 		"/api/workspaces/{slug}/projects/{project_id}/inboxes/",
 		"/api/workspaces/{slug}/projects/{project_id}/intakes/",
 	} {
-		protocol := newIntakeMixedProtocol(pattern, "GET, POST, HEAD, OPTIONS", "Intake", http.MethodPost, true)
+		protocol := newIntakeMixedProtocol(pattern, "GET, POST, HEAD, OPTIONS", http.MethodPost)
 		_, metadata := notificationProtocolMetadata(protocol)
 		encoded, err := json.Marshal(metadata)
 		if err != nil {

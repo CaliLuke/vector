@@ -14,7 +14,7 @@ import (
 
 func TestPageLifecycleMetadataFieldValidationMatchesSerializerBoundaries(t *testing.T) {
 	t.Run("metadata description rejects blank text", func(t *testing.T) {
-		_, failures, _ := validatePageLifecycleFields(djangoinput.Input{Fields: map[string]any{"description_html": ""}}, true, false)
+		_, failures, _ := validatePageLifecycleFields(djangoinput.Input{Fields: map[string]any{"description_html": ""}})
 		if !reflect.DeepEqual(failures["description_html"], []string{"This field may not be blank."}) {
 			t.Fatalf("description_html failures=%#v", failures["description_html"])
 		}
@@ -22,14 +22,14 @@ func TestPageLifecycleMetadataFieldValidationMatchesSerializerBoundaries(t *test
 
 	t.Run("metadata description has no arbitrary short text cap", func(t *testing.T) {
 		value := strings.Repeat("<p>long page text</p>", 200)
-		fields, failures, _ := validatePageLifecycleFields(djangoinput.Input{Fields: map[string]any{"description_html": value}}, true, false)
+		fields, failures, _ := validatePageLifecycleFields(djangoinput.Input{Fields: map[string]any{"description_html": value}})
 		if len(failures) != 0 || fields["description_html"] != value {
 			t.Fatalf("validated=%v failures=%v", fields["description_html"] == value, failures)
 		}
 	})
 
 	t.Run("explicit null labels are invalid", func(t *testing.T) {
-		_, failures, _ := validatePageLifecycleFields(djangoinput.Input{Fields: map[string]any{"labels": nil}}, true, false)
+		_, failures, _ := validatePageLifecycleFields(djangoinput.Input{Fields: map[string]any{"labels": nil}})
 		if !reflect.DeepEqual(failures["labels"], []string{"This field may not be null."}) {
 			t.Fatalf("labels failures=%#v", failures["labels"])
 		}

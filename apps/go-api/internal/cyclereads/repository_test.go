@@ -974,7 +974,6 @@ func TestIssueListRejectsInvalidCursorAndGrouping(t *testing.T) {
 		30,
 		30,
 		0,
-		false,
 	)
 	if !errors.Is(err, ErrMissingGroupKey) {
 		t.Fatalf("missing group key err=%v", err)

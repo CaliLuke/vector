@@ -42,14 +42,14 @@ func inBodyStartTag(p *parser) bool {
 	case a.Form, a.Button, a.Input, a.Textarea, a.Select, a.Option, a.Optgroup:
 		inBodyStartControl(p)
 	case a.Html:
-		if p.oe.contains(a.Template) {
+		if p.oe.containsTemplate() {
 			return true
 		}
 		copyAttributes(p.oe[0], p.tok)
 	case a.Base, a.Basefont, a.Bgsound, a.Link, a.Meta, a.Noframes, a.Script, a.Style, a.Template, a.Title:
 		return inHeadIM(p)
 	case a.Body:
-		if p.oe.contains(a.Template) {
+		if p.oe.containsTemplate() {
 			return true
 		}
 		if len(p.oe) >= 2 {
@@ -255,13 +255,13 @@ func inBodyStartFrameset(p *parser) {
 }
 
 func inBodyStartForm(p *parser) {
-	if p.form != nil && !p.oe.contains(a.Template) {
+	if p.form != nil && !p.oe.containsTemplate() {
 		// Ignore the token
 		return
 	}
 	p.popUntil(buttonScope, a.P)
 	p.addElement()
-	if !p.oe.contains(a.Template) {
+	if !p.oe.containsTemplate() {
 		p.form = p.top()
 	}
 }
@@ -319,7 +319,7 @@ func inBodyStartForeign(p *parser) {
 }
 
 func inBodyEndForm(p *parser) {
-	if p.oe.contains(a.Template) {
+	if p.oe.containsTemplate() {
 		i := p.indexOfElementInScope(defaultScope, a.Form)
 		if i == -1 {
 			// Ignore the token.

@@ -702,7 +702,7 @@ func inHeadIM(p *parser) bool {
 			p.parseImpliedToken(EndTagToken, a.Head, a.Head.String())
 			return false
 		case a.Template:
-			if !p.oe.contains(a.Template) {
+			if !p.oe.containsTemplate() {
 				return true
 			}
 			// TODO: remove this further divergence from the HTML5 spec.
@@ -1147,7 +1147,7 @@ func inTableIM(p *parser) bool {
 			}
 			// Otherwise drop down to the default action.
 		case a.Form:
-			if p.oe.contains(a.Template) || p.form != nil {
+			if p.oe.containsTemplate() || p.form != nil {
 				// Ignore the token.
 				return true
 			}
@@ -1484,7 +1484,7 @@ func inTemplateIM(p *parser) bool {
 			return true
 		}
 	case ErrorToken:
-		if !p.oe.contains(a.Template) {
+		if !p.oe.containsTemplate() {
 			// Ignore the token.
 			return true
 		}

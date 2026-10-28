@@ -181,7 +181,7 @@ func TestDjangoRequestDecoderPreservesEmptyBodyEOF(t *testing.T) {
 func stickyIntegerLimitRequest(t *testing.T, body string, authenticated bool) (*httptest.ResponseRecorder, *stickyJSONRoundTripStub) {
 	t.Helper()
 	stub := &stickyJSONRoundTripStub{stickyHTTPStub: stickyHTTPStub{success: true}}
-	handler := newHTTPHandlerWithStickies(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false, sticky.NewEndpoints(stub), stub.APIKeyAuth)
+	handler := newHTTPHandlerWithStickies(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), sticky.NewEndpoints(stub), stub.APIKeyAuth)
 	request := httptest.NewRequest(http.MethodPatch, "/api/workspaces/test/stickies/0198a28d-d227-7752-82ac-bc4c1c290703/", strings.NewReader(body))
 	request.Header.Set("Content-Type", "application/json")
 	if authenticated {

@@ -162,13 +162,13 @@ func (s *oauthRedirectService) initiate(ctx context.Context, provider string, sp
 		return nil, nil, err
 	}
 	if !configured {
-		return s.errorRedirect(ctx, host, nextPath, provider, 5000, "INSTANCE_NOT_CONFIGURED", provider == "gitea")
+		return s.errorRedirect(ctx, host, nextPath, 5000, "INSTANCE_NOT_CONFIGURED", provider == "gitea")
 	}
 	config, err := s.providerConfig(ctx, provider)
 	if err != nil {
 		var failure *oauthFailure
 		if errors.As(err, &failure) {
-			return s.failureRedirect(ctx, host, nextPath, provider, failure, provider == "gitea")
+			return s.failureRedirect(ctx, host, nextPath, failure, provider == "gitea")
 		}
 		return nil, nil, err
 	}
@@ -181,7 +181,7 @@ func (s *oauthRedirectService) initiate(ctx context.Context, provider string, sp
 		return nil, nil, err
 	}
 	djangosession.SetResponseSession(ctx, refresh)
-	response, body := oauthResponse(oauthSourceOrderAuthURL(config.AuthCodeURL(state, config.options...), provider), "text/html; charset=utf-8")
+	response, body := oauthResponse(oauthSourceOrderAuthURL(config.AuthCodeURL(state, config.options...), provider))
 	return response, body, nil
 }
 
@@ -207,27 +207,27 @@ func (s *oauthRedirectService) callback(ctx context.Context, provider string, sp
 	nextPath, _ := sessionString(current, "next_path")
 	savedState, _ := sessionString(current, "state")
 	if state != savedState || code == "" {
-		return s.errorRedirect(ctx, redirectBase, nextPath, provider, oauthProviderError(provider), oauthProviderErrorName(provider), provider == "gitea")
+		return s.errorRedirect(ctx, redirectBase, nextPath, oauthProviderError(provider), oauthProviderErrorName(provider), provider == "gitea")
 	}
 	config, err := s.providerConfig(ctx, provider)
 	if err != nil {
 		var failure *oauthFailure
 		if errors.As(err, &failure) {
-			return s.failureRedirect(ctx, redirectBase, nextPath, provider, failure, provider == "gitea")
+			return s.failureRedirect(ctx, redirectBase, nextPath, failure, provider == "gitea")
 		}
 		return nil, nil, err
 	}
 	token, err := config.Exchange(ctx, code)
 	if err != nil {
-		return s.errorRedirect(ctx, redirectBase, nextPath, provider, oauthProviderError(provider), oauthProviderErrorName(provider), provider == "gitea")
+		return s.errorRedirect(ctx, redirectBase, nextPath, oauthProviderError(provider), oauthProviderErrorName(provider), provider == "gitea")
 	}
 	identity, err := s.providerIdentity(ctx, provider, token, config)
 	if err != nil {
 		var failure *oauthFailure
 		if errors.As(err, &failure) {
-			return s.failureRedirect(ctx, redirectBase, nextPath, provider, failure, provider == "gitea")
+			return s.failureRedirect(ctx, redirectBase, nextPath, failure, provider == "gitea")
 		}
-		return s.errorRedirect(ctx, redirectBase, nextPath, provider, oauthProviderError(provider), oauthProviderErrorName(provider), provider == "gitea")
+		return s.errorRedirect(ctx, redirectBase, nextPath, oauthProviderError(provider), oauthProviderErrorName(provider), provider == "gitea")
 	}
 	metadata, _ := loomhttp.RequestMetadataFromContext(ctx)
 	loginUser, err := s.repository.AuthenticateOAuth(ctx, oauthLoginRequest{
@@ -238,7 +238,7 @@ func (s *oauthRedirectService) callback(ctx context.Context, provider string, sp
 	if err != nil {
 		var failure *oauthFailure
 		if errors.As(err, &failure) {
-			return s.failureRedirect(ctx, redirectBase, nextPath, provider, failure, provider == "gitea")
+			return s.failureRedirect(ctx, redirectBase, nextPath, failure, provider == "gitea")
 		}
 		return nil, nil, err
 	}
@@ -266,14 +266,14 @@ func (s *oauthRedirectService) callback(ctx context.Context, provider string, sp
 		if _, err := s.loginSession(ctx, current, loginUser, baseHost, metadata); err != nil {
 			return nil, nil, err
 		}
-		response, body := oauthResponse(location, "text/html; charset=utf-8")
+		response, body := oauthResponse(location)
 		return response, body, nil
 	}
 	location := s.safeOAuthRedirect(ctx, baseHost, path, nil)
 	if _, err := s.loginSession(ctx, current, loginUser, baseHost, metadata); err != nil {
 		return nil, nil, err
 	}
-	response, body := oauthResponse(location, "text/html; charset=utf-8")
+	response, body := oauthResponse(location)
 	return response, body, nil
 }
 
@@ -294,12 +294,9 @@ type oauthFailure struct {
 
 func (e *oauthFailure) Error() string { return e.name }
 
-func oauthResponse(location, contentType string) (*oauthredirects.OAuthRedirectResponse, io.ReadCloser) {
-	if contentType == "" {
-		contentType = "text/html"
-	}
+func oauthResponse(location string) (*oauthredirects.OAuthRedirectResponse, io.ReadCloser) {
 	body := "<html><body><p>You are being redirected to <a href=\"" + html.EscapeString(location) + "\">" + html.EscapeString(location) + "</a>.</p></body></html>"
-	return &oauthredirects.OAuthRedirectResponse{ContentType: contentType, Location: location}, io.NopCloser(strings.NewReader(body))
+	return &oauthredirects.OAuthRedirectResponse{ContentType: "text/html; charset=utf-8", Location: location}, io.NopCloser(strings.NewReader(body))
 }
 
 func oauthRandomState() (string, error) {
@@ -457,7 +454,7 @@ func validateOAuthNextPath(value string) string {
 	return value
 }
 
-func (s *oauthRedirectService) errorRedirect(ctx context.Context, base, next, provider string, code int, name string, gitea bool) (*oauthredirects.OAuthRedirectResponse, io.ReadCloser, error) {
+func (s *oauthRedirectService) errorRedirect(ctx context.Context, base, next string, code int, name string, gitea bool) (*oauthredirects.OAuthRedirectResponse, io.ReadCloser, error) {
 	params := map[string]string{"error_code": fmt.Sprint(code), "error_message": name}
 	if gitea {
 		if next != "" {
@@ -469,17 +466,17 @@ func (s *oauthRedirectService) errorRedirect(ctx context.Context, base, next, pr
 		}
 		reference := &url.URL{RawQuery: oauthOrderedEncode(params, []string{"error_code", "error_message", "email", "next_path"})}
 		u := baseURL.ResolveReference(reference).String()
-		r, b := oauthResponse(u, "text/html; charset=utf-8")
+		r, b := oauthResponse(u)
 		return r, b, nil
 	}
 	u := s.safeOAuthRedirect(ctx, base, next, params)
-	r, b := oauthResponse(u, "text/html; charset=utf-8")
+	r, b := oauthResponse(u)
 	return r, b, nil
 }
 
-func (s *oauthRedirectService) failureRedirect(ctx context.Context, base, next, provider string, failure *oauthFailure, gitea bool) (*oauthredirects.OAuthRedirectResponse, io.ReadCloser, error) {
+func (s *oauthRedirectService) failureRedirect(ctx context.Context, base, next string, failure *oauthFailure, gitea bool) (*oauthredirects.OAuthRedirectResponse, io.ReadCloser, error) {
 	if failure == nil {
-		return s.errorRedirect(ctx, base, next, provider, 5999, "AUTHENTICATION_FAILED", gitea)
+		return s.errorRedirect(ctx, base, next, 5999, "AUTHENTICATION_FAILED", gitea)
 	}
 	params := map[string]string{"error_code": fmt.Sprint(failure.code), "error_message": failure.name}
 	if failure.email != "" {
@@ -495,11 +492,11 @@ func (s *oauthRedirectService) failureRedirect(ctx context.Context, base, next, 
 		}
 		reference := &url.URL{RawQuery: oauthOrderedEncode(params, []string{"error_code", "error_message", "email", "next_path"})}
 		location := baseURL.ResolveReference(reference).String()
-		response, body := oauthResponse(location, "text/html; charset=utf-8")
+		response, body := oauthResponse(location)
 		return response, body, nil
 	}
 	location := s.safeOAuthRedirect(ctx, base, next, params)
-	response, body := oauthResponse(location, "text/html; charset=utf-8")
+	response, body := oauthResponse(location)
 	return response, body, nil
 }
 

@@ -392,7 +392,7 @@ func apiV1StickyCreateFields(input djangoinput.Input, location *time.Location) (
 	if raw, present := input.Fields["name"]; present {
 		if raw == nil {
 			values.Name = nil
-		} else if value, fieldErrors := apiV1StickyString(raw, true, 0, input.Surrogates["name"]); len(fieldErrors) != 0 {
+		} else if value, fieldErrors := djangoinput.TextField(raw, true, 0, input.Surrogates["name"]); len(fieldErrors) != 0 {
 			failures["name"] = fieldErrors
 		} else {
 			values.Name = &value
@@ -402,7 +402,7 @@ func apiV1StickyCreateFields(input djangoinput.Input, location *time.Location) (
 		if raw, present := input.Fields[field]; present {
 			if raw == nil {
 				*target = nil
-			} else if value, fieldErrors := apiV1StickyString(raw, true, 255, input.Surrogates[field]); len(fieldErrors) != 0 {
+			} else if value, fieldErrors := djangoinput.TextField(raw, true, 255, input.Surrogates[field]); len(fieldErrors) != 0 {
 				failures[field] = fieldErrors
 			} else {
 				*target = &value
@@ -472,7 +472,7 @@ func apiV1StickyPatchFields(input djangoinput.Input, current stickystore.Sticky,
 	if raw, present := input.Fields["name"]; present {
 		var value *string
 		if raw != nil {
-			parsed, fieldErrors := apiV1StickyString(raw, true, 0, input.Surrogates["name"])
+			parsed, fieldErrors := djangoinput.TextField(raw, true, 0, input.Surrogates["name"])
 			if len(fieldErrors) != 0 {
 				failures["name"] = fieldErrors
 			} else {
@@ -485,7 +485,7 @@ func apiV1StickyPatchFields(input djangoinput.Input, current stickystore.Sticky,
 		if raw, present := input.Fields[field]; present {
 			var value *string
 			if raw != nil {
-				parsed, fieldErrors := apiV1StickyString(raw, true, 255, input.Surrogates[field])
+				parsed, fieldErrors := djangoinput.TextField(raw, true, 255, input.Surrogates[field])
 				if len(fieldErrors) != 0 {
 					failures[field] = fieldErrors
 				} else {
@@ -624,10 +624,6 @@ func apiV1StickyOptionsWithoutActions(name string) map[string]any {
 	metadata := apiV1StickyOptions(name, "PUT")
 	delete(metadata, "actions")
 	return metadata
-}
-
-func apiV1StickyString(value any, allowBlank bool, maximum int, surrogates []string) (string, []string) {
-	return djangoinput.TextField(value, allowBlank, maximum, surrogates)
 }
 
 func apiV1StickyJSONField(input djangoinput.Input, field string, fallback []byte) ([]byte, error) {

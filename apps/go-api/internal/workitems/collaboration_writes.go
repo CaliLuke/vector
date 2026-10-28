@@ -146,7 +146,7 @@ func (r *Repository) writeCollaboration(ctx context.Context, q Request, kind, ta
 	}
 	var previous any
 	if old != nil && q.Method != "PUT" {
-		previous, err = r.collaborationDump(ctx, q, old, kind, false)
+		previous, err = r.collaborationDump(ctx, q, old, kind)
 		if err != nil {
 			return Result{}, err
 		}
@@ -278,7 +278,7 @@ func (r *Repository) collaborationWriteRequest(ctx context.Context, q Request, k
 			}
 			requested, err = orderedDump(projected, fields)
 		} else if kind == "comment" || kind == "link" {
-			requested, err = r.collaborationDump(ctx, q, row, kind, false)
+			requested, err = r.collaborationDump(ctx, q, row, kind)
 		}
 		if err != nil {
 			return "", err
@@ -301,7 +301,7 @@ func (r *Repository) finishCollaborationWrite(ctx context.Context, q Request, ki
 		activityQ.ActorID = djangoinput.ScalarString(row["created_by_id"])
 	}
 	if collaborationPublic(q) && kind == "comment" && old != nil {
-		previous, err = r.collaborationDump(ctx, q, row, kind, false)
+		previous, err = r.collaborationDump(ctx, q, row, kind)
 		if err != nil {
 			return Result{}, err
 		}
@@ -389,7 +389,7 @@ func (r *Repository) destroyCollaboration(ctx context.Context, q Request, kind, 
 	var previous any
 	var requested any
 	if kind == "comment" || kind == "link" {
-		previous, err = r.collaborationDump(ctx, q, row, kind, false)
+		previous, err = r.collaborationDump(ctx, q, row, kind)
 		field := "comment_id"
 		if kind == "link" {
 			field = "link_id"

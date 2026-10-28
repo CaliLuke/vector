@@ -189,7 +189,7 @@ func (service *Service) EmailSignIn(ctx context.Context, request Request, app bo
 	if result := service.loginEligibility(request, user); result != nil {
 		return *result
 	}
-	return service.completeLogin(ctx, request, user, app, "email", false, false)
+	return service.completeLogin(ctx, request, user, app, "email", false)
 }
 
 // EmailSignUp implements app and space password signup. Account existence and
@@ -252,7 +252,7 @@ func (service *Service) EmailSignUp(ctx context.Context, request Request, app bo
 	if err != nil {
 		return Result{Status: http.StatusInternalServerError}
 	}
-	return service.completeLogin(ctx, request, user, app, "email", true, false)
+	return service.completeLogin(ctx, request, user, app, "email", false)
 }
 
 // ResetPassword verifies a Django password-reset token and follows the
@@ -405,7 +405,7 @@ func (service *Service) magicAuthenticate(ctx context.Context, request Request, 
 	} else if result := service.loginEligibility(request, user); result != nil {
 		return *result
 	}
-	return service.completeLogin(ctx, request, user, app, "magic-code", signup, true)
+	return service.completeLogin(ctx, request, user, app, "magic-code", true)
 }
 
 func (service *Service) SignOut(ctx context.Context, request Request, userID string) Result {
@@ -579,7 +579,7 @@ func (service *Service) AdminSignOut(ctx context.Context, request Request, userI
 	return Result{Status: http.StatusFound, Location: SafeRedirectURL(request.BaseURL, "", nil, request.AllowedHosts), ExpireSession: userID != ""}
 }
 
-func (service *Service) completeLogin(ctx context.Context, request Request, user accountauthentication.User, app bool, medium string, signup, autoset bool) Result {
+func (service *Service) completeLogin(ctx context.Context, request Request, user accountauthentication.User, app bool, medium string, autoset bool) Result {
 	now := service.requestNow(request)
 	activated, err := service.accounts.UpdateLoginMetadata(ctx, user.ID, now, request.ClientIP, request.UserAgent, medium, now)
 	if err != nil {

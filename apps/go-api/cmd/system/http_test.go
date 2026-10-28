@@ -24,7 +24,6 @@ import (
 	"uuid"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	assetslifecycleserver "github.com/CaliLuke/go-plane/assetslifecycle/gen/http/plane_internal_django_migration_api/server"
 	analyticviewsapi "github.com/CaliLuke/go-plane/gen/analytic_views"
 	csrftoken "github.com/CaliLuke/go-plane/gen/csrf_token"
 	csrftokensvr "github.com/CaliLuke/go-plane/gen/http/csrf_token/server"
@@ -76,12 +75,8 @@ func TestEntityFavoritesAllowProtocol(t *testing.T) {
 }
 
 func TestAssetLifecycleProtocolHeadersAndAllow(t *testing.T) {
-	mounts := []*assetslifecycleserver.MountPoint{
-		{Verb: http.MethodPost, Pattern: "/api/v1/assets/user-assets/"},
-		{Verb: http.MethodGet, Pattern: "/api/assets/v2/static/{asset_id}/"},
-	}
 	var got http.Header
-	handler := assetLifecycleProtocolHeaders(mounts)(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+	handler := assetLifecycleProtocolHeaders(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
 		got = writer.Header().Clone()
 		writer.WriteHeader(http.StatusOK)
 	}))
@@ -104,7 +99,7 @@ func TestAssetLifecycleProtocolHeadersAndAllow(t *testing.T) {
 	if !strings.Contains(strings.ToLower(got.Get("Vary")), "cookie") || !strings.Contains(strings.ToLower(got.Get("Vary")), "origin") {
 		t.Errorf("Vary=%q, want Cookie and origin", got.Get("Vary"))
 	}
-	if got := assetLifecycleAllowedMethods(mounts, "/api/assets/v2/static/00000000-0000-0000-0000-000000000001/"); got != "GET, HEAD, OPTIONS" {
+	if got := assetLifecycleAllowedMethods("/api/assets/v2/static/00000000-0000-0000-0000-000000000001/"); got != "GET, HEAD, OPTIONS" {
 		t.Fatalf("static Allow=%q, want GET, HEAD, OPTIONS", got)
 	}
 	for path, want := range map[string]string{
@@ -115,7 +110,7 @@ func TestAssetLifecycleProtocolHeadersAndAllow(t *testing.T) {
 		"/api/public/assets/v2/anchor/shared-board/00000000-0000-0000-0000-000000000001/":                                                                                      "GET, PATCH, DELETE, HEAD, OPTIONS",
 		"/api/v1/assets/user-assets/00000000-0000-0000-0000-000000000001/":                                                                                                     "PATCH, DELETE",
 	} {
-		if got := assetLifecycleAllowedMethods(nil, path); got != want {
+		if got := assetLifecycleAllowedMethods(path); got != want {
 			t.Errorf("Allow(%s)=%q, want %q", path, got, want)
 		}
 	}
@@ -1142,7 +1137,7 @@ func TestWorkspaceSlugCheckHTTP(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	endpoints := system.NewEndpoints(systemapi.NewSystem())
 	stub := workspaceSlugHTTPStub{}
-	handler := newHTTPHandlerWithStickiesAndWorkspaceSlugCheck(ctx, endpoints, false, nil, nil, workspaceapi.NewEndpoints(stub))
+	handler := newHTTPHandlerWithWorkspaceSlugCheck(ctx, endpoints, workspaceapi.NewEndpoints(stub))
 	for _, test := range []struct {
 		name, query, wantBody string
 		wantStatus            int
@@ -1174,7 +1169,7 @@ func TestWorkspaceSlugCheckHTTP(t *testing.T) {
 func TestWorkspaceSlugCheckHTTPUnauthenticated(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	endpoints := system.NewEndpoints(systemapi.NewSystem())
-	handler := newHTTPHandlerWithStickiesAndWorkspaceSlugCheck(ctx, endpoints, false, nil, nil, workspaceapi.NewEndpoints(workspaceSlugHTTPStub{unauthenticated: true}))
+	handler := newHTTPHandlerWithWorkspaceSlugCheck(ctx, endpoints, workspaceapi.NewEndpoints(workspaceSlugHTTPStub{unauthenticated: true}))
 	request := httptest.NewRequest(http.MethodGet, "/api/workspace-slug-check/?slug=next", nil)
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)
@@ -1189,7 +1184,7 @@ func TestWorkspaceSlugCheckHTTPUnauthenticated(t *testing.T) {
 func TestWorkspaceSlugCheckHTTPHeadAndOptions(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	endpoints := system.NewEndpoints(systemapi.NewSystem())
-	handler := newHTTPHandlerWithStickiesAndWorkspaceSlugCheck(ctx, endpoints, false, nil, nil, workspaceapi.NewEndpoints(workspaceSlugHTTPStub{}))
+	handler := newHTTPHandlerWithWorkspaceSlugCheck(ctx, endpoints, workspaceapi.NewEndpoints(workspaceSlugHTTPStub{}))
 	for _, method := range []string{http.MethodHead, http.MethodOptions} {
 		t.Run(method, func(t *testing.T) {
 			request := httptest.NewRequest(method, "/api/workspace-slug-check/?slug=next", nil)
@@ -1208,7 +1203,7 @@ func TestWorkspaceSlugCheckHTTPHeadAndOptions(t *testing.T) {
 func TestWorkspaceSlugCheckHTTPInternalError(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	endpoints := system.NewEndpoints(systemapi.NewSystem())
-	handler := newHTTPHandlerWithStickiesAndWorkspaceSlugCheck(ctx, endpoints, false, nil, nil, workspaceapi.NewEndpoints(workspaceSlugHTTPStub{failure: true}))
+	handler := newHTTPHandlerWithWorkspaceSlugCheck(ctx, endpoints, workspaceapi.NewEndpoints(workspaceSlugHTTPStub{failure: true}))
 	request := httptest.NewRequest(http.MethodGet, "/api/workspace-slug-check/?slug=next", nil)
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)
@@ -1221,7 +1216,7 @@ func TestInstanceWorkspaceSlugCheckHTTP(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	endpoints := system.NewEndpoints(systemapi.NewSystem())
 	stub := &instanceWorkspaceSlugHTTPStub{}
-	handler := newHTTPHandlerWithSlugChecks(ctx, endpoints, false, nil, nil, nil, instanceworkspaceapi.NewEndpoints(stub))
+	handler := newHTTPHandlerWithInstanceWorkspaceSlugCheck(ctx, endpoints, instanceworkspaceapi.NewEndpoints(stub))
 	for _, test := range []struct {
 		name, query, wantBody string
 		wantStatus            int
@@ -1268,7 +1263,7 @@ func TestInstanceWorkspaceSlugCheckHTTPAuthentication(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			stub := &instanceWorkspaceSlugHTTPStub{forbidden: test.forbidden}
-			handler := newHTTPHandlerWithSlugChecks(ctx, endpoints, false, nil, nil, nil, instanceworkspaceapi.NewEndpoints(stub))
+			handler := newHTTPHandlerWithInstanceWorkspaceSlugCheck(ctx, endpoints, instanceworkspaceapi.NewEndpoints(stub))
 			request := httptest.NewRequest(http.MethodGet, "/api/instances/workspace-slug-check/?slug=next", nil)
 			if test.cookieName != "" {
 				request.AddCookie(&http.Cookie{Name: test.cookieName, Value: test.cookieValue})
@@ -1288,7 +1283,7 @@ func TestInstanceWorkspaceSlugCheckHTTPAuthentication(t *testing.T) {
 func TestInstanceWorkspaceSlugCheckHTTPHeadAndOptions(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	endpoints := system.NewEndpoints(systemapi.NewSystem())
-	handler := newHTTPHandlerWithSlugChecks(ctx, endpoints, false, nil, nil, nil, instanceworkspaceapi.NewEndpoints(&instanceWorkspaceSlugHTTPStub{}))
+	handler := newHTTPHandlerWithInstanceWorkspaceSlugCheck(ctx, endpoints, instanceworkspaceapi.NewEndpoints(&instanceWorkspaceSlugHTTPStub{}))
 	for _, method := range []string{http.MethodHead, http.MethodOptions} {
 		t.Run(method, func(t *testing.T) {
 			request := httptest.NewRequest(method, "/api/instances/workspace-slug-check/?slug=next", nil)
@@ -1305,16 +1300,35 @@ func TestInstanceWorkspaceSlugCheckHTTPHeadAndOptions(t *testing.T) {
 	}
 }
 
-func TestInstanceWorkspaceSlugCheckHTTPInternalError(t *testing.T) {
+func TestInstanceReadFailuresUseDjangoResponse(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
-	endpoints := system.NewEndpoints(systemapi.NewSystem())
-	handler := newHTTPHandlerWithSlugChecks(ctx, endpoints, false, nil, nil, nil, instanceworkspaceapi.NewEndpoints(&instanceWorkspaceSlugHTTPStub{checkFailure: true}))
-	request := httptest.NewRequest(http.MethodGet, "/api/instances/workspace-slug-check/?slug=next", nil)
-	request.AddCookie(&http.Cookie{Name: "admin-session-id", Value: "admin-token"})
-	response := httptest.NewRecorder()
-	handler.ServeHTTP(response, request)
-	if response.Code != http.StatusInternalServerError || strings.TrimSpace(response.Body.String()) != `{"error":"Something went wrong please try again later"}` {
-		t.Fatalf("response = %d %q, want Django-compatible 500", response.Code, response.Body.String())
+	for _, test := range []struct {
+		name, path string
+		cookie     http.Cookie
+		handler    http.Handler
+	}{
+		{
+			name:    "workspace slug check",
+			path:    "/api/instances/workspace-slug-check/?slug=next",
+			cookie:  http.Cookie{Name: "admin-session-id", Value: "admin-token"},
+			handler: newHTTPHandlerWithInstanceWorkspaceSlugCheck(ctx, system.NewEndpoints(systemapi.NewSystem()), instanceworkspaceapi.NewEndpoints(&instanceWorkspaceSlugHTTPStub{checkFailure: true})),
+		},
+		{
+			name:    "user instance admin",
+			path:    "/api/users/me/instance-admin/",
+			cookie:  http.Cookie{Name: "session-id", Value: "user-token"},
+			handler: newHTTPHandlerWithInstanceAdmin(ctx, system.NewEndpoints(systemapi.NewSystem()), userinstanceadminapi.NewEndpoints(&userInstanceAdminHTTPStub{failure: true})),
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			request := httptest.NewRequest(http.MethodGet, test.path, nil)
+			request.AddCookie(&test.cookie)
+			response := httptest.NewRecorder()
+			test.handler.ServeHTTP(response, request)
+			if response.Code != http.StatusInternalServerError || strings.TrimSpace(response.Body.String()) != `{"error":"Something went wrong please try again later"}` {
+				t.Fatalf("response = %d %q, want Django-compatible 500", response.Code, response.Body.String())
+			}
+		})
 	}
 }
 
@@ -1330,7 +1344,7 @@ func TestUserInstanceAdminHTTP(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			stub := &userInstanceAdminHTTPStub{isAdmin: test.isAdmin}
-			handler := newHTTPHandlerWithBackendReplacements(ctx, endpoints, false, nil, nil, nil, nil, userinstanceadminapi.NewEndpoints(stub))
+			handler := newHTTPHandlerWithInstanceAdmin(ctx, endpoints, userinstanceadminapi.NewEndpoints(stub))
 			request := httptest.NewRequest(http.MethodGet, "/api/users/me/instance-admin/?ignored=value", nil)
 			request.AddCookie(&http.Cookie{Name: "session-id", Value: "user-token"})
 			response := httptest.NewRecorder()
@@ -1364,7 +1378,7 @@ func TestUserInstanceAdminHTTPAuthentication(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			stub := &userInstanceAdminHTTPStub{}
-			handler := newHTTPHandlerWithBackendReplacements(ctx, endpoints, false, nil, nil, nil, nil, userinstanceadminapi.NewEndpoints(stub))
+			handler := newHTTPHandlerWithInstanceAdmin(ctx, endpoints, userinstanceadminapi.NewEndpoints(stub))
 			request := httptest.NewRequest(http.MethodGet, "/api/users/me/instance-admin/", nil)
 			if test.cookieName != "" {
 				request.AddCookie(&http.Cookie{Name: test.cookieName, Value: test.cookieValue})
@@ -1384,7 +1398,7 @@ func TestUserInstanceAdminHTTPAuthentication(t *testing.T) {
 func TestUserInstanceAdminHTTPHeadAndOptions(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	endpoints := system.NewEndpoints(systemapi.NewSystem())
-	handler := newHTTPHandlerWithBackendReplacements(ctx, endpoints, false, nil, nil, nil, nil, userinstanceadminapi.NewEndpoints(&userInstanceAdminHTTPStub{}))
+	handler := newHTTPHandlerWithInstanceAdmin(ctx, endpoints, userinstanceadminapi.NewEndpoints(&userInstanceAdminHTTPStub{}))
 	for _, method := range []string{http.MethodHead, http.MethodOptions} {
 		t.Run(method, func(t *testing.T) {
 			request := httptest.NewRequest(method, "/api/users/me/instance-admin/", nil)
@@ -1403,19 +1417,6 @@ func TestUserInstanceAdminHTTPHeadAndOptions(t *testing.T) {
 	}
 }
 
-func TestUserInstanceAdminHTTPInternalError(t *testing.T) {
-	ctx := newLogContext(context.Background(), io.Discard, false)
-	endpoints := system.NewEndpoints(systemapi.NewSystem())
-	handler := newHTTPHandlerWithBackendReplacements(ctx, endpoints, false, nil, nil, nil, nil, userinstanceadminapi.NewEndpoints(&userInstanceAdminHTTPStub{failure: true}))
-	request := httptest.NewRequest(http.MethodGet, "/api/users/me/instance-admin/", nil)
-	request.AddCookie(&http.Cookie{Name: "session-id", Value: "user-token"})
-	response := httptest.NewRecorder()
-	handler.ServeHTTP(response, request)
-	if response.Code != http.StatusInternalServerError || strings.TrimSpace(response.Body.String()) != `{"error":"Something went wrong please try again later"}` {
-		t.Fatalf("response = %d %q, want Django-compatible 500", response.Code, response.Body.String())
-	}
-}
-
 func TestUserProfileFlagsHTTP(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	endpoints := system.NewEndpoints(systemapi.NewSystem())
@@ -1431,7 +1432,7 @@ func TestUserProfileFlagsHTTP(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			stub := &userProfileFlagsHTTPStub{}
-			handler := newHTTPHandlerWithProfileFlags(ctx, endpoints, false, nil, nil, nil, nil, nil, userprofileflagsapi.NewEndpoints(stub))
+			handler := newHTTPHandlerWithProfileFlags(ctx, endpoints, userprofileflagsapi.NewEndpoints(stub))
 			request := httptest.NewRequest(http.MethodPatch, test.path, strings.NewReader(test.body))
 			request.Header.Set("Content-Type", "application/json")
 			request.AddCookie(&http.Cookie{Name: "session-id", Value: "user-token"})
@@ -1463,7 +1464,7 @@ func TestUserProfileFlagsHTTPPayloadCompatibility(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			stub := &userProfileFlagsHTTPStub{}
-			handler := newHTTPHandlerWithProfileFlags(ctx, endpoints, false, nil, nil, nil, nil, nil, userprofileflagsapi.NewEndpoints(stub))
+			handler := newHTTPHandlerWithProfileFlags(ctx, endpoints, userprofileflagsapi.NewEndpoints(stub))
 			request := httptest.NewRequest(http.MethodPatch, "/api/users/me/onboard/", strings.NewReader(test.body))
 			request.Header.Set("Content-Type", "application/json")
 			request.AddCookie(&http.Cookie{Name: "session-id", Value: "user-token"})
@@ -1491,7 +1492,7 @@ func TestUserProfileFlagsHTTPAuthenticationAndErrors(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			stub := test.stub
-			handler := newHTTPHandlerWithProfileFlags(ctx, endpoints, false, nil, nil, nil, nil, nil, userprofileflagsapi.NewEndpoints(&stub))
+			handler := newHTTPHandlerWithProfileFlags(ctx, endpoints, userprofileflagsapi.NewEndpoints(&stub))
 			request := httptest.NewRequest(http.MethodPatch, "/api/users/me/onboard/", strings.NewReader(`{"is_onboarded":true}`))
 			request.Header.Set("Content-Type", "application/json")
 			if test.cookie {
@@ -1509,7 +1510,7 @@ func TestUserProfileFlagsHTTPAuthenticationAndErrors(t *testing.T) {
 func TestUserProfileFlagsHTTPHeadAndOptions(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	endpoints := system.NewEndpoints(systemapi.NewSystem())
-	handler := newHTTPHandlerWithProfileFlags(ctx, endpoints, false, nil, nil, nil, nil, nil, userprofileflagsapi.NewEndpoints(&userProfileFlagsHTTPStub{}))
+	handler := newHTTPHandlerWithProfileFlags(ctx, endpoints, userprofileflagsapi.NewEndpoints(&userProfileFlagsHTTPStub{}))
 	head := httptest.NewRecorder()
 	handler.ServeHTTP(head, httptest.NewRequest(http.MethodHead, "/api/users/me/onboard/", nil))
 	if head.Code != http.StatusMethodNotAllowed || head.Body.Len() != 0 || head.Header().Get("Allow") != "PATCH, OPTIONS" {
@@ -5019,7 +5020,7 @@ func TestLivenessHTTP(t *testing.T) {
 	ctx := newLogContext(context.Background(), &logs, false)
 	endpoints := system.NewEndpoints(systemapi.NewSystem())
 	endpoints.Use(log.Endpoint)
-	handler := newHTTPHandler(ctx, endpoints, false)
+	handler := newHTTPHandler(ctx, endpoints)
 
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
@@ -5075,7 +5076,7 @@ func TestLivenessHTTP(t *testing.T) {
 func TestCSRFTokenHTTPCompatibility(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	endpoints := system.NewEndpoints(systemapi.NewSystem())
-	handler := newHTTPHandler(ctx, endpoints, false)
+	handler := newHTTPHandler(ctx, endpoints)
 
 	request := httptest.NewRequest(http.MethodGet, "/auth/get-csrf-token/", nil)
 	response := httptest.NewRecorder()
@@ -5169,7 +5170,7 @@ func TestCSRFTokenHTTPCompatibility(t *testing.T) {
 func TestCSRFTokenHTTPProtocolMethods(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	endpoints := system.NewEndpoints(systemapi.NewSystem())
-	handler := newHTTPHandler(ctx, endpoints, false)
+	handler := newHTTPHandler(ctx, endpoints)
 
 	headRequest := httptest.NewRequest(http.MethodHead, "/auth/get-csrf-token/", nil)
 	headResponse := httptest.NewRecorder()
@@ -5646,7 +5647,7 @@ func TestCSRFTokenHTTPSessionLifecycle(t *testing.T) {
 func TestTimezoneHTTPCompatibilitySurface(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	endpoints := system.NewEndpoints(systemapi.NewSystem())
-	handler := newHTTPHandler(ctx, endpoints, false)
+	handler := newHTTPHandler(ctx, endpoints)
 	request := httptest.NewRequest(http.MethodGet, "/api/timezones/", nil)
 	response := httptest.NewRecorder()
 	before := time.Now().UTC().Add(timezoneCacheDuration)
@@ -5691,7 +5692,7 @@ func TestTimezoneHTTPCompatibilitySurface(t *testing.T) {
 
 func TestTimezoneProtocolCompanionsAreMounted(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
-	handler := newHTTPHandler(ctx, system.NewEndpoints(systemapi.NewSystem()), false)
+	handler := newHTTPHandler(ctx, system.NewEndpoints(systemapi.NewSystem()))
 
 	head := httptest.NewRecorder()
 	handler.ServeHTTP(head, httptest.NewRequest(http.MethodHead, "/api/timezones/", nil))
@@ -5810,7 +5811,7 @@ func TestStickyHTTPCompatibilitySurface(t *testing.T) {
 	systemEndpoints := system.NewEndpoints(systemapi.NewSystem())
 	stickyEndpoints := sticky.NewEndpoints(stickyHTTPStub{})
 	stub := stickyHTTPStub{}
-	handler := newHTTPHandlerWithStickies(ctx, systemEndpoints, false, stickyEndpoints, stub.APIKeyAuth)
+	handler := newHTTPHandlerWithStickies(ctx, systemEndpoints, stickyEndpoints, stub.APIKeyAuth)
 
 	request := httptest.NewRequest(http.MethodGet, "/api/workspaces/test/stickies/", nil)
 	response := httptest.NewRecorder()
@@ -5894,7 +5895,7 @@ func TestStickyProtocolCompanionsAreMounted(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	systemEndpoints := system.NewEndpoints(systemapi.NewSystem())
 	stub := stickyHTTPStub{success: true}
-	handler := newHTTPHandlerWithStickies(ctx, systemEndpoints, false, sticky.NewEndpoints(stub), stub.APIKeyAuth)
+	handler := newHTTPHandlerWithStickies(ctx, systemEndpoints, sticky.NewEndpoints(stub), stub.APIKeyAuth)
 	id := "0198a28d-d227-7752-82ac-bc4c1c290703"
 
 	for _, testCase := range []struct {
@@ -6089,7 +6090,7 @@ func TestAllFiveStickyHTTPRoutesReturnDeclaredSuccessStatuses(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	systemEndpoints := system.NewEndpoints(systemapi.NewSystem())
 	stub := stickyHTTPStub{success: true}
-	handler := newHTTPHandlerWithStickies(ctx, systemEndpoints, false, sticky.NewEndpoints(stub), stub.APIKeyAuth)
+	handler := newHTTPHandlerWithStickies(ctx, systemEndpoints, sticky.NewEndpoints(stub), stub.APIKeyAuth)
 	id := "0198a28d-d227-7752-82ac-bc4c1c290703"
 	cases := []struct {
 		method string
@@ -6126,7 +6127,7 @@ func TestStickyFrontendDetailPathsWithoutTrailingSlash(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	systemEndpoints := system.NewEndpoints(systemapi.NewSystem())
 	stub := stickyHTTPStub{success: true}
-	handler := newHTTPHandlerWithStickies(ctx, systemEndpoints, false, sticky.NewEndpoints(stub), stub.APIKeyAuth)
+	handler := newHTTPHandlerWithStickies(ctx, systemEndpoints, sticky.NewEndpoints(stub), stub.APIKeyAuth)
 	path := "/api/workspaces/test/stickies/0198a28d-d227-7752-82ac-bc4c1c290703"
 
 	for _, testCase := range []struct {
@@ -6155,7 +6156,7 @@ func TestStickyWriteMediaTypesReachEquivalentServicePayloads(t *testing.T) {
 				stub := &stickyMediaCaptureStub{stickyHTTPStub: stickyHTTPStub{success: true}}
 				handler := newHTTPHandlerWithStickies(
 					newLogContext(context.Background(), io.Discard, false),
-					system.NewEndpoints(systemapi.NewSystem()), false,
+					system.NewEndpoints(systemapi.NewSystem()),
 					sticky.NewEndpoints(stub), stub.APIKeyAuth,
 				)
 				path := "/api/workspaces/test/stickies/"
@@ -6213,7 +6214,7 @@ func TestStickyPatchPreservesNullableAuditFieldPresence(t *testing.T) {
 			stub := &stickyMediaCaptureStub{stickyHTTPStub: stickyHTTPStub{success: true}}
 			handler := newHTTPHandlerWithStickies(
 				newLogContext(context.Background(), io.Discard, false),
-				system.NewEndpoints(systemapi.NewSystem()), false,
+				system.NewEndpoints(systemapi.NewSystem()),
 				sticky.NewEndpoints(stub), stub.APIKeyAuth,
 			)
 			request := httptest.NewRequest(http.MethodPatch, "/api/workspaces/test/stickies/0198a28d-d227-7752-82ac-bc4c1c290703/", strings.NewReader(testCase.body))
@@ -6253,7 +6254,7 @@ func TestStickyPostAcceptsNullableRequestStrings(t *testing.T) {
 			stub := &stickyMediaCaptureStub{stickyHTTPStub: stickyHTTPStub{success: true}}
 			handler := newHTTPHandlerWithStickies(
 				newLogContext(context.Background(), io.Discard, false),
-				system.NewEndpoints(systemapi.NewSystem()), false,
+				system.NewEndpoints(systemapi.NewSystem()),
 				sticky.NewEndpoints(stub), stub.APIKeyAuth,
 			)
 			request := httptest.NewRequest(http.MethodPost, "/api/workspaces/test/stickies/", strings.NewReader(testCase.body))
@@ -6298,7 +6299,7 @@ func TestStickyListEncodesNullDescriptionBinary(t *testing.T) {
 	stub := stickyHTTPStub{success: true}
 	handler := newHTTPHandlerWithStickies(
 		newLogContext(context.Background(), io.Discard, false),
-		system.NewEndpoints(systemapi.NewSystem()), false,
+		system.NewEndpoints(systemapi.NewSystem()),
 		sticky.NewEndpoints(stub), stub.APIKeyAuth,
 	)
 	request := httptest.NewRequest(http.MethodGet, "/api/workspaces/test/stickies/", nil)

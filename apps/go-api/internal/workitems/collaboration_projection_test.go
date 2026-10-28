@@ -53,7 +53,7 @@ func TestCollaborationAPIDumpPreservesSerializerFieldOrder(t *testing.T) {
 		"created_by_id": nil, "updated_by_id": nil, "project_id": "project-id", "workspace_id": "workspace-id", "description_id": "description-id", "issue_id": "issue-id", "actor_id": "actor-id", "parent_id": nil,
 	}
 	r := &Repository{db: &collaborationAuthorizationDB{}}
-	got, err := r.collaborationDump(context.Background(), Request{API: true, Method: "GET", Timezone: "UTC"}, row, "comment", false)
+	got, err := r.collaborationDump(context.Background(), Request{API: true, Method: "GET", Timezone: "UTC"}, row, "comment")
 	if err != nil {
 		t.Fatal(err)
 	}

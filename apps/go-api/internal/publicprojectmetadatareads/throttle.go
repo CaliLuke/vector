@@ -122,16 +122,16 @@ func (throttle *AnonymousThrottle) AllowRequestWithoutTimezone(ctx context.Conte
 }
 
 func (throttle *AnonymousThrottle) allowRequest(ctx context.Context, request *http.Request, activateTimezone bool) (bool, time.Duration, bool, bool, *djangosession.SessionRefresh, string, error) {
-	authenticated, expireSession, refreshSession, rotatedSession, principal, err := throttle.inspectSession(ctx, request, activateTimezone)
+	authenticated, expireSession, rotatedSession, principal, err := throttle.inspectSession(ctx, request, activateTimezone)
 	userID := principal.UserID
 	if err != nil {
-		return false, 0, expireSession, refreshSession, rotatedSession, userID, err
+		return false, 0, expireSession, false, rotatedSession, userID, err
 	}
 	if authenticated {
-		return true, 0, expireSession, refreshSession, rotatedSession, userID, nil
+		return true, 0, expireSession, false, rotatedSession, userID, nil
 	}
 	allowed, wait, err := throttle.AllowAnonymousRequest(ctx, request)
-	return allowed, wait, expireSession, refreshSession, rotatedSession, userID, err
+	return allowed, wait, expireSession, false, rotatedSession, userID, err
 }
 
 // AllowAnonymousRequest applies Django's anonymous throttle bucket without
@@ -208,32 +208,31 @@ func parseAnonymousThrottleRate(rate string) (*big.Int, time.Duration, error) {
 }
 
 func (throttle *AnonymousThrottle) InspectSession(ctx context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, string, error) {
-	_, expireSession, refreshSession, rotatedSession, principal, err := throttle.inspectSession(ctx, request, false)
-	return expireSession, refreshSession, rotatedSession, principal.UserID, err
+	_, expireSession, rotatedSession, principal, err := throttle.inspectSession(ctx, request, false)
+	return expireSession, false, rotatedSession, principal.UserID, err
 }
 
 // InspectSessionWithTimezone matches authentication inside BaseViewSet, whose
 // TimezoneMixin activates and validates the authenticated user's timezone.
 func (throttle *AnonymousThrottle) InspectSessionWithTimezone(ctx context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, string, error) {
-	_, expireSession, refreshSession, rotatedSession, principal, err := throttle.inspectSession(ctx, request, true)
-	return expireSession, refreshSession, rotatedSession, principal.UserID, err
+	_, expireSession, rotatedSession, principal, err := throttle.inspectSession(ctx, request, true)
+	return expireSession, false, rotatedSession, principal.UserID, err
 }
 
 func (throttle *AnonymousThrottle) InspectReadServiceSession(ctx context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
-	_, expireSession, refreshSession, rotatedSession, principal, err := throttle.inspectSession(ctx, request, true)
-	return expireSession, refreshSession, rotatedSession, principal, err
+	_, expireSession, rotatedSession, principal, err := throttle.inspectSession(ctx, request, true)
+	return expireSession, false, rotatedSession, principal, err
 }
 
 // InspectReadServiceSessionWithoutTimezone leaves timezone validation to views
 // whose permission classes must run before TimezoneMixin.
 func (throttle *AnonymousThrottle) InspectReadServiceSessionWithoutTimezone(ctx context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
-	_, expireSession, refreshSession, rotatedSession, principal, err := throttle.inspectSession(ctx, request, false)
-	return expireSession, refreshSession, rotatedSession, principal, err
+	_, expireSession, rotatedSession, principal, err := throttle.inspectSession(ctx, request, false)
+	return expireSession, false, rotatedSession, principal, err
 }
 
-func (throttle *AnonymousThrottle) inspectSession(ctx context.Context, request *http.Request, activateTimezone bool) (bool, bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
+func (throttle *AnonymousThrottle) inspectSession(ctx context.Context, request *http.Request, activateTimezone bool) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
 	expireSession := false
-	refreshSession := false
 	cookieName, _ := throttle.sessionConfig(request)
 	if cookie := lastCookie(request, cookieName); cookie != nil {
 		if principal, prepared, validationErr := throttle.sessions.Inspect(ctx, cookie.Value); validationErr == nil {
@@ -243,7 +242,7 @@ func (throttle *AnonymousThrottle) inspectSession(ctx context.Context, request *
 			if principal.AuthHashUsedFallback {
 				rotated, refreshErr := throttle.sessions.RotateFallbackPrepared(ctx, prepared, throttle.cookieAge, throttle.now())
 				if refreshErr != nil {
-					return false, false, false, nil, djangosession.Principal{}, fmt.Errorf("refresh Django session: %w", refreshErr)
+					return false, false, nil, djangosession.Principal{}, fmt.Errorf("refresh Django session: %w", refreshErr)
 				}
 				rotatedSession = &rotated
 			}
@@ -252,16 +251,16 @@ func (throttle *AnonymousThrottle) inspectSession(ctx context.Context, request *
 					if rotatedSession == nil && throttle.saveEvery {
 						rotatedSession = &prepared
 					}
-					return false, false, false, rotatedSession, principal, fmt.Errorf("activate Django user timezone: %w", timezoneErr)
+					return false, false, rotatedSession, principal, fmt.Errorf("activate Django user timezone: %w", timezoneErr)
 				}
 			}
 			if rotatedSession != nil {
-				return true, false, false, rotatedSession, principal, nil
+				return true, false, rotatedSession, principal, nil
 			}
 			if throttle.saveEvery {
-				return true, false, false, &prepared, principal, nil
+				return true, false, &prepared, principal, nil
 			}
-			return true, false, false, nil, principal, nil
+			return true, false, nil, principal, nil
 		} else if errors.Is(validationErr, djangosession.ErrStore) ||
 			errors.Is(validationErr, djangosession.ErrSessionStore) ||
 			errors.Is(validationErr, djangosession.ErrUserStore) ||
@@ -270,22 +269,22 @@ func (throttle *AnonymousThrottle) inspectSession(ctx context.Context, request *
 			// BaseAPIView can map the first lazy-authentication exception, but
 			// RequestLogger evaluates the still-unresolved SimpleLazyObject again
 			// outside the view and Django ultimately returns a technical 500.
-			return false, false, false, nil, djangosession.Principal{}, fmt.Errorf("validate Django session for anonymous throttle: %w", validationErr)
+			return false, false, nil, djangosession.Principal{}, fmt.Errorf("validate Django session for anonymous throttle: %w", validationErr)
 		} else if djangoSessionCookieMustExpire(validationErr) {
 			expireSession = true
 			if errors.Is(validationErr, djangosession.ErrInvalidAuthHash) {
 				if err := throttle.invalidator.InvalidateSession(ctx, cookie.Value); err != nil {
-					return false, false, false, nil, djangosession.Principal{}, fmt.Errorf("%w: invalidate Django session after authentication hash mismatch: %w", ErrSessionInvalidation, err)
+					return false, false, nil, djangosession.Principal{}, fmt.Errorf("%w: invalidate Django session after authentication hash mismatch: %w", ErrSessionInvalidation, err)
 				}
 			}
 		} else if throttle.saveEvery {
 			// Database SessionStore retains a supplied key when a valid or corrupt
 			// payload decodes to {}. Django therefore considers it non-empty and
 			// re-signs it under SESSION_SAVE_EVERY_REQUEST.
-			return false, false, false, &prepared, djangosession.Principal{}, nil
+			return false, false, &prepared, djangosession.Principal{}, nil
 		}
 	}
-	return false, expireSession, refreshSession, nil, djangosession.Principal{}, nil
+	return false, expireSession, nil, djangosession.Principal{}, nil
 }
 
 func lastCookie(request *http.Request, name string) *http.Cookie {

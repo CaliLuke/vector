@@ -19,7 +19,7 @@
       "package": "main",
       "function": "buildHTTPHandlerWithReplacementServicesAndPending",
       "score": 0,
-      "sourceHash": "3be2acd8ffaf5985fba7a4050fd78c0d4f3185dde81910f48a1d942dd9a17010"
+      "sourceHash": "5873d1a74f87f365e65eea734ff2c4df79e52268ec0d84fabd4d077edf6c8193"
     },
     {
       "file": "cmd/system/http.go",

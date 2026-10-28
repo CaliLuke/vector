@@ -59,9 +59,9 @@ var Intake = Type("Intake", func() {
 	Required("id", "created_at", "updated_at", "deleted_at", "created_by", "updated_by", "workspace", "project", "name", "description", "is_default", "view_props", "logo_props", "project_detail")
 })
 
-func rawRequest(schema any, required bool) {
+func rawRequest(schema any) {
 	SkipRequestBodyEncodeDecode()
-	OpenAPIRequestBodyTypes(schema, []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"}, required)
+	OpenAPIRequestBodyTypes(schema, []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"}, true)
 }
 func rawResponse(status int, schema any) {
 	SkipResponseBodyEncodeDecode()
@@ -126,7 +126,7 @@ var _ = Service("ProjectIntakeWrites", func() {
 			POST("/api/workspaces/{slug}/projects/{project_id}/inboxes/")
 			Param("slug")
 			Param("project_id")
-			rawRequest(IntakeWriteRequest, true)
+			rawRequest(IntakeWriteRequest)
 			rawResponse(201, Intake)
 			httpWriteErrors()
 		})
@@ -143,7 +143,7 @@ var _ = Service("ProjectIntakeWrites", func() {
 			Param("slug")
 			Param("project_id")
 			Param("pk")
-			rawRequest(IntakeWriteRequest, true)
+			rawRequest(IntakeWriteRequest)
 			rawResponse(200, Intake)
 			httpWriteErrors()
 		})
@@ -175,7 +175,7 @@ var _ = Service("ProjectIntakeWrites", func() {
 			POST("/api/workspaces/{slug}/projects/{project_id}/intakes/")
 			Param("slug")
 			Param("project_id")
-			rawRequest(IntakeWriteRequest, true)
+			rawRequest(IntakeWriteRequest)
 			rawResponse(201, Intake)
 			httpWriteErrors()
 		})
@@ -192,7 +192,7 @@ var _ = Service("ProjectIntakeWrites", func() {
 			Param("slug")
 			Param("project_id")
 			Param("pk")
-			rawRequest(IntakeWriteRequest, true)
+			rawRequest(IntakeWriteRequest)
 			rawResponse(200, Intake)
 			httpWriteErrors()
 		})

@@ -82,7 +82,7 @@ func TestCycleIssueQueriesBindRequestScopeWithoutDateFilters(t *testing.T) {
 		t.Fatalf("cross-workspace query = %#v, %v", otherWorkspace, err)
 	}
 	options.GroupBy = "priority"
-	grouped, err := repository.groupedIssues(ctx, userID, "demo", projectID, cycleID, options, 30, 30, 30, 0, false)
+	grouped, err := repository.groupedIssues(ctx, userID, "demo", projectID, cycleID, options, 30, 30, 30, 0)
 	if err != nil {
 		t.Fatal(err)
 	}

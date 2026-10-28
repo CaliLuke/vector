@@ -127,7 +127,7 @@ func TestOAuthNextPathAndRedirectConstruction(t *testing.T) {
 }
 
 func TestOAuthResponseUsesDjangoRedirectContentType(t *testing.T) {
-	response, _ := oauthResponse("https://app.example.test/", "text/html; charset=utf-8")
+	response, _ := oauthResponse("https://app.example.test/")
 	if response.ContentType != "text/html; charset=utf-8" {
 		t.Fatalf("redirect content type = %q", response.ContentType)
 	}
