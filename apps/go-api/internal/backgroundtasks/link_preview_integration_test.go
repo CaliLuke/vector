@@ -10,13 +10,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/netip"
-	"os"
 	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/bootstrap"
 	"github.com/CaliLuke/selvedge"
 	"github.com/CaliLuke/selvedge/retry"
 	"github.com/google/uuid"
@@ -36,14 +34,10 @@ func (store *linkPreviewLostActivityResponse) Crawl(ctx context.Context, input L
 }
 
 func TestPostgresLinkPreviewDurableRetryAndStaleRowGuards(t *testing.T) {
-	databaseURL := testingDatabaseURL(t)
-	ctx, cancel := context.WithTimeout(t.Context(), 90*time.Second)
-	defer cancel()
-	if err := bootstrap.MigrateSchema(ctx, databaseURL); err != nil {
-		t.Fatal(err)
-	}
 	_, executionURL, pool := openBackgroundTaskDatabase(t)
 	defer pool.Close()
+	ctx, cancel := context.WithTimeout(t.Context(), 90*time.Second)
+	defer cancel()
 
 	ownerID, workspaceID, projectID, issueID := uuid.New(), uuid.New(), uuid.New(), uuid.New()
 	retryLinkID, staleLinkID, deletedLinkID := uuid.New(), uuid.New(), uuid.New()
@@ -191,13 +185,4 @@ func TestPostgresLinkPreviewDurableRetryAndStaleRowGuards(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT deleted_at,metadata->>'keep' FROM issue_links WHERE id=$1`, deletedLinkID).Scan(&deletedAt, &deletedMetadata); err != nil || deletedAt == nil || deletedMetadata != "deleted-row" {
 		t.Fatalf("crawl modified deleted row: deleted_at=%v metadata=%q err=%v", deletedAt, deletedMetadata, err)
 	}
-}
-
-func testingDatabaseURL(t *testing.T) string {
-	t.Helper()
-	databaseURL := os.Getenv(backgroundTasksDatabaseEnv)
-	if databaseURL == "" {
-		t.Skip("set " + backgroundTasksDatabaseEnv + " to an isolated database with the Plane application schema")
-	}
-	return databaseURL
 }

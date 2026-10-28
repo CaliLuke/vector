@@ -210,7 +210,15 @@ func insertSeedRow(ctx context.Context, tx pgx.Tx, table string, row map[string]
 		return err
 	}
 	name := pgx.Identifier{"public", table}.Sanitize()
-	_, err = tx.Exec(ctx, `INSERT INTO `+name+` SELECT * FROM jsonb_populate_record(NULL::`+name+`,$1::jsonb)`, body)
+	// Preserve database defaults for columns added after the seed was captured.
+	// A whole populated record would supply NULL for those missing columns.
+	columns := make([]string, 0, len(row))
+	for column := range row {
+		columns = append(columns, pgx.Identifier{column}.Sanitize())
+	}
+	slices.Sort(columns)
+	fields := strings.Join(columns, ",")
+	_, err = tx.Exec(ctx, `INSERT INTO `+name+` (`+fields+`) SELECT `+fields+` FROM jsonb_populate_record(NULL::`+name+`,$1::jsonb)`, body)
 	if err != nil {
 		return fmt.Errorf("seed %s: %w", table, err)
 	}

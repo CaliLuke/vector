@@ -15,6 +15,7 @@ import (
 )
 
 func TestPostgresInstanceMetricsCollectionAndDurableSchedule(t *testing.T) {
+	t.Setenv("SERVICE_NAME", "")
 	_, executionURL, pool := openBackgroundTaskDatabase(t)
 	defer pool.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -51,7 +52,7 @@ func TestPostgresInstanceMetricsCollectionAndDurableSchedule(t *testing.T) {
 		t.Fatalf("collect and export PostgreSQL instance metrics: %v", err)
 	}
 	snapshot := exporter.snapshot()
-	if snapshot.ServiceName != "plane-ce-api" || snapshot.InstanceID != instanceID {
+	if snapshot.ServiceName != "vector-ce-api" || snapshot.InstanceID != instanceID {
 		t.Fatalf("metric resource service=%q instance=%q", snapshot.ServiceName, snapshot.InstanceID)
 	}
 	if len(snapshot.Observations) < 15 {

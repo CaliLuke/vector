@@ -40,6 +40,9 @@ func TestPostgresIssueExportProducesAndStoresArchive(t *testing.T) {
 	if _, err := pool.Exec(ctx, `INSERT INTO workspaces (id,name,owner_id,slug,timezone,background_color,created_at,updated_at) VALUES ($1,'Issue Export',$2,$3,'UTC','',$4,$4)`, workspaceID, userID, slug, now); err != nil {
 		t.Fatalf("insert export workspace: %v", err)
 	}
+	if _, err := pool.Exec(ctx, `INSERT INTO workspace_members (id,workspace_id,member_id,role,is_active,created_at,updated_at,view_props,default_props,issue_props,explored_features,getting_started_checklist,tips) VALUES ($1,$2,$3,20,true,$4,$4,'{}','{}','{}','{}','{}','{}')`, uuid.New(), workspaceID, userID, now); err != nil {
+		t.Fatalf("insert export workspace membership: %v", err)
+	}
 	if _, err := pool.Exec(ctx, `INSERT INTO projects (id,name,description,network,workspace_id,identifier,module_view,cycle_view,issue_views_view,page_view,intake_view,is_time_tracking_enabled,is_issue_type_enabled,guest_view_all_features,archive_in,close_in,logo_props,timezone,created_at,updated_at) VALUES ($1,'Export Project','',0,$2,'EXP',false,false,false,true,false,false,false,false,0,0,'{}'::jsonb,'UTC',$3,$3)`, projectID, workspaceID, now); err != nil {
 		t.Fatalf("insert export project: %v", err)
 	}

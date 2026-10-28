@@ -5,12 +5,10 @@ package backgroundtasks
 import (
 	"context"
 	"errors"
-	"os"
 	"sync/atomic"
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/bootstrap"
 	"github.com/CaliLuke/selvedge"
 	"github.com/CaliLuke/selvedge/retry"
 	"github.com/google/uuid"
@@ -29,17 +27,10 @@ func (s *retryDeletionStore) Apply(ctx context.Context, plan deletionPlan) ([]De
 	return children, err
 }
 func TestPostgresDeletionDurableCascadeRetryAndRetention(t *testing.T) {
-	databaseURL := os.Getenv(backgroundTasksDatabaseEnv)
-	if databaseURL == "" {
-		t.Skip("set isolated background task database")
-	}
-	ctx, cancel := context.WithTimeout(t.Context(), 90*time.Second)
-	defer cancel()
-	if err := bootstrap.MigrateSchema(ctx, databaseURL); err != nil {
-		t.Fatal(err)
-	}
 	_, executionURL, pool := openBackgroundTaskDatabase(t)
 	defer pool.Close()
+	ctx, cancel := context.WithTimeout(t.Context(), 90*time.Second)
+	defer cancel()
 	owner, workspace, project, sibling, state := uuid.New(), uuid.New(), uuid.New(), uuid.New(), uuid.New()
 	now := time.Now().UTC().Truncate(time.Second)
 	if _, err := pool.Exec(ctx, `INSERT INTO users (id,password,username,display_name,first_name,last_name,avatar,date_joined,created_at,updated_at,last_location,created_location,is_superuser,is_managed,is_password_expired,is_active,is_staff,is_email_verified,is_password_autoset,is_password_reset_required,token,last_login_ip,last_logout_ip,last_login_medium,last_login_uagent,is_bot,user_timezone,is_email_valid) VALUES ($1,'!', $2,'Deletion Test','','','',$3,$3,$3,'','',false,false,false,true,false,true,false,false,$2,'','','','',false,'UTC',true)`, owner, owner.String(), now); err != nil {

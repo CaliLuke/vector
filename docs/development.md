@@ -215,6 +215,16 @@ visible effect ordering, and less work to understand or change the behavior.
 Passing a function-size or complexity metric alone is insufficient; inline or
 regroup helpers that merely redistribute branches or introduce forwarding layers.
 
+The legacy background-task database tests now clone an owned, migrated PostgreSQL
+template. All 21 of their skip allowances are removed, leaving 14 elsewhere.
+Running these proofs exposed missing workspace membership in an export fixture,
+an outdated metrics service-name assertion, and a workspace-seeding defect:
+whole-record inserts supplied NULL instead of new-column database defaults.
+Seed inserts now name the captured columns, preserving defaults for later columns;
+the existing rollback and replay proof verifies empty custom properties on all
+seven seeded issues. Removing obsolete fixture setup also retires two lint
+occurrences and one maintainability allowance, leaving 1,274 and 39 respectively.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML

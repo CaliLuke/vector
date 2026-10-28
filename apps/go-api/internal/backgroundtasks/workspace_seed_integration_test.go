@@ -124,6 +124,9 @@ func TestPostgresWorkspaceSeedAtomicRetryAndSourceContent(t *testing.T) {
 	if !store.failed.Load() {
 		t.Fatal("retry not exercised")
 	}
+	if err = pool.QueryRow(ctx, `SELECT count(*) FROM issues WHERE workspace_id=$1 AND custom_properties='{}'::jsonb`, workspace).Scan(&n); err != nil || n != 7 {
+		t.Fatalf("seeded issue property defaults: count=%d want=7 err=%v", n, err)
+	}
 	for table, want := range map[string]int{"projects": 1, "states": 5, "issues": 7, "issue_sequences": 7, "cycles": 2, "modules": 3, "pages": 2, "project_members": 3, "project_user_properties": 3, "workspace_members": 3, "issue_activities": 7, "module_issues": 11} {
 		if err = pool.QueryRow(ctx, "SELECT count(*) FROM "+table+" WHERE workspace_id=$1", workspace).Scan(&n); err != nil || n != want {
 			t.Errorf("%s count=%d want=%d err=%v", table, n, want, err)

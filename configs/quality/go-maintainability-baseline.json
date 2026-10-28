@@ -101,12 +101,6 @@
       "score": 12
     },
     {
-      "file": "internal/backgroundtasks/link_preview_integration_test.go",
-      "package": "backgroundtasks",
-      "function": "TestPostgresLinkPreviewDurableRetryAndStaleRowGuards",
-      "score": 19
-    },
-    {
       "file": "internal/backgroundtasks/runtime.go",
       "package": "backgroundtasks",
       "function": "NewRuntime",

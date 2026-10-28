@@ -1855,7 +1855,7 @@
         "internal/backgroundtasks/api_activity_logs_integration_test.go",
         "shadow: declaration of \"err\" shadows declaration at line #"
       ],
-      "count": 6
+      "count": 4
     },
     {
       "fingerprint": [

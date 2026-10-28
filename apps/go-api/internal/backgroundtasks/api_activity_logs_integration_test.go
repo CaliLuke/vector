@@ -5,8 +5,6 @@ package backgroundtasks
 import (
 	"context"
 	"errors"
-	"os"
-	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -16,8 +14,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
-
-const backgroundTasksDatabaseEnv = "PLANE_BACKGROUND_TASKS_DATABASE_URL"
 
 func TestPostgresAPIActivityLogAdmissionRollback(t *testing.T) {
 	databaseURL, executionURL, pool := openBackgroundTaskDatabase(t)
@@ -137,44 +133,6 @@ func testAPIActivityLogInput() APIActivityLogInput {
 		Method: "GET", QueryParams: "source=integration", Headers: "{'X-Api-Key': '[REDACTED]'}",
 		ResponseCode: 200, ResponseBody: `{"ok":true}`, IPAddress: "192.0.2.42", UserAgent: "Plane background task integration test",
 	}
-}
-
-func openBackgroundTaskDatabase(t *testing.T) (string, string, *pgxpool.Pool) {
-	t.Helper()
-	databaseURL := os.Getenv(backgroundTasksDatabaseEnv)
-	if databaseURL == "" {
-		t.Skip("set " + backgroundTasksDatabaseEnv + " to an isolated database with the Plane application schema")
-	}
-	config, err := pgxpool.ParseConfig(databaseURL)
-	if err != nil {
-		t.Fatalf("parse %s: %v", backgroundTasksDatabaseEnv, err)
-	}
-	if !strings.HasPrefix(config.ConnConfig.Database, "test_plane_background_tasks_") {
-		t.Fatalf("integration requires an owned test_plane_background_tasks_* database, got %q", config.ConnConfig.Database)
-	}
-	pool, err := pgxpool.NewWithConfig(t.Context(), config)
-	if err != nil {
-		t.Fatalf("connect to isolated PostgreSQL: %v", err)
-	}
-	var tableExists bool
-	if err := pool.QueryRow(t.Context(), `SELECT to_regclass('api_activity_logs') IS NOT NULL`).Scan(&tableExists); err != nil {
-		pool.Close()
-		t.Fatalf("inspect existing Plane application schema: %v", err)
-	}
-	if !tableExists {
-		pool.Close()
-		t.Fatalf("isolated database %q does not contain api_activity_logs; prepare its application schema before running this proof", config.ConnConfig.Database)
-	}
-	if _, err := pool.Exec(t.Context(), `CREATE SCHEMA IF NOT EXISTS plane_execution`); err != nil {
-		pool.Close()
-		t.Fatalf("create isolated Selvedge schema: %v", err)
-	}
-	executionURL, err := withExecutionSearchPath(databaseURL)
-	if err != nil {
-		pool.Close()
-		t.Fatal(err)
-	}
-	return databaseURL, executionURL, pool
 }
 
 func newAPIActivityLogTestApp(t *testing.T, databaseURL, executionURL string, store apiActivityLogStore, options []selvedge.Option) (*selvedge.App, *selvedge.WorkflowFunc[APIActivityLogInput, struct{}], func()) {
