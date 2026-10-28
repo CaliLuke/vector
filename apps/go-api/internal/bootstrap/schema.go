@@ -127,6 +127,11 @@ func MigrateSchema(ctx context.Context, databaseURL string) error {
 	if err != nil {
 		return err
 	}
+	// Migration 31 permits one live edge per relation kind. Keep the original
+	// manifest for adoption of pre-migration databases, and verify the replacement
+	// constraint after upgrading instead of requiring the retired pair-only index.
+	delete(native, "index:issue_relations.issue_relation_unique_issue_related_issue_when_deleted_at_null")
+	native["index:issue_relations.issue_relation_unique_kind_live"] = `["CREATE UNIQUE INDEX issue_relation_unique_kind_live ON public.issue_relations USING btree (issue_id, related_issue_id, relation_type) WHERE (deleted_at IS NULL)", true, true]`
 	actual, err = readSchema(ctx, connection)
 	if err != nil {
 		return err

@@ -30,6 +30,9 @@ func (r *Repository) serializeAuthorizedIssue(ctx context.Context, row map[strin
 }
 
 func (r *Repository) serializeVisibleIssue(ctx context.Context, row map[string]any, q Request, fields, expand string) (map[string]any, error) {
+	if q.ExpectedWorkspaceID != nil {
+		return r.boundIssueProjection(ctx, row, q, fields, expand)
+	}
 	row, err := djangoapi.MaskIssueParent(ctx, r.db, row, q.ActorID)
 	if err != nil {
 		return nil, err

@@ -258,6 +258,23 @@ await test("saved property icons render in field labels and unknown identifiers 
   assert.ok(env.container.querySelector("svg.lucide-database"));
   await env.render(React.createElement(PropertyIcon, { kind: "Number", icon: "future-icon" }));
   assert.ok(env.container.querySelector("svg.lucide-hash"));
+  const kinds = [
+    ["Email", "mail"],
+    ["File", "paperclip"],
+    ["Work item picker", "square-check"],
+  ];
+  await env.render(
+    React.createElement(
+      React.Fragment,
+      null,
+      ...kinds.map(([kind]) => React.createElement(PropertyIcon, { key: kind, kind }))
+    )
+  );
+  for (const [kind, icon] of kinds) {
+    assert.ok(env.container.querySelector(`svg.lucide-${icon}`), `${kind} has a visible field icon`);
+    const definition = { ...base, kind, configuration: { ...base.configuration, default_value: null } };
+    assert.deepEqual(propertyToSave(propertyForEditor(definition, true)), definition);
+  }
 });
 
 await test("custom column selector shows saved property icons and kind fallbacks", async (t) => {

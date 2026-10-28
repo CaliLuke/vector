@@ -11,7 +11,12 @@ import (
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 )
 
-func (s *Service) Module(ctx context.Context, input *api.ModuleRequest) (*api.ModuleResult, error) {
+func (s *Service) moduleRead(ctx context.Context, input *api.ModuleRequest) (*api.ModuleResult, error) {
+	if input != nil {
+		if items, ok := input.AsModuleListWorkitems(); ok {
+			return planningWorkitems(ctx, s, "module", items, api.NewModuleResultWorkitemPQLFailure, api.NewModuleResultWorkitemPage)
+		}
+	}
 	return readProjectResource(ctx, input, selectModuleAction, s.moduleReads, modules.ErrForbidden, modules.ErrNotFound, projectModuleResult)
 }
 
@@ -39,6 +44,9 @@ func selectModuleAction(input *api.ModuleRequest) (modules.APIV1Request, *string
 		} else if detail, ok := input.AsModuleRetrieve(); ok && detail != nil && detail.Action == "retrieve" {
 			request.Operation = "detail"
 			request.Params["project_id"], request.Params["pk"], workspace = detail.ProjectID, detail.ModuleID, detail.WorkspaceSlug
+			if detail.IncludeRevision != nil && *detail.IncludeRevision {
+				request.Params["include_revision"], request.Present["include_revision"] = "true", true
+			}
 			_, err := uuid.Parse(detail.ModuleID)
 			valid = err == nil
 		}
@@ -94,6 +102,9 @@ func projectModuleRecord(row map[string]any, lite bool) (*api.ModuleRecord, erro
 			}
 			wire[field] = value
 		}
+	}
+	if revision, ok := row["revision"]; ok {
+		wire["revision"] = revision
 	}
 	body, err := json.Marshal(wire)
 	if err != nil {

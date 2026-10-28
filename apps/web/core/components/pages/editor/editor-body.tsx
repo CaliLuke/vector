@@ -194,12 +194,13 @@ export function PageEditorBody(props: Props) {
       // Construct realtime config
       return {
         url: WS_LIVE_URL.toString(),
+        documentName: page.collaboration_revision ? `${pageId}.${page.collaboration_revision}` : pageId,
       };
     } catch (error) {
       console.error("Error creating realtime config", error);
       return undefined;
     }
-  }, [webhookConnectionParams]);
+  }, [webhookConnectionParams, pageId, page.collaboration_revision]);
 
   const userConfig = useMemo(
     () => ({

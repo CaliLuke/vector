@@ -38,7 +38,7 @@ func preservationLabels(ctx context.Context, tx pgx.Tx, workspace, project strin
 	query := `SELECT u.id::text,COALESCE(NULLIF(u.display_name,''),NULLIF(trim(u.first_name||' '||u.last_name),''),u.username) FROM users u WHERE u.id=ANY($2::uuid[]) AND EXISTS(SELECT 1 FROM workspace_members m WHERE m.workspace_id=$1 AND m.member_id=u.id AND m.deleted_at IS NULL)`
 	args := []any{workspace, ids}
 	if kind == property.Release {
-		query = `SELECT id::text,name FROM work_item_releases WHERE workspace_id=$1 AND id=ANY($2::uuid[]) AND project_id=NULLIF($3,'')::uuid`
+		query = `SELECT id::text,name FROM work_item_releases WHERE workspace_id=$1 AND id=ANY($2::uuid[]) AND (project_id=NULLIF($3,'')::uuid OR project_id IS NULL)`
 		args = append(args, project)
 	}
 	rows, err := tx.Query(ctx, query, args...)

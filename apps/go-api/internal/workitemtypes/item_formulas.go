@@ -168,10 +168,10 @@ func itemFormulaValue(kind formula.Kind, raw any) (formula.Value, error) {
 				out.Empty = true
 				return out, nil
 			}
-			date, err := time.Parse(time.DateOnly, value)
+			date, err := property.ParseDate(value)
 			if err == nil {
 				out.Date = date
-				out.DateOnly = true
+				out.DateOnly = len(value) == len(time.DateOnly)
 				return out, nil
 			}
 		}

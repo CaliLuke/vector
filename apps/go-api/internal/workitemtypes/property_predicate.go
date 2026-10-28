@@ -29,10 +29,13 @@ type ProjectedPredicate struct {
 func CompileProjectedPredicate(kind property.Kind, result formula.Kind, level, catalog, operator string, raw any) (*ProjectedPredicate, error) {
 	p := &ProjectedPredicate{kind: kind, result: result, level: level, catalog: catalog, operator: operator}
 	family := kind
+	if family == property.Email || family == property.File {
+		family = property.Text
+	}
 	if kind == property.Formula {
 		family = property.Kind(result)
 	}
-	if family == property.RichText || !slices.Contains([]property.Kind{property.Text, property.Number, property.Date, property.Boolean, property.URL, property.Dropdown, property.Member, property.Release, property.Cascading}, family) {
+	if family == property.RichText || !slices.Contains([]property.Kind{property.Text, property.Number, property.Date, property.Boolean, property.URL, property.Dropdown, property.Member, property.Issue, property.Release, property.Cascading}, family) {
 		return nil, fmt.Errorf("this property does not support filtering")
 	}
 	if kind == property.Cascading && level == "" || kind != property.Cascading && level != "" {
@@ -75,7 +78,7 @@ func CompileProjectedPredicate(kind property.Kind, result formula.Kind, level, c
 			return nil, fmt.Errorf("choose a numeric or date comparison")
 		}
 		p.operand, err = orderedPredicateOperand(family, operator, raw)
-	case property.Dropdown, property.Member, property.Release, property.Cascading:
+	case property.Dropdown, property.Member, property.Issue, property.Release, property.Cascading:
 		if operator != "exact" && operator != "in" {
 			return nil, fmt.Errorf("choose a selection equality or inclusion predicate")
 		}
@@ -114,6 +117,9 @@ func (p *ProjectedPredicate) Match(value ProjectedValue) (bool, bool) {
 		return false, false
 	}
 	family := p.kind
+	if family == property.Email || family == property.File {
+		family = property.Text
+	}
 	if family == property.Formula {
 		family = property.Kind(p.result)
 	}
@@ -153,7 +159,7 @@ func (p *ProjectedPredicate) Match(value ProjectedValue) (bool, bool) {
 		case "range":
 			return number >= values[0] && number <= values[1], true
 		}
-	case property.Dropdown, property.Member, property.Release, property.Cascading:
+	case property.Dropdown, property.Member, property.Issue, property.Release, property.Cascading:
 		var values []string
 		switch saved := current.(type) {
 		case string:
@@ -212,10 +218,7 @@ func orderedPredicateValue(kind property.Kind, raw any) (float64, error) {
 		if !ok {
 			return 0, fmt.Errorf("enter a date")
 		}
-		date, err := time.Parse(time.DateOnly, text)
-		if err != nil {
-			date, err = time.Parse(time.RFC3339Nano, text)
-		}
+		date, err := property.ParseDate(text)
 		if err != nil || date.UTC().Year() < 1 || date.UTC().Year() > 9999 {
 			return 0, fmt.Errorf("enter a valid date")
 		}

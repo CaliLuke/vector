@@ -5,6 +5,7 @@ import . "github.com/CaliLuke/loom/dsl"
 var pageRead = Type("PageRead", func() {
 	Attribute("id", String, func() { Format(FormatUUID) })
 	Attribute("name", String)
+	Attribute("collaboration_revision", Int64)
 	Attribute("owned_by", String, func() { Format(FormatUUID) })
 	Attribute("access", Int, func() { Enum(0, 1) })
 	Attribute("color", String)

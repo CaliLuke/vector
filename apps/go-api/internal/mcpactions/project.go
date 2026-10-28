@@ -21,6 +21,18 @@ type projectReader interface {
 }
 
 func (s *Service) Project(ctx context.Context, input *api.ProjectRequest) (loom.Nullable[api.ProjectResult], error) {
+	if input != nil && (input.Kind() == api.ProjectRequestKindProjectGetFeatures || input.Kind() == api.ProjectRequestKindProjectUpdateFeatures) {
+		raw, err := s.featureOperation(ctx, input)
+		return decodeReleaseResult[api.ProjectResult](raw, err)
+	}
+	if input != nil {
+		if summary, ok := input.AsProjectWorklogSummary(); ok {
+			return s.projectWorklogSummary(ctx, summary)
+		}
+	}
+	if input != nil && (input.Kind() == api.ProjectRequestKindProjectCreate || input.Kind() == api.ProjectRequestKindProjectUpdate || input.Kind() == api.ProjectRequestKindProjectDelete) {
+		return s.projectRecordMutation(ctx, input)
+	}
 	result, err := s.project(ctx, input)
 	if err != nil {
 		return loom.Nullable[api.ProjectResult]{}, err

@@ -73,6 +73,13 @@ func (r *Repository) ReadAPIV1(ctx context.Context, user string, request APIV1Re
 			projected, err = djangoapi.Serialize(ctx, r.database, row, declared, fields, expand, false)
 			if err == nil {
 				projected["members"] = row["members"]
+				if request.ExpectedWorkspaceID != nil && detail && p["include_revision"] == "true" {
+					revision, ok := row["revision"].(string)
+					if !ok || revision == "" {
+						return nil, errors.New("module revision unavailable")
+					}
+					projected["revision"] = revision
+				}
 				rows[i] = projected
 			}
 		}
@@ -126,6 +133,9 @@ func (r *Repository) apiModules(ctx context.Context, user string, request APIV1R
 		memberScope = " AND mm.project_id=m.project_id AND mm.workspace_id=m.workspace_id AND mm.deleted_at IS NULL"
 	}
 	row := `to_jsonb(m)||jsonb_build_object('members',COALESCE((SELECT jsonb_agg(u.id ORDER BY u.created_at DESC) FROM users u JOIN module_members mm ON mm.member_id=u.id WHERE mm.module_id=m.id` + memberScope + `),'[]'::jsonb))`
+	if request.ExpectedWorkspaceID != nil && request.Operation == "detail" && p["include_revision"] == "true" {
+		row += "||jsonb_build_object('revision','module:'||m.id::text||':'||(SELECT revision::text FROM module_edit_revisions WHERE module_id=m.id))"
+	}
 	joins := ""
 	if request.Operation != "lite" {
 		joins = apiModuleMetricJoins(scoped)

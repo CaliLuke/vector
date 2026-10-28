@@ -48,6 +48,8 @@ type IssueActivityAdmitter interface {
 }
 
 type Repository struct {
+	clearedPropertyIDs       []string
+	propertyValueMutation    bool
 	pql                      *issuequery.PreparedPQL
 	propertyFilter           *issuequery.PreparedPropertyFilter
 	propertyPredicates       map[int]*workitemtypes.ScopedPropertyPredicate
@@ -61,6 +63,7 @@ type Repository struct {
 	recentVisits             RecentVisitAdmitter
 	issueActivities          IssueActivityAdmitter
 	transactionalEffects     bool
+	notifyCollaboration      bool
 	itemEdit                 *itemEditState
 	origin                   string
 	now                      func() time.Time

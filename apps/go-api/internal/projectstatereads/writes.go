@@ -39,17 +39,13 @@ func missingStateFailure(input StateWriteInput) *WriteFailure {
 type stateWriteDatabase interface {
 	database
 	Begin(context.Context) (pgx.Tx, error)
+	BeginTx(context.Context, pgx.TxOptions) (pgx.Tx, error)
 	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
-}
-
-type StateWriteEffects interface {
-	SoftDelete(context.Context, string, string, string) error
 }
 
 type WriteRepository struct {
 	*Repository
 	database stateWriteDatabase
-	effects  StateWriteEffects
 	cache    StateWriteCache
 }
 
@@ -84,18 +80,15 @@ func (repository *WriteRepository) InvalidateAppCache(ctx context.Context, slug 
 	}
 }
 
-func NewWriteRepository(database stateWriteDatabase, effects StateWriteEffects) (*WriteRepository, error) {
+func NewWriteRepository(database stateWriteDatabase) (*WriteRepository, error) {
 	if database == nil {
 		return nil, errors.New("project state writes database is required")
-	}
-	if effects == nil {
-		return nil, errors.New("project state deletion publisher is required")
 	}
 	base, err := NewRepository(database)
 	if err != nil {
 		return nil, err
 	}
-	return &WriteRepository{Repository: base, database: database, effects: effects}, nil
+	return &WriteRepository{Repository: base, database: database}, nil
 }
 
 // AuthorizeApp applies the session-authenticated app permission decorators.
@@ -234,7 +227,7 @@ func createState(ctx context.Context, tx pgx.Tx, input StateWriteInput, fields m
 		}
 	}
 	if defaultValue {
-		if _, err := tx.Exec(ctx, `UPDATE states SET "default"=false WHERE project_id=$1 AND deleted_at IS NULL AND "group"<>'triage'`, input.ProjectID); err != nil {
+		if _, err := tx.Exec(ctx, `UPDATE states SET "default"=false WHERE project_id=$1 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$2) AND deleted_at IS NULL AND "group"<>'triage'`, input.ProjectID, input.Slug); err != nil {
 			return nil, err
 		}
 	}
@@ -242,7 +235,7 @@ func createState(ctx context.Context, tx pgx.Tx, input StateWriteInput, fields m
 	err := tx.QueryRow(ctx, `INSERT INTO states
  (id,project_id,workspace_id,name,color,slug,"group","default",description,sequence,is_triage,external_source,external_id,created_at,updated_at,created_by_id)
  SELECT gen_random_uuid(),p.id,p.workspace_id,@name,@color,@slug,@group,@default,@description,
-   COALESCE((SELECT MAX(s.sequence)+15000 FROM states s WHERE s.project_id=p.id AND s.deleted_at IS NULL AND s."group"<>'triage'),65535),
+   COALESCE((SELECT MAX(s.sequence)+15000 FROM states s WHERE s.project_id=p.id AND s.workspace_id=p.workspace_id AND s.deleted_at IS NULL AND s."group"<>'triage'),65535),
    @is_triage,@external_source,@external_id,clock_timestamp(),clock_timestamp(),@user_id
  FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=@project_id AND w.slug=@workspace_slug
  RETURNING `+stateJSONSQL(input.App), pgx.StrictNamedArgs{
@@ -276,28 +269,12 @@ func updateState(ctx context.Context, tx pgx.Tx, input StateWriteInput, fields m
 		return nil, err
 	}
 	if !input.App {
-		if requestedID, ok := fields["external_id"].(string); ok && requestedID != "" && (currentExternalID == nil || requestedID != *currentExternalID) {
-			requestedSource := ""
-			if source, ok := fields["external_source"].(string); ok {
-				requestedSource = source
-			} else if currentExternalSource != nil {
-				requestedSource = *currentExternalSource
-			}
-			if requestedSource != "" {
-				var existing bool
-				if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM states s JOIN workspaces w ON w.id=s.workspace_id
- WHERE s.project_id=$1 AND w.slug=$2 AND s.external_source=$3 AND s.external_id=$4 AND s.deleted_at IS NULL)`,
-					input.ProjectID, input.Slug, requestedSource, requestedID).Scan(&existing); err != nil {
-					return nil, err
-				}
-				if existing {
-					return nil, &WriteFailure{Status: 409, Body: map[string]any{"error": "State with the same external id and external source already exists", "id": input.StateID}}
-				}
-			}
+		if err := checkStateExternalIdentity(ctx, tx, input, fields, currentExternalID, currentExternalSource); err != nil {
+			return nil, err
 		}
 	}
 	if hasStateField(fields, "default") && stateBool(fields, "default", false) {
-		if _, err := tx.Exec(ctx, `UPDATE states SET "default"=false WHERE project_id=$1 AND deleted_at IS NULL AND "group"<>'triage'`, input.ProjectID); err != nil {
+		if _, err := tx.Exec(ctx, `UPDATE states SET "default"=false WHERE project_id=$1 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$2) AND deleted_at IS NULL AND "group"<>'triage'`, input.ProjectID, input.Slug); err != nil {
 			return nil, err
 		}
 	}
@@ -326,39 +303,14 @@ func (repository *WriteRepository) Delete(ctx context.Context, input StateWriteI
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback(context.WithoutCancel(ctx))
+	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
 	if err = lockStateProject(ctx, tx, input.Slug, input.ProjectID); err != nil {
 		return err
 	}
-	var isDefault bool
-	err = tx.QueryRow(ctx, `SELECT s."default" FROM states s JOIN workspaces w ON w.id=s.workspace_id
- WHERE s.id=$1 AND s.project_id=$2 AND w.slug=$3 AND s.deleted_at IS NULL AND s."group"<>'triage' AND s.is_triage=false FOR UPDATE OF s`, input.StateID, input.ProjectID, input.Slug).Scan(&isDefault)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return missingStateFailure(input)
-	}
-	if err != nil {
+	if err = deleteState(ctx, tx, input); err != nil {
 		return err
 	}
-	if isDefault {
-		return &WriteFailure{Status: 400, Body: map[string]string{"error": "Default state cannot be deleted"}}
-	}
-	var occupied bool
-	if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issues WHERE state_id=$1 AND deleted_at IS NULL)`, input.StateID).Scan(&occupied); err != nil {
-		return err
-	}
-	if occupied {
-		return &WriteFailure{Status: 400, Body: map[string]string{"error": "The state is not empty, only empty states can be deleted"}}
-	}
-	var id string
-	err = tx.QueryRow(ctx, `UPDATE states SET deleted_at=clock_timestamp(),updated_at=clock_timestamp(),updated_by_id=$4
- WHERE id=$1 AND project_id=$2 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$3) AND deleted_at IS NULL RETURNING id::text`, input.StateID, input.ProjectID, input.Slug, input.UserID).Scan(&id)
-	if err != nil {
-		return err
-	}
-	if err = tx.Commit(ctx); err != nil {
-		return err
-	}
-	return repository.effects.SoftDelete(ctx, "db", "state", id)
+	return tx.Commit(ctx)
 }
 
 func (repository *WriteRepository) MarkDefault(ctx context.Context, input StateWriteInput) error {
@@ -379,7 +331,7 @@ func (repository *WriteRepository) MarkDefault(ctx context.Context, input StateW
 	if !found {
 		return &WriteFailure{Status: 404, Body: map[string]string{"detail": "No State matches the given query."}}
 	}
-	if _, err = tx.Exec(ctx, `UPDATE states SET "default"=false WHERE project_id=$1 AND deleted_at IS NULL AND "group"<>'triage'`, input.ProjectID); err != nil {
+	if _, err = tx.Exec(ctx, `UPDATE states SET "default"=false WHERE project_id=$1 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$2) AND deleted_at IS NULL AND "group"<>'triage'`, input.ProjectID, input.Slug); err != nil {
 		return err
 	}
 	if _, err = tx.Exec(ctx, `UPDATE states SET "default"=true WHERE id=$1 AND project_id=$2 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$3) AND deleted_at IS NULL`, input.StateID, input.ProjectID, input.Slug); err != nil {

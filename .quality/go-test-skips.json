@@ -117,12 +117,6 @@
     },
     {
       "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
-      "test": "TestPostgresIssueActivityWorkflowIsIdempotentPerEvent",
-      "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
-      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"
-    },
-    {
-      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
       "test": "TestPostgresIssueAutomationArchivesAndClosesWithRecoverableEffects",
       "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
       "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"

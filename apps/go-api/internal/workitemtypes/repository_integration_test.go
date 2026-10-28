@@ -9,8 +9,6 @@ import (
 	"time"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/bootstrap"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/jackc/pgx/v5"
 )
@@ -27,12 +25,18 @@ func newTypeFixture(t *testing.T) typeFixture {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	t.Cleanup(cancel)
-	pair, err := postgresfixture.StartUncloned(ctx, bootstrap.MigrateSchema)
+	database, err := typeSchema.CloneDatabase(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = pair.Close() })
-	db, err := pgx.Connect(ctx, pair.SeedURL())
+	t.Cleanup(func() {
+		cleanup, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		if closeErr := database.Close(cleanup); closeErr != nil {
+			t.Errorf("close test database: %v", closeErr)
+		}
+	})
+	db, err := pgx.Connect(ctx, database.URL)
 	if err != nil {
 		t.Fatal(err)
 	}

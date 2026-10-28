@@ -9,12 +9,20 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/activityreads"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	googleuuid "github.com/google/uuid"
 )
 
 type collaborationReader interface {
+	ReadIntake(context.Context, workitems.Request) (workitems.Result, error)
+	MutateIntake(context.Context, projectmutations.Command) (projectmutations.Result, error)
+	MutatePropertyValue(context.Context, projectmutations.Command) (projectmutations.Result, error)
+	ReadWorkitem(context.Context, workitems.Request) (workitems.Result, error)
+	MutateWorkitem(context.Context, projectmutations.Command) (projectmutations.Result, error)
+	MutateComment(context.Context, projectmutations.Command) (projectmutations.Result, error)
+	MutateLink(context.Context, projectmutations.Command) (projectmutations.Result, error)
 	ExecuteCollaboration(context.Context, workitems.Request, io.Reader, string) (workitems.Result, error)
 }
 type activityReader interface {
@@ -52,6 +60,7 @@ type itemReadSelection struct {
 	action, project, issue, target string
 	workspace, cursor              *string
 	perPage                        *int
+	includeRevision                bool
 }
 
 func selectItemRead(q itemReadSelection) (djangoapi.ProjectReadRequest, *string, error) {
@@ -66,6 +75,9 @@ func selectItemRead(q itemReadSelection) (djangoapi.ProjectReadRequest, *string,
 	if q.action == "retrieve" {
 		request.Operation = "detail"
 		request.Params["pk"] = q.target
+		if q.includeRevision {
+			request.Params["include_revision"], request.Present["include_revision"] = "true", true
+		}
 		if _, err := uuid.Parse(q.target); err != nil {
 			valid = false
 		}
@@ -98,4 +110,11 @@ func selectItemReadUnion[Input itemReadRequest](input *Input, detail func(Input)
 		}
 	}
 	return selectItemRead(selection)
+}
+
+func retrieveItemSelection(action, project, issue, target string, workspace *string, revision *bool) itemReadSelection {
+	if action != "retrieve" {
+		return itemReadSelection{}
+	}
+	return itemReadSelection{action: action, project: project, issue: issue, target: target, workspace: workspace, includeRevision: revision != nil && *revision}
 }

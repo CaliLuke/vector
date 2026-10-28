@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
-import { execFileSync } from "node:child_process";
+import { coverageInventory } from "./go-coverage-inventory.mjs";
 
 const [mode, profilePath, baselinePath, moduleRoot] = process.argv.slice(2);
 if (!["check", "write"].includes(mode) || !profilePath || !baselinePath || !moduleRoot) {
@@ -9,51 +9,21 @@ if (!["check", "write"].includes(mode) || !profilePath || !baselinePath || !modu
   process.exit(2);
 }
 
-const packages = execFileSync("go", ["list", "-json", "-tags=integration", "./..."], {
-  cwd: moduleRoot,
-  encoding: "utf8",
-  maxBuffer: 64 * 1024 * 1024,
-})
-  .split(/\n(?=\{)/)
-  .filter(Boolean)
-  .map((chunk) => JSON.parse(chunk));
-const filePackages = new Map();
-const expectedPackages = new Set();
-for (const pkg of packages) {
-  let hasOwnedProductionFiles = false;
-  for (const filename of [...(pkg.GoFiles ?? []), ...(pkg.CgoFiles ?? [])]) {
-    const fullPath = path.join(pkg.Dir, filename);
-    const key = `${pkg.ImportPath}/${filename}`;
-    if (fullPath.includes(`${path.sep}gen${path.sep}`)) {
-      filePackages.set(key, null);
-      continue;
-    }
-    const header = fs.readFileSync(fullPath, "utf8").split(/\r?\n/).slice(0, 10).join("\n");
-    if (/^\/\/ Code generated .* DO NOT EDIT\.$/m.test(header)) {
-      filePackages.set(key, null);
-      continue;
-    }
-    hasOwnedProductionFiles = true;
-    filePackages.set(key, pkg.ImportPath);
-  }
-  if (hasOwnedProductionFiles && (pkg.TestGoFiles?.length ?? 0) + (pkg.XTestGoFiles?.length ?? 0) > 0) {
-    expectedPackages.add(pkg.ImportPath);
-  }
-}
+const { filePackages, expectedPackages } = coverageInventory(moduleRoot);
 const profileLines = fs.readFileSync(profilePath, "utf8").split(/\r?\n/);
 if (!/^mode: (set|count|atomic)$/.test(profileLines[0] ?? "")) {
   console.error(`coverage profile has an invalid mode header: ${profileLines[0] ?? "(empty)"}`);
   process.exit(2);
 }
-const totals = new Map();
+const blocks = new Map();
 for (const line of profileLines.slice(1)) {
   if (!line) continue;
-  const match = line.match(/^(.+):\d+\.\d+,\d+\.\d+ (\d+) (\d+)$/);
+  const match = line.match(/^((.+):\d+\.\d+,\d+\.\d+) (\d+) (\d+)$/);
   if (!match) {
     console.error(`unrecognized coverage record: ${line}`);
     process.exit(2);
   }
-  const [, filename, statementsText, countText] = match;
+  const [, location, filename, statementsText, countText] = match;
   if (path.posix.isAbsolute(filename) || filename.split("/").includes("..")) {
     console.error(`coverage record has an unsafe filename: ${line}`);
     process.exit(2);
@@ -64,15 +34,26 @@ for (const line of profileLines.slice(1)) {
     console.error(`coverage profile references an unknown source file: ${filename}`);
     process.exit(2);
   }
-  const value = totals.get(importPath) ?? { statements: 0, covered: 0 };
   const statements = Number(statementsText);
   const count = Number(countText);
   if (!Number.isSafeInteger(statements) || statements < 0 || !Number.isSafeInteger(count) || count < 0) {
     console.error(`invalid coverage counts: ${line}`);
     process.exit(2);
   }
+  const previous = blocks.get(location);
+  if (previous && previous.statements !== statements) {
+    console.error(`coverage records disagree on statement count: ${location}`);
+    process.exit(2);
+  }
+  // -coverpkg emits the same block from each test binary that imports it.
+  // Count its statements once and retain hits from any of those binaries.
+  blocks.set(location, { importPath, statements, covered: count > 0 || previous?.covered === true });
+}
+const totals = new Map();
+for (const { importPath, statements, covered } of blocks.values()) {
+  const value = totals.get(importPath) ?? { statements: 0, covered: 0 };
   value.statements += statements;
-  if (count > 0) value.covered += statements;
+  if (covered) value.covered += statements;
   totals.set(importPath, value);
 }
 if (totals.size === 0) {

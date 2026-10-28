@@ -34,11 +34,11 @@ func submittedFormerValues(ctx context.Context, tx pgx.Tx, in ItemValueInput, pr
 			fields[def.ID] = "This former property is inactive or read-only."
 			continue
 		}
-		if !sourceVisible && (def.Kind == property.Member || def.Kind == property.Release) && nonemptyPropertyValue(value) {
+		if !sourceVisible && (def.Kind == property.Member || def.Kind == property.Release || def.Kind == property.Issue) && nonemptyPropertyValue(value) {
 			fields[def.ID] = "This selection cannot be edited without access to its former project."
 			continue
 		}
-		allowed, err := itemValueReferences(ctx, tx, source, []property.Definition{def})
+		allowed, err := itemValueReferences(ctx, tx, source, []property.Definition{def}, true)
 		if err != nil {
 			return nil, nil, err
 		}

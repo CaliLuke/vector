@@ -79,7 +79,7 @@ func propertyExportValue(field DiscoveryProperty, values map[string]ProjectedVal
 	if current == nil || value.Status == "empty" {
 		return nil
 	}
-	if field.Kind != property.Dropdown && field.Kind != property.Member && field.Kind != property.Release && field.Kind != property.Cascading {
+	if field.Kind != property.Dropdown && field.Kind != property.Member && field.Kind != property.Release && field.Kind != property.Issue && field.Kind != property.Cascading {
 		return current
 	}
 	names := map[string]string{}

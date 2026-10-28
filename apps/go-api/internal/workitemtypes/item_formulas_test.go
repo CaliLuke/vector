@@ -83,3 +83,14 @@ func TestItemFormulaEstimatesUseCatalogValuesAndRejectNonNumericLabels(t *testin
 func formulaProjectionDefinition(id, expression string, result formula.Kind) property.Definition {
 	return property.Definition{ID: id, Name: id, Kind: property.Formula, Configuration: property.Configuration{Active: true, Expression: expression, Result: result}}
 }
+
+func TestItemFormulaPreservesDateTimeInputs(t *testing.T) {
+	definitions := []property.Definition{
+		{ID: "date", Name: "scheduled", Kind: property.Date, Configuration: property.Configuration{Active: true, Format: "Jan 15, 2025"}},
+		{ID: "result", Name: "result", Kind: property.Formula, Configuration: property.Configuration{Active: true, Expression: "{{scheduled}}", Result: formula.Date}},
+	}
+	result := types.EvaluateItemFormulas(definitions, "project", "type", types.ItemFormulaInputs{}, map[string]any{"date": "2026-10-27 14:35:59"}, time.Now())["result"]
+	if result.Status != "value" || result.Value != "2026-10-27T14:35:59Z" {
+		t.Fatalf("date-time formula lost precision: %+v", result)
+	}
+}

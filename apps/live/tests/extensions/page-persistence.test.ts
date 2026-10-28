@@ -5,9 +5,12 @@ import type { TPage } from "@plane/types";
 import { Database } from "@/extensions/database";
 import { TitleSyncExtension } from "@/extensions/title-sync";
 import { TitleUpdateManager } from "@/extensions/title-update/title-update-manager";
+import { forceCloseDocumentAcrossServers } from "@/extensions/force-close-handler";
+import { AppError } from "@/lib/errors";
 import { getPageService } from "@/services/page/handler";
 import { ProjectPageService } from "@/services/page/project-page.service";
 import type { HocusPocusServerContext } from "@/types";
+import { CloseCode, ForceCloseReason } from "@/types/admin-commands";
 
 vi.mock("@/services/page/handler", () => ({
   getPageService: vi.fn(),
@@ -142,6 +145,30 @@ describe("page persistence during document load and title sync", () => {
 
     expect(getPageService).toHaveBeenCalledWith("project_page", context);
     expect(service.updateDescriptionBinary).toHaveBeenCalledOnce();
+  });
+
+  it("disconnects and unloads a replaced document when its pending body save is rejected", async () => {
+    service.updateDescriptionBinary.mockRejectedValueOnce(new AppError("Page replaced", { statusCode: 409 }));
+    const database = new Database();
+    const instance = createServer();
+    const document = new Document(pageId);
+    await expect(
+      database.onStoreDocument({
+        clientsCount: 1,
+        lastContext: context,
+        document,
+        documentName: pageId,
+        instance,
+        lastTransactionOrigin: null,
+      })
+    ).resolves.toBeUndefined();
+    expect(service.updateDescriptionBinary).toHaveBeenCalledOnce();
+    expect(forceCloseDocumentAcrossServers).toHaveBeenCalledExactlyOnceWith(
+      instance,
+      pageId,
+      ForceCloseReason.CRITICAL_ERROR,
+      CloseCode.FORCE_CLOSE
+    );
   });
 
   it("ignores an observed title equal to the loaded Yjs title", async () => {

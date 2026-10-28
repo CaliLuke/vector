@@ -83,7 +83,8 @@ const storeDocument = async ({
     const isContentTooLarge = appError.statusCode === 413;
 
     // Determine if we should disconnect and unload
-    const shouldDisconnect = isContentTooLarge;
+    const isReplaced = appError.statusCode === 409;
+    const shouldDisconnect = isContentTooLarge || isReplaced;
 
     // Determine error message and code
     let errorMessage: string;
@@ -92,6 +93,8 @@ const storeDocument = async ({
     if (isContentTooLarge) {
       errorMessage = "Document is too large to save. Please reduce the content size.";
       errorCode = "content_too_large";
+    } else if (isReplaced) {
+      errorMessage = "The page was replaced. Reload it before editing.";
     } else {
       errorMessage = "Unable to save the page. Please try again.";
     }

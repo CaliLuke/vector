@@ -48,6 +48,7 @@ export type TUserDetails = {
 
 export type TRealtimeConfig = {
   url: string;
+  documentName?: string;
 };
 
 export type IMarking = {

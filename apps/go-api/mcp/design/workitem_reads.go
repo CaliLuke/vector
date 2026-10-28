@@ -15,6 +15,7 @@ func nullableStrings(fields ...string) {
 }
 
 var workitemCommentRecord = Type("WorkitemCommentRecord", func() {
+	Attribute("revision", String)
 	nullableStrings("id", "created_at", "updated_at", "deleted_at", "comment_stripped", "comment_html", "external_source", "external_id", "edited_at", "created_by", "updated_by", "project", "workspace", "issue", "actor", "parent", "description")
 	Attribute("is_member", Boolean, func() { Nullable() })
 	Required("is_member")
@@ -27,6 +28,7 @@ var workitemCommentRecord = Type("WorkitemCommentRecord", func() {
 	Meta("openapi:additionalProperties", "false")
 })
 var workitemLinkRecord = Type("WorkitemLinkRecord", func() {
+	Attribute("revision", String)
 	Attribute("url", String)
 	Required("url")
 	nullableStrings("id", "created_at", "updated_at", "deleted_at", "title", "created_by", "updated_by", "project", "workspace", "issue")
@@ -104,6 +106,4 @@ func toolkitPageFields() {
 	Required("results", "count", "total_count", "next_cursor", "prev_cursor", "next_page_results", "prev_page_results")
 }
 
-var workitemComment = workitemReadTool("workitem_comment", "Work item comments", "WorkitemComment", "comment_id", workitemCommentRecord, false)
-var workitemLink = workitemReadTool("workitem_link", "Work item links", "WorkitemLink", "link_id", workitemLinkRecord, false)
 var workitemActivity = workitemReadTool("workitem_activity", "Work item activity", "WorkitemActivity", "activity_id", workitemActivityRecord, true)

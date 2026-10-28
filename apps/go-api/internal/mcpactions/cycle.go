@@ -11,7 +11,12 @@ import (
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 )
 
-func (s *Service) Cycle(ctx context.Context, input *api.CycleRequest) (*api.CycleResult, error) {
+func (s *Service) cycleRead(ctx context.Context, input *api.CycleRequest) (*api.CycleResult, error) {
+	if input != nil {
+		if items, ok := input.AsCycleListWorkitems(); ok {
+			return planningWorkitems(ctx, s, "cycle", items, api.NewCycleResultWorkitemPQLFailure, api.NewCycleResultWorkitemPage)
+		}
+	}
 	return readProjectResource(ctx, input, selectCycleAction, s.cycleReads, cycles.ErrForbidden, cycles.ErrNotFound, projectCycleResult)
 }
 
@@ -46,6 +51,9 @@ func selectCycleAction(input *api.CycleRequest) (cycles.APIV1Request, *string, e
 		} else if detail, ok := input.AsCycleRetrieve(); ok && detail != nil && detail.Action == "retrieve" {
 			request.Operation = "detail"
 			request.Params["project_id"], request.Params["pk"], workspace = detail.ProjectID, detail.CycleID, detail.WorkspaceSlug
+			if detail.IncludeRevision != nil && *detail.IncludeRevision {
+				request.Params["include_revision"], request.Present["include_revision"] = "true", true
+			}
 			_, err := uuid.Parse(detail.CycleID)
 			valid = err == nil
 		}
@@ -94,6 +102,9 @@ func projectCycleRecord(row map[string]any, lite bool) (*api.CycleRecord, error)
 			}
 			wire[field] = value
 		}
+	}
+	if revision, ok := row["revision"]; ok {
+		wire["revision"] = revision
 	}
 	body, err := json.Marshal(wire)
 	if err != nil {

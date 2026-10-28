@@ -1,3 +1,5 @@
+import type { TWorkItemPropertyKind } from "@plane/types";
+
 export const propertyKinds = [
   "Text",
   "Number",
@@ -11,7 +13,7 @@ export const propertyKinds = [
   "Formula",
   "Cascading",
 ] as const;
-export type PropertyKind = (typeof propertyKinds)[number];
+export type PropertyKind = TWorkItemPropertyKind;
 export type PreviewOption = {
   icon?: string;
   id: string;

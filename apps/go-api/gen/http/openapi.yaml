@@ -20826,110 +20826,106 @@ paths:
                                     $ref: '#/components/schemas/PageRead'
                                 example:
                                     - access: 0
-                                      archived_at: "1997-06-05"
-                                      color: Non a.
-                                      created_at: "2007-08-23T11:53:25Z"
-                                      created_by: f9bcf4be-65d0-490a-b8bc-96e2414b6a45
+                                      archived_at: "1997-10-31"
+                                      collaboration_revision: 8055392522769610304
+                                      color: Adipisci quidem delectus omnis qui aut.
+                                      created_at: "2006-07-13T15:01:02Z"
+                                      created_by: 8bd429f6-2111-408e-9d6d-b1a325dd89ea
                                       id: 94bedd4d-4ddf-4fc8-9550-61028c7ddba7
                                       is_favorite: true
-                                      is_locked: false
+                                      is_locked: true
                                       label_ids:
-                                        - 54e9e52b-8a82-46e4-af3f-2248464fd909
-                                        - 1a1155f2-0ffc-4774-afbe-ed693ed15acd
-                                        - 225eee32-7c72-4f3c-82cb-96de5b813e47
-                                        - 426f54dc-bc77-4b73-b2dc-8d08ce4cdd6a
-                                      logo_props: Aperiam doloribus fuga numquam aut dolor et.
+                                        - 5225e43d-6b52-4cbd-b899-c4dd513981cb
+                                        - b52ffd1f-bf9b-4aac-a2f7-556b942c49cd
+                                      logo_props: Dolorum consectetur rerum sed.
                                       name: Ea id velit in dolor quae illo.
-                                      owned_by: 09a827c9-ad5b-4235-a626-1dbcc9eefe6f
-                                      parent: 0d8e208f-230c-4ebc-abf1-df8d384ef850
+                                      owned_by: 09a827c9-add4-4b8e-88df-471a5bc28b83
+                                      parent: 78b698f1-aeb7-4760-a156-4c8fafcfac00
                                       project_ids:
-                                        - b380fbc4-7df7-468d-a2b2-bdda584bd9c4
-                                        - 0c0674ac-144b-45a1-ae99-11a73f767f4e
-                                        - 787a3fe2-e143-4c1b-bee7-933d04f81478
-                                        - 2275bf38-03aa-4ce6-85e3-374f0226621a
-                                      updated_at: "2005-04-23T21:04:04Z"
-                                      updated_by: a72c2b02-85d8-49b2-8ed6-d12efc36c696
-                                      view_props: Temporibus neque distinctio modi.
-                                      workspace: f241d36f-7a02-479a-97a7-51394d729af1
+                                        - 8f8c1837-a895-4f20-b198-930594d4cb63
+                                        - 6f795b41-8416-43e9-ad1d-48ec5481405c
+                                        - b139de2b-c1cf-410c-9499-47b7c8d44cb0
+                                        - b697ee6b-4889-4767-83bd-88f0ca44bd23
+                                      updated_at: "1975-08-27T12:34:58Z"
+                                      updated_by: 3ad886ff-904b-4424-a082-e9e91b3a7993
+                                      view_props: Numquam aut dolor et et est maiores.
+                                      workspace: 8ceeb228-90fc-41c8-ab5b-d218182e8188
                                     - access: 0
-                                      archived_at: "1997-06-05"
-                                      color: Non a.
-                                      created_at: "2007-08-23T11:53:25Z"
-                                      created_by: f9bcf4be-65d0-490a-b8bc-96e2414b6a45
+                                      archived_at: "1997-10-31"
+                                      collaboration_revision: 8055392522769610304
+                                      color: Adipisci quidem delectus omnis qui aut.
+                                      created_at: "2006-07-13T15:01:02Z"
+                                      created_by: 8bd429f6-2111-408e-9d6d-b1a325dd89ea
                                       id: 94bedd4d-4ddf-4fc8-9550-61028c7ddba7
                                       is_favorite: true
-                                      is_locked: false
+                                      is_locked: true
                                       label_ids:
-                                        - 54e9e52b-8a82-46e4-af3f-2248464fd909
-                                        - 1a1155f2-0ffc-4774-afbe-ed693ed15acd
-                                        - 225eee32-7c72-4f3c-82cb-96de5b813e47
-                                        - 426f54dc-bc77-4b73-b2dc-8d08ce4cdd6a
-                                      logo_props: Aperiam doloribus fuga numquam aut dolor et.
+                                        - 5225e43d-6b52-4cbd-b899-c4dd513981cb
+                                        - b52ffd1f-bf9b-4aac-a2f7-556b942c49cd
+                                      logo_props: Dolorum consectetur rerum sed.
                                       name: Ea id velit in dolor quae illo.
-                                      owned_by: 09a827c9-ad5b-4235-a626-1dbcc9eefe6f
-                                      parent: 0d8e208f-230c-4ebc-abf1-df8d384ef850
+                                      owned_by: 09a827c9-add4-4b8e-88df-471a5bc28b83
+                                      parent: 78b698f1-aeb7-4760-a156-4c8fafcfac00
                                       project_ids:
-                                        - b380fbc4-7df7-468d-a2b2-bdda584bd9c4
-                                        - 0c0674ac-144b-45a1-ae99-11a73f767f4e
-                                        - 787a3fe2-e143-4c1b-bee7-933d04f81478
-                                        - 2275bf38-03aa-4ce6-85e3-374f0226621a
-                                      updated_at: "2005-04-23T21:04:04Z"
-                                      updated_by: a72c2b02-85d8-49b2-8ed6-d12efc36c696
-                                      view_props: Temporibus neque distinctio modi.
-                                      workspace: f241d36f-7a02-479a-97a7-51394d729af1
+                                        - 8f8c1837-a895-4f20-b198-930594d4cb63
+                                        - 6f795b41-8416-43e9-ad1d-48ec5481405c
+                                        - b139de2b-c1cf-410c-9499-47b7c8d44cb0
+                                        - b697ee6b-4889-4767-83bd-88f0ca44bd23
+                                      updated_at: "1975-08-27T12:34:58Z"
+                                      updated_by: 3ad886ff-904b-4424-a082-e9e91b3a7993
+                                      view_props: Numquam aut dolor et et est maiores.
+                                      workspace: 8ceeb228-90fc-41c8-ab5b-d218182e8188
                             example:
                                 - access: 0
-                                  archived_at: "1997-06-05"
-                                  color: Non a.
-                                  created_at: "2007-08-23T11:53:25Z"
-                                  created_by: f9bcf4be-65d0-490a-b8bc-96e2414b6a45
+                                  archived_at: "1997-10-31"
+                                  collaboration_revision: 8055392522769610304
+                                  color: Adipisci quidem delectus omnis qui aut.
+                                  created_at: "2006-07-13T15:01:02Z"
+                                  created_by: 8bd429f6-2111-408e-9d6d-b1a325dd89ea
                                   id: 94bedd4d-4ddf-4fc8-9550-61028c7ddba7
                                   is_favorite: true
-                                  is_locked: false
+                                  is_locked: true
                                   label_ids:
-                                    - 54e9e52b-8a82-46e4-af3f-2248464fd909
-                                    - 1a1155f2-0ffc-4774-afbe-ed693ed15acd
-                                    - 225eee32-7c72-4f3c-82cb-96de5b813e47
-                                    - 426f54dc-bc77-4b73-b2dc-8d08ce4cdd6a
-                                  logo_props: Aperiam doloribus fuga numquam aut dolor et.
+                                    - 5225e43d-6b52-4cbd-b899-c4dd513981cb
+                                    - b52ffd1f-bf9b-4aac-a2f7-556b942c49cd
+                                  logo_props: Dolorum consectetur rerum sed.
                                   name: Ea id velit in dolor quae illo.
-                                  owned_by: 09a827c9-ad5b-4235-a626-1dbcc9eefe6f
-                                  parent: 0d8e208f-230c-4ebc-abf1-df8d384ef850
+                                  owned_by: 09a827c9-add4-4b8e-88df-471a5bc28b83
+                                  parent: 78b698f1-aeb7-4760-a156-4c8fafcfac00
                                   project_ids:
-                                    - b380fbc4-7df7-468d-a2b2-bdda584bd9c4
-                                    - 0c0674ac-144b-45a1-ae99-11a73f767f4e
-                                    - 787a3fe2-e143-4c1b-bee7-933d04f81478
-                                    - 2275bf38-03aa-4ce6-85e3-374f0226621a
-                                  updated_at: "2005-04-23T21:04:04Z"
-                                  updated_by: a72c2b02-85d8-49b2-8ed6-d12efc36c696
-                                  view_props: Temporibus neque distinctio modi.
-                                  workspace: f241d36f-7a02-479a-97a7-51394d729af1
+                                    - 8f8c1837-a895-4f20-b198-930594d4cb63
+                                    - 6f795b41-8416-43e9-ad1d-48ec5481405c
+                                    - b139de2b-c1cf-410c-9499-47b7c8d44cb0
+                                    - b697ee6b-4889-4767-83bd-88f0ca44bd23
+                                  updated_at: "1975-08-27T12:34:58Z"
+                                  updated_by: 3ad886ff-904b-4424-a082-e9e91b3a7993
+                                  view_props: Numquam aut dolor et et est maiores.
+                                  workspace: 8ceeb228-90fc-41c8-ab5b-d218182e8188
                                 - access: 0
-                                  archived_at: "1997-06-05"
-                                  color: Non a.
-                                  created_at: "2007-08-23T11:53:25Z"
-                                  created_by: f9bcf4be-65d0-490a-b8bc-96e2414b6a45
+                                  archived_at: "1997-10-31"
+                                  collaboration_revision: 8055392522769610304
+                                  color: Adipisci quidem delectus omnis qui aut.
+                                  created_at: "2006-07-13T15:01:02Z"
+                                  created_by: 8bd429f6-2111-408e-9d6d-b1a325dd89ea
                                   id: 94bedd4d-4ddf-4fc8-9550-61028c7ddba7
                                   is_favorite: true
-                                  is_locked: false
+                                  is_locked: true
                                   label_ids:
-                                    - 54e9e52b-8a82-46e4-af3f-2248464fd909
-                                    - 1a1155f2-0ffc-4774-afbe-ed693ed15acd
-                                    - 225eee32-7c72-4f3c-82cb-96de5b813e47
-                                    - 426f54dc-bc77-4b73-b2dc-8d08ce4cdd6a
-                                  logo_props: Aperiam doloribus fuga numquam aut dolor et.
+                                    - 5225e43d-6b52-4cbd-b899-c4dd513981cb
+                                    - b52ffd1f-bf9b-4aac-a2f7-556b942c49cd
+                                  logo_props: Dolorum consectetur rerum sed.
                                   name: Ea id velit in dolor quae illo.
-                                  owned_by: 09a827c9-ad5b-4235-a626-1dbcc9eefe6f
-                                  parent: 0d8e208f-230c-4ebc-abf1-df8d384ef850
+                                  owned_by: 09a827c9-add4-4b8e-88df-471a5bc28b83
+                                  parent: 78b698f1-aeb7-4760-a156-4c8fafcfac00
                                   project_ids:
-                                    - b380fbc4-7df7-468d-a2b2-bdda584bd9c4
-                                    - 0c0674ac-144b-45a1-ae99-11a73f767f4e
-                                    - 787a3fe2-e143-4c1b-bee7-933d04f81478
-                                    - 2275bf38-03aa-4ce6-85e3-374f0226621a
-                                  updated_at: "2005-04-23T21:04:04Z"
-                                  updated_by: a72c2b02-85d8-49b2-8ed6-d12efc36c696
-                                  view_props: Temporibus neque distinctio modi.
-                                  workspace: f241d36f-7a02-479a-97a7-51394d729af1
+                                    - 8f8c1837-a895-4f20-b198-930594d4cb63
+                                    - 6f795b41-8416-43e9-ad1d-48ec5481405c
+                                    - b139de2b-c1cf-410c-9499-47b7c8d44cb0
+                                    - b697ee6b-4889-4767-83bd-88f0ca44bd23
+                                  updated_at: "1975-08-27T12:34:58Z"
+                                  updated_by: 3ad886ff-904b-4424-a082-e9e91b3a7993
+                                  view_props: Numquam aut dolor et et est maiores.
+                                  workspace: 8ceeb228-90fc-41c8-ab5b-d218182e8188
                 "400":
                     description: 'invalid_search: Bad Request response.'
                     content:
@@ -21147,6 +21143,7 @@ paths:
                                 example:
                                     access: 9014206382544252329
                                     archived_at: "2015-12-31"
+                                    collaboration_revision: 4983041885065860460
                                     color: Accusamus vitae ullam non dolorem explicabo recusandae.
                                     created_at: "1983-07-15T09:13:47Z"
                                     created_by: 1605c47b-a1d1-4e7a-8000-1696c09ff788
@@ -21172,6 +21169,7 @@ paths:
                             example:
                                 access: 9014206382544252329
                                 archived_at: "2015-12-31"
+                                collaboration_revision: 4983041885065860460
                                 color: Accusamus vitae ullam non dolorem explicabo recusandae.
                                 created_at: "1983-07-15T09:13:47Z"
                                 created_by: 1605c47b-a1d1-4e7a-8000-1696c09ff788
@@ -21231,6 +21229,13 @@ paths:
                             schema:
                                 example: Cum et et excepturi sint in.
                             example: Cum et et excepturi sint in.
+                "409":
+                    description: 'status_409: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                example: Sed voluptas.
+                            example: Sed voluptas.
                 "415":
                     description: 'status_415: Unsupported Media Type response.'
                     content:
@@ -21317,6 +21322,13 @@ paths:
                             schema:
                                 example: Perspiciatis ea nihil et.
                             example: Perspiciatis ea nihil et.
+                "409":
+                    description: 'status_409: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                example: Ut est corrupti sit officiis autem earum.
+                            example: Ut est corrupti sit officiis autem earum.
                 "415":
                     description: 'status_415: Unsupported Media Type response.'
                     content:
@@ -21392,12 +21404,13 @@ paths:
                                 example:
                                     access: 0
                                     archived_at: "1999-11-27"
-                                    color: Voluptas ipsa facilis necessitatibus minus.
+                                    collaboration_revision: 7221974473407779438
+                                    color: Ipsa facilis.
                                     created_at: "1981-09-09T03:33:35Z"
                                     created_by: c459ca0f-7a4f-4e72-a0d6-12bdfe3d8677
                                     description_html: Ex et.
                                     id: 5cc925b2-8151-4af9-aa57-85b0e1efe1f9
-                                    is_favorite: false
+                                    is_favorite: true
                                     is_locked: false
                                     issue_ids:
                                         - 39497451-0cf3-4fca-b415-3e7d4c285209
@@ -21408,8 +21421,8 @@ paths:
                                         - 1f2e4eb9-d108-4859-bd7e-2530dc37d5bb
                                     logo_props: Ipsam placeat praesentium sequi.
                                     name: Placeat amet ducimus ipsum quo.
-                                    owned_by: 30f211c1-07a1-49c4-9cb0-9ee6fd6c3dfc
-                                    parent: 63d89cc3-c951-4e33-8969-c264ea3c36bc
+                                    owned_by: 309cb09e-e6fd-4c3d-bc63-d89cc3c951b0
+                                    parent: ec179c34-496a-45ec-a54a-19cc0b3e3349
                                     project_ids:
                                         - 52cfbdef-d700-450b-8153-ce0f6d339528
                                         - 3b3fa6ca-9f2a-48b9-9ccb-0dcafb4a9f20
@@ -21423,12 +21436,13 @@ paths:
                             example:
                                 access: 0
                                 archived_at: "1999-11-27"
-                                color: Voluptas ipsa facilis necessitatibus minus.
+                                collaboration_revision: 7221974473407779438
+                                color: Ipsa facilis.
                                 created_at: "1981-09-09T03:33:35Z"
                                 created_by: c459ca0f-7a4f-4e72-a0d6-12bdfe3d8677
                                 description_html: Ex et.
                                 id: 5cc925b2-8151-4af9-aa57-85b0e1efe1f9
-                                is_favorite: false
+                                is_favorite: true
                                 is_locked: false
                                 issue_ids:
                                     - 39497451-0cf3-4fca-b415-3e7d4c285209
@@ -21439,8 +21453,8 @@ paths:
                                     - 1f2e4eb9-d108-4859-bd7e-2530dc37d5bb
                                 logo_props: Ipsam placeat praesentium sequi.
                                 name: Placeat amet ducimus ipsum quo.
-                                owned_by: 30f211c1-07a1-49c4-9cb0-9ee6fd6c3dfc
-                                parent: 63d89cc3-c951-4e33-8969-c264ea3c36bc
+                                owned_by: 309cb09e-e6fd-4c3d-bc63-d89cc3c951b0
+                                parent: ec179c34-496a-45ec-a54a-19cc0b3e3349
                                 project_ids:
                                     - 52cfbdef-d700-450b-8153-ce0f6d339528
                                     - 3b3fa6ca-9f2a-48b9-9ccb-0dcafb4a9f20
@@ -21703,6 +21717,7 @@ paths:
                                 example:
                                     access: 7901624920879865035
                                     archived_at: "2004-09-05"
+                                    collaboration_revision: 723698747392586928
                                     color: Eaque et eaque eveniet.
                                     created_at: "1974-04-09T03:13:03Z"
                                     created_by: ad8dbdb5-83b9-4edd-96c8-0db1172b7053
@@ -21721,6 +21736,7 @@ paths:
                             example:
                                 access: 7901624920879865035
                                 archived_at: "2004-09-05"
+                                collaboration_revision: 723698747392586928
                                 color: Eaque et eaque eveniet.
                                 created_at: "1974-04-09T03:13:03Z"
                                 created_by: ad8dbdb5-83b9-4edd-96c8-0db1172b7053
@@ -21773,6 +21789,13 @@ paths:
                             schema:
                                 example: Assumenda excepturi sequi autem animi.
                             example: Assumenda excepturi sequi autem animi.
+                "409":
+                    description: 'status_409: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                example: Ullam sequi et.
+                            example: Ullam sequi et.
                 "415":
                     description: 'status_415: Unsupported Media Type response.'
                     content:
@@ -21992,6 +22015,13 @@ paths:
                             schema:
                                 example: Sit dolorum suscipit tempore necessitatibus facere quod.
                             example: Sit dolorum suscipit tempore necessitatibus facere quod.
+                "409":
+                    description: 'status_409: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                example: Dolore ut dolorum.
+                            example: Dolore ut dolorum.
                 "415":
                     description: 'status_415: Unsupported Media Type response.'
                     content:
@@ -22078,6 +22108,13 @@ paths:
                             schema:
                                 example: Expedita autem cupiditate ab.
                             example: Expedita autem cupiditate ab.
+                "409":
+                    description: 'status_409: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                example: In et voluptatem.
+                            example: In et voluptatem.
                 "415":
                     description: 'status_415: Unsupported Media Type response.'
                     content:
@@ -22276,6 +22313,13 @@ paths:
                             schema:
                                 example: Quae laborum.
                             example: Quae laborum.
+                "409":
+                    description: 'status_409: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                example: Aut quisquam in ab.
+                            example: Aut quisquam in ab.
                 "415":
                     description: 'status_415: Unsupported Media Type response.'
                     content:
@@ -22693,6 +22737,13 @@ paths:
                             schema:
                                 example: Aut provident facere rerum.
                             example: Aut provident facere rerum.
+                "409":
+                    description: 'status_409: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                example: Quia officiis.
+                            example: Quia officiis.
                 "415":
                     description: 'status_415: Unsupported Media Type response.'
                     content:
@@ -22880,9 +22931,10 @@ paths:
                         application/json:
                             schema:
                                 example:
-                                    access: 6957682508533790022
+                                    access: 1652840389731175099
                                     archived_at: "1983-07-19"
-                                    color: Id dolores provident culpa.
+                                    collaboration_revision: 2921516892210827748
+                                    color: Provident culpa.
                                     created_at: "2008-11-06T22:17:06Z"
                                     created_by: e605c0e2-22f8-441b-9ee3-af822a2347d0
                                     description_html: Vel placeat labore vel corporis.
@@ -22890,8 +22942,8 @@ paths:
                                     is_locked: true
                                     logo_props: Enim voluptas ut atque eum est sunt.
                                     name: Provident in et et vel occaecati.
-                                    owned_by: 85e40a2a-7f18-40bb-82c5-0824135bb36f
-                                    parent: 976acb61-6f6f-403d-b222-58bb5d8c5784
+                                    owned_by: 85e40a2a-46f5-4acd-a0a7-8e9b86e58e90
+                                    parent: 89c0cb61-6f6f-403d-b222-58bb5d8c5784
                                     project_ids:
                                         - 53a4ed0c-d58c-42a0-a007-3ded34727f18
                                         - e320dd11-f883-48ee-8816-8e5a8598af32
@@ -22903,9 +22955,10 @@ paths:
                                     workspace: 90bec53b-c5ed-49f5-bd50-91788a40edb5
                                 $ref: '#/components/schemas/PageLifecycleDuplicate'
                             example:
-                                access: 6957682508533790022
+                                access: 1652840389731175099
                                 archived_at: "1983-07-19"
-                                color: Id dolores provident culpa.
+                                collaboration_revision: 2921516892210827748
+                                color: Provident culpa.
                                 created_at: "2008-11-06T22:17:06Z"
                                 created_by: e605c0e2-22f8-441b-9ee3-af822a2347d0
                                 description_html: Vel placeat labore vel corporis.
@@ -22913,8 +22966,8 @@ paths:
                                 is_locked: true
                                 logo_props: Enim voluptas ut atque eum est sunt.
                                 name: Provident in et et vel occaecati.
-                                owned_by: 85e40a2a-7f18-40bb-82c5-0824135bb36f
-                                parent: 976acb61-6f6f-403d-b222-58bb5d8c5784
+                                owned_by: 85e40a2a-46f5-4acd-a0a7-8e9b86e58e90
+                                parent: 89c0cb61-6f6f-403d-b222-58bb5d8c5784
                                 project_ids:
                                     - 53a4ed0c-d58c-42a0-a007-3ded34727f18
                                     - e320dd11-f883-48ee-8816-8e5a8598af32
@@ -22962,6 +23015,13 @@ paths:
                             schema:
                                 example: Quisquam aliquam qui occaecati et id nam.
                             example: Quisquam aliquam qui occaecati et id nam.
+                "409":
+                    description: 'status_409: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                example: Commodi delectus et quisquam in.
+                            example: Commodi delectus et quisquam in.
                 "415":
                     description: 'status_415: Unsupported Media Type response.'
                     content:
@@ -23048,6 +23108,13 @@ paths:
                             schema:
                                 example: Voluptates beatae iure.
                             example: Voluptates beatae iure.
+                "409":
+                    description: 'status_409: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                example: Vitae ipsa nemo explicabo.
+                            example: Vitae ipsa nemo explicabo.
                 "415":
                     description: 'status_415: Unsupported Media Type response.'
                     content:
@@ -23234,6 +23301,13 @@ paths:
                             schema:
                                 example: Fuga consequatur.
                             example: Fuga consequatur.
+                "409":
+                    description: 'status_409: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                example: Exercitationem similique.
+                            example: Exercitationem similique.
                 "415":
                     description: 'status_415: Unsupported Media Type response.'
                     content:
@@ -36968,6 +37042,10 @@ components:
                         - type: string
                           format: date
                         - type: "null"
+                collaboration_revision:
+                    type: integer
+                    example: 1538523477096759683
+                    format: int64
                 color:
                     type: string
                     example: Molestiae ut nesciunt maiores et.
@@ -37058,6 +37136,7 @@ components:
             example:
                 access: 1
                 archived_at: "2010-05-16"
+                collaboration_revision: 7298746957323728104
                 color: Doloribus dignissimos.
                 created_at: "2007-02-24T10:55:32Z"
                 created_by: beb4d079-efea-4ff3-bc01-a97e7329c819
@@ -37129,6 +37208,10 @@ components:
                         - type: string
                           format: date
                         - type: "null"
+                collaboration_revision:
+                    type: integer
+                    example: 8519200726275384650
+                    format: int64
                 color:
                     type: string
                     example: Eveniet dolore dolorum.
@@ -37209,6 +37292,7 @@ components:
             example:
                 access: 2435690150738775354
                 archived_at: "2000-05-18"
+                collaboration_revision: 4882074950062947373
                 color: Sed omnis aspernatur voluptas nostrum dolores ut.
                 created_at: "1994-05-02T23:39:00Z"
                 created_by: 0237356d-9658-40d6-9cb5-bc82da737699
@@ -37275,6 +37359,10 @@ components:
                         - type: string
                           format: date
                         - type: "null"
+                collaboration_revision:
+                    type: integer
+                    example: 2431330876658886527
+                    format: int64
                 color:
                     type: string
                     example: Voluptatem velit eveniet culpa quia.
@@ -37341,6 +37429,7 @@ components:
             example:
                 access: 4041472019136440175
                 archived_at: "2010-04-11"
+                collaboration_revision: 874562638740060501
                 color: Qui quae labore in.
                 created_at: "1984-05-18T22:18:43Z"
                 created_by: 2afaf9d5-da91-40fa-aad6-e75202ee0a4a
@@ -37391,6 +37480,10 @@ components:
                         - type: string
                           format: date
                         - type: "null"
+                collaboration_revision:
+                    type: integer
+                    example: 7117781431997926486
+                    format: int64
                 color:
                     type: string
                     example: Quis nemo odit libero consequuntur.
@@ -37448,6 +37541,7 @@ components:
             example:
                 access: 5748911439263452073
                 archived_at: "2008-07-16"
+                collaboration_revision: 7752282545678465095
                 color: At consequatur.
                 created_at: "1989-05-31T05:34:04Z"
                 created_by: 29fe7450-9f36-4548-885c-01418e0b08ed
@@ -37540,6 +37634,10 @@ components:
                         - type: string
                           format: date
                         - type: "null"
+                collaboration_revision:
+                    type: integer
+                    example: 3342125288105973820
+                    format: int64
                 color:
                     type: string
                     example: Distinctio fugit occaecati.
@@ -37615,28 +37713,29 @@ components:
                     format: uuid
             example:
                 access: 1
-                archived_at: "1975-08-27"
-                color: Vero tempora et sint molestiae et debitis.
-                created_at: "1975-12-05T22:18:03Z"
+                archived_at: "2009-02-11"
+                collaboration_revision: 6307109325177096531
+                color: Tempora et.
+                created_at: "2003-06-26T11:25:29Z"
                 created_by: d7272263-fff8-49b3-9732-75d14e39b607
                 id: f41e93e9-8961-4a67-ba5e-9f2eeecc557d
                 is_favorite: true
-                is_locked: true
+                is_locked: false
                 label_ids:
                     - c9736218-c1ba-49d6-8b60-258b54d0e92d
                     - 0c7393da-ce6c-4209-90a2-202f9f22456a
                     - d649bf69-60bc-42ed-bdb9-e18e37a4b898
                 logo_props: Autem voluptates ipsum temporibus blanditiis ea fuga.
                 name: Ullam eos aut quis et.
-                owned_by: 6f4c6266-3336-4d97-8e64-3ce4b89bf475
-                parent: c34a0c78-894d-43f7-8bcb-6bd2da3aa5bc
+                owned_by: 6f4c6266-33b8-4bf4-b5c3-4a0c6713ad18
+                parent: 70b8b33f-60ba-4583-8f1e-f052ac37a278
                 project_ids:
                     - b059d40b-24f0-45ae-8dcb-891ad0a40a3a
                     - c041c00b-296d-4d1e-babd-9eabf78e5e47
                 updated_at: "2010-05-25T01:03:47Z"
                 updated_by: dd0c08b9-20d8-45c3-af81-86e6e83ab150
                 view_props: Hic eius distinctio nemo quam voluptatem in.
-                workspace: aee78a93-0fc3-4ca3-a24f-cafdf218c151
+                workspace: 95bbe37a-b5ff-49d2-8dd2-c8083b4ca362
             required:
                 - id
                 - name

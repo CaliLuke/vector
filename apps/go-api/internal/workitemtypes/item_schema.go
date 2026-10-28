@@ -113,7 +113,7 @@ func (r *Repository) ItemSchema(ctx context.Context, actor, slug string, input I
 	if err != nil {
 		return out, err
 	}
-	valueInput := ItemValueInput{WorkspaceID: workspace, ProjectID: input.ProjectID, PreviousProjectID: identity.ProjectID, TypeID: selected, PreviousTypeID: identity.TypeID, ParentID: parent, CreatorID: identity.CreatorID, Draft: input.Mode == "draft", Creating: input.Mode == "create" || input.Mode == "publish" || input.Mode == "draft" && input.DraftID == "", Existing: input.IssueID != "" || input.DraftID != "", ProjectChanged: identity.ProjectID != input.ProjectID}
+	valueInput := ItemValueInput{ActorID: actor, Stored: identity.Values, WorkspaceID: workspace, ProjectID: input.ProjectID, PreviousProjectID: identity.ProjectID, TypeID: selected, PreviousTypeID: identity.TypeID, ParentID: parent, CreatorID: identity.CreatorID, Draft: input.Mode == "draft", Creating: input.Mode == "create" || input.Mode == "publish" || input.Mode == "draft" && input.DraftID == "", Existing: input.IssueID != "" || input.DraftID != "", ProjectChanged: identity.ProjectID != input.ProjectID}
 	if err = resolveSchemaType(ctx, tx, valueInput, &out); err != nil {
 		return out, err
 	}
@@ -138,7 +138,7 @@ func (r *Repository) ItemSchema(ctx context.Context, actor, slug string, input I
 		}
 		out.Properties = append(out.Properties, resolved)
 	}
-	allowed, err := itemValueReferences(ctx, tx, valueInput, definitions)
+	allowed, err := itemValueReferences(ctx, tx, valueInput, definitions, false)
 	if err != nil {
 		return out, err
 	}
@@ -235,7 +235,7 @@ func schemaReleases(ctx context.Context, tx pgx.Tx, workspace, project string, v
 	out := []ItemReferenceChoice{}
 	seen := map[string]bool{}
 	if visible {
-		choices, err := propertyChoices(ctx, tx, `SELECT id::text,name FROM work_item_releases WHERE workspace_id=$1 AND project_id=$2 ORDER BY name,id`, workspace, project)
+		choices, err := propertyChoices(ctx, tx, `SELECT id::text,name FROM work_item_releases WHERE workspace_id=$1 AND (project_id=$2 OR project_id IS NULL) AND deleted_at IS NULL ORDER BY name,id`, workspace, project)
 		if err != nil {
 			return nil, err
 		}

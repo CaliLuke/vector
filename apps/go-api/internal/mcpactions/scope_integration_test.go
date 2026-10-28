@@ -10,14 +10,25 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/activityreads"
 	"github.com/CaliLuke/go-plane/internal/milestones"
+	"github.com/CaliLuke/go-plane/internal/projectconfiguration"
+	"github.com/CaliLuke/go-plane/internal/projectstatereads"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 
+	"github.com/CaliLuke/go-plane/internal/customers"
 	"github.com/CaliLuke/go-plane/internal/cyclereads"
+	"github.com/CaliLuke/go-plane/internal/features"
+	"github.com/CaliLuke/go-plane/internal/initiatives"
 	"github.com/CaliLuke/go-plane/internal/mcpactions"
 	"github.com/CaliLuke/go-plane/internal/modulereads"
+	"github.com/CaliLuke/go-plane/internal/pagereads"
 	"github.com/CaliLuke/go-plane/internal/projectlabelreads"
 	membership "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
+	"github.com/CaliLuke/go-plane/internal/releases"
+	"github.com/CaliLuke/go-plane/internal/templates"
 	"github.com/CaliLuke/go-plane/internal/useridentity"
+	"github.com/CaliLuke/go-plane/internal/workitemrelations"
+	"github.com/CaliLuke/go-plane/internal/workitemtypes"
+	"github.com/CaliLuke/go-plane/internal/worklogs"
 	projects "github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	googleuuid "github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -77,9 +88,17 @@ func memberFixtureWithScopeChange(t *testing.T, f fixture, pool *pgxpool.Pool, m
 	require.NoError(t, err)
 	activityReads, err := activityreads.NewRepository(pool)
 	require.NoError(t, err)
+	cycleWrites, err := cyclereads.NewLifecycleRepository(pool, rosterPublisher{}, "https://vector.example")
+	require.NoError(t, err)
+	moduleWrites, err := modulereads.NewLifecycleRepository(pool, rosterPublisher{}, "https://vector.example")
+	require.NoError(t, err)
+	configuration, err := projectconfiguration.NewRepository(pool)
+	require.NoError(t, err)
+	stateRepository, err := projectstatereads.NewWriteRepository(pool)
+	require.NoError(t, err)
 	milestoneRepository, err := milestones.NewRepository(pool)
 	require.NoError(t, err)
-	f.service, err = mcpactions.New(mcpactions.Applications{Identity: identity, ProjectMembers: changingMemberReader{memberReader, change}, MemberDirectory: changingDirectoryReader{directory, change}, Projects: projectReader, ProjectWrites: projectLifecycle(t, pool), Cycles: cycleReads, Modules: moduleReads, Labels: labelReads, Collaboration: collaborationReads, Activities: activityReads, Milestones: milestoneRepository})
+	f.service, err = mcpactions.New(mcpactions.Applications{Identity: identity, ProjectMembers: changingMemberReader{memberReader, change}, MemberDirectory: changingDirectoryReader{directory, change}, Projects: projectReader, ProjectWrites: projectLifecycle(t, pool), Cycles: cycleReads, CycleWrites: cycleWrites, Modules: moduleReads, ModuleWrites: moduleWrites, Labels: labelReads, LabelWrites: configuration, Collaboration: collaborationReads, Activities: activityReads, Milestones: milestoneRepository, States: stateRepository, Estimates: configuration, Types: workitemtypes.NewRepository(pool), Attachments: attachmentApplicationStub{}, WorkLogs: worklogs.NewRepository(pool), Pages: pagereads.NewPageAPIRepository(pool), Customers: customers.NewRepository(pool), Templates: templates.NewRepository(pool), Features: features.NewRepository(pool), Initiatives: initiatives.NewRepository(pool), Releases: releases.NewRepository(pool), Relations: workitemrelations.NewRepository(pool), Properties: workitemtypes.NewRepository(pool)})
 	require.NoError(t, err)
 	return f
 }

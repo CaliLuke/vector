@@ -1,0 +1,213 @@
+## PQL (Vector Query Language) Reference
+
+### Fields
+
+| Field            | Type     | Valid Values / Notes                                               |
+|---|---|---|
+| priority         | string   | "urgent" "high" "medium" "low" "none"                              |
+| stateGroup       | string   | "backlog" "unstarted" "started" "completed" "cancelled"            |
+| isDraft          | boolean  | true / false (unquoted); isDraft() is shorthand for isDraft = true  |
+| isArchived       | boolean  | true / false (unquoted); isArchived() is shorthand for isArchived = true |
+| title            | string   | work item name — use ~ for contains                                |
+| text             | string   | title + description — only when user explicitly asks to search body |
+| id               | string   | work item's own sequence ID e.g. "SHO-5"                          |
+| dueDate          | date     | "YYYY-MM-DD" or date function                                      |
+| startDate        | date     | "YYYY-MM-DD" or date function                                      |
+| createdAt        | datetime | "YYYY-MM-DD" or date function                                      |
+| updatedAt        | datetime | "YYYY-MM-DD" or date function                                      |
+| assignee         | UUID     | user UUID or currentUser()                                         |
+| state            | UUID     | state UUID                                                         |
+| label            | UUID     | label UUID                                                         |
+| cycle            | UUID     | cycle UUID or activeCycle() / completedCycles() / upcomingCycles() |
+| module           | UUID     | module UUID                                                        |
+| project          | UUID     | project UUID                                                       |
+| createdBy        | UUID     | user UUID                                                          |
+| type             | UUID     | issue type UUID                                                    |
+| release          | UUID     | workspace release UUID                                             |
+| milestone        | UUID     | milestone UUID                                                     |
+| mention          | UUID     | user UUID                                                          |
+| subscriber       | UUID     | user UUID                                                          |
+
+### Operators
+
+| Operator              | Example                                          |
+|---|---|
+| =                     | priority = "high"                                |
+| !=                    | stateGroup != "completed"                        |
+| >  >=  <  <=          | dueDate < today()                                |
+| ~ (contains)          | title ~ "capex"                                  |
+| IN (...)              | priority IN ("high","urgent")                    |
+| NOT IN (...)          | stateGroup NOT IN ("completed","cancelled")       |
+| IS NULL               | dueDate IS NULL                                  |
+| IS NOT NULL           | assignee IS NOT NULL                             |
+| IS EMPTY              | label IS EMPTY                                   |
+| IS NOT EMPTY          | label IS NOT EMPTY                               |
+| BETWEEN val AND val   | dueDate BETWEEN (daysAgo(7), today())            |
+| AND  OR  NOT          | priority = "high" AND NOT isArchived = true      |
+
+Precedence: NOT > AND > OR. Use parentheses to override.
+
+### Date Functions
+
+```
+today()           now()
+startOfDay()      endOfDay()
+startOfWeek()     endOfWeek()
+startOfMonth()    endOfMonth()
+startOfYear()     endOfYear()
+daysAgo(n)        daysFromNow(n)
+weeksAgo(n)       weeksFromNow(n)
+monthsAgo(n)      monthsFromNow(n)
+```
+⚠ Date arithmetic NOT supported. Never: `today() - 7` or `startOfWeek() + 1`
+
+### User Functions
+
+```
+currentUser()                          — current authenticated user
+membersOf("project:<uuid>")            — user UUIDs in project
+workspaceMembers()                     — all workspace members
+```
+
+### Cycle / State Group Functions
+
+```
+activeCycle()        — cycles where start_date ≤ today ≤ end_date
+completedCycles()    — cycles where end_date < today
+upcomingCycles()     — cycles where start_date > today
+
+openStates()         → ["backlog","unstarted","started"]
+closedStates()       → ["completed","cancelled"]
+activeStates()       → ["unstarted","started"]
+```
+
+### Predicate Functions (standalone — no comparison needed)
+
+```
+isOverdue()                — dueDate < today AND state in open states
+hasNoAssignee()            — no assignee
+hasNoLabel()               — no label
+isTopLevel()               — no parent
+isSubWorkItem()            — has a parent (any parent, not specific)
+isEpic()                   — issue type is epic
+hasChildren()              — has sub-items
+hasStartAndDueDates()      — both startDate and dueDate are set
+isDraft()                  — is a draft
+isArchived()               — is archived
+isIntake()                 — is an intake item
+```
+
+### Relation Functions (standalone — pass work item id or UUID)
+
+```
+childOf("WEB-5")           — sub-items OF a specific work item
+parentOf("WEB-5")          — work items that are parent of a specific item
+linkedTo("WEB-5")          — issues related to WEB-5 (both directions)
+blockedBy("WEB-5")         — issues blocked by WEB-5
+blocks("WEB-5")            — issues that block WEB-5
+duplicateOf("WEB-5")       — issues that duplicate WEB-5
+```
+Argument must be a work item identifier (e.g. "WEB-5") or UUID. Never a title.
+
+### Custom Properties
+
+Custom properties use `cf["<property-uuid>"]` as the field name.
+
+**Workflow to get UUIDs:**
+1. Call `workitem_type list` with project_id → get `type_id`
+2. Call `workitem_property list` with type_id and project_id → get property UUID + option UUIDs
+3. Use those UUIDs in the PQL expression
+
+**Syntax:**
+```
+cf["<property-uuid>"] = "<value>"
+cf["<property-uuid>"] IN ("<opt-uuid-1>", "<opt-uuid-2>")
+cf["<property-uuid>"] IS NULL
+cf["<property-uuid>"] IS NOT NULL
+```
+
+**Operator matrix — pick operators matching the property's type:**
+
+| Property type   | Allowed operators                                              | Value shape                        |
+|-----------------|----------------------------------------------------------------|------------------------------------|
+| TEXT, URL, EMAIL, FILE | =, !=, ~, IS NULL, IS NOT NULL, IS EMPTY, IS NOT EMPTY | quoted string; EMAIL/FILE are Vector extensions |
+| OPTION          | =, !=, IN, NOT IN, IS NULL, IS NOT NULL                        | option UUID (quoted)               |
+| RELATION        | =, !=, IN, NOT IN, IS NULL, IS NOT NULL                        | USER, ISSUE or RELEASE UUID (quoted) |
+| DECIMAL         | =, !=, >, >=, <, <=, BETWEEN...AND..., IS NULL, IS NOT NULL   | bare number (never quoted)         |
+| DATETIME        | =, !=, >, >=, <, <=, BETWEEN...AND..., IS NULL, IS NOT NULL   | quoted "YYYY-MM-DD" or date fn     |
+| BOOLEAN         | =, IS NULL, IS NOT NULL                                        | bare true / false (never quoted)   |
+| FORMULA, CASCADING, RICH_TEXT relation | unsupported                           | report the unsupported filter; never silently omit it |
+
+**Value typing rules:**
+- OPTION: use the option's UUID, NEVER its display name
+- DECIMAL: bare number — `cf["uuid"] = 42`, never `cf["uuid"] = "42"`
+- BOOLEAN: bare `true`/`false` — `cf["uuid"] = true`, never `cf["uuid"] = "true"`
+- DATETIME: quoted string or date function — `cf["uuid"] >= daysAgo(7)`
+- Do NOT use IN/NOT IN on TEXT, URL, DECIMAL, DATETIME, or BOOLEAN properties
+
+### Limits
+
+- **Max 5 conditions** per query
+- Each field comparison = 1 condition
+- Each IN(...) = 1 condition (not one per value)
+- Each BETWEEN...AND... = 1 condition
+- Each predicate/relation function call = 1 condition
+
+### UUID Fields — How to get UUIDs
+
+UUID fields (assignee, state, label, cycle, module, project, createdBy, type, milestone,
+call the matching list tool first:
+  project    → `project list`  then: project = "<uuid>"
+  assignee   → `member list_workspace`  then: assignee = "<uuid>"
+  createdBy  → `member list_workspace`  then: createdBy = "<uuid>"
+  state      → `state list`  then: state = "<uuid>"
+  label      → `label list`  then: label = "<uuid>"
+  type       → `workitem_type list`  then: type = "<uuid>"
+  cycle      → `cycle list`  then: cycle = "<uuid>"
+  module     → `module list`  then: module = "<uuid>"
+  milestone  → `milestone list`  then: milestone = "<uuid>"
+  mention    → `member list_workspace`  then: mention = "<uuid>"
+  subscriber → `member list_workspace`  then: subscriber = "<uuid>"
+
+For custom property UUIDs:
+  1. `workitem_type list` with project_id               → get type_id
+  2. `workitem_property list` with type_id, project_id → property UUID + option UUIDs
+
+Exception — these resolve without UUIDs:
+- `assignee = currentUser()`
+- `cycle IN activeCycle()`
+- `cycle IN completedCycles()`
+- `stateGroup IN openStates()` / `closedStates()` / `activeStates()`
+
+### NOT Supported
+
+Teamspace queries (`teamspaceProject` and `membersOf("teamspace:...")`) are unavailable until Vector supports teamspaces. They return an explicit query error.
+
+History/activity queries are NOT available in PQL:
+wasEver(), changedFrom(), changedTo(), changed(), updatedBy(), commentedBy(),
+fieldChangedBy(), wasAssignedTo(), changedAfter(), changedBefore(), etc.
+
+### Common Examples
+
+```pql
+priority = "high" AND assignee = currentUser()
+isOverdue()
+stateGroup IN openStates() AND updatedAt < daysAgo(30)
+cycle IN activeCycle() AND stateGroup IN closedStates()
+title ~ "capex" AND priority IN ("high","urgent")
+dueDate BETWEEN (daysAgo(7), today())
+hasNoAssignee() AND priority = "urgent"
+isEpic() AND hasChildren()
+isSubWorkItem() AND hasStartAndDueDates()
+childOf("WEB-5")
+id = "WEB-11"
+id ~ "WEB"
+createdAt >= startOfWeek()
+stateGroup NOT IN ("completed","cancelled") AND isOverdue()
+assignee = currentUser() AND label = "<label-uuid>" AND stateGroup = "started"
+cf["<prop-uuid>"] = "<option-uuid>"
+cf["<prop-uuid>"] IN ("<opt-uuid-1>", "<opt-uuid-2>")
+cf["<prop-uuid>"] IS NULL
+cf["<decimal-prop-uuid>"] >= 5
+cf["<bool-prop-uuid>"] = true
+```

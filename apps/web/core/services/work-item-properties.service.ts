@@ -1,20 +1,10 @@
+import type { TWorkItemPropertyKind } from "@plane/types";
 import type { WorkItemType } from "./work-item-types.service";
 import { API_BASE_URL } from "@plane/constants";
 import { APIService } from "./api.service";
 import { authService } from "./auth.service";
 
-type PropertyKind =
-  | "Text"
-  | "Number"
-  | "Dropdown"
-  | "Boolean"
-  | "Date"
-  | "Member picker"
-  | "Release picker"
-  | "Rich text"
-  | "URL"
-  | "Formula"
-  | "Cascading";
+type PropertyKind = TWorkItemPropertyKind;
 export type PropertyOption = {
   id: string;
   name: string;

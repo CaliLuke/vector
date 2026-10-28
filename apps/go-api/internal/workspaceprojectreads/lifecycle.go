@@ -34,10 +34,11 @@ type lifecycleDatabase interface {
 }
 type LifecycleRepository struct {
 	*Repository
-	writer      lifecycleDatabase
-	effects     LifecycleEffects
-	baseHost    string
-	coverAssets ProjectCoverAssetValidator
+	writer               lifecycleDatabase
+	effects              LifecycleEffects
+	baseHost             string
+	coverAssets          ProjectCoverAssetValidator
+	transactionalEffects bool
 }
 
 // ProjectCoverAssetValidator reuses the asset owner's scoped lookup without
@@ -228,10 +229,10 @@ func (r *LifecycleRepository) CreateProject(ctx context.Context, user, slug stri
 		return nil, err
 	}
 	effectErr := r.effects.Task(ctx, "plane.bgtasks.webhook_task.model_activity", []any{}, map[string]any{"model_name": "project", "model_id": id, "requested_data": requestedData, "current_instance": nil, "actor_id": user, "slug": slug, "origin": r.baseHost})
-	if !app && effectErr != nil {
+	if !app && !r.transactionalEffects && effectErr != nil {
 		log.Print(ctx, log.KV{K: "msg", V: "Project create activity dispatch failed after commit"}, log.KV{K: "error_type", V: fmt.Sprintf("%T", effectErr)})
 	}
-	if app && effectErr != nil {
+	if (app || r.transactionalEffects) && effectErr != nil {
 		return nil, effectErr
 	} // API create's on_commit callback is robust.
 	return result, nil
@@ -379,7 +380,7 @@ func (r *LifecycleRepository) UpdateProject(ctx context.Context, user, slug, id 
 		enabled = value
 	}
 	if enabled {
-		if _, err = r.writer.Exec(ctx, `INSERT INTO intakes(id,project_id,workspace_id,name,description,is_default,view_props,logo_props,created_at,updated_at,created_by_id) SELECT $1,p.id,p.workspace_id,p.name || ' Intake','',true,'{}','{}',clock_timestamp(),clock_timestamp(),$2 FROM projects p WHERE p.id=$3 AND NOT EXISTS(SELECT 1 FROM intakes intake WHERE intake.project_id=p.id AND intake.is_default AND intake.deleted_at IS NULL)`, uuid.NewString(), user, id); err != nil {
+		if err = EnsureProjectIntake(ctx, r.writer, id, user); err != nil {
 			return nil, err
 		}
 	}

@@ -57,6 +57,9 @@ func (r *Repository) ReadAPIV1(ctx context.Context, user string, request APIV1Re
 		parentScope = " AND parent.project_id=l.project_id AND parent.workspace_id=l.workspace_id"
 		parentValue = "||jsonb_build_object('parent_id',parent.id)"
 	}
+	if request.ExpectedWorkspaceID != nil && detail && p["include_revision"] == "true" {
+		parentValue += "||jsonb_build_object('revision','label:'||l.id::text||':'||(SELECT revision::text FROM label_edit_revisions WHERE label_id=l.id))"
+	}
 	query := `WITH ` + scope + `base AS MATERIALIZED (
  SELECT to_jsonb(l)` + parentValue + `||jsonb_build_object('expanded_parent',CASE WHEN parent.id IS NULL THEN '{}'::jsonb ELSE jsonb_build_object('id',parent.id,'project_id',parent.project_id) END) AS data,
  row_number() OVER(ORDER BY l.created_at DESC) AS ordinal
@@ -108,6 +111,13 @@ func (r *Repository) ReadAPIV1(ctx context.Context, user string, request APIV1Re
 		}
 		if _, selected := projected["parent"]; parentExpanded && selected {
 			projected["parent"] = row["expanded_parent"]
+		}
+		if request.ExpectedWorkspaceID != nil && detail && p["include_revision"] == "true" {
+			revision, valid := row["revision"].(string)
+			if !valid || revision == "" {
+				return nil, errors.New("label revision unavailable")
+			}
+			projected["revision"] = revision
 		}
 		rows[i] = projected
 	}

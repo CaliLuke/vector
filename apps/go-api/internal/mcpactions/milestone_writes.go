@@ -168,10 +168,10 @@ func milestoneError(err error) error {
 		return api.MakeConflict(errors.New("milestone conflict"))
 	case errors.Is(err, milestones.ErrRevisionConflict):
 		return api.MakeRevisionConflict(errors.New("milestone revision changed"))
-	case errors.Is(err, mutationreceipts.ErrConflict):
-		return api.MakeRequestConflict(errors.New("request input changed"))
-	case errors.Is(err, mutationreceipts.ErrIndeterminate):
-		return api.MakeIndeterminate(errors.New("unacknowledged commit"))
+
+	}
+	if receiptErr := receiptOperationError(err); receiptErr != nil {
+		return receiptErr
 	}
 	var failure *loom.ServiceError
 	if errors.As(err, &failure) {

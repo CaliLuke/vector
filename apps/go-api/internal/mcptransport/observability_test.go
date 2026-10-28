@@ -3,6 +3,7 @@ package mcptransport_test
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -15,11 +16,27 @@ import (
 	"github.com/stretchr/testify/require"
 	collectlog "go.opentelemetry.io/proto/otlp/collector/logs/v1"
 	collecttrace "go.opentelemetry.io/proto/otlp/collector/trace/v1"
+	logsv1 "go.opentelemetry.io/proto/otlp/logs/v1"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
 
 func TestMCPAuthenticationFailureProducesSanitizedCorrelatedLogAndTrace(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		failure  error
+		status   int
+		severity logsv1.SeverityNumber
+	}{
+		{"invalid credential", mcptransport.ErrInvalidCredential, http.StatusUnauthorized, logsv1.SeverityNumber_SEVERITY_NUMBER_WARN},
+		{"provider outage", errors.New("private-provider-outage-marker"), http.StatusServiceUnavailable, logsv1.SeverityNumber_SEVERITY_NUMBER_ERROR},
+	} {
+		t.Run(tc.name, func(t *testing.T) { assertAuthenticationFailureTelemetry(t, tc.failure, tc.status, tc.severity) })
+	}
+}
+
+func assertAuthenticationFailureTelemetry(t *testing.T, failure error, status int, severity logsv1.SeverityNumber) {
+	t.Helper()
 	logs, traces := make(chan string, 4), make(chan string, 4)
 	receiver := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
@@ -59,7 +76,7 @@ func TestMCPAuthenticationFailureProducesSanitizedCorrelatedLogAndTrace(t *testi
 	opts := options()
 	opts.Observer = mcptransport.LogObserver(logger)
 	opts.OAuthAuth = func(context.Context, *http.Request) (context.Context, error) {
-		return nil, mcptransport.ErrInvalidCredential
+		return nil, failure
 	}
 	h := mcptransport.RedactRejectedQueries(wrap(handler(t, config("oauth"), opts)))
 	r := httptest.NewRequest("POST", "https://vector.example/mcp", strings.NewReader(`{"private-body-marker":true}`))
@@ -67,7 +84,7 @@ func TestMCPAuthenticationFailureProducesSanitizedCorrelatedLogAndTrace(t *testi
 	r.Header.Set("Cookie", "session-id=private-cookie-marker")
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
-	require.Equal(t, 401, w.Code)
+	require.Equal(t, status, w.Code)
 	requestID := w.Header().Get("X-Request-Id")
 	require.NotEmpty(t, requestID)
 	require.NoError(t, shutdown(context.Background()))
@@ -88,12 +105,12 @@ func TestMCPAuthenticationFailureProducesSanitizedCorrelatedLogAndTrace(t *testi
 	require.Contains(t, logged, requestID)
 	require.Contains(t, stdout.String(), requestID)
 	require.Contains(t, logged, "request_rejected")
-	require.Contains(t, logged, "401")
 	var logExport collectlog.ExportLogsServiceRequest
 	var traceExport collecttrace.ExportTraceServiceRequest
 	require.NoError(t, protojson.Unmarshal([]byte(logged), &logExport))
 	require.NoError(t, protojson.Unmarshal([]byte(traced), &traceExport))
 	logRecord := logExport.ResourceLogs[0].ScopeLogs[0].LogRecords[0]
+	require.Equal(t, severity, logRecord.SeverityNumber)
 	span := traceExport.ResourceSpans[0].ScopeSpans[0].Spans[0]
 	require.NotEmpty(t, logRecord.TraceId)
 	require.Equal(t, span.TraceId, logRecord.TraceId)

@@ -19,7 +19,7 @@ func (snapshot *PropertyDiscoverySnapshot) PQLProperty(ctx context.Context, id s
 	}
 	resolved := issuequery.PQLPropertyDefinition{}
 	switch definition.Kind {
-	case property.Text, property.URL:
+	case property.Text, property.Email, property.File, property.URL:
 		resolved.Kind = issuequery.PQLPropertyText
 	case property.Number:
 		resolved.Kind = issuequery.PQLPropertyNumber
@@ -27,11 +27,11 @@ func (snapshot *PropertyDiscoverySnapshot) PQLProperty(ctx context.Context, id s
 		resolved.Kind = issuequery.PQLPropertyDate
 	case property.Boolean:
 		resolved.Kind = issuequery.PQLPropertyBoolean
-	case property.Dropdown, property.Member, property.Release:
+	case property.Dropdown, property.Member, property.Issue, property.Release:
 		resolved.Kind = issuequery.PQLPropertySelection
 		resolved.ValidateSelections = func(ids []string) (bool, error) {
 			catalog := options
-			if definition.Kind == property.Member || definition.Kind == property.Release {
+			if definition.Kind == property.Member || definition.Kind == property.Issue || definition.Kind == property.Release {
 				var readErr error
 				catalog, readErr = snapshot.predicateReferences(ctx, snapshot.tx, definition.Kind)
 				if readErr != nil {

@@ -131,3 +131,46 @@ test("coverage ratchet rejects package omissions, regressions, and invalid floor
     assert.match(invalidFloor.stderr, /finite percent/);
   });
 });
+
+await test("coverage counts repository code exercised by another package's integration test", () => {
+  fixture((directory) => {
+    write(directory, "go.mod", "module example.test/fixture\n\ngo 1.27.3\n");
+    write(directory, "repository/value.go", "package repository\nfunc Value() int { return 42 }\n");
+    write(
+      directory,
+      "transport/value_test.go",
+      `package transport_test
+import (
+  "testing"
+  "example.test/fixture/repository"
+)
+func TestRead(t *testing.T) {
+  if repository.Value() != 42 { t.Fatal("unexpected value") }
+}
+`
+    );
+    const inventory = invoke("go-coverage-inventory.mjs", [directory]);
+    assert.equal(inventory.status, 0, inventory.stderr);
+    const profile = path.join(directory, "coverage.out");
+    const result = spawnSync(
+      "go",
+      ["test", "-tags=integration", `-coverpkg=${inventory.stdout.trim()}`, `-coverprofile=${profile}`, "./..."],
+      {
+        cwd: directory,
+        encoding: "utf8",
+      }
+    );
+    assert.equal(result.status, 0, result.stderr);
+    const baseline = write(directory, "coverage-baseline.json", {
+      version: 1,
+      packages: { "example.test/fixture/repository": { statements: 1, percent: 100 } },
+    });
+    const checked = invoke("go-coverage-ratchet.mjs", ["check", profile, baseline, directory]);
+    assert.equal(checked.status, 0, checked.stderr);
+    const location = fs.readFileSync(profile, "utf8").split("\n")[1].split(" ")[0];
+    fs.appendFileSync(profile, `${location} 2 1\n`);
+    const inconsistent = invoke("go-coverage-ratchet.mjs", ["check", profile, baseline, directory]);
+    assert.equal(inconsistent.status, 2);
+    assert.match(inconsistent.stderr, /disagree on statement count/);
+  });
+});

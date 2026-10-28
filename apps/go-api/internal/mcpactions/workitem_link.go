@@ -2,7 +2,6 @@ package mcpactions
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"strings"
 
@@ -10,16 +9,16 @@ import (
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 )
 
-func (s *Service) WorkitemLink(ctx context.Context, input *api.WorkitemLinkRequest) (*api.WorkitemLinkResult, error) {
+func (s *Service) workitemLinkRead(ctx context.Context, input *api.WorkitemLinkRequest) (*api.WorkitemLinkResult, error) {
 	return readProjectResource(ctx, input, selectWorkitemLinkAction, collaborationRead{s.collaborationReads, "links"}, nil, nil, projectWorkitemLinkResult)
 }
 func selectWorkitemLinkAction(input *api.WorkitemLinkRequest) (djangoapi.ProjectReadRequest, *string, error) {
 	return selectItemReadUnion(input, func(input api.WorkitemLinkRequest) itemReadSelection {
 		detail, ok := input.AsWorkitemLinkRetrieve()
-		if !ok || detail == nil || detail.Action != "retrieve" {
+		if !ok || detail == nil {
 			return itemReadSelection{}
 		}
-		return itemReadSelection{action: detail.Action, project: detail.ProjectID, issue: detail.WorkitemID, target: detail.LinkID, workspace: detail.WorkspaceSlug}
+		return retrieveItemSelection(detail.Action, detail.ProjectID, detail.WorkitemID, detail.LinkID, detail.WorkspaceSlug, detail.IncludeRevision)
 	})
 }
 
@@ -40,13 +39,8 @@ func projectWorkitemLinkRecord(row map[string]any) (*api.WorkitemLinkRecord, err
 		}
 	}
 
-	body, err := json.Marshal(wire)
-	if err != nil {
-		return nil, err
+	if revision, ok := row["revision"]; ok {
+		wire["revision"] = revision
 	}
-	record := new(api.WorkitemLinkRecord)
-	if err = json.Unmarshal(body, record); err != nil {
-		return nil, err
-	}
-	return record, nil
+	return decodeRecord[api.WorkitemLinkRecord](wire)
 }

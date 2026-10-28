@@ -11,7 +11,7 @@ import (
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 )
 
-func (s *Service) Label(ctx context.Context, input *api.LabelRequest) (*api.LabelResult, error) {
+func (s *Service) labelRead(ctx context.Context, input *api.LabelRequest) (*api.LabelResult, error) {
 	return readProjectResource(ctx, input, selectLabelAction, s.labelReads, labels.ErrForbidden, labels.ErrNotFound, projectLabelResult)
 }
 
@@ -36,6 +36,9 @@ func selectLabelAction(input *api.LabelRequest) (labels.APIV1Request, *string, e
 		} else if detail, ok := input.AsLabelRetrieve(); ok && detail != nil && detail.Action == "retrieve" {
 			request.Operation = "detail"
 			request.Params["project_id"], request.Params["pk"], workspace = detail.ProjectID, detail.LabelID, detail.WorkspaceSlug
+			if detail.IncludeRevision != nil && *detail.IncludeRevision {
+				request.Params["include_revision"], request.Present["include_revision"] = "true", true
+			}
 			_, err := uuid.Parse(detail.LabelID)
 			valid = err == nil
 		}
@@ -68,6 +71,9 @@ func projectLabelRecord(row map[string]any) (*api.LabelRecord, error) {
 	wire := map[string]any{"name": name}
 	for _, field := range labelNullableFields {
 		wire[field] = row[field]
+	}
+	if revision, ok := row["revision"]; ok {
+		wire["revision"] = revision
 	}
 	body, err := json.Marshal(wire)
 	if err != nil {

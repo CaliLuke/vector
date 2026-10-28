@@ -40,7 +40,8 @@ var projectArchive = Type("ProjectArchive", func() {
 })
 
 var projectMutationReceipt = Type("ProjectMutationReceipt", func() {
-	Description("Vector extension result, returned only when request_id or expected_revision is supplied. Ordinary archive/unarchive calls return no content.")
+	Description("Vector extension result, returned only when request_id or expected_revision is supplied. Record mutations include result; archive and restore retain their metadata-only receipt.")
+	Attribute("result", projectDetail, func() { Nullable() })
 	Attribute("project_id", String, func() { Format(FormatUUID) })
 	Attribute("revision", String)
 	Attribute("request_id", String, func() { Format(FormatUUID) })
@@ -94,8 +95,8 @@ var projectDetail = Type("ProjectDetail", func() {
 	Meta("openapi:additionalProperties", "false")
 })
 
-var projectRequest = Type("ProjectRequest", OneOf(projectList, projectRetrieve, projectArchive), func() { Untagged() })
-var projectResult = Type("ProjectResult", OneOf(projectPage, projectDetail, projectMutationReceipt), func() { Untagged() })
+var projectRequest = Type("ProjectRequest", OneOf(projectList, projectRetrieve, projectArchive, projectCreate, projectUpdate, projectDelete, projectWorklogSummary, projectGetFeatures, projectUpdateFeatures), func() { Untagged() })
+var projectResult = Type("ProjectResult", OneOf(projectPage, projectDetail, projectMutationReceipt, projectWorklogTotals, projectFeatureRecord, pageMutationReceipt), func() { Untagged() })
 
 func project() {
 	Method("project", func() {
@@ -105,7 +106,7 @@ func project() {
 		readErrors()
 		writeErrors()
 		Meta("mcp:annotation:readOnlyHint", "false")
-		Meta("mcp:annotation:destructiveHint", "false")
+		Meta("mcp:annotation:destructiveHint", "true")
 		Meta("mcp:annotation:openWorldHint", "false")
 		mcp.Tool("project", "Projects in a workspace. Use an advertised action.", mcp.ToolTitle("Projects"))
 	})
@@ -122,3 +123,42 @@ func writeErrors() {
 		})
 	})
 }
+
+func projectWriteFields() {
+	for _, field := range []string{"name", "identifier", "description", "description_html", "project_lead", "default_assignee", "emoji", "cover_image", "timezone", "external_source", "external_id"} {
+		Attribute(field, String)
+	}
+	for _, field := range []string{"modules", "cycles", "views", "pages", "intakes", "workitem_types"} {
+		Attribute(field, Boolean, func() { Nullable() })
+	}
+	Attribute("archive_in", Int, "Zero or omitted leaves the setting unchanged.")
+	Attribute("close_in", Int, "Zero or omitted leaves the setting unchanged.")
+	projectWorkspaceSelector()
+	Meta("openapi:additionalProperties", "false")
+}
+
+var projectCreate = Type("ProjectCreate", func() {
+	Attribute("action", String, func() { Enum("create") })
+	projectWriteFields()
+	mutationExtensions(false)
+	Required("action", "name", "identifier")
+})
+var projectUpdate = Type("ProjectUpdate", func() {
+	Attribute("action", String, func() { Enum("update") })
+	Attribute("project_id", String, func() { Format(FormatUUID) })
+	projectWriteFields()
+	Attribute("network", Int, func() { Nullable(); Enum(0, 2) })
+	Attribute("is_time_tracking_enabled", Boolean, func() { Nullable() })
+	Attribute("default_state", String)
+	Attribute("estimate", String)
+	mutationExtensions(true)
+	Required("action", "project_id")
+})
+var projectDelete = Type("ProjectDelete", func() {
+	Attribute("action", String, func() { Enum("delete") })
+	Attribute("project_id", String, func() { Format(FormatUUID) })
+	projectWorkspaceSelector()
+	mutationExtensions(true)
+	Required("action", "project_id")
+	Meta("openapi:additionalProperties", "false")
+})

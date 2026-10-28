@@ -24,8 +24,6 @@ func projectLifecycle(t *testing.T, pool *pgxpool.Pool) *projects.LifecycleRepos
 	return lifecycle
 }
 
-func (rosterPublisher) SoftDelete(context.Context, string, string, string) error { return nil }
-
 func addArchiveFixture(t *testing.T, pool *pgxpool.Pool) {
 	t.Helper()
 	addMCPProjectFixture(t, pool)
@@ -158,7 +156,7 @@ func TestProjectDiscoveryTracksScopesAndDomainPermissionsWithoutSharedMutation(t
 		if !archive && !unarchive {
 			require.NotContains(t, schema.Properties, "request_id")
 			require.NotContains(t, schema.Properties, "expected_revision")
-			require.Len(t, schema.OneOf, 2)
+			require.Len(t, schema.OneOf, 4)
 		} else {
 			require.Contains(t, schema.Properties, "request_id")
 		}

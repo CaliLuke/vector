@@ -493,45 +493,51 @@ type toolSearchSettings struct {
 
 func (a *MCPAdapter) generatedToolCatalog() []*ToolInfo {
 	return []*ToolInfo{&ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("The connected workspace and its feature settings."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"get_features\"]},\"include_revision\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update_features\"]},\"customers\":{\"type\":\"boolean\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"initiatives\":{\"type\":\"boolean\"},\"pi\":{\"type\":\"boolean\"},\"project_grouping\":{\"type\":\"boolean\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"teams\":{\"type\":\"boolean\"},\"wiki\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"get_features\"]},{\"type\":\"string\",\"enum\":[\"update_features\"]}]},\"customers\":{\"type\":\"boolean\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"include_revision\":{\"type\":\"boolean\"},\"initiatives\":{\"type\":\"boolean\"},\"pi\":{\"type\":\"boolean\"},\"project_grouping\":{\"type\":\"boolean\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"teams\":{\"type\":\"boolean\"},\"wiki\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "workspace",
+		Title:       stringPtr("Workspace settings"),
+	}, &ToolInfo{
 		Annotations: jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":true}")),
 		Description: stringPtr("Read identities, members and role definitions using the selected action."),
 		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"description\":\"Read the authenticated user's identity.\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"me\"]},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"description\":\"List the members of a project the authenticated user can access.\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_project\"]},\"project_id\":{\"type\":\"string\",\"description\":\"Project identifier.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"description\":\"List workspace members with case-insensitive substring filters combined with AND.\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_workspace\"]},\"cursor\":{\"type\":\"string\"},\"display_name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"first_name\":{\"type\":\"string\"},\"is_active\":{\"anyOf\":[{\"type\":\"boolean\",\"description\":\"Filter membership activity; omit or null to include both.\"},{\"type\":\"null\"}]},\"is_bot\":{\"anyOf\":[{\"type\":\"boolean\",\"description\":\"Filter bot accounts; omit or null to include both.\"},{\"type\":\"null\"}]},\"last_name\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Page size; zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"role_slug\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match an authenticated workspace header.\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"description\":\"List existing Vector roles. Slugs are unique within namespace, not globally.\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_roles\"]},\"cursor\":{\"type\":\"string\"},\"namespace\":{\"type\":\"string\",\"description\":\"Omit or empty for both namespaces.\",\"enum\":[\"\",\"workspace\",\"project\"]},\"per_page\":{\"type\":\"integer\",\"description\":\"Page size; zero or omitted uses 20.\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match an authenticated workspace header.\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"role_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve_role\"]},\"role_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match an authenticated workspace header.\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"me\"]},{\"type\":\"string\",\"enum\":[\"list_project\"]},{\"type\":\"string\",\"enum\":[\"list_workspace\"]},{\"type\":\"string\",\"enum\":[\"list_roles\"]},{\"type\":\"string\",\"enum\":[\"retrieve_role\"]}]},\"cursor\":{\"type\":\"string\"},\"display_name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"first_name\":{\"type\":\"string\"},\"is_active\":{\"anyOf\":[{\"type\":\"boolean\",\"description\":\"Filter membership activity; omit or null to include both.\"},{\"type\":\"null\"}]},\"is_bot\":{\"anyOf\":[{\"type\":\"boolean\",\"description\":\"Filter bot accounts; omit or null to include both.\"},{\"type\":\"null\"}]},\"last_name\":{\"type\":\"string\"},\"namespace\":{\"type\":\"string\",\"description\":\"Omit or empty for both namespaces.\",\"enum\":[\"\",\"workspace\",\"project\"]},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"anyOf\":[{\"type\":\"integer\",\"description\":\"Page size; zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},{\"type\":\"integer\",\"description\":\"Page size; zero or omitted uses 20.\",\"minimum\":0,\"maximum\":1e3}]},\"project_id\":{\"type\":\"string\",\"description\":\"Project identifier.\",\"format\":\"uuid\"},\"role_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"role_slug\":{\"type\":\"string\"},\"workspace_slug\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255},{\"type\":\"string\",\"description\":\"Optional workspace selector; must match an authenticated workspace header.\",\"maxLength\":255}]}},\"type\":\"object\"}")),
 		Name:        "member",
 		Title:       stringPtr("Members and roles"),
 	}, &ToolInfo{
-		Annotations: jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
 		Description: stringPtr("Projects in a workspace. Use an advertised action."),
-		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\",\"description\":\"Vector extension: include an opaque revision token for guarded writes.\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"archive\",\"unarchive\"]},\"expected_revision\":{\"type\":\"string\",\"description\":\"Optional opaque Vector revision from retrieve with include_revision. Conflicts fail atomically.\",\"minLength\":1,\"maxLength\":128},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"description\":\"Optional Vector retry identity; retained for at least 24 hours.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"archive\",\"unarchive\"]}]},\"cursor\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"description\":\"Optional opaque Vector revision from retrieve with include_revision. Conflicts fail atomically.\",\"minLength\":1,\"maxLength\":128},\"include_revision\":{\"type\":\"boolean\",\"description\":\"Vector extension: include an opaque revision token for guarded writes.\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"description\":\"Optional Vector retry identity; retained for at least 24 hours.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\",\"description\":\"Vector extension: include an opaque revision token for guarded writes.\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"archive\",\"unarchive\"]},\"expected_revision\":{\"type\":\"string\",\"description\":\"Optional opaque Vector revision from retrieve with include_revision. Conflicts fail atomically.\",\"minLength\":1,\"maxLength\":128},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"description\":\"Optional Vector retry identity; retained for at least 24 hours.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"name\",\"identifier\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"archive_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"close_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"cover_image\":{\"type\":\"string\"},\"cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"default_assignee\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"emoji\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"identifier\":{\"type\":\"string\"},\"intakes\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"modules\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"pages\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_lead\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"timezone\":{\"type\":\"string\"},\"views\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workitem_types\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"archive_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"close_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"cover_image\":{\"type\":\"string\"},\"cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"default_assignee\":{\"type\":\"string\"},\"default_state\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"emoji\":{\"type\":\"string\"},\"estimate\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"identifier\":{\"type\":\"string\"},\"intakes\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"is_time_tracking_enabled\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"modules\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"network\":{\"anyOf\":[{\"type\":\"integer\",\"enum\":[0,2],\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},{\"type\":\"null\"}]},\"pages\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_lead\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"timezone\":{\"type\":\"string\"},\"views\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workitem_types\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"worklog_summary\"]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"get_features\"]},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update_features\"]},\"cycles\":{\"type\":\"boolean\"},\"epics\":{\"type\":\"boolean\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"intakes\":{\"type\":\"boolean\"},\"modules\":{\"type\":\"boolean\"},\"pages\":{\"type\":\"boolean\"},\"parallel_cycles\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_updates\":{\"type\":\"boolean\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"views\":{\"type\":\"boolean\"},\"workflows\":{\"type\":\"boolean\"},\"workitem_types\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"archive\",\"unarchive\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"worklog_summary\"]},{\"type\":\"string\",\"enum\":[\"get_features\"]},{\"type\":\"string\",\"enum\":[\"update_features\"]}]},\"archive_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"close_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"cover_image\":{\"type\":\"string\"},\"cursor\":{\"type\":\"string\"},\"cycles\":{\"anyOf\":[{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},{\"type\":\"boolean\"}]},\"default_assignee\":{\"type\":\"string\"},\"default_state\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"emoji\":{\"type\":\"string\"},\"epics\":{\"type\":\"boolean\"},\"estimate\":{\"type\":\"string\"},\"expected_revision\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Optional opaque Vector revision from retrieve with include_revision. Conflicts fail atomically.\",\"minLength\":1,\"maxLength\":128},{\"type\":\"string\",\"minLength\":1}]},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"identifier\":{\"type\":\"string\"},\"include_revision\":{\"anyOf\":[{\"type\":\"boolean\",\"description\":\"Vector extension: include an opaque revision token for guarded writes.\"},{\"type\":\"boolean\"}]},\"intakes\":{\"anyOf\":[{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},{\"type\":\"boolean\"}]},\"is_time_tracking_enabled\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"modules\":{\"anyOf\":[{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},{\"type\":\"boolean\"}]},\"name\":{\"type\":\"string\"},\"network\":{\"anyOf\":[{\"type\":\"integer\",\"enum\":[0,2],\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},{\"type\":\"null\"}]},\"order_by\":{\"type\":\"string\"},\"pages\":{\"anyOf\":[{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},{\"type\":\"boolean\"}]},\"parallel_cycles\":{\"type\":\"boolean\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_lead\":{\"type\":\"string\"},\"project_updates\":{\"type\":\"boolean\"},\"request_id\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Optional Vector retry identity; retained for at least 24 hours.\",\"format\":\"uuid\"},{\"type\":\"string\",\"format\":\"uuid\"}]},\"timezone\":{\"type\":\"string\"},\"views\":{\"anyOf\":[{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},{\"type\":\"boolean\"}]},\"workflows\":{\"type\":\"boolean\"},\"workitem_types\":{\"anyOf\":[{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},{\"type\":\"boolean\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
 		Name:        "project",
 		Title:       stringPtr("Projects"),
 	}, &ToolInfo{
-		Annotations: jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":true}")),
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
 		Description: stringPtr("Cycles in a project. Use an advertised action."),
-		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"status\":{\"type\":\"string\",\"description\":\"Active cycle status: current, upcoming, completed, draft, or incomplete. Ignored for archived cycles.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"cycle_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"status\":{\"type\":\"string\",\"description\":\"Active cycle status: current, upcoming, completed, draft, or incomplete. Ignored for archived cycles.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"cycle_id\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_workitems\"]},\"cursor\":{\"type\":\"string\"},\"cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expand\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses the native page size.\",\"minimum\":0,\"maximum\":1e3},\"pql\":{\"type\":\"string\",\"description\":\"PQL predicate; call get_pql_reference for syntax.\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"status\":{\"type\":\"string\",\"description\":\"Active cycle status: current, upcoming, completed, draft, or incomplete. Ignored for archived cycles.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"cycle_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"name\",\"owned_by\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"description\":{\"type\":\"string\"},\"end_date\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"owned_by\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"start_date\":{\"type\":\"string\"},\"timezone\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"cycle_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"description\":{\"type\":\"string\"},\"end_date\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"owned_by\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"start_date\":{\"type\":\"string\"},\"timezone\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"cycle_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"archive\",\"unarchive\",\"complete\",\"delete\"]},\"cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"cycle_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"manage_workitems\"]},\"add_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string.\"},\"cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string. Removal wins on overlap.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"cycle_id\",\"new_cycle_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"transfer_workitems\"]},\"cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"new_cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list_workitems\"]},{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"archive\",\"unarchive\",\"complete\",\"delete\"]},{\"type\":\"string\",\"enum\":[\"manage_workitems\"]},{\"type\":\"string\",\"enum\":[\"transfer_workitems\"]}]},\"add_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string.\"},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"description\":{\"type\":\"string\"},\"end_date\":{\"type\":\"string\"},\"expand\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"name\":{\"type\":\"string\"},\"new_cycle_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"order_by\":{\"type\":\"string\"},\"owned_by\":{\"type\":\"string\"},\"per_page\":{\"anyOf\":[{\"type\":\"integer\",\"description\":\"Zero or omitted uses the native page size.\",\"minimum\":0,\"maximum\":1e3},{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3}]},\"pql\":{\"type\":\"string\",\"description\":\"PQL predicate; call get_pql_reference for syntax.\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string. Removal wins on overlap.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"start_date\":{\"type\":\"string\"},\"status\":{\"type\":\"string\",\"description\":\"Active cycle status: current, upcoming, completed, draft, or incomplete. Ignored for archived cycles.\"},\"timezone\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
 		Name:        "cycle",
 		Title:       stringPtr("Cycles"),
 	}, &ToolInfo{
-		Annotations: jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":true}")),
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
 		Description: stringPtr("Modules in a project. Use an advertised action."),
-		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"module_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"module_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"module_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"module_id\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_workitems\"]},\"cursor\":{\"type\":\"string\"},\"expand\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"module_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses the native page size.\",\"minimum\":0,\"maximum\":1e3},\"pql\":{\"type\":\"string\",\"description\":\"PQL predicate; call get_pql_reference for syntax.\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"module_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\"},\"module_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"name\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"description\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"lead\":{\"type\":\"string\"},\"members\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"start_date\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"},\"target_date\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"module_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"lead\":{\"type\":\"string\"},\"members\":{\"type\":\"string\"},\"module_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"start_date\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"},\"target_date\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"module_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"archive\",\"unarchive\",\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"module_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"module_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"manage_workitems\"]},\"add_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string.\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"module_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string. Removal wins on overlap.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list_workitems\"]},{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"archive\",\"unarchive\",\"delete\"]},{\"type\":\"string\",\"enum\":[\"manage_workitems\"]}]},\"add_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string.\"},\"archived\":{\"type\":\"boolean\"},\"cursor\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"expand\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"lead\":{\"type\":\"string\"},\"members\":{\"type\":\"string\"},\"module_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"name\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"anyOf\":[{\"type\":\"integer\",\"description\":\"Zero or omitted uses the native page size.\",\"minimum\":0,\"maximum\":1e3},{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3}]},\"pql\":{\"type\":\"string\",\"description\":\"PQL predicate; call get_pql_reference for syntax.\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string. Removal wins on overlap.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"start_date\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"},\"target_date\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
 		Name:        "module",
 		Title:       stringPtr("Modules"),
 	}, &ToolInfo{
-		Annotations: jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":true}")),
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
 		Description: stringPtr("Labels in a project. Use an advertised action."),
-		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"label_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"label_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"cursor\":{\"type\":\"string\"},\"label_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"label_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\"},\"label_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"name\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"color\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"parent\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sort_order\":{\"anyOf\":[{\"type\":\"number\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"label_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"color\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"label_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"name\":{\"type\":\"string\"},\"parent\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sort_order\":{\"anyOf\":[{\"type\":\"number\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"label_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"label_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]}]},\"color\":{\"type\":\"string\"},\"cursor\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"label_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"name\":{\"type\":\"string\"},\"parent\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sort_order\":{\"anyOf\":[{\"type\":\"number\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
 		Name:        "label",
 		Title:       stringPtr("Labels"),
 	}, &ToolInfo{
-		Annotations: jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":true}")),
-		Description: stringPtr("Work item comments. Use an advertised action."),
-		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"comment_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"comment_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"comment_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("Comments attached to a work item. Use an advertised action."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"comment_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"comment_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"comment_html\"],\"properties\":{\"access\":{\"type\":\"string\"},\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"comment_html\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"comment_id\"],\"properties\":{\"access\":{\"type\":\"string\"},\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"comment_html\":{\"type\":\"string\"},\"comment_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"comment_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"comment_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"access\":{\"type\":\"string\"},\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]}]},\"comment_html\":{\"type\":\"string\"},\"comment_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"cursor\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
 		Name:        "workitem_comment",
 		Title:       stringPtr("Work item comments"),
 	}, &ToolInfo{
-		Annotations: jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":true}")),
-		Description: stringPtr("Work item links. Use an advertised action."),
-		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"link_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"link_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"cursor\":{\"type\":\"string\"},\"link_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("Links attached to a work item. Use an advertised action."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"link_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\"},\"link_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"url\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"title\":{\"type\":\"string\"},\"url\":{\"type\":\"string\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"link_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"link_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"title\":{\"type\":\"string\"},\"url\":{\"type\":\"string\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"link_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"link_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]}]},\"cursor\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"include_revision\":{\"type\":\"boolean\"},\"link_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"title\":{\"type\":\"string\"},\"url\":{\"type\":\"string\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
 		Name:        "workitem_link",
 		Title:       stringPtr("Work item links"),
 	}, &ToolInfo{
@@ -546,6 +552,127 @@ func (a *MCPAdapter) generatedToolCatalog() []*ToolInfo {
 		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"milestone_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\"},\"milestone_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"title\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"target_date\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"milestone_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"milestone_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"target_date\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"milestone_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"milestone_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"milestone_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_workitems\"]},\"cursor\":{\"type\":\"string\"},\"milestone_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"milestone_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"manage_workitems\"]},\"add_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string.\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"milestone_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string. Removal wins on overlap.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"list_workitems\"]},{\"type\":\"string\",\"enum\":[\"manage_workitems\"]}]},\"add_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string.\"},\"cursor\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"milestone_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string. Removal wins on overlap.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"target_date\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
 		Name:        "milestone",
 		Title:       stringPtr("Milestones"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("Workflow states. Omit project_id for workspace reads; mutations require a project. Use an advertised action."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use an empty string for workspace scope.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"state_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use an empty string for workspace scope.\"},\"state_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"name\",\"color\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"color\":{\"type\":\"string\"},\"default\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"description\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"group\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use an empty string for workspace scope.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sequence\":{\"anyOf\":[{\"type\":\"number\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"state_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"color\":{\"type\":\"string\"},\"default\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"group\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use an empty string for workspace scope.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sequence\":{\"anyOf\":[{\"type\":\"number\"},{\"type\":\"null\"}]},\"state_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"state_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use an empty string for workspace scope.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"state_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]}]},\"color\":{\"type\":\"string\"},\"cursor\":{\"type\":\"string\"},\"default\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"group\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"name\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use an empty string for workspace scope.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sequence\":{\"anyOf\":[{\"type\":\"number\"},{\"type\":\"null\"}]},\"state_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "state",
+		Title:       stringPtr("Workflow states"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("Manage the project's estimate system and points using an advertised action."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"name\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"last_used\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"type\":{\"type\":\"string\",\"description\":\"categories, points, or time; empty uses categories.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"estimate_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"link\"]},\"estimate_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"estimate_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_points\"]},\"estimate_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"estimate_id\",\"points\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create_points\"]},\"estimate_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"points\":{\"type\":\"string\",\"description\":\"Nonempty JSON array of point objects; key zero is valid.\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"estimate_id\",\"estimate_point_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update_point\"]},\"description\":{\"type\":\"string\"},\"estimate_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"estimate_point_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"key\":{\"anyOf\":[{\"type\":\"integer\",\"minimum\":0,\"maximum\":2147483647},{\"type\":\"null\"}]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"value\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"estimate_id\",\"estimate_point_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete_point\"]},\"estimate_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"estimate_point_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"link\"]},{\"type\":\"string\",\"enum\":[\"list_points\"]},{\"type\":\"string\",\"enum\":[\"create_points\"]},{\"type\":\"string\",\"enum\":[\"update_point\"]},{\"type\":\"string\",\"enum\":[\"delete_point\"]}]},\"description\":{\"type\":\"string\"},\"estimate_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"estimate_point_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"key\":{\"anyOf\":[{\"type\":\"integer\",\"minimum\":0,\"maximum\":2147483647},{\"type\":\"null\"}]},\"last_used\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"points\":{\"type\":\"string\",\"description\":\"Nonempty JSON array of point objects; key zero is valid.\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"type\":{\"type\":\"string\",\"description\":\"categories, points, or time; empty uses categories.\"},\"value\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "project_estimate",
+		Title:       stringPtr("Project estimates"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("Read and manage workspace work item types and their project imports."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use empty string for workspace scope.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"workitem_type_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use empty string for workspace scope.\"},\"workitem_type_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"name\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"is_active\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use empty string for workspace scope.\"},\"project_ids\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"workitem_type_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"is_active\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use empty string for workspace scope.\"},\"project_ids\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_type_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"workitem_type_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use empty string for workspace scope.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_type_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"name\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"resolve\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use empty string for workspace scope.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_type_ids\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"import_to_project\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use empty string for workspace scope.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_type_ids\":{\"type\":\"string\",\"description\":\"Comma-separated identifiers or a JSON array.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"resolve\"]},{\"type\":\"string\",\"enum\":[\"import_to_project\"]}]},\"cursor\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"is_active\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"description\":\"Omit or use empty string for workspace scope.\"},\"project_ids\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_type_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_type_ids\":{\"type\":\"string\",\"description\":\"Comma-separated identifiers or a JSON array.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "workitem_type",
+		Title:       stringPtr("Work item types"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("Work items: issues, tasks and epics. Use an advertised action."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"count\"]},\"group_by\":{\"type\":\"string\",\"enum\":[\"\",\"state_id\",\"state__group\",\"priority\",\"project_id\",\"type_id\",\"labels__id\",\"assignees__id\",\"issue_module__module_id\",\"release_work_items__release_id\",\"cycle_id\",\"milestone_id\",\"created_by\",\"target_date\",\"start_date\"]},\"pql\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sub_group_by\":{\"type\":\"string\",\"enum\":[\"\",\"state_id\",\"state__group\",\"priority\",\"project_id\",\"type_id\",\"labels__id\",\"assignees__id\",\"issue_module__module_id\",\"release_work_items__release_id\",\"cycle_id\",\"milestone_id\",\"created_by\",\"target_date\",\"start_date\"]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"expand\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses the native page size.\",\"minimum\":0,\"maximum\":1e3},\"pql\":{\"type\":\"string\",\"description\":\"PQL predicate; call get_pql_reference for syntax.\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_archived\"]},\"cursor\":{\"type\":\"string\"},\"expand\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses the native page size.\",\"minimum\":0,\"maximum\":1e3},\"pql\":{\"type\":\"string\",\"description\":\"PQL predicate; call get_pql_reference for syntax.\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"expand\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"order_by\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"workitem_identifier\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve_by_identifier\"]},\"expand\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"workitem_identifier\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"query\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"search\"]},\"expand\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"query\":{\"type\":\"string\",\"minLength\":1},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"name\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"assignees\":{\"anyOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]},\"description_html\":{\"type\":\"string\"},\"description_stripped\":{\"type\":\"string\"},\"estimate_point\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"is_draft\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"labels\":{\"anyOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"parent\":{\"type\":\"string\"},\"point\":{\"type\":\"integer\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"priority\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sort_order\":{\"type\":\"number\"},\"start_date\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Omitted or empty leaves unchanged; null clears the date.\"},{\"type\":\"null\"}]},\"state\":{\"type\":\"string\"},\"target_date\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Omitted or empty leaves unchanged; null clears the date.\"},{\"type\":\"null\"}]},\"type_id\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"assignees\":{\"anyOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]},\"description_html\":{\"type\":\"string\"},\"description_stripped\":{\"type\":\"string\"},\"estimate_point\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"is_draft\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"labels\":{\"anyOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"parent\":{\"type\":\"string\"},\"point\":{\"type\":\"integer\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"priority\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sort_order\":{\"type\":\"number\"},\"start_date\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Omitted or empty leaves unchanged; null clears the date.\"},{\"type\":\"null\"}]},\"state\":{\"type\":\"string\"},\"target_date\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Omitted or empty leaves unchanged; null clears the date.\"},{\"type\":\"null\"}]},\"type_id\":{\"type\":\"string\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"archive\"]},\"archive\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"manage_assignee\"]},\"add_user_id\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_user_id\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"manage_label\"]},\"add_label_id\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_label_id\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"count\"]},{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"list_archived\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"retrieve_by_identifier\"]},{\"type\":\"string\",\"enum\":[\"search\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"archive\"]},{\"type\":\"string\",\"enum\":[\"manage_assignee\"]},{\"type\":\"string\",\"enum\":[\"manage_label\"]}]},\"add_label_id\":{\"type\":\"string\"},\"add_user_id\":{\"type\":\"string\"},\"archive\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"assignees\":{\"anyOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]},\"cursor\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"description_stripped\":{\"type\":\"string\"},\"estimate_point\":{\"type\":\"string\"},\"expand\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"},\"group_by\":{\"type\":\"string\",\"enum\":[\"\",\"state_id\",\"state__group\",\"priority\",\"project_id\",\"type_id\",\"labels__id\",\"assignees__id\",\"issue_module__module_id\",\"release_work_items__release_id\",\"cycle_id\",\"milestone_id\",\"created_by\",\"target_date\",\"start_date\"]},\"include_revision\":{\"type\":\"boolean\"},\"is_draft\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"labels\":{\"anyOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"parent\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses the native page size.\",\"minimum\":0,\"maximum\":1e3},\"point\":{\"type\":\"integer\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"pql\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"string\",\"description\":\"PQL predicate; call get_pql_reference for syntax.\"}]},\"priority\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"query\":{\"type\":\"string\",\"minLength\":1},\"remove_label_id\":{\"type\":\"string\"},\"remove_user_id\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sort_order\":{\"type\":\"number\"},\"start_date\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Omitted or empty leaves unchanged; null clears the date.\"},{\"type\":\"null\"}]},\"state\":{\"type\":\"string\"},\"sub_group_by\":{\"type\":\"string\",\"enum\":[\"\",\"state_id\",\"state__group\",\"priority\",\"project_id\",\"type_id\",\"labels__id\",\"assignees__id\",\"issue_module__module_id\",\"release_work_items__release_id\",\"cycle_id\",\"milestone_id\",\"created_by\",\"target_date\",\"start_date\"]},\"target_date\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Omitted or empty leaves unchanged; null clears the date.\"},{\"type\":\"null\"}]},\"type_id\":{\"type\":\"string\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_identifier\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "workitem",
+		Title:       stringPtr("Work items"),
+	}, &ToolInfo{
+		Annotations:  jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":true}")),
+		Description:  stringPtr("PQL fields, operators, functions and examples."),
+		InputSchema:  jsontext.Value([]byte("{\"type\":\"object\",\"properties\":{\"detail\":{\"type\":\"string\",\"enum\":[\"brief\",\"full\"],\"default\":\"full\"}},\"additionalProperties\":false}")),
+		Name:         "get_pql_reference",
+		OutputSchema: jsontext.Value([]byte("{\"type\":\"object\",\"required\":[\"detail\",\"reference\"],\"properties\":{\"detail\":{\"type\":\"string\"},\"reference\":{\"type\":\"string\"}},\"additionalProperties\":false}")),
+		Title:        stringPtr("PQL reference"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":true,\"readOnlyHint\":false}")),
+		Description: stringPtr("Files attached to a work item, with inline image/text reads."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"attachment_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"read\",\"download_url\"]},\"attachment_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"url\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"upload_from_url\"]},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"url\":{\"type\":\"string\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"attachment_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"attachment_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"read\",\"download_url\"]},{\"type\":\"string\",\"enum\":[\"upload_from_url\"]},{\"type\":\"string\",\"enum\":[\"delete\"]}]},\"attachment_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"include_revision\":{\"type\":\"boolean\"},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"url\":{\"type\":\"string\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "workitem_attachment",
+		Title:       stringPtr("Work item attachments"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("Manage customers and their work-item associations."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"query\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"customer_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"customer_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"include_revision\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"name\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"contract_status\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"domain\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"employees\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":9223372036854775807},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"revenue\":{\"type\":\"string\"},\"stage\":{\"type\":\"string\"},\"website_url\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"customer_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"contract_status\":{\"type\":\"string\"},\"customer_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"description_html\":{\"type\":\"string\"},\"domain\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"employees\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":9223372036854775807},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"revenue\":{\"type\":\"string\"},\"stage\":{\"type\":\"string\"},\"website_url\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"customer_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"customer_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_workitems\"]},\"customer_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"customer_request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"include_revision\":{\"type\":\"boolean\"},\"search\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"customer_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"manage_workitems\"]},\"customer_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"customer_request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"link_ids\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"unlink_ids\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"list_workitems\"]},{\"type\":\"string\",\"enum\":[\"manage_workitems\"]}]},\"contract_status\":{\"type\":\"string\"},\"cursor\":{\"type\":\"string\"},\"customer_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"customer_request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"description_html\":{\"type\":\"string\"},\"domain\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"employees\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":9223372036854775807},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"link_ids\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"query\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"revenue\":{\"type\":\"string\"},\"search\":{\"type\":\"string\"},\"stage\":{\"type\":\"string\"},\"unlink_ids\":{\"type\":\"string\"},\"website_url\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "customer",
+		Title:       stringPtr("Customers"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("Manage customer property definitions and values."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"property_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\"},\"property_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"display_name\",\"property_type\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"default_value\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"display_format\":{\"type\":\"string\"},\"display_name\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"is_active\":{\"type\":\"boolean\"},\"is_multi\":{\"type\":\"boolean\"},\"is_required\":{\"type\":\"boolean\"},\"options\":{\"type\":\"string\"},\"property_type\":{\"type\":\"string\",\"enum\":[\"TEXT\",\"DATETIME\",\"DECIMAL\",\"BOOLEAN\",\"OPTION\",\"RELATION\",\"URL\",\"EMAIL\",\"FILE\"]},\"relation_type\":{\"type\":\"string\",\"enum\":[\"\",\"ISSUE\",\"USER\"]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"property_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"default_value\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"display_name\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"is_active\":{\"type\":\"boolean\"},\"is_multi\":{\"type\":\"boolean\"},\"is_required\":{\"type\":\"boolean\"},\"options\":{\"type\":\"string\"},\"property_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"relation_type\":{\"type\":\"string\",\"enum\":[\"\",\"ISSUE\",\"USER\"]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"property_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"property_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"customer_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"get_values\"]},\"customer_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"property_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"customer_id\",\"values\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"set_values\"]},\"customer_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"values\":{\"type\":\"string\",\"description\":\"JSON object mapping property UUIDs to string arrays.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"get_values\"]},{\"type\":\"string\",\"enum\":[\"set_values\"]}]},\"cursor\":{\"type\":\"string\"},\"customer_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"default_value\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"display_format\":{\"type\":\"string\"},\"display_name\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"is_active\":{\"type\":\"boolean\"},\"is_multi\":{\"type\":\"boolean\"},\"is_required\":{\"type\":\"boolean\"},\"options\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"property_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"property_type\":{\"type\":\"string\",\"enum\":[\"TEXT\",\"DATETIME\",\"DECIMAL\",\"BOOLEAN\",\"OPTION\",\"RELATION\",\"URL\",\"EMAIL\",\"FILE\"]},\"relation_type\":{\"type\":\"string\",\"enum\":[\"\",\"ISSUE\",\"USER\"]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"values\":{\"type\":\"string\",\"description\":\"JSON object mapping property UUIDs to string arrays.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "customer_property",
+		Title:       stringPtr("Customer properties"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("Manage requests raised by customers."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"customer_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"customer_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"include_revision\":{\"type\":\"boolean\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"query\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"customer_id\",\"request_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"customer_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"include_revision\":{\"type\":\"boolean\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"customer_id\",\"name\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"customer_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"description_html\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"link\":{\"type\":\"string\"},\"mutation_id\":{\"type\":\"string\",\"description\":\"Optional Vector retry UUID. request_id identifies the customer request.\",\"format\":\"uuid\"},\"name\":{\"type\":\"string\"},\"workitem_ids\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"customer_id\",\"request_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"customer_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"description_html\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"link\":{\"type\":\"string\"},\"mutation_id\":{\"type\":\"string\",\"description\":\"Optional Vector retry UUID. request_id identifies the customer request.\",\"format\":\"uuid\"},\"name\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"customer_id\",\"request_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"customer_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"mutation_id\":{\"type\":\"string\",\"description\":\"Optional Vector retry UUID. request_id identifies the customer request.\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]}]},\"cursor\":{\"type\":\"string\"},\"customer_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"description_html\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"include_revision\":{\"type\":\"boolean\"},\"link\":{\"type\":\"string\"},\"mutation_id\":{\"type\":\"string\",\"description\":\"Optional Vector retry UUID. request_id identifies the customer request.\",\"format\":\"uuid\"},\"name\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"query\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_ids\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "customer_request",
+		Title:       stringPtr("Customer requests"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("List, create, edit and delete reusable templates."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"kind\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"include_revision\":{\"type\":\"boolean\"},\"kind\":{\"type\":\"string\",\"enum\":[\"workitem\",\"page\",\"project\"]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"kind\",\"name\",\"template_data\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"description\":{\"type\":\"string\"},\"kind\":{\"type\":\"string\",\"enum\":[\"workitem\",\"page\",\"project\"]},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"template_data\":{\"type\":\"string\",\"description\":\"JSON object. Updates merge top-level keys into the saved object.\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"kind\",\"template_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"kind\":{\"type\":\"string\",\"enum\":[\"workitem\",\"page\",\"project\"]},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"template_data\":{\"type\":\"string\",\"description\":\"JSON object. Updates merge top-level keys into the saved object.\"},\"template_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"kind\",\"template_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"kind\":{\"type\":\"string\",\"enum\":[\"workitem\",\"page\",\"project\"]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"template_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]}]},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"include_revision\":{\"type\":\"boolean\"},\"kind\":{\"type\":\"string\",\"enum\":[\"workitem\",\"page\",\"project\"]},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"template_data\":{\"type\":\"string\",\"description\":\"JSON object. Updates merge top-level keys into the saved object.\"},\"template_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "template",
+		Title:       stringPtr("Templates"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("Manage initiatives and their project/work-item associations."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"include_revision\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"initiative_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\"},\"initiative_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"name\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"description_html\":{\"type\":\"string\"},\"end_date\":{\"type\":\"string\"},\"lead\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"start_date\":{\"type\":\"string\"},\"state\":{\"type\":\"string\",\"enum\":[\"\",\"DRAFT\",\"PLANNED\",\"ACTIVE\",\"COMPLETED\",\"CLOSED\"]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"initiative_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"description_html\":{\"type\":\"string\"},\"end_date\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"initiative_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"lead\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"start_date\":{\"type\":\"string\"},\"state\":{\"type\":\"string\",\"enum\":[\"\",\"DRAFT\",\"PLANNED\",\"ACTIVE\",\"COMPLETED\",\"CLOSED\"]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"initiative_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"initiative_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"initiative_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_projects\"]},\"cursor\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"initiative_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"initiative_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_workitems\"]},\"cursor\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"initiative_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"initiative_id\",\"project_ids\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"add_projects\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"initiative_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_ids\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"initiative_id\",\"project_ids\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"remove_projects\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"initiative_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_ids\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"initiative_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"manage_workitems\"]},\"add_ids\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"initiative_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_ids\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"list_projects\"]},{\"type\":\"string\",\"enum\":[\"list_workitems\"]},{\"type\":\"string\",\"enum\":[\"add_projects\"]},{\"type\":\"string\",\"enum\":[\"remove_projects\"]},{\"type\":\"string\",\"enum\":[\"manage_workitems\"]}]},\"add_ids\":{\"type\":\"string\"},\"cursor\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"end_date\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"include_revision\":{\"type\":\"boolean\"},\"initiative_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"lead\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"project_ids\":{\"type\":\"string\"},\"remove_ids\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"start_date\":{\"type\":\"string\"},\"state\":{\"type\":\"string\",\"enum\":[\"\",\"DRAFT\",\"PLANNED\",\"ACTIVE\",\"COMPLETED\",\"CLOSED\"]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "initiative",
+		Title:       stringPtr("Initiatives"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("Read, create, edit, archive, file and link pages."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"page_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\"},\"page_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"name\",\"description_html\"],\"properties\":{\"access\":{\"type\":\"integer\",\"enum\":[0,1],\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"collection_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"color\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"is_locked\":{\"type\":\"boolean\"},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"parent_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"page_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"description_html\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"name\":{\"type\":\"string\"},\"page_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"page_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"archive\"]},\"archive\":{\"type\":\"boolean\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"page_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"page_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"page_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"page_id\",\"collection_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"set_collection\"]},\"collection_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"page_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_workitem_pages\"]},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"page_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"attach_to_workitem\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"page_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"workitem_page_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"detach_from_workitem\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_page_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"access\":{\"type\":\"integer\",\"enum\":[0,1],\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"archive\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"set_collection\"]},{\"type\":\"string\",\"enum\":[\"list_workitem_pages\"]},{\"type\":\"string\",\"enum\":[\"attach_to_workitem\"]},{\"type\":\"string\",\"enum\":[\"detach_from_workitem\"]}]},\"archive\":{\"type\":\"boolean\"},\"collection_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"color\":{\"type\":\"string\"},\"cursor\":{\"type\":\"string\"},\"description_html\":{\"anyOf\":[{\"type\":\"string\",\"minLength\":1},{\"type\":\"string\"}]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"is_locked\":{\"type\":\"boolean\"},\"name\":{\"anyOf\":[{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},{\"type\":\"string\"}]},\"page_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"parent_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_page_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "page",
+		Title:       stringPtr("Pages"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("Manage page collections, their pages and members."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"include_revision\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"collection_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"collection_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"include_revision\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"name\"],\"properties\":{\"access\":{\"type\":\"string\",\"enum\":[\"\",\"public\",\"private\"]},\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"collection_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"collection_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"name\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sort_order\":{\"type\":\"number\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"collection_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"archive_pages\":{\"type\":\"boolean\"},\"collection_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"collection_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_pages\"]},\"collection_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"cursor\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"parent_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"search\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"collection_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"search_pages\"]},\"collection_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"include_revision\":{\"type\":\"boolean\"},\"search\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"collection_id\",\"page_ids\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"add_pages\"]},\"collection_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"page_ids\":{\"type\":\"string\",\"description\":\"JSON array or comma-separated page UUIDs.\",\"minLength\":1},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"collection_id\",\"page_collection_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"remove_page\"]},\"collection_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"page_collection_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"collection_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_members\"]},\"collection_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"include_revision\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"collection_id\",\"user_id\",\"member_access\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"add_member\"]},\"collection_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"member_access\":{\"type\":\"string\",\"enum\":[\"view\",\"comment\",\"edit\"]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"user_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"collection_id\",\"collection_member_id\",\"member_access\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update_member\"]},\"collection_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"collection_member_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"member_access\":{\"type\":\"string\",\"enum\":[\"view\",\"comment\",\"edit\"]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"collection_id\",\"collection_member_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"remove_member\"]},\"collection_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"collection_member_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"access\":{\"type\":\"string\",\"enum\":[\"\",\"public\",\"private\"]},\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"list_pages\"]},{\"type\":\"string\",\"enum\":[\"search_pages\"]},{\"type\":\"string\",\"enum\":[\"add_pages\"]},{\"type\":\"string\",\"enum\":[\"remove_page\"]},{\"type\":\"string\",\"enum\":[\"list_members\"]},{\"type\":\"string\",\"enum\":[\"add_member\"]},{\"type\":\"string\",\"enum\":[\"update_member\"]},{\"type\":\"string\",\"enum\":[\"remove_member\"]}]},\"archive_pages\":{\"type\":\"boolean\"},\"collection_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"collection_member_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"cursor\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"include_revision\":{\"type\":\"boolean\"},\"member_access\":{\"type\":\"string\",\"enum\":[\"view\",\"comment\",\"edit\"]},\"name\":{\"anyOf\":[{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},{\"type\":\"string\"}]},\"page_collection_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"page_ids\":{\"type\":\"string\",\"description\":\"JSON array or comma-separated page UUIDs.\",\"minLength\":1},\"parent_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"search\":{\"type\":\"string\"},\"sort_order\":{\"type\":\"number\"},\"user_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "collection",
+		Title:       stringPtr("Page collections"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("Workspace releases, changelogs and linked work items. Workspace administrators manage the catalogue. release_date is the UI target date; target_date is stored separately. Item changes validate current project permissions. Labels and version tags have separate tools."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"release_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\"},\"release_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"name\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"description_html\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"is_prerelease\":{\"type\":\"boolean\"},\"lead_id\":{\"type\":\"string\"},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"release_date\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"status\":{\"type\":\"string\",\"enum\":[\"\",\"unreleased\",\"released\",\"cancelled\"]},\"tag_id\":{\"type\":\"string\"},\"target_date\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"release_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"description_html\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"is_prerelease\":{\"type\":\"boolean\"},\"lead_id\":{\"type\":\"string\"},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"release_date\":{\"type\":\"string\"},\"release_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"status\":{\"type\":\"string\",\"enum\":[\"\",\"unreleased\",\"released\",\"cancelled\"]},\"tag_id\":{\"type\":\"string\"},\"target_date\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"release_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"release_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"release_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"get_changelog\"]},\"include_revision\":{\"type\":\"boolean\"},\"release_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"release_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update_changelog\"]},\"description_html\":{\"type\":\"string\"},\"description_stripped\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"release_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"release_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_workitems\"]},\"cursor\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"release_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"release_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"manage_workitems\"]},\"add_ids\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"release_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_ids\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"get_changelog\"]},{\"type\":\"string\",\"enum\":[\"update_changelog\"]},{\"type\":\"string\",\"enum\":[\"list_workitems\"]},{\"type\":\"string\",\"enum\":[\"manage_workitems\"]}]},\"add_ids\":{\"type\":\"string\"},\"cursor\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"description_stripped\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"is_prerelease\":{\"type\":\"boolean\"},\"lead_id\":{\"type\":\"string\"},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"release_date\":{\"type\":\"string\"},\"release_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_ids\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"status\":{\"type\":\"string\",\"enum\":[\"\",\"unreleased\",\"released\",\"cancelled\"]},\"tag_id\":{\"type\":\"string\"},\"target_date\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "release",
+		Title:       stringPtr("Releases"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("Workspace release-label palette. List with release_id returns attached labels. Attach and detach change one release; delete removes the palette entry. sort_order=0 is valid."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"release_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"name\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"color\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sort_order\":{\"type\":\"integer\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"label_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"color\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"label_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sort_order\":{\"type\":\"integer\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"label_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"label_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"release_id\",\"label_ids\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"attach\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"label_ids\":{\"type\":\"string\"},\"release_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"release_id\",\"label_ids\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"detach\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"label_ids\":{\"type\":\"string\"},\"release_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"attach\"]},{\"type\":\"string\",\"enum\":[\"detach\"]}]},\"color\":{\"type\":\"string\"},\"cursor\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"include_revision\":{\"type\":\"boolean\"},\"label_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"label_ids\":{\"type\":\"string\"},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"release_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"sort_order\":{\"type\":\"integer\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "release_label",
+		Title:       stringPtr("Release labels"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("Workspace release version markers, with optional Git metadata. Version strings are unique in the workspace. A release uses the tag ID, not its version text."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"tag_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\"},\"tag_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"version\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"commit_hash\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"git_tag\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"version\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"tag_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"commit_hash\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"git_tag\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"tag_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"version\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"tag_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"tag_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]}]},\"commit_hash\":{\"type\":\"string\"},\"cursor\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"git_tag\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"tag_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"version\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "release_tag",
+		Title:       stringPtr("Release tags"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("List, retrieve, create, triage and delete intake submissions."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"description\":\"Underlying issue ID, not the intake record ID.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"name\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"description_html\":{\"type\":\"string\"},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"priority\":{\"type\":\"string\",\"enum\":[\"\",\"urgent\",\"high\",\"medium\",\"low\",\"none\"]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"duplicate_to\":{\"type\":\"string\",\"description\":\"Visible work-item UUID; required when status is 2.\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"snoozed_till\":{\"type\":\"string\",\"description\":\"Required when status is 0.\"},\"source\":{\"type\":\"string\",\"maxLength\":255},\"source_email\":{\"type\":\"string\"},\"status\":{\"type\":\"integer\",\"description\":\"-2 pending, -1 declined, 0 snoozed, 1 accepted, 2 duplicate.\",\"enum\":[-2,-1,0,1,2],\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"workitem_id\":{\"type\":\"string\",\"description\":\"Underlying issue ID, not the intake record ID.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"description\":\"Underlying issue ID, not the intake record ID.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]}]},\"cursor\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"duplicate_to\":{\"type\":\"string\",\"description\":\"Visible work-item UUID; required when status is 2.\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"include_revision\":{\"type\":\"boolean\"},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"priority\":{\"type\":\"string\",\"enum\":[\"\",\"urgent\",\"high\",\"medium\",\"low\",\"none\"]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"snoozed_till\":{\"type\":\"string\",\"description\":\"Required when status is 0.\"},\"source\":{\"type\":\"string\",\"maxLength\":255},\"source_email\":{\"type\":\"string\"},\"status\":{\"type\":\"integer\",\"description\":\"-2 pending, -1 declined, 0 snoozed, 1 accepted, 2 duplicate.\",\"enum\":[-2,-1,0,1,2],\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"workitem_id\":{\"type\":\"string\",\"description\":\"Underlying issue ID, not the intake record ID.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "intake",
+		Title:       stringPtr("Intake queue"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("List, create, update and delete time entries."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"duration\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"description\":{\"type\":\"string\"},\"duration\":{\"type\":\"integer\",\"description\":\"Minutes.\",\"minimum\":1,\"maximum\":2147483647},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"work_log_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"description\":{\"type\":\"string\",\"description\":\"Empty or omitted leaves unchanged.\"},\"duration\":{\"type\":\"integer\",\"description\":\"Minutes; zero or omission leaves unchanged.\",\"minimum\":0,\"maximum\":2147483647},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"work_log_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"work_log_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"work_log_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]}]},\"cursor\":{\"type\":\"string\"},\"description\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"string\",\"description\":\"Empty or omitted leaves unchanged.\"}]},\"duration\":{\"anyOf\":[{\"type\":\"integer\",\"description\":\"Minutes.\",\"minimum\":1,\"maximum\":2147483647},{\"type\":\"integer\",\"description\":\"Minutes; zero or omission leaves unchanged.\",\"minimum\":0,\"maximum\":2147483647}]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"include_revision\":{\"type\":\"boolean\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"work_log_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "work_log",
+		Title:       stringPtr("Work logs"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("List, create and delete relations; list, create, update and delete their definitions."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"workitem_ids\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"relation_definition_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"relation_definition_label\":{\"type\":\"string\"},\"relation_type\":{\"type\":\"string\",\"enum\":[\"blocking\",\"blocked_by\",\"start_before\",\"start_after\",\"finish_before\",\"finish_after\"]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_ids\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"format\":\"uuid\"},\"minItems\":1,\"maxItems\":1000},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"related_workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"is_dependency\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"related_workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_definitions\"]},\"include_revision\":{\"type\":\"boolean\"},\"is_active\":{\"type\":\"boolean\"},\"is_default\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"name\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create_definition\"]},\"color\":{\"type\":\"string\",\"maxLength\":255},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"inward\":{\"type\":\"string\",\"maxLength\":255},\"is_active\":{\"type\":\"boolean\"},\"name\":{\"type\":\"string\",\"maxLength\":255},\"outward\":{\"type\":\"string\",\"maxLength\":255},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"definition_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update_definition\"]},\"color\":{\"type\":\"string\",\"maxLength\":255},\"definition_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"inward\":{\"type\":\"string\",\"maxLength\":255},\"is_active\":{\"type\":\"boolean\"},\"name\":{\"type\":\"string\",\"maxLength\":255},\"outward\":{\"type\":\"string\",\"maxLength\":255},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"definition_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete_definition\"]},\"definition_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"list_definitions\"]},{\"type\":\"string\",\"enum\":[\"create_definition\"]},{\"type\":\"string\",\"enum\":[\"update_definition\"]},{\"type\":\"string\",\"enum\":[\"delete_definition\"]}]},\"color\":{\"type\":\"string\",\"maxLength\":255},\"definition_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"include_revision\":{\"type\":\"boolean\"},\"inward\":{\"type\":\"string\",\"maxLength\":255},\"is_active\":{\"type\":\"boolean\"},\"is_default\":{\"type\":\"boolean\"},\"is_dependency\":{\"type\":\"boolean\"},\"name\":{\"type\":\"string\",\"maxLength\":255},\"outward\":{\"type\":\"string\",\"maxLength\":255},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"related_workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"relation_definition_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"relation_definition_label\":{\"type\":\"string\"},\"relation_type\":{\"type\":\"string\",\"enum\":[\"blocking\",\"blocked_by\",\"start_before\",\"start_after\",\"finish_before\",\"finish_after\"]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_ids\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"format\":\"uuid\"},\"minItems\":1,\"maxItems\":1000},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "workitem_relation",
+		Title:       stringPtr("Work item relations"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("Manage property definitions, options and type associations."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"description\":\"Optional project scope; definitions are workspace owned.\"},\"workitem_type_id\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"workitem_property_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"description\":\"Optional project scope; definitions are workspace owned.\"},\"workitem_property_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_type_id\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"display_name\",\"property_type\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"configuration\":{\"type\":\"object\",\"description\":\"Vector extension: FORMULA creation requires expression and result; CASCADING creation requires two to four levels and its option tree; readonly TEXT can supply content.\",\"properties\":{\"content\":{\"type\":\"string\",\"maxLength\":65536},\"expression\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096},\"levels\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"required\":[\"id\",\"name\",\"required\"],\"properties\":{\"id\":{\"type\":\"string\",\"format\":\"uuid\"},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":100},\"required\":{\"type\":\"boolean\"}},\"additionalProperties\":false},\"maxItems\":4},\"options\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"required\":[\"id\",\"name\",\"level\"],\"properties\":{\"icon\":{\"type\":\"string\"},\"id\":{\"type\":\"string\",\"format\":\"uuid\"},\"level\":{\"type\":\"integer\",\"description\":\"Zero-based cascading level.\",\"minimum\":0,\"maximum\":3},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"next_label\":{\"type\":\"string\",\"maxLength\":100},\"parent\":{\"type\":\"string\",\"description\":\"Parent option UUID; omit for a root option.\"}},\"additionalProperties\":false},\"maxItems\":1000},\"result\":{\"type\":\"string\",\"enum\":[\"Number\",\"Text\",\"Boolean\",\"Date\"]}},\"additionalProperties\":false},\"default_value\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"display_format\":{\"type\":\"string\"},\"display_name\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"is_active\":{\"type\":\"boolean\"},\"is_multi\":{\"type\":\"boolean\"},\"is_required\":{\"type\":\"boolean\"},\"options\":{\"type\":\"string\",\"description\":\"JSON array of option objects.\"},\"project_id\":{\"type\":\"string\",\"description\":\"Optional project scope; definitions are workspace owned.\"},\"property_type\":{\"type\":\"string\",\"enum\":[\"TEXT\",\"DATETIME\",\"DECIMAL\",\"BOOLEAN\",\"OPTION\",\"RELATION\",\"URL\",\"EMAIL\",\"FILE\",\"FORMULA\",\"CASCADING\"]},\"relation_type\":{\"type\":\"string\",\"enum\":[\"ISSUE\",\"USER\",\"RELEASE\",\"RICH_TEXT\"]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_type_id\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"workitem_property_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"configuration\":{\"type\":\"object\",\"description\":\"Vector extension: FORMULA creation requires expression and result; CASCADING creation requires two to four levels and its option tree; readonly TEXT can supply content.\",\"properties\":{\"content\":{\"type\":\"string\",\"maxLength\":65536},\"expression\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096},\"levels\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"required\":[\"id\",\"name\",\"required\"],\"properties\":{\"id\":{\"type\":\"string\",\"format\":\"uuid\"},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":100},\"required\":{\"type\":\"boolean\"}},\"additionalProperties\":false},\"maxItems\":4},\"options\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"required\":[\"id\",\"name\",\"level\"],\"properties\":{\"icon\":{\"type\":\"string\"},\"id\":{\"type\":\"string\",\"format\":\"uuid\"},\"level\":{\"type\":\"integer\",\"description\":\"Zero-based cascading level.\",\"minimum\":0,\"maximum\":3},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"next_label\":{\"type\":\"string\",\"maxLength\":100},\"parent\":{\"type\":\"string\",\"description\":\"Parent option UUID; omit for a root option.\"}},\"additionalProperties\":false},\"maxItems\":1000},\"result\":{\"type\":\"string\",\"enum\":[\"Number\",\"Text\",\"Boolean\",\"Date\"]}},\"additionalProperties\":false},\"default_value\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"display_format\":{\"type\":\"string\"},\"display_name\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"is_active\":{\"type\":\"boolean\"},\"is_multi\":{\"type\":\"boolean\"},\"is_required\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"description\":\"Optional project scope; definitions are workspace owned.\"},\"property_type\":{\"type\":\"string\",\"enum\":[\"TEXT\",\"DATETIME\",\"DECIMAL\",\"BOOLEAN\",\"OPTION\",\"RELATION\",\"URL\",\"EMAIL\",\"FILE\",\"FORMULA\",\"CASCADING\"]},\"relation_type\":{\"type\":\"string\",\"enum\":[\"ISSUE\",\"USER\",\"RELEASE\",\"RICH_TEXT\"]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_property_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_type_id\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"workitem_property_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"description\":\"Optional project scope; definitions are workspace owned.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_property_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_type_id\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"workitem_type_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"manage_type_properties\"]},\"attach_ids\":{\"type\":\"string\"},\"detach_ids\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"description\":\"Optional project scope; definitions are workspace owned.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_type_id\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"property_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_options\"]},\"cursor\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"description\":\"Optional project scope; definitions are workspace owned.\"},\"property_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"property_id\",\"option_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve_option\"]},\"include_revision\":{\"type\":\"boolean\"},\"option_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"description\":\"Optional project scope; definitions are workspace owned.\"},\"property_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"property_id\",\"name\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create_option\"]},\"color\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"is_default\":{\"type\":\"boolean\"},\"name\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"description\":\"Optional project scope; definitions are workspace owned.\"},\"property_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"property_id\",\"option_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update_option\"]},\"color\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"is_default\":{\"type\":\"boolean\"},\"name\":{\"type\":\"string\"},\"option_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"description\":\"Optional project scope; definitions are workspace owned.\"},\"property_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"property_id\",\"option_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete_option\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"option_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"description\":\"Optional project scope; definitions are workspace owned.\"},\"property_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"property_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"get_value\"]},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"description\":\"Optional project scope; definitions are workspace owned.\"},\"property_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"property_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"set_value\"]},\"description_html\":{\"type\":\"string\",\"description\":\"Use instead of value for a rich text property.\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\",\"maxLength\":255},\"external_source\":{\"type\":\"string\",\"maxLength\":255},\"project_id\":{\"type\":\"string\",\"description\":\"Optional project scope; definitions are workspace owned.\"},\"property_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"value\":{\"description\":\"A string, boolean, number, or array of selection IDs. Zero and false are values.\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"property_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete_value\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"description\":\"Optional project scope; definitions are workspace owned.\"},\"property_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"manage_type_properties\"]},{\"type\":\"string\",\"enum\":[\"list_options\"]},{\"type\":\"string\",\"enum\":[\"retrieve_option\"]},{\"type\":\"string\",\"enum\":[\"create_option\"]},{\"type\":\"string\",\"enum\":[\"update_option\"]},{\"type\":\"string\",\"enum\":[\"delete_option\"]},{\"type\":\"string\",\"enum\":[\"get_value\"]},{\"type\":\"string\",\"enum\":[\"set_value\"]},{\"type\":\"string\",\"enum\":[\"delete_value\"]}]},\"attach_ids\":{\"type\":\"string\"},\"color\":{\"type\":\"string\"},\"configuration\":{\"type\":\"object\",\"description\":\"Vector extension: FORMULA creation requires expression and result; CASCADING creation requires two to four levels and its option tree; readonly TEXT can supply content.\",\"properties\":{\"content\":{\"type\":\"string\",\"maxLength\":65536},\"expression\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096},\"levels\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"required\":[\"id\",\"name\",\"required\"],\"properties\":{\"id\":{\"type\":\"string\",\"format\":\"uuid\"},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":100},\"required\":{\"type\":\"boolean\"}},\"additionalProperties\":false},\"maxItems\":4},\"options\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"required\":[\"id\",\"name\",\"level\"],\"properties\":{\"icon\":{\"type\":\"string\"},\"id\":{\"type\":\"string\",\"format\":\"uuid\"},\"level\":{\"type\":\"integer\",\"description\":\"Zero-based cascading level.\",\"minimum\":0,\"maximum\":3},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"next_label\":{\"type\":\"string\",\"maxLength\":100},\"parent\":{\"type\":\"string\",\"description\":\"Parent option UUID; omit for a root option.\"}},\"additionalProperties\":false},\"maxItems\":1000},\"result\":{\"type\":\"string\",\"enum\":[\"Number\",\"Text\",\"Boolean\",\"Date\"]}},\"additionalProperties\":false},\"cursor\":{\"type\":\"string\"},\"default_value\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\",\"description\":\"Use instead of value for a rich text property.\"},\"detach_ids\":{\"type\":\"string\"},\"display_format\":{\"type\":\"string\"},\"display_name\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"string\",\"maxLength\":255}]},\"external_source\":{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"string\",\"maxLength\":255}]},\"include_revision\":{\"type\":\"boolean\"},\"is_active\":{\"type\":\"boolean\"},\"is_default\":{\"type\":\"boolean\"},\"is_multi\":{\"type\":\"boolean\"},\"is_required\":{\"type\":\"boolean\"},\"name\":{\"type\":\"string\"},\"option_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"options\":{\"type\":\"string\",\"description\":\"JSON array of option objects.\"},\"per_page\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"description\":\"Optional project scope; definitions are workspace owned.\"},\"property_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"property_type\":{\"type\":\"string\",\"enum\":[\"TEXT\",\"DATETIME\",\"DECIMAL\",\"BOOLEAN\",\"OPTION\",\"RELATION\",\"URL\",\"EMAIL\",\"FILE\",\"FORMULA\",\"CASCADING\"]},\"relation_type\":{\"type\":\"string\",\"enum\":[\"ISSUE\",\"USER\",\"RELEASE\",\"RICH_TEXT\"]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"value\":{\"description\":\"A string, boolean, number, or array of selection IDs. Zero and false are values.\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_property_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_type_id\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "workitem_property",
+		Title:       stringPtr("Work item properties"),
 	}}
 }
 func (a *MCPAdapter) toolSearchEnabled() bool {
@@ -574,6 +701,8 @@ func (a *MCPAdapter) isToolCallProxyName(name string) bool {
 }
 func isGeneratedToolName(name string) bool {
 	switch name {
+	case "workspace":
+		return true
 	case "member":
 		return true
 	case "project":
@@ -591,6 +720,46 @@ func isGeneratedToolName(name string) bool {
 	case "workitem_activity":
 		return true
 	case "milestone":
+		return true
+	case "state":
+		return true
+	case "project_estimate":
+		return true
+	case "workitem_type":
+		return true
+	case "workitem":
+		return true
+	case "get_pql_reference":
+		return true
+	case "workitem_attachment":
+		return true
+	case "customer":
+		return true
+	case "customer_property":
+		return true
+	case "customer_request":
+		return true
+	case "template":
+		return true
+	case "initiative":
+		return true
+	case "page":
+		return true
+	case "collection":
+		return true
+	case "release":
+		return true
+	case "release_label":
+		return true
+	case "release_tag":
+		return true
+	case "intake":
+		return true
+	case "work_log":
+		return true
+	case "workitem_relation":
+		return true
+	case "workitem_property":
 		return true
 	default:
 		return false
@@ -1310,6 +1479,21 @@ func (a *MCPAdapter) handleCallToolProxy(ctx context.Context, p *ToolsCallPayloa
 	toolErr := result != nil && result.IsError != nil && *result.IsError
 	return toolErr, stream.SendAndClose(ctx, result)
 }
+func workspaceInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"retrieve\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
 func memberInputRecovery(err error, raw jsontext.Value) string {
 	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
 	if message == "" {
@@ -1346,7 +1530,7 @@ func cycleInputRecovery(err error, raw jsontext.Value) string {
 		message = strings.TrimSpace(err.Error())
 	}
 	_ = raw
-	example := "{\"action\":\"list\",\"project_id\":\"example\"}"
+	example := "{\"action\":\"list_workitems\",\"cycle_id\":\"example\",\"project_id\":\"example\"}"
 	if field := missingFieldFromMessage(message); field != "" {
 		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
 	}
@@ -1361,7 +1545,7 @@ func moduleInputRecovery(err error, raw jsontext.Value) string {
 		message = strings.TrimSpace(err.Error())
 	}
 	_ = raw
-	example := "{\"action\":\"list\",\"project_id\":\"example\"}"
+	example := "{\"action\":\"list_workitems\",\"module_id\":\"example\",\"project_id\":\"example\"}"
 	if field := missingFieldFromMessage(message); field != "" {
 		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
 	}
@@ -1437,6 +1621,306 @@ func milestoneInputRecovery(err error, raw jsontext.Value) string {
 	}
 	_ = raw
 	example := "{\"action\":\"list\",\"project_id\":\"example\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func stateInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func projectEstimateInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"retrieve\",\"project_id\":\"example\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func workitemTypeInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func workitemInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"count\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func getPqlReferenceInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"detail\":\"full\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func workitemAttachmentInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\",\"project_id\":\"example\",\"workitem_id\":\"example\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func customerInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func customerPropertyInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func customerRequestInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\",\"customer_id\":\"example\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func templateInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\",\"kind\":\"workitem\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func initiativeInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func pageInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func collectionInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func releaseInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func releaseLabelInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func releaseTagInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func intakeInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\",\"project_id\":\"example\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func workLogInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\",\"project_id\":\"example\",\"workitem_id\":\"example\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func workitemRelationInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\",\"project_id\":\"example\",\"workitem_id\":\"example\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
+func workitemPropertyInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\"}"
 	if field := missingFieldFromMessage(message); field != "" {
 		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
 	}
@@ -1523,6 +2007,32 @@ func (a *MCPAdapter) executeRealTool(ctx context.Context, p *ToolsCallPayload, s
 		arguments = jsontext.Value([]byte("{}"))
 	}
 	switch p.Name {
+	case "workspace":
+		payload, err := decodeWorkspacePayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", workspaceInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.Workspace(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
 	case "member":
 		payload, err := decodeMemberPayload(arguments)
 		if err != nil {
@@ -1740,6 +2250,526 @@ func (a *MCPAdapter) executeRealTool(ctx context.Context, p *ToolsCallPayload, s
 			return false, err
 		}
 		result, err := a.service.Milestone(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "state":
+		payload, err := decodeStatePayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", stateInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.State(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "project_estimate":
+		payload, err := decodeProjectEstimatePayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", projectEstimateInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.ProjectEstimate(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "workitem_type":
+		payload, err := decodeWorkitemTypePayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", workitemTypeInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.WorkitemType(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "workitem":
+		payload, err := decodeWorkitemPayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", workitemInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.Workitem(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "get_pql_reference":
+		payload, err := decodeGetPqlReferencePayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", getPqlReferenceInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.GetPqlReference(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "workitem_attachment":
+		payload, err := decodeWorkitemAttachmentPayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", workitemAttachmentInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.WorkitemAttachment(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "customer":
+		payload, err := decodeCustomerPayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", customerInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.Customer(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "customer_property":
+		payload, err := decodeCustomerPropertyPayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", customerPropertyInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.CustomerProperty(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "customer_request":
+		payload, err := decodeCustomerRequestPayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", customerRequestInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.CustomerRequest(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "template":
+		payload, err := decodeTemplatePayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", templateInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.Template(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "initiative":
+		payload, err := decodeInitiativePayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", initiativeInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.Initiative(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "page":
+		payload, err := decodePagePayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", pageInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.Page(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "collection":
+		payload, err := decodeCollectionPayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", collectionInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.Collection(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "release":
+		payload, err := decodeReleasePayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", releaseInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.Release(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "release_label":
+		payload, err := decodeReleaseLabelPayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", releaseLabelInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.ReleaseLabel(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "release_tag":
+		payload, err := decodeReleaseTagPayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", releaseTagInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.ReleaseTag(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "intake":
+		payload, err := decodeIntakePayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", intakeInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.Intake(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "work_log":
+		payload, err := decodeWorkLogPayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", workLogInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.WorkLog(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "workitem_relation":
+		payload, err := decodeWorkitemRelationPayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", workitemRelationInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.WorkitemRelation(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "workitem_property":
+		payload, err := decodeWorkitemPropertyPayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", workitemPropertyInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.WorkitemProperty(ctx, payload)
 		if err != nil {
 			return true, a.sendToolError(ctx, stream, p.Name, err)
 		}

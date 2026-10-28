@@ -24,7 +24,7 @@ func (r *Repository) collaborationActivity(ctx context.Context, q Request, kind,
 		}
 	}
 	kwargs := map[string]any{"type": category + ".activity." + verb, "requested_data": requested, "current_instance": previous, "actor_id": q.ActorID, "issue_id": issue, "project_id": project, "epoch": r.now().Unix()}
-	if !q.API && !collaborationPublic(q) {
+	if r.notifyCollaboration || !q.API && !collaborationPublic(q) {
 		kwargs["notification"], kwargs["origin"] = true, r.origin
 	}
 	return r.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, kwargs)

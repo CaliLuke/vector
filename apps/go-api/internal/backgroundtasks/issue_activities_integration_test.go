@@ -19,7 +19,7 @@ import (
 )
 
 func TestPostgresIssueActivityWorkflowIsIdempotentPerEvent(t *testing.T) {
-	_, executionURL, pool := openBackgroundTaskDatabase(t)
+	executionURL, pool := openCatalogueActivityDatabase(t)
 	defer pool.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
@@ -154,6 +154,7 @@ func TestPostgresIssueActivityWorkflowIsIdempotentPerEvent(t *testing.T) {
 	if count != 2 {
 		t.Fatalf("distinct identical event created %d activity rows, want 2", count)
 	}
+	assertCatalogueActivityWorkflows(t, ctx, app, dispatcher, store, pool, input)
 
 	update := IssueActivityInput{
 		Type: "issue.activity.updated", ProjectID: projectID.String(), IssueID: stringPointer(issueID.String()), ActorID: stringPointer(ownerID.String()), Notification: true, Origin: "https://plane.example.test",

@@ -1,0 +1,10 @@
+BEGIN;
+SET LOCAL search_path = public, pg_catalog;
+DROP TRIGGER type_settings_api_revision ON work_item_type_settings;
+DROP TRIGGER project_type_api_revision ON project_issue_types;
+DROP TRIGGER type_api_revision ON issue_types;
+DROP FUNCTION advance_work_item_type_api_revision();
+DROP TRIGGER workspace_type_api_revision ON workspaces;
+DROP FUNCTION initialize_work_item_type_api_revision();
+DROP TABLE work_item_type_api_revisions;
+COMMIT;

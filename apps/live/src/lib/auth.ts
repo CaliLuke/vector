@@ -9,6 +9,8 @@ import type { TUserDetails } from "@plane/editor";
 import { logger } from "@plane/logger";
 import { AppError } from "@/lib/errors";
 // services
+import { parsePageDocumentName } from "@/lib/page-document";
+import { getPageService } from "@/services/page/handler";
 import { UserService } from "@/services/user.service";
 // types
 import type { HocusPocusServerContext, TDocumentTypes } from "@/types";
@@ -21,11 +23,13 @@ import type { HocusPocusServerContext, TDocumentTypes } from "@/types";
  * @returns The authenticated user
  */
 export const onAuthenticate = async ({
+  documentName,
   requestHeaders,
   requestParameters,
   context,
   token,
 }: {
+  documentName: string;
   requestHeaders: Headers;
   context: HocusPocusServerContext;
   requestParameters: URLSearchParams;
@@ -64,6 +68,10 @@ export const onAuthenticate = async ({
   context.projectId = requestParameters.get("projectId");
   context.userId = userId;
   context.workspaceSlug = requestParameters.get("workspaceSlug");
+
+  const document = parsePageDocumentName(documentName);
+  context.collaborationRevision = document.revision;
+  await getPageService(context.documentType, context).fetchDetails(documentName);
 
   return await handleAuthentication({
     cookie: context.cookie,

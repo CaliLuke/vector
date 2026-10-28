@@ -1,0 +1,11 @@
+BEGIN;
+SET LOCAL search_path = public, pg_catalog;
+DROP TRIGGER estimate_point_catalog_revision ON estimate_points;
+DROP TRIGGER estimate_catalog_revision ON estimates;
+DROP FUNCTION advance_estimate_catalog_revision();
+DROP TRIGGER project_estimate_revision ON projects;
+DROP FUNCTION advance_project_estimate_revision();
+DROP TABLE project_estimate_revisions;
+ALTER TABLE estimate_points DROP COLUMN external_source, DROP COLUMN external_id;
+ALTER TABLE estimates DROP COLUMN external_source, DROP COLUMN external_id;
+COMMIT;

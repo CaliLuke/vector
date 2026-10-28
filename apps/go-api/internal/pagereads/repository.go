@@ -724,6 +724,7 @@ WITH page_rows AS (
     )
 )
 SELECT COALESCE(json_agg(json_build_object(
+  'collaboration_revision', collaboration_revision,
   'id', id,
   'name', name,
   'owned_by', owned_by_id,
@@ -748,6 +749,7 @@ FROM page_rows
 
 var pageDetailSQL = `
 SELECT json_build_object(
+  'collaboration_revision', page.collaboration_revision,
   'id', page.id,
   'name', page.name,
   'owned_by', page.owned_by_id,

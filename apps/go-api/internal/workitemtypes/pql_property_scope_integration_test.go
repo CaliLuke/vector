@@ -28,16 +28,20 @@ func TestAPIPQLPropertySelectionsUseAuthorizedCatalogsAndRetainInactiveIdentitie
 	f := newProjectTypeFixture(t)
 	repo, ids := seedDiscoveryItems(t, f)
 	option, member, release, first, second, ownRelease, privateRelease, privateProject := uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString()
+	issue := uuid.NewString()
 	attachValueProperties(t, f,
+		property.Definition{ID: issue, Title: "Linked work", Kind: property.Issue, Configuration: property.Configuration{Active: true, Multiple: true}},
 		property.Definition{ID: option, Title: "Choice", Kind: property.Dropdown, Configuration: property.Configuration{Active: true, Multiple: true, Options: []property.Option{{ID: first, Name: "First"}, {ID: second, Name: "Second"}}}},
 		property.Definition{ID: member, Title: "Reviewers", Kind: property.Member, Configuration: property.Configuration{Active: true, Multiple: true}},
 		property.Definition{ID: release, Title: "Deliveries", Kind: property.Release, Configuration: property.Configuration{Active: true, Multiple: true}},
 	)
 	f.addProject(privateProject)
 	f.exec(`INSERT INTO work_item_releases(id,workspace_id,project_id,name) VALUES($1,$2,$3,'Visible'),($4,$2,$5,'Private')`, ownRelease, f.workspace, f.project, privateRelease, privateProject)
-	f.exec(`UPDATE issues SET custom_properties=$2::jsonb WHERE id=$1`, ids[0], map[string]any{option: []string{first, second}, member: []string{f.member}, release: []string{ownRelease}})
+	f.exec(`UPDATE issues SET custom_properties=$2::jsonb WHERE id=$1`, ids[0], map[string]any{option: []string{first, second}, member: []string{f.member}, release: []string{ownRelease}, issue: []string{ids[2]}})
 	f.exec(`UPDATE issues SET custom_properties=$2::jsonb WHERE id=$1`, ids[1], map[string]any{option: []string{second}})
 	assertPQLPropertyResults(t, f, repo, map[string][]string{
+		pqlCF(issue) + ` = "` + ids[2] + `"`: {ids[0]}, pqlCF(issue) + ` IS NULL`: {ids[1]},
+		pqlCF(issue) + ` IN ("` + ids[2] + `")`: {ids[0]}, pqlCF(issue) + ` NOT IN ("` + ids[1] + `")`: {ids[0]},
 		pqlCF(option) + ` = "` + first + `"`: {ids[0]}, pqlCF(option) + ` != "` + first + `"`: {ids[1]},
 		pqlCF(option) + ` IN ("` + first + `","` + second + `")`: {ids[0], ids[1]},
 		pqlCF(option) + ` NOT IN ("` + first + `")`:              {ids[1]}, pqlCF(option) + ` IS NULL`: {},
@@ -45,6 +49,7 @@ func TestAPIPQLPropertySelectionsUseAuthorizedCatalogsAndRetainInactiveIdentitie
 		pqlCF(member) + ` != "` + f.member + `"`: {}, `NOT ` + pqlCF(member) + ` IN ("` + f.member + `")`: {},
 		pqlCF(release) + ` = "` + ownRelease + `"`: {ids[0]}, pqlCF(release) + ` IS NOT NULL`: {ids[0]},
 	})
+	requirePQLPropertyError(t, f, repo, f.owner, pqlCF(issue)+` = "`+uuid.NewString()+`"`, 400)
 	for _, query := range []string{pqlCF(option) + ` = "` + uuid.NewString() + `"`, pqlCF(member) + ` = "` + f.outsider + `"`, pqlCF(release) + ` = "` + privateRelease + `"`, pqlCF(uuid.NewString()) + ` IS NULL`} {
 		requirePQLPropertyError(t, f, repo, f.owner, query, 400)
 	}

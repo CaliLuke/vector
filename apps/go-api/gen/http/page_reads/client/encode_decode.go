@@ -1443,6 +1443,7 @@ func EncodeCreateRequest(encoder func(*http.Request) loomhttp.Encoder) func(*htt
 //   - "status_403" (type *pagereads.PageLifecycleError): http.StatusForbidden
 //   - "status_404" (type *pagereads.PageLifecycleError): http.StatusNotFound
 //   - "status_405" (type *pagereads.PageLifecycleError): http.StatusMethodNotAllowed
+//   - "status_409" (type *pagereads.PageLifecycleError): http.StatusConflict
 //   - "status_415" (type *pagereads.PageLifecycleError): http.StatusUnsupportedMediaType
 //   - "status_500" (type *pagereads.PageLifecycleError): http.StatusInternalServerError
 //   - "unauthenticated" (type *pagereads.PageReadsUnauthenticated): http.StatusUnauthorized
@@ -1511,6 +1512,16 @@ func DecodeCreateResponse(decoder func(*http.Response) loomhttp.Decoder, restore
 					return nil, loomhttp.ErrDecodingError("page_reads", "create", err)
 				}
 				return nil, NewCreateStatus400(body, "status_405")
+			case http.StatusConflict:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("page_reads", "create", err)
+				}
+				return nil, NewCreateStatus400(body, "status_409")
 			case http.StatusUnsupportedMediaType:
 				var (
 					body loom.JSONValue
@@ -1634,6 +1645,7 @@ func EncodeUpdateRequest(encoder func(*http.Request) loomhttp.Encoder) func(*htt
 //   - "status_403" (type *pagereads.PageLifecycleError): http.StatusForbidden
 //   - "status_404" (type *pagereads.PageLifecycleError): http.StatusNotFound
 //   - "status_405" (type *pagereads.PageLifecycleError): http.StatusMethodNotAllowed
+//   - "status_409" (type *pagereads.PageLifecycleError): http.StatusConflict
 //   - "status_415" (type *pagereads.PageLifecycleError): http.StatusUnsupportedMediaType
 //   - "status_500" (type *pagereads.PageLifecycleError): http.StatusInternalServerError
 //   - "unauthenticated" (type *pagereads.PageReadsUnauthenticated): http.StatusUnauthorized
@@ -1702,6 +1714,16 @@ func DecodeUpdateResponse(decoder func(*http.Response) loomhttp.Decoder, restore
 					return nil, loomhttp.ErrDecodingError("page_reads", "update", err)
 				}
 				return nil, NewCreateStatus400(body, "status_405")
+			case http.StatusConflict:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("page_reads", "update", err)
+				}
+				return nil, NewCreateStatus400(body, "status_409")
 			case http.StatusUnsupportedMediaType:
 				var (
 					body loom.JSONValue
@@ -1818,6 +1840,7 @@ func EncodeDeleteRequest(encoder func(*http.Request) loomhttp.Encoder) func(*htt
 //   - "status_403" (type *pagereads.PageLifecycleError): http.StatusForbidden
 //   - "status_404" (type *pagereads.PageLifecycleError): http.StatusNotFound
 //   - "status_405" (type *pagereads.PageLifecycleError): http.StatusMethodNotAllowed
+//   - "status_409" (type *pagereads.PageLifecycleError): http.StatusConflict
 //   - "status_415" (type *pagereads.PageLifecycleError): http.StatusUnsupportedMediaType
 //   - "status_500" (type *pagereads.PageLifecycleError): http.StatusInternalServerError
 //   - "unauthenticated" (type *pagereads.PageReadsUnauthenticated): http.StatusUnauthorized
@@ -1868,6 +1891,16 @@ func DecodeDeleteResponse(decoder func(*http.Response) loomhttp.Decoder, restore
 					return nil, loomhttp.ErrDecodingError("page_reads", "delete", err)
 				}
 				return nil, NewCreateStatus400(body, "status_405")
+			case http.StatusConflict:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("page_reads", "delete", err)
+				}
+				return nil, NewCreateStatus400(body, "status_409")
 			case http.StatusUnsupportedMediaType:
 				var (
 					body loom.JSONValue
@@ -1978,6 +2011,7 @@ func EncodeAccessRequest(encoder func(*http.Request) loomhttp.Encoder) func(*htt
 //   - "status_403" (type *pagereads.PageLifecycleError): http.StatusForbidden
 //   - "status_404" (type *pagereads.PageLifecycleError): http.StatusNotFound
 //   - "status_405" (type *pagereads.PageLifecycleError): http.StatusMethodNotAllowed
+//   - "status_409" (type *pagereads.PageLifecycleError): http.StatusConflict
 //   - "status_415" (type *pagereads.PageLifecycleError): http.StatusUnsupportedMediaType
 //   - "status_500" (type *pagereads.PageLifecycleError): http.StatusInternalServerError
 //   - "unauthenticated" (type *pagereads.PageReadsUnauthenticated): http.StatusUnauthorized
@@ -2028,6 +2062,16 @@ func DecodeAccessResponse(decoder func(*http.Response) loomhttp.Decoder, restore
 					return nil, loomhttp.ErrDecodingError("page_reads", "access", err)
 				}
 				return nil, NewCreateStatus400(body, "status_405")
+			case http.StatusConflict:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("page_reads", "access", err)
+				}
+				return nil, NewCreateStatus400(body, "status_409")
 			case http.StatusUnsupportedMediaType:
 				var (
 					body loom.JSONValue
@@ -2144,6 +2188,7 @@ func EncodeArchiveRequest(encoder func(*http.Request) loomhttp.Encoder) func(*ht
 //   - "status_403" (type *pagereads.PageLifecycleError): http.StatusForbidden
 //   - "status_404" (type *pagereads.PageLifecycleError): http.StatusNotFound
 //   - "status_405" (type *pagereads.PageLifecycleError): http.StatusMethodNotAllowed
+//   - "status_409" (type *pagereads.PageLifecycleError): http.StatusConflict
 //   - "status_415" (type *pagereads.PageLifecycleError): http.StatusUnsupportedMediaType
 //   - "status_500" (type *pagereads.PageLifecycleError): http.StatusInternalServerError
 //   - "unauthenticated" (type *pagereads.PageReadsUnauthenticated): http.StatusUnauthorized
@@ -2212,6 +2257,16 @@ func DecodeArchiveResponse(decoder func(*http.Response) loomhttp.Decoder, restor
 					return nil, loomhttp.ErrDecodingError("page_reads", "archive", err)
 				}
 				return nil, NewCreateStatus400(body, "status_405")
+			case http.StatusConflict:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("page_reads", "archive", err)
+				}
+				return nil, NewCreateStatus400(body, "status_409")
 			case http.StatusUnsupportedMediaType:
 				var (
 					body loom.JSONValue
@@ -2315,6 +2370,7 @@ func EncodeUnarchiveRequest(encoder func(*http.Request) loomhttp.Encoder) func(*
 //   - "status_403" (type *pagereads.PageLifecycleError): http.StatusForbidden
 //   - "status_404" (type *pagereads.PageLifecycleError): http.StatusNotFound
 //   - "status_405" (type *pagereads.PageLifecycleError): http.StatusMethodNotAllowed
+//   - "status_409" (type *pagereads.PageLifecycleError): http.StatusConflict
 //   - "status_415" (type *pagereads.PageLifecycleError): http.StatusUnsupportedMediaType
 //   - "status_500" (type *pagereads.PageLifecycleError): http.StatusInternalServerError
 //   - "unauthenticated" (type *pagereads.PageReadsUnauthenticated): http.StatusUnauthorized
@@ -2365,6 +2421,16 @@ func DecodeUnarchiveResponse(decoder func(*http.Response) loomhttp.Decoder, rest
 					return nil, loomhttp.ErrDecodingError("page_reads", "unarchive", err)
 				}
 				return nil, NewCreateStatus400(body, "status_405")
+			case http.StatusConflict:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("page_reads", "unarchive", err)
+				}
+				return nil, NewCreateStatus400(body, "status_409")
 			case http.StatusUnsupportedMediaType:
 				var (
 					body loom.JSONValue
@@ -2475,6 +2541,7 @@ func EncodeDescriptionUpdateRequest(encoder func(*http.Request) loomhttp.Encoder
 //   - "status_403" (type *pagereads.PageLifecycleError): http.StatusForbidden
 //   - "status_404" (type *pagereads.PageLifecycleError): http.StatusNotFound
 //   - "status_405" (type *pagereads.PageLifecycleError): http.StatusMethodNotAllowed
+//   - "status_409" (type *pagereads.PageLifecycleError): http.StatusConflict
 //   - "status_415" (type *pagereads.PageLifecycleError): http.StatusUnsupportedMediaType
 //   - "status_500" (type *pagereads.PageLifecycleError): http.StatusInternalServerError
 //   - "unauthenticated" (type *pagereads.PageReadsUnauthenticated): http.StatusUnauthorized
@@ -2543,6 +2610,16 @@ func DecodeDescriptionUpdateResponse(decoder func(*http.Response) loomhttp.Decod
 					return nil, loomhttp.ErrDecodingError("page_reads", "description_update", err)
 				}
 				return nil, NewCreateStatus400(body, "status_405")
+			case http.StatusConflict:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("page_reads", "description_update", err)
+				}
+				return nil, NewCreateStatus400(body, "status_409")
 			case http.StatusUnsupportedMediaType:
 				var (
 					body loom.JSONValue
@@ -2666,6 +2743,7 @@ func EncodeDuplicateRequest(encoder func(*http.Request) loomhttp.Encoder) func(*
 //   - "status_403" (type *pagereads.PageLifecycleError): http.StatusForbidden
 //   - "status_404" (type *pagereads.PageLifecycleError): http.StatusNotFound
 //   - "status_405" (type *pagereads.PageLifecycleError): http.StatusMethodNotAllowed
+//   - "status_409" (type *pagereads.PageLifecycleError): http.StatusConflict
 //   - "status_415" (type *pagereads.PageLifecycleError): http.StatusUnsupportedMediaType
 //   - "status_500" (type *pagereads.PageLifecycleError): http.StatusInternalServerError
 //   - "unauthenticated" (type *pagereads.PageReadsUnauthenticated): http.StatusUnauthorized
@@ -2734,6 +2812,16 @@ func DecodeDuplicateResponse(decoder func(*http.Response) loomhttp.Decoder, rest
 					return nil, loomhttp.ErrDecodingError("page_reads", "duplicate", err)
 				}
 				return nil, NewCreateStatus400(body, "status_405")
+			case http.StatusConflict:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("page_reads", "duplicate", err)
+				}
+				return nil, NewCreateStatus400(body, "status_409")
 			case http.StatusUnsupportedMediaType:
 				var (
 					body loom.JSONValue
@@ -2850,6 +2938,7 @@ func EncodeLockRequest(encoder func(*http.Request) loomhttp.Encoder) func(*http.
 //   - "status_403" (type *pagereads.PageLifecycleError): http.StatusForbidden
 //   - "status_404" (type *pagereads.PageLifecycleError): http.StatusNotFound
 //   - "status_405" (type *pagereads.PageLifecycleError): http.StatusMethodNotAllowed
+//   - "status_409" (type *pagereads.PageLifecycleError): http.StatusConflict
 //   - "status_415" (type *pagereads.PageLifecycleError): http.StatusUnsupportedMediaType
 //   - "status_500" (type *pagereads.PageLifecycleError): http.StatusInternalServerError
 //   - "unauthenticated" (type *pagereads.PageReadsUnauthenticated): http.StatusUnauthorized
@@ -2900,6 +2989,16 @@ func DecodeLockResponse(decoder func(*http.Response) loomhttp.Decoder, restoreBo
 					return nil, loomhttp.ErrDecodingError("page_reads", "lock", err)
 				}
 				return nil, NewCreateStatus400(body, "status_405")
+			case http.StatusConflict:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("page_reads", "lock", err)
+				}
+				return nil, NewCreateStatus400(body, "status_409")
 			case http.StatusUnsupportedMediaType:
 				var (
 					body loom.JSONValue
@@ -3003,6 +3102,7 @@ func EncodeUnlockRequest(encoder func(*http.Request) loomhttp.Encoder) func(*htt
 //   - "status_403" (type *pagereads.PageLifecycleError): http.StatusForbidden
 //   - "status_404" (type *pagereads.PageLifecycleError): http.StatusNotFound
 //   - "status_405" (type *pagereads.PageLifecycleError): http.StatusMethodNotAllowed
+//   - "status_409" (type *pagereads.PageLifecycleError): http.StatusConflict
 //   - "status_415" (type *pagereads.PageLifecycleError): http.StatusUnsupportedMediaType
 //   - "status_500" (type *pagereads.PageLifecycleError): http.StatusInternalServerError
 //   - "unauthenticated" (type *pagereads.PageReadsUnauthenticated): http.StatusUnauthorized
@@ -3053,6 +3153,16 @@ func DecodeUnlockResponse(decoder func(*http.Response) loomhttp.Decoder, restore
 					return nil, loomhttp.ErrDecodingError("page_reads", "unlock", err)
 				}
 				return nil, NewCreateStatus400(body, "status_405")
+			case http.StatusConflict:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("page_reads", "unlock", err)
+				}
+				return nil, NewCreateStatus400(body, "status_409")
 			case http.StatusUnsupportedMediaType:
 				var (
 					body loom.JSONValue

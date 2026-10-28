@@ -18,11 +18,14 @@ type Kind string
 
 const (
 	Text      Kind = "Text"
+	Email     Kind = "Email"
+	File      Kind = "File"
 	Number    Kind = "Number"
 	Dropdown  Kind = "Dropdown"
 	Boolean   Kind = "Boolean"
 	Date      Kind = "Date"
 	Member    Kind = "Member picker"
+	Issue     Kind = "Work item picker"
 	Release   Kind = "Release picker"
 	RichText  Kind = "Rich text"
 	URL       Kind = "URL"
@@ -119,7 +122,7 @@ func ValidateDefinition(def Definition, previous *Definition, used bool) error {
 }
 
 func validateConfiguration(kind Kind, c Configuration) error {
-	if !slices.Contains([]Kind{Text, Number, Dropdown, Boolean, Date, Member, Release, RichText, URL, Formula, Cascading}, kind) {
+	if !slices.Contains([]Kind{Text, Email, File, Number, Dropdown, Boolean, Date, Member, Issue, Release, RichText, URL, Formula, Cascading}, kind) {
 		return fmt.Errorf("unknown property kind")
 	}
 	if c.Required && (kind == Boolean || kind == Formula || kind == Cascading || kind == Text && c.Format == "Read-only") {
@@ -128,7 +131,7 @@ func validateConfiguration(kind Kind, c Configuration) error {
 	if c.Default != nil && (c.Required || !slices.Contains([]Kind{Number, Dropdown, Member}, kind)) {
 		return fmt.Errorf("defaults are supported only for optional numbers, dropdowns, and members")
 	}
-	if c.Multiple && !slices.Contains([]Kind{Dropdown, Member, Release}, kind) {
+	if c.Multiple && !slices.Contains([]Kind{Dropdown, Member, Issue, Release}, kind) {
 		return fmt.Errorf("this property kind does not support multiple selections")
 	}
 	if kind == Text && !slices.Contains([]string{"Single line", "Paragraph", "Read-only"}, c.Format) {

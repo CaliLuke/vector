@@ -8,6 +8,7 @@ import { logger } from "@plane/logger";
 import type { TDocumentPayload, TPage } from "@plane/types";
 // services
 import { AppError } from "@/lib/errors";
+import { parsePageDocumentName } from "@/lib/page-document";
 import { APIService } from "../api.service";
 
 export type TUserMention = {
@@ -18,6 +19,7 @@ export type TUserMention = {
 
 export abstract class PageCoreService extends APIService {
   protected abstract basePath: string;
+  protected collaborationRevision = 0;
 
   constructor() {
     super();
@@ -25,10 +27,14 @@ export abstract class PageCoreService extends APIService {
 
   async fetchDetails(pageId: string): Promise<TPage> {
     try {
-      const response = await this.get(`${this.basePath}/pages/${pageId}/`, {
+      const response = await this.get(`${this.basePath}/pages/${parsePageDocumentName(pageId).pageId}/`, {
         headers: this.getHeader(),
       });
-      return response?.data as TPage;
+      const page = response?.data as TPage;
+      if ((page.collaboration_revision ?? 0) !== this.collaborationRevision) {
+        throw new AppError("The page was replaced. Reload it before editing.", { statusCode: 409 });
+      }
+      return page;
     } catch (error) {
       const appError = new AppError(error, {
         context: { operation: "fetchDetails", pageId },
@@ -40,7 +46,7 @@ export abstract class PageCoreService extends APIService {
 
   async fetchDescriptionBinary(pageId: string): Promise<Buffer> {
     try {
-      const response = await this.get(`${this.basePath}/pages/${pageId}/description/`, {
+      const response = await this.get(`${this.basePath}/pages/${parsePageDocumentName(pageId).pageId}/description/`, {
         headers: {
           ...this.getHeader(),
           "Content-Type": "application/octet-stream",
@@ -88,10 +94,14 @@ export abstract class PageCoreService extends APIService {
 
     try {
       return await Promise.race([
-        this.patch(`${this.basePath}/pages/${pageId}/`, data, {
-          headers: this.getHeader(),
-          signal: abortSignal,
-        })
+        this.patch(
+          `${this.basePath}/pages/${parsePageDocumentName(pageId).pageId}/`,
+          { ...data, collaboration_revision: this.collaborationRevision },
+          {
+            headers: this.getHeader(),
+            signal: abortSignal,
+          }
+        )
           .then((response) => response?.data)
           .catch((error) => {
             const appError = new AppError(error, {
@@ -117,9 +127,13 @@ export abstract class PageCoreService extends APIService {
 
   async updateDescriptionBinary(pageId: string, data: TDocumentPayload): Promise<any> {
     try {
-      const response = await this.patch(`${this.basePath}/pages/${pageId}/description/`, data, {
-        headers: this.getHeader(),
-      });
+      const response = await this.patch(
+        `${this.basePath}/pages/${parsePageDocumentName(pageId).pageId}/description/`,
+        { ...data, collaboration_revision: this.collaborationRevision },
+        {
+          headers: this.getHeader(),
+        }
+      );
       return response?.data as unknown;
     } catch (error) {
       const appError = new AppError(error, {
@@ -137,7 +151,7 @@ export abstract class PageCoreService extends APIService {
    */
   async fetchUserMentions(pageId: string): Promise<TUserMention[]> {
     try {
-      const response = await this.get(`${this.basePath}/pages/${pageId}/mentions/`, {
+      const response = await this.get(`${this.basePath}/pages/${parsePageDocumentName(pageId).pageId}/mentions/`, {
         headers: this.getHeader(),
         params: {
           mention_type: "user_mention",

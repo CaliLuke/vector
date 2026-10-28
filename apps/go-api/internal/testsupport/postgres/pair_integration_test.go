@@ -84,6 +84,43 @@ func TestPairResetRestoresIndependentClonesFromTheSeed(t *testing.T) {
 	if pair.SeedURL() == "" || pair.ContainerID() == "" {
 		t.Fatal("fixture lost its seed or disposable container identity")
 	}
+	t.Run("per-test databases stay isolated and close independently", func(t *testing.T) {
+		first, err := pair.CloneDatabase(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		second, err := pair.CloneDatabase(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		writer, err := pgx.Connect(ctx, first.URL)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() { _ = writer.Close(context.WithoutCancel(ctx)) }()
+		if _, writeErr := writer.Exec(ctx, `UPDATE fixture_probe SET value=99`); writeErr != nil {
+			t.Fatal(writeErr)
+		}
+		// Closing a clone must reclaim even a connection left open by a test.
+		if closeErr := first.Close(ctx); closeErr != nil {
+			t.Fatal(closeErr)
+		}
+		reader, err := pgx.Connect(ctx, second.URL)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() { _ = reader.Close(context.WithoutCancel(ctx)) }()
+		var value int
+		if err := reader.QueryRow(ctx, `SELECT value FROM fixture_probe`).Scan(&value); err != nil || value != 10 {
+			t.Fatalf("independent clone value=%d error=%v", value, err)
+		}
+		if err := second.Close(ctx); err != nil {
+			t.Fatal(err)
+		}
+		if err := first.Close(ctx); err != nil {
+			t.Fatalf("repeated cleanup: %v", err)
+		}
+	})
 	for _, read := range []struct {
 		name    string
 		address func() (string, error)

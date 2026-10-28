@@ -45,13 +45,13 @@ Keep local environment files private. The example database and storage credentia
 
 Open `http://localhost:8000/`. Instance administration uses `/god-mode/`, and public projects use `/spaces/`.
 
-The [remote MCP transport](mcp.md) is disabled by default. Personal-token mode can
-authenticate requests and call five `member` reads and four `project` actions,
-including archive and restore, plus list/detail reads for `cycle`, `module`, `label`, `workitem_comment`, `workitem_link`, and `workitem_activity`. The `milestone` tool supports all seven
-[native milestone actions](mcp-milestones.md), with optional receipt and revision
-extensions for mutations. OAuth mode requires
-the [external issuer profile and account linking](mcp-oauth.md). The remaining
-resource action contracts are still pending.
+The [remote MCP transport](mcp.md) is disabled by default. Its 30 tools expose
+207 actions through personal tokens or generic external-issuer OAuth. OAuth
+requires the [issuer profile and account linking](mcp-oauth.md). Generated-server
+workflow tests cover all actions under both authentication modes and protocol
+revisions; the [parity tracker](mcp-parity.md) records the remaining acceptance
+checks. Mutations support optional [receipt and revision extensions](mcp-writes.md).
+Teamspaces are deferred until native support exists.
 The proxy serves all browser entry points. Frontend ports 3000–3100 are internal development upstreams.
 
 `PLANE_ADMIN_PORT` and `PLANE_SPACE_PORT` can override the admin and Sites upstream ports.
@@ -141,6 +141,19 @@ The test-result guard rejects failures, incomplete reports, and unreviewed skips
 `.quality/go-test-skips.json` records tests that need explicitly provisioned
 fixtures; each entry states its prerequisite. Never point these tests at a database
 with valuable data.
+
+Coverage instruments the same owned Go packages that the ratchet measures, so
+integration tests also count calls into other packages. Repeated coverage blocks
+from separate test binaries are merged by source location; a hit in either binary
+covers the block once. Generated-source exclusions and package floors still apply.
+The work-item type tests and full-schema MCP workflows migrate one disposable
+template per package and clone a separate database for each test. Test data and
+connections are never shared between those clones. Migration-specific tests still
+exercise fresh database installation directly.
+The macOS environment keeps Testcontainers' resource reaper enabled so containers
+are reclaimed when a test process exits before its normal cleanup. Explicitly
+disabling it requires an external runner that owns cleanup; see the
+[Testcontainers cleanup guidance](https://golang.testcontainers.org/features/garbage_collector/).
 
 The full Go gate and frontend pipeline run concurrently. Within the frontend pipeline,
 production builds run first, followed by TypeScript checks; builds and checks remain
@@ -550,3 +563,11 @@ source exclusion changed, and the final scan has no new duplicate identities.
 The same shared-presentation cleanup tightens two existing complexity identities:
 Gantt issue rows decrease from 17 to 16, and calendar issue blocks from 23 to 21.
 Both syntax and type-aware ratchets retain those lower limits.
+
+The seven [work-item relation actions](mcp-work-item-relations.md) are wired through the native relation domain. Custom definitions require a workspace administrator; edge mutations require writable endpoint projects. The core workflow batch covers these actions across both authentication modes and protocol revisions. Durable worker tests cover relation history and replay; remaining acceptance is tracked in [MCP parity](mcp-parity.md).
+
+The [property API](mcp-work-item-properties.md) wires eleven catalogue actions.
+Migration 000032 adds API metadata and revision triggers. Native preservation
+checks still govern destructive edits. Item-value and configuration workflows cover
+formula, read-only content and cascading paths. The consolidated quality and
+acceptance checks remain tracked in [MCP parity](mcp-parity.md).

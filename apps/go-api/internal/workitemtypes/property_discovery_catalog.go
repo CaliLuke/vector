@@ -5,6 +5,7 @@ import (
 	"context"
 	"slices"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/formula"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/jackc/pgx/v5"
@@ -82,7 +83,7 @@ func (snapshot *PropertyDiscoverySnapshot) discoveryFields() (map[string]*Discov
 					continue
 				}
 				base := DiscoveryProperty{Key: "customproperty_" + def.ID, PropertyID: def.ID, Name: def.Title, Icon: def.Icon, Kind: def.Kind, ResultKind: config.Result, Multiple: config.Multiple, Operators: propertyPredicateOperators(def.Kind, config.Result), Options: []DiscoveryPropertyChoice{}}
-				base.Groupable = def.Kind == property.Boolean || !config.Multiple && (def.Kind == property.Dropdown || def.Kind == property.Member || def.Kind == property.Release)
+				base.Groupable = def.Kind == property.Boolean || !config.Multiple && (def.Kind == property.Dropdown || def.Kind == property.Member || def.Kind == property.Release || def.Kind == property.Issue)
 				if def.Kind != property.Cascading {
 					if def.Kind == property.Dropdown {
 						for _, option := range config.Options {
@@ -130,7 +131,7 @@ func (snapshot *PropertyDiscoverySnapshot) discoveryFields() (map[string]*Discov
 func (snapshot *PropertyDiscoverySnapshot) discoveryChoices(ctx context.Context, tx pgx.Tx, fields map[string]*DiscoveryProperty) error {
 	choices := map[property.Kind][]PropertyChoice{}
 	for _, field := range fields {
-		if field.Kind != property.Member && field.Kind != property.Release {
+		if field.Kind != property.Member && field.Kind != property.Release && field.Kind != property.Issue {
 			continue
 		}
 		options, exists := choices[field.Kind]
@@ -142,8 +143,12 @@ func (snapshot *PropertyDiscoverySnapshot) discoveryChoices(ctx context.Context,
 				for id := range snapshot.projects {
 					projects = append(projects, id)
 				}
-				query = `SELECT r.id::text,p.name||' · '||r.name FROM work_item_releases r JOIN projects p ON p.id=r.project_id AND p.workspace_id=r.workspace_id WHERE r.workspace_id=$1 AND r.project_id=ANY($2::uuid[]) ORDER BY p.name,r.name,r.id`
+				query = `SELECT r.id::text,CASE WHEN r.project_id IS NULL THEN r.name ELSE p.name||' · '||r.name END FROM work_item_releases r LEFT JOIN projects p ON p.id=r.project_id AND p.workspace_id=r.workspace_id WHERE r.workspace_id=$1 AND (r.project_id=ANY($2::uuid[]) OR r.project_id IS NULL) AND r.deleted_at IS NULL ORDER BY p.name,r.name,r.id`
 				args = append(args, projects)
+			}
+			if field.Kind == property.Issue {
+				query = `SELECT i.id::text,p.identifier||'-'||i.sequence_id||' · '||i.name FROM issues i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id WHERE ` + djangoapi.IssueVisibleSQL("i", "$2::uuid", "$1::uuid") + ` ORDER BY p.identifier,i.sequence_id,i.id`
+				args = []any{snapshot.workspace, snapshot.actor}
 			}
 			var err error
 			options, err = propertyChoices(ctx, tx, query, args...)

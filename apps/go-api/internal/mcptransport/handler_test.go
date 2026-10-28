@@ -11,11 +11,10 @@ import (
 	"testing"
 	"time"
 
-	loom "github.com/CaliLuke/loom/pkg"
+	"github.com/CaliLuke/go-plane/internal/testsupport/mcpstub"
 
 	"github.com/CaliLuke/go-plane/internal/mcptransport"
 	"github.com/CaliLuke/go-plane/internal/platform"
-	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
@@ -40,11 +39,7 @@ func handler(t *testing.T, c mcptransport.Config, opts mcptransport.Options) htt
 	return h
 }
 
-type transportTestService struct{}
-
-func (transportTestService) Member(context.Context, *api.MemberRequest) (*api.MemberResult, error) {
-	return nil, errors.New("transport tests do not execute identity reads")
-}
+type transportTestService struct{ mcpstub.Service }
 
 func call(h http.Handler, path, body string, headers http.Header) *httptest.ResponseRecorder {
 	r := httptest.NewRequest(http.MethodPost, "https://vector.example"+path, strings.NewReader(body))
@@ -331,38 +326,6 @@ func TestEnabledTransportRequiresApplicationService(t *testing.T) {
 	require.ErrorContains(t, err, "application service is required")
 }
 
-func (transportTestService) Project(context.Context, *api.ProjectRequest) (loom.Nullable[api.ProjectResult], error) {
-	return loom.Nullable[api.ProjectResult]{}, errors.New("this fixture does not execute project reads")
-}
-
 func (transportTestService) DiscoverActions(context.Context) (mcptransport.ActionVisibility, error) {
 	return mcptransport.ActionVisibility{"member": {"me": true, "list_workspace": true, "list_project": true, "list_roles": true, "retrieve_role": true}, "project": {"list": true, "retrieve": true, "archive": true, "unarchive": true}}, nil
-}
-
-func (transportTestService) Cycle(context.Context, *api.CycleRequest) (*api.CycleResult, error) {
-	return nil, errors.New("this fixture does not execute cycle reads")
-}
-
-func (transportTestService) Module(context.Context, *api.ModuleRequest) (*api.ModuleResult, error) {
-	return nil, nil
-}
-
-func (transportTestService) Label(context.Context, *api.LabelRequest) (*api.LabelResult, error) {
-	return nil, nil
-}
-
-func (transportTestService) WorkitemComment(context.Context, *api.WorkitemCommentRequest) (*api.WorkitemCommentResult, error) {
-	return nil, nil
-}
-
-func (transportTestService) WorkitemLink(context.Context, *api.WorkitemLinkRequest) (*api.WorkitemLinkResult, error) {
-	return nil, nil
-}
-
-func (transportTestService) WorkitemActivity(context.Context, *api.WorkitemActivityRequest) (*api.WorkitemActivityResult, error) {
-	return nil, nil
-}
-
-func (transportTestService) Milestone(context.Context, *api.MilestoneRequest) (loom.Nullable[api.MilestoneResult], error) {
-	return loom.Nullable[api.MilestoneResult]{}, errors.New("this fixture does not execute milestone operations")
 }

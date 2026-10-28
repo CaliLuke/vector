@@ -27,6 +27,7 @@ export type TDocumentTypes = "project_page";
 
 // Additional Hocuspocus types that are not exported from the main package
 export type HocusPocusServerContext = {
+  collaborationRevision?: number;
   projectId: string | null;
   cookie: string;
   documentType: TDocumentTypes;

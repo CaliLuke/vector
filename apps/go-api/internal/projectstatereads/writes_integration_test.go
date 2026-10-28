@@ -18,7 +18,7 @@ const writeTestUserID = "00000000-0000-4000-8000-000000000003"
 func TestWriteAPIV1PreservesEmptyAndNullExternalFields(t *testing.T) {
 	ctx := context.Background()
 	connection := projectStateWriteDatabase(t, ctx)
-	repository, err := NewWriteRepository(connection, noOpStateWriteEffects{})
+	repository, err := NewWriteRepository(connection)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,7 +68,7 @@ func TestMarkDefaultAllowsOrdinaryGroupStateWithTriageFlag(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	repository, err := NewWriteRepository(connection, noOpStateWriteEffects{})
+	repository, err := NewWriteRepository(connection)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,10 +99,6 @@ func TestMarkDefaultAllowsOrdinaryGroupStateWithTriageFlag(t *testing.T) {
 		t.Fatalf("defaults after mark-default=%v; ordinary-group target should be enabled while triage-group row remains untouched", defaults)
 	}
 }
-
-type noOpStateWriteEffects struct{}
-
-func (noOpStateWriteEffects) SoftDelete(context.Context, string, string, string) error { return nil }
 
 func projectStateWriteDatabase(t *testing.T, ctx context.Context) *pgx.Conn {
 	t.Helper()

@@ -183,9 +183,10 @@ func validateIssueActivityInput(eventID string, input IssueActivityInput) error 
 
 func supportedIssueActivityType(activityType string) bool {
 	switch activityType {
-	case "issue.activity.created", "issue.activity.deleted", "issue.activity.updated", "cycle.activity.created", "cycle.activity.deleted", "module.activity.created", "module.activity.deleted", "issue_relation.activity.created", "issue_relation.activity.deleted", "comment.activity.created", "comment.activity.updated", "comment.activity.deleted",
+	case "workitem_relation.activity.created", "workitem_relation.activity.deleted", "issue.activity.created", "issue.activity.deleted", "issue.activity.updated", "cycle.activity.created", "cycle.activity.deleted", "module.activity.created", "module.activity.deleted", "issue_relation.activity.created", "issue_relation.activity.deleted", "comment.activity.created", "comment.activity.updated", "comment.activity.deleted",
 		"link.activity.created", "link.activity.updated", "link.activity.deleted",
 		"attachment.activity.created", "attachment.activity.deleted",
+		"work_log.activity.created", "work_log.activity.updated", "work_log.activity.deleted",
 		"issue_reaction.activity.created", "issue_reaction.activity.deleted",
 		"comment_reaction.activity.created", "comment_reaction.activity.deleted",
 		"issue_vote.activity.created", "issue_vote.activity.deleted",
@@ -327,6 +328,11 @@ func buildIssueActivityRows(ctx context.Context, tx pgx.Tx, input IssueActivityI
 	row := issueActivityRow{IssueID: input.IssueID, ActorID: input.ActorID, Epoch: input.Epoch}
 	get := func(data map[string]json.RawMessage, key string) *string { return activityString(data[key]) }
 	switch input.Type {
+	case "workitem_relation.activity.created", "workitem_relation.activity.deleted":
+		return relationActivityRows(input)
+	case "work_log.activity.created", "work_log.activity.updated", "work_log.activity.deleted":
+		return workLogActivityRows(input)
+
 	case "issue.activity.created":
 		var createdAt time.Time
 		var creatorID *string

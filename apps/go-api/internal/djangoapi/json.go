@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
+	"io"
 )
 
 // DjangoTimestampSQL renders a PostgreSQL timestamp as DRF's ISO timestamp,
@@ -18,10 +20,22 @@ func JSON(ctx context.Context, db Database, query string, args ...any) (any, err
 		return nil, err
 	}
 	var result any
-	decoder := json.NewDecoder(bytes.NewReader(data))
-	decoder.UseNumber()
-	if err := decoder.Decode(&result); err != nil {
+	if err := DecodeJSON(data, &result); err != nil {
 		return nil, err
 	}
 	return result, nil
+}
+
+// DecodeJSON retains JSON numbers without rounding through float64. It accepts
+// exactly one value, as json.Unmarshal does, including for embedded JSON inputs.
+func DecodeJSON(data []byte, target any) error {
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.UseNumber()
+	if err := decoder.Decode(target); err != nil {
+		return err
+	}
+	if err := decoder.Decode(new(any)); !errors.Is(err, io.EOF) {
+		return errors.New("expected one JSON value")
+	}
+	return nil
 }

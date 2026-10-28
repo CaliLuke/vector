@@ -14,6 +14,7 @@ import (
 )
 
 type projectWriter interface {
+	resourceWriter
 	ArchiveProject(context.Context, projects.ArchiveCommand) (projects.ArchiveResult, error)
 	VisibleProjectWrites(context.Context, uuid.UUID, uuid.UUID, string) (projects.ProjectWriteVisibility, error)
 }

@@ -15,20 +15,61 @@ import (
 
 // Client is the "VectorMCP" service client.
 type Client struct {
-	MemberEndpoint           loom.Endpoint
-	ProjectEndpoint          loom.Endpoint
-	CycleEndpoint            loom.Endpoint
-	ModuleEndpoint           loom.Endpoint
-	LabelEndpoint            loom.Endpoint
-	WorkitemCommentEndpoint  loom.Endpoint
-	WorkitemLinkEndpoint     loom.Endpoint
-	WorkitemActivityEndpoint loom.Endpoint
-	MilestoneEndpoint        loom.Endpoint
+	WorkspaceEndpoint          loom.Endpoint
+	MemberEndpoint             loom.Endpoint
+	ProjectEndpoint            loom.Endpoint
+	CycleEndpoint              loom.Endpoint
+	ModuleEndpoint             loom.Endpoint
+	LabelEndpoint              loom.Endpoint
+	WorkitemCommentEndpoint    loom.Endpoint
+	WorkitemLinkEndpoint       loom.Endpoint
+	WorkitemActivityEndpoint   loom.Endpoint
+	MilestoneEndpoint          loom.Endpoint
+	StateEndpoint              loom.Endpoint
+	ProjectEstimateEndpoint    loom.Endpoint
+	WorkitemTypeEndpoint       loom.Endpoint
+	WorkitemEndpoint           loom.Endpoint
+	GetPqlReferenceEndpoint    loom.Endpoint
+	WorkitemAttachmentEndpoint loom.Endpoint
+	CustomerEndpoint           loom.Endpoint
+	CustomerPropertyEndpoint   loom.Endpoint
+	CustomerRequestEndpoint    loom.Endpoint
+	TemplateEndpoint           loom.Endpoint
+	InitiativeEndpoint         loom.Endpoint
+	PageEndpoint               loom.Endpoint
+	CollectionEndpoint         loom.Endpoint
+	ReleaseEndpoint            loom.Endpoint
+	ReleaseLabelEndpoint       loom.Endpoint
+	ReleaseTagEndpoint         loom.Endpoint
+	IntakeEndpoint             loom.Endpoint
+	WorkLogEndpoint            loom.Endpoint
+	WorkitemRelationEndpoint   loom.Endpoint
+	WorkitemPropertyEndpoint   loom.Endpoint
 }
 
 // NewClient initializes a "VectorMCP" service client given the endpoints.
-func NewClient(member, project, cycle, module, label, workitemComment, workitemLink, workitemActivity, milestone loom.Endpoint) *Client {
-	return &Client{MemberEndpoint: member, ProjectEndpoint: project, CycleEndpoint: cycle, ModuleEndpoint: module, LabelEndpoint: label, WorkitemCommentEndpoint: workitemComment, WorkitemLinkEndpoint: workitemLink, WorkitemActivityEndpoint: workitemActivity, MilestoneEndpoint: milestone}
+func NewClient(workspace, member, project, cycle, module, label, workitemComment, workitemLink, workitemActivity, milestone, state, projectEstimate, workitemType, workitem, getPqlReference, workitemAttachment, customer, customerProperty, customerRequest, template, initiative, page, collection, release, releaseLabel, releaseTag, intake, workLog, workitemRelation, workitemProperty loom.Endpoint) *Client {
+	return &Client{WorkspaceEndpoint: workspace, MemberEndpoint: member, ProjectEndpoint: project, CycleEndpoint: cycle, ModuleEndpoint: module, LabelEndpoint: label, WorkitemCommentEndpoint: workitemComment, WorkitemLinkEndpoint: workitemLink, WorkitemActivityEndpoint: workitemActivity, MilestoneEndpoint: milestone, StateEndpoint: state, ProjectEstimateEndpoint: projectEstimate, WorkitemTypeEndpoint: workitemType, WorkitemEndpoint: workitem, GetPqlReferenceEndpoint: getPqlReference, WorkitemAttachmentEndpoint: workitemAttachment, CustomerEndpoint: customer, CustomerPropertyEndpoint: customerProperty, CustomerRequestEndpoint: customerRequest, TemplateEndpoint: template, InitiativeEndpoint: initiative, PageEndpoint: page, CollectionEndpoint: collection, ReleaseEndpoint: release, ReleaseLabelEndpoint: releaseLabel, ReleaseTagEndpoint: releaseTag, IntakeEndpoint: intake, WorkLogEndpoint: workLog, WorkitemRelationEndpoint: workitemRelation, WorkitemPropertyEndpoint: workitemProperty}
+}
+
+// Workspace calls the "workspace" endpoint of the "VectorMCP" service.
+// Workspace may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) Workspace(ctx context.Context, p *WorkspaceRequest) (res *WorkspaceResult, err error) {
+	var ires any
+	ires, err = c.WorkspaceEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(*WorkspaceResult), nil
 }
 
 // Member calls the "member" endpoint of the "VectorMCP" service.
@@ -75,14 +116,17 @@ func (c *Client) Project(ctx context.Context, p *ProjectRequest) (res loom.Nulla
 // - "invalid_params" (type *loom.ServiceError)
 // - "not_found" (type *loom.ServiceError)
 // - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
 // - error: internal error
-func (c *Client) Cycle(ctx context.Context, p *CycleRequest) (res *CycleResult, err error) {
+func (c *Client) Cycle(ctx context.Context, p *CycleRequest) (res loom.Nullable[CycleResult], err error) {
 	var ires any
 	ires, err = c.CycleEndpoint(ctx, p)
 	if err != nil {
 		return
 	}
-	return ires.(*CycleResult), nil
+	return ires.(loom.Nullable[CycleResult]), nil
 }
 
 // Module calls the "module" endpoint of the "VectorMCP" service.
@@ -92,14 +136,17 @@ func (c *Client) Cycle(ctx context.Context, p *CycleRequest) (res *CycleResult, 
 // - "invalid_params" (type *loom.ServiceError)
 // - "not_found" (type *loom.ServiceError)
 // - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
 // - error: internal error
-func (c *Client) Module(ctx context.Context, p *ModuleRequest) (res *ModuleResult, err error) {
+func (c *Client) Module(ctx context.Context, p *ModuleRequest) (res loom.Nullable[ModuleResult], err error) {
 	var ires any
 	ires, err = c.ModuleEndpoint(ctx, p)
 	if err != nil {
 		return
 	}
-	return ires.(*ModuleResult), nil
+	return ires.(loom.Nullable[ModuleResult]), nil
 }
 
 // Label calls the "label" endpoint of the "VectorMCP" service.
@@ -109,14 +156,18 @@ func (c *Client) Module(ctx context.Context, p *ModuleRequest) (res *ModuleResul
 // - "invalid_params" (type *loom.ServiceError)
 // - "not_found" (type *loom.ServiceError)
 // - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - "conflict" (type *loom.ServiceError)
 // - error: internal error
-func (c *Client) Label(ctx context.Context, p *LabelRequest) (res *LabelResult, err error) {
+func (c *Client) Label(ctx context.Context, p *LabelRequest) (res loom.Nullable[LabelResult], err error) {
 	var ires any
 	ires, err = c.LabelEndpoint(ctx, p)
 	if err != nil {
 		return
 	}
-	return ires.(*LabelResult), nil
+	return ires.(loom.Nullable[LabelResult]), nil
 }
 
 // WorkitemComment calls the "workitem_comment" endpoint of the "VectorMCP"
@@ -127,14 +178,17 @@ func (c *Client) Label(ctx context.Context, p *LabelRequest) (res *LabelResult, 
 // - "invalid_params" (type *loom.ServiceError)
 // - "not_found" (type *loom.ServiceError)
 // - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
 // - error: internal error
-func (c *Client) WorkitemComment(ctx context.Context, p *WorkitemCommentRequest) (res *WorkitemCommentResult, err error) {
+func (c *Client) WorkitemComment(ctx context.Context, p *WorkitemCommentRequest) (res loom.Nullable[WorkitemCommentResult], err error) {
 	var ires any
 	ires, err = c.WorkitemCommentEndpoint(ctx, p)
 	if err != nil {
 		return
 	}
-	return ires.(*WorkitemCommentResult), nil
+	return ires.(loom.Nullable[WorkitemCommentResult]), nil
 }
 
 // WorkitemLink calls the "workitem_link" endpoint of the "VectorMCP" service.
@@ -144,14 +198,17 @@ func (c *Client) WorkitemComment(ctx context.Context, p *WorkitemCommentRequest)
 // - "invalid_params" (type *loom.ServiceError)
 // - "not_found" (type *loom.ServiceError)
 // - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
 // - error: internal error
-func (c *Client) WorkitemLink(ctx context.Context, p *WorkitemLinkRequest) (res *WorkitemLinkResult, err error) {
+func (c *Client) WorkitemLink(ctx context.Context, p *WorkitemLinkRequest) (res loom.Nullable[WorkitemLinkResult], err error) {
 	var ires any
 	ires, err = c.WorkitemLinkEndpoint(ctx, p)
 	if err != nil {
 		return
 	}
-	return ires.(*WorkitemLinkResult), nil
+	return ires.(loom.Nullable[WorkitemLinkResult]), nil
 }
 
 // WorkitemActivity calls the "workitem_activity" endpoint of the "VectorMCP"
@@ -191,4 +248,419 @@ func (c *Client) Milestone(ctx context.Context, p *MilestoneRequest) (res loom.N
 		return
 	}
 	return ires.(loom.Nullable[MilestoneResult]), nil
+}
+
+// State calls the "state" endpoint of the "VectorMCP" service.
+// State may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - "conflict" (type *loom.ServiceError)
+// - "workspace_not_managed" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) State(ctx context.Context, p *StateRequest) (res loom.Nullable[StateResult], err error) {
+	var ires any
+	ires, err = c.StateEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[StateResult]), nil
+}
+
+// ProjectEstimate calls the "project_estimate" endpoint of the "VectorMCP"
+// service.
+// ProjectEstimate may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) ProjectEstimate(ctx context.Context, p *ProjectEstimateRequest) (res loom.Nullable[ProjectEstimateResult], err error) {
+	var ires any
+	ires, err = c.ProjectEstimateEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[ProjectEstimateResult]), nil
+}
+
+// WorkitemType calls the "workitem_type" endpoint of the "VectorMCP" service.
+// WorkitemType may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - "workspace_owned" (type *loom.ServiceError)
+// - "conflict" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) WorkitemType(ctx context.Context, p *WorkitemTypeRequest) (res loom.Nullable[WorkitemTypeResult], err error) {
+	var ires any
+	ires, err = c.WorkitemTypeEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[WorkitemTypeResult]), nil
+}
+
+// Workitem calls the "workitem" endpoint of the "VectorMCP" service.
+// Workitem may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) Workitem(ctx context.Context, p *WorkitemRequest) (res loom.Nullable[WorkitemResult], err error) {
+	var ires any
+	ires, err = c.WorkitemEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[WorkitemResult]), nil
+}
+
+// GetPqlReference calls the "get_pql_reference" endpoint of the "VectorMCP"
+// service.
+// GetPqlReference may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) GetPqlReference(ctx context.Context, p *GetPqlReferencePayload) (res *GetPqlReferenceResult, err error) {
+	var ires any
+	ires, err = c.GetPqlReferenceEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(*GetPqlReferenceResult), nil
+}
+
+// WorkitemAttachment calls the "workitem_attachment" endpoint of the
+// "VectorMCP" service.
+// WorkitemAttachment may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) WorkitemAttachment(ctx context.Context, p *WorkitemAttachmentRequest) (res loom.Nullable[WorkitemAttachmentResult], err error) {
+	var ires any
+	ires, err = c.WorkitemAttachmentEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[WorkitemAttachmentResult]), nil
+}
+
+// Customer calls the "customer" endpoint of the "VectorMCP" service.
+// Customer may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - "feature_disabled" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) Customer(ctx context.Context, p *CustomerRequest) (res loom.Nullable[CustomerResult], err error) {
+	var ires any
+	ires, err = c.CustomerEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[CustomerResult]), nil
+}
+
+// CustomerProperty calls the "customer_property" endpoint of the "VectorMCP"
+// service.
+// CustomerProperty may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - "feature_disabled" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) CustomerProperty(ctx context.Context, p *CustomerPropertyRequest) (res loom.Nullable[CustomerPropertyResult], err error) {
+	var ires any
+	ires, err = c.CustomerPropertyEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[CustomerPropertyResult]), nil
+}
+
+// CustomerRequest calls the "customer_request" endpoint of the "VectorMCP"
+// service.
+// CustomerRequest may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - "feature_disabled" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) CustomerRequest(ctx context.Context, p *CustomerRequestRequest) (res loom.Nullable[CustomerRequestResult], err error) {
+	var ires any
+	ires, err = c.CustomerRequestEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[CustomerRequestResult]), nil
+}
+
+// Template calls the "template" endpoint of the "VectorMCP" service.
+// Template may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - "workspace_owned" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) Template(ctx context.Context, p *TemplateRequest) (res loom.Nullable[TemplateResult], err error) {
+	var ires any
+	ires, err = c.TemplateEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[TemplateResult]), nil
+}
+
+// Initiative calls the "initiative" endpoint of the "VectorMCP" service.
+// Initiative may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - "feature_disabled" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) Initiative(ctx context.Context, p *InitiativeRequest) (res loom.Nullable[InitiativeResult], err error) {
+	var ires any
+	ires, err = c.InitiativeEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[InitiativeResult]), nil
+}
+
+// Page calls the "page" endpoint of the "VectorMCP" service.
+// Page may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) Page(ctx context.Context, p *PageRequest) (res loom.Nullable[PageResult], err error) {
+	var ires any
+	ires, err = c.PageEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[PageResult]), nil
+}
+
+// Collection calls the "collection" endpoint of the "VectorMCP" service.
+// Collection may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) Collection(ctx context.Context, p *CollectionRequest) (res loom.Nullable[CollectionResult], err error) {
+	var ires any
+	ires, err = c.CollectionEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[CollectionResult]), nil
+}
+
+// Release calls the "release" endpoint of the "VectorMCP" service.
+// Release may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) Release(ctx context.Context, p *ReleaseRequest) (res loom.Nullable[ReleaseResult], err error) {
+	var ires any
+	ires, err = c.ReleaseEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[ReleaseResult]), nil
+}
+
+// ReleaseLabel calls the "release_label" endpoint of the "VectorMCP" service.
+// ReleaseLabel may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) ReleaseLabel(ctx context.Context, p *ReleaseLabelRequest) (res loom.Nullable[ReleaseLabelResult], err error) {
+	var ires any
+	ires, err = c.ReleaseLabelEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[ReleaseLabelResult]), nil
+}
+
+// ReleaseTag calls the "release_tag" endpoint of the "VectorMCP" service.
+// ReleaseTag may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) ReleaseTag(ctx context.Context, p *ReleaseTagRequest) (res loom.Nullable[ReleaseTagResult], err error) {
+	var ires any
+	ires, err = c.ReleaseTagEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[ReleaseTagResult]), nil
+}
+
+// Intake calls the "intake" endpoint of the "VectorMCP" service.
+// Intake may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) Intake(ctx context.Context, p *IntakeRequest) (res loom.Nullable[IntakeResult], err error) {
+	var ires any
+	ires, err = c.IntakeEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[IntakeResult]), nil
+}
+
+// WorkLog calls the "work_log" endpoint of the "VectorMCP" service.
+// WorkLog may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) WorkLog(ctx context.Context, p *WorkLogRequest) (res loom.Nullable[WorkLogResult], err error) {
+	var ires any
+	ires, err = c.WorkLogEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[WorkLogResult]), nil
+}
+
+// WorkitemRelation calls the "workitem_relation" endpoint of the "VectorMCP"
+// service.
+// WorkitemRelation may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) WorkitemRelation(ctx context.Context, p *WorkitemRelationRequest) (res loom.Nullable[WorkitemRelationResult], err error) {
+	var ires any
+	ires, err = c.WorkitemRelationEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[WorkitemRelationResult]), nil
+}
+
+// WorkitemProperty calls the "workitem_property" endpoint of the "VectorMCP"
+// service.
+// WorkitemProperty may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - "workspace_owned" (type *loom.ServiceError)
+// - "conflict" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) WorkitemProperty(ctx context.Context, p *WorkitemPropertyRequest) (res loom.Nullable[WorkitemPropertyResult], err error) {
+	var ires any
+	ires, err = c.WorkitemPropertyEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[WorkitemPropertyResult]), nil
 }

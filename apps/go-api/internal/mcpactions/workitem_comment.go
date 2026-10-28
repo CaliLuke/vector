@@ -2,7 +2,6 @@ package mcpactions
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"strings"
 
@@ -10,16 +9,16 @@ import (
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 )
 
-func (s *Service) WorkitemComment(ctx context.Context, input *api.WorkitemCommentRequest) (*api.WorkitemCommentResult, error) {
+func (s *Service) workitemCommentRead(ctx context.Context, input *api.WorkitemCommentRequest) (*api.WorkitemCommentResult, error) {
 	return readProjectResource(ctx, input, selectWorkitemCommentAction, collaborationRead{s.collaborationReads, "comments"}, nil, nil, projectWorkitemCommentResult)
 }
 func selectWorkitemCommentAction(input *api.WorkitemCommentRequest) (djangoapi.ProjectReadRequest, *string, error) {
 	return selectItemReadUnion(input, func(input api.WorkitemCommentRequest) itemReadSelection {
 		detail, ok := input.AsWorkitemCommentRetrieve()
-		if !ok || detail == nil || detail.Action != "retrieve" {
+		if !ok || detail == nil {
 			return itemReadSelection{}
 		}
-		return itemReadSelection{action: detail.Action, project: detail.ProjectID, issue: detail.WorkitemID, target: detail.CommentID, workspace: detail.WorkspaceSlug}
+		return retrieveItemSelection(detail.Action, detail.ProjectID, detail.WorkitemID, detail.CommentID, detail.WorkspaceSlug, detail.IncludeRevision)
 	})
 }
 
@@ -42,13 +41,8 @@ func projectWorkitemCommentRecord(row map[string]any) (*api.WorkitemCommentRecor
 		return nil, errors.New("invalid comment access")
 	}
 
-	body, err := json.Marshal(wire)
-	if err != nil {
-		return nil, err
+	if revision, ok := row["revision"]; ok {
+		wire["revision"] = revision
 	}
-	record := new(api.WorkitemCommentRecord)
-	if err = json.Unmarshal(body, record); err != nil {
-		return nil, err
-	}
-	return record, nil
+	return decodeRecord[api.WorkitemCommentRecord](wire)
 }

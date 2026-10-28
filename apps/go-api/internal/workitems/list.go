@@ -73,7 +73,7 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 		if err := validateAPIFilterMode(q); err != nil {
 			return Result{}, err
 		}
-		if q.Params["external_id"] != "" && q.Params["external_source"] != "" {
+		if q.ExpectedWorkspaceID == nil && q.Params["external_id"] != "" && q.Params["external_source"] != "" {
 			row, err := r.row(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE w.slug=$1 AND i.project_id=$2 AND i.external_id=$3 AND i.external_source=$4 AND i.deleted_at IS NULL`, q.Slug, q.ProjectID, q.Params["external_id"], q.Params["external_source"])
 			if err != nil {
 				var missing *djangoapi.HTTPError
@@ -105,6 +105,14 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 	add := func(value any, format string) {
 		args = append(args, value)
 		where = append(where, fmt.Sprintf(format, len(args)))
+	}
+	where, args = appendBoundWorkitemScope(q, where, args)
+	if q.ExpectedWorkspaceID != nil {
+		for _, key := range []string{"external_id", "external_source"} {
+			if q.Params[key] != "" {
+				add(q.Params[key], "issue."+key+"=$%d")
+			}
+		}
 	}
 	if workspace || details {
 		where = append(where, `EXISTS(SELECT 1 FROM project_members pm WHERE pm.project_id=issue.project_id AND pm.member_id=$1 AND pm.is_active AND pm.deleted_at IS NULL)`)
@@ -217,6 +225,9 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 		return Result{}, deferredFilterError
 	}
 	from := ` FROM issues issue JOIN projects project ON project.id=issue.project_id JOIN workspaces workspace ON workspace.id=issue.workspace_id WHERE ` + strings.Join(where, " AND ")
+	if q.API && q.ExpectedWorkspaceID != nil && q.Operation == "count" {
+		return r.countIssueResults(ctx, q, from, args)
+	}
 	if !q.API {
 		order += ",issue.created_at DESC"
 	}

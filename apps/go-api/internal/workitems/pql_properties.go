@@ -3,9 +3,11 @@ package workitems
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
+	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 )
 
 func (r *Repository) preparePropertyPQL(ctx context.Context, q Request) error {
@@ -35,6 +37,19 @@ func (r *Repository) appendPropertyPQL(ctx context.Context, where []string, args
 			value := projected[id]
 			if value.Status != "value" && value.Status != "empty" {
 				continue
+			}
+			// Native date filters compare calendar days. Preserve the full stored
+			// date-time in reads and formulas, projecting only this filter operand.
+			if value.Kind == property.Date && value.Value != nil {
+				text, ok := value.Value.(string)
+				if !ok {
+					continue
+				}
+				date, parseErr := property.ParseDate(text)
+				if parseErr != nil {
+					continue
+				}
+				value.Value = date.UTC().Format(time.DateOnly)
 			}
 			values[id] = append(values[id], issuequery.PQLPropertyValue{ItemID: stringValue(row["id"]), Value: value.Value})
 		}

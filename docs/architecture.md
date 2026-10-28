@@ -12,7 +12,7 @@ Static response fixtures remain for contract regression tests. No Python code or
 
 The initial [remote MCP transport](mcp.md) lives in `apps/go-api/mcp` and
 `internal/mcptransport`. The proxy sends `/mcp` and `/mcp/*` to Go. The generated
-catalogue contains twenty-eight actions across member, project, cycle, module, label, comment, link, activity, and milestone tools; MCP is disabled by default.
+catalogue contains 207 actions across 30 tools; MCP is disabled by default. All action contracts are wired. Current generated-server workflow evidence covers all 207 actions; full acceptance checks remain incomplete. The [parity tracker](mcp-parity.md) separates wiring from verified behavior. Native project creation, editing and deletion, cycle/module work-item assignment and transfer, and work-item link/comment writes use transactional receipts and the existing effect outbox. Association, link and comment revisions include changes from native HTTP writers. Workspace retrieval reads current membership and returns the connected workspace metadata.
 `internal/mcpauth` supplies personal-token authentication using primary token and
 workspace membership reads. `internal/mcpoauth` owns fresh external-issuer
 introspection, verified account linking and expiring proof storage. `mcpoauthlinks`
@@ -25,12 +25,13 @@ reassignment from changing the selected tenant. Project archive and restore shar
 OAuth is available through an explicitly configured external issuer; remaining resource actions
 and full parity are incomplete.
 
-`internal/projectstatereads` also supplies the [bound state read contract](mcp-states.md),
+`internal/projectstatereads` also supplies the [state contract](mcp-states.md),
 with project reads and workspace aggregation over accessible project states in
-one authorization snapshot. Existing HTTP projections are retained. State
-mutations and generated MCP registration remain pending.
+one authorization snapshot. HTTP and MCP mutations share native helpers, all-writer
+revision triggers, receipts, and a transactional deletion outbox. The generated
+state tool exposes five actions; workspace writes return workspace_not_managed.
 
-The [PQL query boundary](pql.md) lives in `internal/issuequery` and is executed by the existing `internal/workitems` API list path before counting and pagination. Its scalar, relationship (including native milestones), member, body, and effective custom-property query subset does not yet satisfy the complete MCP query contract; the core query actions and reference tool remain unregistered.
+The [PQL query boundary](pql.md) lives in `internal/issuequery` and is executed by the existing `internal/workitems` API list path before counting and pagination. Its scalar, relationship (including native milestones), member, body, and effective custom-property query subset does not yet satisfy the complete MCP query contract; core query actions and the reference tool are wired, while full grammar parity and combined query proof remain pending.
 
 `internal/milestones` owns the [native milestone operations](mcp-milestones.md): consistent scoped reads and transactional record/association changes, receipts, revisions and outbox insertion. The webhook worker supports explicit milestone subscriptions and immutable workspace binding. Item-activity and notification delivery preserve milestone snapshots and recheck queued email scope. Existing history, profile, export, activity counts and notification readers share current milestone visibility checks; notification writes recheck the same scope. The generated native HTTP routes use primary API-key validation, immutable workspace admission and the shared operations. The generated MCP tool mounts all seven operations through the same repository, with project-scoped discovery, pinned output shapes and optional receipt/revision extensions.
 
@@ -418,3 +419,39 @@ in their SQL statements. Page assets retain their exact project-link context. At
 activity and metadata effects commit with the primary database write. Irreversible legacy
 attachment removal records the captured storage key for durable deletion; restorable asset
 soft-deletes retain their storage objects.
+
+MCP comment mutations validate mention targets against current active project membership, render mention chips only after receipt replay is ruled out, and enqueue notifications through the native activity workflow. Link title previews use the same transaction outbox and a stable workflow identity for admission retries. The native HTTP comment path retains its existing notification policy.
+
+The SDK-shaped estimate API lives in `internal/projectconfiguration` beside the existing app editor operations. It resolves the selected estimate inside the mutation transaction, batches point creation atomically, and reuses native deletion and outbox cleanup. `project_estimate_revisions` covers all estimate/point writers and project selection changes. The MCP projection delegates estimate linking to the existing project update boundary.
+
+`internal/workitemtypes` also exposes SDK-shaped type reads and mutations for MCP. Reads bind the active actor and immutable workspace in a repeatable-read snapshot. Mutations hold the existing workspace schema lock, current membership locks, and optional retry receipts while calling native save, removal, and project-import helpers. `work_item_type_api_revisions` tracks all type, project-link, and settings writers independently of the native editor revision. API mutations advance the native editor revision when the catalogue changes.
+
+Core MCP work-item mutations use `internal/workitems.MutateWorkitem` to run native issue writes and archive operations inside the shared project receipt transaction. `issue_edit_revisions` tracks issue rows and assignment/label relationships. Assignment set changes read the current set while holding the item and workspace schema locks, then apply removals followed by additions through the native PATCH path. Activities, webhooks, and deletion effects remain transactional.
+
+Core MCP work-item reads use `internal/workitems.ReadWorkitem` for workspace/project lists, archived items, direct and identifier lookup, search, and cycle/module item pages. Current identity, immutable workspace scope, candidate visibility, PQL, page counts and expanded relations share one primary-data snapshot. The transport projects sparse pages and returns correctable PQL failures with the reference. Grouped count reuses the same filtered query and aggregates distinct item identities across native dimensions and workspace release associations. These additions await combined integration validation.
+
+MCP attachments use `internal/assets.AttachmentApplication` with the shared FileAsset repository and object store. Reads bind current identity, known workspace/project membership and item visibility to a repeatable-read snapshot. Mutations use project receipts and all-writer asset revisions. URL import commits bounded bytes and an immutable key in `file_asset_upload_intents`, with an `asset_storage_upload` effect, before object storage I/O. Request completion and the effect worker share idempotent upload completion; publication activity and metadata effects are enqueued after storage succeeds. Pending uploads block object-key replacement and physical asset purge. The existing pinned HTTP transport handles public URL fetching. These paths await combined integration proof.
+
+`internal/worklogs` owns time-entry reads and mutations. Composite item ownership follows native item moves; all row writers advance per-log revisions. Current scope and author/administrator authorization run before receipt replay. Changes enqueue immutable `work_log.activity.*` snapshots for the existing activity worker; no-op edits enqueue nothing. The MCP contract and SQL migration await combined integration validation.
+
+`internal/workitemrelations` owns dependency edges and workspace custom relation definitions. Current endpoint permissions precede receipt lookup. Mutations lock all endpoint projects and items, validate complete batches, and persist per-endpoint activity events. A workspace relation revision covers all dependency, definition and custom-edge writers. The migration permits multiple dependency kinds per pair; rollback rejects data that cannot fit the older unique pair constraint. Consolidated integration proof remains pending.
+
+Property catalogue MCP operations live beside native property mutations in
+`internal/workitemtypes`. They reuse save, attachment and preservation validation,
+keep API-only metadata in a separate column, and advance workspace property tokens
+through all definition/association writers. Item value API actions reuse native
+item mutation and history. A companion identity table stores stable API value IDs
+and external metadata; canonical values remain in issues.custom_properties and
+all item writers synchronize those identities. Work-item references validate
+current target visibility. Remaining SDK kind compatibility is pending. Email and File share native bounded-text storage;
+Email adds address validation and both use text query operators.
+
+Intake MCP operations use `internal/workitems.ReadIntake` and `MutateIntake`. They bind queue visibility to current scope, reuse native submission and triage transitions, and authorize current action rights before receipt replay. Intake association writers share the item revision counter. Item HTML uses native asset admission, and activity is persisted through the existing transactional effect adapter. Consolidated integration proof remains pending.
+
+`internal/releases` owns workspace releases, version tags, labels, changelogs and item associations. Workspace releases extend `work_item_releases` with nullable project ownership; existing project catalogue APIs keep their original scope. Native property choices, validation, filtering and preservation recognize live workspace releases. Catalogue mutations persist audit snapshots and association mutations reuse the native durable relation-activity worker. All release, tag, label, changelog and association writers advance a workspace revision; item associations also advance item revisions. New SQL and protocol behavior await consolidated proof.
+
+Workspace pages share the native pages table and body-history workflows. Collections own workspace-only hierarchy filing and view/comment/edit memberships; private page ownership remains authoritative. Page transactions and versions enter the existing effect outbox, while item-page associations require both item and page visibility. See [pages and collections](mcp-pages-collections.md).
+
+Native templates own reusable JSON definitions, top-level merge updates and workspace/project governance. Feature settings map existing project switches to their canonical columns and own workspace switches. Initiatives enforce their workspace switch, current target visibility, atomic associations and durable item history. Their contracts are recorded in [templates](mcp-templates.md) and [features/initiatives](mcp-features-initiatives.md).
+
+Customers, requests, property definitions/options and values share a workspace catalogue in `internal/customers`. Atomic upserts preserve external identity; request associations remain customer-bound. Current workspace features, membership and reference visibility govern reads and receipt replay. Item links enqueue native activity. See [customer contracts](mcp-customers.md); combined integration verification remains pending.

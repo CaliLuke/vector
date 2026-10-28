@@ -89,7 +89,7 @@ func (r *Repository) planningTransaction(ctx context.Context, q Request, body io
 	updated := []any{}
 	if kind == "cycle" {
 		// Both the relation and the underlying Issue must belong to this project.
-		existing, err = r.rows(ctx, `SELECT to_jsonb(link) FROM cycle_issues link JOIN issues i ON i.id=link.issue_id JOIN workspaces w ON w.id=link.workspace_id WHERE link.issue_id=ANY($1::uuid[]) AND link.cycle_id<>$2 AND link.project_id=$3 AND w.slug=$4 AND i.project_id=$3 AND i.workspace_id=link.workspace_id AND link.deleted_at IS NULL ORDER BY link.created_at DESC`, ids, q.Params["cycle_id"], q.ProjectID, q.Slug)
+		existing, err = r.rows(ctx, `SELECT to_jsonb(link) FROM cycle_issues link JOIN cycles c ON c.id=link.cycle_id AND c.project_id=link.project_id AND c.workspace_id=link.workspace_id AND c.deleted_at IS NULL JOIN issues i ON i.id=link.issue_id JOIN workspaces w ON w.id=link.workspace_id WHERE link.issue_id=ANY($1::uuid[]) AND link.cycle_id<>$2 AND link.project_id=$3 AND w.slug=$4 AND i.project_id=$3 AND i.workspace_id=link.workspace_id AND link.deleted_at IS NULL ORDER BY link.created_at DESC`, ids, q.Params["cycle_id"], q.ProjectID, q.Slug)
 		if err != nil {
 			return Result{}, err
 		}
@@ -271,7 +271,7 @@ func planningCurrent(kind string, updated []any, created any) (string, error) {
 	return `{"updated_` + kind + `_issues": [` + strings.Join(serialized, ", ") + `], "created_` + kind + `_issues": ` + data + `}`, nil
 }
 func (r *Repository) removePlanning(ctx context.Context, q Request, kind string, allowMissing bool) (Result, error) {
-	rows, err := r.rows(ctx, `SELECT to_jsonb(link)||jsonb_build_object('container_name',container.name) FROM `+kind+`_issues link JOIN `+kind+`s container ON container.id=link.`+kind+`_id JOIN workspaces w ON w.id=link.workspace_id WHERE w.slug=$1 AND link.project_id=$2 AND link.issue_id=$3 AND link.`+kind+`_id=$4 AND link.deleted_at IS NULL ORDER BY link.created_at DESC`, q.Slug, q.ProjectID, q.IssueID, q.Params[kind+"_id"])
+	rows, err := r.rows(ctx, `SELECT to_jsonb(link)||jsonb_build_object('container_name',container.name) FROM `+kind+`_issues link JOIN `+kind+`s container ON container.id=link.`+kind+`_id AND container.project_id=link.project_id AND container.workspace_id=link.workspace_id JOIN issues i ON i.id=link.issue_id AND i.project_id=link.project_id AND i.workspace_id=link.workspace_id JOIN workspaces w ON w.id=link.workspace_id WHERE w.slug=$1 AND link.project_id=$2 AND link.issue_id=$3 AND link.`+kind+`_id=$4 AND link.deleted_at IS NULL ORDER BY link.created_at DESC`, q.Slug, q.ProjectID, q.IssueID, q.Params[kind+"_id"])
 	if err != nil {
 		return Result{}, err
 	}

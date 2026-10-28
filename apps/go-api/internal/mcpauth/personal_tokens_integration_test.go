@@ -4,19 +4,17 @@ package mcpauth
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
 
-	loom "github.com/CaliLuke/loom/pkg"
+	"github.com/CaliLuke/go-plane/internal/testsupport/mcpstub"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/mcptransport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
-	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
@@ -131,44 +129,8 @@ UPDATE workspaces SET deleted_at=NULL;`)
 	assert.Equal(t, "authentication unavailable\n", w.Body.String())
 }
 
-type tokenTransportService struct{}
-
-func (tokenTransportService) Member(context.Context, *api.MemberRequest) (*api.MemberResult, error) {
-	return nil, errors.New("authentication tests do not execute identity reads")
-}
-
-func (tokenTransportService) Project(context.Context, *api.ProjectRequest) (loom.Nullable[api.ProjectResult], error) {
-	return loom.Nullable[api.ProjectResult]{}, errors.New("this fixture does not execute project reads")
-}
+type tokenTransportService struct{ mcpstub.Service }
 
 func (tokenTransportService) DiscoverActions(context.Context) (mcptransport.ActionVisibility, error) {
 	return mcptransport.ActionVisibility{"member": {"me": true, "list_workspace": true, "list_project": true, "list_roles": true, "retrieve_role": true}, "project": {"list": true, "retrieve": true}}, nil
-}
-
-func (tokenTransportService) Cycle(context.Context, *api.CycleRequest) (*api.CycleResult, error) {
-	return nil, errors.New("this fixture does not execute cycle reads")
-}
-
-func (tokenTransportService) Module(context.Context, *api.ModuleRequest) (*api.ModuleResult, error) {
-	return nil, nil
-}
-
-func (tokenTransportService) Label(context.Context, *api.LabelRequest) (*api.LabelResult, error) {
-	return nil, nil
-}
-
-func (tokenTransportService) WorkitemComment(context.Context, *api.WorkitemCommentRequest) (*api.WorkitemCommentResult, error) {
-	return nil, nil
-}
-
-func (tokenTransportService) WorkitemLink(context.Context, *api.WorkitemLinkRequest) (*api.WorkitemLinkResult, error) {
-	return nil, nil
-}
-
-func (tokenTransportService) WorkitemActivity(context.Context, *api.WorkitemActivityRequest) (*api.WorkitemActivityResult, error) {
-	return nil, nil
-}
-
-func (tokenTransportService) Milestone(context.Context, *api.MilestoneRequest) (loom.Nullable[api.MilestoneResult], error) {
-	return loom.NullValue[api.MilestoneResult](), nil
 }

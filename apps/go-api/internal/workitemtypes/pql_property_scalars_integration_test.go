@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/workitems"
+	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
@@ -41,7 +42,10 @@ func TestAPIPQLPropertyScalarsUseEffectiveValuesAndSQLNulls(t *testing.T) {
 	f := newProjectTypeFixture(t)
 	repo, ids := seedDiscoveryItems(t, f)
 	text, number, date, boolean, link, fixed := uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString(), uuid.NewString()
+	email, file := uuid.NewString(), uuid.NewString()
 	attachValueProperties(t, f,
+		property.Definition{ID: email, Title: "Contact", Kind: property.Email, Configuration: property.Configuration{Active: true}},
+		property.Definition{ID: file, Title: "Document", Kind: property.File, Configuration: property.Configuration{Active: true}},
 		property.Definition{ID: text, Title: "Notes", Kind: property.Text, Configuration: property.Configuration{Active: true, Format: "Paragraph"}},
 		property.Definition{ID: number, Title: "Score", Kind: property.Number, Configuration: property.Configuration{Active: true}},
 		property.Definition{ID: date, Title: "Review date", Kind: property.Date, Configuration: property.Configuration{Active: true, Format: "Jan 15, 2025"}},
@@ -49,9 +53,13 @@ func TestAPIPQLPropertyScalarsUseEffectiveValuesAndSQLNulls(t *testing.T) {
 		property.Definition{ID: link, Title: "Reference", Kind: property.URL, Configuration: property.Configuration{Active: true}},
 		property.Definition{ID: fixed, Title: "Instructions", Kind: property.Text, Configuration: property.Configuration{Active: true, Format: "Read-only", Content: "Effective guidance"}},
 	)
-	f.exec(`UPDATE issues SET custom_properties=$2::jsonb WHERE id=$1`, ids[0], map[string]any{text: "Alpha 50%_\\", number: 0, date: "2026-10-27", link: "https://example.test/one", fixed: "stale text"})
+	f.exec(`UPDATE issues SET custom_properties=$2::jsonb WHERE id=$1`, ids[0], map[string]any{text: "Alpha 50%_\\", number: 0, date: "2026-10-27 14:35:59", link: "https://example.test/one", fixed: "stale text", email: "buyer@example.test", file: "Guide.pdf"})
 	f.exec(`UPDATE issues SET custom_properties=$2::jsonb WHERE id=$1`, ids[1], map[string]any{text: "Beta", number: 9, date: "2026-11-01", boolean: true})
+	raw, readErr := f.repo.ReadPropertyValueAPI(f.ctx, types.PropertyValueAPIQuery{APIScope: types.APIScope{ActorID: uuid.MustParse(f.owner), WorkspaceID: uuid.MustParse(f.workspace), ProjectID: uuid.MustParse(f.project), WorkspaceSlug: "types"}, IssueID: uuid.MustParse(ids[0]), PropertyID: uuid.MustParse(date)})
+	require.NoError(t, readErr)
+	require.Contains(t, string(raw), `"value":"2026-10-27 14:35:59"`)
 	assertPQLPropertyResults(t, f, repo, map[string][]string{
+		pqlCF(email) + ` ~ "EXAMPLE"`: {ids[0]}, pqlCF(file) + ` = "Guide.pdf"`: {ids[0]}, pqlCF(file) + ` IS NULL`: {ids[1]},
 		pqlCF(text) + ` ~ "50%_"`: {ids[0]}, pqlCF(text) + ` ~ "\\"`: {ids[0]},
 		pqlCF(text) + ` ~ "alpha"`: {ids[0]}, pqlCF(text) + ` = "alpha"`: {},
 		pqlCF(text) + ` != "Beta"`: {ids[0]}, `NOT ` + pqlCF(text) + ` ~ "alpha"`: {ids[1]},

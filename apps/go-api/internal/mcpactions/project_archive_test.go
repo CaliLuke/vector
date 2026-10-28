@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
+	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 
 	"github.com/stretchr/testify/require"
@@ -159,4 +160,8 @@ func TestProjectRevisionGuardDoesNotRequireReceipt(t *testing.T) {
 	require.JSONEq(t, `{"project_id":"30000000-0000-4000-8000-000000000001","revision":"project:30000000-0000-4000-8000-000000000001:2"}`, string(result.StructuredContent))
 	require.Nil(t, f.projectWrites.command.RequestID)
 	require.Equal(t, "project:30000000-0000-4000-8000-000000000001:1", *f.projectWrites.command.ExpectedRevision)
+}
+
+func (s *projectWriteStub) MutateResource(context.Context, projectmutations.Command) (projectmutations.Result, error) {
+	return projectmutations.Result{}, errors.New("unexpected project mutation")
 }

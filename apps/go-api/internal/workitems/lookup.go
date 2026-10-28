@@ -172,6 +172,10 @@ func (r *Repository) search(ctx context.Context, q Request) (Result, error) {
 		args = append(args, value)
 		where = append(where, fmt.Sprintf(format, len(args)))
 	}
+	if q.ExpectedWorkspaceID != nil {
+		add(q.ExpectedWorkspaceID.String(), `w.id=$%d`)
+		where = append(where, `p.workspace_id=i.workspace_id`, `p.archived_at IS NULL`)
+	}
 	workspace := q.Params["workspace_search"]
 	if workspace == "" {
 		workspace = "false"

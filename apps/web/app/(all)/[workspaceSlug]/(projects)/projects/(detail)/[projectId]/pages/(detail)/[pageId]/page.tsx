@@ -74,9 +74,10 @@ function PageDetailsPage(): React.JSX.Element | null {
           return `/${workspaceSlug}/projects/${projectId}/pages`;
         }
       },
-      updateDescription: (document) => updatePageDescription.mutateAsync(document),
+      updateDescription: (document) =>
+        updatePageDescription.mutateAsync({ ...document, collaboration_revision: page?.collaboration_revision ?? 0 }),
     }),
-    [create, fetchEntityCallback, id, updatePageDescription, workspaceSlug, projectId]
+    [create, fetchEntityCallback, id, updatePageDescription, workspaceSlug, projectId, page?.collaboration_revision]
   );
   const fileHandler = useEditorConfig({
     projectId,
@@ -146,6 +147,7 @@ function PageDetailsPage(): React.JSX.Element | null {
       <div className="flex h-full flex-col justify-between">
         <div className="relative flex h-full w-full flex-shrink-0 flex-col overflow-hidden">
           <PageRoot
+            key={`${page.id}.${page.collaboration_revision ?? 0}`}
             config={pageRootConfig}
             handlers={pageRootHandlers}
             page={page}

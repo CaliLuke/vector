@@ -8,7 +8,9 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -102,7 +104,7 @@ func ValidateItemValues(ctx context.Context, tx pgx.Tx, in ItemValueInput) (Item
 	if err = validateItemContextTransition(in, out.TypeID, definitions); err != nil {
 		return out, err
 	}
-	allowed, err := itemValueReferences(ctx, tx, in, definitions)
+	allowed, err := itemValueReferences(ctx, tx, in, definitions, true)
 	if err != nil {
 		return out, err
 	}
@@ -203,17 +205,42 @@ func itemPropertyDefinitions(ctx context.Context, tx pgx.Tx, workspace, typeID s
 	return definitions, rows.Err()
 }
 
-func itemValueReferences(ctx context.Context, tx pgx.Tx, in ItemValueInput, definitions []property.Definition) (property.ReferenceAllowed, error) {
-	allowed := map[property.Kind]map[string]bool{property.Member: {}, property.Release: {}}
-	for _, kind := range []property.Kind{property.Member, property.Release} {
+func itemValueReferences(ctx context.Context, tx pgx.Tx, in ItemValueInput, definitions []property.Definition, lock bool) (property.ReferenceAllowed, error) {
+	allowed := map[property.Kind]map[string]bool{property.Member: {}, property.Release: {}, property.Issue: {}}
+	for _, kind := range []property.Kind{property.Member, property.Release, property.Issue} {
 		if !slices.ContainsFunc(definitions, func(def property.Definition) bool { return def.Kind == kind }) {
 			continue
 		}
-		query := `SELECT r.id::text FROM work_item_releases r WHERE r.workspace_id=$1 AND r.project_id=NULLIF($2,'')::uuid AND $3::text IS NOT NULL AND $4::boolean IS NOT NULL`
+		query := `SELECT r.id::text FROM work_item_releases r WHERE r.workspace_id=$1 AND (r.project_id=NULLIF($2,'')::uuid OR r.project_id IS NULL) AND r.deleted_at IS NULL AND $3::text IS NOT NULL AND $4::boolean IS NOT NULL`
 		if kind == property.Member {
 			query = `SELECT u.id::text FROM users u JOIN workspace_members w ON w.member_id=u.id WHERE w.workspace_id=$1 AND w.is_active AND w.deleted_at IS NULL AND u.is_active AND (($2='' AND $4) OR EXISTS(SELECT 1 FROM project_members m JOIN projects p ON p.id=m.project_id WHERE m.member_id=u.id AND m.workspace_id=$1 AND m.project_id=NULLIF($2,'')::uuid AND m.is_active AND m.deleted_at IS NULL AND p.deleted_at IS NULL AND (m.role>=15 OR m.role=5 AND (p.guest_view_all_features OR u.id=NULLIF($3,'')::uuid))))`
 		}
-		rows, err := tx.Query(ctx, query, in.WorkspaceID, in.ProjectID, in.CreatorID, in.Draft)
+		args := []any{in.WorkspaceID, in.ProjectID, in.CreatorID, in.Draft}
+		if kind == property.Issue {
+			ids := []string{}
+			for _, def := range definitions {
+				if def.Kind == property.Issue {
+					value, present := in.Submitted[def.ID]
+					if !present {
+						value = in.Stored[def.ID]
+					}
+					ids = append(ids, memberValueIDs(value)...)
+				}
+			}
+			for _, id := range ids {
+				if _, err := uuid.Parse(id); err != nil {
+					return nil, reject(422, "Choose valid work item references.")
+				}
+			}
+			// Lock selected targets and the actor's corresponding project memberships
+			// so revocation or movement cannot race an accepted reference write.
+			query = `SELECT i.id::text FROM issues i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id JOIN project_members pm ON pm.project_id=p.id AND pm.workspace_id=p.workspace_id AND pm.member_id=NULLIF($2,'')::uuid AND pm.is_active AND pm.deleted_at IS NULL AND pm.role IN(5,15,20) WHERE i.id=ANY($3::uuid[]) AND ` + djangoapi.IssueVisibleSQL("i", "NULLIF($2,'')::uuid", "$1::uuid") + ` ORDER BY i.id`
+			if lock {
+				query += " FOR SHARE OF i,p,pm"
+			}
+			args = []any{in.WorkspaceID, in.ActorID, ids}
+		}
+		rows, err := tx.Query(ctx, query, args...)
 		if err != nil {
 			return nil, err
 		}

@@ -5,6 +5,7 @@ import . "github.com/CaliLuke/loom/dsl"
 var pageLifecycleWriteBase = Type("PageLifecycleWriteBase", func() {
 	Attribute("id", String, func() { Format(FormatUUID) })
 	Attribute("name", String)
+	Attribute("collaboration_revision", Int64)
 	Attribute("owned_by", String, func() { Format(FormatUUID) })
 	Attribute("access", Int)
 	Attribute("color", String)
@@ -125,7 +126,7 @@ func pageLifecycleErrors() {
 		status int
 	}{
 		{"status_400", 400}, {"status_403", 403},
-		{"status_404", 404}, {"status_405", 405}, {"status_415", 415}, {"status_500", 500},
+		{"status_404", 404}, {"status_405", 405}, {"status_409", 409}, {"status_415", 415}, {"status_500", 500},
 	} {
 		Error(item.name, pageLifecycleError, func() {
 			if item.status == 500 {

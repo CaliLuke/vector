@@ -2,9 +2,12 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/testcontainers/testcontainers-go"
 	postgrescontainer "github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -30,6 +33,47 @@ type Pair struct {
 
 	SourceURL string
 	TargetURL string
+}
+
+// Database is an independent clone of a fixture's migrated seed.
+type Database struct {
+	URL      string
+	adminURL string
+	name     string
+}
+
+// CloneDatabase preserves the seed and gives each test its own database.
+func (pair *Pair) CloneDatabase(ctx context.Context) (*Database, error) {
+	name := "plane_test_" + uuid.NewString()
+	cloneURL, err := databaseURL(pair.seedURL, name)
+	if err != nil {
+		return nil, err
+	}
+	database := &Database{URL: cloneURL, adminURL: pair.adminURL, name: name}
+	connection, err := pgx.Connect(ctx, pair.adminURL)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = connection.Close(context.WithoutCancel(ctx)) }()
+	if _, err := connection.Exec(ctx, "CREATE DATABASE "+pgx.Identifier{name}.Sanitize()+" TEMPLATE "+pgx.Identifier{seedDatabase}.Sanitize()); err != nil {
+		// Cancellation can obscure whether CREATE DATABASE finished. Reclaim
+		// the owned name with a separate bounded cleanup context in either case.
+		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
+		defer cancel()
+		return nil, errors.Join(err, database.Close(cleanup))
+	}
+	return database, nil
+}
+
+// Close drops only this test's clone, including any connections it left open.
+func (database *Database) Close(ctx context.Context) error {
+	connection, err := pgx.Connect(ctx, database.adminURL)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = connection.Close(context.WithoutCancel(ctx)) }()
+	_, err = connection.Exec(ctx, "DROP DATABASE IF EXISTS "+pgx.Identifier{database.name}.Sanitize()+" WITH (FORCE)")
+	return err
 }
 
 // Start creates a ready PostgreSQL container, migrates its seed database, and clones two targets.

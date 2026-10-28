@@ -15,34 +15,77 @@ import (
 
 // Endpoints wraps the "VectorMCP" service endpoints.
 type Endpoints struct {
-	Member           loom.Endpoint
-	Project          loom.Endpoint
-	Cycle            loom.Endpoint
-	Module           loom.Endpoint
-	Label            loom.Endpoint
-	WorkitemComment  loom.Endpoint
-	WorkitemLink     loom.Endpoint
-	WorkitemActivity loom.Endpoint
-	Milestone        loom.Endpoint
+	Workspace          loom.Endpoint
+	Member             loom.Endpoint
+	Project            loom.Endpoint
+	Cycle              loom.Endpoint
+	Module             loom.Endpoint
+	Label              loom.Endpoint
+	WorkitemComment    loom.Endpoint
+	WorkitemLink       loom.Endpoint
+	WorkitemActivity   loom.Endpoint
+	Milestone          loom.Endpoint
+	State              loom.Endpoint
+	ProjectEstimate    loom.Endpoint
+	WorkitemType       loom.Endpoint
+	Workitem           loom.Endpoint
+	GetPqlReference    loom.Endpoint
+	WorkitemAttachment loom.Endpoint
+	Customer           loom.Endpoint
+	CustomerProperty   loom.Endpoint
+	CustomerRequest    loom.Endpoint
+	Template           loom.Endpoint
+	Initiative         loom.Endpoint
+	Page               loom.Endpoint
+	Collection         loom.Endpoint
+	Release            loom.Endpoint
+	ReleaseLabel       loom.Endpoint
+	ReleaseTag         loom.Endpoint
+	Intake             loom.Endpoint
+	WorkLog            loom.Endpoint
+	WorkitemRelation   loom.Endpoint
+	WorkitemProperty   loom.Endpoint
 }
 
 // NewEndpoints wraps the methods of the "VectorMCP" service with endpoints.
 func NewEndpoints(s Service) *Endpoints {
 	return &Endpoints{
-		Member:           NewMemberEndpoint(s),
-		Project:          NewProjectEndpoint(s),
-		Cycle:            NewCycleEndpoint(s),
-		Module:           NewModuleEndpoint(s),
-		Label:            NewLabelEndpoint(s),
-		WorkitemComment:  NewWorkitemCommentEndpoint(s),
-		WorkitemLink:     NewWorkitemLinkEndpoint(s),
-		WorkitemActivity: NewWorkitemActivityEndpoint(s),
-		Milestone:        NewMilestoneEndpoint(s),
+		Workspace:          NewWorkspaceEndpoint(s),
+		Member:             NewMemberEndpoint(s),
+		Project:            NewProjectEndpoint(s),
+		Cycle:              NewCycleEndpoint(s),
+		Module:             NewModuleEndpoint(s),
+		Label:              NewLabelEndpoint(s),
+		WorkitemComment:    NewWorkitemCommentEndpoint(s),
+		WorkitemLink:       NewWorkitemLinkEndpoint(s),
+		WorkitemActivity:   NewWorkitemActivityEndpoint(s),
+		Milestone:          NewMilestoneEndpoint(s),
+		State:              NewStateEndpoint(s),
+		ProjectEstimate:    NewProjectEstimateEndpoint(s),
+		WorkitemType:       NewWorkitemTypeEndpoint(s),
+		Workitem:           NewWorkitemEndpoint(s),
+		GetPqlReference:    NewGetPqlReferenceEndpoint(s),
+		WorkitemAttachment: NewWorkitemAttachmentEndpoint(s),
+		Customer:           NewCustomerEndpoint(s),
+		CustomerProperty:   NewCustomerPropertyEndpoint(s),
+		CustomerRequest:    NewCustomerRequestEndpoint(s),
+		Template:           NewTemplateEndpoint(s),
+		Initiative:         NewInitiativeEndpoint(s),
+		Page:               NewPageEndpoint(s),
+		Collection:         NewCollectionEndpoint(s),
+		Release:            NewReleaseEndpoint(s),
+		ReleaseLabel:       NewReleaseLabelEndpoint(s),
+		ReleaseTag:         NewReleaseTagEndpoint(s),
+		Intake:             NewIntakeEndpoint(s),
+		WorkLog:            NewWorkLogEndpoint(s),
+		WorkitemRelation:   NewWorkitemRelationEndpoint(s),
+		WorkitemProperty:   NewWorkitemPropertyEndpoint(s),
 	}
 }
 
 // Use applies the given middleware to all the "VectorMCP" service endpoints.
 func (e *Endpoints) Use(m func(loom.Endpoint) loom.Endpoint) {
+	e.Workspace = m(e.Workspace)
 	e.Member = m(e.Member)
 	e.Project = m(e.Project)
 	e.Cycle = m(e.Cycle)
@@ -52,6 +95,35 @@ func (e *Endpoints) Use(m func(loom.Endpoint) loom.Endpoint) {
 	e.WorkitemLink = m(e.WorkitemLink)
 	e.WorkitemActivity = m(e.WorkitemActivity)
 	e.Milestone = m(e.Milestone)
+	e.State = m(e.State)
+	e.ProjectEstimate = m(e.ProjectEstimate)
+	e.WorkitemType = m(e.WorkitemType)
+	e.Workitem = m(e.Workitem)
+	e.GetPqlReference = m(e.GetPqlReference)
+	e.WorkitemAttachment = m(e.WorkitemAttachment)
+	e.Customer = m(e.Customer)
+	e.CustomerProperty = m(e.CustomerProperty)
+	e.CustomerRequest = m(e.CustomerRequest)
+	e.Template = m(e.Template)
+	e.Initiative = m(e.Initiative)
+	e.Page = m(e.Page)
+	e.Collection = m(e.Collection)
+	e.Release = m(e.Release)
+	e.ReleaseLabel = m(e.ReleaseLabel)
+	e.ReleaseTag = m(e.ReleaseTag)
+	e.Intake = m(e.Intake)
+	e.WorkLog = m(e.WorkLog)
+	e.WorkitemRelation = m(e.WorkitemRelation)
+	e.WorkitemProperty = m(e.WorkitemProperty)
+}
+
+// NewWorkspaceEndpoint returns an endpoint function that calls the method
+// "workspace" of service "VectorMCP".
+func NewWorkspaceEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*WorkspaceRequest)
+		return s.Workspace(ctx, p)
+	}
 }
 
 // NewMemberEndpoint returns an endpoint function that calls the method
@@ -132,5 +204,185 @@ func NewMilestoneEndpoint(s Service) loom.Endpoint {
 	return func(ctx context.Context, req any) (any, error) {
 		p := req.(*MilestoneRequest)
 		return s.Milestone(ctx, p)
+	}
+}
+
+// NewStateEndpoint returns an endpoint function that calls the method "state"
+// of service "VectorMCP".
+func NewStateEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*StateRequest)
+		return s.State(ctx, p)
+	}
+}
+
+// NewProjectEstimateEndpoint returns an endpoint function that calls the
+// method "project_estimate" of service "VectorMCP".
+func NewProjectEstimateEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*ProjectEstimateRequest)
+		return s.ProjectEstimate(ctx, p)
+	}
+}
+
+// NewWorkitemTypeEndpoint returns an endpoint function that calls the method
+// "workitem_type" of service "VectorMCP".
+func NewWorkitemTypeEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*WorkitemTypeRequest)
+		return s.WorkitemType(ctx, p)
+	}
+}
+
+// NewWorkitemEndpoint returns an endpoint function that calls the method
+// "workitem" of service "VectorMCP".
+func NewWorkitemEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*WorkitemRequest)
+		return s.Workitem(ctx, p)
+	}
+}
+
+// NewGetPqlReferenceEndpoint returns an endpoint function that calls the
+// method "get_pql_reference" of service "VectorMCP".
+func NewGetPqlReferenceEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*GetPqlReferencePayload)
+		return s.GetPqlReference(ctx, p)
+	}
+}
+
+// NewWorkitemAttachmentEndpoint returns an endpoint function that calls the
+// method "workitem_attachment" of service "VectorMCP".
+func NewWorkitemAttachmentEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*WorkitemAttachmentRequest)
+		return s.WorkitemAttachment(ctx, p)
+	}
+}
+
+// NewCustomerEndpoint returns an endpoint function that calls the method
+// "customer" of service "VectorMCP".
+func NewCustomerEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*CustomerRequest)
+		return s.Customer(ctx, p)
+	}
+}
+
+// NewCustomerPropertyEndpoint returns an endpoint function that calls the
+// method "customer_property" of service "VectorMCP".
+func NewCustomerPropertyEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*CustomerPropertyRequest)
+		return s.CustomerProperty(ctx, p)
+	}
+}
+
+// NewCustomerRequestEndpoint returns an endpoint function that calls the
+// method "customer_request" of service "VectorMCP".
+func NewCustomerRequestEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*CustomerRequestRequest)
+		return s.CustomerRequest(ctx, p)
+	}
+}
+
+// NewTemplateEndpoint returns an endpoint function that calls the method
+// "template" of service "VectorMCP".
+func NewTemplateEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*TemplateRequest)
+		return s.Template(ctx, p)
+	}
+}
+
+// NewInitiativeEndpoint returns an endpoint function that calls the method
+// "initiative" of service "VectorMCP".
+func NewInitiativeEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*InitiativeRequest)
+		return s.Initiative(ctx, p)
+	}
+}
+
+// NewPageEndpoint returns an endpoint function that calls the method "page" of
+// service "VectorMCP".
+func NewPageEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*PageRequest)
+		return s.Page(ctx, p)
+	}
+}
+
+// NewCollectionEndpoint returns an endpoint function that calls the method
+// "collection" of service "VectorMCP".
+func NewCollectionEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*CollectionRequest)
+		return s.Collection(ctx, p)
+	}
+}
+
+// NewReleaseEndpoint returns an endpoint function that calls the method
+// "release" of service "VectorMCP".
+func NewReleaseEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*ReleaseRequest)
+		return s.Release(ctx, p)
+	}
+}
+
+// NewReleaseLabelEndpoint returns an endpoint function that calls the method
+// "release_label" of service "VectorMCP".
+func NewReleaseLabelEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*ReleaseLabelRequest)
+		return s.ReleaseLabel(ctx, p)
+	}
+}
+
+// NewReleaseTagEndpoint returns an endpoint function that calls the method
+// "release_tag" of service "VectorMCP".
+func NewReleaseTagEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*ReleaseTagRequest)
+		return s.ReleaseTag(ctx, p)
+	}
+}
+
+// NewIntakeEndpoint returns an endpoint function that calls the method
+// "intake" of service "VectorMCP".
+func NewIntakeEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*IntakeRequest)
+		return s.Intake(ctx, p)
+	}
+}
+
+// NewWorkLogEndpoint returns an endpoint function that calls the method
+// "work_log" of service "VectorMCP".
+func NewWorkLogEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*WorkLogRequest)
+		return s.WorkLog(ctx, p)
+	}
+}
+
+// NewWorkitemRelationEndpoint returns an endpoint function that calls the
+// method "workitem_relation" of service "VectorMCP".
+func NewWorkitemRelationEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*WorkitemRelationRequest)
+		return s.WorkitemRelation(ctx, p)
+	}
+}
+
+// NewWorkitemPropertyEndpoint returns an endpoint function that calls the
+// method "workitem_property" of service "VectorMCP".
+func NewWorkitemPropertyEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*WorkitemPropertyRequest)
+		return s.WorkitemProperty(ctx, p)
 	}
 }

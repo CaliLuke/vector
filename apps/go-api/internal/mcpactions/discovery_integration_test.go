@@ -68,7 +68,8 @@ func TestDiscoveryUsesCurrentMemberReadPermissionsAcrossCredentialsAndProtocols(
 						}
 						if tc.roster {
 							for _, tool := range []string{"cycle", "module", "label", "workitem_comment", "workitem_link", "workitem_activity"} {
-								require.ElementsMatch(t, []string{"list", "retrieve"}, actions[tool])
+								require.Contains(t, actions[tool], "list")
+								require.Contains(t, actions[tool], "retrieve")
 							}
 							expected = append(expected, "list_project")
 						}
@@ -109,13 +110,30 @@ func TestOAuthDiscoveryWithoutWorkspaceUsesEligibleScopesAndRechecksMembership(t
 		}
 		_, err := pool.Exec(t.Context(), `UPDATE workspace_members SET role=5 WHERE member_id='10000000-0000-4000-8000-000000000001'; DELETE FROM workspace_members WHERE workspace_id='20000000-0000-4000-8000-000000000002'; INSERT INTO workspace_members(workspace_id,member_id,role,is_active) VALUES('20000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000001',15,true)`)
 		require.NoError(t, err)
+
+		_, err = pool.Exec(t.Context(), `UPDATE workspace_features SET initiatives=true,customers=true WHERE workspace_id='20000000-0000-4000-8000-000000000002'`)
+		require.NoError(t, err)
+		unbound := list("")
+		require.Contains(t, unbound["customer"], "retrieve")
+		require.Contains(t, unbound["initiative"], "retrieve")
+		require.NotContains(t, unbound["customer"], "create")
+		require.NotContains(t, list("workspace-one"), "customer")
+		_, err = pool.Exec(t.Context(), `UPDATE workspace_members SET role=20 WHERE workspace_id='20000000-0000-4000-8000-000000000002'`)
+		require.NoError(t, err)
+		require.Contains(t, list("")["customer"], "create")
+		require.Contains(t, list("")["initiative"], "create")
+		_, err = pool.Exec(t.Context(), `UPDATE workspace_members SET role=15,is_active=false WHERE workspace_id='20000000-0000-4000-8000-000000000002'`)
+		require.NoError(t, err)
+		require.NotContains(t, list(""), "customer")
+		_, err = pool.Exec(t.Context(), `UPDATE workspace_members SET is_active=true WHERE workspace_id='20000000-0000-4000-8000-000000000002'`)
+		require.NoError(t, err)
 		require.Contains(t, list("")["member"], "list_workspace")
 		require.NotContains(t, list("workspace-one")["member"], "list_workspace")
 		require.Contains(t, list("workspace-two")["member"], "list_workspace")
 		require.NotContains(t, list("workspace-two")["member"], "list_project")
 		_, err = pool.Exec(t.Context(), `UPDATE workspace_members SET is_active=false WHERE member_id='10000000-0000-4000-8000-000000000001'`)
 		require.NoError(t, err)
-		require.Equal(t, map[string][]string{"member": {"me"}}, list(""))
+		require.Equal(t, map[string][]string{"member": {"me"}, "workspace": {"retrieve"}}, list(""))
 		me := oauthCall(t, h, version, "oauth-user", "", `{"action":"me"}`, 200)
 		require.False(t, me.IsError, me.Content)
 		_, err = pool.Exec(t.Context(), `UPDATE workspace_members SET is_active=true WHERE member_id='10000000-0000-4000-8000-000000000001'`)

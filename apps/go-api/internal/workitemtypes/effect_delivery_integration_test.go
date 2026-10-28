@@ -61,7 +61,7 @@ func effectStoreForTest(t *testing.T, f typeFixture, recorder *effectAdmissionRe
 		t.Fatal(err)
 	}
 	t.Cleanup(pool.Close)
-	store, err := backgroundtasks.NewPostgresWorkItemEffectStore(pool, recorder, recorder, recorder, recorder, fileAssetDeleteAdmissionRecorder{recorder}, fileAssetMetadataAdmissionRecorder{recorder})
+	store, err := backgroundtasks.NewPostgresWorkItemEffectStore(pool, recorder, recorder, recorder, recorder, fileAssetDeleteAdmissionRecorder{recorder}, fileAssetMetadataAdmissionRecorder{recorder}, recorder, recorder)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -111,4 +111,12 @@ func TestWorkItemEffectAcknowledgementFailureReusesAdmissionIdentity(t *testing.
 	if count, err := store.Drain(f.ctx); err != nil || count != 1 || recorder.calls[id] != 2 || len(recorder.calls) != 1 {
 		t.Fatalf("uncertain admission acquired another identity: %d %v %#v", count, err, recorder.calls)
 	}
+}
+
+func (r *effectAdmissionRecorder) AdmitWithID(_ context.Context, id string, _ backgroundtasks.LinkPreviewInput) (string, error) {
+	return id, r.record(id)
+}
+
+func (r *effectAdmissionRecorder) CompleteAttachmentUpload(_ context.Context, id string) error {
+	return r.record(id)
 }

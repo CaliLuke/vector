@@ -1,0 +1,10 @@
+BEGIN;
+SET LOCAL search_path = public, pg_catalog;
+DO $$ BEGIN IF EXISTS(SELECT 1 FROM workspace_features WHERE project_grouping OR initiatives OR teams OR customers OR wiki OR pi) OR EXISTS(SELECT 1 FROM projects WHERE epics_enabled OR parallel_cycles_enabled OR project_updates_enabled OR workflows_enabled) THEN RAISE EXCEPTION 'cannot discard enabled feature settings';END IF;END; $$;
+DROP TRIGGER project_features_revision ON projects;
+DROP FUNCTION advance_project_features();
+ALTER TABLE projects DROP COLUMN epics_enabled,DROP COLUMN parallel_cycles_enabled,DROP COLUMN project_updates_enabled,DROP COLUMN workflows_enabled;
+DROP TABLE feature_events,workspace_features;
+DROP TRIGGER workspace_features ON workspaces;
+DROP FUNCTION seed_workspace_features(),advance_workspace_features();
+COMMIT;

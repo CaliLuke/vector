@@ -45,6 +45,11 @@ func RegisterLinkPreviewWorkflow(app *selvedge.App, store linkPreviewStore, poli
 	return &LinkPreviewDispatcher{app, workflow}, nil
 }
 func (d *LinkPreviewDispatcher) Admit(ctx context.Context, in LinkPreviewInput) (string, error) {
+	return d.AdmitWithID(ctx, uuid.NewString(), in)
+}
+
+// AdmitWithID reuses the committed outbox identity after an uncertain admission.
+func (d *LinkPreviewDispatcher) AdmitWithID(ctx context.Context, eventID string, in LinkPreviewInput) (string, error) {
 	if d == nil || d.app == nil {
 		return "", errors.New("link preview dispatcher required")
 	}
@@ -54,7 +59,10 @@ func (d *LinkPreviewDispatcher) Admit(ctx context.Context, in LinkPreviewInput) 
 	if in.URL == "" {
 		return "", errors.New("link preview URL required")
 	}
-	return admitOrReconcile(ctx, d.app, d.workflow, "plane-link-preview:"+uuid.NewString(), in)
+	if id, err := uuid.Parse(eventID); err != nil || id == uuid.Nil {
+		return "", errors.New("invalid link preview event identifier")
+	}
+	return admitOrReconcile(ctx, d.app, d.workflow, "plane-link-preview:"+eventID, in)
 }
 
 type LinkPreviewTaskPublisher struct {

@@ -1,6 +1,10 @@
 package projectstatereads
 
-import "uuid"
+import (
+	"encoding/json"
+	"errors"
+	"uuid"
+)
 
 func validateBoundStateRead(user string, request APIV1Request) error {
 	if request.Operation != "list" && request.Operation != "detail" {
@@ -11,6 +15,12 @@ func validateBoundStateRead(user string, request APIV1Request) error {
 	}
 	for _, field := range []string{"fields", "expand"} {
 		if request.Present[field] || request.Params[field] != "" {
+			return ErrForbidden
+		}
+	}
+	value := request.Params["include_revision"]
+	if request.Present["include_revision"] || value != "" {
+		if request.Operation != "detail" || value != "true" && value != "false" {
 			return ErrForbidden
 		}
 	}
@@ -41,6 +51,11 @@ func boundStateReadQuery(user string, request APIV1Request, limit, offset int) (
 	if request.Operation == "detail" {
 		target = request.Params["state_id"]
 	}
+	projection, revisionJoin := "to_jsonb(state)", ""
+	if request.Params["include_revision"] == "true" {
+		projection += "||jsonb_build_object('state_revision',revision.revision)"
+		revisionJoin = " LEFT JOIN state_edit_revisions revision ON revision.state_id=state.id "
+	}
 	return `WITH workspace_scope AS MATERIALIZED (
  SELECT w.id FROM workspaces w WHERE w.id=$1::uuid AND w.slug=$2 AND w.deleted_at IS NULL
  AND EXISTS(SELECT 1 FROM users u WHERE u.id=$3::uuid AND u.is_active)
@@ -52,9 +67,9 @@ func boundStateReadQuery(user string, request APIV1Request, limit, offset int) (
  AND EXISTS(SELECT 1 FROM project_members pm WHERE pm.project_id=p.id AND pm.workspace_id=w.id
   AND pm.member_id=$3::uuid AND pm.is_active AND pm.deleted_at IS NULL AND pm.role IN(5,15,20))
 ), state_rows AS MATERIALIZED (
- SELECT to_jsonb(state) AS data,
+ SELECT ` + projection + ` AS data,
   row_number() OVER(ORDER BY state.project_id,state.sequence,state.id) AS ordinal
- FROM states state JOIN project_scope p ON p.id=state.project_id AND p.workspace_id=state.workspace_id
+ FROM states state JOIN project_scope p ON p.id=state.project_id AND p.workspace_id=state.workspace_id ` + revisionJoin + `
  WHERE state.deleted_at IS NULL AND state."group"<>'triage' AND NOT state.is_triage
  AND ($5::uuid IS NULL OR state.id=$5::uuid)
 ), page AS (
@@ -65,4 +80,18 @@ SELECT jsonb_build_object('total_count',(SELECT count(*) FROM state_rows),
  'results',coalesce((SELECT jsonb_agg(data ORDER BY ordinal) FROM page),'[]'::jsonb))
  FROM workspace_scope WHERE $4::uuid IS NULL OR EXISTS(SELECT 1 FROM project_scope)`,
 		[]any{request.ExpectedWorkspaceID, request.Params["slug"], user, project, target, limit, offset}
+}
+
+func addStateRevision(row, projected map[string]any) error {
+	raw, ok := row["state_revision"].(json.Number)
+	if !ok {
+		return errors.New("state revision unavailable")
+	}
+	revision, err := raw.Int64()
+	id, valid := row["id"].(string)
+	if err != nil || revision <= 0 || !valid || id == "" {
+		return errors.New("state revision unavailable")
+	}
+	projected["revision"] = stateRevision(id, revision)
+	return nil
 }

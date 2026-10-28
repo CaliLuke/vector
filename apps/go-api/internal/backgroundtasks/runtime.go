@@ -352,7 +352,16 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 		_ = emailStore.Close()
 		return nil, err
 	}
-	effectStore, err := NewPostgresWorkItemEffectStore(pool, effectActivities, effectVersions, deletion, effectWebhooks, assetDeleteDispatcher, assetDispatcher)
+	attachmentUploads, err := assets.NewAttachmentApplication(assetRepository, storage, nil, "", assets.AttachmentUploadLimit)
+	if err != nil {
+		return nil, err
+	}
+	effectPages, err := NewPageTaskAdmission(pageTransactions, versions, descriptionAssets)
+	if err != nil {
+		_ = emailStore.Close()
+		return nil, err
+	}
+	effectStore, err := NewPostgresWorkItemEffectStore(pool, effectActivities, effectVersions, deletion, effectWebhooks, assetDeleteDispatcher, assetDispatcher, linkPreviews, attachmentUploads, effectPages)
 	if err != nil {
 		_ = emailStore.Close()
 		return nil, err

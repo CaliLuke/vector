@@ -94,6 +94,11 @@ func (repository *Repository) ReadAPIV1(ctx context.Context, user string, reques
 			}
 			projected["sequence"] = json.Number(pythoncompat.FloatString(value))
 		}
+		if request.ExpectedWorkspaceID != nil && p["include_revision"] == "true" {
+			if revisionErr := addStateRevision(raw.(map[string]any), projected); revisionErr != nil {
+				return nil, revisionErr
+			}
+		}
 		rows[i] = projected
 	}
 	if detail {

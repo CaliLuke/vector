@@ -11,6 +11,7 @@ interface ProjectPageServiceParams {
   workspaceSlug: string | null;
   projectId: string | null;
   cookie: string | null;
+  collaborationRevision?: number;
   [key: string]: unknown;
 }
 
@@ -19,6 +20,7 @@ export class ProjectPageService extends PageService {
 
   constructor(params: ProjectPageServiceParams) {
     super();
+    this.collaborationRevision = params.collaborationRevision ?? 0;
     const { workspaceSlug, projectId } = params;
     if (!workspaceSlug || !projectId) throw new AppError("Missing required fields.");
     // validate cookie

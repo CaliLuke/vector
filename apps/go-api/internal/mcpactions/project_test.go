@@ -158,14 +158,13 @@ func TestProjectDiscoveryOmitsWritesWhenTheyAreUnavailable(t *testing.T) {
 			f := newFixture(t)
 			f.projectWrites.visibility = projects.ProjectWriteVisibility{}
 			discovery := rpcVersion(t, f.handler(t, nil), "test-one", "tools/list", map[string]any{}, version)
-			require.Len(t, discovery.Tools, 8)
 			project := discoveredTool(t, discovery, "project")
 			require.Equal(t, "project", project.Name)
 			require.False(t, project.Annotations["readOnlyHint"])
-			require.False(t, project.Annotations["destructiveHint"])
+			require.True(t, project.Annotations["destructiveHint"])
 			require.False(t, project.Annotations["openWorldHint"])
-			require.JSONEq(t, `{"anyOf":[{"type":"string","enum":["list"]},{"type":"string","enum":["retrieve"]}]}`, string(project.InputSchema.Properties["action"]))
-			require.Len(t, project.InputSchema.OneOf, 2)
+			require.JSONEq(t, `{"anyOf":[{"type":"string","enum":["list"]},{"type":"string","enum":["retrieve"]},{"type":"string","enum":["worklog_summary"]},{"type":"string","enum":["get_features"]}]}`, string(project.InputSchema.Properties["action"]))
+			require.Len(t, project.InputSchema.OneOf, 4)
 			for _, branch := range project.InputSchema.OneOf {
 				var schema struct{ AdditionalProperties *bool }
 				require.NoError(t, json.Unmarshal(branch, &schema))

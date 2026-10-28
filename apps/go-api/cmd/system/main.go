@@ -20,7 +20,14 @@ import (
 	milestonestore "github.com/CaliLuke/go-plane/internal/milestones"
 	milestoneapi "github.com/CaliLuke/go-plane/milestones/gen/milestones"
 
+	"github.com/CaliLuke/go-plane/internal/customers"
+	"github.com/CaliLuke/go-plane/internal/features"
+	"github.com/CaliLuke/go-plane/internal/initiatives"
+	"github.com/CaliLuke/go-plane/internal/releases"
+	"github.com/CaliLuke/go-plane/internal/templates"
+	"github.com/CaliLuke/go-plane/internal/workitemrelations"
 	workitemtypesstore "github.com/CaliLuke/go-plane/internal/workitemtypes"
+	"github.com/CaliLuke/go-plane/internal/worklogs"
 	workitemtypesapi "github.com/CaliLuke/go-plane/workitemtypes/gen/work_item_types"
 
 	systemapi "github.com/CaliLuke/go-plane"
@@ -750,7 +757,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 		return err
 	}
 	defer func() { _ = projectStateWriteCache.Close() }()
-	projectStateReadsRepository, err := projectstatereadsstore.NewWriteRepository(pool, activityTaskPublisher)
+	projectStateReadsRepository, err := projectstatereadsstore.NewWriteRepository(pool)
 	if err != nil {
 		return err
 	}
@@ -997,7 +1004,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	}
 	customViewCreationEndpoints := customviewcreationapi.NewEndpoints(customViewCreationService)
 	customViewCreationEndpoints.Use(log.Endpoint)
-	apiStateRepository, err := projectstatereadsstore.NewWriteRepository(pool, activityTaskPublisher)
+	apiStateRepository, err := projectstatereadsstore.NewWriteRepository(pool)
 	if err != nil {
 		return err
 	}
@@ -1188,7 +1195,8 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	typeService, err := systemapi.NewWorkItemTypes(workitemtypesstore.NewRepository(pool), sessionValidator, workItemRepository)
+	typeRepository := workitemtypesstore.NewRepository(pool)
+	typeService, err := systemapi.NewWorkItemTypes(typeRepository, sessionValidator, workItemRepository)
 	if err != nil {
 		return err
 	}
@@ -1612,7 +1620,11 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	mcpOptions.Service, err = mcpactions.New(mcpactions.Applications{Identity: mcpIdentity, ProjectMembers: mcpMembers, MemberDirectory: mcpDirectory, Projects: workspaceProjectReadsRepository, ProjectWrites: projectLifecycleRepository, Cycles: mcpCycleReads, Modules: moduleReadsRepository, Labels: projectLabelReadsRepository, Collaboration: workItemRepository, Activities: activityReadsPrimaryAPIRepository, Milestones: milestoneRepository}, mcpactions.WithLogContext(logCtx), mcpactions.WithOrigin(os.Getenv("WEB_URL")))
+	mcpAttachments, err := assetsstore.NewAttachmentApplication(assetRepository, assetStorage, backgroundtasks.FetchPublicFile, os.Getenv("WEB_URL"), cfg.fileSizeLimit)
+	if err != nil {
+		return err
+	}
+	mcpOptions.Service, err = mcpactions.New(mcpactions.Applications{Identity: mcpIdentity, ProjectMembers: mcpMembers, MemberDirectory: mcpDirectory, Projects: workspaceProjectReadsRepository, ProjectWrites: projectLifecycleRepository, Cycles: mcpCycleReads, CycleWrites: cycleLifecycleRepository, Modules: moduleReadsRepository, ModuleWrites: moduleLifecycleRepository, Labels: projectLabelReadsRepository, LabelWrites: configurationRepository, Collaboration: workItemRepository, Activities: activityReadsPrimaryAPIRepository, Milestones: milestoneRepository, States: projectStateReadsRepository, Estimates: configurationRepository, Types: typeRepository, Attachments: mcpAttachments, WorkLogs: worklogs.NewRepository(pool), Pages: pagereadsstore.NewPageAPIRepository(pool), Customers: customers.NewRepository(pool), Templates: templates.NewRepository(pool), Features: features.NewRepository(pool), Initiatives: initiatives.NewRepository(pool), Releases: releases.NewRepository(pool), Relations: workitemrelations.NewRepository(pool), Properties: typeRepository}, mcpactions.WithLogContext(logCtx), mcpactions.WithOrigin(os.Getenv("WEB_URL")))
 	if err != nil {
 		return err
 	}

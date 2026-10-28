@@ -1,8 +1,11 @@
 package projectstatereads
 
 import (
+	"encoding/json"
 	"errors"
 	"io"
+	"strconv"
+	"strings"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
@@ -101,6 +104,11 @@ func validateStateFields(fields map[string]any, create, app bool, parsed *django
 			failures[field] = []string{"This field may not be null."}
 			continue
 		}
+		// Typed application commands and already-normalized fields use float64;
+		// HTTP parsing uses json.Number. Both enter the same numeric validator.
+		if number, ok := value.(float64); ok {
+			value = json.Number(strconv.FormatFloat(number, 'g', -1, 64))
+		}
 		number, message := djangoinput.FloatField(value)
 		if message != "" {
 			failures[field] = []string{message}
@@ -126,6 +134,9 @@ func validateStateFields(fields map[string]any, create, app bool, parsed *django
 	}
 	if fields["group"] == "triage" {
 		return &WriteFailure{Status: 400, Body: map[string][]string{"non_field_errors": {"Cannot create triage state"}}}
+	}
+	if name, ok := fields["name"].(string); ok && strings.EqualFold(name, "Triage") {
+		return &WriteFailure{Status: 400, Body: map[string][]string{"name": {"Triage is reserved for system states."}}}
 	}
 	for field := range fields {
 		if !allowed[field] {

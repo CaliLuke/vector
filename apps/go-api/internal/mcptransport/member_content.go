@@ -7,7 +7,7 @@ import (
 	generated "github.com/CaliLuke/go-plane/mcp/gen/mcp_vector_mcp"
 )
 
-// memberContent preserves the pinned FastMCP unannotated-list response: JSON
+// memberContent preserves the pinned FastMCP unannotated-list response for all tools: JSON
 // text for a nonempty list, no content for an empty list, and no structuredContent.
 // It also prevents the legacy-protocol violation tracked in loom-mcp #383:
 // https://github.com/CaliLuke/loom-mcp/issues/383. Remove this interceptor once
@@ -24,7 +24,7 @@ func memberContent(ctx context.Context, _ generated.ToolCallInterceptorInfo, pay
 		result.Content = []*generated.ContentItem{}
 		return result, nil
 	}
-	if payload.Name != "member" || result.StructuredContent.Kind() != '[' {
+	if result.StructuredContent.Kind() != '[' {
 		return result, err
 	}
 	// The generated encoder supplies valid, compact JSON from the typed result.

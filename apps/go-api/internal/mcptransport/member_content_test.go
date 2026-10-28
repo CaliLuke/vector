@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport/mcpstub"
+
 	loom "github.com/CaliLuke/loom/pkg"
 
 	"github.com/CaliLuke/go-plane/internal/mcptransport"
@@ -16,6 +18,7 @@ import (
 )
 
 type memberResponseService struct {
+	mcpstub.Service
 	body    string
 	failure error
 }
@@ -46,7 +49,7 @@ func TestGeneratedMemberResultsPreservePinnedContentAcrossRevisions(t *testing.T
 		} {
 			t.Run(version+"/"+tc.name, func(t *testing.T) {
 				opts := options()
-				opts.Service = memberResponseService{tc.body, tc.failure}
+				opts.Service = memberResponseService{body: tc.body, failure: tc.failure}
 				h, err := mcptransport.New(config("header"), opts, http.NotFoundHandler())
 				require.NoError(t, err)
 				arguments := map[string]any{"action": tc.action}
@@ -89,10 +92,6 @@ func TestGeneratedMemberResultsPreservePinnedContentAcrossRevisions(t *testing.T
 	}
 }
 
-func (memberResponseService) Project(context.Context, *api.ProjectRequest) (loom.Nullable[api.ProjectResult], error) {
-	return loom.Nullable[api.ProjectResult]{}, errors.New("this fixture does not execute project reads")
-}
-
 func (memberResponseService) DiscoverActions(context.Context) (mcptransport.ActionVisibility, error) {
 	return mcptransport.ActionVisibility{"member": {"me": true, "list_workspace": true, "list_project": true, "list_roles": true, "retrieve_role": true}, "project": {"list": true, "retrieve": true, "archive": true, "unarchive": true}}, nil
 }
@@ -131,32 +130,4 @@ func TestEnabledTransportRequiresDiscoveryAuthorization(t *testing.T) {
 	opts.Service = struct{ api.Service }{transportTestService{}}
 	_, err := mcptransport.New(config("header"), opts, http.NotFoundHandler())
 	require.ErrorContains(t, err, "discovery authorization is required")
-}
-
-func (memberResponseService) Cycle(context.Context, *api.CycleRequest) (*api.CycleResult, error) {
-	return nil, errors.New("this fixture does not execute cycle reads")
-}
-
-func (memberResponseService) Module(context.Context, *api.ModuleRequest) (*api.ModuleResult, error) {
-	return nil, nil
-}
-
-func (memberResponseService) Label(context.Context, *api.LabelRequest) (*api.LabelResult, error) {
-	return nil, nil
-}
-
-func (memberResponseService) WorkitemComment(context.Context, *api.WorkitemCommentRequest) (*api.WorkitemCommentResult, error) {
-	return nil, nil
-}
-
-func (memberResponseService) WorkitemLink(context.Context, *api.WorkitemLinkRequest) (*api.WorkitemLinkResult, error) {
-	return nil, nil
-}
-
-func (memberResponseService) WorkitemActivity(context.Context, *api.WorkitemActivityRequest) (*api.WorkitemActivityResult, error) {
-	return nil, nil
-}
-
-func (memberResponseService) Milestone(context.Context, *api.MilestoneRequest) (loom.Nullable[api.MilestoneResult], error) {
-	return loom.NullValue[api.MilestoneResult](), nil
 }

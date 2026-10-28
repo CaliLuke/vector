@@ -10,17 +10,28 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/activityreads"
 	"github.com/CaliLuke/go-plane/internal/milestones"
+	"github.com/CaliLuke/go-plane/internal/projectconfiguration"
+	"github.com/CaliLuke/go-plane/internal/projectstatereads"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
+	"github.com/CaliLuke/go-plane/internal/customers"
 	"github.com/CaliLuke/go-plane/internal/cyclereads"
+	"github.com/CaliLuke/go-plane/internal/features"
+	"github.com/CaliLuke/go-plane/internal/initiatives"
 	"github.com/CaliLuke/go-plane/internal/mcpactions"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/modulereads"
+	"github.com/CaliLuke/go-plane/internal/pagereads"
 	"github.com/CaliLuke/go-plane/internal/projectlabelreads"
 	"github.com/CaliLuke/go-plane/internal/projectmembershipreads"
+	"github.com/CaliLuke/go-plane/internal/releases"
+	"github.com/CaliLuke/go-plane/internal/templates"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/CaliLuke/go-plane/internal/useridentity"
+	"github.com/CaliLuke/go-plane/internal/workitemrelations"
+	"github.com/CaliLuke/go-plane/internal/workitemtypes"
+	"github.com/CaliLuke/go-plane/internal/worklogs"
 	"github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -60,6 +71,11 @@ ALTER TABLE workspaces ADD COLUMN owner_id uuid NOT NULL DEFAULT '10000000-0000-
 ALTER TABLE workspace_members ADD COLUMN id uuid NOT NULL DEFAULT gen_random_uuid();
 ALTER TABLE workspace_members ADD COLUMN created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE workspace_members ADD COLUMN updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP;
+CREATE TABLE workspace_features(workspace_id uuid PRIMARY KEY REFERENCES workspaces(id),
+ project_grouping boolean NOT NULL DEFAULT false, initiatives boolean NOT NULL DEFAULT false,
+ teams boolean NOT NULL DEFAULT false, customers boolean NOT NULL DEFAULT false,
+ wiki boolean NOT NULL DEFAULT false, pi boolean NOT NULL DEFAULT false, revision bigint NOT NULL DEFAULT 1);
+INSERT INTO workspace_features(workspace_id) SELECT id FROM workspaces;
 `
 
 func databaseFixture(t *testing.T) (fixture, *pgxpool.Pool) {
@@ -91,6 +107,8 @@ func databaseFixture(t *testing.T) (fixture, *pgxpool.Pool) {
 }
 
 type rosterPublisher struct{}
+
+func (rosterPublisher) SoftDelete(context.Context, string, string, string) error { return nil }
 
 func (rosterPublisher) Task(context.Context, string, []any, map[string]any) error {
 	return nil
@@ -173,7 +191,15 @@ func databaseApplications(t *testing.T, pool *pgxpool.Pool) mcpactions.Applicati
 	require.NoError(t, err)
 	activityReads, err := activityreads.NewRepository(pool)
 	require.NoError(t, err)
+	cycleWrites, err := cyclereads.NewLifecycleRepository(pool, rosterPublisher{}, "https://vector.example")
+	require.NoError(t, err)
+	moduleWrites, err := modulereads.NewLifecycleRepository(pool, rosterPublisher{}, "https://vector.example")
+	require.NoError(t, err)
+	configuration, err := projectconfiguration.NewRepository(pool)
+	require.NoError(t, err)
+	stateRepository, err := projectstatereads.NewWriteRepository(pool)
+	require.NoError(t, err)
 	milestoneRepository, err := milestones.NewRepository(pool)
 	require.NoError(t, err)
-	return mcpactions.Applications{Identity: reader, ProjectMembers: projectReader, MemberDirectory: directory, Projects: projectReads, ProjectWrites: projectLifecycle(t, pool), Cycles: cycleReads, Modules: moduleReads, Labels: labelReads, Collaboration: collaborationReads, Activities: activityReads, Milestones: milestoneRepository}
+	return mcpactions.Applications{Identity: reader, ProjectMembers: projectReader, MemberDirectory: directory, Projects: projectReads, ProjectWrites: projectLifecycle(t, pool), Cycles: cycleReads, CycleWrites: cycleWrites, Modules: moduleReads, ModuleWrites: moduleWrites, Labels: labelReads, LabelWrites: configuration, Collaboration: collaborationReads, Activities: activityReads, Milestones: milestoneRepository, States: stateRepository, Estimates: configuration, Types: workitemtypes.NewRepository(pool), Attachments: attachmentApplicationStub{}, WorkLogs: worklogs.NewRepository(pool), Pages: pagereads.NewPageAPIRepository(pool), Customers: customers.NewRepository(pool), Templates: templates.NewRepository(pool), Features: features.NewRepository(pool), Initiatives: initiatives.NewRepository(pool), Releases: releases.NewRepository(pool), Relations: workitemrelations.NewRepository(pool), Properties: workitemtypes.NewRepository(pool)}
 }

@@ -2,6 +2,7 @@ package mcptransport
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"slices"
 	"time"
@@ -33,7 +34,12 @@ func LogObserver(logContext context.Context) transport.Observer {
 		if requestID, ok := platform.RequestID(ctx); ok {
 			fields = append(fields, log.KV{K: log.RequestIDKey, V: requestID})
 		}
-		log.Warn(log.WithContext(ctx, logContext), fields...)
+		logger := log.WithContext(ctx, logContext)
+		if event.StatusCode >= http.StatusInternalServerError {
+			log.Error(logger, errors.New("MCP request failed"), fields...)
+		} else {
+			log.Warn(logger, fields...)
+		}
 	})
 }
 

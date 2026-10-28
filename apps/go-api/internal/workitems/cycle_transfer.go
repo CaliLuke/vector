@@ -62,7 +62,7 @@ func (r *Repository) transferCycle(ctx context.Context, q Request, body io.Reade
 	if _, err = r.db.Exec(ctx, `UPDATE cycles SET progress_snapshot=$2 WHERE id=$1`, old["id"], encoded); err != nil {
 		return Result{}, err
 	}
-	rows, err := r.rows(ctx, `SELECT to_jsonb(ci) FROM cycle_issues ci JOIN issues i ON i.id=ci.issue_id JOIN states s ON s.id=i.state_id JOIN workspaces w ON w.id=ci.workspace_id WHERE ci.cycle_id=$1 AND ci.project_id=$2 AND w.slug=$3 AND ci.deleted_at IS NULL AND i.archived_at IS NULL AND NOT i.is_draft AND s."group" IN ('backlog','unstarted','started') ORDER BY ci.created_at DESC`, old["id"], q.ProjectID, q.Slug)
+	rows, err := r.rows(ctx, `SELECT to_jsonb(ci) FROM cycle_issues ci JOIN issues i ON i.id=ci.issue_id AND i.project_id=ci.project_id AND i.workspace_id=ci.workspace_id JOIN states s ON s.id=i.state_id AND s.project_id=i.project_id AND s.workspace_id=i.workspace_id JOIN workspaces w ON w.id=ci.workspace_id WHERE ci.cycle_id=$1 AND ci.project_id=$2 AND w.slug=$3 AND ci.deleted_at IS NULL AND i.deleted_at IS NULL AND s.deleted_at IS NULL AND i.archived_at IS NULL AND NOT i.is_draft AND s."group" IN ('backlog','unstarted','started') ORDER BY ci.created_at DESC`, old["id"], q.ProjectID, q.Slug)
 	if err != nil {
 		return Result{}, err
 	}

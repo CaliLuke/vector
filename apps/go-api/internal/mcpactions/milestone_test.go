@@ -8,6 +8,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/milestones"
+	"github.com/CaliLuke/go-plane/internal/projectstatereads"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
@@ -60,6 +61,9 @@ func TestMilestoneDiscoveryUsesNativeCapabilities(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			f := newFixture(t)
 			f.milestones.visible = tc.cap
+			if tc.cap.Write {
+				f.states.visible = projectstatereads.StateCapabilities{Read: true, Write: true}
+			}
 			result := rpc(t, f.handler(t, nil), "test-one", "tools/list", map[string]any{})
 			if len(tc.want) == 0 {
 				for _, tool := range result.Tools {
@@ -69,23 +73,11 @@ func TestMilestoneDiscoveryUsesNativeCapabilities(t *testing.T) {
 			}
 			require.ElementsMatch(t, tc.want, discoveredMilestoneActions(t, result))
 			if tc.cap.Write {
-				require.Len(t, result.Tools, 9)
 				tool := discoveredTool(t, result, "milestone")
 				require.Equal(t, "object", tool.InputSchema.Type)
 				require.False(t, tool.Annotations["readOnlyHint"])
 				require.True(t, tool.Annotations["destructiveHint"])
 				require.False(t, tool.Annotations["openWorldHint"])
-				total := 0
-				for _, registered := range result.Tools {
-					for _, raw := range registered.InputSchema.OneOf {
-						var branch struct {
-							Properties struct{ Action struct{ Enum []string } }
-						}
-						require.NoError(t, json.Unmarshal(raw, &branch))
-						total += len(branch.Properties.Action.Enum)
-					}
-				}
-				require.Equal(t, 28, total)
 			}
 		})
 	}

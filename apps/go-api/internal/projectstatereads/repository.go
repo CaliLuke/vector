@@ -1,4 +1,4 @@
-// Package projectstatereads contains the read-only project workflow state boundary.
+// Package projectstatereads contains the project workflow state application boundary.
 package projectstatereads
 
 import (

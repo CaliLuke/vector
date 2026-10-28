@@ -17,7 +17,7 @@ func ReadValue(kind Kind, config Configuration, saved any) (any, error) {
 		return nil, nil
 	}
 	switch kind {
-	case Dropdown, Member, Release, Cascading:
+	case Dropdown, Member, Issue, Release, Cascading:
 		multiple := config.Multiple || kind == Cascading
 		ids, err := selectionIDs(saved, multiple)
 		if err != nil || len(ids) == 0 {

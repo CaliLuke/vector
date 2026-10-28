@@ -41,5 +41,6 @@ cover both credentials and protocol revisions, exact response fields, pagination
 archive policies, scope changes after admission, every query projection, empty
 pages, and foreign relationships. [Discovery tests](../apps/go-api/internal/mcpactions/discovery_integration_test.go)
 verify current project-membership filtering. [Label repository regressions](../apps/go-api/internal/projectlabelreads/scoped_read_integration_test.go)
-cover denied versus empty queries and parent ownership directly. OAuth remains generic, with production issuer selection deferred. Complete local browser
-verification and the remaining catalogue actions are still open.
+cover denied versus empty queries and parent ownership directly. OAuth remains generic, with production issuer selection deferred. Local browser checks verified module creation and an MCP update in the native UI.
+The remaining catalogue actions have generated-server workflow coverage; final
+combined quality-gate review remains open.

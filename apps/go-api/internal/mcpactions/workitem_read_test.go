@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/CaliLuke/go-plane/internal/activityreads"
+	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 )
 
@@ -127,7 +128,7 @@ func TestDirectWorkitemReadsRejectInvalidRequests(t *testing.T) {
 	exerciseChildInputs(t, f.service.WorkitemActivity, api.NewWorkitemActivityRequestWorkitemReadList, api.NewWorkitemActivityRequestWorkitemActivityRetrieve)
 }
 
-func exerciseChildInputs[Request, List, Detail, Result any](t *testing.T, call func(context.Context, *Request) (*Result, error), list func(*List) Request, detail func(*Detail) Request) {
+func exerciseChildInputs[Request, List, Detail, Result any](t *testing.T, call func(context.Context, *Request) (Result, error), list func(*List) Request, detail func(*Detail) Request) {
 	t.Helper()
 	for _, input := range []*Request{nil, new(Request)} {
 		_, err := call(t.Context(), input)
@@ -158,4 +159,31 @@ func exerciseChildInputs[Request, List, Detail, Result any](t *testing.T, call f
 		_, err := call(t.Context(), &input)
 		require.Error(t, err)
 	}
+}
+
+func (s *collaborationReadStub) MutateLink(context.Context, projectmutations.Command) (projectmutations.Result, error) {
+	return projectmutations.Result{}, s.err
+}
+
+func (s *collaborationReadStub) MutateComment(context.Context, projectmutations.Command) (projectmutations.Result, error) {
+	return projectmutations.Result{}, s.err
+}
+
+func (s *collaborationReadStub) MutateWorkitem(context.Context, projectmutations.Command) (projectmutations.Result, error) {
+	return projectmutations.Result{}, s.err
+}
+
+func (s *collaborationReadStub) ReadWorkitem(context.Context, workitems.Request) (workitems.Result, error) {
+	return workitems.Result{Status: 200, Body: s.value}, s.err
+}
+
+func (s *collaborationReadStub) MutatePropertyValue(context.Context, projectmutations.Command) (projectmutations.Result, error) {
+	return projectmutations.Result{}, errors.New("unexpected property value mutation")
+}
+
+func (s *collaborationReadStub) ReadIntake(context.Context, workitems.Request) (workitems.Result, error) {
+	return workitems.Result{}, errors.New("unexpected intake read")
+}
+func (s *collaborationReadStub) MutateIntake(context.Context, projectmutations.Command) (projectmutations.Result, error) {
+	return projectmutations.Result{}, errors.New("unexpected intake mutation")
 }

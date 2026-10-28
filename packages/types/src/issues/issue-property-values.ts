@@ -10,11 +10,14 @@ export type TIssuePropertyValueErrors = Record<string, unknown>;
 /** Authorized effective values returned only when a list requests projections. */
 export type TWorkItemPropertyKind =
   | "Text"
+  | "Email"
+  | "File"
   | "Number"
   | "Dropdown"
   | "Boolean"
   | "Date"
   | "Member picker"
+  | "Work item picker"
   | "Release picker"
   | "Rich text"
   | "URL"

@@ -1417,6 +1417,22 @@ func EncodeCreateError(encoder func(context.Context, http.ResponseWriter) loomht
 			}
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return enc.Encode(body)
+		case "status_409":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*pagereads.PageLifecycleError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusConflict)
+			return enc.Encode(body)
 		case "status_415":
 			//nolint:errorlint // Response ownership is already resolved.
 			res, ok := errorResponse.Owner.(*pagereads.PageLifecycleError)
@@ -1602,6 +1618,22 @@ func EncodeUpdateError(encoder func(context.Context, http.ResponseWriter) loomht
 			}
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return enc.Encode(body)
+		case "status_409":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*pagereads.PageLifecycleError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusConflict)
+			return enc.Encode(body)
 		case "status_415":
 			//nolint:errorlint // Response ownership is already resolved.
 			res, ok := errorResponse.Owner.(*pagereads.PageLifecycleError)
@@ -1782,6 +1814,22 @@ func EncodeDeleteError(encoder func(context.Context, http.ResponseWriter) loomht
 			}
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return enc.Encode(body)
+		case "status_409":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*pagereads.PageLifecycleError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusConflict)
+			return enc.Encode(body)
 		case "status_415":
 			//nolint:errorlint // Response ownership is already resolved.
 			res, ok := errorResponse.Owner.(*pagereads.PageLifecycleError)
@@ -1961,6 +2009,22 @@ func EncodeAccessError(encoder func(context.Context, http.ResponseWriter) loomht
 				body = res.Body
 			}
 			w.WriteHeader(http.StatusMethodNotAllowed)
+			return enc.Encode(body)
+		case "status_409":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*pagereads.PageLifecycleError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusConflict)
 			return enc.Encode(body)
 		case "status_415":
 			//nolint:errorlint // Response ownership is already resolved.
@@ -2147,6 +2211,22 @@ func EncodeArchiveError(encoder func(context.Context, http.ResponseWriter) loomh
 			}
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return enc.Encode(body)
+		case "status_409":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*pagereads.PageLifecycleError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusConflict)
+			return enc.Encode(body)
 		case "status_415":
 			//nolint:errorlint // Response ownership is already resolved.
 			res, ok := errorResponse.Owner.(*pagereads.PageLifecycleError)
@@ -2326,6 +2406,22 @@ func EncodeUnarchiveError(encoder func(context.Context, http.ResponseWriter) loo
 				body = res.Body
 			}
 			w.WriteHeader(http.StatusMethodNotAllowed)
+			return enc.Encode(body)
+		case "status_409":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*pagereads.PageLifecycleError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusConflict)
 			return enc.Encode(body)
 		case "status_415":
 			//nolint:errorlint // Response ownership is already resolved.
@@ -2512,6 +2608,22 @@ func EncodeDescriptionUpdateError(encoder func(context.Context, http.ResponseWri
 			}
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return enc.Encode(body)
+		case "status_409":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*pagereads.PageLifecycleError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusConflict)
+			return enc.Encode(body)
 		case "status_415":
 			//nolint:errorlint // Response ownership is already resolved.
 			res, ok := errorResponse.Owner.(*pagereads.PageLifecycleError)
@@ -2697,6 +2809,22 @@ func EncodeDuplicateError(encoder func(context.Context, http.ResponseWriter) loo
 			}
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return enc.Encode(body)
+		case "status_409":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*pagereads.PageLifecycleError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusConflict)
+			return enc.Encode(body)
 		case "status_415":
 			//nolint:errorlint // Response ownership is already resolved.
 			res, ok := errorResponse.Owner.(*pagereads.PageLifecycleError)
@@ -2877,6 +3005,22 @@ func EncodeLockError(encoder func(context.Context, http.ResponseWriter) loomhttp
 			}
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return enc.Encode(body)
+		case "status_409":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*pagereads.PageLifecycleError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusConflict)
+			return enc.Encode(body)
 		case "status_415":
 			//nolint:errorlint // Response ownership is already resolved.
 			res, ok := errorResponse.Owner.(*pagereads.PageLifecycleError)
@@ -3056,6 +3200,22 @@ func EncodeUnlockError(encoder func(context.Context, http.ResponseWriter) loomht
 				body = res.Body
 			}
 			w.WriteHeader(http.StatusMethodNotAllowed)
+			return enc.Encode(body)
+		case "status_409":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*pagereads.PageLifecycleError)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusConflict)
 			return enc.Encode(body)
 		case "status_415":
 			//nolint:errorlint // Response ownership is already resolved.

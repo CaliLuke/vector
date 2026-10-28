@@ -23,6 +23,12 @@ func TestBoundStateReadRejectsInvalidAdmissionWithoutQuerying(t *testing.T) {
 		{"missing detail ID", func(r *APIV1Request, _ *string) { r.Operation = "detail" }},
 		{"invalid detail ID", func(r *APIV1Request, _ *string) { r.Operation = "detail"; r.Params["state_id"] = "bad" }},
 		{"zero detail ID", func(r *APIV1Request, _ *string) { r.Operation = "detail"; r.Params["state_id"] = uuid.Nil().String() }},
+		{"list revision", func(r *APIV1Request, _ *string) { r.Params["include_revision"] = "true" }},
+		{"invalid revision flag", func(r *APIV1Request, _ *string) {
+			r.Operation = "detail"
+			r.Params["state_id"] = uuid.New().String()
+			r.Params["include_revision"] = "yes"
+		}},
 		{"fields", func(r *APIV1Request, _ *string) { r.Params["fields"] = "name" }},
 		{"expand", func(r *APIV1Request, _ *string) { r.Params["expand"] = "project" }},
 		{"empty fields present", func(r *APIV1Request, _ *string) { r.Present["fields"] = true }},

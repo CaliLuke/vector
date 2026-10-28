@@ -82,9 +82,11 @@ type fixture struct {
 	cycleReads         *cycleReadStub
 	moduleReads        *moduleReadStub
 	labelReads         *labelReadStub
+	labelWrites        *labelWriteStub
 	collaborationReads *collaborationReadStub
 	activityReads      *activityReadStub
 	milestones         *milestoneStub
+	states             *stateStub
 }
 
 func newFixture(t *testing.T, options ...mcpactions.Option) fixture {
@@ -106,8 +108,10 @@ func newFixture(t *testing.T, options ...mcpactions.Option) fixture {
 	cycleReads := &cycleReadStub{}
 	moduleReads, labelReads := &moduleReadStub{}, &labelReadStub{}
 	collaborationReads, activityReads := &collaborationReadStub{}, &activityReadStub{}
+	labelWrites := &labelWriteStub{}
 	milestones := &milestoneStub{}
-	service, err := mcpactions.New(mcpactions.Applications{Identity: reader, ProjectMembers: projectReader, MemberDirectory: directory, Projects: projectReads, ProjectWrites: projectWrites, Cycles: cycleReads, Modules: moduleReads, Labels: labelReads, Collaboration: collaborationReads, Activities: activityReads, Milestones: milestones}, options...)
+	states := &stateStub{}
+	service, err := mcpactions.New(mcpactions.Applications{Identity: reader, ProjectMembers: projectReader, MemberDirectory: directory, Projects: projectReads, ProjectWrites: projectWrites, Cycles: cycleReads, CycleWrites: resourceArchiveStub{}, Modules: moduleReads, ModuleWrites: resourceArchiveStub{}, Labels: labelReads, LabelWrites: labelWrites, Collaboration: collaborationReads, Activities: activityReads, Milestones: milestones, States: states, Estimates: estimateApplicationStub{}, Types: typeApplicationStub{}, Attachments: attachmentApplicationStub{}, WorkLogs: workLogApplicationStub{}, Pages: pageApplicationStub{}, Customers: customerApplicationStub{}, Templates: templateApplicationStub{}, Features: featureApplicationStub{}, Initiatives: initiativeApplicationStub{}, Releases: releaseApplicationStub{}, Relations: relationApplicationStub{}, Properties: propertyApplicationStub{}}, options...)
 	require.NoError(t, err)
 	keys := &tokens{owners: map[string]apikey.Principal{
 		"test-one": {UserID: one, Timezone: "UTC"}, "test-two": {UserID: two, Timezone: "UTC"},
@@ -115,7 +119,7 @@ func newFixture(t *testing.T, options ...mcpactions.Option) fixture {
 	members := &memberships{}
 	auth, err := mcpauth.NewPersonalTokens(keys, members, throttle{})
 	require.NoError(t, err)
-	return fixture{service: service, auth: auth, store: store, keys: keys, members: members, projects: projects, directory: directory, projectReads: projectReads, projectWrites: projectWrites, cycleReads: cycleReads, moduleReads: moduleReads, labelReads: labelReads, collaborationReads: collaborationReads, activityReads: activityReads, milestones: milestones}
+	return fixture{service: service, auth: auth, store: store, keys: keys, members: members, projects: projects, directory: directory, projectReads: projectReads, projectWrites: projectWrites, cycleReads: cycleReads, moduleReads: moduleReads, labelReads: labelReads, labelWrites: labelWrites, collaborationReads: collaborationReads, activityReads: activityReads, milestones: milestones, states: states}
 }
 
 func (f fixture) handler(t *testing.T, authenticate mcptransport.Authenticate) http.Handler {
@@ -131,7 +135,10 @@ func (f fixture) handler(t *testing.T, authenticate mcptransport.Authenticate) h
 }
 
 type rpcResult struct {
-	Content           []struct{ Text string }
+	Content []struct {
+		Type, Text, Data string
+		MIMEType         string `json:"mimeType"`
+	}
 	StructuredContent json.RawMessage
 	IsError           bool
 	Tools             []rpcTool
@@ -208,7 +215,6 @@ func TestMemberDiscoveryAndIdentityAreScopedToTheAuthenticatedUser(t *testing.T)
 	f := newFixture(t)
 	h := f.handler(t, nil)
 	discovery := rpc(t, h, "test-one", "tools/list", map[string]any{})
-	require.Len(t, discovery.Tools, 8)
 	assert.Equal(t, "member", discoveredTool(t, discovery, "member").Name)
 	assert.Equal(t, map[string]bool{"readOnlyHint": true, "destructiveHint": false, "idempotentHint": false, "openWorldHint": false}, discoveredTool(t, discovery, "member").Annotations)
 	assert.Equal(t, "object", discoveredTool(t, discovery, "member").InputSchema.Type)

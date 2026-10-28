@@ -145,7 +145,8 @@ function CollaborativeDocumentEditor(props: ICollaborativeDocumentEditorProps) {
 
   return (
     <CollaborationProvider
-      docId={id}
+      key={realtimeConfig.documentName ?? id}
+      docId={realtimeConfig.documentName ?? id}
       serverUrl={realtimeConfig.url}
       authToken={token}
       onStateChange={serverHandler?.onStateChange}

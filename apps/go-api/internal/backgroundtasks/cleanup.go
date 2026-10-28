@@ -32,6 +32,7 @@ const (
 	CleanupIssueDescriptionVersions CleanupTask = "delete_issue_description_versions"
 	CleanupWebhookLogs              CleanupTask = "delete_webhook_logs"
 	CleanupUnuploadedFileAssets     CleanupTask = "delete_unuploaded_file_asset"
+	CleanupMutationReceipts         CleanupTask = "delete_expired_mutation_receipts"
 )
 
 var cleanupTasks = []CleanupTask{
@@ -41,6 +42,7 @@ var cleanupTasks = []CleanupTask{
 	CleanupIssueDescriptionVersions,
 	CleanupWebhookLogs,
 	CleanupUnuploadedFileAssets,
+	CleanupMutationReceipts,
 }
 
 type cleanupBeatSpec struct {
@@ -50,7 +52,8 @@ type cleanupBeatSpec struct {
 	minute int
 }
 
-// These schedules mirror the active Celery Beat entries. They use durable
+// Legacy schedules retain their Celery Beat times; receipt expiry is native.
+// These schedules use durable
 // Selvedge timers and deterministic child identities so restarting the API
 // process cannot lose or duplicate a scheduled cleanup run.
 var cleanupBeatSchedules = []cleanupBeatSpec{
@@ -60,6 +63,7 @@ var cleanupBeatSchedules = []cleanupBeatSpec{
 	{task: CleanupPageVersions, name: "delete-page-versions", hour: 3, minute: 0},
 	{task: CleanupIssueDescriptionVersions, name: "delete-issue-description-versions", hour: 3, minute: 15},
 	{task: CleanupWebhookLogs, name: "delete-webhook-logs", hour: 3, minute: 30},
+	{task: CleanupMutationReceipts, name: "delete-expired-mutation-receipts", hour: 3, minute: 45},
 }
 
 var ErrPermanentCleanup = errors.New("permanent cleanup task failure")
@@ -153,6 +157,17 @@ DELETE FROM webhook_logs AS target USING batch WHERE target.id = batch.id`
  SELECT id FROM file_assets WHERE created_at < $1 AND is_uploaded=false AND deleted_at IS NULL ORDER BY created_at ASC LIMIT $2
 )
 UPDATE file_assets AS target SET deleted_at=clock_timestamp() FROM batch WHERE target.id = batch.id`
+	case CleanupMutationReceipts:
+		// Use database time as an upper bound even if a caller supplies a future
+		// cutoff. Skip receipt rows held by replay or renewal transactions. ctids
+		// are used only within this statement while the selected rows are locked.
+		query = `WITH batch AS (
+ SELECT ctid FROM mutation_receipts
+ WHERE replay_expires_at <= LEAST($1, statement_timestamp())
+ ORDER BY replay_expires_at ASC LIMIT $2 FOR UPDATE SKIP LOCKED
+)
+DELETE FROM mutation_receipts AS target USING batch WHERE target.ctid = batch.ctid
+ AND target.replay_expires_at <= LEAST($1, statement_timestamp())`
 	default:
 		return 0, fmt.Errorf("%w: unknown cleanup task %q", ErrPermanentCleanup, input.Task)
 	}

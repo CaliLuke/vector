@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"net/mail"
 	"net/url"
 	"strings"
 	"time"
@@ -39,7 +40,7 @@ func ValidateValue(kind Kind, c Configuration, value any, draft bool, allowed Re
 	}
 	var result any
 	var err error
-	if kind == Dropdown || kind == Member || kind == Release {
+	if kind == Dropdown || kind == Member || kind == Issue || kind == Release {
 		result, err = selectionValue(kind, c, value, allowed)
 	} else {
 		result, err = scalarValue(kind, c, value)
@@ -55,7 +56,7 @@ func ValidateValue(kind Kind, c Configuration, value any, draft bool, allowed Re
 
 func scalarValue(kind Kind, c Configuration, value any) (any, error) {
 	switch kind {
-	case Text, URL, Date, RichText:
+	case Text, Email, File, URL, Date, RichText:
 		return textValue(kind, c, value)
 	case Number:
 		number, ok := value.(float64)
@@ -95,15 +96,19 @@ func textValue(kind Kind, c Configuration, value any) (any, error) {
 		if c.Format == "Single line" && strings.ContainsAny(text, "\r\n") {
 			return nil, fmt.Errorf("enter a single line")
 		}
+	case Email:
+		address, err := mail.ParseAddress(text)
+		if err != nil || address.Name != "" || address.Address != text {
+			return nil, fmt.Errorf("enter an email address")
+		}
 	case URL:
 		parsed, err := url.Parse(text)
 		if err != nil || parsed.Host == "" || parsed.Scheme != "https" && parsed.Scheme != "http" || parsed.User != nil {
 			return nil, fmt.Errorf("enter an HTTP or HTTPS URL without credentials")
 		}
 	case Date:
-		parsed, err := time.Parse(time.DateOnly, text)
-		if err != nil || parsed.Year() < 1 || parsed.Year() > 9999 || parsed.Format(time.DateOnly) != text {
-			return nil, fmt.Errorf("enter a date as YYYY-MM-DD")
+		if _, err := ParseDate(text); err != nil {
+			return nil, err
 		}
 	case RichText:
 		clean, _, err := content.ValidateHTML(text)
@@ -116,6 +121,18 @@ func textValue(kind Kind, c Configuration, value any) (any, error) {
 		return clean, nil
 	}
 	return text, nil
+}
+
+// ParseDate accepts calendar dates and date-time property values without losing
+// their time component. An input without an explicit offset uses UTC.
+func ParseDate(value string) (time.Time, error) {
+	for _, layout := range []string{time.DateOnly, time.DateTime, time.RFC3339Nano} {
+		parsed, err := time.Parse(layout, value)
+		if err == nil && parsed.Year() >= 1 && parsed.Year() <= 9999 && parsed.UTC().Year() >= 1 && parsed.UTC().Year() <= 9999 && (layout == time.RFC3339Nano || parsed.Format(layout) == value) {
+			return parsed, nil
+		}
+	}
+	return time.Time{}, fmt.Errorf("enter a date as YYYY-MM-DD or a date-time as YYYY-MM-DD HH:MM:SS or RFC3339")
 }
 
 func meaningfulHTML(clean string) bool {

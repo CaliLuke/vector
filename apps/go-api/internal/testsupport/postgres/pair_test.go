@@ -12,6 +12,18 @@ func TestStartRequiresSeedMigration(t *testing.T) {
 	}
 }
 
+func TestUnusedTemplateDoesNotRequireDockerOrMigration(t *testing.T) {
+	template := NewTemplate(nil)
+	if err := template.Close(); err != nil {
+		t.Fatal(err)
+	}
+	for range 2 {
+		if _, err := template.CloneDatabase(context.Background()); err == nil {
+			t.Fatal("a template without a migration must fail before starting Docker")
+		}
+	}
+}
+
 func TestDatabaseURLChangesOnlyDatabase(t *testing.T) {
 	got, err := databaseURL(
 		"postgresql://plane:secret@127.0.0.1:54321/seed?sslmode=disable&application_name=parity",

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/jackc/pgx/v5"
 )
@@ -67,7 +68,7 @@ func (snapshot *PropertyDiscoverySnapshot) FilterPredicate(ctx context.Context, 
 		return nil, true, reject(422, err.Error())
 	}
 	if selected, ok := comparison.operand.([]string); ok {
-		if definition.Kind == property.Member || definition.Kind == property.Release {
+		if definition.Kind == property.Member || definition.Kind == property.Release || definition.Kind == property.Issue {
 			options, err = snapshot.predicateReferences(ctx, tx, definition.Kind)
 			if err != nil {
 				return nil, true, err
@@ -132,8 +133,12 @@ func (snapshot *PropertyDiscoverySnapshot) predicateReferences(ctx context.Conte
 		for id := range snapshot.projects {
 			projects = append(projects, id)
 		}
-		query = `SELECT id::text FROM work_item_releases WHERE workspace_id=$1 AND project_id=ANY($2::uuid[])`
+		query = `SELECT id::text FROM work_item_releases WHERE workspace_id=$1 AND (project_id=ANY($2::uuid[]) OR project_id IS NULL) AND deleted_at IS NULL`
 		args = append(args, projects)
+	}
+	if kind == property.Issue {
+		query = `SELECT i.id::text FROM issues i WHERE ` + djangoapi.IssueVisibleSQL("i", "$2::uuid", "$1::uuid")
+		args = []any{snapshot.workspace, snapshot.actor}
 	}
 	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {

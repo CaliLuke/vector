@@ -9,6 +9,7 @@ import type { EPageAccess } from "../enums";
 import type { TPageExtended } from "./extended";
 
 export type TPage = {
+  collaboration_revision?: number;
   access: EPageAccess | undefined;
   archived_at: string | null | undefined;
   color: string | undefined;
@@ -70,6 +71,7 @@ export type TPageVersion = {
 };
 
 export type TDocumentPayload = {
+  collaboration_revision?: number;
   description_binary: string;
   description_html: string;
   description_json: object;

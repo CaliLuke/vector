@@ -90,7 +90,23 @@ func (r *Repository) validateCustomValues(ctx context.Context, actor string, row
 	if result.TypeID != "" {
 		row["type_id"] = result.TypeID
 	}
+	// A dedicated value-delete removes presence only after native validation has
+	// accepted the clear (including required/read-only checks), before history,
+	// model persistence, search indexing and webhook snapshots are captured.
+	for _, id := range r.clearedPropertyIDs {
+		if value, present := submitted[id]; !present || value != nil {
+			return nil, errors.New("invalid property clear")
+		}
+		delete(result.Values, id)
+	}
 	row["custom_properties"] = result.Values
+	if r.propertyValueMutation && r.itemEdit == nil {
+		assetWriter := *r
+		assetWriter.itemEdit = &itemEditState{command: itemEditCommand{ItemEditInput: ItemEditInput{Mode: "edit", ItemID: stringValue(row["id"]), ProjectID: stringValue(row["project_id"])}}}
+		if err = assetWriter.associateItemEditAssets(ctx, actor, row, old); err != nil {
+			return nil, err
+		}
+	}
 	if r.itemEdit != nil {
 		if err = r.associateItemEditAssets(ctx, actor, row, old); err != nil {
 			return nil, err

@@ -29,6 +29,18 @@ type effectFileAssetDeleteAdmission interface {
 type effectFileAssetMetadataAdmission interface {
 	Admit(context.Context, string, string) (string, error)
 }
+type effectFileAssetUpload interface {
+	CompleteAttachmentUpload(context.Context, string) error
+}
+
+type effectPageAdmission interface {
+	AdmitPageTransaction(context.Context, string, any, any, string) error
+	AdmitPageVersion(context.Context, string, string, any, string) error
+}
+
+type effectLinkPreviewAdmission interface {
+	AdmitWithID(context.Context, string, LinkPreviewInput) (string, error)
+}
 
 // PostgresWorkItemEffectStore hands committed effects to their existing durable
 // workflows. Admission means queued, not completed; workflow status owns execution.
@@ -40,13 +52,23 @@ type PostgresWorkItemEffectStore struct {
 	webhooks      effectWebhookAdmission
 	assetDeletes  effectFileAssetDeleteAdmission
 	assetMetadata effectFileAssetMetadataAdmission
+	linkPreviews  effectLinkPreviewAdmission
+	assetUploads  effectFileAssetUpload
+	pages         effectPageAdmission
 }
 
-func NewPostgresWorkItemEffectStore(pool *pgxpool.Pool, activities effectActivityAdmission, versions effectVersionAdmission, deletions effectDeletionAdmission, webhooks effectWebhookAdmission, assetDeletes effectFileAssetDeleteAdmission, assetMetadata effectFileAssetMetadataAdmission) (*PostgresWorkItemEffectStore, error) {
-	if pool == nil || activities == nil || versions == nil || deletions == nil || webhooks == nil || assetDeletes == nil || assetMetadata == nil {
+func NewPostgresWorkItemEffectStore(pool *pgxpool.Pool, activities effectActivityAdmission, versions effectVersionAdmission, deletions effectDeletionAdmission, webhooks effectWebhookAdmission, assetDeletes effectFileAssetDeleteAdmission, assetMetadata effectFileAssetMetadataAdmission, linkPreviews effectLinkPreviewAdmission, assetUploads effectFileAssetUpload, pages ...effectPageAdmission) (*PostgresWorkItemEffectStore, error) {
+	if pool == nil || activities == nil || versions == nil || deletions == nil || webhooks == nil || assetDeletes == nil || assetMetadata == nil || linkPreviews == nil || assetUploads == nil {
 		return nil, errors.New("work item effect database and native admissions are required")
 	}
-	return &PostgresWorkItemEffectStore{pool, activities, versions, deletions, webhooks, assetDeletes, assetMetadata}, nil
+	if len(pages) > 1 {
+		return nil, errors.New("at most one page admission may be configured")
+	}
+	var pageAdmission effectPageAdmission
+	if len(pages) == 1 {
+		pageAdmission = pages[0]
+	}
+	return &PostgresWorkItemEffectStore{pool, activities, versions, deletions, webhooks, assetDeletes, assetMetadata, linkPreviews, assetUploads, pageAdmission}, nil
 }
 
 func (s *PostgresWorkItemEffectStore) Drain(ctx context.Context) (int, error) {
@@ -93,6 +115,40 @@ func (s *PostgresWorkItemEffectStore) admitNext(ctx context.Context) (bool, erro
 
 func (s *PostgresWorkItemEffectStore) admit(ctx context.Context, id, kind string, raw []byte) error {
 	switch kind {
+	case "page_transaction", "page_version":
+		if s.pages == nil {
+			return errors.New("page effect admission is not configured")
+		}
+		var payload struct {
+			PageID   string `json:"page_id"`
+			UserID   string `json:"user_id"`
+			NewHTML  any    `json:"new_description_html"`
+			OldHTML  any    `json:"old_description_html"`
+			Existing any    `json:"existing_instance"`
+		}
+		if err := json.Unmarshal(raw, &payload); err != nil {
+			return err
+		}
+		if kind == "page_transaction" {
+			return s.pages.AdmitPageTransaction(ctx, id, payload.NewHTML, payload.OldHTML, payload.PageID)
+		}
+		return s.pages.AdmitPageVersion(ctx, id, payload.PageID, payload.Existing, payload.UserID)
+	case "asset_storage_upload":
+		var payload struct {
+			AssetID string `json:"asset_id"`
+		}
+		if err := json.Unmarshal(raw, &payload); err != nil {
+			return err
+		}
+		return s.assetUploads.CompleteAttachmentUpload(ctx, payload.AssetID)
+
+	case "link_preview":
+		var payload LinkPreviewInput
+		if err := json.Unmarshal(raw, &payload); err != nil {
+			return err
+		}
+		_, err := s.linkPreviews.AdmitWithID(ctx, id, payload)
+		return err
 	case "webhook":
 		var payload struct {
 			Name   string         `json:"name"`

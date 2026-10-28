@@ -45,7 +45,7 @@ func propertyValueHTML(def Definition, config Configuration, value any, labels m
 			return "", err
 		}
 		rendered = clean
-	case Dropdown, Member, Release, Cascading:
+	case Dropdown, Member, Issue, Release, Cascading:
 		ids, err := preservedSelections(value)
 		if err != nil {
 			return "", err

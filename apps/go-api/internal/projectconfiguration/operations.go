@@ -370,6 +370,23 @@ func truthy(value any) bool {
 const labelReadSQL = `SELECT jsonb_build_object('id',l.id,'created_at',l.created_at,'updated_at',l.updated_at,'created_by',l.created_by_id,'updated_by',l.updated_by_id,'deleted_at',l.deleted_at,'workspace',l.workspace_id,'project',l.project_id,'name',l.name,'description',l.description,'color',l.color,'sort_order',l.sort_order,'external_source',l.external_source,'external_id',l.external_id,'parent',l.parent_id) FROM labels l WHERE l.id=$1`
 
 func (r *Repository) WriteAPILabel(ctx context.Context, user, slug, project, labelID, method string, body io.Reader, contentType string) (json.RawMessage, error) {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	transaction := &Repository{db: tx}
+	result, err := transaction.writeAPILabel(ctx, tx, user, slug, project, labelID, method, body, contentType)
+	if err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (r *Repository) writeAPILabel(ctx context.Context, tx pgx.Tx, user, slug, project, labelID, method string, body io.Reader, contentType string) (json.RawMessage, error) {
 	if method == http.MethodPatch || method == http.MethodDelete {
 		var exists bool
 		err := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM labels l JOIN projects p ON p.id=l.project_id JOIN workspaces w ON w.id=l.workspace_id WHERE l.id=$1 AND p.id=$2 AND w.slug=$3 AND p.archived_at IS NULL AND l.deleted_at IS NULL AND EXISTS(SELECT 1 FROM project_members pm WHERE pm.project_id=p.id AND pm.member_id=$4 AND pm.is_active))`, labelID, project, slug, user).Scan(&exists)
@@ -381,11 +398,6 @@ func (r *Repository) WriteAPILabel(ctx context.Context, user, slug, project, lab
 		}
 	}
 	if method == http.MethodDelete {
-		tx, err := r.db.Begin(ctx)
-		if err != nil {
-			return nil, err
-		}
-		defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
 		workspaceID, err := labelhierarchy.LockProject(ctx, tx, project, slug)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, failure(404, "error", "The requested resource does not exist.")
@@ -403,7 +415,7 @@ func (r *Repository) WriteAPILabel(ctx context.Context, user, slug, project, lab
 		if !deleted {
 			return nil, failure(404, "error", "The requested resource does not exist.")
 		}
-		return nil, tx.Commit(ctx)
+		return nil, nil
 	}
 	input, err := djangoinput.Parse(body, contentType)
 	if err != nil {
@@ -470,11 +482,6 @@ func (r *Repository) WriteAPILabel(ctx context.Context, user, slug, project, lab
 	if len(fieldErrors) != 0 {
 		return nil, &HTTPError{Status: http.StatusBadRequest, Body: fieldErrors}
 	}
-	tx, err := r.db.Begin(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
 	db := tx
 	workspaceID, err := labelhierarchy.LockProject(ctx, tx, project, slug)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -550,9 +557,6 @@ func (r *Repository) WriteAPILabel(ctx context.Context, user, slug, project, lab
 		if err != nil {
 			return nil, err
 		}
-		if err = tx.Commit(ctx); err != nil {
-			return nil, err
-		}
 		return data, nil
 	}
 	args := []any{labelID}
@@ -577,9 +581,6 @@ func (r *Repository) WriteAPILabel(ctx context.Context, user, slug, project, lab
 	}
 	data, err := scanJSON(ctx, db, labelReadSQL, labelID)
 	if err != nil {
-		return nil, err
-	}
-	if err = tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 	return data, nil

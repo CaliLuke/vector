@@ -86,6 +86,13 @@ func (r *Repository) collaborationProjection(ctx context.Context, q Request, row
 			}
 			out["parent"] = parent
 		}
+		if q.ExpectedWorkspaceID != nil && (kind == "link" || kind == "comment") && q.Params["include_revision"] == "true" {
+			revision, ok := row["revision"].(string)
+			if !ok || revision == "" {
+				return nil, errors.New("missing collaboration revision")
+			}
+			out["revision"] = revision
+		}
 		collaborationTimestamps(out, q.Timezone)
 		return out, nil
 	}

@@ -18,6 +18,7 @@ func pqlTypeValue(column string) string {
 type pqlCollection struct{ bridge, target, foreignKey string }
 
 var pqlCollections = map[string]pqlCollection{
+	"release":    {"release_work_items", "work_item_releases", "release_id"},
 	"label":      {"issue_labels", "labels", "label_id"},
 	"cycle":      {"cycle_issues", "cycles", "cycle_id"},
 	"module":     {"module_issues", "modules", "module_id"},
@@ -30,15 +31,22 @@ var pqlCollections = map[string]pqlCollection{
 const pqlProjectTargetScope = `pql_target.project_id=issue.project_id AND pql_target.workspace_id=issue.workspace_id AND pql_target.deleted_at IS NULL`
 
 func (r pqlCollection) exists(condition, targetScope string) string {
+	liveBridge := " AND pql_bridge.deleted_at IS NULL"
+	if r.bridge == "release_work_items" {
+		liveBridge = ""
+	}
 	return `EXISTS(SELECT 1 FROM ` + r.bridge + ` pql_bridge
  JOIN ` + r.target + ` pql_target ON pql_target.id=pql_bridge.` + r.foreignKey + `
- WHERE pql_bridge.issue_id=issue.id AND pql_bridge.deleted_at IS NULL
+ WHERE pql_bridge.issue_id=issue.id` + liveBridge + `
  AND pql_bridge.project_id=issue.project_id AND pql_bridge.workspace_id=issue.workspace_id
  AND (` + targetScope + `) AND (` + condition + `))`
 }
 
 func (c *pqlCompiler) collection(e *pqlExpression, relation pqlCollection) (string, error) {
 	targetScope := pqlProjectTargetScope
+	if relation.target == "work_item_releases" {
+		targetScope = "pql_target.workspace_id=issue.workspace_id AND pql_target.project_id IS NULL AND pql_target.deleted_at IS NULL"
+	}
 	if relation.target == "users" {
 		var err error
 		targetScope, err = c.userTargetScope(e.pos)

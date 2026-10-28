@@ -18,6 +18,7 @@ var labelRetrieve = Type("LabelRetrieve", func() {
 	Attribute("action", String, func() { Enum("retrieve") })
 	Attribute("project_id", String, func() { Format(FormatUUID) })
 	Attribute("label_id", String, func() { Format(FormatUUID) })
+	Attribute("include_revision", Boolean)
 	projectWorkspaceSelector()
 	Required("action", "project_id", "label_id")
 	Meta("openapi:additionalProperties", "false")
@@ -29,6 +30,7 @@ var labelRecord = Type("LabelRecord", func() {
 		Attribute(field, String, func() { Nullable() })
 		Required(field)
 	}
+	Attribute("revision", String)
 	Attribute("sort_order", Float64, func() { Nullable() })
 	Required("sort_order")
 	Meta("openapi:additionalProperties", "false")
@@ -38,18 +40,57 @@ var labelPage = Type("LabelPage", func() {
 	Attribute("results", ArrayOf(labelRecord))
 	Meta("openapi:additionalProperties", "false")
 })
-var labelRequest = Type("LabelRequest", OneOf(labelList, labelRetrieve), func() { Untagged() })
-var labelResult = Type("LabelResult", OneOf(labelPage, labelRecord), func() { Untagged() })
+var labelRequest = Type("LabelRequest", OneOf(labelList, labelRetrieve, labelCreate, labelUpdate, labelDelete), func() { Untagged() })
+var labelResult = Type("LabelResult", OneOf(labelPage, labelRecord, labelReceipt), func() { Untagged() })
 
 func label() {
 	Method("label", func() {
-		Description("List labels or retrieve a label in a project.")
+		Description("Read and manage labels in a project.")
 		Payload(labelRequest)
-		Result(labelResult)
+		Result(labelResult, func() { Nullable() })
 		readErrors()
-		Meta("mcp:annotation:readOnlyHint", "true")
-		Meta("mcp:annotation:destructiveHint", "false")
+		writeErrors()
+		Error("conflict", func() { Remedy(func() { SafeMessage("The operation conflicts with an existing resource.") }) })
+		Meta("mcp:annotation:readOnlyHint", "false")
+		Meta("mcp:annotation:destructiveHint", "true")
 		Meta("mcp:annotation:openWorldHint", "false")
 		mcp.Tool("label", "Labels in a project. Use an advertised action.", mcp.ToolTitle("Labels"))
 	})
 }
+
+func labelMutationTarget(action string, detail bool) {
+	Attribute("action", String, func() { Enum(action) })
+	Attribute("project_id", String, func() { Format(FormatUUID) })
+	projectWorkspaceSelector()
+	Required("action", "project_id")
+	if detail {
+		Attribute("label_id", String, func() { Format(FormatUUID) })
+		Required("label_id")
+	}
+	Meta("openapi:additionalProperties", "false")
+}
+func labelMutationFields() {
+	for _, field := range []string{"name", "color", "description", "parent", "external_source", "external_id"} {
+		Attribute(field, String)
+	}
+	Attribute("sort_order", Float64, func() { Nullable() })
+}
+
+var labelCreate = Type("LabelCreate", func() {
+	labelMutationTarget("create", false)
+	labelMutationFields()
+	mutationExtensions(false)
+	Required("name")
+})
+var labelUpdate = Type("LabelUpdate", func() { labelMutationTarget("update", true); labelMutationFields(); mutationExtensions(true) })
+var labelDelete = Type("LabelDelete", func() { labelMutationTarget("delete", true); mutationExtensions(true) })
+var labelReceipt = Type("LabelMutationReceipt", func() {
+	Attribute("label_id", String, func() { Format(FormatUUID) })
+	Attribute("revision", String)
+	Attribute("result", labelRecord, func() { Nullable() })
+	Attribute("request_id", String, func() { Format(FormatUUID) })
+	Attribute("replay_expires_at", String)
+	Attribute("replayed", Boolean)
+	Required("label_id", "revision", "result")
+	Meta("openapi:additionalProperties", "false")
+})

@@ -1,6 +1,9 @@
 import { createElement } from "react";
 import {
   Hash,
+  Mail,
+  Paperclip,
+  SquareCheck,
   Type,
   Calendar,
   Users,
@@ -17,6 +20,9 @@ import type { PropertyKind } from "./preview-content";
 
 const defaultIcons = {
   Text: Type,
+  Email: Mail,
+  File: Paperclip,
+  "Work item picker": SquareCheck,
   Number: Hash,
   Dropdown: ListFilter,
   Boolean: ToggleLeft,

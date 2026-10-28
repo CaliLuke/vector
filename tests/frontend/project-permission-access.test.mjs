@@ -109,8 +109,17 @@ function renderProjectScope(workspaceSlug, projectId) {
   );
 }
 
+async function readyButton(fixture, attempt = 0) {
+  const button = fixture.environment.container.querySelector("button");
+  if (button) return button;
+  if (attempt >= 100) throw new Error("Project access did not expose its expected action");
+  await settleQuery();
+  return readyButton(fixture, attempt + 1);
+}
+
 async function clickButton(fixture) {
-  await act(async () => fixture.environment.container.querySelector("button")?.click());
+  const button = await readyButton(fixture);
+  await act(async () => button.click());
   await settleQuery();
 }
 
@@ -138,7 +147,6 @@ await test("403 permits project joining only for workspace admins", async (t) =>
   const join = mockJoinableProject(t, 403);
 
   const fixture = await renderProject(t);
-  assert.ok(fixture.environment.container.querySelector("button"));
   await clickButton(fixture);
   assert.equal(join.mock.callCount(), 1);
   assert.equal(fixture.environment.container.querySelector("main")?.textContent, "Project content");
@@ -263,7 +271,7 @@ await test("a late join does not carry joined feedback or a refetch into a new p
   await joinStarted.promise;
 
   await fixture.render(renderProjectScope("beta", "project-2"));
-  assert.ok(fixture.environment.container.querySelector("button"), "the new project remains independently joinable");
+  await readyButton(fixture);
 
   await act(async () => joinResponse.resolve({ message: "accepted" }));
   await settleQuery();

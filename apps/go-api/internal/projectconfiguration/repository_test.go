@@ -1,9 +1,12 @@
 package projectconfiguration
 
 import (
+	"context"
 	"encoding/json"
 	"strings"
 	"testing"
+
+	"github.com/jackc/pgx/v5"
 
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 )
@@ -28,8 +31,14 @@ func TestRequireObjectInputRejectsValidJSONNonObjectsAs400(t *testing.T) {
 	}
 }
 
+// Invalid create inputs enter and roll back a transaction without issuing SQL.
+type labelValidationDatabase struct{ pgx.Tx }
+
+func (db labelValidationDatabase) Begin(context.Context) (pgx.Tx, error) { return db, nil }
+func (labelValidationDatabase) Rollback(context.Context) error           { return nil }
+
 func TestAPILabelCreateRejectsArrayBeforeFieldValidation(t *testing.T) {
-	repo := &Repository{}
+	repo := &Repository{db: labelValidationDatabase{}}
 	_, err := repo.WriteAPILabel(t.Context(), "user", "workspace", "project", "", "POST", strings.NewReader(`[]`), "application/json")
 	httpErr, ok := err.(*HTTPError)
 	if !ok || httpErr.Status != 400 {
@@ -45,7 +54,7 @@ func TestAPILabelCreateRejectsArrayBeforeFieldValidation(t *testing.T) {
 }
 
 func TestAPILabelSerializerUsesDRFFieldErrorsAndLengthRules(t *testing.T) {
-	repo := &Repository{}
+	repo := &Repository{db: labelValidationDatabase{}}
 	_, err := repo.WriteAPILabel(t.Context(), "user", "workspace", "project", "", "POST", strings.NewReader(`{"name":"`+strings.Repeat("x", 256)+`","sort_order":"not-a-number"}`), "application/json")
 	httpErr, ok := err.(*HTTPError)
 	if !ok || httpErr.Status != 400 {
@@ -64,7 +73,7 @@ func TestAPILabelSerializerUsesDRFFieldErrorsAndLengthRules(t *testing.T) {
 }
 
 func TestAPILabelSerializerRejectsMalformedParentAsDRFUUIDError(t *testing.T) {
-	repo := &Repository{}
+	repo := &Repository{db: labelValidationDatabase{}}
 	_, err := repo.WriteAPILabel(t.Context(), "user", "workspace", "project", "", "POST", strings.NewReader(`{"name":"Child","parent":"not-a-uuid"}`), "application/json")
 	httpErr, ok := err.(*HTTPError)
 	if !ok || httpErr.Status != 400 {

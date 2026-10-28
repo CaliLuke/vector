@@ -95,11 +95,13 @@ tidy_gate() {
 test_gate() {
   local coverage="$REPORTS/go-integration.cover" test_json="$REPORTS/go-test.jsonl" test_status=0 result_mode="${1:-check}"
   node --test "$ROOT/scripts/quality/go-test-results.test.mjs" "$ROOT/scripts/quality/go-ratchets.test.mjs"
+  local coverage_packages
+  coverage_packages="$(node "$ROOT/scripts/quality/go-coverage-inventory.mjs" "$MODULE")"
   rm -f "$coverage" "$test_json"
   (
     cd "$MODULE"
     go test -json -tags=integration -count=1 -p 2 -parallel 2 -timeout=20m \
-      -coverprofile="$coverage" ./...
+      -coverpkg="$coverage_packages" -coverprofile="$coverage" ./...
   ) >"$test_json" || test_status=$?
   node "$ROOT/scripts/quality/go-test-results.mjs" "$test_json" "$ROOT/.quality/go-test-skips.json"
   [[ "$test_status" -eq 0 ]] || return "$test_status"

@@ -1,0 +1,14 @@
+BEGIN;
+SET LOCAL search_path = public, pg_catalog;
+DO $$ BEGIN IF EXISTS(SELECT 1 FROM page_collections) OR EXISTS(SELECT 1 FROM pages p WHERE p.is_global AND NOT EXISTS(SELECT 1 FROM project_pages pp WHERE pp.page_id=p.id)) THEN RAISE EXCEPTION 'workspace page data must be migrated before rollback';END IF;END $$;
+ALTER TABLE work_item_effects DROP CONSTRAINT work_item_effects_kind_check;
+ALTER TABLE work_item_effects ADD CONSTRAINT work_item_effects_kind_check CHECK(kind IN('activity','description_version','soft_delete','webhook','asset_storage_delete','asset_storage_metadata','link_preview','asset_storage_upload'));
+DROP FUNCTION workspace_page_visible(uuid,uuid,uuid),collection_access(uuid,uuid,uuid);
+DROP TRIGGER page_api_revision ON pages;
+DROP TRIGGER page_project_api_revision ON project_pages;
+DROP TRIGGER workspace_page_api_revision ON workspaces;
+DROP TABLE work_item_pages,page_collection_pages,page_collection_members,page_collections,page_api_events;
+DROP FUNCTION advance_page_api_revision(),seed_page_api_revision(),collection_access_immutable();
+DROP TABLE page_api_revisions;
+DROP INDEX pages_owner_key;
+COMMIT;

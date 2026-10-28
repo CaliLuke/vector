@@ -83,3 +83,7 @@ func TestDirectDirectoryCallsValidatePageSizeAndRoleID(t *testing.T) {
 func (s *directoryStub) ReadCapabilities(context.Context, uuid.UUID, uuid.UUID, string) (membership.ReadCapabilities, error) {
 	return s.capabilities, s.capabilitiesErr
 }
+
+func (s *directoryStub) WorkspaceIdentity(context.Context, uuid.UUID, uuid.UUID, string) (membership.WorkspaceIdentity, error) {
+	return membership.WorkspaceIdentity{}, s.err
+}

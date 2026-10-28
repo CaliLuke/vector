@@ -123,8 +123,11 @@ async function checkMemory() {
     peakKiB = Math.max(peakKiB, usage);
     if (failureCode) signalGroup("SIGKILL");
     if (usage > memoryMiB * 1024) stop(137, `RSS exceeded ${memoryMiB} MiB`);
-  } catch {
-    stop(125, "memory monitoring failed");
+  } catch (error) {
+    stop(
+      125,
+      `memory monitoring failed (code=${error.code ?? "unknown"}, killed=${Boolean(error.killed)}, signal=${error.signal ?? "none"})`
+    );
   } finally {
     monitoring = false;
   }

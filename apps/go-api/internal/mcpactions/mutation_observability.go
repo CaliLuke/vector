@@ -112,7 +112,7 @@ func mutationOutcome(err error) string {
 		return "committed"
 	}
 	var serviceError *loom.ServiceError
-	if errors.As(err, &serviceError) && slices.Contains([]string{"unauthorized", "forbidden", "not_found", "invalid_params", "request_conflict", "conflict", "revision_conflict", "indeterminate"}, serviceError.Name) {
+	if errors.As(err, &serviceError) && slices.Contains([]string{"unauthorized", "forbidden", "not_found", "invalid_params", "request_conflict", "conflict", "revision_conflict", "indeterminate", "workspace_not_managed"}, serviceError.Name) {
 		return serviceError.Name
 	}
 	return "internal_error"

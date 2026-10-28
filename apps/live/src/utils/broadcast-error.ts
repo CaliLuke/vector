@@ -8,6 +8,7 @@ import type { Hocuspocus } from "@hocuspocus/server";
 import { createRealtimeEvent } from "@plane/editor/lib";
 import { logger } from "@plane/logger";
 import type { HocusPocusServerContext } from "@/types";
+import { parsePageDocumentName } from "@/lib/page-document";
 import { broadcastMessageToPage } from "./broadcast-message";
 
 // Helper to broadcast error to frontend
@@ -23,7 +24,7 @@ export const broadcastError = async (
   try {
     const errorEvent = createRealtimeEvent({
       action: "error",
-      page_id: pageId,
+      page_id: parsePageDocumentName(pageId).pageId,
       parent_id: undefined,
       descendants_ids: [],
       data: {

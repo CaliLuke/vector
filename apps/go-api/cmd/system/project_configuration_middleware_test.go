@@ -25,6 +25,24 @@ type configurationMiddlewareDB struct {
 
 type configurationMiddlewareRow func(...any) error
 
+// Label writes now enter a transaction before parsing their body. This fixture
+// exercises middleware ordering; malformed input never reaches a write query.
+type configurationMiddlewareTx struct {
+	pgx.Tx
+	db configurationMiddlewareDB
+}
+
+func (db configurationMiddlewareDB) Begin(context.Context) (pgx.Tx, error) {
+	return configurationMiddlewareTx{db: db}, nil
+}
+
+func (tx configurationMiddlewareTx) QueryRow(ctx context.Context, query string, args ...any) pgx.Row {
+	return tx.db.QueryRow(ctx, query, args...)
+}
+
+func (configurationMiddlewareTx) Commit(context.Context) error   { return nil }
+func (configurationMiddlewareTx) Rollback(context.Context) error { return nil }
+
 func (row configurationMiddlewareRow) Scan(values ...any) error { return row(values...) }
 
 func (db configurationMiddlewareDB) QueryRow(_ context.Context, query string, _ ...any) pgx.Row {

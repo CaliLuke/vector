@@ -769,6 +769,11 @@ func (repository *Repository) updateOrDuplicatePage(ctx context.Context, db life
 	_ = repository.database.QueryRow(ctx, `SELECT description_html FROM pages WHERE id=$1 AND workspace_id=$2`, page, state.workspaceID).Scan(&oldDescription)
 	newDescription, descriptionChanged := fields["description_html"].(string)
 	if err := repository.writePage(ctx, db, func(tx pgx.Tx) error {
+		if _, collaborative := input.Fields["collaboration_revision"]; collaborative || fields["name"] != nil || fields["description_html"] != nil {
+			if err := checkPageCollaborationRevision(ctx, tx, page, state.workspaceID, input.Fields); err != nil {
+				return err
+			}
+		}
 		for key, column := range map[string]string{"name": "name", "color": "color", "access": "access", "parent": "parent_id", "description_html": "description_html", "view_props": "view_props", "logo_props": "logo_props", "is_locked": "is_locked", "archived_at": "archived_at"} {
 			value, ok := fields[key]
 			if !ok {
@@ -1003,6 +1008,9 @@ func (repository *Repository) updatePageDescription(ctx context.Context, db life
 		}
 	}
 	if err := repository.writePage(ctx, db, func(tx pgx.Tx) error {
+		if err := checkPageCollaborationRevision(ctx, tx, page, state.workspaceID, fields); err != nil {
+			return err
+		}
 		for key, value := range update {
 			if _, err := tx.Exec(ctx, `UPDATE pages SET `+key+`=$1, updated_by_id=$2, updated_at=now() WHERE id=$3 AND workspace_id=$4 AND deleted_at IS NULL`, value, user, page, state.workspaceID); err != nil {
 				return err
@@ -1093,8 +1101,8 @@ func (repository *Repository) pageLifecycleDetail(ctx context.Context, user uuid
 		return 0, nil, err
 	}
 	var body map[string]any
-	if err := json.Unmarshal(data, &body); err != nil {
-		return 0, nil, err
+	if decodeErr := json.Unmarshal(data, &body); decodeErr != nil {
+		return 0, nil, decodeErr
 	}
 	delete(body, "issue_ids")
 	switch projection {
@@ -1115,6 +1123,7 @@ func (repository *Repository) pageLifecycleDetail(ctx context.Context, user uuid
 
 var pageLifecycleDetailSQL = `
 SELECT json_build_object(
+  'collaboration_revision', page.collaboration_revision,
   'id', page.id, 'name', page.name, 'owned_by', page.owned_by_id,
   'access', page.access, 'color', page.color, 'parent', page.parent_id,
   'is_favorite', EXISTS (

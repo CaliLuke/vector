@@ -89,6 +89,13 @@ func (r *Repository) ReadAPIV1(ctx context.Context, user string, request APIV1Re
 	}
 	for index, raw := range rows {
 		rows[index], err = r.apiSerialize(ctx, raw.(map[string]any), kind, fields, expand, user)
+		if err == nil && request.ExpectedWorkspaceID != nil && detail && p["include_revision"] == "true" {
+			revision, ok := raw.(map[string]any)["revision"].(string)
+			if !ok || revision == "" {
+				return nil, errors.New("cycle revision unavailable")
+			}
+			rows[index].(map[string]any)["revision"] = revision
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -138,6 +145,9 @@ func (r *Repository) apiCycles(ctx context.Context, user string, request APIV1Re
 		order, _ = apiOrder(p["order_by"], "-created_at", false)
 	}
 	row := "to_jsonb(c)"
+	if request.ExpectedWorkspaceID != nil && request.Operation == "detail" && p["include_revision"] == "true" {
+		row += "||jsonb_build_object('revision','cycle:'||c.id::text||':'||(SELECT revision::text FROM cycle_edit_revisions WHERE cycle_id=c.id))"
+	}
 	joins := ""
 	if request.Operation != "lite" {
 		joins = apiCycleMetricJoins(request.ExpectedWorkspaceID != nil)

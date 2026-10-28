@@ -1,0 +1,101 @@
+Vector Query Language (PQL) filter string for work items in a project. Output ONLY valid PQL.
+
+FIELDS
+  priority          = "urgent" | "high" | "medium" | "low" | "none"
+  stateGroup        = "backlog" | "unstarted" | "started" | "completed" | "cancelled"
+  isDraft           = true | false   (also usable as predicate: isDraft() means isDraft = true)
+  isArchived        = true | false   (also usable as predicate: isArchived() means isArchived = true)
+  title             ~ "keyword"          (title search — use for most text queries)
+  text              ~ "keyword"          (title + description — only when user asks to search body/content too)
+  id                = "WEB-11"           (work item's own sequence identifier, e.g. "SHO-5")
+  id                ~ "WEB"              (prefix search on the work item's sequence identifier)
+  dueDate           date field
+  startDate         date field
+  createdAt         datetime field
+  updatedAt         datetime field
+  assignee          UUID  — use currentUser() for current user, or a member UUID
+  state             UUID  — a state UUID
+  label             UUID  — a label UUID
+  cycle             UUID  — a cycle UUID, or activeCycle() / completedCycles() / upcomingCycles()
+  module            UUID  — a module UUID
+  project           UUID  — a project UUID
+  createdBy         UUID  — a member UUID
+  type              UUID  — a work item type UUID
+  release           UUID  — a workspace release UUID
+  milestone         UUID  — a milestone UUID
+  mention           UUID  — a member UUID
+  subscriber        UUID  — a member UUID
+
+CUSTOM PROPERTIES  (cf["<property-uuid>"] syntax)
+  cf["<property-uuid>"] = "<value>"
+  cf["<property-uuid>"] IN ("<opt-uuid-1>", "<opt-uuid-2>")
+  cf["<property-uuid>"] IS NULL
+
+  To get property UUID and option UUIDs: call the work item types tool then the properties tool.
+  Value rules: OPTION → option UUID (not display name); DECIMAL → bare number; BOOLEAN → bare true/false
+  EMAIL and FILE use text operators as Vector extensions.
+  FORMULA, CASCADING, and RICH_TEXT relations are not filterable in PQL.
+  Report an unsupported requested filter; never silently omit it.
+
+OPERATORS
+  =  !=  >  >=  <  <=  ~(contains)  IN(...)  NOT IN(...)
+  IS NULL  IS NOT NULL  IS EMPTY  IS NOT EMPTY
+  BETWEEN value AND value
+  Logical: AND  OR  NOT   (precedence: NOT > AND > OR)
+
+DATE FUNCTIONS
+  today()  now()
+  startOfDay()  endOfDay()  startOfWeek()  endOfWeek()
+  startOfMonth()  endOfMonth()  startOfYear()  endOfYear()
+  daysAgo(n)  daysFromNow(n)  weeksAgo(n)  weeksFromNow(n)
+  monthsAgo(n)  monthsFromNow(n)
+  ⚠ No date arithmetic: never today()-7 or startOfWeek()+1
+
+USER FUNCTIONS
+  currentUser()                        — authenticated personal-token or OAuth user
+  membersOf("project:<uuid>")          — list of user UUIDs in project
+  workspaceMembers()                   — all workspace member UUIDs
+
+CYCLE FUNCTIONS
+  activeCycle()    completedCycles()    upcomingCycles()
+
+STATE GROUP FUNCTIONS
+  openStates()   →  ["backlog","unstarted","started"]
+  closedStates() →  ["completed","cancelled"]
+  activeStates() →  ["unstarted","started"]
+
+PREDICATE FUNCTIONS  (standalone — no comparison needed)
+  isOverdue()          hasNoAssignee()      hasNoLabel()
+  isTopLevel()         isSubWorkItem()      isEpic()
+  hasChildren()        hasStartAndDueDates()
+  isDraft()            isArchived()         isIntake()
+
+RELATION FUNCTIONS   (standalone — argument is work item id or UUID)
+  childOf("WEB-5")     parentOf("WEB-5")    linkedTo("WEB-5")
+  blockedBy("WEB-5")   blocks("WEB-5")      duplicateOf("WEB-5")
+
+LIMITS
+  Max 5 conditions. Each field comparison, predicate, or relation call = 1 condition.
+  IN(...) and BETWEEN...AND... each count as 1.
+
+EXAMPLES
+  priority = "high" AND assignee = currentUser()
+  isOverdue()
+  stateGroup IN openStates() AND updatedAt < daysAgo(30)
+  cycle IN activeCycle() AND stateGroup IN closedStates()
+  title ~ "capex" AND priority IN ("high","urgent")
+  dueDate BETWEEN (daysAgo(7), today())
+  createdAt >= startOfWeek()
+  hasNoAssignee() AND priority = "urgent"
+  isEpic() AND hasChildren()
+  childOf("WEB-5")
+  id = "WEB-11"
+  cf["<prop-uuid>"] = "<option-uuid>"
+
+UUID fields (assignee, state, label, cycle, module, project, type, milestone, createdBy)
+require a UUID — call the relevant list tool first if you only have a name.
+Custom property UUIDs: call the work item types tool then the properties tool.
+
+NOT SUPPORTED in PQL: history queries (wasEver, changedFrom, changedTo, commentedBy, etc.)
+
+Teamspace queries (teamspaceProject and membersOf("teamspace:...")) are unavailable until Vector supports teamspaces.
