@@ -15,7 +15,7 @@ import { pageRedirectLink } from "@/helpers/page-permissions";
 import { useCollaborativePageActions } from "@/hooks/use-collaborative-page-actions";
 import { useDuplicateProjectPage } from "@/hooks/use-project-pages";
 import { useFavorites } from "@/hooks/use-favorites";
-import useLocalStorage from "./use-local-storage";
+import { useLocalStorage } from "@plane/hooks";
 
 type TPageOperations = {
   toggleLock: () => Promise<void>;

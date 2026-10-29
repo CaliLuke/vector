@@ -7,7 +7,7 @@
 import { useMemo, useCallback } from "react";
 import { Tabs } from "@base-ui/react";
 import { Popover } from "../popover";
-import { cn } from "../utils/classname";
+import { cn } from "@plane/utils/common";
 import { convertPlacementToSideAndAlign } from "../utils/placement";
 import { EmojiRoot } from "./emoji/emoji";
 import type { TCustomEmojiPicker } from "./helper";

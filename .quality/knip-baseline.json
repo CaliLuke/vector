@@ -3,198 +3,6 @@
   "findings": [
     {
       "finding": {
-        "category": "catalog",
-        "file": "pnpm-workspace.yaml",
-        "name": "@tanstack/virtual-core"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "dependencies",
-        "file": "apps/admin/package.json",
-        "name": "uuid"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "dependencies",
-        "file": "apps/live/package.json",
-        "name": "@tiptap/html"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "dependencies",
-        "file": "apps/space/package.json",
-        "name": "clsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "dependencies",
-        "file": "apps/space/package.json",
-        "name": "react-dropzone"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "dependencies",
-        "file": "apps/web/package.json",
-        "name": "clsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "dependencies",
-        "file": "apps/web/package.json",
-        "name": "comlink"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "dependencies",
-        "file": "apps/web/package.json",
-        "name": "react-fast-compare"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "dependencies",
-        "file": "apps/web/package.json",
-        "name": "react-is"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "dependencies",
-        "file": "apps/web/package.json",
-        "name": "react-markdown"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "dependencies",
-        "file": "apps/web/package.json",
-        "name": "recharts"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "dependencies",
-        "file": "apps/web/package.json",
-        "name": "use-font-face-observer"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "dependencies",
-        "file": "packages/editor/package.json",
-        "name": "buffer"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "dependencies",
-        "file": "packages/propel/package.json",
-        "name": "@plane/hooks"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "dependencies",
-        "file": "packages/propel/package.json",
-        "name": "@plane/utils"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "dependencies",
-        "file": "packages/ui/package.json",
-        "name": "clsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "dependencies",
-        "file": "packages/ui/package.json",
-        "name": "react-day-picker"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "dependencies",
-        "file": "packages/ui/package.json",
-        "name": "tailwind-merge"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "dependencies",
-        "file": "packages/ui/package.json",
-        "name": "use-font-face-observer"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "devDependencies",
-        "file": "apps/live/package.json",
-        "name": "@types/pdf-parse"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "devDependencies",
-        "file": "package.json",
-        "name": "jscpd"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "devDependencies",
-        "file": "packages/propel/package.json",
-        "name": "@plane/tailwind-config"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "devDependencies",
-        "file": "packages/types/package.json",
-        "name": "@types/react-dom"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "devDependencies",
-        "file": "packages/ui/package.json",
-        "name": "autoprefixer"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
         "category": "enumMembers",
         "file": "apps/space/helpers/authentication.helper.tsx",
         "namespace": "EErrorAlertType",
@@ -1005,22 +813,6 @@
     {
       "finding": {
         "category": "exports",
-        "file": "apps/web/core/hooks/use-local-storage.tsx",
-        "name": "getValueFromLocalStorage"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/hooks/use-local-storage.tsx",
-        "name": "setValueIntoLocalStorage"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
         "file": "apps/web/core/lib/idle-task.ts",
         "name": "cancelIdle"
       },
@@ -1351,30 +1143,6 @@
         "category": "exports",
         "file": "packages/ui/src/badge/helper.tsx",
         "name": "badgeStyling"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "packages/ui/src/card/helper.tsx",
-        "name": "containerStyle"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "packages/ui/src/card/helper.tsx",
-        "name": "directions"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "packages/ui/src/card/helper.tsx",
-        "name": "spacings"
       },
       "count": 1
     },
@@ -2005,14 +1773,6 @@
     {
       "finding": {
         "category": "files",
-        "file": "apps/web/core/components/ui/markdown-to-component.tsx",
-        "name": "apps/web/core/components/ui/markdown-to-component.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
         "file": "apps/web/core/components/ui/profile-empty-state.tsx",
         "name": "apps/web/core/components/ui/profile-empty-state.tsx"
       },
@@ -2141,14 +1901,6 @@
     {
       "finding": {
         "category": "files",
-        "file": "apps/web/core/services/app_config.service.ts",
-        "name": "apps/web/core/services/app_config.service.ts"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
         "file": "apps/web/helpers/dashboard.helper.ts",
         "name": "apps/web/helpers/dashboard.helper.ts"
       },
@@ -2239,14 +1991,6 @@
         "category": "files",
         "file": "packages/i18n/src/hooks/index.ts",
         "name": "packages/i18n/src/hooks/index.ts"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "packages/propel/postcss.config.js",
-        "name": "packages/propel/postcss.config.js"
       },
       "count": 1
     },
@@ -2853,14 +2597,6 @@
     {
       "finding": {
         "category": "types",
-        "file": "packages/ui/src/card/helper.tsx",
-        "name": "ICardProperties"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
         "file": "packages/ui/src/dropdowns/helper.tsx",
         "name": "IDropdownProps"
       },
@@ -2927,14 +2663,6 @@
         "category": "types",
         "file": "packages/utils/src/theme/palette-generator.ts",
         "name": "ShadeStop"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "unlisted",
-        "file": "apps/space/additional.d.ts",
-        "name": "next-images"
       },
       "count": 1
     },

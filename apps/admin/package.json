@@ -39,8 +39,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router": "catalog:",
-    "serve": "catalog:",
-    "uuid": "catalog:"
+    "serve": "catalog:"
   },
   "devDependencies": {
     "@plane/tailwind-config": "workspace:*",

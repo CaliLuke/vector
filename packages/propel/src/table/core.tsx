@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-import { cn } from "../utils/classname";
+import { cn } from "@plane/utils/common";
 
 const Table = React.forwardRef(function Table(
   { className, ...props }: React.ComponentPropsWithoutRef<"table">,

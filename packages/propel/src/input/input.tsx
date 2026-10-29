@@ -7,7 +7,7 @@
 import * as React from "react";
 import { Input as BaseInput } from "@base-ui/react/input";
 // helpers
-import { cn } from "../utils";
+import { cn } from "@plane/utils/common";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   mode?: "primary" | "transparent" | "true-transparent";

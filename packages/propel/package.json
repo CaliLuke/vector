@@ -65,7 +65,6 @@
   "dependencies": {
     "@base-ui/react": "catalog:",
     "@plane/constants": "workspace:*",
-    "@plane/hooks": "workspace:*",
     "@plane/types": "workspace:*",
     "@plane/utils": "workspace:*",
     "class-variance-authority": "catalog:",
@@ -78,8 +77,8 @@
     "react-day-picker": "catalog:",
     "react-dom": "catalog:",
     "react-icons": "catalog:",
+    "react-is": "catalog:",
     "recharts": "catalog:",
-    "tailwind-merge": "catalog:",
     "use-font-face-observer": "catalog:"
   },
   "devDependencies": {

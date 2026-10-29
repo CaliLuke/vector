@@ -13,7 +13,7 @@ import { useTranslation } from "@plane/i18n";
 // types
 import type { TIssueStandardDisplayProperty, IIssueDisplayFilterOptions, TIssueOrderByOptions } from "@plane/types";
 import { CustomMenu, Row } from "@plane/ui";
-import useLocalStorage from "@/hooks/use-local-storage";
+import { useLocalStorage } from "@plane/hooks";
 import { SpreadSheetPropertyIcon } from "../../utils";
 
 interface Props {

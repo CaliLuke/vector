@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { Separator as SeparatorPrimitive } from "@base-ui/react/separator";
-import { cn } from "../utils";
+import { cn } from "@plane/utils/common";
 
 interface SeparatorProps extends React.ComponentProps<typeof SeparatorPrimitive> {
   /**

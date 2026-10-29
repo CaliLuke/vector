@@ -38,14 +38,10 @@
     "@popperjs/core": "catalog:",
     "@radix-ui/react-scroll-area": "catalog:",
     "@tanstack/react-form": "catalog:",
-    "clsx": "catalog:",
     "lodash-es": "catalog:",
     "lucide-react": "catalog:",
     "react-color": "catalog:",
-    "react-day-picker": "catalog:",
-    "react-popper": "catalog:",
-    "tailwind-merge": "catalog:",
-    "use-font-face-observer": "catalog:"
+    "react-popper": "catalog:"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "catalog:",
@@ -61,7 +57,6 @@
     "@types/react-color": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "autoprefixer": "catalog:",
     "jsdom": "catalog:",
     "storybook": "catalog:",
     "tsdown": "catalog:",

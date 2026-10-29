@@ -7,7 +7,7 @@
 import * as React from "react";
 import { Command as CommandPrimitive } from "cmdk";
 import { SearchIcon } from "../icons";
-import { cn } from "../utils/classname";
+import { cn } from "@plane/utils/common";
 
 function CommandComponent({ className, ...props }: React.ComponentProps<typeof CommandPrimitive>) {
   return <CommandPrimitive data-slot="command" className={cn("", className)} {...props} />;

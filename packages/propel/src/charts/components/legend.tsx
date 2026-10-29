@@ -9,7 +9,7 @@ import type { LegendProps } from "recharts";
 import type { LegendPayload } from "recharts/types/component/DefaultLegendContent";
 // plane imports
 import type { TChartLegend } from "@plane/types";
-import { cn } from "../../utils/classname";
+import { cn } from "@plane/utils/common";
 
 export const getLegendProps = (args: TChartLegend): LegendProps => {
   const { align, layout, verticalAlign } = args;

@@ -5,7 +5,7 @@
  */
 
 import * as React from "react";
-import { cn } from "../utils";
+import { cn } from "@plane/utils/common";
 import type { BadgeProps } from "./helper";
 import { getBadgeIconStyling, badgeVariants } from "./helper";
 

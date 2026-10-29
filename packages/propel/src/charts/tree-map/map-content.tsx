@@ -7,7 +7,7 @@
 import React, { useMemo } from "react";
 // plane imports
 import type { TBottomSectionConfig, TContentVisibility, TTopSectionConfig } from "@plane/types";
-import { cn } from "../../utils/classname";
+import { cn } from "@plane/utils/common";
 
 const LAYOUT = {
   PADDING: 2,

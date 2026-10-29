@@ -7,7 +7,7 @@
 import { useParams } from "@tanstack/react-router";
 import React, { useCallback, useMemo } from "react";
 
-import useLocalStorage from "@/hooks/use-local-storage";
+import { useLocalStorage } from "@plane/hooks";
 import { AppRailVisibilityContext } from "./context";
 import type { IAppRailVisibilityContext } from "./types";
 

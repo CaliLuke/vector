@@ -8,7 +8,7 @@ import { useCallback, useMemo } from "react";
 // plane editor
 import type { TEditorFontSize, TEditorFontStyle } from "@plane/editor";
 // hooks
-import useLocalStorage from "@/hooks/use-local-storage";
+import { useLocalStorage } from "@plane/hooks";
 
 export type TPagesPersonalizationConfig = {
   full_width: boolean;

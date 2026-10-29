@@ -6,19 +6,23 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-export const getValueFromLocalStorage = (key: string, defaultValue: any) => {
-  if (typeof window === "undefined" || typeof window === "undefined") return defaultValue;
+const getValueFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
+  if (typeof window === "undefined") return defaultValue;
   try {
     const item = window.localStorage.getItem(key);
     return item ? JSON.parse(item) : defaultValue;
   } catch (_error) {
-    window.localStorage.removeItem(key);
+    try {
+      window.localStorage.removeItem(key);
+    } catch (_removeError) {
+      // Storage can be unavailable in restricted browser contexts.
+    }
     return defaultValue;
   }
 };
 
-export const setValueIntoLocalStorage = (key: string, value: any) => {
-  if (typeof window === "undefined" || typeof window === "undefined") return false;
+const setValueIntoLocalStorage = (key: string, value: unknown) => {
+  if (typeof window === "undefined") return false;
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
     return true;
@@ -28,34 +32,49 @@ export const setValueIntoLocalStorage = (key: string, value: any) => {
 };
 
 export const useLocalStorage = <T,>(key: string, initialValue: T) => {
-  const [storedValue, setStoredValue] = useState<T | null>(() => getValueFromLocalStorage(key, initialValue));
+  const [stored, setStored] = useState<{ key: string; value: T | null }>(() => ({
+    key,
+    value: getValueFromLocalStorage(key, initialValue),
+  }));
+
+  // Reset before React commits a render for a different preference scope.
+  if (stored.key !== key) {
+    setStored({ key, value: getValueFromLocalStorage(key, initialValue) });
+  }
 
   const setValue = useCallback(
     (value: T) => {
-      window.localStorage.setItem(key, JSON.stringify(value));
-      setStoredValue(value);
-      window.dispatchEvent(new Event(`local-storage:${key}`));
+      setValueIntoLocalStorage(key, value);
+      setStored({ key, value });
+      if (typeof window !== "undefined") window.dispatchEvent(new Event(`local-storage:${key}`));
     },
     [key]
   );
 
   const clearValue = useCallback(() => {
-    window.localStorage.removeItem(key);
-    setStoredValue(null);
-    window.dispatchEvent(new Event(`local-storage:${key}`));
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.removeItem(key);
+      } catch (_error) {
+        // Storage can be unavailable in restricted browser contexts.
+      }
+      window.dispatchEvent(new Event(`local-storage:${key}`));
+    }
+    setStored({ key, value: null });
   }, [key]);
 
   const reHydrate = useCallback(() => {
     const data = getValueFromLocalStorage(key, initialValue);
-    setStoredValue(data);
+    setStored({ key, value: data });
   }, [key, initialValue]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return undefined;
     window.addEventListener(`local-storage:${key}`, reHydrate);
     return () => {
       window.removeEventListener(`local-storage:${key}`, reHydrate);
     };
   }, [key, reHydrate]);
 
-  return { storedValue, setValue, clearValue } as const;
+  return { storedValue: stored.value, setValue, clearValue } as const;
 };

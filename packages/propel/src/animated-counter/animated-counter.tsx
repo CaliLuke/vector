@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { cn } from "../utils";
+import { cn } from "@plane/utils/common";
 
 export interface AnimatedCounterProps {
   count: number;

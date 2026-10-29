@@ -23,7 +23,6 @@ const stubs = {
   "@/hooks/use-creation-permissions": `export const useCreationPermissions = () => ({projectsWithCreatePermissions:{first:true,second:true}});`,
   "@/hooks/store/use-project": `export const useProject = () => ({getProjectById:()=>({cycle_view:true,module_view:true})});`,
   "@/hooks/use-platform-os": `export const usePlatformOS = () => ({isMobile:false});`,
-  "@/hooks/use-local-storage": `export default () => ({setValue:()=>{}});`,
   "@/services/auth.service": `export const authService = {requestCSRFToken: async () => ({csrf_token:"fresh"})}; export const signOutCurrentSession=()=>globalThis.nativeFormWorkflows.user.signOut();`,
   "@/services/user.service": `export default {checkEmail: (...args)=>globalThis.nativeFormWorkflows.checkEmail(...args),generateEmailCode:(...args)=>globalThis.nativeFormWorkflows.generateCode(...args),verifyEmailCode:(...args)=>globalThis.nativeFormWorkflows.verifyCode(...args)};`,
   "@plane/i18n": `export const useTranslation=()=>({t:key=>key});`,

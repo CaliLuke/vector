@@ -9,7 +9,7 @@ import { AnimatedCounter } from "../animated-counter";
 import { stringToEmoji } from "../emoji-icon-picker";
 import { AddReactionIcon } from "../icons";
 import { Tooltip } from "../tooltip";
-import { cn } from "../utils";
+import { cn } from "@plane/utils/common";
 import { IconButton } from "../icon-button";
 
 export interface EmojiReactionType {

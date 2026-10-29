@@ -9,7 +9,7 @@ import { Treemap, ResponsiveContainer, Tooltip } from "recharts";
 // plane imports
 import type { TreeMapChartProps } from "@plane/types";
 // local imports
-import { cn } from "../../utils/classname";
+import { cn } from "@plane/utils/common";
 import { CustomTreeMapContent } from "./map-content";
 import { TreeMapTooltip } from "./tooltip";
 

@@ -10,7 +10,7 @@ import { AlertTriangle, CheckIcon, InfoIcon, XIcon } from "lucide-react";
 import { CloseIcon } from "../icons/actions/close-icon";
 // spinner
 import { CircularBarSpinner } from "../spinners/circular-bar-spinner";
-import { cn } from "../utils/classname";
+import { cn } from "@plane/utils/common";
 
 export enum TOAST_TYPE {
   SUCCESS = "success",

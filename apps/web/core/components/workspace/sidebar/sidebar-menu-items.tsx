@@ -21,7 +21,7 @@ import { cn } from "@plane/utils/common";
 import { SidebarNavItem } from "@/components/sidebar/sidebar-navigation";
 // store hooks
 import { useSidebarActions, useExtendedSidebarOpen } from "@/providers/sidebar-state";
-import useLocalStorage from "@/hooks/use-local-storage";
+import { useLocalStorage } from "@plane/hooks";
 import {
   usePersonalNavigationPreferences,
   useWorkspaceNavigationPreferences,

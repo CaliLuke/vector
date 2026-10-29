@@ -5,7 +5,7 @@
  */
 
 import * as React from "react";
-import { cn } from "../utils";
+import { cn } from "@plane/utils/common";
 import type { IconButtonProps } from "./helper";
 import { iconButtonVariants } from "./helper";
 

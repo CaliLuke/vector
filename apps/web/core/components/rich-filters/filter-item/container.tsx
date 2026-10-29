@@ -7,7 +7,7 @@
 import { useEffect, useRef } from "react";
 // plane imports
 import { Tooltip } from "@plane/propel/tooltip";
-import { cn } from "@plane/propel/utils";
+import { cn } from "@plane/utils/common";
 import type { SingleOrArray, TFilterValue } from "@plane/types";
 import { hasValidValue } from "@plane/utils/rich-filters";
 

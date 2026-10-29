@@ -11,6 +11,9 @@
     },
     "apps/web": {
       "entry": ["routes.ts"]
+    },
+    "packages/propel": {
+      "entry": ["postcss.config.js"]
     }
   },
   "rules": {

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "full",
-  "fileCount": 3856,
+  "fileCount": 3849,
   "diagnostics": [
     {
       "diagnostic": {
@@ -6836,24 +6836,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/ui/markdown-to-component.tsx",
-        "severity": "warning",
-        "code": "react(no-object-type-as-default-prop)",
-        "message": "Do not use an object literal as default prop value. Use a stable reference instead."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/ui/markdown-to-component.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/ui/profile-empty-state.tsx",
         "severity": "warning",
         "code": "typescript(no-explicit-any)",
@@ -7776,15 +7758,6 @@
         "severity": "warning",
         "code": "typescript(no-base-to-string)",
         "message": "'value' may use Object's default stringification format ('[object Object]') when stringified."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/services/app_config.service.ts",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
       },
       "count": 1
     },
@@ -10454,24 +10427,6 @@
     },
     {
       "diagnostic": {
-        "filename": "packages/hooks/src/use-local-storage.tsx",
-        "severity": "warning",
-        "code": "oxc(const-comparisons)",
-        "message": "Both sides of the logical operator are the same"
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/hooks/src/use-local-storage.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "packages/hooks/src/use-outside-click-detector.tsx",
         "severity": "warning",
         "code": "typescript(no-explicit-any)",
@@ -11538,15 +11493,6 @@
         "severity": "warning",
         "code": "jsx-a11y(label-has-associated-control)",
         "message": "A form label must be associated with a control."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/propel/src/utils/classname.tsx",
-        "severity": "warning",
-        "code": "unicorn(prefer-set-has)",
-        "message": "should be a `Set`, and use `.has()` to check existence or non-existence."
       },
       "count": 1
     },

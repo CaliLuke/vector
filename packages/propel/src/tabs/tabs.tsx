@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
-import { cn } from "../utils/classname";
+import { cn } from "@plane/utils/common";
 
 type TabsVariant = "contained";
 

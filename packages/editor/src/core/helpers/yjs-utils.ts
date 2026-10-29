@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { Buffer } from "buffer";
+import { Buffer } from "buffer/index.js";
 import type { Extensions, JSONContent } from "@tiptap/core";
 import { getSchema } from "@tiptap/core";
 import { generateHTML, generateJSON } from "@tiptap/html";

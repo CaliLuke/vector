@@ -10,7 +10,7 @@ import { useTranslation } from "@plane/i18n";
 import type { TWorkItemFilterCondition } from "@plane/shared-state";
 import { cn } from "@plane/utils/common";
 import { toFilterArray } from "@plane/utils/rich-filters";
-import useLocalStorage from "@/hooks/use-local-storage";
+import { useLocalStorage } from "@plane/hooks";
 import { AssigneeStatComponent, type TAssigneeData } from "./assignee";
 import { LabelStatComponent, type TLabelData } from "./label";
 import { PROGRESS_STATS, createFilterUpdateHandler, type TSelectedFilterProgressStats } from "./shared";

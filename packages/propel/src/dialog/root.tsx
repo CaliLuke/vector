@@ -6,7 +6,7 @@
 
 import { forwardRef, memo, useMemo } from "react";
 import { Dialog as BaseDialog } from "@base-ui/react";
-import { cn } from "../utils/classname";
+import { cn } from "@plane/utils/common";
 
 // enums
 

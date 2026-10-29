@@ -5,7 +5,7 @@
  */
 
 import * as React from "react";
-import { cn } from "../utils/classname";
+import { cn } from "@plane/utils/common";
 import type { TCardDirection, TCardSpacing, TCardVariant } from "./helper";
 import { ECardDirection, ECardSpacing, ECardVariant, getCardStyle } from "./helper";
 

@@ -7,7 +7,7 @@
 import * as React from "react";
 import { Combobox as BaseCombobox } from "@base-ui/react/combobox";
 import { SearchIcon } from "../icons";
-import { cn } from "../utils/classname";
+import { cn } from "@plane/utils/common";
 
 // Type definitions
 type TMaxHeight = "lg" | "md" | "rg" | "sm";

@@ -6,7 +6,7 @@
 
 import React from "react";
 // helpers
-import { cn } from "../utils/classname";
+import { cn } from "@plane/utils/common";
 
 type SkeletonProps = {
   children: React.ReactNode;

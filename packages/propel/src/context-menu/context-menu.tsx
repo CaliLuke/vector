@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { ContextMenu as ContextMenuPrimitive } from "@base-ui/react/context-menu";
-import { cn } from "../utils";
+import { cn } from "@plane/utils/common";
 
 export interface ContextMenuProps extends React.ComponentProps<typeof ContextMenuPrimitive.Root> {
   children: React.ReactNode;

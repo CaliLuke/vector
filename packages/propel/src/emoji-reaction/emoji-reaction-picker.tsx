@@ -8,7 +8,7 @@ import React, { useMemo, useCallback } from "react";
 import { EmojiRoot } from "../emoji-icon-picker/emoji/emoji";
 import { emojiToString } from "../emoji-icon-picker/helper";
 import { Popover } from "../popover";
-import { cn } from "../utils/classname";
+import { cn } from "@plane/utils/common";
 import { convertPlacementToSideAndAlign } from "../utils/placement";
 import type { TPlacement, TSide, TAlign } from "../utils/placement";
 import { EmojiReactionButton, EmojiReactionGroup } from "./emoji-reaction";

@@ -31,7 +31,7 @@ case "$MODE" in
     run_gate "Test runner regression tests" node --test --test-concurrency=1 scripts/quality/run-bounded.test.mjs scripts/quality/frontend-tests.test.mjs
     run_gate "Quality-ratchet fixture tests" node scripts/quality/test-ratchets.mjs
     run_gate "Knip unused-code/dependency ratchet" node scripts/quality/check-knip-ratchet.mjs
-    run_gate "jscpd duplicate baseline" pnpm exec jscpd --config jscpd.json --baseline .quality/jscpd-baseline.json --fail-on-new-clones
+    run_gate "jscpd duplicate baseline" pnpm check:duplicates
     run_gate "Constants endpoint tests" pnpm --filter @plane/constants test
     run_gate "Reset Live coverage artifact" rm -f -- apps/live/coverage/coverage-summary.json
     run_gate "Live tests with coverage" pnpm --filter live test:coverage

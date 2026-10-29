@@ -5,7 +5,7 @@
  */
 
 import React, { useCallback, useMemo, useRef, useEffect } from "react";
-import { cn } from "../utils";
+import { cn } from "@plane/utils/common";
 import {
   EPortalWidth,
   EPortalPosition,

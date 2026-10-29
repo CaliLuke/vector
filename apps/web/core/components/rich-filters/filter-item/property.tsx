@@ -6,7 +6,7 @@
 
 // plane imports
 import { Tooltip } from "@plane/propel/tooltip";
-import { cn } from "@plane/propel/utils";
+import { cn } from "@plane/utils/common";
 import type { TFilterProperty, TSupportedOperators } from "@plane/types";
 // local imports
 import { AddFilterDropdown } from "../add-filters/dropdown";

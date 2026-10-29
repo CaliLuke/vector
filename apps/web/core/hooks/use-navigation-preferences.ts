@@ -35,7 +35,7 @@ import {
 import type { SidebarPreferencePatch } from "@/queries/navigation-preferences";
 import { useIdentityGeneration } from "./use-identity-generation";
 import { useCurrentUser } from "./use-current-user";
-import useLocalStorage from "./use-local-storage";
+import { useLocalStorage } from "@plane/hooks";
 import { useParams } from "@tanstack/react-router";
 
 const APP_RAIL_PREFERENCES_KEY = "app_rail_preferences";

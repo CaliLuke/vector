@@ -31,7 +31,8 @@
     "test:setup": "bash tests/setup/test-setup.sh",
     "prepare": "husky",
     "doctor": "react-doctor",
-    "dev:frontend": "node scripts/quality/run-bounded.mjs --seconds 86400 --memory-mib 6144 --heap-mib 1024 -- turbo watch dev --filter='./apps/*' --concurrency=5"
+    "dev:frontend": "node scripts/quality/run-bounded.mjs --seconds 86400 --memory-mib 6144 --heap-mib 1024 -- turbo watch dev --filter='./apps/*' --concurrency=5",
+    "check:duplicates": "jscpd --config jscpd.json --baseline .quality/jscpd-baseline.json --fail-on-new-clones"
   },
   "devDependencies": {
     "@tanstack/react-query": "catalog:",

@@ -9,9 +9,6 @@ import type { ClassValue } from "clsx";
 import { extendTailwindMerge } from "tailwind-merge";
 import type { CompleteOrEmpty } from "@plane/types";
 
-// Support email can be configured by the application
-export const getSupportEmail = (defaultEmail: string = ""): string => defaultEmail;
-
 // Matches custom typography classes: text-h1-semibold, text-body-md-regular, text-caption-xs-medium, etc.
 const isCustomTypography = (value: string) =>
   !/^(h[1-6]|body-(xs|sm|md)|caption-(xs|sm|md))-(regular|medium|semibold|bold)$/.test(value);
