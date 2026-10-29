@@ -9,6 +9,11 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
+    "./button": "./dist/button/index.js",
+    "./dropdowns": "./dist/dropdowns/index.js",
+    "./form-fields": "./dist/form-fields/index.js",
+    "./loader": "./dist/loader.js",
+    "./modals": "./dist/modals/index.js",
     "./package.json": "./package.json"
   },
   "scripts": {

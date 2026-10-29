@@ -1,6 +1,6 @@
 import type { RefObject, ReactNode } from "react";
 import { Button } from "@plane/propel/button";
-import { ToggleSwitch } from "@plane/ui";
+import { ToggleSwitch } from "@plane/ui/button";
 import { useTranslation } from "@plane/i18n";
 import type { IssueDraftForm } from "./form-state";
 

@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { CustomSearchSelect } from "@plane/ui";
+import { CustomSearchSelect } from "@plane/ui/dropdowns";
 import { ItemPropertyInput } from "@/components/work-item-types/item-property-input";
 import { TypeIcon } from "@/components/work-item-types/controls";
 import { useWorkspaceBySlug } from "@/hooks/use-workspaces";

@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { useId } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
 import { Button } from "@plane/propel/button";
-import { EModalWidth, ModalCore } from "@plane/ui";
+import { EModalWidth, ModalCore } from "@plane/ui/modals";
 import { typeIconComponents } from "./type-icons";
 import type { PreviewType } from "./preview-content";
 

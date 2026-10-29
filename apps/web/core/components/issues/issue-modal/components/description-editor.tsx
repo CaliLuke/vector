@@ -15,7 +15,8 @@ import type { EditorRefApi } from "@plane/editor";
 import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { EFileAssetType } from "@plane/types";
-import { Loader, FormErrors } from "@plane/ui";
+import { Loader } from "@plane/ui/loader";
+import { FormErrors } from "@plane/ui/form-fields";
 import { getDescriptionPlaceholderI18n } from "@plane/utils/work-item";
 import { getTabIndex } from "@plane/utils/tab-indices";
 // components

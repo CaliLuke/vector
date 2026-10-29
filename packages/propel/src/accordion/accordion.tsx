@@ -5,7 +5,7 @@
  */
 
 import * as React from "react";
-import { Accordion as BaseAccordion } from "@base-ui/react";
+import { Accordion as BaseAccordion } from "@base-ui/react/accordion";
 
 import { PlusIcon } from "../icons";
 

@@ -14,7 +14,8 @@ import { ParentPropertyIcon } from "@plane/propel/icons";
 // types
 import type { ISearchIssueResponse } from "@plane/types";
 // ui
-import { CustomMenu, FormErrors } from "@plane/ui";
+import { CustomMenu } from "@plane/ui/dropdowns";
+import { FormErrors } from "@plane/ui/form-fields";
 import { getDate, renderFormattedPayloadDate } from "@plane/utils/datetime";
 import { getTabIndex } from "@plane/utils/tab-indices";
 // components

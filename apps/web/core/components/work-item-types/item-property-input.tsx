@@ -3,7 +3,8 @@ import { CascadingValueInput } from "./cascading-value-input";
 import { useId } from "react";
 import type { ReactNode } from "react";
 import { OptionIcon, dropdownPath } from "./property-option-label";
-import { CustomSearchSelect, ToggleSwitch } from "@plane/ui";
+import { CustomSearchSelect } from "@plane/ui/dropdowns";
+import { ToggleSwitch } from "@plane/ui/button";
 import type { ItemSchema, ResolvedProperty } from "@/services/work-item-schema.service";
 
 const control =

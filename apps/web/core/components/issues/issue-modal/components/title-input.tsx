@@ -12,7 +12,7 @@ import { ETabIndices } from "@plane/constants";
 // types
 import { useTranslation } from "@plane/i18n";
 // ui
-import { Input } from "@plane/ui";
+import { Input } from "@plane/ui/form-fields";
 // helpers
 import { getTabIndex } from "@plane/utils/tab-indices";
 // hooks

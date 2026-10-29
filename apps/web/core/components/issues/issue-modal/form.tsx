@@ -11,7 +11,7 @@ import { ETabIndices } from "@plane/constants";
 import type { EditorRefApi } from "@plane/editor";
 import { useTranslation } from "@plane/i18n";
 import { IssueFormActions } from "./form-actions";
-import { FormErrors } from "@plane/ui";
+import { FormErrors } from "@plane/ui/form-fields";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TIssue } from "@plane/types";
 import { convertWorkItemDataToSearchResponse } from "@plane/utils/work-item";

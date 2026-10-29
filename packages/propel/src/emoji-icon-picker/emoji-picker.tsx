@@ -5,7 +5,7 @@
  */
 
 import { useMemo, useCallback } from "react";
-import { Tabs } from "@base-ui/react";
+import { Tabs } from "@base-ui/react/tabs";
 import { Popover } from "../popover";
 import { cn } from "@plane/utils/common";
 import { convertPlacementToSideAndAlign } from "../utils/placement";
