@@ -99,6 +99,15 @@ the Colima gateway workaround has been removed. The proxy integration suite pass
 with the pinned version and the existing readiness deadlines. Replace both pins
 with a tagged release that contains this commit when one is available.
 
+Ryuk remains enabled. `scripts/dev-env.sh` defaults its reconnection grace to
+30 minutes to cover idle gaps between package test binaries while
+[Testcontainers #3867](https://github.com/testcontainers/testcontainers-go/issues/3867)
+remains open. A stopped reaper can otherwise be selected for reuse, and its missing
+logs consume the startup timeout. Normal fixtures explicitly remove their containers;
+the grace controls fallback cleanup after the last client disconnects. Fixture
+readiness and test deadlines are unchanged. Remove this default when the pinned
+version includes the [reaper reuse fix](https://github.com/testcontainers/testcontainers-go/pull/3868).
+
 Development orchestration and login/log checks use `cmd/devtools`, written in Go.
 Go unit tests and focused database tests run without Python or historical Git objects.
 

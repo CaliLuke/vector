@@ -7,4 +7,9 @@ if [[ "$(uname -s)" == "Darwin" && -d "$HOME/.colima/default" ]]; then
     # A caller may opt out only when its runner provides equivalent cleanup.
     export TESTCONTAINERS_RYUK_DISABLED="${TESTCONTAINERS_RYUK_DISABLED:-false}"
 fi
+# Keep Ryuk alive across idle gaps between package test binaries. Its stopped-container
+# reuse race is tracked at https://github.com/testcontainers/testcontainers-go/issues/3867.
+# Remove this default once the pinned version includes the reaper reuse fix in PR #3868.
+# Fixture cleanup remains explicit; this is only the fallback reconnection grace.
+export TESTCONTAINERS_RYUK_RECONNECTION_TIMEOUT="${TESTCONTAINERS_RYUK_RECONNECTION_TIMEOUT:-30m}"
 export GOTOOLCHAIN=go1.27.3
