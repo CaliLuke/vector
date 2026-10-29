@@ -19,7 +19,7 @@ import { useWorkItemDetailRecord } from "@/providers/work-item-detail-record";
 import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
 import { currentParentCatalogueScope } from "@/queries/cycle-module-scope";
 import { captureIssueSubItemsReconciliation } from "@/queries/issue-details";
-import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
+import { useIssueAction } from "@/hooks/use-issue-action";
 import { useSubIssueOperations } from "./issue-detail-widgets/sub-issues/helper";
 
 type TIssueParentSelect = {
@@ -136,7 +136,7 @@ function useParentSelectionActions(props: TIssueParentSelect, data: TParentSelec
 
   const entity =
     parentScopeType === EIssueServiceType.ISSUES ? t("common.sub_work_items") : t("issue.label", { count: 1 });
-  const removal = useIssuePropertyChange(
+  const removal = useIssueAction(
     { workspaceSlug, projectId, issueId, context: `parent:${parentScopeProject}:${parentScopeId}:${parentScopeType}` },
     !props.disabled && hasParentOperationIdentity(data.parentIssue),
     {

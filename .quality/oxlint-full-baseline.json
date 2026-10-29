@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "full",
-  "fileCount": 3732,
+  "fileCount": 3735,
   "diagnostics": [
     {
       "diagnostic": {
@@ -3290,15 +3290,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/issue-detail-quick-actions.tsx",
-        "severity": "error",
-        "code": "typescript(no-misused-promises)",
-        "message": "Promise-returning function provided to attribute where a void return was expected."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-detail/label/root.tsx",
         "severity": "warning",
         "code": "typescript(no-useless-default-assignment)",
@@ -3930,15 +3921,6 @@
     {
       "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/helper.tsx",
-        "severity": "error",
-        "code": "typescript(no-misused-promises)",
-        "message": "Promise-returning function provided to property where a void return was expected."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/helper.tsx",
         "severity": "warning",
         "code": "typescript(no-unnecessary-type-assertion)",
         "message": "This assertion is unnecessary since it does not change the type of the expression."
@@ -4374,15 +4356,6 @@
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `IssueFormRoot` has a complexity of 27. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/peek-overview/header.tsx",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
       },
       "count": 1
     },

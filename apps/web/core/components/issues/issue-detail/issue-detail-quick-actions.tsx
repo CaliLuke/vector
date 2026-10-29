@@ -13,7 +13,7 @@ import { IconButton } from "@plane/propel/icon-button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
 import { generateWorkItemLink } from "@plane/utils/work-item";
-import { copyTextToClipboard } from "@plane/utils/string";
+import { useWorkItemLinkCopy } from "@/hooks/use-work-item-link-copy";
 // hooks
 import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
 import { useIssueDetailLifecycle } from "@/hooks/use-issue-detail-lifecycle";
@@ -54,7 +54,6 @@ export function IssueDetailQuickActions(props: Props) {
 
   // derived values
   const issue = detail.issue;
-  if (!issue) return <></>;
 
   const projectIdentifier = projectRows?.find((project) => project.id === projectId)?.identifier ?? "";
 
@@ -66,23 +65,8 @@ export function IssueDetailQuickActions(props: Props) {
     sequenceId: issue?.sequence_id,
   });
 
-  // handlers
-  const handleCopyText = async () => {
-    try {
-      const originURL = typeof window !== "undefined" && window.location.origin ? window.location.origin : "";
-      await copyTextToClipboard(`${originURL}${workItemLink}`);
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: t("common.link_copied"),
-        message: t("common.copied_to_clipboard"),
-      });
-    } catch (_error) {
-      setToast({
-        title: t("toast.error"),
-        type: TOAST_TYPE.ERROR,
-      });
-    }
-  };
+  const copyLink = useWorkItemLinkCopy({ workspaceSlug, projectId, issueId }, workItemLink);
+  if (!issue) return <></>;
 
   const navigateAfterWrite = (isCurrent: () => boolean, href: string, message: string) => {
     if (!isRouteCurrent() || !isCurrent()) return;
@@ -129,7 +113,14 @@ export function IssueDetailQuickActions(props: Props) {
           )}
           <div className="flex flex-wrap items-center gap-2 text-tertiary">
             <Tooltip tooltipContent={t("common.actions.copy_link")} isMobile={isMobile}>
-              <IconButton variant="secondary" size="lg" onClick={handleCopyText} icon={CopyLinkIcon} />
+              <IconButton
+                variant="secondary"
+                size="lg"
+                onClick={copyLink.copy}
+                disabled={copyLink.disabled}
+                aria-label={t("common.actions.copy_link")}
+                icon={CopyLinkIcon}
+              />
             </Tooltip>
             <WorkItemDetailQuickActions
               parentRef={parentRef}

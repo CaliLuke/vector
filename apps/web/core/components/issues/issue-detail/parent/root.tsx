@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
+import { useIssueAction } from "@/hooks/use-issue-action";
 import { useRouter } from "@tanstack/react-router";
 
 import { MinusCircle } from "lucide-react";
@@ -87,7 +87,7 @@ function IssueParentSummary({
   issueOperations: TIssueOperations;
   disabled: boolean;
 }) {
-  const propertyChange = useIssuePropertyChange(
+  const propertyChange = useIssueAction(
     { workspaceSlug, projectId, issueId: currentIssue.id, context: "detail" },
     !disabled
   );

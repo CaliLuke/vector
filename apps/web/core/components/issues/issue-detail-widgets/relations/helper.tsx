@@ -11,7 +11,6 @@ import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TIssue, TIssueServiceType } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
-import { copyUrlToClipboard } from "@plane/utils/string";
 // hooks
 import { useWorkItemDetailScope } from "@/hooks/use-work-item-detail";
 import { useCommittedScope } from "@/hooks/use-committed-scope";
@@ -19,7 +18,6 @@ import { captureIssueDetailReconciliation } from "@/queries/issue-details";
 import { currentIssueListMutationOwner, issueListMutation, patchIssueMutation } from "@/queries/issue-list-mutations";
 
 export type TRelationIssueOperations = {
-  copyLink: (path: string) => void;
   update: (workspaceSlug: string, projectId: string, issueId: string, data: Partial<TIssue>) => Promise<void>;
   remove: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
 };
@@ -39,14 +37,6 @@ export const useRelationOperations = (
 
   const issueOperations: TRelationIssueOperations = useMemo(
     () => ({
-      copyLink: async (path) => {
-        await copyUrlToClipboard(path);
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: t("common.link_copied"),
-          message: t("entity.link_copied_to_clipboard", { entity: entityName }),
-        });
-      },
       update: async (targetWorkspaceSlug, targetProjectId, targetIssueId, data) => {
         try {
           const detailOwner = captureIssueDetailReconciliation(client, access.scope, [targetIssueId]);

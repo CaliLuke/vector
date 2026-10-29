@@ -20,7 +20,7 @@ import { PriorityDropdown } from "@/components/dropdowns/priority";
 import { StateDropdown } from "@/components/dropdowns/state/dropdown";
 // hooks
 import { WithDisplayPropertiesHOC } from "@/components/issues/issue-layouts/properties/with-display-properties-HOC";
-import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
+import { useIssueAction } from "@/hooks/use-issue-action";
 import { useProjectStates } from "@/hooks/use-project-states";
 
 type Props = {
@@ -38,7 +38,7 @@ export const SubIssuesListItemProperties = function SubIssuesListItemProperties(
   const { t } = useTranslation();
   const { getStateById } = useProjectStates(workspaceSlug, issue.project_id);
 
-  const change = useIssuePropertyChange(
+  const change = useIssueAction(
     { workspaceSlug, projectId: issue.project_id, issueId, context: `sub-item:${parentIssueId}` },
     canEdit && Boolean(issue.project_id),
     { success: t("sub_work_item.update.success"), error: t("sub_work_item.update.error") }

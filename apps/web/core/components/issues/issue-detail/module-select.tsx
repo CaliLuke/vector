@@ -7,7 +7,7 @@
 import { useTranslation } from "@plane/i18n";
 import { cn } from "@plane/utils/common";
 import { ModuleDropdown } from "@/components/dropdowns/module/dropdown";
-import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
+import { useIssueAction } from "@/hooks/use-issue-action";
 import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
 import type { TIssueOperations } from "./root";
 
@@ -25,7 +25,7 @@ export const IssueModuleSelect = function IssueModuleSelect(props: TIssueModuleS
   const { t } = useTranslation();
   const { issue } = useWorkItemDetail(workspaceSlug, projectId, issueId);
   const updateModules = issueOperations.changeModulesInIssue;
-  const change = useIssuePropertyChange(
+  const change = useIssueAction(
     { workspaceSlug, projectId, issueId, context: "detail" },
     !disabled && !!issue && !!updateModules
   );

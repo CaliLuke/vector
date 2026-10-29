@@ -31,7 +31,6 @@ export type TIssueSubIssuesIdMap = {
 };
 
 export type TSubIssueOperations = {
-  copyLink: (path: string) => void;
   addSubIssue: (
     workspaceSlug: string,
     projectId: string,

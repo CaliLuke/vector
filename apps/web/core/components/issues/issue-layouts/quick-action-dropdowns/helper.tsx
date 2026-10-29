@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
+import { useIssueAction } from "@/hooks/use-issue-action";
 import { useCallback, useMemo } from "react";
 import { useParams } from "@tanstack/react-router";
 import { XCircle, ArchiveRestoreIcon } from "lucide-react";
@@ -15,7 +15,7 @@ import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { ARCHIVABLE_STATE_GROUPS, EUserPermissions } from "@plane/constants";
 import type { EIssuesStoreType, TIssue } from "@plane/types";
 import type { TContextMenuItem } from "@plane/ui";
-import { copyUrlToClipboard } from "@plane/utils/string";
+import { useWorkItemLinkCopy } from "@/hooks/use-work-item-link-copy";
 import { generateWorkItemLink } from "@plane/utils/work-item";
 import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 import { useProjectStates } from "@/hooks/use-project-states";
@@ -113,18 +113,11 @@ const useIssueActionHandlers = (props: MenuItemFactoryProps) => {
     [workspaceSlug, projectIdentifier, issue]
   );
 
-  const handleCopyIssueLink = () =>
-    copyUrlToClipboard(workItemLink).then(() =>
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: "Link copied",
-        message: "Work item link copied to clipboard",
-      })
-    );
+  const copyLink = useWorkItemLinkCopy({ workspaceSlug, projectId: issue.project_id, issueId: issue.id }, workItemLink);
 
   const handleOpenInNewTab = () => window.open(workItemLink, "_blank");
 
-  const restore = useIssuePropertyChange(
+  const restore = useIssueAction(
     { workspaceSlug, projectId: issue.project_id, issueId: issue.id, context: "restore" },
     props.isEditingAllowed && !!props.isRestoringAllowed && !!handleRestore,
     {
@@ -138,7 +131,8 @@ const useIssueActionHandlers = (props: MenuItemFactoryProps) => {
 
   return {
     workItemLink,
-    handleCopyIssueLink,
+    handleCopyIssueLink: copyLink.copy,
+    copyDisabled: copyLink.disabled,
     handleOpenInNewTab,
     handleIssueRestore,
     restoreDisabled: restore.disabled,
@@ -205,6 +199,7 @@ const useMenuItemFactory = (props: MenuItemFactoryProps) => {
     title: t("common.actions.copy_link"),
     icon: LinkIcon,
     action: actionHandlers.handleCopyIssueLink,
+    disabled: actionHandlers.copyDisabled,
   });
 
   const createRemoveFromCycleMenuItem = (): TContextMenuItem => ({

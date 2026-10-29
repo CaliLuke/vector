@@ -35,7 +35,7 @@ import { useProjectStates } from "@/hooks/use-project-states";
 
 import { useIssueListType } from "@/hooks/use-issue-list-type";
 import { useIssuesActions } from "@/hooks/use-issues-actions";
-import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
+import { useIssueAction } from "@/hooks/use-issue-action";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local components
 import { IssuePropertyLabels } from "./labels";
@@ -79,7 +79,7 @@ export function IssueProperties(props: IIssueProperties) {
   const stateDetails = getStateById(issue.state_id);
   const subIssueCount = issue.sub_issues_count ?? 0;
 
-  const { run, disabled } = useIssuePropertyChange(
+  const { run, disabled } = useIssueAction(
     { workspaceSlug, projectId: issue.project_id, issueId: issue.id, context: storeType },
     !isReadOnly && Boolean(workspaceSlug && issue.project_id && issue.id)
   );

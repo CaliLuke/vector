@@ -31,7 +31,7 @@ import { PriorityDropdown } from "@/components/dropdowns/priority";
 import { StateDropdown } from "@/components/dropdowns/state/dropdown";
 // hooks
 import { useProjectEstimates } from "@/hooks/use-estimates";
-import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
+import { useIssueAction } from "@/hooks/use-issue-action";
 import { useWorkItemDetailRecord } from "@/providers/work-item-detail-record";
 import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
@@ -238,7 +238,7 @@ export const IssueDetailsSidebar = function IssueDetailsSidebar(props: Props) {
   const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
   const { getStateById } = useProjectStates(workspaceSlug, projectId);
   const issue = issueId === record?.issueId ? record.issue : undefined;
-  const propertyChange = useIssuePropertyChange(
+  const propertyChange = useIssueAction(
     { workspaceSlug, projectId, issueId, context: "detail" },
     isEditable && !!issue
   );

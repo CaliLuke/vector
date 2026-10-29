@@ -30,7 +30,7 @@ import { PriorityDropdown } from "@/components/dropdowns/priority";
 import { StateDropdown } from "@/components/dropdowns/state/dropdown";
 import { SidebarPropertyListItem } from "@/components/common/layout/sidebar/property-list-item";
 // helpers
-import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
+import { useIssueAction } from "@/hooks/use-issue-action";
 import { useWorkItemDetailRecord } from "@/providers/work-item-detail-record";
 import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
@@ -234,10 +234,7 @@ export const PeekOverviewProperties = function PeekOverviewProperties(props: IPe
   const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
   // derived values
   const issue = issueId === record?.issueId ? record.issue : undefined;
-  const propertyChange = useIssuePropertyChange(
-    { workspaceSlug, projectId, issueId, context: "detail" },
-    !disabled && !!issue
-  );
+  const propertyChange = useIssueAction({ workspaceSlug, projectId, issueId, context: "detail" }, !disabled && !!issue);
   const onUpdate = (data: Partial<TIssue>) =>
     propertyChange.run(() => issueOperations.update(workspaceSlug, projectId, issueId, data));
   if (!issue) return <></>;

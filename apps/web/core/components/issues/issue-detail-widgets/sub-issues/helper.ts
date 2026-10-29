@@ -10,7 +10,6 @@ import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TIssueServiceType, TSubIssueOperations } from "@plane/types";
 import { EIssueServiceType, EIssuesStoreType } from "@plane/types";
-import { copyUrlToClipboard } from "@plane/utils/string";
 import { useIssuesActions } from "@/hooks/use-issues-actions";
 import { useCommittedScope } from "@/hooks/use-committed-scope";
 import { useWorkItemDetailScope } from "@/hooks/use-work-item-detail";
@@ -127,19 +126,6 @@ export function useSubIssueOperations(
 
   const operations: TSubIssueOperations = useMemo(
     () => ({
-      copyLink: async (path) => {
-        await copyUrlToClipboard(path);
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: t("common.link_copied"),
-          message: t("entity.link_copied_to_clipboard", {
-            entity:
-              issueServiceType === EIssueServiceType.ISSUES
-                ? t("common.sub_work_items", { count: 1 })
-                : t("issue.label", { count: 1 }),
-          }),
-        });
-      },
       addSubIssue: async (_workspaceSlug, _projectId, targetParentId, issues) => {
         const issueIds = issues.map((issue) => issue.id);
         const owner = captureOwner(targetParentId);

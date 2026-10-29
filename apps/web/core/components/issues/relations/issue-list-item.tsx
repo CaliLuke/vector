@@ -20,6 +20,7 @@ import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
 import { useIssueRelations } from "@/hooks/use-issue-resources";
 import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 import useIssuePeekOverviewRedirection from "@/hooks/use-issue-peek-overview-redirection";
+import { useWorkItemLinkCopy } from "@/hooks/use-work-item-link-copy";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // components
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
@@ -79,8 +80,6 @@ export const RelationIssueListItem = function RelationIssueListItem(props: Props
   const projectDetail = projectCatalogue.projects?.find((project) => project.id === issue.project_id);
   const relatedProjectId = issue.project_id;
 
-  if (!relatedProjectId) return <></>;
-
   const workItemLink = generateWorkItemLink({
     workspaceSlug: workspaceSlug.toString(),
     projectId: issue.project_id,
@@ -89,6 +88,9 @@ export const RelationIssueListItem = function RelationIssueListItem(props: Props
     sequenceId: issue?.sequence_id,
     isEpic: issue?.is_epic,
   });
+
+  const copyLink = useWorkItemLinkCopy({ workspaceSlug, projectId: relatedProjectId, issueId: issue.id }, workItemLink);
+  if (!relatedProjectId) return <></>;
 
   // handlers
   const handleIssuePeekOverview = (relatedIssue: TIssue) => {
@@ -118,7 +120,7 @@ export const RelationIssueListItem = function RelationIssueListItem(props: Props
   const handleCopyIssueLink = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
     e.preventDefault();
-    issueOperations.copyLink(workItemLink);
+    copyLink.copy();
   };
 
   const handleRemoveRelation = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -176,7 +178,7 @@ export const RelationIssueListItem = function RelationIssueListItem(props: Props
             </CustomMenu.MenuItem>
           )}
 
-          <CustomMenu.MenuItem onClick={handleCopyIssueLink}>
+          <CustomMenu.MenuItem onClick={handleCopyIssueLink} disabled={copyLink.disabled}>
             <div className="flex items-center gap-2">
               <LinkIcon className="h-3.5 w-3.5" strokeWidth={2} />
               <span>{t("common.actions.copy_link")}</span>

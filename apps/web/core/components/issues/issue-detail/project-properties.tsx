@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
+import { useIssueAction } from "@/hooks/use-issue-action";
 import { useTranslation } from "@plane/i18n";
 import { CycleIcon, EstimatePropertyIcon, ModuleIcon } from "@plane/propel/icons";
 import type { TIssue } from "@plane/types";
@@ -43,7 +43,7 @@ export const IssueProjectProperties = function IssueProjectProperties(props: Iss
     cycleView,
   } = props;
   const { t } = useTranslation();
-  const propertyChange = useIssuePropertyChange({ workspaceSlug, projectId, issueId, context: "detail" }, !disabled);
+  const propertyChange = useIssueAction({ workspaceSlug, projectId, issueId, context: "detail" }, !disabled);
 
   return (
     <>

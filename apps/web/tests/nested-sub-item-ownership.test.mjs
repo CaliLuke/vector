@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { registerWorkItemCopyTests } from "./helpers/work-item-copy-contract.mjs";
 import {
   React,
   act,
@@ -66,6 +67,12 @@ registerPermissionUiStubs("/sub-issues/issues-list/root.tsx", {
   "@/components/issues/issue-layouts/use-group-columns": `export const useGroupColumns=()=>[{id:${JSON.stringify(ALL_ISSUES)},name:'All'}];`,
   "@/components/issues/issue-layouts/utils": "export const isWorkspaceLevel=()=>false;",
 });
+registerPermissionUiStubs("/components/issues/relations/issue-list-item.tsx", {
+  "@plane/ui": ui,
+  "@/hooks/use-projects": catalogue,
+  "./properties": "export const RelationIssueProperty=()=>null;",
+});
+const { RelationIssueListItem } = await import("../core/components/issues/relations/issue-list-item.tsx");
 const { SubIssuesCollapsibleContent } =
   await import("../core/components/issues/issue-detail-widgets/sub-issues/content.tsx");
 const { SubWorkItemPreferencesProvider } = await import("../core/providers/sub-work-item-preferences.tsx");
@@ -105,7 +112,7 @@ async function click(button) {
   await settleQuery();
 }
 
-async function setup(t, { parentPicker = false, parentService = "issues" } = {}) {
+async function setup(t, { parentPicker = false, parentService = "issues", relation = false } = {}) {
   const fixture = await createPermissionUiFixture(t, {
     path: "/acme/projects/p1/issues/P1-1",
     workspaceRole: 15,
@@ -151,6 +158,8 @@ async function setup(t, { parentPicker = false, parentService = "issues" } = {})
   const readPaths = [];
   t.mock.method(IssueService.prototype, "get", async (path) => {
     readPaths.push(path);
+    if (relation && path === "/api/workspaces/acme/projects/p1/issues/root/")
+      return { data: { ...rows.get("root"), issue_relation: [], issue_related: [] } };
     const match = /^\/api\/workspaces\/acme\/projects\/([^/]+)\/(issues|epics)\/([^/]+)\/(sub-issues|issues)\/$/.exec(
       path
     );
@@ -187,15 +196,25 @@ async function setup(t, { parentPicker = false, parentService = "issues" } = {})
       React.createElement(
         SubWorkItemPreferencesProvider,
         null,
-        parentPicker
-          ? React.createElement(ParentDetail, { disabled })
-          : React.createElement(SubIssuesCollapsibleContent, {
+        relation
+          ? React.createElement(RelationIssueListItem, {
               workspaceSlug: "acme",
               projectId: "p1",
-              parentIssueId: "root",
-              issueServiceType: parentService,
+              issueId: "root",
+              relationKey: "relates_to",
+              issue: rows.get("nested"),
               disabled,
+              handleIssueCrudState: () => {},
             })
+          : parentPicker
+            ? React.createElement(ParentDetail, { disabled })
+            : React.createElement(SubIssuesCollapsibleContent, {
+                workspaceSlug: "acme",
+                projectId: "p1",
+                parentIssueId: "root",
+                issueServiceType: parentService,
+                disabled,
+              })
       )
     );
   await render();
@@ -207,6 +226,7 @@ async function setup(t, { parentPicker = false, parentService = "issues" } = {})
   return {
     ...fixture,
     render,
+    unmount: () => fixture.render(null),
     transport,
     rows,
     reads,
@@ -421,3 +441,21 @@ await test("expanding an ordinary child under an epic uses the child's sub-item 
   ]);
   assert.equal(Boolean(view.row("leaf")), true);
 });
+
+for (const relation of [false, true]) {
+  registerWorkItemCopyTests(
+    `${relation ? "relation" : "sub-item"} row copy control`,
+    async (t) => {
+      const view = await setup(t, { relation });
+      return {
+        ...view,
+        path: "/acme/browse/P2-2/",
+        copyButton: () => view.action("nested", relation ? "common.actions.copy_link" : "issue.copy_link"),
+        toasts: () => globalThis.nestedToasts,
+        renderReadOnly: () => view.render(true),
+      };
+    },
+    identity,
+    { readOnly: true }
+  );
+}

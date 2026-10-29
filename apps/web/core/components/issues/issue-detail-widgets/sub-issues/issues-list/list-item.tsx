@@ -24,7 +24,8 @@ import useIssuePeekOverviewRedirection from "@/hooks/use-issue-peek-overview-red
 import { usePlatformOS } from "@/hooks/use-platform-os";
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
 import { SubIssuesListItemProperties } from "./properties";
-import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
+import { useWorkItemLinkCopy } from "@/hooks/use-work-item-link-copy";
+import { useIssueAction } from "@/hooks/use-issue-action";
 import type { SubIssueAction } from "../types";
 import { SubIssuesListRoot } from "./root";
 
@@ -273,8 +274,9 @@ function SubIssueActions({
   onDelete: () => void;
 }) {
   const { t } = useTranslation();
+  const copyLink = useWorkItemLinkCopy({ workspaceSlug, projectId: issue.project_id, issueId: issue.id }, workItemLink);
   const entity = serviceType === EIssueServiceType.ISSUES ? t("common.sub_work_items") : t("issue.label", { count: 1 });
-  const removal = useIssuePropertyChange(
+  const removal = useIssueAction(
     { workspaceSlug, projectId: issue.project_id, issueId: issue.id, context: `sub-item:${parentIssueId}` },
     canEdit && Boolean(issue.project_id),
     {
@@ -299,7 +301,7 @@ function SubIssueActions({
           </CustomMenu.MenuItem>
         )}
 
-        <CustomMenu.MenuItem onClick={() => operations.copyLink(workItemLink)}>
+        <CustomMenu.MenuItem onClick={copyLink.copy} disabled={copyLink.disabled}>
           <div className="flex items-center gap-2">
             <LinkIcon className="h-3.5 w-3.5" strokeWidth={2} />
             <span>{t("issue.copy_link")}</span>

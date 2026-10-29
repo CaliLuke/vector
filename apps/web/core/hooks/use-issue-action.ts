@@ -12,16 +12,16 @@ import { useCurrentUserId } from "@/hooks/use-current-user";
 import { useIdentityGeneration } from "@/hooks/use-identity-generation";
 import { captureIdentityScope, isIdentityScopeCurrent, isIdentityScopeVerified } from "@/queries/identity";
 
-type PropertyScope = {
+type IssueActionScope = {
   workspaceSlug: string | undefined;
   projectId: string | undefined | null;
   issueId: string;
   context: string;
 };
 
-type PropertyFeedback = { success?: string; error?: string };
+type ActionFeedback = { success?: string; successTitle?: string; error?: string };
 
-export function useIssuePropertyChange(scope: PropertyScope, enabled: boolean, messages?: PropertyFeedback) {
+export function useIssueAction(scope: IssueActionScope, enabled: boolean, messages?: ActionFeedback) {
   const client = useQueryClient();
   const userId = useCurrentUserId();
   const generation = useIdentityGeneration(client);
@@ -36,7 +36,7 @@ export function useIssuePropertyChange(scope: PropertyScope, enabled: boolean, m
     retry: false,
   });
 
-  const run = (change: () => Promise<unknown>, feedback: PropertyFeedback | undefined = messages) => {
+  const run = (change: () => Promise<unknown>, feedback: ActionFeedback | undefined = messages) => {
     if (!enabled || !isCurrent() || client.isMutating(filters) > 0) return;
     const identity = captureIdentityScope(client, userId);
     mutate(
@@ -48,7 +48,11 @@ export function useIssuePropertyChange(scope: PropertyScope, enabled: boolean, m
       {
         onSuccess: () => {
           if (!feedback?.success || !isCurrent() || !isIdentityScopeCurrent(client, identity)) return;
-          setToast({ type: TOAST_TYPE.SUCCESS, title: t("toast.success"), message: feedback.success });
+          setToast({
+            type: TOAST_TYPE.SUCCESS,
+            title: feedback.successTitle ?? t("toast.success"),
+            message: feedback.success,
+          });
         },
         onError: () => {
           if (!isCurrent() || !isIdentityScopeCurrent(client, identity)) return;
