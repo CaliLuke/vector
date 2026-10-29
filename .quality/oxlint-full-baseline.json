@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "full",
-  "fileCount": 3716,
+  "fileCount": 3717,
   "diagnostics": [
     {
       "diagnostic": {
@@ -306,24 +306,6 @@
         "severity": "warning",
         "code": "typescript(no-unsafe-type-assertion)",
         "message": "Unsafe type assertion: type '\"dark-blue\" | \"gray\" | \"green\" | \"light-blue\" | \"orange\" | \"peach\" | \"pink\" | \"purple\"' is more narrow than the original type."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/live/src/lib/pdf/mark-renderers.ts",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe type assertion: type '\"dark-blue\" | \"gray\" | \"green\" | \"light-blue\" | \"orange\" | \"peach\" | \"pink\" | \"purple\"' is more narrow than the original type."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/live/src/lib/pdf/mark-renderers.ts",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe type assertion: type 'string | undefined' is more narrow than the original type."
       },
       "count": 2
     },

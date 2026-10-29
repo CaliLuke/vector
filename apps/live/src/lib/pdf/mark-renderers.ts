@@ -5,15 +5,13 @@
  */
 
 import type { Style } from "@react-pdf/types";
-import {
-  BACKGROUND_COLORS,
-  CODE_COLORS,
-  EDITOR_BACKGROUND_COLORS,
-  EDITOR_TEXT_COLORS,
-  LINK_COLORS,
-  resolveColorForPdf,
-} from "./colors";
+import { BACKGROUND_COLORS, CODE_COLORS, EDITOR_BACKGROUND_COLORS, LINK_COLORS, resolveColorForPdf } from "./colors";
 import type { MarkRendererRegistry, TipTapMark } from "./types";
+
+function resolveCustomColor(value: unknown, type: "text" | "background"): string | null {
+  if (typeof value !== "string") return null;
+  return resolveColorForPdf(value, type) ?? (value.startsWith("rgb") ? value : null);
+}
 
 const markRenderers: MarkRendererRegistry = {
   bold: (_mark: TipTapMark, style: Style): Style => ({
@@ -95,35 +93,10 @@ const markRenderers: MarkRendererRegistry = {
     const attrs = mark.attrs || {};
     const newStyle: Style = { ...style };
 
-    // Handle text color (stored in 'color' attribute)
-    const textColor = attrs.color as string | undefined;
-    if (textColor) {
-      const resolvedColor = resolveColorForPdf(textColor, "text");
-      if (resolvedColor) {
-        newStyle.color = resolvedColor;
-      } else if (textColor.startsWith("#") || textColor.startsWith("rgb")) {
-        // Direct color value
-        newStyle.color = textColor;
-      } else if (textColor in EDITOR_TEXT_COLORS) {
-        // Color key lookup
-        newStyle.color = EDITOR_TEXT_COLORS[textColor as keyof typeof EDITOR_TEXT_COLORS];
-      }
-    }
-
-    // Handle background color (stored in 'backgroundColor' attribute)
-    const backgroundColor = attrs.backgroundColor as string | undefined;
-    if (backgroundColor) {
-      const resolvedColor = resolveColorForPdf(backgroundColor, "background");
-      if (resolvedColor) {
-        newStyle.backgroundColor = resolvedColor;
-      } else if (backgroundColor.startsWith("#") || backgroundColor.startsWith("rgb")) {
-        // Direct color value
-        newStyle.backgroundColor = backgroundColor;
-      } else if (backgroundColor in EDITOR_BACKGROUND_COLORS) {
-        // Color key lookup
-        newStyle.backgroundColor = EDITOR_BACKGROUND_COLORS[backgroundColor as keyof typeof EDITOR_BACKGROUND_COLORS];
-      }
-    }
+    const textColor = resolveCustomColor(attrs.color, "text");
+    const backgroundColor = resolveCustomColor(attrs.backgroundColor, "background");
+    if (textColor) newStyle.color = textColor;
+    if (backgroundColor) newStyle.backgroundColor = backgroundColor;
 
     return newStyle;
   },
@@ -135,7 +108,7 @@ export const applyMarks = (marks: TipTapMark[] | undefined, baseStyle: Style = {
   }
 
   return marks.reduce((style, mark) => {
-    const renderer = markRenderers[mark.type];
+    const renderer = Object.hasOwn(markRenderers, mark.type) ? markRenderers[mark.type] : undefined;
     if (renderer) {
       return renderer(mark, style);
     }

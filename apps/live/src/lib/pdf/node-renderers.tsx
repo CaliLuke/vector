@@ -414,7 +414,7 @@ const renderNodeWithContext = (node: TipTapNode, context: InternalRenderContext)
       return renderNodeWithContext(child, childContext);
     }) || [];
 
-  const renderer = nodeRenderers[node.type];
+  const renderer = Object.hasOwn(nodeRenderers, node.type) ? nodeRenderers[node.type] : undefined;
   if (renderer) {
     return renderer(nodeWithContext, children, pdfContext);
   }

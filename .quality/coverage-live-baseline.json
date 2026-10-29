@@ -104,10 +104,10 @@
       "branches": 47.36
     },
     "src/lib/pdf/colors.ts": {
-      "lines": 48.78,
-      "statements": 47.61,
-      "functions": 0,
-      "branches": 0
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
     },
     "src/lib/pdf/icons.tsx": {
       "lines": 41.86,
@@ -122,16 +122,16 @@
       "branches": 100
     },
     "src/lib/pdf/mark-renderers.ts": {
-      "lines": 23.4,
-      "statements": 23.4,
-      "functions": 38.46,
-      "branches": 13.95
+      "lines": 60,
+      "statements": 63.15,
+      "functions": 50,
+      "branches": 57.14
     },
     "src/lib/pdf/node-renderers.tsx": {
-      "lines": 68.62,
-      "statements": 68.94,
+      "lines": 69.93,
+      "statements": 70.18,
       "functions": 85.29,
-      "branches": 40.99
+      "branches": 42.94
     },
     "src/lib/pdf/plane-pdf-exporter.tsx": {
       "lines": 85,

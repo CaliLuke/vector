@@ -730,3 +730,15 @@ describe("PDF Rendering Integration", () => {
     });
   });
 });
+
+it.each(["__proto__", "constructor", "toString"])(
+  "preserves child text inside an unknown node named %s",
+  async (type) => {
+    const doc: TipTapDocument = {
+      type: "doc",
+      content: [{ type, content: [{ type: "paragraph", content: [{ type: "text", text: "Preserved child text" }] }] }],
+    };
+    const buffer = await renderPlaneDocToPdfBuffer(doc);
+    expect(await extractPdfText(buffer)).toContain("Preserved child text");
+  }
+);

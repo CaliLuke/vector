@@ -16,7 +16,7 @@
  */
 
 // Editor text colors (from variables.css :root)
-export const EDITOR_TEXT_COLORS = {
+const EDITOR_TEXT_COLORS = {
   gray: "#5c5e63",
   peach: "#ff5b59",
   pink: "#f65385",
@@ -49,7 +49,7 @@ type EditorColorKey = keyof typeof EDITOR_TEXT_COLORS;
  * Maps a color key to its text color hex value
  */
 const getTextColorHex = (colorKey: string): string | null => {
-  if (colorKey in EDITOR_TEXT_COLORS) {
+  if (Object.hasOwn(EDITOR_TEXT_COLORS, colorKey)) {
     return EDITOR_TEXT_COLORS[colorKey as EditorColorKey];
   }
   return null;
@@ -59,7 +59,7 @@ const getTextColorHex = (colorKey: string): string | null => {
  * Maps a color key to its background color hex value
  */
 const getBackgroundColorHex = (colorKey: string): string | null => {
-  if (colorKey in EDITOR_BACKGROUND_COLORS) {
+  if (Object.hasOwn(EDITOR_BACKGROUND_COLORS, colorKey)) {
     return EDITOR_BACKGROUND_COLORS[colorKey as EditorColorKey];
   }
   return null;
