@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "fast",
-  "fileCount": 3725,
+  "fileCount": 3728,
   "diagnostics": [
     {
       "diagnostic": {
@@ -1589,15 +1589,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/main-content.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `IssueMainContent` has a complexity of 18. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-layouts/calendar/dropdowns/options-dropdown.tsx",
         "severity": "warning",
         "code": "eslint(no-shadow)",
@@ -2025,15 +2016,6 @@
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `IssueFormRoot` has a complexity of 27. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/peek-overview/issue-detail.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `PeekOverviewIssueDetails` has a complexity of 16. Maximum allowed is 15."
       },
       "count": 1
     },

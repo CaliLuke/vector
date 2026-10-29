@@ -6,7 +6,6 @@
 
 import { captureIssueActivityRefresh } from "@/queries/issue-discussion";
 import { captureIssueDetailReconciliation } from "@/queries/issue-details";
-import { refreshItemSchema } from "@/queries/work-item-detail-schema";
 import { useMemo, useCallback } from "react";
 import { useCommittedScope } from "@/hooks/use-committed-scope";
 
@@ -15,10 +14,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setPromiseToast, setToast } from "@plane/propel/toast";
-import type { IWorkItemPeekOverview, TIssue } from "@plane/types";
+import type { IWorkItemPeekOverview } from "@plane/types";
 import { EIssueServiceType, EIssuesStoreType } from "@plane/types";
 // hooks
 import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
+import { useIssueDetailUpdate } from "@/hooks/use-issue-detail-update";
 import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
 import { useProjectPermissions } from "@/hooks/use-permissions";
 import { useIssueListType } from "@/hooks/use-issue-list-type";
@@ -69,36 +69,20 @@ export function IssuePeekOverview(props: IWorkItemPeekOverview) {
     [queryClient, storeType]
   );
   const isPeekIssueArchived = peekIssue?.isArchived;
+  const update = useIssueDetailUpdate(
+    detail.scope,
+    peekIssueId,
+    detail.isReady && !isPeekIssueArchived,
+    actions.updateIssue
+  );
   const issueOperations: TIssueOperations = useMemo(
     () => ({
-      updateText: async (workspaceSlug, projectId, issueId, data) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [issueId]);
-        const refreshActivity = captureActivity(workspaceSlug, projectId, issueId);
-        if (!actions.updateIssue) throw new Error("Work item editing is unavailable.");
-        const receipt = await actions.updateIssue(projectId, issueId, data);
-        await detailOwner.reconcile(receipt);
-        void Promise.allSettled([refreshItemSchema(queryClient, workspaceSlug, issueId), refreshActivity()]);
-      },
+      updateText: update,
       fetch: async (workspaceSlug: string, projectId: string, issueId: string) => {
         if (workspaceSlug === peekWorkspaceSlug && projectId === peekProjectId && issueId === peekIssueId)
           await detail.query.refetch();
       },
-      update: async (workspaceSlug: string, projectId: string, issueId: string, data: Partial<TIssue>) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [issueId]);
-        const refreshActivity = captureActivity(workspaceSlug, projectId, issueId);
-        try {
-          if (!actions.updateIssue) throw new Error("Work item editing is unavailable.");
-          const receipt = await actions.updateIssue(projectId, issueId, data);
-          await detailOwner.reconcile(receipt);
-          void Promise.allSettled([refreshItemSchema(queryClient, workspaceSlug, issueId), refreshActivity()]);
-        } catch (_error) {
-          setToast({
-            title: t("toast.error"),
-            type: TOAST_TYPE.ERROR,
-            message: t("entity.update.failed", { entity: t("issue.label", { count: 1 }) }),
-          });
-        }
-      },
+      update,
       remove: async (workspaceSlug: string, projectId: string, issueId: string) => {
         const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [issueId]);
         try {
@@ -225,6 +209,7 @@ export function IssuePeekOverview(props: IWorkItemPeekOverview) {
       },
     }),
     [
+      update,
       queryClient,
       detail.query,
       detail.scope,

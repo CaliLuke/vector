@@ -31,6 +31,7 @@ import { PriorityDropdown } from "@/components/dropdowns/priority";
 import { StateDropdown } from "@/components/dropdowns/state/dropdown";
 // hooks
 import { useProjectEstimates } from "@/hooks/use-estimates";
+import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
 import { useWorkItemDetailRecord } from "@/providers/work-item-detail-record";
 import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
@@ -51,6 +52,8 @@ type Props = {
 };
 
 type SidebarPropertyGroupsProps = {
+  onUpdate: (data: Partial<TIssue>) => void;
+  propertyDisabled: boolean;
   workspaceSlug: string;
   projectId: string;
   issueId: string;
@@ -67,16 +70,16 @@ type SidebarPropertyGroupsProps = {
 };
 
 const IssueIdentityProperties = function IssueIdentityProperties(props: SidebarPropertyGroupsProps) {
-  const { workspaceSlug, projectId, issueId, issueOperations, isEditable, issue, createdByDetails } = props;
+  const { workspaceSlug, projectId, onUpdate, propertyDisabled, issue, createdByDetails } = props;
   const { t } = useTranslation();
   return (
     <>
       <SidebarPropertyListItem icon={StatePropertyIcon} label={t("common.state")}>
         <StateDropdown
           value={issue.state_id}
-          onChange={(value) => void issueOperations.update(workspaceSlug, projectId, issueId, { state_id: value })}
+          onChange={(value) => onUpdate({ state_id: value })}
           projectId={projectId}
-          disabled={!isEditable}
+          disabled={propertyDisabled}
           buttonVariant="transparent-with-text"
           className="group w-full grow"
           buttonContainerClassName="w-full text-left h-7.5"
@@ -89,8 +92,8 @@ const IssueIdentityProperties = function IssueIdentityProperties(props: SidebarP
         <MemberDropdown
           workspaceSlug={workspaceSlug}
           value={issue.assignee_ids ?? undefined}
-          onChange={(value) => void issueOperations.update(workspaceSlug, projectId, issueId, { assignee_ids: value })}
-          disabled={!isEditable}
+          onChange={(value) => onUpdate({ assignee_ids: value })}
+          disabled={propertyDisabled}
           projectId={projectId}
           placeholder={t("issue.add.assignee")}
           multiple
@@ -106,8 +109,8 @@ const IssueIdentityProperties = function IssueIdentityProperties(props: SidebarP
       <SidebarPropertyListItem icon={PriorityPropertyIcon} label={t("common.priority")}>
         <PriorityDropdown
           value={issue.priority}
-          onChange={(value) => void issueOperations.update(workspaceSlug, projectId, issueId, { priority: value })}
-          disabled={!isEditable}
+          onChange={(value) => onUpdate({ priority: value })}
+          disabled={propertyDisabled}
           buttonVariant="transparent-with-text"
           className="h-7.5 w-full grow rounded-sm"
           buttonContainerClassName="size-full text-left"
@@ -132,7 +135,7 @@ const IssueIdentityProperties = function IssueIdentityProperties(props: SidebarP
 };
 
 const IssueDateProperties = function IssueDateProperties(props: SidebarPropertyGroupsProps) {
-  const { workspaceSlug, projectId, issueId, issueOperations, isEditable, issue, minDate, maxDate, stateGroup } = props;
+  const { onUpdate, propertyDisabled, issue, minDate, maxDate, stateGroup } = props;
   const { t } = useTranslation();
   return (
     <>
@@ -141,12 +144,12 @@ const IssueDateProperties = function IssueDateProperties(props: SidebarPropertyG
           placeholder={t("issue.add.start_date")}
           value={issue.start_date}
           onChange={(value) =>
-            void issueOperations.update(workspaceSlug, projectId, issueId, {
+            onUpdate({
               start_date: value ? renderFormattedPayloadDate(value) : null,
             })
           }
           maxDate={maxDate ?? undefined}
-          disabled={!isEditable}
+          disabled={propertyDisabled}
           buttonVariant="transparent-with-text"
           className="group w-full grow"
           buttonContainerClassName="w-full text-left h-7.5"
@@ -160,12 +163,12 @@ const IssueDateProperties = function IssueDateProperties(props: SidebarPropertyG
           placeholder={t("issue.add.due_date")}
           value={issue.target_date}
           onChange={(value) =>
-            void issueOperations.update(workspaceSlug, projectId, issueId, {
+            onUpdate({
               target_date: value ? renderFormattedPayloadDate(value) : null,
             })
           }
           minDate={minDate ?? undefined}
-          disabled={!isEditable}
+          disabled={propertyDisabled}
           buttonVariant="transparent-with-text"
           className="group w-full grow"
           buttonContainerClassName="w-full text-left h-7.5"
@@ -235,6 +238,12 @@ export const IssueDetailsSidebar = function IssueDetailsSidebar(props: Props) {
   const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
   const { getStateById } = useProjectStates(workspaceSlug, projectId);
   const issue = issueId === record?.issueId ? record.issue : undefined;
+  const propertyChange = useIssuePropertyChange(
+    { workspaceSlug, projectId, issueId, context: "detail" },
+    isEditable && !!issue
+  );
+  const onUpdate = (data: Partial<TIssue>) =>
+    propertyChange.run(() => issueOperations.update(workspaceSlug, projectId, issueId, data));
   if (!issue) return <></>;
 
   const createdByDetails = memberById(issue.created_by)?.member;
@@ -250,6 +259,8 @@ export const IssueDetailsSidebar = function IssueDetailsSidebar(props: Props) {
   maxDate?.setDate(maxDate.getDate());
 
   const groupProps: SidebarPropertyGroupsProps = {
+    onUpdate,
+    propertyDisabled: propertyChange.disabled,
     workspaceSlug,
     projectId,
     issueId,

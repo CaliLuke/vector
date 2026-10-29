@@ -5,7 +5,6 @@
  */
 
 import { useQueryClient } from "@tanstack/react-query";
-import { refreshItemSchema } from "@/queries/work-item-detail-schema";
 import { useRouter } from "@tanstack/react-router";
 import { useMemo } from "react";
 // plane imports
@@ -20,8 +19,8 @@ import emptyIssue from "@/app/assets/empty-state/issue.svg?url";
 import { EmptyState } from "@/components/common/empty-state";
 // hooks
 import { useIssueDetailSidebarCollapsed } from "@/providers/sidebar-state";
+import { useIssueDetailUpdate } from "@/hooks/use-issue-detail-update";
 import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
-import { captureIssueActivityRefresh } from "@/queries/issue-discussion";
 import { captureIssueDetailReconciliation } from "@/queries/issue-details";
 import { useProjectPermissions } from "@/hooks/use-permissions";
 import { useIssuesActions } from "@/hooks/use-issues-actions";
@@ -82,52 +81,20 @@ export function IssueDetailRoot(props: TIssueDetailRoot) {
   const issueDetailSidebarCollapsed = useIssueDetailSidebarCollapsed();
 
   const queryClient = useQueryClient();
+  const update = useIssueDetailUpdate(
+    detail.scope,
+    issueId,
+    detail.isReady && !is_archived,
+    projectActions.updateIssue
+  );
   const issueOperations: TIssueOperations = useMemo(
     () => ({
-      updateText: async (targetWorkspaceSlug, targetProjectId, targetIssueId, data) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [targetIssueId]);
-        const refreshActivity = captureIssueActivityRefresh(queryClient, {
-          workspaceSlug: targetWorkspaceSlug,
-          projectId: targetProjectId,
-          issueId: targetIssueId,
-          serviceType: EIssueServiceType.ISSUES,
-        });
-        if (!projectActions.updateIssue) throw new Error("Work item editing is unavailable.");
-        const receipt = await projectActions.updateIssue(targetProjectId, targetIssueId, data);
-        await detailOwner.reconcile(receipt);
-        void Promise.allSettled([
-          refreshItemSchema(queryClient, targetWorkspaceSlug, targetIssueId),
-          refreshActivity(),
-        ]);
-      },
+      updateText: update,
       fetch: async (targetWorkspaceSlug, targetProjectId, targetIssueId) => {
         if (targetWorkspaceSlug !== workspaceSlug || targetProjectId !== projectId || targetIssueId !== issueId) return;
         await detail.query.refetch();
       },
-      update: async (targetWorkspaceSlug, targetProjectId, targetIssueId, data) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [targetIssueId]);
-        const refreshActivity = captureIssueActivityRefresh(queryClient, {
-          workspaceSlug: targetWorkspaceSlug,
-          projectId: targetProjectId,
-          issueId: targetIssueId,
-          serviceType: EIssueServiceType.ISSUES,
-        });
-        try {
-          if (!projectActions.updateIssue) throw new Error("Work item editing is unavailable.");
-          const receipt = await projectActions.updateIssue(targetProjectId, targetIssueId, data);
-          await detailOwner.reconcile(receipt);
-          void Promise.allSettled([
-            refreshItemSchema(queryClient, targetWorkspaceSlug, targetIssueId),
-            refreshActivity(),
-          ]);
-        } catch (_error) {
-          setToast({
-            title: t("common.error.label"),
-            type: TOAST_TYPE.ERROR,
-            message: t("entity.update.failed", { entity: t("issue.label") }),
-          });
-        }
-      },
+      update,
       remove: async (_targetWorkspaceSlug, targetProjectId, targetIssueId) => {
         const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [targetIssueId]);
         try {
@@ -252,6 +219,7 @@ export function IssueDetailRoot(props: TIssueDetailRoot) {
       },
     }),
     [
+      update,
       queryClient,
       is_archived,
       detail.query,

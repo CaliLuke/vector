@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
 import { useTranslation } from "@plane/i18n";
 import { CycleIcon, EstimatePropertyIcon, ModuleIcon } from "@plane/propel/icons";
 import type { TIssue } from "@plane/types";
@@ -42,6 +43,7 @@ export const IssueProjectProperties = function IssueProjectProperties(props: Iss
     cycleView,
   } = props;
   const { t } = useTranslation();
+  const propertyChange = useIssuePropertyChange({ workspaceSlug, projectId, issueId, context: "detail" }, !disabled);
 
   return (
     <>
@@ -50,10 +52,12 @@ export const IssueProjectProperties = function IssueProjectProperties(props: Iss
           <EstimateDropdown
             value={issue.estimate_point ?? undefined}
             onChange={(value: string | undefined) =>
-              void issueOperations.update(workspaceSlug, projectId, issueId, { estimate_point: value })
+              propertyChange.run(() =>
+                issueOperations.update(workspaceSlug, projectId, issueId, { estimate_point: value })
+              )
             }
             projectId={projectId}
-            disabled={disabled}
+            disabled={propertyChange.disabled}
             buttonVariant="transparent-with-text"
             className="group w-full grow"
             buttonContainerClassName="w-full text-left h-7.5"

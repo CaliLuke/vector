@@ -30,6 +30,7 @@ import { PriorityDropdown } from "@/components/dropdowns/priority";
 import { StateDropdown } from "@/components/dropdowns/state/dropdown";
 import { SidebarPropertyListItem } from "@/components/common/layout/sidebar/property-list-item";
 // helpers
+import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
 import { useWorkItemDetailRecord } from "@/providers/work-item-detail-record";
 import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
@@ -50,6 +51,8 @@ interface IPeekOverviewProperties {
 }
 
 type PeekPropertyGroupProps = {
+  onUpdate: (data: Partial<TIssue>) => void;
+  propertyDisabled: boolean;
   workspaceSlug: string;
   projectId: string;
   issueId: string;
@@ -83,16 +86,16 @@ function PeekCreatedByProperty({ member }: { member: IUserLite }) {
 }
 
 const PeekBasicProperties = function PeekBasicProperties(props: PeekPropertyGroupProps) {
-  const { workspaceSlug, projectId, issueId, issueOperations, disabled, issue, createdByDetails } = props;
+  const { workspaceSlug, projectId, onUpdate, propertyDisabled, issue, createdByDetails } = props;
   const { t } = useTranslation();
   return (
     <>
       <SidebarPropertyListItem icon={StatePropertyIcon} label={t("common.state")}>
         <StateDropdown
           value={issue.state_id}
-          onChange={(val) => void issueOperations.update(workspaceSlug, projectId, issueId, { state_id: val })}
+          onChange={(val) => onUpdate({ state_id: val })}
           projectId={projectId}
-          disabled={disabled}
+          disabled={propertyDisabled}
           buttonVariant="transparent-with-text"
           className="group w-full grow"
           buttonContainerClassName="w-full text-left h-7.5"
@@ -106,8 +109,8 @@ const PeekBasicProperties = function PeekBasicProperties(props: PeekPropertyGrou
         <MemberDropdown
           workspaceSlug={workspaceSlug}
           value={issue.assignee_ids ?? undefined}
-          onChange={(val) => void issueOperations.update(workspaceSlug, projectId, issueId, { assignee_ids: val })}
-          disabled={disabled}
+          onChange={(val) => onUpdate({ assignee_ids: val })}
+          disabled={propertyDisabled}
           projectId={projectId}
           placeholder={t("issue.add.assignee")}
           multiple
@@ -124,8 +127,8 @@ const PeekBasicProperties = function PeekBasicProperties(props: PeekPropertyGrou
       <SidebarPropertyListItem icon={PriorityPropertyIcon} label={t("common.priority")}>
         <PriorityDropdown
           value={issue.priority}
-          onChange={(val) => void issueOperations.update(workspaceSlug, projectId, issueId, { priority: val })}
-          disabled={disabled}
+          onChange={(val) => onUpdate({ priority: val })}
+          disabled={propertyDisabled}
           buttonVariant="transparent-with-text"
           className="h-7.5 w-full grow rounded-sm"
           buttonContainerClassName="w-full text-left h-7.5"
@@ -139,7 +142,7 @@ const PeekBasicProperties = function PeekBasicProperties(props: PeekPropertyGrou
 };
 
 const PeekDateProperties = function PeekDateProperties(props: PeekPropertyGroupProps) {
-  const { workspaceSlug, projectId, issueId, issueOperations, disabled, issue, minDate, maxDate, stateGroup } = props;
+  const { onUpdate, propertyDisabled, issue, minDate, maxDate, stateGroup } = props;
   const { t } = useTranslation();
   return (
     <>
@@ -147,14 +150,14 @@ const PeekDateProperties = function PeekDateProperties(props: PeekPropertyGroupP
         <DateDropdown
           value={issue.start_date}
           onChange={(val) =>
-            void issueOperations.update(workspaceSlug, projectId, issueId, {
+            onUpdate({
               start_date: val ? renderFormattedPayloadDate(val) : null,
             })
           }
           placeholder={t("issue.add.start_date")}
           buttonVariant="transparent-with-text"
           maxDate={maxDate ?? undefined}
-          disabled={disabled}
+          disabled={propertyDisabled}
           className="group w-full grow"
           buttonContainerClassName="w-full text-left h-7.5"
           buttonClassName={`text-body-xs-medium ${issue.start_date ? "" : "text-placeholder"}`}
@@ -168,14 +171,14 @@ const PeekDateProperties = function PeekDateProperties(props: PeekPropertyGroupP
           <DateDropdown
             value={issue.target_date}
             onChange={(val) =>
-              void issueOperations.update(workspaceSlug, projectId, issueId, {
+              onUpdate({
                 target_date: val ? renderFormattedPayloadDate(val) : null,
               })
             }
             placeholder={t("issue.add.due_date")}
             buttonVariant="transparent-with-text"
             minDate={minDate ?? undefined}
-            disabled={disabled}
+            disabled={propertyDisabled}
             className="group w-full grow"
             buttonContainerClassName="w-full text-left h-7.5"
             buttonClassName={cn("text-body-xs-medium", {
@@ -231,6 +234,12 @@ export const PeekOverviewProperties = function PeekOverviewProperties(props: IPe
   const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
   // derived values
   const issue = issueId === record?.issueId ? record.issue : undefined;
+  const propertyChange = useIssuePropertyChange(
+    { workspaceSlug, projectId, issueId, context: "detail" },
+    !disabled && !!issue
+  );
+  const onUpdate = (data: Partial<TIssue>) =>
+    propertyChange.run(() => issueOperations.update(workspaceSlug, projectId, issueId, data));
   if (!issue) return <></>;
   const createdByDetails = memberById(issue?.created_by)?.member;
   const projectDetails = projectRows?.find((project) => project.id === issue.project_id);
@@ -244,6 +253,8 @@ export const PeekOverviewProperties = function PeekOverviewProperties(props: IPe
   maxDate?.setDate(maxDate.getDate());
 
   const groupProps: PeekPropertyGroupProps = {
+    onUpdate,
+    propertyDisabled: propertyChange.disabled,
     workspaceSlug,
     projectId,
     issueId,

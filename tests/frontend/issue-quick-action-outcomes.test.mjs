@@ -44,10 +44,10 @@ const stubs = {
   "@plane/propel/toast": `export const TOAST_TYPE={SUCCESS:"success",ERROR:"error"};export const setToast=toast=>globalThis.issueActionState.toasts.push(toast);export const setPromiseToast=()=>{};`,
   "@plane/propel/tooltip": `const React=globalThis.issueActionReact;export const Tooltip=({children})=>React.createElement(React.Fragment,null,children);`,
   "@plane/ui": `const React=globalThis.issueActionReact;export const CustomSelect=Object.assign(({customButton,children})=>React.createElement("div",null,customButton,children),{Option:({children})=>React.createElement("div",null,children)});export const Loader=()=>null;export const AlertModalCore=props=>{globalThis.issueDeleteModal=props;return React.createElement("div",{role:"dialog"},React.createElement("button",{id:"confirm-delete",disabled:props.isSubmitting,onClick:props.handleSubmit},"Delete"),React.createElement("button",{id:"cancel-delete",onClick:props.handleClose},"Cancel"))};`,
-  "@/hooks/use-work-item-detail": `export const useWorkItemDetail=()=>{return {issue:globalThis.issueActionState.peekWithoutRecord?undefined:globalThis.issueActionIssue,scope:{accountId:"alice",sessionGeneration:0,workspaceSlug:"workspace",projectId:"project",membershipRole:20,membershipRevision:"v1",projectMembershipRole:20,projectRole:20,serviceType:"issues"},query:{refetch:async()=>globalThis.issueActionIssue}}};`,
+  "@/hooks/use-work-item-detail": `export const useWorkItemDetail=()=>{return {isReady:true,issue:globalThis.issueActionState.peekWithoutRecord?undefined:globalThis.issueActionIssue,scope:{accountId:"alice",sessionGeneration:0,workspaceSlug:"workspace",projectId:"project",membershipRole:20,membershipRevision:"v1",projectMembershipRole:20,projectRole:20,serviceType:"issues"},query:{refetch:async()=>globalThis.issueActionIssue}}};`,
   "@/providers/issue-detail-ui-state": `export const useIssueDetailUiState=()=>({peekIssue:globalThis.issueActionState.peekIssue,setPeekIssue:value=>{globalThis.issueActionState.closed++;globalThis.issueActionState.peekIssue=value},getIsIssuePeeked:id=>globalThis.issueActionState.peekIssue?.issueId===id});`,
   "@/hooks/use-issues-actions": `export const useIssuesActions=()=>({removeIssue:async()=>{globalThis.issueActionState.removeCalls++;if(globalThis.issueActionState.removePromise)await globalThis.issueActionState.removePromise;if(globalThis.issueActionState.removeFails)throw new Error("remove failed")},archiveIssue:async()=>{if(globalThis.issueActionState.archiveFails)throw new Error("archive failed")},updateIssue:async()=>globalThis.issueActionState.updateReceipt});`,
-  "@/queries/issue-details": `export const captureIssueDetailReconciliation=()=>({reconcile:async receipt=>{globalThis.issueActionState.reconciled.push(receipt)},remove:()=>{},refresh:async()=>{}});`,
+  "@/queries/issue-details": `export const captureIssueDetailReconciliation=()=>({isCurrent:()=>true,reconcile:async receipt=>{globalThis.issueActionState.reconciled.push(receipt)},remove:()=>{},refresh:async()=>{}});`,
   "@/hooks/store/use-project": `export const useProject=()=>({getProjectIdentifierById:()=>"PRJ",getProjectById:()=>({})});`,
   "@/services/user.service":
     "export class UserService { currentUser() { throw new Error('unexpected identity request'); } } export default new UserService();",
@@ -153,6 +153,7 @@ await test("issue-detail delete and archive callbacks reject primary failures", 
 
 await test("peek archive callback rejects the store failure", async (t) => {
   state.archiveFails = true;
+  state.peekIssue = { workspaceSlug: "workspace", projectId: "project", issueId: issue.id };
   state.peekWithoutRecord = true;
   const environment = await createIssueActionEnvironment();
   t.after(async () => {
@@ -242,6 +243,7 @@ await test("workspace draft delete modal stays open with retry enabled after fai
 await test("peek text update reconciles the canonical accepted receipt", async (t) => {
   state.toasts = [];
   state.reconciled = [];
+  state.peekIssue = { workspaceSlug: "workspace", projectId: "project", issueId: issue.id };
   state.peekWithoutRecord = true;
   const environment = await createIssueActionEnvironment();
   t.after(() => environment.unmount());

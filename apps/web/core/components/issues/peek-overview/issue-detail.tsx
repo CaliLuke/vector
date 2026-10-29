@@ -12,24 +12,20 @@ import type { EditorRefApi } from "@plane/editor";
 import { EFileAssetType } from "@plane/types";
 import type { TNameDescriptionLoader } from "@plane/types";
 // components
-import { DescriptionVersionsRoot } from "@/components/core/description-versions";
+import { IssueDescriptionVersions } from "../issue-detail/description-versions";
 import { IssueDescriptionInput } from "@/components/issues/description-input";
 // hooks
 import { useWorkItemDetailRecord } from "@/providers/work-item-detail-record";
-import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 import { useCurrentUser } from "@/hooks/use-current-user";
 // plane web components
 import { IssueTypeSwitcher } from "@/components/issues/issue-type-switcher";
 // plane web hooks
 // services
-import { WorkItemVersionService } from "@/services/issue";
 // local components
 import type { TIssueOperations } from "../issue-detail";
 import { IssueParentDetail } from "../issue-detail/parent";
 import { IssueReaction } from "../issue-detail/reactions";
 import { IssueTitleInput } from "../title-input";
-// services init
-const workItemVersionService = new WorkItemVersionService();
 
 type Props = {
   editorRef: React.RefObject<EditorRefApi | null>;
@@ -60,9 +56,9 @@ export const PeekOverviewIssueDetails = function PeekOverviewIssueDetails(props:
   const { data: currentUser } = useCurrentUser();
   const record = useWorkItemDetailRecord();
 
-  const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
   // derived values
   const issue = issueId === record?.issueId ? record.issue : undefined;
+  const editingDisabled = isArchived || disabled;
 
   if (!issue || !issue.project_id) return <></>;
 
@@ -75,6 +71,7 @@ export const PeekOverviewIssueDetails = function PeekOverviewIssueDetails(props:
           issueId={issueId}
           issue={issue}
           issueOperations={issueOperations}
+          disabled={editingDisabled}
         />
       )}
       <div className="flex items-center justify-between gap-2">
@@ -82,7 +79,7 @@ export const PeekOverviewIssueDetails = function PeekOverviewIssueDetails(props:
           workspaceSlug={workspaceSlug}
           onEditorOpenChange={onEditorOpenChange}
           issueId={issueId}
-          disabled={isArchived || disabled}
+          disabled={editingDisabled}
         />
       </div>
       <IssueTitleInput
@@ -91,7 +88,7 @@ export const PeekOverviewIssueDetails = function PeekOverviewIssueDetails(props:
         issueId={issue.id}
         setIsSubmitting={setTitleStatus}
         issueOperations={issueOperations}
-        disabled={disabled || isArchived}
+        disabled={editingDisabled}
         value={issue.name}
         containerClassName="-ml-3"
       />
@@ -99,7 +96,7 @@ export const PeekOverviewIssueDetails = function PeekOverviewIssueDetails(props:
       <IssueDescriptionInput
         issueSequenceId={issue.sequence_id}
         containerClassName="-ml-3 border-none"
-        disabled={disabled || isArchived}
+        disabled={editingDisabled}
         editorRef={editorRef}
         entityId={issue.id}
         fileAssetType={EFileAssetType.ISSUE_DESCRIPTION}
@@ -122,32 +119,12 @@ export const PeekOverviewIssueDetails = function PeekOverviewIssueDetails(props:
           />
         )}
         {!disabled && (
-          <DescriptionVersionsRoot
-            className="flex-shrink-0"
-            entityInformation={{
-              createdAt: new Date(issue.created_at ?? 0),
-              createdByDisplayName: memberById(issue.created_by ?? "")?.member.display_name ?? "",
-              id: issueId,
-              isRestoreDisabled: disabled || isArchived,
-            }}
-            fetchHandlers={{
-              listDescriptionVersions: (issueId) =>
-                workItemVersionService.listDescriptionVersions(
-                  workspaceSlug,
-                  issue.project_id?.toString() ?? "",
-                  issueId
-                ),
-              retrieveDescriptionVersion: (issueId, versionId) =>
-                workItemVersionService.retrieveDescriptionVersion(
-                  workspaceSlug,
-                  issue.project_id?.toString() ?? "",
-                  issueId,
-                  versionId
-                ),
-            }}
-            handleRestore={(descriptionHTML) => editorRef.current?.setEditorValue(descriptionHTML, true)}
-            projectId={issue.project_id}
+          <IssueDescriptionVersions
             workspaceSlug={workspaceSlug}
+            projectId={issue.project_id}
+            issue={issue}
+            disabled={editingDisabled}
+            onRestore={(descriptionHTML) => editorRef.current?.setEditorValue(descriptionHTML, true)}
           />
         )}
       </div>

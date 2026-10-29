@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
 import { useRouter } from "@tanstack/react-router";
 
 import { MinusCircle } from "lucide-react";
@@ -32,6 +33,7 @@ export type TIssueParentDetail = {
   issueId: string;
   issue: TIssue;
   issueOperations: TIssueOperations;
+  disabled: boolean;
 };
 
 type TParentIssueSummary = Partial<TBaseIssue> & { id: string; project_id: string; sequence_id: number };
@@ -41,7 +43,7 @@ function hasParentSummaryIdentity(issue: Partial<TBaseIssue> | undefined): issue
 }
 
 export function IssueParentDetail(props: TIssueParentDetail) {
-  const { workspaceSlug, projectId, issue, issueOperations } = props;
+  const { workspaceSlug, projectId, issue, issueOperations, disabled } = props;
   const parentId = issue.parent?.id ?? issue.parent_id ?? undefined;
   const parentProjectId = issue.parent?.project_id ?? projectId;
   const parentServiceType = issue.parent?.is_epic ? EIssueServiceType.EPICS : EIssueServiceType.ISSUES;
@@ -65,6 +67,7 @@ export function IssueParentDetail(props: TIssueParentDetail) {
       currentIssue={issue}
       parentIssue={parentIssue}
       issueOperations={issueOperations}
+      disabled={disabled}
     />
   );
 }
@@ -75,13 +78,19 @@ function IssueParentSummary({
   currentIssue,
   parentIssue,
   issueOperations,
+  disabled,
 }: {
   workspaceSlug: string;
   projectId: string;
   currentIssue: TIssue;
   parentIssue: TParentIssueSummary;
   issueOperations: TIssueOperations;
+  disabled: boolean;
 }) {
+  const propertyChange = useIssuePropertyChange(
+    { workspaceSlug, projectId, issueId: currentIssue.id, context: "detail" },
+    !disabled
+  );
   const router = useRouter();
   const { t } = useTranslation();
   const { getProjectStates } = useWorkspaceStates(workspaceSlug);
@@ -147,8 +156,11 @@ function IssueParentSummary({
           />
 
           <CustomMenu.MenuItem
+            disabled={propertyChange.disabled}
             onClick={() => {
-              void issueOperations.update(workspaceSlug, projectId, currentIssue.id, { parent_id: null });
+              propertyChange.run(() =>
+                issueOperations.update(workspaceSlug, projectId, currentIssue.id, { parent_id: null })
+              );
             }}
             className="flex items-center gap-2 py-2 text-danger-primary"
           >
