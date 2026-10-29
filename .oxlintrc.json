@@ -28,7 +28,6 @@
     "build/**",
     "coverage/**",
     "dist/**",
-    "**/public/**",
     "storybook-static/**",
     "apps/web/app/routeTree.gen.ts"
   ],

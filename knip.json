@@ -10,7 +10,7 @@
       "entry": ["postcss.config.js"]
     },
     "apps/web": {
-      "entry": ["routes.ts"]
+      "entry": ["routes.ts", "public/sw.js"]
     },
     "packages/propel": {
       "entry": ["postcss.config.js"]

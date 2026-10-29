@@ -7,7 +7,6 @@
     "**/dist/**",
     "**/build/**",
     "**/coverage/**",
-    "**/public/**",
     "**/generated/**",
     "**/*.snap",
     "**/fixtures/**",

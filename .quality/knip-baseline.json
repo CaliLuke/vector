@@ -1204,22 +1204,6 @@
     },
     {
       "finding": {
-        "category": "files",
-        "file": "apps/web/public/sw.js",
-        "name": "apps/web/public/sw.js"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/public/workbox-9f2f79cf.js",
-        "name": "apps/web/public/workbox-9f2f79cf.js"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
         "category": "types",
         "file": "apps/admin/app/(all)/(home)/auth-helpers.tsx",
         "name": "EErrorAlertType"
