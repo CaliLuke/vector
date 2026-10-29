@@ -43,6 +43,13 @@ func (service *LifecycleService) APIKeyAuth(ctx context.Context, key string, sch
 // keeping dispatch here lets the generated interface remain mechanically
 // reproducible without embedding a nil Service implementation.
 func (service *LifecycleService) invoke(ctx context.Context, name string, payload any, body io.ReadCloser) (any, error) {
+	if strings.HasPrefix(name, "Get") {
+		return service.invokeRead(ctx, name, payload)
+	}
+	return service.invokeWrite(ctx, name, payload, body)
+}
+
+func (service *LifecycleService) invokeRead(ctx context.Context, name string, payload any) (any, error) {
 	switch name {
 	case "GetAPIAssetsV2WorkspacesBySlugCheckByAssetID":
 		p := payload.(*api.GetAPIAssetsV2WorkspacesBySlugCheckByAssetIDPayload)
@@ -105,6 +112,51 @@ func (service *LifecycleService) invoke(ctx context.Context, name string, payloa
 			return nil, err
 		}
 		return &api.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetIDResult{Location: &location, ContentType: stringPointer("text/html; charset=utf-8")}, nil
+	case "GetAPIUsersFileAssetsByAssetKey":
+		p := payload.(*api.GetAPIUsersFileAssetsByAssetKeyPayload)
+		return service.getLegacyUserAssetByKey(ctx, p.AssetKey)
+	case "GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKey":
+		p := payload.(*api.GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyPayload)
+		return service.getLegacyWorkspaceAssetByKey(ctx, p.WorkspaceID, p.AssetKey)
+	case "GetAPIPublicAssetsV2AnchorByAnchorByPk":
+		p := payload.(*api.GetAPIPublicAssetsV2AnchorByAnchorByPkPayload)
+		return service.getPublicAsset(ctx, p.Anchor, p.Pk)
+	case "GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments":
+		p := payload.(*api.GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsPayload)
+		return service.listIssueAttachmentsAPI(ctx, p.Slug, p.ProjectID, p.IssueID)
+	case "GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk":
+		p := payload.(*api.GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkPayload)
+		location, err := service.getIssueAttachmentV1(ctx, p.Slug, p.ProjectID, p.IssueID, p.Pk)
+		if err != nil {
+			return nil, err
+		}
+		return &api.GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkResult{Location: location, ContentType: stringPointer("text/html; charset=utf-8")}, nil
+	case "GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachments":
+		p := payload.(*api.GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsPayload)
+		return service.listIssueAttachmentsAPI(ctx, p.Slug, p.ProjectID, p.IssueID)
+	case "GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk":
+		p := payload.(*api.GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkPayload)
+		location, err := service.getIssueAttachmentV1(ctx, p.Slug, p.ProjectID, p.IssueID, p.Pk)
+		if err != nil {
+			return nil, err
+		}
+		return &api.GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkResult{Location: location, ContentType: stringPointer("text/html; charset=utf-8")}, nil
+	case "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachments":
+		p := payload.(*api.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsPayload)
+		return service.listIssueAttachments(ctx, p.Slug, p.ProjectID, p.IssueID)
+	case "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk":
+		p := payload.(*api.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkPayload)
+		return service.getIssueAttachment(ctx, p.Slug, p.ProjectID, p.IssueID, p.Pk)
+	case "GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments":
+		p := payload.(*api.GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsPayload)
+		return service.listLegacyIssueAttachments(ctx, p.Slug, p.ProjectID, p.IssueID)
+	default:
+		return service.invokeUnsupported(ctx, name, payload)
+	}
+}
+
+func (service *LifecycleService) invokeWrite(ctx context.Context, name string, payload any, body io.ReadCloser) (any, error) {
+	switch name {
 	case "PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetID":
 		p := payload.(*api.PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetIDPayload)
 		result, err := service.duplicateWorkspaceAsset(ctx, p.Slug, p.AssetID, body)
@@ -159,15 +211,9 @@ func (service *LifecycleService) invoke(ctx context.Context, name string, payloa
 	case "DeleteAPIAssetsV2WorkspacesBySlugByAssetID":
 		p := payload.(*api.DeleteAPIAssetsV2WorkspacesBySlugByAssetIDPayload)
 		return nil, service.deleteWorkspaceAsset(ctx, p.Slug, p.AssetID)
-	case "GetAPIUsersFileAssetsByAssetKey":
-		p := payload.(*api.GetAPIUsersFileAssetsByAssetKeyPayload)
-		return service.getLegacyUserAssetByKey(ctx, p.AssetKey)
 	case "DeleteAPIUsersFileAssetsByAssetKey":
 		p := payload.(*api.DeleteAPIUsersFileAssetsByAssetKeyPayload)
 		return nil, service.deleteLegacyUserAssetByKey(ctx, p.AssetKey)
-	case "GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKey":
-		p := payload.(*api.GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyPayload)
-		return service.getLegacyWorkspaceAssetByKey(ctx, p.WorkspaceID, p.AssetKey)
 	case "DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKey":
 		p := payload.(*api.DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyPayload)
 		return nil, service.deleteLegacyWorkspaceAssetByKey(ctx, p.WorkspaceID, p.AssetKey, true)
@@ -177,9 +223,6 @@ func (service *LifecycleService) invoke(ctx context.Context, name string, payloa
 	case "PostAPIPublicAssetsV2AnchorByAnchor":
 		p := payload.(*api.PostAPIPublicAssetsV2AnchorByAnchorPayload)
 		return service.createPublicAsset(ctx, p.Anchor, body)
-	case "GetAPIPublicAssetsV2AnchorByAnchorByPk":
-		p := payload.(*api.GetAPIPublicAssetsV2AnchorByAnchorByPkPayload)
-		return service.getPublicAsset(ctx, p.Anchor, p.Pk)
 	case "PatchAPIPublicAssetsV2AnchorByAnchorByPk":
 		p := payload.(*api.PatchAPIPublicAssetsV2AnchorByAnchorByPkPayload)
 		return nil, service.confirmPublicAsset(ctx, p.Anchor, p.Pk, body)
@@ -192,53 +235,27 @@ func (service *LifecycleService) invoke(ctx context.Context, name string, payloa
 	case "PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulk":
 		p := payload.(*api.PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulkPayload)
 		return nil, service.bulkAssociatePublicAssets(ctx, p.Anchor, p.EntityID, body)
-	case "GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments":
-		p := payload.(*api.GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsPayload)
-		return service.listIssueAttachmentsAPI(ctx, p.Slug, p.ProjectID, p.IssueID)
 	case "PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments":
 		p := payload.(*api.PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsPayload)
 		return service.createIssueAttachmentAPI(ctx, p.Slug, p.ProjectID, p.IssueID, body, true)
-	case "GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk":
-		p := payload.(*api.GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkPayload)
-		location, err := service.getIssueAttachmentV1(ctx, p.Slug, p.ProjectID, p.IssueID, p.Pk)
-		if err != nil {
-			return nil, err
-		}
-		return &api.GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkResult{Location: location, ContentType: stringPointer("text/html; charset=utf-8")}, nil
 	case "PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk":
 		p := payload.(*api.PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkPayload)
 		return nil, service.confirmIssueAttachmentV1(ctx, p.Slug, p.ProjectID, p.IssueID, p.Pk)
 	case "DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk":
 		p := payload.(*api.DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkPayload)
 		return nil, service.deleteIssueAttachmentV1(ctx, p.Slug, p.ProjectID, p.IssueID, p.Pk)
-	case "GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachments":
-		p := payload.(*api.GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsPayload)
-		return service.listIssueAttachmentsAPI(ctx, p.Slug, p.ProjectID, p.IssueID)
 	case "PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachments":
 		p := payload.(*api.PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsPayload)
 		return service.createIssueAttachmentAPI(ctx, p.Slug, p.ProjectID, p.IssueID, body, true)
-	case "GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk":
-		p := payload.(*api.GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkPayload)
-		location, err := service.getIssueAttachmentV1(ctx, p.Slug, p.ProjectID, p.IssueID, p.Pk)
-		if err != nil {
-			return nil, err
-		}
-		return &api.GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkResult{Location: location, ContentType: stringPointer("text/html; charset=utf-8")}, nil
 	case "PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk":
 		p := payload.(*api.PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkPayload)
 		return nil, service.confirmIssueAttachmentV1(ctx, p.Slug, p.ProjectID, p.IssueID, p.Pk)
 	case "DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk":
 		p := payload.(*api.DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkPayload)
 		return nil, service.deleteIssueAttachmentV1(ctx, p.Slug, p.ProjectID, p.IssueID, p.Pk)
-	case "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachments":
-		p := payload.(*api.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsPayload)
-		return service.listIssueAttachments(ctx, p.Slug, p.ProjectID, p.IssueID)
 	case "PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachments":
 		p := payload.(*api.PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsPayload)
 		return service.createIssueAttachment(ctx, p.Slug, p.ProjectID, p.IssueID, body)
-	case "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk":
-		p := payload.(*api.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkPayload)
-		return service.getIssueAttachment(ctx, p.Slug, p.ProjectID, p.IssueID, p.Pk)
 	case "PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk":
 		p := payload.(*api.PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkPayload)
 		return nil, service.confirmIssueAttachment(ctx, p.Slug, p.ProjectID, p.IssueID, p.Pk)
@@ -250,9 +267,6 @@ func (service *LifecycleService) invoke(ctx context.Context, name string, payloa
 	case "PostAPIWorkspacesBySlugFileAssets":
 		p := payload.(*api.PostAPIWorkspacesBySlugFileAssetsPayload)
 		return service.createLegacyWorkspaceAsset(ctx, p.Slug, body)
-	case "GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments":
-		p := payload.(*api.GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsPayload)
-		return service.listLegacyIssueAttachments(ctx, p.Slug, p.ProjectID, p.IssueID)
 	case "PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments":
 		p := payload.(*api.PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsPayload)
 		return service.createLegacyIssueAttachment(ctx, p.Slug, p.ProjectID, p.IssueID, body)
@@ -260,11 +274,15 @@ func (service *LifecycleService) invoke(ctx context.Context, name string, payloa
 		p := payload.(*api.DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkPayload)
 		return nil, service.deleteLegacyIssueAttachment(ctx, p.Slug, p.ProjectID, p.IssueID, p.Pk)
 	default:
-		if err := service.invalidMethod(ctx, name, payload); err != nil {
-			return nil, err
-		}
-		return nil, fmt.Errorf("assets lifecycle operation %s is not implemented", name)
+		return service.invokeUnsupported(ctx, name, payload)
 	}
+}
+
+func (service *LifecycleService) invokeUnsupported(ctx context.Context, name string, payload any) (any, error) {
+	if err := service.invalidMethod(ctx, name, payload); err != nil {
+		return nil, err
+	}
+	return nil, fmt.Errorf("assets lifecycle operation %s is not implemented", name)
 }
 
 func (service *LifecycleService) getLegacyUserAssetByKey(ctx context.Context, key string) (*api.GetAPIUsersFileAssetsByAssetKeyResponseDataOrGetAPIUsersFileAssetsByAssetKeyResponseError, error) {

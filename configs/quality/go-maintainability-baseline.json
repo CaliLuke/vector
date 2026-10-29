@@ -52,12 +52,6 @@
       "score": 14
     },
     {
-      "file": "internal/assets/service.go",
-      "package": "assets",
-      "function": "(*LifecycleService).invoke",
-      "score": 11
-    },
-    {
       "file": "internal/assets/source_lookup_test.go",
       "package": "assets",
       "function": "TestAssetsLifecycleMissingRowsUseSourceBodiesAtOperationBoundaries",
