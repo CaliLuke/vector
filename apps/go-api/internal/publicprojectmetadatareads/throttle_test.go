@@ -618,6 +618,25 @@ func TestAnonymousThrottleRefreshesFallbackSessionsWithoutSaveEveryRequest(t *te
 	}
 }
 
+func TestAnonymousThrottleRejectsSessionWhenFallbackRotationFails(t *testing.T) {
+	rotationErr := errors.New("session store unavailable")
+	cache := &throttleCacheStub{data: map[string][]byte{}}
+	sessions := &throttleSessionsStub{valid: true, usedFallback: true, refreshErr: rotationErr}
+	throttle, err := NewAnonymousThrottle(cache, sessions, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, false, 3600)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := httptest.NewRequest(http.MethodGet, "/", nil)
+	request.AddCookie(&http.Cookie{Name: djangosession.DefaultCookieName, Value: "fallback-session-key"})
+	allowed, _, expire, refresh, rotated, userID, err := throttle.AllowRequest(context.Background(), request)
+	if !errors.Is(err, rotationErr) || allowed || expire || refresh || rotated != nil || userID != "" {
+		t.Fatalf("allowed=%v expire=%v refresh=%v rotated=%#v userID=%q err=%v", allowed, expire, refresh, rotated, userID, err)
+	}
+	if len(cache.data) != 0 {
+		t.Fatalf("rotation failure must not consume anonymous throttle capacity: %v", cache.data)
+	}
+}
+
 func TestAnonymousThrottleDoesNotTreatXAPIKeyAsSpaceSessionAuthentication(t *testing.T) {
 	cache := &throttleCacheStub{data: map[string][]byte{}}
 	throttle, err := NewAnonymousThrottle(cache, &throttleSessionsStub{}, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, false, 0)
