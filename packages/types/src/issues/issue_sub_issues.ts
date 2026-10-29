@@ -31,7 +31,6 @@ export type TIssueSubIssuesIdMap = {
 
 export type TSubIssueOperations = {
   copyLink: (path: string) => void;
-  fetchSubIssues: (workspaceSlug: string, projectId: string, parentIssueId: string) => Promise<void>;
   addSubIssue: (workspaceSlug: string, projectId: string, parentIssueId: string, issueIds: string[]) => Promise<void>;
   refreshSubIssues: (parentIssueId: string) => void;
   updateSubIssue: (

@@ -8,7 +8,6 @@ import React from "react";
 
 // plane imports
 import { useTranslation } from "@plane/i18n";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { EIssueServiceType } from "@plane/types";
 import type { TIssue } from "@plane/types";
 import { useQueryClient } from "@tanstack/react-query";
@@ -19,6 +18,7 @@ import { IssueParentSelect } from "@/components/issues/issue-detail/parent-selec
 import { useWorkItemDetailRecord } from "@/providers/work-item-detail-record";
 import { useWorkItemDetail, useWorkItemDetailScope } from "@/hooks/use-work-item-detail";
 import { captureIssueSubItemsReconciliation } from "@/queries/issue-details";
+import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
 import { useSubIssueOperations } from "./issue-detail-widgets/sub-issues/helper";
 
 type TIssueParentSelect = {
@@ -123,19 +123,22 @@ function useParentSelectionActions(props: TIssueParentSelect, data: TParentSelec
     await Promise.all([parentQueries.refresh(), issueOperations.fetch(workspaceSlug, projectId, issueId, false)]);
   };
 
-  const handleRemoveSubIssue = async () => {
-    if (!hasParentOperationIdentity(data.parentIssue)) return;
-    try {
-      await subIssueOperations.removeSubIssue(workspaceSlug, projectId, data.parentIssue.id, issueId);
-    } catch (_error) {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: t("common.error.label"),
-        message: t("common.something_went_wrong"),
-      });
+  const entity =
+    parentScopeType === EIssueServiceType.ISSUES ? t("common.sub_work_items") : t("issue.label", { count: 1 });
+  const removal = useIssuePropertyChange(
+    { workspaceSlug, projectId, issueId, context: `parent:${parentScopeProject}:${parentScopeId}:${parentScopeType}` },
+    !props.disabled && hasParentOperationIdentity(data.parentIssue),
+    {
+      success: t("entity.remove.success", { entity }),
+      error: t("entity.remove.failed", { entity }),
     }
+  );
+  const handleRemoveSubIssue = () => {
+    const parent = data.parentIssue;
+    if (hasParentOperationIdentity(parent))
+      removal.run(() => subIssueOperations.removeSubIssue(workspaceSlug, projectId, parent.id, issueId));
   };
-  return { handleParentIssue, handleRemoveSubIssue };
+  return { handleParentIssue, handleRemoveSubIssue, isRemovingParent: removal.pending };
 }
 
 export const IssueParentSelectRoot = function IssueParentSelectRoot(props: TIssueParentSelect) {

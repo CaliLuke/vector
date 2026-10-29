@@ -24,6 +24,7 @@ import useIssuePeekOverviewRedirection from "@/hooks/use-issue-peek-overview-red
 import { usePlatformOS } from "@/hooks/use-platform-os";
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
 import { SubIssuesListItemProperties } from "./properties";
+import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
 import type { SubIssueAction } from "../types";
 import { SubIssuesListRoot } from "./root";
 
@@ -272,12 +273,25 @@ function SubIssueActions({
   onDelete: () => void;
 }) {
   const { t } = useTranslation();
+  const entity = serviceType === EIssueServiceType.ISSUES ? t("common.sub_work_items") : t("issue.label", { count: 1 });
+  const removal = useIssuePropertyChange(
+    { workspaceSlug, projectId: issue.project_id, issueId: issue.id, context: `sub-item:${parentIssueId}` },
+    canEdit && Boolean(issue.project_id),
+    {
+      success: t("entity.remove.success", { entity }),
+      error: t("entity.remove.failed", { entity }),
+    }
+  );
+  const remove = () => {
+    const projectId = issue.project_id;
+    if (projectId) removal.run(() => operations.removeSubIssue(workspaceSlug, projectId, parentIssueId, issue.id));
+  };
 
   return (
     <div className="flex-shrink-0 text-13">
       <CustomMenu placement="bottom-end" ellipsis>
         {canEdit && (
-          <CustomMenu.MenuItem onClick={onEdit}>
+          <CustomMenu.MenuItem onClick={onEdit} disabled={removal.pending}>
             <div className="flex items-center gap-2">
               <EditIcon className="h-3.5 w-3.5" strokeWidth={2} />
               <span>{t("issue.edit")}</span>
@@ -293,9 +307,7 @@ function SubIssueActions({
         </CustomMenu.MenuItem>
 
         {canEdit && issue.project_id && (
-          <CustomMenu.MenuItem
-            onClick={() => operations.removeSubIssue(workspaceSlug, issue.project_id!, parentIssueId, issue.id)}
-          >
+          <CustomMenu.MenuItem onClick={remove} disabled={removal.disabled}>
             <div className="flex items-center gap-2">
               <CloseIcon className="h-3.5 w-3.5" strokeWidth={2} />
               {serviceType === EIssueServiceType.ISSUES ? t("issue.remove.parent.label") : t("issue.remove.label")}
@@ -304,7 +316,7 @@ function SubIssueActions({
         )}
 
         {canEdit && (
-          <CustomMenu.MenuItem onClick={onDelete}>
+          <CustomMenu.MenuItem onClick={onDelete} disabled={removal.pending}>
             <div className="flex items-center gap-2">
               <TrashIcon className="h-3.5 w-3.5" strokeWidth={2} />
               <span>{t("issue.delete.label")}</span>

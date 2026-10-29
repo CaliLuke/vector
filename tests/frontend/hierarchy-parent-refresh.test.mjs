@@ -4,6 +4,7 @@ import test from "node:test";
 
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { React, act } from "./helpers/react.mjs";
+import { settleQuery } from "./helpers/query-router.mjs";
 
 const stubs = {
   "@plane/i18n": `export const useTranslation=()=>({t:key=>key});`,
@@ -18,11 +19,13 @@ const stubs = {
 };
 registerWebTestModules(stubs);
 const { IssueParentSelectRoot } = await import("../../apps/web/core/components/issues/parent-select-root.tsx");
+const { identityKeys } = await import("../../apps/web/core/queries/identity.ts");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 
 await test("cross-project parent changes update the child and scope sub-item actions to the parent project", async (t) => {
   const env = await createReactDomTestEnvironment();
   const client = new QueryClient();
+  client.setQueryData(identityKeys.currentUser(), { id: "alice" });
   t.after(() => env.unmount());
   t.after(() => client.clear());
   const calls = [];
@@ -62,6 +65,7 @@ await test("cross-project parent changes update the child and scope sub-item act
   assert.deepEqual(globalThis.parentFixture.parentQueries[1], ["parent", "new-parent"]);
   calls.length = 0;
   await act(async () => document.querySelectorAll("button")[1].click());
+  await settleQuery();
   assert.deepEqual(calls, [["unlink", "workspace", "child-project", "parent", "child"]]);
   assert.deepEqual(globalThis.parentFixture.scope, ["workspace", "parent-project", "parent", "issues"]);
 });
@@ -69,6 +73,7 @@ await test("cross-project parent changes update the child and scope sub-item act
 await test("parent_id fallback keeps the relation while waiting for the canonical parent read", async (t) => {
   const env = await createReactDomTestEnvironment();
   const client = new QueryClient();
+  client.setQueryData(identityKeys.currentUser(), { id: "alice" });
   t.after(() => env.unmount());
   t.after(() => client.clear());
   const child = { id: "child", project_id: "child-project", parent_id: "parent", parent: {} };

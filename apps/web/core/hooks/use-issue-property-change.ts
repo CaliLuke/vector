@@ -64,5 +64,5 @@ export function useIssuePropertyChange(
     );
   };
 
-  return { run, disabled: !enabled || pending };
+  return { run, pending, disabled: !enabled || pending };
 }

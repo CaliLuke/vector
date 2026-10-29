@@ -36,7 +36,7 @@ registerWebTestModules({
   "@/hooks/use-issue-peek-overview-redirection": "export default ()=>({handleRedirection:()=>{}});",
   "@/components/issues/issue-detail/issue-identifier": "export const IssueIdentifier=()=>null;",
   "@/providers/issue-detail-ui-state":
-    "export const useIssueDetailUiState=()=>({toggleCreateIssueModal:()=>{},toggleDeleteIssueModal:()=>{}});",
+    "export const useIssueDetailUiState=()=>({toggleCreateIssueModal:()=>{},toggleDeleteIssueModal:()=>{},toggleParentIssueModal:()=>{}});",
   "@/components/dropdowns/priority": dropdown("priority", "PriorityDropdown"),
   "@/components/dropdowns/state/dropdown": dropdown("state", "StateDropdown"),
   "@/components/dropdowns/member/dropdown": dropdown("assignee", "MemberDropdown"),
@@ -70,6 +70,30 @@ const { SubIssuesCollapsibleContent } =
   await import("../core/components/issues/issue-detail-widgets/sub-issues/content.tsx");
 const { SubWorkItemPreferencesProvider } = await import("../core/providers/sub-work-item-preferences.tsx");
 const { IssueService } = await import("../core/services/issue/index.ts");
+registerPermissionUiStubs("/components/issues/issue-detail/parent-select.tsx", {
+  "@/hooks/use-projects": catalogue,
+  "../work-item-selection-modal": "export const WorkItemSelectionModal=()=>null;",
+});
+const { IssueParentSelectRoot } = await import("../core/components/issues/parent-select-root.tsx");
+const { WorkItemDetailRecordProvider } = await import("../core/providers/work-item-detail-record.tsx");
+const { useWorkItemDetail } = await import("../core/hooks/use-work-item-detail.ts");
+function ParentDetail({ disabled }) {
+  const { issue } = useWorkItemDetail("acme", "p3", "leaf");
+  if (!issue) return null;
+  return React.createElement(
+    WorkItemDetailRecordProvider,
+    {
+      value: { workspaceSlug: "acme", projectId: "p3", issueId: "leaf", serviceType: "issues", issue },
+    },
+    React.createElement(IssueParentSelectRoot, {
+      workspaceSlug: "acme",
+      projectId: "p3",
+      issueId: "leaf",
+      disabled,
+      issueOperations: {},
+    })
+  );
+}
 const { forgetItemReads } = await import("../core/queries/work-item-access.ts");
 const identity = await import("../core/queries/identity.ts");
 async function click(button) {
@@ -81,7 +105,7 @@ async function click(button) {
   await settleQuery();
 }
 
-async function setup(t) {
+async function setup(t, { parentPicker = false } = {}) {
   const fixture = await createPermissionUiFixture(t, {
     path: "/acme/projects/p1/issues/P1-1",
     workspaceRole: 15,
@@ -121,6 +145,7 @@ async function setup(t) {
   ]);
   const reads = [],
     writes = [];
+  const transport = { patch: async () => {} };
   globalThis.nestedToasts = [];
   globalThis.nestedEditModal = undefined;
   t.mock.method(IssueService.prototype, "subIssues", async (_workspace, project, id) => {
@@ -129,11 +154,18 @@ async function setup(t) {
     if (!parent || parent.project_id !== project) throw { status: 404 };
     return { sub_issues: [...rows.values()].filter((row) => row.parent_id === id) };
   });
+  t.mock.method(IssueService.prototype, "retrieve", async (_workspace, project, id) => {
+    const row = rows.get(id);
+    assert.equal(row.project_id, project);
+    return { ...row, parent: rows.get(row.parent_id) };
+  });
   t.mock.method(IssueService.prototype, "patchIssue", async (workspace, project, id, data) => {
     writes.push(["patch", workspace, project, id, data]);
     const row = rows.get(id);
     assert.equal(row.project_id, project);
-    const next = { ...row, ...data };
+    await transport.patch();
+    const next = { ...row, ...data, parent: rows.get(data.parent_id ?? row.parent_id) };
+    if (data.parent_id === null) next.parent = undefined;
     rows.set(id, next);
     return next;
   });
@@ -142,24 +174,40 @@ async function setup(t) {
     assert.equal(rows.get(id).project_id, project);
     rows.delete(id);
   });
-  await fixture.render(
-    React.createElement(
-      SubWorkItemPreferencesProvider,
-      null,
-      React.createElement(SubIssuesCollapsibleContent, {
-        workspaceSlug: "acme",
-        projectId: "p1",
-        parentIssueId: "root",
-        disabled: false,
-      })
-    )
-  );
+  const render = (disabled = false) =>
+    fixture.render(
+      React.createElement(
+        SubWorkItemPreferencesProvider,
+        null,
+        parentPicker
+          ? React.createElement(ParentDetail, { disabled })
+          : React.createElement(SubIssuesCollapsibleContent, {
+              workspaceSlug: "acme",
+              projectId: "p1",
+              parentIssueId: "root",
+              disabled,
+            })
+      )
+    );
+  await render();
   await settleQuery();
   const row = (id) => fixture.environment.container.querySelector(`#issue-${id}`)?.parentElement;
   const expand = () => click(row("nested")?.querySelector('[aria-label="Expand sub-items"]'));
   const action = (id, text) =>
     [...row(id).querySelectorAll("button")].find((button) => button.textContent.includes(text));
-  return { ...fixture, rows, reads, writes, row, click, expand, action };
+  return {
+    ...fixture,
+    render,
+    transport,
+    rows,
+    reads,
+    writes,
+    row,
+    click,
+    expand,
+    action,
+    removeParent: () => fixture.environment.container.querySelector('[aria-label="common.remove"]'),
+  };
 }
 await test("expanding a cross-project child reads only that child's own parent scope", async (t) => {
   const view = await setup(t);
@@ -238,4 +286,118 @@ await test("a nested delete is rejected after access to its parent is revoked", 
   assert.deepEqual(view.writes, []);
   assert.equal(globalThis.nestedToasts.length, 1);
   assert.equal(globalThis.nestedToasts[0].type, "error");
+});
+
+await test("a rejected parent removal shows one error and allows retry", async (t) => {
+  const view = await setup(t, { parentPicker: true });
+  view.transport.patch = async () => {
+    throw new Error("save failed");
+  };
+  await view.click(view.removeParent());
+  assert.equal(view.writes.length, 1);
+  assert.equal(globalThis.nestedToasts.length, 1);
+  assert.equal(globalThis.nestedToasts[0].type, "error");
+  assert.ok(view.removeParent());
+  view.transport.patch = async () => {};
+  await view.click(view.removeParent());
+  assert.equal(view.writes.length, 2);
+  assert.equal(view.rows.get("leaf").parent_id, null);
+  assert.equal(Boolean(view.removeParent()), false);
+});
+await test("a rejected row removal is handled once and leaves its row for retry", async (t) => {
+  const view = await setup(t);
+  await view.expand();
+  view.transport.patch = async () => {
+    throw new Error("save failed");
+  };
+  await view.click(view.action("leaf", "issue.remove.parent.label"));
+  assert.equal(view.writes.length, 1);
+  assert.equal(globalThis.nestedToasts.length, 1);
+  assert.equal(globalThis.nestedToasts[0].type, "error");
+  assert.ok(view.row("leaf"));
+  view.transport.patch = async () => {};
+  await view.click(view.action("leaf", "issue.remove.parent.label"));
+  assert.equal(view.writes.length, 2);
+  assert.equal(Boolean(view.row("leaf")), false);
+});
+await test("a pending row removal cannot be submitted twice", async (t) => {
+  const view = await setup(t);
+  await view.expand();
+  const pending = Promise.withResolvers();
+  view.transport.patch = () => pending.promise;
+  const remove = view.action("leaf", "issue.remove.parent.label");
+  await act(async () => {
+    remove.click();
+    remove.click();
+    await Promise.resolve();
+  });
+  await settleQuery();
+  const writesBeforeSettlement = view.writes.length;
+  const disabledBeforeSettlement = view.action("leaf", "issue.remove.parent.label").disabled;
+  const propertiesDisabled = view.row("leaf").querySelector('[data-property="priority"]').disabled;
+  await act(() => pending.resolve());
+  await settleQuery();
+  assert.equal(writesBeforeSettlement, 1);
+  assert.equal(disabledBeforeSettlement, true);
+  assert.equal(propertiesDisabled, true);
+  assert.equal(Boolean(view.row("leaf")), false);
+});
+await test("a pending parent removal cannot be submitted twice", async (t) => {
+  const view = await setup(t, { parentPicker: true });
+  const pending = Promise.withResolvers();
+  view.transport.patch = () => pending.promise;
+  const remove = view.removeParent();
+  await act(async () => {
+    remove.click();
+    remove.click();
+    await Promise.resolve();
+  });
+  await settleQuery();
+  const writesBeforeSettlement = view.writes.length;
+  const disabledBeforeSettlement = view.removeParent().disabled;
+  await act(() => pending.resolve());
+  await settleQuery();
+  assert.equal(writesBeforeSettlement, 1);
+  assert.equal(disabledBeforeSettlement, true);
+  assert.equal(Boolean(view.removeParent()), false);
+});
+await test("a late failed parent removal cannot notify a replacement session", async (t) => {
+  const view = await setup(t, { parentPicker: true });
+  const pending = Promise.withResolvers();
+  view.transport.patch = () => pending.promise;
+  await view.click(view.removeParent());
+  await act(() => identity.advanceIdentitySession(view.client));
+  await settleQuery();
+  await act(() => pending.reject(new Error("old failure")));
+  await settleQuery();
+  assert.deepEqual(globalThis.nestedToasts, []);
+});
+await test("a late successful row removal cannot notify a replacement session", async (t) => {
+  const view = await setup(t);
+  await view.expand();
+  const pending = Promise.withResolvers();
+  view.transport.patch = () => pending.promise;
+  await view.click(view.action("leaf", "issue.remove.parent.label"));
+  await act(() => identity.advanceIdentitySession(view.client));
+  await settleQuery();
+  await act(() => pending.resolve());
+  await settleQuery();
+  assert.equal(view.writes.length, 1);
+  assert.deepEqual(globalThis.nestedToasts, []);
+});
+
+await test("a successful row removal reports one success", async (t) => {
+  const view = await setup(t);
+  await view.expand();
+  await view.click(view.action("leaf", "issue.remove.parent.label"));
+  assert.equal(Boolean(view.row("leaf")), false);
+  assert.equal(globalThis.nestedToasts.length, 1);
+  assert.equal(globalThis.nestedToasts[0].type, "success");
+});
+await test("a successful parent removal reports one success", async (t) => {
+  const view = await setup(t, { parentPicker: true });
+  await view.click(view.removeParent());
+  assert.equal(Boolean(view.removeParent()), false);
+  assert.equal(globalThis.nestedToasts.length, 1);
+  assert.equal(globalThis.nestedToasts[0].type, "success");
 });

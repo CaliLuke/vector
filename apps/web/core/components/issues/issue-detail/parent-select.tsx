@@ -27,7 +27,8 @@ type TIssueParentSelect = {
   parentIssue?: Partial<TIssue>;
   hasParentRelation: boolean;
   handleParentIssue: (issueId: string, parentProjectId: string) => Promise<void>;
-  handleRemoveSubIssue: () => Promise<void>;
+  handleRemoveSubIssue: () => void;
+  isRemovingParent?: boolean;
   workItemLink?: string;
 };
 
@@ -48,6 +49,7 @@ export const IssueParentSelect = function IssueParentSelect(props: TIssueParentS
     hasParentRelation,
     handleParentIssue,
     handleRemoveSubIssue,
+    isRemovingParent = false,
     workItemLink,
   } = props;
   const { isParentIssueModalOpen, toggleParentIssueModal } = useIssueDetailUiState();
@@ -76,6 +78,7 @@ export const IssueParentSelect = function IssueParentSelect(props: TIssueParentS
           hasParentRelation={hasParentRelation}
           parentIssue={parentIssue}
           handleRemoveSubIssue={handleRemoveSubIssue}
+          isRemovingParent={isRemovingParent}
           openParentPicker={() => toggleParentIssueModal(issueId)}
         />
       </div>
@@ -149,12 +152,14 @@ function ParentActions({
   hasParentRelation,
   parentIssue,
   handleRemoveSubIssue,
+  isRemovingParent,
   openParentPicker,
 }: {
   disabled: boolean;
   hasParentRelation: boolean;
   parentIssue: Partial<TIssue> | undefined;
-  handleRemoveSubIssue: () => Promise<void>;
+  handleRemoveSubIssue: () => void;
+  isRemovingParent?: boolean;
   openParentPicker: () => void;
 }) {
   const { t } = useTranslation();
@@ -168,7 +173,8 @@ function ParentActions({
             type="button"
             aria-label={t("common.remove")}
             className="flex items-center"
-            onClick={() => void handleRemoveSubIssue()}
+            onClick={handleRemoveSubIssue}
+            disabled={isRemovingParent}
           >
             <CloseIcon className="h-2.5 w-2.5 text-tertiary hover:text-danger-primary" />
           </button>
@@ -179,6 +185,7 @@ function ParentActions({
         aria-label={t(hasParentRelation ? "common.actions.edit" : "issue.add.parent")}
         className="flex-shrink-0 p-1 text-placeholder opacity-0 group-hover:opacity-100"
         onClick={openParentPicker}
+        disabled={isRemovingParent}
       >
         <EditIcon className="h-2.5 w-2.5 flex-shrink-0" />
       </button>
