@@ -12,6 +12,12 @@ import { registerProjectCardModuleHooks } from "./helpers/project-card-module-ho
 const state = { navigations: [] };
 registerProjectCardModuleHooks({ React, state, showModalContents: true });
 
+// Finish shared imports before a test installs DOM globals and scoped mocks.
+const { ProjectCard } = await import("../../apps/web/core/components/project/card.tsx");
+const { currentUserOptions } = await import("../../apps/web/core/queries/identity.ts");
+const { WorkspaceService } = await import("../../apps/web/core/services/workspace.service.ts");
+const { FavoriteService } = await import("../../apps/web/core/services/favorite/favorite.service.ts");
+
 const project = { id: "project-id", name: "Go Plane", identifier: "GOPLANE", member_role: 20, members: [], network: 2 };
 
 async function setup(t, overrides = {}) {
@@ -22,11 +28,7 @@ async function setup(t, overrides = {}) {
   t.mock.method(console, "error", (...args) => errors.push(args.join(" ")));
   t.after(() => assert.deepEqual(errors, []));
   state.navigations = [];
-  const { ProjectCard } = await import("../../apps/web/core/components/project/card.tsx");
   const fixture = createRouterFixture("/default/projects/");
-  const { currentUserOptions } = await import("../../apps/web/core/queries/identity.ts");
-  const { WorkspaceService } = await import("../../apps/web/core/services/workspace.service.ts");
-  const { FavoriteService } = await import("../../apps/web/core/services/favorite/favorite.service.ts");
   t.mock.method(WorkspaceService.prototype, "fetchWorkspaceMembers", async () => []);
   t.mock.method(FavoriteService.prototype, "getFavorites", async () => []);
   client.setQueryData(currentUserOptions().queryKey, { id: "alice" });

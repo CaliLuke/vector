@@ -9,6 +9,14 @@ import { registerProjectCardModuleHooks } from "./helpers/project-card-module-ho
 
 registerProjectCardModuleHooks({ React, state: {}, showModalContents: false });
 
+// Load the shared module graph before a test owns DOM globals and mocks. A test
+// timeout cannot cancel imports, so late setup must not overlap the next case.
+const { currentUserOptions } = await import("../../apps/web/core/queries/identity.ts");
+const { FavoriteService } = await import("../../apps/web/core/services/favorite/favorite.service.ts");
+const { WorkspaceService } = await import("../../apps/web/core/services/workspace.service.ts");
+const { EUserPermissions, EUserWorkspaceRoles } = await import("../../packages/types/dist/index.mjs");
+const { ProjectCard } = await import("../../apps/web/core/components/project/card.tsx");
+
 const project = { id: "project-id", name: "Go Plane", identifier: "GOPLANE", members: [], network: 2 };
 
 async function renderProjectCard(t, projectRoles) {
@@ -19,11 +27,7 @@ async function renderProjectCard(t, projectRoles) {
   t.mock.method(console, "error", (...args) => errors.push(args.join(" ")));
   t.after(() => assert.deepEqual(errors, []));
   const fixture = createRouterFixture("/default/projects/");
-  const { currentUserOptions } = await import("../../apps/web/core/queries/identity.ts");
-  const { FavoriteService } = await import("../../apps/web/core/services/favorite/favorite.service.ts");
-  const { EUserWorkspaceRoles } = await import("../../packages/types/dist/index.mjs");
   t.mock.method(FavoriteService.prototype, "getFavorites", async () => []);
-  const { WorkspaceService } = await import("../../apps/web/core/services/workspace.service.ts");
   t.mock.method(WorkspaceService.prototype, "fetchWorkspaceMembers", async () => []);
   client.setQueryData(currentUserOptions().queryKey, { id: "alice" });
   await seedPermissionQueries(client, {
@@ -32,7 +36,6 @@ async function renderProjectCard(t, projectRoles) {
     workspaceRole: EUserWorkspaceRoles.ADMIN,
     projectRoles,
   });
-  const { ProjectCard } = await import("../../apps/web/core/components/project/card.tsx");
   await fixture.render(
     environment,
     React.createElement(QueryClientProvider, { client }, React.createElement(ProjectCard, { project }))
@@ -53,7 +56,6 @@ await test("workspace admin without project membership cannot favorite a project
 });
 
 await test("a canonical project member can favorite the project card", async (t) => {
-  const { EUserPermissions } = await import("../../packages/types/dist/index.mjs");
   const container = await renderProjectCard(t, { "project-id": EUserPermissions.MEMBER });
   assert.equal(
     container.querySelectorAll('button[class*="bg-white/10"]').length,
