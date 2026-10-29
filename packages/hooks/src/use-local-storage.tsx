@@ -6,6 +6,14 @@
 
 import { useState, useEffect, useCallback } from "react";
 
+type LocalStorageChange<T> = { type: "set"; value: T } | { type: "clear" };
+
+function notifyLocalStorageChange<T>(key: string, persisted: boolean, change: LocalStorageChange<T>) {
+  if (typeof window === "undefined") return;
+  const name = `local-storage:${key}`;
+  window.dispatchEvent(persisted ? new Event(name) : new window.CustomEvent(name, { detail: change }));
+}
+
 const getValueFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
   if (typeof window === "undefined") return defaultValue;
   try {
@@ -42,31 +50,47 @@ export const useLocalStorage = <T,>(key: string, initialValue: T) => {
     setStored({ key, value: getValueFromLocalStorage(key, initialValue) });
   }
 
-  const setValue = useCallback(
-    (value: T) => {
-      setValueIntoLocalStorage(key, value);
-      setStored({ key, value });
-      if (typeof window !== "undefined") window.dispatchEvent(new Event(`local-storage:${key}`));
-    },
+  const updateStoredValue = useCallback(
+    (value: T | null) => setStored((current) => (current.key === key ? { key, value } : current)),
     [key]
   );
 
+  const setValue = useCallback(
+    (value: T) => {
+      const persisted = setValueIntoLocalStorage(key, value);
+      updateStoredValue(value);
+      notifyLocalStorageChange(key, persisted, { type: "set", value });
+    },
+    [key, updateStoredValue]
+  );
+
   const clearValue = useCallback(() => {
+    let persisted = false;
     if (typeof window !== "undefined") {
       try {
         window.localStorage.removeItem(key);
+        persisted = true;
       } catch (_error) {
         // Storage can be unavailable in restricted browser contexts.
       }
-      window.dispatchEvent(new Event(`local-storage:${key}`));
     }
-    setStored({ key, value: null });
-  }, [key]);
+    notifyLocalStorageChange(key, persisted, { type: "clear" });
+    updateStoredValue(null);
+  }, [key, updateStoredValue]);
 
-  const reHydrate = useCallback(() => {
-    const data = getValueFromLocalStorage(key, initialValue);
-    setStored({ key, value: data });
-  }, [key, initialValue]);
+  const reHydrate = useCallback(
+    (event: Event | CustomEvent<LocalStorageChange<T>>) => {
+      const change = "detail" in event ? event.detail : undefined;
+      const data =
+        change?.type === "set"
+          ? change.value
+          : change?.type === "clear"
+            ? initialValue
+            : getValueFromLocalStorage(key, initialValue);
+      updateStoredValue(data);
+    },
+    [key, initialValue, updateStoredValue]
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;

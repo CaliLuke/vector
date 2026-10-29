@@ -7,18 +7,6 @@
       "functions": 0,
       "branches": 0
     },
-    "src/auth-form/auth-forgot-password.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
-    },
-    "src/auth-form/auth-form.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
-    },
     "src/auth-form/auth-input.tsx": {
       "lines": 0,
       "statements": 0,
@@ -120,24 +108,6 @@
       "statements": 0,
       "functions": 0,
       "branches": 0
-    },
-    "src/card/card.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
-    },
-    "src/card/helper.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
-    },
-    "src/card/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
     },
     "src/collapsible/collapsible-button.tsx": {
       "lines": 0,
