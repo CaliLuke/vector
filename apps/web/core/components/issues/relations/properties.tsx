@@ -5,6 +5,9 @@
  */
 
 import React from "react";
+import { useTranslation } from "@plane/i18n";
+import { useIssueAction } from "@/hooks/use-issue-action";
+import type { useIssueRelations } from "@/hooks/use-issue-resources";
 
 // components
 import type { TIssuePriorities } from "@plane/types";
@@ -22,29 +25,28 @@ type Props = {
   issue: TIssue;
   disabled: boolean;
   issueOperations: TRelationIssueOperations;
+  captureRelations: ReturnType<typeof useIssueRelations>["captureReconciliation"];
 };
 
 export const RelationIssueProperty = function RelationIssueProperty(props: Props) {
-  const { workspaceSlug, issueId, issue, disabled, issueOperations } = props;
-
-  // handlers
-  const handleStateChange = (val: string) =>
-    issue.project_id &&
-    issueOperations.update(workspaceSlug, issue.project_id, issueId, {
-      state_id: val,
+  const { workspaceSlug, issueId, issue, disabled: readOnly, issueOperations, captureRelations } = props;
+  const { t } = useTranslation();
+  const action = useIssueAction(
+    { workspaceSlug, projectId: issue.project_id, issueId, context: "relation-property" },
+    !readOnly && Boolean(issue.project_id),
+    { success: t("entity.update.success", { entity: t("common.work_item") }) }
+  );
+  const disabled = action.disabled;
+  const update = (data: Partial<TIssue>) =>
+    action.run(async () => {
+      const owner = captureRelations();
+      if (!owner.isCurrent() || !issue.project_id) throw new Error("The work item relation has changed.");
+      await issueOperations.update(data);
+      await owner.refresh();
     });
-
-  const handlePriorityChange = (val: TIssuePriorities) =>
-    issue.project_id &&
-    issueOperations.update(workspaceSlug, issue.project_id, issueId, {
-      priority: val,
-    });
-
-  const handleAssigneeChange = (val: string[]) =>
-    issue.project_id &&
-    issueOperations.update(workspaceSlug, issue.project_id, issueId, {
-      assignee_ids: val,
-    });
+  const handleStateChange = (state_id: string) => update({ state_id });
+  const handlePriorityChange = (priority: TIssuePriorities) => update({ priority });
+  const handleAssigneeChange = (assignee_ids: string[]) => update({ assignee_ids });
 
   return (
     <div className="relative flex items-center gap-2">

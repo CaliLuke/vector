@@ -24,6 +24,7 @@ import {
   issueLinksOptions,
   issueLinkMutationOptions,
   issueRelationsOptions,
+  captureIssueRelationsReconciliation,
   issueRelationMutationOptions,
 } from "@/queries/issue-resources";
 
@@ -296,5 +297,9 @@ export function useIssueRelations({
     },
     [mutateRelation]
   );
-  return { ...access, query, relations, create, remove, isMutating: isPending };
+  const captureReconciliation = useCallback(
+    () => captureIssueRelationsReconciliation(access.client, access.scope),
+    [access.client, access.scope]
+  );
+  return { ...access, query, relations, create, remove, captureReconciliation, isMutating: isPending };
 }

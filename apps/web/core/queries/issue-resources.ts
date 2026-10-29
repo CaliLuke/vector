@@ -292,6 +292,19 @@ async function refreshAcceptedCollection<TData>(
   await invalidateCapturedCollection(client, owner, query);
 }
 
+/** Capture the relation collection before another domain accepts a work-item write. */
+export function captureIssueRelationsReconciliation(client: QueryClient, scope: TIssueResourceScope) {
+  const owner = captureMutationOwner(client, scope, "relations");
+  const isCurrent = () => Boolean(owner.query && owner.isVerified() && owner.isQueryCurrent());
+  return {
+    isCurrent,
+    refresh: async () => {
+      if (!isCurrent()) return;
+      await refreshAcceptedCollection(client, owner);
+    },
+  };
+}
+
 export function issueLinkMutationOptions(client: QueryClient, scope: TIssueResourceScope) {
   const service = new IssueService(scope.serviceType);
   const queryKey = issueResourceKeys.collection(scope, "links");

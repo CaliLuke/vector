@@ -4,7 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
+import type { RelationItemAction } from "../../relations/types";
 
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -31,7 +33,10 @@ type Props = {
   issueServiceType?: TIssueServiceType;
 };
 
-type TIssueCrudState = { toggle: boolean; issueId: string | undefined; issue: TIssue | undefined };
+type RelationAction = RelationItemAction & {
+  source: ReturnType<ReturnType<typeof useIssueRelations>["captureReconciliation"]>;
+  scopeKey: string;
+};
 
 type TVisibleRelationRow = {
   relationKey: TIssueRelationTypes;
@@ -90,76 +95,19 @@ export const RelationsCollapsibleContent = function RelationsCollapsibleContent(
   const { workspaceSlug, projectId, issueId, disabled = false, issueServiceType = EIssueServiceType.ISSUES } = props;
   // plane hooks
   const { t } = useTranslation();
-  // state
-  const [issueCrudState, setIssueCrudState] = useState<{
-    update: TIssueCrudState;
-    delete: TIssueCrudState;
-    removeRelation: TIssueCrudState & { relationKey: string | undefined; relationIssueId: string | undefined };
-  }>({
-    update: {
-      toggle: false,
-      issueId: undefined,
-      issue: undefined,
-    },
-    delete: {
-      toggle: false,
-      issueId: undefined,
-      issue: undefined,
-    },
-    removeRelation: {
-      toggle: false,
-      issueId: undefined,
-      issue: undefined,
-      relationKey: undefined,
-      relationIssueId: undefined,
-    },
-  });
-
-  // store hooks
-  const { toggleDeleteIssueModal, toggleCreateIssueModal } = useIssueDetailUiState(issueServiceType);
-
-  // helper
-  const issueOperations = useRelationOperations(workspaceSlug, projectId, issueId);
-  const epicOperations = useRelationOperations(workspaceSlug, projectId, issueId, EIssueServiceType.EPICS);
-
-  // derived values
-  const { relations, query, isError, retry } = useIssueRelations({
+  const [action, setAction] = useState<RelationAction>();
+  const { relations, query, isError, retry, captureReconciliation, scope } = useIssueRelations({
     workspaceSlug,
     projectId,
     issueId,
     serviceType: issueServiceType,
   });
-  const ISSUE_RELATION_OPTIONS = useTimeLineRelationOptions();
-
-  const handleIssueCrudState = (
-    key: "update" | "delete" | "removeRelation",
-    _issueId: string | null,
-    issue: TIssue | null = null,
-    relationKey?: TIssueRelationTypes | null,
-    relationIssueId?: string | null
-  ) => {
-    setIssueCrudState((prevState) => ({
-      ...prevState,
-      [key]: {
-        toggle: !prevState[key].toggle,
-        issueId: _issueId,
-        issue: issue,
-        relationKey: relationKey,
-        relationIssueId: relationIssueId,
-      },
-    }));
+  const scopeKey = JSON.stringify(scope);
+  const visibleRelations = getVisibleRelationRows(relations, useTimeLineRelationOptions());
+  const onAction = (itemAction: RelationItemAction) => {
+    if (disabled || !itemAction.issue.project_id) return;
+    setAction({ ...itemAction, source: captureReconciliation(), scopeKey });
   };
-
-  // if relations are not available, return null
-  const visibleRelations = getVisibleRelationRows(relations, ISSUE_RELATION_OPTIONS);
-
-  const shouldRenderIssueDeleteModal =
-    issueCrudState?.delete?.toggle &&
-    issueCrudState?.delete?.issue &&
-    issueCrudState.delete.issueId &&
-    issueCrudState.delete.issue.id;
-
-  const shouldRenderIssueUpdateModal = issueCrudState?.update?.toggle && issueCrudState?.update?.issue;
 
   return (
     <>
@@ -184,7 +132,7 @@ export const RelationsCollapsibleContent = function RelationsCollapsibleContent(
                 relationKey={relation.relationKey}
                 issues={relation.issues}
                 disabled={disabled}
-                handleIssueCrudState={handleIssueCrudState}
+                onAction={onAction}
                 issueServiceType={issueServiceType}
               />
             </Collapsible>
@@ -192,66 +140,85 @@ export const RelationsCollapsibleContent = function RelationsCollapsibleContent(
         ))}
       </div>
 
-      {shouldRenderIssueDeleteModal && (
-        <DeleteIssueModal
-          isOpen={issueCrudState?.delete?.toggle}
-          handleClose={() => {
-            handleIssueCrudState("delete", null, null);
-            toggleDeleteIssueModal(null);
-          }}
-          data={issueCrudState?.delete?.issue as TIssue}
-          onSubmit={async () => {
-            if (
-              issueCrudState.delete.issue &&
-              issueCrudState.delete.issue.id &&
-              issueCrudState.delete.issue.project_id
-            ) {
-              const deleteOperation = issueCrudState.delete.issue?.is_epic
-                ? epicOperations.remove
-                : issueOperations.remove;
-              await deleteOperation(
-                workspaceSlug,
-                issueCrudState.delete.issue?.project_id,
-                issueCrudState?.delete?.issue?.id
-              );
-              void query.refetch().catch(() => undefined);
-            }
-          }}
-          isEpic={!!issueCrudState.delete.issue?.is_epic}
+      {action && action.scopeKey === scopeKey && !disabled && (
+        <RelationActionModal
+          key={JSON.stringify([
+            workspaceSlug,
+            projectId,
+            issueId,
+            issueServiceType,
+            action.kind,
+            action.issue.project_id,
+            action.issue.id,
+          ])}
+          workspaceSlug={workspaceSlug}
+          parentServiceType={issueServiceType}
+          action={action}
+          onClose={() => setAction(undefined)}
         />
-      )}
-
-      {shouldRenderIssueUpdateModal && (
-        <>
-          {issueCrudState?.update?.issue?.is_epic ? (
-            <CreateUpdateEpicModal
-              isOpen={issueCrudState?.update?.toggle}
-              onClose={() => {
-                handleIssueCrudState("update", null, null);
-                toggleCreateIssueModal(false);
-              }}
-              data={issueCrudState?.update?.issue ?? undefined}
-              onSubmit={async (_issue: TIssue) => {
-                if (!_issue.id || !_issue.project_id) return;
-                await epicOperations.update(workspaceSlug, _issue.project_id, _issue.id, _issue);
-              }}
-            />
-          ) : (
-            <CreateUpdateIssueModal
-              isOpen={issueCrudState?.update?.toggle}
-              onClose={() => {
-                handleIssueCrudState("update", null, null);
-                toggleCreateIssueModal(false);
-              }}
-              data={issueCrudState?.update?.issue ?? undefined}
-              onSubmit={async (_issue: TIssue) => {
-                if (!_issue.id || !_issue.project_id) return;
-                await issueOperations.update(workspaceSlug, _issue.project_id, _issue.id, _issue);
-              }}
-            />
-          )}
-        </>
       )}
     </>
   );
 };
+
+function RelationActionModal({
+  workspaceSlug,
+  parentServiceType,
+  action,
+  onClose,
+}: {
+  workspaceSlug: string;
+  parentServiceType: TIssueServiceType;
+  action: RelationAction;
+  onClose: () => void;
+}) {
+  const { issue } = action;
+  const operations = useRelationOperations(
+    workspaceSlug,
+    issue.project_id ?? "",
+    issue.id,
+    issue.is_epic ? EIssueServiceType.EPICS : EIssueServiceType.ISSUES
+  );
+  const acknowledge = useMemo(() => operations.captureAcceptedUpdate(), [operations]);
+  const isMounted = useCommittedScope(JSON.stringify([workspaceSlug, issue.project_id, issue.id]));
+  const { toggleDeleteIssueModal, toggleCreateIssueModal } = useIssueDetailUiState(parentServiceType);
+  if (action.kind === "delete")
+    return (
+      <DeleteIssueModal
+        isOpen
+        handleClose={() => {
+          onClose();
+          toggleDeleteIssueModal(null);
+        }}
+        data={issue}
+        onSubmit={async () => {
+          if (!action.source.isCurrent() || !issue.project_id) throw new Error("The work item relation has changed.");
+          await operations.remove();
+          await action.source.refresh();
+        }}
+        isEpic={!!issue.is_epic}
+      />
+    );
+  const EditModal = issue.is_epic ? CreateUpdateEpicModal : CreateUpdateIssueModal;
+  return (
+    <EditModal
+      isOpen
+      onClose={() => {
+        onClose();
+        toggleCreateIssueModal(false);
+      }}
+      data={issue}
+      onSubmit={async (record: TIssue) => {
+        if (
+          !isMounted() ||
+          !action.source.isCurrent() ||
+          record.id !== issue.id ||
+          record.project_id !== issue.project_id
+        )
+          return;
+        await acknowledge(record);
+        await action.source.refresh();
+      }}
+    />
+  );
+}

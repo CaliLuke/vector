@@ -13,19 +13,15 @@ import type { TIssueRelationTypes } from "@plane/types";
 // local imports
 import { RelationIssueListItem } from "./issue-list-item";
 
+import type { RelationItemAction } from "./types";
+
 type Props = {
   workspaceSlug: string;
   projectId: string;
   issueId: string;
   issues: TIssue[];
   relationKey: TIssueRelationTypes;
-  handleIssueCrudState: (
-    key: "update" | "delete" | "removeRelation",
-    issueId: string,
-    issue?: TIssue | null,
-    relationKey?: TIssueRelationTypes | null,
-    relationIssueId?: string | null
-  ) => void;
+  onAction: (action: RelationItemAction) => void;
   disabled?: boolean;
   issueServiceType?: TIssueServiceType;
 };
@@ -38,7 +34,7 @@ export const RelationIssueList = function RelationIssueList(props: Props) {
     issues,
     relationKey,
     disabled = false,
-    handleIssueCrudState,
+    onAction,
     issueServiceType = EIssueServiceType.ISSUES,
   } = props;
 
@@ -54,7 +50,7 @@ export const RelationIssueList = function RelationIssueList(props: Props) {
             relationKey={relationKey}
             issue={issue}
             disabled={disabled}
-            handleIssueCrudState={handleIssueCrudState}
+            onAction={onAction}
             issueServiceType={issueServiceType}
           />
         ))}

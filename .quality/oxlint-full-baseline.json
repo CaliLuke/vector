@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "full",
-  "fileCount": 3735,
+  "fileCount": 3737,
   "diagnostics": [
     {
       "diagnostic": {
@@ -3076,33 +3076,6 @@
       "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-detail-widgets/relations/content.tsx",
         "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `RelationsCollapsibleContent` has a complexity of 36. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail-widgets/relations/content.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-assertion)",
-        "message": "This assertion is unnecessary since the receiver accepts the original type of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail-widgets/relations/content.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe type assertion: type 'TIssue' is more narrow than the original type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail-widgets/relations/content.tsx",
-        "severity": "warning",
         "code": "typescript(no-unsafe-type-assertion)",
         "message": "Unsafe type assertion: type 'TIssueRelationTypes[]' is more narrow than the original type."
       },
@@ -4412,15 +4385,6 @@
         "message": "Default value is useless because the property is not nullish. This default assignment will never be used."
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/relations/properties.tsx",
-        "severity": "error",
-        "code": "typescript(no-misused-promises)",
-        "message": "Promise-returning function provided to attribute where a void return was expected."
-      },
-      "count": 3
     },
     {
       "diagnostic": {

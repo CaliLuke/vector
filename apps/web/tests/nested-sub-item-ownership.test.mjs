@@ -204,7 +204,7 @@ async function setup(t, { parentPicker = false, parentService = "issues", relati
               relationKey: "relates_to",
               issue: rows.get("nested"),
               disabled,
-              handleIssueCrudState: () => {},
+              onAction: () => {},
             })
           : parentPicker
             ? React.createElement(ParentDetail, { disabled })

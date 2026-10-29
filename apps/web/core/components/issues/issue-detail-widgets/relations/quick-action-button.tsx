@@ -51,13 +51,12 @@ export const RelationActionButton = function RelationActionButton(props: Props) 
       maxHeight="lg"
       closeOnSelect
     >
-      {Object.values(ISSUE_RELATION_OPTIONS).map((item, index) => {
-        if (!item) return <></>;
+      {Object.values(ISSUE_RELATION_OPTIONS).map((item) => {
+        if (!item) return null;
 
         return (
           <CustomMenu.MenuItem
-            // oxlint-disable-next-line react/no-array-index-key
-            key={index}
+            key={item.key}
             onClick={() => {
               handleOnClick(item.key);
             }}

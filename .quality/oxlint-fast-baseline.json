@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "fast",
-  "fileCount": 3735,
+  "fileCount": 3737,
   "diagnostics": [
     {
       "diagnostic": {
@@ -1449,15 +1449,6 @@
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `IssueDetailWidgetModals` has a complexity of 34. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail-widgets/relations/content.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `RelationsCollapsibleContent` has a complexity of 36. Maximum allowed is 15."
       },
       "count": 1
     },

@@ -17,6 +17,7 @@ import { ControlLink, CustomMenu } from "@plane/ui";
 import { generateWorkItemLink } from "@plane/utils/work-item";
 // hooks
 import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
+import { useIssueAction } from "@/hooks/use-issue-action";
 import { useIssueRelations } from "@/hooks/use-issue-resources";
 import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 import useIssuePeekOverviewRedirection from "@/hooks/use-issue-peek-overview-redirection";
@@ -28,6 +29,8 @@ import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifi
 import { useRelationOperations } from "../issue-detail-widgets/relations/helper";
 import { RelationIssueProperty } from "./properties";
 
+import type { RelationItemAction } from "./types";
+
 type Props = {
   workspaceSlug: string;
   projectId: string;
@@ -35,13 +38,7 @@ type Props = {
   relationKey: TIssueRelationTypes;
   issue: TIssue;
   disabled: boolean;
-  handleIssueCrudState: (
-    key: "update" | "delete" | "removeRelation",
-    issueId: string,
-    issue?: TIssue | null,
-    relationKey?: TIssueRelationTypes | null,
-    relationIssueId?: string | null
-  ) => void;
+  onAction: (action: RelationItemAction) => void;
   issueServiceType?: TIssueServiceType;
 };
 
@@ -53,7 +50,7 @@ export const RelationIssueListItem = function RelationIssueListItem(props: Props
     relationKey,
     issue,
     disabled = false,
-    handleIssueCrudState,
+    onAction,
     issueServiceType = EIssueServiceType.ISSUES,
   } = props;
 
@@ -61,7 +58,11 @@ export const RelationIssueListItem = function RelationIssueListItem(props: Props
 
   // store hooks
   const { toggleCreateIssueModal, toggleDeleteIssueModal } = useIssueDetailUiState(issueServiceType);
-  const { remove: removeRelation } = useIssueRelations({
+  const {
+    remove: removeRelation,
+    captureReconciliation,
+    isReady,
+  } = useIssueRelations({
     workspaceSlug,
     projectId: sourceProjectId,
     issueId,
@@ -90,6 +91,11 @@ export const RelationIssueListItem = function RelationIssueListItem(props: Props
   });
 
   const copyLink = useWorkItemLinkCopy({ workspaceSlug, projectId: relatedProjectId, issueId: issue.id }, workItemLink);
+  const removal = useIssueAction(
+    { workspaceSlug, projectId: sourceProjectId, issueId, context: `relation:${relationKey}:${issue.id}` },
+    !disabled && isReady,
+    { error: t("entity.remove.failed", { entity: t("common.relations") }) }
+  );
   if (!relatedProjectId) return <></>;
 
   // handlers
@@ -105,16 +111,15 @@ export const RelationIssueListItem = function RelationIssueListItem(props: Props
   const handleEditIssue = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
     e.preventDefault();
-    handleIssueCrudState("update", issue.id, { ...issue });
+    onAction({ kind: "update", issue: { ...issue } });
     toggleCreateIssueModal(true);
   };
 
   const handleDeleteIssue = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
     e.preventDefault();
-    handleIssueCrudState("delete", issue.id, issue);
+    onAction({ kind: "delete", issue });
     toggleDeleteIssueModal(issue.id);
-    handleIssueCrudState("removeRelation", issueId, issue, relationKey, issue.id);
   };
 
   const handleCopyIssueLink = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -126,7 +131,7 @@ export const RelationIssueListItem = function RelationIssueListItem(props: Props
   const handleRemoveRelation = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
     e.stopPropagation();
-    void removeRelation(relationKey, issue.id);
+    removal.run(() => removeRelation(relationKey, issue.id));
   };
 
   return (
@@ -165,6 +170,7 @@ export const RelationIssueListItem = function RelationIssueListItem(props: Props
           issue={issue}
           disabled={disabled}
           issueOperations={issueOperations}
+          captureRelations={captureReconciliation}
         />
       </div>
       <div className="flex-shrink-0 pl-2 text-13">
@@ -186,7 +192,7 @@ export const RelationIssueListItem = function RelationIssueListItem(props: Props
           </CustomMenu.MenuItem>
 
           {!disabled && (
-            <CustomMenu.MenuItem onClick={handleRemoveRelation}>
+            <CustomMenu.MenuItem onClick={handleRemoveRelation} disabled={removal.disabled}>
               <div className="flex items-center gap-2">
                 <CloseIcon className="h-3.5 w-3.5" strokeWidth={2} />
                 <span>{t("common.actions.remove_relation")}</span>
