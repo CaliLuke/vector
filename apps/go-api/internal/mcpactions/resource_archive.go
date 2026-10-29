@@ -76,16 +76,7 @@ func (s *Service) mutateResource(ctx context.Context, tool string, input resourc
 		}
 		cmd.RequestID = &id
 	}
-	cmd.Revalidate = func(ctx context.Context) error {
-		_, fresh, authErr := actionActor(ctx, input.workspace, true)
-		if authErr != nil {
-			return authErr
-		}
-		if fresh.UserID != actor.UserID || fresh.WorkspaceID != actor.WorkspaceID {
-			return api.MakeForbidden(errors.New("authorized scope changed"))
-		}
-		return nil
-	}
+	cmd.Revalidate = mutationRevalidator(actor, input.workspace, false)
 	value, err = writer.MutateResource(verified, cmd)
 	if err != nil {
 		return value, archiveResourceError(err)

@@ -124,16 +124,7 @@ func (s *Service) labelMutation(ctx context.Context, input *api.LabelRequest) (r
 	}
 	actor = current
 	cmd.ActorID, cmd.WorkspaceID, cmd.WorkspaceSlug = actor.UserID, actor.WorkspaceID, actor.WorkspaceSlug
-	cmd.Revalidate = func(ctx context.Context) error {
-		_, fresh, authErr := actionActor(ctx, workspace, true)
-		if authErr != nil {
-			return authErr
-		}
-		if fresh.UserID != actor.UserID || fresh.WorkspaceID != actor.WorkspaceID {
-			return api.MakeForbidden(errors.New("authorized scope changed"))
-		}
-		return nil
-	}
+	cmd.Revalidate = mutationRevalidator(actor, workspace, false)
 	value, err = s.labelWrites.MutateLabel(verified, cmd)
 	if err != nil {
 		return nil, labelMutationError(err)

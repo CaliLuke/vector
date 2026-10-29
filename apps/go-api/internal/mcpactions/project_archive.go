@@ -35,16 +35,7 @@ func (s *Service) archiveProject(ctx context.Context, actor mcpauth.Principal, i
 	result, err := s.projectWrites.ArchiveProject(ctx, projects.ArchiveCommand{
 		ActorID: actor.UserID, WorkspaceID: actor.WorkspaceID, WorkspaceSlug: actor.WorkspaceSlug, ProjectID: id,
 		Archive: input.Action == "archive", RequestID: request, ExpectedRevision: input.ExpectedRevision,
-		Revalidate: func(ctx context.Context) error {
-			_, current, authErr := actionActor(ctx, input.WorkspaceSlug, true)
-			if authErr != nil {
-				return authErr
-			}
-			if current.UserID != actor.UserID || current.WorkspaceID != actor.WorkspaceID {
-				return api.MakeForbidden(errors.New("authorized scope changed"))
-			}
-			return nil
-		},
+		Revalidate: mutationRevalidator(actor, input.WorkspaceSlug, false),
 	})
 	if err != nil {
 		return nil, projectWriteError(err)

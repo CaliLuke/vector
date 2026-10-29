@@ -59,16 +59,7 @@ func (s *Service) stateMutation(ctx context.Context, input stateInput) (result *
 		}
 		cmd.RequestID = &id
 	}
-	cmd.Revalidate = func(ctx context.Context) error {
-		_, fresh, authErr := actionActor(ctx, input.workspace, true)
-		if authErr != nil {
-			return authErr
-		}
-		if fresh.UserID != actor.UserID || fresh.WorkspaceID != actor.WorkspaceID {
-			return api.MakeForbidden(errors.New("authorized scope changed"))
-		}
-		return nil
-	}
+	cmd.Revalidate = mutationRevalidator(actor, input.workspace, false)
 	value, err = s.states.MutateState(verified, cmd)
 	if err != nil {
 		return nil, stateError(err)

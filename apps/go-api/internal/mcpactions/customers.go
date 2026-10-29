@@ -250,15 +250,6 @@ func (s *Service) mutateCustomer(ctx context.Context, actor mcpauth.Principal, s
 		}
 		s.recordMutation(ctx, span, fields, err)
 	}()
-	cmd.Revalidate = func(ctx context.Context) error {
-		_, current, err := actionActor(ctx, selector, true)
-		if err != nil {
-			return err
-		}
-		if current.UserID != actor.UserID || current.WorkspaceID != actor.WorkspaceID {
-			return api.MakeForbidden(errors.New("authorized scope changed"))
-		}
-		return nil
-	}
+	cmd.Revalidate = mutationRevalidator(actor, selector, false)
 	return s.customers.Mutate(ctx, cmd)
 }

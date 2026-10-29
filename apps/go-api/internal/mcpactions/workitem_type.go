@@ -148,16 +148,7 @@ func (s *Service) mutateWorkitemType(ctx context.Context, in workitemTypeInput) 
 		}
 		cmd.RequestID = &id
 	}
-	cmd.Revalidate = func(ctx context.Context) error {
-		_, fresh, actionActorErr := actionActor(ctx, in.workspace, true)
-		if actionActorErr != nil {
-			return actionActorErr
-		}
-		if fresh.UserID != actor.UserID || fresh.WorkspaceID != actor.WorkspaceID {
-			return api.MakeForbidden(errors.New("authorized scope changed"))
-		}
-		return nil
-	}
+	cmd.Revalidate = mutationRevalidator(actor, in.workspace, false)
 	value, err = s.types.MutateAPI(verified, cmd)
 	if err != nil {
 		return result, workitemTypeError(err)
