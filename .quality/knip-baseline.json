@@ -277,102 +277,6 @@
     {
       "finding": {
         "category": "exports",
-        "file": "apps/web/core/components/icons/attachment/document-icon.tsx",
-        "name": "DocumentIcon"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/icons/attachment/img-file-icon.tsx",
-        "name": "ImgIcon"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/icons/attachment/tune-icon.tsx",
-        "name": "TuneIcon"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/cycle.tsx",
-        "name": "AppliedCycleFilters"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/label.tsx",
-        "name": "AppliedLabelsFilters"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/module.tsx",
-        "name": "AppliedModuleFilters"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/priority.tsx",
-        "name": "AppliedPriorityFilters"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/project.tsx",
-        "name": "AppliedProjectFilters"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/state-group.tsx",
-        "name": "AppliedStateGroupFilters"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/state.tsx",
-        "name": "AppliedStateFilters"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/issues/issue-layouts/filters/header/filters/cycle.tsx",
-        "name": "FilterCycle"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/issues/issue-layouts/filters/header/filters/module.tsx",
-        "name": "FilterModule"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
         "file": "apps/web/core/components/navigation/tab-navigation-utils.ts",
         "name": "getDefaultTabUrl"
       },
@@ -397,48 +301,8 @@
     {
       "finding": {
         "category": "exports",
-        "file": "apps/web/core/components/project-states/state-delete-modal.tsx",
-        "name": "StateDeleteModal"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/web-hooks/empty-state.tsx",
-        "name": "WebhooksEmptyState"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
         "file": "apps/web/core/components/workspace-notifications/notification-card/content.ts",
         "name": "shouldRender"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/services/integrations/github.service.ts",
-        "name": "GithubIntegrationService"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/services/integrations/jira.service.ts",
-        "name": "JiraImporterService"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "packages/editor/src/core/components/menus/ai-menu.tsx",
-        "name": "AIFeaturesMenu"
       },
       "count": 1
     },
@@ -487,14 +351,6 @@
         "category": "exports",
         "file": "packages/editor/src/core/extensions/unique-id/extension.ts",
         "name": "UniqueIDAttribute"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "packages/editor/src/core/extensions/work-item-embed/extension.tsx",
-        "name": "WorkItemEmbedExtension"
       },
       "count": 1
     },

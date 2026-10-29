@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "fast",
-  "fileCount": 3738,
+  "fileCount": 3716,
   "diagnostics": [
     {
       "diagnostic": {
@@ -2588,15 +2588,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/project-states/state-delete-modal.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/project-states/state-item-title.tsx",
         "severity": "warning",
         "code": "eslint(no-unneeded-ternary)",
@@ -3182,15 +3173,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/services/integrations/github.service.ts",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/services/integrations/integration.service.ts",
         "severity": "warning",
         "code": "typescript(no-explicit-any)",
@@ -3492,15 +3474,6 @@
         "severity": "warning",
         "code": "react(set-state-in-effect)",
         "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/editor/src/core/components/menus/ai-menu.tsx",
-        "severity": "warning",
-        "code": "react(refs)",
-        "message": "Cannot access refs during render"
       },
       "count": 1
     },

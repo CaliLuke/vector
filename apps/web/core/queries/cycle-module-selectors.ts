@@ -9,7 +9,7 @@ import sortBy from "lodash-es/sortBy.js";
 import { getDate } from "@plane/utils/datetime";
 import { orderCycles, shouldFilterCycle } from "@plane/utils/cycle";
 import { orderModules, shouldFilterModule } from "@plane/utils/module";
-import type { ICycle, IModule, TCycleGroups, TCycleFilters, TModuleFilters, TModuleDisplayFilters } from "@plane/types";
+import type { ICycle, IModule, TCycleFilters, TModuleFilters, TModuleDisplayFilters } from "@plane/types";
 
 type TFavoriteModuleRecord = { entity_type?: string | null; entity_identifier?: string | null };
 
@@ -93,9 +93,4 @@ export function visibleArchivedCycles(cycles: readonly ICycle[] | undefined, fil
         (cycle) => !cycle.start_date
       )
     : undefined;
-}
-
-export function cycleGroup(status: string | undefined): TCycleGroups {
-  const value = status?.toLowerCase();
-  return value === "current" || value === "upcoming" || value === "completed" ? value : "draft";
 }

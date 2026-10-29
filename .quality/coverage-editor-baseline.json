@@ -223,12 +223,6 @@
       "functions": 0,
       "branches": 0
     },
-    "src/core/components/menus/ai-menu.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
-    },
     "src/core/components/menus/block-menu-options.tsx": {
       "lines": 0,
       "statements": 0,
@@ -1022,24 +1016,6 @@
       "branches": 50
     },
     "src/core/extensions/work-item-embed/extension-config.ts": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
-    },
-    "src/core/extensions/work-item-embed/extension.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
-    },
-    "src/core/extensions/work-item-embed/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
-    },
-    "src/core/extensions/work-item-embed/types.ts": {
       "lines": 0,
       "statements": 0,
       "functions": 0,

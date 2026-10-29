@@ -4,9 +4,6 @@
  * See the LICENSE file for details.
  */
 
-export * from "./github-importer";
-export * from "./jira-importer";
-
 import type { IProjectLite } from "../project";
 // types
 import type { IUserLite } from "../users";

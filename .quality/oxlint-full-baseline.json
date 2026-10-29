@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "full",
-  "fileCount": 3738,
+  "fileCount": 3716,
   "diagnostics": [
     {
       "diagnostic": {
@@ -3641,24 +3641,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/priority.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe type assertion: type 'TIssuePriorities' is more narrow than the original type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/state-group.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe type assertion: type 'TStateGroups' is more narrow than the original type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-layouts/filters/header/display-filters/display-filters-selection.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
@@ -5954,24 +5936,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/project-states/state-delete-modal.tsx",
-        "severity": "error",
-        "code": "typescript(no-misused-promises)",
-        "message": "Promise-returning function provided to attribute where a void return was expected."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project-states/state-delete-modal.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/project-states/state-item-title.tsx",
         "severity": "warning",
         "code": "eslint(no-unneeded-ternary)",
@@ -7376,15 +7340,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/services/integrations/github.service.ts",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/services/integrations/integration.service.ts",
         "severity": "warning",
         "code": "typescript(no-explicit-any)",
@@ -7884,42 +7839,6 @@
         "severity": "warning",
         "code": "react(set-state-in-effect)",
         "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/editor/src/core/components/menus/ai-menu.tsx",
-        "severity": "warning",
-        "code": "react(refs)",
-        "message": "Cannot access refs during render"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/editor/src/core/components/menus/ai-menu.tsx",
-        "severity": "warning",
-        "code": "typescript(consistent-return)",
-        "message": "Function expected no return value."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/editor/src/core/components/menus/ai-menu.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe type assertion: type 'HTMLElement' is more narrow than the original type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/editor/src/core/components/menus/ai-menu.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe type assertion: type 'Node' is more narrow than the original type."
       },
       "count": 1
     },
@@ -9342,15 +9261,6 @@
         "severity": "warning",
         "code": "typescript(no-redundant-type-constituents)",
         "message": "'never' is overridden by other types in this union type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/editor/src/core/extensions/work-item-embed/extension.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe type assertion: type 'TWorkItemEmbedAttributes' is more narrow than the original type."
       },
       "count": 1
     },
