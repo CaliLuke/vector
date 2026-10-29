@@ -4,13 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { useMemo } from "react";
 // plane imports
 import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import { TOAST_TYPE, setPromiseToast, setToast } from "@plane/propel/toast";
 import type { TIssue } from "@plane/types";
 import { EIssueServiceType, EIssuesStoreType } from "@plane/types";
 // assets
@@ -19,9 +17,8 @@ import emptyIssue from "@/app/assets/empty-state/issue.svg?url";
 import { EmptyState } from "@/components/common/empty-state";
 // hooks
 import { useIssueDetailSidebarCollapsed } from "@/providers/sidebar-state";
-import { useIssueDetailUpdate } from "@/hooks/use-issue-detail-update";
+import { useIssueDetailWrites } from "@/hooks/use-issue-detail-writes";
 import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
-import { captureIssueDetailReconciliation } from "@/queries/issue-details";
 import { useProjectPermissions } from "@/hooks/use-permissions";
 import { useIssuesActions } from "@/hooks/use-issues-actions";
 
@@ -40,18 +37,8 @@ export type TIssueOperations = {
     data: Pick<Partial<TIssue>, "name" | "description_html"> & { skip_activity?: string }
   ) => Promise<void>;
   update: (workspaceSlug: string, projectId: string, issueId: string, data: Partial<TIssue>) => Promise<void>;
-  remove: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
-  archive?: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
-  restore?: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
   addCycleToIssue?: (workspaceSlug: string, projectId: string, cycleId: string, issueId: string) => Promise<void>;
-  addIssueToCycle?: (workspaceSlug: string, projectId: string, cycleId: string, issueIds: string[]) => Promise<void>;
   removeIssueFromCycle?: (workspaceSlug: string, projectId: string, cycleId: string, issueId: string) => Promise<void>;
-  removeIssueFromModule?: (
-    workspaceSlug: string,
-    projectId: string,
-    moduleId: string,
-    issueId: string
-  ) => Promise<void>;
   changeModulesInIssue?: (
     workspaceSlug: string,
     projectId: string,
@@ -76,161 +63,20 @@ export function IssueDetailRoot(props: TIssueDetailRoot) {
   // hooks
   const detail = useWorkItemDetail(workspaceSlug, projectId, issueId);
   const projectActions = useIssuesActions(EIssuesStoreType.PROJECT);
-  const archivedActions = useIssuesActions(EIssuesStoreType.ARCHIVED);
   const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
   const issueDetailSidebarCollapsed = useIssueDetailSidebarCollapsed();
 
-  const queryClient = useQueryClient();
-  const update = useIssueDetailUpdate(
-    detail.scope,
-    issueId,
-    detail.isReady && !is_archived,
-    projectActions.updateIssue
-  );
+  const writes = useIssueDetailWrites(detail.scope, issueId, detail.isReady && !is_archived, projectActions);
   const issueOperations: TIssueOperations = useMemo(
     () => ({
-      updateText: update,
+      ...writes,
+      updateText: writes.update,
       fetch: async (targetWorkspaceSlug, targetProjectId, targetIssueId) => {
         if (targetWorkspaceSlug !== workspaceSlug || targetProjectId !== projectId || targetIssueId !== issueId) return;
         await detail.query.refetch();
       },
-      update,
-      remove: async (_targetWorkspaceSlug, targetProjectId, targetIssueId) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [targetIssueId]);
-        try {
-          if (is_archived) await archivedActions.removeIssue(targetProjectId, targetIssueId);
-          else await projectActions.removeIssue(targetProjectId, targetIssueId);
-          detailOwner.remove();
-          setToast({
-            title: t("common.success"),
-            type: TOAST_TYPE.SUCCESS,
-            message: t("entity.delete.success", { entity: t("issue.label") }),
-          });
-        } catch (_error) {
-          setToast({
-            title: t("common.error.label"),
-            type: TOAST_TYPE.ERROR,
-            message: t("entity.delete.failed", { entity: t("issue.label") }),
-          });
-        }
-      },
-      archive: async (_targetWorkspaceSlug, targetProjectId, targetIssueId) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [targetIssueId]);
-        try {
-          if (!projectActions.archiveIssue) throw new Error("Issue archive action is unavailable.");
-          await projectActions.archiveIssue(targetProjectId, targetIssueId);
-          void detailOwner.refresh();
-        } catch (_error) {
-          setToast({
-            title: t("common.error.label"),
-            type: TOAST_TYPE.ERROR,
-            message: t("entity.update.failed", { entity: t("issue.label") }),
-          });
-        }
-      },
-      addCycleToIssue: async (_targetWorkspaceSlug, targetProjectId, cycleId, targetIssueId) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [targetIssueId]);
-        try {
-          await projectActions.addCycleToIssue(targetProjectId, cycleId, targetIssueId);
-          void detailOwner.refresh();
-        } catch (_error) {
-          setToast({
-            type: TOAST_TYPE.ERROR,
-            title: t("common.error.label"),
-            message: t("issue.add.cycle.failed"),
-          });
-        }
-      },
-      addIssueToCycle: async (_targetWorkspaceSlug, targetProjectId, cycleId, issueIds) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, issueIds);
-        try {
-          await projectActions.addIssuesToCycle(targetProjectId, cycleId, issueIds);
-          void detailOwner.refresh();
-        } catch (_error) {
-          setToast({
-            type: TOAST_TYPE.ERROR,
-            title: t("common.error.label"),
-            message: t("issue.add.cycle.failed"),
-          });
-        }
-      },
-      removeIssueFromCycle: async (_targetWorkspaceSlug, targetProjectId, cycleId, targetIssueId) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [targetIssueId]);
-        try {
-          const removeFromCyclePromise = projectActions.removeCycleFromIssue(targetProjectId, cycleId, targetIssueId);
-          setPromiseToast(removeFromCyclePromise, {
-            loading: t("issue.remove.cycle.loading"),
-            success: {
-              title: t("common.success"),
-              message: () => t("issue.remove.cycle.success"),
-            },
-            error: {
-              title: t("common.error.label"),
-              message: () => t("issue.remove.cycle.failed"),
-            },
-          });
-          await removeFromCyclePromise;
-          void detailOwner.refresh();
-        } catch (_error) {
-          // The promise toast above reports the failure.
-        }
-      },
-      removeIssueFromModule: async (_targetWorkspaceSlug, targetProjectId, moduleId, targetIssueId) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [targetIssueId]);
-        try {
-          const removeFromModulePromise = projectActions.removeIssueFromModule(
-            targetProjectId,
-            moduleId,
-            targetIssueId
-          );
-          setPromiseToast(removeFromModulePromise, {
-            loading: t("issue.remove.module.loading"),
-            success: {
-              title: t("common.success"),
-              message: () => t("issue.remove.module.success"),
-            },
-            error: {
-              title: t("common.error.label"),
-              message: () => t("issue.remove.module.failed"),
-            },
-          });
-          await removeFromModulePromise;
-          void detailOwner.refresh();
-        } catch (_error) {
-          // The promise toast above reports the failure.
-        }
-      },
-      changeModulesInIssue: async (
-        _targetWorkspaceSlug,
-        targetProjectId,
-        targetIssueId,
-        addModuleIds,
-        removeModuleIds
-      ) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [targetIssueId]);
-        const promise = await projectActions.changeModulesInIssue(
-          targetProjectId,
-          targetIssueId,
-          addModuleIds,
-          removeModuleIds
-        );
-        void detailOwner.refresh();
-        return promise;
-      },
     }),
-    [
-      update,
-      queryClient,
-      is_archived,
-      detail.query,
-      detail.scope,
-      projectActions,
-      archivedActions,
-      t,
-      workspaceSlug,
-      projectId,
-      issueId,
-    ]
+    [writes, detail.query, workspaceSlug, projectId, issueId]
   );
 
   // issue details

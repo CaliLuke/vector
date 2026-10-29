@@ -11,13 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { EditorRefApi } from "@plane/editor";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TNameDescriptionLoader } from "@plane/types";
-import {
-  EFileAssetType,
-  EInboxIssueSource,
-  EInboxIssueStatus,
-  EIssueServiceType,
-  EIssuesStoreType,
-} from "@plane/types";
+import { EFileAssetType, EInboxIssueSource, EInboxIssueStatus, EIssueServiceType } from "@plane/types";
 // components
 import { DescriptionVersionsRoot } from "@/components/core/description-versions";
 import { IssueDescriptionInput } from "@/components/issues/description-input";
@@ -28,7 +22,6 @@ import { IssueActivity } from "@/components/issues/issue-detail/issue-activity";
 import { IssueReaction } from "@/components/issues/issue-detail/reactions";
 import { IssueTitleInput } from "@/components/issues/title-input";
 // hooks
-import { useIssuesActions } from "@/hooks/use-issues-actions";
 import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 import { useIntakeMutation, useIntakeDetail } from "@/hooks/use-intake";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -54,18 +47,14 @@ type Props = {
 
 function useInboxIssueOperations({
   inboxIssue,
-  projectId,
   mutateAsync,
   refetch,
-  issueActions,
   queryClient,
   detailScope,
 }: {
   inboxIssue: TInboxIssue;
-  projectId: string;
   mutateAsync: ReturnType<typeof useIntakeMutation>["mutateAsync"];
   refetch: ReturnType<typeof useIntakeDetail>["refetch"];
-  issueActions: ReturnType<typeof useIssuesActions>;
   queryClient: ReturnType<typeof useQueryClient>;
   detailScope: ReturnType<typeof useWorkItemDetailScope>["scope"];
 }) {
@@ -78,26 +67,6 @@ function useInboxIssueOperations({
       },
       fetch: async (_workspaceSlug, _projectId, _issueId) => {
         await refetch();
-      },
-      remove: async (_workspaceSlug, _projectId, issueId) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detailScope, [issueId]);
-        try {
-          await issueActions.removeIssue(projectId, issueId);
-          detailOwner.remove();
-          setToast({
-            title: "Success!",
-            type: TOAST_TYPE.SUCCESS,
-            message: "Work item deleted successfully",
-          });
-        } catch (error) {
-          console.error("Error in deleting work item:", error);
-          setToast({
-            title: "Error!",
-            type: TOAST_TYPE.ERROR,
-            message: "Work item delete failed",
-          });
-          throw error;
-        }
       },
       update: async (_workspaceSlug, _projectId, _issueId, data) => {
         const detailOwner = captureIssueDetailReconciliation(queryClient, detailScope, [inboxIssue.issue.id]);
@@ -113,13 +82,8 @@ function useInboxIssueOperations({
           throw error;
         }
       },
-      archive: async (_workspaceSlug, _projectId, issueId) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detailScope, [issueId]);
-        await issueActions.archiveIssue?.(projectId, issueId);
-        void detailOwner.refresh();
-      },
     }),
-    [detailScope, inboxIssue.issue.id, issueActions, mutateAsync, projectId, queryClient, refetch]
+    [detailScope, inboxIssue.issue.id, mutateAsync, queryClient, refetch]
   );
 }
 
@@ -132,7 +96,6 @@ export const InboxIssueMainContent = function InboxIssueMainContent(props: Props
   const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
   const { mutateAsync } = useIntakeMutation(workspaceSlug, projectId);
   const { refetch } = useIntakeDetail(workspaceSlug, projectId, inboxIssue.issue.id);
-  const issueActions = useIssuesActions(EIssuesStoreType.PROJECT);
   const queryClient = useQueryClient();
   // derived values
   const issue = inboxIssue.issue;
@@ -145,10 +108,8 @@ export const InboxIssueMainContent = function InboxIssueMainContent(props: Props
   );
   const issueOperations = useInboxIssueOperations({
     inboxIssue,
-    projectId,
     mutateAsync,
     refetch,
-    issueActions,
     queryClient,
     detailScope: detailAccess.scope,
   });

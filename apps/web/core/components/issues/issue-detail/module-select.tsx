@@ -4,17 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import React, { useState } from "react";
-import xor from "lodash-es/xor.js";
 import { useTranslation } from "@plane/i18n";
-// hooks
-// components
 import { cn } from "@plane/utils/common";
 import { ModuleDropdown } from "@/components/dropdowns/module/dropdown";
-// ui
-// helpers
+import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
 import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
-// types
 import type { TIssueOperations } from "./root";
 
 type TIssueModuleSelect = {
@@ -29,32 +23,20 @@ type TIssueModuleSelect = {
 export const IssueModuleSelect = function IssueModuleSelect(props: TIssueModuleSelect) {
   const { className = "", workspaceSlug, projectId, issueId, issueOperations, disabled = false } = props;
   const { t } = useTranslation();
-  // states
-  const [isUpdating, setIsUpdating] = useState(false);
-  // store hooks
   const { issue } = useWorkItemDetail(workspaceSlug, projectId, issueId);
-  // derived values
-  const disableSelect = disabled || isUpdating;
-
-  const handleIssueModuleChange = async (moduleIds: string[]) => {
-    if (!issue || !issue.module_ids) return;
-
-    setIsUpdating(true);
-    const updatedModuleIds = xor(issue.module_ids, moduleIds);
-    const modulesToAdd: string[] = [];
-    const modulesToRemove: string[] = [];
-
-    for (const moduleId of updatedModuleIds) {
-      if (issue.module_ids.includes(moduleId)) {
-        modulesToRemove.push(moduleId);
-      } else {
-        modulesToAdd.push(moduleId);
-      }
-    }
-
-    await issueOperations.changeModulesInIssue?.(workspaceSlug, projectId, issueId, modulesToAdd, modulesToRemove);
-
-    setIsUpdating(false);
+  const updateModules = issueOperations.changeModulesInIssue;
+  const change = useIssuePropertyChange(
+    { workspaceSlug, projectId, issueId, context: "detail" },
+    !disabled && !!issue && !!updateModules
+  );
+  const handleIssueModuleChange = (moduleIds: string[]) => {
+    if (!issue || !updateModules) return;
+    const selected = new Set(moduleIds);
+    const current = new Set(issue.module_ids ?? []);
+    const added = [...selected].filter((id) => !current.has(id));
+    const removed = [...current].filter((id) => !selected.has(id));
+    if (added.length === 0 && removed.length === 0) return;
+    change.run(() => updateModules(workspaceSlug, projectId, issueId, added, removed));
   };
 
   return (
@@ -64,7 +46,7 @@ export const IssueModuleSelect = function IssueModuleSelect(props: TIssueModuleS
         value={issue?.module_ids ?? []}
         onChange={handleIssueModuleChange}
         placeholder={t("module.no_module")}
-        disabled={disableSelect}
+        disabled={change.disabled}
         className="group h-full w-full"
         buttonContainerClassName="w-full text-left rounded-sm"
         buttonClassName={`text-body-xs-medium justify-between ${issue?.module_ids?.length ? "" : "text-placeholder"}`}

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "full",
-  "fileCount": 3728,
+  "fileCount": 3730,
   "diagnostics": [
     {
       "diagnostic": {
@@ -3236,15 +3236,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/cycle-select.tsx",
-        "severity": "error",
-        "code": "typescript(no-misused-promises)",
-        "message": "Promise-returning function provided to attribute where a void return was expected."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-detail/issue-activity/activity-filter.tsx",
         "severity": "warning",
         "code": "typescript(no-useless-default-assignment)",
@@ -3384,15 +3375,6 @@
         "severity": "warning",
         "code": "jsx-a11y(no-static-element-interactions)",
         "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/module-select.tsx",
-        "severity": "error",
-        "code": "typescript(no-misused-promises)",
-        "message": "Promise-returning function provided to attribute where a void return was expected."
       },
       "count": 1
     },

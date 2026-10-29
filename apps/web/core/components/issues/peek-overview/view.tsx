@@ -18,7 +18,7 @@ import { useWorkItemDetailRecord } from "@/providers/work-item-detail-record";
 import useKeypress from "@/hooks/use-keypress";
 import usePeekOverviewOutsideClickDetector from "@/hooks/use-peek-overview-outside-click";
 // local imports
-import type { TIssueOperations } from "../issue-detail";
+import type { TIssuePeekOperations } from "./root";
 import { useTextSaveStatus } from "../use-text-save-status";
 import { IssueActivity } from "../issue-detail/issue-activity";
 import { IssueDetailWidgets } from "../issue-detail-widgets";
@@ -39,7 +39,7 @@ interface IIssueView {
   disabled?: boolean;
   embedIssue?: boolean;
   embedRemoveCurrentNotification?: () => void;
-  issueOperations: TIssueOperations;
+  issueOperations: TIssuePeekOperations;
 }
 
 type TLocalPeekModal = "delete" | "archive" | "duplicate" | "edit";

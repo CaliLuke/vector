@@ -19,11 +19,9 @@ type PropertyScope = {
   context: string;
 };
 
-export function useIssuePropertyChange(
-  scope: PropertyScope,
-  enabled: boolean,
-  messages?: { success?: string; error?: string }
-) {
+type PropertyFeedback = { success?: string; error?: string };
+
+export function useIssuePropertyChange(scope: PropertyScope, enabled: boolean, messages?: PropertyFeedback) {
   const client = useQueryClient();
   const userId = useCurrentUserId();
   const generation = useIdentityGeneration(client);
@@ -38,7 +36,7 @@ export function useIssuePropertyChange(
     retry: false,
   });
 
-  const run = (change: () => Promise<unknown>) => {
+  const run = (change: () => Promise<unknown>, feedback: PropertyFeedback | undefined = messages) => {
     if (!enabled || !isCurrent() || client.isMutating(filters) > 0) return;
     const identity = captureIdentityScope(client, userId);
     mutate(
@@ -49,15 +47,15 @@ export function useIssuePropertyChange(
       },
       {
         onSuccess: () => {
-          if (!messages?.success || !isCurrent() || !isIdentityScopeCurrent(client, identity)) return;
-          setToast({ type: TOAST_TYPE.SUCCESS, title: t("toast.success"), message: messages.success });
+          if (!feedback?.success || !isCurrent() || !isIdentityScopeCurrent(client, identity)) return;
+          setToast({ type: TOAST_TYPE.SUCCESS, title: t("toast.success"), message: feedback.success });
         },
         onError: () => {
           if (!isCurrent() || !isIdentityScopeCurrent(client, identity)) return;
           setToast({
             type: TOAST_TYPE.ERROR,
             title: t("toast.error"),
-            message: messages?.error ?? t("entity.update.failed", { entity: t("common.work_item") }),
+            message: feedback?.error ?? t("entity.update.failed", { entity: t("common.work_item") }),
           });
         },
       }

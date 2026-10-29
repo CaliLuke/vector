@@ -4,16 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import React, { useState } from "react";
 import { useTranslation } from "@plane/i18n";
-// hooks
-// components
 import { cn } from "@plane/utils/common";
 import { CycleDropdown } from "@/components/dropdowns/cycle";
-// ui
-// helpers
+import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
 import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
-// types
 import type { TIssueOperations } from "./root";
 
 type TIssueCycleSelect = {
@@ -28,19 +23,18 @@ type TIssueCycleSelect = {
 export const IssueCycleSelect = function IssueCycleSelect(props: TIssueCycleSelect) {
   const { className = "", workspaceSlug, projectId, issueId, issueOperations, disabled = false } = props;
   const { t } = useTranslation();
-  // states
-  const [isUpdating, setIsUpdating] = useState(false);
-  // store hooks
   const { issue } = useWorkItemDetail(workspaceSlug, projectId, issueId);
-  // derived values
-  const disableSelect = disabled || isUpdating;
-
-  const handleIssueCycleChange = async (cycleId: string | null) => {
-    if (!issue || issue.cycle_id === cycleId) return;
-    setIsUpdating(true);
-    if (cycleId) await issueOperations.addCycleToIssue?.(workspaceSlug, projectId, cycleId, issueId);
-    else await issueOperations.removeIssueFromCycle?.(workspaceSlug, projectId, issue.cycle_id ?? "", issueId);
-    setIsUpdating(false);
+  const change = useIssuePropertyChange(
+    { workspaceSlug, projectId, issueId, context: "detail" },
+    !disabled && !!issue && !!issueOperations.addCycleToIssue && !!issueOperations.removeIssueFromCycle
+  );
+  const handleIssueCycleChange = (cycleId: string | null) => {
+    const action = cycleId ? issueOperations.addCycleToIssue : issueOperations.removeIssueFromCycle;
+    if (!issue || issue.cycle_id === cycleId || !action) return;
+    change.run(() => action(workspaceSlug, projectId, cycleId ?? issue.cycle_id ?? "", issueId), {
+      error: t(cycleId ? "issue.add.cycle.failed" : "issue.remove.cycle.failed"),
+      success: cycleId ? undefined : t("issue.remove.cycle.success"),
+    });
   };
 
   return (
@@ -49,7 +43,7 @@ export const IssueCycleSelect = function IssueCycleSelect(props: TIssueCycleSele
         value={issue?.cycle_id ?? null}
         onChange={handleIssueCycleChange}
         projectId={projectId}
-        disabled={disableSelect}
+        disabled={change.disabled}
         buttonVariant="transparent-with-text"
         className="group w-full"
         buttonContainerClassName="w-full text-left h-7.5 rounded-sm"

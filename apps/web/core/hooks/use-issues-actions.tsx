@@ -36,7 +36,6 @@ export interface IssueActions {
     data: Partial<TIssue>
   ) => Promise<TIssue | undefined>;
   removeIssueFromView?: (projectId: string | undefined | null, issueId: string) => Promise<void>;
-  removeIssueFromModule: (projectId: string | undefined | null, moduleId: string, issueId: string) => Promise<void>;
   archiveIssue?: (projectId: string | undefined | null, issueId: string) => Promise<void>;
   restoreIssue?: (projectId: string | undefined | null, issueId: string) => Promise<void>;
   updateIssueDates?: (
@@ -182,12 +181,6 @@ export const useIssuesActions = (
     },
     [run]
   );
-  const removeIssueFromModule = useCallback(
-    async (projectId: string | undefined | null, moduleId: string, issueId: string) => {
-      await run(projectId, { kind: "module-remove", moduleId, issueId });
-    },
-    [run]
-  );
   const changeModulesInIssue = useCallback(
     async (projectId: string | undefined | null, issueId: string, added: string[], removed: string[]) => {
       await run(projectId, { kind: "module-change", issueId, added, removed });
@@ -227,7 +220,6 @@ export const useIssuesActions = (
       updateIssue,
       removeIssueFromView:
         storeType === EIssuesStoreType.CYCLE || storeType === EIssuesStoreType.MODULE ? removeIssueFromView : undefined,
-      removeIssueFromModule,
       archiveIssue: storeType === EIssuesStoreType.ARCHIVED ? undefined : archiveIssue,
       restoreIssue: storeType === EIssuesStoreType.ARCHIVED ? restoreIssue : undefined,
       updateIssueDates,
@@ -251,7 +243,6 @@ export const useIssuesActions = (
       removeIssue,
       removeIssues,
       removeIssueFromView,
-      removeIssueFromModule,
       restoreIssue,
       storeType,
       updateFilters,

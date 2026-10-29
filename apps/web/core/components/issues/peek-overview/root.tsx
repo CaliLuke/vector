@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { captureIssueActivityRefresh } from "@/queries/issue-discussion";
 import { captureIssueDetailReconciliation } from "@/queries/issue-details";
 import { useMemo, useCallback } from "react";
 import { useCommittedScope } from "@/hooks/use-committed-scope";
@@ -13,12 +12,12 @@ import { useCommittedScope } from "@/hooks/use-committed-scope";
 import { useQueryClient } from "@tanstack/react-query";
 import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import { TOAST_TYPE, setPromiseToast, setToast } from "@plane/propel/toast";
+import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IWorkItemPeekOverview } from "@plane/types";
 import { EIssueServiceType, EIssuesStoreType } from "@plane/types";
 // hooks
 import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
-import { useIssueDetailUpdate } from "@/hooks/use-issue-detail-update";
+import { useIssueDetailWrites } from "@/hooks/use-issue-detail-writes";
 import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
 import { useProjectPermissions } from "@/hooks/use-permissions";
 import { useIssueListType } from "@/hooks/use-issue-list-type";
@@ -28,6 +27,12 @@ import { useIssuesActions } from "@/hooks/use-issues-actions";
 import type { TIssueOperations } from "../issue-detail";
 import { IssueView } from "./view";
 import { WorkItemDetailRecordProvider } from "@/providers/work-item-detail-record";
+
+export type TIssuePeekOperations = TIssueOperations & {
+  remove: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
+  archive?: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
+  restore?: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
+};
 
 export function IssuePeekOverview(props: IWorkItemPeekOverview) {
   const { embedIssue = false, embedRemoveCurrentNotification, storeType: issueStoreFromProps } = props;
@@ -58,31 +63,16 @@ export function IssuePeekOverview(props: IWorkItemPeekOverview) {
   }, [embedIssue, embedRemoveCurrentNotification, setPeekIssue]);
 
   const queryClient = useQueryClient();
-  const captureActivity = useCallback(
-    (workspaceSlug: string, projectId: string, issueId: string) =>
-      captureIssueActivityRefresh(queryClient, {
-        workspaceSlug,
-        projectId,
-        issueId,
-        serviceType: storeType === EIssuesStoreType.EPIC ? EIssueServiceType.EPICS : EIssueServiceType.ISSUES,
-      }),
-    [queryClient, storeType]
-  );
   const isPeekIssueArchived = peekIssue?.isArchived;
-  const update = useIssueDetailUpdate(
-    detail.scope,
-    peekIssueId,
-    detail.isReady && !isPeekIssueArchived,
-    actions.updateIssue
-  );
-  const issueOperations: TIssueOperations = useMemo(
+  const writes = useIssueDetailWrites(detail.scope, peekIssueId, detail.isReady && !isPeekIssueArchived, actions);
+  const issueOperations: TIssuePeekOperations = useMemo(
     () => ({
-      updateText: update,
+      ...writes,
+      updateText: writes.update,
       fetch: async (workspaceSlug: string, projectId: string, issueId: string) => {
         if (workspaceSlug === peekWorkspaceSlug && projectId === peekProjectId && issueId === peekIssueId)
           await detail.query.refetch();
       },
-      update,
       remove: async (workspaceSlug: string, projectId: string, issueId: string) => {
         const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [issueId]);
         try {
@@ -123,97 +113,12 @@ export function IssuePeekOverview(props: IWorkItemPeekOverview) {
           });
         }
       },
-      addCycleToIssue: async (workspaceSlug: string, projectId: string, cycleId: string, issueId: string) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [issueId]);
-        const refreshActivity = captureActivity(workspaceSlug, projectId, issueId);
-        try {
-          await actions.addCycleToIssue(projectId, cycleId, issueId);
-          void Promise.allSettled([detailOwner.refresh(), refreshActivity()]);
-        } catch (_error) {
-          setToast({
-            type: TOAST_TYPE.ERROR,
-            title: t("toast.error"),
-            message: t("issue.add.cycle.failed"),
-          });
-        }
-      },
-      addIssueToCycle: async (workspaceSlug: string, projectId: string, cycleId: string, issueIds: string[]) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, issueIds);
-        try {
-          await actions.addIssuesToCycle(projectId, cycleId, issueIds);
-          void detailOwner.refresh();
-        } catch (_error) {
-          setToast({
-            type: TOAST_TYPE.ERROR,
-            title: t("toast.error"),
-            message: t("issue.add.cycle.failed"),
-          });
-        }
-      },
-      removeIssueFromCycle: async (workspaceSlug: string, projectId: string, cycleId: string, issueId: string) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [issueId]);
-        const refreshActivity = captureActivity(workspaceSlug, projectId, issueId);
-        try {
-          const removeFromCyclePromise = actions.removeCycleFromIssue(projectId, cycleId, issueId);
-          setPromiseToast(removeFromCyclePromise, {
-            loading: t("issue.remove.cycle.loading"),
-            success: {
-              title: t("toast.success"),
-              message: () => t("issue.remove.cycle.success"),
-            },
-            error: {
-              title: t("toast.error"),
-              message: () => t("issue.remove.cycle.failed"),
-            },
-          });
-          await removeFromCyclePromise;
-          void Promise.allSettled([detailOwner.refresh(), refreshActivity()]);
-        } catch (error) {
-          console.error("Error removing issue from cycle", error);
-        }
-      },
-      changeModulesInIssue: async (
-        workspaceSlug: string,
-        projectId: string,
-        issueId: string,
-        addModuleIds: string[],
-        removeModuleIds: string[]
-      ) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [issueId]);
-        const refreshActivity = captureActivity(workspaceSlug, projectId, issueId);
-        const promise = await actions.changeModulesInIssue(projectId, issueId, addModuleIds, removeModuleIds);
-        void Promise.allSettled([detailOwner.refresh(), refreshActivity()]);
-        return promise;
-      },
-      removeIssueFromModule: async (workspaceSlug: string, projectId: string, moduleId: string, issueId: string) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [issueId]);
-        const refreshActivity = captureActivity(workspaceSlug, projectId, issueId);
-        try {
-          const removeFromModulePromise = actions.removeIssueFromModule(projectId, moduleId, issueId);
-          setPromiseToast(removeFromModulePromise, {
-            loading: t("issue.remove.module.loading"),
-            success: {
-              title: t("toast.success"),
-              message: () => t("issue.remove.module.success"),
-            },
-            error: {
-              title: t("toast.error"),
-              message: () => t("issue.remove.module.failed"),
-            },
-          });
-          await removeFromModulePromise;
-          void Promise.allSettled([detailOwner.refresh(), refreshActivity()]);
-        } catch (error) {
-          console.error("Error removing issue from module", error);
-        }
-      },
     }),
     [
-      update,
+      writes,
       queryClient,
       detail.query,
       detail.scope,
-      captureActivity,
       actions,
       archivedActions,
       isPeekIssueArchived,
