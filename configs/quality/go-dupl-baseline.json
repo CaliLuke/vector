@@ -1425,6 +1425,42 @@
     },
     {
       "fingerprint": [
+        "cmd/system/http_dependencies.go",
+        "cmd/system/http_middleware.go",
+        "59441fc432f5286a35b201ff97aeff08074e1a1cc0cba13a16f27724ba7b9a6f",
+        "e18faad103d61619d6e7d6e1aaed6e2566aaedff5a7204c9c06cd03d4d33408b"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "cmd/system/http_dependencies.go",
+        "cmd/system/session_routes.go",
+        "e18faad103d61619d6e7d6e1aaed6e2566aaedff5a7204c9c06cd03d4d33408b",
+        "fb247ca3e8cc7aa1b5c90d35edf5d8d1a75e1e8153412eb1b5251b61b3ef11b9"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "cmd/system/http_headers.go",
+        "internal/authentication/djangosession/validator.go",
+        "8dce43c37b29f172ad2133b6b75331b768507aebb94eb2cc18632559190e9a49",
+        "8dce43c37b29f172ad2133b6b75331b768507aebb94eb2cc18632559190e9a49"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cmd/system/http_middleware.go",
+        "cmd/system/session_routes.go",
+        "59441fc432f5286a35b201ff97aeff08074e1a1cc0cba13a16f27724ba7b9a6f",
+        "fb247ca3e8cc7aa1b5c90d35edf5d8d1a75e1e8153412eb1b5251b61b3ef11b9"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
         "cmd/system/http_test.go",
         "cmd/system/http_test.go",
         "0b04a412064e1b92024e2cb67d1ff704ebdeaa818c28b055ecd0f1cf537039b8",
@@ -1445,42 +1481,6 @@
       "fingerprint": [
         "cmd/system/http.go",
         "cmd/system/http.go",
-        "065efed16ed06920337c47d550cdb613e890020a15f6dfae1df6465e29da057d",
-        "4f4d199566bd744ec22f32226db7e059d0d4a97b633373546718c222a9505dd3"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "cmd/system/http.go",
-        "cmd/system/http.go",
-        "065efed16ed06920337c47d550cdb613e890020a15f6dfae1df6465e29da057d",
-        "c81ade0c525b2e17900e1a7272c07bf411065eb2a65b37ad52c0fc18e9ecb434"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "cmd/system/http.go",
-        "cmd/system/http.go",
-        "20e51077cccef44ff75d08d3414755f6c146b76680d418a790aac537b8a23e0d",
-        "6493253e4833afbe51dad936b60db5af0d1ea7831a8ca597f2b5d074227a035d"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "cmd/system/http.go",
-        "cmd/system/http.go",
-        "2388f4f661c6073e92ffd0000f70e41f333c1159251574575c4fbf4dd307b5b3",
-        "30b07fb5b2a7f796e57200de516b5ee15aa3043073f991551e7543736a60eb80"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "cmd/system/http.go",
-        "cmd/system/http.go",
         "36e290bafb123f382ef50ac1e960a93d251590a591529925826ee2a8cb49889b",
         "5cc1496a9f7f1931d2eae7e788e113853e425c58b254f02773de098589273220"
       ],
@@ -1488,57 +1488,57 @@
     },
     {
       "fingerprint": [
-        "cmd/system/http.go",
-        "cmd/system/http.go",
-        "4f4d199566bd744ec22f32226db7e059d0d4a97b633373546718c222a9505dd3",
-        "d6fdbdbff9d1006b62bdf6143f65e267f71bea5a57c1acbeacf7d971c5282fa7"
+        "cmd/system/last_visited_workspace_routes.go",
+        "cmd/system/workspace_member_routes.go",
+        "4a954b186f241a568193c1ade6df7fd8974251312b71c72411d6b807b14dbf4e",
+        "d47a00da79370c879b6af47b7ba0c2344abbad0cb38d1e31e2196e59e4dbbb84"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cmd/system/project_identifier_routes.go",
+        "cmd/system/user_settings_routes.go",
+        "1dfdd0f99184a37188027765ac59a7ecbedb49f131f04e85f6dc423b04ad00b8",
+        "907d01e329dac6ae8446302a0f4252e0d65dc0e80e2057ec52b2fc1fe4885c3a"
       ],
       "count": 1
     },
     {
       "fingerprint": [
-        "cmd/system/http.go",
-        "cmd/system/http.go",
-        "7f6ed2c115640c3fa7f90e349aa42c2cdf299b3de815e514cf92c06d1b4076c3",
-        "c0446313a22eaa1ab968703bb1ab026a1a8519b73945fc33a4cbf0bb575ce29b"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "cmd/system/http.go",
-        "cmd/system/http.go",
-        "82f973667ea05313caf0d79d920230bfc8161809da026782d652334930af0221",
-        "c9113e301dac75688fadd375c075cbe9b4ddc2cf0f760f6c8d8607c5d2055656"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "cmd/system/http.go",
-        "cmd/system/http.go",
-        "c81ade0c525b2e17900e1a7272c07bf411065eb2a65b37ad52c0fc18e9ecb434",
-        "d6fdbdbff9d1006b62bdf6143f65e267f71bea5a57c1acbeacf7d971c5282fa7"
+        "cmd/system/project_identifier_routes.go",
+        "cmd/system/workspace_sidebar_routes.go",
+        "6615322f9425315e841d0a6920bd8884e07fc921e4f1d5f226fe0ae5982a3f97",
+        "907d01e329dac6ae8446302a0f4252e0d65dc0e80e2057ec52b2fc1fe4885c3a"
       ],
       "count": 1
     },
     {
       "fingerprint": [
-        "cmd/system/http.go",
-        "cmd/system/http.go",
-        "e18faad103d61619d6e7d6e1aaed6e2566aaedff5a7204c9c06cd03d4d33408b",
-        "fb247ca3e8cc7aa1b5c90d35edf5d8d1a75e1e8153412eb1b5251b61b3ef11b9"
+        "cmd/system/project_label_routes.go",
+        "cmd/system/project_state_routes.go",
+        "2388f4f661c6073e92ffd0000f70e41f333c1159251574575c4fbf4dd307b5b3",
+        "30b07fb5b2a7f796e57200de516b5ee15aa3043073f991551e7543736a60eb80"
       ],
       "count": 2
     },
     {
       "fingerprint": [
-        "cmd/system/http.go",
-        "internal/authentication/djangosession/validator.go",
-        "8dce43c37b29f172ad2133b6b75331b768507aebb94eb2cc18632559190e9a49",
-        "8dce43c37b29f172ad2133b6b75331b768507aebb94eb2cc18632559190e9a49"
+        "cmd/system/user_accounts_routes.go",
+        "cmd/system/user_api_tokens_routes.go",
+        "18e6f872c916779fe353a588c8ef3ab5c3a6b4c385e9544e5e37e4218e69b2fb",
+        "22c28d3b933c821bb285d0f56fd5a39787b2c697a5f5f83571f94070827f557a"
       ],
       "count": 2
+    },
+    {
+      "fingerprint": [
+        "cmd/system/user_settings_routes.go",
+        "cmd/system/workspace_sidebar_routes.go",
+        "1dfdd0f99184a37188027765ac59a7ecbedb49f131f04e85f6dc423b04ad00b8",
+        "6615322f9425315e841d0a6920bd8884e07fc921e4f1d5f226fe0ae5982a3f97"
+      ],
+      "count": 1
     },
     {
       "fingerprint": [

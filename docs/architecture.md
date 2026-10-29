@@ -37,6 +37,14 @@ The [PQL query boundary](pql.md) lives in `internal/issuequery` and is executed 
 
 ## Source layout
 
+HTTP composition lives in `apps/go-api/cmd/system/http.go`. It registers domains
+in order through their `*_routes.go` owners, then applies the shared request
+pipeline in `http_middleware.go`. `http_server.go` owns listening and shutdown.
+Protocol matching, headers, CORS, encoding, and session helpers have separate
+files; test-only endpoint constructors live in `http_test_helpers_test.go`.
+Public metadata session effects remain request-local: audit logging captures the
+inner response before cookie refresh failures can replace the final response.
+
 Membership invitation operations live in `internal/projectmembershipreads`.
 `invitations_commands.go` owns dispatch and shared request context; invitation
 reads, creation, acceptance/join, and updates each have a separate file.

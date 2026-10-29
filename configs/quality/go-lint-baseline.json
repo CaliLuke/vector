@@ -640,7 +640,7 @@
     {
       "fingerprint": [
         "errorlint",
-        "cmd/system/http.go",
+        "cmd/system/sticky_routes.go",
         "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
       ],
       "count": 1
@@ -958,6 +958,18 @@
       "count": 1
     },
     {
+      "fingerprint": ["staticcheck", "cmd/system/activity_reads_routes.go", "QF1001: could apply De Morgan's law"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "cmd/system/activity_reads_routes.go",
+        "QF1003: could use tagged switch on protocol.apiAuthorization"
+      ],
+      "count": 1
+    },
+    {
       "fingerprint": [
         "staticcheck",
         "cmd/system/assets_lifecycle_transport_test.go",
@@ -966,27 +978,19 @@
       "count": 1
     },
     {
+      "fingerprint": ["staticcheck", "cmd/system/http_cors.go", "QF1001: could apply De Morgan's law"],
+      "count": 3
+    },
+    {
+      "fingerprint": ["staticcheck", "cmd/system/http_encoding.go", "QF1003: could use tagged switch on value"],
+      "count": 1
+    },
+    {
       "fingerprint": [
         "staticcheck",
         "cmd/system/http_test.go",
         "QF1011: could omit type http.Handler from declaration; it will be inferred from the right-hand side"
       ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "cmd/system/http.go", "QF1001: could apply De Morgan's law"],
-      "count": 4
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "cmd/system/http.go",
-        "QF1003: could use tagged switch on protocol.apiAuthorization"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "cmd/system/http.go", "QF1003: could use tagged switch on value"],
       "count": 1
     },
     {

@@ -15,19 +15,6 @@
       "score": 9
     },
     {
-      "file": "cmd/system/http.go",
-      "package": "main",
-      "function": "buildHTTPHandlerWithReplacementServicesAndPending",
-      "score": 0,
-      "sourceHash": "656981947fc57e2e20557290ef92548af8f8148cc04f10b169f2cb9865ca68e0"
-    },
-    {
-      "file": "cmd/system/http.go",
-      "package": "main",
-      "function": "publicProjectMetadataReadsCompatibilityMiddleware",
-      "score": 18
-    },
-    {
       "file": "cmd/system/main.go",
       "package": "main",
       "function": "run",
