@@ -41,7 +41,7 @@ router or handwritten generated transport.
 ## Provider and startup contract
 
 OAuth configuration is required only when MCP is enabled in `oauth` or `both`.
-Header mode remains independent of issuer/linking configuration. Disabled
+Header mode serves personal-token clients directly at `/mcp`, with `/mcp/api-key` retained for existing clients. In `both` mode, `/mcp` remains OAuth-only and personal tokens use `/mcp/api-key`; there is no authentication fallback. Header mode remains independent of issuer/linking configuration. Disabled
 OAuth metadata and linking routes return 404. Defaults remain MCP disabled.
 
 Required settings are issuer URL, an explicit introspection endpoint URL,

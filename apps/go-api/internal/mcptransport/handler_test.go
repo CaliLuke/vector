@@ -68,12 +68,41 @@ func TestDisabledRoutesDoNotFallThroughToFrontend(t *testing.T) {
 
 func TestOnlySelectedAuthenticationRoutesAreMounted(t *testing.T) {
 	for _, tc := range []struct{ mode, present, absent string }{
-		{"header", "/mcp/api-key", "/mcp"}, {"oauth", "/mcp", "/mcp/api-key"},
+		{"header", "/mcp", "/.well-known/oauth-protected-resource/mcp"}, {"oauth", "/mcp", "/mcp/api-key"},
 	} {
 		t.Run(tc.mode, func(t *testing.T) {
 			h := handler(t, config(tc.mode), options())
 			require.Equal(t, http.StatusOK, call(h, tc.present, initialize("2026-07-28"), nil).Code)
 			require.Equal(t, http.StatusNotFound, call(h, tc.absent, initialize("2026-07-28"), nil).Code)
+		})
+	}
+}
+
+func TestPersonalTokenCanonicalEndpointAuthenticatesWithoutOAuthFallback(t *testing.T) {
+	for _, version := range []string{"2026-07-28", "2025-11-25"} {
+		t.Run(version, func(t *testing.T) {
+			var revoked atomic.Bool
+			var calls atomic.Int64
+			opts := options()
+			opts.HeaderAuth = func(ctx context.Context, _ *http.Request) (context.Context, error) {
+				calls.Add(1)
+				if revoked.Load() {
+					return nil, mcptransport.ErrInvalidCredential
+				}
+				return ctx, nil
+			}
+			opts.OAuthAuth = func(context.Context, *http.Request) (context.Context, error) {
+				t.Error("personal-token mode must not authenticate through OAuth")
+				return nil, mcptransport.ErrInvalidCredential
+			}
+			h := handler(t, config("header"), opts)
+			response := call(h, "/mcp", initialize(version), nil)
+			require.Equal(t, http.StatusOK, response.Code, response.Body.String())
+			require.Empty(t, response.Header().Get("Mcp-Session-Id"))
+			require.EqualValues(t, 1, calls.Load())
+			revoked.Store(true)
+			require.Equal(t, http.StatusUnauthorized, call(h, "/mcp", initialize(version), nil).Code)
+			require.EqualValues(t, 2, calls.Load())
 		})
 	}
 }

@@ -105,6 +105,11 @@ func New(config Config, options Options, fallback http.Handler) (http.Handler, e
 		server.Server.AddReceivingMiddleware(discoveryMiddleware(app))
 		if config.Mode == "header" || config.Mode == "both" {
 			routes[HeaderPath] = platform.RequestIDMiddleware(observeHTTPRejection(options.Observer, protect(config, options.HeaderAuth, server.Handler, false)))
+			// In personal-token mode the canonical resource is also the client endpoint.
+			// Keep the existing token-specific path available for existing clients.
+			if config.Mode == "header" {
+				routes[ResourcePath] = routes[HeaderPath]
+			}
 		}
 		if config.Mode == "oauth" || config.Mode == "both" {
 			routes[MetadataPath] = platform.RequestIDMiddleware(oauthMetadata(config, options.OAuthIssuer))
