@@ -12,7 +12,7 @@ import { QuickActionMenu } from "@/components/common/quick-action-menu";
 import { IssueQuickActionModals } from "./issue-quick-action-modals";
 import type { IQuickActionProps } from "../list/list-view-types";
 import type { MenuItemFactoryProps } from "./helper";
-import { useProjectIssueMenuItems, useIssueQuickActionContext } from "./helper";
+import { useIssueMenuItems, useIssueQuickActionContext } from "./helper";
 import { useIssueQuickActionModals } from "./use-issue-quick-action-modals";
 
 export const ProjectIssueQuickActions = function ProjectIssueQuickActions(props: IQuickActionProps) {
@@ -55,7 +55,7 @@ export const ProjectIssueQuickActions = function ProjectIssueQuickActions(props:
     storeType: EIssuesStoreType.PROJECT,
   };
 
-  const MENU_ITEMS = useProjectIssueMenuItems(menuItemProps);
+  const MENU_ITEMS = useIssueMenuItems(menuItemProps);
 
   return (
     <>

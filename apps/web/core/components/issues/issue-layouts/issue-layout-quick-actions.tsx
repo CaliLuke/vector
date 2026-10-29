@@ -24,18 +24,23 @@ export function IssueLayoutQuickActions({
   readOnly,
   actions,
 }: Props) {
+  const { updateIssue, removeIssueFromView, archiveIssue, restoreIssue } = actions;
   return (
     <QuickActions
       parentRef={parentRef}
       customActionButton={customActionButton}
       issue={issue}
       handleDelete={() => actions.removeIssue(issue.project_id, issue.id)}
-      handleUpdate={async (data) => {
-        await actions.updateIssue?.(issue.project_id, issue.id, data);
-      }}
-      handleRemoveFromView={async () => actions.removeIssueFromView?.(issue.project_id, issue.id)}
-      handleArchive={async () => actions.archiveIssue?.(issue.project_id, issue.id)}
-      handleRestore={async () => actions.restoreIssue?.(issue.project_id, issue.id)}
+      handleUpdate={
+        updateIssue
+          ? async (data) => {
+              await updateIssue(issue.project_id, issue.id, data);
+            }
+          : undefined
+      }
+      handleRemoveFromView={removeIssueFromView ? () => removeIssueFromView(issue.project_id, issue.id) : undefined}
+      handleArchive={archiveIssue ? () => archiveIssue(issue.project_id, issue.id) : undefined}
+      handleRestore={restoreIssue ? () => restoreIssue(issue.project_id, issue.id) : undefined}
       readOnly={readOnly}
       placements={placement}
       portalElement={portalElement}

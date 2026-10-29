@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "full",
-  "fileCount": 3735,
+  "fileCount": 3736,
   "diagnostics": [
     {
       "diagnostic": {
@@ -3807,51 +3807,6 @@
         "severity": "warning",
         "code": "typescript(no-unnecessary-type-conversion)",
         "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/cycle-issue.tsx",
-        "severity": "error",
-        "code": "typescript(no-misused-promises)",
-        "message": "Promise-returning function provided to property where a void return was expected."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/helper.tsx",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/helper.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-assertion)",
-        "message": "This assertion is unnecessary since it does not change the type of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/helper.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe type assertion: type '() => void | Promise<void>' is more narrow than the original type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/module-issue.tsx",
-        "severity": "error",
-        "code": "typescript(no-misused-promises)",
-        "message": "Promise-returning function provided to property where a void return was expected."
       },
       "count": 1
     },

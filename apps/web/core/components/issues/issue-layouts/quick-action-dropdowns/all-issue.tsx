@@ -17,7 +17,7 @@ import { useRouteProjectStates } from "@/hooks/use-project-states";
 import { IssueQuickActionModals } from "./issue-quick-action-modals";
 import type { IQuickActionProps } from "../list/list-view-types";
 import type { MenuItemFactoryProps } from "./helper";
-import { useAllIssueMenuItems } from "./helper";
+import { useIssueMenuItems } from "./helper";
 import { useIssueQuickActionModals } from "./use-issue-quick-action-modals";
 
 export const AllIssueQuickActions = function AllIssueQuickActions(props: IQuickActionProps) {
@@ -66,7 +66,7 @@ export const AllIssueQuickActions = function AllIssueQuickActions(props: IQuickA
     storeType: EIssuesStoreType.GLOBAL,
   };
 
-  const MENU_ITEMS = useAllIssueMenuItems(menuItemProps);
+  const MENU_ITEMS = useIssueMenuItems(menuItemProps);
 
   return (
     <>

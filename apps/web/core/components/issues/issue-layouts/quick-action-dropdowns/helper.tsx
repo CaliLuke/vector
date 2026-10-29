@@ -11,7 +11,6 @@ import { XCircle, ArchiveRestoreIcon } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { LinkIcon, CopyIcon, NewTabIcon, EditIcon, ArchiveIcon, TrashIcon } from "@plane/propel/icons";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { ARCHIVABLE_STATE_GROUPS, EUserPermissions } from "@plane/constants";
 import type { EIssuesStoreType, TIssue } from "@plane/types";
 import type { TContextMenuItem } from "@plane/ui";
@@ -37,38 +36,6 @@ export function useIssueQuickActionContext(issue: TIssue, readOnly: boolean) {
   };
 }
 
-// Generic helper function to handle optional function calls gracefully
-// Overload for functions without parameters
-function handleOptionalAction(optionalFn: (() => void) | (() => Promise<void>) | undefined, actionName: string): void;
-
-// Overload for functions with one parameter
-function handleOptionalAction<T>(
-  optionalFn: ((param: T) => void) | ((param: T) => Promise<void>) | undefined,
-  actionName: string,
-  param: T
-): void;
-
-// Implementation
-function handleOptionalAction<T>(
-  optionalFn: (() => void) | (() => Promise<void>) | ((param: T) => void) | ((param: T) => Promise<void>) | undefined,
-  actionName: string,
-  param?: T
-): void {
-  if (optionalFn) {
-    if (param !== undefined) {
-      (optionalFn as (param: T) => void | Promise<void>)(param);
-    } else {
-      (optionalFn as () => void | Promise<void>)();
-    }
-  } else {
-    setToast({
-      type: TOAST_TYPE.ERROR,
-      title: "Action not available",
-      message: `${actionName} action is not implemented.`,
-    });
-  }
-}
-
 export interface MenuItemFactoryProps {
   issue: TIssue;
   workspaceSlug?: string;
@@ -85,7 +52,7 @@ export interface MenuItemFactoryProps {
   setDeleteIssueModal: (open: boolean) => void;
   setArchiveIssueModal?: (open: boolean) => void;
   onDuplicate?: () => void;
-  handleRemoveFromView?: () => void;
+  handleRemoveFromView?: () => Promise<void>;
   handleRestore?: () => Promise<void>;
   // External handlers
   handleDelete?: () => Promise<void>;
@@ -156,7 +123,6 @@ const useMenuItemFactory = (props: MenuItemFactoryProps) => {
     setDeleteIssueModal,
     setArchiveIssueModal,
     onDuplicate,
-    handleRemoveFromView,
   } = props;
 
   const createEditMenuItem = (customEditAction?: () => void): TContextMenuItem => ({
@@ -202,22 +168,6 @@ const useMenuItemFactory = (props: MenuItemFactoryProps) => {
     disabled: actionHandlers.copyDisabled,
   });
 
-  const createRemoveFromCycleMenuItem = (): TContextMenuItem => ({
-    key: "remove-from-cycle",
-    title: "Remove from cycle",
-    icon: XCircle,
-    action: () => handleOptionalAction(handleRemoveFromView, "Remove from cycle"),
-    shouldRender: isEditingAllowed,
-  });
-
-  const createRemoveFromModuleMenuItem = (): TContextMenuItem => ({
-    key: "remove-from-module",
-    title: "Remove from module",
-    icon: XCircle,
-    action: () => handleOptionalAction(handleRemoveFromView, "Remove from module"),
-    shouldRender: isEditingAllowed,
-  });
-
   const createArchiveMenuItem = (): TContextMenuItem => ({
     key: "archive",
     title: t("common.actions.archive"),
@@ -225,8 +175,8 @@ const useMenuItemFactory = (props: MenuItemFactoryProps) => {
     icon: ArchiveIcon,
     className: "items-start",
     iconClassName: "mt-1",
-    action: () => handleOptionalAction(setArchiveIssueModal, "Archive", true),
-    disabled: !isInArchivableGroup,
+    action: () => setArchiveIssueModal?.(true),
+    disabled: !isInArchivableGroup || !setArchiveIssueModal,
     shouldRender: isArchivingAllowed,
   });
 
@@ -255,65 +205,76 @@ const useMenuItemFactory = (props: MenuItemFactoryProps) => {
     createCopyMenuItem,
     createOpenInNewTabMenuItem,
     createCopyLinkMenuItem,
-    createRemoveFromCycleMenuItem,
-    createRemoveFromModuleMenuItem,
     createArchiveMenuItem,
     createRestoreMenuItem,
     createDeleteMenuItem,
+    createPlanningMenuItems: (editAction: () => void, removeFromView: TContextMenuItem): TContextMenuItem[] => [
+      createEditMenuItem(editAction),
+      createCopyMenuItem(),
+      createOpenInNewTabMenuItem(),
+      createCopyLinkMenuItem(),
+      removeFromView,
+      createArchiveMenuItem(),
+      createDeleteMenuItem(),
+    ],
   };
 };
 
+function useRemoveFromViewMenuItem(props: MenuItemFactoryProps, kind: "cycle" | "module"): TContextMenuItem {
+  const { issue, workspaceSlug, handleRemoveFromView, isEditingAllowed } = props;
+  const { t } = useTranslation();
+  const parentId = kind === "cycle" ? props.cycleId : props.moduleId;
+  const removal = useIssueAction(
+    {
+      workspaceSlug,
+      projectId: issue.project_id,
+      issueId: issue.id,
+      context: JSON.stringify(["remove-from-view", kind, parentId]),
+    },
+    isEditingAllowed && !!handleRemoveFromView && !!parentId,
+    { error: t("entity.remove.failed", { entity: t("common.work_item") }) }
+  );
+  return {
+    key: `remove-from-${kind}`,
+    title: kind === "cycle" ? "Remove from cycle" : "Remove from module",
+    icon: XCircle,
+    action: () => {
+      if (handleRemoveFromView) removal.run(handleRemoveFromView);
+    },
+    disabled: removal.disabled,
+    shouldRender: isEditingAllowed,
+  };
+}
+
 // Predefined menu item sets for different contexts
-export const useProjectIssueMenuItems = (props: MenuItemFactoryProps): TContextMenuItem[] => {
+export const useIssueMenuItems = (props: MenuItemFactoryProps): TContextMenuItem[] => {
   const factory = useMenuItemFactory(props);
 
-  return useMemo(
-    () => [
-      factory.createEditMenuItem(),
-      factory.createCopyMenuItem(),
-      factory.createOpenInNewTabMenuItem(),
-      factory.createCopyLinkMenuItem(),
-      factory.createArchiveMenuItem(),
-      factory.createDeleteMenuItem(),
-    ],
-    [factory]
-  );
+  return [
+    factory.createEditMenuItem(),
+    factory.createCopyMenuItem(),
+    factory.createOpenInNewTabMenuItem(),
+    factory.createCopyLinkMenuItem(),
+    factory.createArchiveMenuItem(),
+    factory.createDeleteMenuItem(),
+  ];
 };
 
 export const useWorkItemDetailMenuItems = (props: MenuItemFactoryProps): TContextMenuItem[] => {
   const factory = useMenuItemFactory(props);
 
-  return useMemo(
-    () => [
-      factory.createCopyMenuItem(),
-      factory.createOpenInNewTabMenuItem(),
-      factory.createArchiveMenuItem(),
-      factory.createRestoreMenuItem(),
-      factory.createDeleteMenuItem(),
-    ],
-    // oxlint-disable-next-line eslint-plugin-react-hooks/exhaustive-deps
-    [factory]
-  );
-};
-
-export const useAllIssueMenuItems = (props: MenuItemFactoryProps): TContextMenuItem[] => {
-  const factory = useMenuItemFactory(props);
-
-  return useMemo(
-    () => [
-      factory.createEditMenuItem(),
-      factory.createCopyMenuItem(),
-      factory.createOpenInNewTabMenuItem(),
-      factory.createCopyLinkMenuItem(),
-      factory.createArchiveMenuItem(),
-      factory.createDeleteMenuItem(),
-    ],
-    [factory]
-  );
+  return [
+    factory.createCopyMenuItem(),
+    factory.createOpenInNewTabMenuItem(),
+    factory.createArchiveMenuItem(),
+    factory.createRestoreMenuItem(),
+    factory.createDeleteMenuItem(),
+  ];
 };
 
 export const useCycleIssueMenuItems = (props: MenuItemFactoryProps): TContextMenuItem[] => {
   const factory = useMenuItemFactory(props);
+  const removeFromView = useRemoveFromViewMenuItem(props, "cycle");
   const { cycleId, issue, setCreateUpdateIssueModal, setIssueToEdit } = props;
 
   const customEditAction = useCallback(() => {
@@ -324,22 +285,12 @@ export const useCycleIssueMenuItems = (props: MenuItemFactoryProps): TContextMen
     setCreateUpdateIssueModal(true);
   }, [cycleId, issue, setCreateUpdateIssueModal, setIssueToEdit]);
 
-  return useMemo(
-    () => [
-      factory.createEditMenuItem(customEditAction),
-      factory.createCopyMenuItem(),
-      factory.createOpenInNewTabMenuItem(),
-      factory.createCopyLinkMenuItem(),
-      factory.createRemoveFromCycleMenuItem(),
-      factory.createArchiveMenuItem(),
-      factory.createDeleteMenuItem(),
-    ],
-    [customEditAction, factory]
-  );
+  return factory.createPlanningMenuItems(customEditAction, removeFromView);
 };
 
 export const useModuleIssueMenuItems = (props: MenuItemFactoryProps): TContextMenuItem[] => {
   const factory = useMenuItemFactory(props);
+  const removeFromView = useRemoveFromViewMenuItem(props, "module");
   const { issue, moduleId, setCreateUpdateIssueModal, setIssueToEdit } = props;
 
   const customEditAction = useCallback(() => {
@@ -350,30 +301,16 @@ export const useModuleIssueMenuItems = (props: MenuItemFactoryProps): TContextMe
     setCreateUpdateIssueModal(true);
   }, [issue, moduleId, setCreateUpdateIssueModal, setIssueToEdit]);
 
-  return useMemo(
-    () => [
-      factory.createEditMenuItem(customEditAction),
-      factory.createCopyMenuItem(),
-      factory.createOpenInNewTabMenuItem(),
-      factory.createCopyLinkMenuItem(),
-      factory.createRemoveFromModuleMenuItem(),
-      factory.createArchiveMenuItem(),
-      factory.createDeleteMenuItem(),
-    ],
-    [customEditAction, factory]
-  );
+  return factory.createPlanningMenuItems(customEditAction, removeFromView);
 };
 
 export const useArchivedIssueMenuItems = (props: MenuItemFactoryProps): TContextMenuItem[] => {
   const factory = useMenuItemFactory(props);
 
-  return useMemo(
-    () => [
-      factory.createRestoreMenuItem(),
-      factory.createOpenInNewTabMenuItem(),
-      factory.createCopyLinkMenuItem(),
-      factory.createDeleteMenuItem(),
-    ],
-    [factory]
-  );
+  return [
+    factory.createRestoreMenuItem(),
+    factory.createOpenInNewTabMenuItem(),
+    factory.createCopyLinkMenuItem(),
+    factory.createDeleteMenuItem(),
+  ];
 };

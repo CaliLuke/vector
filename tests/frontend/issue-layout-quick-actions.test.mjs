@@ -63,3 +63,47 @@ await test("layout quick actions retain the rendered issue scope and propagate f
     ["delete", "project-a", "first"],
   ]);
 });
+
+await test("layout menus expose only available optional operations", async (t) => {
+  const view = await createReactDomTestEnvironment();
+  t.after(() => view.unmount());
+  let controls;
+  const QuickActions = (props) => {
+    controls = props;
+    return null;
+  };
+  const issue = { id: "item", project_id: "project" };
+  const actions = { removeIssue: async () => {} };
+  const render = () =>
+    view.render(
+      React.createElement(IssueLayoutQuickActions, {
+        QuickActions,
+        issue,
+        readOnly: false,
+        parentRef: { current: null },
+        actions,
+      })
+    );
+  await render();
+  for (const name of ["handleUpdate", "handleRemoveFromView", "handleArchive", "handleRestore"])
+    assert.equal(controls[name], undefined, `${name} is unavailable`);
+  const writes = [];
+  const failure = new Error("Rejected operation");
+  for (const name of ["updateIssue", "removeIssueFromView", "archiveIssue", "restoreIssue"])
+    actions[name] = async (...args) => {
+      writes.push([name, ...args]);
+      throw failure;
+    };
+  await render();
+  await Promise.all(
+    ["handleUpdate", "handleRemoveFromView", "handleArchive", "handleRestore"].map((name) =>
+      assert.rejects(controls[name]({ name: "Rejected" }), (error) => error === failure)
+    )
+  );
+  assert.deepEqual(writes, [
+    ["updateIssue", "project", "item", { name: "Rejected" }],
+    ["removeIssueFromView", "project", "item"],
+    ["archiveIssue", "project", "item"],
+    ["restoreIssue", "project", "item"],
+  ]);
+});
