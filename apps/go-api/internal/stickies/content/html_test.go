@@ -164,3 +164,23 @@ func FuzzValidateHTMLIsIdempotent(f *testing.F) {
 		}
 	})
 }
+
+func TestVoidElementSerializationPreservesAttributesAndIncompleteMarkup(t *testing.T) {
+	for _, sample := range []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{"self-closing tag", `<br/>`, `<br>`},
+		{"existing HTML tag", `<br>`, `<br>`},
+		{"double-quoted delimiter", `<img alt="a/>b"/>`, `<img alt="a/>b">`},
+		{"single-quoted delimiter", `<img alt='a/>b'/>`, `<img alt='a/>b'>`},
+		{"unfinished tag", `<p>before</p><img alt="unfinished`, `<p>before</p><img alt="unfinished`},
+	} {
+		t.Run(sample.name, func(t *testing.T) {
+			if got := string(removeVoidElementSlashes([]byte(sample.input))); got != sample.want {
+				t.Fatalf("serialized HTML=%q, want %q", got, sample.want)
+			}
+		})
+	}
+}

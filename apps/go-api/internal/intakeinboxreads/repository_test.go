@@ -787,21 +787,30 @@ func TestSoftDeletedDuplicateAndPendingRowsPreserveDjangoProjection(t *testing.T
 }
 
 func TestTypeFilterOverwritesStateGroupWithoutExcludingSoftDeletedStateTarget(t *testing.T) {
-	builder := newWhereBuilder(uuid.New(), "demo")
-	if err := addIssueFilters(builder, "issue", map[string]string{"type": "active", "state_group": "completed"}, nil, false, "UTC"); err != nil {
-		t.Fatal(err)
-	}
-	if len(builder.conditions) != 1 {
-		t.Fatalf("type and state_group intersected instead of overwriting: %v", builder.conditions)
-	}
-	for _, condition := range builder.conditions {
-		if strings.Contains(condition, "filtered_state.deleted_at IS NULL") {
-			t.Fatalf("state filter excludes soft-deleted target: %s", condition)
-		}
-	}
-	groups, ok := builder.args[len(builder.args)-1].([]string)
-	if !ok || !reflect.DeepEqual(groups, []string{"unstarted", "started"}) {
-		t.Fatalf("type filter groups=%#v", builder.args)
+	for _, sample := range []struct {
+		value  string
+		groups []string
+	}{
+		{"active", []string{"unstarted", "started"}},
+		{"backlog", []string{"backlog"}},
+		{"all", []string{"backlog", "unstarted", "started", "completed", "cancelled"}},
+	} {
+		t.Run(sample.value, func(t *testing.T) {
+			builder := newWhereBuilder(uuid.New(), "demo")
+			if err := addIssueFilters(builder, "issue", map[string]string{"type": sample.value, "state_group": "completed"}, nil, false, "UTC"); err != nil {
+				t.Fatal(err)
+			}
+			if len(builder.conditions) != 1 {
+				t.Fatalf("type and state_group intersected instead of overwriting: %v", builder.conditions)
+			}
+			if strings.Contains(builder.conditions[0], "filtered_state.deleted_at IS NULL") {
+				t.Fatalf("state filter excludes soft-deleted target: %s", builder.conditions[0])
+			}
+			groups, ok := builder.args[len(builder.args)-1].([]string)
+			if !ok || !reflect.DeepEqual(groups, sample.groups) {
+				t.Fatalf("type filter groups=%#v, want %#v", builder.args, sample.groups)
+			}
+		})
 	}
 }
 

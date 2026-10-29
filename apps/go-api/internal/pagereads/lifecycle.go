@@ -580,7 +580,9 @@ func (repository *Repository) updateOrDuplicatePage(ctx context.Context, db life
 		}
 	}
 	var oldDescription string
-	_ = repository.database.QueryRow(ctx, `SELECT description_html FROM pages WHERE id=$1 AND workspace_id=$2`, page, state.workspaceID).Scan(&oldDescription)
+	if descriptionErr := repository.database.QueryRow(ctx, `SELECT description_html FROM pages WHERE id=$1 AND workspace_id=$2`, page, state.workspaceID).Scan(&oldDescription); descriptionErr != nil {
+		return 0, nil, descriptionErr
+	}
 	newDescription, descriptionChanged := fields["description_html"].(string)
 	if writePageErr := repository.writePage(ctx, db, func(tx pgx.Tx) error {
 		if _, collaborative := input.Fields["collaboration_revision"]; collaborative || fields["name"] != nil || fields["description_html"] != nil {
