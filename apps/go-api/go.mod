@@ -36,8 +36,8 @@ require (
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.49.0
 	github.com/sahilm/fuzzy v0.1.3
 	github.com/stretchr/testify v1.12.1
-	github.com/testcontainers/testcontainers-go v0.44.0
-	github.com/testcontainers/testcontainers-go/modules/postgres v0.44.0
+	github.com/testcontainers/testcontainers-go v0.44.1-0.20261029064637-ff84c26717f1
+	github.com/testcontainers/testcontainers-go/modules/postgres v0.44.1-0.20261029064637-ff84c26717f1
 	github.com/timbutler/zxcvbn v1.0.4
 	github.com/urfave/cli/v3 v3.14.0
 	github.com/wneessen/go-mail v0.8.1

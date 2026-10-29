@@ -90,17 +90,14 @@ go -C apps/go-api test ./...
 go -C apps/go-api vet ./...
 ```
 
-For the default Colima profile, `scripts/dev-env.sh` sets
-`VECTOR_TEST_HOST_GATEWAY=host.docker.internal`. Proxy fixtures use Colima's native
-host gateway to reach their local HTTP test servers. Other Docker environments
-keep Testcontainers' managed host-port tunnel. An explicitly empty
-`VECTOR_TEST_HOST_GATEWAY` also selects that portable default.
-
-This Colima default avoids the SSH-sidecar readiness defect tracked in
-[Testcontainers issue #4054](https://github.com/testcontainers/testcontainers-go/issues/4054).
-Remove the default once a released HostPort wait strategy handles transient TCP
-timeouts and the SSH path passes targeted Colima verification. Test assertions and
-readiness deadlines are the same for both network paths.
+Testcontainers core and its PostgreSQL module are pinned to
+`v0.44.1-0.20261029064637-ff84c26717f1`. This upstream commit includes the
+[HostPort timeout fix](https://github.com/testcontainers/testcontainers-go/pull/4055)
+for [issue #4054](https://github.com/testcontainers/testcontainers-go/issues/4054).
+The proxy fixtures use Testcontainers' SSH host-port forwarding on all platforms;
+the Colima gateway workaround has been removed. The proxy integration suite passes
+with the pinned version and the existing readiness deadlines. Replace both pins
+with a tagged release that contains this commit when one is available.
 
 Development orchestration and login/log checks use `cmd/devtools`, written in Go.
 Go unit tests and focused database tests run without Python or historical Git objects.
