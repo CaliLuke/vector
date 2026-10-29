@@ -191,15 +191,60 @@ const timer = setInterval(() => { if (fs.existsSync(${JSON.stringify(capturedPat
   }
 });
 
-void test("memory ceiling follows descendants that create a separate process group", () => {
-  const result = run(
-    `
-    const {spawn}=require("node:child_process");
-    spawn(process.execPath,["-e", ${JSON.stringify(memoryConsumer)}],{detached:true,stdio:"ignore"});
-    setInterval(()=>{},1000);
-  `,
-    ["--memory-mib", "100", "--heap-mib", "64"]
-  );
-  assert.equal(result.status, 137, result.stderr);
-  assert.match(result.stderr, /RSS exceeded/);
+void test("memory ceiling follows descendants that create a separate process group", async () => {
+  const directory = mkdtempSync(path.join(tmpdir(), "vector-detached-memory-"));
+  const pidPath = path.join(directory, "worker.pid");
+  const snapshotPath = path.join(directory, "worker.snapshot");
+  let worker;
+  try {
+    // Keep real process ancestry and group IDs, but control this worker's RSS.
+    // The native-allocation test above covers actual resident memory; this test
+    // isolates cross-group accounting from OS paging and allocation timing.
+    writeFileSync(
+      path.join(directory, "ps"),
+      `#!${process.execPath}
+const fs = require("node:fs");
+const pidPath = ${JSON.stringify(pidPath)};
+const snapshotPath = ${JSON.stringify(snapshotPath)};
+const worker = fs.existsSync(pidPath) ? Number(fs.readFileSync(pidPath, "utf8")) : undefined;
+const output = require("node:child_process").execFileSync("/bin/ps", process.argv.slice(2), {encoding:"utf8"});
+process.stdout.write(output.split("\\n").map(row => {
+  const values = row.trim().split(/\\s+/);
+  if (Number(values[0]) === worker) {
+    if (!fs.existsSync(snapshotPath)) fs.writeFileSync(snapshotPath, row);
+    values[3] = String(128 * 1024);
+  }
+  return values.join(" ");
+}).join("\\n"));
+`,
+      { mode: 0o700 }
+    );
+    const script = `
+const {spawn} = require("node:child_process");
+const worker = spawn(process.execPath, ["-e", "setInterval(()=>{},1000)"], {detached:true,stdio:"ignore"});
+require("node:fs").writeFileSync(${JSON.stringify(pidPath)}, String(worker.pid));
+setInterval(()=>{},1000);
+`;
+    const result = spawnSync(
+      process.execPath,
+      [runner, "--seconds", "5", "--memory-mib", "100", "--heap-mib", "64", "--", process.execPath, "-e", script],
+      {
+        encoding: "utf8",
+        timeout: 10_000,
+        env: { ...process.env, PATH: `${directory}${path.delimiter}${process.env.PATH}` },
+      }
+    );
+    worker = Number(readFileSync(pidPath, "utf8"));
+    assert.ifError(result.error);
+    assert.equal(result.status, 137, result.stderr);
+    assert.match(result.stderr, /RSS exceeded/);
+    const [pid, parent, group] = readFileSync(snapshotPath, "utf8").trim().split(/\s+/).map(Number);
+    assert.equal(pid, worker);
+    assert.equal(group, worker);
+    assert.notEqual(parent, group);
+    await assertWorkerStopped(worker);
+  } finally {
+    cleanupWorker(worker);
+    rmSync(directory, { recursive: true, force: true });
+  }
 });

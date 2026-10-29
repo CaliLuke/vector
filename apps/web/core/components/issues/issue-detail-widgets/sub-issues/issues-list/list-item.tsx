@@ -63,7 +63,7 @@ export const SubIssuesListItem = function SubIssuesListItem(props: Props) {
     workspaceSlug,
     issue.project_id ?? undefined,
     issueId,
-    issueServiceType,
+    EIssueServiceType.ISSUES,
     isExpanded
   );
   const projectRows = useWorkspaceProjectDetails(workspaceSlug).projects;

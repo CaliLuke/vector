@@ -16,11 +16,7 @@ import { useCommittedScope } from "@/hooks/use-committed-scope";
 import { useWorkItemDetailScope } from "@/hooks/use-work-item-detail";
 import { useIssueListMutationOwner } from "@/hooks/use-issue-list-mutation-owner";
 import { allSubItems, captureIssueDetailReconciliation, issueDetailKeys } from "@/queries/issue-details";
-import {
-  captureIssueListMutationOwner,
-  patchIssueMutation,
-  refreshCapturedIssueLists,
-} from "@/queries/issue-list-mutations";
+import { captureIssueListMutationOwner, refreshCapturedIssueLists } from "@/queries/issue-list-mutations";
 import { currentParentCatalogueScope } from "@/queries/cycle-module-scope";
 import { captureProjectAccessScope } from "@/queries/project-access-scope";
 import { getIdentitySessionGeneration } from "@/queries/identity";
@@ -38,10 +34,10 @@ export function useSubIssueOperations(
   const access = useWorkItemDetailScope(workspaceSlug, projectId, issueServiceType, parentIssueId);
   const isUiCurrent = useCommittedScope(JSON.stringify([workspaceSlug, projectId, parentIssueId, issueServiceType]));
   const service = useMemo(() => new IssueService(issueServiceType), [issueServiceType]);
-  const mutationStoreType =
+  const parentStoreType =
     issueServiceType === EIssueServiceType.EPICS ? EIssuesStoreType.EPIC : EIssuesStoreType.PROJECT;
-  const resolveListOwner = useIssueListMutationOwner(mutationStoreType);
-  const listActions = useIssuesActions(mutationStoreType);
+  const resolveParentListOwner = useIssueListMutationOwner(parentStoreType);
+  const childActions = useIssuesActions(EIssuesStoreType.PROJECT);
 
   const captureOwner = useCallback(
     (targetParentId: string) => {
@@ -105,15 +101,28 @@ export function useSubIssueOperations(
   );
 
   const captureChildDetails = useCallback(
-    (targetProjectId: string, issueIds: readonly string[], serviceType = issueServiceType) => {
+    (targetProjectId: string, issueIds: readonly string[]) => {
       const { workspaceRole, ...scope } = currentParentCatalogueScope(client, workspaceSlug, targetProjectId).project;
       return captureIssueDetailReconciliation(
         client,
-        { ...scope, membershipRole: workspaceRole, serviceType },
+        { ...scope, membershipRole: workspaceRole, serviceType: EIssueServiceType.ISSUES },
         issueIds
       );
     },
-    [client, workspaceSlug, issueServiceType]
+    [client, workspaceSlug]
+  );
+
+  const updateChild = useCallback<TSubIssueOperations["updateSubIssue"]>(
+    async (targetWorkspace, targetProject, targetParentId, issueId, data) => {
+      const owner = captureOwner(targetParentId);
+      assertMutationScope(owner, targetWorkspace, targetProject);
+      const childDetailOwner = captureChildDetails(targetProject, [issueId]);
+      if (!childActions.updateIssue) throw new Error("Work item editing is unavailable.");
+      const receipt = await childActions.updateIssue(targetProject, issueId, data);
+      await childDetailOwner.reconcile(receipt);
+      refresh(owner);
+    },
+    [captureOwner, assertMutationScope, captureChildDetails, childActions, refresh]
   );
 
   const operations: TSubIssueOperations = useMemo(
@@ -135,12 +144,12 @@ export function useSubIssueOperations(
         const issueIds = issues.map((issue) => issue.id);
         const owner = captureOwner(targetParentId);
         assertMutationScope(owner, _workspaceSlug, _projectId, true);
-        const listOwner = await resolveListOwner(_workspaceSlug, _projectId);
+        const listOwner = await resolveParentListOwner(_workspaceSlug, _projectId);
         if (!listOwner) throw new Error("Work item access is unavailable. Retry the operation.");
         const capturedList = captureIssueListMutationOwner(client, listOwner);
         const childDetails = issues.map((issue) => ({
           issue,
-          owner: captureChildDetails(issue.project_id, [issue.id], EIssueServiceType.ISSUES),
+          owner: captureChildDetails(issue.project_id, [issue.id]),
         }));
         const response = await service.addSubIssues(_workspaceSlug, _projectId, targetParentId, {
           sub_issue_ids: issueIds,
@@ -169,31 +178,14 @@ export function useSubIssueOperations(
         });
       },
       refreshSubIssues: (targetParentId) => refresh(captureOwner(targetParentId)),
-      updateSubIssue: async (_workspaceSlug, _projectId, targetParentId, issueId, issueData) => {
-        const owner = captureOwner(targetParentId);
-        assertMutationScope(owner, _workspaceSlug, _projectId);
-        const childDetailOwner = captureChildDetails(_projectId, [issueId]);
-        const listOwner = await resolveListOwner(_workspaceSlug, _projectId);
-        if (!listOwner) throw new Error("Work item access is unavailable. Retry the operation.");
-        const receipt = await patchIssueMutation(client, listOwner, issueId, issueData);
-        await childDetailOwner.reconcile(receipt);
-        refresh(owner);
-      },
-      removeSubIssue: async (_workspaceSlug, _projectId, targetParentId, issueId) => {
-        const owner = captureOwner(targetParentId);
-        assertMutationScope(owner, _workspaceSlug, _projectId);
-        const childDetailOwner = captureChildDetails(_projectId, [issueId]);
-        const listOwner = await resolveListOwner(_workspaceSlug, _projectId);
-        if (!listOwner) throw new Error("Work item access is unavailable. Retry the operation.");
-        const receipt = await patchIssueMutation(client, listOwner, issueId, { parent_id: null });
-        await childDetailOwner.reconcile(receipt);
-        refresh(owner);
-      },
+      updateSubIssue: updateChild,
+      removeSubIssue: (targetWorkspace, targetProject, targetParentId, issueId) =>
+        updateChild(targetWorkspace, targetProject, targetParentId, issueId, { parent_id: null }),
       deleteSubIssue: async (_workspaceSlug, _projectId, targetParentId, issueId) => {
         const owner = captureOwner(targetParentId);
         assertMutationScope(owner, _workspaceSlug, _projectId);
         const childDetailOwner = captureChildDetails(_projectId, [issueId]);
-        await listActions.removeIssue(_projectId, issueId);
+        await childActions.removeIssue(_projectId, issueId);
         childDetailOwner.remove();
         refresh(owner);
       },
@@ -206,8 +198,9 @@ export function useSubIssueOperations(
       assertMutationScope,
       client,
       issueServiceType,
-      listActions,
-      resolveListOwner,
+      childActions,
+      resolveParentListOwner,
+      updateChild,
       service,
       t,
     ]

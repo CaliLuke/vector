@@ -105,7 +105,7 @@ async function click(button) {
   await settleQuery();
 }
 
-async function setup(t, { parentPicker = false } = {}) {
+async function setup(t, { parentPicker = false, parentService = "issues" } = {}) {
   const fixture = await createPermissionUiFixture(t, {
     path: "/acme/projects/p1/issues/P1-1",
     workspaceRole: 15,
@@ -148,11 +148,19 @@ async function setup(t, { parentPicker = false } = {}) {
   const transport = { patch: async () => {} };
   globalThis.nestedToasts = [];
   globalThis.nestedEditModal = undefined;
-  t.mock.method(IssueService.prototype, "subIssues", async (_workspace, project, id) => {
+  const readPaths = [];
+  t.mock.method(IssueService.prototype, "get", async (path) => {
+    readPaths.push(path);
+    const match = /^\/api\/workspaces\/acme\/projects\/([^/]+)\/(issues|epics)\/([^/]+)\/(sub-issues|issues)\/$/.exec(
+      path
+    );
+    if (!match) throw { response: { data: { status: 404 } } };
+    const [, project, service, id] = match;
     reads.push([project, id]);
     const parent = rows.get(id);
-    if (!parent || parent.project_id !== project) throw { status: 404 };
-    return { sub_issues: [...rows.values()].filter((row) => row.parent_id === id) };
+    if (!parent || parent.project_id !== project || service !== (id === "root" ? parentService : "issues"))
+      throw { response: { data: { status: 404 } } };
+    return { data: { sub_issues: [...rows.values()].filter((row) => row.parent_id === id) } };
   });
   t.mock.method(IssueService.prototype, "retrieve", async (_workspace, project, id) => {
     const row = rows.get(id);
@@ -185,6 +193,7 @@ async function setup(t, { parentPicker = false } = {}) {
               workspaceSlug: "acme",
               projectId: "p1",
               parentIssueId: "root",
+              issueServiceType: parentService,
               disabled,
             })
       )
@@ -201,6 +210,7 @@ async function setup(t, { parentPicker = false } = {}) {
     transport,
     rows,
     reads,
+    readPaths,
     writes,
     row,
     click,
@@ -400,4 +410,14 @@ await test("a successful parent removal reports one success", async (t) => {
   assert.equal(Boolean(view.removeParent()), false);
   assert.equal(globalThis.nestedToasts.length, 1);
   assert.equal(globalThis.nestedToasts[0].type, "success");
+});
+
+await test("expanding an ordinary child under an epic uses the child's sub-item endpoint", async (t) => {
+  const view = await setup(t, { parentService: "epics" });
+  await view.expand();
+  assert.deepEqual(view.readPaths, [
+    "/api/workspaces/acme/projects/p1/epics/root/issues/",
+    "/api/workspaces/acme/projects/p2/issues/nested/sub-issues/",
+  ]);
+  assert.equal(Boolean(view.row("leaf")), true);
 });
