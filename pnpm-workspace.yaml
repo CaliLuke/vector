@@ -130,7 +130,7 @@ catalog:
   "oxfmt": "0.74.0"
   "oxlint": "1.89.0"
   "oxlint-tsgolint": "7.0.2005"
-  "knip": "6.43.0"
+  "knip": "6.44.0"
   "jscpd": "5.4.2"
   "pdf-parse": "^2.4.5"
   "postcss": "8.5.32"
@@ -273,3 +273,4 @@ minimumReleaseAgeExclude:
   - autoprefixer@10.6.2
   - postcss@8.5.32
   - storybook@10.6.4
+  - knip@6.44.0

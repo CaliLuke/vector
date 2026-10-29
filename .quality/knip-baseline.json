@@ -1,13 +1,4 @@
 {
   "version": 1,
-  "findings": [
-    {
-      "finding": {
-        "category": "unlisted",
-        "file": "pnpm-workspace.yaml",
-        "name": "@tiptap/pm"
-      },
-      "count": 1
-    }
-  ]
+  "findings": []
 }

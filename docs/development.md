@@ -626,11 +626,9 @@ before their ratchets run. Existing debt is recorded as explicit baselines rathe
 than hidden by excluding application source. Review and tighten those baselines
 as findings are fixed; do not regenerate them simply to accept a failing change.
 
-Knip retains one finding for the `@tiptap/pm` peer added by pnpm
-`packageExtensions`. The editor declares the peer, but Knip attributes it to the
-root workspace ([Knip #2245](https://github.com/webpro-nl/knip/issues/2245)).
-Remove this allowance when a released Knip resolves the consumer correctly or
-the upstream package declares the peer and the extension can be removed.
+Knip has no accepted findings. Version 6.44.0 includes the
+[package-extension peer fix](https://github.com/webpro-nl/knip/pull/2246), so the
+editor’s declared `@tiptap/pm` peer no longer needs a root-workspace allowance.
 
 The frontend behavior suite uses Node's compilation cache and a shared TypeScript transform cache.
 Transform keys include source content, compiler version and every transform option.
