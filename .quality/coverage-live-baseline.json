@@ -85,19 +85,7 @@
       "functions": 100,
       "branches": 80
     },
-    "src/extensions/title-update/title-utils.ts": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
-    },
     "src/hocuspocus.ts": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
-    },
-    "src/lib/auth-middleware.ts": {
       "lines": 0,
       "statements": 0,
       "functions": 0,

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "fast",
-  "fileCount": 3800,
+  "fileCount": 3735,
   "diagnostics": [
     {
       "diagnostic": {
@@ -725,24 +725,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/common/new-empty-state.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `NewEmptyState` has a complexity of 21. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/common/new-empty-state.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/core/list/list-item.tsx",
         "severity": "warning",
         "code": "oxc(const-comparisons)",
@@ -1035,33 +1017,6 @@
         "severity": "warning",
         "code": "react(set-state-in-effect)",
         "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/empty-state/comic-box-button.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/exporter/single-export.tsx",
-        "severity": "warning",
-        "code": "react(purity)",
-        "message": "Cannot call impure function during render"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/exporter/single-export.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `checkExpiry` does not capture any variables from its parent scope"
       },
       "count": 1
     },
@@ -1467,33 +1422,6 @@
         "severity": "warning",
         "code": "eslint(no-shadow)",
         "message": "'repo' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/integration/single-integration-card.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `SingleIntegrationCard` has a complexity of 19. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/integration/single-integration-card.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/integration/single-integration-card.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
       },
       "count": 1
     },
@@ -2120,15 +2048,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/label.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/peek-overview/issue-detail.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
@@ -2597,15 +2516,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/power-k/ui/pages/work-item-selection-page.tsx",
-        "severity": "warning",
-        "code": "react(set-state-in-effect)",
-        "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/power-k/ui/renderer/command.tsx",
         "severity": "warning",
         "code": "unicorn(no-array-sort)",
@@ -2954,15 +2864,6 @@
         "message": "A control must be associated with a text label."
       },
       "count": 4
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/ui/profile-empty-state.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
     },
     {
       "diagnostic": {
@@ -5405,24 +5306,6 @@
     },
     {
       "diagnostic": {
-        "filename": "packages/services/src/indexedDB.service.ts",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/services/src/indexedDB.service.ts",
-        "severity": "warning",
-        "code": "unicorn(prefer-add-event-listener)",
-        "message": "Prefer `addEventListener()` over their `on`-function counterparts."
-      },
-      "count": 3
-    },
-    {
-      "diagnostic": {
         "filename": "packages/services/src/issue/sites-issue.service.ts",
         "severity": "warning",
         "code": "typescript(no-explicit-any)",
@@ -5589,15 +5472,6 @@
         "severity": "warning",
         "code": "typescript(no-explicit-any)",
         "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/types/src/issues/issue_subscription.ts",
-        "severity": "warning",
-        "code": "unicorn(no-empty-file)",
-        "message": "Empty files are not allowed."
       },
       "count": 1
     },

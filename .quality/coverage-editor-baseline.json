@@ -1,12 +1,6 @@
 {
   "version": 1,
   "files": {
-    "src/ce/components/document-editor-side-effects.ts": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
-    },
     "src/ce/components/link-container.tsx": {
       "lines": 0,
       "statements": 0,
@@ -78,12 +72,6 @@
       "statements": 0,
       "functions": 0,
       "branches": 0
-    },
-    "src/ce/helpers/parser.ts": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 100
     },
     "src/ce/types/asset.ts": {
       "lines": 100,
@@ -907,12 +895,6 @@
       "functions": 0,
       "branches": 0
     },
-    "src/core/extensions/table/table/icons.ts": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 100,
-      "branches": 100
-    },
     "src/core/extensions/table/table/index.ts": {
       "lines": 0,
       "statements": 0,
@@ -1129,12 +1111,6 @@
       "functions": 0,
       "branches": 0
     },
-    "src/core/helpers/parser.ts": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
-    },
     "src/core/helpers/paste-asset.ts": {
       "lines": 0,
       "statements": 0,
@@ -1316,18 +1292,6 @@
       "branches": 100
     },
     "src/core/types/slash-commands-suggestion.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
-    },
-    "src/ee/extensions/index.ts": {
-      "lines": 100,
-      "statements": 100,
-      "functions": 100,
-      "branches": 100
-    },
-    "src/ee/types/index.ts": {
       "lines": 100,
       "statements": 100,
       "functions": 100,

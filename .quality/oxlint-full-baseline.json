@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "full",
-  "fileCount": 3800,
+  "fileCount": 3735,
   "diagnostics": [
     {
       "diagnostic": {
@@ -1697,24 +1697,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/common/new-empty-state.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `NewEmptyState` has a complexity of 21. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/common/new-empty-state.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/common/page-access-icon.tsx",
         "severity": "warning",
         "code": "typescript(no-unsafe-enum-comparison)",
@@ -2255,24 +2237,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/empty-state/comic-box-button.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/empty-state/comic-box-button.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-assertion)",
-        "message": "This assertion is unnecessary since the receiver accepts the original type of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/estimates/create/stage-one.tsx",
         "severity": "warning",
         "code": "typescript(no-unsafe-type-assertion)",
@@ -2340,24 +2304,6 @@
         "severity": "error",
         "code": "typescript(no-misused-promises)",
         "message": "Promise-returning function provided to attribute where a void return was expected."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/exporter/single-export.tsx",
-        "severity": "warning",
-        "code": "react(purity)",
-        "message": "Cannot call impure function during render"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/exporter/single-export.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `checkExpiry` does not capture any variables from its parent scope"
       },
       "count": 1
     },
@@ -3065,51 +3011,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/integration/single-integration-card.tsx",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/integration/single-integration-card.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `SingleIntegrationCard` has a complexity of 19. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/integration/single-integration-card.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/integration/single-integration-card.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/integration/single-integration-card.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-template-expression)",
-        "message": "Template literal expression is unnecessary and can be simplified."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/integration/slack/select-channel.tsx",
         "severity": "warning",
         "code": "jsx-a11y(control-has-associated-label)",
@@ -3600,15 +3501,6 @@
         "severity": "error",
         "code": "typescript(no-misused-promises)",
         "message": "Promise-returning function provided to attribute where a void return was expected."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/relation-select.tsx",
-        "severity": "warning",
-        "code": "typescript(consistent-return)",
-        "message": "Function expected no return value."
       },
       "count": 1
     },
@@ -4653,24 +4545,6 @@
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `IssueFormRoot` has a complexity of 27. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/label.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/layout-quick-actions.tsx",
-        "severity": "error",
-        "code": "typescript(no-misused-promises)",
-        "message": "Promise-returning function provided to property where a void return was expected."
       },
       "count": 1
     },
@@ -5864,33 +5738,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/power-k/ui/pages/work-item-selection-page.tsx",
-        "severity": "warning",
-        "code": "react(set-state-in-effect)",
-        "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/power-k/ui/pages/work-item-selection-page.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 3
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/power-k/ui/pages/work-item-selection-page.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe type assertion: type 'TIssueEntityData' is more narrow than the original type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/power-k/ui/renderer/command.tsx",
         "severity": "warning",
         "code": "typescript(no-unsafe-type-assertion)",
@@ -6719,15 +6566,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/ui/profile-empty-state.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/views/applied-filters/access.tsx",
         "severity": "warning",
         "code": "unicorn(consistent-function-scoping)",
@@ -7223,15 +7061,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/workspace/views/header.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 3
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/workspace/views/quick-action.tsx",
         "severity": "error",
         "code": "typescript(no-misused-promises)",
@@ -7688,24 +7517,6 @@
         "message": "Async function 'handleCoverImageChange' expected no return value."
       },
       "count": 3
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/helpers/dashboard.helper.ts",
-        "severity": "warning",
-        "code": "typescript(consistent-return)",
-        "message": "Function 'getCustomDates' expected a return value."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/helpers/dashboard.helper.ts",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-enum-comparison)",
-        "message": "The two values in this comparison do not have a shared enum type."
-      },
-      "count": 2
     },
     {
       "diagnostic": {
@@ -11372,33 +11183,6 @@
     },
     {
       "diagnostic": {
-        "filename": "packages/services/src/indexedDB.service.ts",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/services/src/indexedDB.service.ts",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe type assertion: type 'IDBOpenDBRequest' is more narrow than the original type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/services/src/indexedDB.service.ts",
-        "severity": "warning",
-        "code": "unicorn(prefer-add-event-listener)",
-        "message": "Prefer `addEventListener()` over their `on`-function counterparts."
-      },
-      "count": 3
-    },
-    {
-      "diagnostic": {
         "filename": "packages/services/src/issue/sites-issue.service.ts",
         "severity": "warning",
         "code": "typescript(no-explicit-any)",
@@ -11574,15 +11358,6 @@
         "severity": "warning",
         "code": "typescript(no-explicit-any)",
         "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/types/src/issues/issue_subscription.ts",
-        "severity": "warning",
-        "code": "unicorn(no-empty-file)",
-        "message": "Empty files are not allowed."
       },
       "count": 1
     },
