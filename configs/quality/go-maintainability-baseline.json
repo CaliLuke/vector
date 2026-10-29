@@ -96,12 +96,6 @@
     {
       "file": "internal/projectmembershipreads/lifecycle.go",
       "package": "projectmembershipreads",
-      "function": "(*LifecycleRepository).lifecycleBulkCreate",
-      "score": 19
-    },
-    {
-      "file": "internal/projectmembershipreads/lifecycle.go",
-      "package": "projectmembershipreads",
       "function": "(*LifecycleRepository).lifecycleLegacyPatch",
       "score": 14
     },
