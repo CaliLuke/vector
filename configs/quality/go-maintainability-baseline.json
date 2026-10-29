@@ -96,12 +96,6 @@
     {
       "file": "internal/pagereads/lifecycle.go",
       "package": "pagereads",
-      "function": "(*Repository).createPage",
-      "score": 17
-    },
-    {
-      "file": "internal/pagereads/lifecycle.go",
-      "package": "pagereads",
       "function": "(*Repository).updateOrDuplicatePage",
       "score": 19
     },
