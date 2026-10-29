@@ -94,12 +94,6 @@
       "score": 19
     },
     {
-      "file": "internal/projectmembershipreads/lifecycle.go",
-      "package": "projectmembershipreads",
-      "function": "(*LifecycleRepository).lifecycleLegacyPatch",
-      "score": 14
-    },
-    {
       "file": "internal/publicprojectmetadatareads/repository_integration_test.go",
       "package": "publicprojectmetadatareads",
       "function": "TestRepositoryMatchesPublicProjectMetadataQueries",

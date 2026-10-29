@@ -22,6 +22,8 @@ type lifecycleReviewDB struct {
 	arguments              [][]any
 	writes                 [][]any
 	writeQueries           []string
+	projectRoles           map[string]int
+	workspaceRoles         map[string]int
 	nullTarget             bool
 	missingWorkspaceMember bool
 }
@@ -42,7 +44,7 @@ func (db *lifecycleReviewDB) QueryRow(_ context.Context, query string, args ...a
 			} else {
 				*dest[0].(*string) = lifecycleReviewUser
 			}
-			*dest[1].(*int) = 15
+			*dest[1].(*int) = lifecycleReviewRole(db.projectRoles, lifecycleReviewUser, 15)
 		case strings.Contains(query, "SELECT wm.role"):
 			if db.missingWorkspaceMember {
 				return pgx.ErrNoRows
@@ -50,9 +52,13 @@ func (db *lifecycleReviewDB) QueryRow(_ context.Context, query string, args ...a
 			if value, nullable := args[1].(*string); nullable && value == nil {
 				return pgx.ErrNoRows
 			}
-			*dest[0].(*int) = 20
+			member, _ := args[1].(string)
+			if pointer, ok := args[1].(*string); ok {
+				member = *pointer
+			}
+			*dest[0].(*int) = lifecycleReviewRole(db.workspaceRoles, member, 20)
 		case strings.HasPrefix(query, "SELECT role FROM project_members"):
-			*dest[0].(*int) = 20
+			*dest[0].(*int) = lifecycleReviewRole(db.projectRoles, args[1].(string), 20)
 		case strings.Contains(query, "to_jsonb(pm)"):
 			*dest[0].(*[]byte) = []byte(`{"sort_order":65535}`)
 		default:
@@ -62,6 +68,13 @@ func (db *lifecycleReviewDB) QueryRow(_ context.Context, query string, args ...a
 		}
 		return nil
 	})
+}
+
+func lifecycleReviewRole(roles map[string]int, member string, fallback int) int {
+	if role, ok := roles[member]; ok {
+		return role
+	}
+	return fallback
 }
 
 func (db *lifecycleReviewDB) Exec(_ context.Context, query string, args ...any) (pgconn.CommandTag, error) {
