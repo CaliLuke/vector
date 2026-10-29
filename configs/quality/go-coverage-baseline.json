@@ -585,10 +585,6 @@
       "statements": 46,
       "percent": 0
     },
-    "github.com/CaliLuke/go-plane/page_lifecycle": {
-      "statements": 553,
-      "percent": 0
-    },
     "github.com/CaliLuke/go-plane/project_label_writes/design": {
       "statements": 244,
       "percent": 1.23

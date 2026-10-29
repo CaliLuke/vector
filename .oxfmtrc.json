@@ -16,7 +16,6 @@
     "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/**",
     "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/**",
     "docs/go-backend-replacement/evidence/project-lifecycle/**",
-    "apps/go-api/page_lifecycle/source/**",
     "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/**",
     "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/**",
     "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected_index.json",

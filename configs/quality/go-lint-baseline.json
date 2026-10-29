@@ -1330,10 +1330,6 @@
       "count": 2
     },
     {
-      "fingerprint": ["staticcheck", "page_lifecycle/imported.go", "ST1001: should not use dot imports"],
-      "count": 1
-    },
-    {
       "fingerprint": ["staticcheck", "page_reads.go", "ST1005: error strings should not be capitalized"],
       "count": 1
     },
