@@ -80,13 +80,8 @@ export const IssueDetailWidgetModals = function IssueDetailWidgetModals(props: P
     toggleSubIssuesModal(null);
   };
 
-  const handleExistingIssuesModalOnSubmit = async (_issue: ISearchIssueResponse[]) =>
-    subIssueOperations.addSubIssue(
-      workspaceSlug,
-      projectId,
-      issueId,
-      _issue.map((issue) => issue.id)
-    );
+  const handleExistingIssuesModalOnSubmit = (issues: ISearchIssueResponse[]) =>
+    subIssueOperations.addSubIssue(workspaceSlug, projectId, issueId, issues);
 
   const handleCreateUpdateModalClose = () => {
     handleIssueCrudState("create", null, null);

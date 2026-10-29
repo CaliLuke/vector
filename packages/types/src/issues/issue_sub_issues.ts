@@ -5,6 +5,7 @@
  */
 
 import type { TIssue } from "./issue";
+import type { ISearchIssueResponse } from "../project/projects";
 
 export type TSubIssuesStateDistribution = {
   backlog: string[];
@@ -31,7 +32,12 @@ export type TIssueSubIssuesIdMap = {
 
 export type TSubIssueOperations = {
   copyLink: (path: string) => void;
-  addSubIssue: (workspaceSlug: string, projectId: string, parentIssueId: string, issueIds: string[]) => Promise<void>;
+  addSubIssue: (
+    workspaceSlug: string,
+    projectId: string,
+    parentIssueId: string,
+    issues: Pick<ISearchIssueResponse, "id" | "project_id">[]
+  ) => Promise<void>;
   refreshSubIssues: (parentIssueId: string) => void;
   updateSubIssue: (
     workspaceSlug: string,

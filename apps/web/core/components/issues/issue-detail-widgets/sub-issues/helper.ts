@@ -12,6 +12,7 @@ import type { TIssueServiceType, TSubIssueOperations } from "@plane/types";
 import { EIssueServiceType, EIssuesStoreType } from "@plane/types";
 import { copyUrlToClipboard } from "@plane/utils/string";
 import { useIssuesActions } from "@/hooks/use-issues-actions";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
 import { useWorkItemDetailScope } from "@/hooks/use-work-item-detail";
 import { useIssueListMutationOwner } from "@/hooks/use-issue-list-mutation-owner";
 import { allSubItems, captureIssueDetailReconciliation, issueDetailKeys } from "@/queries/issue-details";
@@ -35,6 +36,7 @@ export function useSubIssueOperations(
   const { t } = useTranslation();
   const client = useQueryClient();
   const access = useWorkItemDetailScope(workspaceSlug, projectId, issueServiceType, parentIssueId);
+  const isUiCurrent = useCommittedScope(JSON.stringify([workspaceSlug, projectId, parentIssueId, issueServiceType]));
   const service = useMemo(() => new IssueService(issueServiceType), [issueServiceType]);
   const mutationStoreType =
     issueServiceType === EIssueServiceType.EPICS ? EIssuesStoreType.EPIC : EIssuesStoreType.PROJECT;
@@ -103,11 +105,11 @@ export function useSubIssueOperations(
   );
 
   const captureChildDetails = useCallback(
-    (targetProjectId: string, issueIds: readonly string[]) => {
+    (targetProjectId: string, issueIds: readonly string[], serviceType = issueServiceType) => {
       const { workspaceRole, ...scope } = currentParentCatalogueScope(client, workspaceSlug, targetProjectId).project;
       return captureIssueDetailReconciliation(
         client,
-        { ...scope, membershipRole: workspaceRole, serviceType: issueServiceType },
+        { ...scope, membershipRole: workspaceRole, serviceType },
         issueIds
       );
     },
@@ -129,22 +131,32 @@ export function useSubIssueOperations(
           }),
         });
       },
-      addSubIssue: async (_workspaceSlug, _projectId, targetParentId, issueIds) => {
+      addSubIssue: async (_workspaceSlug, _projectId, targetParentId, issues) => {
+        const issueIds = issues.map((issue) => issue.id);
         const owner = captureOwner(targetParentId);
         assertMutationScope(owner, _workspaceSlug, _projectId, true);
         const listOwner = await resolveListOwner(_workspaceSlug, _projectId);
         if (!listOwner) throw new Error("Work item access is unavailable. Retry the operation.");
         const capturedList = captureIssueListMutationOwner(client, listOwner);
-        const childDetailOwner = captureIssueDetailReconciliation(client, owner.scope, issueIds);
+        const childDetails = issues.map((issue) => ({
+          issue,
+          owner: captureChildDetails(issue.project_id, [issue.id], EIssueServiceType.ISSUES),
+        }));
         const response = await service.addSubIssues(_workspaceSlug, _projectId, targetParentId, {
           sub_issue_ids: issueIds,
         });
         const records = allSubItems(response);
         if (owner.isCurrent()) {
-          await Promise.all(records.map((record) => childDetailOwner.reconcile(record)));
+          await Promise.all(
+            childDetails.map(({ issue, owner: childOwner }) => {
+              const saved = records.find((record) => record.id === issue.id && record.project_id === issue.project_id);
+              return saved ? childOwner.reconcile(saved) : childOwner.refresh();
+            })
+          );
           await refreshCapturedIssueLists(client, capturedList);
           refresh(owner);
         }
+        if (!owner.isCurrent() || !isUiCurrent()) return;
         setToast({
           type: TOAST_TYPE.SUCCESS,
           title: t("toast.success"),
@@ -189,6 +201,7 @@ export function useSubIssueOperations(
     [
       captureOwner,
       captureChildDetails,
+      isUiCurrent,
       refresh,
       assertMutationScope,
       client,

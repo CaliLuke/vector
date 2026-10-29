@@ -1,18 +1,13 @@
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
-import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
-import { React } from "./helpers/react.mjs";
-import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
+import { React, createPermissionUiFixture } from "./helpers/permission-ui-fixture.mjs";
 import { resolvePackageStub } from "./helpers/module-stubs.mjs";
 
-registerWebModuleHooks();
 globalThis.quickActionCopyReact = React;
 globalThis.quickActionCopyState = {};
 
 const stubs = {
-  "@tanstack/react-router": `export const useParams=()=>({workspaceSlug:"workspace"});`,
-  "@plane/constants": `export const ARCHIVABLE_STATE_GROUPS=[];export const EUserPermissions={ADMIN:"admin",MEMBER:"member"};`,
   "@plane/i18n": `export const useTranslation=()=>({t:key=>key});`,
   "@plane/propel/icons": `const Icon=()=>null;export const LinkIcon=Icon,CopyIcon=Icon,NewTabIcon=Icon,EditIcon=Icon,ArchiveIcon=Icon,TrashIcon=Icon;`,
   "@plane/propel/icon-button": `export const IconButton=()=>null;`,
@@ -68,6 +63,15 @@ const issue = {
   name: "Original",
 };
 
+async function createCopyFixture(t) {
+  return createPermissionUiFixture(t, {
+    path: "/workspace/projects/project-1/issues/PRJ-1",
+    workspaceSlug: "workspace",
+    workspaceRole: 15,
+    projectRoles: { "project-1": 20 },
+  });
+}
+
 async function renderQuickActions(environment, props = {}) {
   const { WorkItemDetailQuickActions } =
     await import("../../apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/issue-detail.tsx");
@@ -101,8 +105,7 @@ async function chooseCopyAction() {
 await test("copy uses the local modal and does not mark edit tracking", async (t) => {
   globalThis.quickActionCopyState = {};
   let editTrackingCalls = 0;
-  const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
+  const environment = await createCopyFixture(t);
 
   await renderQuickActions(environment, {
     toggleEditIssueModal: () => editTrackingCalls++,
@@ -119,8 +122,7 @@ await test("copy uses the local modal and does not mark edit tracking", async (t
 await test("peek copy notifies duplicate tracking and clears it when the local modal closes", async (t) => {
   globalThis.quickActionCopyState = {};
   const tracking = [];
-  const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
+  const environment = await createCopyFixture(t);
 
   await renderQuickActions(environment, {
     toggleEditIssueModal: (open) => tracking.push(["edit", open]),
@@ -143,8 +145,7 @@ await test("peek copy notifies duplicate tracking and clears it when the local m
 
 await test("copy after closing edit clears the edit selection before submit", async (t) => {
   globalThis.quickActionCopyState = { updates: [] };
-  const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
+  const environment = await createCopyFixture(t);
 
   await renderCycleQuickActions(environment);
   const editItem = globalThis.quickActionCopyState.items.find((item) => item.key === "edit");

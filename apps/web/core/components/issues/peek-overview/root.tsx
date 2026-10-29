@@ -67,10 +67,6 @@ export function IssuePeekOverview(props: IWorkItemPeekOverview) {
     () => ({
       ...writes,
       updateText: writes.update,
-      fetch: async (workspaceSlug: string, projectId: string, issueId: string) => {
-        if (workspaceSlug === peekWorkspaceSlug && projectId === peekProjectId && issueId === peekIssueId)
-          await detail.query.refetch();
-      },
       remove: async (workspaceSlug, projectId, issueId) => {
         const receipt = await lifecycle.remove(workspaceSlug, projectId, issueId);
         if (isPeekScopeCurrent() && receipt.isCurrent()) removeRoutePeekId();
@@ -84,16 +80,7 @@ export function IssuePeekOverview(props: IWorkItemPeekOverview) {
         if (isPeekScopeCurrent() && receipt.isCurrent()) removeRoutePeekId();
       },
     }),
-    [
-      writes,
-      lifecycle,
-      detail.query,
-      peekWorkspaceSlug,
-      peekProjectId,
-      peekIssueId,
-      isPeekScopeCurrent,
-      removeRoutePeekId,
-    ]
+    [writes, lifecycle, isPeekScopeCurrent, removeRoutePeekId]
   );
 
   const isLoading = detail.isPending;

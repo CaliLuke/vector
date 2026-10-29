@@ -23,7 +23,7 @@ import { IssueReaction } from "@/components/issues/issue-detail/reactions";
 import { IssueTitleInput } from "@/components/issues/title-input";
 // hooks
 import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
-import { useIntakeMutation, useIntakeDetail } from "@/hooks/use-intake";
+import { useIntakeMutation } from "@/hooks/use-intake";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useWorkItemDetailScope } from "@/hooks/use-work-item-detail";
 import { captureIssueDetailReconciliation } from "@/queries/issue-details";
@@ -48,13 +48,11 @@ type Props = {
 function useInboxIssueOperations({
   inboxIssue,
   mutateAsync,
-  refetch,
   queryClient,
   detailScope,
 }: {
   inboxIssue: TInboxIssue;
   mutateAsync: ReturnType<typeof useIntakeMutation>["mutateAsync"];
-  refetch: ReturnType<typeof useIntakeDetail>["refetch"];
   queryClient: ReturnType<typeof useQueryClient>;
   detailScope: ReturnType<typeof useWorkItemDetailScope>["scope"];
 }) {
@@ -64,9 +62,6 @@ function useInboxIssueOperations({
         const detailOwner = captureIssueDetailReconciliation(queryClient, detailScope, [inboxIssue.issue.id]);
         const receipt = await mutateAsync({ kind: "issue", issueId: inboxIssue.issue.id, data });
         if (receipt.saved?.issue) await detailOwner.reconcile(receipt.saved.issue);
-      },
-      fetch: async (_workspaceSlug, _projectId, _issueId) => {
-        await refetch();
       },
       update: async (_workspaceSlug, _projectId, _issueId, data) => {
         const detailOwner = captureIssueDetailReconciliation(queryClient, detailScope, [inboxIssue.issue.id]);
@@ -83,7 +78,7 @@ function useInboxIssueOperations({
         }
       },
     }),
-    [detailScope, inboxIssue.issue.id, mutateAsync, queryClient, refetch]
+    [detailScope, inboxIssue.issue.id, mutateAsync, queryClient]
   );
 }
 
@@ -95,7 +90,6 @@ export const InboxIssueMainContent = function InboxIssueMainContent(props: Props
   const { data: currentUser } = useCurrentUser();
   const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
   const { mutateAsync } = useIntakeMutation(workspaceSlug, projectId);
-  const { refetch } = useIntakeDetail(workspaceSlug, projectId, inboxIssue.issue.id);
   const queryClient = useQueryClient();
   // derived values
   const issue = inboxIssue.issue;
@@ -109,7 +103,6 @@ export const InboxIssueMainContent = function InboxIssueMainContent(props: Props
   const issueOperations = useInboxIssueOperations({
     inboxIssue,
     mutateAsync,
-    refetch,
     queryClient,
     detailScope: detailAccess.scope,
   });

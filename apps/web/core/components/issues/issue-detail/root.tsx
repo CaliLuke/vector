@@ -29,7 +29,6 @@ import { IssueDetailsSidebar } from "./sidebar";
 import { WorkItemDetailRecordProvider } from "@/providers/work-item-detail-record";
 
 export type TIssueOperations = {
-  fetch: (workspaceSlug: string, projectId: string, issueId: string, loader?: boolean) => Promise<void>;
   updateText: (
     workspaceSlug: string,
     projectId: string,
@@ -71,12 +70,8 @@ export function IssueDetailRoot(props: TIssueDetailRoot) {
     () => ({
       ...writes,
       updateText: writes.update,
-      fetch: async (targetWorkspaceSlug, targetProjectId, targetIssueId) => {
-        if (targetWorkspaceSlug !== workspaceSlug || targetProjectId !== projectId || targetIssueId !== issueId) return;
-        await detail.query.refetch();
-      },
     }),
-    [writes, detail.query, workspaceSlug, projectId, issueId]
+    [writes]
   );
 
   // issue details

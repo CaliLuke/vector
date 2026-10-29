@@ -41,7 +41,7 @@ const { IssueDetailWidgetModals } =
   await import("../core/components/issues/issue-detail-widgets/issue-detail-widget-modals.tsx");
 const { SubIssuesCollapsibleContent } =
   await import("../core/components/issues/issue-detail-widgets/sub-issues/content.tsx");
-const { useWorkItemSubItems } = await import("../core/hooks/use-work-item-detail.ts");
+const { useWorkItemSubItems, useWorkItemDetail } = await import("../core/hooks/use-work-item-detail.ts");
 const { IssueService } = await import("../core/services/issue/index.ts");
 const identity = await import("../core/queries/identity.ts");
 const { EIssueServiceType } = await import("@plane/types");
@@ -61,14 +61,20 @@ function deferred() {
   });
   return { promise, resolve, reject };
 }
-function WidgetProbe() {
-  useWorkItemSubItems("acme", "parent-project", "parent");
-  return React.createElement(IssueDetailWidgetModals, {
-    workspaceSlug: "acme",
-    projectId: "parent-project",
-    issueId: "parent",
-    issueServiceType: EIssueServiceType.ISSUES,
-  });
+function WidgetProbe({ serviceType }) {
+  useWorkItemSubItems("acme", "parent-project", "parent", serviceType);
+  const detail = useWorkItemDetail("acme", "child-project", "child");
+  return React.createElement(
+    React.Fragment,
+    null,
+    React.createElement("output", null, JSON.stringify({ parent: detail.issue?.parent_id })),
+    React.createElement(IssueDetailWidgetModals, {
+      workspaceSlug: "acme",
+      projectId: "parent-project",
+      issueId: "parent",
+      issueServiceType: serviceType,
+    })
+  );
 }
 async function openDelete() {
   await act(() =>
@@ -81,12 +87,23 @@ async function openDelete() {
   await settleQuery();
 }
 
-async function setup(t, { mode = "create", remove = async () => {} } = {}) {
+async function setup(
+  t,
+  {
+    mode = "create",
+    remove = async () => {},
+    add = async () => {},
+    initialParent = "parent",
+    parentService = EIssueServiceType.ISSUES,
+  } = {}
+) {
   const fixture = await createPermissionUiFixture(t, {
     path: "/acme/projects/parent-project/issues/P-1",
     workspaceRole: 15,
     projectRoles: { "parent-project": 20, "child-project": 20 },
   });
+  let savedChild = { ...child, parent_id: initialParent };
+  let detailReads = 0;
   const writes = [],
     reads = [];
   globalThis.lifecycleToasts = [];
@@ -109,13 +126,21 @@ async function setup(t, { mode = "create", remove = async () => {} } = {}) {
     setRelationKey: () => {},
     toggleRelationModal: () => {},
   };
+  t.mock.method(IssueService.prototype, "retrieve", async (_workspace, project, id) => {
+    assert.equal(project, "child-project");
+    assert.equal(id, "child");
+    detailReads++;
+    return savedChild;
+  });
   t.mock.method(IssueService.prototype, "subIssues", async (_workspace, project, parent) => {
     reads.push([project, parent]);
-    return { sub_issues: [child] };
+    return { sub_issues: savedChild.parent_id === "parent" ? [savedChild] : [] };
   });
   t.mock.method(IssueService.prototype, "addSubIssues", async (...args) => {
     writes.push(["add", ...args]);
-    return { sub_issues: [child] };
+    await add(...args);
+    savedChild = { ...savedChild, parent_id: "parent" };
+    return { sub_issues: [savedChild] };
   });
   t.mock.method(IssueService.prototype, "deleteIssue", async (...args) => {
     writes.push(["delete", ...args]);
@@ -129,7 +154,7 @@ async function setup(t, { mode = "create", remove = async () => {} } = {}) {
           parentIssueId: "parent",
           disabled: false,
         })
-      : React.createElement(WidgetProbe)
+      : React.createElement(WidgetProbe, { serviceType: parentService })
   );
   await settleQuery();
   const deleteButton = () => fixture.environment.container.querySelector("[data-confirm-delete]");
@@ -137,7 +162,16 @@ async function setup(t, { mode = "create", remove = async () => {} } = {}) {
     await act(() => deleteButton().click());
     await settleQuery();
   };
-  return { ...fixture, writes, reads, openDelete, deleteButton, confirmDelete };
+  return {
+    ...fixture,
+    writes,
+    reads,
+    openDelete,
+    deleteButton,
+    confirmDelete,
+    detailReads: () => detailReads,
+    detail: () => JSON.parse(fixture.environment.container.querySelector("output").textContent),
+  };
 }
 await test("acknowledging a created child refreshes its parent without another relationship write", async (t) => {
   const view = await setup(t);
@@ -212,4 +246,79 @@ await test("a late deletion failure cannot notify a replacement session", async 
   await act(() => pending.reject(new Error("Retired request")));
   await settleQuery();
   assert.deepEqual(globalThis.lifecycleToasts, []);
+});
+
+await test("adding a cross-project child reconciles its open detail from the accepted record", async (t) => {
+  const view = await setup(t, { mode: "existing", initialParent: null });
+  assert.deepEqual(view.detail(), { parent: null });
+  const reads = view.detailReads();
+  await act(() => globalThis.existingChildModal.handleOnSubmit([child]));
+  await settleQuery();
+  assert.deepEqual(view.detail(), { parent: "parent" });
+  assert.equal(view.detailReads(), reads);
+});
+await test("a late accepted child addition cannot notify or refresh a replacement session", async (t) => {
+  const pending = deferred();
+  const view = await setup(t, { mode: "existing", initialParent: null, add: () => pending.promise });
+  let write;
+  await act(() => {
+    write = globalThis.existingChildModal.handleOnSubmit([child]);
+  });
+  await settleQuery();
+  await act(() => identity.advanceIdentitySession(view.client));
+  await settleQuery();
+  const reads = view.detailReads();
+  const parents = view.reads.length;
+  await act(async () => {
+    pending.resolve();
+    await write;
+  });
+  await settleQuery();
+  assert.deepEqual(globalThis.lifecycleToasts, []);
+  assert.equal(view.detailReads(), reads);
+  assert.equal(view.reads.length, parents);
+  assert.deepEqual(view.detail(), { parent: null });
+});
+await test("rejected child addition preserves detail and leaves retry to the selection dialog", async (t) => {
+  const view = await setup(t, {
+    mode: "existing",
+    initialParent: null,
+    add: async () => {
+      throw new Error("addition rejected");
+    },
+  });
+  const reads = view.detailReads();
+  const parents = view.reads.length;
+  await act(async () => assert.rejects(globalThis.existingChildModal.handleOnSubmit([child]), /addition rejected/));
+  await settleQuery();
+  assert.deepEqual(view.detail(), { parent: null });
+  assert.equal(view.detailReads(), reads);
+  assert.equal(view.reads.length, parents);
+  assert.deepEqual(globalThis.lifecycleToasts, []);
+});
+
+await test("an accepted child addition after unmount does not show feedback on another view", async (t) => {
+  const pending = deferred();
+  const view = await setup(t, { mode: "existing", initialParent: null, add: () => pending.promise });
+  let write;
+  await act(() => {
+    write = globalThis.existingChildModal.handleOnSubmit([child]);
+  });
+  await settleQuery();
+  await view.render(null);
+  await act(async () => {
+    pending.resolve();
+    await write;
+  });
+  await settleQuery();
+  assert.deepEqual(globalThis.lifecycleToasts, []);
+  assert.equal(view.writes.length, 1);
+});
+
+await test("adding an ordinary issue under an epic reconciles the ordinary issue detail", async (t) => {
+  const view = await setup(t, { mode: "existing", initialParent: null, parentService: EIssueServiceType.EPICS });
+  await act(() => globalThis.existingChildModal.handleOnSubmit([child]));
+  await settleQuery();
+  assert.deepEqual(view.detail(), { parent: "parent" });
+  assert.equal(globalThis.lifecycleToasts.length, 1);
 });

@@ -16,7 +16,8 @@ import type { TIssueOperations } from "@/components/issues/issue-detail";
 import { IssueParentSelect } from "@/components/issues/issue-detail/parent-select";
 // hooks
 import { useWorkItemDetailRecord } from "@/providers/work-item-detail-record";
-import { useWorkItemDetail, useWorkItemDetailScope } from "@/hooks/use-work-item-detail";
+import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
+import { currentParentCatalogueScope } from "@/queries/cycle-module-scope";
 import { captureIssueSubItemsReconciliation } from "@/queries/issue-details";
 import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
 import { useSubIssueOperations } from "./issue-detail-widgets/sub-issues/helper";
@@ -107,20 +108,30 @@ function useParentSelectionActions(props: TIssueParentSelect, data: TParentSelec
   const { issueId, issueOperations, projectId, workspaceSlug } = props;
   const { t } = useTranslation();
   const client = useQueryClient();
-  const detailAccess = useWorkItemDetailScope(workspaceSlug, projectId, EIssueServiceType.ISSUES, issueId);
   const parentScopeProject = data.parentIssue?.project_id ?? data.parentProjectId;
   const parentScopeId = data.parentIssue?.id ?? data.parentId ?? "";
   const parentScopeType = data.parentIssue?.is_epic ? EIssueServiceType.EPICS : data.parentServiceType;
   const subIssueOperations = useSubIssueOperations(workspaceSlug, parentScopeProject, parentScopeId, parentScopeType);
 
-  const handleParentIssue = async (targetParentId: string) => {
-    const parentQueries = captureIssueSubItemsReconciliation(
-      client,
-      detailAccess.scope,
-      [data.parentId, targetParentId].filter((id): id is string => Boolean(id))
-    );
+  const handleParentIssue = async (targetParentId: string, targetParentProjectId: string) => {
+    if (targetParentId === data.parentId && targetParentProjectId === parentScopeProject) return;
+    const parents = [
+      { id: data.parentId, projectId: parentScopeProject, serviceType: parentScopeType },
+      { id: targetParentId, projectId: targetParentProjectId, serviceType: EIssueServiceType.ISSUES },
+    ];
+    const readers = parents.flatMap((parent) => {
+      if (!parent.id) return [];
+      const { workspaceRole, ...scope } = currentParentCatalogueScope(client, workspaceSlug, parent.projectId).project;
+      return [
+        captureIssueSubItemsReconciliation(
+          client,
+          { ...scope, membershipRole: workspaceRole, serviceType: parent.serviceType },
+          [parent.id]
+        ),
+      ];
+    });
     await issueOperations.update(workspaceSlug, projectId, issueId, { parent_id: targetParentId });
-    await Promise.all([parentQueries.refresh(), issueOperations.fetch(workspaceSlug, projectId, issueId, false)]);
+    await Promise.all(readers.map((reader) => reader.refresh()));
   };
 
   const entity =
