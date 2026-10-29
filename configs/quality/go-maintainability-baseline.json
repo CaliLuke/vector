@@ -94,12 +94,6 @@
       "score": 19
     },
     {
-      "file": "internal/pagereads/lifecycle.go",
-      "package": "pagereads",
-      "function": "(*Repository).updateOrDuplicatePage",
-      "score": 19
-    },
-    {
       "file": "internal/projectmembershipreads/lifecycle.go",
       "package": "projectmembershipreads",
       "function": "(*LifecycleRepository).lifecycleBulkCreate",

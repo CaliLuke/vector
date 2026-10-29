@@ -1,6 +1,7 @@
 package pythoncompat
 
 import (
+	"errors"
 	"fmt"
 	"math/big"
 	"regexp"
@@ -74,11 +75,8 @@ func DecimalFloat64(value string) (float64, error) {
 		return 0, fmt.Errorf("invalid decimal float %q", value)
 	}
 	parsed, err := strconv.ParseFloat(strings.ReplaceAll(string(normalized), "_", ""), 64)
-	if err != nil {
-		numberError, rangeError := err.(*strconv.NumError)
-		if !rangeError || numberError.Err != strconv.ErrRange {
-			return 0, fmt.Errorf("invalid decimal float %q", value)
-		}
+	if err != nil && !errors.Is(err, strconv.ErrRange) {
+		return 0, fmt.Errorf("invalid decimal float %q", value)
 	}
 	return parsed, nil
 }

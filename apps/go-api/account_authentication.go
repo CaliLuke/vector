@@ -406,7 +406,7 @@ func (s *accountAuthenticationService) allow(ctx context.Context) error {
 		return s.internal()
 	}
 	if !allowed {
-		failure := s.failure(429, authAuthenticationBody(5900, "RATE_LIMIT_EXCEEDED", nil)).(*api.AccountAuthenticationError)
+		failure := s.failure(429, authAuthenticationBody(5900, "RATE_LIMIT_EXCEEDED", nil))
 		if wait > 0 {
 			seconds := int(wait / time.Second)
 			failure.RetryAfter = &seconds
@@ -443,7 +443,7 @@ func (s *accountAuthenticationService) unauthenticated() error {
 	}
 	return &api.AccountAuthenticationError{Name: "unauthenticated", Body: value}
 }
-func (s *accountAuthenticationService) failure(status int, body any) error {
+func (s *accountAuthenticationService) failure(status int, body any) *api.AccountAuthenticationError {
 	encoded, err := json.Marshal(body)
 	if err != nil {
 		encoded = []byte(`{"error":"Something went wrong please try again later"}`)

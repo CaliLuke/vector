@@ -139,11 +139,12 @@ func readParseTest(r *bufio.Reader) (*testAttrs, error) {
 	return ta, nil
 }
 
-func dumpIndent(w io.Writer, level int) {
-	io.WriteString(w, "| ")
-	for i := 0; i < level; i++ {
-		io.WriteString(w, "  ")
+func appendDumpIndent(output []byte, level int) []byte {
+	output = append(output, "| "...)
+	for range level {
+		output = append(output, "  "...)
 	}
+	return output
 }
 
 type sortedAttributes []Attribute
@@ -160,43 +161,43 @@ func (a sortedAttributes) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
 
-func dumpLevel(w io.Writer, n *Node, level int) error {
-	dumpIndent(w, level)
+func appendDumpLevel(output []byte, n *Node, level int) ([]byte, error) {
+	output = appendDumpIndent(output, level)
 	level++
 	switch n.Type {
 	case ErrorNode:
-		return errors.New("unexpected ErrorNode")
+		return nil, errors.New("unexpected ErrorNode")
 	case DocumentNode:
-		return errors.New("unexpected DocumentNode")
+		return nil, errors.New("unexpected DocumentNode")
 	case ElementNode:
 		if n.Namespace != "" {
-			fmt.Fprintf(w, "<%s %s>", n.Namespace, n.Data)
+			output = fmt.Appendf(output, "<%s %s>", n.Namespace, n.Data)
 		} else {
-			fmt.Fprintf(w, "<%s>", n.Data)
+			output = fmt.Appendf(output, "<%s>", n.Data)
 		}
 		attr := sortedAttributes(n.Attr)
 		sort.Sort(attr)
 		for _, a := range attr {
-			io.WriteString(w, "\n")
-			dumpIndent(w, level)
+			output = append(output, "\n"...)
+			output = appendDumpIndent(output, level)
 			if a.Namespace != "" {
-				fmt.Fprintf(w, `%s %s="%s"`, a.Namespace, a.Key, a.Val)
+				output = fmt.Appendf(output, `%s %s="%s"`, a.Namespace, a.Key, a.Val)
 			} else {
-				fmt.Fprintf(w, `%s="%s"`, a.Key, a.Val)
+				output = fmt.Appendf(output, `%s="%s"`, a.Key, a.Val)
 			}
 		}
 		if n.Namespace == "" && n.DataAtom == atom.Template {
-			io.WriteString(w, "\n")
-			dumpIndent(w, level)
+			output = append(output, "\n"...)
+			output = appendDumpIndent(output, level)
 			level++
-			io.WriteString(w, "content")
+			output = append(output, "content"...)
 		}
 	case TextNode:
-		fmt.Fprintf(w, `"%s"`, n.Data)
+		output = fmt.Appendf(output, `"%s"`, n.Data)
 	case CommentNode:
-		fmt.Fprintf(w, "<!-- %s -->", n.Data)
+		output = fmt.Appendf(output, "<!-- %s -->", n.Data)
 	case DoctypeNode:
-		fmt.Fprintf(w, "<!DOCTYPE %s", n.Data)
+		output = fmt.Appendf(output, "<!DOCTYPE %s", n.Data)
 		if n.Attr != nil {
 			var p, s string
 			for _, a := range n.Attr {
@@ -208,36 +209,40 @@ func dumpLevel(w io.Writer, n *Node, level int) error {
 				}
 			}
 			if p != "" || s != "" {
-				fmt.Fprintf(w, ` "%s"`, p)
-				fmt.Fprintf(w, ` "%s"`, s)
+				output = fmt.Appendf(output, ` "%s"`, p)
+				output = fmt.Appendf(output, ` "%s"`, s)
 			}
 		}
-		io.WriteString(w, ">")
+		output = append(output, ">"...)
 	case scopeMarkerNode:
-		return errors.New("unexpected scopeMarkerNode")
+		return nil, errors.New("unexpected scopeMarkerNode")
 	default:
-		return errors.New("unknown node type")
+		return nil, errors.New("unknown node type")
 	}
-	io.WriteString(w, "\n")
+	output = append(output, "\n"...)
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		if err := dumpLevel(w, c, level); err != nil {
-			return err
+		var err error
+		output, err = appendDumpLevel(output, c, level)
+		if err != nil {
+			return nil, err
 		}
 	}
-	return nil
+	return output, nil
 }
 
 func dump(n *Node) (string, error) {
 	if n == nil || n.FirstChild == nil {
 		return "", nil
 	}
-	var b bytes.Buffer
+	var output []byte
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		if err := dumpLevel(&b, c, 0); err != nil {
+		var err error
+		output, err = appendDumpLevel(output, c, 0)
+		if err != nil {
 			return "", err
 		}
 	}
-	return b.String(), nil
+	return string(output), nil
 }
 
 var testDataDirs = []string{"testdata/html5lib-tests/tree-construction/", "testdata/go/"}

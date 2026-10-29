@@ -404,22 +404,6 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/htmlcompat/parse_test.go",
-        "Error return value of `fmt.Fprintf` is not checked"
-      ],
-      "count": 9
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/htmlcompat/parse_test.go",
-        "Error return value of `io.WriteString` is not checked"
-      ],
-      "count": 7
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/instancemanagement/repository.go",
         "Error return value of `tx.Rollback` is not checked"
       ],
@@ -616,14 +600,6 @@
     {
       "fingerprint": [
         "errorlint",
-        "account_authentication.go",
-        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
         "activity_reads.go",
         "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
       ],
@@ -804,22 +780,6 @@
         "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
       ],
       "count": 9
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/pythoncompat/integer.go",
-        "comparing with != will fail on wrapped errors. Use errors.Is to check for a specific error"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/pythoncompat/integer.go",
-        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
-      ],
-      "count": 1
     },
     {
       "fingerprint": [

@@ -686,6 +686,10 @@
     "github.com/CaliLuke/go-plane/internal/pagereads/lifecycle_create.go": {
       "statements": 132,
       "percent": 86.36
+    },
+    "github.com/CaliLuke/go-plane/internal/pagereads/lifecycle_update.go": {
+      "statements": 98,
+      "percent": 84.69
     }
   }
 }
