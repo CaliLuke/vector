@@ -87,3 +87,7 @@ func (s *directoryStub) ReadCapabilities(context.Context, uuid.UUID, uuid.UUID, 
 func (s *directoryStub) WorkspaceIdentity(context.Context, uuid.UUID, uuid.UUID, string) (membership.WorkspaceIdentity, error) {
 	return membership.WorkspaceIdentity{}, s.err
 }
+
+func (s *directoryStub) ListWorkspaces(context.Context, uuid.UUID) ([]membership.WorkspaceIdentity, error) {
+	return []membership.WorkspaceIdentity{}, s.err
+}

@@ -46,7 +46,7 @@ Keep local environment files private. The example database and storage credentia
 Open `http://localhost:8000/`. Instance administration uses `/god-mode/`, and public projects use `/spaces/`.
 
 The [remote MCP transport](mcp.md) is disabled by default. Its 30 tools expose
-207 actions through personal tokens or generic external-issuer OAuth. OAuth
+208 actions through personal tokens or generic external-issuer OAuth. OAuth
 requires the [issuer profile and account linking](mcp-oauth.md). Generated-server
 workflow tests cover all actions under both authentication modes and protocol
 revisions; the [parity tracker](mcp-parity.md) records the remaining acceptance

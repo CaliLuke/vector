@@ -2550,6 +2550,11 @@ type WorkspaceGetFeaturesTransport struct {
 	IncludeRevision *bool   `json:"include_revision,omitzero"`
 }
 
+// WorkspaceListTransport preserves JSON field presence before service conversion.
+type WorkspaceListTransport struct {
+	Action *string `json:"action"`
+}
+
 // WorkspaceMCPInput preserves JSON field presence before service conversion.
 type WorkspaceMCPInput = WorkspaceRequest
 
@@ -53597,6 +53602,7 @@ func validateWorkitemTypeRequestWorkitemTypeImportTransport(body *WorkitemTypeIm
 // WorkspaceRequest is a sum-type union.
 type WorkspaceRequest struct {
 	kind                    WorkspaceRequestKind
+	WorkspaceList           *WorkspaceListTransport
 	WorkspaceRetrieve       *WorkspaceRetrieveTransport
 	WorkspaceGetFeatures    *WorkspaceGetFeaturesTransport
 	WorkspaceUpdateFeatures *WorkspaceUpdateFeaturesTransport
@@ -53606,6 +53612,8 @@ type WorkspaceRequest struct {
 type WorkspaceRequestKind string
 
 const (
+	// WorkspaceRequestKindWorkspaceList identifies the WorkspaceList branch of the union.
+	WorkspaceRequestKindWorkspaceList WorkspaceRequestKind = "WorkspaceList"
 	// WorkspaceRequestKindWorkspaceRetrieve identifies the WorkspaceRetrieve branch of the union.
 	WorkspaceRequestKindWorkspaceRetrieve WorkspaceRequestKind = "WorkspaceRetrieve"
 	// WorkspaceRequestKindWorkspaceGetFeatures identifies the WorkspaceGetFeatures branch of the union.
@@ -53617,6 +53625,29 @@ const (
 // Kind returns the discriminator value of the union.
 func (u WorkspaceRequest) Kind() WorkspaceRequestKind {
 	return u.kind
+}
+
+// NewWorkspaceRequestWorkspaceList constructs a WorkspaceRequest with the
+// WorkspaceList branch set.
+func NewWorkspaceRequestWorkspaceList(v *WorkspaceListTransport) WorkspaceRequest {
+	return WorkspaceRequest{
+		kind:          WorkspaceRequestKindWorkspaceList,
+		WorkspaceList: v,
+	}
+}
+
+// AsWorkspaceList returns the value of the WorkspaceList branch if set.
+func (u WorkspaceRequest) AsWorkspaceList() (_ *WorkspaceListTransport, ok bool) {
+	if u.kind != WorkspaceRequestKindWorkspaceList {
+		return
+	}
+	return u.WorkspaceList, true
+}
+
+// SetWorkspaceList sets the WorkspaceList branch of the union.
+func (u *WorkspaceRequest) SetWorkspaceList(v *WorkspaceListTransport) {
+	u.kind = WorkspaceRequestKindWorkspaceList
+	u.WorkspaceList = v
 }
 
 // NewWorkspaceRequestWorkspaceRetrieve constructs a WorkspaceRequest with the
@@ -53696,10 +53727,13 @@ func (u WorkspaceRequest) Validate() error {
 	switch u.kind {
 	case "":
 		return loom.InvalidEnumValueError("type", "", []any{
+			string(WorkspaceRequestKindWorkspaceList),
 			string(WorkspaceRequestKindWorkspaceRetrieve),
 			string(WorkspaceRequestKindWorkspaceGetFeatures),
 			string(WorkspaceRequestKindWorkspaceUpdateFeatures),
 		})
+	case WorkspaceRequestKindWorkspaceList:
+		return nil
 	case WorkspaceRequestKindWorkspaceRetrieve:
 		return nil
 	case WorkspaceRequestKindWorkspaceGetFeatures:
@@ -53708,6 +53742,7 @@ func (u WorkspaceRequest) Validate() error {
 		return nil
 	default:
 		return loom.InvalidEnumValueError("type", u.kind, []any{
+			string(WorkspaceRequestKindWorkspaceList),
 			string(WorkspaceRequestKindWorkspaceRetrieve),
 			string(WorkspaceRequestKindWorkspaceGetFeatures),
 			string(WorkspaceRequestKindWorkspaceUpdateFeatures),
@@ -53724,14 +53759,17 @@ func (u WorkspaceRequest) MarshalJSON() ([]byte, error) {
 	var err error
 	selected := -1
 	switch u.kind {
-	case WorkspaceRequestKindWorkspaceRetrieve:
+	case WorkspaceRequestKindWorkspaceList:
 		selected = 0
+		data, err = json.Marshal(u.WorkspaceList, loom.JSONOptions(), json.Deterministic(true))
+	case WorkspaceRequestKindWorkspaceRetrieve:
+		selected = 1
 		data, err = json.Marshal(u.WorkspaceRetrieve, loom.JSONOptions(), json.Deterministic(true))
 	case WorkspaceRequestKindWorkspaceGetFeatures:
-		selected = 1
+		selected = 2
 		data, err = json.Marshal(u.WorkspaceGetFeatures, loom.JSONOptions(), json.Deterministic(true))
 	case WorkspaceRequestKindWorkspaceUpdateFeatures:
-		selected = 2
+		selected = 3
 		data, err = json.Marshal(u.WorkspaceUpdateFeatures, loom.JSONOptions(), json.Deterministic(true))
 	}
 	if err != nil {
@@ -53757,8 +53795,8 @@ func (u *WorkspaceRequest) UnmarshalJSON(data []byte) error {
 	return nil
 }
 func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) {
-	var value0 *WorkspaceRetrieveTransport
-	schema0Nodes := make([]loom.JSONShape, 4)
+	var value0 *WorkspaceListTransport
+	schema0Nodes := make([]loom.JSONShape, 3)
 	schema0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &schema0Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -53766,7 +53804,6 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 	schema0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &schema0Nodes[2]},
-			{Name: "workspace_slug", Required: false, Shape: &schema0Nodes[3]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -53774,18 +53811,13 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
 			Enums: [][]jsontext.Value{
 				{
-					jsontext.Value("\"retrieve\""),
+					jsontext.Value("\"list\""),
 				},
 			},
 		},
 	}
-	schema0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			MaxLength: new(255),
-		},
-	}
 	schema0 := &schema0Nodes[0]
-	runtime0Nodes := make([]loom.JSONShape, 4)
+	runtime0Nodes := make([]loom.JSONShape, 3)
 	runtime0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &runtime0Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -53793,7 +53825,6 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 	runtime0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &runtime0Nodes[2]},
-			{Name: "workspace_slug", Required: false, Shape: &runtime0Nodes[3]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -53801,19 +53832,14 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
 			Enums: [][]jsontext.Value{
 				{
-					jsontext.Value("\"retrieve\""),
+					jsontext.Value("\"list\""),
 				},
 			},
 		},
 	}
-	runtime0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			MaxLength: new(255),
-		},
-	}
 	runtime0 := &runtime0Nodes[0]
-	var value1 *WorkspaceGetFeaturesTransport
-	schema1Nodes := make([]loom.JSONShape, 5)
+	var value1 *WorkspaceRetrieveTransport
+	schema1Nodes := make([]loom.JSONShape, 4)
 	schema1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &schema1Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -53822,7 +53848,6 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &schema1Nodes[2]},
 			{Name: "workspace_slug", Required: false, Shape: &schema1Nodes[3]},
-			{Name: "include_revision", Required: false, Shape: &schema1Nodes[4]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -53830,7 +53855,7 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
 			Enums: [][]jsontext.Value{
 				{
-					jsontext.Value("\"get_features\""),
+					jsontext.Value("\"retrieve\""),
 				},
 			},
 		},
@@ -53840,11 +53865,8 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 			MaxLength: new(255),
 		},
 	}
-	schema1Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
-	}
 	schema1 := &schema1Nodes[0]
-	runtime1Nodes := make([]loom.JSONShape, 5)
+	runtime1Nodes := make([]loom.JSONShape, 4)
 	runtime1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &runtime1Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -53853,7 +53875,6 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &runtime1Nodes[2]},
 			{Name: "workspace_slug", Required: false, Shape: &runtime1Nodes[3]},
-			{Name: "include_revision", Required: false, Shape: &runtime1Nodes[4]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -53861,7 +53882,7 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
 			Enums: [][]jsontext.Value{
 				{
-					jsontext.Value("\"get_features\""),
+					jsontext.Value("\"retrieve\""),
 				},
 			},
 		},
@@ -53871,12 +53892,9 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 			MaxLength: new(255),
 		},
 	}
-	runtime1Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
-	}
 	runtime1 := &runtime1Nodes[0]
-	var value2 *WorkspaceUpdateFeaturesTransport
-	schema2Nodes := make([]loom.JSONShape, 12)
+	var value2 *WorkspaceGetFeaturesTransport
+	schema2Nodes := make([]loom.JSONShape, 5)
 	schema2Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &schema2Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -53885,14 +53903,7 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &schema2Nodes[2]},
 			{Name: "workspace_slug", Required: false, Shape: &schema2Nodes[3]},
-			{Name: "project_grouping", Required: false, Shape: &schema2Nodes[4]},
-			{Name: "initiatives", Required: false, Shape: &schema2Nodes[5]},
-			{Name: "teams", Required: false, Shape: &schema2Nodes[6]},
-			{Name: "customers", Required: false, Shape: &schema2Nodes[7]},
-			{Name: "wiki", Required: false, Shape: &schema2Nodes[8]},
-			{Name: "pi", Required: false, Shape: &schema2Nodes[9]},
-			{Name: "request_id", Required: false, Shape: &schema2Nodes[10]},
-			{Name: "expected_revision", Required: false, Shape: &schema2Nodes[11]},
+			{Name: "include_revision", Required: false, Shape: &schema2Nodes[4]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -53900,7 +53911,7 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
 			Enums: [][]jsontext.Value{
 				{
-					jsontext.Value("\"update_features\""),
+					jsontext.Value("\"get_features\""),
 				},
 			},
 		},
@@ -53913,35 +53924,8 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 	schema2Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema2Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
-	}
-	schema2Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
-	}
-	schema2Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
-	}
-	schema2Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
-	}
-	schema2Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
-	}
-	schema2Nodes[10] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			Formats: []loom.Format{
-				"uuid",
-			},
-		},
-	}
-	schema2Nodes[11] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
-		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
-			MinLength: new(1),
-		},
-	}
 	schema2 := &schema2Nodes[0]
-	runtime2Nodes := make([]loom.JSONShape, 12)
+	runtime2Nodes := make([]loom.JSONShape, 5)
 	runtime2Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
 		Child: &runtime2Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
@@ -53950,14 +53934,7 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 		Fields: []loom.JSONShapeField{
 			{Name: "action", Required: true, Shape: &runtime2Nodes[2]},
 			{Name: "workspace_slug", Required: false, Shape: &runtime2Nodes[3]},
-			{Name: "project_grouping", Required: false, Shape: &runtime2Nodes[4]},
-			{Name: "initiatives", Required: false, Shape: &runtime2Nodes[5]},
-			{Name: "teams", Required: false, Shape: &runtime2Nodes[6]},
-			{Name: "customers", Required: false, Shape: &runtime2Nodes[7]},
-			{Name: "wiki", Required: false, Shape: &runtime2Nodes[8]},
-			{Name: "pi", Required: false, Shape: &runtime2Nodes[9]},
-			{Name: "request_id", Required: false, Shape: &runtime2Nodes[10]},
-			{Name: "expected_revision", Required: false, Shape: &runtime2Nodes[11]},
+			{Name: "include_revision", Required: false, Shape: &runtime2Nodes[4]},
 		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
@@ -53965,7 +53942,7 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
 			Enums: [][]jsontext.Value{
 				{
-					jsontext.Value("\"update_features\""),
+					jsontext.Value("\"get_features\""),
 				},
 			},
 		},
@@ -53978,37 +53955,167 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 	runtime2Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime2Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime2 := &runtime2Nodes[0]
+	var value3 *WorkspaceUpdateFeaturesTransport
+	schema3Nodes := make([]loom.JSONShape, 12)
+	schema3Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema3Nodes[1],
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime2Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema3Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema3Nodes[2]},
+			{Name: "workspace_slug", Required: false, Shape: &schema3Nodes[3]},
+			{Name: "project_grouping", Required: false, Shape: &schema3Nodes[4]},
+			{Name: "initiatives", Required: false, Shape: &schema3Nodes[5]},
+			{Name: "teams", Required: false, Shape: &schema3Nodes[6]},
+			{Name: "customers", Required: false, Shape: &schema3Nodes[7]},
+			{Name: "wiki", Required: false, Shape: &schema3Nodes[8]},
+			{Name: "pi", Required: false, Shape: &schema3Nodes[9]},
+			{Name: "request_id", Required: false, Shape: &schema3Nodes[10]},
+			{Name: "expected_revision", Required: false, Shape: &schema3Nodes[11]},
+		},
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime2Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema3Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"update_features\""),
+				},
+			},
+		},
+	}
+	schema3Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema3Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime2Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema3Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime2Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema3Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime2Nodes[10] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+	schema3Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema3Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema3Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema3Nodes[10] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
 			Formats: []loom.Format{
 				"uuid",
 			},
 		},
 	}
-	runtime2Nodes[11] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+	schema3Nodes[11] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
 			MinLength: new(1),
 		},
 	}
-	runtime2 := &runtime2Nodes[0]
+	schema3 := &schema3Nodes[0]
+	runtime3Nodes := make([]loom.JSONShape, 12)
+	runtime3Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime3Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime3Nodes[2]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime3Nodes[3]},
+			{Name: "project_grouping", Required: false, Shape: &runtime3Nodes[4]},
+			{Name: "initiatives", Required: false, Shape: &runtime3Nodes[5]},
+			{Name: "teams", Required: false, Shape: &runtime3Nodes[6]},
+			{Name: "customers", Required: false, Shape: &runtime3Nodes[7]},
+			{Name: "wiki", Required: false, Shape: &runtime3Nodes[8]},
+			{Name: "pi", Required: false, Shape: &runtime3Nodes[9]},
+			{Name: "request_id", Required: false, Shape: &runtime3Nodes[10]},
+			{Name: "expected_revision", Required: false, Shape: &runtime3Nodes[11]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"update_features\""),
+				},
+			},
+		},
+	}
+	runtime3Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime3Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[10] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime3Nodes[11] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+		},
+	}
+	runtime3 := &runtime3Nodes[0]
 	candidates := []loom.JSONUnionBranch{
 		{Schema: schema0, Decode: func(wire jsontext.Value) (bool, error) {
 			matched, err := runtime0.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *WorkspaceListTransport
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if v.Action == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("action", "v"))
+				}
+				if v.Action != nil {
+					if !(*v.Action == "list") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", *v.Action, []any{"list"}))
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value0 = v
+			return true, nil
+		}},
+		{Schema: schema1, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime1.Match(wire)
 			if err != nil || !matched {
 				return matched, err
 			}
@@ -54035,11 +54142,11 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 			}(); err != nil {
 				return false, nil
 			}
-			value0 = v
+			value1 = v
 			return true, nil
 		}},
-		{Schema: schema1, Decode: func(wire jsontext.Value) (bool, error) {
-			matched, err := runtime1.Match(wire)
+		{Schema: schema2, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime2.Match(wire)
 			if err != nil || !matched {
 				return matched, err
 			}
@@ -54066,11 +54173,11 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 			}(); err != nil {
 				return false, nil
 			}
-			value1 = v
+			value2 = v
 			return true, nil
 		}},
-		{Schema: schema2, Decode: func(wire jsontext.Value) (bool, error) {
-			matched, err := runtime2.Match(wire)
+		{Schema: schema3, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime3.Match(wire)
 			if err != nil || !matched {
 				return matched, err
 			}
@@ -54105,7 +54212,7 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 			}(); err != nil {
 				return false, nil
 			}
-			value2 = v
+			value3 = v
 			return true, nil
 		}},
 	}
@@ -54115,14 +54222,35 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 	}
 	switch matched {
 	case 0:
-		return WorkspaceRequest{kind: WorkspaceRequestKindWorkspaceRetrieve, WorkspaceRetrieve: value0}, matched, nil
+		return WorkspaceRequest{kind: WorkspaceRequestKindWorkspaceList, WorkspaceList: value0}, matched, nil
 	case 1:
-		return WorkspaceRequest{kind: WorkspaceRequestKindWorkspaceGetFeatures, WorkspaceGetFeatures: value1}, matched, nil
+		return WorkspaceRequest{kind: WorkspaceRequestKindWorkspaceRetrieve, WorkspaceRetrieve: value1}, matched, nil
 	case 2:
-		return WorkspaceRequest{kind: WorkspaceRequestKindWorkspaceUpdateFeatures, WorkspaceUpdateFeatures: value2}, matched, nil
+		return WorkspaceRequest{kind: WorkspaceRequestKindWorkspaceGetFeatures, WorkspaceGetFeatures: value2}, matched, nil
+	case 3:
+		return WorkspaceRequest{kind: WorkspaceRequestKindWorkspaceUpdateFeatures, WorkspaceUpdateFeatures: value3}, matched, nil
 	}
 	return WorkspaceRequest{}, -1, fmt.Errorf("invalid untagged union match index")
 }
+func validateWorkspaceRequestWorkspaceListTransport(body *WorkspaceListTransport, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if body.Action == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("action", validationPath))
+	}
+	if body.Action != nil {
+		if !(*body.Action == "list") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", *body.Action, []any{"list"}))
+		}
+	}
+	return
+}
+
 func validateWorkspaceRequestWorkspaceRetrieveTransport(body *WorkspaceRetrieveTransport, validationContext ...string) (err error) {
 	validationPath := "body"
 	if len(validationContext) > 0 {
@@ -54208,11 +54336,21 @@ func decodeWorkspacePayload(raw jsontext.Value) (out *vector_mcp.WorkspaceReques
 	if err = decodeMCPPayloadStrict(raw, &in); err != nil {
 		return out, err
 	}
-	if err = sdkbridge.ValidateToolArguments(raw, "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"get_features\"]},\"include_revision\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update_features\"]},\"customers\":{\"type\":\"boolean\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"initiatives\":{\"type\":\"boolean\"},\"pi\":{\"type\":\"boolean\"},\"project_grouping\":{\"type\":\"boolean\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"teams\":{\"type\":\"boolean\"},\"wiki\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"get_features\"]},{\"type\":\"string\",\"enum\":[\"update_features\"]}]},\"customers\":{\"type\":\"boolean\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"include_revision\":{\"type\":\"boolean\"},\"initiatives\":{\"type\":\"boolean\"},\"pi\":{\"type\":\"boolean\"},\"project_grouping\":{\"type\":\"boolean\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"teams\":{\"type\":\"boolean\"},\"wiki\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"); err != nil {
+	if err = sdkbridge.ValidateToolArguments(raw, "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"get_features\"]},\"include_revision\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update_features\"]},\"customers\":{\"type\":\"boolean\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"initiatives\":{\"type\":\"boolean\"},\"pi\":{\"type\":\"boolean\"},\"project_grouping\":{\"type\":\"boolean\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"teams\":{\"type\":\"boolean\"},\"wiki\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"get_features\"]},{\"type\":\"string\",\"enum\":[\"update_features\"]}]},\"customers\":{\"type\":\"boolean\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"include_revision\":{\"type\":\"boolean\"},\"initiatives\":{\"type\":\"boolean\"},\"pi\":{\"type\":\"boolean\"},\"project_grouping\":{\"type\":\"boolean\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"teams\":{\"type\":\"boolean\"},\"wiki\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"); err != nil {
 		return out, err
 	}
 
 	switch string(in.Kind()) {
+	case "WorkspaceList":
+		actual, _ := in.AsWorkspaceList()
+		obj := decodeWorkspacePayloadWorkspaceListTransportToVectorMcpWorkspaceList(actual)
+
+		var u vector_mcp.WorkspaceRequest
+		if out != nil {
+			u = *out
+		}
+		u.SetWorkspaceList((*vector_mcp.WorkspaceList)(obj))
+		out = &u
 	case "WorkspaceRetrieve":
 		actual, _ := in.AsWorkspaceRetrieve()
 		obj := decodeWorkspacePayloadWorkspaceRetrieveTransportToVectorMcpWorkspaceRetrieve(actual)
@@ -56622,6 +56760,17 @@ func decodeWorkitemPropertyPayload(raw jsontext.Value) (out *vector_mcp.Workitem
 		out = &u
 	}
 	return out, err
+}
+
+func decodeWorkspacePayloadWorkspaceListTransportToVectorMcpWorkspaceList(v *WorkspaceListTransport) *vector_mcp.WorkspaceList {
+	if v == nil {
+		return nil
+	}
+	res := &vector_mcp.WorkspaceList{
+		Action: *v.Action,
+	}
+
+	return res
 }
 
 func decodeWorkspacePayloadWorkspaceRetrieveTransportToVectorMcpWorkspaceRetrieve(v *WorkspaceRetrieveTransport) *vector_mcp.WorkspaceRetrieve {

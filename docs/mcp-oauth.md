@@ -100,7 +100,7 @@ otherwise valid credential lacking read gets 403 `insufficient_scope` with
 the read challenge. Unknown scope tokens grant no additional rights.
 
 OAuth accepts exactly one bearer header and zero or one workspace header.
-PAT syntax and errors remain unchanged. X-Api-Key, duplicate selectors,
+Personal tokens use the same optional workspace header and selector rules. X-Api-Key, duplicate selectors,
 duplicate Authorization headers, comma-combined bearer values, malformed
 workspace slugs or conflicting header/tool selectors yield HTTP 400.
 Missing or invalid bearer credentials yield 401. Cookies never authenticate MCP.
@@ -108,12 +108,13 @@ Missing or invalid bearer credentials yield 401. Cookies never authenticate MCP.
 Workspace selection uses header when present, otherwise optional tool argument.
 The selected slug is validated and resolved to a current primary-backed active
 membership before any scoped application read. Missing scope on a scoped action
-yields generated `invalid_params`. `member.me` and the future PQL reference need
+yields generated `invalid_params`. `workspace.list`, `member.me` and the PQL reference need
 no selector; an explicitly provided selector still requires membership. Unknown
 or inaccessible workspace yields the same safe forbidden error. Shared
 application operations retain their own authorization inside data reads/writes.
 The private verified context owns a workspace resolver, rather than accepting a
-caller-fabricated actor. PAT retains its required, fixed header scope.
+caller-fabricated actor. Both credential classes use this resolver, while token
+validation and OAuth scopes remain separate.
 
 The shared throttle applies actor and SHA-256 credential keys to each HTTP
 request. Failure is sanitized 503; denial is 429 with Retry-After. Introspection
@@ -136,12 +137,12 @@ emits OAuth challenges or metadata. Authentication/validation failure outputs
 remain safe and correlated by the shared request ID.
 
 Generated action declarations remain the catalogue source of truth. Discovery
-projects the twenty-one implemented member, project, cycle, module, label, comment, link, and activity actions using current OAuth
-scopes and primary-database permissions. Workspace directory reads require a
+filters the generated actions using current OAuth scopes and primary-database
+permissions. Workspace directory reads require a
 member or admin role; project roster reads require an active project membership.
 Role and project reads require an eligible workspace membership. Cycle, module, label, comment, link, and activity reads require an active project membership. Without a
 selected workspace, discovery considers all eligible memberships; accounts with
-none see only `member.me`. Archive and restore follow their domain permissions.
+none can still use `workspace.list`, `member.me`, and the PQL reference. Archive and restore follow their domain permissions.
 The interceptor filters fresh copies of generated schemas without a second action
 registry. Invocation always rechecks current scopes and access to the selected
 resource. Cache metadata stays private, TTL zero.

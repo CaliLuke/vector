@@ -136,17 +136,34 @@ Replace the example origin with your instance's canonical HTTPS origin, then rec
 as described above. Forward `/mcp` unchanged through your reverse proxy to the Go API. An HTML frontend
 response at that URL does not indicate a working MCP server.
 
-Connect a Streamable HTTP MCP client to `https://vector.example.com/mcp`, with these headers:
+Connect a Streamable HTTP MCP client to `https://vector.example.com/mcp`, with this header:
 
 ```http
 Authorization: Bearer <personal-api-token>
-X-Workspace-Slug: <workspace-slug>
 ```
 
 Create a personal token under Profile settings → API tokens. Keep it in your MCP client's secret storage;
 never include it in a URL or committed configuration. The token owner must be an active member of the
 selected workspace, and every action rechecks current permissions. Browser sessions do not authenticate MCP.
 The legacy `/mcp/api-key` endpoint remains available for existing personal-token clients.
+
+Use one connection for all workspaces the token owner can access. First call the
+`workspace` tool with `{"action":"list"}`. It returns `results` containing each
+workspace's `id`, `name`, and `slug`, ordered by slug and ID. Then pass a returned
+slug to each scoped tool call, for example:
+
+```json
+{ "name": "project", "arguments": { "action": "list", "workspace_slug": "engineering" } }
+```
+
+The next call can use a different authorized slug on the same connection. No new
+token or connection configuration is needed. An optional `X-Workspace-Slug`
+header remains available as a default for existing clients; when present, an
+explicit tool selector must match it. Omit the header for multi-workspace use.
+Missing selectors on scoped actions return `invalid_params`. Listing, discovery,
+and `member.me` need no selector. Workspace listing excludes deleted workspaces
+and inactive or deleted memberships. Every invocation and receipt replay checks
+current credentials and permissions; token workspace metadata grants no access.
 
 Server enablement is deployment configuration, not a UI toggle. The profile's MCP connection section
 is for OAuth account linking and is hidden when OAuth is unavailable. For OAuth or simultaneous OAuth

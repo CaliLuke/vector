@@ -72,7 +72,6 @@ func TestPersonalTokensRejectMalformedHeadersBeforeCredentialLookup(t *testing.T
 		change func(http.Header)
 		want   error
 	}{
-		{"missing workspace", func(h http.Header) { h.Del("X-Workspace-Slug") }, mcptransport.ErrInvalidRequest},
 		{"empty workspace", func(h http.Header) { h.Set("X-Workspace-Slug", "") }, mcptransport.ErrInvalidRequest},
 		{"duplicate workspace", func(h http.Header) { h.Add("X-Workspace-Slug", "workspace-one") }, mcptransport.ErrInvalidRequest},
 		{"combined workspace", func(h http.Header) { h.Set("X-Workspace-Slug", "one,two") }, mcptransport.ErrInvalidRequest},
@@ -215,4 +214,34 @@ func TestPersonalTokensShareActorLimitAcrossCredentials(t *testing.T) {
 	require.Len(t, throttle.keys, 4)
 	assert.Equal(t, throttle.keys[0], throttle.keys[2], "rotating credentials cannot reset the actor limit")
 	assert.NotEqual(t, throttle.keys[1], throttle.keys[3])
+}
+
+func TestPersonalTokensResolveWorkspacePerInvocation(t *testing.T) {
+	auth, keys, memberships, _ := personalTokenFixture(t)
+	request := tokenRequest()
+	request.Header.Del("X-Workspace-Slug")
+	ctx, err := auth.Authenticate(t.Context(), request)
+	require.NoError(t, err)
+	principal, ok := PrincipalFromContext(ctx)
+	require.True(t, ok)
+	assert.Equal(t, keys.principal.UserID, principal.UserID)
+	assert.Equal(t, uuid.Nil, principal.WorkspaceID)
+	assert.Zero(t, memberships.calls)
+	first, err := SelectWorkspace(ctx, "workspace-one")
+	require.NoError(t, err)
+	assert.Equal(t, memberships.workspace.ID, first.WorkspaceID)
+	memberships.workspace = Workspace{ID: uuid.New(), Role: 5}
+	second, err := SelectWorkspace(ctx, "workspace-two")
+	require.NoError(t, err)
+	assert.Equal(t, memberships.workspace.ID, second.WorkspaceID)
+	assert.NotEqual(t, first.WorkspaceID, second.WorkspaceID)
+	assert.Equal(t, 5, second.WorkspaceRole)
+	principal, _ = PrincipalFromContext(ctx)
+	assert.Equal(t, uuid.Nil, principal.WorkspaceID, "tool selection must not bind later calls")
+	memberships.err = mcptransport.ErrAccessDenied
+	_, err = SelectWorkspace(ctx, "workspace-one")
+	require.ErrorIs(t, err, mcptransport.ErrAccessDenied)
+	keys.err = apikey.ErrInvalid
+	_, err = Revalidate(ctx)
+	require.ErrorIs(t, err, mcptransport.ErrInvalidCredential)
 }

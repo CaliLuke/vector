@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -42,7 +43,7 @@ func addArchiveFixture(t *testing.T, pool *pgxpool.Pool) {
 
 func TestProjectArchiveRecoveryAcrossCredentialsAndProtocols(t *testing.T) {
 	for _, version := range []string{"2025-11-25", "2026-07-28"} {
-		for _, mode := range []string{"personal token", "OAuth"} {
+		for _, mode := range []string{"personal token", "personal token selector", "OAuth"} {
 			t.Run(version+"/"+mode, func(t *testing.T) {
 				f, pool, auth, issuer := oauthFixture(t)
 				addArchiveFixture(t, pool)
@@ -53,6 +54,10 @@ func TestProjectArchiveRecoveryAcrossCredentialsAndProtocols(t *testing.T) {
 				call := func(input string) rpcResult {
 					if mode == "OAuth" {
 						return oauthToolCall(t, oauth, version, "oauth-user", "workspace-one", "project", input, 200)
+					}
+					if mode == "personal token selector" {
+						input = strings.TrimSuffix(input, "}") + `,"workspace_slug":"workspace-one"}`
+						return oauthToolCall(t, pat, version, "test-one", "", "project", input, 200)
 					}
 					return rpcVersion(t, pat, "test-one", "tools/call", projectCall(input), version)
 				}

@@ -36,7 +36,7 @@ func NewOAuth(issuer accessTokenIssuer, links linkedAccountReader, memberships m
 }
 
 func (a *OAuth) Authenticate(ctx context.Context, request *http.Request) (context.Context, error) {
-	token, slug, err := credentialHeaders(request.Header, false)
+	token, slug, err := credentialHeaders(request.Header)
 	if err != nil {
 		return nil, err
 	}

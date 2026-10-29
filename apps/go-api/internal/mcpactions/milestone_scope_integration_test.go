@@ -146,7 +146,13 @@ func TestMilestoneMCPReadRetainsAuthenticatedWorkspaceBinding(t *testing.T) {
 	require.NoError(t, err)
 	f.service = service
 	milestoneFailure(t, f.call(t, "OAuth", "2026-07-28")(map[string]any{"action": "list"}), "forbidden")
-	// No workspace selection cannot accidentally advertise scoped milestone actions.
-	result := oauthRPC(t, oauthHandler(t, f.fixture, f.oauth.Authenticate), "2026-07-28", "oauth-user", "", "tools/list", map[string]any{}, http.StatusOK)
+	// Renaming retains membership: unscoped discovery uses the current workspace
+	// name, while the in-flight read above remains bound to its admitted scope.
+	h := oauthHandler(t, f.fixture, f.oauth.Authenticate)
+	result := oauthRPC(t, h, "2026-07-28", "oauth-user", "", "tools/list", map[string]any{}, http.StatusOK)
+	require.Contains(t, discoveredMilestoneActions(t, result), "list")
+	_, err = f.pool.Exec(t.Context(), `UPDATE workspace_members SET is_active=false WHERE workspace_id=$1`, testsupport.LabelWorkspace)
+	require.NoError(t, err)
+	result = oauthRPC(t, h, "2026-07-28", "oauth-user", "", "tools/list", map[string]any{}, http.StatusOK)
 	require.Empty(t, discoveredMilestoneActions(t, result))
 }

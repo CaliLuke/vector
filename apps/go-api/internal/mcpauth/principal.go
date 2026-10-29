@@ -72,7 +72,7 @@ func SelectWorkspace(ctx context.Context, slug string) (Principal, error) {
 		}
 		return principal, nil
 	}
-	if !principal.oauth || identity.workspaces == nil {
+	if identity.workspaces == nil {
 		return Principal{}, ErrWorkspaceMismatch
 	}
 	workspace, err := identity.workspaces.Membership(ctx, principal.UserID, slug)
@@ -94,10 +94,6 @@ func RequireScopes(ctx context.Context, mutation bool) error {
 		return mcptransport.ErrAccessDenied
 	}
 	return nil
-}
-
-func withPrincipal(ctx context.Context, principal Principal, verify func(context.Context) (Principal, error)) context.Context {
-	return withWorkspaceResolver(ctx, principal, verify, nil)
 }
 
 func withWorkspaceResolver(ctx context.Context, principal Principal, verify func(context.Context) (Principal, error), workspaces membershipReader) context.Context {

@@ -4,6 +4,8 @@ import (
 	"context"
 	"uuid"
 
+	googleuuid "github.com/google/uuid"
+
 	"github.com/CaliLuke/go-plane/internal/features"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/mcptransport"
@@ -26,11 +28,44 @@ func (s *Service) DiscoverActions(ctx context.Context) (mcptransport.ActionVisib
 	if !actor.AllowsAction(false) {
 		return mcptransport.ActionVisibility{}, nil
 	}
+	if actor.WorkspaceID == googleuuid.Nil {
+		return s.discoverWorkspaces(ctx, actor)
+	}
 	capabilities, err := s.discoveryCapabilities(ctx, actor)
 	if err != nil {
 		return nil, err
 	}
 	return capabilities.actionVisibility(), nil
+}
+
+// Merge visibility per workspace, so feature flags and roles from different
+// workspaces cannot combine to advertise an action the actor cannot perform.
+func (s *Service) discoverWorkspaces(ctx context.Context, actor mcpauth.Principal) (mcptransport.ActionVisibility, error) {
+	workspaces, err := s.directory.ListWorkspaces(ctx, uuid.UUID(actor.UserID))
+	if err != nil {
+		return nil, err
+	}
+	visible := discoveryCapabilities{}.actionVisibility()
+	for _, workspace := range workspaces {
+		actor.WorkspaceID, err = googleuuid.Parse(workspace.ID)
+		if err != nil {
+			return nil, err
+		}
+		actor.WorkspaceSlug = workspace.Slug
+		capabilities, capabilityErr := s.discoveryCapabilities(ctx, actor)
+		if capabilityErr != nil {
+			return nil, capabilityErr
+		}
+		for tool, actions := range capabilities.actionVisibility() {
+			if visible[tool] == nil {
+				visible[tool] = map[string]bool{}
+			}
+			for action, allowed := range actions {
+				visible[tool][action] = visible[tool][action] || allowed
+			}
+		}
+	}
+	return visible, nil
 }
 
 type discoveryCapabilities struct {
@@ -127,7 +162,7 @@ func (capabilities discoveryCapabilities) actionVisibility() mcptransport.Action
 	for _, action := range []string{"create", "update", "delete", "add_pages", "remove_page", "add_member", "update_member", "remove_member"} {
 		visible["collection"][action] = workspaceMemberWrite
 	}
-	visible["workspace"] = map[string]bool{"retrieve": true, "get_features": reads.Workspace, "update_features": workspaceWrite}
+	visible["workspace"] = map[string]bool{"list": true, "retrieve": reads.Workspace, "get_features": reads.Workspace, "update_features": workspaceWrite}
 	visible["template"] = map[string]bool{"list": reads.Workspace}
 	for _, action := range []string{"create", "update", "delete"} {
 		visible["template"][action] = workspaceWrite || projectWrite

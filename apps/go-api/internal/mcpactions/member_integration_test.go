@@ -76,6 +76,7 @@ CREATE TABLE workspace_features(workspace_id uuid PRIMARY KEY REFERENCES workspa
  teams boolean NOT NULL DEFAULT false, customers boolean NOT NULL DEFAULT false,
  wiki boolean NOT NULL DEFAULT false, pi boolean NOT NULL DEFAULT false, revision bigint NOT NULL DEFAULT 1);
 INSERT INTO workspace_features(workspace_id) SELECT id FROM workspaces;
+ALTER TABLE workspaces ADD COLUMN name text NOT NULL DEFAULT 'Workspace';
 `
 
 func databaseFixture(t *testing.T) (fixture, *pgxpool.Pool) {

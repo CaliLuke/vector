@@ -6,12 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
-	"unicode"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/mcptransport"
-	"github.com/CaliLuke/go-plane/internal/workspacevalidation"
 	"github.com/google/uuid"
 )
 
@@ -43,12 +40,12 @@ func NewPersonalTokens(keys tokenValidator, memberships membershipReader, thrott
 	return &PersonalTokens{keys: keys, memberships: memberships, throttle: throttle}, nil
 }
 
-// Authenticate accepts only one Bearer credential and one workspace header.
+// Authenticate accepts one Bearer credential and an optional workspace header.
 // Cookies, token workspace metadata and alternate API-key headers cannot choose
 // an identity or override the explicit workspace. Domain permissions remain the
 // responsibility of each application action.
 func (a *PersonalTokens) Authenticate(ctx context.Context, request *http.Request) (context.Context, error) {
-	token, slug, err := personalTokenHeaders(request.Header)
+	token, slug, err := credentialHeaders(request.Header)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +60,7 @@ func (a *PersonalTokens) Authenticate(ctx context.Context, request *http.Request
 		return nil, err
 	}
 
-	return withPrincipal(ctx, principal, verify), nil
+	return withWorkspaceResolver(ctx, principal, verify, a.memberships), nil
 }
 
 func (a *PersonalTokens) verify(ctx context.Context, token, slug string) (Principal, error) {
@@ -77,44 +74,14 @@ func (a *PersonalTokens) verify(ctx context.Context, token, slug string) (Princi
 	if owner.UserID == uuid.Nil {
 		return Principal{}, fmt.Errorf("MCP token owner is missing")
 	}
+	principal := Principal{UserID: owner.UserID, Timezone: owner.Timezone}
+	if slug == "" {
+		return principal, nil
+	}
 	workspace, err := a.memberships.Membership(ctx, owner.UserID, slug)
 	if err != nil {
 		return Principal{}, err
 	}
-	return Principal{
-		UserID: owner.UserID, Timezone: owner.Timezone,
-		WorkspaceID: workspace.ID, WorkspaceSlug: slug, WorkspaceRole: workspace.Role,
-	}, nil
-}
-
-func personalTokenHeaders(header http.Header) (token, slug string, err error) {
-	return credentialHeaders(header, true)
-}
-
-func credentialHeaders(header http.Header, requireWorkspace bool) (token, slug string, err error) {
-	authorization := header.Values("Authorization")
-	workspaces := header.Values("X-Workspace-Slug")
-	if len(header.Values("X-Api-Key")) > 0 || len(authorization) > 1 || len(workspaces) > 1 || requireWorkspace && len(workspaces) != 1 {
-		return "", "", mcptransport.ErrInvalidRequest
-	}
-	if len(workspaces) == 1 {
-		slug = workspaces[0]
-		if len(slug) > 255 || !workspacevalidation.ValidSlug(slug) {
-			return "", "", mcptransport.ErrInvalidRequest
-		}
-	}
-	if len(authorization) == 0 {
-		return "", "", mcptransport.ErrInvalidCredential
-	}
-	if strings.Contains(authorization[0], ",") {
-		return "", "", mcptransport.ErrInvalidRequest
-	}
-	scheme, token, found := strings.Cut(authorization[0], " ")
-	if !found || !strings.EqualFold(scheme, "Bearer") || token == "" {
-		return "", "", mcptransport.ErrInvalidCredential
-	}
-	if strings.ContainsFunc(token, unicode.IsSpace) {
-		return "", "", mcptransport.ErrInvalidRequest
-	}
-	return token, slug, nil
+	principal.WorkspaceID, principal.WorkspaceSlug, principal.WorkspaceRole = workspace.ID, slug, workspace.Role
+	return principal, nil
 }

@@ -5,6 +5,24 @@ import (
 	. "github.com/CaliLuke/loom/dsl"
 )
 
+var workspaceList = Type("WorkspaceList", func() {
+	Attribute("action", String, func() { Enum("list") })
+	Required("action")
+	Meta("openapi:additionalProperties", "false")
+})
+var accessibleWorkspace = Type("AccessibleWorkspace", func() {
+	Attribute("id", String, func() { Format(FormatUUID) })
+	Attribute("name", String)
+	Attribute("slug", String)
+	Required("id", "name", "slug")
+	Meta("openapi:additionalProperties", "false")
+})
+var workspaceListResult = Type("WorkspaceListResult", func() {
+	Attribute("results", ArrayOf(accessibleWorkspace))
+	Required("results")
+	Meta("openapi:additionalProperties", "false")
+})
+
 var workspaceRetrieve = Type("WorkspaceRetrieve", func() {
 	Attribute("action", String, func() { Enum("retrieve") })
 	projectWorkspaceSelector()
@@ -20,12 +38,12 @@ var workspaceRecord = Type("WorkspaceRecord", func() {
 	Meta("openapi:additionalProperties", "false")
 })
 
-var workspaceRequest = Type("WorkspaceRequest", OneOf(workspaceRetrieve, workspaceGetFeatures, workspaceUpdateFeatures), func() { Untagged() })
-var workspaceResult = Type("WorkspaceResult", OneOf(workspaceRecord, workspaceFeatureRecord, pageMutationReceipt), func() { Untagged() })
+var workspaceRequest = Type("WorkspaceRequest", OneOf(workspaceList, workspaceRetrieve, workspaceGetFeatures, workspaceUpdateFeatures), func() { Untagged() })
+var workspaceResult = Type("WorkspaceResult", OneOf(workspaceListResult, workspaceRecord, workspaceFeatureRecord, pageMutationReceipt), func() { Untagged() })
 
 func workspace() {
 	Method("workspace", func() {
-		Description("The workspace this connection is bound to and its authentication mode. Personal-token connections return null for id and name.")
+		Description("List accessible workspaces without a workspace selector, then select workspace_slug per scoped call. Retrieve returns the selected workspace and authentication mode. Personal-token retrieval preserves null id and name for compatibility.")
 		Payload(workspaceRequest)
 		Result(workspaceResult)
 		readErrors()
@@ -33,6 +51,6 @@ func workspace() {
 		Meta("mcp:annotation:readOnlyHint", "false")
 		Meta("mcp:annotation:destructiveHint", "false")
 		Meta("mcp:annotation:openWorldHint", "false")
-		mcp.Tool("workspace", "The connected workspace and its feature settings.", mcp.ToolTitle("Workspace settings"))
+		mcp.Tool("workspace", "List accessible workspaces, retrieve a selected workspace, and manage its feature settings.", mcp.ToolTitle("Workspace settings"))
 	})
 }

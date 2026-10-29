@@ -133,7 +133,7 @@ func TestOAuthDiscoveryWithoutWorkspaceUsesEligibleScopesAndRechecksMembership(t
 		require.NotContains(t, list("workspace-two")["member"], "list_project")
 		_, err = pool.Exec(t.Context(), `UPDATE workspace_members SET is_active=false WHERE member_id='10000000-0000-4000-8000-000000000001'`)
 		require.NoError(t, err)
-		require.Equal(t, map[string][]string{"member": {"me"}, "workspace": {"retrieve"}}, list(""))
+		require.Equal(t, map[string][]string{"member": {"me"}, "workspace": {"list"}}, list(""))
 		me := oauthCall(t, h, version, "oauth-user", "", `{"action":"me"}`, 200)
 		require.False(t, me.IsError, me.Content)
 		_, err = pool.Exec(t.Context(), `UPDATE workspace_members SET is_active=true WHERE member_id='10000000-0000-4000-8000-000000000001'`)

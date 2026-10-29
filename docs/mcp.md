@@ -1,6 +1,6 @@
 # Remote MCP transport
 
-VEC-2 is **in progress**. The Go API exposes 30 tools and 207 actions through a
+VEC-2 is **in progress**. The Go API exposes 30 tools and 208 actions through a
 generated, stateless MCP server. Personal-token and generic external-issuer OAuth
 authentication are implemented. All actions have generated-server workflow tests
 under both authentication modes and both supported protocol revisions. The
@@ -12,7 +12,7 @@ deliberate account linking; invalid configuration or discovery fails before
 database startup. Teamspaces and their query functions are deferred until Vector
 has native support.
 
-Workspace retrieval follows the [pinned connection metadata shape](https://github.com/makeplane/plane-mcp-server/blob/dc7cfd9f3c305891909e2372f0cc507291353801/plane_mcp/client.py): `slug`, `id`, `name`, and `connected_via`. Personal tokens report `api_key_header` with null id/name. OAuth reports current authorized workspace id/name when bound, or empty slug and null id/name when no workspace was selected. The optional `workspace_slug` selector uses Vector's existing authenticated workspace binding.
+Workspace retrieval follows the [pinned connection metadata shape](https://github.com/makeplane/plane-mcp-server/blob/dc7cfd9f3c305891909e2372f0cc507291353801/plane_mcp/client.py): `slug`, `id`, `name`, and `connected_via`. Personal tokens report `api_key_header` with null id/name. OAuth reports current authorized workspace id/name. Retrieval requires a workspace selector or header. `workspace.list` returns all currently accessible workspaces as `results` with non-null `id`, `name`, and `slug` for both authentication modes, ordered by slug and ID. It requires no workspace selector.
 
 The source declaration is `apps/go-api/mcp/design/design.go`. Regenerate only
 this projection with:
@@ -37,8 +37,8 @@ adds its SDK and schema/runtime dependencies; no local module replacement is use
 | `MCP_MAX_REQUEST_BYTES` | `1048576` | Positive request body limit, at most 16 MiB.                                     |
 | `MCP_REQUEST_TIMEOUT`   | `30s`     | Positive request timeout, at most five minutes.                                  |
 
-`/mcp` selects only OAuth; `/mcp/api-key` selects only personal-token
-authentication. A missing provider is a startup error. A rejected credential
+`/mcp` uses personal tokens in `header` mode and OAuth in `oauth` or `both` mode.
+`/mcp/api-key` selects only personal-token authentication. A missing provider is a startup error. A rejected credential
 never falls back to the other provider. Disabled routes, including `/mcp/*`,
 return 404 instead of the frontend page. All three proxy configurations route
 these paths to the Go API.
@@ -58,7 +58,8 @@ lifetime. Authentication runs for every request, with cancellation and safe
 ## Personal-token authentication
 
 Header mode requires exactly one `Authorization: Bearer <personal-api-token>`
-and one `X-Workspace-Slug` header on every request. Duplicate headers, combined
+on every request. `X-Workspace-Slug` is optional. Without it, scoped tool calls
+select their workspace with `workspace_slug`. Duplicate headers, combined
 credentials, malformed workspace selectors and any `X-Api-Key` header return 400.
 Missing or invalid credentials return 401; a current nonmember receives 403.
 Cookies cannot authenticate this route, and it never issues an OAuth challenge.
@@ -77,9 +78,13 @@ middleware, including authentication failures. The response returns a validated
 or generated UUID in `X-Request-ID`. Successful authentication updates token
 `last_used` through the existing validator.
 
-The authentication package revalidates before each member action invocation and
-binds optional tool workspace selectors to the header. Each future action must
-also enforce its current project and domain permissions. Archive/restore receipt replay and revision checks are described in [write recovery](mcp-writes.md).
+The authentication package revalidates before each invocation and receipt replay.
+The shared resolver checks current membership for each tool selector. If a header
+is present, an explicit tool selector must match it. Missing scope on a scoped
+action returns `invalid_params`. `workspace.list`, `member.me`, discovery and the
+PQL reference work without a selector. Discovery combines the actions available
+in each accessible workspace; each invocation still checks its target permissions.
+See the [multi-workspace client example](self-hosting.md#remote-mcp). Archive/restore receipt replay and revision checks are described in [write recovery](mcp-writes.md).
 
 The supported revisions are `2026-07-28` and `2025-11-25`. The former uses
 stateless `server/discover` and per-request protocol metadata; the latter uses
@@ -226,9 +231,9 @@ size and legacy cursor/errors remain unchanged.
   results use one page with a concrete typed entry carrier, preserving exact
   action-specific fields and empty pages. The member contract records its removal
   condition; no dependency source is patched.
-- **Discovery authorization:** action schemas follow current scopes and domain permissions, using copies of the generated catalogue. Workspace guests do not see `member.list_workspace`; `member.list_project` requires an active membership in a live project. Role and project reads require an eligible workspace membership. Context-free OAuth discovery considers all eligible workspaces; without one, only `member.me` remains. A selected workspace binds both its immutable ID and slug. Invocation rechecks access to the selected resource. There is no handwritten replacement registry.
+- **Discovery authorization:** action schemas follow current scopes and domain permissions, using copies of the generated catalogue. Workspace guests do not see `member.list_workspace`; `member.list_project` requires an active membership in a live project. Role and project reads require an eligible workspace membership. Unscoped discovery for both credential classes combines the actions available in each eligible workspace; accounts with no memberships retain `workspace.list`, `member.me`, and the PQL reference. A selected workspace binds both its immutable ID and slug. Invocation rechecks access to the selected resource. There is no handwritten replacement registry.
 - **VEC-35 and VEC-3:** personal-token and generic OAuth invocation are implemented
-  across all 207 actions, with separate scope, linking and revocation regressions.
+  across all 208 actions, with separate scope, linking and revocation regressions.
   Production issuer selection is deferred; local browser/proxy evidence is recorded in the parity tracker.
   Mixed-action discovery filtering and archive/restore replay now have focused
   generated-server PostgreSQL proof and pass the full Go gate.
@@ -239,8 +244,8 @@ size and legacy cursor/errors remain unchanged.
   failures now have sanitized log/trace proof; this does not establish the
   complete mutation or asset observability contract.
 - **Resource tickets and VEC-36:** implement and verify the 30 resource tools and
-  207 actions. The pinned expected catalogue lives under
-  `apps/go-api/mcp/testdata/plane-mcp`; the [207-action tracker](mcp-parity.md)
+  208 actions. The 207-action pinned upstream catalogue lives under
+  `apps/go-api/mcp/testdata/plane-mcp`; `workspace.list` is a Vector extension. The [parity tracker](mcp-parity.md)
   records remaining work. Neither is a runtime registry or a parity claim.
 
 Focused verification exercises the real generated HTTP handler, both route
@@ -260,7 +265,7 @@ All seven `workitem_type` actions pass the generated-server configuration workfl
 
 Six core `workitem` mutation actions are wired: create, update, delete, archive, manage_assignee, and manage_label. They reuse native item validation, model hooks and durable effects. The two set-edit actions remove first and add second under the same item/schema locks as PATCH. Null dates clear values; omitted dates and zero numeric sentinels remain unchanged. Revisions include issue-row and assignee/label-link writes. The core workflow batch exercises these mutations and the core read actions under both authentication modes and protocol revisions. The generated custom-property result field temporarily uses a JSON value carrier because [Loom #1041](https://github.com/CaliLuke/loom/issues/1041) rejects maps inside untagged result branches; restore the string-keyed map schema when a release supports it.
 
-Core work-item listing, archived listing, retrieval, identifier lookup and search are wired, together with cycle/module item lists and `get_pql_reference` (`detail=brief|full`, no action parameter). Lists retain cursor metadata and sparse fields. The core workflow batch exercises these eight actions; the generated catalogue has all 207 actions across 30 tools. Grouped counts support all fourteen SDK dimensions, including release associations; the core workflow batch exercises nested grouping.
+Core work-item listing, archived listing, retrieval, identifier lookup and search are wired, together with cycle/module item lists and `get_pql_reference` (`detail=brief|full`, no action parameter). Lists retain cursor metadata and sparse fields. The core workflow batch exercises these eight actions; the generated catalogue has 208 actions across 30 tools. Grouped counts support all fourteen SDK dimensions, including release associations; the core workflow batch exercises nested grouping.
 
 The five `workitem_attachment` actions are wired. URL imports allow public HTTP(S) addresses, validate each redirect, pin connections to validated addresses, and cap imports at 5 MB or the lower configured asset limit. Images up to 5 MB and supported text up to 1 MB return inline MCP content. Other types use `download_url`. Optional `request_id` recovers interrupted imports; uploaded bytes are staged in the database before object creation and erased after completion. `include_revision` on list/download reads supplies current asset revisions for guarded deletion. Upload completion and later metadata updates can advance the revision returned by the original mutation. The attachment workflow batch verifies real object storage, private-address rejection, receipt replay and native MCP content under both credentials and revisions. Local browser checks also verified an imported attachment and its downloaded bytes.
 

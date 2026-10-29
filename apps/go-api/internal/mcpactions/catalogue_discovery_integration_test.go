@@ -31,6 +31,14 @@ func TestMCPDiscoveryMatchesPinnedActionCatalogue(t *testing.T) {
 		}
 	}
 	require.NoError(t, json.Unmarshal(data, &pinned))
+	// Vector adds workspace discovery without changing the pinned upstream fixture.
+	for i := range pinned.Tools {
+		if pinned.Tools[i].Tool == "workspace" {
+			pinned.Tools[i].Actions = append(pinned.Tools[i].Actions, pinnedAction{Action: "list", Required: []string{"action"}})
+		}
+	}
+	pinned.OperationCount++
+
 	f := newMilestoneFixture(t)
 	_, err = f.pool.Exec(t.Context(), `UPDATE workspace_members SET role=20; UPDATE project_members SET role=20; UPDATE workspace_features SET initiatives=true,customers=true`)
 	require.NoError(t, err)
