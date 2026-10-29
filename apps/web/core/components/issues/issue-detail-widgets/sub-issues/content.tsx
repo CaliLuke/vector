@@ -4,19 +4,16 @@
  * See the LICENSE file for details.
  */
 
-import React, { useState, useCallback } from "react";
-
-import type { TIssue, TIssueServiceType } from "@plane/types";
+import React, { useState } from "react";
+import type { TIssueServiceType } from "@plane/types";
 import { EIssueServiceType, EIssuesStoreType } from "@plane/types";
-// components
 import { DeleteIssueModal } from "@/components/issues/delete-issue-modal";
-// hooks
 import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
 import { useWorkItemSubItems } from "@/hooks/use-work-item-detail";
-// local imports
 import { CreateUpdateIssueModal } from "../../issue-modal/modal";
 import { useSubIssueOperations } from "./helper";
 import { SubIssuesListRoot } from "./issues-list/root";
+import type { SubIssueAction } from "./types";
 
 type Props = {
   workspaceSlug: string;
@@ -26,66 +23,10 @@ type Props = {
   issueServiceType?: TIssueServiceType;
 };
 
-type TIssueCrudState = { toggle: boolean; parentIssueId: string | undefined; issue: TIssue | undefined };
-
-export const SubIssuesCollapsibleContent = function SubIssuesCollapsibleContent(props: Props) {
+export function SubIssuesCollapsibleContent(props: Props) {
   const { workspaceSlug, projectId, parentIssueId, disabled, issueServiceType = EIssueServiceType.ISSUES } = props;
-  // state
-  const [issueCrudState, setIssueCrudState] = useState<{
-    create: TIssueCrudState;
-    existing: TIssueCrudState;
-    update: TIssueCrudState;
-    delete: TIssueCrudState;
-  }>({
-    create: {
-      toggle: false,
-      parentIssueId: undefined,
-      issue: undefined,
-    },
-    existing: {
-      toggle: false,
-      parentIssueId: undefined,
-      issue: undefined,
-    },
-    update: {
-      toggle: false,
-      parentIssueId: undefined,
-      issue: undefined,
-    },
-    delete: {
-      toggle: false,
-      parentIssueId: undefined,
-      issue: undefined,
-    },
-  });
-  // store hooks
-  const { toggleCreateIssueModal, toggleDeleteIssueModal } = useIssueDetailUiState(issueServiceType);
-
-  // helpers
-  const subIssueOperations = useSubIssueOperations(workspaceSlug, projectId, parentIssueId, issueServiceType);
+  const [action, setAction] = useState<SubIssueAction>();
   const subItems = useWorkItemSubItems(workspaceSlug, projectId, parentIssueId, issueServiceType);
-
-  // handler
-  const handleIssueCrudState = useCallback(
-    (key: "create" | "existing" | "update" | "delete", _parentIssueId: string | null, issue: TIssue | null = null) => {
-      setIssueCrudState({
-        ...issueCrudState,
-        [key]: {
-          toggle: !issueCrudState[key].toggle,
-          parentIssueId: _parentIssueId,
-          issue,
-        },
-      });
-    },
-    [issueCrudState]
-  );
-
-  // render conditions
-  const { issue: issueToDelete, parentIssueId: deleteParentId, toggle: isDeleteOpen } = issueCrudState.delete;
-  const deleteProjectId = issueToDelete?.project_id;
-
-  const shouldRenderUpdateIssueModal = issueCrudState?.update?.toggle && issueCrudState?.update?.issue;
-
   return (
     <>
       {subItems.isSuccess && (
@@ -97,40 +38,61 @@ export const SubIssuesCollapsibleContent = function SubIssuesCollapsibleContent(
           rootIssueId={parentIssueId}
           spacingLeft={6}
           canEdit={!disabled}
-          handleIssueCrudState={handleIssueCrudState}
-          subIssueOperations={subIssueOperations}
+          onAction={setAction}
           issueServiceType={issueServiceType}
         />
       )}
-
-      {isDeleteOpen && issueToDelete?.id && deleteParentId && deleteProjectId && (
-        <DeleteIssueModal
-          isOpen={isDeleteOpen}
-          handleClose={() => {
-            handleIssueCrudState("delete", null, null);
-            toggleDeleteIssueModal(null);
-          }}
-          data={issueToDelete}
-          onSubmit={() =>
-            subIssueOperations.deleteSubIssue(workspaceSlug, deleteProjectId, deleteParentId, issueToDelete.id)
-          }
-          isSubIssue
-        />
-      )}
-
-      {shouldRenderUpdateIssueModal && (
-        <CreateUpdateIssueModal
-          isOpen={issueCrudState?.update?.toggle}
-          onClose={() => {
-            handleIssueCrudState("update", null, null);
-            toggleCreateIssueModal(false);
-          }}
-          data={issueCrudState?.update?.issue ?? undefined}
-          onSubmit={async () => {
-            subIssueOperations.refreshSubIssues(issueCrudState.update.parentIssueId ?? parentIssueId);
-          }}
+      {action && (
+        <SubIssueActionModal
+          key={JSON.stringify([action.kind, action.parent, action.issue.project_id, action.issue.id])}
+          workspaceSlug={workspaceSlug}
+          action={action}
+          onClose={() => setAction(undefined)}
         />
       )}
     </>
   );
-};
+}
+
+function SubIssueActionModal({
+  workspaceSlug,
+  action,
+  onClose,
+}: {
+  workspaceSlug: string;
+  action: SubIssueAction;
+  onClose: () => void;
+}) {
+  const { issue, parent } = action;
+  const operations = useSubIssueOperations(workspaceSlug, parent.projectId, parent.issueId, parent.serviceType);
+  const { toggleCreateIssueModal, toggleDeleteIssueModal } = useIssueDetailUiState(parent.serviceType);
+  if (action.kind === "delete") {
+    const projectId = issue.project_id;
+    if (!projectId || !issue.id) return null;
+    return (
+      <DeleteIssueModal
+        isOpen
+        handleClose={() => {
+          onClose();
+          toggleDeleteIssueModal(null);
+        }}
+        data={issue}
+        onSubmit={() => operations.deleteSubIssue(workspaceSlug, projectId, parent.issueId, issue.id)}
+        isSubIssue
+      />
+    );
+  }
+  return (
+    <CreateUpdateIssueModal
+      isOpen
+      onClose={() => {
+        onClose();
+        toggleCreateIssueModal(false);
+      }}
+      data={issue}
+      onSubmit={async () => {
+        operations.refreshSubIssues(parent.issueId);
+      }}
+    />
+  );
+}

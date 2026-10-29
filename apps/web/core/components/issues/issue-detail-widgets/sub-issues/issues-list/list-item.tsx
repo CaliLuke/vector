@@ -24,6 +24,7 @@ import useIssuePeekOverviewRedirection from "@/hooks/use-issue-peek-overview-red
 import { usePlatformOS } from "@/hooks/use-platform-os";
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
 import { SubIssuesListItemProperties } from "./properties";
+import type { SubIssueAction } from "../types";
 import { SubIssuesListRoot } from "./root";
 
 type Props = {
@@ -33,11 +34,7 @@ type Props = {
   rootIssueId: string;
   spacingLeft: number;
   canEdit: boolean;
-  handleIssueCrudState: (
-    key: "create" | "existing" | "update" | "delete",
-    issueId: string,
-    issue?: TIssue | null
-  ) => void;
+  onAction: (action: SubIssueAction) => void;
   subIssueOperations: TSubIssueOperations;
   issue: TIssue;
   issueServiceType?: TIssueServiceType;
@@ -53,7 +50,7 @@ export const SubIssuesListItem = function SubIssuesListItem(props: Props) {
     issue,
     spacingLeft = 10,
     canEdit,
-    handleIssueCrudState,
+    onAction,
     subIssueOperations,
     issueServiceType = EIssueServiceType.ISSUES,
     storeType = EIssuesStoreType.PROJECT,
@@ -141,11 +138,19 @@ export const SubIssuesListItem = function SubIssuesListItem(props: Props) {
           serviceType={issueServiceType}
           operations={subIssueOperations}
           onEdit={() => {
-            handleIssueCrudState("update", parentIssueId, { ...issue });
+            onAction({
+              kind: "update",
+              issue,
+              parent: { projectId, issueId: parentIssueId, serviceType: issueServiceType },
+            });
             toggleCreateIssueModal(true);
           }}
           onDelete={() => {
-            handleIssueCrudState("delete", parentIssueId, issue);
+            onAction({
+              kind: "delete",
+              issue,
+              parent: { projectId, issueId: parentIssueId, serviceType: issueServiceType },
+            });
             toggleDeleteIssueModal(issueId);
           }}
         />
@@ -161,8 +166,7 @@ export const SubIssuesListItem = function SubIssuesListItem(props: Props) {
         rootIssueId={rootIssueId}
         spacingLeft={spacingLeft}
         canEdit={canEdit}
-        handleIssueCrudState={handleIssueCrudState}
-        operations={subIssueOperations}
+        onAction={onAction}
       />
     </div>
   );
@@ -216,8 +220,7 @@ function SubIssueChildren({
   rootIssueId,
   spacingLeft,
   canEdit,
-  handleIssueCrudState,
-  operations,
+  onAction,
 }: {
   isExpanded: boolean;
   isLoaded: boolean;
@@ -229,8 +232,7 @@ function SubIssueChildren({
   rootIssueId: string;
   spacingLeft: number;
   canEdit: boolean;
-  handleIssueCrudState: Props["handleIssueCrudState"];
-  operations: TSubIssueOperations;
+  onAction: Props["onAction"];
 }) {
   if (!isExpanded || !isLoaded || !issue.project_id || subIssueCount === 0 || isCurrentIssueRoot) return null;
 
@@ -243,8 +245,7 @@ function SubIssueChildren({
       rootIssueId={rootIssueId}
       spacingLeft={spacingLeft + 22}
       canEdit={canEdit}
-      handleIssueCrudState={handleIssueCrudState}
-      subIssueOperations={operations}
+      onAction={onAction}
     />
   );
 }

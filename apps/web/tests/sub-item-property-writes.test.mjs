@@ -204,7 +204,13 @@ await test("a read-only sub-item rejects retained change callbacks", async (t) =
 });
 await test("modal acknowledgement only refreshes readers and leaves notification to the modal", async (t) => {
   const view = await setup(t, undefined, true);
-  await act(() => globalThis.subItemList.handleIssueCrudState("update", "parent", row));
+  await act(() =>
+    globalThis.subItemList.onAction({
+      kind: "update",
+      issue: row,
+      parent: { projectId: "p1", issueId: "parent", serviceType: EIssueServiceType.ISSUES },
+    })
+  );
   await act(() => globalThis.subItemModal.onSubmit({ ...row, priority: "urgent" }));
   await settleQuery();
   assert.deepEqual(view.writes, []);
@@ -213,7 +219,13 @@ await test("modal acknowledgement only refreshes readers and leaves notification
 });
 await test("a modal acknowledgement after session retirement cannot fail an accepted save", async (t) => {
   const view = await setup(t, undefined, true);
-  await act(() => globalThis.subItemList.handleIssueCrudState("update", "parent", row));
+  await act(() =>
+    globalThis.subItemList.onAction({
+      kind: "update",
+      issue: row,
+      parent: { projectId: "p1", issueId: "parent", serviceType: EIssueServiceType.ISSUES },
+    })
+  );
   const accepted = globalThis.subItemModal.onSubmit;
   await act(() => identity.advanceIdentitySession(view.client));
   await act(() => accepted({ ...row, priority: "urgent" }));
@@ -224,7 +236,13 @@ await test("a modal acknowledgement after session retirement cannot fail an acce
 
 await test("editing a nested sub-item refreshes its actual parent", async (t) => {
   const view = await setup(t, undefined, "nested");
-  await act(() => globalThis.subItemList.handleIssueCrudState("update", "nested", { ...row, parent_id: "nested" }));
+  await act(() =>
+    globalThis.subItemList.onAction({
+      kind: "update",
+      issue: { ...row, parent_id: "nested" },
+      parent: { projectId: "p1", issueId: "nested", serviceType: EIssueServiceType.ISSUES },
+    })
+  );
   await act(() => globalThis.subItemModal.onSubmit({ ...row, parent_id: "nested", priority: "urgent" }));
   await settleQuery();
   assert.deepEqual(view.reads, ["parent", "nested", "nested"]);

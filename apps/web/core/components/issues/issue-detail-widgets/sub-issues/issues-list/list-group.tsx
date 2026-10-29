@@ -13,6 +13,7 @@ import type { IGroupByColumn, TIssue, TIssueServiceType, TSubIssueOperations } f
 import { EIssuesStoreType } from "@plane/types";
 import { Collapsible } from "@plane/ui";
 import { cn } from "@plane/utils/common";
+import type { SubIssueAction } from "../types";
 import { SubIssuesListItem } from "./list-item";
 
 interface TSubIssuesListGroupProps {
@@ -24,11 +25,7 @@ interface TSubIssuesListGroupProps {
   canEdit: boolean;
   parentIssueId: string;
   rootIssueId: string;
-  handleIssueCrudState: (
-    key: "create" | "existing" | "update" | "delete",
-    issueId: string,
-    issue?: TIssue | null
-  ) => void;
+  onAction: (action: SubIssueAction) => void;
   subIssueOperations: TSubIssueOperations;
   storeType?: Exclude<EIssuesStoreType, EIssuesStoreType.WORKSPACE_DRAFT>;
   spacingLeft?: number;
@@ -43,7 +40,7 @@ export const SubIssuesListGroup = function SubIssuesListGroup(props: TSubIssuesL
     rootIssueId,
     projectId,
     workspaceSlug,
-    handleIssueCrudState,
+    onAction,
     subIssueOperations,
     workItems,
     storeType = EIssuesStoreType.PROJECT,
@@ -90,7 +87,7 @@ export const SubIssuesListGroup = function SubIssuesListGroup(props: TSubIssuesL
             rootIssueId={rootIssueId}
             issue={issue}
             canEdit={canEdit}
-            handleIssueCrudState={handleIssueCrudState}
+            onAction={onAction}
             subIssueOperations={subIssueOperations}
             issueServiceType={serviceType}
             spacingLeft={spacingLeft}

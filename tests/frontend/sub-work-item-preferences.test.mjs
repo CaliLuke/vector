@@ -7,6 +7,7 @@ import { registerPermissionUiStubs } from "./helpers/permission-ui-fixture.mjs";
 const { ALL_ISSUES } = webRequire("@plane/constants");
 
 registerPermissionUiStubs("/sub-issues/issues-list/root.tsx", {
+  "../helper": "export const useSubIssueOperations=()=>({});",
   "@/components/issues/issue-layouts/use-group-columns": `export const useGroupColumns = () => [{id:${JSON.stringify(ALL_ISSUES)}}, {id:"high"}, {id:"low"}];`,
   "@/components/issues/issue-layouts/utils": "export const isWorkspaceLevel = () => false;",
   "@/hooks/use-work-item-detail":

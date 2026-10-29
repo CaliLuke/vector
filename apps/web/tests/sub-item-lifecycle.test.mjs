@@ -71,7 +71,13 @@ function WidgetProbe() {
   });
 }
 async function openDelete() {
-  await act(() => globalThis.lifecycleList.handleIssueCrudState("delete", "parent", child));
+  await act(() =>
+    globalThis.lifecycleList.onAction({
+      kind: "delete",
+      issue: child,
+      parent: { projectId: "parent-project", issueId: "parent", serviceType: EIssueServiceType.ISSUES },
+    })
+  );
   await settleQuery();
 }
 

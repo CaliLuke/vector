@@ -10,7 +10,7 @@ import { useGroupColumns } from "@/components/issues/issue-layouts/use-group-col
 import { ListFilter } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
-import type { GroupByColumnTypes, TIssue, TIssueServiceType, TSubIssueOperations } from "@plane/types";
+import type { GroupByColumnTypes, TIssueServiceType } from "@plane/types";
 import { EIssueServiceType, EIssuesStoreType } from "@plane/types";
 // hooks
 import { SectionEmptyState } from "@/components/empty-state/section-empty-state-root";
@@ -20,6 +20,8 @@ import { useSubWorkItemPreferences } from "@/providers/sub-work-item-preferences
 import { getFilteredWorkItems, getGroupedWorkItemIds } from "@/helpers/issue-list/grouping";
 import { useWorkItemSubItems } from "@/hooks/use-work-item-detail";
 import { SubIssuesListGroup } from "./list-group";
+import { useSubIssueOperations } from "../helper";
+import type { SubIssueAction } from "../types";
 type Props = {
   workspaceSlug: string;
   projectId: string;
@@ -27,12 +29,7 @@ type Props = {
   rootIssueId: string;
   spacingLeft: number;
   canEdit: boolean;
-  handleIssueCrudState: (
-    key: "create" | "existing" | "update" | "delete",
-    issueId: string,
-    issue?: TIssue | null
-  ) => void;
-  subIssueOperations: TSubIssueOperations;
+  onAction: (action: SubIssueAction) => void;
   issueServiceType?: TIssueServiceType;
   storeType: Exclude<EIssuesStoreType, EIssuesStoreType.WORKSPACE_DRAFT>;
 };
@@ -44,8 +41,7 @@ export const SubIssuesListRoot = function SubIssuesListRoot(props: Props) {
     parentIssueId,
     rootIssueId,
     canEdit,
-    handleIssueCrudState,
-    subIssueOperations,
+    onAction,
     issueServiceType = EIssueServiceType.ISSUES,
     storeType = EIssuesStoreType.PROJECT,
     spacingLeft = 0,
@@ -56,19 +52,13 @@ export const SubIssuesListRoot = function SubIssuesListRoot(props: Props) {
   const { preferences: filters, resetPreferences } = useSubWorkItemPreferences({
     workspaceSlug,
     projectId,
-    parentId: rootIssueId,
+    parentId: parentIssueId,
     serviceType: issueServiceType,
   });
-  const rootChildren = useWorkItemSubItems(workspaceSlug, projectId, rootIssueId, issueServiceType);
-  const nestedChildren = useWorkItemSubItems(
-    workspaceSlug,
-    projectId,
-    parentIssueId,
-    issueServiceType,
-    parentIssueId !== rootIssueId
-  );
-  const rootSubIssues = (rootChildren.subItems ?? []).filter((issue) => !issue.archived_at);
-  const filteredSubWorkItems = getFilteredWorkItems(rootSubIssues, filters.filters);
+  const subIssueOperations = useSubIssueOperations(workspaceSlug, projectId, parentIssueId, issueServiceType);
+  const children = useWorkItemSubItems(workspaceSlug, projectId, parentIssueId, issueServiceType);
+  const subIssues = (children.subItems ?? []).filter((issue) => !issue.archived_at);
+  const filteredSubWorkItems = getFilteredWorkItems(subIssues, filters.filters);
   const groupedSubIssues = getGroupedWorkItemIds(
     filteredSubWorkItems,
     filters.displayFilters.group_by,
@@ -88,7 +78,7 @@ export const SubIssuesListRoot = function SubIssuesListRoot(props: Props) {
   });
 
   const getWorkItems = (groupId: string) => {
-    const source = isRootLevel ? rootSubIssues : (nestedChildren.subItems ?? []);
+    const source = subIssues;
     const ids = isRootLevel ? (groupedSubIssues[groupId] ?? []) : source.map((item) => item.id);
     const byId = new Map(source.map((item) => [item.id, item]));
     return ids.flatMap((id) => {
@@ -133,7 +123,7 @@ export const SubIssuesListRoot = function SubIssuesListRoot(props: Props) {
             canEdit={canEdit}
             parentIssueId={parentIssueId}
             rootIssueId={rootIssueId}
-            handleIssueCrudState={handleIssueCrudState}
+            onAction={onAction}
             subIssueOperations={subIssueOperations}
             storeType={storeType}
             spacingLeft={spacingLeft}
