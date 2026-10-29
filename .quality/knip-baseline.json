@@ -5,14 +5,6 @@
       "finding": {
         "category": "catalog",
         "file": "pnpm-workspace.yaml",
-        "name": "@tanstack/react-virtual"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "catalog",
-        "file": "pnpm-workspace.yaml",
         "name": "@tanstack/virtual-core"
       },
       "count": 1
@@ -815,14 +807,6 @@
         "category": "exports",
         "file": "apps/web/core/components/issues/issue-layouts/filters/header/filters/cycle.tsx",
         "name": "FilterCycle"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/issues/issue-layouts/filters/header/filters/labels.tsx",
-        "name": "FilterLabels"
       },
       "count": 1
     },

@@ -37,6 +37,14 @@ The [PQL query boundary](pql.md) lives in `internal/issuequery` and is executed 
 
 ## Source layout
 
+Membership invitation operations live in `internal/projectmembershipreads`.
+`invitations_commands.go` owns dispatch and shared request context; invitation
+reads, creation, acceptance/join, and updates each have a separate file.
+`workspace_member_mutations.go` owns workspace member changes, while
+`membership_insert.go` shares membership persistence and `invitations_fields.go`
+shares field validation. Each operation retains its authorization, transaction,
+and effect boundaries.
+
 | Path                                   | Purpose                                       |
 | -------------------------------------- | --------------------------------------------- |
 | `apps/go-api`                          | Go API, workers, bootstrap, schema, and tests |

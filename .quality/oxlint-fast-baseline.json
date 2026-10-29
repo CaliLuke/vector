@@ -1,26 +1,8 @@
 {
   "version": 1,
   "mode": "fast",
-  "fileCount": 3372,
+  "fileCount": 3856,
   "diagnostics": [
-    {
-      "diagnostic": {
-        "filename": "apps/admin/app/(all)/(home)/sign-in-form.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-noninteractive-element-interactions)",
-        "message": "Non-interactive elements should not be assigned mouse or keyboard event listeners."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/admin/app/(all)/(home)/sign-in-form.tsx",
-        "severity": "warning",
-        "code": "react(set-state-in-effect)",
-        "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 2
-    },
     {
       "diagnostic": {
         "filename": "apps/admin/app/root.tsx",
@@ -46,7 +28,7 @@
         "code": "eslint(no-unneeded-ternary)",
         "message": "Unnecessary use of boolean literals in conditional expression"
       },
-      "count": 4
+      "count": 2
     },
     {
       "diagnostic": {
@@ -54,24 +36,6 @@
         "severity": "warning",
         "code": "jsx-a11y(no-autofocus)",
         "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/admin/components/instance/setup-form.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-noninteractive-element-interactions)",
-        "message": "Non-interactive elements should not be assigned mouse or keyboard event listeners."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/admin/components/instance/setup-form.tsx",
-        "severity": "warning",
-        "code": "react(set-state-in-effect)",
-        "message": "Calling setState synchronously within an effect can trigger cascading renders"
       },
       "count": 1
     },
@@ -284,64 +248,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/space/components/account/auth-forms/password.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `AuthPasswordForm` has a complexity of 25. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/space/components/account/auth-forms/password.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/space/components/account/auth-forms/password.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-autofocus)",
-        "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/space/components/account/auth-forms/password.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-noninteractive-element-interactions)",
-        "message": "Non-interactive elements should not be assigned mouse or keyboard event listeners."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/space/components/account/auth-forms/unique-code.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'email' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/space/components/account/auth-forms/unique-code.tsx",
         "severity": "warning",
         "code": "jsx-a11y(no-autofocus)",
         "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/space/components/account/auth-forms/unique-code.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-noninteractive-element-interactions)",
-        "message": "Non-interactive elements should not be assigned mouse or keyboard event listeners."
       },
       "count": 1
     },
@@ -446,15 +356,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/space/components/issues/navbar/user-avatar.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `UserAvatar` has a complexity of 18. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/space/components/issues/peek-overview/comment/comment-detail-card.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
@@ -554,15 +455,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/space/helpers/string.helper.ts",
-        "severity": "warning",
-        "code": "eslint(no-useless-escape)",
-        "message": "Unnecessary escape character '\"'"
-      },
-      "count": 4
-    },
-    {
-      "diagnostic": {
         "filename": "apps/space/hooks/use-clipboard-write-permission.tsx",
         "severity": "warning",
         "code": "promise(always-return)",
@@ -590,136 +482,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/browse/[workItem]/work-item-header.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `WorkItemDetailsHeader` has a complexity of 19. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/extended-project-sidebar.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-autofocus)",
-        "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/extended-project-sidebar.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/profile/[userId]/mobile-header.tsx",
-        "severity": "warning",
-        "code": "react(no-array-index-key)",
-        "message": "Usage of Array index in keys is not allowed"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/cycles/(detail)/[cycleId]/page.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/cycles/(detail)/header.tsx",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_cycle`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/cycles/(detail)/mobile-header.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/cycles/(detail)/mobile-header.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/modules/(detail)/[moduleId]/page.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/modules/(detail)/header.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `ModuleIssuesHeader` has a complexity of 17. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/modules/(detail)/header.tsx",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_module`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/pages/(detail)/[pageId]/page.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'pageId' is already declared in the upper scope."
-      },
-      "count": 4
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/pages/(detail)/header.tsx",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_page`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/views/(detail)/[viewId]/header.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ProjectViewIssuesHeader` has a complexity of 23. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/views/(detail)/[viewId]/header.tsx",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_view`'."
       },
       "count": 1
     },
@@ -734,48 +500,12 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/workspace-views/header.tsx",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_view`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/app/(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/layout.tsx",
         "severity": "warning",
         "code": "react(no-unstable-nested-components)",
         "message": "Do not define components during render."
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/invitations/page.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/invitations/page.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/invitations/page.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 3
     },
     {
       "diagnostic": {
@@ -792,15 +522,6 @@
         "severity": "warning",
         "code": "eslint(no-shadow)",
         "message": "'invitation' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/account/auth-forms/auth-root.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `AuthRoot` has a complexity of 19. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -842,15 +563,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/account/auth-forms/forgot-password.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/account/auth-forms/form-root.tsx",
         "severity": "warning",
         "code": "eslint(no-shadow)",
@@ -878,100 +590,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/account/auth-forms/password.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/account/auth-forms/password.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-autofocus)",
-        "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/account/auth-forms/password.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-noninteractive-element-interactions)",
-        "message": "Non-interactive elements should not be assigned mouse or keyboard event listeners."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/account/auth-forms/reset-password.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ResetPasswordForm` has a complexity of 18. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/account/auth-forms/reset-password.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/account/auth-forms/reset-password.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-autofocus)",
-        "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/account/auth-forms/set-password.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/account/auth-forms/set-password.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-autofocus)",
-        "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/account/auth-forms/unique-code.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'email' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/account/auth-forms/unique-code.tsx",
         "severity": "warning",
         "code": "jsx-a11y(no-autofocus)",
         "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/account/auth-forms/unique-code.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-noninteractive-element-interactions)",
-        "message": "Non-interactive elements should not be assigned mouse or keyboard event listeners."
       },
       "count": 1
     },
@@ -1058,69 +680,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/api-token/delete-token-modal.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/api-token/modal/create-token-modal.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/api-token/modal/create-token-modal.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `downloadSecretKey` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/api-token/modal/form.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/api-token/modal/form.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/api-token/modal/form.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/api-token/modal/form.tsx",
-        "severity": "warning",
-        "code": "react(incompatible-library)",
-        "message": "Use of incompatible library"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/automation/auto-close-automation.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
@@ -1134,15 +693,6 @@
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `BaseGanttLayout` has a complexity of 16. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/base-layouts/gantt/sidebar.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'block' is already declared in the upper scope."
       },
       "count": 1
     },
@@ -1166,24 +716,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/comments/card/edit-form.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/comments/comment-create.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/common/access-field.tsx",
         "severity": "warning",
         "code": "jsx-a11y(control-has-associated-label)",
@@ -1199,24 +731,6 @@
         "message": "function has a complexity of 53. Maximum allowed is 15."
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/common/applied-filters/date.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `getDateLabel` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/common/empty-state.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 2
     },
     {
       "diagnostic": {
@@ -1238,145 +752,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/core/activity.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `IssueLink` has a complexity of 17. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/activity.tsx",
-        "severity": "warning",
-        "code": "eslint(max-lines)",
-        "message": "File has too many lines (729)."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/filters/date-filter-modal.tsx",
-        "severity": "warning",
-        "code": "react(incompatible-library)",
-        "message": "Use of incompatible library"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/filters/date-filter-select.tsx",
-        "severity": "warning",
-        "code": "react(no-array-index-key)",
-        "message": "Usage of Array index in keys is not allowed"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/filters/date-filter-select.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/image-picker-popover.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function has a complexity of 18. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/core/list/list-item.tsx",
         "severity": "warning",
         "code": "oxc(const-comparisons)",
         "message": "Both sides of the logical operator are the same"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/modals/bulk-delete-issues-modal.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/modals/change-email-modal.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "async function has a complexity of 18. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/modals/change-email-modal.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-autofocus)",
-        "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/modals/existing-issues-list-modal.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has a missing dependency: 'handleSearch'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/modals/existing-issues-list-modal.tsx",
-        "severity": "warning",
-        "code": "react(exhaustive-effect-dependencies)",
-        "message": "Found missing/extra effect dependencies"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/modals/existing-issues-list-modal.tsx",
-        "severity": "warning",
-        "code": "react(set-state-in-effect)",
-        "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/modals/gpt-assistant-popover.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-autofocus)",
-        "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/modals/gpt-assistant-popover.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 3
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/modals/gpt-assistant-popover.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `handleInvalidTask` does not capture any variables from its parent scope"
       },
       "count": 1
     },
@@ -1404,60 +783,6 @@
         "severity": "warning",
         "code": "unicorn(consistent-function-scoping)",
         "message": "Function `EmptyStateContainer` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/modals/user-image-upload-modal.tsx",
-        "severity": "warning",
-        "code": "eslint(no-console)",
-        "message": "Unexpected console statement."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/modals/user-image-upload-modal.tsx",
-        "severity": "warning",
-        "code": "eslint(preserve-caught-error)",
-        "message": "There is no cause error attached to this new thrown error."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/modals/user-image-upload-modal.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(img-redundant-alt)",
-        "message": "Redundant `alt` attribute."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/modals/workspace-image-upload-modal.tsx",
-        "severity": "warning",
-        "code": "eslint(no-console)",
-        "message": "Unexpected console statement."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/modals/workspace-image-upload-modal.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(img-redundant-alt)",
-        "message": "Redundant `alt` attribute."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/modals/workspace-image-upload-modal.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
       },
       "count": 1
     },
@@ -1544,339 +869,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/core/theme/color-inputs.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `handleValueChange` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/active-cycle/cycle-stats.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ActiveCycleStats` has a complexity of 26. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/active-cycle/cycle-stats.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'tab' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/active-cycle/cycle-stats.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/active-cycle/cycle-stats.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/active-cycle/cycle-stats.tsx",
-        "severity": "warning",
-        "code": "react(no-array-index-key)",
-        "message": "Usage of Array index in keys is not allowed"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/active-cycle/cycle-stats.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `currentValue` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/active-cycle/productivity.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ActiveCycleProductivity` has a complexity of 17. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/active-cycle/progress.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/active-cycle/progress.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/active-cycle/progress.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/active-cycle/root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/active-cycle/use-cycles-details.ts",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function has a complexity of 29. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/analytics-sidebar/issue-progress.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `CycleAnalyticsProgress` has a complexity of 17. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/analytics-sidebar/issue-progress.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function has a complexity of 26. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/analytics-sidebar/issue-progress.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/analytics-sidebar/sidebar-chart.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `SidebarChart` has a complexity of 19. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/analytics-sidebar/sidebar-details.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `CycleSidebarDetails` has a complexity of 46. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/analytics-sidebar/sidebar-header.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/applied-filters/root.tsx",
-        "severity": "warning",
-        "code": "unicorn(prefer-set-has)",
-        "message": "should be a `Set`, and use `.has()` to check existence or non-existence."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/archived-cycles/header.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/archived-cycles/modal.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(tabindex-no-positive)",
-        "message": "Avoid positive integer values for `tabIndex`."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/cycles-view-header.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/delete-modal.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/dropdowns/estimate-type-dropdown.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/dropdowns/filters/root.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-autofocus)",
-        "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/dropdowns/filters/status.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/form.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `CycleForm` has a complexity of 17. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/form.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'projectId' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/form.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-autofocus)",
-        "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/list/cycle-list-item-action.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `CycleListItemAction` has a complexity of 32. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/modal.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "async function has a complexity of 16. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/modal.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'projectId' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/modal.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 4
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/modal.tsx",
-        "severity": "warning",
-        "code": "react(set-state-in-effect)",
-        "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/transfer-issues-modal.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/dropdowns/cycle/cycle-options.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/dropdowns/date-range.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
@@ -1899,60 +891,6 @@
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `EstimateDropdown` has a complexity of 19. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/dropdowns/estimate.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unused-expressions)",
-        "message": "Expected expression to be used"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/dropdowns/intake-state/base.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `WorkItemStateDropdownBase` has a complexity of 20. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/dropdowns/layout.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'props' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/dropdowns/layout.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useCallback has a missing dependency: 't'"
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/dropdowns/layout.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/dropdowns/module/button-content.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ModuleButtonContent` has a complexity of 20. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -1987,15 +925,6 @@
       "diagnostic": {
         "filename": "apps/web/core/components/dropdowns/project/base.tsx",
         "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ProjectDropdownBase` has a complexity of 16. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/dropdowns/project/base.tsx",
-        "severity": "warning",
         "code": "eslint(no-shadow)",
         "message": "'placeholder' is already declared in the upper scope."
       },
@@ -2016,15 +945,6 @@
         "severity": "warning",
         "code": "unicorn(consistent-function-scoping)",
         "message": "Function `renderIcon` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/dropdowns/state/base.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `WorkItemStateDropdownBase` has a complexity of 20. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -2070,24 +990,6 @@
         "severity": "warning",
         "code": "react(set-state-in-effect)",
         "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/editor/rich-text/description-input/root.tsx",
-        "severity": "warning",
-        "code": "eslint(no-console)",
-        "message": "Unexpected console statement."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/editor/rich-text/description-input/root.tsx",
-        "severity": "warning",
-        "code": "eslint(preserve-caught-error)",
-        "message": "There is no cause error attached to this new thrown error."
       },
       "count": 1
     },
@@ -2156,15 +1058,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/estimates/estimate-search.tsx",
-        "severity": "warning",
-        "code": "eslint(no-empty-pattern)",
-        "message": "Empty object binding pattern"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/exporter/single-export.tsx",
         "severity": "warning",
         "code": "react(purity)",
@@ -2187,15 +1080,6 @@
         "severity": "warning",
         "code": "typescript(no-explicit-any)",
         "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/gantt-chart/blocks/block-row.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'observer' is already declared in the upper scope."
       },
       "count": 1
     },
@@ -2278,33 +1162,6 @@
         "code": "typescript(no-explicit-any)",
         "message": "Unexpected `any`. Specify a different type."
       },
-      "count": 3
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/gantt-chart/chart/root.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `handleScrollToCurrentSelectedDate` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/gantt-chart/chart/root.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `updateCurrentLeftScrollPosition` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/gantt-chart/chart/views/month.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
       "count": 1
     },
     {
@@ -2318,30 +1175,12 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/gantt-chart/chart/views/quarter.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/gantt-chart/chart/views/week.tsx",
         "severity": "warning",
         "code": "react(no-array-index-key)",
         "message": "Usage of Array index in keys is not allowed"
       },
       "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/gantt-chart/chart/views/week.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
     },
     {
       "diagnostic": {
@@ -2437,44 +1276,8 @@
       "diagnostic": {
         "filename": "apps/web/core/components/gantt-chart/root.tsx",
         "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has a missing dependency: 'setBlockIds'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/gantt-chart/root.tsx",
-        "severity": "warning",
         "code": "typescript(no-explicit-any)",
         "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 3
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/gantt-chart/sidebar/gantt-dnd-HOC.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'element' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/gantt-chart/sidebar/gantt-dnd-HOC.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has an unnecessary dependency: blockRef."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/gantt-chart/sidebar/gantt-dnd-HOC.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has missing dependencies: 'id', and 'isDragEnabled'"
       },
       "count": 1
     },
@@ -2615,15 +1418,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/home/widgets/recents/issue.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `RecentIssue` has a complexity of 44. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/home/widgets/recents/project.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
@@ -2642,282 +1436,12 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/inbox/content/inbox-issue-header.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `InboxIssueActionsHeader` has a complexity of 54. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/content/inbox-issue-header.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/content/inbox-issue-header.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `handleActionWithPermission` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/content/inbox-issue-mobile-header.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `InboxIssueActionsMobileHeader` has a complexity of 26. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/content/issue-properties.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `InboxIssueContentProperties` has a complexity of 43. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/content/issue-root.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `InboxIssueMainContent` has a complexity of 17. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/content/issue-root.tsx",
-        "severity": "warning",
-        "code": "eslint(no-console)",
-        "message": "Unexpected console statement."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/content/root.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `InboxContentRoot` has a complexity of 17. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/applied-filters/date.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'InboxIssueAppliedFiltersDate' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/applied-filters/date.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/applied-filters/date.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/applied-filters/date.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `currentOptionDetail` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/applied-filters/label.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/applied-filters/label.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/applied-filters/member.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'InboxIssueAppliedFiltersMember' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/applied-filters/member.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/applied-filters/member.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/applied-filters/priority.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/applied-filters/priority.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/applied-filters/priority.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `currentOptionDetail` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/applied-filters/state.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/applied-filters/state.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/applied-filters/status.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/applied-filters/status.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/applied-filters/status.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `currentOptionDetail` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/inbox/inbox-filter/filters/date.tsx",
         "severity": "warning",
         "code": "eslint(no-unneeded-ternary)",
         "message": "Unnecessary use of boolean literals in conditional expression"
       },
       "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/filters/filter-selection.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-autofocus)",
-        "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/filters/labels.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/filters/members.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/filters/priority.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/inbox-filter/filters/state.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
     },
     {
       "diagnostic": {
@@ -2930,82 +1454,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/inbox/modals/create-modal/issue-description.tsx",
-        "severity": "warning",
-        "code": "eslint(no-console)",
-        "message": "Unexpected console statement."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/modals/create-modal/issue-description.tsx",
-        "severity": "warning",
-        "code": "eslint(preserve-caught-error)",
-        "message": "There is no cause error attached to this new thrown error."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/modals/create-modal/issue-description.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/modals/create-modal/issue-properties.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `InboxIssueProperties` has a complexity of 42. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/modals/delete-issue-modal.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/modals/snooze-issue-modal.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'date' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/inbox/modals/snooze-issue-modal.tsx",
         "severity": "warning",
         "code": "react(purity)",
         "message": "Cannot call impure function during render"
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/sidebar/root.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/sidebar/root.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
       },
       "count": 1
     },
@@ -3026,15 +1478,6 @@
         "message": "'repo' is already declared in the upper scope."
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/integration/github/select-repository.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 2
     },
     {
       "diagnostic": {
@@ -3069,69 +1512,6 @@
         "severity": "warning",
         "code": "jsx-a11y(control-has-associated-label)",
         "message": "A control must be associated with a text label."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/archive-issue-modal.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(tabindex-no-positive)",
-        "message": "Avoid positive integer values for `tabIndex`."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/attachment/attachment-item-list.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'uploadStatus' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/attachment/attachment-item-list.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useCallback has a missing dependency: 't'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/attachment/attachment-list-item.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `IssueAttachmentsListItem` has a complexity of 16. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/attachment/attachments-list.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'uploadStatus' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/delete-issue-modal.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `DeleteIssueModal` has a complexity of 16. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/delete-issue-modal.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
       },
       "count": 1
     },
@@ -3191,42 +1571,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail-widgets/sub-issues/issues-list/list-item.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `SubIssuesListItem` has a complexity of 30. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail-widgets/sub-issues/issues-list/list-item.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'issue' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail-widgets/sub-issues/issues-list/list-item.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail-widgets/sub-issues/issues-list/list-item.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-detail-widgets/sub-issues/issues-list/properties.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
@@ -3263,15 +1607,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail-widgets/sub-issues/issues-list/root.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `SubIssuesListRoot` has a complexity of 16. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-detail-widgets/sub-issues/title-actions.tsx",
         "severity": "warning",
         "code": "jsx-a11y(click-events-have-key-events)",
@@ -3294,87 +1629,6 @@
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `IssueActivityItem` has a complexity of 22. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/issue-activity/helper.tsx",
-        "severity": "warning",
-        "code": "eslint(no-console)",
-        "message": "Unexpected console statement."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/issue-activity/helper.tsx",
-        "severity": "warning",
-        "code": "eslint(preserve-caught-error)",
-        "message": "There is no cause error attached to this new thrown error."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/issue-activity/helper.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/issue-activity/helper.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useMemo has missing dependencies: 'projectDetails.identifier', 'issueDetails', 'issueDetails.project_id', 'getUserDetails', 'currentUser.id', 'removeCommentReaction', 'getCommentReactionById', 'createCommentReaction', 'commentReactionsByUser', 't', 'getCommentReactionsByCommentId', 'issueDetails.sequence_id', 'duplicateEditorAsset', and 'currentUser'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/issue-activity/helper.tsx",
-        "severity": "warning",
-        "code": "react(memo-dependencies)",
-        "message": "Found missing memoization dependencies"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/issue-activity/root.tsx",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_filters`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/label/root.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'issueId' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/label/root.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'projectId' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/label/root.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'workspaceSlug' is already declared in the upper scope."
       },
       "count": 1
     },
@@ -3434,217 +1688,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/links/root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-detail/main-content.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `IssueMainContent` has a complexity of 18. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/parent-select.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `IssueParentSelect` has a complexity of 17. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/parent-select.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'issue' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/parent-select.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/parent-select.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/parent-select.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/root.tsx",
-        "severity": "warning",
-        "code": "eslint(no-console)",
-        "message": "Unexpected console statement."
-      },
-      "count": 5
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/root.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'issueId' is already declared in the upper scope."
-      },
-      "count": 8
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/root.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'projectId' is already declared in the upper scope."
-      },
-      "count": 9
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/root.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'workspaceSlug' is already declared in the upper scope."
-      },
-      "count": 9
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/base-calendar-root.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useCallback has a missing dependency: 'issues'"
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/base-calendar-root.tsx",
-        "severity": "warning",
-        "code": "react(no-unstable-nested-components)",
-        "message": "Do not define components during render."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/base-calendar-root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/calendar.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has an unnecessary dependency: scrollableContainerRef."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/calendar.tsx",
-        "severity": "warning",
-        "code": "react(no-array-index-key)",
-        "message": "Usage of Array index in keys is not allowed"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/calendar.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/day-tile.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `CalendarDayTile` has a complexity of 17. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/day-tile.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `onDrop` has a complexity of 18. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/day-tile.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/day-tile.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/day-tile.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has an unnecessary dependency: dayTileRef."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/day-tile.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has missing dependencies: 'handleDragAndDrop', and 'issues'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/day-tile.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
       },
       "count": 1
     },
@@ -3668,15 +1715,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/issue-block-root.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has an unnecessary dependency: issueRef."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-layouts/calendar/issue-block.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
@@ -3686,55 +1724,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/issue-block.tsx",
-        "severity": "warning",
-        "code": "react(refs)",
-        "message": "Cannot access refs during render"
-      },
-      "count": 5
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-layouts/calendar/issue-blocks.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `CalendarIssueBlocks` has a complexity of 16. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/issue-blocks.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/quick-add-issue-actions.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'isOpen' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/quick-add-issue-actions.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/week-days.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
       },
       "count": 1
     },
@@ -3776,61 +1769,7 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/filters/header/filters/cycle.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'projectId' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/filters/header/filters/cycle.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/filters/header/filters/cycle.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `cycleStatus` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/filters/header/filters/labels.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/filters/header/filters/module.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-layouts/filters/header/filters/priority.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/filters/header/filters/project.tsx",
         "severity": "warning",
         "code": "eslint(no-unneeded-ternary)",
         "message": "Unnecessary use of boolean literals in conditional expression"
@@ -3848,73 +1787,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/filters/header/filters/state.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/gantt/base-gantt-root.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `BaseGanttRoot` has a complexity of 17. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/gantt/base-gantt-root.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'props' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/gantt/base-gantt-root.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unused-expressions)",
-        "message": "Expected expression to be used"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/gantt/base-gantt-root.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useCallback has a missing dependency: 't'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/gantt/base-gantt-root.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has a missing dependency: 'initGantt'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-layouts/gantt/base-gantt-root.tsx",
         "severity": "warning",
         "code": "react(no-unstable-nested-components)",
         "message": "Do not define components during render."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/gantt/base-gantt-root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
       },
       "count": 1
     },
@@ -3942,42 +1818,6 @@
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `BaseKanBanRootContent` has a complexity of 21. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/kanban/base-kanban-root.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'projectId' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/kanban/base-kanban-root.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useCallback has a missing dependency: 'issues'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/kanban/base-kanban-root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/kanban/block.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `KanbanIssueBlock` has a complexity of 17. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -4019,37 +1859,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/kanban/roots/cycle-root.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useCallback has a missing dependency: 'issues'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-layouts/list/base-list-root.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `BaseListRoot` has a complexity of 16. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/list/base-list-root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/list/block-root.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `IssueBlockRoot` has a complexity of 19. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -4064,24 +1877,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/list/blocks-list.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/list/default.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-layouts/list/list-group.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
@@ -4091,37 +1886,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/list/list-group.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has missing dependencies: 'handleCollapsedGroups', 't', 'handleWorkFlowState', 'handleOnDrop', and 'isExpanded'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/list/list-group.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-layouts/list/roots/archived-issue-root.tsx",
         "severity": "warning",
         "code": "unicorn(consistent-function-scoping)",
         "message": "Function `canEditPropertiesBasedOnProject` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/list/roots/cycle-root.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useCallback has a missing dependency: 'issues'"
       },
       "count": 1
     },
@@ -4138,15 +1906,6 @@
       "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-layouts/properties/label-dropdown.tsx",
         "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'label' is already declared in the upper scope."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/properties/label-dropdown.tsx",
-        "severity": "warning",
         "code": "jsx-a11y(click-events-have-key-events)",
         "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
       },
@@ -4158,42 +1917,6 @@
         "severity": "warning",
         "code": "jsx-a11y(no-static-element-interactions)",
         "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/properties/label-dropdown.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `preventPropagation` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/helper.tsx",
-        "severity": "warning",
-        "code": "react(memo-dependencies)",
-        "message": "Found missing memoization dependencies"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/helper.tsx",
-        "severity": "warning",
-        "code": "react(memo-dependencies)",
-        "message": "Found missing/extra memoization dependencies"
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/issue-detail.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `WorkItemDetailQuickActions` has a complexity of 16. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -4212,33 +1935,6 @@
         "severity": "warning",
         "code": "jsx-a11y(no-static-element-interactions)",
         "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/quick-add/root.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `QuickAddIssueRoot` has a complexity of 24. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/quick-add/root.tsx",
-        "severity": "warning",
-        "code": "react(no-unstable-nested-components)",
-        "message": "Do not define components during render."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/quick-add/root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
       },
       "count": 1
     },
@@ -4248,33 +1944,6 @@
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `CycleLayoutRoot` has a complexity of 16. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/roots/project-view-layout-root.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ProjectViewLayoutRoot` has a complexity of 17. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/spreadsheet/base-spreadsheet-root.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'projectId' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/spreadsheet/base-spreadsheet-root.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useCallback has a missing dependency: 'QuickActions'"
       },
       "count": 1
     },
@@ -4433,64 +2102,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/utils.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-modal/base.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `CreateUpdateIssueModalBase` has a complexity of 20. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-modal/base.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'cycleId' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-modal/base.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'data' is already declared in the upper scope."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-modal/base.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'moduleId' is already declared in the upper scope."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-modal/base.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-modal/components/title-input.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-autofocus)",
-        "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
       },
       "count": 1
     },
@@ -4523,28 +2138,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/peek-overview/header.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/peek-overview/issue-detail.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `PeekOverviewIssueDetails` has a complexity of 16. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/peek-overview/root.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `IssuePeekOverview` has a complexity of 18. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -4559,42 +2156,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/relations/issue-list-item.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `RelationIssueListItem` has a complexity of 16. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/relations/issue-list-item.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'issue' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/relations/issue-list-item.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/relations/issue-list-item.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/select/base.tsx",
         "severity": "warning",
         "code": "jsx-a11y(prefer-tag-over-role)",
@@ -4604,51 +2165,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/title-input.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has a missing dependency: 'value'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/workspace-draft/delete-modal.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/workspace-draft/delete-modal.tsx",
-        "severity": "warning",
-        "code": "react(exhaustive-effect-dependencies)",
-        "message": "Found extra effect dependencies"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/workspace-draft/delete-modal.tsx",
-        "severity": "warning",
-        "code": "react(set-state-in-effect)",
-        "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/workspace-draft/draft-issue-block.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'issueId' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/workspace-draft/draft-issue-block.tsx",
         "severity": "warning",
         "code": "jsx-a11y(click-events-have-key-events)",
@@ -4662,42 +2178,6 @@
         "severity": "warning",
         "code": "jsx-a11y(no-static-element-interactions)",
         "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/workspace-draft/draft-issue-properties.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `DraftIssueProperties` has a complexity of 32. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/workspace-draft/draft-issue-properties.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 8
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/workspace-draft/draft-issue-properties.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 8
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/workspace-draft/draft-issue-properties.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `handleEventPropagation` does not capture any variables from its parent scope"
       },
       "count": 1
     },
@@ -4725,51 +2205,6 @@
         "severity": "warning",
         "code": "jsx-a11y(no-autofocus)",
         "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/labels/label-drag-n-drop-HOC.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'element' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/labels/label-drag-n-drop-HOC.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'instruction' is already declared in the upper scope."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/labels/label-drag-n-drop-HOC.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has a missing dependency: 'isEditable'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/labels/label-drag-n-drop-HOC.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has an unnecessary dependency: dragHandleRef."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/labels/label-drag-n-drop-HOC.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has an unnecessary dependency: labelRef."
       },
       "count": 1
     },
@@ -4806,285 +2241,6 @@
         "severity": "warning",
         "code": "unicorn(consistent-function-scoping)",
         "message": "Function `handleRedirection` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/analytics-sidebar/issue-progress.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ModuleAnalyticsProgress` has a complexity of 52. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/analytics-sidebar/issue-progress.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function has a complexity of 19. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/analytics-sidebar/issue-progress.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function has a complexity of 26. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/analytics-sidebar/issue-progress.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `isValidModuleDate` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/analytics-sidebar/root.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ModuleAnalyticsSidebar` has a complexity of 16. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/analytics-sidebar/root.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/applied-filters/root.tsx",
-        "severity": "warning",
-        "code": "unicorn(prefer-set-has)",
-        "message": "should be a `Set`, and use `.has()` to check existence or non-existence."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/archived-modules/header.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/archived-modules/modal.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(tabindex-no-positive)",
-        "message": "Avoid positive integer values for `tabIndex`."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/dropdowns/filters/root.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-autofocus)",
-        "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/dropdowns/filters/status.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/form.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ModuleForm` has a complexity of 19. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/form.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'projectId' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/form.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-autofocus)",
-        "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/form.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/gantt-chart/blocks.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/gantt-chart/blocks.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/gantt-chart/modules-list-layout.tsx",
-        "severity": "warning",
-        "code": "react(no-unstable-nested-components)",
-        "message": "Do not define components during render."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/gantt-chart/modules-list-layout.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/links/create-update-modal.tsx",
-        "severity": "warning",
-        "code": "react(exhaustive-effect-dependencies)",
-        "message": "Found extra effect dependencies"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/links/create-update-modal.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/links/list-item.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `copyToClipboard` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/modal.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/modal.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/module-card-item.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ModuleCardItem` has a complexity of 16. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/module-card-item.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/module-card-item.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/module-card-item.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `handleEventPropagation` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/module-view-header.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/modules-list-view.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ModulesListView` has a complexity of 25. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/select/status.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
       },
       "count": 1
     },
@@ -5144,24 +2300,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/navigation/top-nav-power-k.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useCallback has missing dependencies: 'isOpen', and 'containerRef.current'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/navigation/top-nav-power-k.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has a missing dependency: 'inputRef'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/navigation/use-active-tab.ts",
         "severity": "warning",
         "code": "eslint(complexity)",
@@ -5171,37 +2309,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/navigation/use-tab-preferences.ts",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React hook useMemo depends on `hideInMoreMenu`, which changes every render"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/onboarding/header.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `OnboardingHeader` has a complexity of 16. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/onboarding/root.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function has a complexity of 19. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/onboarding/root.tsx",
-        "severity": "warning",
-        "code": "react(no-object-type-as-default-prop)",
-        "message": "Do not use an array literal as default prop value. Use a stable reference instead."
       },
       "count": 1
     },
@@ -5218,80 +2329,8 @@
       "diagnostic": {
         "filename": "apps/web/core/components/onboarding/steps/profile/root.tsx",
         "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/onboarding/steps/profile/root.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/onboarding/steps/profile/root.tsx",
-        "severity": "warning",
         "code": "jsx-a11y(no-autofocus)",
         "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/onboarding/steps/profile/root.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-noninteractive-element-interactions)",
-        "message": "Non-interactive elements should not be assigned mouse or keyboard event listeners."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/onboarding/steps/profile/root.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `handleSetPassword` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/onboarding/steps/profile/set-password.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/onboarding/steps/profile/set-password.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/onboarding/steps/role/root.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/onboarding/steps/role/root.tsx",
-        "severity": "warning",
-        "code": "unicorn(no-single-promise-in-promise-methods)",
-        "message": "Wrapping single-element array with `Promise.all()` is unnecessary."
       },
       "count": 1
     },
@@ -5301,78 +2340,6 @@
         "severity": "warning",
         "code": "react(exhaustive-effect-dependencies)",
         "message": "Found extra effect dependencies"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/onboarding/steps/team/root.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-noninteractive-element-interactions)",
-        "message": "Non-interactive elements should not be assigned mouse or keyboard event listeners."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/onboarding/steps/team/root.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/onboarding/steps/usecase/root.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/onboarding/steps/usecase/root.tsx",
-        "severity": "warning",
-        "code": "unicorn(no-single-promise-in-promise-methods)",
-        "message": "Wrapping single-element array with `Promise.all()` is unnecessary."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/onboarding/steps/workspace/join-invites.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'invitation' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/onboarding/steps/workspace/join-invites.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/onboarding/steps/workspace/join-invites.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/onboarding/steps/workspace/join-invites.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
       },
       "count": 1
     },
@@ -5405,28 +2372,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/pages/dropdowns/actions.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unused-vars)",
-        "message": "Variable 'movePageModal' is declared but never used. Unused variables should start with a '_'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/pages/editor/ai/menu.tsx",
         "severity": "warning",
         "code": "react(set-state-in-effect)",
         "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/pages/editor/editor-body.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(interactive-supports-focus)",
-        "message": "Elements with the 'button' interactive role must be tabbable."
       },
       "count": 1
     },
@@ -5495,24 +2444,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/pages/modals/create-page-modal.tsx",
-        "severity": "warning",
-        "code": "react(set-state-in-effect)",
-        "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/pages/modals/delete-page-modal.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/pages/modals/export-page-modal.tsx",
         "severity": "warning",
         "code": "unicorn(consistent-function-scoping)",
@@ -5522,55 +2453,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/pages/modals/page-form.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `PageForm` has a complexity of 27. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/pages/modals/page-form.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-autofocus)",
-        "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/pages/modals/page-form.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/pages/navigation-pane/tab-panels/assets.tsx",
         "severity": "warning",
         "code": "jsx-a11y(control-has-associated-label)",
         "message": "A control must be associated with a text label."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/pages/pages-list-main-content.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/pages/version/editor.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `PagesVersionEditor` has a complexity of 16. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -5684,15 +2570,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/power-k/ui/modal/search-menu.tsx",
-        "severity": "warning",
-        "code": "react(set-state-in-effect)",
-        "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/power-k/ui/modal/search-results-map.tsx",
         "severity": "warning",
         "code": "typescript(no-explicit-any)",
@@ -5735,33 +2612,6 @@
         "message": "Each then() should return a value or throw"
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/power-k/ui/pages/context-based/page/commands.ts",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/power-k/ui/pages/context-based/work-item/commands.ts",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function has a complexity of 30. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/power-k/ui/pages/context-based/work-item/commands.ts",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 3
     },
     {
       "diagnostic": {
@@ -5846,33 +2696,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/profile/sidebar.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has missing dependencies: 'profileSidebarCollapsed', and 'toggleProfileSidebar'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project-states/create-update/form.tsx",
-        "severity": "warning",
-        "code": "eslint(no-console)",
-        "message": "Unexpected console statement."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project-states/create-update/form.tsx",
-        "severity": "warning",
-        "code": "react(set-state-in-effect)",
-        "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/project-states/group-item.tsx",
         "severity": "warning",
         "code": "jsx-a11y(click-events-have-key-events)",
@@ -5909,307 +2732,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/project/applied-filters/root.tsx",
-        "severity": "warning",
-        "code": "unicorn(prefer-set-has)",
-        "message": "should be a `Set`, and use `.has()` to check existence or non-existence."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/archive-restore-modal.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(tabindex-no-positive)",
-        "message": "Avoid positive integer values for `tabIndex`."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/card-list.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ProjectCardList` has a complexity of 24. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/card.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ProjectCard` has a complexity of 24. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/card.tsx",
-        "severity": "warning",
-        "code": "react(no-unstable-nested-components)",
-        "message": "Do not define components during render."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/create-project-modal.tsx",
-        "severity": "warning",
-        "code": "react(set-state-in-effect)",
-        "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/create/header.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/delete-project-modal.tsx",
-        "severity": "warning",
-        "code": "react(incompatible-library)",
-        "message": "Use of incompatible library"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/dropdowns/filters/access.tsx",
-        "severity": "warning",
-        "code": "eslint(no-unneeded-ternary)",
-        "message": "Unnecessary use of boolean literals in conditional expression"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/project/dropdowns/filters/root.tsx",
         "severity": "warning",
         "code": "jsx-a11y(no-autofocus)",
         "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/dropdowns/order-by.tsx",
-        "severity": "warning",
-        "code": "unicorn(prefer-set-has)",
-        "message": "should be a `Set`, and use `.has()` to check existence or non-existence."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/empty-state.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/form.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'value' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/form.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/form.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/integration-card.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/integration-card.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/join-project-modal.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(tabindex-no-positive)",
-        "message": "Avoid positive integer values for `tabIndex`."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/leave-project-modal.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/leave-project-modal.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/member-list-item.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/member-list.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-autofocus)",
-        "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/member-select.tsx",
-        "severity": "warning",
-        "code": "oxc(const-comparisons)",
-        "message": "Both sides of the logical operator are the same"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/member-select.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/project-network-icon.tsx",
-        "severity": "warning",
-        "code": "react(static-components)",
-        "message": "Cannot create components during render"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/project-settings-member-defaults.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "async function has a complexity of 17. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/project-settings-member-defaults.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/settings/helper.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/settings/member-columns.tsx",
-        "severity": "warning",
-        "code": "eslint(no-console)",
-        "message": "Unexpected console statement."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/settings/member-columns.tsx",
-        "severity": "warning",
-        "code": "eslint(no-constant-binary-expression)",
-        "message": "Unexpected constant nullishness on the left-hand side of a \"??\" expression"
-      },
-      "count": 3
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/settings/member-columns.tsx",
-        "severity": "warning",
-        "code": "eslint(no-empty-pattern)",
-        "message": "Empty object binding pattern"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/settings/member-columns.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/project/settings/member-columns.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/readonly/estimate.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has a missing dependency: 'getProjectEstimates'"
       },
       "count": 1
     },
@@ -6224,46 +2750,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/readonly/module.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has missing dependencies: 'moduleIds.length', and 'fetchModules'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/readonly/state.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useEffect has a missing dependency: 'fetchStates'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/rich-filters/filter-item/root.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `FilterItem` has a complexity of 18. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/rich-filters/filter-value-input/select/selected-options-display.tsx",
         "severity": "warning",
         "code": "react(no-array-index-key)",
         "message": "Usage of Array index in keys is not allowed"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/rich-filters/filters-row.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `FiltersRow` has a complexity of 23. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -6287,64 +2777,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/settings/profile/content/pages/general/form.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `GeneralProfileSettingsForm` has a complexity of 25. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/settings/profile/content/pages/general/form.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/settings/profile/content/pages/general/form.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-noninteractive-element-to-interactive-role)",
-        "message": "Non-interactive elements should not be assigned interactive roles."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/settings/profile/content/pages/general/form.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(prefer-tag-over-role)",
-        "message": "Prefer `button` over `role` attribute `button`."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/settings/profile/content/pages/general/form.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/settings/profile/content/pages/preferences/language-and-timezone-list.tsx",
         "severity": "warning",
         "code": "unicorn(consistent-function-scoping)",
         "message": "Function `getLanguageLabel` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/settings/profile/content/pages/security.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `SecurityProfileSettings` has a complexity of 28. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -6602,91 +3038,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/views/applied-filters/root.tsx",
-        "severity": "warning",
-        "code": "unicorn(prefer-set-has)",
-        "message": "should be a `Set`, and use `.has()` to check existence or non-existence."
-      },
-      "count": 3
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/views/form.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ProjectViewForm` has a complexity of 20. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/views/form.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/views/view-list-item-action.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ViewListItemAction` has a complexity of 16. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/web-hooks/form/individual-event-options.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/web-hooks/form/secret-key.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(control-has-associated-label)",
-        "message": "A control must be associated with a text label."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/web-hooks/form/secret-key.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/web-hooks/form/toggle.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/web-hooks/utils.ts",
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function has a complexity of 32. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/work-item-filters/filters-hoc/project-level.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
       },
       "count": 1
     },
@@ -6737,51 +3092,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/workspace-notifications/sidebar/notification-card/options/snooze/modal.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace-notifications/sidebar/notification-card/options/snooze/modal.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace-notifications/sidebar/notification-card/options/snooze/modal.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace-notifications/sidebar/notification-card/options/snooze/modal.tsx",
-        "severity": "warning",
-        "code": "react(incompatible-library)",
-        "message": "Use of incompatible library"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace-notifications/sidebar/notification-card/options/snooze/modal.tsx",
-        "severity": "warning",
-        "code": "react(no-array-index-key)",
-        "message": "Usage of Array index in keys is not allowed"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/workspace/billing/comparison/base.tsx",
         "severity": "warning",
         "code": "react(no-array-index-key)",
@@ -6800,55 +3110,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/workspace/confirm-workspace-member-remove.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(tabindex-no-positive)",
-        "message": "Avoid positive integer values for `tabIndex`."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/invite-modal/fields.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'value' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/settings/member-columns.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'value' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/workspace/settings/member-columns.tsx",
         "severity": "warning",
         "code": "jsx-a11y(prefer-tag-over-role)",
         "message": "Prefer `button` over `role` attribute `button`."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/settings/members-list.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `WorkspaceMembersList` has a complexity of 19. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/settings/members-list.tsx",
-        "severity": "warning",
-        "code": "unicorn(no-array-sort)",
-        "message": "Use `Array#toSorted()` instead of `Array#sort()`."
       },
       "count": 1
     },
@@ -6863,55 +3128,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/workspace/sidebar/extended-sidebar-item.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/sidebar/favorites/favorite-folder.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'element' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/sidebar/favorites/favorite-folder.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'instruction' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/sidebar/favorites/favorite-items/root.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'element' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/workspace/sidebar/favorites/favorites-menu.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function has a complexity of 22. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/sidebar/favorites/favorites-menu.tsx",
-        "severity": "warning",
-        "code": "eslint(no-console)",
-        "message": "Unexpected console statement."
       },
       "count": 1
     },
@@ -6939,15 +3159,6 @@
         "severity": "warning",
         "code": "unicorn(no-array-sort)",
         "message": "Use `Array#toSorted()` instead of `Array#sort()`."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/sidebar/projects-list-item.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `SidebarProjectsListItem` has a complexity of 21. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -6993,15 +3204,6 @@
         "severity": "warning",
         "code": "promise(always-return)",
         "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/views/header.tsx",
-        "severity": "warning",
-        "code": "react(no-array-index-key)",
-        "message": "Usage of Array index in keys is not allowed"
       },
       "count": 1
     },
@@ -7070,136 +3272,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/hooks/use-current-time.tsx",
-        "severity": "warning",
-        "code": "react(purity)",
-        "message": "Cannot call impure function during render"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/hooks/use-favorite-item-details.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function has a complexity of 31. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/hooks/use-group-dragndrop.ts",
-        "severity": "warning",
-        "code": "eslint(no-unused-expressions)",
-        "message": "Expected expression to be used"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/hooks/use-intersection-observer.ts",
         "severity": "warning",
         "code": "eslint(no-unused-expressions)",
         "message": "Expected expression to be used"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/hooks/use-issues-actions.tsx",
-        "severity": "warning",
-        "code": "eslint(max-lines)",
-        "message": "File has too many lines (703)."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/hooks/use-issues-actions.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'cycleId' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/hooks/use-issues-actions.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'moduleId' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/hooks/use-issues-actions.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'projectId' is already declared in the upper scope."
-      },
-      "count": 35
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/hooks/use-issues-actions.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'viewId' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/hooks/use-local-storage.tsx",
-        "severity": "warning",
-        "code": "eslint(no-constant-binary-expression)",
-        "message": "Unexpected constant binary expression"
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/hooks/use-local-storage.tsx",
-        "severity": "warning",
-        "code": "eslint(valid-typeof)",
-        "message": "Invalid `typeof` comparison value."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/hooks/use-local-storage.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/hooks/use-multiple-select.ts",
-        "severity": "warning",
-        "code": "eslint(no-console)",
-        "message": "Unexpected console statement."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/hooks/use-multiple-select.ts",
-        "severity": "warning",
-        "code": "react(exhaustive-effect-dependencies)",
-        "message": "Found extra effect dependencies"
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/hooks/use-multiple-select.ts",
-        "severity": "warning",
-        "code": "unicorn(prefer-array-flat-map)",
-        "message": "`Array.flatMap` performs `Array.map` and `Array.flat` in one step."
       },
       "count": 1
     },
@@ -7218,15 +3294,6 @@
         "severity": "warning",
         "code": "react(set-state-in-effect)",
         "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/hooks/use-page-fallback.ts",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
       },
       "count": 1
     },
@@ -7259,33 +3326,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/hooks/use-table-keyboard-navigation.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function has a complexity of 25. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/hooks/use-table-keyboard-navigation.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `getNextRow` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/hooks/use-table-keyboard-navigation.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `getPreviousRow` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/hooks/use-timezone.tsx",
         "severity": "warning",
         "code": "eslint(no-unsafe-optional-chaining)",
@@ -7299,24 +3339,6 @@
         "severity": "warning",
         "code": "unicorn(consistent-function-scoping)",
         "message": "Function `getTimeZoneLabel` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/hooks/use-workspace-invitation.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/layouts/auth-layout/workspace-wrapper.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `WorkspaceAuthWrapper` has a complexity of 17. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -7349,24 +3371,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/lib/wrappers/authentication-wrapper.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `AuthenticationWrapper` has a complexity of 36. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/services/ai.service.ts",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/services/app_config.service.ts",
         "severity": "warning",
         "code": "typescript(no-explicit-any)",
@@ -7385,66 +3389,12 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/services/auth.service.ts",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/services/auth.service.ts",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 4
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/services/file-upload.service.ts",
-        "severity": "warning",
-        "code": "eslint(no-console)",
-        "message": "Unexpected console statement."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/services/file-upload.service.ts",
-        "severity": "warning",
-        "code": "import(no-named-as-default-member)",
-        "message": "\"axios\" also has a named export \"CancelToken\""
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/services/file-upload.service.ts",
-        "severity": "warning",
-        "code": "import(no-named-as-default-member)",
-        "message": "\"axios\" also has a named export \"isCancel\""
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/services/file-upload.service.ts",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/services/file.service.ts",
         "severity": "warning",
         "code": "typescript(no-explicit-any)",
         "message": "Unexpected `any`. Specify a different type."
       },
-      "count": 4
+      "count": 3
     },
     {
       "diagnostic": {
@@ -7471,7 +3421,7 @@
         "code": "typescript(no-explicit-any)",
         "message": "Unexpected `any`. Specify a different type."
       },
-      "count": 3
+      "count": 1
     },
     {
       "diagnostic": {
@@ -7493,15 +3443,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/services/issue/issue_reaction.service.ts",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 4
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/services/issue/issue_relation.service.ts",
         "severity": "warning",
         "code": "typescript(no-explicit-any)",
@@ -7516,25 +3457,7 @@
         "code": "typescript(no-explicit-any)",
         "message": "Unexpected `any`. Specify a different type."
       },
-      "count": 16
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/services/module.service.ts",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 4
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/services/page/project-page.service.ts",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 2
+      "count": 13
     },
     {
       "diagnostic": {
@@ -7556,15 +3479,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/services/project/project-state.service.ts",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 5
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/services/project/project.service.ts",
         "severity": "warning",
         "code": "typescript(no-explicit-any)",
@@ -7579,7 +3493,7 @@
         "code": "typescript(no-explicit-any)",
         "message": "Unexpected `any`. Specify a different type."
       },
-      "count": 14
+      "count": 6
     },
     {
       "diagnostic": {
@@ -7588,7 +3502,7 @@
         "code": "typescript(no-explicit-any)",
         "message": "Unexpected `any`. Specify a different type."
       },
-      "count": 13
+      "count": 10
     },
     {
       "diagnostic": {
@@ -7777,7 +3691,7 @@
         "code": "jsx-a11y(no-autofocus)",
         "message": "The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users."
       },
-      "count": 2
+      "count": 1
     },
     {
       "diagnostic": {
@@ -7787,33 +3701,6 @@
         "message": "`tabIndex` should only be declared on interactive elements."
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/editor/src/core/components/links/link-edit-view.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/editor/src/core/components/links/link-edit-view.tsx",
-        "severity": "warning",
-        "code": "react(no-deriving-state-in-effects)",
-        "message": "Values derived from props and state should be calculated during render, not in an effect"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/editor/src/core/components/links/link-edit-view.tsx",
-        "severity": "warning",
-        "code": "react(set-state-in-effect)",
-        "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 2
     },
     {
       "diagnostic": {
@@ -8109,15 +3996,6 @@
         "severity": "warning",
         "code": "eslint(no-shadow)",
         "message": "'editor' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/editor/src/core/extensions/custom-image/components/uploader.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `CustomImageUploader` has a complexity of 19. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -8699,15 +4577,6 @@
     },
     {
       "diagnostic": {
-        "filename": "packages/editor/src/core/hooks/use-file-upload.ts",
-        "severity": "warning",
-        "code": "unicorn(prefer-add-event-listener)",
-        "message": "Prefer `addEventListener()` over their `on`-function counterparts."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "packages/editor/src/core/hooks/use-title-editor.ts",
         "severity": "warning",
         "code": "eslint(no-shadow)",
@@ -9221,24 +5090,6 @@
     },
     {
       "diagnostic": {
-        "filename": "packages/propel/src/emoji-icon-picker/emoji-picker.stories.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(label-has-associated-control)",
-        "message": "A form label must be associated with a control."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/propel/src/emoji-icon-picker/emoji-picker.stories.tsx",
-        "severity": "warning",
-        "code": "react(no-array-index-key)",
-        "message": "Usage of Array index in keys is not allowed"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "packages/propel/src/emoji-icon-picker/emoji/emoji.tsx",
         "severity": "warning",
         "code": "eslint(no-shadow)",
@@ -9423,15 +5274,6 @@
         "severity": "warning",
         "code": "react(jsx-no-constructed-context-values)",
         "message": "The Context `value` prop should not be constructed."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/propel/src/popover/popover.stories.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(control-has-associated-label)",
-        "message": "A control must be associated with a text label."
       },
       "count": 1
     },
@@ -9631,16 +5473,7 @@
         "code": "typescript(no-explicit-any)",
         "message": "Unexpected `any`. Specify a different type."
       },
-      "count": 4
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/services/src/auth/sites-auth.service.ts",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
+      "count": 3
     },
     {
       "diagnostic": {
@@ -9815,177 +5648,6 @@
     },
     {
       "diagnostic": {
-        "filename": "packages/shared-state/src/store/rich-filters/config-manager.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_allConfigs`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/shared-state/src/store/rich-filters/config-manager.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_allEnabledConfigs`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/shared-state/src/store/rich-filters/config-manager.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_filterInstance`'."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/shared-state/src/store/rich-filters/config-manager.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_initializeConfigOptions`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/shared-state/src/store/rich-filters/config.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_getAdditionalOperatorOptions`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/shared-state/src/store/rich-filters/filter-helpers.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_addConditionByOperator`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/shared-state/src/store/rich-filters/filter-helpers.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_filterInstance`'."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/shared-state/src/store/rich-filters/filter-helpers.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_getConditionPayloadToAdd`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/shared-state/src/store/rich-filters/filter-helpers.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_updateCondition`'."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/shared-state/src/store/rich-filters/filter.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_getExternalExpression`'."
-      },
-      "count": 3
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/shared-state/src/store/rich-filters/filter.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_notifyExpressionChange`'."
-      },
-      "count": 7
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/shared-state/src/store/rich-filters/filter.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_resetInitialFilterExpression`'."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/shared-state/src/store/work-item-filters/adapter.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_convertExpressionToExternal`'."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/shared-state/src/store/work-item-filters/adapter.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_convertExpressionToInternal`'."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/shared-state/src/store/work-item-filters/adapter.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_createWorkItemFilterConditionData`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/shared-state/src/store/work-item-filters/adapter.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_extractWorkItemFilterConditionData`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/shared-state/src/store/work-item-filters/adapter.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_isValidWorkItemFilterConditionKey`'."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/shared-state/src/store/work-item-filters/adapter.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_isWorkItemFilterConditionData`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/shared-state/src/store/work-item-filters/adapter.ts",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`_parseFilterValue`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "packages/types/src/analytics.ts",
         "severity": "warning",
         "code": "typescript(no-explicit-any)",
@@ -10063,7 +5725,7 @@
         "code": "typescript(no-explicit-any)",
         "message": "Unexpected `any`. Specify a different type."
       },
-      "count": 3
+      "count": 2
     },
     {
       "diagnostic": {
@@ -10242,96 +5904,6 @@
         "severity": "warning",
         "code": "typescript(no-explicit-any)",
         "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/ui/src/dropdown/multi-select.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'options' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/ui/src/dropdown/multi-select.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'query' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/ui/src/dropdown/multi-select.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/ui/src/dropdown/multi-select.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useMemo has missing dependencies: 'queryArray', 'value', 'sortByKey', 'firstItem', and 'disableSorting'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/ui/src/dropdown/multi-select.tsx",
-        "severity": "warning",
-        "code": "react(memo-dependencies)",
-        "message": "Found missing memoization dependencies"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/ui/src/dropdown/single-select.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'options' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/ui/src/dropdown/single-select.tsx",
-        "severity": "warning",
-        "code": "eslint(no-shadow)",
-        "message": "'query' is already declared in the upper scope."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/ui/src/dropdown/single-select.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/ui/src/dropdown/single-select.tsx",
-        "severity": "warning",
-        "code": "react-hooks(exhaustive-deps)",
-        "message": "React Hook useMemo has missing dependencies: 'queryArray', 'value', 'sortByKey', 'firstItem', and 'disableSorting'"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/ui/src/dropdown/single-select.tsx",
-        "severity": "warning",
-        "code": "react(memo-dependencies)",
-        "message": "Found missing memoization dependencies"
       },
       "count": 1
     },
@@ -11219,15 +6791,6 @@
     },
     {
       "diagnostic": {
-        "filename": "tests/frontend/attachment-list-item.test.mjs",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`__attachmentCalls`'."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "tests/frontend/hydration-console.mjs",
         "severity": "warning",
         "code": "eslint(no-console)",
@@ -11259,33 +6822,6 @@
         "severity": "warning",
         "code": "eslint(no-underscore-dangle)",
         "message": "Unexpected dangling '_' in '`__widgetCalls`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "tests/frontend/issue-subscription-accessibility.test.mjs",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`__subscriptionEditable`'."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "tests/frontend/issue-subscription-accessibility.test.mjs",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`__subscriptionIssueDetail`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "tests/frontend/module-delete-navigation.test.mjs",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`__moduleDeleteNavigationTest`'."
       },
       "count": 1
     },
@@ -11345,73 +6881,10 @@
     },
     {
       "diagnostic": {
-        "filename": "tests/frontend/project-card-navigation.test.mjs",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`__projectCardTest`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "tests/frontend/self-hosted-billing.test.mjs",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `Harness` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "tests/frontend/space-issue-votes-failure.test.mjs",
         "severity": "warning",
         "code": "eslint(no-underscore-dangle)",
         "message": "Unexpected dangling '_' in '`__spaceIssueVoteToastCalls`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "tests/frontend/workspace-draft-issue-actions.test.mjs",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`__workspaceDraftMobx`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "tests/frontend/workspace-draft-issue-actions.test.mjs",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`__workspaceDraftMobxUtils`'."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "tests/frontend/workspace-draft-issue-actions.test.mjs",
-        "severity": "warning",
-        "code": "eslint(no-underscore-dangle)",
-        "message": "Unexpected dangling '_' in '`__workspaceDraftService`'."
-      },
-      "count": 3
-    },
-    {
-      "diagnostic": {
-        "filename": "tests/frontend/workspace-menu-dom-warnings.test.mjs",
-        "severity": "warning",
-        "code": "react(memo-dependencies)",
-        "message": "Found missing memoization dependencies"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "tests/frontend/workspace-menu-dom-warnings.test.mjs",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `Harness` does not capture any variables from its parent scope"
       },
       "count": 1
     }

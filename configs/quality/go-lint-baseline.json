@@ -1476,14 +1476,6 @@
     {
       "fingerprint": [
         "staticcheck",
-        "internal/projectmembershipreads/invitations_commands.go",
-        "SA1019: strings.Title has been deprecated since Go 1.18 and an alternative has been available since Go 1.0: The rule Title uses for word boundaries does not handle Unicode punctuation properly. Use golang.org/x/text/cases instead. "
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
         "internal/projectmembershipreads/invitations_contract_regressions_test.go",
         "QF1001: could apply De Morgan's law"
       ],
