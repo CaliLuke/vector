@@ -95,7 +95,6 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authentication/passwordstrength"
 	"github.com/CaliLuke/go-plane/internal/authredirects"
 	"github.com/CaliLuke/go-plane/internal/backgroundtasks"
-	"github.com/CaliLuke/go-plane/internal/celery"
 	customviewcreationstore "github.com/CaliLuke/go-plane/internal/customviewcreation"
 	cyclereadsstore "github.com/CaliLuke/go-plane/internal/cyclereads"
 	"github.com/CaliLuke/go-plane/internal/database"
@@ -299,55 +298,53 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	var pageTaskAdmission pagereadsstore.NativePageTaskAdmitter
 	var publicProjectMetadataActivityLogger publicprojectmetadatareadsstore.ActivityLogger
 	var backgroundTaskRuntime *backgroundtasks.Runtime
-	if cfg.goBackgroundTasks {
-		var runtimeOptions []selvedge.Option
-		if cfg.goBackgroundTasksNoWorkers {
-			runtimeOptions = append(runtimeOptions, selvedge.WithActivityQueues())
-		}
-		backgroundTaskRuntime, err = backgroundtasks.NewRuntime(ctx, cfg.databaseURL, runtimeOptions...)
-		if err != nil {
-			return err
-		}
-		defer func() {
-			shutdownContext, cancel := context.WithTimeout(context.Background(), cfg.shutdownTimeout)
-			defer cancel()
-			if shutdownErr := backgroundTaskRuntime.Shutdown(shutdownContext); shutdownErr != nil {
-				log.Error(ctx, shutdownErr)
-			}
-		}()
-		if startErr := backgroundTaskRuntime.Start(ctx); startErr != nil {
-			return startErr
-		}
-		pageTaskAdmission, err = backgroundtasks.NewPageTaskAdmission(backgroundTaskRuntime.PageTransactions, backgroundTaskRuntime.Versions, backgroundTaskRuntime.DescriptionAssets)
-		if err != nil {
-			return err
-		}
-		issueDescriptionVersionAdmission, err = backgroundtasks.NewIssueDescriptionVersionAdmission(backgroundTaskRuntime.Versions)
-		if err != nil {
-			return err
-		}
-		recentVisitAdmission, err = backgroundtasks.NewRecentVisitAdmission(backgroundTaskRuntime.RecentVisits)
-		if err != nil {
-			return err
-		}
-		issueActivityAdmission, err = backgroundtasks.NewIssueActivityAdmission(backgroundTaskRuntime.IssueActivities)
-		if err != nil {
-			return err
-		}
-		emailTaskAdmission = backgroundTaskRuntime.EmailTaskAdmission
-		webhookTaskAdmission, err = backgroundtasks.NewWebhookTaskAdmission(backgroundTaskRuntime.Webhooks)
-		if err != nil {
-			return err
-		}
-		issueExportAdmission = backgroundTaskRuntime.IssueExports
-		analyticsExportDispatcher = backgroundTaskRuntime.AnalyticsExports
-		eventTrackingAdmission = backgroundTaskRuntime.EventTracking
-		assetMetadataDispatcher = backgroundTaskRuntime.Assets
-		workspaceSeedDispatcher = backgroundTaskRuntime.WorkspaceSeed
-		linkPreviewDispatcher = backgroundTaskRuntime.LinkPreviews
-		deletionDispatcher = backgroundTaskRuntime.Deletion
-		publicProjectMetadataActivityLogger = backgroundTaskRuntime.Logger
+	var runtimeOptions []selvedge.Option
+	if cfg.goBackgroundTasksNoWorkers {
+		runtimeOptions = append(runtimeOptions, selvedge.WithActivityQueues())
 	}
+	backgroundTaskRuntime, err = backgroundtasks.NewRuntime(ctx, cfg.databaseURL, runtimeOptions...)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		shutdownContext, cancel := context.WithTimeout(context.Background(), cfg.shutdownTimeout)
+		defer cancel()
+		if shutdownErr := backgroundTaskRuntime.Shutdown(shutdownContext); shutdownErr != nil {
+			log.Error(ctx, shutdownErr)
+		}
+	}()
+	if startErr := backgroundTaskRuntime.Start(ctx); startErr != nil {
+		return startErr
+	}
+	pageTaskAdmission, err = backgroundtasks.NewPageTaskAdmission(backgroundTaskRuntime.PageTransactions, backgroundTaskRuntime.Versions, backgroundTaskRuntime.DescriptionAssets)
+	if err != nil {
+		return err
+	}
+	issueDescriptionVersionAdmission, err = backgroundtasks.NewIssueDescriptionVersionAdmission(backgroundTaskRuntime.Versions)
+	if err != nil {
+		return err
+	}
+	recentVisitAdmission, err = backgroundtasks.NewRecentVisitAdmission(backgroundTaskRuntime.RecentVisits)
+	if err != nil {
+		return err
+	}
+	issueActivityAdmission, err = backgroundtasks.NewIssueActivityAdmission(backgroundTaskRuntime.IssueActivities)
+	if err != nil {
+		return err
+	}
+	emailTaskAdmission = backgroundTaskRuntime.EmailTaskAdmission
+	webhookTaskAdmission, err = backgroundtasks.NewWebhookTaskAdmission(backgroundTaskRuntime.Webhooks)
+	if err != nil {
+		return err
+	}
+	issueExportAdmission = backgroundTaskRuntime.IssueExports
+	analyticsExportDispatcher = backgroundTaskRuntime.AnalyticsExports
+	eventTrackingAdmission = backgroundTaskRuntime.EventTracking
+	assetMetadataDispatcher = backgroundTaskRuntime.Assets
+	workspaceSeedDispatcher = backgroundTaskRuntime.WorkspaceSeed
+	linkPreviewDispatcher = backgroundTaskRuntime.LinkPreviews
+	deletionDispatcher = backgroundTaskRuntime.Deletion
+	publicProjectMetadataActivityLogger = backgroundTaskRuntime.Logger
 	activityReadsPool := pool
 	if cfg.readReplicaDatabaseURL != "" {
 		readReplicaConfig, poolErr := pgxpool.ParseConfig(cfg.readReplicaDatabaseURL)
@@ -366,22 +363,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 			return fmt.Errorf("connect read replica database: %w", pingErr)
 		}
 	}
-	var taskFallback backgroundtasks.TaskFallback
-	var closeActivityPublisher func()
-	if cfg.goBackgroundTasks {
-		taskFallback = rejectingTaskPublisher{}
-	} else {
-		activityPublisher, newPublisherPoolErr := celery.NewPublisherPool(cfg.amqpURL)
-		if newPublisherPoolErr != nil {
-			return newPublisherPoolErr
-		}
-		closeActivityPublisher = func() { _ = activityPublisher.Close() }
-		taskFallback = activityPublisher
-		publicProjectMetadataActivityLogger = activityPublisher
-	}
-	if closeActivityPublisher != nil {
-		defer closeActivityPublisher()
-	}
+	taskFallback := rejectingTaskPublisher{}
 	activityTaskPublisher, err := issueActivityTaskPublisher(taskFallback, issueActivityAdmission)
 	if err != nil {
 		return err
@@ -404,11 +386,9 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 			return err
 		}
 	}
-	if eventTrackingAdmission != nil {
-		activityTaskPublisher, err = backgroundtasks.NewEventTrackingTaskPublisher(activityTaskPublisher, eventTrackingAdmission)
-		if err != nil {
-			return err
-		}
+	activityTaskPublisher, err = backgroundtasks.NewEventTrackingTaskPublisher(activityTaskPublisher, eventTrackingAdmission)
+	if err != nil {
+		return err
 	}
 	if assetMetadataDispatcher != nil {
 		activityTaskPublisher, err = backgroundtasks.NewFileAssetMetadataTaskPublisher(activityTaskPublisher, assetMetadataDispatcher)
@@ -1028,20 +1008,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	}
 	notificationsEndpoints := notificationsapi.NewEndpoints(notificationsService)
 	notificationsEndpoints.Use(log.Endpoint)
-	notificationTaskFallback := taskFallback
-	var closeNotificationPublisher func()
-	if !cfg.goBackgroundTasks {
-		notificationPublisher, newPublisherErr := celery.NewPublisher(cfg.amqpURL)
-		if newPublisherErr != nil {
-			return newPublisherErr
-		}
-		closeNotificationPublisher = func() { _ = notificationPublisher.Close() }
-		notificationTaskFallback = notificationPublisher
-	}
-	if closeNotificationPublisher != nil {
-		defer closeNotificationPublisher()
-	}
-	notificationTaskPublisher, err := issueActivityTaskPublisher(notificationTaskFallback, issueActivityAdmission)
+	notificationTaskPublisher, err := issueActivityTaskPublisher(taskFallback, issueActivityAdmission)
 	if err != nil {
 		return err
 	}
@@ -1063,11 +1030,9 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 			return err
 		}
 	}
-	if eventTrackingAdmission != nil {
-		notificationTaskPublisher, err = backgroundtasks.NewEventTrackingTaskPublisher(notificationTaskPublisher, eventTrackingAdmission)
-		if err != nil {
-			return err
-		}
+	notificationTaskPublisher, err = backgroundtasks.NewEventTrackingTaskPublisher(notificationTaskPublisher, eventTrackingAdmission)
+	if err != nil {
+		return err
 	}
 	if backgroundTaskRuntime != nil {
 		notificationTaskPublisher, err = backgroundtasks.NewVersionTaskPublisher(
@@ -1437,11 +1402,9 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 		return err
 	}
 	exportsTaskPublisher := activityTaskPublisher
-	if issueExportAdmission != nil {
-		exportsTaskPublisher, err = backgroundtasks.NewIssueExportTaskPublisher(exportsTaskPublisher, issueExportAdmission)
-		if err != nil {
-			return err
-		}
+	exportsTaskPublisher, err = backgroundtasks.NewIssueExportTaskPublisher(exportsTaskPublisher, issueExportAdmission)
+	if err != nil {
+		return err
 	}
 	if analyticsExportDispatcher != nil {
 		exportsTaskPublisher, err = backgroundtasks.NewAnalyticsExportTaskPublisher(exportsTaskPublisher, analyticsExportDispatcher)
@@ -1729,7 +1692,7 @@ func parseConfig(args []string) (config, error) {
 	flags.StringVar(&cfg.readReplicaDatabaseURL, "read-replica-database-url", "", "PostgreSQL read replica URL")
 	flags.StringVar(&cfg.redisURL, "redis-url", os.Getenv("REDIS_URL"), "Redis URL")
 	flags.StringVar(&cfg.apiKeyRate, "api-key-rate", envValueOrDefault("API_KEY_RATE_LIMIT", "60/minute"), "Django API-key throttle rate")
-	flags.StringVar(&cfg.amqpURL, "celery-broker-url", brokerURL, "Celery AMQP broker URL")
+	flags.StringVar(&cfg.amqpURL, "celery-broker-url", brokerURL, "legacy broker URL (unused by the native task runtime)")
 	var corsOrigins string
 	flags.StringVar(&corsOrigins, "cors-allowed-origins", os.Getenv("CORS_ALLOWED_ORIGINS"), "comma-separated CORS allowed origins")
 	csrfTrustedOriginsRaw, csrfTrustedOriginsSet := os.LookupEnv("CSRF_TRUSTED_ORIGINS")

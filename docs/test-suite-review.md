@@ -120,12 +120,11 @@ The gate review also found two discovery exclusions: editor Vitest did not match
 discovery now includes both TS and TSX files, and the Storybook configuration is
 included in the shared lint gate.
 
-The process-log publisher integration test now provisions its own disposable
-RabbitMQ broker. Its delivery, persistence, unroutable-message, reconnect, and
-cleanup assertions run in the tagged suite without a separate broker URL. Its
-skip allowance was removed. Pool tests also verify that soft-delete requests
-propagate worker failures, release workers for reuse, and reject requests after
-closure; invalid IDs must produce a UUID validation error, not a connection error.
+The Celery publisher and its RabbitMQ test fixtures have been retired. Startup
+requires native background tasks before publisher construction, so the old
+fallback was unreachable. Native background-task tests cover the active durable
+workers and admissions. The server still accepts legacy broker configuration
+for compatibility, but does not connect to a broker.
 
 The Redis upgrade now has a disposable-Valkey integration test that executes the
 application's key operations and sends an admin command between two collaboration

@@ -3696,15 +3696,6 @@
     {
       "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-layouts/list/list-group.tsx",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/list/list-group.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `ListGroup` has a complexity of 32. Maximum allowed is 15."

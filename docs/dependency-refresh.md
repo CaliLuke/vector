@@ -95,7 +95,6 @@ the library, and the foundation pin check now checks both.
 | OpenAI Go SDK                    | 3.86.0                                                                      |
 | libopenapi / validator           | 0.41.6 / 0.16.1                                                             |
 | PostHog                          | 1.36.0                                                                      |
-| RabbitMQ AMQP client             | 1.16.0                                                                      |
 | River library, pgx driver, CLI   | 0.49.0                                                                      |
 | Testcontainers core / PostgreSQL | 0.44.0                                                                      |
 | urfave/cli                       | 3.14.0                                                                      |

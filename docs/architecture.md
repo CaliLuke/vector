@@ -8,6 +8,8 @@ PostgreSQL stores application data and durable work. Redis provides cache servic
 S3-compatible storage holds uploaded files. The Node.js collaboration service supports live editing.
 
 The runtime does not require Django, Celery, or RabbitMQ.
+Startup requires native background tasks. Legacy broker settings remain accepted
+for configuration compatibility, but no AMQP publisher is constructed.
 Static response fixtures remain for contract regression tests. No Python code or interpreter is required.
 
 The initial [remote MCP transport](mcp.md) lives in `apps/go-api/mcp` and

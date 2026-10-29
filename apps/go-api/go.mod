@@ -13,6 +13,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.114.5
 	github.com/aws/smithy-go v1.28.6
 	github.com/c-robinson/iplib/v2 v2.0.5
+	github.com/containerd/errdefs v1.0.0
 	github.com/coreos/go-oidc/v3 v3.21.0
 	github.com/emersion/go-sasl v0.0.0-20241020182733-b788ff22d5a6
 	github.com/emersion/go-smtp v0.25.0
@@ -25,12 +26,12 @@ require (
 	github.com/jackc/pgx/v5 v5.11.0
 	github.com/kisielk/og-rek v1.3.0
 	github.com/moby/moby/api v1.56.1
+	github.com/moby/moby/client v0.6.2
 	github.com/modelcontextprotocol/go-sdk v1.8.1-0.20261016161459-3e9d812b1814
 	github.com/openai/openai-go/v3 v3.88.0
 	github.com/pb33f/libopenapi v0.41.7
 	github.com/pb33f/libopenapi-validator v0.16.1
 	github.com/posthog/posthog-go v1.38.0
-	github.com/rabbitmq/amqp091-go v1.16.0
 	github.com/redis/go-redis/v9 v9.23.0
 	github.com/riverqueue/river v0.49.0
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.49.0
@@ -97,7 +98,6 @@ require (
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/coder/websocket v1.8.15 // indirect
-	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/log v0.2.0 // indirect
 	github.com/containerd/platforms v0.2.1 // indirect
@@ -145,7 +145,6 @@ require (
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/go-archive v0.3.3 // indirect
-	github.com/moby/moby/client v0.6.2 // indirect
 	github.com/moby/patternmatcher v0.6.1 // indirect
 	github.com/moby/sys/mountinfo v0.7.3 // indirect
 	github.com/moby/sys/sequential v0.7.0 // indirect

@@ -29,12 +29,12 @@ func (spy *issueActivityAdmitterSpy) AdmitIssueActivityTask(_ context.Context, e
 	return nil
 }
 
-func TestIssueActivityTaskPublisherFlagControlsNativeAdmission(t *testing.T) {
+func TestIssueActivityTaskPublisherRoutesByAdmission(t *testing.T) {
 	ctx := context.Background()
 	fallback := &taskPublisherSpy{}
 	kwargs := map[string]any{"type": "issue.activity.updated"}
 
-	t.Run("flag off preserves legacy publisher", func(t *testing.T) {
+	t.Run("missing admission uses supplied fallback", func(t *testing.T) {
 		publisher, err := issueActivityTaskPublisher(fallback, nil)
 		if err != nil {
 			t.Fatal(err)
@@ -43,11 +43,11 @@ func TestIssueActivityTaskPublisherFlagControlsNativeAdmission(t *testing.T) {
 			t.Fatal(err)
 		}
 		if len(fallback.tasks) != 1 {
-			t.Fatalf("legacy publishes=%d, want 1", len(fallback.tasks))
+			t.Fatalf("fallback publishes=%d, want 1", len(fallback.tasks))
 		}
 	})
 
-	t.Run("flag on durably admits issue activity", func(t *testing.T) {
+	t.Run("available admission durably admits issue activity", func(t *testing.T) {
 		fallback.tasks = nil
 		admitter := &issueActivityAdmitterSpy{}
 		publisher, err := issueActivityTaskPublisher(fallback, admitter)
@@ -64,11 +64,11 @@ func TestIssueActivityTaskPublisherFlagControlsNativeAdmission(t *testing.T) {
 			t.Fatalf("native task payload = %#v, want %#v", admitter.kwargs, kwargs)
 		}
 		if len(fallback.tasks) != 0 {
-			t.Fatalf("legacy publisher received %d tasks after native admission", len(fallback.tasks))
+			t.Fatalf("fallback publisher received %d tasks after native admission", len(fallback.tasks))
 		}
 	})
 
-	t.Run("unrelated task remains on legacy publisher", func(t *testing.T) {
+	t.Run("unrelated task uses supplied fallback", func(t *testing.T) {
 		admitter := &issueActivityAdmitterSpy{}
 		publisher, err := issueActivityTaskPublisher(fallback, admitter)
 		if err != nil {
@@ -78,7 +78,7 @@ func TestIssueActivityTaskPublisherFlagControlsNativeAdmission(t *testing.T) {
 			t.Fatal(err)
 		}
 		if len(fallback.tasks) != 1 || fallback.tasks[0] != "plane.bgtasks.logger_task.process_logs" {
-			t.Fatalf("legacy tasks = %v", fallback.tasks)
+			t.Fatalf("fallback tasks = %v", fallback.tasks)
 		}
 		if admitter.eventID != "" {
 			t.Fatalf("unrelated task reached native admission: %q", admitter.eventID)

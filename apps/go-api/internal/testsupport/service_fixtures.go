@@ -12,17 +12,25 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
+// StartContainer owns a service container, including when its readiness check fails.
+func StartContainer(t testing.TB, request testcontainers.ContainerRequest) testcontainers.Container {
+	t.Helper()
+	container, err := testcontainers.GenericContainer(t.Context(), testcontainers.GenericContainerRequest{
+		ContainerRequest: request, Started: true,
+	})
+	// GenericContainer can return an owned container together with an error.
+	testcontainers.CleanupContainer(t, container)
+	require.NoError(t, err)
+	return container
+}
+
 // StartRedis owns an isolated Redis-compatible server and its client.
 func StartRedis(t testing.TB) *redis.Client {
 	t.Helper()
-	container, err := testcontainers.GenericContainer(t.Context(), testcontainers.GenericContainerRequest{
-		ContainerRequest: testcontainers.ContainerRequest{
-			Image: "valkey/valkey:9.1.2-alpine", ExposedPorts: []string{"6379/tcp"},
-			WaitingFor: wait.ForListeningPort("6379/tcp"),
-		}, Started: true,
+	container := StartContainer(t, testcontainers.ContainerRequest{
+		Image: "valkey/valkey:9.1.2-alpine", ExposedPorts: []string{"6379/tcp"},
+		WaitingFor: wait.ForListeningPort("6379/tcp"),
 	})
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, testcontainers.TerminateContainer(container)) })
 	host, err := container.Host(t.Context())
 	require.NoError(t, err)
 	port, err := container.MappedPort(t.Context(), "6379/tcp")
@@ -42,22 +50,19 @@ type RustFSFixture struct {
 func StartRustFS(t testing.TB) RustFSFixture {
 	t.Helper()
 	fixture := RustFSFixture{AccessKey: "integration-access", SecretKey: uuid.NewString()}
-	container, err := testcontainers.GenericContainer(t.Context(), testcontainers.GenericContainerRequest{
-		ContainerRequest: testcontainers.ContainerRequest{
-			Image:        "rustfs/rustfs:1.0.3@sha256:9ca9559533b537d10482fe923288b676ad08f92a7069d9a17327fbae3cab688b",
-			ExposedPorts: []string{"9000/tcp"}, Cmd: []string{"/data"},
-			Env: map[string]string{
-				"RUSTFS_ACCESS_KEY": fixture.AccessKey, "RUSTFS_SECRET_KEY": fixture.SecretKey,
-				"RUSTFS_ADDRESS": ":9000", "RUSTFS_CONSOLE_ENABLE": "false",
-				"RUSTFS_CORS_ALLOWED_ORIGINS": "http://localhost:8000",
-			},
-			WaitingFor: wait.ForHTTP("/health/ready").WithPort("9000/tcp").WithStartupTimeout(90 * time.Second),
-		}, Started: true,
+	container := StartContainer(t, testcontainers.ContainerRequest{
+		Image:        "rustfs/rustfs:1.0.3@sha256:9ca9559533b537d10482fe923288b676ad08f92a7069d9a17327fbae3cab688b",
+		ExposedPorts: []string{"9000/tcp"}, Cmd: []string{"/data"},
+		Env: map[string]string{
+			"RUSTFS_ACCESS_KEY": fixture.AccessKey, "RUSTFS_SECRET_KEY": fixture.SecretKey,
+			"RUSTFS_ADDRESS": ":9000", "RUSTFS_CONSOLE_ENABLE": "false",
+			"RUSTFS_CORS_ALLOWED_ORIGINS": "http://localhost:8000",
+		},
+		WaitingFor: wait.ForHTTP("/health/ready").WithPort("9000/tcp").WithStartupTimeout(90 * time.Second),
 	})
+	endpoint, err := container.PortEndpoint(t.Context(), "9000/tcp", "http")
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, testcontainers.TerminateContainer(container)) })
-	fixture.Endpoint, err = container.PortEndpoint(t.Context(), "9000/tcp", "http")
-	require.NoError(t, err)
+	fixture.Endpoint = endpoint
 	return fixture
 }
 

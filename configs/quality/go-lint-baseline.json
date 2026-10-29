@@ -704,14 +704,6 @@
     {
       "fingerprint": [
         "errorlint",
-        "internal/celery/publisher_test.go",
-        "comparing with != will fail on wrapped errors. Use errors.Is to check for a specific error"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
         "internal/cyclereads/lifecycle_test.go",
         "comparing with != will fail on wrapped errors. Use errors.Is to check for a specific error"
       ],
@@ -1175,14 +1167,6 @@
         "internal/bootstrap/instance.go",
         "ST1005: error strings should not end with punctuation or newlines"
       ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "internal/celery/publisher.go", "ST1005: error strings should not be capitalized"],
-      "count": 11
-    },
-    {
-      "fingerprint": ["staticcheck", "internal/celery/task.go", "ST1005: error strings should not be capitalized"],
       "count": 1
     },
     {

@@ -157,10 +157,6 @@
       "statements": 289,
       "percent": 72.32
     },
-    "github.com/CaliLuke/go-plane/internal/celery": {
-      "statements": 326,
-      "percent": 76.07
-    },
     "github.com/CaliLuke/go-plane/internal/commentmentions": {
       "statements": 63,
       "percent": 55.56

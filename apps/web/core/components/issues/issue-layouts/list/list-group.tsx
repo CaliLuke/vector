@@ -209,7 +209,7 @@ export function ListGroup(props: Props) {
             return;
           }
 
-          handleOnDrop(source, destination);
+          void handleOnDrop(source, destination);
 
           highlightIssueOnDrop(getIssueBlockId(source.id, destination?.groupId), orderBy !== "sort_order");
 

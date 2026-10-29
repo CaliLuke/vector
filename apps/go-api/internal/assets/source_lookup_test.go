@@ -209,18 +209,52 @@ func TestSourceLookupErrorsAreMappedAtServiceBoundaries(t *testing.T) {
 	}
 }
 
-func TestAssetsLifecycleMissingRowsUseSourceBodiesAtOperationBoundaries(t *testing.T) {
+type missingAssetCase struct {
+	name       string
+	want       map[string]any
+	call       func(*LifecycleService) error
+	repository func() *sourceLookupRepository
+}
+
+func runMissingAssetCases(t *testing.T, workspaceID uuid.UUID, cases []missingAssetCase) {
+	t.Helper()
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			repository := test.repository()
+			if repository.workspaceID == uuid.Nil {
+				repository.workspaceID = workspaceID
+			}
+			service := &LifecycleService{assets: &Service{repository: repository}}
+			assertAssetErrorBody(t, test.call(service), test.want)
+		})
+	}
+}
+
+func assertAssetErrorBody(t *testing.T, err error, want map[string]any) {
+	t.Helper()
+	if err == nil {
+		t.Fatal("operation succeeded for a missing asset")
+	}
+	encoded, marshalErr := json.Marshal(err)
+	if marshalErr != nil {
+		t.Fatalf("encode operation error: %v", marshalErr)
+	}
+	var got map[string]any
+	if unmarshalErr := json.Unmarshal(encoded, &got); unmarshalErr != nil {
+		t.Fatalf("decode operation error %s: %v", encoded, unmarshalErr)
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("operation body = %#v, want %#v", got, want)
+	}
+}
+
+func TestV2AssetsMissingRowsUseSourceBodies(t *testing.T) {
 	userID, workspaceID := uuid.New(), uuid.New()
 	ctx := context.WithValue(context.Background(), assetUserKey{}, userID)
 	missing := &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	assetID, projectID, issueID := uuid.NewString(), uuid.NewString(), uuid.NewString()
 
-	for _, test := range []struct {
-		name       string
-		want       map[string]any
-		call       func(*LifecycleService) error
-		repository func() *sourceLookupRepository
-	}{
+	runMissingAssetCases(t, workspaceID, []missingAssetCase{
 		{
 			name:       "v2 user asset delete",
 			want:       map[string]any{"error": "The required object does not exist."},
@@ -235,30 +269,6 @@ func TestAssetsLifecycleMissingRowsUseSourceBodiesAtOperationBoundaries(t *testi
 			repository: func() *sourceLookupRepository { return &sourceLookupRepository{userAssetErr: missing} },
 			call: func(service *LifecycleService) error {
 				return service.PatchAPIAssetsV2UserAssetsByAssetID(ctx, &api.PatchAPIAssetsV2UserAssetsByAssetIDPayload{AssetID: assetID}, nil)
-			},
-		},
-		{
-			name:       "v1 user asset delete",
-			want:       map[string]any{"error": "The requested resource does not exist."},
-			repository: func() *sourceLookupRepository { return &sourceLookupRepository{userAssetErr: missing} },
-			call: func(service *LifecycleService) error {
-				return service.DeleteAPIV1AssetsUserAssetsByAssetID(ctx, &api.DeleteAPIV1AssetsUserAssetsByAssetIDPayload{AssetID: assetID})
-			},
-		},
-		{
-			name:       "v1 user asset confirmation",
-			want:       map[string]any{"error": "The requested resource does not exist."},
-			repository: func() *sourceLookupRepository { return &sourceLookupRepository{userAssetErr: missing} },
-			call: func(service *LifecycleService) error {
-				return service.PatchAPIV1AssetsUserAssetsByAssetID(ctx, &api.PatchAPIV1AssetsUserAssetsByAssetIDPayload{AssetID: assetID}, nil)
-			},
-		},
-		{
-			name:       "v1 server user asset delete alias",
-			want:       map[string]any{"error": "The requested resource does not exist."},
-			repository: func() *sourceLookupRepository { return &sourceLookupRepository{userAssetErr: missing} },
-			call: func(service *LifecycleService) error {
-				return service.DeleteAPIV1AssetsUserAssetsByAssetIDServer(ctx, &api.DeleteAPIV1AssetsUserAssetsByAssetIDServerPayload{AssetID: assetID})
 			},
 		},
 		{
@@ -355,6 +365,40 @@ func TestAssetsLifecycleMissingRowsUseSourceBodiesAtOperationBoundaries(t *testi
 				return service.DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk(ctx, &api.DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkPayload{Slug: "workspace", ProjectID: projectID, IssueID: issueID, Pk: assetID})
 			},
 		},
+	})
+}
+
+func TestV1AssetsMissingRowsUseSourceBodies(t *testing.T) {
+	userID, workspaceID := uuid.New(), uuid.New()
+	ctx := context.WithValue(context.Background(), assetUserKey{}, userID)
+	missing := &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+	assetID, projectID, issueID := uuid.NewString(), uuid.NewString(), uuid.NewString()
+
+	runMissingAssetCases(t, workspaceID, []missingAssetCase{
+		{
+			name:       "v1 user asset delete",
+			want:       map[string]any{"error": "The requested resource does not exist."},
+			repository: func() *sourceLookupRepository { return &sourceLookupRepository{userAssetErr: missing} },
+			call: func(service *LifecycleService) error {
+				return service.DeleteAPIV1AssetsUserAssetsByAssetID(ctx, &api.DeleteAPIV1AssetsUserAssetsByAssetIDPayload{AssetID: assetID})
+			},
+		},
+		{
+			name:       "v1 user asset confirmation",
+			want:       map[string]any{"error": "The requested resource does not exist."},
+			repository: func() *sourceLookupRepository { return &sourceLookupRepository{userAssetErr: missing} },
+			call: func(service *LifecycleService) error {
+				return service.PatchAPIV1AssetsUserAssetsByAssetID(ctx, &api.PatchAPIV1AssetsUserAssetsByAssetIDPayload{AssetID: assetID}, nil)
+			},
+		},
+		{
+			name:       "v1 server user asset delete alias",
+			want:       map[string]any{"error": "The requested resource does not exist."},
+			repository: func() *sourceLookupRepository { return &sourceLookupRepository{userAssetErr: missing} },
+			call: func(service *LifecycleService) error {
+				return service.DeleteAPIV1AssetsUserAssetsByAssetIDServer(ctx, &api.DeleteAPIV1AssetsUserAssetsByAssetIDServerPayload{AssetID: assetID})
+			},
+		},
 		{
 			name: "v1 issue attachment mutation lookup",
 			want: map[string]any{"error": "The requested resource does not exist."},
@@ -385,6 +429,15 @@ func TestAssetsLifecycleMissingRowsUseSourceBodiesAtOperationBoundaries(t *testi
 				return service.DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk(ctx, &api.DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkPayload{Slug: "workspace", ProjectID: projectID, IssueID: issueID, Pk: assetID})
 			},
 		},
+	})
+}
+
+func TestLegacyAssetsMissingRowsUseSourceBodies(t *testing.T) {
+	userID, workspaceID := uuid.New(), uuid.New()
+	ctx := context.WithValue(context.Background(), assetUserKey{}, userID)
+	missing := &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+
+	runMissingAssetCases(t, workspaceID, []missingAssetCase{
 		{
 			name:       "legacy user key delete",
 			want:       map[string]any{"error": "The required object does not exist."},
@@ -409,63 +462,34 @@ func TestAssetsLifecycleMissingRowsUseSourceBodiesAtOperationBoundaries(t *testi
 				return service.DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKey(ctx, &api.DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyPayload{WorkspaceID: workspaceID.String(), AssetKey: "missing"})
 			},
 		},
-	} {
-		t.Run(test.name, func(t *testing.T) {
-			repository := test.repository()
-			if repository.workspaceID == uuid.Nil {
-				repository.workspaceID = workspaceID
-			}
-			service := &LifecycleService{assets: &Service{repository: repository}}
-			err := test.call(service)
-			if err == nil {
-				t.Fatal("operation succeeded for a missing asset")
-			}
-			encoded, marshalErr := json.Marshal(err)
-			if marshalErr != nil {
-				t.Fatalf("encode operation error: %v", marshalErr)
-			}
-			var got map[string]any
-			if unmarshalErr := json.Unmarshal(encoded, &got); unmarshalErr != nil {
-				t.Fatalf("decode operation error %s: %v", encoded, unmarshalErr)
-			}
-			if !reflect.DeepEqual(got, test.want) {
-				t.Fatalf("operation body = %#v, want %#v", got, test.want)
-			}
-		})
+	})
+}
+
+func TestAssetLookupInternalFailureRemains500(t *testing.T) {
+	ctx := context.WithValue(context.Background(), assetUserKey{}, uuid.New())
+	assetID := uuid.NewString()
+	repository := &sourceLookupRepository{assetIDErr: errors.New("database unavailable")}
+	service := &LifecycleService{assets: &Service{repository: repository}}
+	_, err := service.GetAPIAssetsV2StaticByAssetID(ctx, &api.GetAPIAssetsV2StaticByAssetIDPayload{AssetID: assetID})
+	if err == nil || !strings.Contains(fmt.Sprintf("%T", err), "Status500") {
+		t.Fatalf("static lookup error = %T (%v), want generated 500 response", err, err)
 	}
+}
 
-	t.Run("internal repository failure remains 500", func(t *testing.T) {
-		repository := &sourceLookupRepository{assetIDErr: errors.New("database unavailable")}
-		service := &LifecycleService{assets: &Service{repository: repository}}
-		_, err := service.GetAPIAssetsV2StaticByAssetID(ctx, &api.GetAPIAssetsV2StaticByAssetIDPayload{AssetID: assetID})
-		if err == nil || !strings.Contains(fmt.Sprintf("%T", err), "Status500") {
-			t.Fatalf("static lookup error = %T (%v), want generated 500 response", err, err)
-		}
+func TestLegacyAttachmentDenialShortCircuitsBeforeAssetEffects(t *testing.T) {
+	ctx := context.WithValue(context.Background(), assetUserKey{}, uuid.New())
+	workspaceID := uuid.New()
+	assetID, projectID, issueID := uuid.NewString(), uuid.NewString(), uuid.NewString()
+	repository := &sourceLookupRepository{workspaceID: workspaceID, deleteAllowed: false}
+	service := &LifecycleService{assets: &Service{repository: repository}}
+	err := service.DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk(ctx, &api.DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkPayload{
+		Slug: "workspace", ProjectID: projectID, IssueID: issueID, Pk: assetID,
 	})
-
-	t.Run("legacy issue attachment denial keeps decorator body and short circuits", func(t *testing.T) {
-		repository := &sourceLookupRepository{workspaceID: workspaceID, deleteAllowed: false}
-		service := &LifecycleService{assets: &Service{repository: repository}}
-		err := service.DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk(ctx, &api.DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkPayload{
-			Slug: "workspace", ProjectID: projectID, IssueID: issueID, Pk: assetID,
-		})
-		if err == nil || !strings.Contains(fmt.Sprintf("%T", err), "Status403") {
-			t.Fatalf("denial response = %T (%v), want generated 403 response", err, err)
-		}
-		encoded, marshalErr := json.Marshal(err)
-		if marshalErr != nil {
-			t.Fatalf("encode denial: %v", marshalErr)
-		}
-		var got map[string]any
-		if unmarshalErr := json.Unmarshal(encoded, &got); unmarshalErr != nil {
-			t.Fatalf("decode denial %s: %v", encoded, unmarshalErr)
-		}
-		want := map[string]any{"error": "You don't have the required permissions."}
-		if !reflect.DeepEqual(got, want) {
-			t.Fatalf("denial body = %#v, want %#v", got, want)
-		}
-		if !reflect.DeepEqual(repository.calls, []string{"IssueAttachmentDeleteAllowed"}) {
-			t.Fatalf("repository calls = %v, want only permission check before any asset mutation or effect", repository.calls)
-		}
-	})
+	if err == nil || !strings.Contains(fmt.Sprintf("%T", err), "Status403") {
+		t.Fatalf("denial response = %T (%v), want generated 403 response", err, err)
+	}
+	assertAssetErrorBody(t, err, map[string]any{"error": "You don't have the required permissions."})
+	if !reflect.DeepEqual(repository.calls, []string{"IssueAttachmentDeleteAllowed"}) {
+		t.Fatalf("repository calls = %v, want only permission check before any asset mutation or effect", repository.calls)
+	}
 }
