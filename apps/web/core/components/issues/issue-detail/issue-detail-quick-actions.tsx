@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useRouter } from "@tanstack/react-router";
+import { useLocation, useRouter } from "@tanstack/react-router";
 import { useRef } from "react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -12,16 +12,14 @@ import { CopyLinkIcon } from "@plane/propel/icons";
 import { IconButton } from "@plane/propel/icon-button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
-import { EIssuesStoreType } from "@plane/types";
 import { generateWorkItemLink } from "@plane/utils/work-item";
 import { copyTextToClipboard } from "@plane/utils/string";
 // hooks
 import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
-import { useIssuesActions } from "@/hooks/use-issues-actions";
+import { useIssueDetailLifecycle } from "@/hooks/use-issue-detail-lifecycle";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
 import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { captureIssueDetailReconciliation } from "@/queries/issue-details";
-import { useQueryClient } from "@tanstack/react-query";
 
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local imports
@@ -50,9 +48,9 @@ export function IssueDetailQuickActions(props: Props) {
   const projectCatalogue = useWorkspaceProjectDetails();
   const projectRows = projectCatalogue.projects;
   const detail = useWorkItemDetail(workspaceSlug, projectId, issueId);
-  const queryClient = useQueryClient();
-  const projectActions = useIssuesActions(EIssuesStoreType.PROJECT);
-  const archivedActions = useIssuesActions(EIssuesStoreType.ARCHIVED);
+  const lifecycle = useIssueDetailLifecycle(detail.scope, issueId, detail.isReady);
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const isRouteCurrent = useCommittedScope(JSON.stringify([detail.scope, issueId, pathname]));
 
   // derived values
   const issue = detail.issue;
@@ -86,54 +84,40 @@ export function IssueDetailQuickActions(props: Props) {
     }
   };
 
-  const handleDeleteIssue = async () => {
-    const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [issueId]);
-    const redirectionPath = issue?.archived_at
-      ? `/${workspaceSlug}/projects/${projectId}/archives/issues`
-      : `/${workspaceSlug}/projects/${projectId}/issues`;
-
-    if (issue?.archived_at) await archivedActions.removeIssue(projectId, issueId);
-    else await projectActions.removeIssue(projectId, issueId);
-    detailOwner.remove();
-    void router.navigate({ href: redirectionPath }).catch(() => {
-      setToast({
-        title: t("toast.error"),
-        message: "The work item was deleted, but the list could not be opened. Refresh to continue.",
-        type: TOAST_TYPE.ERROR,
-      });
+  const navigateAfterWrite = (isCurrent: () => boolean, href: string, message: string) => {
+    if (!isRouteCurrent() || !isCurrent()) return;
+    void router.navigate({ href }).catch(() => {
+      if (isRouteCurrent() && isCurrent()) setToast({ title: t("toast.error"), type: TOAST_TYPE.ERROR, message });
     });
+  };
+
+  const handleDeleteIssue = async () => {
+    const receipt = await lifecycle.remove(workspaceSlug, projectId, issueId);
+    navigateAfterWrite(
+      receipt.isCurrent,
+      issue.archived_at
+        ? `/${workspaceSlug}/projects/${projectId}/archives/issues`
+        : `/${workspaceSlug}/projects/${projectId}/issues`,
+      "The work item was deleted, but the list could not be opened. Refresh to continue."
+    );
   };
 
   const handleArchiveIssue = async () => {
-    const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [issueId]);
-    await projectActions.archiveIssue?.(projectId, issueId);
-    void detailOwner.refresh();
-    void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/issues` }).catch(() => {
-      setToast({
-        title: t("toast.error"),
-        message: "The work item was archived, but the list could not be opened. Refresh to continue.",
-        type: TOAST_TYPE.ERROR,
-      });
-    });
+    const receipt = await lifecycle.archive(workspaceSlug, projectId, issueId);
+    navigateAfterWrite(
+      receipt.isCurrent,
+      `/${workspaceSlug}/projects/${projectId}/issues`,
+      "The work item was archived, but the list could not be opened. Refresh to continue."
+    );
   };
 
   const handleRestore = async () => {
-    if (!workspaceSlug || !projectId || !issueId || !archivedActions.restoreIssue) return;
-    try {
-      await archivedActions.restoreIssue(projectId, issueId);
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: t("issue.restore.success.title"),
-        message: t("issue.restore.success.message"),
-      });
-      void router.navigate({ href: workItemLink });
-    } catch (_error) {
-      setToast({
-        title: t("toast.error"),
-        type: TOAST_TYPE.ERROR,
-        message: t("issue.restore.failed.message"),
-      });
-    }
+    const receipt = await lifecycle.restore(workspaceSlug, projectId, issueId);
+    navigateAfterWrite(
+      receipt.isCurrent,
+      workItemLink,
+      "The work item was restored, but it could not be opened. Refresh to continue."
+    );
   };
 
   return (

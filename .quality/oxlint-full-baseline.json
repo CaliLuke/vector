@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "full",
-  "fileCount": 3730,
+  "fileCount": 3732,
   "diagnostics": [
     {
       "diagnostic": {
@@ -3934,7 +3934,7 @@
         "code": "typescript(no-misused-promises)",
         "message": "Promise-returning function provided to property where a void return was expected."
       },
-      "count": 2
+      "count": 1
     },
     {
       "diagnostic": {
@@ -3953,15 +3953,6 @@
         "message": "Unsafe type assertion: type '() => void | Promise<void>' is more narrow than the original type."
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/issue-detail.tsx",
-        "severity": "error",
-        "code": "typescript(no-misused-promises)",
-        "message": "Promise-returning function provided to property where a void return was expected."
-      },
-      "count": 2
     },
     {
       "diagnostic": {

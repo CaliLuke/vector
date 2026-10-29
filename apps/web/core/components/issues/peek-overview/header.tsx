@@ -18,7 +18,6 @@ import { CustomSelect } from "@plane/ui";
 import { copyUrlToClipboard } from "@plane/utils/string";
 import { generateWorkItemLink } from "@plane/utils/work-item";
 // hooks
-import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
 import { useWorkItemDetailRecord } from "@/providers/work-item-detail-record";
 import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -102,7 +101,6 @@ export const IssuePeekOverviewHeader = function IssuePeekOverviewHeader(props: P
   const { t } = useTranslation();
   // store hooks
   const { data: currentUser } = useCurrentUser();
-  const { getIsIssuePeeked } = useIssueDetailUiState();
   const record = useWorkItemDetailRecord();
   const { isMobile } = usePlatformOS();
   const projectCatalogue = useWorkspaceProjectDetails();
@@ -132,26 +130,6 @@ export const IssuePeekOverviewHeader = function IssuePeekOverviewHeader(props: P
       });
       return undefined;
     });
-  };
-
-  const handleDeleteIssue = async () => {
-    try {
-      await removeIssue();
-    } catch (_error) {
-      setToast({
-        title: t("toast.error"),
-        type: TOAST_TYPE.ERROR,
-        message: t("entity.delete.failed", { entity: t("issue.label", { count: 1 }) }),
-      });
-    }
-  };
-
-  const handleArchiveIssue = async () => {
-    await archiveIssue();
-    // check and remove if issue is peeked
-    if (getIsIssuePeeked(issueId)) {
-      removeRoutePeekId();
-    }
   };
 
   return (
@@ -214,15 +192,14 @@ export const IssuePeekOverviewHeader = function IssuePeekOverviewHeader(props: P
             <WorkItemDetailQuickActions
               parentRef={parentRef}
               issue={issueDetails}
-              handleDelete={handleDeleteIssue}
-              handleArchive={handleArchiveIssue}
+              handleDelete={removeIssue}
+              handleArchive={archiveIssue}
               handleRestore={handleRestoreIssue}
               readOnly={disabled}
               toggleDeleteIssueModal={toggleDeleteIssueModal}
               toggleArchiveIssueModal={toggleArchiveIssueModal}
               toggleDuplicateIssueModal={toggleDuplicateIssueModal}
               toggleEditIssueModal={toggleEditIssueModal}
-              isPeekMode
             />
           )}
         </div>

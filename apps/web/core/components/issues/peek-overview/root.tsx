@@ -4,19 +4,16 @@
  * See the LICENSE file for details.
  */
 
-import { captureIssueDetailReconciliation } from "@/queries/issue-details";
 import { useMemo, useCallback } from "react";
 import { useCommittedScope } from "@/hooks/use-committed-scope";
 
 // Vector imports
-import { useQueryClient } from "@tanstack/react-query";
 import { EUserPermissions } from "@plane/constants";
-import { useTranslation } from "@plane/i18n";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IWorkItemPeekOverview } from "@plane/types";
 import { EIssueServiceType, EIssuesStoreType } from "@plane/types";
 // hooks
 import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
+import { useIssueDetailLifecycle } from "@/hooks/use-issue-detail-lifecycle";
 import { useIssueDetailWrites } from "@/hooks/use-issue-detail-writes";
 import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
 import { useProjectPermissions } from "@/hooks/use-permissions";
@@ -30,13 +27,12 @@ import { WorkItemDetailRecordProvider } from "@/providers/work-item-detail-recor
 
 export type TIssuePeekOperations = TIssueOperations & {
   remove: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
-  archive?: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
-  restore?: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
+  archive: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
+  restore: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
 };
 
 export function IssuePeekOverview(props: IWorkItemPeekOverview) {
   const { embedIssue = false, embedRemoveCurrentNotification, storeType: issueStoreFromProps } = props;
-  const { t } = useTranslation();
   // router
   const { peekIssue, setPeekIssue } = useIssueDetailUiState();
   const { workspaceSlug: peekWorkspaceSlug, projectId: peekProjectId, issueId: peekIssueId } = peekIssue ?? {};
@@ -44,9 +40,9 @@ export function IssuePeekOverview(props: IWorkItemPeekOverview) {
   const issueStoreType = useIssueListType();
   const storeType = issueStoreFromProps ?? issueStoreType;
   const actions = useIssuesActions(storeType);
-  const archivedActions = useIssuesActions(EIssuesStoreType.ARCHIVED);
   const serviceType = storeType === EIssuesStoreType.EPIC ? EIssueServiceType.EPICS : EIssueServiceType.ISSUES;
   const detail = useWorkItemDetail(peekWorkspaceSlug, peekProjectId, peekIssueId, serviceType);
+  const lifecycle = useIssueDetailLifecycle(detail.scope, peekIssueId, detail.isReady);
   const isPeekScopeCurrent = useCommittedScope(
     JSON.stringify([detail.scope, peekWorkspaceSlug, peekProjectId, peekIssueId, storeType, !!peekIssue?.isArchived])
   );
@@ -59,10 +55,12 @@ export function IssuePeekOverview(props: IWorkItemPeekOverview) {
   );
   const removeRoutePeekId = useCallback(() => {
     setPeekIssue(undefined);
-    if (embedIssue) embedRemoveCurrentNotification?.();
+    if (embedIssue && embedRemoveCurrentNotification)
+      void Promise.resolve()
+        .then(embedRemoveCurrentNotification)
+        .catch((error) => console.error("Could not dismiss the work item notification", error));
   }, [embedIssue, embedRemoveCurrentNotification, setPeekIssue]);
 
-  const queryClient = useQueryClient();
   const isPeekIssueArchived = peekIssue?.isArchived;
   const writes = useIssueDetailWrites(detail.scope, peekIssueId, detail.isReady && !isPeekIssueArchived, actions);
   const issueOperations: TIssuePeekOperations = useMemo(
@@ -73,61 +71,28 @@ export function IssuePeekOverview(props: IWorkItemPeekOverview) {
         if (workspaceSlug === peekWorkspaceSlug && projectId === peekProjectId && issueId === peekIssueId)
           await detail.query.refetch();
       },
-      remove: async (workspaceSlug: string, projectId: string, issueId: string) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [issueId]);
-        try {
-          if (isPeekIssueArchived) await archivedActions.removeIssue(projectId, issueId);
-          else await actions.removeIssue(projectId, issueId);
-          detailOwner.remove();
-          if (isPeekScopeCurrent()) removeRoutePeekId();
-        } catch (_error) {
-          setToast({
-            title: t("toast.error"),
-            type: TOAST_TYPE.ERROR,
-            message: t("entity.delete.failed", { entity: t("issue.label", { count: 1 }) }),
-          });
-        }
+      remove: async (workspaceSlug, projectId, issueId) => {
+        const receipt = await lifecycle.remove(workspaceSlug, projectId, issueId);
+        if (isPeekScopeCurrent() && receipt.isCurrent()) removeRoutePeekId();
       },
-      archive: async (workspaceSlug: string, projectId: string, issueId: string) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [issueId]);
-        if (!actions.archiveIssue) throw new Error("Issue archive action is unavailable");
-        await actions.archiveIssue(projectId, issueId);
-        void detailOwner.refresh();
+      archive: async (workspaceSlug, projectId, issueId) => {
+        const receipt = await lifecycle.archive(workspaceSlug, projectId, issueId);
+        if (isPeekScopeCurrent() && receipt.isCurrent()) removeRoutePeekId();
       },
-      restore: async (workspaceSlug: string, projectId: string, issueId: string) => {
-        const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [issueId]);
-        try {
-          if (!archivedActions.restoreIssue) throw new Error("Issue restore action is unavailable");
-          await archivedActions.restoreIssue(projectId, issueId);
-          void detailOwner.refresh();
-          setToast({
-            type: TOAST_TYPE.SUCCESS,
-            title: t("issue.restore.success.title"),
-            message: t("issue.restore.success.message"),
-          });
-        } catch (_error) {
-          setToast({
-            type: TOAST_TYPE.ERROR,
-            title: t("toast.error"),
-            message: t("issue.restore.failed.message"),
-          });
-        }
+      restore: async (workspaceSlug, projectId, issueId) => {
+        const receipt = await lifecycle.restore(workspaceSlug, projectId, issueId);
+        if (isPeekScopeCurrent() && receipt.isCurrent()) removeRoutePeekId();
       },
     }),
     [
       writes,
-      queryClient,
+      lifecycle,
       detail.query,
-      detail.scope,
-      actions,
-      archivedActions,
-      isPeekIssueArchived,
-      peekIssueId,
-      peekProjectId,
       peekWorkspaceSlug,
-      removeRoutePeekId,
+      peekProjectId,
+      peekIssueId,
       isPeekScopeCurrent,
-      t,
+      removeRoutePeekId,
     ]
   );
 

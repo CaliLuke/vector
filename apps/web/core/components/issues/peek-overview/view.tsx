@@ -121,9 +121,7 @@ export const IssueView = function IssueView(props: IIssueView) {
   useKeypress("Escape", () => !embedIssue && handleKeyDown());
 
   const handleRestore = async () => {
-    if (!issueOperations.restore) return;
     await issueOperations.restore(workspaceSlug, projectId, issueId);
-    removeRoutePeekId();
   };
 
   const peekOverviewIssueClassName = cn(
@@ -192,7 +190,7 @@ export const IssueView = function IssueView(props: IIssueView) {
                 projectId={projectId}
                 isSubmitting={isSubmitting}
                 removeIssue={() => issueOperations.remove(workspaceSlug, projectId, issueId)}
-                archiveIssue={() => issueOperations.archive?.(workspaceSlug, projectId, issueId) ?? Promise.resolve()}
+                archiveIssue={() => issueOperations.archive(workspaceSlug, projectId, issueId)}
                 disabled={disabled}
                 embedIssue={embedIssue}
               />

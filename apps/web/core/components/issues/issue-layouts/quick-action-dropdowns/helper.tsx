@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
 import { useCallback, useMemo } from "react";
 import { useParams } from "@tanstack/react-router";
 import { XCircle, ArchiveRestoreIcon } from "lucide-react";
@@ -123,27 +124,16 @@ const useIssueActionHandlers = (props: MenuItemFactoryProps) => {
 
   const handleOpenInNewTab = () => window.open(workItemLink, "_blank");
 
-  const handleIssueRestore = async () => {
-    if (!handleRestore) {
-      handleOptionalAction(handleRestore, "Restore");
-      return;
+  const restore = useIssuePropertyChange(
+    { workspaceSlug, projectId: issue.project_id, issueId: issue.id, context: "restore" },
+    props.isEditingAllowed && !!props.isRestoringAllowed && !!handleRestore,
+    {
+      success: "Your work item can be found in project work items.",
+      error: "Work item could not be restored. Please try again.",
     }
-    await handleRestore()
-      // oxlint-disable-next-line promise/always-return
-      .then(() => {
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: "Restore success",
-          message: "Your work item can be found in project work items.",
-        });
-      })
-      .catch(() => {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: "Error!",
-          message: "Work item could not be restored. Please try again.",
-        });
-      });
+  );
+  const handleIssueRestore = () => {
+    if (handleRestore) restore.run(handleRestore);
   };
 
   return {
@@ -151,6 +141,7 @@ const useIssueActionHandlers = (props: MenuItemFactoryProps) => {
     handleCopyIssueLink,
     handleOpenInNewTab,
     handleIssueRestore,
+    restoreDisabled: restore.disabled,
   };
 };
 
@@ -249,6 +240,7 @@ const useMenuItemFactory = (props: MenuItemFactoryProps) => {
     title: "Restore",
     icon: ArchiveRestoreIcon,
     action: actionHandlers.handleIssueRestore,
+    disabled: actionHandlers.restoreDisabled,
     shouldRender: isRestoringAllowed,
   });
 

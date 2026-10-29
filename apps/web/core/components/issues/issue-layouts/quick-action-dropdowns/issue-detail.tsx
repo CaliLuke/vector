@@ -22,7 +22,6 @@ type TWorkItemDetailQuickActionProps = IQuickActionProps & {
   toggleDeleteIssueModal?: (value: boolean) => void;
   toggleDuplicateIssueModal?: (value: boolean) => void;
   toggleArchiveIssueModal?: (value: boolean) => void;
-  isPeekMode?: boolean;
 };
 
 export const WorkItemDetailQuickActions = function WorkItemDetailQuickActions(props: TWorkItemDetailQuickActionProps) {
@@ -39,7 +38,6 @@ export const WorkItemDetailQuickActions = function WorkItemDetailQuickActions(pr
     toggleDeleteIssueModal,
     toggleDuplicateIssueModal,
     toggleArchiveIssueModal,
-    isPeekMode = false,
   } = props;
   // states
   const modals = useIssueQuickActionModals(issue);
@@ -53,7 +51,7 @@ export const WorkItemDetailQuickActions = function WorkItemDetailQuickActions(pr
 
   const isDeletingAllowed = isEditingAllowed;
 
-  const customDeleteAction = async () => {
+  const customDeleteAction = () => {
     modals.setDeleteIssueModal(true);
     if (toggleDeleteIssueModal) toggleDeleteIssueModal(true);
   };
@@ -66,13 +64,9 @@ export const WorkItemDetailQuickActions = function WorkItemDetailQuickActions(pr
     }
   };
 
-  const customArchiveAction = async () => {
+  const customArchiveAction = () => {
     modals.setArchiveIssueModal(true);
     if (toggleArchiveIssueModal) toggleArchiveIssueModal(true);
-  };
-
-  const customRestoreAction = async () => {
-    if (handleRestore) await handleRestore();
   };
 
   // Menu items and modals using helper
@@ -90,44 +84,12 @@ export const WorkItemDetailQuickActions = function WorkItemDetailQuickActions(pr
     setDeleteIssueModal: customDeleteAction,
     setArchiveIssueModal: customArchiveAction,
     onDuplicate: toggleDuplicateIssueModal ? customDuplicateAction : undefined,
-    handleDelete: customDeleteAction,
     handleUpdate,
-    handleArchive: customArchiveAction,
-    handleRestore: customRestoreAction,
+    handleRestore,
     storeType: EIssuesStoreType.PROJECT,
   };
 
-  //   const MENU_ITEMS = useWorkItemDetailMenuItems(menuItemProps);
-  const baseMenuItems = useWorkItemDetailMenuItems(menuItemProps);
-
-  const MENU_ITEMS = baseMenuItems
-    // oxlint-disable-next-line oxc/no-map-spread
-    .map((item) => {
-      // Customize edit action for work item
-      if (item.key === "edit") {
-        return {
-          ...item,
-          shouldRender: isEditingAllowed && !isPeekMode,
-        };
-      }
-      // Customize delete action for work item
-      if (item.key === "delete") {
-        return {
-          ...item,
-        };
-      }
-      // Hide copy link in peek mode
-      if (item.key === "copy-link") {
-        return {
-          ...item,
-          shouldRender: !isPeekMode,
-        };
-      }
-      return item;
-    })
-    .filter(function MENU_ITEMS(item) {
-      return item.shouldRender !== false;
-    });
+  const MENU_ITEMS = useWorkItemDetailMenuItems(menuItemProps).filter((item) => item.shouldRender !== false);
 
   return (
     <>

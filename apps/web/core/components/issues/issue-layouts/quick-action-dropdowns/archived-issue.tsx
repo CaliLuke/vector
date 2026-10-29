@@ -39,7 +39,7 @@ export const ArchivedIssueQuickActions = function ArchivedIssueQuickActions(prop
 
   // auth
   const isEditingAllowed = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]) && !readOnly;
-  const isRestoringAllowed = handleRestore && canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
+  const isRestoringAllowed = !!handleRestore && isEditingAllowed;
 
   // Menu items and modals using helper
   const menuItemProps: MenuItemFactoryProps = {
@@ -47,7 +47,7 @@ export const ArchivedIssueQuickActions = function ArchivedIssueQuickActions(prop
     workspaceSlug: workspaceSlug?.toString(),
     isEditingAllowed,
     isDeletingAllowed: isEditingAllowed,
-    isRestoringAllowed: !!isRestoringAllowed,
+    isRestoringAllowed,
     setIssueToEdit: () => {},
     setCreateUpdateIssueModal: () => {},
     setDeleteIssueModal,
