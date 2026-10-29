@@ -18,7 +18,6 @@ import { IconButton } from "@plane/propel/icon-button";
 import { useIssueQuickActionModals } from "./use-issue-quick-action-modals";
 
 type TWorkItemDetailQuickActionProps = IQuickActionProps & {
-  toggleEditIssueModal?: (value: boolean) => void;
   toggleDeleteIssueModal?: (value: boolean) => void;
   toggleDuplicateIssueModal?: (value: boolean) => void;
   toggleArchiveIssueModal?: (value: boolean) => void;

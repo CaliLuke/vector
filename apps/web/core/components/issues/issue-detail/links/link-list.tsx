@@ -10,9 +10,9 @@ import { useIssueLinks } from "@/hooks/use-issue-resources";
 // local imports
 import { IssueLinkItem } from "./link-item";
 import { IssueResourceRetryButton } from "../resource-retry-button";
-import type { TLinkOperations } from "./root";
+import type { TLinkOperations } from "@/hooks/use-issue-link-operations";
 
-type TLinkOperationsModal = Exclude<TLinkOperations, "create">;
+type TLinkOperationsModal = Pick<TLinkOperations, "remove" | "pending">;
 
 type TLinkList = {
   issueId: string;
@@ -47,6 +47,9 @@ export function LinkList(props: TLinkList) {
       {issueLinks.map((link) => (
         <IssueLinkItem
           key={link.id}
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
+          issueId={issueId}
           link={link}
           linkOperations={linkOperations}
           isNotAllowed={disabled}

@@ -102,21 +102,17 @@ async function chooseCopyAction() {
   await React.act(async () => copyItem.action());
 }
 
-await test("copy uses the local modal and does not mark edit tracking", async (t) => {
+await test("copy uses the local modal with the original item as its source", async (t) => {
   globalThis.quickActionCopyState = {};
-  let editTrackingCalls = 0;
   const environment = await createCopyFixture(t);
 
-  await renderQuickActions(environment, {
-    toggleEditIssueModal: () => editTrackingCalls++,
-  });
+  await renderQuickActions(environment);
   await chooseCopyAction();
 
   assert.equal(globalThis.quickActionCopyState.modal.isOpen, true);
   assert.equal(globalThis.quickActionCopyState.modal.data.name, "Original (copy)");
   assert.equal(globalThis.quickActionCopyState.modal.data.id, undefined);
   assert.equal(globalThis.quickActionCopyState.modal.data.sourceIssueId, issue.id);
-  assert.equal(editTrackingCalls, 0);
 });
 
 await test("peek copy notifies duplicate tracking and clears it when the local modal closes", async (t) => {
@@ -125,7 +121,6 @@ await test("peek copy notifies duplicate tracking and clears it when the local m
   const environment = await createCopyFixture(t);
 
   await renderQuickActions(environment, {
-    toggleEditIssueModal: (open) => tracking.push(["edit", open]),
     toggleDuplicateIssueModal: (open) => tracking.push(["duplicate", open]),
   });
   await chooseCopyAction();

@@ -182,7 +182,6 @@ export const IssueView = function IssueView(props: IIssueView) {
                 toggleDeleteIssueModal={toggleDeleteIssueModal}
                 toggleArchiveIssueModal={toggleArchiveIssueModal}
                 toggleDuplicateIssueModal={toggleDuplicateIssueModal}
-                toggleEditIssueModal={toggleEditIssueModal}
                 handleRestoreIssue={handleRestore}
                 isArchived={is_archived}
                 issueId={issueId}

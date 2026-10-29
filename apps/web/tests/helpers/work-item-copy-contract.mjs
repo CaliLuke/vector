@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { act, settleQuery } from "../../../../tests/frontend/helpers/permission-ui-fixture.mjs";
 
-function clipboard(t, write) {
+export function mockClipboard(t, write) {
   const target = navigator;
   const original = Object.getOwnPropertyDescriptor(target, "clipboard");
   const calls = [];
@@ -25,7 +25,7 @@ function clipboard(t, write) {
 export function registerWorkItemCopyTests(name, setup, identity, { readOnly = false } = {}) {
   void test(`${name} copies an absolute canonical work-item URL once`, async (t) => {
     const view = await setup(t);
-    const calls = clipboard(t, async () => {});
+    const calls = mockClipboard(t, async () => {});
     await view.click(view.copyButton());
     assert.deepEqual(calls, [new URL(view.path, window.location.origin).href]);
     assert.deepEqual(
@@ -36,7 +36,7 @@ export function registerWorkItemCopyTests(name, setup, identity, { readOnly = fa
   void test(`${name} prevents duplicate pending clipboard writes`, async (t) => {
     const view = await setup(t);
     const pending = Promise.withResolvers();
-    const calls = clipboard(t, () => pending.promise);
+    const calls = mockClipboard(t, () => pending.promise);
     const button = view.copyButton();
     await act(() => {
       button.click();
@@ -55,7 +55,7 @@ export function registerWorkItemCopyTests(name, setup, identity, { readOnly = fa
   void test(`${name} handles clipboard rejection once and allows retry`, async (t) => {
     const view = await setup(t);
     let reject = true;
-    const calls = clipboard(t, async () => {
+    const calls = mockClipboard(t, async () => {
       if (reject) throw new Error("clipboard denied");
     });
     await view.click(view.copyButton());
@@ -77,7 +77,7 @@ export function registerWorkItemCopyTests(name, setup, identity, { readOnly = fa
       void test(`${name} suppresses late ${rejects ? "failure" : "success"} after ${retiredBy}`, async (t) => {
         const view = await setup(t);
         const pending = Promise.withResolvers();
-        clipboard(t, () => pending.promise);
+        mockClipboard(t, () => pending.promise);
         await view.click(view.copyButton());
         if (retiredBy === "unmount") await view.unmount();
         else await act(() => identity.advanceIdentitySession(view.client));
@@ -95,7 +95,7 @@ export function registerWorkItemCopyTests(name, setup, identity, { readOnly = fa
     void test(`${name} permits copying a read-only work item`, async (t) => {
       const view = await setup(t);
       await view.renderReadOnly();
-      const calls = clipboard(t, async () => {});
+      const calls = mockClipboard(t, async () => {});
       assert.equal(view.copyButton().disabled, false);
       await view.click(view.copyButton());
       assert.deepEqual(calls, [new URL(view.path, window.location.origin).href]);

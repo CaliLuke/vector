@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   React,
   act,
+  clickAndSettle as click,
   createPermissionUiFixture,
   settleQuery,
   registerPermissionUiStubs,
@@ -63,15 +64,6 @@ const { useWorkItemDetail } = await import("../core/hooks/use-work-item-detail.t
 const { IssueService } = await import("../core/services/issue/index.ts");
 const { IssueRelationService } = await import("../core/services/issue/issue_relation.service.ts");
 const identity = await import("../core/queries/identity.ts");
-async function click(button) {
-  assert.ok(button);
-  await act(async () => {
-    button.click();
-    await Promise.resolve();
-  });
-  await settleQuery();
-}
-
 async function setup(
   t,
   { epic = false, operationsOnly = false, patchStatus = 200, readOnly = false, parentEpic = false } = {}

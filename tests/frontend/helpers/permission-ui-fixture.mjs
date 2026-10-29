@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import { React, act } from "./react.mjs";
 import { createQueryRouterFixture, settleQuery } from "./query-router.mjs";
@@ -35,4 +36,13 @@ export async function createPermissionUiFixture(
   if (rolesRead) t.mock.method(WorkspaceService.prototype, "getWorkspaceUserProjectsRole", rolesRead);
   else t.mock.method(WorkspaceService.prototype, "getWorkspaceUserProjectsRole", async () => projectRoles);
   return fixture;
+}
+
+export async function clickAndSettle(element) {
+  assert.ok(element, "Expected a visible control");
+  await act(async () => {
+    element.click();
+    await Promise.resolve();
+  });
+  await settleQuery();
 }

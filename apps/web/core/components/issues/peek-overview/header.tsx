@@ -68,7 +68,6 @@ export type PeekOverviewHeaderProps = {
   toggleDeleteIssueModal: (value: boolean) => void;
   toggleArchiveIssueModal: (value: boolean) => void;
   toggleDuplicateIssueModal: (value: boolean) => void;
-  toggleEditIssueModal: (value: boolean) => void;
   handleRestoreIssue: () => Promise<void>;
   isSubmitting: TNameDescriptionLoader;
   removeIssue: () => Promise<void>;
@@ -89,7 +88,6 @@ export const IssuePeekOverviewHeader = function IssuePeekOverviewHeader(props: P
     toggleDeleteIssueModal,
     toggleArchiveIssueModal,
     toggleDuplicateIssueModal,
-    toggleEditIssueModal,
     handleRestoreIssue,
     isSubmitting,
     removeIssue,
@@ -199,7 +197,6 @@ export const IssuePeekOverviewHeader = function IssuePeekOverviewHeader(props: P
               toggleDeleteIssueModal={toggleDeleteIssueModal}
               toggleArchiveIssueModal={toggleArchiveIssueModal}
               toggleDuplicateIssueModal={toggleDuplicateIssueModal}
-              toggleEditIssueModal={toggleEditIssueModal}
             />
           )}
         </div>

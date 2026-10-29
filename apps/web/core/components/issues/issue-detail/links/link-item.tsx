@@ -6,7 +6,7 @@
 
 import { useTranslation } from "@plane/i18n";
 import { LinkIcon, CopyIcon, EditIcon, TrashIcon } from "@plane/propel/icons";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
+import { useIssueAction } from "@/hooks/use-issue-action";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { TIssueLink, TIssueServiceType } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
@@ -18,25 +18,44 @@ import { copyTextToClipboard } from "@plane/utils/string";
 // hooks
 import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
 import { usePlatformOS } from "@/hooks/use-platform-os";
-import type { TLinkOperationsModal } from "./create-update-link-modal";
+import type { TLinkOperations } from "@/hooks/use-issue-link-operations";
 
 type TIssueLinkItem = {
   link: TIssueLink;
-  linkOperations: TLinkOperationsModal;
+  linkOperations: Pick<TLinkOperations, "remove" | "pending">;
+  workspaceSlug: string;
+  projectId: string;
+  issueId: string;
   isNotAllowed: boolean;
   issueServiceType?: TIssueServiceType;
 };
 
 export function IssueLinkItem(props: TIssueLinkItem) {
   // props
-  const { link, linkOperations, isNotAllowed, issueServiceType = EIssueServiceType.ISSUES } = props;
+  const {
+    link,
+    linkOperations,
+    isNotAllowed,
+    workspaceSlug,
+    projectId,
+    issueId,
+    issueServiceType = EIssueServiceType.ISSUES,
+  } = props;
   // hooks
   const { t } = useTranslation();
   const { toggleIssueLinkModal: toggleIssueLinkModalStore, setIssueLinkData } = useIssueDetailUiState(issueServiceType);
   const { isMobile } = usePlatformOS();
   const linkDetail = link;
 
-  // const Icon = getIconForLink(linkDetail.url);
+  const copy = useIssueAction(
+    { workspaceSlug, projectId, issueId, context: `link-copy:${link.id}:${link.url}` },
+    Boolean(workspaceSlug && projectId && issueId),
+    {
+      successTitle: t("common.link_copied"),
+      success: t("common.link_copied_to_clipboard"),
+      error: t("power_k.contextual_actions.work_item.copy_url_toast_error"),
+    }
+  );
   const faviconUrl: string | undefined = linkDetail.metadata?.favicon;
   const linkTitle: string | undefined = linkDetail.metadata?.title;
 
@@ -76,25 +95,21 @@ export function IssueLinkItem(props: TIssueLinkItem) {
           <p className="group-hover-text-secondary p-1 align-bottom text-caption-sm-regular leading-5 text-placeholder">
             {calculateTimeAgo(linkDetail.created_at)}
           </p>
-          <span
-            onClick={() => {
-              copyTextToClipboard(linkDetail.url);
-              setToast({
-                type: TOAST_TYPE.SUCCESS,
-                title: t("common.link_copied"),
-                message: t("common.link_copied_to_clipboard"),
-              });
-            }}
+          <button
+            type="button"
+            aria-label={t("common.actions.copy_link")}
+            disabled={copy.disabled}
+            onClick={() => copy.run(() => copyTextToClipboard(linkDetail.url))}
             className="relative grid cursor-pointer place-items-center rounded-sm p-1 text-placeholder outline-none group-hover:text-secondary hover:bg-layer-1"
           >
             <CopyIcon className="h-3.5 w-3.5 stroke-[1.5]" />
-          </span>
+          </button>
           <CustomMenu
             ellipsis
             buttonClassName="text-placeholder group-hover:text-secondary"
             placement="bottom-end"
             closeOnSelect
-            disabled={isNotAllowed}
+            disabled={isNotAllowed || linkOperations.pending}
           >
             <CustomMenu.MenuItem
               className="flex items-center gap-2"
@@ -108,7 +123,7 @@ export function IssueLinkItem(props: TIssueLinkItem) {
             <CustomMenu.MenuItem
               className="flex items-center gap-2"
               onClick={() => {
-                linkOperations.remove(linkDetail.id);
+                void linkOperations.remove(linkDetail.id).catch(() => undefined);
               }}
             >
               <TrashIcon className="h-3 w-3" />

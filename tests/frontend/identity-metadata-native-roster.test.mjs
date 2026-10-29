@@ -26,7 +26,6 @@ registerHooks({
       "@/providers/issue-detail-ui-state": `
         export const useIssueDetailUiState = () => ({ toggleIssueLinkModal() {} });
       `,
-      "@/hooks/use-issue-resources": `export const useIssueLinks=()=>({links:[{id:"issue-link"}],query:{isError:false},create:async()=>{},update:async()=>{},remove:async()=>{}});`,
       "@plane/i18n": `export const useTranslation=()=>({t:key=>key});`,
       "@/hooks/use-platform-os": "export const usePlatformOS = () => ({ isMobile: false });",
       "@/components/modules": `
@@ -38,26 +37,10 @@ registerHooks({
       "@plane/propel/icons": "export const PlusIcon = () => null;",
       "@plane/propel/toast": "export const TOAST_TYPE = {}; export const setToast = () => {};",
     };
-    if (
-      specifier === "@plane/types" &&
-      context.parentURL?.endsWith("/apps/web/core/components/issues/issue-detail/links/root.tsx")
-    ) {
-      return {
-        shortCircuit: true,
-        url: `data:text/javascript,${encodeURIComponent('export const EIssueServiceType = { ISSUES: "issues" };')}`,
-      };
-    }
     if (sources[specifier]) {
       return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent(sources[specifier])}` };
     }
     const localStubs = {
-      "./create-update-link-modal": `export const IssueLinkCreateUpdateModal = () => null;`,
-      "./link-detail": `
-        const React = globalThis.identityMetadataTestReact;
-        export function IssueLinkDetail({ workspaceSlug }) {
-          return React.createElement("output", { "data-testid": "issue-link-scope" }, workspaceSlug);
-        }
-      `,
       "../issue-detail-widgets/attachments/helper": `
         export const useAttachmentOperations = () => ({ operations: {}, snapshot: { uploadStatus: [], attachments: [{id:"attachment"}] } });
       `,
@@ -168,12 +151,11 @@ await test("activity identity updates from native workspace roster reads and sta
   );
 });
 
-await test("issue and module metadata parents pass their explicit workspace scope to link and attachment rows", async (t) => {
+await test("module link and attachment parents pass their explicit workspace scope to rows", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(async () => {
     await environment.unmount();
   });
-  const { IssueLinkRoot } = await import("../../apps/web/core/components/issues/issue-detail/links/root.tsx");
   const { IssueAttachmentRoot } = await import("../../apps/web/core/components/issues/attachment/root.tsx");
   const { ModuleLinksList } = await import("../../apps/web/core/components/modules/links/list.tsx");
 
@@ -181,11 +163,6 @@ await test("issue and module metadata parents pass their explicit workspace scop
     React.createElement(
       React.Fragment,
       null,
-      React.createElement(IssueLinkRoot, {
-        workspaceSlug: "workspace-alpha",
-        projectId: "project-1",
-        issueId: "issue-1",
-      }),
       React.createElement(IssueAttachmentRoot, {
         workspaceSlug: "workspace-alpha",
         projectId: "project-1",
@@ -201,7 +178,6 @@ await test("issue and module metadata parents pass their explicit workspace scop
     )
   );
 
-  assert.equal(environment.container.querySelector('[data-testid="issue-link-scope"]')?.textContent, "workspace-alpha");
   assert.equal(environment.container.querySelector('[data-testid="attachment-scope"]')?.textContent, "workspace-alpha");
   assert.equal(
     environment.container.querySelector('[data-testid="module-link-scope"]')?.textContent,

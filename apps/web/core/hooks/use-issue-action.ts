@@ -19,7 +19,12 @@ type IssueActionScope = {
   context: string;
 };
 
-type ActionFeedback = { success?: string; successTitle?: string; error?: string };
+type ActionFeedback = {
+  success?: string;
+  successTitle?: string;
+  errorTitle?: string;
+  error?: string | ((error: unknown) => string);
+};
 
 export function useIssueAction(scope: IssueActionScope, enabled: boolean, messages?: ActionFeedback) {
   const client = useQueryClient();
@@ -30,16 +35,32 @@ export function useIssueAction(scope: IssueActionScope, enabled: boolean, messag
   const isCurrent = useCommittedScope(JSON.stringify([mutationKey, enabled]));
   const filters = { mutationKey, exact: true };
   const pending = useIsMutating(filters) > 0;
-  const { mutate } = useMutation({
+  const { mutateAsync } = useMutation({
     mutationKey,
     mutationFn: (change: () => Promise<unknown>) => change(),
     retry: false,
   });
 
-  const run = (change: () => Promise<unknown>, feedback: ActionFeedback | undefined = messages) => {
-    if (!enabled || !isCurrent() || client.isMutating(filters) > 0) return;
+  const notifyFailure = (
+    error: unknown,
+    feedback: ActionFeedback | undefined,
+    identity: ReturnType<typeof captureIdentityScope>
+  ) => {
+    if (!isCurrent() || !isIdentityScopeCurrent(client, identity)) return;
+    setToast({
+      type: TOAST_TYPE.ERROR,
+      title: feedback?.errorTitle ?? t("toast.error"),
+      message:
+        typeof feedback?.error === "function"
+          ? feedback.error(error)
+          : (feedback?.error ?? t("entity.update.failed", { entity: t("common.work_item") })),
+    });
+  };
+
+  const execute = (change: () => Promise<unknown>, feedback: ActionFeedback | undefined = messages) => {
+    if (!enabled || !isCurrent() || client.isMutating(filters) > 0) return undefined;
     const identity = captureIdentityScope(client, userId);
-    mutate(
+    return mutateAsync(
       async () => {
         if (!isCurrent() || !isIdentityScopeVerified(client, identity))
           throw new Error("The work item or account session has changed.");
@@ -54,17 +75,22 @@ export function useIssueAction(scope: IssueActionScope, enabled: boolean, messag
             message: feedback.success,
           });
         },
-        onError: () => {
-          if (!isCurrent() || !isIdentityScopeCurrent(client, identity)) return;
-          setToast({
-            type: TOAST_TYPE.ERROR,
-            title: t("toast.error"),
-            message: feedback?.error ?? t("entity.update.failed", { entity: t("common.work_item") }),
-          });
-        },
+        onError: (error) => notifyFailure(error, feedback, identity),
       }
     );
   };
 
-  return { run, pending, disabled: !enabled || pending };
+  const run = (change: () => Promise<unknown>, feedback?: ActionFeedback) => {
+    void execute(change, feedback)?.catch(() => undefined);
+  };
+  const runAsync = async (change: () => Promise<unknown>, feedback: ActionFeedback | undefined = messages) => {
+    const completion = execute(change, feedback);
+    if (!completion) {
+      const error = new Error("The work item action is unavailable or already pending.");
+      if (client.isMutating(filters) === 0) notifyFailure(error, feedback, captureIdentityScope(client, userId));
+      throw error;
+    }
+    await completion;
+  };
+  return { run, runAsync, isCurrent, pending, disabled: !enabled || pending };
 }

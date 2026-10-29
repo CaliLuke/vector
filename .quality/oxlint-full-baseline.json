@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "full",
-  "fileCount": 3737,
+  "fileCount": 3735,
   "diagnostics": [
     {
       "diagnostic": {
@@ -3276,69 +3276,6 @@
         "severity": "warning",
         "code": "typescript(no-explicit-any)",
         "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/links/link-detail.tsx",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/links/link-detail.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/links/link-detail.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/links/link-detail.tsx",
-        "severity": "warning",
-        "code": "react(static-components)",
-        "message": "Cannot create components during render"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/links/link-item.tsx",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/links/link-item.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/links/link-item.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
       },
       "count": 1
     },
