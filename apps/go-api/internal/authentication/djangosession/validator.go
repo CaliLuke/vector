@@ -804,9 +804,10 @@ func djangoBase64Decode(value string) ([]byte, error) {
 		octet := padded[index]
 		if (octet >= 'a' && octet <= 'z') || (octet >= 'A' && octet <= 'Z') ||
 			(octet >= '0' && octet <= '9') || octet == '-' || octet == '_' || octet == '+' || octet == '/' {
-			if octet == '+' {
+			switch octet {
+			case '+':
 				octet = '-'
-			} else if octet == '/' {
+			case '/':
 				octet = '_'
 			}
 			alphabet = append(alphabet, octet)
@@ -1160,7 +1161,7 @@ func validBase62(value string) bool {
 		}
 	}
 	for _, character := range value {
-		if !((character >= '0' && character <= '9') || (character >= 'A' && character <= 'Z') || (character >= 'a' && character <= 'z')) {
+		if (character < '0' || character > '9') && (character < 'A' || character > 'Z') && (character < 'a' || character > 'z') {
 			return false
 		}
 	}

@@ -191,7 +191,6 @@ func newSessionServiceProtocolMiddleware(metadata func(readServiceProtocol) (int
 					}
 					response.Header().Set("Location", location)
 					response.WriteHeader(http.StatusMovedPermanently)
-					return
 				})
 				unresolved := func(next http.Handler) http.Handler {
 					return activityReadsRequestSizeMiddleware(options.bodySizeLimit)(activityReadsCompatibilityMiddleware(options)(next))

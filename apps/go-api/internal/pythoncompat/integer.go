@@ -58,7 +58,7 @@ var pythonFloatPattern = regexp.MustCompile(`^[+-]?(?:(?:[0-9](?:_?[0-9])*)?(?:\
 
 // DecimalFloat64 matches Python 3.12 float parsing for decimal strings.
 func DecimalFloat64(value string) (float64, error) {
-	characters := []rune(strings.TrimSpace(value))
+	characters := strings.TrimSpace(value)
 	normalized := make([]byte, 0, len(value))
 	for _, character := range characters {
 		if digit, ok := unicodeDecimalDigit(character); ok {

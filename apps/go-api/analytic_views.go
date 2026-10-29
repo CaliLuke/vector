@@ -142,9 +142,10 @@ func analyticQuery(value any) (json.RawMessage, error) {
 	}
 	if candidate, exists := m["type"]; exists {
 		groups := []string{"backlog", "unstarted", "started", "completed", "cancelled"}
-		if candidate == "backlog" {
+		switch candidate {
+		case "backlog":
 			groups = []string{"backlog"}
-		} else if candidate == "active" {
+		case "active":
 			groups = []string{"unstarted", "started"}
 		}
 		query["state__group__in"] = groups

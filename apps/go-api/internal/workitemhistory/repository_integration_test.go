@@ -89,9 +89,10 @@ INSERT INTO comment_reactions(id,workspace_id,project_id,comment_id,actor_id,cre
 	for _, operation := range []string{"meta", "versions", "version_detail", "description_versions", "description_version_detail", "history"} {
 		t.Run(operation, func(t *testing.T) {
 			request.Operation = operation
-			if operation == "version_detail" {
+			switch operation {
+			case "version_detail":
 				request.VersionID = uuid.MustParse(historyVersion)
-			} else if operation == "description_version_detail" {
+			case "description_version_detail":
 				request.VersionID = uuid.MustParse(historyDescVer)
 			}
 			data, readErr := repository.Read(ctx, request)

@@ -5434,7 +5434,7 @@ func TestCSRFTokenHTTPSessionLifecycle(t *testing.T) {
 			t.Fatalf("runtime CORS policy: %v", err)
 		}
 		server := csrftokensvr.New(endpoints, mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil, corsPolicy)
-		var route http.Handler = server.CsrfToken
+		route := server.CsrfToken
 		switch method {
 		case http.MethodHead:
 			route = loomhttp.DerivedHeadHandler(route)

@@ -6,6 +6,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"io"
+	"slices"
 	"strings"
 	"testing"
 
@@ -22,6 +23,7 @@ func TestFormatIssueExportSupportsSourceFormatsAndSanitizesSpreadsheetCells(t *t
 		"labels": []any{"Bug", "Urgent"}, "links": []any{map[string]any{"url": "https://example.test", "title": "Example"}},
 		"is_draft": false,
 	}}
+	wantHeaders := []string{"Project Name", "Project Identifier", "Parent", "Identifier", "Sequence Id", "Name", "State Name", "Priority", "Assignees", "Subscribers", "Created By Name", "Start Date", "Target Date", "Completed At", "Created At", "Updated At", "Archived At", "Estimate", "Labels", "Cycles", "Modules", "Links", "Relations", "Comments", "Sub Issues Count", "Link Count", "Attachment Count", "Is Draft"}
 	t.Run("csv", func(t *testing.T) {
 		name, data, err := formatIssueExport("demo", "csv", records)
 		if err != nil {
@@ -34,7 +36,7 @@ func TestFormatIssueExportSupportsSourceFormatsAndSanitizesSpreadsheetCells(t *t
 		if err != nil {
 			t.Fatal(err)
 		}
-		if len(rows) != 2 || rows[0][0] != "Project Name" || rows[1][5] != "'=1+1" || rows[1][8] != "[\"A User\",\"B User\"]" {
+		if len(rows) != 2 || !slices.Equal(rows[0], wantHeaders) || rows[1][5] != "'=1+1" || rows[1][8] != "[\"A User\",\"B User\"]" {
 			t.Fatalf("CSV rows=%#v", rows)
 		}
 	})
@@ -65,7 +67,7 @@ func TestFormatIssueExportSupportsSourceFormatsAndSanitizesSpreadsheetCells(t *t
 		if err != nil {
 			t.Fatal(err)
 		}
-		if name != "demo.xlsx" || rows[0][0] != "Project Name" || rows[1][5] != "'=1+1" || rows[1][8] != "A User, B User" {
+		if name != "demo.xlsx" || !slices.Equal(rows[0], wantHeaders) || rows[1][5] != "'=1+1" || rows[1][8] != "A User, B User" {
 			t.Fatalf("XLSX rows=%#v", rows)
 		}
 	})

@@ -43,8 +43,8 @@ func (repository *Repository) Patch(ctx context.Context, userID uuid.UUID, value
 			continue
 		}
 		var converted any
-		switch {
-		case field == "deleted_at":
+		switch field {
+		case "deleted_at":
 			if value == nil {
 				converted = nil
 				break
@@ -54,7 +54,7 @@ func (repository *Repository) Patch(ctx context.Context, userID uuid.UUID, value
 				return uuid.Nil(), &FieldError{Field: field, Message: "Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."}
 			}
 			converted = parsed
-		case field == "created_by" || field == "updated_by" || field == "user" || field == "workspace" || field == "project":
+		case "created_by", "updated_by", "user", "workspace", "project":
 			if value == nil {
 				if field == "user" {
 					return uuid.Nil(), &FieldError{Field: field, Message: "This field may not be null."}

@@ -780,13 +780,14 @@ func marshalWebhookJSON(value any, spaced bool) ([]byte, error) {
 			}
 			continue
 		}
-		if b == '"' {
+		switch b {
+		case '"':
 			quoted = true
 			output.WriteByte(b)
-		} else if b == ',' || b == ':' {
+		case ',', ':':
 			output.WriteByte(b)
 			output.WriteByte(' ')
-		} else {
+		default:
 			output.WriteByte(b)
 		}
 	}

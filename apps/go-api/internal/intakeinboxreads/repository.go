@@ -656,9 +656,10 @@ func addIssueFilters(builder *whereBuilder, alias string, filters map[string]str
 	}
 	if value := filters["type"]; value != "" {
 		groups := []string{"backlog", "unstarted", "started", "completed", "cancelled"}
-		if value == "backlog" {
+		switch value {
+		case "backlog":
 			groups = []string{"backlog"}
-		} else if value == "active" {
+		case "active":
 			groups = []string{"unstarted", "started"}
 		}
 		builder.addCondition("EXISTS (SELECT 1 FROM states filtered_state WHERE filtered_state.id = "+alias+".state_id AND filtered_state.\"group\" = ANY(%s))", groups)

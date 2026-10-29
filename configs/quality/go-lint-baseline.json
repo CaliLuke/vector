@@ -946,95 +946,11 @@
       "count": 1
     },
     {
-      "fingerprint": ["staticcheck", "analytic_views.go", "QF1003: could use tagged switch on candidate"],
-      "count": 1
-    },
-    {
       "fingerprint": [
         "staticcheck",
         "cmd/system/account_authentication_adapters.go",
         "ST1005: error strings should not be capitalized"
       ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "cmd/system/activity_reads_routes.go", "QF1001: could apply De Morgan's law"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "cmd/system/activity_reads_routes.go",
-        "QF1003: could use tagged switch on protocol.apiAuthorization"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "cmd/system/assets_lifecycle_transport_test.go",
-        "QF1003: could use tagged switch on method"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "cmd/system/http_cors.go", "QF1001: could apply De Morgan's law"],
-      "count": 3
-    },
-    {
-      "fingerprint": ["staticcheck", "cmd/system/http_encoding.go", "QF1003: could use tagged switch on value"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "cmd/system/http_test.go",
-        "QF1011: could omit type http.Handler from declaration; it will be inferred from the right-hand side"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "cmd/system/main_logging_test.go", "QF1003: could use tagged switch on test.want"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "cmd/system/main.go",
-        "QF1011: could omit type backgroundtasks.TaskFallback from declaration; it will be inferred from the right-hand side"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "cmd/system/module_lifecycle_transport_test.go",
-        "QF1001: could apply De Morgan's law"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "cmd/system/module_lifecycle_transport_test.go",
-        "QF1003: could use tagged switch on test.method"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "cmd/system/session_service_protocol.go", "S1023: redundant return statement"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "cmd/system/workspace_search_http_test.go",
-        "QF1003: could use tagged switch on status"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "cycle_lifecycle.go", "QF1002: could use tagged switch on pattern"],
       "count": 1
     },
     {
@@ -1081,25 +997,9 @@
       "fingerprint": [
         "staticcheck",
         "internal/assets/bindingsgen/main.go",
-        "QF1012: Use fmt.Fprintf(...) instead of WriteString(fmt.Sprintf(...))"
-      ],
-      "count": 5
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/assets/bindingsgen/main.go",
         "ST1005: error strings should not be capitalized"
       ],
       "count": 11
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/authentication/djangosession/django_json.go",
-        "S1017: should replace this if statement with an unconditional strings.TrimPrefix"
-      ],
-      "count": 1
     },
     {
       "fingerprint": [
@@ -1108,22 +1008,6 @@
         "ST1005: error strings should not be capitalized"
       ],
       "count": 4
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/authentication/djangosession/validator.go",
-        "QF1001: could apply De Morgan's law"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/authentication/djangosession/validator.go",
-        "QF1003: could use tagged switch on octet"
-      ],
-      "count": 1
     },
     {
       "fingerprint": [
@@ -1178,14 +1062,6 @@
         "staticcheck",
         "internal/backgroundtasks/description_asset_copy.go",
         "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/event_tracking.go",
-        "QF1003: could use tagged switch on key"
       ],
       "count": 1
     },
@@ -1257,14 +1133,6 @@
       "fingerprint": [
         "staticcheck",
         "internal/backgroundtasks/issue_export.go",
-        "SA1019: strings.Title has been deprecated since Go 1.18 and an alternative has been available since Go 1.0: The rule Title uses for word boundaries does not handle Unicode punctuation properly. Use golang.org/x/text/cases instead. "
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/issue_export.go",
         "ST1005: error strings should not be capitalized"
       ],
       "count": 1
@@ -1284,14 +1152,6 @@
         "ST1005: error strings should not be capitalized"
       ],
       "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/link_preview_test.go",
-        "ST1013: should use constant http.StatusFound instead of numeric literal 302"
-      ],
-      "count": 2
     },
     {
       "fingerprint": [
@@ -1337,14 +1197,6 @@
       "fingerprint": [
         "staticcheck",
         "internal/backgroundtasks/webhook_tasks.go",
-        "QF1003: could use tagged switch on b"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/webhook_tasks.go",
         "ST1005: error strings should not be capitalized"
       ],
       "count": 1
@@ -1354,14 +1206,6 @@
         "staticcheck",
         "internal/bootstrap/install.go",
         "ST1005: error strings should not end with punctuation or newlines"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/bootstrap/instance_integration_test.go",
-        "S1038: should use t.Fatalf(...) instead of t.Fatal(fmt.Sprintf(...))"
       ],
       "count": 1
     },
@@ -1382,14 +1226,6 @@
       "count": 1
     },
     {
-      "fingerprint": ["staticcheck", "internal/cyclereads/repository.go", "QF1001: could apply De Morgan's law"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "internal/cyclereads/repository.go", "QF1003: could use tagged switch on value"],
-      "count": 3
-    },
-    {
       "fingerprint": [
         "staticcheck",
         "internal/devtools/local_logs.go",
@@ -1398,98 +1234,14 @@
       "count": 1
     },
     {
-      "fingerprint": [
-        "staticcheck",
-        "internal/djangoinput/input.go",
-        "S1034: assigning the result of this type assertion to a variable (switch value := value.(type)) could eliminate type assertions in switch cases"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/djangoinput/input.go",
-        "S1034(related information): could eliminate this type assertion"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "internal/emailvalidation/email.go", "QF1001: could apply De Morgan's law"],
-      "count": 5
-    },
-    {
-      "fingerprint": ["staticcheck", "internal/htmlcompat/parse_test.go", "QF1001: could apply De Morgan's law"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "internal/htmlcompat/parse.go", "QF1004: could use strings.ReplaceAll instead"],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/htmlcompat/parse.go",
-        "S1008: should use 'return p.tok.DataAtom == a.Noscript' instead of 'if p.tok.DataAtom == a.Noscript { return true }; return false'"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/htmlcompat/render.go",
-        "ST1012: error var plaintextAbort should have name of the form errFoo"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "internal/htmlcompat/token.go", "QF1004: could use bytes.ReplaceAll instead"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/instancemail/sender_test.go",
-        "QF1011: could omit type io.Reader from declaration; it will be inferred from the right-hand side"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/intakeinboxreads/repository.go",
-        "QF1003: could use tagged switch on value"
-      ],
-      "count": 1
-    },
-    {
       "fingerprint": ["staticcheck", "internal/issuequery/group.go", "ST1005: error strings should not be capitalized"],
       "count": 2
-    },
-    {
-      "fingerprint": ["staticcheck", "internal/pagereads/lifecycle.go", "QF1003: could use tagged switch on operation"],
-      "count": 1
     },
     {
       "fingerprint": [
         "staticcheck",
         "internal/pagereads/repository.go",
         "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/projectmembershipreads/invitations_contract_regressions_test.go",
-        "QF1001: could apply De Morgan's law"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/projectmembershipreads/lifecycle.go",
-        "QF1001: could apply De Morgan's law"
       ],
       "count": 1
     },
@@ -1512,22 +1264,10 @@
     {
       "fingerprint": [
         "staticcheck",
-        "internal/pythoncompat/integer.go",
-        "SA6003: should range over string, not []rune(string)"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
         "internal/stickies/content/binary.go",
         "ST1005: error strings should not be capitalized"
       ],
       "count": 5
-    },
-    {
-      "fingerprint": ["staticcheck", "internal/stickies/content/html.go", "QF1003: could use tagged switch on b"],
-      "count": 1
     },
     {
       "fingerprint": [
@@ -1541,23 +1281,7 @@
       "fingerprint": [
         "staticcheck",
         "internal/usernotificationpreferences/repository.go",
-        "QF1002: could use tagged switch on field"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/usernotificationpreferences/repository.go",
         "ST1005: error strings should not end with punctuation or newlines"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/workitemhistory/repository_integration_test.go",
-        "QF1003: could use tagged switch on operation"
       ],
       "count": 1
     },
@@ -1575,18 +1299,6 @@
         "internal/workitems/filters.go",
         "ST1005: error strings should not be capitalized"
       ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "internal/workitems/input.go", "QF1001: could apply De Morgan's law"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "internal/workitems/intake.go", "QF1001: could apply De Morgan's law"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "internal/workitems/issue_writes.go", "QF1001: could apply De Morgan's law"],
       "count": 1
     },
     {
@@ -1671,14 +1383,6 @@
     },
     {
       "fingerprint": ["staticcheck", "user_profile_flags.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "work_item_core/design/target_errors_test.go",
-        "S1021: should merge variable declaration with assignment on next line"
-      ],
       "count": 1
     },
     {

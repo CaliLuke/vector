@@ -187,9 +187,10 @@ func (repository *Repository) AuthorizeLifecycle(ctx context.Context, operation 
 		var role int
 		err := repository.database.QueryRow(ctx, `SELECT pm.role FROM workspaces w JOIN projects pr ON pr.workspace_id=w.id AND pr.id=$2 AND pr.deleted_at IS NULL JOIN workspace_members wm ON wm.workspace_id=w.id AND wm.member_id=$1 AND wm.is_active AND wm.deleted_at IS NULL JOIN project_members pm ON pm.project_id=pr.id AND pm.member_id=$1 AND pm.is_active AND pm.deleted_at IS NULL WHERE w.slug=$3 AND w.deleted_at IS NULL`, user, project, slug).Scan(&role)
 		minimumRole := 15
-		if operation == "options" {
+		switch operation {
+		case "options":
 			minimumRole = 5
-		} else if operation == "delete_collection" {
+		case "delete_collection":
 			minimumRole = 20
 		}
 		if errors.Is(err, pgx.ErrNoRows) || (err == nil && (role < minimumRole || operation == "unsupported_collection")) {

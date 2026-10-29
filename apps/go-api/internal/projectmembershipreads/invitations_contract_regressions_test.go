@@ -60,7 +60,7 @@ func TestV1InvitationSupportedMediaAndCompleteDocumentParsing(t *testing.T) {
 					}
 					return
 				}
-				if err != nil || !(strings.Contains(db.query, "INSERT") || strings.Contains(db.query, "UPDATE")) {
+				if err != nil || (!strings.Contains(db.query, "INSERT") && !strings.Contains(db.query, "UPDATE")) {
 					t.Fatalf("error=%v final query=%s", err, db.query)
 				}
 				if operation == "create" && (db.args[1] != "fresh@example.com" || db.args[2] != 15) {

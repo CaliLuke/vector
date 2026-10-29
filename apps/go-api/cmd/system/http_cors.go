@@ -402,7 +402,7 @@ func djangoURLSplit(origin string) (djangoURLSplitResult, bool) {
 		if strings.HasPrefix(host, "v") {
 			version, suffix, found := strings.Cut(host[1:], ".")
 			if !found || version == "" || suffix == "" || strings.IndexFunc(version, func(value rune) bool {
-				return !((value >= '0' && value <= '9') || (value >= 'a' && value <= 'f') || (value >= 'A' && value <= 'F'))
+				return (value < '0' || value > '9') && (value < 'a' || value > 'f') && (value < 'A' || value > 'F')
 			}) >= 0 {
 				return djangoURLSplitResult{}, false
 			}
@@ -429,11 +429,11 @@ func djangoURLSplit(origin string) (djangoURLSplitResult, bool) {
 
 func djangoURLSchemeValid(value string) bool {
 	for index, character := range value {
-		if index == 0 && !((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z')) {
+		if index == 0 && ((character < 'a' || character > 'z') && (character < 'A' || character > 'Z')) {
 			return false
 		}
-		if index > 0 && !((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') ||
-			(character >= '0' && character <= '9') || character == '+' || character == '-' || character == '.') {
+		if index > 0 && ((character < 'a' || character > 'z') && (character < 'A' || character > 'Z') &&
+			(character < '0' || character > '9') && character != '+' && character != '-' && character != '.') {
 			return false
 		}
 	}

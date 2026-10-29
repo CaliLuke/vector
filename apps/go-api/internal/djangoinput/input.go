@@ -317,7 +317,7 @@ func unpairedSurrogates(raw []byte) []string {
 }
 
 func PythonType(value any) string {
-	switch value.(type) {
+	switch typed := value.(type) {
 	case nil:
 		return "NoneType"
 	case []any:
@@ -327,7 +327,7 @@ func PythonType(value any) string {
 	case string:
 		return "str"
 	case json.Number:
-		if strings.ContainsAny(string(value.(json.Number)), ".eE") {
+		if strings.ContainsAny(string(typed), ".eE") {
 			return "float"
 		}
 		return "int"

@@ -3,7 +3,6 @@ package bootstrap
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -169,6 +168,6 @@ func TestPostgresBootstrapRegistrationAndConfiguration(t *testing.T) {
 		t.Fatal(err)
 	}
 	if savedValue != "user-selected" || !isEncrypted || plaintext != "initial-password" || configCount != 36 {
-		t.Fatal(fmt.Sprintf("configuration should preserve existing values: signup=%q encrypted=%t password=%q count=%d", savedValue, isEncrypted, plaintext, configCount))
+		t.Fatalf("configuration should preserve existing values: signup=%q encrypted=%t password=%q count=%d", savedValue, isEncrypted, plaintext, configCount)
 	}
 }

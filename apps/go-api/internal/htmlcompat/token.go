@@ -1159,7 +1159,7 @@ func (z *Tokenizer) Text() []byte {
 		z.data.end = z.raw.end
 		s = convertNewlines(s)
 		if (z.convertNUL || z.tt == CommentToken) && bytes.Contains(s, nul) {
-			s = bytes.Replace(s, nul, replacement, -1)
+			s = bytes.ReplaceAll(s, nul, replacement)
 		}
 		if !z.textIsRaw {
 			s = unescape(s, false)

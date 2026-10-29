@@ -37,7 +37,7 @@ func ValidDjangoEmail(raw string) bool {
 	if strings.HasPrefix(domain, "[") && strings.HasSuffix(domain, "]") {
 		literal := domain[1 : len(domain)-1]
 		for _, c := range literal {
-			if !(c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F' || c == ':' || c == '.') {
+			if (c < '0' || c > '9') && (c < 'a' || c > 'f') && (c < 'A' || c > 'F') && c != ':' && c != '.' {
 				return false
 			}
 		}
@@ -54,7 +54,7 @@ func ValidDjangoEmail(raw string) bool {
 			return false
 		}
 		for _, c := range label {
-			if !emailDomainLetter(c) && !(c >= '0' && c <= '9') && c != '-' {
+			if !emailDomainLetter(c) && (c < '0' || c > '9') && c != '-' {
 				return false
 			}
 		}
@@ -74,7 +74,7 @@ func ValidDjangoEmail(raw string) bool {
 		return false
 	}
 	for _, c := range tld[4:] {
-		if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9') {
+		if (c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && (c < '0' || c > '9') {
 			return false
 		}
 	}
@@ -94,7 +94,7 @@ func validEmailLocal(local string) bool {
 				if i >= len(local)-1 || local[i] == 0 || local[i] == '\n' || local[i] == '\r' || local[i] > 127 {
 					return false
 				}
-			} else if !(c >= 1 && c <= 8 || c == 11 || c == 12 || c >= 14 && c <= 31 || c == '!' || c >= '#' && c <= '[' || c >= ']' && c <= 127) {
+			} else if (c < 1 || c > 8) && c != 11 && c != 12 && (c < 14 || c > 31) && c != '!' && (c < '#' || c > '[') && (c < ']' || c > 127) {
 				return false
 			}
 		}
@@ -106,7 +106,7 @@ func validEmailLocal(local string) bool {
 		}
 		for _, c := range atom {
 			// Python's Unicode IGNORECASE adds these four letters to A-Z.
-			if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || strings.ContainsRune("-!#$%&'*+/=?^_`{}|~İıſK", c)) {
+			if (c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && (c < '0' || c > '9') && !strings.ContainsRune("-!#$%&'*+/=?^_`{}|~İıſK", c) {
 				return false
 			}
 		}

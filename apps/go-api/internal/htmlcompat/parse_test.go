@@ -126,7 +126,7 @@ func readParseTest(r *bufio.Reader) (*testAttrs, error) {
 			if line[0] == '|' && trimmed[0] == '"' {
 				inQuote = true
 			}
-			if trimmed[len(trimmed)-1] == '"' && !(line[0] == '|' && len(trimmed) == 1) {
+			if trimmed[len(trimmed)-1] == '"' && (line[0] != '|' || len(trimmed) != 1) {
 				inQuote = false
 			}
 		}

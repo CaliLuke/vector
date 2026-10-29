@@ -799,9 +799,10 @@ func TestAssetsLifecycleDuplicateAssetThrottlePrecedesPermissionAndDispatch(t *t
 		response := httptest.NewRecorder()
 		handler.ServeHTTP(response, request)
 		wantStatus := http.StatusForbidden
-		if method == http.MethodPatch {
+		switch method {
+		case http.MethodPatch:
 			wantStatus = http.StatusMethodNotAllowed
-		} else if method == http.MethodOptions {
+		case http.MethodOptions:
 			wantStatus = http.StatusOK
 		}
 		if response.Code != wantStatus {

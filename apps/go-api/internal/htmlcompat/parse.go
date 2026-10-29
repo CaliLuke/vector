@@ -781,10 +781,7 @@ func inHeadNoscriptIM(p *parser) bool {
 		panic("html: the new current node will be a head element.")
 	}
 	p.im = inHeadIM
-	if p.tok.DataAtom == a.Noscript {
-		return true
-	}
-	return false
+	return p.tok.DataAtom == a.Noscript
 }
 
 // Section 12.2.6.4.6.
@@ -1096,7 +1093,7 @@ func textIM(p *parser) bool {
 func inTableIM(p *parser) bool {
 	switch p.tok.Type {
 	case TextToken:
-		p.tok.Data = strings.Replace(p.tok.Data, "\x00", "", -1)
+		p.tok.Data = strings.ReplaceAll(p.tok.Data, "\x00", "")
 		switch p.oe.top().DataAtom {
 		case a.Table, a.Tbody, a.Tfoot, a.Thead, a.Tr:
 			if strings.Trim(p.tok.Data, whitespace) == "" {
@@ -1711,7 +1708,7 @@ func parseForeignContent(p *parser) bool {
 		if p.framesetOK {
 			p.framesetOK = strings.TrimLeft(p.tok.Data, whitespaceOrNUL) == ""
 		}
-		p.tok.Data = strings.Replace(p.tok.Data, "\x00", "\ufffd", -1)
+		p.tok.Data = strings.ReplaceAll(p.tok.Data, "\x00", "\ufffd")
 		p.addText(p.tok.Data)
 	case CommentToken:
 		p.addChild(&Node{

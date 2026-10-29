@@ -1028,7 +1028,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	}
 	notificationsEndpoints := notificationsapi.NewEndpoints(notificationsService)
 	notificationsEndpoints.Use(log.Endpoint)
-	var notificationTaskFallback backgroundtasks.TaskFallback = taskFallback
+	notificationTaskFallback := taskFallback
 	var closeNotificationPublisher func()
 	if !cfg.goBackgroundTasks {
 		notificationPublisher, newPublisherErr := celery.NewPublisher(cfg.amqpURL)

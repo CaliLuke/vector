@@ -453,7 +453,7 @@ func (r *Repository) patchIntake(ctx context.Context, q Request, project, row ma
 		}
 		// A later acceptance transition must build on this saved edit.
 		cachedIssue = saved
-		if !q.API && !(truthy(skip) && descriptionUpdate) {
+		if !q.API && (!truthy(skip) || !descriptionUpdate) {
 			if intakeActivityErr := r.intakeActivity(ctx, q, row["id"].(string), "issue.activity.updated", edit.requested, edit.previous, true); intakeActivityErr != nil {
 				return Result{}, intakeActivityErr
 			}

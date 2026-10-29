@@ -29,11 +29,12 @@ func TestNewLogContextReportsRequestCancellationSafely(t *testing.T) {
 			ctx = log.Context(ctx, log.WithDisableBuffering(func(context.Context) bool { return true }))
 			handler := http.HandlerFunc(func(_ http.ResponseWriter, request *http.Request) {
 				requestContext := request.Context()
-				if test.want == "context_canceled" {
+				switch test.want {
+				case "context_canceled":
 					var cancel context.CancelFunc
 					requestContext, cancel = context.WithCancel(requestContext)
 					cancel()
-				} else if test.want == "deadline_exceeded" {
+				case "deadline_exceeded":
 					var cancel context.CancelFunc
 					requestContext, cancel = context.WithDeadline(requestContext, time.Unix(1, 0))
 					defer cancel()

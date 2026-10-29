@@ -31,8 +31,7 @@ func TestWorkItemGeneratedErrorsPreserveSelectedTargetBodies(t *testing.T) {
 		t.Fatal(err)
 	}
 	checked := 0
-	var checkBody func(string, int, map[string]any)
-	checkBody = func(name string, status int, body map[string]any) {
+	checkBody := func(name string, status int, body map[string]any) {
 		if status < 400 {
 			return
 		}

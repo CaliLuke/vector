@@ -191,18 +191,18 @@ func (service *cycleLifecycleService) AuthorizeSessionResourceProtocol(ctx conte
 }
 
 func (service *cycleLifecycleService) OwnsSessionProtocolMethod(pattern, method string) bool {
-	switch {
-	case pattern == "/api/workspaces/{slug}/projects/{project_id}/cycles/":
+	switch pattern {
+	case "/api/workspaces/{slug}/projects/{project_id}/cycles/":
 		return method == http.MethodPost
-	case pattern == "/api/workspaces/{slug}/projects/{project_id}/cycles/date-check/":
+	case "/api/workspaces/{slug}/projects/{project_id}/cycles/date-check/":
 		return method == http.MethodPost
-	case pattern == "/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/archive/":
+	case "/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/archive/":
 		return method == http.MethodPost || method == http.MethodDelete
-	case pattern == "/api/workspaces/{slug}/projects/{project_id}/archived-cycles/":
+	case "/api/workspaces/{slug}/projects/{project_id}/archived-cycles/":
 		return method == http.MethodPost || method == http.MethodDelete
-	case pattern == "/api/workspaces/{slug}/projects/{project_id}/archived-cycles/{pk}/":
+	case "/api/workspaces/{slug}/projects/{project_id}/archived-cycles/{pk}/":
 		return method == http.MethodPost || method == http.MethodDelete
-	case pattern == "/api/workspaces/{slug}/projects/{project_id}/cycles/{pk}/":
+	case "/api/workspaces/{slug}/projects/{project_id}/cycles/{pk}/":
 		return method == http.MethodPut || method == http.MethodPatch || method == http.MethodDelete
 	default:
 		return false

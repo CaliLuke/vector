@@ -327,9 +327,10 @@ func TestModuleLinkLifecycleProductionMuxSelectsMethodSpecificProtocol(t *testin
 		body := `{"title":"ref","url":"https://example.test"}`
 		response := request(test.method, test.path, body)
 		wantStatus := http.StatusOK
-		if test.method == http.MethodPost {
+		switch test.method {
+		case http.MethodPost:
 			wantStatus = http.StatusCreated
-		} else if test.method == http.MethodDelete {
+		case http.MethodDelete:
 			wantStatus = http.StatusNoContent
 		}
 		if response.Code != wantStatus || response.Header().Get("Allow") != test.allow {
@@ -446,7 +447,7 @@ func TestModuleLifecycleArchivedItemAliasesUseSourceActionsAndPK(t *testing.T) {
 		request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
 		response := httptest.NewRecorder()
 		handler.ServeHTTP(response, request)
-		if response.Code != http.StatusOK && !(test.method == http.MethodDelete && response.Code == http.StatusNoContent) {
+		if response.Code != http.StatusOK && (test.method != http.MethodDelete || response.Code != http.StatusNoContent) {
 			t.Fatalf("%s status=%d body=%q", test.method, response.Code, response.Body.String())
 		}
 		if got := response.Header().Get("Vary"); got != "Cookie, origin" {

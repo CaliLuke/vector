@@ -199,7 +199,7 @@ func readAttachments(header textproto.MIMEHeader, body io.Reader) ([]decodedAtta
 	if err != nil || !strings.EqualFold(disposition, "attachment") {
 		return nil, nil
 	}
-	var decoded io.Reader = body
+	decoded := body
 	switch strings.ToLower(header.Get("Content-Transfer-Encoding")) {
 	case "base64":
 		decoded = base64.NewDecoder(base64.StdEncoding, body)

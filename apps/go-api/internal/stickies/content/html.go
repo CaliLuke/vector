@@ -174,9 +174,10 @@ func findTagEnd(rendered []byte, start int) int {
 			}
 			continue
 		}
-		if b == '\'' || b == '"' {
+		switch b {
+		case '\'', '"':
 			quote = b
-		} else if b == '>' {
+		case '>':
 			return position
 		}
 	}

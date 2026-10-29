@@ -28,9 +28,10 @@ func djangoJSONColonSpacing(body []byte) []byte {
 			}
 			continue
 		}
-		if value == '"' {
+		switch value {
+		case '"':
 			inString = true
-		} else if value == ':' {
+		case ':':
 			spaced = append(spaced, ' ')
 		}
 	}

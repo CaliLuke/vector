@@ -264,7 +264,7 @@ func mapAssetsLifecycleError(operation string, err error) error {
 	}
 	sort.Strings(operations)
 	for _, operation := range operations {
-		source.WriteString(fmt.Sprintf("\tcase %q:\n\t\tswitch status {\n", operation))
+		fmt.Fprintf(&source, "\tcase %q:\n\t\tswitch status {\n", operation)
 		statuses := make([]string, 0, len(statusTypes[operation]))
 		for status := range statusTypes[operation] {
 			statuses = append(statuses, status)
@@ -273,16 +273,16 @@ func mapAssetsLifecycleError(operation string, err error) error {
 		for _, status := range statuses {
 			typeInfo := statusTypes[operation][status]
 			if typeInfo.pointerReceiver {
-				source.WriteString(fmt.Sprintf("\t\tcase %s:\n\t\t\tresult := &api.%s{}\n\t\t\tif json.Unmarshal(encoded, result) == nil {\n\t\t\t\treturn result\n\t\t\t}\n", status, typeInfo.name))
+				fmt.Fprintf(&source, "\t\tcase %s:\n\t\t\tresult := &api.%s{}\n\t\t\tif json.Unmarshal(encoded, result) == nil {\n\t\t\t\treturn result\n\t\t\t}\n", status, typeInfo.name)
 			} else {
-				source.WriteString(fmt.Sprintf("\t\tcase %s:\n\t\t\tresult := api.%s{}\n\t\t\tif json.Unmarshal(encoded, &result) == nil {\n\t\t\t\treturn result\n\t\t\t}\n", status, typeInfo.name))
+				fmt.Fprintf(&source, "\t\tcase %s:\n\t\t\tresult := api.%s{}\n\t\t\tif json.Unmarshal(encoded, &result) == nil {\n\t\t\t\treturn result\n\t\t\t}\n", status, typeInfo.name)
 			}
 		}
 		if typeInfo, ok := statusTypes[operation]["500"]; ok {
 			if typeInfo.pointerReceiver {
-				source.WriteString(fmt.Sprintf("\t\tdefault:\n\t\t\tresult := &api.%s{}\n\t\t\tif json.Unmarshal(encoded, result) == nil {\n\t\t\t\treturn result\n\t\t\t}\n", typeInfo.name))
+				fmt.Fprintf(&source, "\t\tdefault:\n\t\t\tresult := &api.%s{}\n\t\t\tif json.Unmarshal(encoded, result) == nil {\n\t\t\t\treturn result\n\t\t\t}\n", typeInfo.name)
 			} else {
-				source.WriteString(fmt.Sprintf("\t\tdefault:\n\t\t\tresult := api.%s{}\n\t\t\tif json.Unmarshal(encoded, &result) == nil {\n\t\t\t\treturn result\n\t\t\t}\n", typeInfo.name))
+				fmt.Fprintf(&source, "\t\tdefault:\n\t\t\tresult := api.%s{}\n\t\t\tif json.Unmarshal(encoded, &result) == nil {\n\t\t\t\treturn result\n\t\t\t}\n", typeInfo.name)
 			}
 		}
 		source.WriteString("\t\t}\n")

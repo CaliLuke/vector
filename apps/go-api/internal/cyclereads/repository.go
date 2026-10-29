@@ -305,7 +305,7 @@ func (repository *Repository) issueResults(
 		totalPages = int(math.Ceil(float64(result.total) / float64(limit)))
 	}
 	nextPage := (page+1)*limit < result.expandedTotal
-	if previous && !(options.GroupBy == "" && issueMultiGroup(options.SubGroupBy)) {
+	if previous && (options.GroupBy != "" || !issueMultiGroup(options.SubGroupBy)) {
 		nextPage = page+1 < totalPages
 	}
 	responseOptions := options
@@ -1076,9 +1076,10 @@ func issueFilterPredicates(filters map[string]string, args *[]any) []string {
 			}
 		case "type":
 			groups := []string{"backlog", "unstarted", "started", "completed", "cancelled"}
-			if value == "backlog" {
+			switch value {
+			case "backlog":
 				groups = []string{"backlog"}
-			} else if value == "active" {
+			case "active":
 				groups = []string{"unstarted", "started"}
 			}
 			add(groups, "state.\"group\" = ANY($%d::text[])")
@@ -1087,15 +1088,17 @@ func issueFilterPredicates(filters map[string]string, args *[]any) []string {
 				predicates = append(predicates, "issue.parent_id IS NULL")
 			}
 		case "is_archived":
-			if value == "true" || value == "True" || value == "1" {
+			switch value {
+			case "true", "True", "1":
 				predicates = append(predicates, "issue.archived_at IS NOT NULL")
-			} else if value == "false" || value == "False" || value == "0" {
+			case "false", "False", "0":
 				predicates = append(predicates, "issue.archived_at IS NULL")
 			}
 		case "is_draft":
-			if value == "true" || value == "True" || value == "1" {
+			switch value {
+			case "true", "True", "1":
 				predicates = append(predicates, "issue.is_draft = true")
-			} else if value == "false" || value == "False" || value == "0" {
+			case "false", "False", "0":
 				predicates = append(predicates, "issue.is_draft = false")
 			}
 		case "start_target_date":

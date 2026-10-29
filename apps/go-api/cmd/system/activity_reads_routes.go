@@ -103,7 +103,7 @@ func newActivityReadsProtocolMiddleware(
 				}
 			}
 			unsupportedUserMethod := userActivity && !readServiceMethodAllowed(protocol.allow, request.Method)
-			if slices.Contains(protocol.passthroughMethods, request.Method) || (!activityAPI || request.Method == http.MethodGet && protocol.apiAuthorization != "assets" && !protocol.generatedMethods || (protocol.workItem || protocol.generatedMethods) && readServiceMethodAllowed(protocol.allow, request.Method) && !(protocol.apiAuthorization == "invitations" && request.Method == http.MethodOptions)) && !unsupportedUserMethod {
+			if slices.Contains(protocol.passthroughMethods, request.Method) || (!activityAPI || request.Method == http.MethodGet && protocol.apiAuthorization != "assets" && !protocol.generatedMethods || (protocol.workItem || protocol.generatedMethods) && readServiceMethodAllowed(protocol.allow, request.Method) && (protocol.apiAuthorization != "invitations" || request.Method != http.MethodOptions)) && !unsupportedUserMethod {
 				next.ServeHTTP(response, request)
 				return
 			}
@@ -123,13 +123,14 @@ func activityReadsAPIMethodNotAllowedHandler(authorizer systemapi.ActivityReadsP
 		var body map[string]any
 		protocol, _ := resolveReadServiceProtocolForMethod(request.URL.Path, request.Method)
 
-		if protocol.apiAuthorization == "stickies" {
+		switch protocol.apiAuthorization {
+		case "stickies":
 			if stickies, ok := authorizer.(systemapi.APIV1StickyProtocolAuthorizer); ok {
 				status, body = stickies.AuthorizeAPIV1StickyProtocol(request.Context(), djangoJoinedHeader(request, "X-Api-Key"), request.PathValue("slug"))
 			} else {
 				status, body = 500, map[string]any{"error": "Something went wrong please try again later"}
 			}
-		} else if protocol.apiAuthorization == "project_configuration" {
+		case "project_configuration":
 			if configuration, ok := authorizer.(interface {
 				AuthorizeAPIV1LabelProtocol(context.Context, string, string, string) (int, map[string]any)
 			}); ok {
@@ -137,7 +138,7 @@ func activityReadsAPIMethodNotAllowedHandler(authorizer systemapi.ActivityReadsP
 			} else {
 				status, body = 500, map[string]any{"error": "Something went wrong please try again later"}
 			}
-		} else if protocol.apiAuthorization == "project_lifecycle" {
+		case "project_lifecycle":
 			if project, ok := authorizer.(interface {
 				AuthorizeProjectLifecycleAPIProtocol(context.Context, string, systemapi.SessionProtocolResource) (int, map[string]any)
 			}); ok {
@@ -145,34 +146,34 @@ func activityReadsAPIMethodNotAllowedHandler(authorizer systemapi.ActivityReadsP
 			} else {
 				status, body = 500, map[string]any{"error": "Something went wrong please try again later"}
 			}
-		} else if protocol.apiAuthorization == "assets" {
+		case "assets":
 			if assets, ok := authorizer.(systemapi.AssetsAPIProtocolAuthorizer); ok {
 				status, body = assets.AuthorizeAssetsAPIProtocol(request.Context(), djangoJoinedHeader(request, "X-Api-Key"), sessionProtocolResource(request, protocol))
 			} else {
 				status = 500
 				body = map[string]any{"error": "Something went wrong please try again later"}
 			}
-		} else if protocol.apiAuthorization == "invitations" {
+		case "invitations":
 			if invitations, ok := authorizer.(systemapi.InvitationsMembershipProtocolAuthorizer); ok {
 				status, body = invitations.AuthorizeInvitationsMembershipProtocol(request.Context(), djangoJoinedHeader(request, "X-Api-Key"), sessionProtocolResource(request, protocol), true)
 			} else {
 				status, body = 500, map[string]any{"error": "Something went wrong please try again later"}
 			}
-		} else if protocol.apiAuthorization == "membership" {
+		case "membership":
 			if membership, ok := authorizer.(systemapi.MembershipLifecycleProtocolAuthorizer); ok {
 				status, body = membership.AuthorizeMembershipLifecycleProtocol(request.Context(), djangoJoinedHeader(request, "X-Api-Key"), systemapi.SessionProtocolResource{Method: request.Method, Pattern: protocol.pattern, Slug: request.PathValue("slug"), ProjectID: request.PathValue("project_id")}, true)
 			} else {
 				status = 500
 				body = map[string]any{"error": "Something went wrong please try again later"}
 			}
-		} else if protocol.apiAuthorization == "identity" {
+		case "identity":
 			identity, ok := authorizer.(systemapi.APIIdentityProtocolAuthorizer)
 			if !ok {
 				writeReadServiceJSON(response, 500, map[string]string{"error": "Something went wrong please try again later"})
 				return
 			}
 			status, body = identity.AuthorizeAPIIdentityProtocol(request.Context(), djangoJoinedHeader(request, "X-Api-Key"))
-		} else {
+		default:
 			status, body = authorizer.AuthorizeAPIActivityProtocol(request.Context(), djangoJoinedHeader(request, "X-Api-Key"), request.PathValue("slug"), request.PathValue("project_id"), request.Method)
 		}
 

@@ -245,10 +245,7 @@ func (parser *djangoJSONParser) parseNumber() (djangoJSONValue, error) {
 		}
 		return djangoJSONValue{kind: djangoJSONFloat, number: token}, nil
 	}
-	digits := token
-	if strings.HasPrefix(digits, "-") {
-		digits = digits[1:]
-	}
+	digits := strings.TrimPrefix(token, "-")
 	if len(digits) > 4300 {
 		return djangoJSONValue{}, ErrInvalidData
 	}

@@ -21,6 +21,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/xuri/excelize/v2"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -318,8 +320,9 @@ func formatIssueExport(filename, format string, records []map[string]any) (strin
 func formatIssueExportColumns(filename, format string, records []map[string]any, columns []workitemtypes.PropertyExportColumn) (string, []byte, error) {
 	fields := append([]string{}, issueExportFields...)
 	titles := map[string]string{}
+	title := cases.Title(language.Und, cases.NoLower)
 	for _, field := range fields {
-		titles[field] = strings.Title(strings.ReplaceAll(field, "_", " "))
+		titles[field] = title.String(strings.ReplaceAll(field, "_", " "))
 	}
 	for _, column := range columns {
 		fields = append(fields, column.Key)

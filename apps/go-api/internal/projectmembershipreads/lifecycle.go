@@ -267,7 +267,7 @@ func (r *LifecycleRepository) lifecycleV1Write(ctx context.Context, c LifecycleC
 	} else if create {
 		failures["member"] = []string{"This field is required."}
 	}
-	if value, ok := input.Fields["role"]; ok && !(input.Form && value == "") {
+	if value, ok := input.Fields["role"]; ok && (!input.Form || value != "") {
 		parsed, failure := lifecycleRole(value)
 		if failure != "" {
 			failures["role"] = []string{failure}

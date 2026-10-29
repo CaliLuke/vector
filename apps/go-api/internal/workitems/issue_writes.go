@@ -297,7 +297,7 @@ func (r *Repository) finishIssueWrite(ctx context.Context, q Request, input djan
 			return Result{}, err
 		}
 	}
-	if q.Method != "PUT" && !(q.Method == "PATCH" && !q.API && truthy(skip) && input.Fields["description_html"] != nil) {
+	if q.Method != "PUT" && (q.Method != "PATCH" || q.API || !truthy(skip) || input.Fields["description_html"] == nil) {
 		if err = r.issueWriteEffects(ctx, q, input, previous, old == nil); err != nil {
 			return Result{}, err
 		}

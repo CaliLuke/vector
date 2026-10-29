@@ -157,9 +157,10 @@ func TestWorkspaceSearchProductionMounts(t *testing.T) {
 					if !entity {
 						want = `{"description":"Endpoint to search across multiple fields in the workspace and\nalso show related workspace if found","name":"Global Search Endpoint","parses":["application/json","application/x-www-form-urlencoded","multipart/form-data"],"renders":["application/json"]}`
 					}
-					if status == http.StatusForbidden {
+					switch status {
+					case http.StatusForbidden:
 						want = `{"detail":"You do not have permission to perform this action."}`
-					} else if status == http.StatusUnauthorized {
+					case http.StatusUnauthorized:
 						want = `{"detail":"Authentication credentials were not provided."}`
 					}
 					if strings.TrimSpace(response.Body.String()) != want {

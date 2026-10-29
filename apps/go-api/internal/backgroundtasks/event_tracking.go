@@ -227,9 +227,10 @@ func (store *eventTrackingStore) configuration(ctx context.Context) (string, str
 				return "", "", fmt.Errorf("decrypt %s: %w", key, err)
 			}
 		}
-		if key == "POSTHOG_API_KEY" {
+		switch key {
+		case "POSTHOG_API_KEY":
 			apiKey = value
-		} else if key == "POSTHOG_HOST" {
+		case "POSTHOG_HOST":
 			host = value
 		}
 	}

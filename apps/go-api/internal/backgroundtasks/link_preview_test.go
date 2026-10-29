@@ -31,7 +31,7 @@ func TestLinkPreviewPinnedRedirectCharsetAndFavicon(t *testing.T) {
 		}
 		switch r.URL.Path {
 		case "/":
-			http.Redirect(w, r, "/page", 302)
+			http.Redirect(w, r, "/page", http.StatusFound)
 		case "/page":
 			w.Header().Set("Content-Type", "text/html; charset=iso-8859-1")
 			io.WriteString(w, "<title> Caf\xe9 &amp; tea </title><link rel='apple-touch-icon' href='/other'><link rel='icon' href='fav.ico'>")
@@ -39,7 +39,7 @@ func TestLinkPreviewPinnedRedirectCharsetAndFavicon(t *testing.T) {
 			w.Header().Set("Content-Type", "image/png")
 			io.WriteString(w, "icon")
 		case "/private":
-			http.Redirect(w, r, "http://127.0.0.1/private", 302)
+			http.Redirect(w, r, "http://127.0.0.1/private", http.StatusFound)
 		default:
 			w.WriteHeader(404)
 		}

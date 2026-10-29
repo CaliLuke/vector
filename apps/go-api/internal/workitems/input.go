@@ -161,7 +161,7 @@ func validateIssueDateTimes(input djangoinput.Input, options issueValidation, ch
 
 func validateIssueNumbers(input djangoinput.Input, changes *issueChanges, failures map[string]any) {
 	fields := input.Fields
-	if value, present := fields["sort_order"]; present && !(input.Form && value == "") {
+	if value, present := fields["sort_order"]; present && (!input.Form || value != "") {
 		if value == nil {
 			failures["sort_order"] = []string{"This field may not be null."}
 		} else if parsed, message := djangoinput.FloatField(value); message != "" {
