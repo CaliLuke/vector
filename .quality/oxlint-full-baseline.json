@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "full",
-  "fileCount": 3721,
+  "fileCount": 3723,
   "diagnostics": [
     {
       "diagnostic": {
@@ -3122,34 +3122,7 @@
         "filename": "apps/web/core/components/issues/issue-detail-widgets/sub-issues/content.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `SubIssuesCollapsibleContent` has a complexity of 26. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail-widgets/sub-issues/content.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-assertion)",
-        "message": "This assertion is unnecessary since the receiver accepts the original type of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail-widgets/sub-issues/content.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe type assertion: type 'string' is more narrow than the original type."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail-widgets/sub-issues/content.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe type assertion: type 'TIssue' is more narrow than the original type."
+        "message": "function `SubIssuesCollapsibleContent` has a complexity of 20. Maximum allowed is 15."
       },
       "count": 1
     },

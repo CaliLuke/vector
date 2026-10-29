@@ -25,6 +25,7 @@ import {
   patchIssueMutation,
   refreshCapturedIssueLists,
 } from "@/queries/issue-list-mutations";
+import { currentParentCatalogueScope } from "@/queries/cycle-module-scope";
 import { captureProjectAccessScope } from "@/queries/project-access-scope";
 import { getIdentitySessionGeneration } from "@/queries/identity";
 import { itemAccessOptions } from "@/queries/work-item-access";
@@ -106,6 +107,18 @@ export function useSubIssueOperations(
     []
   );
 
+  const captureChildDetails = useCallback(
+    (targetProjectId: string, issueIds: readonly string[]) => {
+      const { workspaceRole, ...scope } = currentParentCatalogueScope(client, workspaceSlug, targetProjectId).project;
+      return captureIssueDetailReconciliation(
+        client,
+        { ...scope, membershipRole: workspaceRole, serviceType: issueServiceType },
+        issueIds
+      );
+    },
+    [client, workspaceSlug, issueServiceType]
+  );
+
   const operations: TSubIssueOperations = useMemo(
     () => ({
       copyLink: async (path) => {
@@ -171,7 +184,7 @@ export function useSubIssueOperations(
       updateSubIssue: async (_workspaceSlug, _projectId, targetParentId, issueId, issueData) => {
         const owner = captureOwner(targetParentId);
         assertMutationScope(owner, _workspaceSlug, _projectId);
-        const childDetailOwner = captureIssueDetailReconciliation(client, owner.scope, [issueId]);
+        const childDetailOwner = captureChildDetails(_projectId, [issueId]);
         const listOwner = await resolveListOwner(_workspaceSlug, _projectId);
         if (!listOwner) throw new Error("Work item access is unavailable. Retry the operation.");
         const receipt = await patchIssueMutation(client, listOwner, issueId, issueData);
@@ -181,7 +194,7 @@ export function useSubIssueOperations(
       removeSubIssue: async (_workspaceSlug, _projectId, targetParentId, issueId) => {
         const owner = captureOwner(targetParentId);
         assertMutationScope(owner, _workspaceSlug, _projectId);
-        const childDetailOwner = captureIssueDetailReconciliation(client, owner.scope, [issueId]);
+        const childDetailOwner = captureChildDetails(_projectId, [issueId]);
         try {
           const listOwner = await resolveListOwner(_workspaceSlug, _projectId);
           if (!listOwner) throw new Error("Work item access is unavailable. Retry the operation.");
@@ -215,29 +228,16 @@ export function useSubIssueOperations(
       deleteSubIssue: async (_workspaceSlug, _projectId, targetParentId, issueId) => {
         const owner = captureOwner(targetParentId);
         assertMutationScope(owner, _workspaceSlug, _projectId);
-        const childDetailOwner = captureIssueDetailReconciliation(client, owner.scope, [issueId]);
-        try {
-          await listActions.removeIssue(_projectId, issueId);
-          childDetailOwner.remove();
-          if (owner.isCurrent()) refresh(owner);
-        } catch (error) {
-          setToast({
-            type: TOAST_TYPE.ERROR,
-            title: t("toast.error"),
-            message: t("entity.delete.failed", {
-              entity:
-                issueServiceType === EIssueServiceType.ISSUES
-                  ? t("common.sub_work_items")
-                  : t("issue.label", { count: 1 }),
-            }),
-          });
-          throw error;
-        }
+        const childDetailOwner = captureChildDetails(_projectId, [issueId]);
+        await listActions.removeIssue(_projectId, issueId);
+        childDetailOwner.remove();
+        refresh(owner);
       },
     }),
     [
       access.isReady,
       captureOwner,
+      captureChildDetails,
       refresh,
       assertMutationScope,
       client,

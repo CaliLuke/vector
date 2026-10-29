@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "fast",
-  "fileCount": 3721,
+  "fileCount": 3723,
   "diagnostics": [
     {
       "diagnostic": {
@@ -1466,7 +1466,7 @@
         "filename": "apps/web/core/components/issues/issue-detail-widgets/sub-issues/content.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `SubIssuesCollapsibleContent` has a complexity of 26. Maximum allowed is 15."
+        "message": "function `SubIssuesCollapsibleContent` has a complexity of 20. Maximum allowed is 15."
       },
       "count": 1
     },

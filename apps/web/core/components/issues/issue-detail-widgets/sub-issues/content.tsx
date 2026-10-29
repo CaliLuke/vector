@@ -81,11 +81,8 @@ export const SubIssuesCollapsibleContent = function SubIssuesCollapsibleContent(
   );
 
   // render conditions
-  const shouldRenderDeleteIssueModal =
-    issueCrudState?.delete?.toggle &&
-    issueCrudState?.delete?.issue &&
-    issueCrudState.delete.parentIssueId &&
-    issueCrudState.delete.issue.id;
+  const { issue: issueToDelete, parentIssueId: deleteParentId, toggle: isDeleteOpen } = issueCrudState.delete;
+  const deleteProjectId = issueToDelete?.project_id;
 
   const shouldRenderUpdateIssueModal = issueCrudState?.update?.toggle && issueCrudState?.update?.issue;
 
@@ -106,21 +103,16 @@ export const SubIssuesCollapsibleContent = function SubIssuesCollapsibleContent(
         />
       )}
 
-      {shouldRenderDeleteIssueModal && (
+      {isDeleteOpen && issueToDelete?.id && deleteParentId && deleteProjectId && (
         <DeleteIssueModal
-          isOpen={issueCrudState?.delete?.toggle}
+          isOpen={isDeleteOpen}
           handleClose={() => {
             handleIssueCrudState("delete", null, null);
             toggleDeleteIssueModal(null);
           }}
-          data={issueCrudState?.delete?.issue as TIssue}
-          onSubmit={async () =>
-            await subIssueOperations.deleteSubIssue(
-              workspaceSlug,
-              projectId,
-              issueCrudState?.delete?.parentIssueId as string,
-              issueCrudState?.delete?.issue?.id as string
-            )
+          data={issueToDelete}
+          onSubmit={() =>
+            subIssueOperations.deleteSubIssue(workspaceSlug, deleteProjectId, deleteParentId, issueToDelete.id)
           }
           isSubIssue
         />
