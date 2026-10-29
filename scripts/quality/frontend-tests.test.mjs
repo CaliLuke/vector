@@ -10,12 +10,13 @@ function runFrontendFixture(t, failedFile) {
   t.after(() => rmSync(root, { recursive: true, force: true }));
   mkdirSync(path.join(root, "scripts/quality"), { recursive: true });
   mkdirSync(path.join(root, "tests/frontend"), { recursive: true });
+  mkdirSync(path.join(root, "apps/web/tests"), { recursive: true });
   for (const script of ["frontend-tests.sh", "run-bounded.mjs"]) {
     copyFileSync(new URL(script, import.meta.url), path.join(root, "scripts/quality", script));
   }
-  for (const name of ["a", "b", "c"]) {
+  for (const name of ["a", "b", "c", "d"]) {
     writeFileSync(
-      path.join(root, `tests/frontend/${name}.test.mjs`),
+      path.join(root, name === "d" ? `apps/web/tests/${name}.test.mjs` : `tests/frontend/${name}.test.mjs`),
       `import test from "node:test";
 import assert from "node:assert/strict";
 import { appendFileSync } from "node:fs";
@@ -42,6 +43,7 @@ test("${name}", () => {
     "a",
     "b",
     "c",
+    "d",
   ]);
   return result;
 }
@@ -52,11 +54,16 @@ await test("frontend shards execute every discovered file exactly once", (t) => 
 });
 
 await test("a failed first frontend shard cannot be hidden by a passing second shard", (t) => {
-  const result = runFrontendFixture(t, "a");
+  const result = runFrontendFixture(t, "b");
   assert.equal(result.status, 1, result.stdout + result.stderr);
 });
 
 await test("a failed second frontend shard fails the complete suite", (t) => {
-  const result = runFrontendFixture(t, "b");
+  const result = runFrontendFixture(t, "a");
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+});
+
+await test("a failed workspace-owned test fails the complete suite", (t) => {
+  const result = runFrontendFixture(t, "d");
   assert.equal(result.status, 1, result.stdout + result.stderr);
 });

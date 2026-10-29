@@ -2381,15 +2381,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/power-k/core/types.ts",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/power-k/menus/labels.tsx",
         "severity": "warning",
         "code": "react(no-unstable-nested-components)",
@@ -6246,15 +6237,6 @@
         "severity": "warning",
         "code": "unicorn(no-useless-length-check)",
         "message": "Found a useless array length check"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/utils/src/theme/color-conversion.ts",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `toHex` does not capture any variables from its parent scope"
       },
       "count": 1
     },

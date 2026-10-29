@@ -626,15 +626,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/live/src/types/admin-commands.ts",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe type assertion: type 'ForceCloseReason' is more narrow than the original type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/live/src/utils/broadcast-error.ts",
         "severity": "warning",
         "code": "eslint(no-shadow)",
@@ -5445,15 +5436,6 @@
         "severity": "warning",
         "code": "typescript(no-unsafe-type-assertion)",
         "message": "Unsafe type assertion: type 'Element' is more narrow than the original type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/power-k/core/types.ts",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
       },
       "count": 1
     },
@@ -12641,15 +12623,6 @@
     },
     {
       "diagnostic": {
-        "filename": "packages/utils/src/theme/color-conversion.ts",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `toHex` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "packages/utils/src/theme/palette-generator.ts",
         "severity": "warning",
         "code": "typescript(no-unnecessary-type-assertion)",
@@ -13109,15 +13082,6 @@
     },
     {
       "diagnostic": {
-        "filename": "tests/frontend/editor-link-protocol-lifecycle.test.mjs",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "tests/frontend/emoji-reaction-picker.test.mjs",
         "severity": "error",
         "code": "typescript(no-floating-promises)",
@@ -13475,15 +13439,6 @@
         "message": "Promises must be awaited, add void operator to ignore."
       },
       "count": 3
-    },
-    {
-      "diagnostic": {
-        "filename": "tests/frontend/workspace-menu-keyboard.test.mjs",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
-      },
-      "count": 1
     }
   ]
 }

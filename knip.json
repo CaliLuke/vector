@@ -7,13 +7,23 @@
       "project": ["scripts/quality/**/*.mjs", "tests/**/*.mjs"]
     },
     "packages/ui": {
-      "entry": ["postcss.config.js"]
+      "postcss": true
     },
     "apps/web": {
-      "entry": ["routes.ts", "public/sw.js"]
+      "entry": ["routes.ts", "public/sw.js", "tests/**/*.test.mjs"],
+      "postcss": true
     },
     "packages/propel": {
-      "entry": ["postcss.config.js"]
+      "postcss": true
+    },
+    "apps/admin": {
+      "postcss": true
+    },
+    "apps/space": {
+      "postcss": true
+    },
+    "packages/editor": {
+      "postcss": true
     }
   },
   "rules": {

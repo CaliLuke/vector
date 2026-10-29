@@ -63,8 +63,5 @@ export const getImageBlockId = (id: string) => `editor-image-block-${id}`;
 
 export const isImageDuplicating = (status: ECustomImageStatus) => status === ECustomImageStatus.DUPLICATING;
 
-export const isImageDuplicationComplete = (status: ECustomImageStatus) =>
-  status === ECustomImageStatus.UPLOADED || status === ECustomImageStatus.DUPLICATION_FAILED;
-
 export const hasImageDuplicationFailed = (status: ECustomImageStatus) =>
   status === ECustomImageStatus.DUPLICATION_FAILED;

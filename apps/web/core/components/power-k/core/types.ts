@@ -106,24 +106,4 @@ export type TPowerKCommandConfig = {
       }
   );
 
-// ============================================================================
-// UI State Types
-// ============================================================================
-
-export type TCommandPaletteState = {
-  isOpen: boolean;
-  searchTerm: string;
-  activePage: TPowerKPageType | null;
-  activeContext: TPowerKContextType | null;
-  selectedCommand: TPowerKCommandConfig | null;
-};
-
-export type TSelectionPageProps<T = any> = {
-  workspaceSlug: string;
-  projectId?: string;
-  searchTerm?: string;
-  onSelect: (item: T) => void;
-  onClose: () => void;
-};
-
 export type TPowerKSearchResultsKeys = "workspace" | "project" | "issue" | "cycle" | "module" | "issue_view" | "page";

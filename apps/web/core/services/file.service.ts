@@ -40,17 +40,6 @@ interface UnSplashImageUrls {
   small_s3: string;
 }
 
-export enum TFileAssetType {
-  COMMENT_DESCRIPTION = "COMMENT_DESCRIPTION",
-  ISSUE_ATTACHMENT = "ISSUE_ATTACHMENT",
-  ISSUE_DESCRIPTION = "ISSUE_DESCRIPTION",
-  PAGE_DESCRIPTION = "PAGE_DESCRIPTION",
-  PROJECT_COVER = "PROJECT_COVER",
-  USER_AVATAR = "USER_AVATAR",
-  USER_COVER = "USER_COVER",
-  WORKSPACE_LOGO = "WORKSPACE_LOGO",
-}
-
 export class FileService extends APIService {
   private fileUploadService: FileUploadService;
 

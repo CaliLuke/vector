@@ -542,16 +542,16 @@
       "branches": 0
     },
     "src/core/extensions/custom-link/extension.tsx": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": 76.78,
+      "functions": 75,
+      "statements": 77.04,
+      "branches": 58.82
     },
     "src/core/extensions/custom-link/helpers/autolink.ts": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": 82.05,
+      "functions": 92.3,
+      "statements": 81.81,
+      "branches": 78.57
     },
     "src/core/extensions/custom-link/helpers/clickHandler.ts": {
       "lines": 0,

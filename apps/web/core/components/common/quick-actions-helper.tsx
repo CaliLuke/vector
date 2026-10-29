@@ -52,14 +52,6 @@ interface UseViewMenuItemsProps {
   handleOpenInNewTab: () => void;
 }
 
-interface UseLayoutMenuItemsProps {
-  workspaceSlug: string;
-  projectId: string;
-  storeType: "PROJECT" | "EPIC";
-  handleCopyLink: () => void;
-  handleOpenInNewTab: () => void;
-}
-
 type MenuResult = {
   items: TContextMenuItem[];
   modals: ReactElement | null;
@@ -130,23 +122,3 @@ export const useViewMenuItems = (props: UseViewMenuItemsProps): MenuResult => {
 
   return { items, modals: null };
 };
-
-export const useLayoutMenuItems = (props: UseLayoutMenuItemsProps): MenuResult => {
-  const factory = useQuickActionsFactory();
-  const { ...handlers } = props;
-
-  // Assemble final menu items - order defined here
-  const items = [
-    factory.createOpenInNewTab(handlers.handleOpenInNewTab),
-    factory.createCopyLayoutLinkMenuItem(handlers.handleCopyLink),
-  ].filter((item) => item.shouldRender !== false);
-
-  return { items, modals: null };
-};
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const useIntakeHeaderMenuItems = (props: {
-  workspaceSlug: string;
-  projectId: string;
-  handleCopyLink: () => void;
-}): MenuResult => ({ items: [], modals: null });

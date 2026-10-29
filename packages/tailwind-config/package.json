@@ -14,8 +14,7 @@
     "./postcss.config.js": "./postcss.config.js"
   },
   "dependencies": {
-    "@tailwindcss/postcss": "catalog:",
-    "postcss": "catalog:"
+    "@tailwindcss/postcss": "catalog:"
   },
   "devDependencies": {
     "tailwindcss": "catalog:"

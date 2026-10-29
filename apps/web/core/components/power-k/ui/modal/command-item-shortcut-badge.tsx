@@ -85,16 +85,6 @@ export function ShortcutBadge({ shortcut }: { shortcut: string | undefined }) {
   );
 }
 
-/**
- * Formats key sequence for display (e.g., "gm" -> "G then M")
- */
-export const formatKeySequenceForDisplay = (sequence: string | undefined): string => {
-  if (!sequence) return "";
-
-  const chars = sequence.split("");
-  return chars.map((c) => c.toUpperCase()).join(" then ");
-};
-
 export function KeySequenceBadge({ sequence }: { sequence: string | undefined }) {
   if (!sequence) return null;
 

@@ -39,18 +39,6 @@ const EDITOR_BACKGROUND_COLORS_LIGHT = {
   purple: "#e3d8fd",
 } as const;
 
-// Editor background colors - Dark theme (from variables.css [data-theme*="dark"])
-export const EDITOR_BACKGROUND_COLORS_DARK = {
-  gray: "#404144",
-  peach: "#593032",
-  pink: "#562e3d",
-  orange: "#583e2a",
-  green: "#1d4a3b",
-  "light-blue": "#1f495c",
-  "dark-blue": "#223558",
-  purple: "#3d325a",
-} as const;
-
 // Use light theme colors by default for PDF exports
 export const EDITOR_BACKGROUND_COLORS = EDITOR_BACKGROUND_COLORS_LIGHT;
 
@@ -210,22 +198,4 @@ export const LINK_COLORS = {
 export const MENTION_COLORS = {
   background: "#e0e9ff", // accent-primary with ~20% opacity on white
   text: BRAND_COLORS.default,
-} as const;
-
-// Success/Green colors
-export const SUCCESS_COLORS = {
-  primary: "#10b981",
-  subtle: "#d1fae5",
-} as const;
-
-// Warning/Amber colors
-export const WARNING_COLORS = {
-  primary: "#f59e0b",
-  subtle: "#fef3c7",
-} as const;
-
-// Danger/Red colors
-export const DANGER_COLORS = {
-  primary: "#ef4444",
-  subtle: "#fee2e2",
 } as const;

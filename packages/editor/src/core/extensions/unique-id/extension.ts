@@ -21,8 +21,6 @@ type UniqueIDGenerationContext = {
   node: ProseMirrorNode;
   pos: number;
 };
-export const UniqueIDAttribute = "id";
-export const generateUniqueID = () => uuidv4();
 
 export interface UniqueIDOptions {
   /**

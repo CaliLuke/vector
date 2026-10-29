@@ -63,97 +63,6 @@ export const LinkIcon = ({ size = 12, color = "#2563eb" }: IconProps) => (
   </Svg>
 );
 
-// Paperclip icon for attachments (default)
-const PaperclipIcon = ({ size = 16, color = "#374151" }: IconProps) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Path
-      d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"
-      fill="none"
-      stroke={color}
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </Svg>
-);
-
-// Image icon for image attachments
-const ImageIcon = ({ size = 16, color = "#374151" }: IconProps) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Rect x={3} y={3} width={18} height={18} rx={2} ry={2} fill="none" stroke={color} strokeWidth={2} />
-    <Circle cx={8.5} cy={8.5} r={1.5} fill={color} />
-    <Path d="M21 15l-5-5L5 21" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" />
-  </Svg>
-);
-
-// Video icon for video attachments
-const VideoIcon = ({ size = 16, color = "#374151" }: IconProps) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Rect x={2} y={4} width={15} height={16} rx={2} ry={2} fill="none" stroke={color} strokeWidth={2} />
-    <Path d="M17 10l5-3v10l-5-3z" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" />
-  </Svg>
-);
-
-// Music/audio icon
-const MusicIcon = ({ size = 16, color = "#374151" }: IconProps) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Path d="M9 18V5l12-2v13" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" />
-    <Circle cx={6} cy={18} r={3} fill="none" stroke={color} strokeWidth={2} />
-    <Circle cx={18} cy={16} r={3} fill="none" stroke={color} strokeWidth={2} />
-  </Svg>
-);
-
-// File-text icon for PDFs and documents
-const FileTextIcon = ({ size = 16, color = "#374151" }: IconProps) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Path
-      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-      fill="none"
-      stroke={color}
-      strokeWidth={2}
-      strokeLinecap="round"
-    />
-    <Path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" />
-  </Svg>
-);
-
-// Table/spreadsheet icon
-const TableIcon = ({ size = 16, color = "#374151" }: IconProps) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Rect x={3} y={3} width={18} height={18} rx={2} fill="none" stroke={color} strokeWidth={2} />
-    <Path d="M3 9h18M3 15h18M9 3v18M15 3v18" fill="none" stroke={color} strokeWidth={2} />
-  </Svg>
-);
-
-// Presentation icon
-const PresentationIcon = ({ size = 16, color = "#374151" }: IconProps) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Rect x={2} y={3} width={20} height={14} rx={2} fill="none" stroke={color} strokeWidth={2} />
-    <Path d="M8 21l4-4 4 4M12 17v-4" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" />
-  </Svg>
-);
-
-// Archive/zip icon
-const ArchiveIcon = ({ size = 16, color = "#374151" }: IconProps) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Path
-      d="M21 8v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8"
-      fill="none"
-      stroke={color}
-      strokeWidth={2}
-      strokeLinecap="round"
-    />
-    <Path
-      d="M23 3H1v5h22V3zM10 12h4"
-      fill="none"
-      stroke={color}
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </Svg>
-);
-
 // Globe icon for external embeds (rich cards)
 export const GlobeIcon = ({ size = 12, color = "#374151" }: IconProps) => (
   <Svg width={size} height={size} viewBox="0 0 24 24">
@@ -181,52 +90,9 @@ export const ClipboardIcon = ({ size = 12, color = "#6b7280" }: IconProps) => (
   </Svg>
 );
 
-// Ruler/diagram icon for diagrams
-export const DiagramIcon = ({ size = 12, color = "#6b7280" }: IconProps) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Path
-      d="M14 3v4a1 1 0 0 0 1 1h4"
-      fill="none"
-      stroke={color}
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <Path
-      d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"
-      fill="none"
-      stroke={color}
-      strokeWidth={2}
-    />
-    <Path d="M9 9h1M9 13h6M9 17h6" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" />
-  </Svg>
-);
-
-// Work item / task icon
-export const TaskIcon = ({ size = 14, color = "#374151" }: IconProps) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Rect x={3} y={3} width={18} height={18} rx={2} fill="none" stroke={color} strokeWidth={2} />
-    <Path d="M9 12l2 2 4-4" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-  </Svg>
-);
-
 // Checkmark icon for checked task items
 export const CheckIcon = ({ size = 10, color = "#ffffff" }: IconProps) => (
   <Svg width={size} height={size} viewBox="0 0 24 24">
     <Path d="M20 6L9 17l-5-5" fill="none" stroke={color} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 );
-
-// Helper to get file icon component based on file type
-export const getFileIcon = (fileType: string, size = 16, color = "#374151") => {
-  if (fileType.startsWith("image/")) return <ImageIcon size={size} color={color} />;
-  if (fileType.startsWith("video/")) return <VideoIcon size={size} color={color} />;
-  if (fileType.startsWith("audio/")) return <MusicIcon size={size} color={color} />;
-  if (fileType.includes("pdf")) return <FileTextIcon size={size} color="#dc2626" />;
-  if (fileType.includes("spreadsheet") || fileType.includes("excel")) return <TableIcon size={size} color="#16a34a" />;
-  if (fileType.includes("document") || fileType.includes("word")) return <FileTextIcon size={size} color="#2563eb" />;
-  if (fileType.includes("presentation") || fileType.includes("powerpoint"))
-    return <PresentationIcon size={size} color="#ea580c" />;
-  if (fileType.includes("zip") || fileType.includes("archive")) return <ArchiveIcon size={size} color={color} />;
-  return <PaperclipIcon size={size} color={color} />;
-};

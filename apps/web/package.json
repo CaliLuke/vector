@@ -65,7 +65,6 @@
   "devDependencies": {
     "@plane/tailwind-config": "workspace:*",
     "@plane/typescript-config": "workspace:*",
-    "@tailwindcss/postcss": "catalog:",
     "@tailwindcss/typography": "catalog:",
     "@tanstack/router-cli": "catalog:",
     "@tanstack/router-plugin": "catalog:",

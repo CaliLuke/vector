@@ -21,8 +21,6 @@ export const PdfExportRequestBody = Schema.Struct({
   noAssets: Schema.optional(Schema.Boolean),
 });
 
-export type TPdfExportRequestBody = Schema.Schema.Type<typeof PdfExportRequestBody>;
-
 export class PdfValidationError extends Schema.TaggedError<PdfValidationError>()("PdfValidationError", {
   message: NonEmptyTrimmedString,
   cause: Schema.optional(Schema.Unknown),
@@ -34,12 +32,6 @@ export class PdfAuthenticationError extends Schema.TaggedError<PdfAuthentication
 
 export class PdfContentFetchError extends Schema.TaggedError<PdfContentFetchError>()("PdfContentFetchError", {
   message: NonEmptyTrimmedString,
-  cause: Schema.optional(Schema.Unknown),
-}) {}
-
-class PdfMetadataFetchError extends Schema.TaggedError<PdfMetadataFetchError>()("PdfMetadataFetchError", {
-  message: NonEmptyTrimmedString,
-  source: Schema.Literal("user-mentions"),
   cause: Schema.optional(Schema.Unknown),
 }) {}
 
@@ -58,12 +50,3 @@ export class PdfTimeoutError extends Schema.TaggedError<PdfTimeoutError>()("PdfT
   message: NonEmptyTrimmedString,
   operation: NonEmptyTrimmedString,
 }) {}
-
-export type PdfExportError =
-  | PdfValidationError
-  | PdfAuthenticationError
-  | PdfContentFetchError
-  | PdfMetadataFetchError
-  | PdfImageProcessingError
-  | PdfGenerationError
-  | PdfTimeoutError;

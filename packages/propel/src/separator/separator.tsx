@@ -35,4 +35,3 @@ const Separator = React.forwardRef(function Separator(
 Separator.displayName = "Separator";
 
 export { Separator };
-export type { SeparatorProps };

@@ -119,50 +119,6 @@ export const getSelectedRows = (selection: Selection, map: TableMap): number[] =
 };
 
 /**
- * @description Check if the rect is selected.
- * @param {Rect} rect - The rect.
- * @param {CellSelection} selection - The cell selection.
- * @returns {boolean} True if the rect is selected, false otherwise.
- */
-const isRectSelected = (rect: Rect, selection: CellSelection): boolean => {
-  const map = TableMap.get(selection.$anchorCell.node(-1));
-  const cells = map.cellsInRect(rect);
-  const selectedCells = map.cellsInRect(getSelectedRect(selection, map));
-
-  return cells.every((cell) => selectedCells.includes(cell));
-};
-
-/**
- * @description Check if the column is selected.
- * @param {number} columnIndex - The column index.
- * @param {Selection} selection - The selection.
- * @returns {boolean} True if the column is selected, false otherwise.
- */
-export const isColumnSelected = (columnIndex: number, selection: Selection): boolean => {
-  if (!isCellSelection(selection)) return false;
-
-  const { height } = TableMap.get(selection.$anchorCell.node(-1));
-  const rect = { left: columnIndex, right: columnIndex + 1, top: 0, bottom: height };
-  return isRectSelected(rect, selection);
-};
-
-/**
- * @description Check if the row is selected.
- * @param {number} rowIndex - The row index.
- * @param {Selection} selection - The selection.
- * @returns {boolean} True if the row is selected, false otherwise.
- */
-export const isRowSelected = (rowIndex: number, selection: Selection): boolean => {
-  if (isCellSelection(selection)) {
-    const { width } = TableMap.get(selection.$anchorCell.node(-1));
-    const rect = { left: 0, right: width, top: rowIndex, bottom: rowIndex + 1 };
-    return isRectSelected(rect, selection);
-  }
-
-  return false;
-};
-
-/**
  * @description Select the column.
  * @param {TableNodeLocation} table - The table node location.
  * @param {number} index - The column index.

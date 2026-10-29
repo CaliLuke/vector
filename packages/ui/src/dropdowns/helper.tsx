@@ -76,12 +76,6 @@ export function SyncComboboxOpenState({
   return null;
 }
 
-export interface IPortalProps {
-  children: React.ReactNode;
-  container?: Element | null;
-  asChild?: boolean;
-}
-
 export interface ICustomMenuDropdownProps extends IDropdownProps {
   children: React.ReactNode;
   ellipsis?: boolean;

@@ -12,6 +12,6 @@ for shard in 1 2; do
   printf '\n▶ Frontend behavior tests (shard %s/2)\n' "$shard"
   node scripts/quality/run-bounded.mjs --seconds 300 --memory-mib 1024 --heap-mib 384 -- \
     node --test --test-timeout=15000 --test-concurrency=2 --test-shard="$shard/2" \
-    tests/frontend/*.test.mjs || failed=1
+    tests/frontend/*.test.mjs apps/web/tests/*.test.mjs || failed=1
 done
 exit "$failed"

@@ -80,9 +80,3 @@ export const renderPlaneDocToPdfBuffer = async (
   const arrayBuffer = await blob.arrayBuffer();
   return Buffer.from(arrayBuffer);
 };
-
-export const renderPlaneDocToPdfBlob = async (doc: TipTapDocument, options: PDFExportOptions = {}): Promise<Blob> => {
-  const pdfDocument = createPdfDocument(doc, options);
-  const pdfInstance = pdf(pdfDocument);
-  return await pdfInstance.toBlob();
-};

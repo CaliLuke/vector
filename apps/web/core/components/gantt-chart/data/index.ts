@@ -46,31 +46,6 @@ export const quarters: WeekMonthDataType[] = [
   { key: 3, shortTitle: "Q4", title: "Oct - Dec", abbreviation: "Q4" },
 ];
 
-const charCapitalize = (word: string) => `${word.charAt(0).toUpperCase()}${word.substring(1)}`;
-
-const bindZero = (value: number) => (value > 9 ? `${value}` : `0${value}`);
-
-const timePreview = (date: Date) => {
-  let hours = date.getHours();
-  const amPm = hours >= 12 ? "PM" : "AM";
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-
-  let minutes: number | string = date.getMinutes();
-  minutes = bindZero(minutes);
-
-  return `${bindZero(hours)}:${minutes} ${amPm}`;
-};
-
-export const datePreview = (date: Date, includeTime: boolean = false) => {
-  const day = date.getDate();
-  let month: number | WeekMonthDataType = date.getMonth();
-  month = months[month];
-  const year = date.getFullYear();
-
-  return `${charCapitalize(month?.shortTitle)} ${day}, ${year}${includeTime ? `, ${timePreview(date)}` : ``}`;
-};
-
 // context data
 export const VIEWS_LIST: ChartDataType[] = [
   {

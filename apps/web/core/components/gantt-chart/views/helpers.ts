@@ -9,15 +9,6 @@ import { addDaysToDate, findTotalDaysInRange, getDate } from "@plane/utils/datet
 import { DEFAULT_BLOCK_WIDTH } from "../constants";
 
 /**
- * Generates Date by using Day, month and Year
- * @param day
- * @param month
- * @param year
- * @returns
- */
-export const generateDate = (day: number, month: number, year: number) => new Date(year, month, day);
-
-/**
  * Returns number of days in month
  * @param month
  * @param year

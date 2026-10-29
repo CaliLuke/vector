@@ -23,10 +23,6 @@ import { useRouteProject } from "@/hooks/use-projects";
 
 import { usePageRecord } from "@/components/pages/page-record-context";
 
-export interface IPagesHeaderProps {
-  showButton?: boolean;
-}
-
 export const PageDetailsHeader = function PageDetailsHeader() {
   // router
   const router = useRouter();

@@ -45,10 +45,6 @@ export const cycleEstimateOptions: Options[] = [
   { value: "issues", label: "Work items" },
   { value: "points", label: "Estimates" },
 ];
-export const cycleChartOptions: Options[] = [
-  { value: "burndown", label: "Burn-down" },
-  { value: "burnup", label: "Burn-up" },
-];
 
 function isCycleRangeValid(start: Date | undefined, end: Date | undefined, today: Date) {
   return Boolean(start && end && start <= today && end >= start);

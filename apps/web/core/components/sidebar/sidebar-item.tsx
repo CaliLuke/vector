@@ -116,19 +116,6 @@ function AppSidebarButtonItem({ children, onClick, disabled = false, className }
   );
 }
 
-// ============================================================================
-// MAIN COMPONENT
-// ============================================================================
-
-export type AppSidebarItemComponent = React.ForwardRefExoticComponent<
-  AppSidebarItemProps & React.RefAttributes<HTMLElement>
-> & {
-  Label: React.FC<AppSidebarItemLabelProps>;
-  Icon: React.FC<AppSidebarItemIconProps>;
-  Link: React.FC<AppSidebarLinkItemProps>;
-  Button: React.FC<AppSidebarButtonItemProps>;
-};
-
 const AppSidebarItem = Object.assign(
   forwardRef<HTMLElement, AppSidebarItemProps>(function AppSidebarItem({ variant = "link", item }, ref) {
     if (!item) return null;
@@ -181,4 +168,4 @@ const AppSidebarItem = Object.assign(
 );
 
 export { AppSidebarItem };
-export type { AppSidebarItemData, AppSidebarItemProps };
+export type { AppSidebarItemData };

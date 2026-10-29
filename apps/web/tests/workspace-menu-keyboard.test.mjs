@@ -1,13 +1,13 @@
-import { routerApi } from "./helpers/router.mjs";
-import { createQueryRouterFixture } from "./helpers/query-router.mjs";
+import { routerApi } from "../../../tests/frontend/helpers/router.mjs";
+import { createQueryRouterFixture } from "../../../tests/frontend/helpers/query-router.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
-import { act, React } from "./helpers/react.mjs";
-import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
+import { act, React } from "../../../tests/frontend/helpers/react.mjs";
+import { registerWebModuleHooks } from "../../../tests/frontend/helpers/web-module-hooks.mjs";
 
 registerWebModuleHooks();
-const primitives = new URL("./helpers/workspace-ui-test-primitives.mjs", import.meta.url).href;
+const primitives = new URL("../../../tests/frontend/helpers/workspace-ui-test-primitives.mjs", import.meta.url).href;
 registerHooks({
   resolve(specifier, context, nextResolve) {
     if (
@@ -28,19 +28,18 @@ registerHooks({
 });
 
 const { useLocation } = routerApi;
-const identityQueries = await import("../../apps/web/core/queries/identity.ts");
+const identityQueries = await import("../core/queries/identity.ts");
 
 function CurrentLocation() {
   const { pathname } = useLocation();
   return React.createElement("output", null, pathname);
 }
 
-test("workspace menu keyboard selection navigates through the real link", async (t) => {
+await test("workspace menu keyboard selection navigates through the real link", async (t) => {
   const fixture = await createQueryRouterFixture(t, "/default/");
   fixture.client.setQueryData(identityQueries.currentUserOptions().queryKey, { id: "alice" });
-  const { Menu } = await import("../../apps/web/node_modules/@headlessui/react/dist/headlessui.esm.js");
-  const { default: SidebarDropdownItem } =
-    await import("../../apps/web/core/components/workspace/sidebar/dropdown-item.tsx");
+  const { Menu } = await import("@headlessui/react");
+  const { default: SidebarDropdownItem } = await import("../core/components/workspace/sidebar/dropdown-item.tsx");
   let selectedWorkspace;
   const workspace = { id: "other", slug: "other", name: "Other", role: "MEMBER" };
   await fixture.render(

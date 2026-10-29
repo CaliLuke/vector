@@ -33,10 +33,6 @@ export enum EAuthSteps {
 
 export enum EErrorAlertType {
   BANNER_ALERT = "BANNER_ALERT",
-  INLINE_FIRST_NAME = "INLINE_FIRST_NAME",
-  INLINE_EMAIL = "INLINE_EMAIL",
-  INLINE_PASSWORD = "INLINE_PASSWORD",
-  INLINE_EMAIL_CODE = "INLINE_EMAIL_CODE",
 }
 
 export enum EAuthenticationErrorCodes {

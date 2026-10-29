@@ -117,20 +117,6 @@ export function isForceCloseCommand(data: AdminCommandData): data is ForceCloseC
 }
 
 /**
- * Type guard to check if data is a HealthCheckCommandData
- */
-export function isHealthCheckCommand(data: AdminCommandData): data is HealthCheckCommandData {
-  return data.command === AdminCommand.HEALTH_CHECK;
-}
-
-/**
- * Validate force close reason
- */
-export function isValidForceCloseReason(reason: string): reason is ForceCloseReason {
-  return Object.values(ForceCloseReason).includes(reason as ForceCloseReason);
-}
-
-/**
  * Get human-readable message for force close reason
  */
 export function getForceCloseMessage(reason: ForceCloseReason): string {

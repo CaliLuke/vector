@@ -8,21 +8,8 @@ import { Link } from "react-router";
 // helpers
 import { SUPPORT_EMAIL } from "@plane/constants";
 
-export enum EPageTypes {
-  INIT = "INIT",
-  PUBLIC = "PUBLIC",
-  NON_AUTHENTICATED = "NON_AUTHENTICATED",
-  ONBOARDING = "ONBOARDING",
-  AUTHENTICATED = "AUTHENTICATED",
-}
-
 export enum EErrorAlertType {
   BANNER_ALERT = "BANNER_ALERT",
-  TOAST_ALERT = "TOAST_ALERT",
-  INLINE_FIRST_NAME = "INLINE_FIRST_NAME",
-  INLINE_EMAIL = "INLINE_EMAIL",
-  INLINE_PASSWORD = "INLINE_PASSWORD",
-  INLINE_EMAIL_CODE = "INLINE_EMAIL_CODE",
 }
 
 export enum EAuthenticationErrorCodes {

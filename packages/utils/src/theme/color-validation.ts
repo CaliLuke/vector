@@ -71,27 +71,3 @@ export function validateAndAdjustOKLCH(oklch: { l: number; c: number; h: number 
 
   return { l, c, h };
 }
-
-/**
- * Adjust lightness for dark mode with improved algorithm
- * Applies different scaling based on original lightness
- */
-export function adjustLightnessForDarkMode(lightness: number, offset: number): number {
-  // Apply offset (negative to make darker)
-  let adjusted = lightness + offset;
-
-  // Enhanced clamping with better distribution
-  // Keep very light colors from becoming too dark
-  if (lightness > 0.9) {
-    // For very light colors, apply less offset
-    adjusted = lightness + offset * 0.6;
-  } else if (lightness < 0.25) {
-    // For already dark colors, apply more offset to ensure they stay very dark
-    adjusted = lightness + offset * 1.2;
-  }
-
-  // Clamp to valid range (0.1 to 0.95)
-  adjusted = Math.max(0.1, Math.min(0.95, adjusted));
-
-  return adjusted;
-}
