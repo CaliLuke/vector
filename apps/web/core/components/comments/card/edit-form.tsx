@@ -16,7 +16,7 @@ import { CheckIcon, CloseIcon } from "@plane/propel/icons";
 import type { TIssueComment } from "@plane/types";
 import { cn } from "@plane/utils/common";
 import { isCommentEmpty } from "@plane/utils/string";
-import { FormErrors } from "@plane/ui";
+import { FormErrors } from "@plane/ui/form-fields";
 // components
 import { LiteTextEditor } from "@/components/editor/lite-text";
 

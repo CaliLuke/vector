@@ -30,6 +30,18 @@ func openBackgroundTaskDatabase(t *testing.T) (string, string, *pgxpool.Pool) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
 	defer cancel()
+	databaseURL, pool := openBackgroundTaskClone(t, ctx)
+	_, err := pool.Exec(ctx, `CREATE SCHEMA plane_execution`)
+	require.NoError(t, err)
+	executionURL, err := withExecutionSearchPath(databaseURL)
+	require.NoError(t, err)
+	return databaseURL, executionURL, pool
+}
+
+// openBackgroundTaskClone supplies only the migrated application schema. Tests
+// that exercise workflow setup still create their own execution schema.
+func openBackgroundTaskClone(t *testing.T, ctx context.Context) (string, *pgxpool.Pool) {
+	t.Helper()
 	database, err := backgroundTaskSchema.CloneDatabase(ctx)
 	require.NoError(t, err)
 	t.Cleanup(func() {
@@ -40,9 +52,5 @@ func openBackgroundTaskDatabase(t *testing.T) (string, string, *pgxpool.Pool) {
 	pool, err := pgxpool.New(ctx, database.URL)
 	require.NoError(t, err)
 	t.Cleanup(pool.Close)
-	_, err = pool.Exec(ctx, `CREATE SCHEMA plane_execution`)
-	require.NoError(t, err)
-	executionURL, err := withExecutionSearchPath(database.URL)
-	require.NoError(t, err)
-	return database.URL, executionURL, pool
+	return database.URL, pool
 }

@@ -552,6 +552,13 @@ in [timakin/bodyclose#60](https://github.com/timakin/bodyclose/issues/60), with 
 Those call sites can use the shared helper when the pinned analyzer accepts that
 reproduction. No linter suppression or dependency patch was added.
 
+The legacy tooltip uses Floating UI's controlled element API with callback-ref
+state. Oxlint currently mistakes a callback property passed to JSX `ref` for a
+render-time ref read; [oxc#23753](https://github.com/oxc-project/oxc/issues/23753#issuecomment-6510863595)
+contains a standalone reproduction on the pinned versions. The tooltip can use
+Floating UI's returned ref setters directly when the pinned analyzer accepts
+that callback-member form. No rule is suppressed.
+
 The initial inventory at `4d7deab2` contains 54 allowances below 20, including
 35 production functions and the current MCP delivery. Five functions already
 score zero: startup assembly, HTTP assembly, activity-row construction, HTML
@@ -598,7 +605,9 @@ are reclaimed when a test process exits before its normal cleanup. Explicitly
 disabling it requires an external runner that owns cleanup; see the
 [Testcontainers cleanup guidance](https://golang.testcontainers.org/features/garbage_collector/).
 
-The full Go gate and frontend pipeline run concurrently. Within the frontend pipeline,
+The frontend pipeline completes before the full Go gate starts. Distinct Prek
+priorities keep frontend builds from competing with Docker-backed tests for host
+resources. Within the frontend pipeline,
 production builds run first, followed by TypeScript checks; builds and checks remain
 sequential so generated package output is ready before typechecking. Frontend tests
 run in two sequential shards, each with two isolated workers, a 384 MiB JavaScript

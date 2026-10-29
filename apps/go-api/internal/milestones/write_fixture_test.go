@@ -7,10 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/bootstrap"
 	"github.com/CaliLuke/go-plane/internal/milestones"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -28,13 +26,11 @@ func newWriteFixture(t *testing.T) writeFixture {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
 	t.Cleanup(cancel)
-	pair, err := postgresfixture.StartUncloned(ctx, bootstrap.MigrateSchema)
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, pair.Close()) })
-	db, err := pgx.Connect(ctx, pair.SeedURL())
+	address := cloneMilestoneDatabase(t, ctx, milestoneSchema)
+	db, err := pgx.Connect(ctx, address)
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, db.Close(context.WithoutCancel(ctx))) })
-	config, err := pgxpool.ParseConfig(pair.SeedURL())
+	config, err := pgxpool.ParseConfig(address)
 	require.NoError(t, err)
 	config.MaxConns = 2
 	config.ConnConfig.RuntimeParams["application_name"] = "milestone-writes"

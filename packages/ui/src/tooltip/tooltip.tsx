@@ -4,43 +4,51 @@
  * See the LICENSE file for details.
  */
 
-import { Tooltip as BlueprintTooltip } from "@blueprintjs/core";
-import { cloneElement } from "react";
-import type {
-  FocusEventHandler,
-  MouseEventHandler,
-  AriaAttributes,
-  ReactElement,
-  ReactNode,
-  Ref,
-  RefCallback,
-  SyntheticEvent,
-} from "react";
-// helpers
+import { cloneElement, useState, type HTMLProps, type MouseEvent, type ReactElement, type ReactNode } from "react";
+import {
+  arrow,
+  autoPlacement,
+  autoUpdate,
+  flip,
+  FloatingArrow,
+  FloatingPortal,
+  offset,
+  shift,
+  useDismiss,
+  useFloating,
+  useFocus,
+  useHover,
+  useInteractions,
+  useMergeRefs,
+  useRole,
+} from "@floating-ui/react";
 import { cn } from "../utils/classname";
 
-export type TPosition =
-  | "top"
-  | "right"
-  | "bottom"
-  | "left"
-  | "auto"
-  | "auto-end"
-  | "auto-start"
-  | "bottom-left"
-  | "bottom-right"
-  | "left-bottom"
-  | "left-top"
-  | "right-bottom"
-  | "right-top"
-  | "top-left"
-  | "top-right";
+const positions = {
+  top: "top",
+  right: "right",
+  bottom: "bottom",
+  left: "left",
+  auto: undefined,
+  "auto-end": undefined,
+  "auto-start": undefined,
+  "bottom-left": "bottom-start",
+  "bottom-right": "bottom-end",
+  "left-bottom": "left-end",
+  "left-top": "left-start",
+  "right-bottom": "right-end",
+  "right-top": "right-start",
+  "top-left": "top-start",
+  "top-right": "top-end",
+} as const;
+
+export type TPosition = keyof typeof positions;
 
 interface ITooltipProps {
   tooltipHeading?: string;
   tooltipContent: string | ReactNode;
   position?: TPosition;
-  children: ReactElement;
+  children: ReactElement<HTMLProps<HTMLElement>>;
   disabled?: boolean;
   className?: string;
   openDelay?: number;
@@ -48,58 +56,6 @@ interface ITooltipProps {
   isMobile?: boolean;
   /** @deprecated The overlay is lazy; target handlers always mount for keyboard access. */
   renderByDefault?: boolean;
-}
-
-type TooltipTargetProps = {
-  "aria-expanded"?: boolean;
-  "aria-haspopup"?: AriaAttributes["aria-haspopup"];
-  className?: string;
-  onBlur?: FocusEventHandler<HTMLElement>;
-  onContextMenu?: MouseEventHandler<HTMLElement>;
-  onFocus?: FocusEventHandler<HTMLElement>;
-  onMouseEnter?: MouseEventHandler<HTMLElement>;
-  onMouseLeave?: MouseEventHandler<HTMLElement>;
-  ref?: Ref<HTMLElement>;
-  tabIndex?: number;
-};
-
-function mergeRefs<T>(...refs: Array<Ref<T> | undefined>): RefCallback<T> {
-  return (node) => {
-    const cleanups: Array<() => void> = [];
-    const callbackRefs: Array<RefCallback<T>> = [];
-
-    refs.forEach((ref) => {
-      if (typeof ref === "function") {
-        const cleanup = ref(node);
-        if (typeof cleanup === "function") cleanups.push(cleanup);
-        else callbackRefs.push(ref);
-      } else if (ref) {
-        ref.current = node;
-        cleanups.push(() => {
-          ref.current = null;
-        });
-      }
-    });
-
-    if (node === null) return;
-
-    return () => {
-      cleanups.forEach((cleanup) => cleanup());
-      callbackRefs.forEach((ref) => ref(null));
-    };
-  };
-}
-
-function compose<T extends SyntheticEvent<HTMLElement>>(
-  childHandler: ((event: T) => void) | undefined,
-  tooltipHandler: ((event: T) => void) | undefined
-): ((event: T) => void) | undefined {
-  if (!childHandler) return tooltipHandler;
-  if (!tooltipHandler) return childHandler;
-  return (event) => {
-    childHandler(event);
-    tooltipHandler(event);
-  };
 }
 
 export function Tooltip({
@@ -110,44 +66,68 @@ export function Tooltip({
   disabled = false,
   className = "",
   openDelay = 200,
-  closeDelay,
+  closeDelay = 0,
   isMobile = false,
 }: ITooltipProps) {
-  return (
-    <BlueprintTooltip
-      disabled={disabled}
-      hoverOpenDelay={openDelay}
-      hoverCloseDelay={closeDelay}
-      content={
-        <div
-          className={cn(
-            "shadow-md relative z-50 block max-w-xs gap-1 overflow-hidden rounded-md bg-surface-1 p-2 text-11 break-words text-secondary",
-            {
-              hidden: isMobile,
-            },
-            className
-          )}
-        >
-          {tooltipHeading && <h5 className="font-medium text-primary">{tooltipHeading}</h5>}
-          {tooltipContent}
-        </div>
-      }
-      position={position}
-      renderTarget={({ isOpen: _isOpen, ...injectedProps }) => {
-        const target = children as ReactElement<TooltipTargetProps>;
-        const targetProps = injectedProps as TooltipTargetProps;
+  const [isOpen, setIsOpen] = useState(false);
+  if (disabled && isOpen) setIsOpen(false);
+  const [reference, setReference] = useState<Element | null>(null);
+  const [floating, setFloating] = useState<HTMLElement | null>(null);
+  const [arrowElement, setArrowElement] = useState<SVGSVGElement | null>(null);
+  const placement = positions[position];
+  const { floatingStyles, context } = useFloating({
+    open: isOpen && !disabled,
+    onOpenChange: setIsOpen,
+    elements: { reference, floating },
+    placement,
+    whileElementsMounted: autoUpdate,
+    middleware: [offset(11), placement ? flip() : autoPlacement(), shift(), arrow({ element: arrowElement })],
+  });
+  const hover = useHover(context, {
+    enabled: !disabled,
+    delay: { open: openDelay, close: closeDelay },
+    mouseOnly: true,
+  });
+  const focus = useFocus(context, { enabled: !disabled, visibleOnly: false });
+  const dismiss = useDismiss(context);
+  const role = useRole(context, { role: "tooltip" });
+  const { getReferenceProps, getFloatingProps } = useInteractions([hover, focus, dismiss, role]);
+  const ref = useMergeRefs([setReference, children.props.ref]);
 
-        return cloneElement(target, {
-          ...targetProps,
-          className: cn(target.props.className, targetProps.className),
-          ref: mergeRefs(target.props.ref, targetProps.ref),
-          onBlur: compose(target.props.onBlur, targetProps.onBlur),
-          onContextMenu: compose(target.props.onContextMenu, targetProps.onContextMenu),
-          onFocus: compose(target.props.onFocus, targetProps.onFocus),
-          onMouseEnter: compose(target.props.onMouseEnter, targetProps.onMouseEnter),
-          onMouseLeave: compose(target.props.onMouseLeave, targetProps.onMouseLeave),
-        });
-      }}
-    ></BlueprintTooltip>
+  return (
+    <>
+      {cloneElement(children, {
+        ...getReferenceProps({
+          ...children.props,
+          onContextMenu: (event: MouseEvent<HTMLElement>) => {
+            children.props.onContextMenu?.(event);
+            if (event.defaultPrevented) setIsOpen(false);
+          },
+        }),
+        ref,
+      })}
+      {isOpen && !disabled && (
+        <FloatingPortal>
+          <div
+            ref={setFloating}
+            style={floatingStyles}
+            className={cn("z-50", { hidden: isMobile })}
+            data-placement={context.placement}
+            {...getFloatingProps()}
+          >
+            <FloatingArrow ref={setArrowElement} context={context} width={22} height={7} className="fill-surface-1" />
+            <div
+              className={cn(
+                "shadow-md relative z-50 block max-w-xs gap-1 overflow-hidden rounded-md bg-surface-1 p-2 text-11 break-words text-secondary",
+                className
+              )}
+            >
+              {tooltipHeading && <h5 className="font-medium text-primary">{tooltipHeading}</h5>}
+              {tooltipContent}
+            </div>
+          </div>
+        </FloatingPortal>
+      )}
+    </>
   );
 }

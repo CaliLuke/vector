@@ -30,12 +30,12 @@ export function Tooltip(props: ITooltipProps) {
   const {
     tooltipHeading,
     tooltipContent,
-    position = "top",
+    position,
     children,
     disabled = false,
     className = "",
     openDelay = 200,
-    side = "bottom",
+    side = "top",
     align = "center",
     sideOffset = 10,
     closeDelay,
@@ -69,13 +69,13 @@ export function Tooltip(props: ITooltipProps) {
               <BaseTooltip.Popup>
                 {tooltipHeading && <p className="text-caption-md-medium text-primary">{tooltipHeading}</p>}
                 {tooltipContent && (
-                  <p
+                  <div
                     className={cn("text-caption-sm-regular text-secondary", {
                       "mt-1": tooltipHeading && tooltipHeading !== "",
                     })}
                   >
                     {tooltipContent}
-                  </p>
+                  </div>
                 )}
               </BaseTooltip.Popup>
             }

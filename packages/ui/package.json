@@ -9,11 +9,18 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
+    "./avatar": "./dist/avatar/index.js",
     "./button": "./dist/button/index.js",
+    "./content-wrapper": "./dist/content-wrapper/index.js",
+    "./control-link": "./dist/control-link/index.js",
     "./dropdowns": "./dist/dropdowns/index.js",
     "./form-fields": "./dist/form-fields/index.js",
+    "./header": "./dist/header/index.js",
     "./loader": "./dist/loader.js",
     "./modals": "./dist/modals/index.js",
+    "./popovers": "./dist/popovers/index.js",
+    "./row": "./dist/row/index.js",
+    "./tooltip": "./dist/tooltip/index.js",
     "./package.json": "./package.json"
   },
   "scripts": {
@@ -33,7 +40,7 @@
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "catalog:",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "catalog:",
-    "@blueprintjs/core": "catalog:",
+    "@floating-ui/react": "catalog:",
     "@headlessui/react": "catalog:",
     "@plane/constants": "workspace:*",
     "@plane/hooks": "workspace:*",

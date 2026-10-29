@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "full",
-  "fileCount": 3736,
+  "fileCount": 3737,
   "diagnostics": [
     {
       "diagnostic": {
@@ -11610,51 +11610,6 @@
         "severity": "warning",
         "code": "react(exhaustive-effect-dependencies)",
         "message": "Found extra effect dependencies"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/ui/src/tooltip/tooltip.test.tsx",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/ui/src/tooltip/tooltip.test.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe type assertion: type '{ IS_REACT_ACT_ENVIRONMENT?: boolean | undefined; }' is more narrow than the original type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/ui/src/tooltip/tooltip.tsx",
-        "severity": "warning",
-        "code": "typescript(consistent-return)",
-        "message": "Function expected no return value."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/ui/src/tooltip/tooltip.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe type assertion: type 'ReactElement<TooltipTargetProps, string | JSXElementConstructor<any>>' is more narrow than the original type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/ui/src/tooltip/tooltip.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe type assertion: type 'TooltipTargetProps' is more narrow than the original type."
       },
       "count": 1
     },

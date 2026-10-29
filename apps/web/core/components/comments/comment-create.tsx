@@ -16,7 +16,7 @@ import type { EditorRefApi } from "@plane/editor";
 
 import { cn } from "@plane/utils/common";
 import { isCommentEmpty } from "@plane/utils/string";
-import { FormErrors } from "@plane/ui";
+import { FormErrors } from "@plane/ui/form-fields";
 // components
 import { LiteTextEditor } from "@/components/editor/lite-text";
 // hooks

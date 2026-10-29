@@ -10,7 +10,7 @@ import type { TActivityFilters, TActivityFilterOption } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { IconButton } from "@plane/propel/icon-button";
 import { CheckIcon } from "@plane/propel/icons";
-import { PopoverMenu } from "@plane/ui";
+import { PopoverMenu } from "@plane/ui/popovers";
 // helper
 import { cn } from "@plane/utils/common";
 // constants

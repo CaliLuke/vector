@@ -10,7 +10,7 @@ globalThis.quickActionMenuCalls = [];
 
 const customMenuUrl = new URL("../../packages/ui/src/dropdowns/custom-menu.tsx", import.meta.url).href;
 const packageStubs = {
-  "@plane/ui": `export const ContextMenu = ({ items }) => globalThis.React.createElement("div", null, items.length); export { CustomMenu } from ${JSON.stringify(customMenuUrl)};`,
+  "@plane/ui/dropdowns": `export const ContextMenu = ({ items }) => globalThis.React.createElement("div", null, items.length); export { CustomMenu } from ${JSON.stringify(customMenuUrl)};`,
   "@plane/hooks": "export const useOutsideClickDetector = () => {};",
   "@plane/propel/icons": "export const ChevronDownIcon = () => null; export const ChevronRightIcon = () => null;",
   "lucide-react": "export const MoreHorizontal = () => null;",

@@ -30,7 +30,7 @@ repos:
         stages: [pre-push, manual]
         groups: [full, ci, typescript]
       - id: vector-go-full
-        priority: 20
+        priority: 30
         name: Go full gates
         entry: ./check.sh --go --full
         language: system

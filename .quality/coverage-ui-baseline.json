@@ -627,9 +627,9 @@
     },
     "src/tooltip/tooltip.tsx": {
       "lines": 100,
-      "statements": 93.54,
+      "statements": 100,
       "functions": 100,
-      "branches": 78.94
+      "branches": 95.23
     },
     "src/typography/index.tsx": {
       "lines": 100,

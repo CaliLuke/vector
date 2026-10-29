@@ -6,17 +6,21 @@
  * See the LICENSE file for details.
  */
 
-import { act, createRef } from "react";
+import { act, createRef, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { Tooltip as PropelTooltip } from "@plane/propel/tooltip";
 import { Tooltip } from "./tooltip";
 
-describe("Tooltip target behavior", () => {
+describe.each([
+  ["legacy", Tooltip],
+  ["propel", PropelTooltip],
+] as const)("%s Tooltip target behavior", (_name, Component) => {
   let root: Root | undefined;
   let container: HTMLDivElement | undefined;
 
   beforeAll(() => {
-    (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+    Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   });
 
   afterEach(() => {
@@ -27,27 +31,37 @@ describe("Tooltip target behavior", () => {
     vi.useRealTimers();
   });
 
-  const renderTooltip = (props: { renderByDefault?: boolean; onFocus?: () => void; onMouseEnter?: () => void }) => {
+  const renderTooltip = (props: {
+    renderByDefault?: boolean;
+    disabled?: boolean;
+    tooltipHeading?: string;
+    tooltipContent?: ReactNode;
+    openDelay?: number;
+    onFocus?: () => void;
+    onMouseEnter?: () => void;
+  }) => {
     const { onFocus, onMouseEnter, ...tooltipProps } = props;
     container = document.createElement("div");
     document.body.append(container);
     root = createRoot(container);
     const ref = createRef<HTMLButtonElement>();
 
-    act(() => {
-      root?.render(
-        <Tooltip tooltipContent="Tooltip body" openDelay={0} {...tooltipProps}>
-          <button ref={ref} onFocus={onFocus} onMouseEnter={onMouseEnter}>
-            Target
-          </button>
-        </Tooltip>
-      );
-    });
+    const rerender = (disabled = props.disabled) =>
+      act(() => {
+        root?.render(
+          <Component tooltipContent="Tooltip body" openDelay={0} {...tooltipProps} disabled={disabled}>
+            <button ref={ref} onFocus={onFocus} onMouseEnter={onMouseEnter}>
+              Target
+            </button>
+          </Component>
+        );
+      });
+    rerender();
 
-    return { ref, target: container.querySelector("button") };
+    return { ref, target: container.querySelector("button"), rerender };
   };
 
-  it("preserves the child element, ref, and mouse handler before the tooltip mounts", () => {
+  it("preserves the child element, ref, and mouse handler before the tooltip mounts", async () => {
     const onMouseEnter = vi.fn();
     const { ref, target } = renderTooltip({ renderByDefault: false, onMouseEnter });
 
@@ -55,7 +69,7 @@ describe("Tooltip target behavior", () => {
     expect(target?.parentElement).toBe(container);
     expect(ref.current).toBe(target);
 
-    act(() => target?.dispatchEvent(new MouseEvent("mouseover", { bubbles: true })));
+    await act(() => target?.dispatchEvent(new MouseEvent("mouseover", { bubbles: true })));
     expect(onMouseEnter).toHaveBeenCalledOnce();
   });
 
@@ -92,9 +106,9 @@ describe("Tooltip target behavior", () => {
     root = createRoot(container);
     act(() => {
       root?.render(
-        <Tooltip tooltipContent="Help">
+        <Component tooltipContent="Help">
           <button ref={childRef}>Target</button>
-        </Tooltip>
+        </Component>
       );
     });
     expect(childRef).toHaveBeenCalledWith(container.querySelector("button"));
@@ -102,5 +116,104 @@ describe("Tooltip target behavior", () => {
     root = undefined;
     expect(cleanups.length).toBeGreaterThan(0);
     for (const cleanup of cleanups) expect(cleanup).toHaveBeenCalledOnce();
+  });
+
+  it("keeps a disabled tooltip's target focusable without showing its content", async () => {
+    vi.useFakeTimers();
+    const onFocus = vi.fn();
+    const { target, ref } = renderTooltip({ disabled: true, tooltipContent: "Disabled help", onFocus });
+
+    await act(async () => {
+      target?.focus();
+      await vi.runAllTimersAsync();
+    });
+
+    expect(document.activeElement).toBe(target);
+    expect(ref.current).toBe(target);
+    expect(onFocus).toHaveBeenCalledOnce();
+    expect(document.body.textContent).not.toContain("Disabled help");
+  });
+
+  it("renders a heading and rich block content without invalid paragraph nesting", async () => {
+    vi.useFakeTimers();
+    const { target } = renderTooltip({
+      tooltipHeading: "Details",
+      tooltipContent: <section aria-label="Rich help">Extra information</section>,
+    });
+
+    await act(async () => {
+      target?.focus();
+      await vi.runAllTimersAsync();
+    });
+
+    const content = document.querySelector('section[aria-label="Rich help"]');
+    expect(content).not.toBeNull();
+    expect(content?.closest("p")).toBeNull();
+    expect(document.body.textContent).toContain("Details");
+  });
+
+  it("closes when disabled and waits for a new interaction after being enabled", async () => {
+    vi.useFakeTimers();
+    const { target, rerender } = renderTooltip({ tooltipContent: "Conditional help" });
+    await act(async () => {
+      target?.focus();
+      await vi.runAllTimersAsync();
+    });
+    expect(document.body.textContent).toContain("Conditional help");
+
+    await act(async () => {
+      rerender(true);
+      await vi.runAllTimersAsync();
+    });
+    expect(document.body.textContent).not.toContain("Conditional help");
+
+    await act(async () => {
+      target?.blur();
+      rerender(false);
+      await vi.runAllTimersAsync();
+    });
+    expect(document.body.textContent).not.toContain("Conditional help");
+
+    await act(async () => {
+      target?.focus();
+      await vi.runAllTimersAsync();
+    });
+    expect(document.body.textContent).toContain("Conditional help");
+  });
+
+  it("dismisses on Escape while retaining focus on the original target", async () => {
+    vi.useFakeTimers();
+    const { target } = renderTooltip({ tooltipContent: "Dismissible help" });
+    await act(async () => {
+      target?.focus();
+      await vi.runAllTimersAsync();
+    });
+    expect(document.body.textContent).toContain("Dismissible help");
+
+    await act(async () => {
+      target?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      await vi.runAllTimersAsync();
+    });
+
+    expect(document.body.textContent).not.toContain("Dismissible help");
+    expect(document.activeElement).toBe(target);
+  });
+
+  it("waits for the configured hover delay before showing content", async () => {
+    vi.useFakeTimers();
+    const { target } = renderTooltip({ tooltipContent: "Delayed help", openDelay: 80 });
+
+    await act(async () => {
+      target?.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
+      target?.dispatchEvent(new MouseEvent("mouseenter"));
+      target?.dispatchEvent(new MouseEvent("mousemove", { bubbles: true }));
+      await vi.advanceTimersByTimeAsync(79);
+    });
+    expect(document.body.textContent).not.toContain("Delayed help");
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    expect(document.body.textContent).toContain("Delayed help");
   });
 });

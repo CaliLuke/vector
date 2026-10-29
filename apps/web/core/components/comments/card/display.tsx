@@ -23,7 +23,8 @@ import { LiteTextEditor } from "@/components/editor/lite-text";
 import { CommentReactions } from "../comment-reaction";
 import { CommentCardEditForm } from "./edit-form";
 import { EmojiReactionButton, EmojiReactionPicker } from "@plane/propel/emoji-reaction";
-import { Avatar, Tooltip } from "@plane/ui";
+import { Avatar } from "@plane/ui/avatar";
+import { Tooltip } from "@plane/ui/tooltip";
 import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 import { useCommentHighlight } from "./use-comment-highlight";
 

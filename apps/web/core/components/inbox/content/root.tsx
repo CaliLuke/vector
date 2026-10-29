@@ -12,7 +12,7 @@ import { captureIdentityScope, isIdentityScopeCurrent } from "@/queries/identity
 import { EUserPermissions } from "@plane/constants";
 import { useTextSaveStatus } from "@/components/issues/use-text-save-status";
 // components
-import { ContentWrapper } from "@plane/ui";
+import { ContentWrapper } from "@plane/ui/content-wrapper";
 // hooks
 import { useIntakeDetail } from "@/hooks/use-intake";
 import type { TInboxIssueCurrentTab } from "@plane/types";

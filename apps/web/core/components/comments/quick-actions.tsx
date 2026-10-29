@@ -13,8 +13,8 @@ import { useTranslation } from "@plane/i18n";
 import { IconButton } from "@plane/propel/icon-button";
 import { LinkIcon, GlobeIcon, LockIcon, EditIcon, TrashIcon } from "@plane/propel/icons";
 import type { TIssueComment } from "@plane/types";
-import type { TContextMenuItem } from "@plane/ui";
-import { CustomMenu } from "@plane/ui";
+import type { TContextMenuItem } from "@plane/ui/dropdowns";
+import { CustomMenu } from "@plane/ui/dropdowns";
 import { cn } from "@plane/utils/common";
 // hooks
 import { useCurrentUser } from "@/hooks/use-current-user";

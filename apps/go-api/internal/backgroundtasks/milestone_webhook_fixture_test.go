@@ -9,10 +9,8 @@ import (
 	"time"
 	stduuid "uuid"
 
-	"github.com/CaliLuke/go-plane/internal/bootstrap"
 	"github.com/CaliLuke/go-plane/internal/milestones"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/CaliLuke/go-plane/internal/workspacewebhooks"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -31,13 +29,8 @@ func newMilestoneWebhookFixture(t *testing.T) milestoneWebhookFixture {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
 	t.Cleanup(cancel)
-	pair, err := postgresfixture.StartUncloned(ctx, bootstrap.MigrateSchema)
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, pair.Close()) })
-	pool, err := pgxpool.New(ctx, pair.SeedURL())
-	require.NoError(t, err)
-	t.Cleanup(pool.Close)
-	_, err = pool.Exec(ctx, testsupport.MilestoneWriteSeed)
+	_, pool := openBackgroundTaskClone(t, ctx)
+	_, err := pool.Exec(ctx, testsupport.MilestoneWriteSeed)
 	require.NoError(t, err)
 	store, err := NewPostgresWebhookTaskStore(pool, nil)
 	require.NoError(t, err)

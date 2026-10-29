@@ -5,8 +5,8 @@
  */
 
 import type { ComponentProps, RefObject } from "react";
-import { ContextMenu, CustomMenu } from "@plane/ui";
-import type { TContextMenuItem } from "@plane/ui";
+import { ContextMenu, CustomMenu } from "@plane/ui/dropdowns";
+import type { TContextMenuItem } from "@plane/ui/dropdowns";
 import { cn } from "@plane/utils/common";
 
 type QuickActionMenuProps = {

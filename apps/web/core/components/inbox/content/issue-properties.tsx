@@ -15,7 +15,7 @@ import {
 } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { TInboxDuplicateIssueDetails, TIssue } from "@plane/types";
-import { ControlLink } from "@plane/ui";
+import { ControlLink } from "@plane/ui/control-link";
 import { getDate, renderFormattedPayloadDate } from "@plane/utils/datetime";
 import { generateWorkItemLink } from "@plane/utils/work-item";
 // components

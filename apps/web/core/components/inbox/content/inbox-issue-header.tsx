@@ -19,7 +19,7 @@ import { ChevronDownIcon, ChevronUpIcon } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TNameDescriptionLoader } from "@plane/types";
 import { EInboxIssueStatus } from "@plane/types";
-import { Row } from "@plane/ui";
+import { Row } from "@plane/ui/row";
 import { copyUrlToClipboard } from "@plane/utils/string";
 import { findHowManyDaysLeft } from "@plane/utils/datetime";
 import { generateWorkItemLink } from "@plane/utils/work-item";

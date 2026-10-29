@@ -16,8 +16,9 @@ import {
   CheckCircleFilledIcon,
   CloseCircleFilledIcon,
 } from "@plane/propel/icons";
-import { ControlLink, CustomMenu } from "@plane/ui";
-import type { TContextMenuItem } from "@plane/ui";
+import { ControlLink } from "@plane/ui/control-link";
+import { CustomMenu } from "@plane/ui/dropdowns";
+import type { TContextMenuItem } from "@plane/ui/dropdowns";
 import { renderQuickActionMenuItems } from "@/components/common/quick-action-menu";
 
 export type IntakeActions = {

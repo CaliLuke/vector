@@ -8,7 +8,7 @@ import { PanelLeft, MoveRight } from "lucide-react";
 import { IconButton } from "@plane/propel/icon-button";
 import { ChevronDownIcon, ChevronUpIcon } from "@plane/propel/icons";
 import type { TNameDescriptionLoader, TInboxIssue } from "@plane/types";
-import { Header, EHeaderVariant } from "@plane/ui";
+import { Header, EHeaderVariant } from "@plane/ui/header";
 import { cn } from "@plane/utils/common";
 import { NameDescriptionUpdateStatus } from "@/components/issues/issue-update-status";
 import { InboxIssueStatus } from "../inbox-issue-status";

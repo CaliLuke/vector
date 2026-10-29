@@ -6,11 +6,11 @@ import (
 	"context"
 	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/milestones"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/require"
@@ -29,7 +29,12 @@ type readFixture struct {
 
 func newReadFixture(t *testing.T) readFixture {
 	t.Helper()
-	ctx, db := postgresfixture.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed+milestoneReadSeed)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	t.Cleanup(cancel)
+	address := cloneMilestoneDatabase(t, ctx, milestoneReadSchema)
+	db, err := pgx.Connect(ctx, address)
+	require.NoError(t, err)
+	t.Cleanup(func() { testsupport.CloseContext(t, db, context.WithoutCancel(ctx)) })
 	repo, err := milestones.NewRepository(db)
 	require.NoError(t, err)
 	return readFixture{ctx, db, repo, milestones.Scope{ActorID: uuid.MustParse(testsupport.LabelActor), WorkspaceID: uuid.MustParse(testsupport.LabelWorkspace), ProjectID: uuid.MustParse(testsupport.LabelProject), WorkspaceSlug: "demo", Timezone: "America/Los_Angeles"}}
