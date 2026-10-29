@@ -435,11 +435,9 @@ func (r *Repository) writeCollaborationSubscriber(ctx context.Context, q Request
 		}
 		return Result{204, nil}, r.deleteCollaboration(ctx, q, "issue_subscribers", row)
 	}
-	input := djangoinput.Input{Fields: map[string]any{}}
 	changes := map[string]any{}
 	if !self {
-		var err error
-		input, err = djangoinput.Parse(body, contentType)
+		input, err := djangoinput.Parse(body, contentType)
 		if err != nil {
 			return Result{}, err
 		}

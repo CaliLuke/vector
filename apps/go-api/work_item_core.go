@@ -178,7 +178,7 @@ func workItemErrorKind(err error) string {
 }
 
 func (s *workItemCoreService) APIKeyAuth(ctx context.Context, key string, scheme *security.APIKeyScheme) (context.Context, error) {
-	p := workItemPrincipal{}
+	var p workItemPrincipal
 	if scheme != nil && scheme.Name == "ApiKeyAuth" {
 		principal, err := s.keys.Validate(ctx, key)
 		if err != nil {

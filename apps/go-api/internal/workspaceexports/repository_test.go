@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -109,5 +110,22 @@ func TestCreateIssueExportRejectsMalformedUUIDBeforeInsert(t *testing.T) {
 	}
 	if len(database.queries) != 1 {
 		t.Fatalf("queries=%d, want only workspace lookup before validation failure", len(database.queries))
+	}
+}
+
+func TestHistoryRejectsUnsafeOrderingBeforeQuery(t *testing.T) {
+	database := &exportDatabase{}
+	repository, err := NewRepository(database)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = repository.History(context.Background(), "user", "demo", djangoapi.Query{Params: map[string]string{
+		"per_page": "20", "cursor": "20:1:0", "order_by": "created_at; DROP TABLE exporters",
+	}})
+	if err == nil || err.Error() != "unsupported exporter order_by" {
+		t.Fatalf("unsafe ordering error = %v", err)
+	}
+	if len(database.queries) != 0 {
+		t.Fatalf("unsafe ordering reached the database: %v", database.queries)
 	}
 }

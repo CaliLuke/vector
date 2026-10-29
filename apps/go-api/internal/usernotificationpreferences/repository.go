@@ -42,7 +42,7 @@ func (repository *Repository) Patch(ctx context.Context, userID uuid.UUID, value
 		if !ok {
 			continue
 		}
-		converted := value
+		var converted any
 		switch {
 		case field == "deleted_at":
 			if value == nil {

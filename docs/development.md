@@ -524,6 +524,21 @@ packages pass with no skips. Fresh module coverage is 65.59%, above its retained
 65.51% floor; the statement inventory grows from 1,447 to 1,450 for the extracted
 calls and return. The complete repository gate remains pending.
 
+Removing redundant state retires the last ten `ineffassign` findings, the last
+configured `govet` finding, and three `SA4006` findings. Workspace-insights mounting
+shares its existing middleware factory; exhaustive branches assign values without
+unused initializers. Attachment creation retains permission checks and assigns
+its workspace ID at the active-workspace lookup, preserving API-specific errors.
+No helper functions are added. The baseline removes fourteen findings and eleven
+fingerprints, leaving 445 occurrences and 255 fingerprints; all analyzers remain
+enabled. Maintainability stays at 25 and duplication at 488. The zero-score HTTP
+assembly fingerprint is refreshed after reviewing its three local changes.
+Final affected runs pass 5,066 tests/subtests across nine packages without skips.
+New cases protect quoted Accept parameters and reject unsafe export ordering
+before a database query. Fresh coverage passes all six affected package floors;
+five statement inventories are refreshed, including earlier parameter cleanup.
+All percentage floors are retained. The complete repository gate remains pending.
+
 HTTP response bodies retain explicit checked closes where the current bodyclose
 analyzer cannot follow a cross-package cleanup helper. This limitation is tracked
 in [timakin/bodyclose#60](https://github.com/timakin/bodyclose/issues/60), with a

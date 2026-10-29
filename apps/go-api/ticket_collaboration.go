@@ -157,7 +157,7 @@ func collaborationError(err error) error {
 }
 
 func (s *ticketCollaborationService) APIKeyAuth(ctx context.Context, key string, scheme *security.APIKeyScheme) (context.Context, error) {
-	p := collaborationPrincipal{}
+	var p collaborationPrincipal
 	if scheme != nil && scheme.Name == "ApiKeyAuth" {
 		principal, err := s.keys.Validate(ctx, key)
 		if err != nil {

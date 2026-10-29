@@ -4893,6 +4893,7 @@ func TestProjectMembershipReadsJSONNegotiation(t *testing.T) {
 		{name: "application wildcard", accept: "application/*; indent=3", present: true, accepted: true, wantIndent: 3},
 		{name: "JSON", accept: "application/json; indent=2", present: true, accepted: true, wantIndent: 2},
 		{name: "whitespace indent", accept: `application/json; indent=" 4 "`, present: true, accepted: true, wantIndent: 4},
+		{name: "quoted parameter with escaped quote and semicolon", accept: `application/json; profile="quoted\";value"; indent=4`, present: true, accepted: true, wantIndent: 4},
 		{name: "arbitrary precision indent", accept: "application/json; indent=999999999999999999999999999999", present: true, accepted: true, wantIndent: 8},
 		{name: "underscored indent", accept: "application/json; indent=1_0", present: true, accepted: true, wantIndent: 8},
 		{name: "malformed parameter", accept: "application/json; indent", present: true, accepted: true},

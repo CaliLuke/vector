@@ -594,8 +594,8 @@ func (s *oauthRedirectService) providerConfig(ctx context.Context, provider stri
 		return oauthConfig{}, errors.New("OAuth request metadata is missing effective host or scheme")
 	}
 	callback := "/auth/" + provider + "/callback/"
-	endpoint := oauth2.Endpoint{}
-	scopes := []string{}
+	var endpoint oauth2.Endpoint
+	var scopes []string
 	options := []oauth2.AuthCodeOption{}
 	switch provider {
 	case "google":

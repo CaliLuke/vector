@@ -1011,10 +1011,6 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 			{"/api/workspaces/{slug}/user-profile/{user_id}/", server.Profile},
 			{"/api/workspaces/{slug}/user-stats/{user_id}/", server.Stats},
 		}, readServicesCORSPolicy)
-	}
-	if pending.workspaceUserInsights != nil && sessionProtocolMiddleware == nil {
-		options := apiV1CompatibilityOptions{activityLogger: pending.activityReadsActivity, activitySecret: pending.activityReadsSecret, bodySizeLimit: pending.activityReadsBodyLimit}
-		stack := sessionServiceMiddlewareStack(options, pending.readServicesSession, pending.readServicesCookie)
 		authorizer := labelSessionProtocolDispatch{userInsights: pending.workspaceUserInsightsMetadata}
 		sessionProtocolMiddleware = newSessionServiceProtocolMiddleware(notificationProtocolMetadata, authorizer, readServicesCORSPolicy, stack, pending.readServicesCookie, dbg, options)
 	}
@@ -1333,7 +1329,7 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 		mountCycleReadsProtocolRoutes(mux, server, readServicesCORSPolicy)
 	}
 	if pending.cycleLifecycle != nil {
-		options := apiV1CompatibilityOptions{}
+		var options apiV1CompatibilityOptions
 		if activityOptions != nil {
 			options = *activityOptions
 		} else {
@@ -1358,7 +1354,7 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 		mountProjectPublication(mux, pending.projectPublication, pending.projectPublicationMetadata, readServicesCORSPolicy, options, pending.readServicesSession, pending.readServicesCookie)
 	}
 	if pending.moduleLifecycle != nil {
-		options := apiV1CompatibilityOptions{}
+		var options apiV1CompatibilityOptions
 		if activityOptions != nil {
 			options = *activityOptions
 		} else {
@@ -4304,7 +4300,6 @@ func projectMembershipReadsJSONNegotiation(accept string, present bool) (bool, i
 			continue
 		}
 		bestPrecedence = precedence
-		bestIndent = 0
 		bestIndent = djangoJSONIndent(parameters["indent"])
 	}
 	return bestPrecedence >= 0, bestIndent, nil

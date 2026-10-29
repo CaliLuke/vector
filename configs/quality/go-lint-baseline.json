@@ -910,50 +910,6 @@
       "count": 2
     },
     {
-      "fingerprint": ["govet", "cmd/system/http.go", "nilness: tautological condition: nil == nil"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["ineffassign", "cmd/system/http.go", "ineffectual assignment to bestIndent"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["ineffassign", "cmd/system/http.go", "ineffectual assignment to options"],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "ineffassign",
-        "internal/usernotificationpreferences/repository.go",
-        "ineffectual assignment to converted"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["ineffassign", "internal/workitems/collaboration_writes.go", "ineffectual assignment to input"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["ineffassign", "internal/workspaceexports/repository.go", "ineffectual assignment to order"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["ineffassign", "oauth_redirects.go", "ineffectual assignment to endpoint"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["ineffassign", "oauth_redirects.go", "ineffectual assignment to scopes"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["ineffassign", "ticket_collaboration.go", "ineffectual assignment to p"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["ineffassign", "work_item_core.go", "ineffectual assignment to p"],
-      "count": 1
-    },
-    {
       "fingerprint": [
         "nilerr",
         "cmd/system/account_authentication_adapters.go",
@@ -1116,14 +1072,6 @@
     {
       "fingerprint": ["staticcheck", "intake_inbox_reads.go", "ST1005: error strings should not be capitalized"],
       "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/assets/attachment.go",
-        "SA4006: this value of workspaceID is never used"
-      ],
-      "count": 3
     },
     {
       "fingerprint": [

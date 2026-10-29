@@ -102,7 +102,7 @@ func (service *LifecycleService) listScopedIssueAttachments(ctx context.Context,
 }
 
 func (service *LifecycleService) createLegacyIssueAttachment(ctx context.Context, slug, rawProjectID, rawIssueID string, body io.ReadCloser) (*api.PlaneAppSerializersIssueIssueattachmentserializerResponse, error) {
-	userID, workspaceID, err := service.attachmentScope(ctx, slug, rawProjectID)
+	userID, _, err := service.attachmentScope(ctx, slug, rawProjectID)
 	if err != nil {
 		return nil, err
 	}
@@ -119,11 +119,10 @@ func (service *LifecycleService) createLegacyIssueAttachment(ctx context.Context
 	if err != nil {
 		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"asset": []string{"No file was submitted."}}}
 	}
-	activeWorkspaceID, err := service.assets.repository.WorkspaceIDBySlug(ctx, slug)
+	workspaceID, err := service.assets.repository.WorkspaceIDBySlug(ctx, slug)
 	if err != nil {
 		return nil, err
 	}
-	workspaceID = activeWorkspaceID
 	found, allowed, err := service.assets.repository.IssueAccess(ctx, userID, workspaceID, projectID, issueID)
 	if err != nil {
 		return nil, err
@@ -280,12 +279,12 @@ func (service *LifecycleService) createIssueAttachment(ctx context.Context, slug
 }
 
 func (service *LifecycleService) createIssueAttachmentAPI(ctx context.Context, slug, rawProjectID, rawIssueID string, body io.ReadCloser, apiV1 bool) (*api.RestFrameworkSerializersIssueattachmentuploadresponseResponse, error) {
-	var userID, workspaceID, projectID, issueID uuid.UUID
+	var userID, projectID, issueID uuid.UUID
 	var err error
 	if apiV1 {
 		var found, allowed bool
 		var permissionErr error
-		userID, workspaceID, projectID, found, allowed, permissionErr = service.issuePermissionV1(ctx, slug, rawProjectID, rawIssueID)
+		userID, _, projectID, found, allowed, permissionErr = service.issuePermissionV1(ctx, slug, rawProjectID, rawIssueID)
 		if permissionErr != nil {
 			return nil, permissionErr
 		}
@@ -297,7 +296,7 @@ func (service *LifecycleService) createIssueAttachmentAPI(ctx context.Context, s
 		}
 		issueID, _ = uuid.Parse(rawIssueID)
 	} else {
-		userID, workspaceID, err = service.attachmentScope(ctx, slug, rawProjectID)
+		userID, _, err = service.attachmentScope(ctx, slug, rawProjectID)
 		if err != nil {
 			return nil, err
 		}
@@ -329,18 +328,12 @@ func (service *LifecycleService) createIssueAttachmentAPI(ctx context.Context, s
 	if size > service.assets.fileLimit {
 		size = service.assets.fileLimit
 	}
-	if apiV1 {
-		activeWorkspaceID, workspaceErr := service.assets.repository.WorkspaceIDBySlug(ctx, slug)
-		if workspaceErr != nil {
-			return nil, sourceLookupError(workspaceErr, map[string]any{"error": "The requested resource does not exist."})
+	workspaceID, err := service.assets.repository.WorkspaceIDBySlug(ctx, slug)
+	if err != nil {
+		if apiV1 {
+			return nil, sourceLookupError(err, map[string]any{"error": "The requested resource does not exist."})
 		}
-		workspaceID = activeWorkspaceID
-	} else {
-		activeWorkspaceID, workspaceErr := service.assets.repository.WorkspaceIDBySlug(ctx, slug)
-		if workspaceErr != nil {
-			return nil, workspaceErr
-		}
-		workspaceID = activeWorkspaceID
+		return nil, err
 	}
 	externalID, externalSource := "", ""
 	if apiV1 {

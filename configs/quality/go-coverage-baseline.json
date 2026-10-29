@@ -2,7 +2,7 @@
   "version": 1,
   "packages": {
     "github.com/CaliLuke/go-plane": {
-      "statements": 11769,
+      "statements": 11766,
       "percent": 62.1
     },
     "github.com/CaliLuke/go-plane/accountauthentication/design": {
@@ -82,7 +82,7 @@
       "percent": 42.86
     },
     "github.com/CaliLuke/go-plane/cmd/system": {
-      "statements": 6560,
+      "statements": 6556,
       "percent": 73.73
     },
     "github.com/CaliLuke/go-plane/cmd/system-cli": {
@@ -118,7 +118,7 @@
       "percent": 70
     },
     "github.com/CaliLuke/go-plane/internal/assets": {
-      "statements": 3563,
+      "statements": 3556,
       "percent": 58.63
     },
     "github.com/CaliLuke/go-plane/internal/assets/bindingsgen": {
@@ -454,7 +454,7 @@
       "percent": 75.23
     },
     "github.com/CaliLuke/go-plane/internal/workitems": {
-      "statements": 7175,
+      "statements": 7173,
       "percent": 66.15
     },
     "github.com/CaliLuke/go-plane/internal/workitemsearch": {
@@ -482,7 +482,7 @@
       "percent": 78.43
     },
     "github.com/CaliLuke/go-plane/internal/workspaceexports": {
-      "statements": 69,
+      "statements": 68,
       "percent": 72.46
     },
     "github.com/CaliLuke/go-plane/internal/workspacefavorites": {
