@@ -1379,6 +1379,9 @@ importers:
       '@plane/types':
         specifier: workspace:*
         version: link:../types
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
     devDependencies:
       '@plane/typescript-config':
         specifier: workspace:*

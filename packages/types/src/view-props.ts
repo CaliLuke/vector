@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import type * as React from "react";
+
 import type { IProjectMemberNavigationPreferences } from "./project";
 import type { TIssue } from "./issues/issue";
 import type { LOGICAL_OPERATOR, TSupportedOperators } from "./rich-filters";

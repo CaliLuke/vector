@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import type * as React from "react";
+
 export type TCoreInstanceAuthenticationModeKeys =
   | "unique-codes"
   | "passwords-login"

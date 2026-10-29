@@ -3,6 +3,8 @@ import test from "node:test";
 import { registerHooks } from "node:module";
 import { React, act, createPermissionUiFixture, settleQuery } from "./helpers/permission-ui-fixture.mjs";
 import { changeFormControl, submitForm } from "./helpers/native-forms.mjs";
+import { openSearchCombobox } from "./helpers/combobox.mjs";
+import { setPositioningGeometry } from "./helpers/positioning.mjs";
 const { routerApi } = await import("./helpers/router.mjs");
 const { useParams } = routerApi;
 globalThis.estimateUiReact = React;
@@ -56,10 +58,7 @@ registerHooks({
     if (isLayout && (specifier === "@plane/ui" || specifier === "@plane/i18n"))
       return { shortCircuit: true, url: "data:text/javascript," + encodeURIComponent(stubs[specifier]) };
 
-    if (
-      (parent.includes("/components/estimates/") || parent.endsWith("/components/readonly/estimate.tsx")) &&
-      stubs[specifier]
-    )
+    if (parent.includes("/components/estimates/") && stubs[specifier])
       return { shortCircuit: true, url: "data:text/javascript," + encodeURIComponent(stubs[specifier]) };
     return next(specifier, context);
   },
@@ -77,9 +76,6 @@ const { CycleModulePreferencesProvider } = await import("../../apps/web/core/pro
 const { ParentIssuePreferencesProvider } = await import("../../apps/web/core/providers/parent-issue-preferences.tsx");
 const { seedParentListPreferences } = await import("./helpers/parent-catalogue-fixture.mjs");
 const { estimateKeys } = await import("../../apps/web/core/queries/estimates.ts");
-const { EstimateRoot } = await import("../../apps/web/core/components/estimates/root.tsx");
-const { DeleteEstimateModal } = await import("../../apps/web/core/components/estimates/delete/modal.tsx");
-const { ReadonlyEstimate } = await import("../../apps/web/core/components/readonly/estimate.tsx");
 const initialScope = {
   kind: "project",
   accountId: "alice",
@@ -146,10 +142,6 @@ async function click(node) {
   await act(async () => node.click());
   await settleQuery();
 }
-function Settings() {
-  const { projectId } = useParams({ strict: false });
-  return React.createElement(EstimateRoot, { workspaceSlug: "acme", projectId, isAdmin: true });
-}
 
 async function fixture(t, rows) {
   globalThis.estimateUiToasts.length = 0;
@@ -158,6 +150,13 @@ async function fixture(t, rows) {
     workspaceRole: 15,
     projectRoles: { p1: 20, p2: 20 },
   });
+  // Load browser UI after the DOM exists so its subscriptions use client effects.
+  const { EstimateRoot } = await import("../../apps/web/core/components/estimates/root.tsx");
+  const { DeleteEstimateModal } = await import("../../apps/web/core/components/estimates/delete/modal.tsx");
+  function Settings() {
+    const { projectId } = useParams({ strict: false });
+    return React.createElement(EstimateRoot, { workspaceSlug: "acme", projectId, isAdmin: true });
+  }
   view.client.setDefaultOptions({ queries: { retry: false, gcTime: Infinity, staleTime: Infinity } });
   const projectRows = [
     { id: "p1", workspace: "w1", estimate: rows?.[0]?.id ?? null, identifier: "ALP", name: "Alpha" },
@@ -173,7 +172,7 @@ async function fixture(t, rows) {
   t.mock.method(UserService.prototype, "currentUser", async () => ({ id: "alice" }));
   if (rows !== undefined) view.client.setQueryData(estimateKeys.list(initialScope), rows);
   const render = (element) => view.render(React.createElement(IssueDetailUiStateProvider, null, element));
-  return { ...view, render, Settings };
+  return { ...view, render, Settings, DeleteEstimateModal };
 }
 
 await test("real estimate settings recover a failed catalogue through Retry rather than an endless loader", async (t) => {
@@ -207,7 +206,7 @@ await test("accepted archived estimate deletion preserves a different active pro
   const view = await fixture(t, [active, archived]);
   let closes = 0;
   await view.render(
-    React.createElement(DeleteEstimateModal, {
+    React.createElement(view.DeleteEstimateModal, {
       workspaceSlug: "acme",
       projectId: "p1",
       estimateId: "Archived",
@@ -303,24 +302,34 @@ await test("old accepted native estimate form cannot close or toast into a repla
 await test("old rejected native estimate form cannot close or toast into a replacement draft", (t) =>
   assertReplacedEstimateDraft(t, true));
 
-await test("real readonly point values follow canonical query updates and hide cached data after read error", async (t) => {
+await test("live estimate dropdown follows canonical values and hides cached choices after read error", async (t) => {
   t.mock.method(EstimateService.prototype, "fetchProjectEstimates", async () => {
     throw new Error("offline");
   });
   const view = await fixture(t, [row("Effort")]);
+  const { EstimateDropdown } = await import("../../apps/web/core/components/dropdowns/estimate.tsx");
   await view.render(
-    React.createElement(ReadonlyEstimate, { workspaceSlug: "acme", projectId: "p1", value: "Effort-point" })
+    React.createElement(EstimateDropdown, {
+      projectId: "p1",
+      value: "Effort-point",
+      buttonVariant: "transparent-with-text",
+      onChange() {},
+    })
   );
   assert.equal(view.environment.container.textContent, "3");
   await act(async () => view.client.setQueryData(estimateKeys.list(initialScope), [row("Effort", "p1", "13")]));
   await settleQuery();
   assert.equal(view.environment.container.textContent, "13");
+  const trigger = view.environment.container.querySelector("button");
+  setPositioningGeometry(trigger);
+  await openSearchCombobox(trigger);
+  assert.match(document.querySelector('[role="listbox"]').textContent, /13/);
   await act(async () => {
     await view.client.refetchQueries({ queryKey: estimateKeys.list(initialScope), exact: true });
   });
   await settleQuery();
-  assert.ok(view.environment.container.querySelector('[role="alert"]'));
-  assert.doesNotMatch(view.environment.container.textContent, /13/);
+  assert.ok(document.querySelector('[role="alert"]'));
+  assert.doesNotMatch(document.body.textContent, /13/);
 });
 
 await test("numeric point changes refresh actual native parent statistics, keys only reorder, and failed refresh can retry", async (t) => {

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import type { ReactNode } from "react";
 import type { TLoginMediums } from "@plane/types";
 import { CORE_LOGIN_MEDIUM_LABELS } from "./core";
 import { EXTENDED_LOGIN_MEDIUM_LABELS } from "./extended";
@@ -80,7 +81,7 @@ export type TAuthErrorInfo = {
   type: EErrorAlertType;
   code: EAuthErrorCodes;
   title: string;
-  message: string | React.ReactNode;
+  message: string | ReactNode;
 };
 
 export enum EAdminAuthErrorCodes {
@@ -100,7 +101,7 @@ export type TAdminAuthErrorInfo = {
   type: EErrorAlertType;
   code: EAdminAuthErrorCodes;
   title: string;
-  message: string | React.ReactNode;
+  message: string | ReactNode;
 };
 
 export enum EAuthErrorCodes {

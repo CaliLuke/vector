@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import type * as React from "react";
+
 import type { ICycle } from "./cycle";
 import type { TIssue } from "./issues/issue";
 import type { IModule } from "./module";

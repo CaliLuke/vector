@@ -4,9 +4,12 @@
  * See the LICENSE file for details.
  */
 
-export const CORE_GANTT_TIMELINE_TYPE = {
+export const GANTT_TIMELINE_TYPE = {
   ISSUE: "ISSUE",
   MODULE: "MODULE",
   PROJECT: "PROJECT",
   GROUPED: "GROUPED",
 } as const;
+
+export type TTimelineTypeCore = (typeof GANTT_TIMELINE_TYPE)[keyof typeof GANTT_TIMELINE_TYPE];
+export type TTimelineType = TTimelineTypeCore;

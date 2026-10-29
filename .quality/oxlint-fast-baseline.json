@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "fast",
-  "fileCount": 3849,
+  "fileCount": 3800,
   "diagnostics": [
     {
       "diagnostic": {
@@ -684,15 +684,6 @@
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `AutoCloseAutomation` has a complexity of 23. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/base-layouts/gantt/layout.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `BaseGanttLayout` has a complexity of 16. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -2219,33 +2210,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/license/modal/card/discount-info.tsx",
-        "severity": "warning",
-        "code": "unicorn(prefer-set-has)",
-        "message": "should be a `Set`, and use `.has()` to check existence or non-existence."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/license/modal/card/talk-to-sales.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `renderPriceContent` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/license/modal/upgrade-modal.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `handleRedirection` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/navigation/project-actions-menu.tsx",
         "severity": "warning",
         "code": "jsx-a11y(click-events-have-key-events)",
@@ -2741,15 +2705,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/readonly/module.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ReadonlyModule` has a complexity of 17. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/rich-filters/filter-value-input/select/selected-options-display.tsx",
         "severity": "warning",
         "code": "react(no-array-index-key)",
@@ -3074,24 +3029,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/workspace/billing/comparison/base.tsx",
-        "severity": "warning",
-        "code": "react(no-array-index-key)",
-        "message": "Usage of Array index in keys is not allowed"
-      },
-      "count": 3
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/billing/comparison/plans.tsx",
-        "severity": "warning",
-        "code": "eslint(max-lines)",
-        "message": "File has too many lines (1228)."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/workspace/settings/member-columns.tsx",
         "severity": "warning",
         "code": "jsx-a11y(prefer-tag-over-role)",
@@ -3152,33 +3089,6 @@
         "message": "Use `Array#toSorted()` instead of `Array#sort()`."
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/sidebar/workspace-menu-header.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(click-events-have-key-events)",
-        "message": "Enforce a clickable non-interactive element has at least one keyboard event listener."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/sidebar/workspace-menu-header.tsx",
-        "severity": "warning",
-        "code": "jsx-a11y(no-static-element-interactions)",
-        "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/sidebar/workspace-menu-item.tsx",
-        "severity": "warning",
-        "code": "typescript(no-explicit-any)",
-        "message": "Unexpected `any`. Specify a different type."
-      },
-      "count": 2
     },
     {
       "diagnostic": {
