@@ -8,17 +8,20 @@ import test from "node:test";
 const runner = new URL("./run-bounded.mjs", import.meta.url).pathname;
 // Retain a bounded native allocation until the supervisor terminates us. A
 // fixture that exits after allocation can disappear between process samples.
+// Incompressible bytes keep this a resident-memory test under OS compression.
 const memoryConsumer =
-  "const buffers=[]; setInterval(()=>{if(buffers.length<32)buffers.push(Buffer.alloc(4*1024*1024,1))},40)";
+  "const {randomFillSync}=require('node:crypto'); const buffers=[]; setInterval(()=>{if(buffers.length<32)buffers.push(randomFillSync(Buffer.alloc(4*1024*1024)))},40)";
 function run(script, extra = []) {
-  return spawnSync(process.execPath, [runner, ...extra, "--", process.execPath, "-e", script], {
+  const result = spawnSync(process.execPath, [runner, ...extra, "--", process.execPath, "-e", script], {
     encoding: "utf8",
     timeout: 7000,
   });
+  assert.ifError(result.error);
+  return result;
 }
 
-function runWithSampleTimeouts(t, timeouts, extra = [], childDuration = 4500) {
-  const directory = mkdtempSync(path.join(tmpdir(), "vector-process-sample-timeout-"));
+function runWithUnavailableSamples(t, count, { mode = "timeout", extra = [], childDuration = 4500 } = {}) {
+  const directory = mkdtempSync(path.join(tmpdir(), "vector-process-sample-"));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
   const countPath = path.join(directory, "samples");
   writeFileSync(countPath, "0");
@@ -29,8 +32,10 @@ const fs = require("node:fs");
 const countPath = ${JSON.stringify(countPath)};
 const count = Number(fs.readFileSync(countPath, "utf8")) + 1;
 fs.writeFileSync(countPath, String(count));
-if (count <= ${timeouts}) setInterval(() => {}, 1000);
-else process.stdout.write(require("node:child_process").execFileSync("/bin/ps", process.argv.slice(2)));
+if (count <= ${count}) {
+  if (${JSON.stringify(mode)} === "timeout") setInterval(() => {}, 1000);
+  else process.stdout.write("999999 1 999999 0\\n");
+} else process.stdout.write(require("node:child_process").execFileSync("/bin/ps", process.argv.slice(2)));
 `,
     { mode: 0o700 }
   );
@@ -48,22 +53,34 @@ else process.stdout.write(require("node:child_process").execFileSync("/bin/ps", 
 }
 
 void test("one delayed memory sample recovers without rejecting the child", (t) => {
-  const result = runWithSampleTimeouts(t, 1);
+  const result = runWithUnavailableSamples(t, 1);
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stderr, /memory sample timed out; retrying once/);
 });
 
 void test("repeated memory sampling timeouts fail closed", (t) => {
-  const result = runWithSampleTimeouts(t, 2, [], 60_000);
+  const result = runWithUnavailableSamples(t, 2, { childDuration: 60_000 });
   assert.equal(result.status, 125, result.stderr);
   assert.match(result.stderr, /memory monitoring failed/);
 });
 
 void test("memory limits still apply after recovering from a sampling timeout", (t) => {
-  const result = runWithSampleTimeouts(t, 1, ["--memory-mib", "1"]);
+  const result = runWithUnavailableSamples(t, 1, { extra: ["--memory-mib", "1"] });
   assert.equal(result.status, 137, result.stderr);
   assert.match(result.stderr, /RSS exceeded/);
 });
+void test("memory monitoring rediscovers the child after a snapshot omits its process tree", (t) => {
+  const result = runWithUnavailableSamples(t, 1, { mode: "missing-root", extra: ["--memory-mib", "1"] });
+  assert.equal(result.status, 137, result.stderr);
+  assert.match(result.stderr, /RSS exceeded/);
+});
+
+void test("repeated snapshots without the child tree fail closed", (t) => {
+  const result = runWithUnavailableSamples(t, 2, { mode: "missing-root" });
+  assert.equal(result.status, 125, result.stderr);
+  assert.match(result.stderr, /memory monitoring failed/);
+});
+
 async function assertWorkerStopped(pid) {
   let alive = true;
   for (let attempt = 0; alive && attempt < 20; attempt++) {

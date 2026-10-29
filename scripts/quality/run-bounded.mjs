@@ -38,7 +38,7 @@ const child = spawn(command[0], command.slice(1), {
 });
 let failureCode = 0;
 let monitoring = false;
-let sampleTimeouts = 0;
+let sampleFailures = 0;
 let peakKiB = 0;
 let forceTimer;
 let finished = false;
@@ -91,6 +91,12 @@ function descendants(rows) {
   trackedGroups = new Set(
     selected.filter((row) => row.pid === row.group || trackedGroups.has(row.group)).map((row) => row.group)
   );
+  // A snapshot can omit a live root. Keep its spawn identity so later samples
+  // can rediscover the tree and cleanup still owns the original process group.
+  if (child.pid) {
+    trackedPids.add(child.pid);
+    trackedGroups.add(child.pid);
+  }
   ungroupedPids = selected.filter((row) => !trackedGroups.has(row.group)).map((row) => row.pid);
   return selected;
 }
@@ -120,6 +126,9 @@ async function groupMemory() {
     signalGroup("SIGKILL");
     return 0;
   }
+  if (owned.length === 0) {
+    throw Object.assign(new Error("child tree missing from process snapshot"), { code: "NO_PROCESS_TREE" });
+  }
   return owned.reduce((total, row) => total + row.rss, 0);
 }
 
@@ -128,7 +137,7 @@ async function checkMemory() {
   monitoring = true;
   try {
     const usage = await groupMemory();
-    sampleTimeouts = 0;
+    sampleFailures = 0;
     peakKiB = Math.max(peakKiB, usage);
     if (failureCode) signalGroup("SIGKILL");
     if (usage > memoryMiB * 1024) stop(137, `RSS exceeded ${memoryMiB} MiB`);
@@ -136,8 +145,10 @@ async function checkMemory() {
     if (finished) return;
     // Process enumeration can briefly stall during compiler process churn.
     // Permit one missed sample, but never continue without working monitoring.
-    if (error.killed && error.signal === "SIGTERM" && sampleTimeouts++ === 0) {
-      process.stderr.write("[bounded] memory sample timed out; retrying once\n");
+    const timedOut = error.killed && error.signal === "SIGTERM";
+    if ((timedOut || error.code === "NO_PROCESS_TREE") && sampleFailures++ === 0) {
+      const reason = timedOut ? "memory sample timed out" : "child tree missing from memory sample";
+      process.stderr.write(`[bounded] ${reason}; retrying once\n`);
       return;
     }
     stop(
