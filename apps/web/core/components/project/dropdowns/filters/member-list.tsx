@@ -81,7 +81,7 @@ const RoleFilterGroup = function RoleFilterGroup({
   );
 };
 
-export const MemberListFilters = function MemberListFilters(props: Props) {
+const MemberListFilters = function MemberListFilters(props: Props) {
   const { appliedFilters, handleUpdate, memberType } = props;
 
   return (

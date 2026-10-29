@@ -6,11 +6,11 @@
 
 export type TBannerVariant = "success" | "error" | "warning" | "info";
 
-export interface IBannerStyling {
+interface IBannerStyling {
   [key: string]: string;
 }
 
-export const bannerSizeStyling = {
+const bannerSizeStyling = {
   container: "py-3 px-6 h-12",
   icon: "w-5 h-5",
   title: "text-13",
@@ -19,7 +19,7 @@ export const bannerSizeStyling = {
 
 // TODO: update this with new color once its implemented
 // Banner variant styling
-export const bannerStyling: IBannerStyling = {
+const bannerStyling: IBannerStyling = {
   success: "bg-success-subtle",
   error: "bg-danger-subtle",
   warning: "bg-yellow-500/10",
@@ -27,7 +27,7 @@ export const bannerStyling: IBannerStyling = {
 };
 
 // Base banner styles
-export const bannerBaseStyles = "flex items-center justify-between w-full transition-all duration-200";
+const bannerBaseStyles = "flex items-center justify-between w-full transition-all duration-200";
 
 // Get banner container styling
 export const getBannerStyling = (variant: TBannerVariant): string => {

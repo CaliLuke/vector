@@ -17,7 +17,7 @@ export type TAttachmentOperations = {
   remove: (attachmentId: string) => Promise<void>;
 };
 
-export type TAttachmentSnapshot = {
+type TAttachmentSnapshot = {
   uploadStatus: readonly TAttachmentUploadStatus[];
   attachments: readonly import("@plane/types").TIssueAttachment[] | undefined;
   isError: boolean;

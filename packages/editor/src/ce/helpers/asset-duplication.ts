@@ -7,12 +7,12 @@
 import { v4 as uuidv4 } from "uuid";
 import { ECustomImageAttributeNames, ECustomImageStatus } from "@/extensions/custom-image/types";
 
-export type AssetDuplicationContext = {
+type AssetDuplicationContext = {
   element: Element;
   originalHtml: string;
 };
 
-export type AssetDuplicationResult = {
+type AssetDuplicationResult = {
   modifiedHtml: string;
   shouldProcess: boolean;
 };

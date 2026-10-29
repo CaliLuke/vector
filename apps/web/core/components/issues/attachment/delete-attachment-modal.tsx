@@ -17,7 +17,7 @@ import { getFileName } from "@plane/utils/attachment";
 // types
 import type { TAttachmentOperations } from "../issue-detail-widgets/attachments/helper";
 
-export type TAttachmentOperationsRemoveModal = Pick<TAttachmentOperations, "remove">;
+type TAttachmentOperationsRemoveModal = Pick<TAttachmentOperations, "remove">;
 
 type Props = {
   isOpen: boolean;

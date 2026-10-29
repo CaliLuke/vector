@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-export type TTableColumn<T> = {
+type TTableColumn<T> = {
   key: string;
   content: string;
   thRender?: () => React.ReactNode;

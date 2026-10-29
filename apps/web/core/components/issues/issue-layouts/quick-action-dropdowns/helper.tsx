@@ -38,20 +38,17 @@ export function useIssueQuickActionContext(issue: TIssue, readOnly: boolean) {
 
 // Generic helper function to handle optional function calls gracefully
 // Overload for functions without parameters
-export function handleOptionalAction(
-  optionalFn: (() => void) | (() => Promise<void>) | undefined,
-  actionName: string
-): void;
+function handleOptionalAction(optionalFn: (() => void) | (() => Promise<void>) | undefined, actionName: string): void;
 
 // Overload for functions with one parameter
-export function handleOptionalAction<T>(
+function handleOptionalAction<T>(
   optionalFn: ((param: T) => void) | ((param: T) => Promise<void>) | undefined,
   actionName: string,
   param: T
 ): void;
 
 // Implementation
-export function handleOptionalAction<T>(
+function handleOptionalAction<T>(
   optionalFn: (() => void) | (() => Promise<void>) | ((param: T) => void) | ((param: T) => Promise<void>) | undefined,
   actionName: string,
   param?: T
@@ -100,7 +97,7 @@ export interface MenuItemFactoryProps {
 }
 
 // Common action handlers hook
-export const useIssueActionHandlers = (props: MenuItemFactoryProps) => {
+const useIssueActionHandlers = (props: MenuItemFactoryProps) => {
   const { issue, workspaceSlug, projectIdentifier, handleRestore } = props;
 
   const workItemLink = useMemo(
@@ -157,7 +154,7 @@ export const useIssueActionHandlers = (props: MenuItemFactoryProps) => {
   };
 };
 
-export const useMenuItemFactory = (props: MenuItemFactoryProps) => {
+const useMenuItemFactory = (props: MenuItemFactoryProps) => {
   const { t } = useTranslation();
   const actionHandlers = useIssueActionHandlers(props);
 

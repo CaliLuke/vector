@@ -30,7 +30,7 @@ type AvatarProps = {
   icon?: LucideIcon;
 };
 
-export const ButtonAvatars = function ButtonAvatars(props: AvatarProps) {
+const ButtonAvatars = function ButtonAvatars(props: AvatarProps) {
   const { showTooltip, members, icon: Icon } = props;
 
   if (Array.isArray(members)) {

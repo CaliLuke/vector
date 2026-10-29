@@ -39,7 +39,7 @@ import { projectGroupedIssueIdsByDisplayOrder } from "../issue-display-ordering"
 import { getSourceFromDropPayload, isSubscribedProfileRequest } from "../utils";
 import { IssueListViewProvider } from "@/providers/issue-list-view";
 
-export type KanbanStoreType =
+type KanbanStoreType =
   | EIssuesStoreType.PROJECT
   | EIssuesStoreType.MODULE
   | EIssuesStoreType.CYCLE

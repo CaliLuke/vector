@@ -15,7 +15,7 @@ import { EWidgetKeys, WidgetLoader } from "../loaders";
 import { ProjectLinkDetail } from "./link-detail";
 import type { TLinkOperations } from "./use-links";
 
-export type TLinkOperationsModal = Exclude<TLinkOperations, "create">;
+type TLinkOperationsModal = Exclude<TLinkOperations, "create">;
 
 export type TProjectLinkList = {
   linkOperations: TLinkOperationsModal;

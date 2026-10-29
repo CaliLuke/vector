@@ -7,7 +7,7 @@
 import type { Placement } from "@popperjs/core";
 import type { MutableRefObject, ReactNode } from "react";
 
-export type TPopoverButtonDefaultOptions = {
+type TPopoverButtonDefaultOptions = {
   // button and button styling
   button?: ReactNode;
   buttonClassName?: string;
@@ -17,7 +17,7 @@ export type TPopoverButtonDefaultOptions = {
   buttonAsChild?: boolean;
 };
 
-export type TPopoverDefaultOptions = TPopoverButtonDefaultOptions & {
+type TPopoverDefaultOptions = TPopoverButtonDefaultOptions & {
   // popper styling
   popperPosition?: Placement | undefined;
   popperPadding?: number | undefined;

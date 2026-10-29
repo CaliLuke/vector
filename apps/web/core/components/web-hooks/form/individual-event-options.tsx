@@ -9,7 +9,7 @@ import { Checkbox } from "@plane/ui";
 
 export type WebhookEvents = Pick<IWebhook, "project" | "cycle" | "module" | "issue" | "issue_comment">;
 
-export const INDIVIDUAL_WEBHOOK_OPTIONS: {
+const INDIVIDUAL_WEBHOOK_OPTIONS: {
   key: keyof WebhookEvents;
   label: string;
   description: string;

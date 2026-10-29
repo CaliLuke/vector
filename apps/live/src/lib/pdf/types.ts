@@ -31,13 +31,13 @@ export type PDFRenderContext = {
   metadata?: PDFExportMetadata;
 };
 
-export type PDFNodeRenderer = (
+type PDFNodeRenderer = (
   node: TipTapNode,
   children: React.ReactElement[],
   context: PDFRenderContext
 ) => React.ReactElement;
 
-export type PDFMarkRenderer = (mark: TipTapMark, currentStyle: Style) => Style;
+type PDFMarkRenderer = (mark: TipTapMark, currentStyle: Style) => Style;
 
 export type NodeRendererRegistry = Record<string, PDFNodeRenderer>;
 

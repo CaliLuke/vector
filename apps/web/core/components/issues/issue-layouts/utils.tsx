@@ -748,7 +748,7 @@ export const calculateIdentifierWidth = (projectIdentifierLength: number, maxSeq
   return projectIdentifierLength * 7 + 7 + sequenceDigits * 7; // project identifier chars + dash + sequence digits
 };
 
-export const getTeamProjectColumns = (): IGroupByColumn[] | undefined => undefined;
+const getTeamProjectColumns = (): IGroupByColumn[] | undefined => undefined;
 
 const SpreadSheetPropertyIconMap: Record<string, FC<ISvgIcons>> = {
   MembersPropertyIcon: MembersPropertyIcon,

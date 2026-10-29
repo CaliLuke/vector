@@ -21,7 +21,7 @@ import {
 } from "../../notification-card/content";
 
 // Types
-export type TNotificationFieldData = {
+type TNotificationFieldData = {
   field: string | undefined;
   newValue: string | undefined;
   oldValue: string | undefined;
@@ -34,14 +34,14 @@ export type TNotificationContentDetails = {
   showConnector?: boolean;
 };
 
-export type TNotificationContentHandler = (data: TNotificationFieldData) => TNotificationContentDetails | null;
+type TNotificationContentHandler = (data: TNotificationFieldData) => TNotificationContentDetails | null;
 
 export type TNotificationContentMap = {
   [key: string]: TNotificationContentHandler;
 };
 
 // Base notification content map for core fields
-export const BASE_NOTIFICATION_CONTENT_MAP: TNotificationContentMap = {
+const BASE_NOTIFICATION_CONTENT_MAP: TNotificationContentMap = {
   milestone: ({ newValue, oldValue }) => milestoneActivityContent(newValue, oldValue),
   duplicate: ({ verb }) => ({
     action:

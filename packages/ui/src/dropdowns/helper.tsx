@@ -22,7 +22,7 @@ type Placement =
   | "right-start"
   | "right-end";
 
-export interface IDropdownProps {
+interface IDropdownProps {
   customButtonClassName?: string;
   customButtonTabIndex?: number;
   buttonClassName?: string;

@@ -31,7 +31,7 @@ declare module "@tiptap/core" {
   }
 }
 
-export const inputRegex = /(?:^|\s)((?:`)((?:[^`]+))(?:`))$/;
+const inputRegex = /(?:^|\s)((?:`)((?:[^`]+))(?:`))$/;
 const pasteRegex = /(?:^|\s)((?:`)((?:[^`]+))(?:`))/g;
 
 export const CustomCodeInlineExtension = Mark.create<InlineCodeOptions>({

@@ -50,7 +50,7 @@ Font.register({
   ],
 });
 
-export const createPdfDocument = (doc: TipTapDocument, options: PDFExportOptions = {}) => {
+const createPdfDocument = (doc: TipTapDocument, options: PDFExportOptions = {}) => {
   const { title, author, subject, pageSize = "A4", pageOrientation = "portrait", metadata, noAssets } = options;
 
   // Merge noAssets into metadata for use in node renderers

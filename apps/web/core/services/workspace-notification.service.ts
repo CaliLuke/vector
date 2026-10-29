@@ -15,7 +15,7 @@ import type {
 // services
 import { APIService } from "@/services/api.service";
 
-export class WorkspaceNotificationService extends APIService {
+class WorkspaceNotificationService extends APIService {
   constructor() {
     super(API_BASE_URL);
   }

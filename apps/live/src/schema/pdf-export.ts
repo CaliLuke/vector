@@ -37,7 +37,7 @@ export class PdfContentFetchError extends Schema.TaggedError<PdfContentFetchErro
   cause: Schema.optional(Schema.Unknown),
 }) {}
 
-export class PdfMetadataFetchError extends Schema.TaggedError<PdfMetadataFetchError>()("PdfMetadataFetchError", {
+class PdfMetadataFetchError extends Schema.TaggedError<PdfMetadataFetchError>()("PdfMetadataFetchError", {
   message: NonEmptyTrimmedString,
   source: Schema.Literal("user-mentions"),
   cause: Schema.optional(Schema.Unknown),

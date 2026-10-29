@@ -14,7 +14,7 @@ export const generateWeeks = (startOfWeek: EStartOfTheWeek = EStartOfTheWeek.SUN
   ...weeks.slice(0, startOfWeek),
 ];
 
-export const weeks: WeekMonthDataType[] = [
+const weeks: WeekMonthDataType[] = [
   { key: 0, shortTitle: "sun", title: "sunday", abbreviation: "Su" },
   { key: 1, shortTitle: "mon", title: "monday", abbreviation: "M" },
   { key: 2, shortTitle: "tue", title: "tuesday", abbreviation: "T" },
@@ -46,11 +46,11 @@ export const quarters: WeekMonthDataType[] = [
   { key: 3, shortTitle: "Q4", title: "Oct - Dec", abbreviation: "Q4" },
 ];
 
-export const charCapitalize = (word: string) => `${word.charAt(0).toUpperCase()}${word.substring(1)}`;
+const charCapitalize = (word: string) => `${word.charAt(0).toUpperCase()}${word.substring(1)}`;
 
-export const bindZero = (value: number) => (value > 9 ? `${value}` : `0${value}`);
+const bindZero = (value: number) => (value > 9 ? `${value}` : `0${value}`);
 
-export const timePreview = (date: Date) => {
+const timePreview = (date: Date) => {
   let hours = date.getHours();
   const amPm = hours >= 12 ? "PM" : "AM";
   hours = hours % 12;

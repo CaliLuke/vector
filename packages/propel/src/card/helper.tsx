@@ -20,20 +20,20 @@ export type TCardVariant = ECardVariant.WITHOUT_SHADOW | ECardVariant.WITH_SHADO
 export type TCardDirection = ECardDirection.ROW | ECardDirection.COLUMN;
 export type TCardSpacing = ECardSpacing.SM | ECardSpacing.LG;
 
-export interface ICardProperties {
+interface ICardProperties {
   [key: string]: string;
 }
 
 const DEFAULT_STYLE = "bg-surface-1 rounded-lg border-[0.5px] border-subtle w-full flex flex-col";
-export const containerStyle: ICardProperties = {
+const containerStyle: ICardProperties = {
   [ECardVariant.WITHOUT_SHADOW]: "",
   [ECardVariant.WITH_SHADOW]: "hover:shadow-raised-200 duration-300",
 };
-export const spacings = {
+const spacings = {
   [ECardSpacing.SM]: "p-4",
   [ECardSpacing.LG]: "p-6",
 };
-export const directions = {
+const directions = {
   [ECardDirection.ROW]: "flex-row space-x-3",
   [ECardDirection.COLUMN]: "flex-col space-y-3",
 };

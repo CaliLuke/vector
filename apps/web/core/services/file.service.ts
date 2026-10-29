@@ -31,7 +31,7 @@ export interface UnSplashImage {
   [key: string]: any;
 }
 
-export interface UnSplashImageUrls {
+interface UnSplashImageUrls {
   raw: string;
   full: string;
   regular: string;

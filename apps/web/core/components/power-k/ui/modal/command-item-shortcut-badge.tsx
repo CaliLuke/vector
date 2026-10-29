@@ -10,7 +10,7 @@ import React from "react";
  * Formats a shortcut string for display
  * Converts "cmd+shift+," to proper keyboard symbols
  */
-export const formatShortcutForDisplay = (shortcut: string | undefined): string | null => {
+const formatShortcutForDisplay = (shortcut: string | undefined): string | null => {
   if (!shortcut) return null;
 
   const isMac = typeof window !== "undefined" && navigator.platform.toUpperCase().indexOf("MAC") >= 0;

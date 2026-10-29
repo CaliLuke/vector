@@ -15,7 +15,7 @@ import {
 } from "./colors";
 import type { MarkRendererRegistry, TipTapMark } from "./types";
 
-export const markRenderers: MarkRendererRegistry = {
+const markRenderers: MarkRendererRegistry = {
   bold: (_mark: TipTapMark, style: Style): Style => ({
     ...style,
     fontWeight: "bold",

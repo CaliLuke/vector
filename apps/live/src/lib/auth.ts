@@ -79,7 +79,7 @@ export const onAuthenticate = async ({
   });
 };
 
-export const handleAuthentication = async ({ cookie, userId }: { cookie: string; userId: string }) => {
+const handleAuthentication = async ({ cookie, userId }: { cookie: string; userId: string }) => {
   // fetch current user info
   try {
     const userService = new UserService();

@@ -19,7 +19,7 @@ export type TDocumentEditorAdditionalExtensionsProps = Pick<
   userDetails: TUserDetails;
 };
 
-export type TDocumentEditorAdditionalExtensionsRegistry = {
+type TDocumentEditorAdditionalExtensionsRegistry = {
   isEnabled: (disabledExtensions: TExtensions[], flaggedExtensions: TExtensions[]) => boolean;
   getExtension: (props: TDocumentEditorAdditionalExtensionsProps) => AnyExtension;
 };

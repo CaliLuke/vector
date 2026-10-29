@@ -23,21 +23,21 @@ export enum EPillSize {
   XS = "xs",
 }
 
-export enum ERadius {
+enum ERadius {
   SQUARE = "square",
   CIRCLE = "circle",
 }
 
-export type TRadius = ERadius.SQUARE | ERadius.CIRCLE;
+type TRadius = ERadius.SQUARE | ERadius.CIRCLE;
 
-export type TPillVariant =
+type TPillVariant =
   | EPillVariant.DEFAULT
   | EPillVariant.PRIMARY
   | EPillVariant.SUCCESS
   | EPillVariant.WARNING
   | EPillVariant.ERROR
   | EPillVariant.INFO;
-export type TPillSize = EPillSize.SM | EPillSize.MD | EPillSize.LG | EPillSize.XS;
+type TPillSize = EPillSize.SM | EPillSize.MD | EPillSize.LG | EPillSize.XS;
 
 export interface PillProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: TPillVariant;

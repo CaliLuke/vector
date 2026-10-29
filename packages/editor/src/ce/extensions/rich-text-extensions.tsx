@@ -18,7 +18,7 @@ export type TRichTextEditorAdditionalExtensionsProps = Pick<
 /**
  * Registry entry configuration for extensions
  */
-export type TRichTextEditorAdditionalExtensionsRegistry = {
+type TRichTextEditorAdditionalExtensionsRegistry = {
   /** Determines if the extension should be enabled based on disabled extensions */
   isEnabled: (disabledExtensions: TExtensions[], flaggedExtensions: TExtensions[]) => boolean;
   /** Returns the extension instance(s) when enabled */

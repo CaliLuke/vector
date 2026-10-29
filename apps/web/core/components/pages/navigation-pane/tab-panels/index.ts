@@ -6,7 +6,7 @@
 
 export type TPageNavigationPaneTab = "outline" | "info" | "assets";
 
-export const PAGE_NAVIGATION_PANE_TABS_LIST: Record<
+const PAGE_NAVIGATION_PANE_TABS_LIST: Record<
   TPageNavigationPaneTab,
   {
     key: TPageNavigationPaneTab;

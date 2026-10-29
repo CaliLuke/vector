@@ -9,7 +9,7 @@ import type { ChartDataType } from "@plane/types";
 import { EStartOfTheWeek } from "@plane/types";
 import { months, generateWeeks } from "../data";
 import { getNumberOfDaysBetweenTwoDates, getWeekNumberByDate } from "./helpers";
-export interface IDayBlock {
+interface IDayBlock {
   date: Date;
   day: number;
   dayData: {

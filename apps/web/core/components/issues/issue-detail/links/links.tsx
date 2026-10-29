@@ -11,7 +11,7 @@ import { IssueLinkDetail } from "./link-detail";
 // hooks
 import type { TLinkOperations } from "./root";
 
-export type TLinkOperationsModal = Exclude<TLinkOperations, "create">;
+type TLinkOperationsModal = Exclude<TLinkOperations, "create">;
 
 export type TIssueLinkList = {
   issueId: string;

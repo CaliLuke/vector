@@ -11,7 +11,7 @@ export type TTabPreferences = {
 };
 
 // Constants
-export const TAB_PREFS_KEY = "plane_tab_prefs";
+const TAB_PREFS_KEY = "plane_tab_prefs";
 export const DEFAULT_TAB_KEY = "work_items";
 
 /**
@@ -19,7 +19,7 @@ export const DEFAULT_TAB_KEY = "work_items";
  * @param projectId - The project ID
  * @returns Tab preferences object with defaultTab and hiddenTabs
  */
-export const getTabPreferences = (projectId: string): TTabPreferences => {
+const getTabPreferences = (projectId: string): TTabPreferences => {
   try {
     const stored = localStorage.getItem(TAB_PREFS_KEY);
     if (stored) {
@@ -103,7 +103,7 @@ export const getDefaultTabUrl = (workspaceSlug: string, projectId: string, avail
  * @param availableTabKeys - Array of available tab keys
  * @returns The default tab key if valid, otherwise DEFAULT_TAB_KEY
  */
-export const getValidatedDefaultTab = (projectId: string, availableTabKeys: string[]): string => {
+const getValidatedDefaultTab = (projectId: string, availableTabKeys: string[]): string => {
   const preferences = getTabPreferences(projectId);
   const defaultTab = preferences.defaultTab;
 

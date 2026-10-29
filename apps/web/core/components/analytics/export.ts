@@ -8,7 +8,7 @@ import { download, generateCsv, mkConfig } from "export-to-csv";
 import type { RowData } from "@tanstack/react-table";
 import type { AnalyticsColumnDef, AnalyticsRow } from "./insight-table/table-features";
 
-export const csvConfig = (workspaceSlug: string) =>
+const csvConfig = (workspaceSlug: string) =>
   mkConfig({
     fieldSeparator: ",",
     filename: `${workspaceSlug}-analytics`,

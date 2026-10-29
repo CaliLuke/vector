@@ -20,7 +20,7 @@ export enum ECustomImageAttributeNames {
 
 export type Pixel = `${number}px`;
 
-export type PixelAttribute<TDefault> = Pixel | TDefault;
+type PixelAttribute<TDefault> = Pixel | TDefault;
 
 export type TCustomImageSize = {
   width: PixelAttribute<"35%">;
@@ -48,7 +48,7 @@ export type TCustomImageAttributes = {
   [ECustomImageAttributeNames.STATUS]: ECustomImageStatus;
 };
 
-export type UploadEntity = ({ event: "insert" } | { event: "drop"; file: File }) & { hasOpenedFileInputOnce?: boolean };
+type UploadEntity = ({ event: "insert" } | { event: "drop"; file: File }) & { hasOpenedFileInputOnce?: boolean };
 
 export type InsertImageComponentProps = {
   file?: File;

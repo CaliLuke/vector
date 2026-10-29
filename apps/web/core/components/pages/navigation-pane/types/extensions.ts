@@ -8,12 +8,12 @@ import type { TPage } from "@plane/types";
 
 import type { ReactNode } from "react";
 
-export interface INavigationPaneExtensionProps<T = Record<string, unknown>> {
+interface INavigationPaneExtensionProps<T = Record<string, unknown>> {
   page: TPage;
   extensionData?: T;
 }
 
-export interface INavigationPaneExtensionComponent<T = Record<string, unknown>> {
+interface INavigationPaneExtensionComponent<T = Record<string, unknown>> {
   (props: INavigationPaneExtensionProps<T>): ReactNode;
 }
 

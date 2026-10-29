@@ -9,7 +9,7 @@ import type { TLinkEditableFields } from "@plane/types";
 import { LinkModal } from "@/components/common/link-modal";
 import type { TLinkOperations } from "./use-links";
 
-export type TLinkOperationsModal = Exclude<TLinkOperations, "remove">;
+type TLinkOperationsModal = Exclude<TLinkOperations, "remove">;
 type TLinkCreateFormFieldOptions = TLinkEditableFields & { id?: string };
 export type TLinkCreateEditModal = {
   isModalOpen: boolean;

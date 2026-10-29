@@ -10,7 +10,7 @@ import path from "node:path";
 export const LOCALES_DIR = path.resolve(import.meta.dirname, "../../src/locales");
 
 /** Recursively flatten an object into dot-notation keys. */
-export function flattenKeys(obj: Record<string, unknown>, prefix = ""): string[] {
+function flattenKeys(obj: Record<string, unknown>, prefix = ""): string[] {
   const keys: string[] = [];
   for (const [k, v] of Object.entries(obj)) {
     const full = prefix ? `${prefix}.${k}` : k;
@@ -24,7 +24,7 @@ export function flattenKeys(obj: Record<string, unknown>, prefix = ""): string[]
 }
 
 /** Parse JSON from a file, including the file path in any error message. */
-export function readJsonFile(filePath: string): Record<string, unknown> {
+function readJsonFile(filePath: string): Record<string, unknown> {
   const raw = fs.readFileSync(filePath, "utf-8");
   try {
     return JSON.parse(raw) as Record<string, unknown>;
@@ -34,7 +34,7 @@ export function readJsonFile(filePath: string): Record<string, unknown> {
   }
 }
 
-export interface NamespaceData {
+interface NamespaceData {
   name: string; // file stem, e.g. "common"
   keys: Set<string>;
   data: Record<string, unknown>; // original parsed object

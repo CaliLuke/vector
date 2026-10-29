@@ -67,7 +67,7 @@ type TAuthHeaderBase = {
   additionalAction?: React.ReactNode;
 };
 
-export function AuthHeaderBase(props: TAuthHeaderBase) {
+function AuthHeaderBase(props: TAuthHeaderBase) {
   const { pageTitle, additionalAction } = props;
   return (
     <>

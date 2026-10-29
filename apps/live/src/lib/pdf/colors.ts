@@ -28,7 +28,7 @@ export const EDITOR_TEXT_COLORS = {
 } as const;
 
 // Editor background colors - Light theme (from variables.css [data-theme*="light"])
-export const EDITOR_BACKGROUND_COLORS_LIGHT = {
+const EDITOR_BACKGROUND_COLORS_LIGHT = {
   gray: "#d6d6d8",
   peach: "#ffd5d7",
   pink: "#fdd4e3",
@@ -55,12 +55,12 @@ export const EDITOR_BACKGROUND_COLORS_DARK = {
 export const EDITOR_BACKGROUND_COLORS = EDITOR_BACKGROUND_COLORS_LIGHT;
 
 // Color key type
-export type EditorColorKey = keyof typeof EDITOR_TEXT_COLORS;
+type EditorColorKey = keyof typeof EDITOR_TEXT_COLORS;
 
 /**
  * Maps a color key to its text color hex value
  */
-export const getTextColorHex = (colorKey: string): string | null => {
+const getTextColorHex = (colorKey: string): string | null => {
   if (colorKey in EDITOR_TEXT_COLORS) {
     return EDITOR_TEXT_COLORS[colorKey as EditorColorKey];
   }
@@ -70,7 +70,7 @@ export const getTextColorHex = (colorKey: string): string | null => {
 /**
  * Maps a color key to its background color hex value
  */
-export const getBackgroundColorHex = (colorKey: string): string | null => {
+const getBackgroundColorHex = (colorKey: string): string | null => {
   if (colorKey in EDITOR_BACKGROUND_COLORS) {
     return EDITOR_BACKGROUND_COLORS[colorKey as EditorColorKey];
   }
@@ -80,7 +80,7 @@ export const getBackgroundColorHex = (colorKey: string): string | null => {
 /**
  * Checks if a value is a CSS variable reference (e.g., "var(--editor-colors-gray-text)")
  */
-export const isCssVariable = (value: string): boolean => {
+const isCssVariable = (value: string): boolean => {
   return value.startsWith("var(");
 };
 
@@ -89,7 +89,7 @@ export const isCssVariable = (value: string): boolean => {
  * e.g., "var(--editor-colors-gray-text)" -> "gray"
  * e.g., "var(--editor-colors-light-blue-background)" -> "light-blue"
  */
-export const extractColorKeyFromCssVariable = (cssVar: string): string | null => {
+const extractColorKeyFromCssVariable = (cssVar: string): string | null => {
   // Match patterns like: var(--editor-colors-{color}-text) or var(--editor-colors-{color}-background)
   const match = cssVar.match(/var\(--editor-colors-([\w-]+)-(text|background)\)/);
   if (match) {
@@ -129,7 +129,7 @@ export const resolveColorForPdf = (value: string | null | undefined, type: "text
 // These are derived from the CSS variables in packages/tailwind-config/variables.css
 
 // Neutral colors (light theme)
-export const NEUTRAL_COLORS = {
+const NEUTRAL_COLORS = {
   white: "#ffffff",
   100: "#fafafa", // oklch(0.9848 0.0003 230.66) ≈ #fafafa
   200: "#f5f5f5", // oklch(0.9696 0.0007 230.67) ≈ #f5f5f5

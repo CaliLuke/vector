@@ -282,7 +282,7 @@ const nextListIsSibling = (typeOrName: string, state: EditorState) => {
   return false;
 };
 
-export const nextListIsHigher = (typeOrName: string, state: EditorState) => {
+const nextListIsHigher = (typeOrName: string, state: EditorState) => {
   const listDepth = getNextListDepth(typeOrName, state);
   const listItemPos = findListItemPos(typeOrName, state);
 

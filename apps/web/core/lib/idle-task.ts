@@ -23,13 +23,13 @@ const cancelIdleFallback = (id: number) => {
   globalThis.clearTimeout(id);
 };
 
-export const requestIdle = (callback: IdleRequestCallback, options?: IdleRequestOptions): number => {
+const requestIdle = (callback: IdleRequestCallback, options?: IdleRequestOptions): number => {
   if (typeof globalThis.requestIdleCallback === "function") return globalThis.requestIdleCallback(callback, options);
 
   return requestIdleFallback(callback, options);
 };
 
-export const cancelIdle = (id: number) => {
+const cancelIdle = (id: number) => {
   if (typeof globalThis.cancelIdleCallback === "function") return globalThis.cancelIdleCallback(id);
 
   return cancelIdleFallback(id);

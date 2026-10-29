@@ -11,7 +11,7 @@ import { Link } from "react-router";
 import type { TAdminAuthErrorInfo } from "@plane/constants";
 import { SUPPORT_EMAIL, EAdminAuthErrorCodes } from "@plane/constants";
 
-export enum EErrorAlertType {
+enum EErrorAlertType {
   BANNER_ALERT = "BANNER_ALERT",
   INLINE_FIRST_NAME = "INLINE_FIRST_NAME",
   INLINE_EMAIL = "INLINE_EMAIL",

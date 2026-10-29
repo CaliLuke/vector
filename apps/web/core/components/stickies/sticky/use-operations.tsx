@@ -22,7 +22,7 @@ import { useCurrentUserId } from "@/hooks/use-current-user";
 import { useIdentityGeneration } from "@/hooks/use-identity-generation";
 import { captureIdentityScope, isIdentityScopeCurrent } from "@/queries/identity";
 
-export type TOperations = {
+type TOperations = {
   create: (data?: Partial<TSticky>) => Promise<void>;
   update: (stickyId: string, data: Partial<TSticky>) => Promise<void>;
   remove: (stickyId: string) => Promise<void>;

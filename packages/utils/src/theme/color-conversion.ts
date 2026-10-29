@@ -90,7 +90,7 @@ export function parseOKLCH(oklchString: string): OKLCH | null {
  * Convert hex color to RGB object
  * Legacy function for backward compatibility
  */
-export function hexToRgb(hex: string): RGB {
+function hexToRgb(hex: string): RGB {
   const cleanHex = hex.replace("#", "");
 
   const r = parseInt(cleanHex.substring(0, 2), 16);

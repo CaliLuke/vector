@@ -7,7 +7,7 @@
 import * as React from "react";
 import { cn } from "../utils";
 
-export interface OAuthButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface OAuthButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   text: string;
   icon: React.ReactNode;
   compact?: boolean;

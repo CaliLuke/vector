@@ -95,7 +95,7 @@ export const FilterValueInput = function FilterValueInput<P extends TFilterPrope
   return <AdditionalFilterValueInput {...props} />;
 };
 
-export const AdditionalFilterValueInput = function AdditionalFilterValueInput<
+const AdditionalFilterValueInput = function AdditionalFilterValueInput<
   P extends TFilterProperty,
   V extends TFilterValue,
 >(_props: TFilterValueInputProps<P, V>) {

@@ -124,7 +124,7 @@ export const getSelectedRows = (selection: Selection, map: TableMap): number[] =
  * @param {CellSelection} selection - The cell selection.
  * @returns {boolean} True if the rect is selected, false otherwise.
  */
-export const isRectSelected = (rect: Rect, selection: CellSelection): boolean => {
+const isRectSelected = (rect: Rect, selection: CellSelection): boolean => {
   const map = TableMap.get(selection.$anchorCell.node(-1));
   const cells = map.cellsInRect(rect);
   const selectedCells = map.cellsInRect(getSelectedRect(selection, map));

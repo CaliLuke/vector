@@ -64,7 +64,7 @@ export const LinkIcon = ({ size = 12, color = "#2563eb" }: IconProps) => (
 );
 
 // Paperclip icon for attachments (default)
-export const PaperclipIcon = ({ size = 16, color = "#374151" }: IconProps) => (
+const PaperclipIcon = ({ size = 16, color = "#374151" }: IconProps) => (
   <Svg width={size} height={size} viewBox="0 0 24 24">
     <Path
       d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"
@@ -78,7 +78,7 @@ export const PaperclipIcon = ({ size = 16, color = "#374151" }: IconProps) => (
 );
 
 // Image icon for image attachments
-export const ImageIcon = ({ size = 16, color = "#374151" }: IconProps) => (
+const ImageIcon = ({ size = 16, color = "#374151" }: IconProps) => (
   <Svg width={size} height={size} viewBox="0 0 24 24">
     <Rect x={3} y={3} width={18} height={18} rx={2} ry={2} fill="none" stroke={color} strokeWidth={2} />
     <Circle cx={8.5} cy={8.5} r={1.5} fill={color} />
@@ -87,7 +87,7 @@ export const ImageIcon = ({ size = 16, color = "#374151" }: IconProps) => (
 );
 
 // Video icon for video attachments
-export const VideoIcon = ({ size = 16, color = "#374151" }: IconProps) => (
+const VideoIcon = ({ size = 16, color = "#374151" }: IconProps) => (
   <Svg width={size} height={size} viewBox="0 0 24 24">
     <Rect x={2} y={4} width={15} height={16} rx={2} ry={2} fill="none" stroke={color} strokeWidth={2} />
     <Path d="M17 10l5-3v10l-5-3z" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" />
@@ -95,7 +95,7 @@ export const VideoIcon = ({ size = 16, color = "#374151" }: IconProps) => (
 );
 
 // Music/audio icon
-export const MusicIcon = ({ size = 16, color = "#374151" }: IconProps) => (
+const MusicIcon = ({ size = 16, color = "#374151" }: IconProps) => (
   <Svg width={size} height={size} viewBox="0 0 24 24">
     <Path d="M9 18V5l12-2v13" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" />
     <Circle cx={6} cy={18} r={3} fill="none" stroke={color} strokeWidth={2} />
@@ -104,7 +104,7 @@ export const MusicIcon = ({ size = 16, color = "#374151" }: IconProps) => (
 );
 
 // File-text icon for PDFs and documents
-export const FileTextIcon = ({ size = 16, color = "#374151" }: IconProps) => (
+const FileTextIcon = ({ size = 16, color = "#374151" }: IconProps) => (
   <Svg width={size} height={size} viewBox="0 0 24 24">
     <Path
       d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
@@ -118,7 +118,7 @@ export const FileTextIcon = ({ size = 16, color = "#374151" }: IconProps) => (
 );
 
 // Table/spreadsheet icon
-export const TableIcon = ({ size = 16, color = "#374151" }: IconProps) => (
+const TableIcon = ({ size = 16, color = "#374151" }: IconProps) => (
   <Svg width={size} height={size} viewBox="0 0 24 24">
     <Rect x={3} y={3} width={18} height={18} rx={2} fill="none" stroke={color} strokeWidth={2} />
     <Path d="M3 9h18M3 15h18M9 3v18M15 3v18" fill="none" stroke={color} strokeWidth={2} />
@@ -126,7 +126,7 @@ export const TableIcon = ({ size = 16, color = "#374151" }: IconProps) => (
 );
 
 // Presentation icon
-export const PresentationIcon = ({ size = 16, color = "#374151" }: IconProps) => (
+const PresentationIcon = ({ size = 16, color = "#374151" }: IconProps) => (
   <Svg width={size} height={size} viewBox="0 0 24 24">
     <Rect x={2} y={3} width={20} height={14} rx={2} fill="none" stroke={color} strokeWidth={2} />
     <Path d="M8 21l4-4 4 4M12 17v-4" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" />
@@ -134,7 +134,7 @@ export const PresentationIcon = ({ size = 16, color = "#374151" }: IconProps) =>
 );
 
 // Archive/zip icon
-export const ArchiveIcon = ({ size = 16, color = "#374151" }: IconProps) => (
+const ArchiveIcon = ({ size = 16, color = "#374151" }: IconProps) => (
   <Svg width={size} height={size} viewBox="0 0 24 24">
     <Path
       d="M21 8v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8"

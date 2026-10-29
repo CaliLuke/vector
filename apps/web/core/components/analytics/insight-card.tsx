@@ -9,7 +9,7 @@ import React from "react";
 import type { IAnalyticsResponseFields } from "@plane/types";
 import { Loader } from "@plane/ui";
 
-export type InsightCardProps = {
+type InsightCardProps = {
   data?: IAnalyticsResponseFields;
   label: string;
   isLoading?: boolean;

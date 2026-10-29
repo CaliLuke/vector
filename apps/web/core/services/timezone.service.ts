@@ -10,7 +10,7 @@ import type { TTimezones } from "@plane/types";
 // api services
 import { APIService } from "@/services/api.service";
 
-export class TimezoneService extends APIService {
+class TimezoneService extends APIService {
   constructor() {
     super(API_BASE_URL);
   }

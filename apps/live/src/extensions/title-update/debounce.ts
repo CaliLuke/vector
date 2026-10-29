@@ -21,7 +21,7 @@ export interface DebounceState {
 /**
  * Creates a new DebounceState object
  */
-export const createDebounceState = (): DebounceState => ({
+const createDebounceState = (): DebounceState => ({
   lastArgs: null,
   timerId: null,
   lastCallTime: undefined,

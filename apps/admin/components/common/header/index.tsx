@@ -16,7 +16,7 @@ import { BreadcrumbLink } from "../breadcrumb-link";
 import { CORE_HEADER_SEGMENT_LABELS } from "./core";
 import { EXTENDED_HEADER_SEGMENT_LABELS } from "./extended";
 
-export const HamburgerToggle = function HamburgerToggle() {
+const HamburgerToggle = function HamburgerToggle() {
   const { isSidebarCollapsed, toggleSidebar } = useSidebar();
   return (
     <button

@@ -11,7 +11,7 @@ import type { TPowerKCommandConfig, TPowerKContext } from "./types";
  * Formats a keyboard event into a modifier shortcut string
  * e.g., "cmd+k", "cmd+shift+,", "cmd+delete"
  */
-export function formatModifierShortcut(e: KeyboardEvent): string {
+function formatModifierShortcut(e: KeyboardEvent): string {
   const parts: string[] = [];
 
   if (e.ctrlKey || e.metaKey) parts.push("cmd");
@@ -27,7 +27,7 @@ export function formatModifierShortcut(e: KeyboardEvent): string {
 /**
  * Checks if the event target is a typing-focused element
  */
-export function isTypingInInput(target: EventTarget | null): boolean {
+function isTypingInInput(target: EventTarget | null): boolean {
   if (!target) return false;
 
   if (target instanceof HTMLInputElement) return true;

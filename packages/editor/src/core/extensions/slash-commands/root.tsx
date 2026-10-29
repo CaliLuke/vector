@@ -22,7 +22,7 @@ import { getSlashCommandFilteredSections } from "./command-items-list";
 import type { SlashCommandsMenuProps } from "./command-menu";
 import { SlashCommandsMenu } from "./command-menu";
 
-export type SlashCommandOptions = {
+type SlashCommandOptions = {
   suggestion: Omit<SuggestionOptions, "editor">;
 };
 

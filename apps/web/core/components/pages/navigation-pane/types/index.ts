@@ -5,8 +5,4 @@
  */
 
 // Export generic extension system interfaces
-export type {
-  INavigationPaneExtensionProps,
-  INavigationPaneExtensionComponent,
-  INavigationPaneExtension,
-} from "./extensions";
+export type { INavigationPaneExtension } from "./extensions";

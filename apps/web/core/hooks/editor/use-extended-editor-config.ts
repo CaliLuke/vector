@@ -8,7 +8,7 @@ import { useCallback } from "react";
 // plane imports
 import type { TExtendedFileHandler } from "@plane/editor";
 
-export type TExtendedEditorFileHandlersArgs = {
+type TExtendedEditorFileHandlersArgs = {
   projectId?: string;
   workspaceSlug: string;
 };

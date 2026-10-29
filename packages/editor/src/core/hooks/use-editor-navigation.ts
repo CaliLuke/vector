@@ -14,7 +14,7 @@ import { useCallback, useRef } from "react";
  * @param getMainEditor Function to get the main editor instance
  * @returns A Tiptap extension with keyboard shortcuts
  */
-export const createTitleNavigationExtension = (getMainEditor: () => Editor | null) =>
+const createTitleNavigationExtension = (getMainEditor: () => Editor | null) =>
   Extension.create({
     name: "titleEditorNavigation",
     priority: 10,
@@ -66,7 +66,7 @@ export const createTitleNavigationExtension = (getMainEditor: () => Editor | nul
  * @param getTitleEditor Function to get the title editor instance
  * @returns A Tiptap extension with keyboard shortcuts
  */
-export const createMainNavigationExtension = (getTitleEditor: () => Editor | null) =>
+const createMainNavigationExtension = (getTitleEditor: () => Editor | null) =>
   Extension.create({
     name: "mainEditorNavigation",
     priority: 10,

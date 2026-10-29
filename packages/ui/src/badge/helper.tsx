@@ -23,7 +23,7 @@ export type TBadgeVariant =
 
 export type TBadgeSizes = "sm" | "md" | "lg" | "xl";
 
-export interface IBadgeStyling {
+interface IBadgeStyling {
   [key: string]: {
     default: string;
     hover: string;
@@ -48,7 +48,7 @@ enum badgeIconStyling {
   xl = "h-4 w-4 flex justify-center items-center overflow-hidden flex-shrink-0",
 }
 
-export const badgeStyling: IBadgeStyling = {
+const badgeStyling: IBadgeStyling = {
   primary: {
     default: `text-on-color bg-accent-primary`,
     hover: `hover:bg-accent-primary/80`,

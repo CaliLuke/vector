@@ -46,8 +46,8 @@ declare module "@tiptap/core" {
   }
 }
 
-export const backtickInputRegex = /^```([a-z]+)?[\s\n]$/;
-export const tildeInputRegex = /^~~~([a-z]+)?[\s\n]$/;
+const backtickInputRegex = /^```([a-z]+)?[\s\n]$/;
+const tildeInputRegex = /^~~~([a-z]+)?[\s\n]$/;
 
 export const CodeBlock = Node.create<CodeBlockOptions>({
   name: CORE_EXTENSIONS.CODE_BLOCK,

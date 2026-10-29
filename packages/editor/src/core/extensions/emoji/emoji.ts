@@ -33,7 +33,7 @@ export interface ExtendedEmojiStorage extends EmojiStorage {
   forceOpen: boolean;
 }
 
-export type EmojiItem = {
+type EmojiItem = {
   /**
    * A unique name of the emoji which will be stored as attribute
    */
@@ -80,11 +80,11 @@ export type EmojiOptions = {
   suggestion: Omit<SuggestionOptions, "editor">;
 };
 
-export const EmojiSuggestionPluginKey = new PluginKey("emojiSuggestion");
+const EmojiSuggestionPluginKey = new PluginKey("emojiSuggestion");
 
-export const inputRegex = /:([a-zA-Z0-9_+-]+):$/;
+const inputRegex = /:([a-zA-Z0-9_+-]+):$/;
 
-export const pasteRegex = /:([a-zA-Z0-9_+-]+):/g;
+const pasteRegex = /:([a-zA-Z0-9_+-]+):/g;
 
 export const Emoji = Node.create<EmojiOptions, EmojiStorage>({
   name: "emoji",

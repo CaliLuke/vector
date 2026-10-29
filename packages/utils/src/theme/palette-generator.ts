@@ -27,7 +27,7 @@ import {
 /**
  * Type representing valid shade stop values
  */
-export type ShadeStop = (typeof SHADE_STOPS)[number];
+type ShadeStop = (typeof SHADE_STOPS)[number];
 
 /**
  * 14-shade color palette

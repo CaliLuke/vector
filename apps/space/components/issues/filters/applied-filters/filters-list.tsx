@@ -18,7 +18,7 @@ type Props = {
   handleRemoveFilter: (key: keyof TFilters, value: string | null) => void;
 };
 
-export const replaceUnderscoreIfSnakeCase = (str: string) => str.replace(/_/g, " ");
+const replaceUnderscoreIfSnakeCase = (str: string) => str.replace(/_/g, " ");
 
 export const AppliedFiltersList = function AppliedFiltersList(props: Props) {
   const { appliedFilters, handleRemoveAllFilters, handleRemoveFilter } = props;
