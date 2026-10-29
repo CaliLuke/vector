@@ -21,7 +21,7 @@ import { generateWorkItemLink, shouldHighlightIssueDueDate } from "@plane/utils/
 // components
 import { CycleDropdown } from "@/components/dropdowns/cycle";
 import { DateDropdown } from "@/components/dropdowns/date";
-import { DateRangeDropdown } from "@/components/dropdowns/date-range";
+import { IssuePropertyDateRange } from "./date-range";
 import { EstimateDropdown } from "@/components/dropdowns/estimate";
 import { MemberDropdown } from "@/components/dropdowns/member/dropdown";
 import { ModuleDropdown } from "@/components/dropdowns/module/dropdown";
@@ -189,32 +189,13 @@ export function IssueProperties(props: IIssueProperties) {
       >
         {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions */}
         <div className="h-5" onFocus={handleEventPropagation} onClick={handleEventPropagation}>
-          <DateRangeDropdown
-            value={{
-              from: getDate(issue.start_date) || undefined,
-              to: getDate(issue.target_date) || undefined,
-            }}
-            onSelect={(range) =>
-              handleUpdate({
-                start_date: range?.from ? renderFormattedPayloadDate(range.from) : null,
-                target_date: range?.to ? renderFormattedPayloadDate(range.to) : null,
-              })
-            }
-            hideIcon={{
-              from: false,
-            }}
-            isClearable
-            mergeDates
-            buttonVariant={issue.start_date || issue.target_date ? "border-with-text" : "border-without-text"}
-            buttonClassName={
-              shouldHighlightIssueDueDate(issue.target_date, stateDetails?.group) ? "text-danger-primary" : ""
-            }
+          <IssuePropertyDateRange
+            dates={issue}
+            onChange={handleUpdate}
+            highlight={shouldHighlightIssueDueDate(issue.target_date, stateDetails?.group)}
             clearIconClassName="text-primary!"
             disabled={isUpdateDisabled}
             renderByDefault={isMobile}
-            showTooltip
-            renderPlaceholder={false}
-            customTooltipHeading="Date Range"
           />
         </div>
       </WithDisplayPropertiesHOC>

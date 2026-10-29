@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "full",
-  "fileCount": 3719,
+  "fileCount": 3721,
   "diagnostics": [
     {
       "diagnostic": {
@@ -3201,27 +3201,9 @@
     {
       "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-detail-widgets/sub-issues/issues-list/properties.tsx",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail-widgets/sub-issues/issues-list/properties.tsx",
-        "severity": "error",
-        "code": "typescript(no-misused-promises)",
-        "message": "Promise-returning function provided to attribute where a void return was expected."
-      },
-      "count": 3
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail-widgets/sub-issues/issues-list/properties.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `SubIssuesListItemProperties` has a complexity of 27. Maximum allowed is 15."
+        "message": "function `SubIssuesListItemProperties` has a complexity of 18. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -3240,15 +3222,6 @@
         "severity": "warning",
         "code": "jsx-a11y(no-static-element-interactions)",
         "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail-widgets/sub-issues/issues-list/properties.tsx",
-        "severity": "warning",
-        "code": "unicorn(consistent-function-scoping)",
-        "message": "Function `handleEventPropagation` does not capture any variables from its parent scope"
       },
       "count": 1
     },
@@ -3950,7 +3923,7 @@
         "filename": "apps/web/core/components/issues/issue-layouts/properties/all-properties.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `IssueProperties` has a complexity of 43. Maximum allowed is 15."
+        "message": "function `IssueProperties` has a complexity of 38. Maximum allowed is 15."
       },
       "count": 1
     },

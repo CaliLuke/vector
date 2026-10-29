@@ -19,7 +19,11 @@ type PropertyScope = {
   context: string;
 };
 
-export function useIssuePropertyChange(scope: PropertyScope, enabled: boolean) {
+export function useIssuePropertyChange(
+  scope: PropertyScope,
+  enabled: boolean,
+  messages?: { success?: string; error?: string }
+) {
   const client = useQueryClient();
   const userId = useCurrentUserId();
   const generation = useIdentityGeneration(client);
@@ -44,12 +48,16 @@ export function useIssuePropertyChange(scope: PropertyScope, enabled: boolean) {
         return change();
       },
       {
+        onSuccess: () => {
+          if (!messages?.success || !isCurrent() || !isIdentityScopeCurrent(client, identity)) return;
+          setToast({ type: TOAST_TYPE.SUCCESS, title: t("toast.success"), message: messages.success });
+        },
         onError: () => {
           if (!isCurrent() || !isIdentityScopeCurrent(client, identity)) return;
           setToast({
             type: TOAST_TYPE.ERROR,
             title: t("toast.error"),
-            message: t("entity.update.failed", { entity: t("common.work_item") }),
+            message: messages?.error ?? t("entity.update.failed", { entity: t("common.work_item") }),
           });
         },
       }

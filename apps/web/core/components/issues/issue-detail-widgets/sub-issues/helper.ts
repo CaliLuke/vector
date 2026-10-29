@@ -167,42 +167,16 @@ export function useSubIssueOperations(
           }),
         });
       },
-      updateSubIssue: async (
-        _workspaceSlug,
-        _projectId,
-        targetParentId,
-        issueId,
-        issueData,
-        _oldIssue = {},
-        fromModal = false
-      ) => {
+      refreshSubIssues: (targetParentId) => refresh(captureOwner(targetParentId)),
+      updateSubIssue: async (_workspaceSlug, _projectId, targetParentId, issueId, issueData) => {
         const owner = captureOwner(targetParentId);
         assertMutationScope(owner, _workspaceSlug, _projectId);
-        const childDetailOwner = fromModal
-          ? undefined
-          : captureIssueDetailReconciliation(client, owner.scope, [issueId]);
-        try {
-          if (!fromModal) {
-            const listOwner = await resolveListOwner(_workspaceSlug, _projectId);
-            if (!listOwner) throw new Error("Work item access is unavailable. Retry the operation.");
-            const receipt = await patchIssueMutation(client, listOwner, issueId, issueData);
-            await childDetailOwner?.reconcile(receipt);
-          }
-          if (childDetailOwner && fromModal) void childDetailOwner.refresh();
-          if (owner.isCurrent()) refresh(owner);
-          setToast({
-            type: TOAST_TYPE.SUCCESS,
-            title: t("toast.success"),
-            message: t("sub_work_item.update.success"),
-          });
-        } catch (error) {
-          setToast({
-            type: TOAST_TYPE.ERROR,
-            title: t("toast.error"),
-            message: t("sub_work_item.update.error"),
-          });
-          throw error;
-        }
+        const childDetailOwner = captureIssueDetailReconciliation(client, owner.scope, [issueId]);
+        const listOwner = await resolveListOwner(_workspaceSlug, _projectId);
+        if (!listOwner) throw new Error("Work item access is unavailable. Retry the operation.");
+        const receipt = await patchIssueMutation(client, listOwner, issueId, issueData);
+        await childDetailOwner.reconcile(receipt);
+        refresh(owner);
       },
       removeSubIssue: async (_workspaceSlug, _projectId, targetParentId, issueId) => {
         const owner = captureOwner(targetParentId);

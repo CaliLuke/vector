@@ -134,16 +134,8 @@ export const SubIssuesCollapsibleContent = function SubIssuesCollapsibleContent(
             toggleCreateIssueModal(false);
           }}
           data={issueCrudState?.update?.issue ?? undefined}
-          onSubmit={async (_issue: TIssue) => {
-            await subIssueOperations.updateSubIssue(
-              workspaceSlug,
-              projectId,
-              parentIssueId,
-              _issue.id,
-              _issue,
-              issueCrudState?.update?.issue,
-              true
-            );
+          onSubmit={async () => {
+            subIssueOperations.refreshSubIssues(issueCrudState.update.parentIssueId ?? parentIssueId);
           }}
         />
       )}
