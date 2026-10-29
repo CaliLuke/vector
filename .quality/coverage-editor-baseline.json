@@ -1016,10 +1016,10 @@
       "branches": 0
     },
     "src/core/extensions/utility.ts": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": 68.29,
+      "statements": 64.44,
+      "functions": 65.21,
+      "branches": 50
     },
     "src/core/extensions/work-item-embed/extension-config.ts": {
       "lines": 0,
@@ -1208,10 +1208,10 @@
       "branches": 0
     },
     "src/core/plugins/highlight.ts": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": 96.66,
+      "statements": 96.66,
+      "functions": 100,
+      "branches": 85
     },
     "src/core/plugins/markdown-clipboard.ts": {
       "lines": 0,

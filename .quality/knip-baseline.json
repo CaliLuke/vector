@@ -501,14 +501,6 @@
     {
       "finding": {
         "category": "exports",
-        "file": "packages/editor/src/core/plugins/highlight.ts",
-        "name": "NodeHighlightPlugin"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
         "file": "packages/i18n/src/core/index.ts",
         "name": "setLanguage"
       },

@@ -80,8 +80,6 @@ export const NodeHighlightPlugin = () =>
 
         if (shouldRecalculate) {
           decorations = buildDecorations(newState.doc, highlightedNodeId);
-        } else if (tr.docChanged) {
-          decorations = decorations.map(tr.mapping, newState.doc);
         }
 
         return {

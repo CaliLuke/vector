@@ -12,6 +12,7 @@ import { restorePublicImages } from "@/helpers/image-helpers";
 // plugins
 import type { TAdditionalActiveDropbarExtensions } from "@/plane-editor/types/utils";
 import { DropHandlerPlugin } from "@/plugins/drop";
+import { NodeHighlightPlugin } from "@/plugins/highlight";
 import { FilePlugins } from "@/plugins/file/root";
 import { MarkdownClipboardPlugin } from "@/plugins/markdown-clipboard";
 import type { IEditorProps, TEditorAsset, TFileHandler, TMentionHandler } from "@/types";
@@ -90,6 +91,7 @@ export const UtilityExtension = (props: Props) => {
 
     addProseMirrorPlugins() {
       return [
+        NodeHighlightPlugin(),
         ...FilePlugins({
           editor: this.editor,
           isEditable,
