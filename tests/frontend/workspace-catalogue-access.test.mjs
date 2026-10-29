@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
 import { React, act } from "./helpers/react.mjs";
-import { createQueryRouterFixture, settleQuery } from "./helpers/query-router.mjs";
+import { createQueryRouterFixture } from "./helpers/query-router.mjs";
 import { resolvePackageStub } from "./helpers/module-stubs.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 import { seedWorkspaceQuery } from "./helpers/workspace-query-fixture.mjs";
@@ -39,6 +39,12 @@ function mockAccess(t) {
 }
 const content = React.createElement(WorkspaceAuthWrapper, null, React.createElement("main", null, "Workspace content"));
 
+async function expectAccess(t, assertState) {
+  // Membership and roles load in sequence. Wait for the visible result while
+  // keeping their asynchronous React updates inside the act scope.
+  await act(async () => t.waitFor(assertState));
+}
+
 async function assertInvalidMembershipIsDenied(t, membership) {
   const fixture = await createQueryRouterFixture(t, "/acme/");
   await seedWorkspaceQuery(fixture.client, { id: "workspace", slug: "acme" });
@@ -47,9 +53,7 @@ async function assertInvalidMembershipIsDenied(t, membership) {
   globalThis.workspaceAccessReads = [];
 
   await fixture.render(content);
-  await settleQuery();
-
-  assert.match(fixture.environment.container.textContent, /Not Authorized/);
+  await expectAccess(t, () => assert.match(fixture.environment.container.textContent, /Not Authorized/));
   assert.equal(roles.mock.callCount(), 0);
   assert.deepEqual(globalThis.workspaceAccessReads, []);
 }
@@ -65,25 +69,31 @@ await test("an initial catalogue failure offers retry and recovers into the work
   });
   await fixture.render(content);
   const { container } = fixture.environment;
-  assert.match(container.querySelector('[role="alert"]').textContent, /Unable to load your workspaces/);
+  await expectAccess(t, () =>
+    assert.match(container.querySelector('[role="alert"]')?.textContent ?? "", /Unable to load your workspaces/)
+  );
   assert.equal(container.querySelector("main"), null);
   unavailable = false;
   await act(async () => container.querySelector("button").click());
-  await settleQuery();
-  assert.equal(container.querySelector("main").textContent, "Workspace content");
+  await expectAccess(t, () => assert.equal(container.querySelector("main")?.textContent, "Workspace content"));
   assert.equal(container.querySelector('[role="alert"]'), null);
 });
 
 await test("a refreshed catalogue revokes workspace rendering even with cached permission data", async (t) => {
   mockAccess(t);
+  const roles = Promise.withResolvers();
+  t.mock.method(WorkspaceService.prototype, "getWorkspaceUserProjectsRole", () => roles.promise);
   const fixture = await createQueryRouterFixture(t, "/acme/");
   await seedWorkspaceQuery(fixture.client, { id: "workspace", slug: "acme" });
   await fixture.render(content);
   const { container } = fixture.environment;
-  assert.ok(container.querySelector("main"));
+  assert.equal(container.querySelector("main"), null);
+  assert.match(container.querySelector('[role="status"]').textContent, /Loading/);
+  await act(async () => roles.resolve({}));
+  await expectAccess(t, () => assert.equal(container.querySelector("main")?.textContent, "Workspace content"));
   t.mock.method(WorkspaceService.prototype, "userWorkspaces", async () => []);
   await act(async () => fixture.client.fetchQuery({ ...workspacesOptions("workspace-query-test-user"), staleTime: 0 }));
-  await settleQuery();
+  await expectAccess(t, () => assert.match(container.textContent, /Workspace not found/));
   assert.deepEqual(fixture.client.getQueryData(workspaceKeys.list("workspace-query-test-user")), []);
   assert.equal(container.querySelector("main"), null);
   assert.match(container.textContent, /Workspace not found/);
@@ -103,7 +113,7 @@ await test("pending membership waits, then inactive membership denies access wit
   assert.match(container.querySelector('[role="status"]').textContent, /Loading/);
   assert.doesNotMatch(container.textContent, /Not Authorized/);
   await act(async () => resolveMembership({ is_active: false, role: null }));
-  await settleQuery();
+  await expectAccess(t, () => assert.match(container.textContent, /Not Authorized/));
   assert.equal(container.querySelector("main"), null);
   assert.match(container.textContent, /Not Authorized/);
   assert.equal(roles.mock.callCount(), 0);
@@ -128,12 +138,13 @@ await test("failed membership read offers retry instead of an authorization deni
   t.mock.method(WorkspaceService.prototype, "getWorkspaceUserProjectsRole", async () => ({}));
   await fixture.render(content);
   const { container } = fixture.environment;
-  assert.match(container.querySelector('[role="alert"]').textContent, /Unable to load your workspace access/);
+  await expectAccess(t, () =>
+    assert.match(container.querySelector('[role="alert"]')?.textContent ?? "", /Unable to load your workspace access/)
+  );
   assert.doesNotMatch(container.textContent, /Not Authorized/);
   offline = false;
   await act(async () => container.querySelector("button").click());
-  await settleQuery();
-  assert.equal(container.querySelector("main").textContent, "Workspace content");
+  await expectAccess(t, () => assert.equal(container.querySelector("main")?.textContent, "Workspace content"));
 });
 
 await test("a failed role refresh hides cached workspace content and retries only that read", async (t) => {
@@ -142,7 +153,7 @@ await test("a failed role refresh hides cached workspace content and retries onl
   await seedWorkspaceQuery(fixture.client, { id: "workspace", slug: "acme" });
   await fixture.render(content);
   const { container } = fixture.environment;
-  assert.ok(container.querySelector("main"));
+  await expectAccess(t, () => assert.equal(container.querySelector("main")?.textContent, "Workspace content"));
   let offline = true;
   const roles = t.mock.method(WorkspaceService.prototype, "getWorkspaceUserProjectsRole", async () => {
     if (offline) throw new Error("offline");
@@ -155,12 +166,13 @@ await test("a failed role refresh hides cached workspace content and retries onl
     activeMembership.updated_at
   );
   await act(async () => fixture.client.invalidateQueries({ queryKey: key, exact: true }));
-  await settleQuery();
+  await expectAccess(t, () =>
+    assert.match(container.querySelector('[role="alert"]')?.textContent ?? "", /Unable to load your workspace access/)
+  );
   assert.equal(container.querySelector("main"), null);
   assert.match(container.querySelector('[role="alert"]').textContent, /Unable to load your workspace access/);
   offline = false;
   await act(async () => container.querySelector("button").click());
-  await settleQuery();
-  assert.ok(container.querySelector("main"));
+  await expectAccess(t, () => assert.equal(container.querySelector("main")?.textContent, "Workspace content"));
   assert.equal(roles.mock.callCount(), 2);
 });

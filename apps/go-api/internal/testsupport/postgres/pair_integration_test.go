@@ -4,6 +4,7 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"net/url"
 	"testing"
 	"time"
@@ -11,6 +12,34 @@ import (
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/jackc/pgx/v5"
 )
+
+func TestSeedMigrationRunsOnceAfterSQLReadinessAndCleansUpOnFailure(t *testing.T) {
+	ctx, cancel := context.WithTimeout(t.Context(), time.Minute)
+	defer cancel()
+	want := errors.New("seed migration rejected after a write")
+	calls := 0
+	var seedURL string
+	pair, err := StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
+		calls++
+		seedURL = databaseURL
+		connection, err := pgx.Connect(ctx, databaseURL)
+		if err != nil {
+			return err
+		}
+		defer func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) }()
+		if _, err := connection.Exec(ctx, `CREATE TABLE fixture_probe(value int)`); err != nil {
+			return err
+		}
+		return want
+	})
+	if pair != nil || !errors.Is(err, want) || calls != 1 {
+		t.Fatalf("pair=%v error=%v migration calls=%d; want original failure from one migration", pair, err, calls)
+	}
+	if connection, err := pgx.Connect(ctx, seedURL); err == nil {
+		testsupport.CloseContext(t, connection, context.WithoutCancel(ctx))
+		t.Fatal("failed migration left its disposable database running")
+	}
+}
 
 func TestOpenSQLInstallsItsSchemaBeforeReturningAConnection(t *testing.T) {
 	ctx, connection := OpenSQL(t, `CREATE TABLE fixture_probe(value text); INSERT INTO fixture_probe VALUES('ready')`)

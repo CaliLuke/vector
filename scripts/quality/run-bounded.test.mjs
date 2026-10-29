@@ -6,12 +6,64 @@ import path from "node:path";
 import test from "node:test";
 
 const runner = new URL("./run-bounded.mjs", import.meta.url).pathname;
+// Retain a bounded native allocation until the supervisor terminates us. A
+// fixture that exits after allocation can disappear between process samples.
+const memoryConsumer =
+  "const buffers=[]; setInterval(()=>{if(buffers.length<32)buffers.push(Buffer.alloc(4*1024*1024,1))},40)";
 function run(script, extra = []) {
   return spawnSync(process.execPath, [runner, ...extra, "--", process.execPath, "-e", script], {
     encoding: "utf8",
     timeout: 7000,
   });
 }
+
+function runWithSampleTimeouts(t, timeouts, extra = [], childDuration = 4500) {
+  const directory = mkdtempSync(path.join(tmpdir(), "vector-process-sample-timeout-"));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const countPath = path.join(directory, "samples");
+  writeFileSync(countPath, "0");
+  writeFileSync(
+    path.join(directory, "ps"),
+    `#!${process.execPath}
+const fs = require("node:fs");
+const countPath = ${JSON.stringify(countPath)};
+const count = Number(fs.readFileSync(countPath, "utf8")) + 1;
+fs.writeFileSync(countPath, String(count));
+if (count <= ${timeouts}) setInterval(() => {}, 1000);
+else process.stdout.write(require("node:child_process").execFileSync("/bin/ps", process.argv.slice(2)));
+`,
+    { mode: 0o700 }
+  );
+  const result = spawnSync(
+    process.execPath,
+    [runner, ...extra, "--", process.execPath, "-e", `setTimeout(() => {}, ${childDuration})`],
+    {
+      encoding: "utf8",
+      timeout: 10_000,
+      env: { ...process.env, PATH: `${directory}${path.delimiter}${process.env.PATH}` },
+    }
+  );
+  assert.ifError(result.error);
+  return result;
+}
+
+void test("one delayed memory sample recovers without rejecting the child", (t) => {
+  const result = runWithSampleTimeouts(t, 1);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stderr, /memory sample timed out; retrying once/);
+});
+
+void test("repeated memory sampling timeouts fail closed", (t) => {
+  const result = runWithSampleTimeouts(t, 2, [], 60_000);
+  assert.equal(result.status, 125, result.stderr);
+  assert.match(result.stderr, /memory monitoring failed/);
+});
+
+void test("memory limits still apply after recovering from a sampling timeout", (t) => {
+  const result = runWithSampleTimeouts(t, 1, ["--memory-mib", "1"]);
+  assert.equal(result.status, 137, result.stderr);
+  assert.match(result.stderr, /RSS exceeded/);
+});
 async function assertWorkerStopped(pid) {
   let alive = true;
   for (let attempt = 0; alive && attempt < 20; attempt++) {
@@ -60,11 +112,8 @@ void test("external deadline interrupts a blocked child event loop", () => {
   assert.doesNotMatch(result.stdout, /finished/);
 });
 void test("memory ceiling includes native buffer allocations", () => {
-  const result = run(
-    "const buffers=[]; const timer=setInterval(()=>{buffers.push(Buffer.alloc(4*1024*1024,1)); if(buffers.length===24)clearInterval(timer)},40)",
-    ["--memory-mib", "60", "--heap-mib", "64"]
-  );
-  assert.equal(result.status, 137);
+  const result = run(memoryConsumer, ["--memory-mib", "60", "--heap-mib", "64"]);
+  assert.equal(result.status, 137, result.stderr);
   assert.match(result.stderr, /RSS exceeded/);
 });
 for (const detached of [false, true]) {
@@ -129,11 +178,11 @@ void test("memory ceiling follows descendants that create a separate process gro
   const result = run(
     `
     const {spawn}=require("node:child_process");
-    spawn(process.execPath,["-e", "const buffers=[]; const timer=setInterval(()=>{buffers.push(Buffer.alloc(4*1024*1024,1)); if(buffers.length===24)clearInterval(timer)},40)"],{detached:true,stdio:"ignore"});
-    setTimeout(()=>{},5000);
+    spawn(process.execPath,["-e", ${JSON.stringify(memoryConsumer)}],{detached:true,stdio:"ignore"});
+    setInterval(()=>{},1000);
   `,
     ["--memory-mib", "100", "--heap-mib", "64"]
   );
-  assert.equal(result.status, 137);
+  assert.equal(result.status, 137, result.stderr);
   assert.match(result.stderr, /RSS exceeded/);
 });

@@ -5,6 +5,7 @@ package mcpactions_test
 import (
 	"context"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -27,13 +28,11 @@ import (
 	"github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	"github.com/CaliLuke/go-plane/internal/releases"
 	"github.com/CaliLuke/go-plane/internal/templates"
-	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/CaliLuke/go-plane/internal/useridentity"
 	"github.com/CaliLuke/go-plane/internal/workitemrelations"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/CaliLuke/go-plane/internal/worklogs"
 	"github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -83,18 +82,14 @@ func databaseFixture(t *testing.T) (fixture, *pgxpool.Pool) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
 	defer cancel()
-	pair, err := postgresfixture.Start(ctx, func(ctx context.Context, url string) error {
-		conn, err := pgx.Connect(ctx, url)
-		if err != nil {
-			return err
-		}
-		defer func() { require.NoError(t, conn.Close(context.WithoutCancel(ctx))) }()
-		_, err = conn.Exec(ctx, identitySchema)
-		return err
-	})
+	database, err := identitySchemaTemplate.CloneDatabase(ctx)
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, pair.Close()) })
-	pool, err := pgxpool.New(ctx, pair.SourceURL)
+	t.Cleanup(func() {
+		cleanup, cancelCleanup := context.WithTimeout(context.WithoutCancel(t.Context()), 30*time.Second)
+		defer cancelCleanup()
+		require.NoError(t, database.Close(cleanup))
+	})
+	pool, err := pgxpool.New(ctx, database.URL)
 	require.NoError(t, err)
 	t.Cleanup(pool.Close)
 	service := databaseService(t, pool, nil)
@@ -105,6 +100,19 @@ func databaseFixture(t *testing.T) (fixture, *pgxpool.Pool) {
 	auth, err := mcpauth.NewPersonalTokens(keys, members, throttle{})
 	require.NoError(t, err)
 	return fixture{service: service, auth: auth}, pool
+}
+
+func TestIdentityFixturesKeepCredentialRevocationsIsolated(t *testing.T) {
+	first, firstPool := databaseFixture(t)
+	second, _ := databaseFixture(t)
+	_, err := firstPool.Exec(t.Context(), `UPDATE api_tokens SET is_active=false WHERE token='test-one'`)
+	require.NoError(t, err)
+	request := httptest.NewRequest(http.MethodPost, "https://vector.example/mcp/api-key", nil)
+	request.Header.Set("Authorization", "Bearer test-one")
+	_, err = first.auth.Authenticate(t.Context(), request)
+	require.Error(t, err)
+	_, err = second.auth.Authenticate(t.Context(), request)
+	require.NoError(t, err)
 }
 
 type rosterPublisher struct{}

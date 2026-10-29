@@ -4,13 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/url"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	_ "github.com/jackc/pgx/v5/stdlib" // Register pgx for the SQL readiness probe.
+	"github.com/moby/moby/api/types/network"
 	"github.com/testcontainers/testcontainers-go"
 	postgrescontainer "github.com/testcontainers/testcontainers-go/modules/postgres"
+	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 const (
@@ -107,16 +111,25 @@ func StartUncloned(ctx context.Context, migrate SeedMigration) (_ *Pair, err err
 		postgrescontainer.WithUsername(postgresUser),
 		postgrescontainer.WithPassword(postgresPassword),
 		postgrescontainer.BasicWaitStrategies(),
+		// A forwarded TCP port can accept connections before PostgreSQL's
+		// protocol is usable. Retry only this read, never the seed migration.
+		testcontainers.WithAdditionalWaitStrategy(wait.ForSQL("5432/tcp", "pgx", func(host string, port network.Port) string {
+			return (&url.URL{
+				Scheme: "postgres", User: url.UserPassword(postgresUser, postgresPassword),
+				Host: net.JoinHostPort(host, port.Port()), Path: seedDatabase,
+				RawQuery: "sslmode=disable&connect_timeout=2",
+			}).String()
+		}).WithStartupTimeout(time.Minute)),
 	)
-	if err != nil {
-		return nil, fmt.Errorf("start PostgreSQL testcontainer: %w", err)
-	}
 	cleanup := true
 	defer func() {
 		if cleanup {
 			_ = testcontainers.TerminateContainer(container)
 		}
 	}()
+	if err != nil {
+		return nil, fmt.Errorf("start PostgreSQL testcontainer: %w", err)
+	}
 	seedURL, err := container.ConnectionString(ctx, "sslmode=disable")
 	if err != nil {
 		return nil, fmt.Errorf("get seed connection string: %w", err)

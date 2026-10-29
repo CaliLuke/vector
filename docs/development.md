@@ -580,10 +580,13 @@ Identity, member directory, project reads, project members and service construct
 New domain, design and test-support packages have explicit initial floors, including visible zero-coverage entries.
 Other existing package floors remain unchanged.
 
-The work-item type tests and full-schema MCP workflows migrate one disposable
-template per package and clone a separate database for each test. Test data and
+The work-item type tests, full-schema MCP workflows, and MCP identity tests migrate
+disposable templates per package and clone a separate database for each test. Test data and
 connections are never shared between those clones. Migration-specific tests still
 exercise fresh database installation directly.
+PostgreSQL fixtures verify a SQL query through the published port before running
+seed migrations. Only readiness is retried; a failed migration is returned once
+and its container is reclaimed.
 The macOS environment keeps Testcontainers' resource reaper enabled so containers
 are reclaimed when a test process exits before its normal cleanup. Explicitly
 disabling it requires an external runner that owns cleanup; see the
@@ -592,13 +595,17 @@ disabling it requires an external runner that owns cleanup; see the
 The full Go gate and frontend pipeline run concurrently. Within the frontend pipeline,
 production builds run first, followed by TypeScript checks; builds and checks remain
 sequential so generated package output is ready before typechecking. Frontend tests
-use two isolated workers, a 384 MiB JavaScript heap limit, a 1 GiB sampled
-process-tree RSS ceiling, and an external five-minute deadline. Each TypeScript gate
+run in two sequential shards, each with two isolated workers, a 384 MiB JavaScript
+heap limit, a 1 GiB sampled process-tree RSS ceiling, and an external five-minute
+deadline. Every frontend file runs once; either shard failing fails the gate.
+Individual tests retain their 15-second timeout. Each TypeScript gate
 has a ten-minute deadline and 3 GiB RSS ceiling;
 production builds use one Turbo task at a time with a 4 GiB RSS ceiling. The Go
 gate has a 6 GiB RSS ceiling and two Go runtime threads. These are process-group
 watchdogs sampled every 100 ms, not OS-enforced total-memory reservations. They
-track descendant processes and their groups, including Turbo task groups, but
+retry one timed-out process sample; consecutive sample timeouts or other
+monitoring errors fail the gate. The external command deadline remains active.
+They track descendant processes and their groups, including Turbo task groups, but
 do not measure Docker containers. A process that fully daemonizes between
 samples can escape ancestry tracking; these guards are for build/test workers,
 not an isolation boundary for untrusted programs.

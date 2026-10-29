@@ -21,14 +21,14 @@ case "$MODE" in
   --fast)
     run_gate "Oxlint syntax diagnostic ratchet" node scripts/quality/check-oxlint-baseline.mjs fast
     run_gate "Oxfmt check" pnpm exec oxfmt --check .
-    run_gate "Process guard regression tests" node --test --test-concurrency=1 scripts/quality/run-bounded.test.mjs
+    run_gate "Test runner regression tests" node --test --test-concurrency=1 scripts/quality/run-bounded.test.mjs scripts/quality/frontend-tests.test.mjs
     run_gate "Quality-ratchet fixture tests" node scripts/quality/test-ratchets.mjs
     ;;
   --full)
     run_gate "Generated route types" bash scripts/quality/route-types.sh
     run_gate "Oxlint type-aware rules and TypeScript diagnostics" env GOMEMLIMIT=1GiB GOMAXPROCS=2 node scripts/quality/check-oxlint-baseline.mjs full
     run_gate "Oxfmt check" pnpm exec oxfmt --check .
-    run_gate "Process guard regression tests" node --test --test-concurrency=1 scripts/quality/run-bounded.test.mjs
+    run_gate "Test runner regression tests" node --test --test-concurrency=1 scripts/quality/run-bounded.test.mjs scripts/quality/frontend-tests.test.mjs
     run_gate "Quality-ratchet fixture tests" node scripts/quality/test-ratchets.mjs
     run_gate "Knip unused-code/dependency ratchet" node scripts/quality/check-knip-ratchet.mjs
     run_gate "jscpd duplicate baseline" pnpm exec jscpd --config jscpd.json --baseline .quality/jscpd-baseline.json --fail-on-new-clones
