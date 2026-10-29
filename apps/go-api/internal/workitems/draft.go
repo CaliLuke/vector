@@ -14,22 +14,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (r *Repository) drafts(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
-	tx, err := r.db.Begin(ctx)
-	if err != nil {
-		return Result{}, err
-	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
-	writer := *r
-	writer.db, writer.transactionalEffects = tx, true
-	result, err := writer.writeDraft(ctx, q, body, contentType)
-	if err != nil {
-		return Result{}, err
-	}
-	return result, tx.Commit(ctx)
-}
-
-func (r *Repository) writeDraft(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
+func (r *draftOperation) writeDraft(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
 	publish := strings.Contains(q.Operation, "_draft_to_issue")
 	workspace, err := r.lockDraftWriteScope(ctx, q, publish)
 	if err != nil {
@@ -84,28 +69,28 @@ type draftEdit struct {
 	changes   issueChanges
 }
 
-func (r *Repository) lockDraftWriteScope(ctx context.Context, q Request, publish bool) (map[string]any, error) {
+func (r *draftOperation) lockDraftWriteScope(ctx context.Context, q Request, publish bool) (map[string]any, error) {
 	roles := []int{5, 15, 20}
 	if publish {
 		roles = []int{15, 20}
 	}
-	if err := r.allowWorkspace(ctx, q, roles); err != nil {
+	if err := allowWorkspace(ctx, r.db, q, roles); err != nil {
 		return nil, err
 	}
-	workspace, err := r.row(ctx, `SELECT to_jsonb(w) FROM workspaces w WHERE slug=$1 AND deleted_at IS NULL`, q.Slug)
+	workspace, err := readWorkItemRow(ctx, r.db, `SELECT to_jsonb(w) FROM workspaces w WHERE slug=$1 AND deleted_at IS NULL`, q.Slug)
 	if err != nil {
 		return nil, err
 	}
 	if _, err = r.db.Exec(ctx, `SELECT work_item_schema_lock($1::uuid)`, workspace["id"]); err != nil {
 		return nil, err
 	}
-	if err = r.allowWorkspace(ctx, q, roles); err != nil {
+	if err = allowWorkspace(ctx, r.db, q, roles); err != nil {
 		return nil, err
 	}
 	return workspace, nil
 }
 
-func (r *Repository) draftForWrite(ctx context.Context, q Request, workspace any, publish bool) (map[string]any, error) {
+func (r *draftOperation) draftForWrite(ctx context.Context, q Request, workspace any, publish bool) (map[string]any, error) {
 	var err error
 	var old map[string]any
 	if q.Method != "POST" || publish {
@@ -115,7 +100,7 @@ func (r *Repository) draftForWrite(ctx context.Context, q Request, workspace any
 		}
 		// Drafts remain private even to workspace administrators. Publication
 		// and deletion use the same owner boundary as editing and listing.
-		old, err = r.row(ctx, `SELECT to_jsonb(d) FROM draft_issues d WHERE d.id=$1 AND d.workspace_id=$2 AND d.created_by_id=$3 AND d.deleted_at IS NULL FOR UPDATE`, id, workspace, q.ActorID)
+		old, err = readWorkItemRow(ctx, r.db, `SELECT to_jsonb(d) FROM draft_issues d WHERE d.id=$1 AND d.workspace_id=$2 AND d.created_by_id=$3 AND d.deleted_at IS NULL FOR UPDATE`, id, workspace, q.ActorID)
 		if err != nil {
 			if q.Method == "PATCH" {
 				var e *djangoapi.HTTPError
@@ -129,7 +114,7 @@ func (r *Repository) draftForWrite(ctx context.Context, q Request, workspace any
 	return old, nil
 }
 
-func (r *Repository) validateDraftEdit(ctx context.Context, q Request, input djangoinput.Input, old, workspace map[string]any, publish bool) (draftEdit, error) {
+func (r *draftOperation) validateDraftEdit(ctx context.Context, q Request, input djangoinput.Input, old, workspace map[string]any, publish bool) (draftEdit, error) {
 	project := any(nil)
 	if old != nil {
 		project = old["project_id"]
@@ -156,7 +141,7 @@ func (r *Repository) validateDraftEdit(ctx context.Context, q Request, input dja
 			validation.Fields[f] = value
 		}
 	}
-	changes, err := r.validateIssue(ctx, validation, issueValidation{ActorID: q.ActorID, Timezone: q.Timezone, Partial: q.Method == "PATCH", Draft: !publish, ProjectID: optionsProject, WorkspaceID: workspace["id"].(string)})
+	changes, err := r.validation.validateIssue(ctx, validation, issueValidation{ActorID: q.ActorID, Timezone: q.Timezone, Partial: q.Method == "PATCH", Draft: !publish, ProjectID: optionsProject, WorkspaceID: workspace["id"].(string)})
 	if err != nil {
 		return draftEdit{}, err
 	}
@@ -172,13 +157,13 @@ func (r *Repository) validateDraftEdit(ctx context.Context, q Request, input dja
 	if err = r.validateDraftReferences(ctx, input.Fields, effective, workspace["id"]); err != nil {
 		return draftEdit{}, err
 	}
-	if err = r.validateTypeTenant(ctx, changes.values, input.Fields, workspace["id"]); err != nil {
+	if err = validateTypeTenant(ctx, r.db, changes.values, input.Fields, workspace["id"]); err != nil {
 		return draftEdit{}, err
 	}
 	return draftEdit{project: project, projectID: optionsProject, changes: changes}, nil
 }
 
-func (r *Repository) validateDraftProjectAndCompletion(ctx context.Context, q Request, input djangoinput.Input, changes *issueChanges) error {
+func (r *draftOperation) validateDraftProjectAndCompletion(ctx context.Context, q Request, input djangoinput.Input, changes *issueChanges) error {
 	for _, field := range []string{"project_id", "project"} {
 		value, ok := input.Fields[field]
 		if !ok {
@@ -187,7 +172,7 @@ func (r *Repository) validateDraftProjectAndCompletion(ctx context.Context, q Re
 		if value == nil || value == "" {
 			changes.values["project_id"] = nil
 		} else {
-			id, messages, e := r.primaryKey(ctx, value, "projects", false)
+			id, messages, e := primaryKey(ctx, r.db, value, "projects", false)
 			if e != nil {
 				return e
 			}
@@ -211,7 +196,7 @@ func (r *Repository) validateDraftProjectAndCompletion(ctx context.Context, q Re
 	return nil
 }
 
-func (r *Repository) persistDraftEdit(ctx context.Context, q Request, input djangoinput.Input, old, workspace, submitted map[string]any, edit draftEdit) (Result, error) {
+func (r *draftOperation) persistDraftEdit(ctx context.Context, q Request, input djangoinput.Input, old, workspace, submitted map[string]any, edit draftEdit) (Result, error) {
 	project, optionsProject, changes := edit.project, edit.projectID, edit.changes
 	var err error
 	row := maps.Clone(old)
@@ -228,11 +213,11 @@ func (r *Repository) persistDraftEdit(ctx context.Context, q Request, input djan
 	if row["project_id"] != nil && (old == nil || old["project_id"] != row["project_id"]) {
 		projectRequest := q
 		projectRequest.ProjectID = stringValue(row["project_id"])
-		if err = r.allowProject(ctx, projectRequest, []int{5, 15, 20}, false); err != nil {
+		if err = allowProject(ctx, r.db, projectRequest, []int{5, 15, 20}, false); err != nil {
 			return Result{}, err
 		}
 	}
-	if _, err = r.validateCustomValues(ctx, q.ActorID, row, old, submitted, true, old == nil, hasSubmittedType(input.Fields)); err != nil {
+	if _, err = r.validation.validateCustomValues(ctx, q.ActorID, row, old, submitted, true, old == nil, hasSubmittedType(input.Fields)); err != nil {
 		return Result{}, err
 	}
 	if old != nil {
@@ -257,7 +242,7 @@ func (r *Repository) persistDraftEdit(ctx context.Context, q Request, input djan
 	return Result{201, result}, err
 }
 
-func (r *Repository) validateDraftReferences(ctx context.Context, input map[string]any, project, workspace any) error {
+func (r *draftOperation) validateDraftReferences(ctx context.Context, input map[string]any, project, workspace any) error {
 	if project != nil && project != "" {
 		if id, e := djangoinput.UUID(project); e == nil {
 			var foreign bool
@@ -294,9 +279,9 @@ func (r *Repository) validateDraftReferences(ctx context.Context, input map[stri
 	return nil
 }
 
-func (r *Repository) saveDraft(ctx context.Context, actor string, row map[string]any, create bool) (map[string]any, error) {
+func (r *draftOperation) saveDraft(ctx context.Context, actor string, row map[string]any, create bool) (map[string]any, error) {
 	if row["project_id"] != nil {
-		project, err := r.project(ctx, djangoinput.ScalarString(row["project_id"]))
+		project, err := readWorkItemProject(ctx, r.db, djangoinput.ScalarString(row["project_id"]))
 		if err != nil {
 			return nil, err
 		}
@@ -346,17 +331,17 @@ func (r *Repository) saveDraft(ctx context.Context, actor string, row map[string
 	if _, err = r.db.Exec(ctx, query, data); err != nil {
 		return nil, err
 	}
-	return r.row(ctx, `SELECT to_jsonb(d) FROM draft_issues d WHERE id=$1`, row["id"])
+	return readWorkItemRow(ctx, r.db, `SELECT to_jsonb(d) FROM draft_issues d WHERE id=$1`, row["id"])
 }
 
-func (r *Repository) deleteDraft(ctx context.Context, q Request, row map[string]any) error {
+func (r *draftOperation) deleteDraft(ctx context.Context, q Request, row map[string]any) error {
 	if _, err := r.db.Exec(ctx, `UPDATE draft_issues SET deleted_at=$2,updated_at=$2,updated_by_id=$3 WHERE id=$1`, row["id"], timestamp(r.now()), q.ActorID); err != nil {
 		return err
 	}
-	return r.softDelete(ctx, "draftissue", row["id"].(string))
+	return enqueueEffect(ctx, r.db, "soft_delete", map[string]string{"app": "db", "model": "draftissue", "id": row["id"].(string)})
 }
 
-func (r *Repository) replaceDraftRelations(ctx context.Context, q Request, row map[string]any, changes issueChanges, input djangoinput.Input, create bool) error {
+func (r *draftOperation) replaceDraftRelations(ctx context.Context, q Request, row map[string]any, changes issueChanges, input djangoinput.Input, create bool) error {
 	cycle, cycleSet := input.Fields["cycle_id"]
 	module, moduleSet := input.Fields["module_ids"]
 	cycleIDs := []string{}
@@ -399,7 +384,7 @@ func (r *Repository) replaceDraftRelations(ctx context.Context, q Request, row m
 			if rel.instance {
 				creator, updater = q.ActorID, nil
 				if row["project_id"] != nil {
-					project, e := r.project(ctx, djangoinput.ScalarString(row["project_id"]))
+					project, e := readWorkItemProject(ctx, r.db, djangoinput.ScalarString(row["project_id"]))
 					if e != nil {
 						err = e
 						break
@@ -423,7 +408,7 @@ func (r *Repository) replaceDraftRelations(ctx context.Context, q Request, row m
 	return nil
 }
 
-func (r *Repository) draftProjection(ctx context.Context, row map[string]any, actor string) (map[string]any, error) {
+func (r *draftOperation) draftProjection(ctx context.Context, row map[string]any, actor string) (map[string]any, error) {
 	row, err := djangoapi.MaskIssueParent(ctx, r.db, row, actor)
 	if err != nil {
 		return nil, err
@@ -439,7 +424,7 @@ func (r *Repository) draftProjection(ctx context.Context, row map[string]any, ac
 		if rel.field == "label_ids" {
 			query = `SELECT DISTINCT relation.label_id::text FROM draft_issue_labels relation JOIN draft_issues draft ON draft.id=relation.draft_issue_id WHERE draft.id=$1 AND ` + issuequery.LiveDraftIssueLabelPredicate("draft", "relation") + ` ORDER BY 1`
 		}
-		ids, err := r.filteredIDs(ctx, query, row["id"])
+		ids, err := filteredIDs(ctx, r.db, query, row["id"])
 		if err != nil {
 			return nil, err
 		}
@@ -448,39 +433,39 @@ func (r *Repository) draftProjection(ctx context.Context, row map[string]any, ac
 	return result, nil
 }
 
-func (r *Repository) publishDraft(ctx context.Context, q Request, draft map[string]any, input djangoinput.Input, changes issueChanges, submitted map[string]any) (Result, error) {
-	if err := r.allowProject(ctx, q, []int{15, 20}, false); err != nil {
+func (r *draftOperation) publishDraft(ctx context.Context, q Request, draft map[string]any, input djangoinput.Input, changes issueChanges, submitted map[string]any) (Result, error) {
+	if err := allowProject(ctx, r.db, q, []int{15, 20}, false); err != nil {
 		return Result{}, err
 	}
-	project, err := r.project(ctx, q.ProjectID)
+	project, err := readWorkItemProject(ctx, r.db, q.ProjectID)
 	if err != nil {
 		return Result{}, err
 	}
 	row := defaultIssue(q.ProjectID)
 	row["workspace_id"] = draft["workspace_id"]
 	maps.Copy(row, changes.values)
-	subscribers, err := r.validateCustomValues(ctx, q.ActorID, row, draft, submitted, false, true, hasSubmittedType(input.Fields))
+	subscribers, err := r.validation.validateCustomValues(ctx, q.ActorID, row, draft, submitted, false, true, hasSubmittedType(input.Fields))
 	if err != nil {
 		return Result{}, err
 	}
-	input = r.composedItemEditInput(input, row)
+	input = composedItemEditInput(r.review, input, row)
 	if err = r.validateDraftUploads(ctx, draft, row); err != nil {
 		return Result{}, err
 	}
-	row, err = r.saveIssue(ctx, q.ActorID, row, nil)
+	row, err = r.publication.saveIssue(ctx, q.ActorID, row, nil)
 	if err != nil {
 		return Result{}, err
 	}
 	if len(changes.assignees) == 0 && !changes.assigneesSet && project["default_assignee_id"] != nil {
-		changes.assignees, err = r.filteredIDs(ctx, `SELECT member_id::text FROM project_members WHERE project_id=$1 AND member_id=$2 AND role>=15 AND is_active AND deleted_at IS NULL`, q.ProjectID, project["default_assignee_id"])
+		changes.assignees, err = filteredIDs(ctx, r.db, `SELECT member_id::text FROM project_members WHERE project_id=$1 AND member_id=$2 AND role>=15 AND is_active AND deleted_at IS NULL`, q.ProjectID, project["default_assignee_id"])
 		if err != nil {
 			return Result{}, err
 		}
 	}
-	if err = r.replaceIssueRelations(ctx, row, changes, true); err != nil {
+	if err = r.publication.replaceIssueRelations(ctx, row, changes, true); err != nil {
 		return Result{}, err
 	}
-	if err = r.subscribePropertyMembers(ctx, q.ActorID, row, subscribers); err != nil {
+	if err = r.publication.subscribePropertyMembers(ctx, q.ActorID, row, subscribers); err != nil {
 		return Result{}, err
 	}
 	q.IssueID = row["id"].(string)
@@ -503,7 +488,7 @@ func (r *Repository) publishDraft(ctx context.Context, q Request, draft map[stri
 			return Result{}, cycleActivityErr
 		}
 		current, _ := orderedDump(map[string]any{"updated_cycle_issues": nil, "created_cycle_issues": serialized}, []string{"updated_cycle_issues", "created_cycle_issues"})
-		if cycleActivityErr = r.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, map[string]any{"type": "cycle.activity.created", "requested_data": nil, "actor_id": q.ActorID, "issue_id": nil, "project_id": q.ProjectID, "current_instance": current, "epoch": r.now().Unix(), "notification": true, "origin": r.origin}); cycleActivityErr != nil {
+		if cycleActivityErr = enqueueEffect(ctx, r.db, "activity", map[string]any{"type": "cycle.activity.created", "requested_data": nil, "actor_id": q.ActorID, "issue_id": nil, "project_id": q.ProjectID, "current_instance": current, "epoch": r.now().Unix(), "notification": true, "origin": r.origin}); cycleActivityErr != nil {
 			return Result{}, cycleActivityErr
 		}
 	}
@@ -537,8 +522,8 @@ func (r *Repository) publishDraft(ctx context.Context, q Request, draft map[stri
 		}
 	}
 	var reviewedAssets []string
-	if r.itemEdit != nil {
-		reviewedAssets = append([]string{}, r.itemEdit.publicationAssets...)
+	if r.review != nil {
+		reviewedAssets = append([]string{}, r.review.publicationAssets...)
 	}
 	if _, err = r.db.Exec(ctx, `UPDATE file_assets SET issue_id=$2::uuid,entity_identifier=$2::uuid::text,project_id=$3,entity_type=CASE WHEN entity_type='DRAFT_ISSUE_ATTACHMENT' THEN 'ISSUE_ATTACHMENT' ELSE 'ISSUE_DESCRIPTION' END,draft_issue_id=NULL WHERE draft_issue_id=$1 AND deleted_at IS NULL AND NOT is_deleted AND NOT is_archived AND is_uploaded AND workspace_id=$4 AND created_by_id=$5 AND issue_id IS NULL AND comment_id IS NULL AND page_id IS NULL AND user_id IS NULL AND ($6::uuid[] IS NULL OR id=ANY($6::uuid[]))`, draft["id"], q.IssueID, q.ProjectID, draft["workspace_id"], q.ActorID, reviewedAssets); err != nil {
 		return Result{}, err
@@ -549,6 +534,6 @@ func (r *Repository) publishDraft(ctx context.Context, q Request, draft map[stri
 	if _, err = r.db.Exec(ctx, `INSERT INTO work_item_draft_publications(draft_id,workspace_id,actor_id,project_id,issue_id) VALUES($1,$2,$3,$4,$5)`, draft["id"], draft["workspace_id"], q.ActorID, q.ProjectID, q.IssueID); err != nil {
 		return Result{}, err
 	}
-	body, projectionErr := r.visibleAppWriteProjection(ctx, q, row, input)
+	body, projectionErr := visibleAppWriteProjection(ctx, r.db, q, row, input)
 	return Result{201, body}, projectionErr
 }

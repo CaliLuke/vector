@@ -6,8 +6,8 @@ import (
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 )
 
-func (r *Repository) composedItemEditInput(input djangoinput.Input, row map[string]any) djangoinput.Input {
-	if r.itemEdit == nil || len(r.itemEdit.plan.Preserved) == 0 {
+func composedItemEditInput(review *itemEditState, input djangoinput.Input, row map[string]any) djangoinput.Input {
+	if review == nil || len(review.plan.Preserved) == 0 {
 		return input
 	}
 	input.Fields = maps.Clone(input.Fields)

@@ -64,7 +64,7 @@ func (r *Repository) Execute(ctx context.Context, q Request, body io.Reader, con
 		return r.intake(ctx, q, body, contentType)
 	}
 	if strings.Contains(op, "_draft_issues") || strings.Contains(op, "_draft_to_issue") {
-		return r.drafts(ctx, q, body, contentType)
+		return (draftLifecycle{db: r.db, now: r.now, origin: r.origin}).execute(ctx, q, body, contentType)
 	}
 	if q.Params["identifier"] != "" {
 		return r.identifier(ctx, q)

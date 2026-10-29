@@ -12,10 +12,7 @@ import (
 
 func TestDraftProjectionUsesNativeDraftLabelOwnership(t *testing.T) {
 	ctx, connection := postgresfixture.OpenSQL(t, testsupport.LabelReadSchema+testsupport.LabelReadSeed)
-	repository, err := NewRepository(connection, modelPublisher{}, "")
-	if err != nil {
-		t.Fatal(err)
-	}
+	repository := &draftOperation{db: connection}
 	cases := []struct {
 		id     string
 		labels []string

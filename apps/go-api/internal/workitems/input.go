@@ -405,6 +405,10 @@ func (r *Repository) validateIssueRelationScopes(ctx context.Context, options is
 }
 
 func (r *Repository) primaryKey(ctx context.Context, value any, table string, allStates bool) (string, []string, error) {
+	return primaryKey(ctx, r.db, value, table, allStates)
+}
+
+func primaryKey(ctx context.Context, db Database, value any, table string, allStates bool) (string, []string, error) {
 	if _, ok := value.(bool); ok {
 		return "", []string{"Incorrect type. Expected pk value, received bool."}, nil
 	}
@@ -420,7 +424,7 @@ func (r *Repository) primaryKey(ctx context.Context, value any, table string, al
 		predicate += ` AND "group"<>'triage'`
 	}
 	var exists bool
-	err = r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM `+table+` WHERE id=$1`+predicate+`)`, id.String()).Scan(&exists)
+	err = db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM `+table+` WHERE id=$1`+predicate+`)`, id.String()).Scan(&exists)
 	if err != nil {
 		return "", nil, err
 	}
@@ -431,7 +435,11 @@ func (r *Repository) primaryKey(ctx context.Context, value any, table string, al
 }
 
 func (r *Repository) filteredIDs(ctx context.Context, query string, args ...any) ([]string, error) {
-	rows, err := r.db.Query(ctx, query, args...)
+	return filteredIDs(ctx, r.db, query, args...)
+}
+
+func filteredIDs(ctx context.Context, db Database, query string, args ...any) ([]string, error) {
+	rows, err := db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

@@ -253,7 +253,7 @@ func (r *Repository) persistIssueEdit(ctx context.Context, q Request, edit *issu
 	if err != nil {
 		return nil, err
 	}
-	edit.input = r.composedItemEditInput(edit.input, row)
+	edit.input = composedItemEditInput(r.itemEdit, edit.input, row)
 	if edit.old != nil {
 		row, err = r.updateIssueWithRelations(ctx, q.ActorID, row, edit.old, edit.changes)
 	} else {
@@ -401,12 +401,16 @@ func (r *Repository) putIssue(ctx context.Context, q Request) (map[string]any, e
 }
 
 func (r *Repository) validateTypeTenant(ctx context.Context, values, input map[string]any, workspace any) error {
+	return validateTypeTenant(ctx, r.db, values, input, workspace)
+}
+
+func validateTypeTenant(ctx context.Context, db Database, values, input map[string]any, workspace any) error {
 	id := values["type_id"]
 	if id == nil {
 		return nil
 	}
 	var foreign bool
-	if err := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issue_types WHERE id=$1 AND workspace_id<>$2)`, id, workspace).Scan(&foreign); err != nil {
+	if err := db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issue_types WHERE id=$1 AND workspace_id<>$2)`, id, workspace).Scan(&foreign); err != nil {
 		return err
 	}
 	if foreign {
@@ -554,7 +558,11 @@ func (r *Repository) destroyIssue(ctx context.Context, q Request) (Result, error
 }
 
 func (r *Repository) visibleAppWriteProjection(ctx context.Context, q Request, row map[string]any, input djangoinput.Input) (map[string]any, error) {
-	row, err := djangoapi.MaskIssueParent(ctx, r.db, row, q.ActorID)
+	return visibleAppWriteProjection(ctx, r.db, q, row, input)
+}
+
+func visibleAppWriteProjection(ctx context.Context, db Database, q Request, row map[string]any, input djangoinput.Input) (map[string]any, error) {
+	row, err := djangoapi.MaskIssueParent(ctx, db, row, q.ActorID)
 	if err != nil {
 		return nil, err
 	}

@@ -7,8 +7,8 @@ import (
 // An interrupted upload may never have reached the editor. Only pending assets
 // referenced by the submitted content prevent publication; abandoned rows stay
 // private and are never transferred to the published item.
-func (r *Repository) validateDraftUploads(ctx context.Context, draft, row map[string]any) error {
-	ids, err := r.itemAssetReferences(ctx, draft["workspace_id"], row)
+func (r *draftOperation) validateDraftUploads(ctx context.Context, draft, row map[string]any) error {
+	ids, err := itemAssetReferences(ctx, r.db, draft["workspace_id"], row)
 	if err != nil {
 		return err
 	}

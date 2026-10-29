@@ -37,6 +37,14 @@ The [PQL query boundary](pql.md) lives in `internal/issuequery` and is executed 
 
 ## Source layout
 
+Draft creation, editing, deletion and publication belong to `draftLifecycle` and
+`draftOperation` in `internal/workitems`. The lifecycle owns standalone transactions;
+reviewed changes bind the operation to their existing savepoint and review state.
+Drafts use database-bound authorization helpers and narrow item-validation and
+item-creation capabilities. They do not copy repository query state or unrelated
+mutation flags. Activity and cleanup effects go directly to the transaction's
+outbox, including on publication and deletion.
+
 HTTP composition lives in `apps/go-api/cmd/system/http.go`. It registers domains
 in order through their `*_routes.go` owners, then applies the shared request
 pipeline in `http_middleware.go`. `http_server.go` owns listening and shutdown.

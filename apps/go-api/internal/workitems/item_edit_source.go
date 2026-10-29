@@ -85,6 +85,7 @@ func (r *Repository) lockItemEditRelations(ctx context.Context, command itemEdit
 }
 
 func (r *Repository) applyItemEdit(ctx context.Context, q Request, command itemEditCommand, snapshot map[string]any) error {
+	draft := newDraftOperation(r.db, r.now, r.origin, r.itemEdit)
 	source := snapshot["item"].(map[string]any)
 	if command.Restore != nil {
 		value, err := r.resolvePropertyRestore(ctx, q, command, source)
@@ -95,7 +96,7 @@ func (r *Repository) applyItemEdit(ctx context.Context, q Request, command itemE
 	}
 	fields := command.Changes
 	if command.Mode == "publish" || (command.Mode == "draft" && command.ProjectID != stringValue(source["project_id"])) {
-		input, err := r.publicationInput(ctx, source, djangoinput.Input{Fields: maps.Clone(fields)})
+		input, err := draft.publicationInput(ctx, source, djangoinput.Input{Fields: maps.Clone(fields)})
 		if err != nil {
 			return err
 		}
@@ -116,7 +117,7 @@ func (r *Repository) applyItemEdit(ctx context.Context, q Request, command itemE
 	if err := r.lockItemEditSelections(ctx, q, fields); err != nil {
 		return err
 	}
-	if err := r.validateItemEditSelections(ctx, q, fields); err != nil {
+	if err := validateItemEditSelections(ctx, r.db, q, fields); err != nil {
 		return err
 	}
 	q.Method = "PATCH"
@@ -131,13 +132,14 @@ func (r *Repository) applyItemEdit(ctx context.Context, q Request, command itemE
 		q.Method = "POST"
 		q.Operation = "_draft_to_issue"
 	}
-	_, err := r.writeDraft(ctx, q, itemEditBody(command), "application/json")
+	_, err := draft.writeDraft(ctx, q, itemEditBody(command), "application/json")
 	return err
 }
 
 func (r *Repository) itemEditProjection(ctx context.Context, q Request, command itemEditCommand, workspace string) (Result, error) {
+	draft := newDraftOperation(r.db, r.now, r.origin, r.itemEdit)
 	if command.Mode == "publish" {
-		row, sourceRequest, found, err := r.publishedDraftSource(ctx, q, workspace)
+		row, sourceRequest, found, err := draft.publishedDraftSource(ctx, q, workspace)
 		if !found && err == nil {
 			err = requiredObject()
 		}
@@ -152,7 +154,7 @@ func (r *Repository) itemEditProjection(ctx context.Context, q Request, command 
 		if err != nil {
 			return Result{}, err
 		}
-		projection, err := r.draftProjection(ctx, row, q.ActorID)
+		projection, err := draft.draftProjection(ctx, row, q.ActorID)
 		return Result{200, projection}, err
 	}
 	if err := r.allowProject(ctx, q, []int{15, 20}, true); err != nil {

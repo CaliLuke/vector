@@ -170,22 +170,26 @@ func forbidden() error                    { return failure(403, "error", "You do
 // allowProject is the app decorator's authorization, including its workspace
 // administrator exception. API-v1 uses its distinct ProjectEntityPermission.
 func (r *Repository) allowProject(ctx context.Context, q Request, roles []int, creator bool) error {
+	return allowProject(ctx, r.db, q, roles, creator)
+}
+
+func allowProject(ctx context.Context, db Database, q Request, roles []int, creator bool) error {
 	var allowed bool
 	if creator {
-		if err := r.db.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM workspace_members m JOIN workspaces w ON w.id=m.workspace_id WHERE w.slug=$1 AND m.member_id=$2 AND m.is_active AND m.deleted_at IS NULL)`, q.Slug, q.ActorID).Scan(&allowed); err != nil {
+		if err := db.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM workspace_members m JOIN workspaces w ON w.id=m.workspace_id WHERE w.slug=$1 AND m.member_id=$2 AND m.is_active AND m.deleted_at IS NULL)`, q.Slug, q.ActorID).Scan(&allowed); err != nil {
 			return err
 		}
 		if !allowed {
 			return forbidden()
 		}
-		if err := r.db.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM issues WHERE id=$1 AND created_by_id=$2 AND deleted_at IS NULL)`, q.IssueID, q.ActorID).Scan(&allowed); err != nil {
+		if err := db.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM issues WHERE id=$1 AND created_by_id=$2 AND deleted_at IS NULL)`, q.IssueID, q.ActorID).Scan(&allowed); err != nil {
 			return err
 		}
 		if allowed {
 			return nil
 		}
 	}
-	err := r.db.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM project_members m JOIN workspaces w ON w.id=m.workspace_id
+	err := db.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM project_members m JOIN workspaces w ON w.id=m.workspace_id
  WHERE w.slug=$1 AND m.project_id=$2 AND m.member_id=$3 AND m.is_active AND m.deleted_at IS NULL
  AND (m.role=ANY($4::int[]) OR EXISTS (SELECT 1 FROM workspace_members wm WHERE wm.workspace_id=w.id
  AND wm.member_id=$3 AND wm.is_active AND wm.deleted_at IS NULL AND wm.role=20)))`, q.Slug, q.ProjectID, q.ActorID, roles).Scan(&allowed)
@@ -199,8 +203,12 @@ func (r *Repository) allowProject(ctx context.Context, q Request, roles []int, c
 }
 
 func (r *Repository) allowWorkspace(ctx context.Context, q Request, roles []int) error {
+	return allowWorkspace(ctx, r.db, q, roles)
+}
+
+func allowWorkspace(ctx context.Context, db Database, q Request, roles []int) error {
 	var allowed bool
-	err := r.db.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM workspace_members m JOIN workspaces w ON w.id=m.workspace_id WHERE w.slug=$1 AND m.member_id=$2 AND m.is_active AND m.deleted_at IS NULL AND m.role=ANY($3::int[]))`, q.Slug, q.ActorID, roles).Scan(&allowed)
+	err := db.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM workspace_members m JOIN workspaces w ON w.id=m.workspace_id WHERE w.slug=$1 AND m.member_id=$2 AND m.is_active AND m.deleted_at IS NULL AND m.role=ANY($3::int[]))`, q.Slug, q.ActorID, roles).Scan(&allowed)
 	if err != nil {
 		return err
 	}
@@ -211,7 +219,11 @@ func (r *Repository) allowWorkspace(ctx context.Context, q Request, roles []int)
 }
 
 func (r *Repository) row(ctx context.Context, query string, args ...any) (map[string]any, error) {
-	v, err := djangoapi.JSON(ctx, r.db, query, args...)
+	return readWorkItemRow(ctx, r.db, query, args...)
+}
+
+func readWorkItemRow(ctx context.Context, db Database, query string, args ...any) (map[string]any, error) {
+	v, err := djangoapi.JSON(ctx, db, query, args...)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, requiredObject()
 	}
@@ -226,7 +238,11 @@ func (r *Repository) row(ctx context.Context, query string, args ...any) (map[st
 }
 
 func (r *Repository) project(ctx context.Context, id string) (map[string]any, error) {
-	return r.row(ctx, `SELECT to_jsonb(p) FROM projects p WHERE id=$1 AND deleted_at IS NULL`, id)
+	return readWorkItemProject(ctx, r.db, id)
+}
+
+func readWorkItemProject(ctx context.Context, db Database, id string) (map[string]any, error) {
+	return readWorkItemRow(ctx, db, `SELECT to_jsonb(p) FROM projects p WHERE id=$1 AND deleted_at IS NULL`, id)
 }
 
 const liveIssue = `i.deleted_at IS NULL AND i.archived_at IS NULL AND NOT i.is_draft

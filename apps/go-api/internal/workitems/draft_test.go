@@ -28,7 +28,7 @@ func (db *draftRelationDatabase) Exec(_ context.Context, query string, _ ...any)
 
 func TestDraftMalformedModulePreservesEarlierRelationChanges(t *testing.T) {
 	db := &draftRelationDatabase{}
-	r := &Repository{db: db, now: time.Now}
+	r := &draftOperation{db: db, now: time.Now}
 	input := djangoinput.Input{Fields: map[string]any{"cycle_id": nil, "module_ids": []any{"invalid"}}}
 	err := r.replaceDraftRelations(context.Background(), Request{}, map[string]any{"id": "draft"}, issueChanges{assigneesSet: true, labelsSet: true}, input, false)
 	var response *djangoapi.HTTPError

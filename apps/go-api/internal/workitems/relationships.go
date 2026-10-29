@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
@@ -47,12 +48,16 @@ func reverseRelation(value string) bool {
 }
 
 func (r *Repository) activity(ctx context.Context, q Request, kind string, requested, previous any, defaults bool) error {
-	data := map[string]any{"type": kind, "requested_data": requested, "actor_id": q.ActorID, "issue_id": q.IssueID, "project_id": q.ProjectID, "current_instance": previous, "epoch": r.now().Unix()}
+	return r.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, issueActivityData(q, kind, requested, previous, defaults, r.now(), r.origin))
+}
+
+func issueActivityData(q Request, kind string, requested, previous any, defaults bool, now time.Time, origin string) map[string]any {
+	data := map[string]any{"type": kind, "requested_data": requested, "actor_id": q.ActorID, "issue_id": q.IssueID, "project_id": q.ProjectID, "current_instance": previous, "epoch": now.Unix()}
 	if !defaults {
 		data["notification"] = true
-		data["origin"] = r.origin
+		data["origin"] = origin
 	}
-	return r.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, data)
+	return data
 }
 
 func parseObject(body io.Reader, contentType string) (djangoinput.Input, error) {

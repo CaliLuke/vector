@@ -12,16 +12,16 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func (r *Repository) publishedDraft(ctx context.Context, q Request, workspace any) (Result, bool, error) {
+func (r *draftOperation) publishedDraft(ctx context.Context, q Request, workspace any) (Result, bool, error) {
 	row, q, found, err := r.publishedDraftSource(ctx, q, workspace)
 	if err != nil || !found {
 		return Result{}, found, err
 	}
-	body, projectionErr := r.visibleAppWriteProjection(ctx, q, row, djangoinput.Input{Fields: map[string]any{"assignee_ids": row["assignees"], "label_ids": row["labels"]}})
+	body, projectionErr := visibleAppWriteProjection(ctx, r.db, q, row, djangoinput.Input{Fields: map[string]any{"assignee_ids": row["assignees"], "label_ids": row["labels"]}})
 	return Result{201, body}, true, projectionErr
 }
 
-func (r *Repository) publishedDraftSource(ctx context.Context, q Request, workspace any) (map[string]any, Request, bool, error) {
+func (r *draftOperation) publishedDraftSource(ctx context.Context, q Request, workspace any) (map[string]any, Request, bool, error) {
 	var project, issue string
 	err := r.db.QueryRow(ctx, `SELECT project_id::text,issue_id::text FROM work_item_draft_publications WHERE draft_id=$1 AND workspace_id=$2 AND actor_id=$3`, q.Params["draft_id"], workspace, q.ActorID).Scan(&project, &issue)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -31,10 +31,10 @@ func (r *Repository) publishedDraftSource(ctx context.Context, q Request, worksp
 		return nil, q, false, err
 	}
 	q.ProjectID, q.IssueID = project, issue
-	if err = r.allowProject(ctx, q, []int{15, 20}, false); err != nil {
+	if err = allowProject(ctx, r.db, q, []int{15, 20}, false); err != nil {
 		return nil, q, true, err
 	}
-	row, err := r.row(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND deleted_at IS NULL`, issue, workspace, project)
+	row, err := readWorkItemRow(ctx, r.db, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND deleted_at IS NULL`, issue, workspace, project)
 	if err != nil {
 		return nil, q, true, err
 	}
@@ -43,7 +43,7 @@ func (r *Repository) publishedDraftSource(ctx context.Context, q Request, worksp
 
 // Saved values and relationships form the publication input; the request only
 // overrides fields the owner edited in the publication form. Read under its lock.
-func (r *Repository) publicationInput(ctx context.Context, draft map[string]any, input djangoinput.Input) (djangoinput.Input, error) {
+func (r *draftOperation) publicationInput(ctx context.Context, draft map[string]any, input djangoinput.Input) (djangoinput.Input, error) {
 	input, err := normalizePublicationForm(input)
 	if err != nil {
 		return input, err
@@ -53,7 +53,7 @@ func (r *Repository) publicationInput(ctx context.Context, draft map[string]any,
 		{"draft_issue_cycles", "cycle_id", "cycle_id"}, {"draft_issue_modules", "module_id", "module_ids"},
 		{"draft_issue_assignees", "assignee_id", "assignee_ids"}, {"draft_issue_labels", "label_id", "label_ids"},
 	} {
-		ids, err := r.filteredIDs(ctx, `SELECT DISTINCT `+relation.column+`::text FROM `+relation.table+` WHERE draft_issue_id=$1 AND deleted_at IS NULL ORDER BY 1`, draft["id"])
+		ids, err := filteredIDs(ctx, r.db, `SELECT DISTINCT `+relation.column+`::text FROM `+relation.table+` WHERE draft_issue_id=$1 AND deleted_at IS NULL ORDER BY 1`, draft["id"])
 		if err != nil {
 			return input, err
 		}
@@ -105,44 +105,15 @@ func normalizePublicationForm(input djangoinput.Input) (djangoinput.Input, error
 	return input, nil
 }
 
-func (r *Repository) validatePublicationRelations(ctx context.Context, q Request, fields map[string]any) error {
-	if err := r.allowProject(ctx, q, []int{15, 20}, false); err != nil {
+func (r *draftOperation) validatePublicationRelations(ctx context.Context, q Request, fields map[string]any) error {
+	if err := allowProject(ctx, r.db, q, []int{15, 20}, false); err != nil {
 		return err
 	}
-	return r.validateItemEditSelections(ctx, q, fields)
-}
-
-func (r *Repository) validateItemEditSelections(ctx context.Context, q Request, fields map[string]any) error {
-	for _, relation := range []struct{ field, query string }{
-		{"assignee_ids", `SELECT count(*) FROM project_members m JOIN workspace_members w ON w.workspace_id=m.workspace_id AND w.member_id=m.member_id JOIN users u ON u.id=m.member_id WHERE m.project_id=NULLIF($1,'')::uuid AND m.member_id=ANY($2::uuid[]) AND m.role>=15 AND m.is_active AND m.deleted_at IS NULL AND w.is_active AND w.deleted_at IS NULL AND u.is_active`},
-		{"label_ids", `SELECT count(*) FROM labels WHERE project_id=NULLIF($1,'')::uuid AND id=ANY($2::uuid[]) AND deleted_at IS NULL`},
-		{"module_ids", `SELECT count(*) FROM modules WHERE project_id=NULLIF($1,'')::uuid AND id=ANY($2::uuid[]) AND deleted_at IS NULL AND archived_at IS NULL`},
-		{"cycle_id", `SELECT count(*) FROM cycles WHERE project_id=NULLIF($1,'')::uuid AND id=ANY($2::uuid[]) AND deleted_at IS NULL AND archived_at IS NULL`},
-	} {
-		value := fields[relation.field]
-		if relation.field == "cycle_id" && value != nil {
-			value = []any{value}
-		}
-		if value == nil {
-			continue
-		}
-		ids, err := rawIDs(value)
-		if err != nil {
-			return err
-		}
-		var count int
-		if err = r.db.QueryRow(ctx, relation.query, q.ProjectID, ids).Scan(&count); err != nil {
-			return err
-		}
-		if count != len(ids) {
-			return invalid(map[string]any{relation.field: []string{"One or more selections are no longer available in this project."}})
-		}
-	}
-	return nil
+	return validateItemEditSelections(ctx, r.db, q, fields)
 }
 
 // Select and authorize the publication target without first mutating the private draft.
-func (r *Repository) publicationDestination(ctx context.Context, q Request, draft map[string]any, input djangoinput.Input) (Request, error) {
+func (r *draftOperation) publicationDestination(ctx context.Context, q Request, draft map[string]any, input djangoinput.Input) (Request, error) {
 	value := draft["project_id"]
 	if explicit, ok := input.Fields["project_id"]; ok {
 		value = explicit
@@ -163,5 +134,5 @@ func (r *Repository) publicationDestination(ctx context.Context, q Request, draf
 		}
 	}
 	q.ProjectID = id.String()
-	return q, r.allowProject(ctx, q, []int{15, 20}, false)
+	return q, allowProject(ctx, r.db, q, []int{15, 20}, false)
 }

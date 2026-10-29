@@ -33,3 +33,32 @@ func (r *Repository) lockItemEditSelections(ctx context.Context, q Request, fiel
 	}
 	return nil
 }
+
+func validateItemEditSelections(ctx context.Context, db Database, q Request, fields map[string]any) error {
+	for _, relation := range []struct{ field, query string }{
+		{"assignee_ids", `SELECT count(*) FROM project_members m JOIN workspace_members w ON w.workspace_id=m.workspace_id AND w.member_id=m.member_id JOIN users u ON u.id=m.member_id WHERE m.project_id=NULLIF($1,'')::uuid AND m.member_id=ANY($2::uuid[]) AND m.role>=15 AND m.is_active AND m.deleted_at IS NULL AND w.is_active AND w.deleted_at IS NULL AND u.is_active`},
+		{"label_ids", `SELECT count(*) FROM labels WHERE project_id=NULLIF($1,'')::uuid AND id=ANY($2::uuid[]) AND deleted_at IS NULL`},
+		{"module_ids", `SELECT count(*) FROM modules WHERE project_id=NULLIF($1,'')::uuid AND id=ANY($2::uuid[]) AND deleted_at IS NULL AND archived_at IS NULL`},
+		{"cycle_id", `SELECT count(*) FROM cycles WHERE project_id=NULLIF($1,'')::uuid AND id=ANY($2::uuid[]) AND deleted_at IS NULL AND archived_at IS NULL`},
+	} {
+		value := fields[relation.field]
+		if relation.field == "cycle_id" && value != nil {
+			value = []any{value}
+		}
+		if value == nil {
+			continue
+		}
+		ids, err := rawIDs(value)
+		if err != nil {
+			return err
+		}
+		var count int
+		if err = db.QueryRow(ctx, relation.query, q.ProjectID, ids).Scan(&count); err != nil {
+			return err
+		}
+		if count != len(ids) {
+			return invalid(map[string]any{relation.field: []string{"One or more selections are no longer available in this project."}})
+		}
+	}
+	return nil
+}

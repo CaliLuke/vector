@@ -48,7 +48,7 @@ CREATE TABLE work_item_properties(id uuid PRIMARY KEY, workspace_id uuid, defini
 	if err != nil {
 		t.Fatal(err)
 	}
-	repo := &Repository{db: conn}
+	repo := &draftOperation{db: conn}
 	identity := map[string]any{"id": draft, "workspace_id": workspace, "created_by_id": actor}
 	image := fmt.Sprintf(`<image-component src="%s"></image-component>`, asset)
 	for _, test := range []struct {
