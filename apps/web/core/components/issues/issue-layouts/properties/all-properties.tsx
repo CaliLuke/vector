@@ -6,8 +6,6 @@
 
 import { useParams, useRouter } from "@tanstack/react-router";
 import type { SyntheticEvent } from "react";
-import { useCallback, useMemo } from "react";
-import xor from "lodash-es/xor.js";
 
 // icons
 import { Paperclip } from "lucide-react";
@@ -37,10 +35,16 @@ import { useProjectStates } from "@/hooks/use-project-states";
 
 import { useIssueListType } from "@/hooks/use-issue-list-type";
 import { useIssuesActions } from "@/hooks/use-issues-actions";
+import { useIssuePropertyChange } from "@/hooks/use-issue-property-change";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local components
 import { IssuePropertyLabels } from "./labels";
 import { WithDisplayPropertiesHOC } from "./with-display-properties-HOC";
+
+function handleEventPropagation(event: SyntheticEvent<HTMLDivElement>) {
+  event.stopPropagation();
+  event.preventDefault();
+}
 
 export interface IIssueProperties {
   issue: TIssue;
@@ -73,93 +77,54 @@ export function IssueProperties(props: IIssueProperties) {
 
   // derived values
   const stateDetails = getStateById(issue.state_id);
-  const subIssueCount = issue?.sub_issues_count ?? 0;
+  const subIssueCount = issue.sub_issues_count ?? 0;
 
-  const issueOperations = useMemo(
-    () => ({
-      addModulesToIssue: async (moduleIds: string[]) => {
-        if (!workspaceSlug || !issue.project_id || !issue.id) return;
-        await actions.changeModulesInIssue(issue.project_id, issue.id, moduleIds, []);
-      },
-      removeModulesFromIssue: async (moduleIds: string[]) => {
-        if (!workspaceSlug || !issue.project_id || !issue.id) return;
-        await actions.changeModulesInIssue(issue.project_id, issue.id, [], moduleIds);
-      },
-      addIssueToCycle: async (cycleId: string) => {
-        if (!workspaceSlug || !issue.project_id || !issue.id) return;
-        await actions.addCycleToIssue(issue.project_id, cycleId, issue.id);
-      },
-      removeIssueFromCycle: async () => {
-        if (!workspaceSlug || !issue.project_id || !issue.id) return;
-        if (!issue.cycle_id) return;
-        await actions.removeCycleFromIssue(issue.project_id, issue.cycle_id, issue.id);
-      },
-    }),
-    [workspaceSlug, issue, actions]
+  const { run, disabled } = useIssuePropertyChange(
+    { workspaceSlug, projectId: issue.project_id, issueId: issue.id, context: storeType },
+    !isReadOnly && Boolean(workspaceSlug && issue.project_id && issue.id)
   );
+  const isUpdateDisabled = disabled || !updateIssue;
 
-  const handleState = async (stateId: string) => {
-    if (updateIssue) await updateIssue(issue.project_id, issue.id, { state_id: stateId });
+  const handleUpdate = (data: Partial<TIssue>) => {
+    if (updateIssue) run(() => updateIssue(issue.project_id, issue.id, data));
+  };
+  const handleState = (stateId: string) => handleUpdate({ state_id: stateId });
+  const handlePriority = (priority: TIssuePriorities) => handleUpdate({ priority });
+  const handleLabel = (label_ids: string[]) => handleUpdate({ label_ids });
+  const handleAssignee = (assignee_ids: string[]) => handleUpdate({ assignee_ids });
+
+  const handleModule = (moduleIds: string[] | null) => {
+    if (!moduleIds) return;
+    const selected = new Set(moduleIds);
+    const current = new Set(issue.module_ids ?? []);
+    const added = [...selected].filter((id) => !current.has(id));
+    const removed = [...current].filter((id) => !selected.has(id));
+    if (added.length || removed.length)
+      run(() => actions.changeModulesInIssue(issue.project_id, issue.id, added, removed));
   };
 
-  const handlePriority = async (value: TIssuePriorities) => {
-    if (updateIssue) await updateIssue(issue.project_id, issue.id, { priority: value });
+  const handleCycle = (cycleId: string | null) => {
+    if (issue.cycle_id === cycleId) return;
+    if (cycleId) run(() => actions.addCycleToIssue(issue.project_id, cycleId, issue.id));
+    else if (issue.cycle_id) {
+      const previousCycleId = issue.cycle_id;
+      run(() => actions.removeCycleFromIssue(issue.project_id, previousCycleId, issue.id));
+    }
   };
 
-  const handleLabel = async (ids: string[]) => {
-    if (updateIssue) await updateIssue(issue.project_id, issue.id, { label_ids: ids });
-  };
-
-  const handleAssignee = async (ids: string[]) => {
-    if (updateIssue) await updateIssue(issue.project_id, issue.id, { assignee_ids: ids });
-  };
-
-  const handleModule = useCallback(
-    (moduleIds: string[] | null) => {
-      if (!issue || !issue.module_ids || !moduleIds) return;
-
-      const updatedModuleIds = xor(issue.module_ids, moduleIds);
-      const modulesToAdd: string[] = [];
-      const modulesToRemove: string[] = [];
-      for (const moduleId of updatedModuleIds)
-        if (issue.module_ids.includes(moduleId)) modulesToRemove.push(moduleId);
-        else modulesToAdd.push(moduleId);
-      if (modulesToAdd.length > 0) issueOperations.addModulesToIssue(modulesToAdd);
-      if (modulesToRemove.length > 0) issueOperations.removeModulesFromIssue(modulesToRemove);
-    },
-    [issueOperations, issue]
-  );
-
-  const handleCycle = useCallback(
-    (cycleId: string | null) => {
-      if (!issue || issue.cycle_id === cycleId) return;
-      if (cycleId) issueOperations.addIssueToCycle?.(cycleId);
-      else issueOperations.removeIssueFromCycle?.();
-    },
-    [issue, issueOperations]
-  );
-
-  const handleStartDate = async (date: Date | null) => {
-    if (updateIssue)
-      await updateIssue(issue.project_id, issue.id, { start_date: date ? renderFormattedPayloadDate(date) : null });
-  };
-
-  const handleTargetDate = async (date: Date | null) => {
-    if (updateIssue)
-      await updateIssue(issue.project_id, issue.id, { target_date: date ? renderFormattedPayloadDate(date) : null });
-  };
-
-  const handleEstimate = async (value: string | undefined) => {
-    if (updateIssue) await updateIssue(issue.project_id, issue.id, { estimate_point: value });
-  };
+  const handleStartDate = (date: Date | null) =>
+    handleUpdate({ start_date: date ? renderFormattedPayloadDate(date) : null });
+  const handleTargetDate = (date: Date | null) =>
+    handleUpdate({ target_date: date ? renderFormattedPayloadDate(date) : null });
+  const handleEstimate = (estimate_point: string | undefined) => handleUpdate({ estimate_point });
 
   const workItemLink = generateWorkItemLink({
-    workspaceSlug: workspaceSlug?.toString(),
-    projectId: issue?.project_id,
-    issueId: issue?.id,
+    workspaceSlug,
+    projectId: issue.project_id,
+    issueId: issue.id,
     projectIdentifier: projectDetails?.identifier,
-    sequenceId: issue?.sequence_id,
-    isArchived: !!issue?.archived_at,
+    sequenceId: issue.sequence_id,
+    isArchived: !!issue.archived_at,
     isEpic,
   });
 
@@ -173,19 +138,13 @@ export function IssueProperties(props: IIssueProperties) {
   );
 
   const defaultLabelOptions =
-    issue?.label_ids?.flatMap((id) => {
+    issue.label_ids?.flatMap((id) => {
       const label = labelsById?.get(id);
       return label ? [label] : [];
     }) || [];
 
   const minDate = getDate(issue.start_date);
   const maxDate = getDate(issue.target_date);
-
-  // oxlint-disable-next-line unicorn/consistent-function-scoping
-  const handleEventPropagation = (e: SyntheticEvent<HTMLDivElement>) => {
-    e.stopPropagation();
-    e.preventDefault();
-  };
 
   return (
     <div className={className}>
@@ -199,7 +158,7 @@ export function IssueProperties(props: IIssueProperties) {
             value={issue.state_id}
             onChange={handleState}
             projectId={issue.project_id}
-            disabled={isReadOnly}
+            disabled={isUpdateDisabled}
             buttonVariant="border-with-text"
             renderByDefault={isMobile}
             showTooltip
@@ -212,9 +171,9 @@ export function IssueProperties(props: IIssueProperties) {
         {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions */}
         <div className="h-5" onFocus={handleEventPropagation} onClick={handleEventPropagation}>
           <PriorityDropdown
-            value={issue?.priority}
+            value={issue.priority}
             onChange={handlePriority}
-            disabled={isReadOnly}
+            disabled={isUpdateDisabled}
             buttonVariant="border-without-text"
             renderByDefault={isMobile}
             showTooltip
@@ -235,10 +194,12 @@ export function IssueProperties(props: IIssueProperties) {
               from: getDate(issue.start_date) || undefined,
               to: getDate(issue.target_date) || undefined,
             }}
-            onSelect={(range) => {
-              handleStartDate(range?.from ?? null);
-              handleTargetDate(range?.to ?? null);
-            }}
+            onSelect={(range) =>
+              handleUpdate({
+                start_date: range?.from ? renderFormattedPayloadDate(range.from) : null,
+                target_date: range?.to ? renderFormattedPayloadDate(range.to) : null,
+              })
+            }
             hideIcon={{
               from: false,
             }}
@@ -249,7 +210,7 @@ export function IssueProperties(props: IIssueProperties) {
               shouldHighlightIssueDueDate(issue.target_date, stateDetails?.group) ? "text-danger-primary" : ""
             }
             clearIconClassName="text-primary!"
-            disabled={isReadOnly}
+            disabled={isUpdateDisabled}
             renderByDefault={isMobile}
             showTooltip
             renderPlaceholder={false}
@@ -274,7 +235,7 @@ export function IssueProperties(props: IIssueProperties) {
             icon={<StartDatePropertyIcon className="h-3 w-3 flex-shrink-0" />}
             buttonVariant={issue.start_date ? "border-with-text" : "border-without-text"}
             optionsClassName="z-10"
-            disabled={isReadOnly}
+            disabled={isUpdateDisabled}
             renderByDefault={isMobile}
             showTooltip
             labelClassName="text-caption-sm-regular"
@@ -291,7 +252,7 @@ export function IssueProperties(props: IIssueProperties) {
         {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions */}
         <div className="h-5" onFocus={handleEventPropagation} onClick={handleEventPropagation}>
           <DateDropdown
-            value={issue?.target_date ?? null}
+            value={issue.target_date ?? null}
             onChange={handleTargetDate}
             minDate={minDate}
             placeholder={t("common.order_by.due_date")}
@@ -302,7 +263,7 @@ export function IssueProperties(props: IIssueProperties) {
             }
             clearIconClassName="text-primary!"
             optionsClassName="z-10"
-            disabled={isReadOnly}
+            disabled={isUpdateDisabled}
             renderByDefault={isMobile}
             showTooltip
             labelClassName="text-caption-sm-regular"
@@ -316,14 +277,14 @@ export function IssueProperties(props: IIssueProperties) {
         <div className="h-5" onFocus={handleEventPropagation} onClick={handleEventPropagation}>
           <MemberDropdown
             workspaceSlug={workspaceSlug}
-            projectId={issue?.project_id}
-            value={issue?.assignee_ids}
+            projectId={issue.project_id}
+            value={issue.assignee_ids}
             onChange={handleAssignee}
-            disabled={isReadOnly}
+            disabled={isUpdateDisabled}
             multiple
             buttonVariant={issue.assignee_ids?.length > 0 ? "transparent-without-text" : "border-without-text"}
             buttonClassName={issue.assignee_ids?.length > 0 ? "hover:bg-transparent px-0" : ""}
-            showTooltip={issue?.assignee_ids?.length === 0}
+            showTooltip={issue.assignee_ids?.length === 0}
             placeholder={t("common.assignees")}
             optionsClassName="z-10"
             tooltipContent=""
@@ -342,10 +303,10 @@ export function IssueProperties(props: IIssueProperties) {
                 <div className="h-5" onFocus={handleEventPropagation} onClick={handleEventPropagation}>
                   <ModuleDropdown
                     buttonContainerClassName="truncate max-w-40"
-                    projectId={issue?.project_id}
-                    value={issue?.module_ids ?? []}
+                    projectId={issue.project_id}
+                    value={issue.module_ids ?? []}
                     onChange={handleModule}
-                    disabled={isReadOnly}
+                    disabled={disabled}
                     renderByDefault={isMobile}
                     multiple
                     buttonVariant="border-with-text"
@@ -363,10 +324,10 @@ export function IssueProperties(props: IIssueProperties) {
                 <div className="h-5" onFocus={handleEventPropagation} onClick={handleEventPropagation}>
                   <CycleDropdown
                     buttonContainerClassName="truncate max-w-40"
-                    projectId={issue?.project_id}
-                    value={issue?.cycle_id}
+                    projectId={issue.project_id}
+                    value={issue.cycle_id}
                     onChange={handleCycle}
-                    disabled={isReadOnly}
+                    disabled={disabled}
                     buttonVariant="border-with-text"
                     renderByDefault={isMobile}
                     showTooltip
@@ -387,7 +348,7 @@ export function IssueProperties(props: IIssueProperties) {
               value={issue.estimate_point ?? undefined}
               onChange={handleEstimate}
               projectId={issue.project_id}
-              disabled={isReadOnly}
+              disabled={isUpdateDisabled}
               buttonVariant="border-with-text"
               renderByDefault={isMobile}
               showTooltip
@@ -409,11 +370,11 @@ export function IssueProperties(props: IIssueProperties) {
       {/* label */}
       <WithDisplayPropertiesHOC displayProperties={displayProperties} displayPropertyKey="labels">
         <IssuePropertyLabels
-          projectId={issue?.project_id || null}
-          value={issue?.label_ids || []}
+          projectId={issue.project_id || null}
+          value={issue.label_ids || []}
           defaultOptions={defaultLabelOptions}
           onChange={handleLabel}
-          disabled={isReadOnly}
+          disabled={isUpdateDisabled}
           renderByDefault={isMobile}
           hideDropdownArrow
           maxRender={3}

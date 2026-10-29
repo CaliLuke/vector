@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "fast",
-  "fileCount": 3717,
+  "fileCount": 3719,
   "diagnostics": [
     {
       "diagnostic": {
@@ -1817,7 +1817,7 @@
         "filename": "apps/web/core/components/issues/issue-layouts/properties/all-properties.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `IssueProperties` has a complexity of 57. Maximum allowed is 15."
+        "message": "function `IssueProperties` has a complexity of 43. Maximum allowed is 15."
       },
       "count": 1
     },
