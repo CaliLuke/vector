@@ -1637,14 +1637,6 @@
     {
       "finding": {
         "category": "types",
-        "file": "packages/editor/src/core/extensions/trailing-node.ts",
-        "name": "TrailingNodeOptions"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
         "file": "packages/editor/src/core/extensions/unique-id/extension.ts",
         "name": "UniqueIDGenerationContext"
       },

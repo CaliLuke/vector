@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "full",
-  "fileCount": 3737,
+  "fileCount": 3738,
   "diagnostics": [
     {
       "diagnostic": {
@@ -9288,15 +9288,6 @@
         "severity": "warning",
         "code": "import(no-named-as-default)",
         "message": "Module \"@tiptap/extension-text\" has named export \"Text\""
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/editor/src/core/extensions/trailing-node.ts",
-        "severity": "warning",
-        "code": "typescript(consistent-return)",
-        "message": "Function 'appendTransaction' expected no return value."
       },
       "count": 1
     },

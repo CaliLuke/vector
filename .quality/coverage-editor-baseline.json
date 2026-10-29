@@ -980,10 +980,10 @@
       "branches": 100
     },
     "src/core/extensions/trailing-node.ts": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
     },
     "src/core/extensions/typography/index.ts": {
       "lines": 0,
