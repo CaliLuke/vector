@@ -30,7 +30,6 @@ func (s *seedLostResponseStore) Seed(ctx context.Context, in WorkspaceSeedInput)
 }
 func TestPostgresWorkspaceSeedAtomicRetryAndSourceContent(t *testing.T) {
 	_, executionURL, pool := openBackgroundTaskDatabase(t)
-	defer pool.Close()
 	ctx, cancel := context.WithTimeout(t.Context(), time.Minute)
 	defer cancel()
 	owner, member, workspace := uuid.NewString(), uuid.NewString(), uuid.NewString()
@@ -80,12 +79,6 @@ func TestPostgresWorkspaceSeedAtomicRetryAndSourceContent(t *testing.T) {
 	if err = tx.Commit(ctx); err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() {
-		clean, stop := context.WithTimeout(context.Background(), 5*time.Second)
-		defer stop()
-		pool.Exec(clean, `DELETE FROM workspaces WHERE id=$1`, workspace)
-		pool.Exec(clean, `DELETE FROM users WHERE id=ANY($1::uuid[]) OR username=$2`, []string{owner, member}, "bot_user_"+workspace)
-	})
 	base, err := NewPostgresWorkspaceSeedStore(pool, "https://plane.example.test:8000")
 	if err != nil {
 		t.Fatal(err)

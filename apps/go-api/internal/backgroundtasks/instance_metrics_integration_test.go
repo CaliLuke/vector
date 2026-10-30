@@ -17,7 +17,6 @@ import (
 func TestPostgresInstanceMetricsCollectionAndDurableSchedule(t *testing.T) {
 	t.Setenv("SERVICE_NAME", "")
 	_, executionURL, pool := openBackgroundTaskDatabase(t)
-	defer pool.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
@@ -25,12 +24,6 @@ func TestPostgresInstanceMetricsCollectionAndDurableSchedule(t *testing.T) {
 	instanceID := "metrics-" + uuid.NewString()
 	username := "metrics-test-" + ownerID.String()
 	now := time.Now().UTC()
-	defer func() {
-		_, _ = pool.Exec(context.Background(), `DELETE FROM instances WHERE id=$1`, instanceRowID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM projects WHERE id=$1`, projectID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM workspaces WHERE id=$1`, workspaceID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM users WHERE id=$1`, ownerID)
-	}()
 	if _, err := pool.Exec(ctx, `INSERT INTO users (id,password,username,email,display_name,first_name,last_name,avatar,date_joined,created_at,updated_at,last_location,created_location,is_superuser,is_managed,is_password_expired,is_active,is_staff,is_email_verified,is_password_autoset,is_password_reset_required,token,last_login_ip,last_logout_ip,last_login_medium,last_login_uagent,is_bot,user_timezone,is_email_valid) VALUES ($1,'!', $2,$3,'Metrics Test','Metrics','Test','',$4,$4,$4,'','',false,false,false,true,false,true,false,false,$2,'','','','',false,'UTC',true)`, ownerID, username, username+"@example.test", now); err != nil {
 		t.Fatalf("insert metric user fixture: %v", err)
 	}

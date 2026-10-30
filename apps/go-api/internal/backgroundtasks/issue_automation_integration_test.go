@@ -15,7 +15,6 @@ import (
 
 func TestPostgresIssueAutomationArchivesAndClosesWithRecoverableEffects(t *testing.T) {
 	_, executionURL, pool := openBackgroundTaskDatabase(t)
-	defer pool.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
 
@@ -66,14 +65,6 @@ func TestPostgresIssueAutomationArchivesAndClosesWithRecoverableEffects(t *testi
 			t.Fatalf("insert automation issue %s: %v", issue.name, err)
 		}
 	}
-	defer func() {
-		_, _ = pool.Exec(context.Background(), `DELETE FROM notifications WHERE entity_identifier=ANY($1::uuid[])`, []uuid.UUID{archivedIssueID, closedIssueID, youngIssueID})
-		_, _ = pool.Exec(context.Background(), `DELETE FROM issue_activities WHERE issue_id=ANY($1::uuid[])`, []uuid.UUID{archivedIssueID, closedIssueID, youngIssueID})
-		_, _ = pool.Exec(context.Background(), `DELETE FROM issues WHERE id=ANY($1::uuid[])`, []uuid.UUID{archivedIssueID, closedIssueID, youngIssueID})
-		_, _ = pool.Exec(context.Background(), `DELETE FROM projects WHERE id=$1`, projectID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM workspaces WHERE id=$1`, workspaceID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM users WHERE id=$1`, ownerID)
-	}()
 
 	activityStore, err := NewPostgresIssueActivityStore(pool)
 	if err != nil {

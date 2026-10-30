@@ -35,7 +35,6 @@ func (store *linkPreviewLostActivityResponse) Crawl(ctx context.Context, input L
 
 func TestPostgresLinkPreviewDurableRetryAndStaleRowGuards(t *testing.T) {
 	_, executionURL, pool := openBackgroundTaskDatabase(t)
-	defer pool.Close()
 	ctx, cancel := context.WithTimeout(t.Context(), 90*time.Second)
 	defer cancel()
 
@@ -56,15 +55,6 @@ func TestPostgresLinkPreviewDurableRetryAndStaleRowGuards(t *testing.T) {
 	if _, err := pool.Exec(ctx, `INSERT INTO issues (created_at,updated_at,id,name,description_json,priority,sequence_id,project_id,workspace_id,description_html,sort_order,is_draft) VALUES ($1,$1,$2,'Link Preview Issue','{}'::jsonb,'medium',1,$3,$4,'',0,false)`, now, issueID, projectID, workspaceID); err != nil {
 		t.Fatalf("insert issue: %v", err)
 	}
-	defer func() {
-		cleanup, cleanupCancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cleanupCancel()
-		_, _ = pool.Exec(cleanup, `DELETE FROM issue_links WHERE id=ANY($1::uuid[])`, []uuid.UUID{retryLinkID, staleLinkID, deletedLinkID})
-		_, _ = pool.Exec(cleanup, `DELETE FROM issues WHERE id=$1`, issueID)
-		_, _ = pool.Exec(cleanup, `DELETE FROM projects WHERE id=$1`, projectID)
-		_, _ = pool.Exec(cleanup, `DELETE FROM workspaces WHERE id=$1`, workspaceID)
-		_, _ = pool.Exec(cleanup, `DELETE FROM users WHERE id=$1`, ownerID)
-	}()
 
 	const host = "link-preview.example.test"
 	retryURL := "http://" + host + "/retry"

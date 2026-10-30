@@ -21,30 +21,11 @@ import (
 
 func TestPostgresIssueActivityWorkflowIsIdempotentPerEvent(t *testing.T) {
 	executionURL, pool := openCatalogueActivityDatabase(t)
-	defer pool.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
 
 	ownerID, receiverID, mentionID, workspaceID, projectID, issueID := uuid.New(), uuid.New(), uuid.New(), uuid.New(), uuid.New(), uuid.New()
 	now := time.Now().UTC()
-	defer func() {
-		_, _ = pool.Exec(context.Background(), `DELETE FROM email_notification_logs WHERE receiver_id=ANY($1::uuid[])`, []uuid.UUID{receiverID, mentionID})
-		_, _ = pool.Exec(context.Background(), `DELETE FROM notifications WHERE receiver_id=$1`, receiverID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM notifications WHERE receiver_id=$1`, mentionID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM email_notification_logs WHERE receiver_id=$1`, receiverID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM email_notification_logs WHERE receiver_id=$1`, mentionID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM issue_subscribers WHERE issue_id=$1`, issueID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM project_members WHERE member_id=$1 AND project_id=$2`, receiverID, projectID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM project_members WHERE member_id=$1 AND project_id=$2`, mentionID, projectID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM issue_mentions WHERE issue_id=$1`, issueID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM issue_activities WHERE issue_id=$1`, issueID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM issues WHERE id=$1`, issueID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM projects WHERE id=$1`, projectID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM workspaces WHERE id=$1`, workspaceID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM users WHERE id=$1`, ownerID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM users WHERE id=$1`, receiverID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM users WHERE id=$1`, mentionID)
-	}()
 	username := "issue-activity-" + ownerID.String()
 	if _, err := pool.Exec(ctx, `INSERT INTO users (id,password,username,display_name,first_name,last_name,avatar,date_joined,created_at,updated_at,last_location,created_location,is_superuser,is_managed,is_password_expired,is_active,is_staff,is_email_verified,is_password_autoset,is_password_reset_required,token,last_login_ip,last_logout_ip,last_login_medium,last_login_uagent,is_bot,user_timezone,is_email_valid) VALUES ($1,'!', $2,'Activity Test','Activity','Test','',$3,$3,$3,'','',false,false,false,true,false,true,false,false,$2,'','','','',false,'UTC',true)`, ownerID, username, now); err != nil {
 		t.Fatalf("insert activity owner fixture: %v", err)

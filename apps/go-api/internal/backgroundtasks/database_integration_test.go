@@ -26,6 +26,8 @@ func TestMain(m *testing.M) {
 	os.Exit(status)
 }
 
+// openBackgroundTaskDatabase owns the pool and discards the entire isolated
+// database at test cleanup. Callers only need to stop their workflow runtimes.
 func openBackgroundTaskDatabase(t *testing.T) (string, string, *pgxpool.Pool) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)

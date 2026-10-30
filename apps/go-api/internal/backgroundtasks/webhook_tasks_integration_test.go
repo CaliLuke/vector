@@ -27,7 +27,6 @@ import (
 
 func TestPostgresWebhookModelActivityDeliversSignedPayloadRetriesAndDeactivates(t *testing.T) {
 	_, executionURL, pool := openBackgroundTaskDatabase(t)
-	defer pool.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
 
@@ -66,15 +65,6 @@ func TestPostgresWebhookModelActivityDeliversSignedPayloadRetriesAndDeactivates(
 	t.Setenv("WEBHOOK_ALLOWED_HOSTS", "127.0.0.1")
 	t.Setenv("WEBHOOK_ALLOWED_IPS", "")
 
-	t.Cleanup(func() {
-		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cleanupCancel()
-		_, _ = pool.Exec(cleanupCtx, `DELETE FROM webhook_logs WHERE webhook=$1`, webhookID)
-		_, _ = pool.Exec(cleanupCtx, `DELETE FROM webhooks WHERE id=$1`, webhookID)
-		_, _ = pool.Exec(cleanupCtx, `DELETE FROM projects WHERE id=$1`, projectID)
-		_, _ = pool.Exec(cleanupCtx, `DELETE FROM workspaces WHERE id=$1`, workspaceID)
-		_, _ = pool.Exec(cleanupCtx, `DELETE FROM users WHERE id=$1`, ownerID)
-	})
 	if _, err := pool.Exec(ctx, `INSERT INTO users (id,password,username,display_name,first_name,last_name,avatar,date_joined,created_at,updated_at,last_location,created_location,is_superuser,is_managed,is_password_expired,is_active,is_staff,is_email_verified,is_password_autoset,is_password_reset_required,token,last_login_ip,last_logout_ip,last_login_medium,last_login_uagent,is_bot,user_timezone,is_email_valid,email) VALUES ($1,'!', $2,'Webhook Owner','Webhook','Owner','',$3,$3,$3,'','',false,false,false,true,false,true,false,false,$2,'','','','',false,'UTC',true,$4)`, ownerID, username, now, username+"@example.test"); err != nil {
 		t.Fatalf("insert webhook owner: %v", err)
 	}

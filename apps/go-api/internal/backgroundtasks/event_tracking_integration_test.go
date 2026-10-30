@@ -17,7 +17,6 @@ import (
 
 func TestPostgresEventTrackingWorkflowDeliversPostHogCaptureOverHTTP(t *testing.T) {
 	_, executionURL, pool := openBackgroundTaskDatabase(t)
-	t.Cleanup(pool.Close)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	captures := make(chan map[string]any, 1)
@@ -78,10 +77,6 @@ func TestPostgresEventTrackingWorkflowDeliversPostHogCaptureOverHTTP(t *testing.
 	if _, execErr := pool.Exec(ctx, `INSERT INTO workspaces (id,name,owner_id,slug,timezone,background_color,created_at,updated_at) VALUES ($1,'Event Workspace',$2,$3,'UTC','',$4,$4)`, workspaceID, userID, slug, now); execErr != nil {
 		t.Fatalf("insert event workspace: %v", execErr)
 	}
-	t.Cleanup(func() {
-		_, _ = pool.Exec(context.Background(), `DELETE FROM workspaces WHERE id=$1`, workspaceID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM users WHERE id=$1`, userID)
-	})
 	instanceID, err := dispatcher.Admit(ctx, uuid.NewString(), EventTrackingInput{
 		UserID: userID, EventName: "workspace_deleted", Slug: slug,
 		EventProperties: map[string]any{"workspace_id": workspaceID, "role": "admin"},

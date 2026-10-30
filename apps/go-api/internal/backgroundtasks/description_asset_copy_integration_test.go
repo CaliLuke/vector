@@ -20,7 +20,6 @@ import (
 
 func TestPostgresDescriptionAssetCopyUsesDurableWorkflowAndStableS3Key(t *testing.T) {
 	_, executionURL, pool := openBackgroundTaskDatabase(t)
-	defer pool.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
 
@@ -53,13 +52,6 @@ func TestPostgresDescriptionAssetCopyUsesDurableWorkflowAndStableS3Key(t *testin
 	if _, err := pool.Exec(ctx, `INSERT INTO file_assets (created_at,updated_at,id,attributes,asset,created_by_id,workspace_id,is_deleted,is_archived,entity_type,is_uploaded,page_id,project_id,size,storage_metadata) VALUES ($1,$1,$2,'{"name":"image.png","type":"image/png"}'::jsonb,$3,$4,$5,false,false,'PAGE_DESCRIPTION',true,$6,$7,42,'{"etag":"source"}'::jsonb)`, now, assetID, workspaceID.String()+"/source-image.png", ownerID, workspaceID, sourcePageID, projectID); err != nil {
 		t.Fatalf("insert source FileAsset: %v", err)
 	}
-	defer func() {
-		_, _ = pool.Exec(context.Background(), `DELETE FROM file_assets WHERE id=ANY($1::uuid[]) OR page_id=ANY($2::uuid[])`, []uuid.UUID{assetID, uuid.NewSHA1(targetPageID, assetID[:])}, []uuid.UUID{sourcePageID, targetPageID})
-		_, _ = pool.Exec(context.Background(), `DELETE FROM pages WHERE id=ANY($1::uuid[])`, []uuid.UUID{sourcePageID, targetPageID})
-		_, _ = pool.Exec(context.Background(), `DELETE FROM projects WHERE id=$1`, projectID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM workspaces WHERE id=$1`, workspaceID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM users WHERE id=$1`, ownerID)
-	}()
 
 	var copies []string
 	var copiesMu sync.Mutex

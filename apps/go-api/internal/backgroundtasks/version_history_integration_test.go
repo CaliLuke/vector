@@ -16,7 +16,6 @@ import (
 
 func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 	_, executionURL, pool := openBackgroundTaskDatabase(t)
-	defer pool.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
 
@@ -51,16 +50,6 @@ func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 	if _, err := pool.Exec(ctx, `INSERT INTO issues (id,project_id,workspace_id,created_by_id,name,description_json,description_html,priority,sequence_id,sort_order,is_draft,created_at,updated_at) VALUES ($1,$2,$3,$4,'Version Sync Batch','{}'::jsonb,'<p>sync</p>','medium',2,0,false,$5,$5)`, issueBatchID, projectID, workspaceID, pageOwner, fixtureNow.Add(time.Second)); err != nil {
 		t.Fatalf("insert second issue version fixture: %v", err)
 	}
-	defer func() {
-		_, _ = pool.Exec(context.Background(), `DELETE FROM issue_description_versions WHERE issue_id=ANY($1::uuid[])`, []uuid.UUID{issueID, issueBatchID})
-		_, _ = pool.Exec(context.Background(), `DELETE FROM page_versions WHERE page_id=$1`, pageID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM issues WHERE id=ANY($1::uuid[])`, []uuid.UUID{issueID, issueBatchID})
-		_, _ = pool.Exec(context.Background(), `DELETE FROM pages WHERE id=$1`, pageID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM projects WHERE id=$1`, projectID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM workspaces WHERE id=$1`, workspaceID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM users WHERE id=$1`, issueTaskOwner)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM users WHERE id=$1`, pageOwner)
-	}()
 	priorHTML := "<p>before</p>"
 	if _, err := pool.Exec(ctx, `UPDATE pages SET description_html=$2,description_stripped=$3,updated_at=clock_timestamp() WHERE id=$1`, pageID, "<p>"+pageMarker+"</p>", pageMarker); err != nil {
 		t.Fatalf("set page version fixture: %v", err)

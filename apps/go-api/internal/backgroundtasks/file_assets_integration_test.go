@@ -18,7 +18,6 @@ import (
 
 func TestPostgresFileAssetMetadataWorkflowUsesStableAdmission(t *testing.T) {
 	_, executionURL, pool := openBackgroundTaskDatabase(t)
-	defer pool.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
@@ -31,9 +30,6 @@ INSERT INTO file_assets (
 ) VALUES ($1, clock_timestamp(), clock_timestamp(), '{}'::jsonb, $2, false, false, 68, true, '{}'::jsonb, NULL)`, assetID, key); err != nil {
 		t.Fatalf("insert FileAsset fixture: %v", err)
 	}
-	defer func() {
-		_, _ = pool.Exec(context.Background(), `DELETE FROM file_assets WHERE id=$1`, assetID)
-	}()
 
 	repository, err := assetdomain.NewPostgresRepository(pool)
 	if err != nil {

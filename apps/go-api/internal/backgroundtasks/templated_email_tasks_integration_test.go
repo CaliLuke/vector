@@ -28,7 +28,6 @@ import (
 
 func TestPostgresTemplatedEmailWorkflowRetriesAndDeliversSMTP(t *testing.T) {
 	_, executionURL, pool := openBackgroundTaskDatabase(t)
-	defer pool.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	smtp := startRetryOnceEmailSMTP(t)
@@ -92,7 +91,6 @@ func TestPostgresTemplatedEmailWorkflowRetriesAndDeliversSMTP(t *testing.T) {
 
 func TestPostgresTemplatedEmailPreparationUsesPlaneRows(t *testing.T) {
 	_, _, pool := openBackgroundTaskDatabase(t)
-	defer pool.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 	ownerID, memberID, workspaceID, projectID, projectMemberID, workspaceInviteID, projectInviteID := uuid.New(), uuid.New(), uuid.New(), uuid.New(), uuid.New(), uuid.New(), uuid.New()
@@ -103,14 +101,6 @@ func TestPostgresTemplatedEmailPreparationUsesPlaneRows(t *testing.T) {
 	memberEmail := memberName + "@example.test"
 	workspaceSlug := "mail-" + ownerID.String()[:8]
 	workspaceToken, projectToken := "workspace-"+workspaceID.String(), "project-"+projectID.String()
-	defer func() {
-		_, _ = pool.Exec(context.Background(), `DELETE FROM workspace_member_invites WHERE id=$1`, workspaceInviteID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM project_member_invites WHERE id=$1`, projectInviteID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM project_members WHERE id=$1`, projectMemberID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM projects WHERE id=$1`, projectID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM workspaces WHERE id=$1`, workspaceID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM users WHERE id=ANY($1::uuid[])`, []uuid.UUID{ownerID, memberID})
-	}()
 	for _, user := range []struct {
 		id                                      uuid.UUID
 		username, email, firstName, displayName string

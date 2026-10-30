@@ -148,14 +148,6 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/backgroundtasks/workspace_seed_integration_test.go",
-        "Error return value of `pool.Exec` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/bootstrap/instance.go",
         "Error return value of `response.Body.Close` is not checked"
       ],

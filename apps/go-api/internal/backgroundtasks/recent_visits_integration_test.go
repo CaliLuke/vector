@@ -14,7 +14,6 @@ import (
 
 func TestPostgresRecentVisitAdmissionRefreshesAndEvicts(t *testing.T) {
 	_, executionURL, pool := openBackgroundTaskDatabase(t)
-	defer pool.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
 
@@ -31,12 +30,6 @@ func TestPostgresRecentVisitAdmissionRefreshesAndEvicts(t *testing.T) {
 	if _, err := pool.Exec(ctx, `INSERT INTO projects (id,name,description,network,workspace_id,identifier,module_view,cycle_view,issue_views_view,page_view,intake_view,is_time_tracking_enabled,is_issue_type_enabled,guest_view_all_features,archive_in,close_in,logo_props,timezone,created_at,updated_at) VALUES ($1,'Recent Visit','',0,$2,$3,false,false,false,true,false,false,false,false,0,0,'{}'::jsonb,'UTC',$4,$4)`, projectID, workspaceID, "RV"+userID.String()[:3], now); err != nil {
 		t.Fatalf("insert recent visit project fixture: %v", err)
 	}
-	defer func() {
-		_, _ = pool.Exec(context.Background(), `DELETE FROM user_recent_visits WHERE user_id=$1`, userID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM projects WHERE id=$1`, projectID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM workspaces WHERE id=$1`, workspaceID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM users WHERE id=$1`, userID)
-	}()
 
 	store, err := NewPostgresRecentVisitStore(pool)
 	if err != nil {

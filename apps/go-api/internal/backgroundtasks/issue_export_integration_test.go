@@ -18,7 +18,6 @@ import (
 
 func TestPostgresIssueExportProducesAndStoresArchive(t *testing.T) {
 	_, _, pool := openBackgroundTaskDatabase(t)
-	t.Cleanup(pool.Close)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
@@ -27,14 +26,6 @@ func TestPostgresIssueExportProducesAndStoresArchive(t *testing.T) {
 	token := uuid.NewString()
 	slug := "export-proof-" + userID.String()[:8]
 	username := "issue-export-" + userID.String()
-	t.Cleanup(func() {
-		_, _ = pool.Exec(context.Background(), `DELETE FROM exporters WHERE id=$1`, exporterID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM issues WHERE id=$1`, issueID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM project_members WHERE project_id=$1`, projectID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM projects WHERE id=$1`, projectID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM workspaces WHERE id=$1`, workspaceID)
-		_, _ = pool.Exec(context.Background(), `DELETE FROM users WHERE id=$1`, userID)
-	})
 	if _, err := pool.Exec(ctx, `INSERT INTO users (id,password,username,display_name,first_name,last_name,avatar,date_joined,created_at,updated_at,last_location,created_location,is_superuser,is_managed,is_password_expired,is_active,is_staff,is_email_verified,is_password_autoset,is_password_reset_required,token,last_login_ip,last_logout_ip,last_login_medium,last_login_uagent,is_bot,user_timezone,is_email_valid) VALUES ($1,'!',$2,'Export Actor','Export','Actor','',$3,$3,$3,'','',false,false,false,true,false,true,false,false,$2,'','','','',false,'UTC',true)`, userID, username, now); err != nil {
 		t.Fatalf("insert export actor: %v", err)
 	}
