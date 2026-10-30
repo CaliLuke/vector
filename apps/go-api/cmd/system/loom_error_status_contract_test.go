@@ -2,16 +2,14 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
-	"go/ast"
-	"go/parser"
-	"go/token"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"path/filepath"
 	"runtime"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -73,47 +71,82 @@ func TestGeneratedErrorResponseContractsUseStatusIdentity(t *testing.T) {
 	}
 }
 
-func TestMiddlewareStrippedDesignsDoNotRequireLoomErrorHeader(t *testing.T) {
+func TestGeneratedResponsesDoNotPublishStrippedErrorHeader(t *testing.T) {
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
 		t.Fatal("runtime.Caller did not return this test file path")
 	}
 	moduleRoot := filepath.Clean(filepath.Join(filepath.Dir(filename), "..", ".."))
-	designs := map[string]string{
-		"activityreads": "activityreads/design/design.go", "apicyclereads": "apicyclereads/design/design.go",
-		"apilabelreads": "apilabelreads/design/design.go", "apimodulereads": "apimodulereads/design/design.go",
-		"apistatereads": "apistatereads/design/design.go", "apiuseridentity": "apiuseridentity/design/design.go",
-		"cyclelifecycle": "cyclelifecycle/design/design.go", "modulelifecycle": "modulelifecycle/design/design.go",
-		"invitationsmembership": "invitationsmembership/design/design.go", "notificationactions": "notificationactions/design/design.go",
-		"notificationreads": "notificationreads/design/design.go", "project_label_writes": "project_label_writes/design/design.go",
-		"projectmembershiplifecycle": "projectmembershiplifecycle/design/design.go",
-		"ticket_collaboration":       "ticket_collaboration/design/design.go", "work_item_core": "work_item_core/design/design.go",
-		"public_feedback": "design/public_feedback.go",
+	documents := map[string]string{
+		"activityreads": "activityreads/gen/http/openapi.json", "apicyclereads": "apicyclereads/gen/http/openapi.json",
+		"apilabelreads": "apilabelreads/gen/http/openapi.json", "apimodulereads": "apimodulereads/gen/http/openapi.json",
+		"apistatereads": "apistatereads/gen/http/openapi.json", "apiuseridentity": "apiuseridentity/gen/http/openapi.json",
+		"cyclelifecycle": "cyclelifecycle/gen/http/openapi.json", "modulelifecycle": "modulelifecycle/gen/http/openapi.json",
+		"invitationsmembership": "invitationsmembership/gen/http/openapi.json", "notificationactions": "notificationactions/gen/http/openapi.json",
+		"notificationreads": "notificationreads/gen/http/openapi.json", "project_label_writes": "project_label_writes/gen/http/openapi.json",
+		"projectmembershiplifecycle": "projectmembershiplifecycle/gen/http/openapi.json",
+		"ticket_collaboration":       "ticket_collaboration/gen/http/openapi.json", "work_item_core": "work_item_core/gen/http/openapi.json",
+		"public_feedback": "gen/http/openapi.json",
 	}
-	for design, relativePath := range designs {
-		t.Run(design, func(t *testing.T) {
-			path := filepath.Join(moduleRoot, relativePath)
-			file, err := parser.ParseFile(token.NewFileSet(), path, nil, 0)
+	for name, path := range documents {
+		t.Run(name, func(t *testing.T) {
+			data, err := os.ReadFile(filepath.Join(moduleRoot, path))
 			if err != nil {
 				t.Fatal(err)
 			}
-			ast.Inspect(file, func(node ast.Node) bool {
-				call, ok := node.(*ast.CallExpr)
-				if !ok || !isHeaderCall(call.Fun) {
-					return true
-				}
-				for _, argument := range call.Args {
-					literal, ok := argument.(*ast.BasicLit)
-					if !ok || literal.Kind != token.STRING {
+			type response struct {
+				Ref     string                     `json:"$ref"`
+				Headers map[string]json.RawMessage `json:"headers"`
+			}
+			var document struct {
+				Paths      map[string]map[string]json.RawMessage `json:"paths"`
+				Components struct {
+					Responses map[string]response `json:"responses"`
+				} `json:"components"`
+			}
+			if err := json.Unmarshal(data, &document); err != nil {
+				t.Fatal(err)
+			}
+			checked := 0
+			for path, item := range document.Paths {
+				for _, method := range []string{"get", "post", "put", "patch", "delete", "options", "head", "trace"} {
+					raw, exists := item[method]
+					if !exists {
 						continue
 					}
-					value, err := strconv.Unquote(literal.Value)
-					if err == nil && strings.Contains(strings.ToLower(value), "loom-error") {
-						t.Errorf("%s still maps stripped Loom-Error in %s", design, path)
+					var operation struct {
+						Responses map[string]response `json:"responses"`
+					}
+					if err := json.Unmarshal(raw, &operation); err != nil {
+						t.Fatal(err)
+					}
+					for status, value := range operation.Responses {
+						seen := map[string]bool{}
+						for value.Ref != "" {
+							ref := value.Ref
+							const prefix = "#/components/responses/"
+							if !strings.HasPrefix(ref, prefix) || seen[ref] {
+								t.Fatalf("unsupported or cyclic response reference %q", ref)
+							}
+							seen[ref] = true
+							var found bool
+							value, found = document.Components.Responses[strings.TrimPrefix(ref, prefix)]
+							if !found {
+								t.Fatalf("missing response reference %q", ref)
+							}
+						}
+						checked++
+						for header := range value.Headers {
+							if strings.EqualFold(header, "Loom-Error") {
+								t.Errorf("%s %s status %s publishes stripped error header", method, path, status)
+							}
+						}
 					}
 				}
-				return true
-			})
+			}
+			if checked == 0 {
+				t.Fatal("no generated responses checked")
+			}
 		})
 	}
 }
@@ -166,17 +199,6 @@ func TestPublicFeedbackGeneratedClientDecodesKindFromStatusWithoutHeader(t *test
 	}
 	if capture.contractErr != nil {
 		t.Fatalf("generated public-feedback response contract: %v", capture.contractErr)
-	}
-}
-
-func isHeaderCall(expression ast.Expr) bool {
-	switch function := expression.(type) {
-	case *ast.Ident:
-		return function.Name == "Header"
-	case *ast.SelectorExpr:
-		return function.Sel.Name == "Header"
-	default:
-		return false
 	}
 }
 

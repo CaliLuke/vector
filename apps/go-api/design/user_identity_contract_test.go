@@ -3,31 +3,21 @@ package design
 import (
 	"encoding/json"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 )
 
-func TestUserIdentityDesignCoversCommittedParityFixtures(t *testing.T) {
-	design, err := os.ReadFile("user_identity.go")
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, fragment := range []string{
-		`Service("user_identity"`, `Method("session"`, `Method("me"`, `Method("profile"`, `Method("update_profile"`,
-		`GET("/api/users/session/")`, `GET("/api/users/me/")`, `GET("/api/users/me/profile/")`, `PATCH("/api/users/me/profile/")`,
-	} {
-		if !strings.Contains(string(design), fragment) {
-			t.Errorf("user identity design missing %q", fragment)
-		}
-	}
-	fixtures := []struct{ file, method, path string }{
-		{"../internal/parity/testdata/fixtures/user_identity/session-anonymous.json", "GET", "/api/users/session/"},
-		{"../internal/parity/testdata/fixtures/user_identity/session-authenticated.json", "GET", "/api/users/session/"},
-		{"../internal/parity/testdata/fixtures/user_identity/profile-get.json", "GET", "/api/users/me/profile/"},
-		{"../internal/parity/testdata/fixtures/user_identity/profile-patch.json", "PATCH", "/api/users/me/profile/"},
-		{"../internal/parity/testdata/fixtures/user_me_read/authenticated.json", "GET", "/api/users/me/"},
-		{"../internal/parity/testdata/fixtures/user_me_read/session.json", "GET", "/api/users/me/"},
-		{"../internal/parity/testdata/fixtures/user_me_read/anonymous.json", "GET", "/api/users/me/"},
+func TestUserIdentityOpenAPICoversCommittedParityFixtures(t *testing.T) {
+	generated := readOpenAPI(t)
+	fixtures := []struct{ file, method, path, operationID string }{
+		{"../internal/parity/testdata/fixtures/user_identity/session-anonymous.json", "GET", "/api/users/session/", "user_identity.session"},
+		{"../internal/parity/testdata/fixtures/user_identity/session-authenticated.json", "GET", "/api/users/session/", "user_identity.session"},
+		{"../internal/parity/testdata/fixtures/user_identity/profile-get.json", "GET", "/api/users/me/profile/", "user_identity.profile"},
+		{"../internal/parity/testdata/fixtures/user_identity/profile-patch.json", "PATCH", "/api/users/me/profile/", "user_identity.update_profile"},
+		{"../internal/parity/testdata/fixtures/user_me_read/authenticated.json", "GET", "/api/users/me/", "user_identity.me"},
+		{"../internal/parity/testdata/fixtures/user_me_read/session.json", "GET", "/api/users/me/", "user_identity.me"},
+		{"../internal/parity/testdata/fixtures/user_me_read/anonymous.json", "GET", "/api/users/me/", "user_identity.me"},
 	}
 	for _, fixture := range fixtures {
 		data, err := os.ReadFile(fixture.file)
@@ -35,13 +25,27 @@ func TestUserIdentityDesignCoversCommittedParityFixtures(t *testing.T) {
 			t.Fatalf("read %s: %v", fixture.file, err)
 		}
 		var document struct {
-			Request struct{ Method, Path string } `json:"request"`
+			Request  struct{ Method, Path string } `json:"request"`
+			Response struct {
+				Status int `json:"status"`
+			} `json:"response"`
 		}
 		if err := json.Unmarshal(data, &document); err != nil {
 			t.Fatalf("decode %s: %v", fixture.file, err)
 		}
 		if document.Request.Method != fixture.method || document.Request.Path != fixture.path {
 			t.Errorf("%s request = %s %s, want %s %s", fixture.file, document.Request.Method, document.Request.Path, fixture.method, fixture.path)
+		}
+		operation, exists := generated.Paths[fixture.path][strings.ToLower(fixture.method)]
+		if !exists {
+			t.Errorf("fixture %s has no generated %s %s operation", fixture.file, fixture.method, fixture.path)
+			continue
+		}
+		if operation.OperationID != fixture.operationID {
+			t.Errorf("%s %s operation ID=%q want=%q", fixture.method, fixture.path, operation.OperationID, fixture.operationID)
+		}
+		if _, exists := operation.Responses[strconv.Itoa(document.Response.Status)]; !exists {
+			t.Errorf("%s has no generated response for fixture status %d", fixture.file, document.Response.Status)
 		}
 	}
 }

@@ -18,57 +18,61 @@ type workspaceOpenAPIOperation struct {
 	Parameters []workspaceOpenAPIParameter `json:"parameters"`
 }
 
-func TestWorkspaceProjectReadsDesignDeclaresSevenDistinctGETOperations(t *testing.T) {
-	data, err := os.ReadFile("workspace_project_reads.go")
-	if err != nil {
-		t.Fatal(err)
+func TestWorkspaceProjectReadsGeneratedOperationsPreserveWireContracts(t *testing.T) {
+	document := readOpenAPI(t)
+	paths := map[string]string{
+		"/api/users/me/workspaces/":                "get_api_users_me_workspaces",
+		"/api/workspaces/":                         "get_api_workspaces",
+		"/api/workspaces/{slug}/":                  "get_api_workspaces_by_slug",
+		"/api/workspaces/{slug}/project-stats/":    "get_api_workspaces_by_slug_project_stats",
+		"/api/workspaces/{slug}/projects/":         "get_api_workspaces_by_slug_projects",
+		"/api/workspaces/{slug}/projects/details/": "get_api_workspaces_by_slug_projects_details",
+		"/api/workspaces/{slug}/projects/{pk}/":    "get_api_workspaces_by_slug_projects_by_pk",
 	}
-	design := string(data)
-	methods := []string{
-		`Method("user_workspaces"`,
-		`Method("workspaces"`,
-		`Method("workspace"`,
-		`Method("project_stats"`,
-		`Method("projects"`,
-		`Method("project_details"`,
-		`Method("project"`,
+	operationIDs := map[string]bool{}
+	owners := 0
+	for path, operationID := range paths {
+		t.Run(path, func(t *testing.T) {
+			operation, exists := document.Paths[path]["get"]
+			if !exists {
+				t.Fatal("GET operation missing")
+			}
+			if operation.OperationID != operationID || operationIDs[operation.OperationID] {
+				t.Fatalf("missing or duplicate operation ID %q", operation.OperationID)
+			}
+			operationIDs[operation.OperationID] = true
+			var response struct {
+				Headers map[string]json.RawMessage `json:"headers"`
+				Content map[string]json.RawMessage `json:"content"`
+			}
+			if err := json.Unmarshal(operation.Responses["200"], &response); err != nil {
+				t.Fatal(err)
+			}
+			if _, exists := response.Content["application/json"]; !exists {
+				t.Error("200 response must publish application/json")
+			}
+			if _, exists := response.Headers["Content-Type"]; !exists {
+				t.Error("200 response must publish Content-Type metadata")
+			}
+			for _, parameter := range resolvedPageParameters(t, document, operation.Parameters) {
+				if parameter.Name != "owner" && parameter.Name != "pk" {
+					continue
+				}
+				if parameter.Schema.Type.Value != "string" || parameter.Schema.Format != "" {
+					t.Errorf("%s must reach service validation as an unformatted string: %#v", parameter.Name, parameter.Schema)
+				}
+				if parameter.Name == "owner" {
+					owners++
+				}
+			}
+		})
 	}
-	for _, method := range methods {
-		if strings.Count(design, method) != 1 {
-			t.Errorf("design occurrence count for %s = %d, want 1", method, strings.Count(design, method))
-		}
+	if owners != 3 {
+		t.Errorf("owner parameters=%d want=3", owners)
 	}
-	for _, parameter := range []string{`Param("owner")`, `Param("fields")`, `Param("project_ids")`, `Param("per_page")`, `Param("cursor")`, `Param("order_by")`} {
-		if !strings.Contains(design, parameter) {
-			t.Errorf("design missing operative query parameter %s", parameter)
-		}
-	}
-	if strings.Count(design, "Result(rawJSONResponseMetadata)") != 7 || strings.Count(design, "rawJSONReadResponse(Any)") != 1 {
-		t.Fatalf("raw GET result declarations do not preserve the seven wire contracts")
-	}
-	for _, metadataContract := range []string{`Type("RawJSONResponseMetadata"`, `Required("content_type")`, `Header("content_type:Content-Type")`} {
-		if !strings.Contains(design, metadataContract) {
-			t.Errorf("raw response metadata missing %s", metadataContract)
-		}
-	}
-	for _, method := range []string{`Method("user_workspaces_options"`, `Method("project_stats_options"`, `Method("project_details_options"`} {
-		if strings.Count(design, method) != 1 {
-			t.Errorf("design occurrence count for %s = %d, want 1", method, strings.Count(design, method))
-		}
-	}
-	if !strings.Contains(design, `ContentType("application/json")`) {
-		t.Error("raw JSON responses must declare application/json")
-	}
-
-	if count := strings.Count(design, `Attribute("owner", String)`); count != 3 {
-		t.Errorf("plain post-auth owner payload declarations = %d, want 3", count)
-	}
-	if strings.Contains(design, `Attribute("pk", String, func() { Format(FormatUUID) })`) {
-		t.Error("project pk must reach service-level Django 404 mapping")
-	}
-	for _, modeledError := range []string{"WorkspaceProjectOwnerBadRequest", "WorkspaceProjectValidationError"} {
-		if !strings.Contains(design, modeledError) {
-			t.Errorf("design missing %s", modeledError)
+	for _, name := range []string{"WorkspaceProjectOwnerBadRequest", "WorkspaceProjectValidationError"} {
+		if _, exists := document.Components.Schemas[name]; !exists {
+			t.Errorf("missing validation schema %s", name)
 		}
 	}
 }
