@@ -17,7 +17,8 @@ memberships. A write action is advertised only when the actor administers a
 workspace where that feature is enabled. A selected workspace constrains discovery
 to its immutable ID and slug. Revoked membership removes its capabilities.
 
-Only supplied booleans change; false is a real value. Workspace administrators
+Only supplied booleans change; false is a real value. Explicit null leaves a flag
+unchanged, matching omission, and uses the same normalized receipt input. Workspace administrators
 manage workspace settings. Current project administrators manage project settings;
 workspace administration alone does not grant access to a private project. Reads
 require current active workspace membership and, for project settings, project

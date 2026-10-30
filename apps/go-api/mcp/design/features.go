@@ -8,7 +8,7 @@ var workspaceGetFeatures = Type("WorkspaceGetFeatures", func() { pageTarget("get
 var workspaceUpdateFeatures = Type("WorkspaceUpdateFeatures", func() {
 	pageTarget("update_features", false)
 	for _, key := range workspaceFeatureKeys {
-		Attribute(key, Boolean)
+		Attribute(key, Boolean, func() { Nullable() })
 	}
 	mutationExtensions(true)
 })
@@ -16,7 +16,7 @@ var projectGetFeatures = Type("ProjectGetFeatures", func() { pageTarget("get_fea
 var projectUpdateFeatures = Type("ProjectUpdateFeatures", func() {
 	pageTarget("update_features", false, "project_id")
 	for _, key := range projectFeatureKeys {
-		Attribute(key, Boolean)
+		Attribute(key, Boolean, func() { Nullable() })
 	}
 	mutationExtensions(true)
 })

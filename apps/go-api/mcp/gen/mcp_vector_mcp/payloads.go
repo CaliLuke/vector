@@ -1329,21 +1329,21 @@ type ProjectRetrieveTransport struct {
 
 // ProjectUpdateFeaturesTransport preserves JSON field presence before service conversion.
 type ProjectUpdateFeaturesTransport struct {
-	Action           *string `json:"action"`
-	WorkspaceSlug    *string `json:"workspace_slug,omitzero"`
-	ProjectID        *string `json:"project_id"`
-	Modules          *bool   `json:"modules,omitzero"`
-	Cycles           *bool   `json:"cycles,omitzero"`
-	Views            *bool   `json:"views,omitzero"`
-	Pages            *bool   `json:"pages,omitzero"`
-	Intakes          *bool   `json:"intakes,omitzero"`
-	WorkitemTypes    *bool   `json:"workitem_types,omitzero"`
-	Epics            *bool   `json:"epics,omitzero"`
-	ParallelCycles   *bool   `json:"parallel_cycles,omitzero"`
-	ProjectUpdates   *bool   `json:"project_updates,omitzero"`
-	Workflows        *bool   `json:"workflows,omitzero"`
-	RequestID        *string `json:"request_id,omitzero"`
-	ExpectedRevision *string `json:"expected_revision,omitzero"`
+	Action           *string             `json:"action"`
+	WorkspaceSlug    *string             `json:"workspace_slug,omitzero"`
+	ProjectID        *string             `json:"project_id"`
+	Modules          loom.Nullable[bool] `json:"modules,omitzero"`
+	Cycles           loom.Nullable[bool] `json:"cycles,omitzero"`
+	Views            loom.Nullable[bool] `json:"views,omitzero"`
+	Pages            loom.Nullable[bool] `json:"pages,omitzero"`
+	Intakes          loom.Nullable[bool] `json:"intakes,omitzero"`
+	WorkitemTypes    loom.Nullable[bool] `json:"workitem_types,omitzero"`
+	Epics            loom.Nullable[bool] `json:"epics,omitzero"`
+	ParallelCycles   loom.Nullable[bool] `json:"parallel_cycles,omitzero"`
+	ProjectUpdates   loom.Nullable[bool] `json:"project_updates,omitzero"`
+	Workflows        loom.Nullable[bool] `json:"workflows,omitzero"`
+	RequestID        *string             `json:"request_id,omitzero"`
+	ExpectedRevision *string             `json:"expected_revision,omitzero"`
 }
 
 // ProjectUpdateTransport preserves JSON field presence before service conversion.
@@ -2566,16 +2566,16 @@ type WorkspaceRetrieveTransport struct {
 
 // WorkspaceUpdateFeaturesTransport preserves JSON field presence before service conversion.
 type WorkspaceUpdateFeaturesTransport struct {
-	Action           *string `json:"action"`
-	WorkspaceSlug    *string `json:"workspace_slug,omitzero"`
-	ProjectGrouping  *bool   `json:"project_grouping,omitzero"`
-	Initiatives      *bool   `json:"initiatives,omitzero"`
-	Teams            *bool   `json:"teams,omitzero"`
-	Customers        *bool   `json:"customers,omitzero"`
-	Wiki             *bool   `json:"wiki,omitzero"`
-	Pi               *bool   `json:"pi,omitzero"`
-	RequestID        *string `json:"request_id,omitzero"`
-	ExpectedRevision *string `json:"expected_revision,omitzero"`
+	Action           *string             `json:"action"`
+	WorkspaceSlug    *string             `json:"workspace_slug,omitzero"`
+	ProjectGrouping  loom.Nullable[bool] `json:"project_grouping,omitzero"`
+	Initiatives      loom.Nullable[bool] `json:"initiatives,omitzero"`
+	Teams            loom.Nullable[bool] `json:"teams,omitzero"`
+	Customers        loom.Nullable[bool] `json:"customers,omitzero"`
+	Wiki             loom.Nullable[bool] `json:"wiki,omitzero"`
+	Pi               loom.Nullable[bool] `json:"pi,omitzero"`
+	RequestID        *string             `json:"request_id,omitzero"`
+	ExpectedRevision *string             `json:"expected_revision,omitzero"`
 }
 
 // CollectionRequest is a sum-type union.
@@ -28588,34 +28588,34 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 			},
 		},
 	}
-	schema8Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema8Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema8Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema8Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema8Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema8Nodes[10] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[10] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema8Nodes[11] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[11] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema8Nodes[12] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[12] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema8Nodes[13] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[13] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema8Nodes[14] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[14] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	schema8Nodes[15] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
@@ -28677,34 +28677,34 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 			},
 		},
 	}
-	runtime8Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime8Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime8Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime8Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime8Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime8Nodes[10] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[10] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime8Nodes[11] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[11] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime8Nodes[12] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[12] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime8Nodes[13] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[13] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime8Nodes[14] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[14] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	runtime8Nodes[15] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
@@ -53991,22 +53991,22 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 			MaxLength: new(255),
 		},
 	}
-	schema3Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema3Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema3Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema3Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema3Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema3Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema3Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema3Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema3Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema3Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema3Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema3Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	schema3Nodes[10] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
@@ -54056,22 +54056,22 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 			MaxLength: new(255),
 		},
 	}
-	runtime3Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime3Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime3Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime3Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime3Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime3Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime3Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime3Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime3Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime3Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime3Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime3Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	runtime3Nodes[10] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
@@ -54336,7 +54336,7 @@ func decodeWorkspacePayload(raw jsontext.Value) (out *vector_mcp.WorkspaceReques
 	if err = decodeMCPPayloadStrict(raw, &in); err != nil {
 		return out, err
 	}
-	if err = sdkbridge.ValidateToolArguments(raw, "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"get_features\"]},\"include_revision\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update_features\"]},\"customers\":{\"type\":\"boolean\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"initiatives\":{\"type\":\"boolean\"},\"pi\":{\"type\":\"boolean\"},\"project_grouping\":{\"type\":\"boolean\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"teams\":{\"type\":\"boolean\"},\"wiki\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"get_features\"]},{\"type\":\"string\",\"enum\":[\"update_features\"]}]},\"customers\":{\"type\":\"boolean\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"include_revision\":{\"type\":\"boolean\"},\"initiatives\":{\"type\":\"boolean\"},\"pi\":{\"type\":\"boolean\"},\"project_grouping\":{\"type\":\"boolean\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"teams\":{\"type\":\"boolean\"},\"wiki\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"); err != nil {
+	if err = sdkbridge.ValidateToolArguments(raw, "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"get_features\"]},\"include_revision\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update_features\"]},\"customers\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"initiatives\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"pi\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_grouping\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"teams\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"wiki\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"get_features\"]},{\"type\":\"string\",\"enum\":[\"update_features\"]}]},\"customers\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"include_revision\":{\"type\":\"boolean\"},\"initiatives\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"pi\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_grouping\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"teams\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"wiki\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"); err != nil {
 		return out, err
 	}
 
@@ -54454,7 +54454,7 @@ func decodeProjectPayload(raw jsontext.Value) (out *vector_mcp.ProjectRequest, e
 	if err = decodeMCPPayloadStrict(raw, &in); err != nil {
 		return out, err
 	}
-	if err = sdkbridge.ValidateToolArguments(raw, "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\",\"description\":\"Vector extension: include an opaque revision token for guarded writes.\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"archive\",\"unarchive\"]},\"expected_revision\":{\"type\":\"string\",\"description\":\"Optional opaque Vector revision from retrieve with include_revision. Conflicts fail atomically.\",\"minLength\":1,\"maxLength\":128},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"description\":\"Optional Vector retry identity; retained for at least 24 hours.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"name\",\"identifier\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"archive_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"close_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"cover_image\":{\"type\":\"string\"},\"cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"default_assignee\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"emoji\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"identifier\":{\"type\":\"string\"},\"intakes\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"modules\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"pages\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_lead\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"timezone\":{\"type\":\"string\"},\"views\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workitem_types\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"archive_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"close_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"cover_image\":{\"type\":\"string\"},\"cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"default_assignee\":{\"type\":\"string\"},\"default_state\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"emoji\":{\"type\":\"string\"},\"estimate\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"identifier\":{\"type\":\"string\"},\"intakes\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"is_time_tracking_enabled\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"modules\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"network\":{\"anyOf\":[{\"type\":\"integer\",\"enum\":[0,2],\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},{\"type\":\"null\"}]},\"pages\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_lead\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"timezone\":{\"type\":\"string\"},\"views\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workitem_types\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"worklog_summary\"]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"get_features\"]},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update_features\"]},\"cycles\":{\"type\":\"boolean\"},\"epics\":{\"type\":\"boolean\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"intakes\":{\"type\":\"boolean\"},\"modules\":{\"type\":\"boolean\"},\"pages\":{\"type\":\"boolean\"},\"parallel_cycles\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_updates\":{\"type\":\"boolean\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"views\":{\"type\":\"boolean\"},\"workflows\":{\"type\":\"boolean\"},\"workitem_types\":{\"type\":\"boolean\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"archive\",\"unarchive\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"worklog_summary\"]},{\"type\":\"string\",\"enum\":[\"get_features\"]},{\"type\":\"string\",\"enum\":[\"update_features\"]}]},\"archive_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"close_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"cover_image\":{\"type\":\"string\"},\"cursor\":{\"type\":\"string\"},\"cycles\":{\"anyOf\":[{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},{\"type\":\"boolean\"}]},\"default_assignee\":{\"type\":\"string\"},\"default_state\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"emoji\":{\"type\":\"string\"},\"epics\":{\"type\":\"boolean\"},\"estimate\":{\"type\":\"string\"},\"expected_revision\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Optional opaque Vector revision from retrieve with include_revision. Conflicts fail atomically.\",\"minLength\":1,\"maxLength\":128},{\"type\":\"string\",\"minLength\":1}]},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"identifier\":{\"type\":\"string\"},\"include_revision\":{\"anyOf\":[{\"type\":\"boolean\",\"description\":\"Vector extension: include an opaque revision token for guarded writes.\"},{\"type\":\"boolean\"}]},\"intakes\":{\"anyOf\":[{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},{\"type\":\"boolean\"}]},\"is_time_tracking_enabled\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"modules\":{\"anyOf\":[{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},{\"type\":\"boolean\"}]},\"name\":{\"type\":\"string\"},\"network\":{\"anyOf\":[{\"type\":\"integer\",\"enum\":[0,2],\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},{\"type\":\"null\"}]},\"order_by\":{\"type\":\"string\"},\"pages\":{\"anyOf\":[{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},{\"type\":\"boolean\"}]},\"parallel_cycles\":{\"type\":\"boolean\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_lead\":{\"type\":\"string\"},\"project_updates\":{\"type\":\"boolean\"},\"request_id\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Optional Vector retry identity; retained for at least 24 hours.\",\"format\":\"uuid\"},{\"type\":\"string\",\"format\":\"uuid\"}]},\"timezone\":{\"type\":\"string\"},\"views\":{\"anyOf\":[{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},{\"type\":\"boolean\"}]},\"workflows\":{\"type\":\"boolean\"},\"workitem_types\":{\"anyOf\":[{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},{\"type\":\"boolean\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"); err != nil {
+	if err = sdkbridge.ValidateToolArguments(raw, "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\",\"description\":\"Vector extension: include an opaque revision token for guarded writes.\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"archive\",\"unarchive\"]},\"expected_revision\":{\"type\":\"string\",\"description\":\"Optional opaque Vector revision from retrieve with include_revision. Conflicts fail atomically.\",\"minLength\":1,\"maxLength\":128},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"description\":\"Optional Vector retry identity; retained for at least 24 hours.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"name\",\"identifier\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"archive_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"close_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"cover_image\":{\"type\":\"string\"},\"cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"default_assignee\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"emoji\":{\"type\":\"string\"},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"identifier\":{\"type\":\"string\"},\"intakes\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"modules\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"pages\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_lead\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"timezone\":{\"type\":\"string\"},\"views\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workitem_types\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"archive_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"close_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"cover_image\":{\"type\":\"string\"},\"cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"default_assignee\":{\"type\":\"string\"},\"default_state\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"emoji\":{\"type\":\"string\"},\"estimate\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"identifier\":{\"type\":\"string\"},\"intakes\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"is_time_tracking_enabled\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"modules\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"network\":{\"anyOf\":[{\"type\":\"integer\",\"enum\":[0,2],\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},{\"type\":\"null\"}]},\"pages\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_lead\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"timezone\":{\"type\":\"string\"},\"views\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workitem_types\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"worklog_summary\"]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"get_features\"]},\"include_revision\":{\"type\":\"boolean\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update_features\"]},\"cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"epics\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1},\"intakes\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"modules\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"pages\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"parallel_cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_updates\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"views\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workflows\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workitem_types\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"archive\",\"unarchive\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"worklog_summary\"]},{\"type\":\"string\",\"enum\":[\"get_features\"]},{\"type\":\"string\",\"enum\":[\"update_features\"]}]},\"archive_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"close_in\":{\"type\":\"integer\",\"description\":\"Zero or omitted leaves the setting unchanged.\",\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},\"cover_image\":{\"type\":\"string\"},\"cursor\":{\"type\":\"string\"},\"cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"default_assignee\":{\"type\":\"string\"},\"default_state\":{\"type\":\"string\"},\"description\":{\"type\":\"string\"},\"description_html\":{\"type\":\"string\"},\"emoji\":{\"type\":\"string\"},\"epics\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"estimate\":{\"type\":\"string\"},\"expected_revision\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Optional opaque Vector revision from retrieve with include_revision. Conflicts fail atomically.\",\"minLength\":1,\"maxLength\":128},{\"type\":\"string\",\"minLength\":1}]},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"identifier\":{\"type\":\"string\"},\"include_revision\":{\"anyOf\":[{\"type\":\"boolean\",\"description\":\"Vector extension: include an opaque revision token for guarded writes.\"},{\"type\":\"boolean\"}]},\"intakes\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"is_time_tracking_enabled\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"modules\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"name\":{\"type\":\"string\"},\"network\":{\"anyOf\":[{\"type\":\"integer\",\"enum\":[0,2],\"minimum\":-9223372036854775808,\"maximum\":9223372036854775807},{\"type\":\"null\"}]},\"order_by\":{\"type\":\"string\"},\"pages\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"parallel_cycles\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_lead\":{\"type\":\"string\"},\"project_updates\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"request_id\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Optional Vector retry identity; retained for at least 24 hours.\",\"format\":\"uuid\"},{\"type\":\"string\",\"format\":\"uuid\"}]},\"timezone\":{\"type\":\"string\"},\"views\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workflows\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workitem_types\":{\"anyOf\":[{\"type\":\"boolean\"},{\"type\":\"null\"}]},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"); err != nil {
 		return out, err
 	}
 
@@ -56805,15 +56805,15 @@ func decodeWorkspacePayloadWorkspaceUpdateFeaturesTransportToVectorMcpWorkspaceU
 	res := &vector_mcp.WorkspaceUpdateFeatures{
 		Action:           *v.Action,
 		WorkspaceSlug:    v.WorkspaceSlug,
-		ProjectGrouping:  v.ProjectGrouping,
-		Initiatives:      v.Initiatives,
-		Teams:            v.Teams,
-		Customers:        v.Customers,
-		Wiki:             v.Wiki,
-		Pi:               v.Pi,
 		RequestID:        v.RequestID,
 		ExpectedRevision: v.ExpectedRevision,
 	}
+	res.ProjectGrouping = v.ProjectGrouping
+	res.Initiatives = v.Initiatives
+	res.Teams = v.Teams
+	res.Customers = v.Customers
+	res.Wiki = v.Wiki
+	res.Pi = v.Pi
 
 	return res
 }
@@ -57057,19 +57057,19 @@ func decodeProjectPayloadProjectUpdateFeaturesTransportToVectorMcpProjectUpdateF
 		Action:           *v.Action,
 		WorkspaceSlug:    v.WorkspaceSlug,
 		ProjectID:        *v.ProjectID,
-		Modules:          v.Modules,
-		Cycles:           v.Cycles,
-		Views:            v.Views,
-		Pages:            v.Pages,
-		Intakes:          v.Intakes,
-		WorkitemTypes:    v.WorkitemTypes,
-		Epics:            v.Epics,
-		ParallelCycles:   v.ParallelCycles,
-		ProjectUpdates:   v.ProjectUpdates,
-		Workflows:        v.Workflows,
 		RequestID:        v.RequestID,
 		ExpectedRevision: v.ExpectedRevision,
 	}
+	res.Modules = v.Modules
+	res.Cycles = v.Cycles
+	res.Views = v.Views
+	res.Pages = v.Pages
+	res.Intakes = v.Intakes
+	res.WorkitemTypes = v.WorkitemTypes
+	res.Epics = v.Epics
+	res.ParallelCycles = v.ParallelCycles
+	res.ProjectUpdates = v.ProjectUpdates
+	res.Workflows = v.Workflows
 
 	return res
 }

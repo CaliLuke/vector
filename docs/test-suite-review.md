@@ -96,6 +96,16 @@ cleanup errors alongside the original cause, without repeating the migration.
 Focused tests cover these failure paths; a disposable PostgreSQL test proves that
 an output failure preserves the applied schema and leaves its version readable.
 
+MCP workspace and project feature updates now preserve explicit null flags,
+matching the pinned handler and SDK's omitted-field behavior. Generated-server
+regressions cover every nullable flag, false values, rejected strings, and receipt
+hash equivalence. Workspace tests also cover tenant isolation, role restrictions,
+native-writer revisions, durable audit snapshots, replay without another audit,
+and atomic rollback when the audit insert fails. A controlled concurrent-write
+test permits only one commit for a shared expected revision. Exact workspace
+identity assertions now use the known input credential and a name distinct from
+the slug; they no longer rely only on a branch selected by the returned auth tag.
+
 ## Coverage and execution gaps
 
 The previous CI omitted Live and codemod tests. The default Go command omitted

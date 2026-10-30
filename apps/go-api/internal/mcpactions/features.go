@@ -62,14 +62,17 @@ func (s *Service) featureOperation(ctx context.Context, input interface{ Validat
 		case "action", "project_id", "workspace_slug", "request_id", "expected_revision", "include_revision":
 			continue
 		}
-		var flag bool
+		var flag *bool
 		if json.Unmarshal(value, &flag) != nil {
 			return nil, api.MakeInvalidParams(errors.New("feature flags must be booleans"))
+		}
+		if flag == nil {
+			continue
 		}
 		if key == "workitem_types" {
 			key = "work_item_types"
 		}
-		cmd.Values[key] = flag
+		cmd.Values[key] = *flag
 	}
 	write := in.Action == "update_features"
 	ctx, actor, err := actionActor(ctx, in.Workspace, write)

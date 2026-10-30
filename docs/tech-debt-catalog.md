@@ -5,8 +5,8 @@ debt. It consolidates the quality baselines, MCP acceptance tracker, test review
 and previously local work log. It does not claim an exhaustive audit of every
 possible defect.
 
-Snapshot: `593a73b64054c00e72a5b74c3fa0f831b7bb3d67`, 2026-10-30.
-Both full quality gates passed at this revision, including 13,285 Go test cases
+Snapshot: `1b29573b8e18c9cb55afb100baede9c6f532a03a`, 2026-10-30.
+Both full quality gates passed at this revision, including 13,329 Go test cases
 with no failed or skipped cases. Passing gates allow the recorded debt below;
 they do not mean this catalog is complete.
 
@@ -70,9 +70,18 @@ The first acceptance batch covers workspace listing, selection and live access.
 Its 62 focused leaf cases cover both credentials and protocols, membership
 revocation, preservation of another workspace, and credential changes after
 transport authentication. The [workspace acceptance evidence](mcp-parity.md#workspace-read-acceptance-mcp-01)
-records the exact scope. No application code changed. This closes only the recorded listing
-read-contract gap. Next reconcile `workspace.retrieve`'s pinned
-identity projection, then workspace feature read/write guarantees.
+records the exact scope. That published batch changed no application code and
+closed the recorded listing read-contract gap.
+
+Identity and feature-setting acceptance now includes exact responses and storage proof:
+41 focused leaf cases cover both credentials/protocols, native storage, tenant
+isolation, role restrictions, receipt conflicts, native-writer revisions,
+concurrent CAS, and audit-failure rollback. It also fixes a reproduced null-flag
+compatibility defect: explicit null must preserve the flag and normalize like an
+omitted field. [Feature acceptance evidence](mcp-parity.md#workspace-feature-acceptance-mcp-01-mcp-02)
+records the source contract and checks. Next prove feature credential revocation
+while a write waits, then reconcile project feature permissions and revisions.
+Other action rows and inventory categories remain open.
 
 The following runtime items are already members of ERR-01/ERR-02 and COV-01.
 They are prepared follow-ups, not evidence of completed fixes:

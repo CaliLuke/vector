@@ -17,6 +17,7 @@ func TestWorkspaceSelectionAndListingAcrossCredentialsAndProtocols(t *testing.T)
  INSERT INTO workspace_members(workspace_id,member_id,role,is_active)
  VALUES('20000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000001',15,true);
  UPDATE workspaces SET name=slug;
+ UPDATE workspaces SET name='Second workspace' WHERE slug='workspace-two';
  INSERT INTO workspaces(id,slug,name) VALUES('20000000-0000-4000-8000-000000000003','other-user-workspace','Other user workspace');
  INSERT INTO workspace_members(workspace_id,member_id,role,is_active)
  VALUES('20000000-0000-4000-8000-000000000003','10000000-0000-4000-8000-000000000002',15,true);
@@ -25,9 +26,10 @@ func TestWorkspaceSelectionAndListingAcrossCredentialsAndProtocols(t *testing.T)
 	for _, mode := range []struct {
 		name, token string
 		handler     http.Handler
+		identity    string
 	}{
-		{"personal token", "test-one", f.handler(t, nil)},
-		{"OAuth", "oauth-user", oauthHandler(t, f, auth.Authenticate)},
+		{"personal token", "test-one", f.handler(t, nil), `{"slug":"workspace-two","id":null,"name":null,"connected_via":"api_key_header"}`},
+		{"OAuth", "oauth-user", oauthHandler(t, f, auth.Authenticate), `{"slug":"workspace-two","id":"20000000-0000-4000-8000-000000000002","name":"Second workspace","connected_via":"oauth"}`},
 	} {
 		for _, version := range []string{"2025-11-25", "2026-07-28"} {
 			t.Run(mode.name+"/"+version, func(t *testing.T) {
@@ -36,7 +38,10 @@ func TestWorkspaceSelectionAndListingAcrossCredentialsAndProtocols(t *testing.T)
 				}
 				listed := call("workspace", `{"action":"list"}`)
 				require.False(t, listed.IsError, listed.Content)
-				require.JSONEq(t, `{"results":[{"id":"20000000-0000-4000-8000-000000000001","name":"workspace-one","slug":"workspace-one"},{"id":"20000000-0000-4000-8000-000000000002","name":"workspace-two","slug":"workspace-two"}]}`, string(listed.StructuredContent))
+				require.JSONEq(t, `{"results":[{"id":"20000000-0000-4000-8000-000000000001","name":"workspace-one","slug":"workspace-one"},{"id":"20000000-0000-4000-8000-000000000002","name":"Second workspace","slug":"workspace-two"}]}`, string(listed.StructuredContent))
+				identity := call("workspace", `{"action":"retrieve","workspace_slug":"workspace-two"}`)
+				require.False(t, identity.IsError, identity.Content)
+				require.JSONEq(t, mode.identity, string(identity.StructuredContent))
 				first := call("project", `{"action":"list","workspace_slug":"workspace-one"}`)
 				require.False(t, first.IsError, first.Content)
 				require.Contains(t, string(first.StructuredContent), "SDK project")

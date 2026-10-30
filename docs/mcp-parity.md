@@ -19,7 +19,7 @@ covers both authentication modes and protocol versions.
 The local collector recorded the revision conflict with its request ID and trace.
 A controlled outage of the isolated Redis service returned a sanitized MCP 503
 and produced an error-level record with a matching error trace, without the token
-or authorization header. Full frontend and Go gates passed at `593a73b6` on 2026-10-30.
+or authorization header. Full frontend and Go gates passed at `1b29573b` on 2026-10-30.
 The [debt catalog](tech-debt-catalog.md) records the remaining coverage and
 acceptance work; a passing gate does not close those requirements.
 
@@ -140,8 +140,8 @@ The [PQL foundation](pql.md) adds shared scalar, relationship (including native 
 | `project.archive`                          | Mutation | `project_id`                                             | PAT and OAuth         | Browser conflict and deployed issuer verification                                     |
 | `project.unarchive`                        | Mutation | `project_id`                                             | PAT and OAuth         | Browser conflict and deployed issuer verification                                     |
 | `project.worklog_summary`                  | Read     | `project_id`                                             | Workflow verified     | Combined visibility, seconds conversion and aggregate checks                          |
-| `project.get_features`                     | Read     | `project_id`                                             | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
-| `project.update_features`                  | Mutation | `project_id`                                             | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
+| `project.get_features`                     | Read     | `project_id`                                             | Projection verified   | Reconcile project scope and private-project permissions                               |
+| `project.update_features`                  | Mutation | `project_id`                                             | Null/false verified   | Project permissions, native-writer revisions, receipts and effects                    |
 | `project_estimate.retrieve`                | Read     | `project_id`                                             | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `project_estimate.create`                  | Mutation | `project_id`, `name`                                     | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `project_estimate.update`                  | Mutation | `project_id`                                             | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
@@ -238,9 +238,9 @@ The [PQL foundation](pql.md) adds shared scalar, relationship (including native 
 | `workitem_type.delete`                     | Mutation | `workitem_type_id`                                       | Workflow verified     | Combined regression, authorization, receipt and native policy checks                  |
 | `workitem_type.import_to_project`          | Mutation | `project_id`, `workitem_type_ids`                        | Workflow verified     | Combined regression, authorization, receipt and native policy checks                  |
 | `workspace.list`                           | Read     | None                                                     | Workflow verified     | Read contract verified; see workspace acceptance evidence below                       |
-| `workspace.retrieve`                       | Read     | None                                                     | Workflow verified     | Current access proven; pinned identity projection review remains                      |
-| `workspace.get_features`                   | Read     | None                                                     | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
-| `workspace.update_features`                | Mutation | None                                                     | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
+| `workspace.retrieve`                       | Read     | None                                                     | Read verified         | None for the documented identity contract; see workspace evidence                     |
+| `workspace.get_features`                   | Read     | None                                                     | Read verified         | None for the documented workspace feature read contract                               |
+| `workspace.update_features`                | Mutation | None                                                     | More mutation proof   | Credential revocation while waiting for a write; see feature evidence                 |
 | `template.list`                            | Read     | `kind`                                                   | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
 | `template.create`                          | Mutation | `kind`, `name`, `template_data`                          | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
 | `template.update`                          | Mutation | `kind`, `template_id`                                    | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
@@ -326,7 +326,50 @@ both credentials; it still rejects a scoped member read. The focused selection,
 live-access, and late-revalidation run has 62 leaf cases across four tests.
 
 This closes the recorded `workspace.list` read-contract proof gap. Workspace
-retrieval has current-access proof, but its pinned connection-metadata projection
-still needs reconciliation with the contract tests. Receipt, CAS and durable-effect
+retrieval now asserts the exact four-field connection metadata for each known
+input credential. OAuth returns the selected workspace's ID and name (distinct
+from its slug); personal tokens retain null ID/name and `api_key_header`. This
+matches the [pinned handler and metadata projection](https://github.com/makeplane/plane-mcp-server/blob/dc7cfd9f3c305891909e2372f0cc507291353801/plane_mcp/client.py),
+with Vector's documented per-call selection and current authorization. Receipt, CAS and durable-effect
 requirements apply to mutations, not these read actions. Feature reads and writes
 remain separate rows; this evidence does not close their domain requirements.
+
+### Workspace feature acceptance (MCP-01, MCP-02)
+
+The [feature regressions](../apps/go-api/internal/mcpactions/workspace_features_integration_test.go)
+cover exact workspace and project feature projections, false versus omitted/null
+updates, the native project-column mapping, and null/omitted receipt equivalence
+under both credentials and protocol revisions. The pinned
+[workspace handler](https://github.com/makeplane/plane-mcp-server/blob/dc7cfd9f3c305891909e2372f0cc507291353801/plane_mcp/tools/workspace.py)
+and [project handler](https://github.com/makeplane/plane-mcp-server/blob/dc7cfd9f3c305891909e2372f0cc507291353801/plane_mcp/tools/project.py)
+accept optional nullable booleans. The `WorkspaceFeature` and `ProjectFeature`
+models and their `update_features` methods were inspected in the published
+[plane-sdk 0.3.1 source release](https://pypi.org/project/plane-sdk/0.3.1/);
+both SDK methods omit null fields from PATCH requests. The source archive SHA-256
+is `e093f0d6cc83a155cc9e1670d26da14e8f57f4dc33fed9672aa785f70662ec64`.
+
+The regression first reproduced null rejection in both tools. Making the source
+contract nullable exposed conversion of null to false in the existing flag
+normalizer. The fix now skips null flags before forming the mutation and its
+receipt hash. Explicit false remains a change; nonboolean strings are rejected.
+Only the affected MCP design was regenerated.
+
+Workspace proof covers guest/member reads without write permission, foreign and
+revoked workspace rejection without data or audit changes, preservation of another
+workspace, durable audit before/after snapshots, changed-input request conflicts,
+replay after native edits, and stale revisions after native workspace or project
+feature writes. A forced audit constraint failure rolls back flags, revisions and
+receipts; retrying the same key succeeds and replays without another audit row.
+The existing catalogue workflow also checks revoked-role replay rejection.
+
+The [concurrent CAS regression](../apps/go-api/internal/mcpactions/workspace_feature_concurrency_integration_test.go)
+holds the feature row until two writes are waiting. Exactly one flag change,
+audit row and receipt commit; the other call returns a revision conflict. Shared
+receipt-engine tests cover cancellation and lost commit acknowledgements. Features
+persist audit events in the same transaction and do not dispatch external effects.
+
+The focused identity/feature run contains 41 leaf cases across nine tests. This
+closes workspace identity and feature-read projection/scope proof. Feature writes
+still need direct evidence of credential revocation while waiting at the storage
+boundary. Project feature permissions and native-writer revision acceptance remain
+separate work; the null-handling fix does not close those rows.

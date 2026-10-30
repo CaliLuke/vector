@@ -2172,21 +2172,21 @@ type ProjectUpdate struct {
 }
 
 type ProjectUpdateFeatures struct {
-	Action           string  `json:"action"`
-	WorkspaceSlug    *string `json:"workspace_slug,omitzero"`
-	ProjectID        string  `json:"project_id"`
-	Modules          *bool   `json:"modules,omitzero"`
-	Cycles           *bool   `json:"cycles,omitzero"`
-	Views            *bool   `json:"views,omitzero"`
-	Pages            *bool   `json:"pages,omitzero"`
-	Intakes          *bool   `json:"intakes,omitzero"`
-	WorkitemTypes    *bool   `json:"workitem_types,omitzero"`
-	Epics            *bool   `json:"epics,omitzero"`
-	ParallelCycles   *bool   `json:"parallel_cycles,omitzero"`
-	ProjectUpdates   *bool   `json:"project_updates,omitzero"`
-	Workflows        *bool   `json:"workflows,omitzero"`
-	RequestID        *string `json:"request_id,omitzero"`
-	ExpectedRevision *string `json:"expected_revision,omitzero"`
+	Action           string              `json:"action"`
+	WorkspaceSlug    *string             `json:"workspace_slug,omitzero"`
+	ProjectID        string              `json:"project_id"`
+	Modules          loom.Nullable[bool] `json:"modules,omitzero"`
+	Cycles           loom.Nullable[bool] `json:"cycles,omitzero"`
+	Views            loom.Nullable[bool] `json:"views,omitzero"`
+	Pages            loom.Nullable[bool] `json:"pages,omitzero"`
+	Intakes          loom.Nullable[bool] `json:"intakes,omitzero"`
+	WorkitemTypes    loom.Nullable[bool] `json:"workitem_types,omitzero"`
+	Epics            loom.Nullable[bool] `json:"epics,omitzero"`
+	ParallelCycles   loom.Nullable[bool] `json:"parallel_cycles,omitzero"`
+	ProjectUpdates   loom.Nullable[bool] `json:"project_updates,omitzero"`
+	Workflows        loom.Nullable[bool] `json:"workflows,omitzero"`
+	RequestID        *string             `json:"request_id,omitzero"`
+	ExpectedRevision *string             `json:"expected_revision,omitzero"`
 }
 
 type ProjectWorklogSummary struct {
@@ -13779,16 +13779,16 @@ type WorkspaceRetrieve struct {
 }
 
 type WorkspaceUpdateFeatures struct {
-	Action           string  `json:"action"`
-	WorkspaceSlug    *string `json:"workspace_slug,omitzero"`
-	ProjectGrouping  *bool   `json:"project_grouping,omitzero"`
-	Initiatives      *bool   `json:"initiatives,omitzero"`
-	Teams            *bool   `json:"teams,omitzero"`
-	Customers        *bool   `json:"customers,omitzero"`
-	Wiki             *bool   `json:"wiki,omitzero"`
-	Pi               *bool   `json:"pi,omitzero"`
-	RequestID        *string `json:"request_id,omitzero"`
-	ExpectedRevision *string `json:"expected_revision,omitzero"`
+	Action           string              `json:"action"`
+	WorkspaceSlug    *string             `json:"workspace_slug,omitzero"`
+	ProjectGrouping  loom.Nullable[bool] `json:"project_grouping,omitzero"`
+	Initiatives      loom.Nullable[bool] `json:"initiatives,omitzero"`
+	Teams            loom.Nullable[bool] `json:"teams,omitzero"`
+	Customers        loom.Nullable[bool] `json:"customers,omitzero"`
+	Wiki             loom.Nullable[bool] `json:"wiki,omitzero"`
+	Pi               loom.Nullable[bool] `json:"pi,omitzero"`
+	RequestID        *string             `json:"request_id,omitzero"`
+	ExpectedRevision *string             `json:"expected_revision,omitzero"`
 }
 
 // CollectionRequest is a sum-type union.
@@ -54073,34 +54073,34 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 			},
 		},
 	}
-	schema8Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema8Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema8Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema8Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema8Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema8Nodes[10] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[10] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema8Nodes[11] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[11] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema8Nodes[12] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[12] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema8Nodes[13] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[13] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema8Nodes[14] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema8Nodes[14] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	schema8Nodes[15] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
@@ -54162,34 +54162,34 @@ func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
 			},
 		},
 	}
-	runtime8Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime8Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime8Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime8Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime8Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime8Nodes[10] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[10] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime8Nodes[11] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[11] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime8Nodes[12] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[12] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime8Nodes[13] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[13] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime8Nodes[14] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime8Nodes[14] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	runtime8Nodes[15] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
@@ -93011,22 +93011,22 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 			MaxLength: new(255),
 		},
 	}
-	schema3Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema3Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema3Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema3Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema3Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema3Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema3Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema3Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema3Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema3Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	schema3Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	schema3Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	schema3Nodes[10] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
@@ -93076,22 +93076,22 @@ func (u WorkspaceRequest) matchJSON(data []byte) (WorkspaceRequest, int, error) 
 			MaxLength: new(255),
 		},
 	}
-	runtime3Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime3Nodes[4] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime3Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime3Nodes[5] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime3Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime3Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime3Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime3Nodes[7] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime3Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime3Nodes[8] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
-	runtime3Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+	runtime3Nodes[9] = loom.JSONShape{Kind: "boolean", Nullable: true, Closed: false, NonNullableElements: false,
 		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
 	}
 	runtime3Nodes[10] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
