@@ -48,7 +48,7 @@ func NewProjectLabelReads(
 		return nil, fmt.Errorf("project label reads repository is required")
 	}
 	if sessions == nil {
-		return nil, fmt.Errorf("Django session validator is required")
+		return nil, fmt.Errorf("session validator for Django is required")
 	}
 	return &projectLabelReadsService{repository: repository, sessions: sessions}, nil
 }

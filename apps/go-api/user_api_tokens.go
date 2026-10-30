@@ -34,7 +34,7 @@ func NewUserAPITokens(r apiTokensRepository, s apiTokensSessionValidator) (api.S
 		return nil, fmt.Errorf("api tokens repository is required")
 	}
 	if s == nil {
-		return nil, fmt.Errorf("Django session validator is required")
+		return nil, fmt.Errorf("session validator for Django is required")
 	}
 	return &apiTokensService{r, s}, nil
 }

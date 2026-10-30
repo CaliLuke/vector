@@ -31,7 +31,7 @@ func NewUserProfileFlags(repository userProfileFlagsRepository, sessions userPro
 		return nil, fmt.Errorf("user profile flags repository is required")
 	}
 	if sessions == nil {
-		return nil, fmt.Errorf("Django session validator is required")
+		return nil, fmt.Errorf("session validator for Django is required")
 	}
 	return &userProfileFlagsService{repository: repository, sessions: sessions}, nil
 }

@@ -56,7 +56,7 @@ func NewModuleReads(repository moduleReadsRepository, sessions moduleReadsSessio
 		return nil, fmt.Errorf("module reads repository is required")
 	}
 	if sessions == nil {
-		return nil, fmt.Errorf("Django session validator is required")
+		return nil, fmt.Errorf("session validator for Django is required")
 	}
 	if recentVisits == nil {
 		return nil, fmt.Errorf("module recent visits repository is required")

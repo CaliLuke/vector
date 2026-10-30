@@ -40,7 +40,7 @@ func NewEstimateReads(repository estimateReadsRepository, sessions estimateReads
 		return nil, fmt.Errorf("estimate reads repository is required")
 	}
 	if sessions == nil {
-		return nil, fmt.Errorf("Django session validator is required")
+		return nil, fmt.Errorf("session validator for Django is required")
 	}
 	return &estimateReadsService{repository: repository, sessions: sessions}, nil
 }

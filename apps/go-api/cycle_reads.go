@@ -60,7 +60,7 @@ func NewCycleReads(
 		return nil, fmt.Errorf("cycle reads repository is required")
 	}
 	if sessions == nil {
-		return nil, fmt.Errorf("Django session validator is required")
+		return nil, fmt.Errorf("session validator for Django is required")
 	}
 	if recentVisits == nil {
 		return nil, fmt.Errorf("cycle recent visits recorder is required")

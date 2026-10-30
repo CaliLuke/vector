@@ -29,7 +29,7 @@ func NewWorkspaceSlugCheck(repository workspaceSlugRepository, sessions workspac
 		return nil, fmt.Errorf("workspace slug repository is required")
 	}
 	if sessions == nil {
-		return nil, fmt.Errorf("Django session validator is required")
+		return nil, fmt.Errorf("session validator for Django is required")
 	}
 	return &workspaceSlugService{repository: repository, sessions: sessions}, nil
 }

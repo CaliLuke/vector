@@ -34,7 +34,7 @@ func NewInstanceAdminSession(repository instanceAdminSessionRepository, sessions
 		return nil, fmt.Errorf("instance admin session repository is required")
 	}
 	if sessions == nil {
-		return nil, fmt.Errorf("Django session validator is required")
+		return nil, fmt.Errorf("session validator for Django is required")
 	}
 	return &InstanceAdminSessionService{repository: repository, sessions: sessions}, nil
 }

@@ -41,7 +41,7 @@ func NewDeployBoardReads(
 		return nil, fmt.Errorf("deploy board reads repository is required")
 	}
 	if sessions == nil {
-		return nil, fmt.Errorf("Django session validator is required")
+		return nil, fmt.Errorf("session validator for Django is required")
 	}
 	return &deployBoardReadsService{repository: repository, sessions: sessions}, nil
 }

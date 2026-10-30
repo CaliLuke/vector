@@ -10,10 +10,6 @@
       "count": 3
     },
     {
-      "fingerprint": ["bodyclose", "internal/backgroundtasks/webhook_tasks_test.go", "response body must be closed"],
-      "count": 1
-    },
-    {
       "fingerprint": ["bodyclose", "modulelifecycle/design/transport_test.go", "response body must be closed"],
       "count": 1
     },
@@ -878,27 +874,11 @@
       "count": 1
     },
     {
-      "fingerprint": ["staticcheck", "activity_reads.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
       "fingerprint": [
         "staticcheck",
         "cmd/system/account_authentication_adapters.go",
         "ST1005: error strings should not be capitalized"
       ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "cycle_reads.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "deploy_board_reads.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "estimate_reads.go", "ST1005: error strings should not be capitalized"],
       "count": 1
     },
     {
@@ -910,23 +890,7 @@
       "count": 2
     },
     {
-      "fingerprint": ["staticcheck", "instance_admin_session.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
       "fingerprint": ["staticcheck", "instance_management.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "instance_workspace_slug_check.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "intake_inbox_reads.go", "ST1005: error strings should not be capitalized"],
       "count": 1
     },
     {
@@ -1246,10 +1210,6 @@
       "count": 5
     },
     {
-      "fingerprint": ["staticcheck", "module_reads.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
       "fingerprint": [
         "staticcheck",
         "module_reads.go",
@@ -1258,63 +1218,11 @@
       "count": 2
     },
     {
-      "fingerprint": ["staticcheck", "page_reads.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "project_label_reads.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
       "fingerprint": ["staticcheck", "project_label_writes.go", "ST1005: error strings should not be capitalized"],
       "count": 1
     },
     {
-      "fingerprint": ["staticcheck", "project_membership_reads.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "project_state_reads.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
       "fingerprint": ["staticcheck", "stickies.go", "ST1005: error strings should not be capitalized"],
-      "count": 2
-    },
-    {
-      "fingerprint": ["staticcheck", "user_accounts.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "user_api_tokens.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "user_identity.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "user_instance_admin.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "user_notification_preferences.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "user_profile_flags.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "workspace_project_reads.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["staticcheck", "workspace_slug_check.go", "ST1005: error strings should not be capitalized"],
       "count": 1
     }
   ]

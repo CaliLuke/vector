@@ -105,7 +105,14 @@ func TestWebhookPinnedPostRejectsPrivateTargetWithoutAllowlist(t *testing.T) {
 	t.Setenv("WEBHOOK_ALLOWED_HOSTS", "")
 	t.Setenv("WEBHOOK_ALLOWED_IPS", "")
 	store := &PostgresWebhookTaskStore{}
-	_, err := store.post(context.Background(), "http://127.0.0.1:1234/hook", nil, []byte(`{}`))
+	response, err := store.post(context.Background(), "http://127.0.0.1:1234/hook", nil, []byte(`{}`))
+	if response != nil {
+		defer func() {
+			if closeErr := response.Body.Close(); closeErr != nil {
+				t.Errorf("close HTTP response body: %v", closeErr)
+			}
+		}()
+	}
 	if err == nil || !strings.Contains(err.Error(), "private or reserved IP") {
 		t.Fatalf("private target error = %v, want source URL policy rejection", err)
 	}
