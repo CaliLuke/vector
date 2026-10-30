@@ -8,8 +8,8 @@ estimate of equally sized tasks or time remaining.
 
 ## Current state
 
-Last verified published revision: `8100990201d0ea5b171a05c5543a8a94ced37948`,
-2026-10-30. Both full quality gates passed, including all 13,951 Go test events
+Last verified published revision: `3f044c7a3915c86c54f93041631af73fd143d860`,
+2026-10-30. Both full quality gates passed, including all 13,960 Go test events
 across 118 test-bearing packages, with no failures or skipped tests. Remote
 `main` was verified at that revision.
 
@@ -31,26 +31,35 @@ revision conflicts, MCP edits, archive/restore/delete replay and list visibility
 Both fixture lists exactly match their original empty baselines, and all project
 feature settings are restored. See [the browser evidence](mcp-cycles.md#native-browser-acceptance).
 
+NEW-01 is fixed and published at `3f044c7a`. Its 22 prompt tests pass in both the
+focused race run and the full suite; the enforced package floor is 68.07%.
+
 Keep the checkout unchanged while publication hooks run. Earlier full commands
 passed at `1772ca79`, but that push was rejected because tracked documentation
 changed during hooks. Its changes are now included in published `a2e44d6f`.
 
 ## Ordered execution queue
 
-1. **NEW-01: fix the reproduced parity prompt cancellation defect.** Controlled
-   cancellation and deadline cases both leave the old prompt blocked. The fix
-   delegates the blocking read to a helper process, which cancellation terminates
-   and reaps without closing caller-owned stdin. The applied fix passes 22 race-enabled
-   test events and measures 68.07% package coverage, raising its floor from 62.5%. Finish the quality gates and
-   publication before closing this item.
-2. **MCP-01/MCP-02: continue the action-level acceptance tracker.** Select the
-   next documented domain gap from [the tracker](mcp-parity.md), prioritize current
-   authorization, tenant isolation and durable mutation guarantees, and record
-   that bounded batch here before implementation.
-3. **ERR-01/ERR-02 and COV-01: retire the next recorded runtime gap.** Select exact
-   file/message entries from the inventories below; state the observable failure
-   and regression proof before changing code. Coverage work follows the affected
-   behavior.
+1. **ERR-01/ERR-02: preserve eight API cache cleanup errors.** The exact
+   `cmd/system/main.go` entries are state writes, public metadata throttling,
+   assets, label writes, invitations, authentication Redis, authentication
+   throttling, and account writes. These discarded errors can hide a cleanup
+   failure or lose it behind the original startup/serving error. Preserve both
+   causes and resource identity, keep reverse cleanup order, and prove that one
+   failed close does not prevent the others. The five regression cases and all
+   2,326 affected-package race test events pass.
+   The configured inventory falls 156 → 155 and the strict inventory 933 → 925.
+   COV-01 raises the package floor 73.73% → 74.67%. Finish fast gates and publication
+   before closing this batch.
+2. **MCP-01: reconcile five member reads and workspace listing.** The recorded
+   read contract now has 198 passing test events across 32 relevant test roots,
+   including native HTTP adapter checks. Live proxy comparisons cover all six
+   actions, seven role details, filters, pagination and foreign-role rejection.
+   Publish the [acceptance record](mcp-members.md#member-read-acceptance-mcp-01)
+   and six tracker updates with this batch.
+3. **MCP-01/MCP-02: select the next documented domain gap** from
+   [the tracker](mcp-parity.md). Prioritize current authorization, tenant isolation
+   and durable mutation guarantees, and record the bounded batch before edits.
 4. **STRUCT-01, DUP-01/DUP-02, COV-02 and TS-01:** work through the remaining
    bounded components after the higher-risk acceptance and runtime gaps. Do not
    raise baselines or treat a changed fingerprint as retirement.
@@ -78,8 +87,8 @@ counts to produce a single "tasks remaining" total.
 | --------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | MCP-01    | Complete MCP acceptance                   | [Action-by-action tracker](mcp-parity.md) covers 208 actions across 30 tools, including `workspace.list`. Workflow wiring is implemented; compatibility, scope, concurrency, replay, revisions, and durable-effect acceptance remain to be reconciled.                                                                                                | Each action has inspected contract evidence and the applicable generated-server, authorization, tenant, receipt/CAS, effect, and storage proofs. Update stale tracker statements against current tests; do not count a green full gate as missing domain proof. |
 | MCP-02    | Complete mutation guarantees              | [Write contract and recovery requirements](mcp-writes.md), plus mutation rows in MCP-01. This overlaps MCP-01.                                                                                                                                                                                                                                        | Current authorization on replay, request-hash conflicts, relevant native-writer revisions, contention/cancellation/uncertain commits, and durable effects are proven for the documented contracts.                                                              |
-| ERR-01    | Resolve configured Go findings            | [Exact file/message inventory](../configs/quality/go-lint-baseline.json): **156** occurrences: 52 errcheck, 78 staticcheck, 13 errorlint, 7 bodyclose, 6 nilerr. Some analyzer findings have documented upstream limitations.                                                                                                                         | Fix the underlying behavior or remove an obsolete finding with evidence. No increased allowances, blanket suppressions, or source exclusions. Retained upstream limitations stay in EXT-01.                                                                     |
-| ERR-02    | Retire stricter unchecked-error inventory | [Exact file/line inventory](unchecked-error-inventory.json), refreshed at `6ba02d1d`: **933** findings with `errcheck.check-blank: true`; **52 overlap ERR-01**, leaving **881 additional findings**. The report contains 551 test-file and 382 non-test-file findings.                                                                               | Resolve each retained error according to resource/effect ownership and refresh the inventory. Findings are not automatically defects; no blanket suppression or unchecked-error wrapper. Do not count the 52 configured findings twice.                         |
+| ERR-01    | Resolve configured Go findings            | [Exact file/message inventory](../configs/quality/go-lint-baseline.json): **155** occurrences: 51 errcheck, 78 staticcheck, 13 errorlint, 7 bodyclose, 6 nilerr. Some analyzer findings have documented upstream limitations.                                                                                                                         | Fix the underlying behavior or remove an obsolete finding with evidence. No increased allowances, blanket suppressions, or source exclusions. Retained upstream limitations stay in EXT-01.                                                                     |
+| ERR-02    | Retire stricter unchecked-error inventory | [Exact file/line inventory](unchecked-error-inventory.json), refreshed for the API cache-cleanup batch based on `3f044c7a`: **925** findings with `errcheck.check-blank: true`; **51 overlap ERR-01**, leaving **874 additional findings**. The report contains 551 test-file and 374 non-test-file findings.                                         | Resolve each retained error according to resource/effect ownership and refresh the inventory. Findings are not automatically defects; no blanket suppression or unchecked-error wrapper. Do not count the 51 configured findings twice.                         |
 | TS-01     | Resolve TypeScript findings               | [Full inventory](../.quality/oxlint-full-baseline.json): **1,941** occurrences. [Fast inventory](../.quality/oxlint-fast-baseline.json): 1,062 overlapping occurrences, not additional debt.                                                                                                                                                          | Resolve each recorded finding while preserving contracts. Compiler errors cannot be baselined. Prioritize unsafe data and asynchronous behavior before mechanical style cleanup.                                                                                |
 | STRUCT-01 | Retire Go maintainability exceptions      | [Named functions and scores](../configs/quality/go-maintainability-baseline.json): **17** exceptions, including server assembly and large test functions.                                                                                                                                                                                             | Coherent responsibilities, effect ordering, and narrower interfaces; no score regressions or movement into unmeasured code. Remove allowances only after review.                                                                                                |
 | DUP-01    | Consolidate Go duplication                | [Fingerprint inventory](../configs/quality/go-dupl-baseline.json): **474 directed reports**, represented by 365 fingerprints.                                                                                                                                                                                                                         | Consolidate duplicated responsibilities with behavior checks; reduce the reviewed baseline without adding allowances. Directed reports are not 474 independent refactors.                                                                                       |
@@ -98,13 +107,13 @@ baseline contains the remaining categories and exact affected files.
 
 ## Intake and resolved findings
 
-These records preserve the intake decision and closure evidence. NEW-01 and
-NEW-02 remain open. NEW-03 and NEW-04 are fixed and published. New observations
+These records preserve the intake decision and closure evidence. NEW-02 remains
+open. NEW-01, NEW-03 and NEW-04 are fixed and published. New observations
 are not automatically placed ahead of the existing catalog.
 
-| ID     | Observation                                                                                                                      | Evidence strength                                                                                                                                                          | Next decision                                                                                                         |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| NEW-01 | `parity-diff`'s action prompt ignores its callback context while waiting for stdin, despite the complete-operation timeout flag. | Both controlled cancellation and deadline cases reproduce a blocked read. The applied helper-process fix passes 22 race-enabled test events, with 68.07% package coverage. | Enter/EOF, cancellation/deadline, input ownership and error reporting checks pass. Full publication remains required. |
+| ID     | Observation                                                                                                                      | Evidence strength                                                                                                                                                          | Next decision                                                                                                                               |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| NEW-01 | `parity-diff`'s action prompt ignores its callback context while waiting for stdin, despite the complete-operation timeout flag. | Both controlled cancellation and deadline cases reproduce a blocked read. The applied helper-process fix passes 22 race-enabled test events, with 68.07% package coverage. | Enter/EOF, cancellation/deadline, input ownership and error reporting checks pass. Fixed and published at `3f044c7a`; both full gates pass. |
 
 **NEW-03 — cycle completion/archive calendar boundaries:**
 Before the fix, [`MutateResource`](../apps/go-api/internal/cyclereads/mutations.go)

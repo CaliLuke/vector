@@ -1,7 +1,7 @@
 {
   "version": 1,
   "catalog_id": "ERR-02",
-  "source_commit": "6ba02d1d87582baffa11b5605248f87c4dc023c2",
+  "source_commit": "3f044c7a3915c86c54f93041631af73fd143d860",
   "audit_date": "2026-10-30",
   "tool": "golangci-lint 2.15.0 (Go 1.27.3)",
   "configuration": "Repository .golangci.yml at source_commit; add linters.settings.errcheck.check-blank=true and select --enable-only errcheck. Existing integration tags, test inclusion, generated-source exclusions and timeout retained.",
@@ -9,11 +9,11 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 933,
-    "also_in_ERR_01": 52,
-    "additional_ERR_02": 881,
+    "findings": 925,
+    "also_in_ERR_01": 51,
+    "additional_ERR_02": 874,
     "test_file_findings": 551,
-    "non_test_file_findings": 382
+    "non_test_file_findings": 374
   },
   "findings": [
     {
@@ -602,62 +602,6 @@
       "line": 22,
       "column": 12,
       "message": "Error return value of `mime.ParseMediaType` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/main.go",
-      "line": 739,
-      "column": 17,
-      "message": "Error return value of `projectStateWriteCache.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/main.go",
-      "line": 775,
-      "column": 45,
-      "message": "Error return value of `publicProjectMetadataReadsCache.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/cmd/system/main.go",
-      "line": 854,
-      "column": 17,
-      "message": "Error return value of `assetCache.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/main.go",
-      "line": 1083,
-      "column": 17,
-      "message": "Error return value of `labelWriteCache.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/main.go",
-      "line": 1142,
-      "column": 17,
-      "message": "Error return value of `invitationsCache.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/main.go",
-      "line": 1275,
-      "column": 17,
-      "message": "Error return value of `authRedis.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/main.go",
-      "line": 1284,
-      "column": 17,
-      "message": "Error return value of `authThrottleCache.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/main.go",
-      "line": 1361,
-      "column": 17,
-      "message": "Error return value of `userAccountWritesCache.Close` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -6547,5 +6491,6 @@
       "message": "Error return value of `body.Close` is not checked",
       "also_in_configured_audit": false
     }
-  ]
+  ],
+  "source_state": "Working tree containing the ERR-01/ERR-02 API cache-cleanup batch based on source_commit."
 }

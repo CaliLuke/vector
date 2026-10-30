@@ -8,8 +8,8 @@ application operations in `internal/projectmembershipreads`. Catalogue entries
 describe existing roles; they do not create permissions or custom roles.
 
 This contract is implemented for personal-token and generic OAuth MCP, and the
-HTTP member reads. Production OAuth deployment, complete browser proof and overall
-MCP parity remain incomplete.
+HTTP member reads. The member read acceptance below is verified. Production
+OAuth issuer selection remains deferred, and overall MCP parity remains incomplete.
 
 All four workspace-scoped MCP member actions bind the verified workspace UUID
 in their data statement, so a concurrent slug reassignment cannot switch tenants.
@@ -220,3 +220,49 @@ ties, empty pages and filtered totals. HTTP regressions must preserve existing
 unfiltered field values, auth/throttle order, default pagination and legacy errors.
 No passing role-read test constitutes proof of Commenter, custom roles, OAuth,
 or overall MCP parity.
+
+## Member read acceptance (MCP-01)
+
+The five member actions meet this read contract. The evidence combines generated
+MCP transport tests, primary-database authorization tests, and native HTTP
+comparisons. It does not depend on a future management UI or a production OAuth
+issuer choice.
+
+The full test report published at `81009902` contains 198 passing test events
+across 32 relevant top-level tests, with no failed or skipped cases. These include
+identity and directory projections, project rosters, role definitions, filtering
+before counts and pagination, current credential and membership checks, discovery,
+and immutable workspace binding after slug reassignment. Both credentials and
+protocol revisions are covered by the generated-server authorization tests.
+The [identity](../apps/go-api/internal/mcpactions/member_integration_test.go),
+[directory](../apps/go-api/internal/mcpactions/member_directory_integration_test.go),
+[project roster](../apps/go-api/internal/mcpactions/project_members_integration_test.go),
+[OAuth](../apps/go-api/internal/mcpactions/oauth_integration_test.go),
+[scope](../apps/go-api/internal/mcpactions/scope_integration_test.go), and
+[workspace selection](../apps/go-api/internal/mcpactions/workspace_selection_integration_test.go)
+tests provide the transport proof. The
+[directory](../apps/go-api/internal/projectmembershipreads/directory_integration_test.go)
+and [project roster](../apps/go-api/internal/projectmembershipreads/member_reader_integration_test.go)
+tests cover the shared primary application reads. The
+[native HTTP regressions](../apps/go-api/member_directory_integration_test.go)
+verify unchanged default pagination and identity fields, legacy cursor errors,
+filter validation after throttling, role lookup errors and revocation between
+throttling and the primary read. API-key and existing roster tests in
+[invitations membership](../apps/go-api/invitations_membership_test.go) preserve
+authentication order and empty-string fields.
+
+On 2026-10-30, read-only calls through `http://localhost:8000/` also compared MCP
+with native HTTP. Identity matched the seven native identity fields. Workspace
+members and all seven role list/detail entries matched their native responses.
+Project members matched the native identity projection and retained the four
+nullable SDK fields. Active/inactive and bot filters, namespace filtering, literal
+wildcards, ordering and pagination matched native HTTP across five filtered/page
+pairs. Both transports rejected a role ID belonging to another workspace.
+`workspace.list` matched the IDs, names and slugs in the native authenticated
+workspace list. These checks changed no records.
+
+The local evidence is retained in `/tmp/vector-member-acceptance-20261030/`:
+`native-read-proof.json`, `filter-read-proof.json`, and
+`published-test-proof.json`. Raw profile payloads are not committed. These checks
+close the member rows and supplement the separate workspace-list acceptance;
+other MCP action requirements remain in the parity tracker.

@@ -736,7 +736,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = projectStateWriteCache.Close() }()
+	defer closeResource(&runErr, "project state write cache", projectStateWriteCache)
 	projectStateReadsRepository, err := projectstatereadsstore.NewWriteRepository(pool)
 	if err != nil {
 		return err
@@ -772,7 +772,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	defer publicProjectMetadataReadsCache.Close()
+	defer closeResource(&runErr, "public project metadata throttle cache", publicProjectMetadataReadsCache)
 	apiKeyThrottle, err := apikey.NewThrottle(publicProjectMetadataReadsCache, cfg.apiKeyRate)
 	if err != nil {
 		return fmt.Errorf("configure API-key throttle: %w", err)
@@ -851,7 +851,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = assetCache.Close() }()
+	defer closeResource(&runErr, "asset cache", assetCache)
 	assetAppBaseURL := os.Getenv("APP_BASE_URL")
 	assetAppURL, assetAppURLErr := url.Parse(assetAppBaseURL)
 	if assetAppURLErr != nil || assetAppURL.Scheme == "" || assetAppURL.Host == "" {
@@ -1080,7 +1080,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = labelWriteCache.Close() }()
+	defer closeResource(&runErr, "label write cache", labelWriteCache)
 	membershipBaseHost := os.Getenv("APP_BASE_URL")
 	membershipAppURL, membershipAppURLErr := url.Parse(membershipBaseHost)
 	if membershipAppURLErr != nil || membershipAppURL.Scheme == "" || membershipAppURL.Host == "" {
@@ -1139,7 +1139,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = invitationsCache.Close() }()
+	defer closeResource(&runErr, "invitation cache", invitationsCache)
 	invitationsService, err := systemapi.NewInvitationsMembership(invitationsRepository, membershipKeys, sessionValidator, apiKeyThrottle, invitationsCache)
 	if err != nil {
 		return err
@@ -1272,7 +1272,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 		return fmt.Errorf("configure authentication Redis client: %w", err)
 	}
 	authRedis := redis.NewClient(redisOptions)
-	defer func() { _ = authRedis.Close() }()
+	defer closeResource(&runErr, "authentication Redis client", authRedis)
 	magicCodeVerifier, err := authredirects.NewRedisMagicCodeVerifier(authRedis)
 	if err != nil {
 		return err
@@ -1281,7 +1281,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = authThrottleCache.Close() }()
+	defer closeResource(&runErr, "authentication throttle cache", authThrottleCache)
 	if setMagicCodeDependenciesErr := authRedirectService.SetMagicCodeDependencies(magicCodeVerifier, authThrottle); setMagicCodeDependenciesErr != nil {
 		return setMagicCodeDependenciesErr
 	}
@@ -1358,7 +1358,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = userAccountWritesCache.Close() }()
+	defer closeResource(&runErr, "user account write cache", userAccountWritesCache)
 	userAccountWritesService, err := systemapi.NewUserAccountWrites(userAccountWritesRepository, sessionValidator, userAccountWritesCache, activityTaskPublisher, assetAppBaseURL)
 	if err != nil {
 		return err

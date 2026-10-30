@@ -160,3 +160,39 @@ The full publication gate remains pending. No dependency
 is added. A cancellation-library candidate was rejected after a standalone macOS
 EOF reproduction; [upstream #30](https://github.com/muesli/cancelreader/issues/30)
 records that independent problem. No dependency source was changed.
+
+## 2026-10-30: prompt cancellation and member-read acceptance
+
+NEW-01 is fixed and published at `3f044c7a`. Both full gates pass, with 13,960
+Go test events across 118 test-bearing packages and no failures or skips. Remote
+`main` was verified at that revision. The full report is retained at
+`/tmp/vector-parity-prompt-20261030/full-go-test.jsonl`; its SHA-256 is
+`84a0c19f10d4ef6b85dddd0e08f30e7e0f5f5ace6305358d9dea95ac7933de8f`.
+The prompt's 22 focused race-test events also pass, and the package coverage floor
+increases from 62.5% to 68.07%.
+
+The MCP-01 read reconciliation covers five member actions and `workspace.list`.
+The [member acceptance record](mcp-members.md#member-read-acceptance-mcp-01)
+combines 198 passing published test events across 32 relevant roots with native
+HTTP comparisons through the local proxy. All six tracker rows now record the
+verified read contract. This does not close the remaining MCP domains.
+
+The active ERR-01/ERR-02 batch preserves eight API cache-close errors that startup
+and shutdown discarded. Individual deferred cleanup sites retain their existing
+order. Five focused cases cover successful cleanup, the original error, a failed
+close, combined failures, and continued cleanup after failure. The affected package
+passes 2,326 race-enabled test events with no failures or
+skips. Its measured coverage is 4,945 of 6,622 statements (74.675%), so COV-01
+tightens the package floor from 73.73% to 74.67%. The strict inventory refresh confirms
+933 → 925 findings: one configured and
+seven additional unchecked-error entries are retired. The configured baseline
+falls 156 → 155, with no new diagnostics. The final five focused race tests pass
+after correcting an assertion style caught by lint. Fast gates and publication
+remain pending.
+
+The fast gate required source review for the existing zero-score `cmd/system.run`
+allowance. Review confirmed exactly eight deferred-close replacements: resource
+acquisition, consumer wiring, and deferred cleanup order are preserved; close
+errors now join the returned error with resource context. Only that allowance's
+source fingerprint is refreshed. Its score remains zero, all 17 exceptions remain,
+and STRUCT-01 is still open. This is not maintainability-debt retirement.
