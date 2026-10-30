@@ -17,8 +17,8 @@ fields retain their values. The enclosing project and page records are typed;
 there is no opaque whole-result map.
 
 All four actions accept the optional MCP `workspace_slug` selector. Personal tokens
-retain their required workspace header. OAuth can select a workspace through
-that header or the argument. A scoped action without a workspace fails with
+and OAuth can select a workspace through that argument or an optional fixed
+workspace header default. A scoped action without a workspace fails with
 `invalid_params`; conflicting selectors fail at the existing HTTP boundary.
 Other-action fields and unimplemented actions fail generated validation before
 application dispatch.
@@ -65,4 +65,4 @@ and before the domain reader executes, so another credential check alone cannot
 make these tests pass.
 
 All four project actions are integrated and tested through the generated server with both credentials and protocol revisions. The full Go gate and focused race tests pass; package coverage floors remain unchanged. Frontend builds and checks pass after the parity-table formatting correction. Read-action discovery now reflects current workspace and project membership. Browser conflict proof remains open.
-Complete OAuth browser/proxy proof and 207-action parity remain separate open work.
+Complete OAuth browser/proxy proof and 208-action parity remain separate open work.

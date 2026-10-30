@@ -22,8 +22,11 @@ unchanged, matching omission, and uses the same normalized receipt input. Worksp
 manage workspace settings. Current project administrators manage project settings;
 workspace administration alone does not grant access to a private project. Reads
 require current active workspace membership and, for project settings, project
-membership. Changes are audited, revisioned across all writers, and support optional
-receipts whose replay rechecks current scope.
+membership. Archived project settings remain readable to current members, matching
+the native project read lifecycle. Feature changes and receipt replay require an
+unarchived project; restore it before updating settings. Changes are audited,
+revisioned across all writers, and support optional receipts whose replay rechecks
+current scope.
 
 Initiatives are a native workspace catalogue, gated by the initiatives flag.
 Disabling the flag preserves data and associations but blocks initiative operations,

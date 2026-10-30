@@ -111,12 +111,17 @@ func TestFeatureWaitRechecksAuthorizationBeforeWriteAndReplay(t *testing.T) {
 
 func featureMutationSnapshot(t *testing.T, f milestoneFixture) []byte {
 	t.Helper()
+	return featureMutationSnapshotForWorkspace(t, f, testsupport.LabelWorkspace)
+}
+
+func featureMutationSnapshotForWorkspace(t *testing.T, f milestoneFixture, workspace string) []byte {
+	t.Helper()
 	var snapshot []byte
 	require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT jsonb_build_object(
  'flags',(SELECT to_jsonb(f) FROM workspace_features f WHERE workspace_id=$1),
  'projects',COALESCE((SELECT jsonb_agg(to_jsonb(p) ORDER BY id) FROM projects p WHERE workspace_id=$1),'[]'::jsonb),
  'intakes',COALESCE((SELECT jsonb_agg(to_jsonb(i) ORDER BY id) FROM intakes i WHERE workspace_id=$1),'[]'::jsonb),
  'events',COALESCE((SELECT jsonb_agg(to_jsonb(e) ORDER BY id) FROM feature_events e WHERE workspace_id=$1),'[]'::jsonb),
- 'receipts',COALESCE((SELECT jsonb_agg(to_jsonb(r) ORDER BY tool,project_id,request_id) FROM mutation_receipts r WHERE workspace_id=$1 AND action='update_features'),'[]'::jsonb))`, testsupport.LabelWorkspace).Scan(&snapshot))
+ 'receipts',COALESCE((SELECT jsonb_agg(to_jsonb(r) ORDER BY tool,project_id,request_id) FROM mutation_receipts r WHERE workspace_id=$1 AND action='update_features'),'[]'::jsonb))`, workspace).Scan(&snapshot))
 	return snapshot
 }

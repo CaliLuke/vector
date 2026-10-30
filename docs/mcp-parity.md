@@ -19,7 +19,7 @@ covers both authentication modes and protocol versions.
 The local collector recorded the revision conflict with its request ID and trace.
 A controlled outage of the isolated Redis service returned a sanitized MCP 503
 and produced an error-level record with a matching error trace, without the token
-or authorization header. Full frontend and Go gates passed at `1b29573b` on 2026-10-30.
+or authorization header. Full frontend and Go gates passed at `17d1afdb` on 2026-10-30.
 The [debt catalog](tech-debt-catalog.md) records the remaining coverage and
 acceptance work; a passing gate does not close those requirements.
 
@@ -140,8 +140,8 @@ The [PQL foundation](pql.md) adds shared scalar, relationship (including native 
 | `project.archive`                          | Mutation | `project_id`                                             | PAT and OAuth         | Browser conflict and deployed issuer verification                                     |
 | `project.unarchive`                        | Mutation | `project_id`                                             | PAT and OAuth         | Browser conflict and deployed issuer verification                                     |
 | `project.worklog_summary`                  | Read     | `project_id`                                             | Workflow verified     | Combined visibility, seconds conversion and aggregate checks                          |
-| `project.get_features`                     | Read     | `project_id`                                             | Scope proof added     | Archived-project policy and foreign-workspace project targeting                       |
-| `project.update_features`                  | Mutation | `project_id`                                             | Mutation proof added  | Archived-project policy and foreign-workspace project targeting                       |
+| `project.get_features`                     | Read     | `project_id`                                             | Read verified         | None for the documented project feature read contract                                 |
+| `project.update_features`                  | Mutation | `project_id`                                             | Write verified        | None for the documented project feature write contract                                |
 | `project_estimate.retrieve`                | Read     | `project_id`                                             | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `project_estimate.create`                  | Mutation | `project_id`, `name`                                     | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `project_estimate.update`                  | Mutation | `project_id`                                             | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
@@ -363,9 +363,9 @@ receipts; retrying the same key succeeds and replays without another audit row.
 The existing catalogue workflow also checks revoked-role replay rejection.
 
 The [concurrent CAS regression](../apps/go-api/internal/mcpactions/workspace_feature_concurrency_integration_test.go)
-holds the feature row until two writes are waiting. Exactly one flag change,
-audit row and receipt commit; the other call returns a revision conflict. Shared
-receipt-engine tests cover cancellation and lost commit acknowledgements. Features
+holds the feature row until two writes are waiting, for both workspace and project
+settings. Exactly one flag change, audit row and receipt commit; the other call
+returns a revision conflict. Shared receipt-engine tests cover cancellation and lost commit acknowledgements. Features
 persist audit events in the same transaction and do not dispatch external effects.
 
 The focused identity/feature run contains 41 leaf cases across nine tests. It
@@ -394,6 +394,19 @@ reuse one request ID across two projects and verify separate results. Native
 project-column writes invalidate earlier revisions; a current token from another
 project is rejected. Changed-input conflicts and replay preserve native edits and
 do not add effects, while a matching project revision permits a fresh update.
-Project rows remain open for explicit foreign-workspace targeting proof and
-reconciliation of archived-project policy; those cases are not inferred from the
-current SQL filter or general project-read behavior.
+The [workspace-binding regression](../apps/go-api/internal/mcpactions/project_feature_workspace_integration_test.go)
+uses an actor who administers both workspaces and both private projects. Selecting
+one workspace cannot read or write the other's project, including when reusing a
+successful receipt key. Both workspaces' flags, projects, intakes, audits and
+receipts remain unchanged on rejection; correct-scope replay still succeeds.
+
+The [archive regressions](../apps/go-api/internal/mcpactions/project_feature_archive_integration_test.go)
+first reproduced a discrepancy: native project retrieval retained its feature
+columns after archive, but the feature reader rejected the same current member.
+The feature scope now applies its archive restriction only to writes. Reads retain
+the native project's archived settings while still rejecting revoked membership.
+Fresh writes and receipt replay remain forbidden until restore, with no mutation
+effects; restoration permits replay and a new update. This is the explicit Vector
+native-lifecycle policy; the pinned handler/SDK do not specify a separate archive
+policy. The combined focused feature run passes 102 leaf cases, including project
+CAS and existing current-authorization, revision, receipt and rollback regressions.

@@ -114,7 +114,11 @@ checks distinguish workspace administration from current private-project roles.
 Project receipt tests cover native-writer revisions and project-bound keys/tokens;
 forced audit failure rolls back default-intake creation and permits a safe keyed
 retry. Archived-project policy and explicit foreign-workspace project targeting
-remain open in the action tracker.
+are now covered by focused regressions. Archived feature reads retain native
+project settings but still require current membership; writes and replay require
+restore. Cross-workspace project IDs are rejected even when the actor administers
+both scopes, with unchanged domain/audit/receipt snapshots. Both workspace and
+project CAS tests permit one competing commit.
 
 ## Coverage and execution gaps
 

@@ -70,9 +70,10 @@ func scope(ctx context.Context, tx pgx.Tx, q Query, write bool) error {
 	if q.ProjectID != uuid.Nil {
 		suffix := ""
 		if write {
-			suffix = " FOR SHARE OF p,pm"
+			// Archived projects retain readable settings, but cannot be changed.
+			suffix = " AND p.archived_at IS NULL FOR SHARE OF p,pm"
 		}
-		err = tx.QueryRow(ctx, `SELECT pm.role FROM projects p JOIN project_members pm ON pm.project_id=p.id AND pm.workspace_id=p.workspace_id WHERE p.id=$1 AND p.workspace_id=$2 AND p.deleted_at IS NULL AND p.archived_at IS NULL AND pm.member_id=$3 AND pm.is_active AND pm.deleted_at IS NULL AND pm.role IN(5,15,20)`+suffix, q.ProjectID, q.WorkspaceID, q.ActorID).Scan(&role)
+		err = tx.QueryRow(ctx, `SELECT pm.role FROM projects p JOIN project_members pm ON pm.project_id=p.id AND pm.workspace_id=p.workspace_id WHERE p.id=$1 AND p.workspace_id=$2 AND p.deleted_at IS NULL AND pm.member_id=$3 AND pm.is_active AND pm.deleted_at IS NULL AND pm.role IN(5,15,20)`+suffix, q.ProjectID, q.WorkspaceID, q.ActorID).Scan(&role)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return projectmutations.ErrForbidden
 		}
