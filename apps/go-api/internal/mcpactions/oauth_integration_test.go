@@ -180,51 +180,63 @@ func TestOAuthGeneratedMembersUseOptionalWorkspaceAndCurrentIssuer(t *testing.T)
 	oauthCall(t, h, "2025-11-25", "oauth-user", "", `{"action":"me"}`, 503)
 }
 
-func TestOAuthGeneratedMemberRevalidatesBetweenAuthenticationAndCall(t *testing.T) {
+func TestOAuthGeneratedReadsRevalidateBetweenAuthenticationAndCall(t *testing.T) {
 	for _, change := range []string{"token", "scope", "issuer outage", "unlink", "account", "membership", "client", "link reassigned"} {
-		t.Run(change, func(t *testing.T) {
-			f, pool, auth, issuer := oauthFixture(t)
-			h := oauthHandler(t, f, func(ctx context.Context, r *http.Request) (context.Context, error) {
-				verified, err := auth.Authenticate(ctx, r)
-				if err != nil {
-					return nil, err
-				}
-				switch change {
-				case "client":
+		for _, target := range []struct{ tool, workspace, input string }{
+			{"member", "workspace-one", `{"action":"list_roles"}`},
+			{"workspace", "", `{"action":"list"}`},
+		} {
+			for _, version := range []string{"2025-11-25", "2026-07-28"} {
+				t.Run(change+"/"+target.tool+"/"+version, func(t *testing.T) {
+					f, pool, auth, issuer := oauthFixture(t)
+					h := oauthHandler(t, f, func(ctx context.Context, r *http.Request) (context.Context, error) {
+						verified, err := auth.Authenticate(ctx, r)
+						if err != nil {
+							return nil, err
+						}
+						switch change {
+						case "client":
+							issuer.mu.Lock()
+							issuer.client = "other-client"
+							issuer.mu.Unlock()
+						case "link reassigned":
+							_, err = pool.Exec(ctx, `UPDATE mcp_oauth_links SET user_id='10000000-0000-4000-8000-000000000002'`)
+						case "token":
+							issuer.mu.Lock()
+							issuer.active = false
+							issuer.mu.Unlock()
+						case "scope":
+							issuer.mu.Lock()
+							issuer.scope = ""
+							issuer.mu.Unlock()
+						case "issuer outage":
+							issuer.mu.Lock()
+							issuer.status = 503
+							issuer.mu.Unlock()
+						case "unlink":
+							_, err = pool.Exec(ctx, `DELETE FROM mcp_oauth_links`)
+						case "account":
+							_, err = pool.Exec(ctx, `UPDATE users SET is_active=false WHERE id='10000000-0000-4000-8000-000000000001'`)
+						case "membership":
+							_, err = pool.Exec(ctx, `UPDATE workspace_members SET is_active=false WHERE member_id='10000000-0000-4000-8000-000000000001'`)
+						}
+						require.NoError(t, err)
+						return verified, nil
+					})
+					result := oauthToolCall(t, h, version, "oauth-user", target.workspace, target.tool, target.input, 200)
+					if change == "membership" && target.tool == "workspace" {
+						require.False(t, result.IsError, result.Content)
+						require.JSONEq(t, `{"results":[]}`, string(result.StructuredContent))
+					} else {
+						require.True(t, result.IsError, result.Content)
+						require.Empty(t, result.StructuredContent)
+					}
 					issuer.mu.Lock()
-					issuer.client = "other-client"
+					calls := issuer.calls
 					issuer.mu.Unlock()
-				case "link reassigned":
-					_, err = pool.Exec(ctx, `UPDATE mcp_oauth_links SET user_id='10000000-0000-4000-8000-000000000002'`)
-				case "token":
-					issuer.mu.Lock()
-					issuer.active = false
-					issuer.mu.Unlock()
-				case "scope":
-					issuer.mu.Lock()
-					issuer.scope = ""
-					issuer.mu.Unlock()
-				case "issuer outage":
-					issuer.mu.Lock()
-					issuer.status = 503
-					issuer.mu.Unlock()
-				case "unlink":
-					_, err = pool.Exec(ctx, `DELETE FROM mcp_oauth_links`)
-				case "account":
-					_, err = pool.Exec(ctx, `UPDATE users SET is_active=false WHERE id='10000000-0000-4000-8000-000000000001'`)
-				case "membership":
-					_, err = pool.Exec(ctx, `UPDATE workspace_members SET is_active=false WHERE member_id='10000000-0000-4000-8000-000000000001'`)
-				}
-				require.NoError(t, err)
-				return verified, nil
-			})
-			result := oauthCall(t, h, "2025-11-25", "oauth-user", "workspace-one", `{"action":"list_roles"}`, 200)
-			require.True(t, result.IsError, result.Content)
-			require.Empty(t, result.StructuredContent)
-			issuer.mu.Lock()
-			calls := issuer.calls
-			issuer.mu.Unlock()
-			require.Equal(t, 2, calls)
-		})
+					require.Equal(t, 2, calls)
+				})
+			}
+		}
 	}
 }

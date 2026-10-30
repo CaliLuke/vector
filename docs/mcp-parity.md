@@ -2,7 +2,7 @@
 
 The scope is 30 tools and 208 operations, including the Vector `workspace.list` extension. The pinned [catalogue](../apps/go-api/mcp/testdata/plane-mcp/catalogue.json) supplies the expected names and input declarations. This tracker records implementation evidence; catalogue presence alone is not implementation. The user explicitly deferred teamspaces until native support exists. Teamspace query fields/functions are outside this delivery and return explicit errors; the reference lists that limitation.
 
-All 208 actions are wired across 30 tools. The original 33 actions have detailed generated-server integration evidence, including current authorization, receipt and revision cases. Five subsequent workflow batches exercise another 174 actions with personal tokens and generic OAuth under both MCP protocol revisions. The attachment batch uses real disposable S3 storage. These counts describe workflow coverage, not full parity: compatibility, authorization/concurrency, durable effects, required quality gates remain open. Current-worktree browser evidence is recorded below.
+All 208 actions are wired across 30 tools. The original 33 actions have detailed generated-server integration evidence, including current authorization, receipt and revision cases. Five subsequent workflow batches exercise another 174 actions with personal tokens and generic OAuth under both MCP protocol revisions. The attachment batch uses real disposable S3 storage. These counts describe workflow coverage, not full parity: compatibility, authorization/concurrency, and durable-effect acceptance remain open. Current-worktree browser evidence is recorded below.
 
 OAuth tests use an isolated TLS issuer and real PostgreSQL. Production issuer selection is deferred. Discovery reflects current workspace and project membership; milestones also apply guest-feature and archived-project policy, while writes require the OAuth write scope. State discovery allows workspace aggregation and limits mutations to writable projects.
 
@@ -19,14 +19,15 @@ covers both authentication modes and protocol versions.
 The local collector recorded the revision conflict with its request ID and trace.
 A controlled outage of the isolated Redis service returned a sanitized MCP 503
 and produced an error-level record with a matching error trace, without the token
-or authorization header. The remaining quality-gate and coverage review is not
-complete; these browser results do not imply a passing final gate.
+or authorization header. Full frontend and Go gates passed at `593a73b6` on 2026-10-30.
+The [debt catalog](tech-debt-catalog.md) records the remaining coverage and
+acceptance work; a passing gate does not close those requirements.
 
-The [consolidated catalogue workflow batch](../apps/go-api/internal/mcpactions/catalogue_batch_integration_test.go) now exercises the 37 customer, property, request, template, initiative and feature actions against the real generated server and PostgreSQL under both authentication modes and protocol revisions. It covers the primary lifecycles, selected receipt/authorization cases, atomic value rejection, association preservation, and opaque template JSON. Fresh bootstrap applies all 41 migrations. This is preliminary integration evidence; exhaustive domain compatibility, permission/concurrency cases, quality gates remain open; completed browser evidence is recorded above.
+The [consolidated catalogue workflow batch](../apps/go-api/internal/mcpactions/catalogue_batch_integration_test.go) now exercises the 37 customer, property, request, template, initiative and feature actions against the real generated server and PostgreSQL under both authentication modes and protocol revisions. It covers the primary lifecycles, selected receipt/authorization cases, atomic value rejection, association preservation, and opaque template JSON. This is preliminary integration evidence; exhaustive domain compatibility and permission/concurrency cases remain open; completed browser evidence is recorded above.
 
 The [content workflow batch](../apps/go-api/internal/mcpactions/content_batch_integration_test.go) also passes the 43 page, collection and release actions across both authentication modes and protocol revisions, sharing one PostgreSQL fixture.
 
-The [core workflow batch](../apps/go-api/internal/mcpactions/core_batch_integration_test.go) and [configuration workflow batch](../apps/go-api/internal/mcpactions/configuration_batch_integration_test.go) add passing coverage for 89 actions across both authentication modes and protocol revisions. These cover work-item queries and lifecycle, planning, comments, links, work logs, estimates, types, properties, relations and intake. Enabling intake now creates its default queue through the shared native helper. The [attachment workflow batch](../apps/go-api/internal/mcpactions/attachment_batch_integration_test.go) adds all five remaining actions with real RustFS object storage, including signed downloads, native text/image content, receipt replay without another source download, current-role rejection and private-address blocking. Successful source downloads use a controlled fetch boundary. All 207 pinned actions have generated-server workflow evidence; `workspace.list` has separate multi-workspace regressions. Passing these workflows does not replace the outstanding authorization, concurrency, durability, compatibility and quality-gate checks. The separate [property configuration batch](../apps/go-api/internal/mcpactions/property_configuration_batch_integration_test.go) passes formula creation/evaluation/update, fixed read-only content, cascading option paths, omitted versus empty fields, and preservation rejection under all four authentication/protocol combinations.
+The [core workflow batch](../apps/go-api/internal/mcpactions/core_batch_integration_test.go) and [configuration workflow batch](../apps/go-api/internal/mcpactions/configuration_batch_integration_test.go) add passing coverage for 89 actions across both authentication modes and protocol revisions. These cover work-item queries and lifecycle, planning, comments, links, work logs, estimates, types, properties, relations and intake. Enabling intake now creates its default queue through the shared native helper. The [attachment workflow batch](../apps/go-api/internal/mcpactions/attachment_batch_integration_test.go) adds all five remaining actions with real RustFS object storage, including signed downloads, native text/image content, receipt replay without another source download, current-role rejection and private-address blocking. Successful source downloads use a controlled fetch boundary. All 207 pinned actions have generated-server workflow evidence; `workspace.list` has separate multi-workspace regressions. Passing these workflows does not replace the outstanding authorization, concurrency, durability and compatibility checks. The separate [property configuration batch](../apps/go-api/internal/mcpactions/property_configuration_batch_integration_test.go) passes formula creation/evaluation/update, fixed read-only content, cascading option paths, omitted versus empty fields, and preservation rejection under all four authentication/protocol combinations.
 
 The [catalogue receipt batch](../apps/go-api/internal/mcpactions/catalogue_safety_integration_test.go) verifies customers, initiatives, releases, templates, pages and collections under all four authentication/protocol combinations. Direct database edits invalidate prior revisions; changed input conflicts with an existing request ID; revoked write access blocks update replay; deletion receipts replay after the target is deleted. Shared receipt-engine tests separately cover contention, cancellation and uncertain commits.
 
@@ -236,8 +237,8 @@ The [PQL foundation](pql.md) adds shared scalar, relationship (including native 
 | `workitem_type.update`                     | Mutation | `workitem_type_id`                                       | Workflow verified     | Combined regression, authorization, receipt and native policy checks                  |
 | `workitem_type.delete`                     | Mutation | `workitem_type_id`                                       | Workflow verified     | Combined regression, authorization, receipt and native policy checks                  |
 | `workitem_type.import_to_project`          | Mutation | `project_id`, `workitem_type_ids`                        | Workflow verified     | Combined regression, authorization, receipt and native policy checks                  |
-| `workspace.list`                           | Read     | None                                                     | Workflow verified     | Vector extension; current active memberships across both authentication modes         |
-| `workspace.retrieve`                       | Read     | None                                                     | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
+| `workspace.list`                           | Read     | None                                                     | Workflow verified     | Read contract verified; see workspace acceptance evidence below                       |
+| `workspace.retrieve`                       | Read     | None                                                     | Workflow verified     | Current access proven; pinned identity projection review remains                      |
 | `workspace.get_features`                   | Read     | None                                                     | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
 | `workspace.update_features`                | Mutation | None                                                     | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
 | `template.list`                            | Read     | `kind`                                                   | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
@@ -295,7 +296,7 @@ The fixture pins Plane MCP Server revision `dc7cfd9f3c305891909e2372f0cc50729135
 
 [Page and collection contracts](mcp-pages-collections.md) cover workspace pages, project lifecycle reuse, hierarchy, private collection membership, work-item links and durable body-history admission. The generated-server content batch covers all 23 actions across both authentication modes and protocol revisions.
 
-[Templates](mcp-templates.md), [features/initiatives](mcp-features-initiatives.md), and [customers](mcp-customers.md) are wired and covered by the generated-server workspace catalogue batch. Full acceptance still requires the remaining quality gates and compatibility review.
+[Templates](mcp-templates.md), [features/initiatives](mcp-features-initiatives.md), and [customers](mcp-customers.md) are wired and covered by the generated-server workspace catalogue batch. Full acceptance still requires the remaining domain checks and compatibility review.
 
 The `workspace.list` extension returns the current user's active workspace memberships
 with IDs, names and slugs. Generated-server regressions cover listing and per-call
@@ -303,3 +304,29 @@ workspace selection under personal tokens and OAuth on both protocol revisions.
 Header defaults and conflicts remain supported. Unscoped discovery merges each
 workspace's current capabilities; invocation and receipt replay retain current
 credential, workspace and domain authorization.
+
+### Workspace read acceptance (MCP-01)
+
+The [workspace selection regressions](../apps/go-api/internal/mcpactions/workspace_selection_integration_test.go)
+exercise the generated server and PostgreSQL with personal tokens and OAuth under
+both protocol revisions. They prove exact ordered workspace lists, exclusion of
+another user's workspace, per-call project isolation, missing selectors, and
+legacy header defaults/conflicts. The live-access matrix covers inactive,
+soft-deleted, removed, and invalid-role memberships and deleted workspaces.
+Revocation hides only the affected workspace, denies its workspace/project reads,
+and preserves access to the other workspace. Token workspace metadata and another
+user's surviving membership do not grant access.
+
+Credential changes between authentication and invocation are covered by the
+personal-token tests in that file and the [OAuth read regressions](../apps/go-api/internal/mcpactions/oauth_integration_test.go).
+OAuth cases cover token, scope, issuer availability, account linking, account
+activity, client identity, and link reassignment. Rejected calls return no
+structured data. Losing the last membership returns a successful empty list for
+both credentials; it still rejects a scoped member read. The focused selection,
+live-access, and late-revalidation run has 62 leaf cases across four tests.
+
+This closes the recorded `workspace.list` read-contract proof gap. Workspace
+retrieval has current-access proof, but its pinned connection-metadata projection
+still needs reconciliation with the contract tests. Receipt, CAS and durable-effect
+requirements apply to mutations, not these read actions. Feature reads and writes
+remain separate rows; this evidence does not close their domain requirements.

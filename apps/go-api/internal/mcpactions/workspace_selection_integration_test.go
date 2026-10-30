@@ -17,6 +17,9 @@ func TestWorkspaceSelectionAndListingAcrossCredentialsAndProtocols(t *testing.T)
  INSERT INTO workspace_members(workspace_id,member_id,role,is_active)
  VALUES('20000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000001',15,true);
  UPDATE workspaces SET name=slug;
+ INSERT INTO workspaces(id,slug,name) VALUES('20000000-0000-4000-8000-000000000003','other-user-workspace','Other user workspace');
+ INSERT INTO workspace_members(workspace_id,member_id,role,is_active)
+ VALUES('20000000-0000-4000-8000-000000000003','10000000-0000-4000-8000-000000000002',15,true);
  UPDATE api_tokens SET workspace_id='20000000-0000-4000-8000-000000000001';`)
 	require.NoError(t, err)
 	for _, mode := range []struct {
@@ -68,58 +71,91 @@ func TestWorkspaceSelectionAndListingAcrossCredentialsAndProtocols(t *testing.T)
 	}
 }
 
-func TestPersonalTokenWorkspaceListAndCallsRecheckLiveAccess(t *testing.T) {
-	f, pool := databaseFixture(t)
-	addMCPProjectFixture(t, pool)
-	h := f.handler(t, nil)
-	// Another user's membership and the token's workspace metadata grant no access.
-	_, err := pool.Exec(t.Context(), `UPDATE api_tokens SET workspace_id='20000000-0000-4000-8000-000000000002';
- INSERT INTO workspace_members(workspace_id,member_id,role,is_active)
- VALUES('20000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000002',15,true)`)
-	require.NoError(t, err)
-	before := oauthToolCall(t, h, "2026-07-28", "test-one", "", "workspace", `{"action":"list"}`, 200)
-	require.False(t, before.IsError, before.Content)
-	require.JSONEq(t, `{"results":[{"id":"20000000-0000-4000-8000-000000000001","name":"Workspace","slug":"workspace-one"}]}`, string(before.StructuredContent))
-	for _, change := range []string{
-		`UPDATE workspace_members SET is_active=false`,
-		`UPDATE workspace_members SET deleted_at=now()`,
-		`UPDATE workspaces SET deleted_at=now()`,
-		`DELETE FROM workspace_members`,
+func TestWorkspaceReadsRecheckLiveAccessAcrossCredentialsAndProtocols(t *testing.T) {
+	for _, change := range []struct{ name, statement string }{
+		{"inactive membership", `UPDATE workspace_members SET is_active=false WHERE workspace_id='20000000-0000-4000-8000-000000000001' AND member_id='10000000-0000-4000-8000-000000000001'`},
+		{"deleted membership", `UPDATE workspace_members SET deleted_at=now() WHERE workspace_id='20000000-0000-4000-8000-000000000001' AND member_id='10000000-0000-4000-8000-000000000001'`},
+		{"removed membership", `DELETE FROM workspace_members WHERE workspace_id='20000000-0000-4000-8000-000000000001' AND member_id='10000000-0000-4000-8000-000000000001'`},
+		{"invalid membership role", `UPDATE workspace_members SET role=0 WHERE workspace_id='20000000-0000-4000-8000-000000000001' AND member_id='10000000-0000-4000-8000-000000000001'`},
+		{"deleted workspace", `UPDATE workspaces SET deleted_at=now() WHERE id='20000000-0000-4000-8000-000000000001'`},
 	} {
-		t.Run(change, func(t *testing.T) {
-			_, changeErr := pool.Exec(t.Context(), change)
-			require.NoError(t, changeErr)
-			listed := oauthToolCall(t, h, "2026-07-28", "test-one", "", "workspace", `{"action":"list"}`, 200)
-			require.False(t, listed.IsError, listed.Content)
-			require.JSONEq(t, `{"results":[]}`, string(listed.StructuredContent))
-			denied := oauthToolCall(t, h, "2026-07-28", "test-one", "", "project", `{"action":"list","workspace_slug":"workspace-one"}`, 200)
-			require.True(t, denied.IsError)
-			require.Contains(t, denied.Content[0].Text, "[forbidden]")
-			_, err = pool.Exec(t.Context(), `UPDATE workspace_members SET is_active=true,deleted_at=NULL; UPDATE workspaces SET deleted_at=NULL;`)
-			require.NoError(t, err)
-		})
+		for _, mode := range []string{"personal token", "OAuth"} {
+			for _, version := range []string{"2025-11-25", "2026-07-28"} {
+				t.Run(change.name+"/"+mode+"/"+version, func(t *testing.T) {
+					f, pool, auth, _ := oauthFixture(t)
+					addMCPProjectFixture(t, pool)
+					_, err := pool.Exec(t.Context(), `UPDATE workspaces SET name=slug;
+ INSERT INTO workspace_members(workspace_id,member_id,role,is_active)
+ VALUES('20000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000001',15,true);
+ INSERT INTO workspaces(id,slug,name) VALUES('20000000-0000-4000-8000-000000000003','other-user-workspace','Other user workspace');
+ INSERT INTO workspace_members(workspace_id,member_id,role,is_active)
+ VALUES('20000000-0000-4000-8000-000000000003','10000000-0000-4000-8000-000000000002',15,true);
+ UPDATE api_tokens SET workspace_id='20000000-0000-4000-8000-000000000001';`)
+					require.NoError(t, err)
+					handler, token := f.handler(t, nil), "test-one"
+					if mode == "OAuth" {
+						handler, token = oauthHandler(t, f, auth.Authenticate), "oauth-user"
+					}
+					call := func(input string) rpcResult {
+						return oauthToolCall(t, handler, version, token, "", "workspace", input, 200)
+					}
+					before := call(`{"action":"list"}`)
+					require.False(t, before.IsError, before.Content)
+					require.JSONEq(t, `{"results":[{"id":"20000000-0000-4000-8000-000000000001","name":"workspace-one","slug":"workspace-one"},{"id":"20000000-0000-4000-8000-000000000002","name":"workspace-two","slug":"workspace-two"}]}`, string(before.StructuredContent))
+					_, err = pool.Exec(t.Context(), change.statement)
+					require.NoError(t, err)
+					// Another user's surviving membership and token metadata cannot restore access.
+					after := call(`{"action":"list"}`)
+					require.False(t, after.IsError, after.Content)
+					require.JSONEq(t, `{"results":[{"id":"20000000-0000-4000-8000-000000000002","name":"workspace-two","slug":"workspace-two"}]}`, string(after.StructuredContent))
+					denied := call(`{"action":"retrieve","workspace_slug":"workspace-one"}`)
+					require.True(t, denied.IsError, denied.Content)
+					require.Empty(t, denied.StructuredContent)
+					require.Contains(t, denied.Content[0].Text, "[forbidden]")
+					project := oauthToolCall(t, handler, version, token, "", "project", `{"action":"list","workspace_slug":"workspace-one"}`, 200)
+					require.True(t, project.IsError, project.Content)
+					require.Empty(t, project.StructuredContent)
+					require.Contains(t, project.Content[0].Text, "[forbidden]")
+					allowed := call(`{"action":"retrieve","workspace_slug":"workspace-two"}`)
+					require.False(t, allowed.IsError, allowed.Content)
+					require.Contains(t, string(allowed.StructuredContent), `"slug":"workspace-two"`)
+					require.NotContains(t, string(allowed.StructuredContent), "workspace-one")
+				})
+			}
+		}
 	}
 }
 
 func TestPersonalTokenUnscopedCallsRevalidateAfterAuthentication(t *testing.T) {
-	for _, change := range []string{
-		`UPDATE api_tokens SET is_active=false`,
-		`UPDATE users SET is_active=false`,
+	for _, change := range []struct {
+		name, statement string
+		emptyList       bool
+	}{
+		{"token", `UPDATE api_tokens SET is_active=false`, false},
+		{"account", `UPDATE users SET is_active=false`, false},
+		{"membership", `UPDATE workspace_members SET is_active=false WHERE member_id='10000000-0000-4000-8000-000000000001'`, true},
 	} {
-		t.Run(change, func(t *testing.T) {
-			f, pool := databaseFixture(t)
-			h := f.handler(t, func(ctx context.Context, r *http.Request) (context.Context, error) {
-				verified, err := f.auth.Authenticate(ctx, r)
-				require.NoError(t, err)
-				_, err = pool.Exec(ctx, change)
-				require.NoError(t, err)
-				return verified, nil
+		for _, version := range []string{"2025-11-25", "2026-07-28"} {
+			t.Run(change.name+"/"+version, func(t *testing.T) {
+				f, pool := databaseFixture(t)
+				h := f.handler(t, func(ctx context.Context, r *http.Request) (context.Context, error) {
+					verified, err := f.auth.Authenticate(ctx, r)
+					require.NoError(t, err)
+					_, err = pool.Exec(ctx, change.statement)
+					require.NoError(t, err)
+					return verified, nil
+				})
+				result := oauthToolCall(t, h, version, "test-one", "", "workspace", `{"action":"list"}`, 200)
+				if change.emptyList {
+					require.False(t, result.IsError, result.Content)
+					require.JSONEq(t, `{"results":[]}`, string(result.StructuredContent))
+				} else {
+					require.True(t, result.IsError, result.Content)
+					require.Empty(t, result.StructuredContent)
+					require.Contains(t, result.Content[0].Text, "[unauthorized]")
+				}
 			})
-			result := oauthToolCall(t, h, "2026-07-28", "test-one", "", "workspace", `{"action":"list"}`, 200)
-			require.True(t, result.IsError)
-			require.Empty(t, result.StructuredContent)
-			require.Contains(t, result.Content[0].Text, "[unauthorized]")
-		})
+		}
 	}
 }
 

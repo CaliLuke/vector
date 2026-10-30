@@ -171,6 +171,9 @@ Never point these tests at a database with valuable data.
 
 ### Baselines and review
 
+The [technical debt catalog](tech-debt-catalog.md) consolidates the remaining
+work, source inventories, priorities, completion evidence, and accepted deferrals.
+
 Current Go allowances and coverage floors live in `configs/quality/`.
 Current frontend allowances, coverage floors, and unmeasured scopes live in `.quality/`.
 The gate reports current findings against these files. Historical cleanup counts remain in Git history.
