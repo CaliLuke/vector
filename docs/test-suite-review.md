@@ -42,9 +42,16 @@ use metadata sizes only when they contain finite nonzero numbers. Generated MCP
 tests cover numeric list results through both credentials and protocol versions;
 legacy upload tests verify invalid sizes cause no storage or activity writes.
 
-Storage review remains open for type hierarchy levels. End-to-end validation of
-the remaining numeric writers is also open; parser rejection alone does not prove
-their persisted effects.
+Type levels now enforce the hierarchy editor's integer range of 0 through 20.
+Migration 46 restores invalid levels from consistent project copies, or uses the
+unassigned level of zero when no copy exists. It validates affected work-item and
+private-draft relationships, preserves metadata, and advances native and MCP
+revisions. Ambiguous copies or invalid final links abort the transaction without
+unlinking records. Tests cover legacy adoption, soft deletion, both tenants,
+concurrent repair, and the documented journal recovery and retry procedure.
+
+End-to-end validation of the remaining numeric writers is still open; parser
+rejection alone does not prove their persisted effects.
 
 ## Coverage and execution gaps
 

@@ -326,6 +326,50 @@ or test runtime is patched. Remove it after a Form release incorporates
 The process-lifetime reproduction is recorded on
 [the existing upstream issue](https://github.com/TanStack/form/issues/2132).
 
+## Recover a rejected type-level migration
+
+Migration 46 enforces integer work-item type levels from 0 through 20, matching
+hierarchy input validation. It repairs invalid levels from consistent project
+copies, or uses the unassigned level of zero when no project copy exists. It
+checks the complete affected hierarchy, including private drafts, before commit.
+It preserves parent links and increments native and MCP revisions.
+
+Conflicting or out-of-range project copies, or a repair that would invalidate
+parent links, stop migration 46. Its transaction rolls back the level and revision
+changes. Earlier migrations remain applied, and the migration journal records
+version 46 as dirty. With application writers and migration runners stopped,
+inspect the affected values:
+
+```sql
+SELECT t.workspace_id, t.id, t.level::text,
+       array_agg(DISTINCT p.level) FILTER (WHERE p.id IS NOT NULL) AS project_levels
+FROM public.issue_types t
+LEFT JOIN public.project_issue_types p
+  ON p.issue_type_id = t.id AND p.workspace_id = t.workspace_id
+WHERE NOT (t.level BETWEEN 0 AND 20 AND t.level = floor(t.level))
+GROUP BY t.workspace_id, t.id, t.level;
+```
+
+Restore a reviewed level assignment or project copy, for example from a backup.
+Do not remove parent links to make this migration pass. After resolving the
+reported conflict, use this guarded reset for the rejected migration 46 only:
+
+```sql
+UPDATE public.plane_schema_migrations SET version = 45, dirty = false
+WHERE version = 46 AND dirty
+  AND NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid = 'public.issue_types'::regclass
+      AND conname = 'issue_types_level_valid'
+  )
+RETURNING version, dirty;
+```
+
+Expect one returned row, then rerun normal schema bootstrap. If no row is returned,
+inspect the journal and constraint state before taking another action. The reset
+cannot rewind a completed migration. Integration tests exercise the failed
+upgrade, unchanged data and revisions, reviewed correction, reset, and retry.
+
 ## Logs
 
 ```sh
