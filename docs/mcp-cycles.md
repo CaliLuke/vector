@@ -20,7 +20,7 @@ HTTP and MCP share timezone conversion. Modeled timestamps use the user's curren
 Generated-server PostgreSQL tests cover both credentials and protocol revisions,
 exact SDK field sets, filters and pagination, archived estimates, hidden/absent
 targets, empty pages, late authorization changes, cross-workspace relationships,
-and timezone behavior. Remaining browser and mutation acceptance is tracked in
+and timezone behavior. Acceptance status is tracked in
 [MCP parity](mcp-parity.md) and the [debt catalog](tech-debt-catalog.md).
 Production OAuth issuer selection remains an accepted deferral.
 
@@ -53,8 +53,8 @@ add 72 cases for denied scope, allowed member/admin writes and owned-delete repl
 add 40 cases that revoke credentials, OAuth write scope or project membership after
 the request waits on a project lock, before a new write or receipt replay.
 These transport cases cover both credentials and protocol revisions. Both full gates passed at `97660842`, including all 13,814 Go test events.
-Further isolation and contention checks are described below; browser acceptance
-remains open.
+Further isolation and contention checks and completed browser acceptance are
+described below.
 
 The acceptance batch published at `a2e44d6f` adds
 [resource and receipt scope checks](../apps/go-api/internal/mcpactions/planning_scope_integration_test.go),
@@ -121,3 +121,32 @@ verify exact default/full/brief responses and invalid-detail rejection without a
 workspace selector, for both credentials and protocols. Four additional applied-source
 cases pass, giving 36 leaf cases and 57 test events in the combined run. These supplement the existing language semantics tests; they do not
 change the accepted teamspace deferral or unsupported property mappings.
+
+## Native browser acceptance
+
+Local checks on 2026-10-30 used `http://localhost:8000/`, the API image
+`sha256:5e8a6fdad64a33ba93297c24595a2d8adab7556730705da611f89a2355ff4b0c`,
+and the application source at `f47720fd` (production code unchanged from
+`a2e44d6f`). Dedicated cycle and module fixtures were created through MCP and
+appeared in the native lists. Native rename forms advanced each revision from 1
+to 2. MCP rejected updates with revision 1 without changing either record. Updates
+with revision 2 advanced to 3, and the new names appeared after browser reload.
+Replaying each update preserved the saved payload and revision; only the
+`replayed` indicator changed.
+
+Archive, unarchive and delete each passed receipt replay and active/archived-list
+checks. The native lists hid archived fixtures, showed restored fixtures, and
+returned to empty after deletion. Archiving the running cycle completed it; the
+restored cycle appeared in the completed group. A planned module rejected archive
+without changing its status or archive timestamp; completing it allowed archive.
+Cycle detail rejected an archived cycle, and both detail endpoints rejected the
+deleted fixtures. Both final list responses exactly matched their saved empty
+baselines. All original project feature settings were restored and the dedicated
+project was retained.
+
+Local evidence is in `/tmp/vector-planning-browser-20261030/`: redacted MCP
+requests/responses, `edit-proof.json`, `lifecycle-proof.json`, `cleanup-proof.json`,
+and native screenshots. The browser check uses a personal token and the current
+protocol; the generated-server tests provide both credential/protocol matrices.
+This closes the recorded browser gap for these planning actions. Publication of
+the 36 query/reference cases remains pending the full gate.

@@ -46,8 +46,10 @@ adds 32 applied-source cases for ordinary/property query snapshots, parent and
 tenant scope, current access, filtered pagination, projection and recovery.
 Four reference cases verify default/full/brief output and invalid-detail rejection
 without a workspace selector. Both credentials and protocols are covered.
-Publication of this test batch remains pending; broader action acceptance stays
-open until its recorded requirements are reconciled.
+[Native browser acceptance](mcp-cycles.md#native-browser-acceptance) now proves
+creation visibility, bidirectional edits and revision conflicts, lifecycle replay,
+active-list visibility and fixture cleanup. Publication of the query test batch
+remains pending; action closure follows the full gate and evidence reconciliation.
 
 Work-item child reads: [contract and scope notes](mcp-workitem-reads.md) and [generated-server regression tests](../apps/go-api/internal/mcpactions/workitem_read_integration_test.go).
 
@@ -83,7 +85,7 @@ The [PQL foundation](pql.md) adds shared scalar, relationship (including native 
 | `cycle.create`                             | Mutation | `project_id`, `name`, `owned_by`                         | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `cycle.update`                             | Mutation | `project_id`, `cycle_id`                                 | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `cycle.delete`                             | Mutation | `project_id`, `cycle_id`                                 | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
-| `cycle.list_workitems`                     | Read     | `project_id`, `cycle_id`                                 | Applied tests pass    | 32 planning query cases pass; publication and browser acceptance pending              |
+| `cycle.list_workitems`                     | Read     | `project_id`, `cycle_id`                                 | Applied tests pass    | 32 planning query cases and native browser checks pass; publication pending           |
 | `cycle.manage_workitems`                   | Mutation | `project_id`, `cycle_id`                                 | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `cycle.transfer_workitems`                 | Mutation | `project_id`, `cycle_id`, `new_cycle_id`                 | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `cycle.complete`                           | Mutation | `project_id`, `cycle_id`                                 | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
@@ -127,7 +129,7 @@ The [PQL foundation](pql.md) adds shared scalar, relationship (including native 
 | `module.create`                            | Mutation | `project_id`, `name`                                     | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `module.update`                            | Mutation | `project_id`, `module_id`                                | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `module.delete`                            | Mutation | `project_id`, `module_id`                                | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
-| `module.list_workitems`                    | Read     | `project_id`, `module_id`                                | Applied tests pass    | 32 planning query cases pass; publication and browser acceptance pending              |
+| `module.list_workitems`                    | Read     | `project_id`, `module_id`                                | Applied tests pass    | 32 planning query cases and native browser checks pass; publication pending           |
 | `module.manage_workitems`                  | Mutation | `project_id`, `module_id`                                | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `module.archive`                           | Mutation | `project_id`, `module_id`                                | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `module.unarchive`                         | Mutation | `project_id`, `module_id`                                | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |

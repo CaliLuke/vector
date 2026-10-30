@@ -120,8 +120,8 @@ These transport cases cover both credentials and protocol revisions.
 Eight [native module-delete authorization cases](../apps/go-api/internal/mcpactions/module_native_delete_authorization_integration_test.go)
 also preserve the distinct app and API rules for creators, members and project or
 workspace administrators. Both full gates passed at `97660842`, including all 13,814 Go test events.
-Further isolation and contention checks are described below; browser acceptance
-remains open.
+Further isolation and contention checks are described below. The
+[native browser acceptance](mcp-cycles.md#native-browser-acceptance) is complete.
 
 The acceptance batch published at `a2e44d6f` adds
 [resource and receipt scope checks](../apps/go-api/internal/mcpactions/planning_scope_integration_test.go),
@@ -132,5 +132,5 @@ The combined cycle/module run passes 24 new cases against the applied source.
 Both full gates passed at `a2e44d6f`, including all 13,894 Go test events.
 
 The [planning work-item query acceptance](mcp-cycles.md#planning-work-item-query-acceptance)
-records the shared cycle/module query and reference checks. Browser acceptance
-and publication of that test batch remain open.
+records the shared cycle/module query and reference checks. Native browser
+acceptance is complete; publication of that test batch remains pending the full gate.

@@ -135,3 +135,12 @@ records behavior and limitations; Git history preserves the implementation.
 | CLI output and migration cleanup                     | `593a73b6`: six reproduced failures fixed; 28 focused cases, including PostgreSQL; Go findings 183 → 162. Coverage floors: parity-diff 62.5%, support-migrate 86.96%, shared output helper 100%.                                    |
 | Requested Testcontainers fix pin                     | Core and PostgreSQL module use `v0.44.1-0.20261029064637-ff84c26717f1`; [development instructions](development.md#tests) link the upstream fix and removal condition. Separate reaper/forwarding limitations remain EXT-01.         |
 | Stale Vector worktrees                               | Rechecked on 2026-10-30: only the current `main` checkout exists. No outdated Vector worktrees remain.                                                                                                                              |
+
+## Planning browser acceptance, 2026-10-30
+
+MCP-01/MCP-02: [cycle/module browser acceptance](mcp-cycles.md#native-browser-acceptance)
+passes against the local proxy. Native edits advanced revisions; stale MCP writes
+failed without changes; current writes and lifecycle receipt replay passed.
+Both dedicated fixtures were deleted, final list responses matched their original
+empty baselines, and all project feature settings were restored. The query and
+reference test commit is `f47720fd`; its full publication gate remains pending.
