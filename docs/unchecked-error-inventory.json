@@ -1,7 +1,7 @@
 {
   "version": 1,
   "catalog_id": "ERR-02",
-  "source_commit": "264d505f74949960baf249c0bf0170e36a59789e",
+  "source_commit": "6ba02d1d87582baffa11b5605248f87c4dc023c2",
   "audit_date": "2026-10-30",
   "tool": "golangci-lint 2.15.0 (Go 1.27.3)",
   "configuration": "Repository .golangci.yml at source_commit; add linters.settings.errcheck.check-blank=true and select --enable-only errcheck. Existing integration tags, test inclusion, generated-source exclusions and timeout retained.",
@@ -9,11 +9,11 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 945,
-    "also_in_ERR_01": 58,
-    "additional_ERR_02": 887,
+    "findings": 933,
+    "also_in_ERR_01": 52,
+    "additional_ERR_02": 881,
     "test_file_findings": 551,
-    "non_test_file_findings": 394
+    "non_test_file_findings": 382
   },
   "findings": [
     {
@@ -318,45 +318,10 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/cmd/background-worker/main.go",
-      "line": 37,
-      "column": 5,
-      "message": "Error return value of `runtime.Shutdown` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/background-worker/main.go",
-      "line": 40,
-      "column": 16,
-      "message": "Error return value of `fmt.Fprintln` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
       "file": "apps/go-api/cmd/bootstrap/main.go",
       "line": 147,
       "column": 4,
       "message": "Error return value of `runtime.Shutdown` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/durable-metadata/main.go",
-      "line": 71,
-      "column": 17,
-      "message": "Error return value of `fmt.Fprintf` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/cmd/durable-metadata/main.go",
-      "line": 97,
-      "column": 18,
-      "message": "Error return value of `fmt.Fprintln` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/cmd/durable-metadata/main.go",
-      "line": 189,
-      "column": 3,
-      "message": "Error return value of `app.Shutdown` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -2082,55 +2047,6 @@
       "also_in_configured_audit": true
     },
     {
-      "file": "apps/go-api/internal/bootstrap/schema.go",
-      "line": 37,
-      "column": 24,
-      "message": "Error return value of `connection.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/bootstrap/schema.go",
-      "line": 86,
-      "column": 10,
-      "message": "Error return value of `url.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/bootstrap/schema.go",
-      "line": 99,
-      "column": 3,
-      "message": "Error return value of `source.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/bootstrap/schema.go",
-      "line": 102,
-      "column": 22,
-      "message": "Error return value of `migrator.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/bootstrap/support.go",
-      "line": 33,
-      "column": 3,
-      "message": "Error return value of `source.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/bootstrap/support.go",
-      "line": 39,
-      "column": 3,
-      "message": "Error return value of `source.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/bootstrap/support.go",
-      "line": 42,
-      "column": 23,
-      "message": "Error return value of `migration.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
       "file": "apps/go-api/internal/customers/mutations.go",
       "line": 41,
       "column": 9,
@@ -2825,21 +2741,21 @@
     },
     {
       "file": "apps/go-api/internal/features/repository.go",
-      "line": 161,
+      "line": 162,
       "column": 14,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/features/repository.go",
-      "line": 218,
+      "line": 219,
       "column": 9,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/features/repository.go",
-      "line": 219,
+      "line": 220,
       "column": 13,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
