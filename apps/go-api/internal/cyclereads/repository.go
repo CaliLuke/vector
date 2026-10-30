@@ -298,7 +298,8 @@ func (repository *Repository) issueResults(
 	if result.total > 0 {
 		totalPages = int(math.Ceil(float64(result.total) / float64(limit)))
 	}
-	nextPage := (page+1)*limit < result.expandedTotal
+	// The current offset fits, but adding another page may overflow.
+	nextPage := offset < result.expandedTotal-limit
 	if previous && (options.GroupBy != "" || !issueMultiGroup(options.SubGroupBy)) {
 		nextPage = page+1 < totalPages
 	}
@@ -516,7 +517,8 @@ func pagination(
 		return 0, 0, 0, 0, false, ErrInvalidPagination
 	}
 	cursorPage, pageFits := pythonIntegerAsInt(cursorPageNumber)
-	if !pageFits {
+	// Every envelope emits both adjacent cursors, even on an empty page.
+	if !pageFits || cursorPage == math.MaxInt || cursorPage == math.MinInt {
 		return 0, 0, 0, 0, false, ErrPaginationOverflow
 	}
 	windowLimit = cursorLimit

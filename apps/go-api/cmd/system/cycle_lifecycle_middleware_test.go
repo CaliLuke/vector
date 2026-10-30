@@ -77,7 +77,8 @@ func (cycleMiddlewareRepository) Delete(context.Context, string, string, string,
 func (cycleMiddlewareRepository) Cycle(context.Context, string, string, string) (cyclereads.CycleLifecycleResource, error) {
 	return cyclereads.CycleLifecycleResource{}, nil
 }
-func (cycleMiddlewareRepository) Patch(context.Context, string, string, string, string, bool, map[string]any, map[string]any) (map[string]any, error) {
+func (repository cycleMiddlewareRepository) Patch(context.Context, string, string, string, string, bool, map[string]any, map[string]any) (map[string]any, error) {
+	repository.recorder.add("dispatch")
 	return nil, nil
 }
 func (cycleMiddlewareRepository) PutNoop(context.Context, string, string, string, string) (map[string]any, error) {

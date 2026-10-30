@@ -21,6 +21,10 @@ Cycle issue pagination rejections now return typed JSON 400 responses for zero o
 negative ungrouped page sizes, invalid previous-page slices, and offset overflow.
 Generated-server tests cover direct and wrapped repository errors and verify that
 unexpected failures still return a sanitized 500 response.
+Adjacent cursor arithmetic also rejects page values that cannot represent both
+neighbors, and next-page detection cannot overflow at the last valid offset.
+PostgreSQL tests retain supported infinite first-page cursors and large grouped
+bounds without changing their existing results.
 
 All floating-point ordering columns now have finite-value constraints. Migration
 43 repairs historical NaN and infinity positions to a fallback order of 65535.
@@ -50,8 +54,14 @@ revisions. Ambiguous copies or invalid final links abort the transaction without
 unlinking records. Tests cover legacy adoption, soft deletion, both tenants,
 concurrent repair, and the documented journal recovery and retry procedure.
 
-End-to-end validation of the remaining numeric writers is still open; parser
-rejection alone does not prove their persisted effects.
+The remaining numeric writer audit now covers cycle and sticky HTTP create/update
+paths, native state and member ordering, and native work-item writes. Rejected
+values return 400 before persistence; PostgreSQL checks preserve stored rows,
+revisions, sequence allocation and durable effects. Existing custom-view and
+asset tests cover the other recorded parser consumers. Finite fractional ordering
+remains accepted. The solar-coordinate columns belong to the retained Celery
+schema and have no active application writer; this review makes no claim about
+historical values in those tables.
 
 ## Coverage and execution gaps
 
