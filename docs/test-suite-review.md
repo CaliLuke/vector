@@ -34,8 +34,17 @@ existing unknown-timestamp representation. Migration tests preserve all other
 activity metadata across two tenants, including soft-deleted records, and keep
 finite and missing timestamps unchanged.
 
-Storage review remains open for legacy asset sizes and type hierarchy levels.
-End-to-end validation of the remaining numeric writers is also open; parser rejection alone does not prove their persisted effects.
+Asset sizes also have a finite-value constraint. Migration 45 repairs historical
+non-finite sizes to the existing missing-size fallback of zero. Tests cover
+fractional legacy values, global and workspace assets, soft deletion, preserved
+object metadata, and revision updates only for repaired rows. Attachment reads
+use metadata sizes only when they contain finite nonzero numbers. Generated MCP
+tests cover numeric list results through both credentials and protocol versions;
+legacy upload tests verify invalid sizes cause no storage or activity writes.
+
+Storage review remains open for type hierarchy levels. End-to-end validation of
+the remaining numeric writers is also open; parser rejection alone does not prove
+their persisted effects.
 
 ## Coverage and execution gaps
 

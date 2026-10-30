@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"mime"
 	"net/url"
 	"path"
@@ -160,7 +161,21 @@ func authorizeAttachmentRead(ctx context.Context, tx pgx.Tx, q AttachmentQuery) 
 func normalizeAttachment(row map[string]any) {
 	attrs, _ := row["attributes"].(map[string]any)
 	row["name"], row["content_type"] = attrs["name"], attrs["type"]
-	if size := attrs["size"]; size != nil && size != json.Number("0") && size != float64(0) {
+	size := attrs["size"]
+	var number float64
+	switch value := size.(type) {
+	case json.Number:
+		var err error
+		number, err = value.Float64()
+		if err != nil {
+			return
+		}
+	case float64:
+		number = value
+	default:
+		return
+	}
+	if number != 0 && !math.IsNaN(number) && !math.IsInf(number, 0) {
 		row["size"] = size
 	}
 }
