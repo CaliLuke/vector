@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/google/uuid"
 )
@@ -166,9 +168,7 @@ func TestLegacyIssueAttachmentMissingFileChecksActiveWorkspaceFirst(t *testing.T
 	ctx = WithRequestContentType(ctx, writer.FormDataContentType())
 
 	_, err := service.createLegacyIssueAttachment(ctx, "tombstoned", projectID.String(), issueID.String(), io.NopCloser(bytes.NewReader(body.Bytes())))
-	if err != workspaceErr {
-		t.Fatalf("missing-file error = %#v, want active Workspace lookup error %#v", err, workspaceErr)
-	}
+	require.Same(t, workspaceErr, err, "active workspace lookup must precede missing-file validation")
 	wantCalls := []string{"ProjectPermissionAllowed", "RelatedWorkspaceIDBySlug", "WorkspaceIDBySlug"}
 	if len(repository.calls) != len(wantCalls) {
 		t.Fatalf("repository calls = %v, want %v", repository.calls, wantCalls)

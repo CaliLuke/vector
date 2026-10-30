@@ -6,6 +6,8 @@ import (
 	"io"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	publicfeedback "github.com/CaliLuke/go-plane/gen/public_feedback"
@@ -15,7 +17,11 @@ import (
 )
 
 func TestPublicFeedbackMissingBoardMapsToDjango404(t *testing.T) {
-	encoded, err := publicFeedbackError(metadata.ErrProjectNotPublished).(*publicfeedback.PublicFeedbackError).Body.MarshalJSON()
+	err := publicFeedbackError(metadata.ErrProjectNotPublished)
+	require.IsType(t, (*publicfeedback.PublicFeedbackError)(nil), err)
+	var failure *publicfeedback.PublicFeedbackError
+	require.ErrorAs(t, err, &failure)
+	encoded, err := failure.Body.MarshalJSON()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -26,7 +32,6 @@ func TestPublicFeedbackMissingBoardMapsToDjango404(t *testing.T) {
 	if got := body["error"]; got != "Project is not published" {
 		t.Fatalf("missing board error=%v, want Project is not published", got)
 	}
-	failure := publicFeedbackError(metadata.ErrProjectNotPublished).(*publicfeedback.PublicFeedbackError)
 	if failure.Kind != "status_404" {
 		t.Fatalf("missing board status kind=%q, want status_404", failure.Kind)
 	}
@@ -42,8 +47,10 @@ func TestPublicFeedbackMissingBoardErrorsFollowOperationContract(t *testing.T) {
 		{name: "intake", err: publicFeedbackIntakeError(metadata.ErrProjectNotPublished), want: "Not found"},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			failure, ok := test.err.(*publicfeedback.PublicFeedbackError)
-			if !ok || failure.Kind != "status_404" {
+			require.IsType(t, (*publicfeedback.PublicFeedbackError)(nil), test.err)
+			var failure *publicfeedback.PublicFeedbackError
+			require.ErrorAs(t, test.err, &failure)
+			if failure.Kind != "status_404" {
 				t.Fatalf("error=%T(%v), want status_404", test.err, test.err)
 			}
 			encoded, err := failure.Body.MarshalJSON()

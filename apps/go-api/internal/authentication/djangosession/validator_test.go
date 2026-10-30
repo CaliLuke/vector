@@ -311,16 +311,17 @@ func TestValidateLooksUpUserBeforeCheckingAuthenticationHash(t *testing.T) {
 		"_auth_user_backend": fixtureBackend,
 	}
 	for _, testCase := range []struct {
-		name   string
-		active bool
-		want   error
+		name        string
+		active      bool
+		missingUser bool
+		want        error
 	}{
-		{name: "missing user", active: true, want: ErrUserNotFound},
+		{name: "missing user", active: true, missingUser: true, want: ErrUserNotFound},
 		{name: "inactive user", want: ErrInactiveUser},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			reader := fixtureReader(encodeValuesForTest(t, fixtureCurrentSecret, values, false), fixturePassword, testCase.active)
-			if testCase.want == ErrUserNotFound {
+			if testCase.missingUser {
 				reader.users = map[string]User{}
 			}
 			validator := configuredValidator(t, reader)

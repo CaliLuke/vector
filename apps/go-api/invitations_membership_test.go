@@ -13,6 +13,8 @@ import (
 	"testing"
 	stduuid "uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	invitationserver "github.com/CaliLuke/go-plane/invitationsmembership/gen/http/invitations_membership/server"
@@ -76,8 +78,10 @@ func TestInvitationsMembershipAPIKeyAuthRejectsMissingAndInvalidKeys(t *testing.
 		t.Run(test.name, func(t *testing.T) {
 			service := &invitationsMembershipService{keys: &invitationsMembershipKeyValidator{err: test.err}, sessions: invitationsMembershipSessionValidator{}}
 			_, err := service.APIKeyAuth(context.Background(), test.key, &security.APIKeyScheme{Name: "ApiKeyAuth"})
-			response, ok := err.(*api.InvitationsMembershipAPIKeyError)
-			if !ok || response.Name != test.wantStatus {
+			require.IsType(t, (*api.InvitationsMembershipAPIKeyError)(nil), err)
+			var response *api.InvitationsMembershipAPIKeyError
+			require.ErrorAs(t, err, &response)
+			if response.Name != test.wantStatus {
 				t.Fatalf("error=%T %v, want %s", err, err, test.wantStatus)
 			}
 		})

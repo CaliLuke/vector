@@ -6,6 +6,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_recent_visits"
@@ -66,18 +68,15 @@ func TestWorkspaceRecentVisitsListAndEntityFilter(t *testing.T) {
 func TestWorkspaceRecentVisitsAuthorizationAndFailures(t *testing.T) {
 	repository := &recentVisitRepoStub{}
 	service, ctx := recentVisitService(t, repository)
-	if _, err := service.List(ctx, &api.ListPayload{Slug: "demo"}); err == nil {
-		t.Fatal("expected forbidden")
-	} else if forbidden, ok := err.(*api.WorkspaceRecentVisitForbidden); !ok || forbidden.Message != "You don't have the required permissions." {
-		t.Fatalf("forbidden=%T %+v", err, err)
-	}
+	_, err := service.List(ctx, &api.ListPayload{Slug: "demo"})
+	require.IsType(t, (*api.WorkspaceRecentVisitForbidden)(nil), err)
+	var forbidden *api.WorkspaceRecentVisitForbidden
+	require.ErrorAs(t, err, &forbidden)
+	require.Equal(t, "You don't have the required permissions.", forbidden.Message)
 	repository.authorized = true
 	repository.err = errors.New("database unavailable")
-	if _, err := service.List(ctx, &api.ListPayload{Slug: "demo"}); err == nil {
-		t.Fatal("expected internal error")
-	} else if _, ok := err.(*api.WorkspaceRecentVisitInternal); !ok {
-		t.Fatalf("error=%T", err)
-	}
+	_, err = service.List(ctx, &api.ListPayload{Slug: "demo"})
+	require.IsType(t, (*api.WorkspaceRecentVisitInternal)(nil), err)
 	invalidSession, err := NewWorkspaceRecentVisits(repository, recentVisitSessionStub{err: errors.New("invalid")})
 	if err != nil {
 		t.Fatal(err)

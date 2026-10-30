@@ -5,6 +5,8 @@ import (
 	"errors"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestValidateBinary(t *testing.T) {
@@ -98,9 +100,8 @@ func TestDecodeBase64BinaryReturnsValidatedDecodedContent(t *testing.T) {
 		t.Fatalf("DecodeBase64Binary() = %q, want Hello", decoded)
 	}
 
-	if decoded, err := DecodeBase64Binary("not-base64!"); err != ErrInvalidBase64 {
-		t.Fatalf("DecodeBase64Binary(invalid) = (%q, %v), want ErrInvalidBase64", decoded, err)
-	}
+	_, err = DecodeBase64Binary("not-base64!")
+	require.Same(t, ErrInvalidBase64, err)
 }
 
 func TestDecodePythonBase64MatchesCPython312Matrix(t *testing.T) {

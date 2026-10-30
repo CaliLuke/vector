@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	api "github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/google/uuid"
@@ -193,9 +195,7 @@ func TestSourceLookupErrorsAreMappedAtServiceBoundaries(t *testing.T) {
 					}
 
 					if errors.Is(failure.err, internalErr) {
-						if err != internalErr {
-							t.Fatalf("service error = %#v, want original repository error %#v", err, internalErr)
-						}
+						require.Same(t, internalErr, err, "preserve the original repository error")
 						return
 					}
 

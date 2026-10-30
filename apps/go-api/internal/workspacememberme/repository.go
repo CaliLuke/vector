@@ -3,6 +3,7 @@ package workspacememberme
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"uuid"
@@ -57,7 +58,7 @@ LEFT JOIN workspace_members wm
     AND wm.is_active = true
     AND wm.deleted_at IS NULL
 WHERE w.slug = $2 AND w.deleted_at IS NULL`, user, slug).Scan(&b)
-	if err == pgx.ErrNoRows {
+	if errors.Is(err, pgx.ErrNoRows) {
 		return json.RawMessage(`{"company_role":"","created_by":null,"default_props":null,"deleted_at":null,"explored_features":null,"getting_started_checklist":null,"is_active":false,"issue_props":null,"member":null,"role":null,"tips":null,"updated_by":null,"view_props":null,"workspace":null}`), nil
 	}
 	return b, err

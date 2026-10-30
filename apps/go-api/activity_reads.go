@@ -314,8 +314,8 @@ func activityStatusError(status int, body map[string]any) error {
 }
 
 func activityErrorStatusAndBody(err error) (int, map[string]any) {
-	response, ok := err.(*api.ActivityErrorResponseBody)
-	if !ok {
+	var response *api.ActivityErrorResponseBody
+	if !errors.As(err, &response) {
 		return 500, map[string]any{"error": "Something went wrong please try again later"}
 	}
 	status := 500

@@ -272,14 +272,6 @@
     {
       "fingerprint": [
         "errorlint",
-        "activity_reads.go",
-        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
         "cmd/durable-metadata/main.go",
         "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
       ],
@@ -292,30 +284,6 @@
         "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
       ],
       "count": 2
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/assets/source_lookup_test.go",
-        "comparing with != will fail on wrapped errors. Use errors.Is to check for a specific error"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/assets/workspace_scope_test.go",
-        "comparing with != will fail on wrapped errors. Use errors.Is to check for a specific error"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/authentication/djangosession/validator_test.go",
-        "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
-      ],
-      "count": 1
     },
     {
       "fingerprint": [
@@ -362,14 +330,6 @@
         "errorlint",
         "internal/backgroundtasks/issue_version_task.go",
         "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/cyclereads/lifecycle_test.go",
-        "comparing with != will fail on wrapped errors. Use errors.Is to check for a specific error"
       ],
       "count": 1
     },
@@ -424,38 +384,6 @@
     {
       "fingerprint": [
         "errorlint",
-        "internal/stickies/content/binary_test.go",
-        "comparing with != will fail on wrapped errors. Use errors.Is to check for a specific error"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/useraccountwrites/cache.go",
-        "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/workspacememberme/repository.go",
-        "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/workspaceuserinsights/repository_integration_test.go",
-        "comparing with != will fail on wrapped errors. Use errors.Is to check for a specific error"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
         "internal/workspacewebhooks/repository.go",
         "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
       ],
@@ -464,50 +392,10 @@
     {
       "fingerprint": [
         "errorlint",
-        "invitations_membership_test.go",
-        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "last_visited_workspace_test.go",
-        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "public_feedback_error_test.go",
-        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
-      ],
-      "count": 3
-    },
-    {
-      "fingerprint": [
-        "errorlint",
         "work_item_core_error_logging_test.go",
         "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
       ],
       "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "workspace_metadata_test.go",
-        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
-      ],
-      "count": 3
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "workspace_recent_visits_test.go",
-        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
-      ],
-      "count": 2
     },
     {
       "fingerprint": [

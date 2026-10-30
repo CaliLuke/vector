@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -25,7 +26,7 @@ func (cache *Cache) Close() error { return cache.client.Close() }
 
 func (cache *Cache) Get(ctx context.Context, key string) ([]byte, bool, error) {
 	value, err := cache.client.Get(ctx, key).Bytes()
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		return nil, false, nil
 	}
 	return value, err == nil, err

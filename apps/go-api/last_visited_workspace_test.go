@@ -6,6 +6,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/last_visited_workspace"
@@ -62,9 +64,6 @@ func TestLastVisitedWorkspaceAuthenticationAndRepositoryFailures(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := service.Get(ctx, &api.GetPayload{}); err == nil {
-		t.Fatal("expected internal error")
-	} else if _, ok := err.(*api.LastVisitedWorkspaceInternal); !ok {
-		t.Fatalf("error = %T", err)
-	}
+	_, err = service.Get(ctx, &api.GetPayload{})
+	require.IsType(t, (*api.LastVisitedWorkspaceInternal)(nil), err)
 }

@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -21,9 +23,7 @@ func TestCycleLifecycleAuthorizationRequiresProjectMemberRole(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := repository.AuthorizeProject(context.Background(), "user", "workspace", "project"); err != ErrForbidden {
-		t.Fatalf("guest project member should be denied, got %v", err)
-	}
+	require.Same(t, ErrForbidden, repository.AuthorizeProject(context.Background(), "user", "workspace", "project"), "guest project member should be denied")
 	query := database.queries[0]
 	for _, fragment := range []string{"project_members", "pm.role IN (15,20)", "pm.is_active=true", "w.slug=$3"} {
 		if !strings.Contains(query, fragment) {

@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
@@ -128,9 +130,7 @@ func TestWorkspaceAuthorizationAndActivityQueryUseSourceScopeAndCTEAliases(t *te
 	if authorizeWorkspaceErr := repository.AuthorizeWorkspace(ctx, insightsRequesterID, "demo", false); authorizeWorkspaceErr != nil {
 		t.Fatalf("safe workspace member permission: %v", authorizeWorkspaceErr)
 	}
-	if err := repository.AuthorizeWorkspace(ctx, insightsRequesterID, "demo", true); err != ErrForbidden {
-		t.Fatalf("viewer unsafe permission = %v, want ErrForbidden", err)
-	}
+	require.Same(t, ErrForbidden, repository.AuthorizeWorkspace(ctx, insightsRequesterID, "demo", true), "viewer unsafe permission")
 	if authorizeWorkspaceErr := repository.AuthorizeWorkspace(ctx, insightsTargetID, "demo", true); authorizeWorkspaceErr != nil {
 		t.Fatalf("Admin/Member unsafe permission: %v", authorizeWorkspaceErr)
 	}

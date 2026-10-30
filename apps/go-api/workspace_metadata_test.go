@@ -6,6 +6,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_metadata"
@@ -69,23 +71,14 @@ func TestWorkspaceMetadataReturnsRepositoryContracts(t *testing.T) {
 
 func TestWorkspaceMetadataAuthorizationAndRepositoryFailures(t *testing.T) {
 	service, ctx := workspaceMetadataServiceForTest(t, &workspaceMetadataRepositoryStub{})
-	if _, err := service.Labels(ctx, &api.LabelsPayload{Slug: "demo"}); err == nil {
-		t.Fatal("expected forbidden error")
-	} else if _, ok := err.(*api.WorkspaceMetadataForbidden); !ok {
-		t.Fatalf("error = %T, want forbidden", err)
-	}
+	_, err := service.Labels(ctx, &api.LabelsPayload{Slug: "demo"})
+	require.IsType(t, (*api.WorkspaceMetadataForbidden)(nil), err)
 
 	service, ctx = workspaceMetadataServiceForTest(t, &workspaceMetadataRepositoryStub{authorized: true, labelsErr: errors.New("database unavailable")})
-	if _, err := service.Labels(ctx, &api.LabelsPayload{Slug: "demo"}); err == nil {
-		t.Fatal("expected internal error")
-	} else if _, ok := err.(*api.WorkspaceMetadataInternal); !ok {
-		t.Fatalf("error = %T, want internal", err)
-	}
+	_, err = service.Labels(ctx, &api.LabelsPayload{Slug: "demo"})
+	require.IsType(t, (*api.WorkspaceMetadataInternal)(nil), err)
 
 	service, ctx = workspaceMetadataServiceForTest(t, &workspaceMetadataRepositoryStub{authorized: true, labels: json.RawMessage("not-json")})
-	if _, err := service.Labels(ctx, &api.LabelsPayload{Slug: "demo"}); err == nil {
-		t.Fatal("expected decoding error")
-	} else if _, ok := err.(*api.WorkspaceMetadataInternal); !ok {
-		t.Fatalf("error = %T, want internal", err)
-	}
+	_, err = service.Labels(ctx, &api.LabelsPayload{Slug: "demo"})
+	require.IsType(t, (*api.WorkspaceMetadataInternal)(nil), err)
 }
