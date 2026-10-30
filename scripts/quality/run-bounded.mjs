@@ -145,7 +145,10 @@ async function checkMemory() {
     if (finished) return;
     // Process enumeration can briefly stall during compiler process churn.
     // Permit one missed sample, but never continue without working monitoring.
-    const timedOut = error.killed && error.signal === "SIGTERM";
+    // execFile destroys its pipes before sending the timeout signal, so a
+    // writer can exit with SIGPIPE instead of SIGTERM. Its killed flag and
+    // null exit code identify this timeout; buffer-limit errors have a code.
+    const timedOut = error.killed && error.code === null;
     if ((timedOut || error.code === "NO_PROCESS_TREE") && sampleFailures++ === 0) {
       const reason = timedOut ? "memory sample timed out" : "child tree missing from memory sample";
       process.stderr.write(`[bounded] ${reason}; retrying once\n`);

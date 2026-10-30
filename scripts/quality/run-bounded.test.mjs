@@ -21,10 +21,11 @@ function run(script, extra = []) {
   return result;
 }
 
-function runWithUnavailableSamples(t, count, { mode = "timeout", extra = [], childDuration = 4500 } = {}) {
+function runWithUnavailableSamples(t, count, { mode = "timeout", extra = [], childDuration } = {}) {
   const directory = mkdtempSync(path.join(tmpdir(), "vector-process-sample-"));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
   const countPath = path.join(directory, "samples");
+  const recoveredPath = path.join(directory, "recovered");
   writeFileSync(countPath, "0");
   writeFileSync(
     path.join(directory, "ps"),
@@ -34,22 +35,34 @@ count=$((count + 1))
 printf '%s\\n' "$count" > ${shellQuote(countPath)}
 if [ "$count" -le ${count} ]; then
   if [ ${shellQuote(mode)} = timeout ]; then exec sleep 60; fi
+  if [ ${shellQuote(mode)} = timeout-pipe ]; then
+    # execFile closes the output pipe before sending its timeout signal. A
+    # process that writes while shutting down can therefore exit with SIGPIPE.
+    trap '' TERM
+    sleep 2.2
+    exec /bin/echo '999999 1 999999 0'
+  fi
+  if [ ${shellQuote(mode)} = broken-pipe ]; then kill -PIPE $$; fi
+  if [ ${shellQuote(mode)} = oversized ]; then exec /usr/bin/head -c 3145728 /dev/zero; fi
   printf '999999 1 999999 0\\n'
 else
+  # The first healthy snapshot must reach the guard before the child exits.
+  if [ "$count" -ge ${count + 2} ]; then touch ${shellQuote(recoveredPath)}; fi
   exec /bin/ps "$@"
 fi
 `,
     { mode: 0o700 }
   );
-  const result = spawnSync(
-    process.execPath,
-    [runner, ...extra, "--", process.execPath, "-e", `setTimeout(() => {}, ${childDuration})`],
-    {
-      encoding: "utf8",
-      timeout: 10_000,
-      env: { ...process.env, PATH: `${directory}${path.delimiter}${process.env.PATH}` },
-    }
-  );
+  const childScript = childDuration
+    ? `setTimeout(() => {}, ${childDuration})`
+    : `const fs = require('node:fs'); const timer = setInterval(() => {
+        if (fs.existsSync(${JSON.stringify(recoveredPath)})) clearInterval(timer);
+      }, 10);`;
+  const result = spawnSync(process.execPath, [runner, ...extra, "--", process.execPath, "-e", childScript], {
+    encoding: "utf8",
+    timeout: 10_000,
+    env: { ...process.env, PATH: `${directory}${path.delimiter}${process.env.PATH}` },
+  });
   assert.ifError(result.error);
   return result;
 }
@@ -64,6 +77,31 @@ void test("repeated memory sampling timeouts fail closed", (t) => {
   const result = runWithUnavailableSamples(t, 2, { childDuration: 60_000 });
   assert.equal(result.status, 125, result.stderr);
   assert.match(result.stderr, /memory monitoring failed/);
+});
+
+void test("a timed-out memory sample that exits with SIGPIPE gets one retry", (t) => {
+  const result = runWithUnavailableSamples(t, 1, { mode: "timeout-pipe" });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stderr, /memory sample timed out; retrying once/);
+});
+
+void test("repeated SIGPIPE exits after sampling deadlines still fail closed", (t) => {
+  const result = runWithUnavailableSamples(t, 2, { mode: "timeout-pipe", childDuration: 60_000 });
+  assert.equal(result.status, 125, result.stderr);
+  assert.match(result.stderr, /memory sample timed out; retrying once/);
+  assert.match(result.stderr, /memory monitoring failed/);
+});
+
+void test("a sampler SIGPIPE without a timeout fails immediately", (t) => {
+  const result = runWithUnavailableSamples(t, 1, { mode: "broken-pipe" });
+  assert.equal(result.status, 125, result.stderr);
+  assert.doesNotMatch(result.stderr, /retrying once/);
+});
+
+void test("oversized memory snapshots fail immediately instead of retrying", (t) => {
+  const result = runWithUnavailableSamples(t, 1, { mode: "oversized" });
+  assert.equal(result.status, 125, result.stderr);
+  assert.doesNotMatch(result.stderr, /retrying once/);
 });
 
 void test("memory limits still apply after recovering from a sampling timeout", (t) => {
