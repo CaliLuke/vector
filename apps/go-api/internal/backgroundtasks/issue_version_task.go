@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
+
 	"github.com/CaliLuke/loom/execution"
 	executionSelvedge "github.com/CaliLuke/loom/execution/selvedge"
 	"github.com/CaliLuke/selvedge"
@@ -45,7 +47,7 @@ type IssueVersionTaskDispatcher struct {
 
 func RegisterIssueVersionTaskWorkflow(app *selvedge.App, store issueVersionTaskStore, policy *retry.Policy) (*IssueVersionTaskDispatcher, error) {
 	if app == nil || store == nil {
-		return nil, errors.New("Selvedge app and issue version task store are required")
+		return nil, errors.New("workflow app and issue version task store are required")
 	}
 	if policy == nil {
 		policy = retry.Exponential(8, time.Second, time.Minute, 2)
@@ -144,7 +146,7 @@ func NewPostgresIssueVersionTaskStore(pool *pgxpool.Pool) (*PostgresIssueVersion
 	return &PostgresIssueVersionTaskStore{pool: pool}, nil
 }
 
-func (store *PostgresIssueVersionTaskStore) TrackIssueVersion(ctx context.Context, input IssueVersionTaskInput) error {
+func (store *PostgresIssueVersionTaskStore) TrackIssueVersion(ctx context.Context, input IssueVersionTaskInput) (resultErr error) {
 	if err := validateIssueVersionTaskInput(input); err != nil {
 		return err
 	}
@@ -160,7 +162,7 @@ func (store *PostgresIssueVersionTaskStore) TrackIssueVersion(ctx context.Contex
 	if err != nil {
 		return fmt.Errorf("begin issue version transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var currentJSON []byte
 	err = tx.QueryRow(ctx, `SELECT to_jsonb(issue) FROM issues issue WHERE issue.id=$1 AND issue.deleted_at IS NULL FOR UPDATE`, issueID).Scan(&currentJSON)
 	if errors.Is(err, pgx.ErrNoRows) {

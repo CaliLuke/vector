@@ -76,7 +76,7 @@ func NewPostgresEventTrackingStore(pool *pgxpool.Pool, cipher instanceConfigCiph
 
 func RegisterEventTrackingWorkflow(app *selvedge.App, store *eventTrackingStore, policy *retry.Policy) (*EventTrackingDispatcher, error) {
 	if app == nil || store == nil {
-		return nil, errors.New("Selvedge app and event tracking store are required")
+		return nil, errors.New("workflow app and event tracking store are required")
 	}
 	if policy == nil {
 		policy = retry.Exponential(5, time.Second, time.Minute, 2)

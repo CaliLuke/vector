@@ -129,7 +129,7 @@ type ExporterHistoryDispatcher struct {
 
 func RegisterExporterHistoryWorkflow(app *selvedge.App, store exporterHistoryStore, policy *retry.Policy) (*ExporterHistoryDispatcher, error) {
 	if app == nil || store == nil {
-		return nil, errors.New("Selvedge app and exporter history store are required")
+		return nil, errors.New("workflow app and exporter history store are required")
 	}
 	if policy == nil {
 		policy = retry.Exponential(8, time.Second, time.Minute, 2)

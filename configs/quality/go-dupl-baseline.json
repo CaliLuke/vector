@@ -1985,8 +1985,8 @@
       "fingerprint": [
         "internal/backgroundtasks/issue_description_sync.go",
         "internal/backgroundtasks/issue_version_sync.go",
-        "a75a424294e44361fb83430b1864068b76c22dbfe96a4a580cf6a8cc3b8cc3b2",
-        "acbc1a650032436dab2f45c43d77a6f7ccb76d595d9c077e3f9b89f3bcc8d967"
+        "63599426b7f0d9a4f4769cafbdbaf6c8e03b8d3b89f31fed9cfac7c1c17d4317",
+        "86d3cff3c8e6ec0f0d6173b4b1ff87e823821a3397995d7fe4c370713ba0d49a"
       ],
       "count": 2
     },
@@ -1994,8 +1994,8 @@
       "fingerprint": [
         "internal/backgroundtasks/issue_version_task.go",
         "internal/backgroundtasks/recent_visits.go",
-        "08923719684ec30dbc6caf84fc448452c54834e685b81598f345ab97fb0bbb01",
-        "e87e4cf5fd07d33381647f2548aaa7a90b23de763fa610b52ad405871171d699"
+        "2f1fbbbd1309a2dd5b67361a30adc9d48b1795ee33acca25985825aa2b430e0b",
+        "b18a7d3298a548cd59e813d3bf65a3e6cbecf288568107cff23d4c8d865ff21b"
       ],
       "count": 2
     },

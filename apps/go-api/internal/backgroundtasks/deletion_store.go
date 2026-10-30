@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
+
 	"github.com/CaliLuke/go-plane/internal/deletion"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -144,7 +146,7 @@ func (s *PostgresDeletionStore) Plan(ctx context.Context, in deletionPlanInput) 
 	result.More = len(result.IDs) == deletionBatchSize
 	return result, rows.Err()
 }
-func (s *PostgresDeletionStore) Apply(ctx context.Context, plan deletionPlan) ([]DeletionInput, error) {
+func (s *PostgresDeletionStore) Apply(ctx context.Context, plan deletionPlan) (_ []DeletionInput, resultErr error) {
 	r, err := s.relation(plan.Input)
 	if err != nil {
 		return nil, err
@@ -160,7 +162,7 @@ func (s *PostgresDeletionStore) Apply(ctx context.Context, plan deletionPlan) ([
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	for _, id := range plan.IDs {
 		if _, parseErr := uuid.Parse(id); parseErr != nil {
 			return nil, parseErr
@@ -182,7 +184,7 @@ func (s *PostgresDeletionStore) Apply(ctx context.Context, plan deletionPlan) ([
 	}
 	return children, tx.Commit(ctx)
 }
-func (s *PostgresDeletionStore) HardDelete(ctx context.Context, in hardDeletionInput) (int, error) {
+func (s *PostgresDeletionStore) HardDelete(ctx context.Context, in hardDeletionInput) (_ int, resultErr error) {
 	if in.Cutoff.IsZero() || in.Model < 0 || in.Model >= len(s.policy.Models) {
 		return 0, errors.New("invalid hard deletion batch")
 	}
@@ -194,7 +196,7 @@ func (s *PostgresDeletionStore) HardDelete(ctx context.Context, in hardDeletionI
 	if err != nil {
 		return 0, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	// Never physically delete against a source schema whose FK cascades still
 	// exist only in Python. Bootstrap validates and installs this migration.
 	var ready bool

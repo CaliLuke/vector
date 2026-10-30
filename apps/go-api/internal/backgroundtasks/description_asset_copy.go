@@ -96,7 +96,7 @@ func NewPostgresDescriptionAssetCopyStore(pool *pgxpool.Pool, storage *assets.St
 
 func RegisterDescriptionAssetCopyWorkflow(app *selvedge.App, store descriptionAssetCopyStore, policy *retry.Policy) (*DescriptionAssetCopyDispatcher, error) {
 	if app == nil || store == nil {
-		return nil, errors.New("Selvedge app and description asset copy store are required")
+		return nil, errors.New("workflow app and description asset copy store are required")
 	}
 	if policy == nil {
 		policy = retry.Exponential(8, time.Second, time.Minute, 2)

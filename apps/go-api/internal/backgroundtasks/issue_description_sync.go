@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
+
 	"github.com/CaliLuke/loom/execution"
 	executionSelvedge "github.com/CaliLuke/loom/execution/selvedge"
 	"github.com/CaliLuke/selvedge"
@@ -58,7 +60,7 @@ type IssueDescriptionSyncDispatcher struct {
 
 func RegisterIssueDescriptionSyncWorkflow(app *selvedge.App, store issueDescriptionSyncStore, policy *retry.Policy) (*IssueDescriptionSyncDispatcher, error) {
 	if app == nil || store == nil {
-		return nil, errors.New("Selvedge app and issue description sync store are required")
+		return nil, errors.New("workflow app and issue description sync store are required")
 	}
 	if policy == nil {
 		policy = retry.Exponential(8, time.Second, time.Minute, 2)
@@ -148,7 +150,7 @@ type syncIssueRow struct {
 	Stripped    *string
 }
 
-func (store *PostgresIssueDescriptionSyncStore) SyncIssueDescriptionVersionBatch(ctx context.Context, input IssueDescriptionSyncBatchInput) (IssueDescriptionSyncBatchOutput, error) {
+func (store *PostgresIssueDescriptionSyncStore) SyncIssueDescriptionVersionBatch(ctx context.Context, input IssueDescriptionSyncBatchInput) (_ IssueDescriptionSyncBatchOutput, resultErr error) {
 	if _, err := uuid.Parse(input.RunID); err != nil || input.Offset < 0 || input.BatchSize < 1 || input.BatchSize > issueSyncBatchLimit {
 		return IssueDescriptionSyncBatchOutput{}, fmt.Errorf("%w: invalid issue description sync batch", ErrPermanentVersionHistory)
 	}
@@ -156,7 +158,7 @@ func (store *PostgresIssueDescriptionSyncStore) SyncIssueDescriptionVersionBatch
 	if err != nil {
 		return IssueDescriptionSyncBatchOutput{}, fmt.Errorf("begin issue description sync batch: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var total int
 	if scanErr := tx.QueryRow(ctx, `SELECT COUNT(*) FROM issues WHERE deleted_at IS NULL`).Scan(&total); scanErr != nil {
 		return IssueDescriptionSyncBatchOutput{}, fmt.Errorf("count issues for description sync: %w", scanErr)

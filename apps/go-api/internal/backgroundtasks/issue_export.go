@@ -127,7 +127,7 @@ func NewPostgresIssueExportStore(pool *pgxpool.Pool, objects issueExportObjectSt
 
 func RegisterIssueExportWorkflow(app *selvedge.App, store *issueExportStore, policy *retry.Policy) (*IssueExportDispatcher, error) {
 	if app == nil || store == nil {
-		return nil, errors.New("Selvedge app and issue export store are required")
+		return nil, errors.New("workflow app and issue export store are required")
 	}
 	if policy == nil {
 		policy = retry.Exponential(8, time.Second, time.Minute, 2)

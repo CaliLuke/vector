@@ -12,6 +12,8 @@ import (
 	"time"
 	"unicode"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/password"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -68,7 +70,7 @@ func decodeSeedRecords() (seedRecords, error) {
 	return records, err
 }
 
-func (s *PostgresWorkspaceSeedStore) Seed(ctx context.Context, in WorkspaceSeedInput) (struct{}, error) {
+func (s *PostgresWorkspaceSeedStore) Seed(ctx context.Context, in WorkspaceSeedInput) (_ struct{}, resultErr error) {
 	workspace, err := uuid.Parse(in.WorkspaceID)
 	if err != nil || in.At.IsZero() {
 		return struct{}{}, errors.New("workspace seed requires a UUID and timestamp")
@@ -81,7 +83,7 @@ func (s *PostgresWorkspaceSeedStore) Seed(ctx context.Context, in WorkspaceSeedI
 	if err != nil {
 		return struct{}{}, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	// Serialize repeat admissions; the bot and all rows commit in one transaction.
 	var name, zone, owner string
 	err = tx.QueryRow(ctx, `SELECT name,timezone,owner_id::text FROM workspaces WHERE id=$1 AND deleted_at IS NULL FOR UPDATE`, workspace).Scan(&name, &zone, &owner)

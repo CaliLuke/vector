@@ -53,7 +53,7 @@ type Runtime struct {
 // schema; it never drops or replaces application data.
 func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Option) (_ *Runtime, err error) {
 	if strings.TrimSpace(databaseURL) == "" {
-		return nil, errors.New("Plane PostgreSQL URL is required")
+		return nil, errors.New("database URL is required")
 	}
 	pool, err := pgxpool.New(ctx, databaseURL)
 	if err != nil {

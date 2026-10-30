@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
+
 	"github.com/CaliLuke/loom/execution"
 	executionSelvedge "github.com/CaliLuke/loom/execution/selvedge"
 	"github.com/CaliLuke/selvedge"
@@ -58,7 +60,7 @@ type IssueVersionSyncDispatcher struct {
 
 func RegisterIssueVersionSyncWorkflow(app *selvedge.App, store issueVersionSyncStore, policy *retry.Policy) (*IssueVersionSyncDispatcher, error) {
 	if app == nil || store == nil {
-		return nil, errors.New("Selvedge app and issue version sync store are required")
+		return nil, errors.New("workflow app and issue version sync store are required")
 	}
 	if policy == nil {
 		policy = retry.Exponential(8, time.Second, time.Minute, 2)
@@ -147,7 +149,7 @@ type syncIssueVersionRow struct {
 	ExternalSource, ExternalID                     *string
 }
 
-func (store *PostgresIssueVersionSyncStore) SyncIssueVersionBatch(ctx context.Context, input IssueVersionSyncBatchInput) (IssueVersionSyncBatchOutput, error) {
+func (store *PostgresIssueVersionSyncStore) SyncIssueVersionBatch(ctx context.Context, input IssueVersionSyncBatchInput) (_ IssueVersionSyncBatchOutput, resultErr error) {
 	if _, err := uuid.Parse(input.RunID); err != nil || input.Offset < 0 || input.BatchSize < 1 || input.BatchSize > issueSyncBatchLimit {
 		return IssueVersionSyncBatchOutput{}, fmt.Errorf("%w: invalid issue version sync batch", ErrPermanentVersionHistory)
 	}
@@ -155,7 +157,7 @@ func (store *PostgresIssueVersionSyncStore) SyncIssueVersionBatch(ctx context.Co
 	if err != nil {
 		return IssueVersionSyncBatchOutput{}, fmt.Errorf("begin issue version sync batch: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var total int
 	if scanErr := tx.QueryRow(ctx, `SELECT COUNT(*) FROM issues WHERE deleted_at IS NULL`).Scan(&total); scanErr != nil {
 		return IssueVersionSyncBatchOutput{}, fmt.Errorf("count issues for version sync: %w", scanErr)

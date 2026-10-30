@@ -99,7 +99,7 @@ type webhookTaskStore interface {
 // by Selvedge's symmetric jitter with the same expected delay.
 func RegisterWebhookTaskWorkflows(app *selvedge.App, store webhookTaskStore, policy *retry.Policy) (*WebhookTaskDispatcher, error) {
 	if app == nil || store == nil {
-		return nil, errors.New("Selvedge app and webhook task store are required")
+		return nil, errors.New("workflow app and webhook task store are required")
 	}
 	if policy == nil {
 		policy = &retry.Policy{MaxAttempts: webhookMaxAttempts, InitialInterval: 10 * time.Minute, MaxInterval: 24 * time.Hour, Multiplier: 2, RandomizationFactor: 0.5}

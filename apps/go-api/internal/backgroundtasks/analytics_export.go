@@ -83,7 +83,7 @@ func NewPostgresAnalyticsExportStore(pool *pgxpool.Pool, config issueEmailSMTPCo
 
 func RegisterAnalyticsExportWorkflow(app *selvedge.App, store *analyticsExportStore, policy *retry.Policy) (*AnalyticsExportDispatcher, error) {
 	if app == nil || store == nil {
-		return nil, errors.New("Selvedge app and analytics export store are required")
+		return nil, errors.New("workflow app and analytics export store are required")
 	}
 	if policy == nil {
 		policy = retry.Exponential(8, time.Second, time.Minute, 2)

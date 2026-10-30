@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
+
 	"github.com/CaliLuke/loom/execution"
 	executionSelvedge "github.com/CaliLuke/loom/execution/selvedge"
 	"github.com/CaliLuke/selvedge"
@@ -72,7 +74,7 @@ func (admission *RecentVisitAdmission) AdmitRecentVisit(ctx context.Context, eve
 
 func RegisterRecentVisitWorkflow(app *selvedge.App, store recentVisitStore, policy *retry.Policy) (*RecentVisitDispatcher, error) {
 	if app == nil || store == nil {
-		return nil, errors.New("Selvedge app and recent visit store are required")
+		return nil, errors.New("workflow app and recent visit store are required")
 	}
 	if policy == nil {
 		policy = retry.Exponential(8, time.Second, time.Minute, 2)
@@ -149,7 +151,7 @@ func NewPostgresRecentVisitStore(pool *pgxpool.Pool) (*PostgresRecentVisitStore,
 	return &PostgresRecentVisitStore{pool: pool}, nil
 }
 
-func (store *PostgresRecentVisitStore) RecordRecentVisit(ctx context.Context, input RecentVisitInput) error {
+func (store *PostgresRecentVisitStore) RecordRecentVisit(ctx context.Context, input RecentVisitInput) (resultErr error) {
 	if err := validateRecentVisitInput(input); err != nil {
 		return err
 	}
@@ -168,7 +170,7 @@ func (store *PostgresRecentVisitStore) RecordRecentVisit(ctx context.Context, in
 	if err != nil {
 		return fmt.Errorf("begin recent visit transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var workspaceID uuid.UUID
 	err = tx.QueryRow(ctx, `SELECT id FROM workspaces WHERE slug=$1 AND deleted_at IS NULL`, input.Slug).Scan(&workspaceID)
 	if errors.Is(err, pgx.ErrNoRows) {

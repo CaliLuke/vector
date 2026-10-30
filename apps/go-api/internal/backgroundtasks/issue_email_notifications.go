@@ -104,7 +104,7 @@ func (store *issueEmailStore) Close() error {
 
 func RegisterIssueEmailNotificationWorkflow(app *selvedge.App, store *issueEmailStore, policy *retry.Policy) (*IssueEmailDispatcher, error) {
 	if app == nil || store == nil {
-		return nil, errors.New("Selvedge app and issue email store are required")
+		return nil, errors.New("workflow app and issue email store are required")
 	}
 	if policy == nil {
 		policy = retry.Exponential(8, time.Second, time.Minute, 2)

@@ -55,7 +55,7 @@ type APIActivityLogger struct {
 
 func NewAPIActivityLogger(app *selvedge.App, workflow *selvedge.WorkflowFunc[APIActivityLogInput, struct{}]) (*APIActivityLogger, error) {
 	if app == nil || workflow == nil {
-		return nil, errors.New("Selvedge app and API activity log workflow are required")
+		return nil, errors.New("workflow app and API activity log workflow are required")
 	}
 	return &APIActivityLogger{app: app, workflow: workflow}, nil
 }
@@ -100,7 +100,7 @@ func (logger *APIActivityLogger) AdmitInput(ctx context.Context, input APIActivi
 // RegisterAPIActivityLogWorkflow registers a workflow before App.Start.
 func RegisterAPIActivityLogWorkflow(app *selvedge.App, store apiActivityLogStore, policy *retry.Policy) (*selvedge.WorkflowFunc[APIActivityLogInput, struct{}], error) {
 	if app == nil || store == nil {
-		return nil, errors.New("Selvedge app and API activity log store are required")
+		return nil, errors.New("workflow app and API activity log store are required")
 	}
 	if policy == nil {
 		policy = retry.Exponential(8, time.Second, time.Minute, 2)

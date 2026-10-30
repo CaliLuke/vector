@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
+
 	"github.com/CaliLuke/loom/execution"
 	executionSelvedge "github.com/CaliLuke/loom/execution/selvedge"
 	"github.com/CaliLuke/selvedge"
@@ -69,7 +71,7 @@ func NewPostgresIssueAutomationStore(pool *pgxpool.Pool) (*PostgresIssueAutomati
 
 func RegisterIssueAutomationWorkflow(app *selvedge.App, store issueAutomationStore, issueActivities *IssueActivityDispatcher, policy *retry.Policy) (*IssueAutomationDispatcher, error) {
 	if app == nil || store == nil || issueActivities == nil {
-		return nil, errors.New("Selvedge app, issue automation store and issue activity dispatcher are required")
+		return nil, errors.New("workflow app, issue automation store and issue activity dispatcher are required")
 	}
 	if policy == nil {
 		policy = retry.Exponential(8, time.Second, time.Minute, 2)
@@ -178,7 +180,7 @@ type issueAutomationCandidate struct {
 	ArchivedAt                  *time.Time
 }
 
-func (store *PostgresIssueAutomationStore) ApplyIssueAutomationBatch(ctx context.Context, input issueAutomationBatchInput) (issueAutomationBatchOutput, error) {
+func (store *PostgresIssueAutomationStore) ApplyIssueAutomationBatch(ctx context.Context, input issueAutomationBatchInput) (_ issueAutomationBatchOutput, resultErr error) {
 	if input.ScheduledAt.IsZero() {
 		return issueAutomationBatchOutput{}, errors.New("issue automation schedule time is required")
 	}
@@ -190,7 +192,7 @@ func (store *PostgresIssueAutomationStore) ApplyIssueAutomationBatch(ctx context
 	if err != nil {
 		return issueAutomationBatchOutput{}, fmt.Errorf("begin issue automation batch: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	candidates, err := loadIssueAutomationCandidates(ctx, tx, input, nil)
 	if err != nil {
 		return issueAutomationBatchOutput{}, err

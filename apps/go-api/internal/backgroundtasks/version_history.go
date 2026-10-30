@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
+
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	"github.com/CaliLuke/loom/execution"
 	executionSelvedge "github.com/CaliLuke/loom/execution/selvedge"
@@ -56,14 +58,14 @@ type VersionHistoryDispatcher struct {
 
 func NewVersionHistoryDispatcher(app *selvedge.App, page *selvedge.WorkflowFunc[PageVersionInput, struct{}], issue *selvedge.WorkflowFunc[IssueDescriptionVersionInput, struct{}]) (*VersionHistoryDispatcher, error) {
 	if app == nil || page == nil || issue == nil {
-		return nil, errors.New("Selvedge app and both version history workflows are required")
+		return nil, errors.New("workflow app and both version history workflows are required")
 	}
 	return &VersionHistoryDispatcher{app: app, page: page, issue: issue}, nil
 }
 
 func RegisterVersionHistoryWorkflows(app *selvedge.App, store versionStore, policy *retry.Policy) (*VersionHistoryDispatcher, error) {
 	if app == nil || store == nil {
-		return nil, errors.New("Selvedge app and version history store are required")
+		return nil, errors.New("workflow app and version history store are required")
 	}
 	if policy == nil {
 		policy = retry.Exponential(8, time.Second, time.Minute, 2)
@@ -144,7 +146,7 @@ func NewPostgresVersionHistoryStore(pool *pgxpool.Pool) (*PostgresVersionHistory
 	return &PostgresVersionHistoryStore{pool: pool}, nil
 }
 
-func (store *PostgresVersionHistoryStore) TrackPageVersion(ctx context.Context, input PageVersionInput) error {
+func (store *PostgresVersionHistoryStore) TrackPageVersion(ctx context.Context, input PageVersionInput) (resultErr error) {
 	pageID, userID, err := parseVersionIdentity(input.PageID, input.UserID)
 	if err != nil {
 		return err
@@ -159,7 +161,7 @@ func (store *PostgresVersionHistoryStore) TrackPageVersion(ctx context.Context, 
 	if err != nil {
 		return fmt.Errorf("begin page version transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var workspaceID uuid.UUID
 	var html string
 	var binary []byte
@@ -200,7 +202,7 @@ func (store *PostgresVersionHistoryStore) TrackPageVersion(ctx context.Context, 
 	return tx.Commit(ctx)
 }
 
-func (store *PostgresVersionHistoryStore) TrackIssueDescriptionVersion(ctx context.Context, input IssueDescriptionVersionInput) error {
+func (store *PostgresVersionHistoryStore) TrackIssueDescriptionVersion(ctx context.Context, input IssueDescriptionVersionInput) (resultErr error) {
 	issueID, userID, err := parseVersionIdentity(input.IssueID, input.UserID)
 	if err != nil {
 		return err
@@ -215,7 +217,7 @@ func (store *PostgresVersionHistoryStore) TrackIssueDescriptionVersion(ctx conte
 	if err != nil {
 		return fmt.Errorf("begin issue description version transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var workspaceID, projectID uuid.UUID
 	var createdBy, updatedBy *uuid.UUID
 	var html string

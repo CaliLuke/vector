@@ -152,14 +152,6 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/backgroundtasks/deletion_store.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/backgroundtasks/description_asset_copy.go",
         "Error return value of `response.Body.Close` is not checked"
       ],
@@ -176,64 +168,8 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/backgroundtasks/instance_metrics.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/issue_activities.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/issue_automation.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/issue_description_sync.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/backgroundtasks/issue_export.go",
         "Error return value of `workbook.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/issue_notifications.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/issue_version_sync.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/issue_version_task.go",
-        "Error return value of `tx.Rollback` is not checked"
       ],
       "count": 1
     },
@@ -256,34 +192,10 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/backgroundtasks/page_transactions.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/recent_visits.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/backgroundtasks/templated_email_tasks_integration_test.go",
         "Error return value of `connection.Close` is not checked"
       ],
       "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/version_history.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 2
     },
     {
       "fingerprint": [
@@ -305,14 +217,6 @@
       "fingerprint": [
         "errcheck",
         "internal/backgroundtasks/workspace_seed_integration_test.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/workspace_seed.go",
         "Error return value of `tx.Rollback` is not checked"
       ],
       "count": 1
@@ -924,174 +828,6 @@
         "ST1005: error strings should not be capitalized"
       ],
       "count": 3
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/analytics_export.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/api_activity_logs.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/cleanup.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/description_asset_copy.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/event_tracking.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/exporter_history.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/file_assets.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/instance_metrics.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/issue_activities.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/issue_automation.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/issue_description_sync.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/issue_email_notifications.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/issue_export.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/issue_version_sync.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/issue_version_task.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/page_transactions.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/recent_visits.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/runtime.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/templated_email_tasks.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/version_history.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/backgroundtasks/webhook_tasks.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
     },
     {
       "fingerprint": [

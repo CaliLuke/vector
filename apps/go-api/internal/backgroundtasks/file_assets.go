@@ -22,7 +22,7 @@ type FileAssetMetadataDispatcher struct {
 
 func NewFileAssetMetadataDispatcher(app *selvedge.App, workflow *selvedge.WorkflowFunc[assets.StorageMetadataWorkflowInput, struct{}]) (*FileAssetMetadataDispatcher, error) {
 	if app == nil || workflow == nil {
-		return nil, errors.New("Selvedge app and FileAsset metadata workflow are required")
+		return nil, errors.New("workflow app and FileAsset metadata workflow are required")
 	}
 	return &FileAssetMetadataDispatcher{app: app, workflow: workflow}, nil
 }

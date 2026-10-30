@@ -76,7 +76,7 @@ func NewPostgresTemplatedEmailStore(pool *pgxpool.Pool, config issueEmailSMTPCon
 
 func RegisterTemplatedEmailTaskWorkflow(app *selvedge.App, store *templatedEmailStore, policy *retry.Policy) (*TemplatedEmailTaskDispatcher, error) {
 	if app == nil || store == nil {
-		return nil, errors.New("Selvedge app and templated email store are required")
+		return nil, errors.New("workflow app and templated email store are required")
 	}
 	if policy == nil {
 		policy = retry.Exponential(8, time.Second, time.Minute, 2)

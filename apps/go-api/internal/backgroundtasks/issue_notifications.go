@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/net/html"
@@ -25,7 +27,7 @@ type issueNotificationEvent struct {
 	creatorID, stateName, stateGroup            *string
 }
 
-func (store *PostgresIssueActivityStore) ProcessIssueNotifications(ctx context.Context, eventID string, input IssueActivityInput, activityIDs []string) error {
+func (store *PostgresIssueActivityStore) ProcessIssueNotifications(ctx context.Context, eventID string, input IssueActivityInput, activityIDs []string) (resultErr error) {
 	if err := validateIssueActivityInput(eventID, input); err != nil {
 		return err
 	}
@@ -40,7 +42,7 @@ func (store *PostgresIssueActivityStore) ProcessIssueNotifications(ctx context.C
 	if err != nil {
 		return fmt.Errorf("begin issue notification transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if input.WorkspaceID != "" {
 		if scopeErr := lockBoundIssueActivity(ctx, tx, input, uuid.MustParse(input.WorkspaceID), false); scopeErr != nil {
 			return scopeErr

@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
+
 	htmlcompat "github.com/CaliLuke/go-plane/internal/htmlcompat"
 	"github.com/CaliLuke/loom/execution"
 	executionSelvedge "github.com/CaliLuke/loom/execution/selvedge"
@@ -44,7 +46,7 @@ type PageTransactionDispatcher struct {
 
 func RegisterPageTransactionWorkflow(app *selvedge.App, store pageTransactionStore, policy *retry.Policy) (*PageTransactionDispatcher, error) {
 	if app == nil || store == nil {
-		return nil, errors.New("Selvedge app and page transaction store are required")
+		return nil, errors.New("workflow app and page transaction store are required")
 	}
 	if policy == nil {
 		policy = retry.Exponential(8, time.Second, time.Minute, 2)
@@ -107,7 +109,7 @@ type pageComponentRecord struct {
 	entityID      *string
 }
 
-func (store *PostgresPageTransactionStore) TrackPageTransactions(ctx context.Context, input PageTransactionInput) error {
+func (store *PostgresPageTransactionStore) TrackPageTransactions(ctx context.Context, input PageTransactionInput) (resultErr error) {
 	pageID, err := uuid.Parse(input.PageID)
 	if err != nil {
 		return fmt.Errorf("%w: invalid page transaction page ID", ErrPermanentPageTransaction)
@@ -116,7 +118,7 @@ func (store *PostgresPageTransactionStore) TrackPageTransactions(ctx context.Con
 	if err != nil {
 		return fmt.Errorf("begin page transaction write: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var workspaceID uuid.UUID
 	err = tx.QueryRow(ctx, `SELECT workspace_id FROM pages WHERE id=$1 AND deleted_at IS NULL FOR UPDATE`, pageID).Scan(&workspaceID)
 	if errors.Is(err, pgx.ErrNoRows) {

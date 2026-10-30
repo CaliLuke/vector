@@ -9,6 +9,8 @@ import (
 	"sort"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
+
 	"github.com/CaliLuke/loom/execution"
 	executionSelvedge "github.com/CaliLuke/loom/execution/selvedge"
 	"github.com/CaliLuke/selvedge"
@@ -59,7 +61,7 @@ type IssueActivityDispatcher struct {
 
 func RegisterIssueActivityWorkflow(app *selvedge.App, store issueActivityStore, policy *retry.Policy) (*IssueActivityDispatcher, error) {
 	if app == nil || store == nil {
-		return nil, errors.New("Selvedge app and issue activity store are required")
+		return nil, errors.New("workflow app and issue activity store are required")
 	}
 	if policy == nil {
 		policy = retry.Exponential(8, time.Second, time.Minute, 2)
@@ -237,7 +239,7 @@ func (store *PostgresIssueActivityStore) Close() error {
 	return store.origin.Close()
 }
 
-func (store *PostgresIssueActivityStore) RecordIssueActivity(ctx context.Context, eventID string, input IssueActivityInput) ([]string, error) {
+func (store *PostgresIssueActivityStore) RecordIssueActivity(ctx context.Context, eventID string, input IssueActivityInput) (_ []string, resultErr error) {
 	if err := validateIssueActivityInput(eventID, input); err != nil {
 		return nil, err
 	}
@@ -247,7 +249,7 @@ func (store *PostgresIssueActivityStore) RecordIssueActivity(ctx context.Context
 	if err != nil {
 		return nil, fmt.Errorf("begin issue activity transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var workspaceID uuid.UUID
 	err = tx.QueryRow(ctx, `SELECT workspace_id FROM projects WHERE id=$1 AND deleted_at IS NULL`, projectID).Scan(&workspaceID)
 	if errors.Is(err, pgx.ErrNoRows) {

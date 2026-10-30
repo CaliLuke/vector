@@ -189,7 +189,7 @@ DELETE FROM mutation_receipts AS target USING batch WHERE target.ctid = batch.ct
 // Every run has a fixed cutoff and uses native Selvedge retries/checkpoints.
 func RegisterCleanupWorkflows(app *selvedge.App, store cleanupBatchDeleter, policy *retry.Policy) (*CleanupDispatcher, error) {
 	if app == nil || store == nil {
-		return nil, errors.New("Selvedge app and cleanup store are required")
+		return nil, errors.New("workflow app and cleanup store are required")
 	}
 	if policy == nil {
 		policy = retry.Exponential(8, time.Second, time.Minute, 2)

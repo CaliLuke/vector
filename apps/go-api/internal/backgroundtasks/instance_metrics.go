@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
+
 	"github.com/CaliLuke/loom/execution"
 	executionSelvedge "github.com/CaliLuke/loom/execution/selvedge"
 	"github.com/CaliLuke/selvedge"
@@ -90,7 +92,7 @@ func NewPostgresInstanceMetricsStore(pool *pgxpool.Pool, exporter instanceMetric
 
 func RegisterInstanceMetricsWorkflow(app *selvedge.App, store *PostgresInstanceMetricsStore, policy *retry.Policy) (*InstanceMetricsDispatcher, error) {
 	if app == nil || store == nil {
-		return nil, errors.New("Selvedge app and instance metrics store are required")
+		return nil, errors.New("workflow app and instance metrics store are required")
 	}
 	if policy == nil {
 		policy = retry.Exponential(8, time.Second, time.Minute, 2)
@@ -186,12 +188,12 @@ func (store *PostgresInstanceMetricsStore) Push(ctx context.Context) error {
 	return nil
 }
 
-func (store *PostgresInstanceMetricsStore) collect(ctx context.Context) (InstanceMetricsSnapshot, bool, error) {
+func (store *PostgresInstanceMetricsStore) collect(ctx context.Context) (_ InstanceMetricsSnapshot, _ bool, resultErr error) {
 	tx, err := store.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
 	if err != nil {
 		return InstanceMetricsSnapshot{}, false, fmt.Errorf("begin instance metrics snapshot: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var instanceID, instanceName, currentVersion, edition string
 	var latestVersion *string
 	var isTelemetryEnabled, isVerified, isSetupDone bool
