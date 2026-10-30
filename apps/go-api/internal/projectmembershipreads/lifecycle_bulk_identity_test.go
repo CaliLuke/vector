@@ -72,8 +72,8 @@ func TestLifecycleBulkIdentityLookupOrderPrecedesLaterUUIDErrors(t *testing.T) {
 		{valid, malformed, true, 15, 404, 1, "The required object does not exist."},
 		{malformed, valid, true, 15, 400, 0, "Please provide valid detail"},
 		{`{"member_id":"` + bulkIdentityUser + `","role":20}`, malformed, false, 5, 400, 1, "You cannot add a user with role higher than the workspace role"},
-		{`{"member_id":null}`, `{"member_id":[]}`, true, 15, 500, 0, "Something went wrong please try again later"},
-		{malformed, `{"member_id":{}}`, true, 15, 500, 0, "Something went wrong please try again later"},
+		{`{"member_id":null}`, `{"member_id":[]}`, true, 15, 400, 0, "Please provide valid detail"},
+		{malformed, `{"member_id":{}}`, true, 15, 400, 0, "Please provide valid detail"},
 	} {
 		db := &bulkIdentityDB{role: test.role, missing: test.missing}
 		err := runBulkIdentity(t, db, `{"members":[`+test.first+`,`+test.second+`]}`)

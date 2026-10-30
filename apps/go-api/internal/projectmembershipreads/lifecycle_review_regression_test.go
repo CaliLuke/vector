@@ -214,8 +214,8 @@ func TestLifecycleBulkMalformedUUIDIsDistinctFromMissingMember(t *testing.T) {
 		{`null`, 404, "The required object does not exist."},
 		{`true`, 404, "The required object does not exist."},
 		{`123`, 404, "The required object does not exist."},
-		{`{}`, 500, "Something went wrong please try again later"},
-		{`[]`, 500, "Something went wrong please try again later"},
+		{`{}`, 400, "Please provide valid detail"},
+		{`[]`, 400, "Please provide valid detail"},
 	} {
 		db := &lifecycleReviewDB{missingWorkspaceMember: true}
 		_, err := lifecycleReviewRepository(t, db).lifecycleBulkCreate(context.Background(), LifecycleCommand{Body: strings.NewReader(`{"members":[{"member_id":` + test.identity + `,"role":15}]}`), ContentType: "application/json"})
@@ -235,10 +235,10 @@ func TestLifecycleBulkMalformedUUIDIsDistinctFromMissingMember(t *testing.T) {
 	}
 }
 
-func TestLifecycleLegacyEmptyFormRoleStillFailsAtViewGuard(t *testing.T) {
+func TestLifecycleLegacyEmptyFormRoleReturnsValidationErrorBeforeWrites(t *testing.T) {
 	db := &lifecycleReviewDB{}
 	_, err := lifecycleReviewRepository(t, db).lifecycleLegacyPatch(context.Background(), lifecycleReviewForm("role", "", "application/x-www-form-urlencoded"))
-	lifecycleReviewError(t, err, 500, map[string]any{"error": "Something went wrong please try again later"})
+	lifecycleReviewError(t, err, 400, map[string]any{"role": []string{"A valid integer is required."}})
 	if len(db.writes) > 0 {
 		t.Fatal("invalid role saved")
 	}

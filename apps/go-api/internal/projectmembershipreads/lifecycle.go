@@ -198,13 +198,17 @@ func lifecycleParse(c LifecycleCommand) (djangoinput.Input, error) {
 	if err != nil {
 		return input, err
 	}
+	return input, lifecycleObjectError(input)
+}
+
+func lifecycleObjectError(input djangoinput.Input) error {
 	if input.Null {
-		return input, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"non_field_errors": []string{"No data provided"}}}
+		return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"non_field_errors": []string{"No data provided"}}}
 	}
 	if input.Kind != "" {
-		return input, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"non_field_errors": []string{"Invalid data. Expected a dictionary, but got " + input.Kind + "."}}}
+		return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"non_field_errors": []string{"Invalid data. Expected a dictionary, but got " + input.Kind + "."}}}
 	}
-	return input, nil
+	return nil
 }
 func lifecycleRole(v any) (int, string) {
 	if v == nil {

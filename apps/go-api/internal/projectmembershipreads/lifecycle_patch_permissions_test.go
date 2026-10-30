@@ -21,7 +21,7 @@ func TestLegacyPatchKeepsCurrentActorAsUpdatedBy(t *testing.T) {
 
 func TestLegacyPatchPermissionAndParsingPrecedence(t *testing.T) {
 	for _, tc := range []struct {
-		name, body, message                                                  string
+		name, body, message, field                                           string
 		requesterProject, requesterWorkspace, targetProject, targetWorkspace int
 		self                                                                 bool
 		status                                                               int
@@ -72,9 +72,9 @@ func TestLegacyPatchPermissionAndParsingPrecedence(t *testing.T) {
 			status: 403, message: "You do not have permission to update member status",
 		},
 		{
-			name: "permitted nonobject role retains view error", body: `["role"]`,
+			name: "permitted nonobject role returns validation error", body: `["role"]`,
 			requesterProject: 20, requesterWorkspace: 15, targetProject: 5, targetWorkspace: 15,
-			status: 500, message: "Something went wrong please try again later",
+			status: 400, message: "Invalid data. Expected a dictionary, but got list.", field: "non_field_errors",
 		},
 		{
 			name: "workspace administrator can change own role", body: `{"role":5}`, self: true,
@@ -100,7 +100,11 @@ func TestLegacyPatchPermissionAndParsingPrecedence(t *testing.T) {
 				UserID: requester, Body: strings.NewReader(tc.body), ContentType: "application/json",
 			})
 			if tc.status != 0 {
-				lifecycleReviewError(t, err, tc.status, map[string]any{"error": tc.message})
+				body := map[string]any{"error": tc.message}
+				if tc.field != "" {
+					body = map[string]any{tc.field: []string{tc.message}}
+				}
+				lifecycleReviewError(t, err, tc.status, body)
 				require.Empty(t, db.writes)
 				return
 			}

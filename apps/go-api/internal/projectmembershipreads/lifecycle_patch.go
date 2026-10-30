@@ -86,11 +86,15 @@ func validateLegacyPatchPermissions(input djangoinput.Input, roles *legacyPatchR
 			return lifecycleFailure(403, "error", "You cannot update the role of a member with a role equal to or higher than your own")
 		}
 		if input.Kind != "" {
-			return lifecycleFailure(500, "error", "Something went wrong please try again later")
+			return lifecycleObjectError(input)
 		}
 		number, e := lifecyclePythonInt(value)
 		if e != nil {
-			return lifecycleFailure(500, "error", "Something went wrong please try again later")
+			message := "A valid integer is required."
+			if value == nil {
+				message = "This field may not be null."
+			}
+			return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"role": []string{message}}}
 		}
 		if number.Cmp(big.NewInt(int64(roles.requesterRole))) >= 0 && !roles.admin {
 			return lifecycleFailure(403, "error", "You cannot assign a role equal to or higher than your own")
@@ -107,10 +111,7 @@ func validateLegacyPatchPermissions(input djangoinput.Input, roles *legacyPatchR
 			return lifecycleFailure(403, "error", "You cannot update the status of a member with a role equal to or higher than your own")
 		}
 	}
-	if input.Kind != "" {
-		return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"non_field_errors": []string{"Invalid data. Expected a dictionary, but got " + input.Kind + "."}}}
-	}
-	return nil
+	return lifecycleObjectError(input)
 }
 
 func (r *LifecycleRepository) prepareLegacyPatchAssignments(ctx context.Context, c LifecycleCommand, input djangoinput.Input) ([]string, []any, error) {
@@ -238,7 +239,7 @@ func lifecycleLegacyPatchInput(c LifecycleCommand) (djangoinput.Input, error) {
 		return input, nil
 	}
 	if input.Null || (input.Kind != "list" && input.Kind != "str") {
-		return input, lifecycleFailure(500, "error", "Something went wrong please try again later")
+		return input, lifecycleObjectError(input)
 	}
 	var raw any
 	if err := json.Unmarshal(input.Raw, &raw); err != nil {

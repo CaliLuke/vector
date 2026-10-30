@@ -34,6 +34,13 @@ reading page content or recording a visit. Page-read validation responses retain
 the generated error-name header so clients can distinguish ordering and search
 errors that share status 400. Unexpected failures remain sanitized 500 responses.
 
+Malformed project-member writes now return JSON 400 responses for non-object
+bodies, malformed bulk entries and invalid role values. Permission checks retain
+their existing order. Generated-server tests check response bodies and prove that
+rejected requests perform no writes or notifications. PostgreSQL regressions
+compare memberships and member properties before and after rejection. Existing
+permission, identity and successful-write tests continue to cover accepted inputs.
+
 All floating-point ordering columns now have finite-value constraints. Migration
 43 repairs historical NaN and infinity positions to a fallback order of 65535.
 PostgreSQL tests cover all 20 additional columns alongside the existing label

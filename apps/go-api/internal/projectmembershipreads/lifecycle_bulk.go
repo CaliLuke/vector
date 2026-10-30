@@ -29,12 +29,9 @@ type lifecycleBulkBatch struct {
 }
 
 func (r *LifecycleRepository) lifecycleBulkCreate(ctx context.Context, c LifecycleCommand) (any, error) {
-	input, err := djangoinput.Parse(c.Body, c.ContentType)
+	input, err := lifecycleParse(c)
 	if err != nil {
 		return nil, err
-	}
-	if input.Null || input.Kind != "" {
-		return nil, lifecycleFailure(500, "error", "Something went wrong please try again later")
 	}
 	var project bool
 	if scanErr := r.database.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$1 AND w.slug=$2 AND p.deleted_at IS NULL)`, c.ProjectID, c.Slug).Scan(&project); scanErr != nil {
@@ -85,7 +82,7 @@ func indexLifecycleBulkMembers(fields map[string]any) (*lifecycleBulkBatch, erro
 					return nil, lifecycleFailure(400, "error", "At least one member is required")
 				}
 			}
-			return nil, lifecycleFailure(500, "error", "Something went wrong please try again later")
+			return nil, lifecycleFailure(400, "error", "Members must be a list.")
 		}
 	}
 	members, _ := fields["members"].([]any)
@@ -98,12 +95,12 @@ func indexLifecycleBulkMembers(fields map[string]any) (*lifecycleBulkBatch, erro
 	for _, item := range members {
 		m, ok := item.(map[string]any)
 		if !ok {
-			return nil, lifecycleFailure(500, "error", "Something went wrong please try again later")
+			return nil, lifecycleFailure(400, "error", "Each member must be an object.")
 		}
 		original = append(original, m)
 		key, hashable := lifecycleBulkIdentityKey(m["member_id"])
 		if !hashable {
-			return nil, lifecycleFailure(500, "error", "Something went wrong please try again later")
+			return nil, lifecycleFailure(400, "error", "Please provide valid detail")
 		}
 		entry, exists := roles[key]
 		if !exists {

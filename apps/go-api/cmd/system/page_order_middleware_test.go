@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"uuid"
 
@@ -22,33 +24,36 @@ import (
 )
 
 type pageOrderAuthorizationDatabase struct {
-	t       *testing.T
-	queries int
+	queries atomic.Int64
 }
 
 func (database *pageOrderAuthorizationDatabase) QueryRow(context.Context, string, ...any) pgx.Row {
-	database.queries++
-	require.Equal(database.t, 1, database.queries, "invalid ordering must stop after authorization")
+	database.queries.Add(1)
 	return database
 }
 
 func (database *pageOrderAuthorizationDatabase) Scan(destinations ...any) error {
-	require.Len(database.t, destinations, 1)
+	if database.queries.Load() != 1 {
+		return errors.New("invalid ordering must stop after authorization")
+	}
+	if len(destinations) != 1 {
+		return fmt.Errorf("unexpected page query with %d scan destinations", len(destinations))
+	}
 	switch target := destinations[0].(type) {
 	case *bool:
 		*target = true
 	case *string:
 		*target = "allowed"
 	default:
-		database.t.Fatalf("unexpected page content read into %T", target)
+		return fmt.Errorf("unexpected page content read into %T", target)
 	}
 	return nil
 }
 
-type pageOrderVisits struct{ calls int }
+type pageOrderVisits struct{ calls atomic.Int64 }
 
 func (visits *pageOrderVisits) Record(context.Context, uuid.UUID, string, string, uuid.UUID, uuid.UUID) error {
-	visits.calls++
+	visits.calls.Add(1)
 	return nil
 }
 
@@ -68,8 +73,8 @@ func TestPageOrderValidationThroughProductionMiddleware(t *testing.T) {
 					handler.ServeHTTP(response, request)
 					require.Equal(t, http.StatusBadRequest, response.Code, response.Body.String())
 					require.Contains(t, response.Header().Get("Content-Type"), "application/json")
-					require.Equal(t, 1, database.queries)
-					require.Zero(t, visits.calls)
+					require.Equal(t, int64(1), database.queries.Load())
+					require.Zero(t, visits.calls.Load())
 					if method == http.MethodHead {
 						require.Empty(t, response.Body.String())
 					} else {
@@ -85,7 +90,7 @@ func TestPageOrderValidationThroughProductionMiddleware(t *testing.T) {
 
 func newPageOrderHandler(t *testing.T) (http.Handler, *pageOrderAuthorizationDatabase, *pageOrderVisits) {
 	t.Helper()
-	database := &pageOrderAuthorizationDatabase{t: t}
+	database := &pageOrderAuthorizationDatabase{}
 	repository, err := store.NewRepository(database)
 	require.NoError(t, err)
 	sessions := &cycleMiddlewareSessions{recorder: &cycleMiddlewareRecorder{}, userTimezone: "UTC"}
@@ -123,8 +128,8 @@ func TestPageReadClientDecodesValidationErrors(t *testing.T) {
 			})
 			require.Nil(t, result)
 			require.Equal(t, test.want, err)
-			require.Equal(t, 1, database.queries)
-			require.Zero(t, visits.calls)
+			require.Equal(t, int64(1), database.queries.Load())
+			require.Zero(t, visits.calls.Load())
 		})
 	}
 }

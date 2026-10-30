@@ -120,7 +120,7 @@ func TestLegacyPatchNonObjectParsingRetainsViewGuardPrecedence(t *testing.T) {
 	for _, body := range []string{`null`, `true`, `5`} {
 		_, err := lifecycleLegacyPatchInput(LifecycleCommand{Body: strings.NewReader(body), ContentType: "application/json"})
 		var failure *djangoapi.HTTPError
-		if !errors.As(err, &failure) || failure.Status != 500 {
+		if !errors.As(err, &failure) || failure.Status != 400 {
 			t.Fatalf("body=%s error=%v", body, err)
 		}
 	}
@@ -167,11 +167,11 @@ func TestLegacyBulkNonObjectBodyFailsBeforeProjectLookup(t *testing.T) {
 		}
 		_, err = repository.ExecuteLifecycle(context.Background(), LifecycleCommand{Operation: "legacy-create-members", Method: "POST", Body: strings.NewReader(body), ContentType: "application/json"})
 		var failure *djangoapi.HTTPError
-		if !errors.As(err, &failure) || failure.Status != 500 {
+		if !errors.As(err, &failure) || failure.Status != 400 {
 			t.Fatalf("body=%s error=%v", body, err)
 		}
 		if !strings.Contains(db.query, "FROM project_members pm") {
-			t.Fatalf("body=%s performed a project lookup before request.data.get failed: %s", body, db.query)
+			t.Fatalf("body=%s performed a project lookup before input validation: %s", body, db.query)
 		}
 	}
 }
