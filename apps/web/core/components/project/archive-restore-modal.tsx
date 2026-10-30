@@ -9,30 +9,29 @@ import { useState } from "react";
 // ui
 import { Button } from "@plane/propel/button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
+import type { IProject } from "@plane/types";
 import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
 // hooks
-import { useProjectDetail, useProjectMutations } from "@/hooks/use-projects";
+import { useProjectMutations } from "@/hooks/use-projects";
 
 type Props = {
   workspaceSlug: string;
 
-  projectId: string;
+  project: Pick<IProject, "id" | "name">;
   isOpen: boolean;
   onClose: () => void;
   archive: boolean;
 };
 
 export function ArchiveRestoreProjectModal(props: Props) {
-  const { workspaceSlug, projectId, isOpen, onClose, archive } = props;
+  const { workspaceSlug, project, isOpen, onClose, archive } = props;
+  const projectId = project.id;
   // router
   const router = useRouter();
   // states
   const [isLoading, setIsLoading] = useState(false);
   // store hooks
-  const projectQuery = useProjectDetail(workspaceSlug, projectId);
-  const projectDetails = projectQuery.project;
   const projectMutation = useProjectMutations(workspaceSlug, projectId);
-  if (!projectDetails) return null;
 
   const handleClose = () => {
     setIsLoading(false);
@@ -47,7 +46,7 @@ export function ArchiveRestoreProjectModal(props: Props) {
         setToast({
           type: TOAST_TYPE.SUCCESS,
           title: "Archive success",
-          message: `${projectDetails.name} has been archived successfully`,
+          message: `${project.name} has been archived successfully`,
         });
         onClose();
         void router.navigate({ href: `/${workspaceSlug}/projects/` });
@@ -71,7 +70,7 @@ export function ArchiveRestoreProjectModal(props: Props) {
         setToast({
           type: TOAST_TYPE.SUCCESS,
           title: "Restore success",
-          message: `You can find ${projectDetails.name} in your projects.`,
+          message: `You can find ${project.name} in your projects.`,
         });
         onClose();
         void router.navigate({ href: `/${workspaceSlug}/projects/` });
@@ -91,7 +90,7 @@ export function ArchiveRestoreProjectModal(props: Props) {
     <ModalCore isOpen={isOpen} handleClose={handleClose} position={EModalPosition.CENTER} width={EModalWidth.LG}>
       <div className="px-5 py-4">
         <h3 className="text-18 font-medium 2xl:text-20">
-          {archive ? "Archive" : "Restore"} {projectDetails.name}
+          {archive ? "Archive" : "Restore"} {project.name}
         </h3>
         <p className="mt-3 text-13 text-secondary">
           {archive

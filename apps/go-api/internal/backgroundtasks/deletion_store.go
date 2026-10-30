@@ -59,25 +59,26 @@ func NewPostgresDeletionStore(pool *pgxpool.Pool) (*PostgresDeletionStore, error
 	return &PostgresDeletionStore{pool: pool, policy: policy}, nil
 }
 func (s *PostgresDeletionStore) Policy() deletion.Policy { return s.policy }
-func (s *PostgresDeletionStore) validate(in DeletionInput) (deletion.Model, error) {
+func (s *PostgresDeletionStore) validate(in DeletionInput) (deletion.Model, any, error) {
 	if _, err := uuid.Parse(in.EventID); err != nil {
-		return deletion.Model{}, fmt.Errorf("deletion event ID: %w", err)
-	}
-	if _, err := uuid.Parse(in.ID); err != nil {
-		return deletion.Model{}, fmt.Errorf("deletion object ID: %w", err)
+		return deletion.Model{}, nil, fmt.Errorf("deletion event ID: %w", err)
 	}
 	m, err := s.policy.Lookup(in.App, in.Model)
 	if err != nil {
-		return m, err
+		return m, nil, err
 	}
 	if !m.SoftDelete {
-		return m, errors.New("model does not support soft deletion")
+		return m, nil, errors.New("model does not support soft deletion")
 	}
-	return m, nil
+	id, err := m.ParseID(in.ID)
+	if err != nil {
+		return m, nil, fmt.Errorf("deletion object ID: %w", err)
+	}
+	return m, id, nil
 }
 func deletionTable(m deletion.Model) string { return pgx.Identifier{"public", m.Table}.Sanitize() }
 func (s *PostgresDeletionStore) MarkRoot(ctx context.Context, in DeletionInput) (bool, error) {
-	m, err := s.validate(in)
+	m, id, err := s.validate(in)
 	if err != nil {
 		return false, err
 	}
@@ -85,7 +86,7 @@ func (s *PostgresDeletionStore) MarkRoot(ctx context.Context, in DeletionInput) 
 	if m.UpdatedAt {
 		updated = ",updated_at=CASE WHEN deleted_at IS NULL THEN clock_timestamp() ELSE updated_at END"
 	}
-	tag, err := s.pool.Exec(ctx, "UPDATE "+deletionTable(m)+" SET deleted_at=COALESCE(deleted_at,clock_timestamp())"+updated+" WHERE "+pgx.Identifier{m.PK}.Sanitize()+"=$1::uuid", in.ID)
+	tag, err := s.pool.Exec(ctx, "UPDATE "+deletionTable(m)+" SET deleted_at=COALESCE(deleted_at,clock_timestamp())"+updated+" WHERE "+pgx.Identifier{m.PK}.Sanitize()+"=$1", id)
 	return tag.RowsAffected() > 0, err
 }
 
@@ -105,23 +106,23 @@ func deletionRelations(p deletion.Policy, parent deletion.Model) []reverseDeleti
 	}
 	return result
 }
-func (s *PostgresDeletionStore) relation(in deletionPlanInput) (reverseDeletionRelation, error) {
-	m, err := s.validate(in.Root)
+func (s *PostgresDeletionStore) relation(in deletionPlanInput) (reverseDeletionRelation, any, error) {
+	m, parentID, err := s.validate(in.Root)
 	if err != nil {
-		return reverseDeletionRelation{}, err
+		return reverseDeletionRelation{}, nil, err
 	}
 	rs := deletionRelations(s.policy, m)
 	if in.Relation < 0 || in.Relation >= len(rs) {
-		return reverseDeletionRelation{}, errors.New("invalid deletion relation")
+		return reverseDeletionRelation{}, nil, errors.New("invalid deletion relation")
 	}
-	return rs[in.Relation], nil
+	return rs[in.Relation], parentID, nil
 }
 
 // Plan is a read-only activity: its bounded result is journaled before Apply
 // changes visibility. An activity retry after a committed update cannot lose
 // the IDs whose child workflows still need admission.
 func (s *PostgresDeletionStore) Plan(ctx context.Context, in deletionPlanInput) (deletionPlan, error) {
-	r, err := s.relation(in)
+	r, parentID, err := s.relation(in)
 	if err != nil {
 		return deletionPlan{}, err
 	}
@@ -130,8 +131,8 @@ func (s *PostgresDeletionStore) Plan(ctx context.Context, in deletionPlanInput) 
 	if r.model.SoftDelete && (r.relation.OnDelete == "CASCADE" || !r.relation.OneToOne) {
 		predicate = " AND deleted_at IS NULL"
 	}
-	query := "SELECT " + pgx.Identifier{r.model.PK}.Sanitize() + "::text FROM " + deletionTable(r.model) + " WHERE " + pgx.Identifier{r.relation.Column}.Sanitize() + "=$1::uuid AND " + pgx.Identifier{r.model.PK}.Sanitize() + "::text>$2" + predicate + " ORDER BY " + pgx.Identifier{r.model.PK}.Sanitize() + "::text LIMIT $3"
-	rows, err := s.pool.Query(ctx, query, in.Root.ID, in.AfterID, deletionBatchSize)
+	query := "SELECT " + pgx.Identifier{r.model.PK}.Sanitize() + "::text FROM " + deletionTable(r.model) + " WHERE " + pgx.Identifier{r.relation.Column}.Sanitize() + "=$1 AND " + pgx.Identifier{r.model.PK}.Sanitize() + "::text>$2" + predicate + " ORDER BY " + pgx.Identifier{r.model.PK}.Sanitize() + "::text LIMIT $3"
+	rows, err := s.pool.Query(ctx, query, parentID, in.AfterID, deletionBatchSize)
 	if err != nil {
 		return result, err
 	}
@@ -147,7 +148,7 @@ func (s *PostgresDeletionStore) Plan(ctx context.Context, in deletionPlanInput) 
 	return result, rows.Err()
 }
 func (s *PostgresDeletionStore) Apply(ctx context.Context, plan deletionPlan) (_ []DeletionInput, resultErr error) {
-	r, err := s.relation(plan.Input)
+	r, parentID, err := s.relation(plan.Input)
 	if err != nil {
 		return nil, err
 	}
@@ -164,19 +165,35 @@ func (s *PostgresDeletionStore) Apply(ctx context.Context, plan deletionPlan) (_
 	}
 	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	for _, id := range plan.IDs {
-		if _, parseErr := uuid.Parse(id); parseErr != nil {
+		objectID, parseErr := r.model.ParseID(id)
+		if parseErr != nil {
 			return nil, parseErr
 		}
-		where := " WHERE " + pgx.Identifier{r.model.PK}.Sanitize() + "=$1::uuid AND " + pgx.Identifier{r.relation.Column}.Sanitize() + "=$2::uuid"
+		where := " WHERE " + pgx.Identifier{r.model.PK}.Sanitize() + "=$1 AND " + pgx.Identifier{r.relation.Column}.Sanitize() + "=$2"
 		if r.relation.OnDelete == "SET_NULL" {
-			_, err = tx.Exec(ctx, "UPDATE "+deletionTable(r.model)+" SET "+pgx.Identifier{r.relation.Column}.Sanitize()+"=NULL"+where, id, plan.Input.Root.ID)
+			_, err = tx.Exec(ctx, "UPDATE "+deletionTable(r.model)+" SET "+pgx.Identifier{r.relation.Column}.Sanitize()+"=NULL"+where, objectID, parentID)
 		} else {
 			updated := ""
 			if r.model.UpdatedAt {
 				updated = ",updated_at=CASE WHEN deleted_at IS NULL THEN clock_timestamp() ELSE updated_at END"
 			}
-			_, err = tx.Exec(ctx, "UPDATE "+deletionTable(r.model)+" SET deleted_at=COALESCE(deleted_at,clock_timestamp())"+updated+where, id, plan.Input.Root.ID)
-			children = append(children, DeletionInput{EventID: plan.Input.Root.EventID, App: r.model.App, Model: r.model.Name, ID: id})
+			if r.model.App == "db" && r.model.Name == "projectmember" && plan.Input.Root.App == "db" && plan.Input.Root.Model == "project" {
+				// Keep the deleting actor's current membership available for receipt
+				// authorization. The deleted project remains hidden; normal membership
+				// revocation still applies, and physical project purge removes this row.
+				where += ` AND NOT EXISTS(SELECT 1 FROM mutation_receipts receipt
+ WHERE receipt.tool='project' AND receipt.action='delete'
+ AND receipt.replay_expires_at>statement_timestamp()
+ AND receipt.workspace_id=project_members.workspace_id
+ AND receipt.project_id=project_members.project_id
+ AND receipt.actor_id=project_members.member_id
+ AND receipt.result->>'id'=project_members.project_id::text)`
+			}
+			tag, updateErr := tx.Exec(ctx, "UPDATE "+deletionTable(r.model)+" SET deleted_at=COALESCE(deleted_at,clock_timestamp())"+updated+where, objectID, parentID)
+			err = updateErr
+			if tag.RowsAffected() > 0 {
+				children = append(children, DeletionInput{EventID: plan.Input.Root.EventID, App: r.model.App, Model: r.model.Name, ID: id})
+			}
 		}
 		if err != nil {
 			return nil, err
@@ -210,6 +227,12 @@ func (s *PostgresDeletionStore) HardDelete(ctx context.Context, in hardDeletionI
 	table := deletionTable(m)
 	candidates := "SELECT " + pk + " FROM " + table + " candidate WHERE deleted_at<$1"
 	args := []any{in.Cutoff, deletionBatchSize}
+	if m.App == "db" && m.Name == "project" {
+		candidates += ` AND NOT EXISTS(SELECT 1 FROM mutation_receipts r
+ WHERE r.tool='project' AND r.action='delete' AND r.replay_expires_at>statement_timestamp()
+ AND r.workspace_id=candidate.workspace_id AND r.project_id=candidate.id
+ AND r.result->>'id'=candidate.id::text)`
+	}
 	if m.App == "db" && (m.Name == "cycle" || m.Name == "module") {
 		// These deleted rows supply current owner/admin authorization on replay.
 		// Even a one-day purge policy must preserve the receipt's retry window.

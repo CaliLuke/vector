@@ -53,7 +53,7 @@ export function GeneralProjectSettingsControlSection(props: Props) {
       {workspaceSlug && (
         <ArchiveRestoreProjectModal
           workspaceSlug={workspaceSlug}
-          projectId={projectId}
+          project={currentProjectDetails}
           isOpen={archiveProject}
           onClose={() => setArchiveProject(false)}
           archive

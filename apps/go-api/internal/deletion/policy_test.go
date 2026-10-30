@@ -1,6 +1,10 @@
 package deletion
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/google/uuid"
+)
 
 func TestCapturedPolicyIsCompleteAndUnambiguous(t *testing.T) {
 	p, err := Load()
@@ -44,5 +48,36 @@ func TestCapturedPolicyIsCompleteAndUnambiguous(t *testing.T) {
 	}
 	if _, err := p.Lookup("db", "workspaces; DROP TABLE users"); err == nil {
 		t.Fatal("accepted unknown model")
+	}
+}
+
+func TestModelIdentifiersMatchTheirDatabaseKeyType(t *testing.T) {
+	const id = "00000000-0000-4000-8000-000000000001"
+	for _, tc := range []struct {
+		name, keyType, input string
+		want                 any
+	}{
+		{"default UUID", "", id, uuid.MustParse(id)},
+		{"explicit UUID", "uuid", id, uuid.MustParse(id)},
+		{"integer", "bigint", "42", int64(42)},
+		{"largest integer", "bigint", "9223372036854775807", int64(9223372036854775807)},
+		{"UUID rejects integer", "uuid", "42", nil},
+		{"integer rejects UUID", "bigint", id, nil},
+		{"integer overflow", "bigint", "9223372036854775808", nil},
+		{"invalid integer", "bigint", "42;DELETE FROM projects", nil},
+		{"unsupported model key", "text", "anything", nil},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := (Model{PKType: tc.keyType}).ParseID(tc.input)
+			if tc.want == nil {
+				if err == nil {
+					t.Fatalf("accepted incompatible model identifier: %v", got)
+				}
+				return
+			}
+			if err != nil || got != tc.want {
+				t.Fatalf("identifier=%v (%T), want %v (%T), error=%v", got, got, tc.want, tc.want, err)
+			}
+		})
 	}
 }

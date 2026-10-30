@@ -1,6 +1,6 @@
 # MCP projects
 
-This page documents the `project` tool’s `list`, `retrieve`, `archive`, and `unarchive` actions. Its action and result contracts come from the pinned Plane MCP handler and `plane-sdk==0.3.1`. Creation, updates, deletion, feature settings and work-log summaries are also implemented; their separate acceptance remains in the parity tracker. See [write recovery](mcp-writes.md) for archive permissions, receipt and revision extensions, discovery filtering, and remaining evidence.
+This page documents the `project` tool’s `list`, `retrieve`, `create`, `update`, `delete`, `archive`, and `unarchive` actions. Its action and result contracts come from the pinned Plane MCP handler and `plane-sdk==0.3.1`. Feature settings and work-log summaries have separate contracts in the parity tracker. See [write recovery](mcp-writes.md) for archive permissions, receipt and revision extensions, discovery filtering, and remaining evidence.
 
 ## Inputs and results
 
@@ -16,7 +16,7 @@ supplies its SDK default, null. Existing JSON-valued icon, logo and description
 fields retain their values. The enclosing project and page records are typed;
 there is no opaque whole-result map.
 
-All four actions accept the optional MCP `workspace_slug` selector. Personal tokens
+All seven actions accept the optional MCP `workspace_slug` selector. Personal tokens
 and OAuth can select a workspace through that argument or an optional fixed
 workspace header default. A scoped action without a workspace fails with
 `invalid_params`; conflicting selectors fail at the existing HTTP boundary.
@@ -64,16 +64,39 @@ in the roster statement. Their regressions mutate scope after action admission
 and before the domain reader executes, so another credential check alone cannot
 make these tests pass.
 
-All four project actions are integrated and tested through the generated server with both credentials and protocol revisions. The full Go gate and focused race tests pass; package coverage floors remain unchanged. Frontend builds and checks pass after the parity-table formatting correction. Read-action discovery now reflects current workspace and project membership. Browser conflict proof remains open.
-Production OAuth issuer selection remains deferred. Complete native browser/proxy
-proof and overall 208-action parity remain separate open work.
+Project lifecycle mutations share the native repository and receipt transaction.
+[Receipt safety](../apps/go-api/internal/mcpactions/catalogue_safety_integration_test.go)
+covers changed requests, native-writer revisions and current replay permissions.
+[Storage rollback](../apps/go-api/internal/mcpactions/project_mutation_rollback_integration_test.go)
+covers receipt and effect failures without retaining partial project defaults.
+[Contention and cancellation](../apps/go-api/internal/mcpactions/project_record_concurrency_integration_test.go)
+prove one winning write, stable same-key recovery, competing revisions, unchanged
+state after cancellation and request-key reuse. The
+[real-worker workflow](../apps/go-api/internal/mcpactions/project_delete_workflow_integration_test.go)
+proves delete recovery after child cascades, including integer project identifiers.
+
+Native browser acceptance through `localhost:8000` verifies the MCP-created
+project's name, identifier and defaults; a browser rename advances the MCP
+revision and rejects an old-revision write. MCP update replay returns the original
+result and appears after browser refresh. Archive removes the project from the
+active list and shows it in Archives. Native restoration advances the revision;
+a stale archive request fails. MCP archive/restore receipts replay without
+repeating the transition. Deletion hides the project from native and MCP lists
+and detail reads. After the running worker completes the cascade, the original
+delete receipt remains recoverable and there is one root deletion workflow.
+
+The native restore dialog uses the project supplied by the archived card. It
+must not fetch active-project detail to display its confirmation; archived
+projects are absent from that endpoint. The
+[dialog regression](../tests/frontend/project-archive-dialog.test.mjs) verifies
+restoration without that read.
+
+Production OAuth issuer selection remains deferred. Overall 208-action parity
+and final publication checks remain in the outstanding debt catalog.
 
 ## Credential changes during archive lock waits
 
-NEW-05 reproduced a credential timing defect in both archive and restore. The
-initial transaction authorization checked the credential before waiting for the
-project row. A token revoked or stripped of write scope during that wait could
-still produce a mutation or receipt replay. The writer now repeats credential
+Archive and restore repeat credential
 validation after domain authorization has acquired its locks and before receipt
 lookup or mutation. Native HTTP callers retain their existing permissions and
 have no MCP credential callback.
@@ -82,10 +105,9 @@ The [generated-server regression](../apps/go-api/internal/mcpactions/project_arc
 holds the project lock, waits for the request to block, changes the credential,
 and releases the lock. Its 24 cases cover PAT revocation, OAuth revocation and
 OAuth write-scope removal, both protocols, archive/restore, and writes/replays.
-Each must return a safe error without structured content and preserve the exact
-project, favorite, revision and receipt snapshot. All 24 fail on the old source
-and pass with the applied fix; the combined existing archive checks also pass
-under the race detector (69 test events). Go fast gates pass without new lint or
-maintainability allowances; duplication remains at 474 reports. Full publication
-remains pending. This check does not promise continuous issuer validation through
-commit or close the remaining project-action acceptance work.
+Each returns a safe error without structured content and preserves the exact
+project, favorite, revision and receipt snapshot. The
+[update/delete lock-wait tests](../apps/go-api/internal/mcpactions/project_record_authorization_wait_integration_test.go)
+apply the same requirement to project record writes and receipt replay,
+including explicit project membership revocation. These checks do not promise
+continuous issuer validation through commit.

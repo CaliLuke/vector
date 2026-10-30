@@ -65,3 +65,41 @@ func TestAPIProjectReadsKeepSourceAllowWithoutChangingWriteMethods(t *testing.T)
 		}
 	}
 }
+
+func TestProjectLiteArchivedQueryPreservesNativeBooleanRules(t *testing.T) {
+	for _, tc := range []struct{ name, query, want string }{
+		{"omitted", "order_by=name", ""},
+		{"true", "include_archived=true&order_by=name", "true"},
+		{"case insensitive", "include_archived=TRUE&order_by=name", "true"},
+		{"one", "include_archived=1&order_by=name", "true"},
+		{"false", "include_archived=false&order_by=name", "false"},
+		{"zero", "include_archived=0&order_by=name", "false"},
+		{"empty", "include_archived=&order_by=name", "false"},
+		{"other text", "include_archived=yes&order_by=name", "false"},
+		{"last repeated value wins", "include_archived=true&include_archived=false&order_by=name", "false"},
+		{"last repeated true wins", "include_archived=false&include_archived=1&order_by=name", "true"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			original := httptest.NewRequest(http.MethodGet, "/api/v1/workspaces/demo/projects-lite/?"+tc.query, nil)
+			handled := false
+			handler := projectLifecycleQueryCompatibilityMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				handled = true
+				if got := r.URL.Query().Get("include_archived"); got != tc.want {
+					t.Errorf("include_archived=%q, want %q", got, tc.want)
+				}
+				if got := r.URL.Query().Get("order_by"); got != "name" {
+					t.Errorf("unrelated order_by changed to %q", got)
+				}
+				w.WriteHeader(http.StatusNoContent)
+			}))
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, original)
+			if !handled || response.Code != http.StatusNoContent {
+				t.Fatalf("request not forwarded: handled=%v status=%d", handled, response.Code)
+			}
+			if original.URL.RawQuery != tc.query {
+				t.Fatalf("shared request query changed: %q", original.URL.RawQuery)
+			}
+		})
+	}
+}

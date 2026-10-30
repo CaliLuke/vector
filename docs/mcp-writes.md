@@ -63,3 +63,27 @@ The [planning delete checks](../apps/go-api/internal/mcpactions/planning_delete_
 and [purge regression](../apps/go-api/internal/backgroundtasks/planning_deletion_receipt_integration_test.go)
 cover these boundaries. Both complete publication gates passed at `97660842`,
 including 13,814 Go test events with no failed or skipped cases.
+
+## Project deletion recovery
+
+A project delete receipt needs the deleted project and the deleting actor's
+current project membership for authorization. The cascade retains that actor's
+membership while an unexpired project delete receipt references it. Other
+memberships still cascade. The project remains hidden from normal reads, and
+explicit account, workspace, project membership, and role revocation still block
+replay. This does not grant access based on the old receipt alone.
+
+Physical project purge waits until its delete receipts expire, including when
+the configured purge age is shorter than the receipt window. The project foreign
+key cascade then removes retained memberships. Expired receipts and unkeyed
+project deletions do not extend this retention.
+
+The deletion policy records the integer key used by project identifiers.
+Admission and worker queries parse each model's key type instead of assuming
+that every deletion target has a UUID.
+
+The [worker regressions](../apps/go-api/internal/backgroundtasks/project_deletion_receipt_integration_test.go)
+exercise retention, expiry, explicit revocation, and committed cascade retries.
+The [MCP workflow regression](../apps/go-api/internal/mcpactions/project_delete_workflow_integration_test.go)
+creates and deletes projects through both credentials and protocol revisions,
+runs the durable cascade, and checks receipt recovery and hidden-project reads.

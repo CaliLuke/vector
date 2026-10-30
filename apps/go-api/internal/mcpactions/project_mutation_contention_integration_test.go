@@ -49,3 +49,30 @@ func competingProjectWrites[T any](t *testing.T, f milestoneFixture, project uui
 	}
 	return results
 }
+
+func cancelProjectWriteWhileLocked(t *testing.T, f milestoneFixture, project uuid.UUID, call func(context.Context) error) {
+	t.Helper()
+	ctx, cancel := context.WithTimeout(t.Context(), 20*time.Second)
+	defer cancel()
+	blocker, err := f.pool.Begin(ctx)
+	require.NoError(t, err)
+	defer func() { require.NoError(t, dbutil.RollbackTransaction(ctx, blocker.Rollback, nil)) }()
+	_, err = blocker.Exec(ctx, `SELECT id FROM projects WHERE id=$1 FOR UPDATE`, project)
+	require.NoError(t, err)
+	requestCtx, cancelRequest := context.WithCancel(ctx)
+	defer cancelRequest()
+	done := make(chan error, 1)
+	go func() { done <- call(requestCtx) }()
+	require.Eventually(t, func() bool {
+		var waiting bool
+		queryErr := f.pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND $1=ANY(pg_blocking_pids(pid)))`, blocker.Conn().PgConn().PID()).Scan(&waiting)
+		return queryErr == nil && waiting
+	}, 10*time.Second, 10*time.Millisecond, "request must reach the held project lock before cancellation")
+	cancelRequest()
+	select {
+	case err = <-done:
+		require.ErrorIs(t, err, context.Canceled)
+	case <-ctx.Done():
+		t.Fatal("cancelled request did not return while the project lock remained held")
+	}
+}

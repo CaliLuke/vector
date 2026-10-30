@@ -6,12 +6,13 @@ sized tasks or an estimate of time remaining.
 
 ## Next work
 
-1. Finish the full quality gate and publish the pending commits to `main`.
-2. **MCP-01/MCP-02:** complete acceptance for project list, retrieve, create,
-   update, delete, archive and restore. Verify current authorization, tenant
-   isolation, receipts, revisions, durable effects and native browser behavior.
-   In particular, verify delete-receipt recovery after worker cascades and purge.
-   Keep source observations distinct from reproduced defects.
+1. Complete the full quality gate and publish the pending `main` commits,
+   including the unchanged `cmd/system` coverage floor with its corrected
+   owned-source statement count.
+2. **MCP-01/MCP-02:** publish the verified project list, retrieve, create,
+   update, delete, archive and restore acceptance, including deletion recovery
+   and the native restore dialog fix. Then select the next outstanding action
+   domain from the parity tracker.
 3. **ERR-01/ERR-02:** select the next exact runtime findings from the inventories
    below. State their observable impact and required regression evidence before
    changing code. Coverage work follows the affected behavior.
@@ -37,7 +38,7 @@ single tasks-remaining total.
 | COV-02    | Measure remaining frontend scopes         | [Coverage scope inventory](../.quality/coverage-scope.json): **14 unmeasured workspaces**, including web, admin, space, and shared packages. Existing behavior tests do not provide reliable source coverage for every scope.                                                                                                                         | Reliable attribution of source coverage, meaningful tests, and enforced floors for the recorded scopes. Preserve existing measured-suite floors.                                                                                                                |
 | UI-01     | Finish recorded browser verification      | [Test-suite review](test-suite-review.md) and the existing local browser evidence. Legacy-comment tooltip and clipboard paste round-trip verification remain pending.                                                                                                                                                                                 | Verify the specific remaining user-visible behaviors and record the result. Do not treat automation limitations as proven application defects.                                                                                                                  |
 | EXT-01    | Review retained dependency limitations    | [Development limitations and removal conditions](development.md#dependency-limitations), plus the Testcontainers/Colima guidance in [test commands](development.md#tests). Includes Ryuk reuse, Colima forwarding, bodyclose analysis, errorlint EOF handling, Go overlay coverage, Lagotto loading, and scoped dependency compatibility workarounds. | Use upstream reports and pinned consumer reproductions. Remove a workaround only when the consumer passes its removal condition. No dependency edits, forks, or publication without separate authorization.                                                     |
-| EXT-02    | Revalidate recorded tooling warnings      | Previously observed next-themes warning and an unconfirmed router CLI circular-dependency warning. Historical observations need current reproduction before changes.                                                                                                                                                                                  | Reproduce and locate the cause, then fix owned behavior or retain a reported upstream limitation with a removal condition. Close obsolete observations with evidence.                                                                                           |
+| EXT-02    | Revalidate recorded tooling warnings      | Current frontend startup reports deprecated tsdown `external` configuration. Previously observed next-themes and router CLI circular-dependency warnings need current reproduction before changes.                                                                                                                                                    | Reproduce and locate the cause, then fix owned behavior or retain a reported upstream limitation with a removal condition. Close obsolete observations with evidence.                                                                                           |
 
 The largest TypeScript categories at this snapshot are 351 unsafe type assertions,
 264 explicit `any` uses, 129 inconsistent returns, 108 floating promises, 105
@@ -47,10 +48,11 @@ baseline contains the remaining categories and exact affected files.
 
 ## Open findings
 
-| ID     | Outstanding work                                                                                                                            | Closure evidence                                                                                                             |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| NEW-02 | Investigate the intermittent color-picker pending-save timeout at its existing five-second limit. The cause remains unknown; rechecks pass. | Reproduce and resolve the cause, or establish that the observation is obsolete. Do not relax the deadline or coverage floor. |
-| NEW-05 | Complete full verification and publication of the archive/restore credential revalidation fix.                                              | Both full gates pass and remote `main` contains the fix.                                                                     |
+| ID     | Outstanding work                                                                                                                                          | Closure evidence                                                                                                                     |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| NEW-02 | Investigate the intermittent color-picker pending-save timeout at its existing five-second limit. The cause remains unknown; rechecks pass.               | Reproduce and resolve the cause, or establish that the observation is obsolete. Do not relax the deadline or coverage floor.         |
+| NEW-05 | Complete full verification and publication of the archive/restore credential revalidation fix.                                                            | Both full gates pass and remote `main` contains the fix.                                                                             |
+| NEW-06 | Complete full verification and publication of project deletion recovery, integer project-identifier keys, and the native archived-project restore dialog. | Generated-server and real-worker recovery, explicit revocation, expiry cleanup, native visibility, and full publication checks pass. |
 
 ## Deferred work and product follow-ups
 

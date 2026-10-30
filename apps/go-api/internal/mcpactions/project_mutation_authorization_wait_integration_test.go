@@ -19,6 +19,7 @@ import (
 
 type projectMutationWaitScenario struct {
 	tool         string
+	action       string
 	fixture      func(*testing.T) milestoneFixture
 	createFields map[string]any
 	snapshot     func(*testing.T, milestoneFixture) []byte
@@ -50,11 +51,25 @@ func runProjectMutationAuthorizationWait(t *testing.T, scenario projectMutationW
 					createInput := map[string]any{"action": "create", "workspace_slug": "workspace-one",
 						"project_id": testsupport.LabelProject, "name": uuid.NewString()}
 					maps.Copy(createInput, scenario.createFields)
+					if scenario.tool == "project" {
+						delete(createInput, "project_id")
+					}
 					create, err := json.Marshal(createInput)
 					require.NoError(t, err)
 					created := milestoneObject(t, oauthToolCall(t, handler, version, token, "", scenario.tool, string(create), http.StatusOK))
-					input := map[string]any{"action": "update", "workspace_slug": "workspace-one", "project_id": testsupport.LabelProject,
+					projectID := testsupport.LabelProject
+					if scenario.tool == "project" {
+						projectID = created["id"].(string)
+					}
+					action := scenario.action
+					if action == "" {
+						action = "update"
+					}
+					input := map[string]any{"action": action, "workspace_slug": "workspace-one", "project_id": projectID,
 						scenario.tool + "_id": created["id"], "description": "accepted only with current authorization", "request_id": uuid.NewString()}
+					if action == "delete" {
+						delete(input, "description")
+					}
 					arguments, err := json.Marshal(input)
 					require.NoError(t, err)
 					if replay {
@@ -65,7 +80,7 @@ func runProjectMutationAuthorizationWait(t *testing.T, scenario projectMutationW
 					blocker, err := f.pool.Begin(ctx)
 					require.NoError(t, err)
 					defer func() { require.NoError(t, dbutil.RollbackTransaction(ctx, blocker.Rollback, nil)) }()
-					_, err = blocker.Exec(ctx, `SELECT id FROM projects WHERE id=$1 FOR UPDATE`, testsupport.LabelProject)
+					_, err = blocker.Exec(ctx, `SELECT id FROM projects WHERE id=$1 FOR UPDATE`, projectID)
 					require.NoError(t, err)
 					request := oauthRequest(t, version, token, "", "tools/call", map[string]any{"name": scenario.tool, "arguments": json.RawMessage(arguments)}).WithContext(ctx)
 					response := httptest.NewRecorder()
@@ -79,7 +94,7 @@ func runProjectMutationAuthorizationWait(t *testing.T, scenario projectMutationW
 					}, 10*time.Second, 10*time.Millisecond, "request never waited on the held project lock")
 					switch change.kind {
 					case "membership":
-						_, err = f.pool.Exec(ctx, `UPDATE project_members SET is_active=false WHERE member_id=$1 AND project_id=$2`, testsupport.LabelActor, testsupport.LabelProject)
+						_, err = f.pool.Exec(ctx, `UPDATE project_members SET is_active=false WHERE member_id=$1 AND project_id=$2`, testsupport.LabelActor, projectID)
 						require.NoError(t, err)
 					case "scope":
 						f.issuer.mu.Lock()

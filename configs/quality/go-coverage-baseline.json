@@ -82,7 +82,7 @@
       "percent": 86.96
     },
     "github.com/CaliLuke/go-plane/cmd/system": {
-      "statements": 6622,
+      "statements": 6576,
       "percent": 74.67
     },
     "github.com/CaliLuke/go-plane/cmd/system-cli": {

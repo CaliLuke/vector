@@ -5,6 +5,7 @@ package mcpactions_test
 import (
 	"context"
 	"maps"
+	"strings"
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/testsupport"
@@ -24,6 +25,7 @@ func TestMCPCatalogueReceiptsRespectNativeEditsAndCurrentPermissions(t *testing.
 		_, err := f.pool.Exec(t.Context(), `UPDATE workspace_features SET customers=true,initiatives=true`)
 		require.NoError(t, err)
 		for _, tc := range []catalogueSafetyCase{
+			{tool: "project", table: "projects", selector: "project_id", fields: map[string]any{"identifier": strings.ToUpper(uuid.NewString()[:8]), "name": "Receipt project " + strings.ReplaceAll(uuid.NewString(), "-", "")}},
 			{tool: "customer", table: "customers", selector: "customer_id"},
 			{tool: "initiative", table: "initiatives", selector: "initiative_id"},
 			{tool: "release", table: "work_item_releases", selector: "release_id"},
@@ -52,7 +54,11 @@ func catalogueReceiptSafety(t *testing.T, f milestoneFixture, call catalogueCall
 	create := catalogueSafetyInput(tc, "create", uuid.NewString())
 	create["request_id"] = uuid.NewString()
 	created := milestoneObject(t, call(tc.tool, create))
-	id := created["resource_id"].(string)
+	receiptID := "resource_id"
+	if tc.tool == "project" {
+		receiptID = "project_id"
+	}
+	id := created[receiptID].(string)
 	conflict := maps.Clone(create)
 	conflict["name"] = "Different input"
 	milestoneFailure(t, call(tc.tool, conflict), "request_conflict")
@@ -95,6 +101,15 @@ func catalogueReceiptSafety(t *testing.T, f milestoneFixture, call catalogueCall
 
 func revokeCatalogueWrite(t *testing.T, f milestoneFixture, tc catalogueSafetyCase, id string) {
 	t.Helper()
+	if tc.tool == "project" {
+		_, err := f.pool.Exec(t.Context(), `UPDATE project_members SET is_active=false WHERE project_id=$1 AND member_id=$2`, id, testsupport.LabelActor)
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			_, restoreErr := f.pool.Exec(context.WithoutCancel(t.Context()), `UPDATE project_members SET is_active=true WHERE project_id=$1 AND member_id=$2`, id, testsupport.LabelActor)
+			require.NoError(t, restoreErr)
+		})
+		return
+	}
 	if tc.tool != "page" && tc.tool != "collection" {
 		_, err := f.pool.Exec(t.Context(), `UPDATE workspace_members SET role=5 WHERE member_id=$1`, testsupport.LabelActor)
 		require.NoError(t, err)

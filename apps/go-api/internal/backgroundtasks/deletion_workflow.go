@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/deletion"
 	"github.com/CaliLuke/loom/execution"
 	executionSelvedge "github.com/CaliLuke/loom/execution/selvedge"
 	"github.com/CaliLuke/selvedge"
@@ -23,6 +24,7 @@ const (
 )
 
 type DeletionDispatcher struct {
+	policy   deletion.Policy
 	app      *selvedge.App
 	soft     *selvedge.WorkflowFunc[DeletionInput, struct{}]
 	hard     *selvedge.WorkflowFunc[time.Time, struct{}]
@@ -154,7 +156,7 @@ func RegisterDeletionWorkflows(app *selvedge.App, store deletionStore, days int,
 		}
 	})
 	selvedge.RegisterWorkflow(app, schedule)
-	return &DeletionDispatcher{app: app, soft: soft, hard: hard, schedule: schedule}, nil
+	return &DeletionDispatcher{app: app, soft: soft, hard: hard, schedule: schedule, policy: store.Policy()}, nil
 }
 func deletionInstanceID(in DeletionInput) string {
 	return "plane-soft-delete:" + in.EventID + ":" + in.App + ":" + in.Model + ":" + in.ID
@@ -166,7 +168,11 @@ func (d *DeletionDispatcher) Admit(ctx context.Context, in DeletionInput) (strin
 	if _, err := uuid.Parse(in.EventID); err != nil {
 		return "", err
 	}
-	if _, err := uuid.Parse(in.ID); err != nil {
+	model, err := d.policy.Lookup(in.App, in.Model)
+	if err != nil {
+		return "", err
+	}
+	if _, err := model.ParseID(in.ID); err != nil {
 		return "", err
 	}
 	return admitOrReconcile(ctx, d.app, d.soft, deletionInstanceID(in), in)

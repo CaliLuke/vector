@@ -414,7 +414,7 @@ export const ProjectCard = function ProjectCard(props: Props) {
       {workspaceSlug && project && (
         <ArchiveRestoreProjectModal
           workspaceSlug={workspaceSlug}
-          projectId={project.id}
+          project={project}
           isOpen={restoreProject}
           onClose={() => setRestoreProject(false)}
           archive={false}
