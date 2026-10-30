@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -18,7 +20,7 @@ func TestResponseActionLoadsFilesAfterActionPause(t *testing.T) {
 		writeResponse(t, sourcePath, `{"status":201,"headers":{},"cookies":{},"body":{"runtime":"source-after-action"}}`)
 		writeResponse(t, targetPath, `{"status":201,"headers":{},"cookies":{},"body":{"runtime":"target-after-action"}}`)
 	}}
-	action, err := responseAction(reader, &output, sourcePath, targetPath)
+	action, err := responseAction(testConfirmation(reader), &output, sourcePath, targetPath)
 	if err != nil {
 		t.Fatalf("responseAction() error = %v", err)
 	}
@@ -40,7 +42,7 @@ func TestResponseActionRejectsStaleArtifact(t *testing.T) {
 	targetPath := filepath.Join(directory, "target.json")
 	writeResponse(t, sourcePath, `{"status":201,"headers":{},"cookies":{},"body":{"runtime":"stale-source"}}`)
 	writeResponse(t, targetPath, `{"status":201,"headers":{},"cookies":{},"body":{"runtime":"stale-target"}}`)
-	action, err := responseAction(bytes.NewBufferString("\n"), &bytes.Buffer{}, sourcePath, targetPath)
+	action, err := responseAction(testConfirmation(bytes.NewBufferString("\n")), &bytes.Buffer{}, sourcePath, targetPath)
 	if err != nil {
 		t.Fatalf("responseAction() error = %v", err)
 	}
@@ -56,7 +58,7 @@ func TestResponseActionDoesNotTreatPrePromptChangeAsFresh(t *testing.T) {
 	targetPath := filepath.Join(directory, "target.json")
 	writeResponse(t, sourcePath, `{"status":201,"headers":{},"cookies":{},"body":{"runtime":"before-snapshots"}}`)
 	writeResponse(t, targetPath, `{"status":201,"headers":{},"cookies":{},"body":{"runtime":"before-snapshots"}}`)
-	action, err := responseAction(bytes.NewBufferString("\n"), &bytes.Buffer{}, sourcePath, targetPath)
+	action, err := responseAction(testConfirmation(bytes.NewBufferString("\n")), &bytes.Buffer{}, sourcePath, targetPath)
 	if err != nil {
 		t.Fatalf("responseAction() error = %v", err)
 	}
@@ -77,7 +79,7 @@ func TestResponseActionRequiresBothArtifactsToBeFresh(t *testing.T) {
 	reader := &actionReader{beforeRead: func() {
 		writeResponse(t, sourcePath, `{"status":201,"headers":{},"cookies":{},"body":{"runtime":"new-source"}}`)
 	}}
-	action, err := responseAction(reader, &bytes.Buffer{}, sourcePath, targetPath)
+	action, err := responseAction(testConfirmation(reader), &bytes.Buffer{}, sourcePath, targetPath)
 	if err != nil {
 		t.Fatalf("responseAction() error = %v", err)
 	}
@@ -98,7 +100,7 @@ func TestResponseActionAcceptsReplacedArtifactsWithIdenticalContents(t *testing.
 		replaceResponse(t, sourcePath, response)
 		replaceResponse(t, targetPath, response)
 	}}
-	action, err := responseAction(reader, &bytes.Buffer{}, sourcePath, targetPath)
+	action, err := responseAction(testConfirmation(reader), &bytes.Buffer{}, sourcePath, targetPath)
 	if err != nil {
 		t.Fatalf("responseAction() error = %v", err)
 	}
@@ -125,7 +127,7 @@ func (reader *actionReader) Read(buffer []byte) (int, error) {
 func TestResponseActionRejectsSharedArtifact(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "response.json")
 	writeResponse(t, path, `{"status":201,"headers":{},"cookies":{},"body":null}`)
-	if _, err := responseAction(bytes.NewBufferString("\n"), &bytes.Buffer{}, path, path); err == nil {
+	if _, err := responseAction(testConfirmation(bytes.NewBufferString("\n")), &bytes.Buffer{}, path, path); err == nil {
 		t.Fatal("responseAction() error = nil, want shared-artifact rejection")
 	}
 }
@@ -143,5 +145,15 @@ func replaceResponse(t *testing.T, path string, contents string) {
 	writeResponse(t, temporary, contents)
 	if err := os.Rename(temporary, path); err != nil {
 		t.Fatalf("replace response fixture: %v", err)
+	}
+}
+
+func testConfirmation(reader io.Reader) func(context.Context) error {
+	return func(context.Context) error {
+		_, err := bufio.NewReader(reader).ReadString('\n')
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
+		return err
 	}
 }

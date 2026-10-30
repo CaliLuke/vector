@@ -8,22 +8,22 @@ estimate of equally sized tasks or time remaining.
 
 ## Current state
 
-Last verified published revision: `a2e44d6ff4eb070f4881807fc1fb31fe1a31afcd`,
-2026-10-30. Both full quality gates passed, including all 13,894 Go test events
+Last verified published revision: `8100990201d0ea5b171a05c5543a8a94ced37948`,
+2026-10-30. Both full quality gates passed, including all 13,951 Go test events
 across 118 test-bearing packages, with no failures or skipped tests. Remote
 `main` was verified at that revision.
 
-| Catalog IDs                     | Published work                                            | Evidence                                                                               | Status                                                                      |
-| ------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| MCP-01, MCP-02                  | Cycle/module scope, receipts, contention and cancellation | Authorization batch at `97660842`; 31 additional focused cases at `6ba02d1d`           | Published; query tests and browser acceptance now pass; publication pending |
-| MCP-01, MCP-02 / NEW-03, NEW-04 | Calendar boundaries and transfer snapshot isolation       | `a2e44d6f`: 34 focused cases, fast gates and both full gates pass                      | Both reproduced defects fixed and published                                 |
-| ERR-01, ERR-02                  | Worker and migration output/cleanup errors                | `6ba02d1d`: 35 focused cases; configured findings 162 → 156; strict findings 945 → 933 | This bounded batch is published; remaining inventories stay open            |
-| COV-01                          | Worker CLI and module coverage floors                     | Worker floors 55% and 30.58%; module floor 65.51% → 67.84%                             | Published and enforced; no floor lowered                                    |
+| Catalog IDs                     | Published work                                            | Evidence                                                                               | Status                                                                            |
+| ------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| MCP-01, MCP-02                  | Cycle/module scope, receipts, contention and cancellation | Authorization batch at `97660842`; 31 additional focused cases at `6ba02d1d`           | Published; all 20 planning actions and the PQL reference meet recorded acceptance |
+| MCP-01, MCP-02 / NEW-03, NEW-04 | Calendar boundaries and transfer snapshot isolation       | `a2e44d6f`: 34 focused cases, fast gates and both full gates pass                      | Both reproduced defects fixed and published                                       |
+| ERR-01, ERR-02                  | Worker and migration output/cleanup errors                | `6ba02d1d`: 35 focused cases; configured findings 162 → 156; strict findings 945 → 933 | This bounded batch is published; remaining inventories stay open                  |
+| COV-01                          | Worker CLI and module coverage floors                     | Worker floors 55% and 30.58%; module floor 65.51% → 67.84%                             | Published and enforced; no floor lowered                                          |
 
-The current local batch adds 32 planning query cases and four PQL reference
+The query batch published at `81009902` adds 32 planning query cases and four PQL reference
 cases. All 36 cases pass against the applied source (57 test events), with no failures
 or skipped cases. The Go fast gate passes; duplication remains at 474 reports and maintainability
-at 17 allowances, with no added baseline entries. Publication remains pending. They cover both credentials
+at 17 allowances, with no added baseline entries. Both full gates pass at `81009902`. They cover both credentials
 and protocols, ordinary and custom-property filtering, pagination, projection,
 parent/workspace binding, current membership, typed errors and reference defaults.
 The native browser acceptance also passes: creation visibility, native edits,
@@ -37,10 +37,12 @@ changed during hooks. Its changes are now included in published `a2e44d6f`.
 
 ## Ordered execution queue
 
-1. **MCP-01/MCP-02: finish cycle/module acceptance.** Publish the 36 passing query
-   and reference cases with their quality-check evidence. Native/MCP browser
-   acceptance and fixture cleanup are complete. Reconcile the action rows after
-   the full publication gate.
+1. **NEW-01: fix the reproduced parity prompt cancellation defect.** Controlled
+   cancellation and deadline cases both leave the old prompt blocked. The fix
+   delegates the blocking read to a helper process, which cancellation terminates
+   and reaps without closing caller-owned stdin. The applied fix passes 22 race-enabled
+   test events and measures 68.07% package coverage, raising its floor from 62.5%. Finish the quality gates and
+   publication before closing this item.
 2. **MCP-01/MCP-02: continue the action-level acceptance tracker.** Select the
    next documented domain gap from [the tracker](mcp-parity.md), prioritize current
    authorization, tenant isolation and durable mutation guarantees, and record
@@ -100,9 +102,9 @@ These records preserve the intake decision and closure evidence. NEW-01 and
 NEW-02 remain open. NEW-03 and NEW-04 are fixed and published. New observations
 are not automatically placed ahead of the existing catalog.
 
-| ID     | Observation                                                                                                                      | Evidence strength                                                                                                     | Next decision                                                                                                                                                                              |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| NEW-01 | `parity-diff`'s action prompt ignores its callback context while waiting for stdin, despite the complete-operation timeout flag. | Source observation in [`responseAction`](../apps/go-api/cmd/parity-diff/main.go); no cancellation regression has run. | Prove the deadline behavior with controlled blocking input, then assess priority. Any fix needs explicit input ownership and must avoid leaked blocked reads or closing an unowned stream. |
+| ID     | Observation                                                                                                                      | Evidence strength                                                                                                                                                          | Next decision                                                                                                         |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| NEW-01 | `parity-diff`'s action prompt ignores its callback context while waiting for stdin, despite the complete-operation timeout flag. | Both controlled cancellation and deadline cases reproduce a blocked read. The applied helper-process fix passes 22 race-enabled test events, with 68.07% package coverage. | Enter/EOF, cancellation/deadline, input ownership and error reporting checks pass. Full publication remains required. |
 
 **NEW-03 — cycle completion/archive calendar boundaries:**
 Before the fix, [`MutateResource`](../apps/go-api/internal/cyclereads/mutations.go)

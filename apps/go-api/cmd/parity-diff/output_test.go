@@ -64,7 +64,7 @@ func TestParityDifferenceStillExitsNonzeroWithoutTypedMismatch(t *testing.T) {
 }
 
 func TestParityUsageDiagnosticFailureExitsAsIOFailure(t *testing.T) {
-	if code := run(nil, strings.NewReader(""), io.Discard, &rejectedPromptWriter{}); code != 1 {
+	if code := run(nil, nil, io.Discard, &rejectedPromptWriter{}); code != 1 {
 		t.Fatalf("exit code = %d; want I/O failure", code)
 	}
 }

@@ -133,4 +133,6 @@ Both full gates passed at `a2e44d6f`, including all 13,894 Go test events.
 
 The [planning work-item query acceptance](mcp-cycles.md#planning-work-item-query-acceptance)
 records the shared cycle/module query and reference checks. Native browser
-acceptance is complete; publication of that test batch remains pending the full gate.
+acceptance is complete. The batch is published at `81009902`, with both full gates
+and all 13,951 Go test events passing without failures or skipped tests. All nine
+module actions meet their recorded acceptance requirements.

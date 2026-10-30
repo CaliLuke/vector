@@ -70,8 +70,8 @@
       "percent": 68.04
     },
     "github.com/CaliLuke/go-plane/cmd/parity-diff": {
-      "statements": 136,
-      "percent": 62.5
+      "statements": 166,
+      "percent": 68.07
     },
     "github.com/CaliLuke/go-plane/cmd/route-policy": {
       "statements": 19,

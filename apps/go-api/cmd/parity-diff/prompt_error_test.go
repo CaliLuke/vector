@@ -24,7 +24,7 @@ func (reader *observedPromptReader) Read([]byte) (int, error) {
 func TestResponseActionDoesNotWaitWhenPromptCannotBeWritten(t *testing.T) {
 	directory := t.TempDir()
 	output, input := &rejectedPromptWriter{}, &observedPromptReader{}
-	action, err := responseAction(input, output, filepath.Join(directory, "source.json"), filepath.Join(directory, "target.json"))
+	action, err := responseAction(testConfirmation(input), output, filepath.Join(directory, "source.json"), filepath.Join(directory, "target.json"))
 	if err != nil {
 		t.Fatal(err)
 	}

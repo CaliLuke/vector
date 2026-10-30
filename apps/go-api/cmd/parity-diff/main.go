@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"crypto/sha256"
 	"errors"
@@ -35,7 +34,10 @@ func main() {
 	os.Exit(run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr))
 }
 
-func run(arguments []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
+func run(arguments []string, stdin *os.File, stdout io.Writer, stderr io.Writer) int {
+	if len(arguments) == 1 && arguments[0] == confirmationReadFlag {
+		return readConfirmationInput(stdin, stderr)
+	}
 	flags := flag.NewFlagSet("parity-diff", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	var config parity.Config
@@ -74,7 +76,7 @@ func run(arguments []string, stdin io.Reader, stdout io.Writer, stderr io.Writer
 			return clioutput.Report(stderr, 2, "error: %s response path: %v\n", role, err)
 		}
 	}
-	action, err := responseAction(stdin, stdout, sourceResponsePath, targetResponsePath)
+	action, err := responseAction(func(ctx context.Context) error { return readConfirmation(ctx, stdin) }, stdout, sourceResponsePath, targetResponsePath)
 	if err != nil {
 		return clioutput.Report(stderr, 2, "error: response artifacts: %v\n", err)
 	}
@@ -131,7 +133,7 @@ type responseArtifactState struct {
 }
 
 func responseAction(
-	stdin io.Reader,
+	confirm func(context.Context) error,
 	stdout io.Writer,
 	sourcePath string,
 	targetPath string,
@@ -148,7 +150,7 @@ func responseAction(
 		return nil, fmt.Errorf("source and target response artifacts must be separate files")
 	}
 
-	return func(context.Context) (parity.ActionResult, error) {
+	return func(ctx context.Context) (parity.ActionResult, error) {
 		sourceAtPrompt, err := captureResponseArtifact(sourcePath)
 		if err != nil {
 			return parity.ActionResult{}, fmt.Errorf("capture source response before action prompt: %w", err)
@@ -163,8 +165,8 @@ func responseAction(
 		if _, promptErr := fmt.Fprintln(stdout, "before snapshots captured; run the equivalent source and target actions, then press Enter"); promptErr != nil {
 			return parity.ActionResult{}, fmt.Errorf("write action prompt: %w", promptErr)
 		}
-		_, readErr := bufio.NewReader(stdin).ReadString('\n')
-		if readErr != nil && !errors.Is(readErr, io.EOF) {
+		readErr := confirm(ctx)
+		if readErr != nil {
 			return parity.ActionResult{}, readErr
 		}
 		sourceAfter, err := captureResponseArtifact(sourcePath)

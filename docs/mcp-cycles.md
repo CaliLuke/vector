@@ -3,7 +3,8 @@
 The `cycle` tool implements all eleven actions from the pinned Plane MCP handler
 and `plane-sdk==0.3.1`: list, retrieve, create, update, delete, list_workitems,
 manage_workitems, transfer_workitems, complete, archive and unarchive.
-Implementation does not close the remaining mutation acceptance requirements.
+The acceptance evidence below closes these eleven actions; other MCP domains
+remain tracked separately.
 
 All actions require `project_id`. Create also requires `name` and `owned_by`; actions on an existing cycle require `cycle_id`. Transfer additionally requires `new_cycle_id`. Workspace selection follows the shared PAT/OAuth contract. Discovery advertises cycle reads only when the principal has an active membership in a live project in the selected workspace, or in any eligible workspace for context-free OAuth. Invocation requires access to the specific project.
 
@@ -113,8 +114,9 @@ remain intact. Both credentials and protocols are covered.
 
 The applied-source run passes 32 planning leaf cases (52 test events), with no
 failed or skipped cases. The Go fast gate and duplication ratchet pass with no added allowances.
-Publication remains required. This
-closes no broader PQL grammar or unrelated action acceptance requirement.
+The batch is published at `81009902`; both full gates pass, with 13,951 Go test
+events and no failures or skipped tests. This closes no broader PQL grammar or
+unrelated action acceptance requirement.
 
 The [PQL reference transport cases](../apps/go-api/internal/mcpactions/pql_reference_integration_test.go)
 verify exact default/full/brief responses and invalid-detail rejection without a
@@ -148,5 +150,7 @@ Local evidence is in `/tmp/vector-planning-browser-20261030/`: redacted MCP
 requests/responses, `edit-proof.json`, `lifecycle-proof.json`, `cleanup-proof.json`,
 and native screenshots. The browser check uses a personal token and the current
 protocol; the generated-server tests provide both credential/protocol matrices.
-This closes the recorded browser gap for these planning actions. Publication of
-the 36 query/reference cases remains pending the full gate.
+This closes the recorded browser gap for these planning actions. The 36
+query/reference cases and browser evidence are published at `81009902`; both
+full gates pass. The eleven cycle and nine module actions meet their recorded
+contract, scope, mutation, query and native-browser requirements.

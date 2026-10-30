@@ -144,3 +144,19 @@ failed without changes; current writes and lifecycle receipt replay passed.
 Both dedicated fixtures were deleted, final list responses matched their original
 empty baselines, and all project feature settings were restored. The query and
 reference test commit is `f47720fd`; its full publication gate remains pending.
+
+## Planning acceptance published, 2026-10-30
+
+`81009902` is verified on remote main. Both full gates pass, with 13,951 exact
+run/pass Go test events across 118 test-bearing packages, no failures and no
+skipped tests. The 20 cycle/module rows and `get_pql_reference` are reconciled
+against their contract, authorization/scope, receipt/revision, effect, query and
+browser evidence. Those rows are closed; the broader MCP inventory remains open.
+
+NEW-01 now has controlled cancellation and deadline reproductions. The applied fix
+uses a helper process and passes 22 race-enabled test events, with 68.07% package
+coverage (113/166 statements). Its floor increases from 62.5% to 68.07%. It preserves stdin ownership, Enter/EOF behavior and read diagnostics.
+The full publication gate remains pending. No dependency
+is added. A cancellation-library candidate was rejected after a standalone macOS
+EOF reproduction; [upstream #30](https://github.com/muesli/cancelreader/issues/30)
+records that independent problem. No dependency source was changed.
