@@ -171,3 +171,20 @@ func TestPublicProjectMetadataReadsMarksDecodeFailures(t *testing.T) {
 		t.Fatalf("err=%T %v capture=%#v", err, err, capture)
 	}
 }
+
+func TestPublicProjectMetadataRenderPhaseTakesPrecedenceOverCause(t *testing.T) {
+	for _, cause := range []error{store.ErrRequiredObject, store.ErrProjectNotPublished, store.ErrInvalidAnchor} {
+		t.Run(cause.Error(), func(t *testing.T) {
+			service := &publicProjectMetadataReadsService{
+				repository: &publicProjectMetadataReadsRepositoryStub{err: fmt.Errorf("%w: %w", store.ErrRender, cause)},
+			}
+			capture := &PublicProjectMetadataReadsResponseCapture{}
+			ctx := WithPublicProjectMetadataReadsResponseCapture(t.Context(), capture)
+			data, err := service.Labels(ctx, &api.LabelsPayload{Anchor: "anchor"})
+			var internal *api.PublicProjectMetadataInternalError
+			if data != nil || !errors.As(err, &internal) || internal.Message != publicProjectMetadataInternalErrorDetail || !capture.RenderError || len(capture.Data) != 0 {
+				t.Fatalf("data=%v err=%T %v capture=%#v", data, err, err, capture)
+			}
+		})
+	}
+}

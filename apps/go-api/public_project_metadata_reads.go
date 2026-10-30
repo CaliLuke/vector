@@ -193,6 +193,10 @@ func (service *publicProjectMetadataReadsService) capture(ctx context.Context, d
 }
 
 func publicProjectMetadataReadsRepositoryError(err error) error {
+	// Rendering phase owns the response even when its underlying cause is a lookup error.
+	if errors.Is(err, store.ErrRender) {
+		return &api.PublicProjectMetadataInternalError{Message: publicProjectMetadataInternalErrorDetail}
+	}
 	if errors.Is(err, store.ErrRequiredObject) {
 		return &api.PublicProjectMetadataNotFound{Message: "The required object does not exist."}
 	}

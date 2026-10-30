@@ -110,6 +110,12 @@ Codemod output snapshots exercise real transformations and protect useful edge
 cases. Some also depend on printer whitespace. Use semantic AST assertions where
 formatting and comment preservation are not the behavior under test.
 
+Public metadata rendering and webhook integrity errors retain their underlying
+Go error causes. Regression tests cover database and decoding failures, render-phase
+precedence, operation-specific webhook uniqueness handling, sanitized generated HTTP
+responses, and authorization before writes. No database detail is exposed in the
+public response.
+
 ## Valid compatibility coverage
 
 Keep tests for supported routes, response schemas, accepted input formats,

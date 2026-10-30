@@ -97,7 +97,7 @@ WHERE workspace.slug = $1
   AND cycle.deleted_at IS NULL
 `, workspaceSlug, projectID).Scan(&data)
 	if err != nil {
-		return nil, fmt.Errorf("%w: list public project cycles: %v", ErrRender, err)
+		return nil, fmt.Errorf("%w: list public project cycles: %w", ErrRender, err)
 	}
 	return json.RawMessage(data), nil
 }
@@ -122,7 +122,7 @@ WHERE workspace.slug = $1
   AND label.deleted_at IS NULL
 `, workspaceSlug, projectID).Scan(&data)
 	if err != nil {
-		return nil, fmt.Errorf("%w: list public project labels: %v", ErrRender, err)
+		return nil, fmt.Errorf("%w: list public project labels: %w", ErrRender, err)
 	}
 	return json.RawMessage(data), nil
 }
@@ -145,7 +145,7 @@ WHERE workspace.slug = $1
   AND module.deleted_at IS NULL
 `, workspaceSlug, projectID).Scan(&data)
 	if err != nil {
-		return nil, fmt.Errorf("%w: list public project modules: %v", ErrRender, err)
+		return nil, fmt.Errorf("%w: list public project modules: %w", ErrRender, err)
 	}
 	return json.RawMessage(data), nil
 }
@@ -340,7 +340,7 @@ WHERE workspace.slug = $1
   AND project_member.deleted_at IS NULL
 `, workspaceSlug, projectID).Scan(&data)
 	if err != nil {
-		return nil, fmt.Errorf("%w: list public project members: %v", ErrRender, err)
+		return nil, fmt.Errorf("%w: list public project members: %w", ErrRender, err)
 	}
 	return json.RawMessage(data), nil
 }
@@ -483,21 +483,21 @@ WHERE workspace.slug = $1
   AND state.name <> 'Triage'
 `, workspaceSlug, projectID).Scan(&data)
 	if err != nil {
-		return nil, fmt.Errorf("%w: list public project states: %v", ErrRender, err)
+		return nil, fmt.Errorf("%w: list public project states: %w", ErrRender, err)
 	}
 	var records []stateRecord
 	if err := json.Unmarshal(data, &records); err != nil {
-		return nil, fmt.Errorf("%w: decode public project states: %v", ErrRender, err)
+		return nil, fmt.Errorf("%w: decode public project states: %w", ErrRender, err)
 	}
 	responses := make([]stateResponse, 0, len(records))
 	for _, record := range records {
 		sequence, err := strconv.ParseFloat(record.Sequence, 64)
 		if err != nil {
-			return nil, fmt.Errorf("%w: decode public project state sequence: %v", ErrRender, err)
+			return nil, fmt.Errorf("%w: decode public project state sequence: %w", ErrRender, err)
 		}
 		encodedSequence, err := pythonFloatJSON(sequence)
 		if err != nil {
-			return nil, fmt.Errorf("%w: encode public project state sequence: %v", ErrRender, err)
+			return nil, fmt.Errorf("%w: encode public project state sequence: %w", ErrRender, err)
 		}
 		responses = append(responses, stateResponse{
 			Name:     record.Name,
@@ -511,7 +511,7 @@ WHERE workspace.slug = $1
 	encoder := json.NewEncoder(&encoded)
 	encoder.SetEscapeHTML(false)
 	if err := encoder.Encode(responses); err != nil {
-		return nil, fmt.Errorf("%w: encode public project states: %v", ErrRender, err)
+		return nil, fmt.Errorf("%w: encode public project states: %w", ErrRender, err)
 	}
 	return bytes.TrimSuffix(encoded.Bytes(), []byte("\n")), nil
 }

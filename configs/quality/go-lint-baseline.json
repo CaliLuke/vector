@@ -352,22 +352,6 @@
     {
       "fingerprint": [
         "errorlint",
-        "internal/publicprojectmetadatareads/repository.go",
-        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
-      ],
-      "count": 9
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/workspacewebhooks/repository.go",
-        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errorlint",
         "work_item_core_error_logging_test.go",
         "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
       ],

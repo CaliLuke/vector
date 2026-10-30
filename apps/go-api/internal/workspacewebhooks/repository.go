@@ -99,7 +99,7 @@ RETURNING `+webhookJSON, pgx.StrictNamedArgs{
 			if strings.Contains(strings.ToLower(pgErr.Message), "already exists") || pgErr.ConstraintName == "webhook_url_unique_url_when_deleted_at_null" {
 				return nil, ErrDuplicateURL
 			}
-			return nil, fmt.Errorf("%w: %v", ErrIntegrity, err)
+			return nil, fmt.Errorf("%w: %w", ErrIntegrity, err)
 		}
 		return nil, err
 	}
@@ -145,7 +145,7 @@ RETURNING `+webhookJSON, pgx.StrictNamedArgs{
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return nil, fmt.Errorf("%w: %v", ErrIntegrity, err)
+			return nil, fmt.Errorf("%w: %w", ErrIntegrity, err)
 		}
 	}
 	return data, err
