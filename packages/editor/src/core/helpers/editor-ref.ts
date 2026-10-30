@@ -112,7 +112,7 @@ export const getEditorRefHelpers = (args: TArgs): EditorRefApi => {
       return markdown;
     },
     copyMarkdownToClipboard: () => {
-      if (!editor) return;
+      if (!editor) throw new Error("The editor is unavailable.");
 
       const html = editor.getHTML();
       const metaData = getEditorMetaData(html);
@@ -121,16 +121,22 @@ export const getEditorRefHelpers = (args: TArgs): EditorRefApi => {
         metaData,
       });
 
+      let copied = false;
       const copyHandler = (event: ClipboardEvent) => {
+        if (!event.clipboardData) return;
         event.preventDefault();
-        event.clipboardData?.setData("text/plain", markdown);
-        event.clipboardData?.setData("text/html", html);
-        event.clipboardData?.setData("text/plane-editor-html", html);
-        document.removeEventListener("copy", copyHandler);
+        event.clipboardData.setData("text/plain", markdown);
+        event.clipboardData.setData("text/html", html);
+        event.clipboardData.setData("text/plane-editor-html", html);
+        copied = true;
       };
 
       document.addEventListener("copy", copyHandler);
-      document.execCommand("copy");
+      try {
+        if (!document.execCommand("copy") || !copied) throw new Error("The markdown could not be copied.");
+      } finally {
+        document.removeEventListener("copy", copyHandler);
+      }
     },
     isAnyDropbarOpen: () => {
       if (!editor) return false;

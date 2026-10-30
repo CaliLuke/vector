@@ -1,6 +1,19 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { React, act, createPermissionUiFixture, settleQuery } from "./helpers/permission-ui-fixture.mjs";
+import {
+  React,
+  act,
+  createPermissionUiFixture,
+  settleQuery,
+  registerPermissionUiStubs,
+} from "./helpers/permission-ui-fixture.mjs";
+
+const copyToasts = [];
+globalThis.markdownCopyToasts = copyToasts;
+registerPermissionUiStubs("/use-workspace-markdown-copy.ts", {
+  "@plane/propel/toast":
+    'export const TOAST_TYPE={ERROR:"error"};export const setToast=value=>globalThis.markdownCopyToasts.push(value);',
+});
 
 const { WorkspaceService } = await import("../../apps/web/core/services/workspace.service.ts");
 const { useWorkspaceMarkdownCopy } = await import("../../apps/web/core/hooks/use-workspace-markdown-copy.ts");
@@ -33,7 +46,9 @@ function waitFor(predicate, description) {
   });
 }
 
-function MarkdownCopyProbe({ editor }) {
+const ignoreCopy = () => {};
+
+function MarkdownCopyProbe({ editor, onCopied = ignoreCopy }) {
   const { actionLabel, actionDisabled, statusRole, statusMessage, handleAction } = useWorkspaceMarkdownCopy("acme");
   return React.createElement(
     "div",
@@ -44,11 +59,7 @@ function MarkdownCopyProbe({ editor }) {
       {
         type: "button",
         disabled: actionDisabled,
-        onClick: () =>
-          handleAction(
-            () => editor,
-            () => {}
-          ),
+        onClick: () => handleAction(() => editor, onCopied),
         "data-testid": "copy",
       },
       actionLabel
@@ -117,4 +128,41 @@ await test("markdown copy waits for the native roster query and retries its fail
     copyButton.click();
   });
   assert.equal(copyCount, 1);
+});
+
+await test("markdown copy failure keeps the action available without announcing success", async (t) => {
+  t.mock.method(WorkspaceService.prototype, "fetchWorkspaceMembers", async () => []);
+  const fixture = await createPermissionUiFixture(t, {
+    path: "/acme/pages/page-1/",
+    userId: "viewer",
+    workspaceRole: EUserWorkspaceRoles.MEMBER,
+  });
+  copyToasts.length = 0;
+  let denied = true;
+  const editor = {
+    copyMarkdownToClipboard: () => {
+      if (denied) throw new Error("clipboard denied");
+    },
+  };
+  let successes = 0;
+  await fixture.render(
+    React.createElement(MarkdownCopyProbe, {
+      editor,
+      onCopied: () => {
+        successes++;
+      },
+    })
+  );
+  await settleQuery();
+  const button = fixture.environment.container.querySelector('[data-testid="copy"]');
+  assert.equal(button.disabled, false);
+  await act(async () => button.click());
+  assert.equal(successes, 0);
+  assert.equal(copyToasts.length, 1);
+  assert.equal(copyToasts[0].type, "error");
+  assert.equal(button.disabled, false);
+  denied = false;
+  await act(async () => button.click());
+  assert.equal(successes, 1);
+  assert.equal(copyToasts.length, 1);
 });

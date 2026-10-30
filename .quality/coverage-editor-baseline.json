@@ -1040,10 +1040,10 @@
       "branches": 0
     },
     "src/core/helpers/editor-ref.ts": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 0,
-      "branches": 0
+      "lines": 19.56,
+      "statements": 19.37,
+      "functions": 13.33,
+      "branches": 19.19
     },
     "src/core/helpers/file.ts": {
       "lines": 0,

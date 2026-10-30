@@ -5,6 +5,7 @@
  */
 
 import { useCallback } from "react";
+import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import type { EditorRefApi } from "@plane/editor";
 import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 
@@ -23,7 +24,16 @@ export function useWorkspaceMarkdownCopy(workspaceSlug: string) {
       if (state !== "ready") return;
       const editor = getEditor();
       if (!editor) return;
-      editor.copyMarkdownToClipboard();
+      try {
+        editor.copyMarkdownToClipboard();
+      } catch {
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "Copy failed",
+          message: "The markdown could not be copied. Please try again.",
+        });
+        return;
+      }
       onCopied();
     },
     [retry, state]
