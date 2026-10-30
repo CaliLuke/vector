@@ -1204,7 +1204,7 @@ func TestPaginationDistinguishesOmittedEmptyZeroNegativeAndFloatValues(t *testin
 	}
 }
 
-func TestUngroupedOffsetOverflowUsesDjangoHTML500Sentinel(t *testing.T) {
+func TestUngroupedOffsetOverflowIsRejectedBeforeReadingIssues(t *testing.T) {
 	maxInt := int(^uint(0) >> 1)
 	if _, ok := checkedIntProduct(maxInt, 3); ok {
 		t.Fatal("checked product accepted overflowing native int multiplication")
@@ -1308,7 +1308,7 @@ func TestGroupedSignedCursorValidatesComputedOffset(t *testing.T) {
 	}
 }
 
-func TestUngroupedPreviousCursorWithDifferentValueUsesDjangoHTML500Sentinel(t *testing.T) {
+func TestUngroupedPreviousCursorWithDifferentValueIsRejectedBeforeReadingIssues(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{boolRow(true)}}
 	repository, _ := NewRepository(database)
 	_, err := repository.Issues(

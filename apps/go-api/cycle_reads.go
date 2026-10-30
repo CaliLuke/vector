@@ -203,12 +203,6 @@ func (service *cycleReadsService) Issues(
 	}
 	data, err := service.repository.Issues(ctx, userID, payload.Slug, projectID, cycleID, options)
 	if err != nil {
-		if errors.Is(err, store.ErrZeroPageSize) ||
-			errors.Is(err, store.ErrNegativePageSize) ||
-			errors.Is(err, store.ErrPreviousPageSlice) ||
-			errors.Is(err, store.ErrPaginationOverflow) {
-			MarkReadServiceDjangoHTML500(ctx)
-		}
 		return nil, nil, cycleReadsRepositoryError(err)
 	}
 	return cycleRawJSONResponse(data)
@@ -482,7 +476,11 @@ func cycleReadsRepositoryError(err error) error {
 		return cycleBadRequest("Group by and sub group by cannot have same parameters")
 	case errors.Is(err, store.ErrPaginationParsing):
 		return cycleParseError("Error in parsing")
-	case errors.Is(err, store.ErrInvalidPagination):
+	case errors.Is(err, store.ErrZeroPageSize), errors.Is(err, store.ErrNegativePageSize):
+		return cycleInvalidPagination("Invalid per_page parameter.")
+	case errors.Is(err, store.ErrInvalidPagination),
+		errors.Is(err, store.ErrPreviousPageSlice),
+		errors.Is(err, store.ErrPaginationOverflow):
 		return cycleInvalidPagination("Invalid cursor parameter.")
 	default:
 		return cycleInternalError()

@@ -17,6 +17,11 @@ Live, and codemods. It is not a proof that every test or product behavior is cor
 
 Go paths in the table are relative to `apps/go-api`.
 
+Cycle issue pagination rejections now return typed JSON 400 responses for zero or
+negative ungrouped page sizes, invalid previous-page slices, and offset overflow.
+Generated-server tests cover direct and wrapped repository errors and verify that
+unexpected failures still return a sanitized 500 response.
+
 Storage review remains open for other numeric ordering fields and legacy asset sizes.
 Parser rejection alone does not prove that historical stored values are finite.
 

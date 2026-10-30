@@ -61,7 +61,7 @@
       "file": "internal/backgroundtasks/issue_activities_integration_test.go",
       "package": "backgroundtasks",
       "function": "TestPostgresIssueActivityWorkflowIsIdempotentPerEvent",
-      "score": 9
+      "score": 10
     },
     {
       "file": "internal/backgroundtasks/version_history_integration_test.go",
@@ -73,7 +73,7 @@
       "file": "internal/backgroundtasks/webhook_tasks_integration_test.go",
       "package": "backgroundtasks",
       "function": "TestPostgresWebhookModelActivityDeliversSignedPayloadRetriesAndDeactivates",
-      "score": 16
+      "score": 17
     },
     {
       "file": "internal/cyclereads/live_labels_integration_test.go",

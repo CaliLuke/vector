@@ -415,7 +415,7 @@ func assertCycleMetadata(t *testing.T, metadata *api.CycleReadsMetadata, name st
 		}
 	}
 }
-func TestCycleIssueInvalidPageSizesMarkDjangoHTML500(t *testing.T) {
+func TestCycleIssuePaginationRejectionsUseTypedClientErrors(t *testing.T) {
 	for _, repositoryError := range []error{
 		store.ErrZeroPageSize,
 		store.ErrNegativePageSize,
@@ -429,12 +429,12 @@ func TestCycleIssueInvalidPageSizesMarkDjangoHTML500(t *testing.T) {
 		_, _, err := service.Issues(ctx, &api.IssuesPayload{
 			Slug: "alpha", ProjectID: uuid.New().String(), CycleID: uuid.New().String(),
 		})
-		var internal *api.CycleReadsInternalError
-		if !errors.As(err, &internal) {
+		var invalid *api.CycleReadsInvalidPagination
+		if !errors.As(err, &invalid) {
 			t.Fatalf("%v: err=%T %v", repositoryError, err, err)
 		}
-		if !ReadServiceDjangoHTML500(ctx) {
-			t.Fatalf("%v did not mark the Django HTML 500 response", repositoryError)
+		if ReadServiceDjangoHTML500(ctx) {
+			t.Fatalf("%v requested an HTML 500 response for invalid pagination", repositoryError)
 		}
 	}
 }
@@ -450,10 +450,10 @@ func TestCycleReadsMapPermissionNotFoundDatesGroupingAndPaginationErrors(t *test
 		{store.ErrInvalidGrouping, (*api.CycleReadsBadRequest)(nil)},
 		{store.ErrInvalidPagination, (*api.CycleReadsInvalidPagination)(nil)},
 		{store.ErrPaginationParsing, (*api.CycleReadsParseError)(nil)},
-		{store.ErrZeroPageSize, (*api.CycleReadsInternalError)(nil)},
-		{store.ErrNegativePageSize, (*api.CycleReadsInternalError)(nil)},
-		{store.ErrPreviousPageSlice, (*api.CycleReadsInternalError)(nil)},
-		{store.ErrPaginationOverflow, (*api.CycleReadsInternalError)(nil)},
+		{store.ErrZeroPageSize, (*api.CycleReadsInvalidPagination)(nil)},
+		{store.ErrNegativePageSize, (*api.CycleReadsInvalidPagination)(nil)},
+		{store.ErrPreviousPageSlice, (*api.CycleReadsInvalidPagination)(nil)},
+		{store.ErrPaginationOverflow, (*api.CycleReadsInvalidPagination)(nil)},
 		{&store.InvalidGroupingFieldError{Field: "group_by", Value: "bogus"}, (*api.CycleReadsInvalidGrouping)(nil)},
 		{&store.FilterError{Message: "Invalid filter parameters", Code: "invalid_filterset", Errors: map[string]any{"state_id": []string{"Enter a valid UUID."}}}, (*api.CycleReadsFilterError)(nil)},
 	}
