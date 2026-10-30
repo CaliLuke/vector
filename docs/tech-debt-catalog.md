@@ -5,8 +5,8 @@ debt. It consolidates the quality baselines, MCP acceptance tracker, test review
 and previously local work log. It does not claim an exhaustive audit of every
 possible defect.
 
-Snapshot: `1b29573b8e18c9cb55afb100baede9c6f532a03a`, 2026-10-30.
-Both full quality gates passed at this revision, including 13,329 Go test cases
+Snapshot: `17d1afdbf4fd4bcf298f460574f14063712052b6`, 2026-10-30.
+Both full quality gates passed at this revision, including 13,381 Go test events
 with no failed or skipped cases. Passing gates allow the recorded debt below;
 they do not mean this catalog is complete.
 
@@ -79,9 +79,19 @@ isolation, role restrictions, receipt conflicts, native-writer revisions,
 concurrent CAS, and audit-failure rollback. It also fixes a reproduced null-flag
 compatibility defect: explicit null must preserve the flag and normalize like an
 omitted field. [Feature acceptance evidence](mcp-parity.md#workspace-feature-acceptance-mcp-01-mcp-02)
-records the source contract and checks. Next prove feature credential revocation
-while a write waits, then reconcile project feature permissions and revisions.
+records the source contract and checks. The next acceptance batch proves current
+authorization after waiting for both workspace/project writes and replays,
+private-project permissions, project-bound receipts and native revisions, and
+atomic default-intake creation. Its focused regressions pass; full gates for this
+batch must still pass before publication. The next project-feature gaps are
+foreign-workspace targeting and archived-project policy reconciliation.
 Other action rows and inventory categories remain open.
+
+COV-01 floor review uses the completed full profile at the snapshot above:
+`internal/features` increases from 80.92% to 83.21%, and `internal/mcpactions`
+from 83.82% to 84.24%. Only these affected package floors change; no allowance is
+increased. The new acceptance batch changes tests and documentation, not runtime
+code.
 
 The following runtime items are already members of ERR-01/ERR-02 and COV-01.
 They are prepared follow-ups, not evidence of completed fixes:

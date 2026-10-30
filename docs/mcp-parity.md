@@ -140,8 +140,8 @@ The [PQL foundation](pql.md) adds shared scalar, relationship (including native 
 | `project.archive`                          | Mutation | `project_id`                                             | PAT and OAuth         | Browser conflict and deployed issuer verification                                     |
 | `project.unarchive`                        | Mutation | `project_id`                                             | PAT and OAuth         | Browser conflict and deployed issuer verification                                     |
 | `project.worklog_summary`                  | Read     | `project_id`                                             | Workflow verified     | Combined visibility, seconds conversion and aggregate checks                          |
-| `project.get_features`                     | Read     | `project_id`                                             | Projection verified   | Reconcile project scope and private-project permissions                               |
-| `project.update_features`                  | Mutation | `project_id`                                             | Null/false verified   | Project permissions, native-writer revisions, receipts and effects                    |
+| `project.get_features`                     | Read     | `project_id`                                             | Scope proof added     | Archived-project policy and foreign-workspace project targeting                       |
+| `project.update_features`                  | Mutation | `project_id`                                             | Mutation proof added  | Archived-project policy and foreign-workspace project targeting                       |
 | `project_estimate.retrieve`                | Read     | `project_id`                                             | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `project_estimate.create`                  | Mutation | `project_id`, `name`                                     | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `project_estimate.update`                  | Mutation | `project_id`                                             | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
@@ -240,7 +240,7 @@ The [PQL foundation](pql.md) adds shared scalar, relationship (including native 
 | `workspace.list`                           | Read     | None                                                     | Workflow verified     | Read contract verified; see workspace acceptance evidence below                       |
 | `workspace.retrieve`                       | Read     | None                                                     | Read verified         | None for the documented identity contract; see workspace evidence                     |
 | `workspace.get_features`                   | Read     | None                                                     | Read verified         | None for the documented workspace feature read contract                               |
-| `workspace.update_features`                | Mutation | None                                                     | More mutation proof   | Credential revocation while waiting for a write; see feature evidence                 |
+| `workspace.update_features`                | Mutation | None                                                     | Write verified        | None for the documented workspace feature write contract                              |
 | `template.list`                            | Read     | `kind`                                                   | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
 | `template.create`                          | Mutation | `kind`, `name`, `template_data`                          | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
 | `template.update`                          | Mutation | `kind`, `template_id`                                    | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
@@ -368,8 +368,32 @@ audit row and receipt commit; the other call returns a revision conflict. Shared
 receipt-engine tests cover cancellation and lost commit acknowledgements. Features
 persist audit events in the same transaction and do not dispatch external effects.
 
-The focused identity/feature run contains 41 leaf cases across nine tests. This
-closes workspace identity and feature-read projection/scope proof. Feature writes
-still need direct evidence of credential revocation while waiting at the storage
-boundary. Project feature permissions and native-writer revision acceptance remain
-separate work; the null-handling fix does not close those rows.
+The focused identity/feature run contains 41 leaf cases across nine tests. It
+closes workspace identity and feature-read projection/scope proof.
+
+The [waiting-write regressions](../apps/go-api/internal/mcpactions/workspace_feature_authorization_integration_test.go)
+now hold admission before transaction authorization for both workspace and project
+settings. Forty cases cover both protocols, fresh writes and receipt replay:
+personal-token and OAuth revocation, removed OAuth write scope, and demotion of
+the relevant administrator. Each rejected request returns no structured data and
+leaves flags, project rows, intakes, audit events and receipts unchanged. This
+closes the recorded workspace feature-write authorization gap. It proves checks
+after admission waits, not continuous external-issuer revocation checks through commit.
+
+The [project permission regressions](../apps/go-api/internal/mcpactions/project_feature_permissions_integration_test.go)
+verify current project administrators can write even when their workspace role
+is guest or member. Workspace administration alone cannot bypass private-project
+membership or elevate a project guest/member into a feature administrator.
+Inactive/deleted memberships and deleted projects reject reads and writes without
+mutation effects. Forcing an audit failure after enabling intakes rolls back the
+native project flag, newly created default intake, revision and receipt. Same-key
+retry and replay then produce one default intake and one audit event.
+
+The [project receipt regressions](../apps/go-api/internal/mcpactions/project_feature_receipts_integration_test.go)
+reuse one request ID across two projects and verify separate results. Native
+project-column writes invalidate earlier revisions; a current token from another
+project is rejected. Changed-input conflicts and replay preserve native edits and
+do not add effects, while a matching project revision permits a fresh update.
+Project rows remain open for explicit foreign-workspace targeting proof and
+reconciliation of archived-project policy; those cases are not inferred from the
+current SQL filter or general project-read behavior.

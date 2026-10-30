@@ -99,6 +99,24 @@ func oauthToolCall(t *testing.T, h http.Handler, version, token, workspace, tool
 
 func oauthRPC(t *testing.T, h http.Handler, version, token, workspace, method string, params map[string]any, status int) rpcResult {
 	t.Helper()
+	r := oauthRequest(t, version, token, workspace, method, params)
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	require.Equal(t, status, w.Code, w.Body.String())
+	if status != http.StatusOK {
+		return rpcResult{}
+	}
+	var response struct {
+		Result rpcResult
+		Error  json.RawMessage
+	}
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &response))
+	require.Empty(t, response.Error, w.Body.String())
+	return response.Result
+}
+
+func oauthRequest(t *testing.T, version, token, workspace, method string, params map[string]any) *http.Request {
+	t.Helper()
 	if version == "2026-07-28" {
 		params["_meta"] = map[string]any{"io.modelcontextprotocol/protocolVersion": version, "io.modelcontextprotocol/clientInfo": map[string]string{"name": "test", "version": "1"}, "io.modelcontextprotocol/clientCapabilities": map[string]any{}}
 	}
@@ -118,19 +136,7 @@ func oauthRPC(t *testing.T, h http.Handler, version, token, workspace, method st
 	if workspace != "" {
 		r.Header.Set("X-Workspace-Slug", workspace)
 	}
-	w := httptest.NewRecorder()
-	h.ServeHTTP(w, r)
-	require.Equal(t, status, w.Code, w.Body.String())
-	if status != http.StatusOK {
-		return rpcResult{}
-	}
-	var response struct {
-		Result rpcResult
-		Error  json.RawMessage
-	}
-	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &response))
-	require.Empty(t, response.Error, w.Body.String())
-	return response.Result
+	return r
 }
 
 func TestOAuthGeneratedMembersUseOptionalWorkspaceAndCurrentIssuer(t *testing.T) {

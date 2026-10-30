@@ -106,6 +106,16 @@ test permits only one commit for a shared expected revision. Exact workspace
 identity assertions now use the known input credential and a name distinct from
 the slug; they no longer rely only on a branch selected by the returned auth tag.
 
+Waiting feature-write regressions cover workspace and project calls through the
+generated server. Revoked tokens, removed OAuth write scope, and demoted
+administrators reject fresh writes and receipt replays after admission waits,
+without changing domain rows, intakes, audits or receipts. Project permission
+checks distinguish workspace administration from current private-project roles.
+Project receipt tests cover native-writer revisions and project-bound keys/tokens;
+forced audit failure rolls back default-intake creation and permits a safe keyed
+retry. Archived-project policy and explicit foreign-workspace project targeting
+remain open in the action tracker.
+
 ## Coverage and execution gaps
 
 The previous CI omitted Live and codemod tests. The default Go command omitted
