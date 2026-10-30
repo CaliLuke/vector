@@ -654,16 +654,22 @@ func (s *oauthRedirectService) providerIdentity(ctx context.Context, provider st
 	case "github":
 		profile, err = oauthGetJSON(ctx, client, "https://api.github.com/user")
 		if err == nil {
-			organization, _ := s.repository.ConfigValue(ctx, "GITHUB_ORGANIZATION_ID", "")
+			organization, configErr := s.repository.ConfigValue(ctx, "GITHUB_ORGANIZATION_ID", "")
+			if configErr != nil {
+				return oauthIdentity{}, configErr
+			}
 			if organization != "" {
 				username := oauthStringField(profile, "login")
 				resp, requestErr := client.Get("https://api.github.com/orgs/" + url.PathEscape(organization) + "/memberships/" + url.PathEscape(username))
 				if requestErr != nil {
 					return oauthIdentity{}, &oauthFailure{code: 5122, name: "GITHUB_USER_NOT_IN_ORG"}
 				}
-				resp.Body.Close()
+				closeErr := resp.Body.Close()
 				if resp.StatusCode != http.StatusOK {
-					return oauthIdentity{}, &oauthFailure{code: 5122, name: "GITHUB_USER_NOT_IN_ORG"}
+					return oauthIdentity{}, errors.Join(&oauthFailure{code: 5122, name: "GITHUB_USER_NOT_IN_ORG"}, closeErr)
+				}
+				if closeErr != nil {
+					return oauthIdentity{}, closeErr
 				}
 			}
 			var emails []map[string]any
@@ -678,10 +684,16 @@ func (s *oauthRedirectService) providerIdentity(ctx context.Context, provider st
 			}
 		}
 	case "gitlab":
-		host, _ := s.repository.ConfigValue(ctx, "GITLAB_HOST", "https://gitlab.com")
+		host, configErr := s.repository.ConfigValue(ctx, "GITLAB_HOST", "https://gitlab.com")
+		if configErr != nil {
+			return oauthIdentity{}, configErr
+		}
 		profile, err = oauthGetJSON(ctx, client, strings.TrimRight(host, "/")+"/api/v4/user")
 	case "gitea":
-		host, _ := s.repository.ConfigValue(ctx, "GITEA_HOST", "")
+		host, configErr := s.repository.ConfigValue(ctx, "GITEA_HOST", "")
+		if configErr != nil {
+			return oauthIdentity{}, configErr
+		}
 		base := strings.TrimRight(host, "/")
 		profile, err = oauthGetJSON(ctx, client, base+"/api/v1/user")
 		if err == nil {
@@ -747,8 +759,7 @@ func oauthGetJSON(ctx context.Context, client *http.Client, endpoint string) (ma
 		return nil, err
 	}
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		response.Body.Close()
-		return nil, fmt.Errorf("OAuth provider returned HTTP %d", response.StatusCode)
+		return nil, errors.Join(fmt.Errorf("OAuth provider returned HTTP %d", response.StatusCode), response.Body.Close())
 	}
 	return oauthDecodeObject(response)
 }
@@ -762,11 +773,10 @@ func oauthGetJSONList(ctx context.Context, client *http.Client, endpoint string,
 	if err != nil {
 		return err
 	}
-	defer response.Body.Close()
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		return fmt.Errorf("OAuth provider returned HTTP %d", response.StatusCode)
+		return errors.Join(fmt.Errorf("OAuth provider returned HTTP %d", response.StatusCode), response.Body.Close())
 	}
-	return json.NewDecoder(response.Body).Decode(dest)
+	return errors.Join(json.NewDecoder(response.Body).Decode(dest), response.Body.Close())
 }
 func oauthStringField(object map[string]any, key string) string {
 	value, _ := object[key].(string)
@@ -796,9 +806,8 @@ func firstNonempty(values ...string) string {
 // Keep JSON shape checking centralized so provider response decoding rejects
 // non-object bodies instead of silently treating them as zero-valued profiles.
 func oauthDecodeObject(response *http.Response) (map[string]any, error) {
-	defer response.Body.Close()
 	var value map[string]any
-	if err := json.NewDecoder(response.Body).Decode(&value); err != nil {
+	if err := errors.Join(json.NewDecoder(response.Body).Decode(&value), response.Body.Close()); err != nil {
 		return nil, err
 	}
 	if value == nil {

@@ -174,14 +174,6 @@
       "count": 1
     },
     {
-      "fingerprint": ["errcheck", "oauth_redirects.go", "Error return value of `resp.Body.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "oauth_redirects.go", "Error return value of `response.Body.Close` is not checked"],
-      "count": 3
-    },
-    {
       "fingerprint": [
         "errcheck",
         "project_label_writes/design/transport_test.go",
