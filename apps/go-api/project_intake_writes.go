@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/projectintakewrites"
@@ -164,7 +166,7 @@ func projectIntakeResponse(data json.RawMessage, err error) (*api.ProjectIntakeW
 	return &api.ProjectIntakeWritesResponseMetadata{ContentType: "application/json"}, io.NopCloser(bytes.NewReader(data)), nil
 }
 func (s *projectIntakeWritesService) create(ctx context.Context, slug, project string, body io.ReadCloser) (*api.ProjectIntakeWritesResponseMetadata, io.ReadCloser, error) {
-	defer body.Close()
+	defer platform.CloseRequestBody(ctx, body)
 	p, err := s.principal(ctx)
 	if err != nil {
 		return nil, nil, err
@@ -184,7 +186,7 @@ func (s *projectIntakeWritesService) create(ctx context.Context, slug, project s
 	return projectIntakeResponse(data, err)
 }
 func (s *projectIntakeWritesService) patch(ctx context.Context, slug, project, id string, body io.ReadCloser) (*api.ProjectIntakeWritesResponseMetadata, io.ReadCloser, error) {
-	defer body.Close()
+	defer platform.CloseRequestBody(ctx, body)
 	p, err := s.principal(ctx)
 	if err != nil {
 		return nil, nil, err

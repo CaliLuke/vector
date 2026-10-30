@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	api "github.com/CaliLuke/go-plane/customviewcreation/gen/custom_view_creation"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/customviewcreation"
@@ -130,7 +132,7 @@ func (s *customViewCreationService) prepare(ctx context.Context) (customViewCrea
 
 func customViewCreationInput(ctx context.Context, body io.ReadCloser) (djangoinput.Input, error) {
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	contentType := ""
 	if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok {

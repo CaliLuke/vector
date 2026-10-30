@@ -12,6 +12,8 @@ import (
 	"time"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	api "github.com/CaliLuke/go-plane/gen/instance_management"
 	"github.com/CaliLuke/go-plane/internal/accountauthentication"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
@@ -146,7 +148,7 @@ func (service *instanceManagementService) adminRedirect(ctx context.Context, bod
 
 func (service *instanceManagementService) adminRedirectRequest(ctx context.Context, body io.ReadCloser) (authredirects.Request, error) {
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	input, err := djangoinput.Parse(body, authRedirectRequestContentType(ctx))
 	if err != nil {
@@ -523,7 +525,7 @@ func (service *instanceManagementService) invalidate(ctx context.Context, path s
 
 func parseInstanceManagementBody(ctx context.Context, body io.ReadCloser) (map[string]json.RawMessage, error) {
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	contentType := ""
 	if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok {

@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	api "github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
@@ -42,7 +44,7 @@ func (service *LifecycleService) bulkAssociateProjectAssets(ctx context.Context,
 	}
 	fields := map[string]any{}
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 		contentType := RequestContentType(ctx)
 		if contentType == "" {
 			contentType = "application/json"
@@ -114,7 +116,7 @@ func (service *LifecycleService) createLegacyIssueAttachment(ctx context.Context
 	if body == nil {
 		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"asset": []string{"No file was submitted."}}}
 	}
-	defer body.Close()
+	defer platform.CloseRequestBody(ctx, body)
 	file, err := parseLegacyAssetFile(body, RequestContentType(ctx))
 	if err != nil {
 		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"asset": []string{"No file was submitted."}}}

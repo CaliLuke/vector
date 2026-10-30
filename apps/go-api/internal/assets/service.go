@@ -10,6 +10,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	api "github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
@@ -604,7 +606,7 @@ func (service *LifecycleService) invalidateWorkspaceAssetCaches(ctx context.Cont
 func assetAttributes(ctx context.Context, body io.ReadCloser, current any) ([]byte, error) {
 	value := current
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 		contentType := RequestContentType(ctx)
 		if contentType == "" {
 			contentType = "application/json"
@@ -675,7 +677,7 @@ func (service *LifecycleService) confirmLegacyWorkspaceAssetUpload(ctx context.C
 	}
 	uploaded := asset.IsUploaded
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 		contentType := RequestContentType(ctx)
 		if contentType == "" {
 			contentType = "application/json"
@@ -733,7 +735,7 @@ func (service *LifecycleService) confirmLegacyUserAssetUpload(ctx context.Contex
 	}
 	attributes := asset.Attributes
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 		contentType := RequestContentType(ctx)
 		if contentType == "" {
 			contentType = "application/json"
@@ -783,7 +785,7 @@ func (service *LifecycleService) confirmUserAssetUpload(ctx context.Context, raw
 	}
 	attributes := asset.Attributes
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 		contentType := RequestContentType(ctx)
 		if contentType == "" {
 			contentType = "application/json"
@@ -1410,7 +1412,7 @@ func (service *LifecycleService) decodeUploadRequest(ctx context.Context, body i
 	if body == nil {
 		return uploadRequest{}, nil
 	}
-	defer body.Close()
+	defer platform.CloseRequestBody(ctx, body)
 	contentType := RequestContentType(ctx)
 	if contentType == "" {
 		contentType = "application/json"

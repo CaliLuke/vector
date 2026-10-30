@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
@@ -118,7 +120,7 @@ func (s *projectPublicationService) principal(ctx context.Context) (projectPubli
 }
 func publicationInput(ctx context.Context, body io.ReadCloser) (djangoinput.Input, error) {
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	contentType := ""
 	if m, ok := loomhttp.RequestMetadataFromContext(ctx); ok {

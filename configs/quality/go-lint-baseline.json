@@ -18,22 +18,6 @@
       "count": 2
     },
     {
-      "fingerprint": ["errcheck", "account_authentication.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "api_project_membership_lifecycle.go",
-        "Error return value of `body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "auth_redirects.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
       "fingerprint": [
         "errcheck",
         "cmd/background-worker/main.go",
@@ -98,20 +82,12 @@
       "count": 1
     },
     {
-      "fingerprint": ["errcheck", "custom_view_creation.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
       "fingerprint": [
         "errcheck",
         "external_integrations.go",
         "Error return value of `response.Body.Close` is not checked"
       ],
       "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "instance_management.go", "Error return value of `body.Close` is not checked"],
-      "count": 2
     },
     {
       "fingerprint": [
@@ -128,26 +104,6 @@
         "Error return value of `tx.Rollback` is not checked"
       ],
       "count": 2
-    },
-    {
-      "fingerprint": ["errcheck", "internal/assets/attachment.go", "Error return value of `body.Close` is not checked"],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/assets/legacy_upload.go",
-        "Error return value of `body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "internal/assets/public.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "internal/assets/service.go", "Error return value of `body.Close` is not checked"],
-      "count": 5
     },
     {
       "fingerprint": [
@@ -390,14 +346,6 @@
       "count": 1
     },
     {
-      "fingerprint": ["errcheck", "invitations_membership.go", "Error return value of `body.Close` is not checked"],
-      "count": 2
-    },
-    {
-      "fingerprint": ["errcheck", "notification_actions.go", "Error return value of `body.Close` is not checked"],
-      "count": 4
-    },
-    {
       "fingerprint": ["errcheck", "oauth_redirects.go", "Error return value of `resp.Body.Close` is not checked"],
       "count": 1
     },
@@ -406,40 +354,12 @@
       "count": 3
     },
     {
-      "fingerprint": ["errcheck", "page_lifecycle_methods.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "project_configuration.go", "Error return value of `body.Close` is not checked"],
-      "count": 7
-    },
-    {
-      "fingerprint": ["errcheck", "project_intake_writes.go", "Error return value of `body.Close` is not checked"],
-      "count": 2
-    },
-    {
-      "fingerprint": ["errcheck", "project_label_writes.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
       "fingerprint": [
         "errcheck",
         "project_label_writes/design/transport_test.go",
         "Error return value of `s.record` is not checked"
       ],
       "count": 2
-    },
-    {
-      "fingerprint": ["errcheck", "project_member_preferences.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "project_publication.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "ticket_collaboration.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
     },
     {
       "fingerprint": [
@@ -458,28 +378,12 @@
       "count": 1
     },
     {
-      "fingerprint": ["errcheck", "work_item_core.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
       "fingerprint": [
         "errcheck",
         "work_item_core/design/transport_test.go",
         "Error return value of `body.Close` is not checked"
       ],
       "count": 2
-    },
-    {
-      "fingerprint": ["errcheck", "workspace_exports.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "workspace_lifecycle.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "workspace_webhooks.go", "Error return value of `body.Close` is not checked"],
-      "count": 1
     },
     {
       "fingerprint": [

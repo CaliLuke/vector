@@ -12,6 +12,8 @@ import (
 	"time"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
@@ -84,7 +86,7 @@ func (s *projectMembershipLifecycleService) APIKeyAuth(ctx context.Context, key 
 }
 func (s *projectMembershipLifecycleService) execute(ctx context.Context, method, operation string, payload any, body io.ReadCloser) (any, error) {
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	principal, ok := ctx.Value(projectMembershipLifecyclePrincipalKey{}).(projectMembershipLifecyclePrincipal)
 	if !ok {

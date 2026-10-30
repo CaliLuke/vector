@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/page_reads"
@@ -316,7 +318,7 @@ func (service *pageReadsService) pageLifecycle(ctx context.Context, operation, s
 			_ = body.Close()
 		}
 	} else if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 		contentType := "application/json"
 		if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok && metadata.Headers().Get("Content-Type") != "" {
 			contentType = metadata.Headers().Get("Content-Type")

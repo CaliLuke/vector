@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
@@ -222,7 +224,7 @@ func collaborationRequest(ctx context.Context, operation string, payload any) st
 
 func (s *ticketCollaborationService) execute(ctx context.Context, operation string, payload any, body io.ReadCloser) (*api.CollaborationResponse, io.ReadCloser, error) {
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	p, ok := ctx.Value(collaborationPrincipalKey{}).(collaborationPrincipal)
 	q := collaborationRequest(ctx, operation, payload)

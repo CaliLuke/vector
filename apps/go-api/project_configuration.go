@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
@@ -174,7 +176,7 @@ func principalFromSessionContext(ctx context.Context, credential string, session
 }
 
 func (service *projectConfigurationService) CreateEstimate(ctx context.Context, payload *api.CreateEstimatePayload, body io.ReadCloser) (*api.ProjectConfigurationRawJSON, io.ReadCloser, error) {
-	defer body.Close()
+	defer platform.CloseRequestBody(ctx, body)
 	identity, err := service.appPrincipal(ctx, payload.Slug, payload.ProjectID, false)
 	if err != nil {
 		return nil, nil, service.mapError(err)
@@ -233,7 +235,7 @@ func formatProjectEstimateDateTimes(raw []byte, location *time.Location) ([]byte
 }
 
 func (service *projectConfigurationService) PatchEstimate(ctx context.Context, payload *api.PatchEstimatePayload, body io.ReadCloser) (*api.ProjectConfigurationRawJSON, io.ReadCloser, error) {
-	defer body.Close()
+	defer platform.CloseRequestBody(ctx, body)
 	identity, err := service.appPrincipal(ctx, payload.Slug, payload.ProjectID, false)
 	if err != nil {
 		return nil, nil, service.mapError(err)
@@ -256,7 +258,7 @@ func (service *projectConfigurationService) DeleteEstimate(ctx context.Context, 
 	return nil
 }
 func (service *projectConfigurationService) CreateEstimatePoint(ctx context.Context, payload *api.CreateEstimatePointPayload, body io.ReadCloser) (*api.ProjectConfigurationRawJSON, io.ReadCloser, error) {
-	defer body.Close()
+	defer platform.CloseRequestBody(ctx, body)
 	identity, err := service.appPrincipal(ctx, payload.Slug, payload.ProjectID, true)
 	if err != nil {
 		return nil, nil, service.mapError(err)
@@ -278,7 +280,7 @@ func (service *projectConfigurationService) DeleteEstimatePoint(ctx context.Cont
 	})
 }
 func (service *projectConfigurationService) mutateEstimatePoint(ctx context.Context, slug, project string, body io.ReadCloser, operation func(string) (json.RawMessage, error)) (*api.ProjectConfigurationRawJSON, io.ReadCloser, error) {
-	defer body.Close()
+	defer platform.CloseRequestBody(ctx, body)
 	identity, err := service.appPrincipal(ctx, slug, project, true)
 	if err != nil {
 		return nil, nil, service.mapError(err)
@@ -290,7 +292,7 @@ func (service *projectConfigurationService) mutateEstimatePoint(ctx context.Cont
 	return jsonResponse(result)
 }
 func (service *projectConfigurationService) CreateAPILabel(ctx context.Context, payload *api.CreateAPILabelPayload, body io.ReadCloser) (*api.ProjectConfigurationRawJSON, io.ReadCloser, error) {
-	defer body.Close()
+	defer platform.CloseRequestBody(ctx, body)
 	identity, err := service.apiLabelPrincipal(ctx, payload.Slug, payload.ProjectID)
 	if err != nil {
 		return nil, nil, service.mapError(err)
@@ -302,7 +304,7 @@ func (service *projectConfigurationService) CreateAPILabel(ctx context.Context, 
 	return jsonResponse(result)
 }
 func (service *projectConfigurationService) PatchAPILabel(ctx context.Context, payload *api.PatchAPILabelPayload, body io.ReadCloser) (*api.ProjectConfigurationRawJSON, io.ReadCloser, error) {
-	defer body.Close()
+	defer platform.CloseRequestBody(ctx, body)
 	identity, err := service.apiLabelPrincipal(ctx, payload.Slug, payload.ProjectID)
 	if err != nil {
 		return nil, nil, service.mapError(err)
@@ -327,7 +329,7 @@ func (service *projectConfigurationService) DeleteAPILabel(ctx context.Context, 
 	return nil
 }
 func (service *projectConfigurationService) BulkCreateLabels(ctx context.Context, payload *api.BulkCreateLabelsPayload, body io.ReadCloser) (*api.ProjectConfigurationRawJSON, io.ReadCloser, error) {
-	defer body.Close()
+	defer platform.CloseRequestBody(ctx, body)
 	identity := principalFrom(ctx)
 	if identity.userID == "" {
 		return nil, nil, serviceError(http.StatusUnauthorized, map[string]any{"detail": unauthenticatedDetail})

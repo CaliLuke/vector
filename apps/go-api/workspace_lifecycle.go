@@ -12,6 +12,8 @@ import (
 	"time"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
@@ -183,7 +185,7 @@ func (service *workspaceLifecycleService) internal() error {
 
 func workspaceLifecycleRequestBody(ctx context.Context, body io.ReadCloser) (map[string]json.RawMessage, error) {
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	contentType := ""
 	if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok {

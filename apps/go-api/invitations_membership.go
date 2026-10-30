@@ -12,6 +12,8 @@ import (
 	"time"
 	stduuid "uuid"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
@@ -278,7 +280,7 @@ func (service *invitationsMembershipService) PostAPIV1WorkspacesBySlugInvitation
 		return nil, authorizeWorkspaceErr
 	}
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	result, err := service.repository.CreateAPIWorkspaceInvite(ctx, payload.Slug, principal.UserID, body, invitationContentType(ctx))
 	if err != nil {
@@ -300,7 +302,7 @@ func (service *invitationsMembershipService) PatchAPIV1WorkspacesBySlugInvitatio
 		return nil, invitationsMembershipError(400, map[string]any{"error": "Please provide valid detail"})
 	}
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	result, err := service.repository.PatchAPIWorkspaceInvite(store.WithInvitationActor(ctx, principal.UserID.String()), payload.Slug, id, body, invitationContentType(ctx))
 	if err != nil {

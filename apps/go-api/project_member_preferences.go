@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/projectmemberpreferences"
@@ -132,7 +134,7 @@ func preferenceError(status int, body map[string]any) error {
 
 func (s *projectMemberPreferencesService) Patch(ctx context.Context, payload *api.PatchPayload, body io.ReadCloser) (*api.Preferences, error) {
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	identity, ok := ctx.Value(projectMemberPreferencesPrincipal{}).(projectMemberPreferencesPrincipal)
 	if !ok || identity.userID == "" {

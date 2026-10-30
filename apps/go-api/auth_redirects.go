@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	api "github.com/CaliLuke/go-plane/authredirects/gen/auth_redirects"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	core "github.com/CaliLuke/go-plane/internal/authredirects"
@@ -99,7 +101,7 @@ func (s *authRedirectsService) execute(ctx context.Context, body io.ReadCloser, 
 
 func (s *authRedirectsService) request(ctx context.Context, body io.ReadCloser, space bool) (core.Request, error) {
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	input, err := djangoinput.Parse(body, authRedirectRequestContentType(ctx))
 	if err != nil {

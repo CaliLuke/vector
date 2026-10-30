@@ -9,6 +9,8 @@ import (
 	"math"
 	"net/http"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/projectlabelreads"
 	api "github.com/CaliLuke/go-plane/project_label_writes/gen/project_label_writes"
@@ -102,7 +104,7 @@ func (s *projectLabelWritesService) principal(ctx context.Context, slug, project
 
 func (s *projectLabelWritesService) write(ctx context.Context, slug, project, id, method string, body io.ReadCloser) (*api.Label, error) {
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	user, err := s.principal(ctx, slug, project, method)
 	if err != nil {

@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	api "github.com/CaliLuke/go-plane/accountauthentication/gen/account_authentication"
 	store "github.com/CaliLuke/go-plane/internal/accountauthentication"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
@@ -173,7 +175,7 @@ func (s *accountAuthenticationService) emailCheck(ctx context.Context, contentTy
 	if !configured {
 		return nil, nil, s.failure(400, authAuthenticationBody(5000, "INSTANCE_NOT_CONFIGURED", nil))
 	}
-	input, err := s.parse(body, contentType)
+	input, err := s.parse(ctx, body, contentType)
 	if err != nil {
 		return nil, nil, s.inputFailure(err)
 	}
@@ -216,7 +218,7 @@ func (s *accountAuthenticationService) forgotPassword(ctx context.Context, conte
 	if !configured {
 		return nil, nil, s.failure(400, authAuthenticationBody(5000, "INSTANCE_NOT_CONFIGURED", nil))
 	}
-	input, err := s.parse(body, contentType)
+	input, err := s.parse(ctx, body, contentType)
 	if err != nil {
 		return nil, nil, s.inputFailure(err)
 	}
@@ -263,7 +265,7 @@ func (s *accountAuthenticationService) magicGenerate(ctx context.Context, conten
 	if !configured {
 		return nil, nil, s.failure(400, authAuthenticationBody(5000, "INSTANCE_NOT_CONFIGURED", nil))
 	}
-	input, err := s.parse(body, contentType)
+	input, err := s.parse(ctx, body, contentType)
 	if err != nil {
 		return nil, nil, s.inputFailure(err)
 	}
@@ -305,7 +307,7 @@ func (s *accountAuthenticationService) passwordChange(ctx context.Context, conte
 			return nil, nil, s.internal()
 		}
 	}
-	input, err := s.parse(body, contentType)
+	input, err := s.parse(ctx, body, contentType)
 	if err != nil {
 		return nil, nil, s.inputFailure(err)
 	}
@@ -415,9 +417,9 @@ func (s *accountAuthenticationService) allow(ctx context.Context) error {
 	}
 	return nil
 }
-func (s *accountAuthenticationService) parse(body io.ReadCloser, contentType *string) (djangoinput.Input, error) {
+func (s *accountAuthenticationService) parse(ctx context.Context, body io.ReadCloser, contentType *string) (djangoinput.Input, error) {
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	ct := ""
 	if contentType != nil {

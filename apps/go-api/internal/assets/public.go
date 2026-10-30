@@ -6,6 +6,8 @@ import (
 	"io"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	api "github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
@@ -199,7 +201,7 @@ func (service *LifecycleService) bulkAssociatePublicAssets(ctx context.Context, 
 	}
 	var fields map[string]any
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 		contentType := RequestContentType(ctx)
 		if contentType == "" {
 			contentType = "application/json"

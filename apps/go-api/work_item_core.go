@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
@@ -250,7 +252,7 @@ func workItemRequest(ctx context.Context, operation string, payload any) store.R
 
 func (s *workItemCoreService) execute(ctx context.Context, operation string, payload any, body io.ReadCloser) (*api.WorkItemResponse, io.ReadCloser, error) {
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	p, ok := ctx.Value(workItemPrincipalKey{}).(workItemPrincipal)
 	if !ok {

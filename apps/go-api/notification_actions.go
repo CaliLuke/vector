@@ -8,6 +8,8 @@ import (
 	"io"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/notifications"
@@ -78,7 +80,7 @@ func (s *notificationActionsService) update(ctx context.Context, slug, id, field
 }
 func (s *notificationActionsService) Archive(ctx context.Context, payload *api.ArchivePayload, body io.ReadCloser) (*api.Notification, error) {
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	return s.update(ctx, payload.Slug, payload.Pk, "archived_at", time.Now().UTC())
 }
@@ -87,7 +89,7 @@ func (s *notificationActionsService) Unarchive(ctx context.Context, payload *api
 }
 func (s *notificationActionsService) MarkRead(ctx context.Context, payload *api.MarkReadPayload, body io.ReadCloser) (*api.Notification, error) {
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	return s.update(ctx, payload.Slug, payload.Pk, "read_at", time.Now().UTC())
 }
@@ -101,7 +103,7 @@ func (s *notificationActionsService) MarkAllRead(ctx context.Context, payload *a
 		return nil, notificationActionError(err)
 	}
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	contentType, _ := ctx.Value(loomhttp.ContentTypeKey).(string)
 	if contentType == "" {
@@ -148,7 +150,7 @@ func notificationActionBodyError(status int, body map[string]any) error {
 
 func (s *notificationActionsService) Update(ctx context.Context, payload *api.UpdatePayload, body io.ReadCloser) (*api.Notification, error) {
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	p, err := s.target(ctx, payload.Slug, payload.Pk, false)
 	if err != nil {

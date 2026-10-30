@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	api "github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/google/uuid"
@@ -35,7 +37,7 @@ func (service *LifecycleService) createLegacyAsset(ctx context.Context, userID u
 	if body == nil {
 		return nil, &djangoapi.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"asset": []string{"No file was submitted."}}}
 	}
-	defer body.Close()
+	defer platform.CloseRequestBody(ctx, body)
 	contentType := RequestContentType(ctx)
 	file, err := parseLegacyAssetFile(body, contentType)
 	if err != nil {

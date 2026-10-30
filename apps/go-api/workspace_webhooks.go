@@ -10,6 +10,8 @@ import (
 	"strings"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/workspacewebhooks"
@@ -64,7 +66,7 @@ type webhookPatchRequest webhookCreateRequest
 
 func parseWebhookBody[T any](ctx context.Context, body io.ReadCloser) (*T, error) {
 	if body != nil {
-		defer body.Close()
+		defer platform.CloseRequestBody(ctx, body)
 	}
 	contentType := ""
 	if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok {
