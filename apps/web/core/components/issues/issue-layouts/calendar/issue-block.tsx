@@ -71,8 +71,7 @@ export const CalendarIssueBlock = forwardRef(function CalendarIssueBlock(
   }, [isMenuActive]);
 
   // handlers
-  const handleIssuePeekOverview = (peekIssue: TIssue) =>
-    handleRedirection(workspaceSlug?.toString(), peekIssue, isMobile);
+  const handleIssuePeekOverview = (peekIssue: TIssue) => handleRedirection(workspaceSlug, peekIssue, isMobile);
 
   useOutsideClickDetector(menuActionRef, () => setIsMenuActive(false));
 
@@ -92,7 +91,7 @@ export const CalendarIssueBlock = forwardRef(function CalendarIssueBlock(
   );
 
   const workItemLink = generateWorkItemLink({
-    workspaceSlug: workspaceSlug?.toString(),
+    workspaceSlug,
     projectId: issue?.project_id,
     issueId: issue?.id,
     projectIdentifier,

@@ -37,7 +37,7 @@ export const ProjectArchivedIssueDetailsHeader = function ProjectArchivedIssueDe
     queryKey: ["ISSUE_DETAILS", workspaceSlug, projectId, archivedIssueId],
     queryFn:
       workspaceSlug && projectId && archivedIssueId
-        ? () => issueService.retrieve(workspaceSlug.toString(), projectId.toString(), archivedIssueId.toString())
+        ? () => issueService.retrieve(workspaceSlug, projectId, archivedIssueId)
         : skipToken,
   });
 
@@ -45,7 +45,7 @@ export const ProjectArchivedIssueDetailsHeader = function ProjectArchivedIssueDe
     <Header>
       <Header.LeftItem>
         <Breadcrumbs isLoading={loader}>
-          <ProjectBreadcrumb workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
+          <ProjectBreadcrumb workspaceSlug={workspaceSlug} projectId={projectId} />
           <Breadcrumbs.Item
             component={
               <BreadcrumbLink
@@ -78,11 +78,7 @@ export const ProjectArchivedIssueDetailsHeader = function ProjectArchivedIssueDe
         </Breadcrumbs>
       </Header.LeftItem>
       <Header.RightItem>
-        <IssueDetailQuickActions
-          workspaceSlug={workspaceSlug.toString()}
-          projectId={projectId.toString()}
-          issueId={archivedIssueId.toString()}
-        />
+        <IssueDetailQuickActions workspaceSlug={workspaceSlug} projectId={projectId} issueId={archivedIssueId} />
       </Header.RightItem>
     </Header>
   );

@@ -262,7 +262,7 @@ export function FavoriteFolder(props: Props) {
                   {orderBy(favorite.children, "sequence", "desc").map((child, index) => (
                     <FavoriteRoot
                       key={child.id}
-                      workspaceSlug={workspaceSlug.toString()}
+                      workspaceSlug={workspaceSlug}
                       favorite={child}
                       isLastChild={index === favorite.children.length - 1}
                       parentId={favorite.id}

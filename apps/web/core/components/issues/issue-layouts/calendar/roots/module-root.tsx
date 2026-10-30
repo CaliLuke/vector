@@ -30,10 +30,6 @@ export function ModuleCalendarLayout() {
   if (!moduleId) return null;
 
   return (
-    <BaseCalendarRoot
-      QuickActions={ModuleIssueQuickActions}
-      addIssuesToView={addIssuesToView}
-      viewId={moduleId?.toString()}
-    />
+    <BaseCalendarRoot QuickActions={ModuleIssueQuickActions} addIssuesToView={addIssuesToView} viewId={moduleId} />
   );
 }

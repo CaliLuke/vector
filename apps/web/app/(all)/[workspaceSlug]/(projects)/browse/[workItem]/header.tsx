@@ -27,7 +27,7 @@ export const ProjectWorkItemDetailsHeader = function ProjectWorkItemDetailsHeade
   // store hooks
   const sidebarCollapsed = useSidebarCollapsed();
   const projectCatalogue = useWorkspaceProjectDetails();
-  const [projectIdentifier, sequenceId] = (workItem?.toString() ?? "").split("-");
+  const [projectIdentifier, sequenceId] = (workItem ?? "").split("-");
   const projectId = projectCatalogue.projects?.find((project) => project.identifier === projectIdentifier)?.id;
   const detail = useWorkItemByIdentifier(workspaceSlug, projectIdentifier, sequenceId, projectId);
   const issueDetails = detail.issue;

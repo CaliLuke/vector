@@ -33,7 +33,7 @@ export const StickiesTruncated = function StickiesTruncated(props: StickiesTrunc
       customButton={
         <Link
           to="/$workspaceSlug/stickies/"
-          params={{ workspaceSlug: workspaceSlug }}
+          params={{ workspaceSlug }}
           className={cn(
             "w-full gap-1 bg-surface-2/20 text-13 font-medium text-accent-primary transition-opacity duration-300"
           )}
@@ -43,7 +43,7 @@ export const StickiesTruncated = function StickiesTruncated(props: StickiesTrunc
         </Link>
       }
     >
-      <StickiesLayout workspaceSlug={workspaceSlug?.toString()} />
+      <StickiesLayout workspaceSlug={workspaceSlug} />
     </ContentOverflowWrapper>
   );
 };

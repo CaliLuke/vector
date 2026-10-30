@@ -19,9 +19,9 @@ export const WorkItemDetailRoot = function WorkItemDetailRoot(props: TWorkItemDe
 
   return (
     <IssueDetailRoot
-      workspaceSlug={workspaceSlug.toString()}
-      projectId={projectId.toString()}
-      issueId={issueId.toString()}
+      workspaceSlug={workspaceSlug}
+      projectId={projectId}
+      issueId={issueId}
       is_archived={!!issue?.archived_at}
     />
   );

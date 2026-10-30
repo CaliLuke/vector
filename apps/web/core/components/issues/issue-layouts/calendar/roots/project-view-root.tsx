@@ -13,5 +13,5 @@ import { BaseCalendarRoot } from "../base-calendar-root";
 export const ProjectViewCalendarLayout = function ProjectViewCalendarLayout() {
   const { viewId } = useParams({ from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/views/$viewId" });
 
-  return <BaseCalendarRoot QuickActions={ProjectIssueQuickActions} viewId={viewId.toString()} />;
+  return <BaseCalendarRoot QuickActions={ProjectIssueQuickActions} viewId={viewId} />;
 };

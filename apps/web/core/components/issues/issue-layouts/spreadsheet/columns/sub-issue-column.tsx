@@ -30,7 +30,7 @@ export const SpreadsheetSubIssueColumn = function SpreadsheetSubIssueColumn(prop
 
   const redirectToIssueDetail = () => {
     void router.navigate({
-      href: `/${workspaceSlug?.toString()}/projects/${issue.project_id}/${issue.archived_at ? "archives/" : ""}${isEpic ? "epics" : "issues"}/${issue.id}#sub-issues`,
+      href: `/${workspaceSlug}/projects/${issue.project_id}/${issue.archived_at ? "archives/" : ""}${isEpic ? "epics" : "issues"}/${issue.id}#sub-issues`,
     });
   };
 

@@ -74,7 +74,7 @@ export const ArchivedCycleLayoutRoot = function ArchivedCycleLayoutRoot() {
         </div>
       ) : (
         <div className="relative h-full w-full overflow-auto">
-          <ArchivedCyclesView workspaceSlug={workspaceSlug.toString()} projectId={projectId.toString()} />
+          <ArchivedCyclesView workspaceSlug={workspaceSlug} projectId={projectId} />
         </div>
       )}
     </>

@@ -22,8 +22,8 @@ export const ProfileViewEmptyState = function ProfileViewEmptyState() {
   return (
     <EmptyStateDetailed
       assetKey="work-item"
-      title={t(`profile.empty_state.${profileViewId.toString()}.title`)}
-      description={t(`profile.empty_state.${profileViewId.toString()}.description`)}
+      title={t(`profile.empty_state.${profileViewId}.title`)}
+      description={t(`profile.empty_state.${profileViewId}.description`)}
     />
   );
 };

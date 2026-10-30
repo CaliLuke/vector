@@ -85,10 +85,8 @@ export const ProjectsAppPowerKProvider = function ProjectsAppPowerKProvider() {
   return (
     <>
       <GlobalShortcutsProvider context={context} commands={commands} />
-      {workspaceSlug && <WorkspaceLevelModals workspaceSlug={workspaceSlug.toString()} />}
-      {workspaceSlug && projectId && (
-        <ProjectLevelModals workspaceSlug={workspaceSlug.toString()} projectId={projectId.toString()} />
-      )}
+      {workspaceSlug && <WorkspaceLevelModals workspaceSlug={workspaceSlug} />}
+      {workspaceSlug && projectId && <ProjectLevelModals workspaceSlug={workspaceSlug} projectId={projectId} />}
       <WorkItemLevelModals workItemIdentifier={workItemIdentifier?.toString()} />
       <ProjectsAppPowerKModalWrapper
         commandsListComponent={ProjectsAppPowerKCommandsList}

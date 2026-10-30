@@ -20,7 +20,6 @@ import { Breadcrumbs, Header, BreadcrumbNavigationSearchDropdown } from "@plane/
 import { cn } from "@plane/utils/common";
 // components
 import { WorkItemsModal } from "@/components/analytics/work-items/modal";
-import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 import { SwitcherLabel } from "@/components/common/switcher-label";
 import {
   FiltersDropdown,
@@ -41,7 +40,7 @@ import { useProjectPermissions } from "@/hooks/use-permissions";
 import { useParentChartPreferences } from "@/providers/cycle-module-preferences";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // plane web imports
-import { CommonProjectBreadcrumbs } from "@/components/breadcrumbs/common";
+import { ProjectSectionBreadcrumbs } from "@/components/breadcrumbs/common";
 import { IconButton } from "@plane/propel/icon-button";
 
 export function ModuleIssuesHeader() {
@@ -103,23 +102,20 @@ export function ModuleIssuesHeader() {
       <Header>
         <Header.LeftItem>
           <div className="flex items-center gap-2">
-            <Breadcrumbs onBack={router.history.back} isLoading={loader}>
-              <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug} projectId={projectId?.toString()} />
-              <Breadcrumbs.Item
-                component={
-                  <BreadcrumbLink
-                    label="Modules"
-                    href={`/${workspaceSlug}/projects/${projectId}/modules/`}
-                    icon={<ModuleIcon className="h-4 w-4 text-tertiary" />}
-                    isLast
-                  />
-                }
-                isLast
-              />
+            <ProjectSectionBreadcrumbs
+              workspaceSlug={workspaceSlug}
+              projectId={projectId}
+              onBack={router.history.back}
+              isLoading={loader}
+              label="Modules"
+              href={`/${workspaceSlug}/projects/${projectId}/modules/`}
+              icon={<ModuleIcon className="h-4 w-4 text-tertiary" />}
+              sectionIsLast
+            >
               <Breadcrumbs.Item
                 component={
                   <BreadcrumbNavigationSearchDropdown
-                    selectedItem={moduleId?.toString() ?? ""}
+                    selectedItem={moduleId ?? ""}
                     navigationItems={switcherOptions ?? []}
                     onChange={(value: string) => {
                       void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/modules/${value}` });
@@ -130,7 +126,7 @@ export function ModuleIssuesHeader() {
                   />
                 }
               />
-            </Breadcrumbs>
+            </ProjectSectionBreadcrumbs>
             {workItemsCount && workItemsCount > 0 ? (
               <Tooltip
                 isMobile={isMobile}
@@ -196,8 +192,8 @@ export function ModuleIssuesHeader() {
               module={moduleDetails}
               parentRef={parentRef}
               moduleId={moduleId}
-              projectId={projectId.toString()}
-              workspaceSlug={workspaceSlug.toString()}
+              projectId={projectId}
+              workspaceSlug={workspaceSlug}
               customClassName="flex-shrink-0 flex items-center justify-center bg-layer-1/70 rounded-sm size-[26px]"
             />
           )}

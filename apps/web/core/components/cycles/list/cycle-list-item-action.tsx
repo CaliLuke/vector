@@ -199,7 +199,7 @@ export const CycleListItemAction = function CycleListItemAction(props: Props) {
     e.preventDefault();
     if (!workspaceSlug || !projectId) return;
 
-    const addToFavoritePromise = toggleFavorite("cycle", cycleId, projectId.toString()).then(
+    const addToFavoritePromise = toggleFavorite("cycle", cycleId, projectId).then(
       // oxlint-disable-next-line promise/always-return
       () => {
         if (!isFavoriteMenuOpen) toggleFavoriteMenu(true);
@@ -223,7 +223,7 @@ export const CycleListItemAction = function CycleListItemAction(props: Props) {
     e.preventDefault();
     if (!workspaceSlug || !projectId) return;
 
-    const removeFromFavoritePromise = toggleFavorite("cycle", cycleId, projectId.toString());
+    const removeFromFavoritePromise = toggleFavorite("cycle", cycleId, projectId);
 
     setPromiseToast(removeFromFavoritePromise, {
       loading: t("project_cycles.action.unfavorite.loading"),
@@ -256,7 +256,7 @@ export const CycleListItemAction = function CycleListItemAction(props: Props) {
       <TransferIssuesModal
         handleClose={() => setTransferIssuesModal(false)}
         isOpen={transferIssuesModal}
-        cycleId={cycleId.toString()}
+        cycleId={cycleId}
         projectId={projectId}
         workspaceSlug={workspaceSlug}
       />

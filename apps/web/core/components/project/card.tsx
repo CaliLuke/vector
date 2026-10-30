@@ -404,7 +404,7 @@ export const ProjectCard = function ProjectCard(props: Props) {
       {/* Join Project Modal */}
       {workspaceSlug && (
         <JoinProjectModal
-          workspaceSlug={workspaceSlug.toString()}
+          workspaceSlug={workspaceSlug}
           project={project}
           isOpen={joinProjectModalOpen}
           handleClose={() => setJoinProjectModal(false)}
@@ -413,7 +413,7 @@ export const ProjectCard = function ProjectCard(props: Props) {
       {/* Restore project modal */}
       {workspaceSlug && project && (
         <ArchiveRestoreProjectModal
-          workspaceSlug={workspaceSlug.toString()}
+          workspaceSlug={workspaceSlug}
           projectId={project.id}
           isOpen={restoreProject}
           onClose={() => setRestoreProject(false)}
@@ -430,7 +430,7 @@ export const ProjectCard = function ProjectCard(props: Props) {
           aria-label={`Open project ${project.name}`}
           className="focus-visible:outline-focus-ring absolute inset-0 z-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           to="/$workspaceSlug/projects/$projectId/issues/"
-          params={{ workspaceSlug: workspaceSlug, projectId: project.id }}
+          params={{ workspaceSlug, projectId: project.id }}
           onClick={handleProjectNavigation}
           data-prevent-progress={!isMemberOfProject || isArchived}
         />

@@ -43,7 +43,7 @@ export const ProjectInboxHeader = function ProjectInboxHeader() {
       <Header.LeftItem>
         <div className="flex flex-grow items-center gap-4">
           <Breadcrumbs isLoading={projectPending}>
-            <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
+            <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug} projectId={projectId} />
             <Breadcrumbs.Item
               component={
                 <BreadcrumbLink
@@ -62,8 +62,8 @@ export const ProjectInboxHeader = function ProjectInboxHeader() {
         {currentProjectDetails?.inbox_view && workspaceSlug && projectId && isAuthorized ? (
           <div className="flex items-center gap-2">
             <InboxIssueCreateModalRoot
-              workspaceSlug={workspaceSlug.toString()}
-              projectId={projectId.toString()}
+              workspaceSlug={workspaceSlug}
+              projectId={projectId}
               modalState={createIssueModal}
               handleModalClose={() => setCreateIssueModal(false)}
             />

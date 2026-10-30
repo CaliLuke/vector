@@ -75,7 +75,7 @@ export function EditorAIMenu(props: Props) {
   // params
   const handleGenerateResponse = async (payload: TTaskPayload) => {
     if (!workspaceSlug) return;
-    await aiService.performEditorTask(workspaceSlug.toString(), payload).then((res) => setResponse(res.response));
+    await aiService.performEditorTask(workspaceSlug, payload).then((res) => setResponse(res.response));
   };
   // handle task click
   const handleClick = async (key: AI_EDITOR_TASKS) => {

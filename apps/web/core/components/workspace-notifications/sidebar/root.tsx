@@ -64,7 +64,7 @@ export const NotificationsSidebarRoot = function NotificationsSidebarRoot() {
     >
       <div className="relative flex h-full w-full flex-col">
         <Row className="flex h-header flex-shrink-0 border-b border-subtle">
-          <NotificationSidebarHeader workspaceSlug={workspaceSlug.toString()} />
+          <NotificationSidebarHeader workspaceSlug={workspaceSlug} />
         </Row>
 
         <Header variant={EHeaderVariant.SECONDARY} className="justify-start">
@@ -97,7 +97,7 @@ export const NotificationsSidebarRoot = function NotificationsSidebarRoot() {
         </Header>
 
         {/* applied filters */}
-        <AppliedFilters workspaceSlug={workspaceSlug.toString()} />
+        <AppliedFilters workspaceSlug={workspaceSlug} />
 
         {/* rendering notifications */}
         {list.isPending ? (
@@ -120,7 +120,7 @@ export const NotificationsSidebarRoot = function NotificationsSidebarRoot() {
           <>
             {notificationIds && notificationIds.length > 0 ? (
               <ContentWrapper variant={ERowVariant.HUGGING} ref={scrollRef}>
-                <NotificationCardListRoot workspaceSlug={workspaceSlug.toString()} scrollRef={scrollRef} />
+                <NotificationCardListRoot workspaceSlug={workspaceSlug} scrollRef={scrollRef} />
               </ContentWrapper>
             ) : (
               <div className="relative flex h-full w-full items-center justify-center">

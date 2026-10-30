@@ -76,11 +76,7 @@ export const ArchivedModulesView = function ArchivedModulesView(props: IArchived
             <ModuleListItem key={module.id} module={module} />
           ))}
         </div>
-        <ModulePeekOverview
-          projectId={projectId?.toString() ?? ""}
-          workspaceSlug={workspaceSlug?.toString() ?? ""}
-          isArchived
-        />
+        <ModulePeekOverview projectId={projectId ?? ""} workspaceSlug={workspaceSlug ?? ""} isArchived />
       </div>
     </div>
   );

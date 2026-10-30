@@ -284,7 +284,7 @@ export function SidebarFavoritesMenu() {
                       />
                     ) : (
                       <FavoriteRoot
-                        workspaceSlug={workspaceSlug.toString()}
+                        workspaceSlug={workspaceSlug}
                         favorite={fav}
                         isLastChild={index === length - 1}
                         parentId={undefined}

@@ -44,7 +44,7 @@ export const ArchiveTabsList = function ArchiveTabsList() {
 
   // derived values
   if (!projectId) return null;
-  const projectDetails = projectRows?.find((project) => project.id === projectId.toString());
+  const projectDetails = projectRows?.find((project) => project.id === projectId);
   if (!projectDetails) return null;
 
   return (

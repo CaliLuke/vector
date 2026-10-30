@@ -37,7 +37,7 @@ export const ProfileActivity = function ProfileActivity() {
     queryFn:
       workspaceSlug && userId
         ? () =>
-            userService.getUserProfileActivity(workspaceSlug.toString(), userId.toString(), {
+            userService.getUserProfileActivity(workspaceSlug, userId, {
               per_page: 10,
             })
         : skipToken,

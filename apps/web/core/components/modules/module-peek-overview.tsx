@@ -56,7 +56,7 @@ export const ModulePeekOverview = function ModulePeekOverview({ projectId, works
           <ModuleAnalyticsSidebar
             workspaceSlug={workspaceSlug}
             projectId={projectId}
-            moduleId={peekModule?.toString() ?? ""}
+            moduleId={peekModule ?? ""}
             handleClose={handleClose}
             isArchived={isArchived}
           />

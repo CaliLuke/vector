@@ -10,11 +10,11 @@ import { useState } from "react";
 import { CircleDashed } from "lucide-react";
 import { PlusIcon } from "@plane/propel/icons";
 // types
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TIssue, ISearchIssueResponse, TIssueGroupByOptions } from "@plane/types";
 // ui
 import { CustomMenu } from "@plane/ui";
 // components
+import { addSelectedIssuesToView } from "../../add-selected-issues";
 import { cn } from "@plane/utils/common";
 import { ExistingIssuesListModal } from "@/components/core/modals/existing-issues-list-modal";
 import { MultipleSelectGroupAction } from "@/components/core/multiple-select";
@@ -61,7 +61,7 @@ export const HeaderGroupByCard = function HeaderGroupByCard(props: IHeaderGroupB
   const storeType = useIssueListType();
   // derived values
   const renderExistingIssueModal = moduleId || cycleId;
-  const existingIssuesListModalPayload = moduleId ? { module: moduleId.toString() } : { cycle: true };
+  const existingIssuesListModalPayload = moduleId ? { module: moduleId } : { cycle: true };
   const isGroupSelectionEmpty = selectionHelpers.isGroupSelected(groupID) === "empty";
   // auth
   const canSelectIssues = canEditProperties(projectId?.toString()) && !selectionHelpers.isSelectionDisabled;
@@ -69,23 +69,7 @@ export const HeaderGroupByCard = function HeaderGroupByCard(props: IHeaderGroupB
   const handleAddIssuesToView = async (data: ISearchIssueResponse[]) => {
     if (!workspaceSlug || !projectId) return;
 
-    const issues = data.map((i) => i.id);
-
-    try {
-      await addIssuesToView?.(issues);
-
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: "Success!",
-        message: "Work items added to the cycle successfully.",
-      });
-    } catch (_error) {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "Selected work items could not be added to the cycle. Please try again.",
-      });
-    }
+    await addSelectedIssuesToView(data, addIssuesToView);
   };
 
   return (

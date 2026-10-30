@@ -88,14 +88,14 @@ export const ViewListItemAction = function ViewListItemAction(props: Props) {
   const handleAddToFavorites = async () => {
     if (!workspaceSlug || !projectId) return;
 
-    await toggleFavorite("view", view.id, projectId.toString());
+    await toggleFavorite("view", view.id, projectId);
     if (!isFavoriteOpen) toggleFavoriteMenu(true);
   };
 
   const handleRemoveFromFavorites = () => {
     if (!workspaceSlug || !projectId) return;
 
-    void toggleFavorite("view", view.id, projectId.toString());
+    void toggleFavorite("view", view.id, projectId);
   };
 
   const ownedByDetails = view.owned_by ? getUserDetails(view.owned_by) : undefined;
@@ -106,8 +106,8 @@ export const ViewListItemAction = function ViewListItemAction(props: Props) {
         <CreateUpdateProjectViewModal
           isOpen={createUpdateViewModal}
           onClose={() => setCreateUpdateViewModal(false)}
-          workspaceSlug={workspaceSlug.toString()}
-          projectId={projectId.toString()}
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
           data={view}
         />
       )}
@@ -134,12 +134,7 @@ export const ViewListItemAction = function ViewListItemAction(props: Props) {
       />
       {projectId && workspaceSlug && (
         <div className="hidden md:block">
-          <ViewQuickActions
-            parentRef={parentRef}
-            projectId={projectId.toString()}
-            view={view}
-            workspaceSlug={workspaceSlug.toString()}
-          />
+          <ViewQuickActions parentRef={parentRef} projectId={projectId} view={view} workspaceSlug={workspaceSlug} />
         </div>
       )}
     </>

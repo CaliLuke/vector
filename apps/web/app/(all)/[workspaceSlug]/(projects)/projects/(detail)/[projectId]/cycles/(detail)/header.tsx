@@ -22,7 +22,6 @@ import { Breadcrumbs, BreadcrumbNavigationSearchDropdown, Header } from "@plane/
 import { cn } from "@plane/utils/common";
 // components
 import { WorkItemsModal } from "@/components/analytics/work-items/modal";
-import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 import { SwitcherLabel } from "@/components/common/switcher-label";
 import { CycleQuickActions } from "@/components/cycles/quick-actions";
 import {
@@ -42,7 +41,7 @@ import { useProjectPermissions } from "@/hooks/use-permissions";
 
 import { useParentChartPreferences } from "@/providers/cycle-module-preferences";
 // plane web imports
-import { CommonProjectBreadcrumbs } from "@/components/breadcrumbs/common";
+import { ProjectSectionBreadcrumbs } from "@/components/breadcrumbs/common";
 
 export function CycleIssuesHeader() {
   // refs
@@ -108,17 +107,15 @@ export function CycleIssuesHeader() {
       <Header>
         <Header.LeftItem>
           <div className="flex items-center gap-2">
-            <Breadcrumbs onBack={router.history.back} isLoading={loader}>
-              <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug} projectId={projectId} />
-              <Breadcrumbs.Item
-                component={
-                  <BreadcrumbLink
-                    label="Cycles"
-                    href={`/${workspaceSlug}/projects/${projectId}/cycles/`}
-                    icon={<CycleIcon className="h-4 w-4 text-tertiary" />}
-                  />
-                }
-              />
+            <ProjectSectionBreadcrumbs
+              workspaceSlug={workspaceSlug}
+              projectId={projectId}
+              onBack={router.history.back}
+              isLoading={loader}
+              label="Cycles"
+              href={`/${workspaceSlug}/projects/${projectId}/cycles/`}
+              icon={<CycleIcon className="h-4 w-4 text-tertiary" />}
+            >
               <Breadcrumbs.Item
                 component={
                   <BreadcrumbNavigationSearchDropdown
@@ -138,7 +135,7 @@ export function CycleIssuesHeader() {
                 }
                 isLast
               />
-            </Breadcrumbs>
+            </ProjectSectionBreadcrumbs>
             {workItemsCount && workItemsCount > 0 ? (
               <Tooltip
                 isMobile={isMobile}

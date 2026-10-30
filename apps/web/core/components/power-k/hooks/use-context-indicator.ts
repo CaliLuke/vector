@@ -37,7 +37,7 @@ export const useContextIndicator = (args: TArgs): string | null => {
 
   switch (activeContext) {
     case "work-item": {
-      indicator = workItemIdentifier ? workItemIdentifier.toString() : null;
+      indicator = workItemIdentifier ? workItemIdentifier : null;
       break;
     }
     case "cycle": {

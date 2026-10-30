@@ -75,7 +75,7 @@ export const ExtendedProjectSidebar = function ExtendedProjectSidebar() {
           isOpen={isProjectModalOpen}
           onClose={() => setIsProjectModalOpen(false)}
           setToFavorite={false}
-          workspaceSlug={workspaceSlug.toString()}
+          workspaceSlug={workspaceSlug}
         />
       )}
       <ExtendedSidebarWrapper

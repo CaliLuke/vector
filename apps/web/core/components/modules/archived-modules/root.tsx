@@ -79,7 +79,7 @@ export const ArchivedModuleLayoutRoot = function ArchivedModuleLayoutRoot() {
         </div>
       ) : (
         <div className="relative h-full w-full overflow-auto">
-          <ArchivedModulesView workspaceSlug={workspaceSlug.toString()} projectId={projectId.toString()} />
+          <ArchivedModulesView workspaceSlug={workspaceSlug} projectId={projectId} />
         </div>
       )}
     </>

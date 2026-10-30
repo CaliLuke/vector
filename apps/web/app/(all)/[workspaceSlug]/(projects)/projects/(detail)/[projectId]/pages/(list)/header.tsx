@@ -54,7 +54,7 @@ export const PagesListHeader = function PagesListHeader() {
     <Header>
       <Header.LeftItem>
         <Breadcrumbs isLoading={projectQuery.isPending}>
-          <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
+          <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug} projectId={projectId} />
           <Breadcrumbs.Item
             component={
               <BreadcrumbLink

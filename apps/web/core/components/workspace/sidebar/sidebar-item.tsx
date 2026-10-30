@@ -52,7 +52,7 @@ export function SidebarItemBase({ item, additionalRender, additionalStaticItems 
     "drafts",
     ...(additionalStaticItems || []),
   ];
-  const slug = workspaceSlug?.toString() || "";
+  const slug = workspaceSlug || "";
 
   if (!canWorkspace(item.access)) return null;
 

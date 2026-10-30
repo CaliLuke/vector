@@ -99,8 +99,8 @@ function InboxIssueScreen(props: TInboxIssueRoot) {
         >
           <InboxSidebar
             setIsMobileSidebar={setIsMobileSidebar}
-            workspaceSlug={workspaceSlug.toString()}
-            projectId={projectId.toString()}
+            workspaceSlug={workspaceSlug}
+            projectId={projectId}
             inboxIssueId={inboxIssueId}
           />
         </div>
@@ -110,9 +110,9 @@ function InboxIssueScreen(props: TInboxIssueRoot) {
             navigation={{ tab, issueIds }}
             setIsMobileSidebar={setIsMobileSidebar}
             isMobileSidebar={isMobileSidebar}
-            workspaceSlug={workspaceSlug.toString()}
-            projectId={projectId.toString()}
-            inboxIssueId={inboxIssueId.toString()}
+            workspaceSlug={workspaceSlug}
+            projectId={projectId}
+            inboxIssueId={inboxIssueId}
           />
         ) : (
           <EmptyStateCompact

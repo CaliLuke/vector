@@ -50,12 +50,7 @@ export const ProjectViewListItem = function ProjectViewListItem(props: Props) {
       actionableItems={<ViewListItemAction parentRef={parentRef} view={view} />}
       quickActionElement={
         <div className="block md:hidden">
-          <ViewQuickActions
-            parentRef={parentRef}
-            projectId={projectId.toString()}
-            view={view}
-            workspaceSlug={workspaceSlug.toString()}
-          />
+          <ViewQuickActions parentRef={parentRef} projectId={projectId} view={view} workspaceSlug={workspaceSlug} />
         </div>
       }
       isMobile={isMobile}

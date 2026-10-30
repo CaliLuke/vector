@@ -48,11 +48,7 @@ export const RecentActivityWidget = function RecentActivityWidget(props: TRecent
   const { data: recents, isLoading } = useRecordCollection({
     queryKey: ["WORKSPACE_RECENT_ACTIVITY", workspaceSlug, filter],
     queryFn: workspaceSlug
-      ? () =>
-          workspaceService.fetchWorkspaceRecents(
-            workspaceSlug.toString(),
-            filter === filters[0].name ? undefined : filter
-          )
+      ? () => workspaceService.fetchWorkspaceRecents(workspaceSlug, filter === filters[0].name ? undefined : filter)
       : skipToken,
     staleTime: Infinity,
     refetchOnWindowFocus: false,

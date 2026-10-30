@@ -21,7 +21,7 @@ export const WorkspaceStickyHeader = function WorkspaceStickyHeader() {
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug/_projects/stickies" });
   // hooks
   const { creatingSticky } = useStickies();
-  const { stickyOperations } = useStickyOperations({ workspaceSlug: workspaceSlug?.toString() });
+  const { stickyOperations } = useStickyOperations({ workspaceSlug });
 
   return (
     <>

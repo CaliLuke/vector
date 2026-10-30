@@ -56,7 +56,7 @@ export const StickiesList = function StickiesList(props: TProps) {
   const { list, stickyIds: workspaceStickyIds, searchQuery } = useStickies();
   const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
   // sticky operations
-  const { stickyOperations } = useStickyOperations({ workspaceSlug: workspaceSlug?.toString() });
+  const { stickyOperations } = useStickyOperations({ workspaceSlug });
   // derived values
   const itemWidth = `${100 / columnCount}%`;
   const totalRows = Math.ceil(workspaceStickyIds.length / columnCount);
@@ -217,7 +217,7 @@ export const StickiesList = function StickiesList(props: TProps) {
               key={stickyId}
               className="sticky-masonry-item"
               stickyId={stickyId}
-              workspaceSlug={workspaceSlug.toString()}
+              workspaceSlug={workspaceSlug}
               itemWidth={itemWidth}
               handleDrop={handleDrop}
               isLastChild={index === workspaceStickyIds.length - 1}

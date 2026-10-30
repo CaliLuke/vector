@@ -38,7 +38,7 @@ export function WorkspaceActivityListPage(props: Props) {
     queryFn:
       workspaceSlug && userId
         ? () =>
-            userService.getUserProfileActivity(workspaceSlug.toString(), userId.toString(), {
+            userService.getUserProfileActivity(workspaceSlug, userId, {
               cursor,
               per_page: perPage,
             })

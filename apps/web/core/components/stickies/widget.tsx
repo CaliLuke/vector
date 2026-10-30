@@ -24,7 +24,7 @@ const StickiesWidgetContent = function StickiesWidgetContent() {
   const { t } = useTranslation();
   // sticky operations
   const { stickyOperations } = useStickyOperations({
-    workspaceSlug: workspaceSlug?.toString() ?? "",
+    workspaceSlug: workspaceSlug ?? "",
   });
 
   return (

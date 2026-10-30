@@ -29,7 +29,7 @@ export function IssueLabelSelect(props: TWorkItemLabelSelectProps) {
     createLabel,
     canCreate,
     scope,
-  } = useProjectLabelMutations(workspaceSlug?.toString(), projectId);
+  } = useProjectLabelMutations(workspaceSlug, projectId);
   // derived values
   const canCreateLabel = projectId && canCreate;
 

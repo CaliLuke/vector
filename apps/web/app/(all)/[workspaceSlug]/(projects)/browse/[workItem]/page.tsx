@@ -122,12 +122,7 @@ function IssueDetailsPage(): React.JSX.Element | null {
       <PageHead title={pageTitle} />
       {workspaceSlug && projectId && issueId && (
         <ProjectAuthWrapper workspaceSlug={workspaceSlug} projectId={projectId}>
-          <WorkItemDetailRoot
-            workspaceSlug={workspaceSlug}
-            projectId={projectId.toString()}
-            issueId={issueId.toString()}
-            issue={issue}
-          />
+          <WorkItemDetailRoot workspaceSlug={workspaceSlug} projectId={projectId} issueId={issueId} issue={issue} />
         </ProjectAuthWrapper>
       )}
     </>

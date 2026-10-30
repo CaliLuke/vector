@@ -113,7 +113,7 @@ export const ModuleCardItem = function ModuleCardItem(props: Props) {
         ref={parentRef}
         onClickCapture={preventCardNavigationFromControl}
         to="/$workspaceSlug/projects/$projectId/modules/$moduleId/"
-        params={{ workspaceSlug: workspaceSlug, projectId: moduleDetails.project_id, moduleId: moduleDetails.id }}
+        params={{ workspaceSlug, projectId: moduleDetails.project_id, moduleId: moduleDetails.id }}
       >
         <Card>
           <div>
@@ -176,8 +176,8 @@ export const ModuleCardItem = function ModuleCardItem(props: Props) {
             module={moduleDetails}
             parentRef={parentRef}
             moduleId={moduleId}
-            projectId={projectId.toString()}
-            workspaceSlug={workspaceSlug.toString()}
+            projectId={projectId}
+            workspaceSlug={workspaceSlug}
           />
         )}
       </div>

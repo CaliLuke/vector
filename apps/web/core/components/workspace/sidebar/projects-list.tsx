@@ -146,7 +146,7 @@ export const SidebarProjectsList = function SidebarProjectsList() {
           isOpen={isProjectModalOpen}
           onClose={() => setIsProjectModalOpen(false)}
           setToFavorite={false}
-          workspaceSlug={workspaceSlug.toString()}
+          workspaceSlug={workspaceSlug}
         />
       )}
       <div

@@ -40,7 +40,7 @@ export function PowerKProjectStatesMenu(props: Props) {
         projectId={workItemDetails.project_id ?? undefined}
         selectedStateId={workItemDetails.state_id ?? undefined}
         states={filteredProjectStates}
-        workspaceSlug={workspaceSlug?.toString()}
+        workspaceSlug={workspaceSlug}
       />
     </Command.Group>
   );

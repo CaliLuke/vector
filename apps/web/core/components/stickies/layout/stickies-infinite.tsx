@@ -36,7 +36,7 @@ export const StickiesInfinite = function StickiesInfinite() {
   return (
     <ContentWrapper ref={containerRef} className="space-y-4">
       <StickiesLayout
-        workspaceSlug={workspaceSlug.toString()}
+        workspaceSlug={workspaceSlug}
         intersectionElement={
           hasNextPage &&
           workspaceStickies?.length >= STICKIES_PER_PAGE && (

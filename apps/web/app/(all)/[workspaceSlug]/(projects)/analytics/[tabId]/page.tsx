@@ -53,7 +53,7 @@ function AnalyticsPage(): React.JSX.Element | null {
   const canPerformEmptyStateActions = canWorkspace([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   const workspaceSlug = params.workspaceSlug;
-  const ANALYTICS_TABS = useAnalyticsTabs(workspaceSlug.toString());
+  const ANALYTICS_TABS = useAnalyticsTabs(workspaceSlug);
 
   const handleTabChange = (value: string) => {
     void router.navigate({ href: `/${workspaceSlug}/analytics/${value}` });

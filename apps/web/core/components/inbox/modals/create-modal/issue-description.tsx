@@ -67,9 +67,9 @@ export const InboxIssueDescription = function InboxIssueDescription(props: TInbo
       onChange={(_description: object, description_html: string) => onChange(description_html)}
       placeholder={(isFocused, description) => t(`${getDescriptionPlaceholderI18n(isFocused, description)}`)}
       searchMentionCallback={async (payload) =>
-        await workspaceService.searchEntity(workspaceSlug?.toString() ?? "", {
+        await workspaceService.searchEntity(workspaceSlug ?? "", {
           ...payload,
-          project_id: projectId?.toString() ?? "",
+          project_id: projectId ?? "",
         })
       }
       containerClassName={containerClassName}

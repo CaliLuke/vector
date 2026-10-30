@@ -44,7 +44,7 @@ export const CyclesListHeader = function CyclesListHeader() {
     <Header>
       <Header.LeftItem>
         <Breadcrumbs onBack={router.history.back} isLoading={loader}>
-          <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
+          <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug} projectId={projectId} />
           <Breadcrumbs.Item
             component={
               <BreadcrumbLink

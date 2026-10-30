@@ -36,24 +36,24 @@ export function ProjectLevelModals(props: TProjectLevelModalsProps) {
       <CycleCreateUpdateModal
         isOpen={isCreateCycleModalOpen}
         handleClose={() => toggleCreateCycleModal(false)}
-        workspaceSlug={workspaceSlug.toString()}
-        projectId={projectId.toString()}
+        workspaceSlug={workspaceSlug}
+        projectId={projectId}
       />
       <CreateUpdateModuleModal
         isOpen={isCreateModuleModalOpen}
         onClose={() => toggleCreateModuleModal(false)}
-        workspaceSlug={workspaceSlug.toString()}
-        projectId={projectId.toString()}
+        workspaceSlug={workspaceSlug}
+        projectId={projectId}
       />
       <CreateUpdateProjectViewModal
         isOpen={isCreateViewModalOpen}
         onClose={() => toggleCreateViewModal(false)}
-        workspaceSlug={workspaceSlug.toString()}
-        projectId={projectId.toString()}
+        workspaceSlug={workspaceSlug}
+        projectId={projectId}
       />
       <CreatePageModal
-        workspaceSlug={workspaceSlug.toString()}
-        projectId={projectId.toString()}
+        workspaceSlug={workspaceSlug}
+        projectId={projectId}
         isModalOpen={createPageModal.isOpen}
         pageAccess={createPageModal.pageAccess}
         handleModalClose={() => toggleCreatePageModal({ isOpen: false })}

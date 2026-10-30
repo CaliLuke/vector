@@ -10,11 +10,11 @@ import React from "react";
 // lucide icons
 import { Minimize2, Maximize2, Circle } from "lucide-react";
 import { PlusIcon } from "@plane/propel/icons";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TIssue, ISearchIssueResponse, TIssueKanbanFilters, TIssueGroupByOptions } from "@plane/types";
 // ui
 import { CustomMenu } from "@plane/ui";
 // components
+import { addSelectedIssuesToView } from "../../add-selected-issues";
 import { ExistingIssuesListModal } from "@/components/core/modals/existing-issues-list-modal";
 import { CreateUpdateIssueModal } from "@/components/issues/issue-modal/modal";
 // constants
@@ -60,28 +60,12 @@ export const HeaderGroupByCard = function HeaderGroupByCard(props: IHeaderGroupB
   const { workspaceSlug, projectId, moduleId, cycleId } = useParams({ strict: false });
 
   const renderExistingIssueModal = moduleId || cycleId;
-  const ExistingIssuesListModalPayload = moduleId ? { module: moduleId.toString() } : { cycle: true };
+  const ExistingIssuesListModalPayload = moduleId ? { module: moduleId } : { cycle: true };
 
   const handleAddIssuesToView = async (data: ISearchIssueResponse[]) => {
     if (!workspaceSlug || !projectId) return;
 
-    const issues = data.map((i) => i.id);
-
-    try {
-      await addIssuesToView?.(issues);
-
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: "Success!",
-        message: "Work items added to the cycle successfully.",
-      });
-    } catch (_error) {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "Selected work items could not be added to the cycle. Please try again.",
-      });
-    }
+    await addSelectedIssuesToView(data, addIssuesToView);
   };
 
   return (

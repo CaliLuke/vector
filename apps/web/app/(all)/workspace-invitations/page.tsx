@@ -49,10 +49,7 @@ function WorkspaceInvitationPage(): React.JSX.Element | null {
 
   const { data: invitationDetail, error } = useQuery({
     queryKey: WORKSPACE_INVITATION(slug ?? undefined, invitation_id ?? undefined),
-    queryFn:
-      invitation_id && slug
-        ? () => workspaceService.getWorkspaceInvitation(slug.toString(), invitation_id.toString())
-        : skipToken,
+    queryFn: invitation_id && slug ? () => workspaceService.getWorkspaceInvitation(slug, invitation_id) : skipToken,
   });
 
   const respondToInvitation = async (accepted: boolean) => {

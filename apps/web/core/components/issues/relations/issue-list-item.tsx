@@ -82,7 +82,7 @@ export const RelationIssueListItem = function RelationIssueListItem(props: Props
   const relatedProjectId = issue.project_id;
 
   const workItemLink = generateWorkItemLink({
-    workspaceSlug: workspaceSlug.toString(),
+    workspaceSlug,
     projectId: issue.project_id,
     issueId: issue.id,
     projectIdentifier: projectDetail?.identifier,

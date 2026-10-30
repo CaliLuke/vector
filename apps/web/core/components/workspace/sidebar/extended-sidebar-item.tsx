@@ -93,9 +93,7 @@ export function ExtendedSidebarItem(props: TExtendedSidebarItemProps) {
   }, [isLastChild, handleOnNavigationItemDrop, disableDrag, disableDrop, item.key]);
 
   const itemHref =
-    item.key === "your_work"
-      ? `/${workspaceSlug.toString()}${item.href}${data?.id}`
-      : `/${workspaceSlug.toString()}${item.href}`;
+    item.key === "your_work" ? `/${workspaceSlug}${item.href}${data?.id}` : `/${workspaceSlug}${item.href}`;
   const isActive = itemHref === pathname;
 
   const pinNavigationItem = (key: string) => {

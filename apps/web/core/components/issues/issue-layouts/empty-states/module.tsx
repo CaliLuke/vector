@@ -67,7 +67,7 @@ export function ModuleEmptyState() {
         projectId={projectId?.toString()}
         isOpen={moduleIssuesListModal}
         handleClose={() => setModuleIssuesListModal(false)}
-        searchParams={{ module: moduleId != undefined ? moduleId.toString() : "" }}
+        searchParams={{ module: moduleId != undefined ? moduleId : "" }}
         handleOnSubmit={handleAddIssuesToModule}
       />
       <div className="grid h-full w-full place-items-center">

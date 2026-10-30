@@ -58,7 +58,7 @@ export const ModuleGanttBlock = function ModuleGanttBlock(props: Props) {
         style={blockStyle}
         onClick={() =>
           void router.navigate({
-            href: `/${workspaceSlug?.toString()}/projects/${moduleDetails?.project_id}/modules/${moduleDetails?.id}`,
+            href: `/${workspaceSlug}/projects/${moduleDetails?.project_id}/modules/${moduleDetails?.id}`,
           })
         }
       >
@@ -86,7 +86,7 @@ export const ModuleGanttSidebarBlock = function ModuleGanttSidebarBlock(props: P
       className="relative flex h-full w-full items-center gap-2"
       to="/$workspaceSlug/projects/$projectId/modules/$moduleId/"
       params={{
-        workspaceSlug: workspaceSlug?.toString(),
+        workspaceSlug,
         projectId: moduleDetails.project_id,
         moduleId: moduleDetails.id,
       }}

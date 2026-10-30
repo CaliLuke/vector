@@ -38,7 +38,7 @@ export function CycleCalendarLayout() {
       QuickActions={CycleIssueQuickActions}
       addIssuesToView={addIssuesToView}
       isCompletedCycle={isCompletedCycle}
-      viewId={cycleId?.toString()}
+      viewId={cycleId}
     />
   );
 }

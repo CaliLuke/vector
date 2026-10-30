@@ -61,7 +61,7 @@ export const TopNavigationRoot = function TopNavigationRoot() {
             variant="link"
             aria-label="Inbox"
             item={{
-              href: `/${workspaceSlug?.toString()}/notifications/`,
+              href: `/${workspaceSlug}/notifications/`,
               icon: (
                 <div className="relative">
                   <InboxIcon className="size-5" />

@@ -45,7 +45,7 @@ export const CalendarOptionsDropdown = function CalendarOptionsDropdown(props: I
   const handleLayoutChange = (layout: TCalendarLayouts, closePopover: any) => {
     if (!projectId) return;
 
-    void updateFilters(projectId.toString(), { calendar: { layout } });
+    void updateFilters(projectId, { calendar: { layout } });
 
     if (windowWidth <= 768) closePopover(); // close the popover on mobile
   };
@@ -55,7 +55,7 @@ export const CalendarOptionsDropdown = function CalendarOptionsDropdown(props: I
 
     if (!projectId) return;
 
-    void updateFilters(projectId.toString(), {
+    void updateFilters(projectId, {
       calendar: { show_weekends: !showWeekends },
     });
   };

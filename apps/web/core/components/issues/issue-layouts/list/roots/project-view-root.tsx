@@ -17,5 +17,5 @@ import { BaseListRoot } from "../base-list-root";
 export const ProjectViewListLayout = function ProjectViewListLayout() {
   const { viewId } = useParams({ from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/views/$viewId" });
 
-  return <BaseListRoot QuickActions={ProjectIssueQuickActions} viewId={viewId.toString()} />;
+  return <BaseListRoot QuickActions={ProjectIssueQuickActions} viewId={viewId} />;
 };

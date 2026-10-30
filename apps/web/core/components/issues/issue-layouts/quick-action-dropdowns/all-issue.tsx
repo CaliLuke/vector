@@ -50,7 +50,7 @@ export const AllIssueQuickActions = function AllIssueQuickActions(props: IQuickA
   // Menu items and modals using helper
   const menuItemProps: MenuItemFactoryProps = {
     issue,
-    workspaceSlug: workspaceSlug?.toString(),
+    workspaceSlug,
     projectIdentifier,
     isEditingAllowed,
     isArchivingAllowed,

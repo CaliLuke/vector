@@ -56,7 +56,7 @@ export const PageDetailsHeader = function PageDetailsHeader() {
       <Header.LeftItem>
         <div>
           <Breadcrumbs isLoading={projectQuery.isPending || pageListQuery.isPending || pageQuery.isPending}>
-            <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
+            <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug} projectId={projectId} />
             <Breadcrumbs.Item
               component={
                 <BreadcrumbLink
@@ -70,7 +70,7 @@ export const PageDetailsHeader = function PageDetailsHeader() {
             <Breadcrumbs.Item
               component={
                 <BreadcrumbNavigationSearchDropdown
-                  selectedItem={pageId?.toString() ?? ""}
+                  selectedItem={pageId ?? ""}
                   navigationItems={switcherOptions}
                   onChange={(value: string) => {
                     void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/pages/${value}` });

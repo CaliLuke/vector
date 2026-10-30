@@ -23,7 +23,7 @@ export function WorkspaceLevelModals(props: TWorkspaceLevelModalsProps) {
       <CreateProjectModal
         isOpen={isCreateProjectModalOpen}
         onClose={() => toggleCreateProjectModal(false)}
-        workspaceSlug={workspaceSlug.toString()}
+        workspaceSlug={workspaceSlug}
       />
     </>
   );

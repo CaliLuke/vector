@@ -33,7 +33,7 @@ export function DownloadActivityButton() {
     setIsDownloading(true);
 
     const csv = await userService
-      .downloadProfileActivity(workspaceSlug.toString(), userId.toString(), {
+      .downloadProfileActivity(workspaceSlug, userId, {
         date: today,
       })
       .finally(() => setIsDownloading(false));

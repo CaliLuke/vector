@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "fast",
-  "fileCount": 3747,
+  "fileCount": 3749,
   "diagnostics": [
     {
       "diagnostic": {
@@ -468,15 +468,6 @@
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `IssueDetailsPage` has a complexity of 24. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/modules/(detail)/header.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ModuleIssuesHeader` has a complexity of 17. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -1547,7 +1538,7 @@
         "filename": "apps/web/core/components/issues/issue-layouts/calendar/issue-block.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `CalendarIssueBlock` has a complexity of 21. Maximum allowed is 15."
+        "message": "function `CalendarIssueBlock` has a complexity of 20. Maximum allowed is 15."
       },
       "count": 1
     },

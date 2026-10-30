@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "full",
-  "fileCount": 3747,
+  "fileCount": 3749,
   "diagnostics": [
     {
       "diagnostic": {
@@ -1031,46 +1031,10 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/analytics/[tabId]/page.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/browse/[workItem]/header.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/browse/[workItem]/page.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function `IssueDetailsPage` has a complexity of 24. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/browse/[workItem]/page.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/extended-project-sidebar.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
       },
       "count": 1
     },
@@ -1103,57 +1067,12 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/archives/issues/(detail)/header.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 8
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/cycles/(list)/header.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/cycles/(list)/mobile-header.tsx",
         "severity": "warning",
         "code": "typescript(consistent-return)",
         "message": "Function expected no return value."
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/modules/(detail)/header.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `ModuleIssuesHeader` has a complexity of 17. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/modules/(detail)/header.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 4
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/modules/(list)/header.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
     },
     {
       "diagnostic": {
@@ -1168,37 +1087,10 @@
       "diagnostic": {
         "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/pages/(detail)/header.tsx",
         "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 3
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/pages/(detail)/header.tsx",
-        "severity": "warning",
         "code": "typescript(no-unsafe-type-assertion)",
         "message": "Unsafe type assertion: type 'ICustomSearchSelectOption[]' is more narrow than the original type."
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/pages/(list)/header.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/views/(list)/header.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
     },
     {
       "diagnostic": {
@@ -1215,15 +1107,6 @@
         "severity": "error",
         "code": "typescript(no-floating-promises)",
         "message": "Promises must be awaited, add void operator to ignore."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/stickies/header.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
       },
       "count": 1
     },
@@ -1271,15 +1154,6 @@
         "message": "Unsafe type assertion: type 'TProfileSettingsTabs' is more narrow than the original type."
       },
       "count": 3
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/app/(all)/workspace-invitations/page.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
     },
     {
       "diagnostic": {
@@ -1526,15 +1400,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/archives/archive-tabs-list.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/automation/auto-archive-automation.tsx",
         "severity": "error",
         "code": "typescript(no-misused-promises)",
@@ -1550,15 +1415,6 @@
         "message": "function `AutoCloseAutomation` has a complexity of 23. Maximum allowed is 15."
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/browse/workItem-detail.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 3
     },
     {
       "diagnostic": {
@@ -1627,15 +1483,6 @@
       "diagnostic": {
         "filename": "apps/web/core/components/core/activity.tsx",
         "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/activity.tsx",
-        "severity": "warning",
         "code": "typescript(no-unsafe-type-assertion)",
         "message": "Unsafe type assertion: type 'string | number' is more narrow than the original type."
       },
@@ -1667,15 +1514,6 @@
         "message": "This type conversion does not change the type or value of the expression."
       },
       "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/core/modals/gpt-assistant-popover.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
     },
     {
       "diagnostic": {
@@ -1856,24 +1694,6 @@
         "message": "Unsafe type assertion: type 'keyof TCycleFilters' is more narrow than the original type."
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/archived-cycles/root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/cycles/list/cycle-list-item-action.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 3
     },
     {
       "diagnostic": {
@@ -2669,15 +2489,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/home/home-dashboard-widgets.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 3
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/home/root.tsx",
         "severity": "error",
         "code": "typescript(no-misused-promises)",
@@ -2727,24 +2538,6 @@
         "severity": "warning",
         "code": "promise(always-return)",
         "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/home/widgets/recents/index.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/home/widgets/recents/issue.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
       },
       "count": 1
     },
@@ -2867,30 +2660,12 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/inbox/modals/create-modal/issue-description.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/inbox/modals/snooze-issue-modal.tsx",
         "severity": "warning",
         "code": "react(purity)",
         "message": "Cannot call impure function during render"
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/inbox/root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 5
     },
     {
       "diagnostic": {
@@ -2972,15 +2747,6 @@
         "message": "This is the default value for this type parameter, so it can be omitted."
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/header.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
     },
     {
       "diagnostic": {
@@ -3263,15 +3029,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/dropdowns/options-dropdown.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-layouts/calendar/issue-block-root.tsx",
         "severity": "warning",
         "code": "typescript(consistent-return)",
@@ -3284,18 +3041,9 @@
         "filename": "apps/web/core/components/issues/issue-layouts/calendar/issue-block.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `CalendarIssueBlock` has a complexity of 21. Maximum allowed is 15."
+        "message": "function `CalendarIssueBlock` has a complexity of 20. Maximum allowed is 15."
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/issue-block.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
     },
     {
       "diagnostic": {
@@ -3305,51 +3053,6 @@
         "message": "function `CalendarIssueBlocks` has a complexity of 16. Maximum allowed is 15."
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/roots/cycle-root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/roots/module-root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/calendar/roots/project-view-root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/empty-states/module.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/empty-states/profile-view.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
     },
     {
       "diagnostic": {
@@ -3506,15 +3209,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/kanban/headers/group-by-card.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-layouts/kanban/kanban-group.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
@@ -3528,15 +3222,6 @@
         "severity": "warning",
         "code": "eslint(complexity)",
         "message": "function has a complexity of 21. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/kanban/roots/project-view-root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
       },
       "count": 1
     },
@@ -3623,15 +3308,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/list/headers/group-by-card.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-layouts/list/list-group.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
@@ -3663,15 +3339,6 @@
         "severity": "warning",
         "code": "unicorn(consistent-function-scoping)",
         "message": "Function `canEditPropertiesBasedOnProject` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/list/roots/project-view-root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
       },
       "count": 1
     },
@@ -3722,24 +3389,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/all-issue.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/archived-issue.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-layouts/quick-add/button/gantt.tsx",
         "severity": "warning",
         "code": "typescript(no-unnecessary-template-expression)",
@@ -3762,15 +3411,6 @@
         "severity": "warning",
         "code": "jsx-a11y(no-static-element-interactions)",
         "message": "Static HTML elements with event handlers require a role."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/roots/archived-issue-layout-root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
       },
       "count": 1
     },
@@ -3875,15 +3515,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/spreadsheet/columns/sub-issue-column.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-layouts/spreadsheet/issue-column.tsx",
         "severity": "error",
         "code": "typescript(no-misused-promises)",
@@ -3926,24 +3557,6 @@
         "message": "Static HTML elements with event handlers require a role."
       },
       "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/spreadsheet/roots/cycle-root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-layouts/spreadsheet/roots/project-view-root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
     },
     {
       "diagnostic": {
@@ -4192,15 +3805,6 @@
       "diagnostic": {
         "filename": "apps/web/core/components/issues/relations/issue-list-item.tsx",
         "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/relations/issue-list-item.tsx",
-        "severity": "warning",
         "code": "typescript(no-useless-default-assignment)",
         "message": "Default value is useless because the property is not nullish. This default assignment will never be used."
       },
@@ -4221,15 +3825,6 @@
         "severity": "warning",
         "code": "typescript(consistent-return)",
         "message": "Function expected a return value."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/issues/select/dropdown.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
       },
       "count": 1
     },
@@ -4307,24 +3902,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/modals/project-level.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 8
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modals/workspace-level.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/modules/analytics-sidebar/root.tsx",
         "severity": "error",
         "code": "typescript(no-misused-promises)",
@@ -4361,24 +3938,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/modules/archived-modules/root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/archived-modules/view.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/modules/dropdowns/order-by.tsx",
         "severity": "warning",
         "code": "typescript(no-unsafe-type-assertion)",
@@ -4388,30 +3947,12 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/modules/gantt-chart/blocks.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/modules/gantt-chart/modules-list-layout.tsx",
         "severity": "error",
         "code": "typescript(no-misused-promises)",
         "message": "Promise-returning function provided to attribute where a void return was expected."
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/module-card-item.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
     },
     {
       "diagnostic": {
@@ -4428,33 +3969,6 @@
         "severity": "warning",
         "code": "typescript(no-unsafe-type-assertion)",
         "message": "Unsafe type assertion: type 'keyof IModule' is more narrow than the original type."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/module-list-item-action.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/module-list-item.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/module-peek-overview.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
       },
       "count": 1
     },
@@ -4554,15 +4068,6 @@
         "severity": "warning",
         "code": "jsx-a11y(prefer-tag-over-role)",
         "message": "Prefer `button` over `role` attribute `button`."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/navigation/top-navigation-root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
       },
       "count": 1
     },
@@ -4671,15 +4176,6 @@
         "severity": "warning",
         "code": "react(set-state-in-effect)",
         "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/pages/editor/ai/menu.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
       },
       "count": 1
     },
@@ -4874,15 +4370,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/pages/navigation-pane/tab-panels/assets.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/pages/version/editor.tsx",
         "severity": "warning",
         "code": "typescript(no-unsafe-type-assertion)",
@@ -5036,15 +4523,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/power-k/hooks/use-context-indicator.ts",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/power-k/menus/labels.tsx",
         "severity": "warning",
         "code": "react(no-unstable-nested-components)",
@@ -5087,15 +4565,6 @@
         "message": "Do not define components during render."
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/power-k/projects-app-provider.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 3
     },
     {
       "diagnostic": {
@@ -5270,15 +4739,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/power-k/ui/pages/context-based/work-item/states-menu.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/power-k/ui/pages/open-entity/project-settings-menu.tsx",
         "severity": "warning",
         "code": "oxc(no-map-spread)",
@@ -5375,33 +4835,6 @@
         "message": "Promise-returning function provided to attribute where a void return was expected."
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/profile/activity/download-button.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/profile/activity/workspace-activity-list.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/profile/overview/activity.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
     },
     {
       "diagnostic": {
@@ -5576,15 +5009,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/project/card.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/project/dropdowns/filters/root.tsx",
         "severity": "warning",
         "code": "jsx-a11y(no-autofocus)",
@@ -5627,15 +5051,6 @@
         "message": "Unsafe type assertion: type 'keyof IProject' is more narrow than the original type."
       },
       "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/projects/settings/intake/header.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 4
     },
     {
       "diagnostic": {
@@ -5882,15 +5297,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/stickies/layout/stickies-infinite.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/stickies/layout/stickies-list.tsx",
         "severity": "error",
         "code": "typescript(no-floating-promises)",
@@ -5913,15 +5319,6 @@
         "severity": "warning",
         "code": "typescript(consistent-return)",
         "message": "Function expected no return value."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/stickies/layout/stickies-list.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
       },
       "count": 2
     },
@@ -5963,15 +5360,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/stickies/layout/stickies-truncated.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/stickies/layout/sticky-dnd-wrapper.tsx",
         "severity": "warning",
         "code": "typescript(consistent-return)",
@@ -5994,15 +5382,6 @@
         "severity": "warning",
         "code": "jsx-a11y(prefer-tag-over-role)",
         "message": "Prefer `output` over `role` attribute `status`."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/stickies/widget.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
       },
       "count": 1
     },
@@ -6188,24 +5567,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/views/view-list-item-action.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 6
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/views/view-list-item.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/web-hooks/create-webhook-modal.tsx",
         "severity": "warning",
         "code": "typescript(no-unsafe-type-assertion)",
@@ -6305,15 +5666,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/workspace-notifications/sidebar/root.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 3
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/workspace/invite-modal/fields.tsx",
         "severity": "warning",
         "code": "typescript(no-unsafe-enum-comparison)",
@@ -6404,15 +5756,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/workspace/sidebar/extended-sidebar-item.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 2
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/workspace/sidebar/favorites/favorite-folder.tsx",
         "severity": "warning",
         "code": "typescript(consistent-return)",
@@ -6428,15 +5771,6 @@
         "message": "Template literal expression is unnecessary and can be simplified."
       },
       "count": 2
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/sidebar/favorites/favorite-folder.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
     },
     {
       "diagnostic": {
@@ -6462,15 +5796,6 @@
         "severity": "warning",
         "code": "typescript(consistent-return)",
         "message": "Function expected no return value."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/sidebar/favorites/favorites-menu.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
       },
       "count": 1
     },
@@ -6534,24 +5859,6 @@
         "severity": "warning",
         "code": "typescript(consistent-return)",
         "message": "Function expected no return value."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/sidebar/projects-list.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/sidebar/sidebar-item.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unnecessary-type-conversion)",
-        "message": "This type conversion does not change the type or value of the expression."
       },
       "count": 1
     },

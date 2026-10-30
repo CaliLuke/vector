@@ -32,7 +32,7 @@ export function ArchivedIssueLayoutRoot() {
   return (
     <ProjectLevelWorkItemFiltersHOC
       entityType={EIssuesStoreType.ARCHIVED}
-      entityId={projectId?.toString()}
+      entityId={projectId}
       filtersToShowByLayout={ISSUE_DISPLAY_FILTERS_BY_PAGE.archived_issues.filters}
       initialWorkItemFilters={workItemFilters}
       updateFilters={preferences.updateRichFilters}

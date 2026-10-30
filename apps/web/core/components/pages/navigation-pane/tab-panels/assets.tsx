@@ -46,7 +46,7 @@ function AssetItem(props: AssetItemProps) {
         getEditorAssetSrc({
           assetId: asset.src,
           projectId,
-          workspaceSlug: workspaceSlug.toString(),
+          workspaceSlug,
         }) ?? ""
       );
     }
@@ -61,7 +61,7 @@ function AssetItem(props: AssetItemProps) {
         getEditorAssetDownloadSrc({
           assetId: asset.src,
           projectId,
-          workspaceSlug: workspaceSlug.toString(),
+          workspaceSlug,
         }) ?? ""
       );
     }

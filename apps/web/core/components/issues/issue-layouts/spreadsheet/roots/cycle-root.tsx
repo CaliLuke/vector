@@ -39,7 +39,7 @@ export const CycleSpreadsheetLayout = function CycleSpreadsheetLayout() {
       QuickActions={CycleIssueQuickActions}
       canEditPropertiesBasedOnProject={canEditIssueProperties}
       isCompletedCycle={isCompletedCycle}
-      viewId={cycleId.toString()}
+      viewId={cycleId}
     />
   );
 };

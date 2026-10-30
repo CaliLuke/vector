@@ -100,8 +100,8 @@ export const ModuleListItemAction = function ModuleListItemAction(props: Props) 
             module={moduleDetails}
             parentRef={parentRef}
             moduleId={moduleId}
-            projectId={projectId.toString()}
-            workspaceSlug={workspaceSlug.toString()}
+            projectId={projectId}
+            workspaceSlug={workspaceSlug}
           />
         </div>
       )}
