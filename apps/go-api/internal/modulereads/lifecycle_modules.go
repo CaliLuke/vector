@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -784,10 +783,7 @@ func validateModuleWriteFields(fields map[string]any, surrogates map[string][]st
 	}
 	if raw, present := fields["sort_order"]; present {
 		value, message := djangoinput.FloatField(raw)
-		if message != "" || math.IsInf(value, 0) || math.IsNaN(value) {
-			if message == "" {
-				message = "A valid number is required."
-			}
+		if message != "" {
 			failures["sort_order"] = []string{message}
 		} else {
 			values["sort_order"] = value

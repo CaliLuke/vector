@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"math"
 	"testing"
 	"time"
 
@@ -63,16 +62,16 @@ func TestLegacyWritableFieldsAggregatesDeclaredFieldErrors(t *testing.T) {
 	}
 }
 
-func TestLegacyWritableFieldsUsesDRFEmptyAndNonfiniteRules(t *testing.T) {
-	fields, err := legacyWritableFields(map[string]string{"is_archived": "", "size": "nan"})
+func TestLegacyWritableFieldsPreservesEmptyFieldRules(t *testing.T) {
+	fields, err := legacyWritableFields(map[string]string{"is_archived": "", "size": "37.5"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if _, ok := fields["is_archived"]; ok {
 		t.Fatalf("empty HTML boolean should be omitted: %#v", fields)
 	}
-	if number, ok := fields["size"].(float64); !ok || !math.IsNaN(number) {
-		t.Fatalf("size = %#v, want NaN", fields["size"])
+	if fields["size"] != float64(37.5) {
+		t.Fatalf("size = %#v, want 37.5", fields["size"])
 	}
 	for _, value := range []string{"   ", "null", "not-a-uuid"} {
 		if _, err := legacyWritableFields(map[string]string{"workspace": value}); err == nil {
@@ -95,5 +94,27 @@ func TestTaskOriginAndActivityJSONUseConfiguredPythonRepresentation(t *testing.T
 	}
 	if got, want := string(encoded), `{"fraction":37.5,"size":0.0}`; got != want {
 		t.Fatalf("python activity JSON = %s, want %s", got, want)
+	}
+}
+
+func TestLegacyWritableFieldsRejectsNonfiniteSize(t *testing.T) {
+	for _, value := range []string{"NaN", "Infinity", "-Infinity", "1e309"} {
+		t.Run(value, func(t *testing.T) {
+			fields, err := legacyWritableFields(map[string]string{"size": value})
+			var failure *djangoapi.HTTPError
+			if !errors.As(err, &failure) || failure.Status != 400 {
+				t.Fatalf("error=%v, want HTTP 400", err)
+			}
+			encoded, marshalErr := json.Marshal(failure.Body)
+			if marshalErr != nil {
+				t.Fatal(marshalErr)
+			}
+			if string(encoded) != `{"size":["A valid number is required."]}` {
+				t.Fatalf("body=%s", encoded)
+			}
+			if fields != nil {
+				t.Fatalf("invalid input returned writable fields: %v", fields)
+			}
+		})
 	}
 }

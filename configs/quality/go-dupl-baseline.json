@@ -2334,15 +2334,6 @@
     },
     {
       "fingerprint": [
-        "project_label_writes/design/design.go",
-        "project_label_writes/design/design.go",
-        "0e1786124919afcf63186fb07f42676a647a22239988b8cdf06913eeff018d46",
-        "b82acc13a4919df09ae110e94a4d0d4c5d0cd01f77a6e71894bf460ad36e00ed"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
         "project_membership_reads.go",
         "project_membership_reads.go",
         "22c1c724c7a31490b3b675dc1b550dea11c883acf9693ebeac6758940c11fa21",

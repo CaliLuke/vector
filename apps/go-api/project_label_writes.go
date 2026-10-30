@@ -134,8 +134,7 @@ func (s *projectLabelWritesService) write(ctx context.Context, slug, project, id
 		return nil, nil
 	}
 	if math.IsNaN(label.SortOrder) || math.IsInf(label.SortOrder, 0) {
-		MarkReadServiceDjangoHTML500(ctx)
-		return nil, labelWriteError(errors.New("Django cannot render a nonfinite label sort_order"))
+		return nil, labelWriteError(errors.New("label sort order is not finite"))
 	}
 	parent, projectValue := loom.NullValue[string](), loom.NullValue[string]()
 	if label.Parent != nil {

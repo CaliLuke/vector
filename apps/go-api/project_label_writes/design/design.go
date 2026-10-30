@@ -105,7 +105,7 @@ var _ = Service("ProjectLabelWrites", func() {
 			Attribute("slug", String)
 			Required("project_id", "slug")
 		})
-		labelErrors(true)
+		labelErrors()
 		Result(Label)
 		HTTP(func() {
 			Meta("openapi:tag:projects")
@@ -165,31 +165,7 @@ var _ = Service("ProjectLabelWrites", func() {
 		Meta("openapi:extension:x-plane-permission-classes", "[\"plane.app.permissions.project.ProjectBasePermission\"]")
 		Meta("openapi:extension:x-plane-view", "\"plane.app.views.issue.label.LabelViewSet\"")
 		SessionSecurity(PlaneSession)
-		Payload(func() {
-			Attribute("pk", String, func() {
-				Pattern("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
-			})
-			Attribute("project_id", String, func() {
-				Pattern("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
-			})
-			Attribute("slug", String)
-			Required("pk", "project_id", "slug")
-		})
-		labelErrors(true)
-		Result(Label)
-		HTTP(func() {
-			Meta("openapi:tag:projects")
-			PATCH("/api/workspaces/{slug}/projects/{project_id}/issue-labels/{pk}/")
-			Param("pk")
-			Param("project_id")
-			Param("slug")
-			SkipRequestBodyEncodeDecode()
-			OpenAPIRequestBodyTypes(LabelPatchRequest, []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"}, false)
-			Response(200, func() {
-				ContentType("application/json")
-				OpenAPIBody(Label)
-			})
-		})
+		labelUpdateContract(func() { PATCH("/api/workspaces/{slug}/projects/{project_id}/issue-labels/{pk}/") }, LabelPatchRequest, false)
 	})
 	Method("Update", func() {
 		Description("This enables timezone conversion according\nto the user set timezone")
@@ -202,31 +178,7 @@ var _ = Service("ProjectLabelWrites", func() {
 		Meta("openapi:extension:x-plane-permission-classes", "[\"plane.app.permissions.project.ProjectBasePermission\"]")
 		Meta("openapi:extension:x-plane-view", "\"plane.app.views.issue.label.LabelViewSet\"")
 		SessionSecurity(PlaneSession)
-		Payload(func() {
-			Attribute("pk", String, func() {
-				Pattern("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
-			})
-			Attribute("project_id", String, func() {
-				Pattern("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
-			})
-			Attribute("slug", String)
-			Required("pk", "project_id", "slug")
-		})
-		labelErrors(true)
-		Result(Label)
-		HTTP(func() {
-			Meta("openapi:tag:projects")
-			PUT("/api/workspaces/{slug}/projects/{project_id}/issue-labels/{pk}/")
-			Param("pk")
-			Param("project_id")
-			Param("slug")
-			SkipRequestBodyEncodeDecode()
-			OpenAPIRequestBodyTypes(LabelRequest, []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"}, true)
-			Response(200, func() {
-				ContentType("application/json")
-				OpenAPIBody(Label)
-			})
-		})
+		labelUpdateContract(func() { PUT("/api/workspaces/{slug}/projects/{project_id}/issue-labels/{pk}/") }, LabelRequest, true)
 	})
 	Method("CollectionOptions", func() {
 		SessionSecurity(PlaneSession)
@@ -265,6 +217,34 @@ var _ = Service("ProjectLabelWrites", func() {
 
 })
 
+func labelUpdateContract(route func(), requestType any, required bool) {
+	Payload(func() {
+		Attribute("pk", String, func() {
+			Pattern("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+		})
+		Attribute("project_id", String, func() {
+			Pattern("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+		})
+		Attribute("slug", String)
+		Required("pk", "project_id", "slug")
+	})
+	labelErrors()
+	Result(Label)
+	HTTP(func() {
+		Meta("openapi:tag:projects")
+		route()
+		Param("pk")
+		Param("project_id")
+		Param("slug")
+		SkipRequestBodyEncodeDecode()
+		OpenAPIRequestBodyTypes(requestType, []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"}, required)
+		Response(200, func() {
+			ContentType("application/json")
+			OpenAPIBody(Label)
+		})
+	})
+}
+
 var PlaneSession = SessionAuth("PlaneSession", func() {
 	CookieTransport(ImportedPlaneSessionCookieSecurity, "", func() { CookieName("session-id") })
 })
@@ -286,9 +266,7 @@ func labelErrorFields() {
 	Attribute("non_field_errors", ArrayOf(String))
 }
 
-// HTML renderer failures originate in the shared Django compatibility boundary.
-// The generated contract records this additional response representation.
-func labelErrors(rendererFailure ...bool) {
+func labelErrors() {
 	for _, status := range []struct {
 		name string
 		code int
@@ -306,10 +284,7 @@ func labelErrors(rendererFailure ...bool) {
 				ContentType("application/json")
 				ErrorNameFromStatus()
 				Body(LabelHTTPError)
-				if status.code == 500 && len(rendererFailure) > 0 && rendererFailure[0] {
-					Description("JSON application failure, or Django HTML server error if rendering a saved nonfinite sort_order fails.")
-					Meta("openapi:response:extension:x-plane-renderer-failure", `{"content_type":"text/html; charset=utf-8","schema":{"type":"string"},"boundary":"shared Django renderer compatibility"}`)
-				}
+
 			})
 		})
 	}

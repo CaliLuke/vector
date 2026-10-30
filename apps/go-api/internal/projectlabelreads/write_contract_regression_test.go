@@ -2,7 +2,6 @@ package projectlabelreads
 
 import (
 	"context"
-	"math"
 	"net/http"
 	"strings"
 	"testing"
@@ -39,18 +38,15 @@ func TestLabelWriteOptionalFormSortOrder(t *testing.T) {
 }
 
 func TestLabelWriteFloatFieldGuards(t *testing.T) {
-	for _, test := range []struct {
-		name, value, message string
-		wantInfinity         bool
-	}{
-		{"JSON empty stays invalid", `""`, "A valid number is required.", false},
-		{"string size limit", `"` + strings.Repeat("0", 1001) + `"`, "String value too large.", false},
-		{"size checked before trimming", `"` + strings.Repeat(" ", 1000) + `1"`, "String value too large.", false},
-		{"string boundary", `"` + strings.Repeat("0", 1000) + `"`, "", false},
-		{"integer overflow", "1" + strings.Repeat("0", 309), "Integer value too large to convert to float", false},
-		{"negative integer overflow", "-1" + strings.Repeat("0", 309), "Integer value too large to convert to float", false},
-		{"float overflow retains source persistence", "1e309", "", true},
-		{"string overflow retains source persistence", `"1e309"`, "", true},
+	for _, test := range []struct{ name, value, message string }{
+		{"JSON empty stays invalid", `""`, "A valid number is required."},
+		{"string size limit", `"` + strings.Repeat("0", 1001) + `"`, "String value too large."},
+		{"size checked before trimming", `"` + strings.Repeat(" ", 1000) + `1"`, "String value too large."},
+		{"string boundary", `"` + strings.Repeat("0", 1000) + `"`, ""},
+		{"integer overflow", "1" + strings.Repeat("0", 309), "Integer value too large to convert to float"},
+		{"negative integer overflow", "-1" + strings.Repeat("0", 309), "Integer value too large to convert to float"},
+		{"float overflow", "1e309", "A valid number is required."},
+		{"string overflow", `"1e309"`, "A valid number is required."},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			db := &parentWriteDatabase{label: existingWriteLabel()}
@@ -66,8 +62,8 @@ func TestLabelWriteFloatFieldGuards(t *testing.T) {
 			if err != nil || !db.saved {
 				t.Fatalf("saved=%v err=%v", db.saved, err)
 			}
-			if test.wantInfinity != math.IsInf(label.SortOrder, 1) || (!test.wantInfinity && label.SortOrder != 0) {
-				t.Fatalf("order = %v, want infinity=%v", label.SortOrder, test.wantInfinity)
+			if label.SortOrder != 0 {
+				t.Fatalf("order=%v, want zero", label.SortOrder)
 			}
 		})
 	}

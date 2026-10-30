@@ -3,7 +3,6 @@ package projectlabelreads
 import (
 	"context"
 	"errors"
-	"math"
 	"net/http"
 	"reflect"
 	"strings"
@@ -211,39 +210,32 @@ func TestPatchRejectsParentOutsideProject(t *testing.T) {
 	}
 }
 
-func TestPatchNaNSortOrderIsPassedToPersistence(t *testing.T) {
-	db := &parentWriteDatabase{label: existingWriteLabel()}
-	repository := newWriteRepository(t, db)
-
-	label, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, http.MethodPatch, strings.NewReader(`{"sort_order":"NaN"}`), "application/json")
-
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !db.saved || !math.IsNaN(label.SortOrder) {
-		t.Fatalf("saved=%v sort_order=%v", db.saved, label.SortOrder)
-	}
-	if !math.IsNaN(db.args[len(db.args)-1][4].(float64)) {
-		t.Fatalf("persisted sort_order = %v", db.args[len(db.args)-1][4])
+func TestPatchRejectsNonfiniteSortOrderBeforePersistence(t *testing.T) {
+	for _, value := range []string{`"NaN"`, `"Infinity"`, `"-Infinity"`, `"1e10000"`, `1e309`} {
+		t.Run(value, func(t *testing.T) {
+			db := &parentWriteDatabase{label: existingWriteLabel()}
+			repository := newWriteRepository(t, db)
+			_, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, http.MethodPatch, strings.NewReader(`{"sort_order":`+value+`}`), "application/json")
+			assertWriteHTTPError(t, err, 400, map[string]any{"sort_order": []string{"A valid number is required."}})
+			if db.saved {
+				t.Fatal("invalid order reached persistence")
+			}
+		})
 	}
 }
 
-func TestPatchPythonFloatSyntaxAndOverflowArePersisted(t *testing.T) {
+func TestPatchPythonFloatSyntaxIsPersisted(t *testing.T) {
 	for _, scenario := range []struct {
 		name, body string
 		want       float64
-		infinite   bool
 	}{
-		{"Unicode decimal digits", `{"sort_order":"١٢"}`, 12, false},
-		{"digit separator", `{"sort_order":"1_000"}`, 1000, false},
-		{"overflow", `{"sort_order":"1e10000"}`, 0, true},
+		{"Unicode decimal digits", `{"sort_order":"١٢"}`, 12},
+		{"digit separator", `{"sort_order":"1_000"}`, 1000},
 	} {
 		t.Run(scenario.name, func(t *testing.T) {
 			db := &parentWriteDatabase{label: existingWriteLabel()}
 			repository := newWriteRepository(t, db)
-
 			label, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, http.MethodPatch, strings.NewReader(scenario.body), "application/json")
-
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -251,11 +243,7 @@ func TestPatchPythonFloatSyntaxAndOverflowArePersisted(t *testing.T) {
 				t.Fatal("sort order was not persisted")
 			}
 			persisted := db.args[len(db.args)-1][4].(float64)
-			if scenario.infinite {
-				if !math.IsInf(label.SortOrder, 1) || !math.IsInf(persisted, 1) {
-					t.Fatalf("result=%v persisted=%v, want +Inf", label.SortOrder, persisted)
-				}
-			} else if label.SortOrder != scenario.want || persisted != scenario.want {
+			if label.SortOrder != scenario.want || persisted != scenario.want {
 				t.Fatalf("result=%v persisted=%v, want %v", label.SortOrder, persisted, scenario.want)
 			}
 		})

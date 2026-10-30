@@ -177,7 +177,7 @@ func (s *customViewCreationService) CreateProjectView(ctx context.Context, paylo
 	if raw, ok := input.Fields["sort_order"]; ok {
 		value, message := djangoinput.FloatField(raw)
 		if message != "" {
-			return s.internal()
+			return s.error(http.StatusBadRequest, map[string]any{"sort_order": []string{message}})
 		}
 		changes.SortOrder, changes.HasSortOrder = value, true
 	}

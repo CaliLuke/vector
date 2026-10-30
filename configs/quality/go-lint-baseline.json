@@ -810,10 +810,6 @@
       "count": 2
     },
     {
-      "fingerprint": ["staticcheck", "project_label_writes.go", "ST1005: error strings should not be capitalized"],
-      "count": 1
-    },
-    {
       "fingerprint": ["staticcheck", "stickies.go", "ST1005: error strings should not be capitalized"],
       "count": 1
     }

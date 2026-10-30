@@ -125,8 +125,8 @@
             "description": "status_415: Unsupported Media Type response."
           },
           "500": {
-            "$ref": "#/components/responses/InternalServerErrorError_ec60f68c",
-            "description": "status_500: JSON application failure, or Django HTML server error if rendering a saved nonfinite sort_order fails."
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
           }
         },
         "security": [
@@ -349,8 +349,8 @@
             "description": "status_415: Unsupported Media Type response."
           },
           "500": {
-            "$ref": "#/components/responses/InternalServerErrorError_ec60f68c",
-            "description": "status_500: JSON application failure, or Django HTML server error if rendering a saved nonfinite sort_order fails."
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
           }
         },
         "security": [
@@ -422,8 +422,8 @@
             "description": "status_415: Unsupported Media Type response."
           },
           "500": {
-            "$ref": "#/components/responses/InternalServerErrorError_ec60f68c",
-            "description": "status_500: JSON application failure, or Django HTML server error if rendering a saved nonfinite sort_order fails."
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
           }
         },
         "security": [
@@ -757,23 +757,6 @@
             "schema": {
               "$ref": "#/components/schemas/LabelHTTPError_bd9d5644f0a89728"
             }
-          }
-        }
-      },
-      "InternalServerErrorError_ec60f68c": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/LabelHTTPError_bd9d5644f0a89728"
-            }
-          }
-        },
-        "description": "Internal Server Error response.",
-        "x-plane-renderer-failure": {
-          "boundary": "shared Django renderer compatibility",
-          "content_type": "text/html; charset=utf-8",
-          "schema": {
-            "type": "string"
           }
         }
       },

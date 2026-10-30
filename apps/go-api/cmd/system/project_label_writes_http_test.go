@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"math"
 	"net/http"
@@ -133,27 +134,40 @@ func TestProjectLabelWritesMiddlewareOrderAndEffects(t *testing.T) {
 	}
 }
 
-func TestProjectLabelWritesNaNRendererFailureReturnsHTMLAfterPersistence(t *testing.T) {
-	events := []string{}
-	project := labelWriteHTTPProject
-	repository := &labelWriteHTTPRepository{events: &events, label: &store.Label{ID: labelWriteHTTPID, Name: "Alpha", ProjectID: &project, WorkspaceID: "workspace", SortOrder: math.NaN()}}
-	cache := &labelWriteHTTPCache{events: &events}
-	sessions := &publicProjectMetadataThrottleStub{userID: "project-admin", userTimezone: "UTC"}
-	logger := &apiV1ActivityLoggerStub{}
-	mux := newProjectLabelWriteTestMux(t, repository, cache, sessions, logger, defaultFileSizeLimit)
-	request := httptest.NewRequest(http.MethodPost, "/api/workspaces/demo/projects/"+labelWriteHTTPProject+"/issue-labels/", strings.NewReader(`{"name":"Alpha"}`))
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("X-Api-Key", "audit-only")
-	request.AddCookie(&http.Cookie{Name: "session-id", Value: "session"})
-	response := httptest.NewRecorder()
+func TestProjectLabelWritesUnexpectedNonfiniteResultUsesJSONError(t *testing.T) {
+	for _, test := range []struct {
+		name  string
+		order float64
+	}{
+		{"NaN", math.NaN()}, {"positive infinity", math.Inf(1)}, {"negative infinity", math.Inf(-1)},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			events := []string{}
+			project := labelWriteHTTPProject
+			repository := &labelWriteHTTPRepository{events: &events, label: &store.Label{ID: labelWriteHTTPID, Name: "Alpha", ProjectID: &project, WorkspaceID: "workspace", SortOrder: test.order}}
+			cache := &labelWriteHTTPCache{events: &events}
+			sessions := &publicProjectMetadataThrottleStub{userID: "project-admin", userTimezone: "UTC"}
+			logger := &apiV1ActivityLoggerStub{}
+			mux := newProjectLabelWriteTestMux(t, repository, cache, sessions, logger, defaultFileSizeLimit)
+			request := httptest.NewRequest(http.MethodPost, "/api/workspaces/demo/projects/"+labelWriteHTTPProject+"/issue-labels/", strings.NewReader(`{"name":"Alpha"}`))
+			request.Header.Set("Content-Type", "application/json")
+			request.Header.Set("X-Api-Key", "audit-only")
+			request.AddCookie(&http.Cookie{Name: "session-id", Value: "session"})
+			response := httptest.NewRecorder()
 
-	mux.ServeHTTP(response, request)
+			mux.ServeHTTP(response, request)
 
-	if response.Code != 500 || response.Header().Get("Content-Type") != "text/html; charset=utf-8" || response.Body.String() != string(djangoServerErrorBody) {
-		t.Fatalf("renderer status=%d content-type=%s body=%s", response.Code, response.Header().Get("Content-Type"), response.Body.String())
-	}
-	if !reflect.DeepEqual(events, []string{"authorize:POST", "cache", "authorize:DELETE", "dispatch:POST"}) || len(logger.records) != 1 || logger.records[0].ResponseCode != 500 {
-		t.Fatalf("events=%v audit=%v", events, logger.records)
+			var result map[string]any
+			if err := json.Unmarshal(response.Body.Bytes(), &result); err != nil {
+				t.Fatalf("error response must be JSON: %s: %v", response.Body.String(), err)
+			}
+			if response.Code != 500 || !strings.HasPrefix(response.Header().Get("Content-Type"), "application/json") || !reflect.DeepEqual(result, map[string]any{"error": "Something went wrong please try again later"}) {
+				t.Fatalf("status=%d content-type=%s body=%s", response.Code, response.Header().Get("Content-Type"), response.Body.String())
+			}
+			if !reflect.DeepEqual(events, []string{"authorize:POST", "cache", "authorize:DELETE", "dispatch:POST"}) || len(logger.records) != 1 || logger.records[0].ResponseCode != 500 {
+				t.Fatalf("events=%v audit=%v", events, logger.records)
+			}
+		})
 	}
 }
 

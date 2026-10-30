@@ -479,6 +479,9 @@ func FloatField(input any) (float64, string) {
 	if integer && math.IsInf(value, 0) {
 		return 0, "Integer value too large to convert to float"
 	}
+	if math.IsNaN(value) || math.IsInf(value, 0) {
+		return 0, "A valid number is required."
+	}
 	return value, ""
 }
 

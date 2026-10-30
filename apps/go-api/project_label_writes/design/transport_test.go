@@ -191,8 +191,7 @@ func TestGeneratedLabelWritesRejectMalformedPathUUID(t *testing.T) {
 }
 
 func TestGeneratedLabelWritesPreserveValidationArraysAndJSONServerError(t *testing.T) {
-	// Explicit JSON error bodies preserve Django's field-keyed validation shape.
-	// The separate Django HTML renderer failure is verified by parity coverage.
+	// Field validation and unexpected failures share the JSON error contract.
 	serverMessage := "Something went wrong please try again later"
 	for _, tc := range []struct {
 		name        string
@@ -435,8 +434,7 @@ func TestGeneratedLabelWritesOpenAPIContract(t *testing.T) {
 				t.Fatalf("%s missing %s", target.method, media)
 			}
 		}
-		// OpenAPI has one response object per status. The shared HTML renderer
-		// exception is documented alongside the JSON 500 response.
+		// Unexpected failures expose the JSON contract without a legacy HTML exception.
 		var responseRefs struct {
 			Responses map[string]struct {
 				Ref string `json:"$ref"`
@@ -448,82 +446,13 @@ func TestGeneratedLabelWritesOpenAPIContract(t *testing.T) {
 		ref := strings.TrimPrefix(responseRefs.Responses["500"].Ref, "#/components/responses/")
 		var failure struct {
 			Content  map[string]json.RawMessage
-			Renderer struct {
-				ContentType string `json:"content_type"`
-				Boundary    string
-			} `json:"x-plane-renderer-failure"`
+			Renderer json.RawMessage `json:"x-plane-renderer-failure"`
 		}
 		if err := json.Unmarshal(doc.Components.Responses[ref], &failure); err != nil {
 			t.Fatal(err)
 		}
-		if _, ok := failure.Content["application/json"]; !ok || failure.Renderer.ContentType != "text/html; charset=utf-8" || failure.Renderer.Boundary == "" {
-			t.Fatalf("%s missing renderer-failure documentation: %+v", target.method, failure)
+		if _, ok := failure.Content["application/json"]; !ok || len(failure.Content) != 1 || len(failure.Renderer) != 0 {
+			t.Fatalf("%s unexpected error response contract: %+v", target.method, failure)
 		}
-	}
-}
-
-func TestGeneratedLabelWritesSharedResponseKeepsOperationDescription(t *testing.T) {
-	data, err := os.ReadFile("../gen/http/openapi.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	var document struct {
-		Paths      map[string]map[string]json.RawMessage `json:"paths"`
-		Components struct {
-			Responses map[string]json.RawMessage `json:"responses"`
-		} `json:"components"`
-	}
-	if err := json.Unmarshal(data, &document); err != nil {
-		t.Fatal(err)
-	}
-
-	collectionPath := "/api/workspaces/{slug}/projects/{project_id}/issue-labels/"
-	detailPath := collectionPath + "{pk}/"
-	const wantDescription = "status_500: JSON application failure, or Django HTML server error if rendering a saved nonfinite sort_order fails."
-	var refs []string
-	var effectiveShapes []map[string]any
-	for _, endpoint := range []struct{ path, method string }{
-		{collectionPath, "post"},
-		{detailPath, "patch"},
-	} {
-		var operation struct {
-			Responses map[string]struct {
-				Ref         string `json:"$ref"`
-				Description string `json:"description"`
-			} `json:"responses"`
-		}
-		if err := json.Unmarshal(document.Paths[endpoint.path][endpoint.method], &operation); err != nil {
-			t.Fatal(err)
-		}
-		response := operation.Responses["500"]
-		if response.Description != wantDescription {
-			t.Fatalf("%s %s 500 description = %q, want operation-specific override", endpoint.method, endpoint.path, response.Description)
-		}
-		componentName, valid := strings.CutPrefix(response.Ref, "#/components/responses/")
-		if !valid || componentName == "" {
-			t.Fatalf("%s %s 500 response ref = %q", endpoint.method, endpoint.path, response.Ref)
-		}
-		component, ok := document.Components.Responses[componentName]
-		if !ok {
-			t.Fatalf("response component %q is missing", componentName)
-		}
-		var shape map[string]any
-		if err := json.Unmarshal(component, &shape); err != nil {
-			t.Fatal(err)
-		}
-		if shape["description"] != "Internal Server Error response." {
-			t.Fatalf("shared response description = %v, want neutral component description", shape["description"])
-		}
-		shape["description"] = response.Description
-		effectiveShapes = append(effectiveShapes, shape)
-		refs = append(refs, response.Ref)
-	}
-	if refs[0] != refs[1] {
-		t.Fatalf("equivalent operation responses use different components: %v", refs)
-	}
-	delete(effectiveShapes[0], "description")
-	delete(effectiveShapes[1], "description")
-	if !reflect.DeepEqual(effectiveShapes[0], effectiveShapes[1]) {
-		t.Fatalf("shared response references resolve to different shapes:\npost:  %#v\npatch: %#v", effectiveShapes[0], effectiveShapes[1])
 	}
 }
