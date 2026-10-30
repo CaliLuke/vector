@@ -732,14 +732,6 @@
     {
       "fingerprint": [
         "staticcheck",
-        "internal/pagereads/repository.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
         "internal/projectmembershipreads/lifecycle.go",
         "ST1005: error strings should not be capitalized"
       ],

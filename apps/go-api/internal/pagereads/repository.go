@@ -21,7 +21,6 @@ var (
 	ErrRestrictedGuest = errors.New("guest cannot view this page")
 	ErrInvalidOrder    = errors.New("invalid page order field")
 	ErrInvalidSearch   = errors.New("null characters are not allowed in page search")
-	ErrDjangoPageNil   = errors.New("Django page detail dereferenced a missing searched page")
 )
 
 type database interface {
@@ -167,7 +166,6 @@ func (repository *Repository) Detail(
 	authorizationErr := repository.authorizePage(ctx, userID, slug, projectID, pageID, true)
 	if authorizationErr != nil &&
 		!errors.Is(authorizationErr, ErrRestrictedGuest) &&
-		!errors.Is(authorizationErr, ErrDjangoPageNil) &&
 		!errors.Is(authorizationErr, ErrNotFound) {
 		return nil, authorizationErr
 	}
@@ -177,25 +175,10 @@ func (repository *Repository) Detail(
 	if strings.IndexByte(search, 0) >= 0 {
 		return nil, ErrInvalidSearch
 	}
+	if authorizationErr != nil {
+		return nil, authorizationErr
+	}
 	searchTerms := pageSearchPatterns(search)
-	if errors.Is(authorizationErr, ErrDjangoPageNil) {
-		return nil, ErrDjangoPageNil
-	}
-	if errors.Is(authorizationErr, ErrNotFound) {
-		return nil, ErrNotFound
-	}
-	if errors.Is(authorizationErr, ErrRestrictedGuest) {
-		if len(searchTerms) != 0 {
-			var matches bool
-			if err := repository.database.QueryRow(ctx, pageSearchMatchSQL, pageID, searchTerms).Scan(&matches); err != nil {
-				return nil, fmt.Errorf("match restricted project page search: %w", err)
-			}
-			if !matches {
-				return nil, ErrDjangoPageNil
-			}
-		}
-		return nil, ErrRestrictedGuest
-	}
 	var data []byte
 	err := repository.database.QueryRow(ctx, pageDetailSQL, userID, slug, projectID, pageID, searchTerms, userTimezone).Scan(&data)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -329,8 +312,6 @@ func (repository *Repository) authorizePage(
 		return nil
 	case "restricted_guest":
 		return ErrRestrictedGuest
-	case "django_page_nil":
-		return ErrDjangoPageNil
 	case "not_found":
 		return ErrNotFound
 	default:
@@ -586,7 +567,6 @@ WITH page_access AS (
 SELECT COALESCE((
   SELECT CASE
     WHEN access = 1 AND owned_by_id <> $1 THEN 'forbidden'
-    WHEN $5 AND (NOT has_visible_project OR NOT is_top_level) AND role = 5 AND NOT guest_view_all_features THEN 'django_page_nil'
     WHEN $5 AND (NOT has_visible_project OR NOT is_top_level) THEN 'not_found'
     WHEN owned_by_id = $1 THEN 'allowed'
     WHEN $5 AND role = 5 AND NOT guest_view_all_features THEN 'restricted_guest'
@@ -594,19 +574,6 @@ SELECT COALESCE((
   END
   FROM page_access
 ), 'forbidden')
-`
-
-const pageSearchMatchSQL = `
-SELECT EXISTS (
-  SELECT 1
-  FROM pages page
-  WHERE page.id = $1
-    AND NOT EXISTS (
-      SELECT 1
-      FROM unnest($2::text[]) AS search_term
-      WHERE UPPER(page.name) NOT LIKE UPPER('%' || search_term || '%') ESCAPE E'\\'
-    )
-)
 `
 
 const pageSummarySQL = `

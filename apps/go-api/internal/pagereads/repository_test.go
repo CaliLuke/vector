@@ -118,7 +118,6 @@ func TestPageAuthorizationPreservesOwnershipPublicPrivateAndActiveLinkRules(t *t
 				"WHEN access = 1 AND owned_by_id <> $1 THEN 'forbidden'",
 				"visible_project.archived_at IS NULL",
 				"page.parent_id IS NULL AS is_top_level",
-				"WHEN $5 AND (NOT has_visible_project OR NOT is_top_level) AND role = 5 AND NOT guest_view_all_features THEN 'django_page_nil'",
 				"WHEN $5 AND (NOT has_visible_project OR NOT is_top_level) THEN 'not_found'",
 				"WHEN $5 AND role = 5 AND NOT guest_view_all_features THEN 'restricted_guest'",
 			} {
@@ -395,95 +394,39 @@ func TestDetailReturnsStoredHTMLIssueIDsAndMapsMissingRow(t *testing.T) {
 		t.Fatalf("err=%v", err)
 	}
 }
-func TestRestrictedGuestNonmatchingSearchPreservesDjangoNilDereference(t *testing.T) {
-	database := &databaseStub{rows: []pgx.Row{stringRow("restricted_guest"), boolRow(false)}}
-	repository, _ := NewRepository(database)
-	_, err := repository.Detail(
-		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), `missing%_page`, "-created_at", "UTC",
-	)
-	if !errors.Is(err, ErrDjangoPageNil) {
-		t.Fatalf("err=%v", err)
-	}
-	if len(database.queries) != 2 || !strings.Contains(database.queries[1], "UPPER(page.name) NOT LIKE") {
-		t.Fatalf("queries=%q", database.queries)
-	}
-	patterns := database.args[1][1].([]string)
-	if len(patterns) != 1 || patterns[0] != `missing\%\_page` {
-		t.Fatalf("patterns=%q", patterns)
-	}
-
-	database = &databaseStub{rows: []pgx.Row{stringRow("restricted_guest"), boolRow(true)}}
-	repository, _ = NewRepository(database)
-	_, err = repository.Detail(
-		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), "matching", "-created_at", "UTC",
-	)
-	if !errors.Is(err, ErrRestrictedGuest) {
-		t.Fatalf("matching search err=%v", err)
-	}
-}
-
-func TestDetailPreservesDjangoNilDereferenceOnlyForRestrictedGuestWithoutVisibleProject(t *testing.T) {
-	database := &databaseStub{rows: []pgx.Row{stringRow("django_page_nil")}}
-	repository, _ := NewRepository(database)
-	_, err := repository.Detail(
-		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), "", "-created_at", "UTC",
-	)
-	if !errors.Is(err, ErrDjangoPageNil) {
-		t.Fatalf("err=%v", err)
-	}
-	if len(database.queries) != 1 {
-		t.Fatalf("queries=%d, want authorization only", len(database.queries))
-	}
-	for _, fragment := range []string{
-		"visible_project.archived_at IS NULL",
-		"page.parent_id IS NULL AS is_top_level",
-		"WHEN $5 AND (NOT has_visible_project OR NOT is_top_level) AND role = 5 AND NOT guest_view_all_features THEN 'django_page_nil'",
-		"WHEN $5 AND (NOT has_visible_project OR NOT is_top_level) THEN 'not_found'",
+func TestDetailWithoutVisibleProjectPreservesInputValidationPrecedence(t *testing.T) {
+	for _, sample := range []struct {
+		name, search, order string
+		want                error
+	}{
+		{name: "not found", order: "-created_at", want: ErrNotFound},
+		{name: "invalid order", order: "not_a_page_field", want: ErrInvalidOrder},
+		{name: "invalid search", search: "before\x00after", order: "-created_at", want: ErrInvalidSearch},
 	} {
-		if !strings.Contains(database.queries[0], fragment) {
-			t.Errorf("authorization query missing %q", fragment)
-		}
-	}
-
-	database = &databaseStub{rows: []pgx.Row{stringRow("not_found")}}
-	repository, _ = NewRepository(database)
-	_, err = repository.Detail(
-		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), "", "-created_at", "UTC",
-	)
-	if !errors.Is(err, ErrNotFound) {
-		t.Fatalf("non-restricted caller err=%v", err)
-	}
-
-	database = &databaseStub{rows: []pgx.Row{stringRow("not_found")}}
-	repository, _ = NewRepository(database)
-	_, err = repository.Detail(
-		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), "", "not_a_page_field", "UTC",
-	)
-	if !errors.Is(err, ErrInvalidOrder) {
-		t.Fatalf("no-visible invalid order err=%v", err)
-	}
-
-	database = &databaseStub{rows: []pgx.Row{stringRow("not_found")}}
-	repository, _ = NewRepository(database)
-	_, err = repository.Detail(
-		context.Background(), uuid.New(), "demo", uuid.New(), uuid.New(), "before\x00after", "-created_at", "UTC",
-	)
-	if !errors.Is(err, ErrInvalidSearch) {
-		t.Fatalf("no-visible NUL search err=%v", err)
-	}
-	if len(database.queries) != 1 {
-		t.Fatalf("non-restricted caller queries=%d, want authorization only", len(database.queries))
+		t.Run(sample.name, func(t *testing.T) {
+			db := &databaseStub{rows: []pgx.Row{stringRow("not_found")}}
+			repository, err := NewRepository(db)
+			if err != nil {
+				t.Fatal(err)
+			}
+			data, err := repository.Detail(t.Context(), uuid.New(), "demo", uuid.New(), uuid.New(), sample.search, sample.order, "UTC")
+			if !errors.Is(err, sample.want) || data != nil {
+				t.Fatalf("data=%s err=%v, want %v", data, err, sample.want)
+			}
+			if len(db.queries) != 1 {
+				t.Fatalf("queries=%d, want authorization only", len(db.queries))
+			}
+		})
 	}
 }
 
-func TestDetailChildPageUsesCallerSpecificDjangoOutcome(t *testing.T) {
+func TestDetailReturnsClassifiedDenialWithoutReadingPage(t *testing.T) {
 	tests := []struct {
 		name   string
 		access string
 		want   error
 	}{
-		{name: "ordinary member gets not found", access: "not_found", want: ErrNotFound},
-		{name: "restricted guest preserves nil dereference", access: "django_page_nil", want: ErrDjangoPageNil},
+		{name: "not found", access: "not_found", want: ErrNotFound},
 		{name: "private non-owner is forbidden first", access: "forbidden", want: ErrForbidden},
 	}
 	for _, test := range tests {

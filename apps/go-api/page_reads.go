@@ -308,7 +308,7 @@ func pageReadsRepositoryError(err error, notFoundMessage string) error {
 		return api.InvalidSearch{"Null characters are not allowed."}
 	case errors.Is(err, store.ErrNotFound):
 		return pageReadsNotFound(notFoundMessage)
-	case errors.Is(err, store.ErrDjangoPageNil), errors.Is(err, store.ErrInvalidOrder):
+	case errors.Is(err, store.ErrInvalidOrder):
 		return err
 	default:
 		return pageReadsInternalError()

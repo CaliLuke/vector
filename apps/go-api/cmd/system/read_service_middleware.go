@@ -349,7 +349,7 @@ func writeReadServicesSessionError(response http.ResponseWriter, request *http.R
 func markDjangoPageInternalError(endpoint loom.Endpoint) loom.Endpoint {
 	return func(ctx context.Context, request any) (any, error) {
 		result, err := endpoint(ctx, request)
-		if errors.Is(err, pagereadsstore.ErrInvalidOrder) || errors.Is(err, pagereadsstore.ErrDjangoPageNil) {
+		if errors.Is(err, pagereadsstore.ErrInvalidOrder) {
 			systemapi.MarkReadServiceDjangoHTML500(ctx)
 		}
 		return result, err

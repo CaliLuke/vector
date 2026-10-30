@@ -534,20 +534,6 @@ func TestPageReadsMapsAuthorizationGuestAndNotFoundErrors(t *testing.T) {
 		})
 	}
 }
-func TestPageReadsLeavesDjangoNilDereferenceUnhandled(t *testing.T) {
-	service, ctx := authenticatedPageReadsService(
-		t,
-		&pageReadsRepositoryStub{err: store.ErrDjangoPageNil},
-		&pageRecentVisitsStub{},
-	)
-	_, _, err := service.Detail(ctx, &api.DetailPayload{
-		Slug: "demo", ProjectID: pageReadsProjectID, PageID: pageReadsPageID,
-	})
-	if !errors.Is(err, store.ErrDjangoPageNil) {
-		t.Fatalf("err=%T %v", err, err)
-	}
-}
-
 func TestPageReadsRejectInvalidSession(t *testing.T) {
 	service := &pageReadsService{sessions: pageReadsSessionsStub{err: errors.New("invalid")}}
 	_, err := service.APIKeyAuth(context.Background(), "bad", &security.APIKeyScheme{})
