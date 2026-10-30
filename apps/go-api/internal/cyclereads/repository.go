@@ -32,10 +32,8 @@ var (
 	ErrNegativePageSize   = errors.New("cycle issue page size is negative")
 	ErrPreviousPageSlice  = errors.New("cycle issue previous page slice is invalid")
 	ErrPaginationOverflow = errors.New("cycle issue pagination offset overflow")
-	ErrDynamicGrouping    = errors.New("cycle issue grouping source failure")
 	ErrPaginationParsing  = errors.New("error in parsing cycle issue pagination")
 	ErrInvalidGrouping    = errors.New("invalid cycle issue grouping")
-	ErrMissingGroupKey    = errors.New("required grouped result key does not exist")
 )
 
 type InvalidGroupingFieldError struct {
@@ -270,10 +268,6 @@ func (repository *Repository) issueResults(
 	if err != nil {
 		return nil, err
 	}
-	if options.GroupBy != "" &&
-		(dynamicGroupingFailure(options.GroupBy) || dynamicGroupingFailure(options.SubGroupBy)) {
-		return nil, ErrDynamicGrouping
-	}
 	if options.GroupBy != "" {
 		if float64(page)*cursorLimit < 0 {
 			return nil, ErrPaginationParsing
@@ -377,12 +371,9 @@ func (repository *Repository) groupedIssues(
 	}
 	var resultsData []byte
 	var total, count, maximum int
-	var nextPage, missingGroupKey bool
-	if err := repository.database.QueryRow(ctx, query, args...).Scan(&resultsData, &total, &count, &maximum, &nextPage, &missingGroupKey); err != nil {
+	var nextPage bool
+	if err := repository.database.QueryRow(ctx, query, args...).Scan(&resultsData, &total, &count, &maximum, &nextPage); err != nil {
 		return nil, fmt.Errorf("list grouped cycle issues: %w", err)
-	}
-	if missingGroupKey {
-		return nil, ErrMissingGroupKey
 	}
 	if count > 0 && limit == 0 {
 		return nil, ErrZeroPageSize
@@ -681,10 +672,6 @@ func validGroup(group string) bool {
 	return ok
 }
 
-func dynamicGroupingFailure(group string) bool {
-	return group == "created_by" || group == "start_date" || group == "target_date"
-}
-
 func issueListQuery(
 	userID uuid.UUID,
 	slug string,
@@ -821,7 +808,7 @@ func groupedIssueListQuery(
 	args = append(args, lowerBound, upperBound)
 	lowerPosition, upperPosition := len(args)-1, len(args)
 	subgroupKeys := `jsonb_build_array('__none__')`
-	subgroupUniverse := `'["__none__"]'::json`
+	maximumBucketCount := `(SELECT max(group_total.countable_results)::int FROM group_totals group_total)`
 	payload := groupedIssuePayloadSQL
 	bucketKeys := `
 SELECT group_value.value group_key,'__none__'::text subgroup_key
@@ -833,13 +820,9 @@ CROSS JOIN LATERAL jsonb_array_elements_text(universes.group_values) group_value
 	}
 	if options.SubGroupBy != "" {
 		subgroupKeys = issueGroupKeysSQL(options.SubGroupBy)
-		subgroupUniverse = issueGroupUniverseSQL(options.SubGroupBy)
+		maximumBucketCount = `(SELECT max(bucket.total_results)::int FROM buckets bucket)`
 		payload = subgroupedIssuePayloadSQL
 		bucketKeys = `SELECT DISTINCT group_key,subgroup_key FROM expanded`
-	}
-	sourceSubgroupFailure := "false"
-	if options.SubGroupBy != "" && !issueMultiGroup(options.GroupBy) && !issueMultiGroup(options.SubGroupBy) {
-		sourceSubgroupFailure = "true"
 	}
 	query := fmt.Sprintf(
 		groupedIssueListSQL,
@@ -852,11 +835,10 @@ CROSS JOIN LATERAL jsonb_array_elements_text(universes.group_values) group_value
 		subgroupKeys,
 		issuePagedItemSQL(options),
 		issueGroupUniverseSQL(options.GroupBy),
-		subgroupUniverse,
-		sourceSubgroupFailure,
 		bucketKeys,
 		issueBucketTotalSQL(options),
 		payload,
+		maximumBucketCount,
 	)
 	return query, args, nil
 }
@@ -2447,13 +2429,12 @@ var groupedIssueListSQL = issueRequestScopeSQL + `, filtered AS (
   SELECT paged.issue_id,paged.position,paged.group_key,paged.subgroup_key,%s item
   FROM paged
 ), universes AS (
-  SELECT (%s)::jsonb group_values,(%s)::jsonb subgroup_values
-), source_guard AS (
-  SELECT %s AND EXISTS(
-    SELECT 1 FROM paged
-    WHERE NOT (universes.group_values ? paged.group_key)
-  ) missing_group_key
-  FROM universes
+  SELECT COALESCE(jsonb_agg(group_key ORDER BY group_key),'[]'::jsonb) group_values
+  FROM (
+    SELECT jsonb_array_elements_text((%s)::jsonb) group_key
+    UNION
+    SELECT group_key FROM expanded
+  ) visible_groups
 ), bucket_keys AS (
   %s
 ), buckets AS (
@@ -2476,15 +2457,14 @@ SELECT CASE WHEN EXISTS(SELECT 1 FROM paged) THEN (` + `%s` + `) ELSE '{}'::json
   (SELECT count(*)::int FROM expanded),
   (SELECT count(*)::int FROM paged),
   CASE WHEN EXISTS(SELECT 1 FROM paged)
-    THEN COALESCE((SELECT max(group_total.countable_results)::int FROM group_totals group_total),0)
+    THEN COALESCE(%s,0)
     ELSE 0 END,
   COALESCE((
     SELECT EXISTS(
       SELECT 1 FROM ranked CROSS JOIN params
       WHERE ranked.bucket_position>=params.upper_bound
     )
-  ),false),
-  (SELECT missing_group_key FROM source_guard)`
+  ),false)`
 
 var issueListSQL = issueRequestScopeSQL + `, base AS (
   SELECT issue.*,(SELECT annotated_cycle.cycle_id FROM cycle_issues annotated_cycle JOIN cycles live_cycle ON live_cycle.id=annotated_cycle.cycle_id AND live_cycle.deleted_at IS NULL AND live_cycle.project_id=issue.project_id AND live_cycle.workspace_id=issue.workspace_id WHERE annotated_cycle.issue_id=issue.id AND annotated_cycle.deleted_at IS NULL ORDER BY annotated_cycle.created_at DESC LIMIT 1) cycle_id

@@ -101,6 +101,26 @@ The Colima gateway workaround is removed. The proxy integration suite passes
 with the pinned version and the existing readiness deadlines. Replace both pins
 with a tagged release that contains this commit when one is available.
 
+Colima also forwards published container ports to macOS. Its SSH forwarder can
+leave a port unreachable after a temporary native port collision
+([Colima #1660](https://github.com/abiosoft/colima/issues/1660)). Use a separate,
+directly reachable test VM to avoid that forwarding path. These commands use `jq`:
+
+```sh
+colima start vector-mcp-tests --cpu 2 --memory 3 --disk 15 --network-address --port-forwarder none --activate=false
+export DOCKER_HOST="unix://$HOME/.colima/vector-mcp-tests/docker.sock"
+export TESTCONTAINERS_HOST_OVERRIDE="$(colima status vector-mcp-tests --json | jq -er .ip_address)"
+source scripts/dev-env.sh
+./check.sh --go --full
+```
+
+Use those exports in the shell that runs Git hooks too. The default VM and Docker
+context stay unchanged. Unset both variables before returning to the application's
+default development stack; stop the test VM with `colima stop vector-mcp-tests`
+when it is no longer needed. The separate test route can become optional once
+upstream forwarding recovery is fixed and the transient-collision reproduction
+passes. Keep the existing readiness deadlines and resource-reaper cleanup.
+
 Ryuk remains enabled. `scripts/dev-env.sh` defaults its reconnection grace to
 30 minutes to cover idle gaps between package test binaries while
 [Testcontainers #3867](https://github.com/testcontainers/testcontainers-go/issues/3867)

@@ -14,29 +14,8 @@ import (
 )
 
 func TestCycleIssueQueriesBindRequestScopeWithoutDateFilters(t *testing.T) {
-	ctx := context.Background()
-	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
-		connection, err := pgx.Connect(ctx, databaseURL)
-		if err != nil {
-			return err
-		}
-		defer func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) }()
-		_, err = connection.Exec(ctx, cycleIssueQuerySchema)
-		return err
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { testsupport.Close(t, pair) })
-	connection, err := pgx.Connect(ctx, pair.SeedURL())
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) })
-	repository, err := NewRepository(connection)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ctx := t.Context()
+	connection, repository := cycleIssueQueryFixture(t)
 	userID := uuid.MustParse("00000000-0000-4000-8000-000000000001")
 	projectID := uuid.MustParse("00000000-0000-4000-8000-000000000002")
 	cycleID := uuid.MustParse("00000000-0000-4000-8000-000000000003")
@@ -125,3 +104,31 @@ INSERT INTO issues(id,name,workspace_id,project_id,priority,created_at,updated_a
  ('00000000-0000-4000-8000-000000000006','Low priority work','00000000-0000-4000-8000-000000000004','00000000-0000-4000-8000-000000000002','low',now(),now());
 INSERT INTO cycle_issues(issue_id,cycle_id,created_at) SELECT id,'00000000-0000-4000-8000-000000000003',now() FROM issues;
 `
+
+func cycleIssueQueryFixture(t *testing.T) (*pgx.Conn, *Repository) {
+	t.Helper()
+	ctx := t.Context()
+	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
+		connection, err := pgx.Connect(ctx, databaseURL)
+		if err != nil {
+			return err
+		}
+		defer func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) }()
+		_, err = connection.Exec(ctx, cycleIssueQuerySchema)
+		return err
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { testsupport.Close(t, pair) })
+	connection, err := pgx.Connect(ctx, pair.SeedURL())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { testsupport.CloseContext(t, connection, context.WithoutCancel(ctx)) })
+	repository, err := NewRepository(connection)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return connection, repository
+}

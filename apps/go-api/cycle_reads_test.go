@@ -421,7 +421,6 @@ func TestCycleIssueInvalidPageSizesMarkDjangoHTML500(t *testing.T) {
 		store.ErrNegativePageSize,
 		store.ErrPreviousPageSlice,
 		store.ErrPaginationOverflow,
-		store.ErrDynamicGrouping,
 	} {
 		repository := &cycleReadsRepositoryStub{err: repositoryError}
 		service := &cycleReadsService{repository: repository}
@@ -449,14 +448,12 @@ func TestCycleReadsMapPermissionNotFoundDatesGroupingAndPaginationErrors(t *test
 		{store.ErrNotFound, (*api.CycleReadsNotFound)(nil)},
 		{store.ErrCycleDatesMissing, (*api.CycleReadsBadRequest)(nil)},
 		{store.ErrInvalidGrouping, (*api.CycleReadsBadRequest)(nil)},
-		{store.ErrMissingGroupKey, (*api.CycleReadsBadRequest)(nil)},
 		{store.ErrInvalidPagination, (*api.CycleReadsInvalidPagination)(nil)},
 		{store.ErrPaginationParsing, (*api.CycleReadsParseError)(nil)},
 		{store.ErrZeroPageSize, (*api.CycleReadsInternalError)(nil)},
 		{store.ErrNegativePageSize, (*api.CycleReadsInternalError)(nil)},
 		{store.ErrPreviousPageSlice, (*api.CycleReadsInternalError)(nil)},
 		{store.ErrPaginationOverflow, (*api.CycleReadsInternalError)(nil)},
-		{store.ErrDynamicGrouping, (*api.CycleReadsInternalError)(nil)},
 		{&store.InvalidGroupingFieldError{Field: "group_by", Value: "bogus"}, (*api.CycleReadsInvalidGrouping)(nil)},
 		{&store.FilterError{Message: "Invalid filter parameters", Code: "invalid_filterset", Errors: map[string]any{"state_id": []string{"Enter a valid UUID."}}}, (*api.CycleReadsFilterError)(nil)},
 	}
@@ -477,9 +474,6 @@ func TestCycleReadsMapPermissionNotFoundDatesGroupingAndPaginationErrors(t *test
 			var target *api.CycleReadsBadRequest
 			if !errors.As(mapped, &target) {
 				t.Fatalf("err=%T", mapped)
-			}
-			if errors.Is(test.err, store.ErrMissingGroupKey) && cycleOptionalString(target.ErrorMessage) != "The required key does not exist." {
-				t.Fatalf("message=%q", cycleOptionalString(target.ErrorMessage))
 			}
 		case *api.CycleReadsInvalidPagination:
 			var target *api.CycleReadsInvalidPagination

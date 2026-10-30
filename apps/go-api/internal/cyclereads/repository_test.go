@@ -82,19 +82,6 @@ func groupedPageRow(value string, total int, count int, maximum int, next bool) 
 		*destinations[2].(*int) = count
 		*destinations[3].(*int) = maximum
 		*destinations[4].(*bool) = next
-		*destinations[5].(*bool) = false
-		return nil
-	})
-}
-
-func missingGroupedPageRow() pgx.Row {
-	return rowFunc(func(destinations ...any) error {
-		*destinations[0].(*[]byte) = []byte(`{}`)
-		*destinations[1].(*int) = 1
-		*destinations[2].(*int) = 1
-		*destinations[3].(*int) = 1
-		*destinations[4].(*bool) = false
-		*destinations[5].(*bool) = true
 		return nil
 	})
 }
@@ -670,25 +657,7 @@ func TestGroupedIssueSQLUsesPageGroupsForManyToManyAndRewritesMappedIDs(t *testi
 	if strings.Contains(subgrouped, "SELECT DISTINCT ON (processed.issue_id)") {
 		t.Fatal("subgrouped paginator must preserve duplicate source rows")
 	}
-	if !strings.Contains(subgrouped, "SELECT false AND EXISTS") {
-		t.Fatal("M2M subgrouping must not inherit scalar paginator failure")
-	}
-	scalarSubgrouped, _, _ := groupedIssueListQuery(
-		uuid.New(),
-		"alpha",
-		uuid.New(),
-		uuid.New(),
-		IssueListOptions{GroupBy: "state_id", SubGroupBy: "priority"}, 30, 30, 0,
-	)
-	for _, fragment := range []string{
-		"SELECT true AND EXISTS",
-		"NOT (universes.group_values ? paged.group_key)",
-		"(SELECT missing_group_key FROM source_guard)",
-	} {
-		if !strings.Contains(scalarSubgrouped, fragment) {
-			t.Fatalf("scalar subgroup source-failure parity missing %q", fragment)
-		}
-	}
+
 }
 
 func TestModuleGroupingUsesRelationIDsButOtherPayloadsOmitArchivedModules(t *testing.T) {
@@ -962,22 +931,7 @@ func TestIssueListRejectsInvalidCursorAndGrouping(t *testing.T) {
 			t.Fatalf("options=%+v err=%T %v", options, err, err)
 		}
 	}
-	missingRepository, _ := NewRepository(&databaseStub{rows: []pgx.Row{missingGroupedPageRow()}})
-	_, err = missingRepository.groupedIssues(
-		context.Background(),
-		uuid.New(),
-		"alpha",
-		uuid.New(),
-		uuid.New(),
-		IssueListOptions{GroupBy: "state_id", SubGroupBy: "priority"},
-		30,
-		30,
-		30,
-		0,
-	)
-	if !errors.Is(err, ErrMissingGroupKey) {
-		t.Fatalf("missing group key err=%v", err)
-	}
+
 }
 
 func TestStandaloneManyToManySubgroupPreservesScalarProjectionJoinAndMultiplicity(t *testing.T) {
@@ -1042,23 +996,6 @@ func TestStandaloneManyToManySubgroupPreservesScalarProjectionJoinAndMultiplicit
 	}
 	if envelope["grouped_by"] != nil || envelope["sub_grouped_by"] != nil {
 		t.Fatalf("standalone subgroup changed envelope grouping: %s", data)
-	}
-}
-
-func TestDynamicGroupingFieldsPreserveDjangoSourceFailure(t *testing.T) {
-	for _, group := range []string{"created_by", "start_date", "target_date"} {
-		database := &databaseStub{rows: []pgx.Row{boolRow(true)}}
-		repository, _ := NewRepository(database)
-		_, err := repository.Issues(
-			context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(),
-			IssueListOptions{GroupBy: group},
-		)
-		if !errors.Is(err, ErrDynamicGrouping) {
-			t.Fatalf("group=%s err=%v", group, err)
-		}
-		if len(database.queries) != 1 {
-			t.Fatalf("group=%s queries=%d", group, len(database.queries))
-		}
 	}
 }
 

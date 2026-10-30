@@ -206,8 +206,7 @@ func (service *cycleReadsService) Issues(
 		if errors.Is(err, store.ErrZeroPageSize) ||
 			errors.Is(err, store.ErrNegativePageSize) ||
 			errors.Is(err, store.ErrPreviousPageSlice) ||
-			errors.Is(err, store.ErrPaginationOverflow) ||
-			errors.Is(err, store.ErrDynamicGrouping) {
+			errors.Is(err, store.ErrPaginationOverflow) {
 			MarkReadServiceDjangoHTML500(ctx)
 		}
 		return nil, nil, cycleReadsRepositoryError(err)
@@ -481,8 +480,6 @@ func cycleReadsRepositoryError(err error) error {
 		return cycleBadRequest("Cycle has no start or end date")
 	case errors.Is(err, store.ErrInvalidGrouping):
 		return cycleBadRequest("Group by and sub group by cannot have same parameters")
-	case errors.Is(err, store.ErrMissingGroupKey):
-		return cycleBadRequest("The required key does not exist.")
 	case errors.Is(err, store.ErrPaginationParsing):
 		return cycleParseError("Error in parsing")
 	case errors.Is(err, store.ErrInvalidPagination):
