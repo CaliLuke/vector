@@ -1,7 +1,7 @@
 {
   "version": 1,
   "catalog_id": "ERR-02",
-  "source_commit": "1e30845570c97629593071858e514a70b1aebcd0",
+  "source_commit": "db3e2b5a2f3e20bb802422cb5805ee75b635a979",
   "audit_date": "2026-10-30",
   "tool": "golangci-lint 2.15.0 (Go 1.27.3)",
   "configuration": "Repository .golangci.yml at source_commit; add linters.settings.errcheck.check-blank=true and select --enable-only errcheck. Existing integration tags, test inclusion, generated-source exclusions and timeout retained.",
@@ -9,10 +9,10 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 921,
+    "findings": 919,
     "also_in_ERR_01": 51,
-    "additional_ERR_02": 870,
-    "test_file_findings": 547,
+    "additional_ERR_02": 868,
+    "test_file_findings": 545,
     "non_test_file_findings": 374
   },
   "findings": [
@@ -2737,20 +2737,6 @@
       "line": 75,
       "column": 5,
       "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/instancemail/sender_test.go",
-      "line": 73,
-      "column": 33,
-      "message": "Error return value of `server.Serve` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/instancemail/sender_test.go",
-      "line": 191,
-      "column": 4,
-      "message": "Error return value of `part.Close` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -6464,5 +6450,5 @@
       "also_in_configured_audit": false
     }
   ],
-  "source_state": "Working tree containing the admin-session read-failure and checked test-setup changes based on source_commit."
+  "source_state": "Working tree containing work-log acceptance and SMTP fixture error handling based on source_commit."
 }

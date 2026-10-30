@@ -23,6 +23,7 @@ type projectMutationWaitScenario struct {
 	fixture      func(*testing.T) milestoneFixture
 	createFields map[string]any
 	snapshot     func(*testing.T, milestoneFixture) []byte
+	prepare      func(*testing.T, milestoneFixture, catalogueCall) map[string]any
 }
 
 func runProjectMutationAuthorizationWait(t *testing.T, scenario projectMutationWaitScenario) {
@@ -48,28 +49,13 @@ func runProjectMutationAuthorizationWait(t *testing.T, scenario projectMutationW
 					if change.mode == "OAuth" {
 						handler, token = oauthHandler(t, f.fixture, f.oauth.Authenticate), "oauth-user"
 					}
-					createInput := map[string]any{"action": "create", "workspace_slug": "workspace-one",
-						"project_id": testsupport.LabelProject, "name": uuid.NewString()}
-					maps.Copy(createInput, scenario.createFields)
-					if scenario.tool == "project" {
-						delete(createInput, "project_id")
-					}
-					create, err := json.Marshal(createInput)
-					require.NoError(t, err)
-					created := milestoneObject(t, oauthToolCall(t, handler, version, token, "", scenario.tool, string(create), http.StatusOK))
-					projectID := testsupport.LabelProject
-					if scenario.tool == "project" {
-						projectID = created["id"].(string)
-					}
-					action := scenario.action
-					if action == "" {
-						action = "update"
-					}
-					input := map[string]any{"action": action, "workspace_slug": "workspace-one", "project_id": projectID,
-						scenario.tool + "_id": created["id"], "description": "accepted only with current authorization", "request_id": uuid.NewString()}
-					if action == "delete" {
-						delete(input, "description")
-					}
+					call := catalogueCall(func(tool string, input map[string]any) rpcResult {
+						body, err := json.Marshal(input)
+						require.NoError(t, err)
+						return oauthToolCall(t, handler, version, token, "", tool, string(body), http.StatusOK)
+					})
+					input := projectMutationWaitInput(t, f, scenario, call)
+					projectID := input["project_id"].(string)
 					arguments, err := json.Marshal(input)
 					require.NoError(t, err)
 					if replay {
@@ -132,4 +118,32 @@ func runProjectMutationAuthorizationWait(t *testing.T, scenario projectMutationW
 			}
 		}
 	}
+}
+
+// Request construction belongs to the resource fixture; the wait harness owns
+// the concurrent revocation and verifies that no mutation escaped it.
+func projectMutationWaitInput(t *testing.T, f milestoneFixture, scenario projectMutationWaitScenario, call catalogueCall) map[string]any {
+	t.Helper()
+	if scenario.prepare != nil {
+		return scenario.prepare(t, f, call)
+	}
+	createInput := map[string]any{"action": "create", "workspace_slug": "workspace-one", "project_id": testsupport.LabelProject, "name": uuid.NewString()}
+	maps.Copy(createInput, scenario.createFields)
+	if scenario.tool == "project" {
+		delete(createInput, "project_id")
+	}
+	created := milestoneObject(t, call(scenario.tool, createInput))
+	projectID := testsupport.LabelProject
+	if scenario.tool == "project" {
+		projectID = created["id"].(string)
+	}
+	action := scenario.action
+	if action == "" {
+		action = "update"
+	}
+	input := map[string]any{"action": action, "workspace_slug": "workspace-one", "project_id": projectID, scenario.tool + "_id": created["id"], "description": "accepted only with current authorization", "request_id": uuid.NewString()}
+	if action == "delete" {
+		delete(input, "description")
+	}
+	return input
 }

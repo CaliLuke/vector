@@ -69,9 +69,19 @@ func startSink(t *testing.T, failure Kind) (SMTPConfig, <-chan string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	done := make(chan struct{})
-	go func() { defer close(done); _ = server.Serve(listener) }()
-	t.Cleanup(func() { testsupport.Close(t, server); <-done })
+	done := make(chan error, 1)
+	go func() { done <- server.Serve(listener) }()
+	t.Cleanup(func() {
+		testsupport.Close(t, server)
+		select {
+		case serveErr := <-done:
+			if serveErr != nil {
+				t.Errorf("SMTP fixture failed: %v", serveErr)
+			}
+		case <-time.After(2 * time.Second):
+			t.Error("SMTP fixture did not stop after Close")
+		}
+	})
 	return SMTPConfig{Host: "127.0.0.1", Port: listener.Addr().(*net.TCPAddr).Port, Username: "fixture", Password: "fixture-password"}, messages
 }
 
@@ -180,23 +190,29 @@ func readAttachments(header textproto.MIMEHeader, body io.Reader) ([]decodedAtta
 		reader := multipart.NewReader(body, params["boundary"])
 		var attachments []decodedAttachment
 		for {
-			part, attachmentErr := reader.NextPart()
-			if attachmentErr == io.EOF {
+			part, partErr := reader.NextPart()
+			if partErr == io.EOF {
 				return attachments, nil
 			}
-			if attachmentErr != nil {
-				return nil, attachmentErr
+			if partErr != nil {
+				return nil, partErr
 			}
-			nested, attachmentErr := readAttachments(part.Header, part)
-			_ = part.Close()
-			if attachmentErr != nil {
+			nested, readErr := readAttachments(part.Header, part)
+			if attachmentErr := errors.Join(readErr, part.Close()); attachmentErr != nil {
 				return nil, attachmentErr
 			}
 			attachments = append(attachments, nested...)
 		}
 	}
-	disposition, dispositionParams, err := mime.ParseMediaType(header.Get("Content-Disposition"))
-	if err != nil || !strings.EqualFold(disposition, "attachment") {
+	rawDisposition := header.Get("Content-Disposition")
+	if rawDisposition == "" {
+		return nil, nil
+	}
+	disposition, dispositionParams, err := mime.ParseMediaType(rawDisposition)
+	if err != nil {
+		return nil, err
+	}
+	if !strings.EqualFold(disposition, "attachment") {
 		return nil, nil
 	}
 	decoded := body

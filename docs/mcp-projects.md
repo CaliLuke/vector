@@ -92,7 +92,7 @@ projects are absent from that endpoint. The
 restoration without that read.
 
 Production OAuth issuer selection remains deferred. Overall 208-action parity
-and final publication checks remain in the outstanding debt catalog.
+remains in the outstanding debt catalog.
 
 ## Credential changes during archive lock waits
 

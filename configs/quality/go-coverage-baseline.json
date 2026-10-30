@@ -475,7 +475,7 @@
     },
     "github.com/CaliLuke/go-plane/internal/worklogs": {
       "statements": 135,
-      "percent": 72.59
+      "percent": 80.74
     },
     "github.com/CaliLuke/go-plane/internal/workspaceanalytics": {
       "statements": 51,

@@ -36,26 +36,31 @@ func projectMutationStorageFailure(t *testing.T, f milestoneFixture, call catalo
 			input["name"] = "Changed " + strings.ReplaceAll(uuid.NewString(), "-", "")
 		}
 	}
-	before := projectMutationStorageSnapshot(t, f)
+	assertCatalogueStorageFailure(t, f, call, "project", input, table, func() []byte { return projectMutationStorageSnapshot(t, f) })
+}
+
+func assertCatalogueStorageFailure(t *testing.T, f milestoneFixture, call catalogueCall, tool string, input map[string]any, table string, snapshot func() []byte) {
+	t.Helper()
+	before := snapshot()
 	tableSQL := pgx.Identifier{table}.Sanitize()
-	_, err := f.pool.Exec(t.Context(), "ALTER TABLE "+tableSQL+" ADD CONSTRAINT reject_project_mutation_storage CHECK(false) NOT VALID")
+	_, err := f.pool.Exec(t.Context(), "ALTER TABLE "+tableSQL+" ADD CONSTRAINT reject_mutation_storage CHECK(false) NOT VALID")
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		_, cleanupErr := f.pool.Exec(context.WithoutCancel(t.Context()), "ALTER TABLE "+tableSQL+" DROP CONSTRAINT IF EXISTS reject_project_mutation_storage")
+		_, cleanupErr := f.pool.Exec(context.WithoutCancel(t.Context()), "ALTER TABLE "+tableSQL+" DROP CONSTRAINT IF EXISTS reject_mutation_storage")
 		require.NoError(t, cleanupErr)
 	})
-	milestoneFailure(t, call("project", input), "internal_error")
-	require.Equal(t, before, projectMutationStorageSnapshot(t, f), "storage failure must roll back project rows, initialization, revisions, receipts and durable effects")
-	_, err = f.pool.Exec(t.Context(), "ALTER TABLE "+tableSQL+" DROP CONSTRAINT reject_project_mutation_storage")
+	milestoneFailure(t, call(tool, input), "internal_error")
+	require.Equal(t, before, snapshot(), "storage failure must roll back domain rows, revisions, receipts and durable effects")
+	_, err = f.pool.Exec(t.Context(), "ALTER TABLE "+tableSQL+" DROP CONSTRAINT reject_mutation_storage")
 	require.NoError(t, err)
-	accepted := milestoneObject(t, call("project", input))
+	accepted := milestoneObject(t, call(tool, input))
 	require.Equal(t, false, accepted["replayed"], "failed write must leave its request ID reusable")
-	after := projectMutationStorageSnapshot(t, f)
-	replay := milestoneObject(t, call("project", input))
+	after := snapshot()
+	replay := milestoneObject(t, call(tool, input))
 	require.Equal(t, true, replay["replayed"])
 	require.Equal(t, accepted["revision"], replay["revision"])
 	require.Equal(t, accepted["result"], replay["result"])
-	require.Equal(t, after, projectMutationStorageSnapshot(t, f), "replay must not repeat effects or initialization")
+	require.Equal(t, after, snapshot(), "replay must not repeat effects or domain changes")
 }
 
 func projectMutationStorageSnapshot(t *testing.T, f milestoneFixture) []byte {
