@@ -6,6 +6,7 @@ import (
 	"encoding/json/jsontext"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"regexp"
 	"strconv"
@@ -31,7 +32,6 @@ var (
 	ErrMissingIntake            = errors.New("active project intake required")
 	ErrInvalidCursor            = errors.New("invalid cursor parameter")
 	ErrPaginationParsing        = errors.New("error in parsing pagination cursor")
-	ErrPaginationRuntime        = errors.New("invalid pagination value")
 	ErrInvalidDescriptionCursor = errors.New("invalid description-version cursor")
 	ErrInvalidDetail            = errors.New("invalid filter detail")
 )
@@ -364,7 +364,7 @@ func parseOffsetPagination(perPage string, perPageSet bool, cursor string, curso
 				return offsetPagination{}, ErrInvalidCursor
 			}
 			cursorValue, err := strconv.ParseFloat(parts[0], 64)
-			if err != nil && !errors.Is(err, strconv.ErrRange) {
+			if err != nil && (!errors.Is(err, strconv.ErrRange) || math.IsInf(cursorValue, 0)) {
 				return offsetPagination{}, ErrInvalidCursor
 			}
 			cursorValueMatchesLimit = cursorValue == float64(limit)
@@ -383,18 +383,18 @@ func parseOffsetPagination(perPage string, perPageSet bool, cursor string, curso
 			return offsetPagination{}, ErrPaginationParsing
 		}
 		if !parsedPage.IsInt64() || parsedPage.Int64() > int64(^uint(0)>>1) {
-			return offsetPagination{}, ErrPaginationRuntime
+			return offsetPagination{}, ErrInvalidCursor
 		}
 		previous, ok := new(big.Int).SetString(parts[2], 10)
 		if !ok {
 			return offsetPagination{}, ErrInvalidCursor
 		}
 		if previous.Sign() != 0 && !cursorValueMatchesLimit {
-			return offsetPagination{}, ErrPaginationRuntime
+			return offsetPagination{}, ErrInvalidCursor
 		}
 		page = int(parsedPage.Int64())
-		if page > int(^uint(0)>>1)/limit {
-			return offsetPagination{}, ErrPaginationRuntime
+		if page > (int(^uint(0)>>1)-limit)/limit {
+			return offsetPagination{}, ErrInvalidCursor
 		}
 	}
 	return offsetPagination{limit: limit, page: page}, nil
@@ -406,7 +406,7 @@ func parsePerPage(value string) (int, error) {
 			return 0, ErrPerPageTooLarge
 		}
 		if parsed <= 0 {
-			return 0, ErrPaginationRuntime
+			return 0, ErrInvalidPerPage
 		}
 		return parsed, nil
 	}
@@ -415,7 +415,7 @@ func parsePerPage(value string) (int, error) {
 		return 0, ErrInvalidPerPage
 	}
 	if arbitrary.Sign() <= 0 {
-		return 0, ErrPaginationRuntime
+		return 0, ErrInvalidPerPage
 	}
 	if arbitrary.Cmp(big.NewInt(1000)) > 0 {
 		return 0, ErrPerPageTooLarge
@@ -569,20 +569,20 @@ func filterHasUUID(value string) bool {
 }
 
 func validateDraftIssueFilters(options ListOptions) error {
-	for _, name := range []string{"labels", "assignees", "cycle", "module", "subscriber"} {
-		if listFilterPresent(options, name) {
-			return ErrPaginationRuntime
-		}
+	// Drafts have native label, assignee, cycle and module relations. The
+	// issue-only relations below cannot be evaluated against a draft.
+	if listFilterPresent(options, "subscriber") {
+		return ErrBadRequest
 	}
 	if filterHasUUIDOrNone(options.Filters["logged_by"]) {
-		return ErrPaginationRuntime
+		return ErrBadRequest
 	}
 	if filterHasUUID(options.Filters["mentions"]) {
-		return ErrPaginationRuntime
+		return ErrBadRequest
 	}
 	for _, name := range []string{"intake_status", "inbox_status"} {
 		if _, applies := djangoIntakeStatusFilter(options.Filters[name]); applies {
-			return ErrPaginationRuntime
+			return ErrBadRequest
 		}
 	}
 	if listFilterPresent(options, "type") && options.Filters["type"] == "" {
@@ -593,7 +593,7 @@ func validateDraftIssueFilters(options ListOptions) error {
 
 func validateIntakeIssueFilters(options ListOptions) error {
 	if filterHasUUIDOrNone(options.Filters["logged_by"]) {
-		return ErrPaginationRuntime
+		return ErrBadRequest
 	}
 	if listFilterPresent(options, "type") && options.Filters["type"] == "" {
 		options.Filters["type"] = "all"
@@ -605,21 +605,29 @@ func addIntakeStatuses(builder *whereBuilder, value string, set bool) error {
 	if !set {
 		value = "-2"
 	}
-	statuses := make([]int, 0)
-	for _, item := range strings.Split(value, ",") {
-		if item == "null" {
-			continue
-		}
-		status, err := strconv.Atoi(pythonNumericString(item))
-		if err != nil {
-			return ErrPaginationRuntime
-		}
-		statuses = append(statuses, status)
+	statuses, err := parseIntakeStatuses(strings.Split(value, ","))
+	if err != nil {
+		return err
 	}
 	if len(statuses) > 0 {
 		builder.addCondition("intake_issue.status = ANY(%s)", statuses)
 	}
 	return nil
+}
+
+func parseIntakeStatuses(values []string) ([]int, error) {
+	statuses := make([]int, 0, len(values))
+	for _, value := range values {
+		if value == "null" {
+			continue
+		}
+		status, err := strconv.ParseInt(pythonNumericString(value), 10, 32)
+		if err != nil {
+			return nil, ErrBadRequest
+		}
+		statuses = append(statuses, int(status))
+	}
+	return statuses, nil
 }
 
 func addIssueFilters(builder *whereBuilder, alias string, filters map[string]string, present map[string]bool, draft bool, timezone string) error {
@@ -687,13 +695,9 @@ func addIssueFilters(builder *whereBuilder, alias string, filters map[string]str
 		statuses, hasStatusFilter = inboxStatuses, true
 	}
 	if hasStatusFilter {
-		parsed := make([]int, 0, len(statuses))
-		for _, status := range statuses {
-			value, err := strconv.Atoi(pythonNumericString(status))
-			if err != nil {
-				return ErrPaginationRuntime
-			}
-			parsed = append(parsed, value)
+		parsed, err := parseIntakeStatuses(statuses)
+		if err != nil {
+			return err
 		}
 		builder.addCondition("EXISTS (SELECT 1 FROM intake_issues filtered_intake WHERE filtered_intake.issue_id = "+alias+".id AND filtered_intake.status = ANY(%s))", parsed)
 	}
@@ -1144,11 +1148,11 @@ WITH filtered AS (
 )
 SELECT json_build_object(
   'grouped_by', NULL, 'sub_grouped_by', NULL, 'total_count', counted.total,
-  'next_cursor', concat(%[2]s::int, ':', (%[3]s::int / %[2]s::int) + 1, ':0'),
-  'prev_cursor', concat(%[2]s::int, ':', (%[3]s::int / %[2]s::int) - 1, ':1'),
-  'next_page_results', counted.total > %[3]s::int + %[2]s::int,
-  'prev_page_results', %[3]s::int > 0, 'count', count(draft.id)::int,
-  'total_pages', ceil(counted.total::numeric / %[2]s::int)::int,
+  'next_cursor', concat(%[2]s::bigint, ':', (%[3]s::bigint / %[2]s::bigint) + 1, ':0'),
+  'prev_cursor', concat(%[2]s::bigint, ':', (%[3]s::bigint / %[2]s::bigint) - 1, ':1'),
+  'next_page_results', counted.total > %[3]s::bigint + %[2]s::bigint,
+  'prev_page_results', %[3]s::bigint > 0, 'count', count(draft.id)::int,
+  'total_pages', ceil(counted.total::numeric / %[2]s::bigint)::int,
   'total_results', counted.total, 'extra_stats', NULL,
   'results', COALESCE(json_agg(` + draftIssueProjection + ` ORDER BY draft.ordinal) FILTER (WHERE draft.id IS NOT NULL), '[]'::json)
 )
@@ -1180,11 +1184,11 @@ WITH filtered AS (
 )
 SELECT json_build_object(
   'grouped_by', NULL, 'sub_grouped_by', NULL, 'total_count', counted.total,
-  'next_cursor', concat(%[3]s::int, ':', (%[4]s::int / %[3]s::int) + 1, ':0'),
-  'prev_cursor', concat(%[3]s::int, ':', (%[4]s::int / %[3]s::int) - 1, ':1'),
-  'next_page_results', counted.total > %[4]s::int + %[3]s::int,
-  'prev_page_results', %[4]s::int > 0, 'count', count(intake_issue.id)::int,
-  'total_pages', ceil(counted.total::numeric / %[3]s::int)::int, 'total_results', counted.total,
+  'next_cursor', concat(%[3]s::bigint, ':', (%[4]s::bigint / %[3]s::bigint) + 1, ':0'),
+  'prev_cursor', concat(%[3]s::bigint, ':', (%[4]s::bigint / %[3]s::bigint) - 1, ':1'),
+  'next_page_results', counted.total > %[4]s::bigint + %[3]s::bigint,
+  'prev_page_results', %[4]s::bigint > 0, 'count', count(intake_issue.id)::int,
+  'total_pages', ceil(counted.total::numeric / %[3]s::bigint)::int, 'total_results', counted.total,
   'extra_stats', NULL,
   'results', COALESCE(json_agg(json_build_object(
     'id', intake_issue.id, 'status', intake_issue.status, 'duplicate_to', intake_issue.duplicate_to_id,

@@ -325,7 +325,7 @@ func intakeInboxReadsRepositoryError(err error, notFound string) error {
 	if errors.Is(err, store.ErrPerPageTooLarge) {
 		return &api.IntakeInboxReadsBadRequest{Detail: "Invalid per_page value. Cannot exceed 1000."}
 	}
-	if errors.Is(err, store.ErrInvalidCursor) {
+	if errors.Is(err, store.ErrInvalidCursor) || errors.Is(err, store.ErrInvalidDescriptionCursor) {
 		return &api.IntakeInboxReadsBadRequest{Detail: "Invalid cursor parameter."}
 	}
 	if errors.Is(err, store.ErrPaginationParsing) {

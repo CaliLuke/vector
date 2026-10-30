@@ -144,11 +144,11 @@ func customViewCreationInput(ctx context.Context, body io.ReadCloser) (djangoinp
 func (s *customViewCreationService) CreateProjectView(ctx context.Context, payload *api.CreateProjectViewPayload, body io.ReadCloser) error {
 	principal, err := s.prepare(ctx)
 	if err != nil {
-		closeCustomViewBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return err
 	}
 	if projectTargetErr := s.repo.ProjectTarget(ctx, principal.userID, payload.Slug, payload.ProjectID); projectTargetErr != nil {
-		closeCustomViewBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return s.mapError(projectTargetErr)
 	}
 	input, err := customViewCreationInput(ctx, body)
@@ -190,11 +190,11 @@ func (s *customViewCreationService) CreateProjectView(ctx context.Context, paylo
 func (s *customViewCreationService) CreateWorkspaceView(ctx context.Context, payload *api.CreateWorkspaceViewPayload, body io.ReadCloser) error {
 	principal, err := s.prepare(ctx)
 	if err != nil {
-		closeCustomViewBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return err
 	}
 	if workspaceTargetErr := s.repo.WorkspaceTarget(ctx, principal.userID, payload.Slug); workspaceTargetErr != nil {
-		closeCustomViewBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return s.mapError(workspaceTargetErr)
 	}
 	input, err := customViewCreationInput(ctx, body)
@@ -245,12 +245,6 @@ func (s *customViewCreationService) mapError(err error) error {
 
 func (s *customViewCreationService) internal() error {
 	return s.error(http.StatusInternalServerError, map[string]any{"error": "Something went wrong please try again later"})
-}
-
-func closeCustomViewBody(body io.ReadCloser) {
-	if body != nil {
-		_ = body.Close()
-	}
 }
 
 var _ api.Service = (*customViewCreationService)(nil)

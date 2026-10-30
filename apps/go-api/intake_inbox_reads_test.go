@@ -195,7 +195,7 @@ func TestListServicesPreserveExplicitEmptyQueryPresence(t *testing.T) {
 	}
 }
 
-func TestDescriptionServicePreservesEmptyCursorAsDjangoJSON500(t *testing.T) {
+func TestDescriptionServiceRejectsExplicitEmptyCursorAsClientError(t *testing.T) {
 	repository := &intakeInboxReadsRepositoryStub{err: store.ErrInvalidDescriptionCursor}
 	service, ctx := authenticatedIntakeReadsService(t, repository)
 	ctx = WithReadServiceQueryPresence(ctx, url.Values{"cursor": {""}})
@@ -203,8 +203,8 @@ func TestDescriptionServicePreservesEmptyCursorAsDjangoJSON500(t *testing.T) {
 	_, _, err := service.DescriptionVersionList(ctx, &api.DescriptionVersionListPayload{
 		Slug: "demo", ProjectID: intakeReadsProjectID, WorkItemID: intakeReadsObjectID,
 	})
-	var internal *api.IntakeInboxReadsInternalError
-	if !errors.As(err, &internal) || repository.descriptionCursor == nil || *repository.descriptionCursor != "" || ReadServiceDjangoHTML500(ctx) {
+	var badRequest *api.IntakeInboxReadsBadRequest
+	if !errors.As(err, &badRequest) || badRequest.Detail != "Invalid cursor parameter." || repository.descriptionCursor == nil || *repository.descriptionCursor != "" || ReadServiceDjangoHTML500(ctx) {
 		t.Fatalf("err=%T cursor=%v html500=%v", err, repository.descriptionCursor, ReadServiceDjangoHTML500(ctx))
 	}
 }
@@ -385,7 +385,7 @@ func TestRepositoryErrorsMapToStableDjangoShapes(t *testing.T) {
 	}
 }
 
-func TestPaginationErrorsMapToExactDjangoDetail(t *testing.T) {
+func TestPaginationErrorsMapToClientDetails(t *testing.T) {
 	for _, test := range []struct {
 		err    error
 		detail string
@@ -393,20 +393,14 @@ func TestPaginationErrorsMapToExactDjangoDetail(t *testing.T) {
 		{err: store.ErrInvalidPerPage, detail: "Invalid per_page parameter."},
 		{err: store.ErrPerPageTooLarge, detail: "Invalid per_page value. Cannot exceed 1000."},
 		{err: store.ErrInvalidCursor, detail: "Invalid cursor parameter."},
+		{err: store.ErrInvalidDescriptionCursor, detail: "Invalid cursor parameter."},
+		{err: store.ErrBadRequest, detail: "Invalid pagination or filter parameter."},
 	} {
 		mapped := intakeInboxReadsRepositoryError(test.err, "")
 		var badRequest *api.IntakeInboxReadsBadRequest
 		if !errors.As(mapped, &badRequest) || badRequest.Detail != test.detail {
 			t.Errorf("error %v mapped to %T %v", test.err, mapped, mapped)
 		}
-	}
-}
-
-func TestMalformedDescriptionCursorPreservesDjangoInternalError(t *testing.T) {
-	mapped := intakeInboxReadsRepositoryError(store.ErrInvalidDescriptionCursor, "")
-	var internal *api.IntakeInboxReadsInternalError
-	if !errors.As(mapped, &internal) || internal.Message != intakeInboxReadsInternalErrorDetail {
-		t.Fatalf("mapped=%T %v", mapped, mapped)
 	}
 }
 

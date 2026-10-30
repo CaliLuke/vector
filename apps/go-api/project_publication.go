@@ -131,7 +131,7 @@ func publicationInput(ctx context.Context, body io.ReadCloser) (djangoinput.Inpu
 func (s *projectPublicationService) Create(ctx context.Context, p *api.CreatePayload, body io.ReadCloser) (*api.ProjectPublicationRawJSON, io.ReadCloser, error) {
 	principal, err := s.principal(ctx)
 	if err != nil {
-		closeCustomViewBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return nil, nil, err
 	}
 	input, err := publicationInput(ctx, body)
@@ -169,15 +169,15 @@ func (s *projectPublicationService) Create(ctx context.Context, p *api.CreatePay
 func (s *projectPublicationService) Update(ctx context.Context, p *api.UpdatePayload, body io.ReadCloser) (*api.ProjectPublicationRawJSON, io.ReadCloser, error) {
 	principal, err := s.principal(ctx)
 	if err != nil {
-		closeCustomViewBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return nil, nil, err
 	}
 	if _, e := uuid.Parse(p.Pk); e != nil {
-		closeCustomViewBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return nil, nil, s.notFound()
 	}
 	if existsErr := s.repo.Exists(ctx, p.Slug, p.ProjectID, p.Pk); existsErr != nil {
-		closeCustomViewBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return nil, nil, s.mapError(existsErr)
 	}
 	input, err := publicationInput(ctx, body)

@@ -92,11 +92,10 @@ func TestDraftIssueListScopesCreatorTenantFiltersAndProjection(t *testing.T) {
 	}
 }
 
-func TestDraftIssueListPreservesIncumbentBrokenSharedFilters(t *testing.T) {
+func TestDraftIssueListRejectsUnsupportedFilters(t *testing.T) {
 	validID := uuid.New().String()
 	tests := []ListOptions{
-		{Filters: map[string]string{}, PresentFilters: map[string]bool{"labels": true}},
-		{Filters: map[string]string{"assignees": validID}},
+		{Filters: map[string]string{"subscriber": validID}},
 		{Filters: map[string]string{"mentions": validID}},
 		{Filters: map[string]string{"logged_by": "None"}},
 		{Filters: map[string]string{"intake_status": "1"}},
@@ -104,11 +103,11 @@ func TestDraftIssueListPreservesIncumbentBrokenSharedFilters(t *testing.T) {
 	for _, options := range tests {
 		database := &repositoryDatabaseStub{rows: []pgx.Row{repositoryBoolRow(true)}}
 		repository, _ := NewRepository(database)
-		if _, err := repository.DraftIssueList(context.Background(), uuid.New(), "demo", options); !errors.Is(err, ErrPaginationRuntime) {
+		if _, err := repository.DraftIssueList(context.Background(), uuid.New(), "demo", options); !errors.Is(err, ErrBadRequest) {
 			t.Errorf("options=%+v err=%v", options, err)
 		}
 		if len(database.queries) != 1 {
-			t.Errorf("broken draft filter reached data query: %v", database.queries)
+			t.Errorf("unsupported draft filter reached data query: %v", database.queries)
 		}
 	}
 }
@@ -506,7 +505,7 @@ func TestListFilterErrorsPrecedePaginationErrors(t *testing.T) {
 	_, err = intakeRepository.IntakeIssueList(context.Background(), uuid.New(), "demo", uuid.New(), ListOptions{
 		PerPage: "bad", PerPageSet: true, StatusSet: true, Filters: map[string]string{"status": "bad"},
 	})
-	if !errors.Is(err, ErrPaginationRuntime) {
+	if !errors.Is(err, ErrBadRequest) {
 		t.Fatalf("intake combined status/pagination err=%v", err)
 	}
 	if len(intakeDatabase.queries) != 2 {
@@ -540,7 +539,7 @@ func TestPaginationErrorsPreserveDjangoParameterDetail(t *testing.T) {
 	if _, err := parseOffsetPagination("", false, "invalid", true); !errors.Is(err, ErrInvalidCursor) {
 		t.Fatalf("cursor err=%v", err)
 	}
-	if _, err := parseOffsetPagination("0", true, "", false); !errors.Is(err, ErrPaginationRuntime) {
+	if _, err := parseOffsetPagination("0", true, "", false); !errors.Is(err, ErrInvalidPerPage) {
 		t.Fatalf("zero per_page err=%v", err)
 	}
 	if _, err := parseOffsetPagination("", false, "1e3:0:0", true); !errors.Is(err, ErrInvalidCursor) {
@@ -552,11 +551,11 @@ func TestPaginationErrorsPreserveDjangoParameterDetail(t *testing.T) {
 	if pagination, err := parseOffsetPagination("", false, "1000:2:9", true); err != nil || pagination.page != 2 {
 		t.Fatalf("matching truthy is_prev cursor pagination=%+v err=%v", pagination, err)
 	}
-	if _, err := parseOffsetPagination("", false, "10:2:1", true); !errors.Is(err, ErrPaginationRuntime) {
+	if _, err := parseOffsetPagination("", false, "10:2:1", true); !errors.Is(err, ErrInvalidCursor) {
 		t.Fatalf("mismatched truthy is_prev cursor err=%v", err)
 	}
-	if pagination, err := parseOffsetPagination("", false, "1.e999:0:0", true); err != nil || pagination.page != 0 {
-		t.Fatalf("overflowing Python float cursor pagination=%+v err=%v", pagination, err)
+	if _, err := parseOffsetPagination("", false, "1.e999:0:0", true); !errors.Is(err, ErrInvalidCursor) {
+		t.Fatalf("overflowing Python float cursor err=%v", err)
 	}
 	if pagination, err := parseOffsetPagination(" 2_0 ", true, " 2_0 : 2 : 9 ", true); err != nil || pagination.limit != 20 || pagination.page != 2 {
 		t.Fatalf("whitespace pagination=%+v err=%v", pagination, err)
@@ -564,7 +563,7 @@ func TestPaginationErrorsPreserveDjangoParameterDetail(t *testing.T) {
 	if _, err := parseOffsetPagination("999999999999999999999999", true, "", false); !errors.Is(err, ErrPerPageTooLarge) {
 		t.Fatalf("huge positive per_page err=%v", err)
 	}
-	if _, err := parseOffsetPagination("-999999999999999999999999", true, "", false); !errors.Is(err, ErrPaginationRuntime) {
+	if _, err := parseOffsetPagination("-999999999999999999999999", true, "", false); !errors.Is(err, ErrInvalidPerPage) {
 		t.Fatalf("huge negative per_page err=%v", err)
 	}
 	if pagination, err := parseOffsetPagination("١", true, "١:٠:٠", true); err != nil || pagination.limit != 1 || pagination.page != 0 {
@@ -582,10 +581,10 @@ func TestPaginationErrorsPreserveDjangoParameterDetail(t *testing.T) {
 	if _, err := parseOffsetPagination("", false, "1000:-999999999999999999999999:0", true); !errors.Is(err, ErrPaginationParsing) {
 		t.Fatalf("huge negative cursor page err=%v", err)
 	}
-	if _, err := parseOffsetPagination("", false, "1000:999999999999999999999999:0", true); !errors.Is(err, ErrPaginationRuntime) {
+	if _, err := parseOffsetPagination("", false, "1000:999999999999999999999999:0", true); !errors.Is(err, ErrInvalidCursor) {
 		t.Fatalf("huge positive cursor page err=%v", err)
 	}
-	if _, err := parseOffsetPagination("1000", true, "1000:2305843009213693952:0", true); !errors.Is(err, ErrPaginationRuntime) {
+	if _, err := parseOffsetPagination("1000", true, "1000:2305843009213693952:0", true); !errors.Is(err, ErrInvalidCursor) {
 		t.Fatalf("overflowing cursor offset err=%v", err)
 	}
 	invalidDescriptionCursor := "invalid"
@@ -847,12 +846,12 @@ func TestExplicitEmptyTypeAndRelationPresencePreserveDjangoFiltering(t *testing.
 	}
 }
 
-func TestMalformedStatusFiltersPreserveDjangoInternalError(t *testing.T) {
+func TestMalformedStatusFiltersReturnClientErrors(t *testing.T) {
 	builder := newWhereBuilder(uuid.New(), "demo")
-	if err := addIntakeStatuses(builder, "", true); !errors.Is(err, ErrPaginationRuntime) {
+	if err := addIntakeStatuses(builder, "", true); !errors.Is(err, ErrBadRequest) {
 		t.Fatalf("explicit empty status err=%v", err)
 	}
-	if err := addIssueFilters(builder, "issue", map[string]string{"intake_status": "invalid"}, nil, false, "UTC"); !errors.Is(err, ErrPaginationRuntime) {
+	if err := addIssueFilters(builder, "issue", map[string]string{"intake_status": "invalid"}, nil, false, "UTC"); !errors.Is(err, ErrBadRequest) {
 		t.Fatalf("invalid intake_status err=%v", err)
 	}
 	if strings.Contains(strings.Join(builder.conditions, " "), "filtered_intake.deleted_at") {
