@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "fast",
-  "fileCount": 3736,
+  "fileCount": 3747,
   "diagnostics": [
     {
       "diagnostic": {
@@ -450,15 +450,6 @@
         "severity": "warning",
         "code": "unicorn(no-array-sort)",
         "message": "Use `Array#toSorted()` instead of `Array#sort()`."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/space/hooks/use-clipboard-write-permission.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
       },
       "count": 1
     },
@@ -2880,15 +2871,6 @@
         "severity": "warning",
         "code": "unicorn(no-array-sort)",
         "message": "Use `Array#toSorted()` instead of `Array#sort()`."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/views/default-view-quick-action.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
       },
       "count": 1
     },

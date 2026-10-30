@@ -4,6 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useMemo } from "react";
+import { useClipboardCopy } from "@plane/hooks";
+import { copyTextToClipboard } from "@plane/utils/string";
+import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Link2Off } from "lucide-react";
 import { CopyIcon, GlobeIcon, EditIcon } from "@plane/propel/icons";
 // components
@@ -17,15 +21,20 @@ export function LinkPreview({
   switchView: (view: LinkViews) => void;
 }) {
   const { editor, from, to, url } = viewProps;
+  const scope = useMemo(() => ({ editor, from, to, url }), [editor, from, to, url]);
+  const { copy } = useClipboardCopy(scope);
 
   const removeLink = () => {
     editor.view.dispatch(editor.state.tr.removeMark(from, to, editor.schema.marks.link));
     viewProps.closeLinkView();
   };
 
-  const copyLinkToClipboard = () => {
-    navigator.clipboard.writeText(url);
-    viewProps.closeLinkView();
+  const copyLinkToClipboard = async () => {
+    const result = await copy(() => copyTextToClipboard(url));
+    if (result === "copied") viewProps.closeLinkView();
+    else if (result === "failed") {
+      setToast({ type: TOAST_TYPE.ERROR, title: "Could not copy link", message: "Please try again." });
+    }
   };
 
   return (
@@ -39,7 +48,10 @@ export function LinkPreview({
         <GlobeIcon width={14} height={14} className="inline-block" />
         <p>{url?.length > 40 ? url.slice(0, 40) + "..." : url}</p>
         <div className="flex gap-2">
-          <button onClick={copyLinkToClipboard} className="cursor-pointer transition-colors hover:text-primary">
+          <button
+            onClick={() => void copyLinkToClipboard()}
+            className="cursor-pointer transition-colors hover:text-primary"
+          >
             <CopyIcon width={14} height={14} className="inline-block" />
           </button>
           {editor.isEditable && (

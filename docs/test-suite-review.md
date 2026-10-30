@@ -41,6 +41,17 @@ rejected requests perform no writes or notifications. PostgreSQL regressions
 compare memberships and member properties before and after rejection. Existing
 permission, identity and successful-write tests continue to cover accepted inputs.
 
+The audited clipboard actions now report success only after the browser accepts
+the copy. Failures produce feedback and permit retry. The shared fallback checks
+`execCommand` results and removes its temporary input even on failure. Public
+pages use that same helper. Copying remains available without a Permissions API
+probe, since the `clipboard-write` permission is not portable across browsers
+([MDN](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API)). Tests
+cover rejection, retry, focus restoration, event handling, timer replacement,
+and completion after a view or account changes. Scoped feedback in the editor,
+work-item toast, inbox, cycle, module and view menus stays with its initiating
+request. Rich-text clipboard formats retain their separate checked copy path.
+
 All floating-point ordering columns now have finite-value constraints. Migration
 43 repairs historical NaN and infinity positions to a fallback order of 65535.
 PostgreSQL tests cover all 20 additional columns alongside the existing label

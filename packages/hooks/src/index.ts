@@ -12,3 +12,4 @@ export * from "./use-platform-os";
 export * from "./use-resend-code-form";
 export * from "./query-client";
 export * from "./use-record-collection";
+export * from "./use-clipboard-copy";

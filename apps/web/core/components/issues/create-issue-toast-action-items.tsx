@@ -4,7 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import React, { useState } from "react";
+import React from "react";
+import { useClipboardCopy } from "@plane/hooks";
 
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import { copyUrlToClipboard } from "@plane/utils/string";
@@ -25,8 +26,7 @@ type TCreateIssueToastActionItems = {
 
 export const CreateIssueToastActionItems = function CreateIssueToastActionItems(props: TCreateIssueToastActionItems) {
   const { workspaceSlug, issueId, isEpic = false } = props;
-  // state
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useClipboardCopy(JSON.stringify([workspaceSlug, props.projectId, issueId, isEpic]), 3000);
   // store hooks
   const issueData = useWorkItemDetail(
     workspaceSlug,
@@ -53,15 +53,11 @@ export const CreateIssueToastActionItems = function CreateIssueToastActionItems(
   });
 
   const copyToClipboard = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    try {
-      await copyUrlToClipboard(workItemLink);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 3000);
-    } catch (_error) {
-      setCopied(false);
-    }
     e.preventDefault();
     e.stopPropagation();
+    if ((await copy(() => copyUrlToClipboard(workItemLink))) === "failed") {
+      setToast({ type: TOAST_TYPE.ERROR, title: "Could not copy link", message: "Please try again." });
+    }
   };
 
   return (

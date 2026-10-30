@@ -7,11 +7,22 @@ import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 import { resolvePackageStub } from "./helpers/module-stubs.mjs";
 
 registerWebModuleHooks();
-const fixture = { React, modal: undefined, writes: [], navigations: [], save: undefined };
+const fixture = {
+  React,
+  toasts: [],
+  copy: async () => {},
+  client: undefined,
+  modal: undefined,
+  writes: [],
+  navigations: [],
+  save: undefined,
+};
 globalThis.intakeAcceptNavigationFixture = fixture;
 const state = "globalThis.intakeAcceptNavigationFixture";
 const empty = (name) => `export const ${name} = () => null;`;
 const stubs = {
+  "@plane/utils/string": `export const copyUrlToClipboard = path => ${state}.copy(path);`,
+  "@plane/propel/toast": `export const TOAST_TYPE={SUCCESS:'success',ERROR:'error'};export const setToast=toast=>${state}.toasts.push(toast);`,
   "@tanstack/react-router": `export const useRouter = () => ({ navigate: (to) => { ${state}.navigations.push(to); return Promise.resolve(); } });`,
   "@plane/i18n": `export const useTranslation = () => ({ t: (key) => key });`,
   "@/hooks/use-current-user": `export const useCurrentUser = () => ({ data: ${state}.user });`,
@@ -31,9 +42,9 @@ registerHooks({
 });
 const { EInboxIssueStatus, EInboxIssueCurrentTab } = webRequire("@plane/types");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
-const { identityKeys } = await import("../../apps/web/core/queries/identity.ts");
+const { identityKeys, advanceIdentitySession } = await import("../../apps/web/core/queries/identity.ts");
 
-async function setup(t, anonymous = false) {
+async function setup(t, anonymous = false, copyOnly = false) {
   const env = await createReactDomTestEnvironment();
   const client = new QueryClient({ defaultOptions: { queries: { gcTime: Infinity, retry: false } } });
   client.setQueryData(identityKeys.currentUser(), anonymous ? undefined : { id: "alice" });
@@ -42,6 +53,9 @@ async function setup(t, anonymous = false) {
   });
   const { InboxIssueActionsHeader } =
     await import("../../apps/web/core/components/inbox/content/inbox-issue-header.tsx");
+  fixture.client = client;
+  fixture.toasts = [];
+  fixture.copy = async () => {};
   fixture.user = anonymous ? undefined : { id: "alice" };
   fixture.writes = [];
   fixture.navigations = [];
@@ -55,7 +69,7 @@ async function setup(t, anonymous = false) {
         projectId: "project",
         inboxIssue: {
           id: "intake-1",
-          status: EInboxIssueStatus.PENDING,
+          status: copyOnly ? EInboxIssueStatus.ACCEPTED : EInboxIssueStatus.PENDING,
           issue: { id: "item-1", project_id: "project", sequence_id: 1, created_by: anonymous ? undefined : "alice" },
         },
         navigation: { tab: EInboxIssueCurrentTab.OPEN, issueIds: ["item-1", "item-2"] },
@@ -67,7 +81,7 @@ async function setup(t, anonymous = false) {
       })
     )
   );
-  if (anonymous) return env;
+  if (anonymous || copyOnly) return env;
   const accept = [...env.container.querySelectorAll("button")].find((button) =>
     button.textContent.includes("inbox_issue.actions.accept")
   );
@@ -77,7 +91,7 @@ async function setup(t, anonymous = false) {
   return env;
 }
 
-await test("acceptance keeps the editor open until its subsequent work-item save succeeds", async (t) => {
+void test("acceptance keeps the editor open until its subsequent work-item save succeeds", async (t) => {
   const env = await setup(t);
   await act(async () => fixture.modal.beforeFormSubmit());
   assert.equal(fixture.writes[0].data.status, EInboxIssueStatus.ACCEPTED);
@@ -89,7 +103,7 @@ await test("acceptance keeps the editor open until its subsequent work-item save
   assert.match(fixture.navigations[0].href, /inboxIssueId=item-2/);
 });
 
-await test("rejected intake acceptance leaves the editor and current route intact", async (t) => {
+void test("rejected intake acceptance leaves the editor and current route intact", async (t) => {
   const env = await setup(t);
   fixture.save = async () => {
     throw new Error("acceptance rejected");
@@ -99,7 +113,7 @@ await test("rejected intake acceptance leaves the editor and current route intac
   assert.deepEqual(fixture.navigations, []);
 });
 
-await test("an unavailable account cannot inherit creator-only delete controls from a missing creator", async (t) => {
+void test("an unavailable account cannot inherit creator-only delete controls from a missing creator", async (t) => {
   const env = await setup(t, true);
   const menuButton = env.container.querySelector('button[aria-haspopup="menu"]');
   assert.ok(menuButton, "the mobile action menu should be mounted");
@@ -107,3 +121,47 @@ await test("an unavailable account cannot inherit creator-only delete controls f
   assert.equal(document.querySelector('[role="menuitem"]'), null, "no write action is available without an account");
   assert.deepEqual(fixture.writes, []);
 });
+
+function copyButton(env) {
+  const button = [...env.container.querySelectorAll("button")].find((candidate) =>
+    candidate.textContent.includes("inbox_issue.actions.copy")
+  );
+  assert.ok(button);
+  return button;
+}
+void test("intake clipboard rejection reports failure and allows retry", async (t) => {
+  const env = await setup(t, false, true);
+  let pending = Promise.withResolvers();
+  const paths = [];
+  fixture.copy = (path) => {
+    paths.push(path);
+    return pending.promise;
+  };
+  await act(async () => copyButton(env).click());
+  assert.deepEqual(fixture.toasts, []);
+  await act(async () => pending.reject(new Error("clipboard denied")));
+  assert.equal(fixture.toasts.at(-1).type, "error");
+  pending = Promise.withResolvers();
+  await act(async () => copyButton(env).click());
+  await act(async () => pending.resolve());
+  assert.deepEqual(
+    fixture.toasts.map((toast) => toast.type),
+    ["error", "success"]
+  );
+  assert.equal(paths.length, 2);
+  assert.equal(paths[0], paths[1]);
+  assert.deepEqual(fixture.writes, []);
+});
+for (const change of ["identity", "unmount"])
+  for (const outcome of ["resolve", "reject"])
+    void test(`intake copy ignores ${outcome} after ${change}`, async (t) => {
+      const env = await setup(t, false, true);
+      const pending = Promise.withResolvers();
+      fixture.copy = () => pending.promise;
+      await act(async () => copyButton(env).click());
+      if (change === "identity") await act(async () => advanceIdentitySession(fixture.client));
+      else await env.render(null);
+      await act(async () => pending[outcome](new Error("denied")));
+      assert.deepEqual(fixture.toasts, []);
+      assert.deepEqual(fixture.writes, []);
+    });

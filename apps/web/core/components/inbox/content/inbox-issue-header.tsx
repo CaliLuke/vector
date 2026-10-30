@@ -224,13 +224,18 @@ function InboxIssueActions(props: TInboxIssueActionsHeader & { isCurrent: () => 
   };
 
   const handleCopyIssueLink = async (path: string) => {
-    await copyUrlToClipboard(path);
-    if (!isCurrent()) return;
-    setToast({
-      type: TOAST_TYPE.SUCCESS,
-      title: t("common.link_copied"),
-      message: t("common.copied_to_clipboard"),
-    });
+    try {
+      await copyUrlToClipboard(path);
+      if (!isCurrent()) return;
+      setToast({
+        type: TOAST_TYPE.SUCCESS,
+        title: t("common.link_copied"),
+        message: t("common.copied_to_clipboard"),
+      });
+    } catch {
+      if (!isCurrent()) return;
+      setToast({ type: TOAST_TYPE.ERROR, title: "Could not copy to clipboard", message: "Please try again." });
+    }
   };
 
   const currentIssueIndex = filteredInboxIssueIds.findIndex((issueId) => issueId === currentInboxIssueId);

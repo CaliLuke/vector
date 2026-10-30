@@ -85,14 +85,18 @@ export const SidebarProjectsList = function SidebarProjectsList() {
   );
 
   const handleCopyText = (projectId: string) => {
-    copyUrlToClipboard(`${workspaceSlug}/projects/${projectId}/issues`).then(() => {
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: t("link_copied"),
-        message: t("project_link_copied_to_clipboard"),
+    copyUrlToClipboard(`${workspaceSlug}/projects/${projectId}/issues`)
+      .then(() => {
+        setToast({
+          type: TOAST_TYPE.SUCCESS,
+          title: t("link_copied"),
+          message: t("project_link_copied_to_clipboard"),
+        });
+        return undefined;
+      })
+      .catch(() => {
+        setToast({ type: TOAST_TYPE.ERROR, title: "Could not copy to clipboard", message: "Please try again." });
       });
-      return undefined;
-    });
   };
 
   /**

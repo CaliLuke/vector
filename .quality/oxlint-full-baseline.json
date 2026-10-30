@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "full",
-  "fileCount": 3740,
+  "fileCount": 3747,
   "diagnostics": [
     {
       "diagnostic": {
@@ -36,15 +36,6 @@
         "severity": "warning",
         "code": "react(set-state-in-effect)",
         "message": "Calling setState synchronously within an effect can trigger cascading renders"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/admin/components/common/copy-field.tsx",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
       },
       "count": 1
     },
@@ -906,15 +897,6 @@
     {
       "diagnostic": {
         "filename": "apps/space/components/issues/peek-overview/header.tsx",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/space/components/issues/peek-overview/header.tsx",
         "severity": "warning",
         "code": "jsx-a11y(tabindex-no-positive)",
         "message": "Avoid positive integer values for `tabIndex`."
@@ -945,15 +927,6 @@
         "severity": "warning",
         "code": "unicorn(consistent-function-scoping)",
         "message": "Function `handleCopyLink` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/space/components/issues/peek-overview/issue-properties.tsx",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
       },
       "count": 1
     },
@@ -1035,24 +1008,6 @@
         "severity": "warning",
         "code": "unicorn(no-array-sort)",
         "message": "Use `Array#toSorted()` instead of `Array#sort()`."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/space/hooks/use-clipboard-write-permission.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/space/hooks/use-clipboard-write-permission.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe type assertion: type 'PermissionName' is more narrow than the original type."
       },
       "count": 1
     },
@@ -1568,15 +1523,6 @@
         "message": "Do not define components during render."
       },
       "count": 14
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/api-token/modal/generated-token-details.tsx",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
-      },
-      "count": 1
     },
     {
       "diagnostic": {
@@ -2754,15 +2700,6 @@
         "severity": "warning",
         "code": "typescript(no-unnecessary-type-arguments)",
         "message": "This is the default value for this type parameter, so it can be omitted."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/home/widgets/links/link-detail.tsx",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
       },
       "count": 1
     },
@@ -4464,15 +4401,6 @@
         "severity": "error",
         "code": "typescript(no-misused-promises)",
         "message": "Promise-returning function provided to attribute where a void return was expected."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/modules/links/list-item.tsx",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
       },
       "count": 1
     },
@@ -6603,15 +6531,6 @@
     {
       "diagnostic": {
         "filename": "apps/web/core/components/workspace/sidebar/projects-list.tsx",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/sidebar/projects-list.tsx",
         "severity": "warning",
         "code": "typescript(consistent-return)",
         "message": "Function expected no return value."
@@ -6651,15 +6570,6 @@
         "severity": "error",
         "code": "typescript(no-misused-promises)",
         "message": "Promise-returning function provided to property where a void return was expected."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "apps/web/core/components/workspace/views/default-view-quick-action.tsx",
-        "severity": "warning",
-        "code": "promise(always-return)",
-        "message": "Each then() should return a value or throw"
       },
       "count": 1
     },
@@ -7470,15 +7380,6 @@
         "severity": "warning",
         "code": "jsx-a11y(no-noninteractive-tabindex)",
         "message": "`tabIndex` should only be declared on interactive elements."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/editor/src/core/components/links/link-preview.tsx",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
       },
       "count": 1
     },
@@ -12944,15 +12845,6 @@
         "message": "Unexpected dangling '_' in '`__profileTabLabelReact`'."
       },
       "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "tests/frontend/project-card-navigation.test.mjs",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
-      },
-      "count": 3
     },
     {
       "diagnostic": {

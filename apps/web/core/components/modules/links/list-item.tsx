@@ -30,13 +30,17 @@ type Props = {
 };
 
 function copyToClipboard(text: string) {
-  copyTextToClipboard(text).then(() =>
-    setToast({
-      type: TOAST_TYPE.SUCCESS,
-      title: "Copied to clipboard",
-      message: "The URL has been successfully copied to your clipboard",
-    })
-  );
+  copyTextToClipboard(text)
+    .then(() =>
+      setToast({
+        type: TOAST_TYPE.SUCCESS,
+        title: "Copied to clipboard",
+        message: "The URL has been successfully copied to your clipboard",
+      })
+    )
+    .catch(() => {
+      setToast({ type: TOAST_TYPE.ERROR, title: "Could not copy to clipboard", message: "Please try again." });
+    });
 }
 
 export const ModulesLinksListItem = function ModulesLinksListItem(props: Props) {

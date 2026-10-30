@@ -10,12 +10,11 @@ import { MoreHorizontal } from "lucide-react";
 // types
 import { EUserPermissions } from "@plane/constants";
 import { IconButton } from "@plane/propel/icon-button";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
+import { useViewLinkCopy } from "@/components/views/use-view-link-copy";
 import type { IProjectView } from "@plane/types";
 // ui
 import type { TContextMenuItem } from "@plane/ui";
 import { ContextMenu, CustomMenu } from "@plane/ui";
-import { copyUrlToClipboard } from "@plane/utils/string";
 import { cn } from "@plane/utils/common";
 // helpers
 import { useViewMenuItems } from "@/components/common/quick-actions-helper";
@@ -50,15 +49,7 @@ export const ViewQuickActions = function ViewQuickActions(props: Props) {
   const { publishContextMenu } = useViewPublish(!!view.anchor, isAdmin || isOwner);
 
   const viewLink = `${workspaceSlug}/projects/${projectId}/views/${view.id}`;
-  const handleCopyText = () =>
-    // oxlint-disable-next-line promise/always-return
-    copyUrlToClipboard(viewLink).then(() => {
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: "Link Copied!",
-        message: "View link copied to clipboard.",
-      });
-    });
+  const handleCopyText = useViewLinkCopy(viewLink);
   const handleOpenInNewTab = () => window.open(`/${viewLink}`, "_blank");
 
   const menuResult = useViewMenuItems({

@@ -69,8 +69,8 @@ export function WorkspaceInvitationsListItem(props: Props) {
         title: t("common.link_copied"),
         message: t("entity.link_copied_to_clipboard", { entity: t("common.invite") }),
       });
-    } catch (error) {
-      console.error("Error generating invite link:", error);
+    } catch {
+      setToast({ type: TOAST_TYPE.ERROR, title: "Could not copy to clipboard", message: "Please try again." });
     }
   };
 

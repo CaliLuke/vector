@@ -28,13 +28,17 @@ export function GeneratedTokenDetails(props: Props) {
   const { isMobile } = usePlatformOS();
   const { t } = useTranslation();
   const copyApiToken = (token: string) => {
-    copyTextToClipboard(token).then(() =>
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: `${t("success")}!`,
-        message: t("workspace_settings.token_copied"),
-      })
-    );
+    copyTextToClipboard(token)
+      .then(() =>
+        setToast({
+          type: TOAST_TYPE.SUCCESS,
+          title: `${t("success")}!`,
+          message: t("workspace_settings.token_copied"),
+        })
+      )
+      .catch(() => {
+        setToast({ type: TOAST_TYPE.ERROR, title: "Could not copy to clipboard", message: "Please try again." });
+      });
   };
 
   return (

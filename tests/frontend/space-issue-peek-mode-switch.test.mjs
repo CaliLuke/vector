@@ -27,9 +27,6 @@ const packageStubs = {
 
 registerHooks({
   resolve(specifier, context, nextResolve) {
-    if (specifier === "@/hooks/use-clipboard-write-permission") {
-      return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent("export default () => false;")}` };
-    }
     if (specifier === "@/helpers/string.helper") {
       return {
         shortCircuit: true,

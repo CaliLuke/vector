@@ -1,3 +1,4 @@
+import { registerHooks } from "node:module";
 import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -9,8 +10,26 @@ import { registerProjectCardModuleHooks } from "./helpers/project-card-module-ho
 
 // Keep the card's actual links, buttons, permission branches, and click handlers.
 // Isolate its services, imagery, and modal contents from the application singleton.
-const state = { navigations: [] };
+const state = { navigations: [], toasts: [], copy: async () => {}, copyMenu: [] };
+globalThis.projectCardCopyFixture = state;
 registerProjectCardModuleHooks({ React, state, showModalContents: true });
+registerHooks({
+  resolve(specifier, context, next) {
+    if (context.parentURL?.endsWith("/project/card.tsx")) {
+      const replacements = {
+        "@plane/utils/string":
+          "export const copyUrlToClipboard = path => globalThis.projectCardCopyFixture.copy(path);",
+        "@plane/propel/toast":
+          "export const TOAST_TYPE={INFO:'info',ERROR:'error'};export const setPromiseToast=()=>{};export const setToast=toast=>globalThis.projectCardCopyFixture.toasts.push(toast);",
+        "@plane/ui":
+          "export const Avatar=()=>null;export const AvatarGroup=({children})=>children;export const ContextMenu=({items})=>{globalThis.projectCardCopyFixture.copyMenu=items;return null;};",
+      };
+      if (Object.hasOwn(replacements, specifier))
+        return { shortCircuit: true, url: "data:text/javascript," + encodeURIComponent(replacements[specifier]) };
+    }
+    return next(specifier, context);
+  },
+});
 
 // Finish shared imports before a test installs DOM globals and scoped mocks.
 const { ProjectCard } = await import("../../apps/web/core/components/project/card.tsx");
@@ -54,7 +73,7 @@ async function setup(t, overrides = {}) {
   return environment.container;
 }
 
-test("project navigation and settings are independently accessible sibling links", async (t) => {
+void test("project navigation and settings are independently accessible sibling links", async (t) => {
   const container = await setup(t);
   assert.equal(container.querySelector("a a, a button"), null);
   const projectLink = container.querySelector('[aria-label="Open project Go Plane"]');
@@ -72,7 +91,7 @@ test("project navigation and settings are independently accessible sibling links
   assert.equal(state.navigations.length, 3);
 });
 
-test("nonmembers open the join dialog instead of navigating", async (t) => {
+void test("nonmembers open the join dialog instead of navigating", async (t) => {
   const container = await setup(t, { member_role: null });
   assert.equal(container.querySelector('[aria-label="Project settings for Go Plane"]'), null);
   await act(async () => container.querySelector('[aria-label="Open project Go Plane"]').click());
@@ -80,7 +99,7 @@ test("nonmembers open the join dialog instead of navigating", async (t) => {
   assert.ok(container.querySelector('[data-modal="JoinProjectModal"]'));
 });
 
-test("archived project actions stay keyboard-focusable without navigating", async (t) => {
+void test("archived project actions stay keyboard-focusable without navigating", async (t) => {
   const container = await setup(t, { archived_at: "2026-10-09T00:00:00Z" });
   await act(async () => container.querySelector('[aria-label="Open project Go Plane"]').click());
   assert.deepEqual(state.navigations, []);
@@ -92,5 +111,31 @@ test("archived project actions stay keyboard-focusable without navigating", asyn
   assert.ok(container.querySelector('[data-modal="ArchiveRestoreProjectModal"]'));
   await act(async () => container.querySelector('[aria-label="Delete project"]').click());
   assert.ok(container.querySelector('[data-modal="DeleteProjectModal"]'));
+  assert.deepEqual(state.navigations, []);
+});
+
+void test("project card copy handles rejection and waits for acceptance before feedback", async (t) => {
+  await setup(t);
+  state.toasts = [];
+  const paths = [];
+  let pending = Promise.withResolvers();
+  state.copy = (path) => {
+    paths.push(path);
+    return pending.promise;
+  };
+  const copy = state.copyMenu.find((item) => item.key === "copy-link");
+  assert.ok(copy);
+  await act(async () => copy.action());
+  assert.deepEqual(state.toasts, []);
+  assert.deepEqual(paths, ["default/projects/project-id/issues"]);
+  await act(async () => pending.reject(new Error("clipboard denied")));
+  assert.equal(state.toasts.at(-1).type, "error");
+  pending = Promise.withResolvers();
+  await act(async () => copy.action());
+  await act(async () => pending.resolve());
+  assert.deepEqual(
+    state.toasts.map((toast) => toast.type),
+    ["error", "info"]
+  );
   assert.deepEqual(state.navigations, []);
 });

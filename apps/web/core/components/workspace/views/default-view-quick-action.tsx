@@ -7,12 +7,11 @@
 import { useTranslation } from "@plane/i18n";
 // plane imports
 import { LinkIcon, NewTabIcon } from "@plane/propel/icons";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
+import { useViewLinkCopy } from "@/components/views/use-view-link-copy";
 // ui
 import type { TStaticViewTypes } from "@plane/types";
 import type { TContextMenuItem } from "@plane/ui";
 import { CustomMenu } from "@plane/ui";
-import { copyUrlToClipboard } from "@plane/utils/string";
 import { cn } from "@plane/utils/common";
 // helpers
 type Props = {
@@ -29,14 +28,7 @@ export const DefaultWorkspaceViewQuickActions = function DefaultWorkspaceViewQui
   const { t } = useTranslation();
 
   const viewLink = `${workspaceSlug}/workspace-views/${view.key}`;
-  const handleCopyText = () =>
-    copyUrlToClipboard(viewLink).then(() => {
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: "Link Copied!",
-        message: "View link copied to clipboard.",
-      });
-    });
+  const handleCopyText = useViewLinkCopy(viewLink);
   const handleOpenInNewTab = () => window.open(`/${viewLink}`, "_blank");
 
   const MENU_ITEMS: TContextMenuItem[] = [

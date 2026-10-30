@@ -13,8 +13,6 @@ import { LinkIcon, CenterPanelIcon, FullScreenPanelIcon, SidePanelIcon } from "@
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 // helpers
 import { copyTextToClipboard } from "@/helpers/string.helper";
-// hooks
-import useClipboardWritePermission from "@/hooks/use-clipboard-write-permission";
 // types
 import type { IPeekMode } from "@/types/issue";
 import type { IPublicIssue } from "@plane/types";
@@ -47,18 +45,20 @@ const PEEK_MODES: {
 export const PeekOverviewHeader = function PeekOverviewHeader(props: Props) {
   const { handleClose, peekMode, setPeekMode } = props;
 
-  const isClipboardWriteAllowed = useClipboardWritePermission();
-
   const handleCopyLink = () => {
     const urlToCopy = window.location.href;
 
-    copyTextToClipboard(urlToCopy).then(() => {
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: "Link copied!",
-        message: "Work item link copied to clipboard.",
+    copyTextToClipboard(urlToCopy)
+      .then(() => {
+        setToast({
+          type: TOAST_TYPE.SUCCESS,
+          title: "Link copied!",
+          message: "Work item link copied to clipboard.",
+        });
+      })
+      .catch(() => {
+        setToast({ type: TOAST_TYPE.ERROR, title: "Could not copy to clipboard", message: "Please try again." });
       });
-    });
   };
 
   const Icon = PEEK_MODES.find((m) => m.key === peekMode)?.icon ?? SidePanelIcon;
@@ -116,7 +116,7 @@ export const PeekOverviewHeader = function PeekOverviewHeader(props: Props) {
             </Transition>
           </Listbox>
         </div>
-        {isClipboardWriteAllowed && (peekMode === "side" || peekMode === "modal") && (
+        {(peekMode === "side" || peekMode === "modal") && (
           <button
             type="button"
             onClick={handleCopyLink}

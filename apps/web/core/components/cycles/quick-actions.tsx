@@ -58,14 +58,20 @@ export const CycleQuickActions = function CycleQuickActions(props: Props) {
 
   const cycleLink = `${workspaceSlug}/projects/${projectId}/cycles/${cycleId}`;
   const handleCopyText = () =>
-    copyUrlToClipboard(cycleLink).then(() => {
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: t("common.link_copied"),
-        message: t("common.link_copied_to_clipboard"),
+    copyUrlToClipboard(cycleLink)
+      .then(() => {
+        if (!mounted()) return;
+        setToast({
+          type: TOAST_TYPE.SUCCESS,
+          title: t("common.link_copied"),
+          message: t("common.link_copied_to_clipboard"),
+        });
+        return;
+      })
+      .catch(() => {
+        if (!mounted()) return;
+        setToast({ type: TOAST_TYPE.ERROR, title: "Could not copy to clipboard", message: "Please try again." });
       });
-      return undefined;
-    });
   const handleOpenInNewTab = () => window.open(`/${cycleLink}`, "_blank");
 
   const handleRestoreCycle = async () => {

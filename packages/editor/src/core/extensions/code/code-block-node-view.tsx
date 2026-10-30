@@ -9,7 +9,9 @@ import { NodeViewWrapper, NodeViewContent } from "@tiptap/react";
 import ts from "highlight.js/lib/languages/typescript";
 import { common, createLowlight } from "lowlight";
 import { CheckIcon } from "lucide-react";
-import { useState } from "react";
+import { useClipboardCopy } from "@plane/hooks";
+import { copyTextToClipboard } from "@plane/utils/string";
+import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { CopyIcon } from "@plane/propel/icons";
 // ui
 import { Tooltip } from "@plane/propel/tooltip";
@@ -28,20 +30,16 @@ type Props = {
 };
 
 export function CodeBlockComponent({ node }: Props) {
-  const [copied, setCopied] = useState(false);
   // derived values
   const attrs = node.attrs as TCodeBlockAttributes;
+  const { copied, copy } = useClipboardCopy(JSON.stringify([attrs[ECodeBlockAttributeNames.ID], node.textContent]));
 
   const copyToClipboard = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    try {
-      await navigator.clipboard.writeText(node.textContent);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1000);
-    } catch {
-      setCopied(false);
-    }
     e.preventDefault();
     e.stopPropagation();
+    if ((await copy(() => copyTextToClipboard(node.textContent))) === "failed") {
+      setToast({ type: TOAST_TYPE.ERROR, title: "Could not copy code", message: "Please try again." });
+    }
   };
 
   return (

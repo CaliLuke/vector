@@ -366,13 +366,17 @@ export const ProjectCard = function ProjectCard(props: Props) {
     }
   };
   const handleCopyText = () => {
-    void copyUrlToClipboard(projectLink).then(() =>
-      setToast({
-        type: TOAST_TYPE.INFO,
-        title: "Link Copied!",
-        message: "Project link copied to clipboard.",
-      })
-    );
+    void copyUrlToClipboard(projectLink)
+      .then(() =>
+        setToast({
+          type: TOAST_TYPE.INFO,
+          title: "Link Copied!",
+          message: "Project link copied to clipboard.",
+        })
+      )
+      .catch(() => {
+        setToast({ type: TOAST_TYPE.ERROR, title: "Could not copy to clipboard", message: "Please try again." });
+      });
   };
   const handleOpenInNewTab = () => window.open(`/${projectLink}`, "_blank");
 

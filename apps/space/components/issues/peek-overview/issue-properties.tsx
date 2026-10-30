@@ -53,13 +53,17 @@ export const PeekOverviewIssueProperties = function PeekOverviewIssueProperties(
   const handleCopyLink = () => {
     const urlToCopy = window.location.href;
 
-    copyTextToClipboard(urlToCopy).then(() => {
-      setToast({
-        type: TOAST_TYPE.INFO,
-        title: "Link copied!",
-        message: "Work item link copied to clipboard",
+    copyTextToClipboard(urlToCopy)
+      .then(() => {
+        setToast({
+          type: TOAST_TYPE.INFO,
+          title: "Link copied!",
+          message: "Work item link copied to clipboard",
+        });
+      })
+      .catch(() => {
+        setToast({ type: TOAST_TYPE.ERROR, title: "Could not copy to clipboard", message: "Please try again." });
       });
-    });
   };
 
   return (

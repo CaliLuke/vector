@@ -7,10 +7,9 @@
 import { useState } from "react";
 // plane imports
 import { EUserPermissions } from "@plane/constants";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
+import { useViewLinkCopy } from "@/components/views/use-view-link-copy";
 import type { IWorkspaceView } from "@plane/types";
 import { CustomMenu } from "@plane/ui";
-import { copyUrlToClipboard } from "@plane/utils/string";
 // helpers
 import { useViewMenuItems } from "@/components/common/quick-actions-helper";
 import { renderQuickActionMenuItems } from "@/components/common/quick-action-menu";
@@ -39,15 +38,7 @@ export function WorkspaceViewQuickActions(props: Props) {
   const isAdmin = canWorkspace([EUserPermissions.ADMIN]);
 
   const viewLink = `${workspaceSlug}/workspace-views/${view.id}`;
-  const handleCopyText = async () => {
-    await copyUrlToClipboard(viewLink);
-    setToast({
-      type: TOAST_TYPE.SUCCESS,
-      title: "Link Copied!",
-      message: "View link copied to clipboard.",
-    });
-  };
-
+  const handleCopyText = useViewLinkCopy(viewLink);
   const handleOpenInNewTab = () => window.open(`/${viewLink}`, "_blank");
 
   const MENU_ITEMS = useViewMenuItems({

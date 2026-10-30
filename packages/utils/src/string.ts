@@ -351,19 +351,20 @@ const fallbackCopyTextToClipboard = (text: string) => {
   textArea.style.left = "0";
   textArea.style.position = "fixed";
 
+  const previousFocus = document.activeElement;
   document.body.appendChild(textArea);
-  textArea.focus();
-  textArea.select();
-
   try {
-    // FIXME: Even though we are using this as a fallback, execCommand is deprecated 👎. We should find a better way to do this.
-    // https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand
-    document.execCommand("copy");
-  } catch (_err) {
-    // catch fallback error
+    textArea.focus();
+    textArea.select();
+    // Preserve copying in browsers without the Clipboard API, but never report
+    // success when the legacy command is unavailable or rejects the operation.
+    if (typeof document.execCommand !== "function" || !document.execCommand("copy")) {
+      throw new Error("Clipboard copying is unavailable.");
+    }
+  } finally {
+    textArea.remove();
+    if (previousFocus instanceof HTMLElement) previousFocus.focus({ preventScroll: true });
   }
-
-  document.body.removeChild(textArea);
 };
 
 /**
