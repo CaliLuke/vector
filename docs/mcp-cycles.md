@@ -46,6 +46,12 @@ cover insert, move and removal of work-item links and module memberships.
 prove replay preserves later restoration and deletion.
 [Delete authorization](../apps/go-api/internal/mcpactions/planning_delete_authorization_integration_test.go)
 checks current owner/admin authority before replay, including a removed target.
-Their combined cycle/module run passes 52 focused MCP cases. The new regression batch
-still needs complete gates; domain authorization, contention and remaining browser
-acceptance stay open. The receipt foundation alone does not close these requirements.
+Their combined cycle/module run passes 52 focused MCP cases.
+[Role and lifecycle cases](../apps/go-api/internal/mcpactions/planning_permissions_integration_test.go)
+add 72 cases for denied scope, allowed member/admin writes and owned-delete replay.
+[Lock-wait cases](../apps/go-api/internal/mcpactions/planning_authorization_wait_integration_test.go)
+add 40 cases that revoke credentials, OAuth write scope or project membership after
+the request waits on a project lock, before a new write or receipt replay.
+These transport cases cover both credentials and protocol revisions. The new
+regression batches still need complete gates; resource binding, contention and
+remaining browser acceptance stay open.

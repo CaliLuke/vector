@@ -117,7 +117,7 @@ proof is explicit:
 | Batch                                        | Required evidence                                                                                                                                                                     | Status                                                                                                                                                                                                      |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Planning receipts and rollback               | Changed input conflicts; other writers invalidate old revisions; replay preserves later edits; failed association/effect writes roll back relations, revisions and receipts.          | 52 MCP cases pass across both credentials, protocols and domains, including native relation-writer revisions and lifecycle replay. Three deletion-worker cases also pass. Complete batch gates remain open. |
-| Planning authorization and contention        | Current roles/lifecycle and credentials govern fresh writes and replay; workspace/project/resource bindings hold; competing requests and revisions admit only the documented commits. | Source reviewed; domain-specific regression gaps remain.                                                                                                                                                    |
+| Planning authorization and contention        | Current roles/lifecycle and credentials govern fresh writes and replay; workspace/project/resource bindings hold; competing requests and revisions admit only the documented commits. | 72 role/lifecycle and 40 lock-wait cases pass across both credentials/protocols and domains. Eight native module-delete authorization cases pass. Resource-binding and contention proof remain open.        |
 | Planning browser and contract reconciliation | Native/MCP edits and lifecycle changes agree through the local proxy; stale cycle documentation matches implemented actions.                                                          | Existing partial browser evidence; remaining checks open.                                                                                                                                                   |
 
 The planning batch fixes a reproduced MCP-02 gap: an administrator could delete
@@ -127,7 +127,12 @@ can also replay after the target disappears through a native owner cascade.
 Scheduled purge retains owner authorization rows during the receipt's retry window,
 then releases them after expiry. The focused run passes 52 MCP cases plus two purge
 cases and the existing durable cascade/retention regression, with no failures or
-skips. Complete publication gates remain required before this fix is published.
+skips. The first full publication attempt passed all 13,660 Go test events and the
+TypeScript gate, but stopped at the module coverage floor (65.28% versus 65.51%).
+The fix remains local. The next MCP-01/MCP-02/COV-01 batch adds current-role and
+lock-wait authorization proofs, plus direct native module-delete authorization
+coverage now that MCP uses the shared transactional authorization path. No floor
+is lowered; complete publication gates remain required.
 
 These batches refine existing catalog entries. They do not introduce new product
 scope or replace the remaining inventory.
