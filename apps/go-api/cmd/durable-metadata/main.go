@@ -1,5 +1,5 @@
 // durable-metadata is an isolated prototype entry point. It requires an
-// explicitly configured database URL so it cannot attach to Plane's live
+// explicitly configured database URL so it cannot attach to Vector's live
 // application database by accident.
 package main
 
@@ -9,12 +9,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/assets"
+	"github.com/CaliLuke/go-plane/internal/clioutput"
 	"github.com/CaliLuke/selvedge"
 	"github.com/CaliLuke/selvedge/retry"
 	"github.com/google/uuid"
@@ -26,8 +28,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	if err := newCommand().Run(ctx, os.Args); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		os.Exit(clioutput.Report(os.Stderr, 1, "%v\n", err))
 	}
 }
 
@@ -62,27 +63,12 @@ func newCommand() *cli.Command {
 					if err != nil {
 						return err
 					}
-					defer closeApp()
 					input := assets.StorageMetadataWorkflowInput{AssetID: assetID.String(), EventID: command.String("event-id")}
-					startedID, reconciled, err := startOrReconcile(waitCtx, app, workflow, runID, input)
-					if err != nil {
-						return err
-					}
-					fmt.Fprintf(command.Root().Writer, "admitted run_id=%s reconciled=%t\n", startedID, reconciled)
-					result, err := selvedge.WaitWorkflow[struct{}](waitCtx, app, startedID)
-					if err != nil {
-						return fmt.Errorf("wait for workflow %s: %w", startedID, err)
-					}
-					if err := writeResult(command.Root().Writer, result.InstanceID, result.Status, result.Error); err != nil {
-						return err
-					}
-					if result.Status != "completed" {
-						if result.Error != nil {
-							return result.Error
-						}
-						return fmt.Errorf("workflow %s ended with status %q", result.InstanceID, result.Status)
-					}
-					return nil
+					return runMetadata(command.Root().Writer,
+						func() (string, bool, error) { return startOrReconcile(waitCtx, app, workflow, runID, input) },
+						func(id string) (*selvedge.WorkflowResult[struct{}], error) {
+							return selvedge.WaitWorkflow[struct{}](waitCtx, app, id)
+						}, closeApp)
 				},
 			},
 			{
@@ -93,10 +79,7 @@ func newCommand() *cli.Command {
 					if err != nil {
 						return err
 					}
-					defer closeApp()
-					fmt.Fprintln(command.Root().Writer, "worker ready")
-					<-ctx.Done()
-					return nil
+					return runMetadataWorker(ctx, command.Root().Writer, closeApp)
 				},
 			},
 			{
@@ -106,11 +89,11 @@ func newCommand() *cli.Command {
 				Action: func(ctx context.Context, command *cli.Command) error {
 					pool, err := pgxpool.New(ctx, command.String("database-url"))
 					if err != nil {
-						return fmt.Errorf("configure isolated Plane database: %w", err)
+						return fmt.Errorf("configure isolated Vector database: %w", err)
 					}
 					defer pool.Close()
 					if pingErr := pool.Ping(ctx); pingErr != nil {
-						return fmt.Errorf("connect isolated Plane database: %w", pingErr)
+						return fmt.Errorf("connect isolated Vector database: %w", pingErr)
 					}
 					var workflowName, status string
 					err = pool.QueryRow(ctx, `SELECT workflow_name, status FROM workflow_instances WHERE instance_id=$1`, command.String("run-id")).Scan(&workflowName, &status)
@@ -143,14 +126,14 @@ func startOrReconcile(ctx context.Context, app *selvedge.App, workflow *selvedge
 	return runID, true, nil
 }
 
-func startApp(ctx context.Context, databaseURL string) (*selvedge.App, *selvedge.WorkflowFunc[assets.StorageMetadataWorkflowInput, struct{}], func(), error) {
+func startApp(ctx context.Context, databaseURL string) (*selvedge.App, *selvedge.WorkflowFunc[assets.StorageMetadataWorkflowInput, struct{}], func() error, error) {
 	pool, err := pgxpool.New(ctx, databaseURL)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("configure isolated Plane database: %w", err)
+		return nil, nil, nil, fmt.Errorf("configure isolated Vector database: %w", err)
 	}
 	if pingErr := pool.Ping(ctx); pingErr != nil {
 		pool.Close()
-		return nil, nil, nil, fmt.Errorf("connect isolated Plane database: %w", pingErr)
+		return nil, nil, nil, fmt.Errorf("connect isolated Vector database: %w", pingErr)
 	}
 	store, err := assets.NewPostgresRepository(pool)
 	if err != nil {
@@ -183,12 +166,7 @@ func startApp(ctx context.Context, databaseURL string) (*selvedge.App, *selvedge
 		pool.Close()
 		return nil, nil, nil, fmt.Errorf("start Selvedge app: %w", err)
 	}
-	closeApp := func() {
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-		_ = app.Shutdown(shutdownCtx)
-		pool.Close()
-	}
+	closeApp := func() error { return closeMetadataApp(ctx, app.Shutdown, pool.Close) }
 	return app, workflow, closeApp, nil
 }
 
@@ -212,4 +190,50 @@ func writeStatus(output interface{ Write([]byte) (int, error) }, runID, workflow
 	}
 	_, err = fmt.Fprintln(output, string(encoded))
 	return err
+}
+
+func runMetadata(output io.Writer, admit func() (string, bool, error), wait func(string) (*selvedge.WorkflowResult[struct{}], error), closeApp func() error) (resultErr error) {
+	defer func() { resultErr = errors.Join(resultErr, closeApp()) }()
+	startedID, reconciled, err := admit()
+	if err != nil {
+		return err
+	}
+	if _, outputErr := fmt.Fprintf(output, "admitted run_id=%s reconciled=%t\n", startedID, reconciled); outputErr != nil {
+		return fmt.Errorf("write workflow %s admission: %w", startedID, outputErr)
+	}
+	result, err := wait(startedID)
+	if err != nil {
+		return fmt.Errorf("wait for workflow %s: %w", startedID, err)
+	}
+	var workflowErr error
+	if result.Status != "completed" {
+		workflowErr = result.Error
+		if workflowErr == nil {
+			workflowErr = fmt.Errorf("workflow %s ended with status %q", result.InstanceID, result.Status)
+		}
+	}
+	outputErr := writeResult(output, result.InstanceID, result.Status, result.Error)
+	if outputErr != nil {
+		outputErr = fmt.Errorf("write workflow %s result: %w", result.InstanceID, outputErr)
+	}
+	return errors.Join(workflowErr, outputErr)
+}
+
+func runMetadataWorker(ctx context.Context, output io.Writer, closeApp func() error) (resultErr error) {
+	defer func() { resultErr = errors.Join(resultErr, closeApp()) }()
+	if _, err := fmt.Fprintln(output, "worker ready"); err != nil {
+		return fmt.Errorf("write metadata worker readiness: %w", err)
+	}
+	<-ctx.Done()
+	return nil
+}
+
+func closeMetadataApp(ctx context.Context, shutdown func(context.Context) error, closePool func()) error {
+	shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
+	defer cancel()
+	defer closePool()
+	if err := shutdown(shutdownCtx); err != nil {
+		return fmt.Errorf("shut down metadata app: %w", err)
+	}
+	return nil
 }

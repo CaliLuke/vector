@@ -16,7 +16,7 @@ import (
 
 // MigrateRuntimeSchemas retains the existing River and support migration
 // journals. Each library owns versioning, locking, and migration execution.
-func MigrateRuntimeSchemas(ctx context.Context, databaseURL string, pool *pgxpool.Pool) error {
+func MigrateRuntimeSchemas(ctx context.Context, databaseURL string, pool *pgxpool.Pool) (resultErr error) {
 	river, err := rivermigrate.New(riverpgxv5.New(pool), nil)
 	if err != nil {
 		return fmt.Errorf("configure River migrations: %w", err)
@@ -30,16 +30,14 @@ func MigrateRuntimeSchemas(ctx context.Context, databaseURL string, pool *pgxpoo
 	}
 	parsed, err := url.Parse(databaseURL)
 	if err != nil {
-		_ = source.Close()
-		return err
+		return closeMigrationSource("support", source.Close, err)
 	}
 	parsed.Scheme = "pgx5"
 	migration, err := migrate.NewWithSourceInstance("iofs", source, parsed.String())
 	if err != nil {
-		_ = source.Close()
-		return fmt.Errorf("configure support migrations: %w", err)
+		return closeMigrationSource("support", source.Close, fmt.Errorf("configure support migrations: %w", err))
 	}
-	defer migration.Close()
+	defer func() { resultErr = closeMigration("support", migration.Close, resultErr) }()
 	if err := migration.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return fmt.Errorf("apply support migrations: %w", err)
 	}

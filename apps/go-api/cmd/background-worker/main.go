@@ -2,13 +2,16 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/backgroundtasks"
+	"github.com/CaliLuke/go-plane/internal/clioutput"
 	"github.com/urfave/cli/v3"
 )
 
@@ -16,15 +19,14 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	if err := newCommand().Run(ctx, os.Args); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		os.Exit(clioutput.Report(os.Stderr, 1, "%v\n", err))
 	}
 }
 
 func newCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "background-worker",
-		Usage: "run Plane's durable Go background jobs",
+		Usage: "run Vector's durable Go background jobs",
 		Flags: []cli.Flag{
 			&cli.StringFlag{Name: "database-url", Sources: cli.EnvVars("DATABASE_URL"), Required: true},
 		},
@@ -33,15 +35,30 @@ func newCommand() *cli.Command {
 			if err != nil {
 				return err
 			}
-			if err := runtime.Start(ctx); err != nil {
-				_ = runtime.Shutdown(context.Background())
-				return err
-			}
-			fmt.Fprintln(command.Root().Writer, "durable background worker ready")
-			<-ctx.Done()
-			shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
-			return runtime.Shutdown(shutdownCtx)
+			return runWorker(ctx, runtime, command.Root().Writer)
 		},
 	}
+}
+
+type workerRuntime interface {
+	Start(context.Context) error
+	Shutdown(context.Context) error
+}
+
+func runWorker(ctx context.Context, runtime workerRuntime, writer io.Writer) (resultErr error) {
+	defer func() {
+		shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+		defer cancel()
+		if err := runtime.Shutdown(shutdownCtx); err != nil {
+			resultErr = errors.Join(resultErr, fmt.Errorf("shut down background worker: %w", err))
+		}
+	}()
+	if err := runtime.Start(ctx); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintln(writer, "durable background worker ready"); err != nil {
+		return fmt.Errorf("write background worker readiness: %w", err)
+	}
+	<-ctx.Done()
+	return nil
 }

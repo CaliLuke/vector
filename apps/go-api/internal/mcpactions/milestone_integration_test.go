@@ -83,9 +83,14 @@ func milestoneObject(t *testing.T, result rpcResult) map[string]any {
 }
 func (f milestoneFixture) item(t *testing.T) string {
 	t.Helper()
+	return f.itemInScope(t, testsupport.LabelWorkspace, testsupport.LabelProject)
+}
+
+func (f milestoneFixture) itemInScope(t *testing.T, workspace, project string) string {
+	t.Helper()
 	id := uuid.NewString()
 	_, err := f.pool.Exec(t.Context(), `INSERT INTO issues(id,created_at,updated_at,workspace_id,project_id,created_by_id,name,description_json,description_html,priority,sequence_id,sort_order,is_draft)
- VALUES($1,now(),now(),$2,$3,$4,'Work','{}','','none',1,0,false)`, id, testsupport.LabelWorkspace, testsupport.LabelProject, testsupport.LabelActor)
+ VALUES($1,now(),now(),$2,$3,$4,'Work','{}','','none',1,0,false)`, id, workspace, project, testsupport.LabelActor)
 	require.NoError(t, err)
 	return id
 }

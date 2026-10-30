@@ -39,6 +39,7 @@ func TestPostgresSchemaBootstrapFreshAndRepeat(t *testing.T) {
 		if migrateErr := MigrateSchema(ctx, databaseURL); migrateErr != nil {
 			t.Fatal(migrateErr)
 		}
+		assertSchemaBootstrapLockReleased(t, ctx, connection)
 		for table, want := range map[string]int{"auth_permission": 424, "django_content_type": 106, "django_migrations": 164} {
 			var got int
 			if scanErr := connection.QueryRow(ctx, "SELECT count(*) FROM "+pgx.Identifier{"public", table}.Sanitize()).Scan(&got); scanErr != nil || got != want {
@@ -95,6 +96,7 @@ func TestPostgresSchemaBootstrapAdoptsDjango(t *testing.T) {
 			} else if migrateErr != nil {
 				t.Fatalf("adopt source schema: %v", migrateErr)
 			}
+			assertSchemaBootstrapLockReleased(t, ctx, connection)
 			var saved string
 			if scanErr := connection.QueryRow(ctx, `SELECT name FROM public.django_migrations WHERE app='bootstrap_test'`).Scan(&saved); scanErr != nil || saved != "preserved" {
 				t.Fatalf("adoption changed data: %q %v", saved, scanErr)
@@ -104,5 +106,21 @@ func TestPostgresSchemaBootstrapAdoptsDjango(t *testing.T) {
 				t.Fatalf("support ledger changed: %d %v", version, scanErr)
 			}
 		})
+	}
+}
+
+func assertSchemaBootstrapLockReleased(t *testing.T, ctx context.Context, connection *pgx.Conn) {
+	t.Helper()
+	// Closing the socket sends Terminate; PostgreSQL releases the session lock
+	// when its backend processes that message. Wait for that cleanup rather
+	// than requiring the client close and server release to be simultaneous.
+	lockCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	if _, err := connection.Exec(lockCtx, `SELECT pg_advisory_lock($1)`, registrationLockID+2); err != nil {
+		t.Fatalf("schema bootstrap retained its session lock: %v", err)
+	}
+	var released bool
+	if err := connection.QueryRow(ctx, `SELECT pg_advisory_unlock($1)`, registrationLockID+2).Scan(&released); err != nil || !released {
+		t.Fatalf("release test session lock: released=%t error=%v", released, err)
 	}
 }

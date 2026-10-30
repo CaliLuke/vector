@@ -20,26 +20,6 @@
     {
       "fingerprint": [
         "errcheck",
-        "cmd/background-worker/main.go",
-        "Error return value of `fmt.Fprintln` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "cmd/durable-metadata/main.go", "Error return value of `fmt.Fprintf` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "cmd/durable-metadata/main.go",
-        "Error return value of `fmt.Fprintln` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "cmd/system/main.go",
         "Error return value of `publicProjectMetadataReadsCache.Close` is not checked"
       ],
@@ -122,30 +102,6 @@
         "errcheck",
         "internal/bootstrap/instance.go",
         "Error return value of `response.Body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/bootstrap/schema.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/bootstrap/schema.go",
-        "Error return value of `migrator.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/bootstrap/support.go",
-        "Error return value of `migration.Close` is not checked"
       ],
       "count": 1
     },

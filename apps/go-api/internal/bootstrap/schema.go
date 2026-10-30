@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
 	"sort"
 	"strings"
 
@@ -25,8 +24,9 @@ const schemaMigrationTable = "plane_schema_migrations"
 // MigrateSchema installs the application schema without Python. Existing Django
 // databases are adopted only after every baseline definition has been verified.
 // Application data and the independent support/River migration ledgers remain intact.
-func MigrateSchema(ctx context.Context, databaseURL string) error {
-	if err := ValidateDatabaseURL(databaseURL); err != nil {
+func MigrateSchema(ctx context.Context, databaseURL string) (resultErr error) {
+	parsed, err := parseDatabaseURL(databaseURL)
+	if err != nil {
 		return err
 	}
 	connection, err := pgx.Connect(ctx, databaseURL)
@@ -34,7 +34,7 @@ func MigrateSchema(ctx context.Context, databaseURL string) error {
 		return fmt.Errorf("connect schema migrator: %w", err)
 	}
 	// Closing this dedicated connection releases its session lock even on error.
-	defer connection.Close(context.WithoutCancel(ctx))
+	defer func() { resultErr = closeSchemaConnection(ctx, connection.Close, resultErr) }()
 	if _, execErr := connection.Exec(ctx, `SELECT pg_advisory_lock($1)`, registrationLockID+2); execErr != nil {
 		return fmt.Errorf("lock schema bootstrap: %w", execErr)
 	}
@@ -83,7 +83,6 @@ func MigrateSchema(ctx context.Context, databaseURL string) error {
 			}
 		}
 	}
-	parsed, _ := url.Parse(databaseURL) // Validated above.
 	parsed.Scheme = "pgx5"
 	query := parsed.Query()
 	query.Set("x-migrations-table", schemaMigrationTable)
@@ -96,10 +95,9 @@ func MigrateSchema(ctx context.Context, databaseURL string) error {
 	}
 	migrator, err := migrate.NewWithSourceInstance("iofs", source, parsed.String())
 	if err != nil {
-		_ = source.Close()
-		return fmt.Errorf("configure application migrations: %w", err)
+		return closeMigrationSource("application", source.Close, fmt.Errorf("configure application migrations: %w", err))
 	}
-	defer migrator.Close()
+	defer func() { resultErr = closeMigration("application", migrator.Close, resultErr) }()
 	if adopt {
 		// Force is the library's baseline-adoption operation. It is safe only
 		// after the complete source schema comparison above has succeeded.

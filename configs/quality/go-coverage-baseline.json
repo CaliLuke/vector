@@ -50,8 +50,8 @@
       "percent": 0
     },
     "github.com/CaliLuke/go-plane/cmd/background-worker": {
-      "statements": 17,
-      "percent": 0
+      "statements": 20,
+      "percent": 55
     },
     "github.com/CaliLuke/go-plane/cmd/bootstrap": {
       "statements": 100,
@@ -62,8 +62,8 @@
       "percent": 0
     },
     "github.com/CaliLuke/go-plane/cmd/durable-metadata": {
-      "statements": 109,
-      "percent": 0
+      "statements": 121,
+      "percent": 30.58
     },
     "github.com/CaliLuke/go-plane/cmd/notion-sync": {
       "statements": 97,

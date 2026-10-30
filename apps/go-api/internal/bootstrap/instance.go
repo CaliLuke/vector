@@ -206,9 +206,14 @@ func ConfigureInstance(ctx context.Context, pool *pgxpool.Pool, secret string, l
 
 // ValidateDatabaseURL is shared by bootstrap commands that need PostgreSQL.
 func ValidateDatabaseURL(raw string) error {
+	_, err := parseDatabaseURL(raw)
+	return err
+}
+
+func parseDatabaseURL(raw string) (*url.URL, error) {
 	parsed, err := url.Parse(raw)
 	if err != nil || (parsed.Scheme != "postgres" && parsed.Scheme != "postgresql") || parsed.Host == "" {
-		return errors.New("DATABASE_URL must be a PostgreSQL URL")
+		return nil, errors.New("DATABASE_URL must be a PostgreSQL URL")
 	}
-	return nil
+	return parsed, nil
 }

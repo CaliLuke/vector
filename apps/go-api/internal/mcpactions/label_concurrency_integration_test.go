@@ -6,9 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"testing"
-	"time"
 
-	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	labels "github.com/CaliLuke/go-plane/internal/projectconfiguration"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
@@ -16,10 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type labelMutationOutcome struct {
-	value labels.LabelMutationResult
-	err   error
-}
+type labelMutationOutcome = concurrentMutationOutcome[labels.LabelMutationResult]
 
 func labelMutationCommand(action string) labels.LabelMutation {
 	return labels.LabelMutation{ActorID: uuid.MustParse(testsupport.LabelActor), WorkspaceID: uuid.MustParse(testsupport.LabelWorkspace),
@@ -29,37 +24,15 @@ func labelMutationCommand(action string) labels.LabelMutation {
 func competingLabelMutations(t *testing.T, f milestoneFixture, commands [2]labels.LabelMutation) [2]labelMutationOutcome {
 	t.Helper()
 	require.Equal(t, commands[0].ProjectID, commands[1].ProjectID)
-	ctx, cancel := context.WithTimeout(t.Context(), 20*time.Second)
-	defer cancel()
 	repository, err := labels.NewRepository(f.pool)
 	require.NoError(t, err)
-	blocker, err := f.pool.Begin(ctx)
-	require.NoError(t, err)
-	defer func() { require.NoError(t, dbutil.RollbackTransaction(ctx, blocker.Rollback, nil)) }()
-	_, err = blocker.Exec(ctx, `SELECT id FROM projects WHERE id=$1 FOR UPDATE`, commands[0].ProjectID)
-	require.NoError(t, err)
-	done := make(chan labelMutationOutcome, 2)
-	for _, command := range commands {
-		go func() {
-			value, mutationErr := repository.MutateLabel(ctx, command)
-			done <- labelMutationOutcome{value, mutationErr}
-		}()
-	}
-	require.Eventually(t, func() bool {
-		var waiting int
-		queryErr := f.pool.QueryRow(ctx, `SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock'`).Scan(&waiting)
-		return queryErr == nil && waiting == 2
-	}, 10*time.Second, 10*time.Millisecond, "both label requests must wait before the competing commits")
-	require.NoError(t, blocker.Commit(ctx))
-	var results [2]labelMutationOutcome
-	for i := range results {
-		select {
-		case results[i] = <-done:
-		case <-ctx.Done():
-			t.Fatal("label requests did not finish after releasing the project lock")
+	calls := [2]func(context.Context) (labels.LabelMutationResult, error){}
+	for i, command := range commands {
+		calls[i] = func(ctx context.Context) (labels.LabelMutationResult, error) {
+			return repository.MutateLabel(ctx, command)
 		}
 	}
-	return results
+	return competingProjectWrites(t, f, commands[0].ProjectID, calls)
 }
 
 func TestLabelConcurrentIdenticalRequestCommitsOnce(t *testing.T) {

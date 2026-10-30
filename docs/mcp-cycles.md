@@ -52,6 +52,14 @@ add 72 cases for denied scope, allowed member/admin writes and owned-delete repl
 [Lock-wait cases](../apps/go-api/internal/mcpactions/planning_authorization_wait_integration_test.go)
 add 40 cases that revoke credentials, OAuth write scope or project membership after
 the request waits on a project lock, before a new write or receipt replay.
-These transport cases cover both credentials and protocol revisions. The new
-regression batches still need complete gates; resource binding, contention and
-remaining browser acceptance stay open.
+These transport cases cover both credentials and protocol revisions. Both full gates passed at `97660842`, including all 13,814 Go test events.
+Further isolation and contention checks are described below; browser acceptance
+remains open.
+
+The next locally applied acceptance batch adds
+[resource and receipt scope checks](../apps/go-api/internal/mcpactions/planning_scope_integration_test.go),
+[foreign work-item preservation](../apps/go-api/internal/mcpactions/planning_association_scope_integration_test.go),
+[competing requests and revisions](../apps/go-api/internal/mcpactions/planning_concurrency_integration_test.go),
+and [cancellation with safe retry](../apps/go-api/internal/mcpactions/planning_cancellation_integration_test.go).
+The combined cycle/module run passes 24 new cases against the applied source.
+Complete publication gates remain pending.
