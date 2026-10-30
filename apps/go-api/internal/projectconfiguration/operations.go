@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"strings"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/labelhierarchy"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
@@ -95,12 +96,12 @@ func (r *Repository) PatchEstimate(ctx context.Context, user, slug, project, est
 
 const estimateReadSQLForID = `SELECT jsonb_build_object('id',e.id,'created_at',e.created_at,'updated_at',e.updated_at,'created_by',e.created_by_id,'updated_by',e.updated_by_id,'deleted_at',e.deleted_at,'workspace',e.workspace_id,'project',e.project_id,'name',e.name,'description',e.description,'type',e.type,'last_used',e.last_used,'points',COALESCE((SELECT jsonb_agg(jsonb_build_object('id',ep.id,'created_at',ep.created_at,'updated_at',ep.updated_at,'created_by',ep.created_by_id,'updated_by',ep.updated_by_id,'deleted_at',ep.deleted_at,'estimate',ep.estimate_id,'workspace',ep.workspace_id,'project',ep.project_id,'key',ep.key,'value',ep.value,'description',ep.description) ORDER BY ep.value) FROM estimate_points ep WHERE ep.estimate_id=e.id AND ep.deleted_at IS NULL),'[]'::jsonb)) FROM estimates e WHERE e.id=$1`
 
-func (r *Repository) DeleteEstimate(ctx context.Context, user, slug, project, estimateID string) error {
+func (r *Repository) DeleteEstimate(ctx context.Context, user, slug, project, estimateID string) (resultErr error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	writer := &Repository{db: tx}
 	if err = writer.Authorize(ctx, user, slug, project, true); err != nil {
 		return err
@@ -217,12 +218,12 @@ func (r *Repository) PatchEstimatePoint(ctx context.Context, user, slug, project
 	return scanJSON(ctx, r.db, estimatePointReadSQL, pointID)
 }
 
-func (r *Repository) DeleteEstimatePoint(ctx context.Context, user, slug, project, estimateID, pointID string, body io.Reader, contentType string) (json.RawMessage, error) {
+func (r *Repository) DeleteEstimatePoint(ctx context.Context, user, slug, project, estimateID, pointID string, body io.Reader, contentType string) (_ json.RawMessage, resultErr error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	writer := &Repository{db: tx}
 	if err = writer.Authorize(ctx, user, slug, project, true); err != nil {
 		return nil, err
@@ -357,12 +358,12 @@ func truthy(value any) bool {
 
 const labelReadSQL = `SELECT jsonb_build_object('id',l.id,'created_at',l.created_at,'updated_at',l.updated_at,'created_by',l.created_by_id,'updated_by',l.updated_by_id,'deleted_at',l.deleted_at,'workspace',l.workspace_id,'project',l.project_id,'name',l.name,'description',l.description,'color',l.color,'sort_order',l.sort_order,'external_source',l.external_source,'external_id',l.external_id,'parent',l.parent_id) FROM labels l WHERE l.id=$1`
 
-func (r *Repository) WriteAPILabel(ctx context.Context, user, slug, project, labelID, method string, body io.Reader, contentType string) (json.RawMessage, error) {
+func (r *Repository) WriteAPILabel(ctx context.Context, user, slug, project, labelID, method string, body io.Reader, contentType string) (_ json.RawMessage, resultErr error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	transaction := &Repository{db: tx}
 	result, err := transaction.writeAPILabel(ctx, tx, user, slug, project, labelID, method, body, contentType)
 	if err != nil {

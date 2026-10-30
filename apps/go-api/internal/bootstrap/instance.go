@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/instancecipher"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -56,7 +57,7 @@ func RegisterInstance(ctx context.Context, pool *pgxpool.Pool, input Registratio
 	if err != nil {
 		return false, fmt.Errorf("begin instance registration: %w", err)
 	}
-	defer func() { resultErr = rollbackBootstrapTransaction(ctx, tx.Rollback, resultErr) }()
+	defer func() { resultErr = database.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, execErr := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(@lock_id)`, pgx.StrictNamedArgs{"lock_id": registrationLockID}); execErr != nil {
 		return false, fmt.Errorf("lock instance registration: %w", execErr)
 	}
@@ -171,7 +172,7 @@ func ConfigureInstance(ctx context.Context, pool *pgxpool.Pool, secret string, l
 	if err != nil {
 		return fmt.Errorf("begin instance configuration: %w", err)
 	}
-	defer func() { resultErr = rollbackBootstrapTransaction(ctx, tx.Rollback, resultErr) }()
+	defer func() { resultErr = database.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(@lock_id)`, pgx.StrictNamedArgs{"lock_id": registrationLockID + 1}); err != nil {
 		return fmt.Errorf("lock instance configuration: %w", err)
 	}
@@ -201,17 +202,6 @@ func ConfigureInstance(ctx context.Context, pool *pgxpool.Pool, secret string, l
 		return fmt.Errorf("commit instance configuration: %w", err)
 	}
 	return nil
-}
-
-// Rollback must release a failed transaction even after caller cancellation.
-// Commit already closes the transaction; other cleanup failures remain observable.
-func rollbackBootstrapTransaction(ctx context.Context, rollback func(context.Context) error, operationErr error) error {
-	cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
-	defer cancel()
-	if rollbackErr := rollback(cleanup); rollbackErr != nil && !errors.Is(rollbackErr, pgx.ErrTxClosed) {
-		return errors.Join(operationErr, fmt.Errorf("rollback bootstrap transaction: %w", rollbackErr))
-	}
-	return operationErr
 }
 
 // ValidateDatabaseURL is shared by bootstrap commands that need PostgreSQL.

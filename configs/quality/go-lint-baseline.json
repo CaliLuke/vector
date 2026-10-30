@@ -424,14 +424,6 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/projectconfiguration/repository.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/projectstatereads/writes.go",
         "Error return value of `tx.Rollback` is not checked"
       ],
@@ -756,14 +748,6 @@
         "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
       ],
       "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/projectconfiguration/repository_test.go",
-        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
-      ],
-      "count": 5
     },
     {
       "fingerprint": [

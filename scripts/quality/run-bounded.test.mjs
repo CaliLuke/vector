@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -11,6 +11,7 @@ const runner = new URL("./run-bounded.mjs", import.meta.url).pathname;
 // Incompressible bytes keep this a resident-memory test under OS compression.
 const memoryConsumer =
   "const {randomFillSync}=require('node:crypto'); const buffers=[]; setInterval(()=>{if(buffers.length<32)buffers.push(randomFillSync(Buffer.alloc(4*1024*1024)))},40)";
+const shellQuote = (value) => `'${value.replaceAll("'", "'\\''")}'`;
 function run(script, extra = []) {
   const result = spawnSync(process.execPath, [runner, ...extra, "--", process.execPath, "-e", script], {
     encoding: "utf8",
@@ -27,15 +28,16 @@ function runWithUnavailableSamples(t, count, { mode = "timeout", extra = [], chi
   writeFileSync(countPath, "0");
   writeFileSync(
     path.join(directory, "ps"),
-    `#!${process.execPath}
-const fs = require("node:fs");
-const countPath = ${JSON.stringify(countPath)};
-const count = Number(fs.readFileSync(countPath, "utf8")) + 1;
-fs.writeFileSync(countPath, String(count));
-if (count <= ${count}) {
-  if (${JSON.stringify(mode)} === "timeout") setInterval(() => {}, 1000);
-  else process.stdout.write("999999 1 999999 0\\n");
-} else process.stdout.write(require("node:child_process").execFileSync("/bin/ps", process.argv.slice(2)));
+    `#!/bin/sh
+read -r count < ${shellQuote(countPath)}
+count=$((count + 1))
+printf '%s\\n' "$count" > ${shellQuote(countPath)}
+if [ "$count" -le ${count} ]; then
+  if [ ${shellQuote(mode)} = timeout ]; then exec sleep 60; fi
+  printf '999999 1 999999 0\\n'
+else
+  exec /bin/ps "$@"
+fi
 `,
     { mode: 0o700 }
   );
@@ -103,6 +105,9 @@ function cleanupWorker(pid) {
     if (error.code !== "ESRCH") throw error;
   }
 }
+function cleanupWorkerFile(pidPath) {
+  if (existsSync(pidPath)) cleanupWorker(Number(readFileSync(pidPath, "utf8")));
+}
 async function verifyWorkerCleanup(result, pidPath) {
   let pid;
   try {
@@ -136,18 +141,39 @@ void test("memory ceiling includes native buffer allocations", () => {
 for (const detached of [false, true]) {
   void test(`cleans up a ${detached ? "detached" : "shared-group"} worker when its parent exits`, async () => {
     const directory = mkdtempSync(path.join(tmpdir(), "vector-process-guard-"));
+    const pidPath = path.join(directory, "worker.pid");
+    const capturedPath = path.join(directory, "captured");
     try {
-      const pidPath = path.join(directory, "worker.pid");
-      const result = run(`
+      writeFileSync(
+        path.join(directory, "ps"),
+        `#!/bin/sh
+/bin/ps "$@" > ${shellQuote(path.join(directory, "sample"))} || exit "$?"
+cat ${shellQuote(path.join(directory, "sample"))}
+if [ -f ${shellQuote(pidPath)} ]; then
+  read -r worker < ${shellQuote(pidPath)}
+  if awk -v worker="$worker" '$1 == worker { found=1 } END { exit !found }' ${shellQuote(path.join(directory, "sample"))}; then
+    touch ${shellQuote(capturedPath)}
+  fi
+fi
+`,
+        { mode: 0o700 }
+      );
+      const script = `
       const {spawn}=require('node:child_process');
       const worker=spawn(process.execPath,['-e','setTimeout(()=>{},60000)'],{stdio:'ignore',detached:${detached}});
       require('node:fs').writeFileSync(${JSON.stringify(pidPath)},String(worker.pid));
       worker.unref();
-      // Allow a complete two-second sampling window before parent exit.
-      setTimeout(()=>{},2200);
-    `);
+      const timer=setInterval(()=>{if(require('node:fs').existsSync(${JSON.stringify(capturedPath)}))clearInterval(timer)},10);
+    `;
+      const result = spawnSync(process.execPath, [runner, "--", process.execPath, "-e", script], {
+        encoding: "utf8",
+        timeout: 7000,
+        env: { ...process.env, PATH: `${directory}${path.delimiter}${process.env.PATH}` },
+      });
+      assert.ifError(result.error);
       await verifyWorkerCleanup(result, pidPath);
     } finally {
+      cleanupWorkerFile(pidPath);
       rmSync(directory, { recursive: true, force: true });
     }
   });
@@ -187,6 +213,7 @@ const timer = setInterval(() => { if (fs.existsSync(${JSON.stringify(capturedPat
     });
     await verifyWorkerCleanup(result, pidPath);
   } finally {
+    cleanupWorkerFile(pidPath);
     rmSync(directory, { recursive: true, force: true });
   }
 });
@@ -202,20 +229,13 @@ void test("memory ceiling follows descendants that create a separate process gro
     // isolates cross-group accounting from OS paging and allocation timing.
     writeFileSync(
       path.join(directory, "ps"),
-      `#!${process.execPath}
-const fs = require("node:fs");
-const pidPath = ${JSON.stringify(pidPath)};
-const snapshotPath = ${JSON.stringify(snapshotPath)};
-const worker = fs.existsSync(pidPath) ? Number(fs.readFileSync(pidPath, "utf8")) : undefined;
-const output = require("node:child_process").execFileSync("/bin/ps", process.argv.slice(2), {encoding:"utf8"});
-process.stdout.write(output.split("\\n").map(row => {
-  const values = row.trim().split(/\\s+/);
-  if (Number(values[0]) === worker) {
-    if (!fs.existsSync(snapshotPath)) fs.writeFileSync(snapshotPath, row);
-    values[3] = String(128 * 1024);
-  }
-  return values.join(" ");
-}).join("\\n"));
+      `#!/bin/sh
+worker=0
+if [ -f ${shellQuote(pidPath)} ]; then read -r worker < ${shellQuote(pidPath)}; fi
+/bin/ps "$@" | awk -v worker="$worker" -v snapshot=${shellQuote(snapshotPath)} '
+  $1 == worker { print $0 > snapshot; close(snapshot); $4 = 128 * 1024 }
+  { print }
+'
 `,
       { mode: 0o700 }
     );
@@ -245,6 +265,7 @@ setInterval(()=>{},1000);
     await assertWorkerStopped(worker);
   } finally {
     cleanupWorker(worker);
+    cleanupWorkerFile(pidPath);
     rmSync(directory, { recursive: true, force: true });
   }
 });

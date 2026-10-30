@@ -12,6 +12,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/google/uuid"
@@ -85,7 +86,7 @@ func (r *Repository) AuthorizeAPIV1(ctx context.Context, user, slug, project str
 // CreateEstimate validates every point before beginning the write transaction.
 // The old Django handler persisted the estimate before point validation; the
 // parity correction preserves the response while preventing that partial write.
-func (r *Repository) CreateEstimate(ctx context.Context, user, slug, project string, body io.Reader, contentType string) (json.RawMessage, error) {
+func (r *Repository) CreateEstimate(ctx context.Context, user, slug, project string, body io.Reader, contentType string) (_ json.RawMessage, resultErr error) {
 	input, err := djangoinput.Parse(body, contentType)
 	if err != nil {
 		return nil, err
@@ -161,7 +162,7 @@ func (r *Repository) CreateEstimate(ctx context.Context, user, slug, project str
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var estimateID string
 	err = tx.QueryRow(ctx, `INSERT INTO estimates (id,project_id,workspace_id,name,type,last_used,description,created_at,updated_at,created_by_id,updated_by_id)
 SELECT $1,p.id,p.workspace_id,$4,$5,$6,'',clock_timestamp(),clock_timestamp(),$7,NULL

@@ -3,6 +3,7 @@ package projectconfiguration
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"strings"
 	"testing"
 
@@ -20,8 +21,8 @@ func TestRequireObjectInputRejectsValidJSONNonObjectsAs400(t *testing.T) {
 		{Null: true, Kind: "NoneType"},
 	} {
 		err := requireObjectInput(input)
-		httpErr, ok := err.(*HTTPError)
-		if !ok || httpErr.Status != 400 {
+		var httpErr *HTTPError
+		if !errors.As(err, &httpErr) || httpErr.Status != 400 {
 			t.Fatalf("requireObjectInput(%#v) = %#v, want HTTP 400", input, err)
 		}
 		body, ok := httpErr.Body.(map[string]any)
@@ -40,8 +41,8 @@ func (labelValidationDatabase) Rollback(context.Context) error           { retur
 func TestAPILabelCreateRejectsArrayBeforeFieldValidation(t *testing.T) {
 	repo := &Repository{db: labelValidationDatabase{}}
 	_, err := repo.WriteAPILabel(t.Context(), "user", "workspace", "project", "", "POST", strings.NewReader(`[]`), "application/json")
-	httpErr, ok := err.(*HTTPError)
-	if !ok || httpErr.Status != 400 {
+	var httpErr *HTTPError
+	if !errors.As(err, &httpErr) || httpErr.Status != 400 {
 		t.Fatalf("expected 400, got %v", err)
 	}
 	body, marshalErr := json.Marshal(httpErr.Body)
@@ -56,8 +57,8 @@ func TestAPILabelCreateRejectsArrayBeforeFieldValidation(t *testing.T) {
 func TestAPILabelSerializerUsesDRFFieldErrorsAndLengthRules(t *testing.T) {
 	repo := &Repository{db: labelValidationDatabase{}}
 	_, err := repo.WriteAPILabel(t.Context(), "user", "workspace", "project", "", "POST", strings.NewReader(`{"name":"`+strings.Repeat("x", 256)+`","sort_order":"not-a-number"}`), "application/json")
-	httpErr, ok := err.(*HTTPError)
-	if !ok || httpErr.Status != 400 {
+	var httpErr *HTTPError
+	if !errors.As(err, &httpErr) || httpErr.Status != 400 {
 		t.Fatalf("expected serializer HTTP 400, got %v", err)
 	}
 	body, ok := httpErr.Body.(map[string][]string)
@@ -75,8 +76,8 @@ func TestAPILabelSerializerUsesDRFFieldErrorsAndLengthRules(t *testing.T) {
 func TestAPILabelSerializerRejectsMalformedParentAsDRFUUIDError(t *testing.T) {
 	repo := &Repository{db: labelValidationDatabase{}}
 	_, err := repo.WriteAPILabel(t.Context(), "user", "workspace", "project", "", "POST", strings.NewReader(`{"name":"Child","parent":"not-a-uuid"}`), "application/json")
-	httpErr, ok := err.(*HTTPError)
-	if !ok || httpErr.Status != 400 {
+	var httpErr *HTTPError
+	if !errors.As(err, &httpErr) || httpErr.Status != 400 {
 		t.Fatalf("expected serializer HTTP 400, got %v", err)
 	}
 	body, ok := httpErr.Body.(map[string][]string)
@@ -88,8 +89,8 @@ func TestAPILabelSerializerRejectsMalformedParentAsDRFUUIDError(t *testing.T) {
 func TestPatchEstimatePointMalformedStringIDReturnsSourceDetailError(t *testing.T) {
 	repo := &Repository{}
 	_, err := repo.PatchEstimatePoint(t.Context(), "user", "workspace", "project", "estimate", "not-a-uuid", strings.NewReader(`{}`), "application/json")
-	httpErr, ok := err.(*HTTPError)
-	if !ok || httpErr.Status != 400 {
+	var httpErr *HTTPError
+	if !errors.As(err, &httpErr) || httpErr.Status != 400 {
 		t.Fatalf("expected source-compatible HTTP 400, got %v", err)
 	}
 	body, marshalErr := json.Marshal(httpErr.Body)
