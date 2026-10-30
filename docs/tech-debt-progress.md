@@ -196,3 +196,27 @@ acquisition, consumer wiring, and deferred cleanup order are preserved; close
 errors now join the returned error with resource context. Only that allowance's
 source fingerprint is refreshed. Its score remains zero, all 17 exceptions remain,
 and STRUCT-01 is still open. This is not maintainability-debt retirement.
+
+## 2026-10-30: project archive authorization after lock waits
+
+The cleanup/member batch is committed locally at `26c8a3ac`, with both fast gates
+passing. Its full publication was deliberately stopped after the project audit
+reproduced NEW-05, so the authorization fix can join the same verified push. The
+push exited 130, its hook processes stopped, and remote `main` remains verified
+at `3f044c7a`. This was an intentional cancellation, not a failed quality check.
+
+The archive/restore regression reproduces stale credentials in all 24 leaf cases
+across both protocols, fresh writes and receipt replay. Revalidation after domain
+locks fixes the cases in a temporary overlay; 69 related race-test events pass.
+The initial test draft had an invalid fixture sort column, which was corrected
+before this reproduction; that failed draft is not counted as defect evidence.
+The applied source now includes the fix and regression. Normal tests, lint and
+combined full publication remain pending. Temporary overlays are not used for
+coverage measurements.
+
+Applied-source verification also passes all 69 targeted race-test events, with no
+failures or skips. Go fast gates pass at the existing 155 lint findings and 17
+maintainability allowances. The duplication scan remains at 474 reports; no
+baseline or coverage allowance is added for this fix. Full publication remains
+required. Evidence is retained in `/tmp/vector-project-acceptance-20261030/`:
+`baseline.jsonl`, `baseline-evidence.json`, `applied.jsonl`, and `fast.log`.

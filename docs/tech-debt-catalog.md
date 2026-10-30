@@ -40,26 +40,29 @@ changed during hooks. Its changes are now included in published `a2e44d6f`.
 
 ## Ordered execution queue
 
-1. **ERR-01/ERR-02: preserve eight API cache cleanup errors.** The exact
-   `cmd/system/main.go` entries are state writes, public metadata throttling,
-   assets, label writes, invitations, authentication Redis, authentication
-   throttling, and account writes. These discarded errors can hide a cleanup
-   failure or lose it behind the original startup/serving error. Preserve both
-   causes and resource identity, keep reverse cleanup order, and prove that one
-   failed close does not prevent the others. The five regression cases and all
-   2,326 affected-package race test events pass.
-   The configured inventory falls 156 → 155 and the strict inventory 933 → 925.
-   COV-01 raises the package floor 73.73% → 74.67%. Finish fast gates and publication
-   before closing this batch.
-2. **MCP-01: reconcile five member reads and workspace listing.** The recorded
-   read contract now has 198 passing test events across 32 relevant test roots,
-   including native HTTP adapter checks. Live proxy comparisons cover all six
-   actions, seven role details, filters, pagination and foreign-role rejection.
-   Publish the [acceptance record](mcp-members.md#member-read-acceptance-mcp-01)
-   and six tracker updates with this batch.
-3. **MCP-01/MCP-02: select the next documented domain gap** from
-   [the tracker](mcp-parity.md). Prioritize current authorization, tenant isolation
-   and durable mutation guarantees, and record the bounded batch before edits.
+1. **MCP-01/MCP-02 / NEW-05: reject revoked credentials after project archive lock waits.**
+   All 24 controlled generated-server cases reproduce archive/restore accepting a
+   revoked PAT, revoked OAuth token, or removed OAuth write scope after waiting
+   for the project lock. Both protocols, fresh writes and receipt replay are
+   affected. Add revalidation after domain authorization acquires its locks;
+   prove rejection with unchanged projects, favorites, revisions and receipts.
+   The applied fix passes all 24 cases and 69 related race-test events. Go fast
+   gates pass with 155 configured findings and 17 maintainability allowances;
+   duplication remains at 474 reports. Full publication is required before
+   closing this defect.
+2. **ERR-01/ERR-02 and COV-01: publish the verified API cleanup batch.** Commit
+   `26c8a3ac` preserves eight cache-close errors, reduces configured findings
+   156 → 155 and strict findings 933 → 925, and raises the API coverage floor
+   73.73% → 74.67%. Its 2,326 affected-package race test events and both fast gates
+   pass. Its publication was deliberately stopped after NEW-05 was reproduced,
+   so both changes can receive one complete verification and push.
+3. **MCP-01: publish six read acceptance updates, then complete project acceptance.**
+   The five member reads and `workspace.list` have 198 passing test events across
+   32 relevant roots and successful native HTTP comparisons. Their tracker updates
+   are committed in `26c8a3ac`. The next domain is project list, retrieve, create,
+   update, delete, archive and restore. Audit contract, current authorization,
+   receipts, revisions, effects and native browser behavior; NEW-05 is one part
+   of that work. Production OAuth issuer selection remains deferred.
 4. **STRUCT-01, DUP-01/DUP-02, COV-02 and TS-01:** work through the remaining
    bounded components after the higher-risk acceptance and runtime gaps. Do not
    raise baselines or treat a changed fingerprint as retirement.
@@ -107,13 +110,24 @@ baseline contains the remaining categories and exact affected files.
 
 ## Intake and resolved findings
 
-These records preserve the intake decision and closure evidence. NEW-02 remains
-open. NEW-01, NEW-03 and NEW-04 are fixed and published. New observations
+These records preserve the intake decision and closure evidence. NEW-02 and
+NEW-05 remain open. NEW-01, NEW-03 and NEW-04 are fixed and published. New observations
 are not automatically placed ahead of the existing catalog.
 
 | ID     | Observation                                                                                                                      | Evidence strength                                                                                                                                                          | Next decision                                                                                                                               |
 | ------ | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | NEW-01 | `parity-diff`'s action prompt ignores its callback context while waiting for stdin, despite the complete-operation timeout flag. | Both controlled cancellation and deadline cases reproduce a blocked read. The applied helper-process fix passes 22 race-enabled test events, with 68.07% package coverage. | Enter/EOF, cancellation/deadline, input ownership and error reporting checks pass. Fixed and published at `3f044c7a`; both full gates pass. |
+
+**NEW-05 — project archive credentials can become stale during a lock wait:**
+`authorizeArchive` checked credentials before acquiring the project lock. A token
+revoked or stripped of OAuth write scope during that wait could still archive,
+restore, or retrieve a prior receipt. All 24 generated-server cases reproduce this
+at `26c8a3ac`: both protocols, PAT/OAuth revocation, OAuth scope removal, both
+operations, fresh writes and replay. Revalidation after domain locks passes
+these cases and the existing permission, rollback and concurrency checks against
+the applied source (69 race-test events). Go fast gates pass. Full publication
+remains required.
+This is owned application behavior within MCP-01/MCP-02, not an upstream issue.
 
 **NEW-03 — cycle completion/archive calendar boundaries:**
 Before the fix, [`MutateResource`](../apps/go-api/internal/cyclereads/mutations.go)

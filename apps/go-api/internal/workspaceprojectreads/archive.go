@@ -17,7 +17,8 @@ var ErrRevisionConflict = errors.New("project revision has changed")
 // ArchiveCommand is a credential-neutral application command. App retains the
 // browser route's member policy; false selects the v1 API policy used by the SDK.
 // WorkspaceID may be omitted by HTTP, but MCP supplies its verified immutable ID.
-// Revalidate runs after the receipt lock wait, before any receipt is inspected.
+// Revalidate runs before domain authorization and again after its lock waits,
+// before any receipt is inspected.
 type ArchiveCommand struct {
 	ActorID, WorkspaceID, ProjectID uuid.UUID
 	WorkspaceSlug                   string
@@ -60,8 +61,18 @@ func (r *LifecycleRepository) ArchiveProject(ctx context.Context, cmd ArchiveCom
 		ActorID: cmd.ActorID, WorkspaceID: cmd.WorkspaceID, ProjectID: &cmd.ProjectID, Tool: "project", Action: action,
 		RequestID: cmd.RequestID, NormalizedInput: input,
 	}, mutationreceipts.Operation{
-		Authorize: func(ctx context.Context, tx pgx.Tx) error { return authorizeArchive(ctx, tx, cmd) },
-		Apply:     func(ctx context.Context, tx pgx.Tx) (json.RawMessage, error) { return applyArchive(ctx, tx, cmd) },
+		Authorize: func(ctx context.Context, tx pgx.Tx) error {
+			if authorizeErr := authorizeArchive(ctx, tx, cmd); authorizeErr != nil {
+				return authorizeErr
+			}
+			// A project or membership lock can delay this call after the first
+			// credential check. Revalidate before inspecting or creating receipts.
+			if cmd.Revalidate != nil {
+				return cmd.Revalidate(ctx)
+			}
+			return nil
+		},
+		Apply: func(ctx context.Context, tx pgx.Tx) (json.RawMessage, error) { return applyArchive(ctx, tx, cmd) },
 	})
 	if err != nil {
 		return ArchiveResult{}, err

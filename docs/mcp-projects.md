@@ -1,6 +1,6 @@
 # MCP projects
 
-The `project` tool provides `list`, `retrieve`, `archive`, and `unarchive`. Its action and result contracts come from the pinned Plane MCP handler and `plane-sdk==0.3.1`. Other project mutations and feature settings remain outside this slice. See [write recovery](mcp-writes.md) for archive permissions, receipt and revision extensions, discovery filtering, and remaining evidence.
+This page documents the `project` tool’s `list`, `retrieve`, `archive`, and `unarchive` actions. Its action and result contracts come from the pinned Plane MCP handler and `plane-sdk==0.3.1`. Creation, updates, deletion, feature settings and work-log summaries are also implemented; their separate acceptance remains in the parity tracker. See [write recovery](mcp-writes.md) for archive permissions, receipt and revision extensions, discovery filtering, and remaining evidence.
 
 ## Inputs and results
 
@@ -20,7 +20,7 @@ All four actions accept the optional MCP `workspace_slug` selector. Personal tok
 and OAuth can select a workspace through that argument or an optional fixed
 workspace header default. A scoped action without a workspace fails with
 `invalid_params`; conflicting selectors fail at the existing HTTP boundary.
-Other-action fields and unimplemented actions fail generated validation before
+Fields from another action and unknown actions fail generated validation before
 application dispatch.
 
 ## Authorization and data ownership
@@ -65,4 +65,27 @@ and before the domain reader executes, so another credential check alone cannot
 make these tests pass.
 
 All four project actions are integrated and tested through the generated server with both credentials and protocol revisions. The full Go gate and focused race tests pass; package coverage floors remain unchanged. Frontend builds and checks pass after the parity-table formatting correction. Read-action discovery now reflects current workspace and project membership. Browser conflict proof remains open.
-Complete OAuth browser/proxy proof and 208-action parity remain separate open work.
+Production OAuth issuer selection remains deferred. Complete native browser/proxy
+proof and overall 208-action parity remain separate open work.
+
+## Credential changes during archive lock waits
+
+NEW-05 reproduced a credential timing defect in both archive and restore. The
+initial transaction authorization checked the credential before waiting for the
+project row. A token revoked or stripped of write scope during that wait could
+still produce a mutation or receipt replay. The writer now repeats credential
+validation after domain authorization has acquired its locks and before receipt
+lookup or mutation. Native HTTP callers retain their existing permissions and
+have no MCP credential callback.
+
+The [generated-server regression](../apps/go-api/internal/mcpactions/project_archive_wait_integration_test.go)
+holds the project lock, waits for the request to block, changes the credential,
+and releases the lock. Its 24 cases cover PAT revocation, OAuth revocation and
+OAuth write-scope removal, both protocols, archive/restore, and writes/replays.
+Each must return a safe error without structured content and preserve the exact
+project, favorite, revision and receipt snapshot. All 24 fail on the old source
+and pass with the applied fix; the combined existing archive checks also pass
+under the race detector (69 test events). Go fast gates pass without new lint or
+maintainability allowances; duplication remains at 474 reports. Full publication
+remains pending. This check does not promise continuous issuer validation through
+commit or close the remaining project-action acceptance work.
