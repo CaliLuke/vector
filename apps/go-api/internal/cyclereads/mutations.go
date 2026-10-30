@@ -3,6 +3,7 @@ package cyclereads
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 
@@ -66,8 +67,12 @@ func (r *LifecycleRepository) MutateResource(ctx context.Context, cmd projectmut
 			return nil, err
 		}
 		now := r.now()
-		if cmd.Action == "complete" || cmd.Action == "archive" && (cycle.EndDate == nil || cycle.EndDate.Format("2006-01-02") > now.UTC().Format("2006-01-02")) {
-			fields := map[string]any{"end_date": now.UTC().Format("2006-01-02")}
+		if cmd.Action == "complete" || cmd.Action == "archive" && (cycle.EndDate == nil || !cycle.EndDate.Before(now)) {
+			day, dateErr := transaction.completionDay(ctx, cmd.ActorID.String(), now)
+			if dateErr != nil {
+				return nil, dateErr
+			}
+			fields := map[string]any{"end_date": day}
 			result, patchErr := transaction.Patch(ctx, cmd.WorkspaceSlug, cmd.ProjectID.String(), cmd.ResourceID.String(), cmd.ActorID.String(), true, fields, fields)
 			if patchErr != nil {
 				return nil, patchErr
@@ -79,4 +84,18 @@ func (r *LifecycleRepository) MutateResource(ctx context.Context, cmd projectmut
 		_, err = transaction.SetArchived(ctx, cmd.WorkspaceSlug, cmd.ProjectID.String(), cmd.ResourceID.String(), cmd.ActorID.String(), cmd.Action == "archive")
 		return nil, err
 	})
+}
+
+// completionDay uses the same actor timezone that Patch uses to parse date-only
+// input. A UTC day interpreted in another zone can place completion in the future.
+func (r *LifecycleRepository) completionDay(ctx context.Context, actor string, now time.Time) (string, error) {
+	var zone string
+	if err := r.database.QueryRow(ctx, `SELECT COALESCE(NULLIF(user_timezone,''),'UTC') FROM users WHERE id=$1`, actor).Scan(&zone); err != nil {
+		return "", err
+	}
+	location, err := time.LoadLocation(zone)
+	if err != nil {
+		return "", err
+	}
+	return now.In(location).Format("2006-01-02"), nil
 }

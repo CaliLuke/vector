@@ -61,4 +61,5 @@ an unexpired delete receipt references it. Expired receipts do not extend retent
 This protects the 48-hour receipt window even with a one-day purge policy.
 The [planning delete checks](../apps/go-api/internal/mcpactions/planning_delete_authorization_integration_test.go)
 and [purge regression](../apps/go-api/internal/backgroundtasks/planning_deletion_receipt_integration_test.go)
-cover these boundaries. Complete publication gates for this batch remain pending.
+cover these boundaries. Both complete publication gates passed at `97660842`,
+including 13,814 Go test events with no failed or skipped cases.

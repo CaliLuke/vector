@@ -92,7 +92,7 @@ func afterNow(raw any, now time.Time) bool {
 	return e == nil && value.After(now)
 }
 func (r *Repository) transferSnapshot(ctx context.Context, q Request, cycle map[string]any) (map[string]any, error) {
-	snapshot, err := r.row(ctx, `SELECT jsonb_build_object('total_issues',COUNT(*),'completed_issues',COUNT(*) FILTER(WHERE s."group"='completed'),'cancelled_issues',COUNT(*) FILTER(WHERE s."group"='cancelled'),'started_issues',COUNT(*) FILTER(WHERE s."group"='started'),'unstarted_issues',COUNT(*) FILTER(WHERE s."group"='unstarted'),'backlog_issues',COUNT(*) FILTER(WHERE s."group"='backlog')) FROM cycle_issues ci JOIN issues i ON i.id=ci.issue_id LEFT JOIN states s ON s.id=i.state_id WHERE ci.cycle_id=$1 AND ci.deleted_at IS NULL AND i.deleted_at IS NULL AND i.archived_at IS NULL AND NOT i.is_draft`, cycle["id"])
+	snapshot, err := r.row(ctx, `SELECT jsonb_build_object('total_issues',COUNT(*),'completed_issues',COUNT(*) FILTER(WHERE s."group"='completed'),'cancelled_issues',COUNT(*) FILTER(WHERE s."group"='cancelled'),'started_issues',COUNT(*) FILTER(WHERE s."group"='started'),'unstarted_issues',COUNT(*) FILTER(WHERE s."group"='unstarted'),'backlog_issues',COUNT(*) FILTER(WHERE s."group"='backlog'))`+transferIssueFromSQL+` LEFT JOIN states s ON s.id=i.state_id AND s.project_id=i.project_id AND s.workspace_id=i.workspace_id`+transferIssueWhereSQL+` AND i.deleted_at IS NULL AND i.archived_at IS NULL AND NOT i.is_draft`, cycle["id"], q.ProjectID, q.Slug)
 	if err != nil {
 		return nil, err
 	}
@@ -100,8 +100,8 @@ func (r *Repository) transferSnapshot(ctx context.Context, q Request, cycle map[
 	if err = r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM projects p JOIN workspaces w ON w.id=p.workspace_id JOIN estimates e ON e.id=p.estimate_id WHERE p.id=$1 AND w.slug=$2 AND p.deleted_at IS NULL AND e.type='points')`, q.ProjectID, q.Slug).Scan(&estimates); err != nil {
 		return nil, err
 	}
-	base := ` FROM cycle_issues ci JOIN issues i ON i.id=ci.issue_id JOIN workspaces w ON w.id=i.workspace_id LEFT JOIN estimate_points ep ON ep.id=i.estimate_point_id `
-	where := ` WHERE ci.cycle_id=$1 AND ci.deleted_at IS NULL AND i.project_id=$2 AND w.slug=$3 AND ` + liveIssue
+	base := transferIssueFromSQL + ` LEFT JOIN estimate_points ep ON ep.id=i.estimate_point_id `
+	where := transferIssueWhereSQL + ` AND ` + liveIssue
 	distribution := func(points bool) (map[string]any, error) {
 		suffix, aggregate := "issues", "COUNT(i.id)"
 		if points {
@@ -157,7 +157,7 @@ func (r *Repository) transferChart(ctx context.Context, q Request, cycle map[str
 		aggregate = "SUM(ep.value::float8)"
 		extra = " AND i.estimate_point_id IS NOT NULL"
 	}
-	rows, err := r.rows(ctx, `SELECT jsonb_build_object('date',(i.completed_at AT TIME ZONE $4)::date,'total',`+aggregate+`) FROM issues i JOIN cycle_issues ci ON ci.issue_id=i.id LEFT JOIN estimate_points ep ON ep.id=i.estimate_point_id JOIN workspaces w ON w.id=i.workspace_id WHERE ci.cycle_id=$1 AND ci.deleted_at IS NULL AND i.project_id=$2 AND w.slug=$3 AND `+liveIssue+extra+` GROUP BY (i.completed_at AT TIME ZONE $4)::date ORDER BY (i.completed_at AT TIME ZONE $4)::date`, cycle["id"], q.ProjectID, q.Slug, zone)
+	rows, err := r.rows(ctx, `SELECT jsonb_build_object('date',(i.completed_at AT TIME ZONE $4)::date,'total',`+aggregate+`)`+transferIssueFromSQL+` LEFT JOIN estimate_points ep ON ep.id=i.estimate_point_id `+transferIssueWhereSQL+` AND `+liveIssue+extra+` GROUP BY (i.completed_at AT TIME ZONE $4)::date ORDER BY (i.completed_at AT TIME ZONE $4)::date`, cycle["id"], q.ProjectID, q.Slug, zone)
 	if err != nil {
 		return nil, err
 	}
@@ -199,3 +199,11 @@ func (r *Repository) transferChart(ctx context.Context, q Request, cycle map[str
 	}
 	return chart, nil
 }
+
+// Every stored transfer aggregate binds its relation and issue to the current scope.
+const transferIssueFromSQL = ` FROM cycle_issues ci
+ JOIN issues i ON i.id=ci.issue_id AND i.project_id=ci.project_id AND i.workspace_id=ci.workspace_id
+ JOIN workspaces w ON w.id=ci.workspace_id `
+
+const transferIssueWhereSQL = ` WHERE ci.cycle_id=$1 AND ci.project_id=$2 AND w.slug=$3
+ AND ci.deleted_at IS NULL `

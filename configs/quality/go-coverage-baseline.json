@@ -294,8 +294,8 @@
       "percent": 85.75
     },
     "github.com/CaliLuke/go-plane/internal/modulereads": {
-      "statements": 1450,
-      "percent": 65.51
+      "statements": 1446,
+      "percent": 67.84
     },
     "github.com/CaliLuke/go-plane/internal/mutationreceipts": {
       "statements": 77,

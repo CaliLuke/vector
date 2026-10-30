@@ -12,16 +12,25 @@ they do not mean this catalog is complete.
 
 ## Current batch
 
-| Catalog IDs    | Work in progress                                                | Evidence and next step                                                                                                                     |
-| -------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| MCP-01, MCP-02 | Cycle/module scope isolation, competing writes and cancellation | 24 new cases plus seven existing helper consumers pass against applied source. Full gates and browser/contract reconciliation remain.      |
-| ERR-01, ERR-02 | Worker, metadata CLI and bootstrap output/cleanup errors        | 33 lifecycle/bootstrap cases plus two shared-output cases pass. Six configured findings removed; strict inventory refreshed at `6ba02d1d`. |
-| COV-01         | Enforce coverage for the two previously unmeasured worker CLIs  | Applied-source coverage supports floors of 55% and 30.58%. Full gates pending; no existing floor lowered.                                  |
+| Catalog IDs    | Work in progress                                                | Evidence and next step                                                                                                                                                              |
+| -------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MCP-01, MCP-02 | Cycle/module scope isolation, competing writes and cancellation | 24 new cases plus seven existing helper consumers pass against applied source. Quality commands passed at `1772ca79`; publication retry and browser/contract reconciliation remain. |
+| ERR-01, ERR-02 | Worker, metadata CLI and bootstrap output/cleanup errors        | 33 lifecycle/bootstrap cases plus two shared-output cases pass. Six configured findings removed; strict inventory refreshed at `6ba02d1d`.                                          |
+| COV-01         | Enforce coverage for the two previously unmeasured worker CLIs  | Applied-source coverage supports floors of 55% and 30.58%. Coverage gate passed at `1772ca79`; publication retry pending. No floor lowered.                                         |
 
 This batch is committed at `6ba02d1d` with 66 passing focused leaf cases
-(84 test events) and passing fast gates. Full publication gates remain pending. The counts
+(84 test events) and passing fast gates. The complete Go and TypeScript commands
+passed at `1772ca79`, including 13,881 Go test events with no failures or test
+skips. The push was rejected because documentation was edited while Prek was
+running; both hook wrappers detected tracked-file changes. Publication remains
+pending, and the retry must leave all tracked files untouched during hooks. The counts
 below distinguish current local baselines from the dated strict inventory.
 The next implementation must come from this catalog or its verified intake.
+
+The following batch is now applied locally: NEW-03 calendar boundaries and
+NEW-04 transfer snapshot isolation, both within MCP-01/MCP-02. Their reproductions
+and draft checks are recorded in intake below. All 34 focused applied-source cases and the Go fast gate pass; full publication gates remain pending;
+these are not published fixes.
 
 ## Work selection
 
@@ -179,6 +188,11 @@ Their fixes are applied and focused tests pass; full gates remain pending:
 | Metadata worker output and cleanup | [`cmd/durable-metadata/main.go`](../apps/go-api/cmd/durable-metadata/main.go)                                                               | Admission/readiness output and application shutdown errors can be discarded. Prove that output failure never repeats an admitted durable workflow.                                        | Output, workflow and cleanup causes covered by ten passing applied-source cases. Full gates pending.                               |
 | Bootstrap migration cleanup        | [`internal/bootstrap/support.go`](../apps/go-api/internal/bootstrap/support.go), [`schema.go`](../apps/go-api/internal/bootstrap/schema.go) | Migration/source/connection cleanup errors can be discarded. Preserve adoption order, migration effects, and session-lock release while retaining cleanup causes.                         | Twelve cleanup cases, five PostgreSQL migration/adoption cases and URL validation pass against applied source. Full gates pending. |
 
+The completed full profile at `1772ca79` also raises COV-01's
+`internal/modulereads` floor from 65.51% to 67.84% (981 covered statements out of
+1,446). The measured module source is unchanged in the calendar/snapshot batch.
+No package or file floor is lowered.
+
 ## New findings awaiting verification and prioritization
 
 These are recorded to prevent silent scope growth. They are not automatically
@@ -192,9 +206,29 @@ placed ahead of the existing catalog.
 [`MutateResource`](../apps/go-api/internal/cyclereads/mutations.go) synthesizes a UTC
 date while the native date parser uses the current actor's timezone. Archive also
 compares date strings when deciding whether to end a running cycle. This is a
-source observation, not a reproduced defect. Run frozen-clock cases for actor-day
-boundaries, an end time later today, DST and receipt replay before changing
-behavior. This belongs to MCP-01/MCP-02's existing cycle contract acceptance.
+reproduced defect: four of six initial frozen-clock cases fail. The local draft
+uses the actor's calendar day and compares end timestamps; seven new calendar
+cases and seven existing native date cases pass against the applied source. The
+fix is applied locally; 34 focused applied-source cases and the Go fast gate pass; full publication remains pending. [Upstream #266](https://github.com/makeplane/plane-mcp-server/issues/266)
+records the date-only running check with a standalone helper reproduction.
+Keep the corrected instant comparison when reconciling a later upstream handler;
+only remove a compatibility adjustment when the pinned handler and local
+same-day/DST/replay regressions agree. This belongs to MCP-01/MCP-02's existing
+cycle contract acceptance.
+
+**NEW-04 — cycle transfer snapshot tenant isolation:**
+[`transferSnapshot`](../apps/go-api/internal/workitems/cycle_transfer.go) counts
+foreign work items and incorrectly scoped relation rows in a cycle's saved
+progress snapshot. Four generated-server regressions (both credentials and
+protocols) reproduce a total of seven for five valid local associations. The
+writer transfers the expected three unfinished local items and preserves the
+foreign records; the saved and returned snapshot is incorrect. Tighten snapshot
+summary, distribution and chart scope while preserving native transfer behavior,
+then prove exact counts, retained associations and unchanged receipt replay.
+This is part of MCP-01/MCP-02's existing planning isolation acceptance. The
+regression and fix are applied locally. Four transport cases pass for both issue and estimate totals, distributions and
+charts, retained associations and receipt replay. The combined calendar, native
+date and existing core workflow run also passes. 34 focused applied-source cases and the Go fast gate pass; full publication remains pending.
 
 The earlier publication check at `264d505f` recorded **NEW-02**: the UI
 color-picker pending-save regression timed out at its existing five-second limit;

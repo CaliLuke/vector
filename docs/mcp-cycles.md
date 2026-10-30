@@ -5,7 +5,7 @@ and `plane-sdk==0.3.1`: list, retrieve, create, update, delete, list_workitems,
 manage_workitems, transfer_workitems, complete, archive and unarchive.
 Implementation does not close the remaining mutation acceptance requirements.
 
-Both actions require `project_id`. Retrieve also requires `cycle_id`. Workspace selection follows the shared PAT/OAuth contract. Discovery advertises cycle reads only when the principal has an active membership in a live project in the selected workspace, or in any eligible workspace for context-free OAuth. Invocation requires access to the specific project.
+All actions require `project_id`. Create also requires `name` and `owned_by`; actions on an existing cycle require `cycle_id`. Transfer additionally requires `new_cycle_id`. Workspace selection follows the shared PAT/OAuth contract. Discovery advertises cycle reads only when the principal has an active membership in a live project in the selected workspace, or in any eligible workspace for context-free OAuth. Invocation requires access to the specific project.
 
 List defaults to active cycles. `archived: true` selects archived cycles and ignores `status`, including otherwise invalid values. Active status values are `current`, `upcoming`, `completed`, `draft`, and `incomplete`. Active lists always return a page, including `status=current`. Zero or omitted `per_page` uses 1000; the accepted range otherwise is 1–1000. Empty cursors and ordering strings use server defaults. The existing API cursor format is retained. Active ordering supports created/updated timestamps, name, start/end dates, and sort order; archived lists preserve the API's fixed ordering.
 
@@ -63,3 +63,22 @@ The next locally applied acceptance batch adds
 and [cancellation with safe retry](../apps/go-api/internal/mcpactions/planning_cancellation_integration_test.go).
 The combined cycle/module run passes 24 new cases against the applied source.
 Complete publication gates remain pending.
+
+The current local fixes cover calendar and transfer snapshot boundaries.
+[Calendar regressions](../apps/go-api/internal/cyclereads/mutation_calendar_integration_test.go)
+verify that completion uses the current actor's calendar day, archive ends cycles
+whose end timestamp is still in the future (including later today), and a later
+receipt replay preserves the saved end date after the actor's timezone changes.
+An already-completed cycle retains its end date during archive.
+The date-only running check in the pinned handler is reported in
+[upstream #266](https://github.com/makeplane/plane-mcp-server/issues/266); retain
+instant comparison when reconciling future handler revisions until that source
+and the local calendar regressions agree.
+[Transfer scope regressions](../apps/go-api/internal/mcpactions/planning_transfer_scope_integration_test.go)
+verify stored and returned snapshot totals, label/assignee distributions and
+completion charts, including estimate distributions, exclude malformed foreign
+associations. Three unfinished local items move while completed/cancelled and
+foreign associations remain in place; receipt replay leaves state and effects
+unchanged. These fixes are applied locally. The combined run passes 34 focused cases:
+seven calendar, seven existing native date, four transfer-scope and sixteen
+existing core workflow cases. The Go fast gate passes; full publication checks remain pending.
