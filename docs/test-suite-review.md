@@ -28,9 +28,14 @@ PostgreSQL tests cover all 20 additional columns alongside the existing label
 checks, including both tenants, soft-deleted rows, unchanged finite values and
 metadata, and the existing revision triggers.
 
-Storage review remains open for legacy asset sizes, activity epochs, and type
-hierarchy levels. End-to-end validation of the remaining numeric writers is
-also open; parser rejection alone does not prove their persisted effects.
+Activity timestamps now reject non-finite values before worker effects and at the
+database boundary. Migration 44 repairs historical non-finite epochs to NULL, the
+existing unknown-timestamp representation. Migration tests preserve all other
+activity metadata across two tenants, including soft-deleted records, and keep
+finite and missing timestamps unchanged.
+
+Storage review remains open for legacy asset sizes and type hierarchy levels.
+End-to-end validation of the remaining numeric writers is also open; parser rejection alone does not prove their persisted effects.
 
 ## Coverage and execution gaps
 

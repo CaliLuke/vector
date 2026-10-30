@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"sort"
 	"time"
@@ -146,6 +147,9 @@ func (dispatcher *IssueActivityDispatcher) Admit(ctx context.Context, eventID st
 }
 
 func validateIssueActivityInput(eventID string, input IssueActivityInput) error {
+	if math.IsNaN(input.Epoch) || math.IsInf(input.Epoch, 0) {
+		return fmt.Errorf("%w: epoch must be finite", ErrPermanentIssueActivity)
+	}
 	if _, err := uuid.Parse(eventID); err != nil {
 		return fmt.Errorf("%w: event ID must be a UUID", ErrPermanentIssueActivity)
 	}
