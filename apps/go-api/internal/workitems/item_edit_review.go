@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/google/uuid"
@@ -37,7 +38,7 @@ func (r *Repository) CommitItemChange(ctx context.Context, q Request, input Item
 	return r.reviewItemChange(ctx, q, input)
 }
 
-func (r *Repository) reviewItemChange(ctx context.Context, q Request, input ItemEditInput) (Result, error) {
+func (r *Repository) reviewItemChange(ctx context.Context, q Request, input ItemEditInput) (_ Result, resultErr error) {
 	command, raw, err := normalizedItemEdit(input)
 	if err != nil {
 		return Result{}, err
@@ -46,7 +47,7 @@ func (r *Repository) reviewItemChange(ctx context.Context, q Request, input Item
 	if err != nil {
 		return Result{}, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	writer := *r
 	writer.db, writer.transactionalEffects = tx, true
 	q.API = false

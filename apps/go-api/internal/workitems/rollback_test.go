@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -67,10 +68,34 @@ func (*itemCleanupRows) Close()     {}
 
 func TestItemTransactionsPreserveRollbackFailureAfterCancellation(t *testing.T) {
 	q := Request{Method: "POST", Slug: "demo", ProjectID: "00000000-0000-4000-8000-000000000002", IssueID: "00000000-0000-4000-8000-000000000003", ActorID: "00000000-0000-4000-8000-000000000004"}
+
+	workspace := uuid.MustParse("00000000-0000-4000-8000-000000000001")
+	readQuery := q
+	readQuery.Method, readQuery.API, readQuery.Operation = "GET", true, "list"
+	readQuery.ExpectedWorkspaceID = &workspace
 	for _, test := range []struct {
 		name string
 		run  func(context.Context, *Repository) error
 	}{
+
+		{"API item snapshot", func(ctx context.Context, r *Repository) error { _, err := r.ReadWorkitem(ctx, readQuery); return err }},
+		{"API intake snapshot", func(ctx context.Context, r *Repository) error { _, err := r.ReadIntake(ctx, readQuery); return err }},
+		{"edit source snapshot", func(ctx context.Context, r *Repository) error {
+			_, err := r.ReadItemEditSource(ctx, q, "edit", q.IssueID, q.ProjectID)
+			return err
+		}},
+		{"model history", func(ctx context.Context, r *Repository) error {
+			_, err := r.saveIssue(ctx, q.ActorID, defaultIssue(q.ProjectID), nil)
+			return err
+		}},
+
+		{"item relation batch", func(ctx context.Context, r *Repository) error {
+			return r.replaceIssueRelations(ctx, defaultIssue(q.ProjectID), issueChanges{assignees: []string{q.ActorID}}, true)
+		}},
+		{"draft relation batch", func(ctx context.Context, r *Repository) error {
+			operation := newDraftOperation(r.db, r.now, "", nil)
+			return operation.replaceDraftRelations(ctx, q, defaultIssue(q.ProjectID), issueChanges{assignees: []string{q.ActorID}}, djangoinput.Input{}, true)
+		}},
 		{"create item", func(ctx context.Context, r *Repository) error {
 			_, err := r.saveIssueRow(ctx, q.ActorID, defaultIssue(q.ProjectID), nil)
 			return err
@@ -124,6 +149,43 @@ func TestItemTransactionsPreserveRollbackFailureAfterCancellation(t *testing.T) 
 			}
 			if !errors.Is(cleanup.Err(), context.Canceled) {
 				t.Fatalf("cleanup context not released: %v", cleanup.Err())
+			}
+		})
+	}
+}
+
+func TestDuplicateRelationRequiresSuccessfulRollback(t *testing.T) {
+	for _, test := range []struct {
+		name        string
+		rollbackErr error
+	}{
+		{name: "rollback succeeds"},
+		{name: "rollback fails", rollbackErr: errors.New("savepoint cleanup failed")},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			ctx, cancel := context.WithCancel(t.Context())
+			defer cancel()
+			duplicate := &pgconn.PgError{Code: "23505"}
+			calls := 0
+			db := &itemCleanupDatabase{cancel: cancel, failure: duplicate, rollback: func(cleanup context.Context) error {
+				calls++
+				deadline, ok := cleanup.Deadline()
+				if cleanup.Err() != nil || !ok || time.Until(deadline) > 5*time.Second {
+					t.Error("rollback did not receive an independent bounded context")
+				}
+				return test.rollbackErr
+			}}
+			repo := &Repository{db: db, now: time.Now}
+			err := repo.replaceIssueRelations(ctx, defaultIssue("project"), issueChanges{assignees: []string{"actor"}}, true)
+			if calls != 1 {
+				t.Fatalf("rollback calls=%d", calls)
+			}
+			if test.rollbackErr == nil {
+				if err != nil {
+					t.Fatalf("cleaned duplicate was not tolerated: %v", err)
+				}
+			} else if !errors.Is(err, test.rollbackErr) || !errors.Is(err, duplicate) {
+				t.Fatalf("lost duplicate or cleanup failure: %v", err)
 			}
 		})
 	}

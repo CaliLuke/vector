@@ -5,18 +5,19 @@ import (
 	"errors"
 	"io"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/jackc/pgx/v5"
 )
 
 // writeProjectTransaction acquires the schema lock before any item snapshot is
 // read. Older full-row writers must participate in the same ordering as schema
 // migrations, or a concurrent edit can restore removed fields and descriptions.
-func (r *Repository) writeProjectTransaction(ctx context.Context, projectID string, authorize func(*Repository) error, operation func(*Repository) (Result, error)) (Result, error) {
+func (r *Repository) writeProjectTransaction(ctx context.Context, projectID string, authorize func(*Repository) error, operation func(*Repository) (Result, error)) (_ Result, resultErr error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return Result{}, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	writer := *r
 	writer.db, writer.transactionalEffects = tx, true
 	if err = authorize(&writer); err != nil {

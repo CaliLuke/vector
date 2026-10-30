@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
@@ -13,7 +14,7 @@ import (
 
 // ReadWorkitem binds API queries, pagination and expanded relations to one
 // primary-data snapshot and the credential's immutable workspace identity.
-func (r *Repository) ReadWorkitem(ctx context.Context, q Request) (Result, error) {
+func (r *Repository) ReadWorkitem(ctx context.Context, q Request) (_ Result, resultErr error) {
 	if q.ExpectedWorkspaceID == nil || q.Method != "GET" || !q.API {
 		return Result{}, forbidden()
 	}
@@ -55,7 +56,7 @@ func (r *Repository) ReadWorkitem(ctx context.Context, q Request) (Result, error
 	if err != nil {
 		return Result{}, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, err = tx.Exec(ctx, `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`); err != nil {
 		return Result{}, err
 	}

@@ -3,6 +3,7 @@ package workitems
 import (
 	"context"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/workitemsearch"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
@@ -13,12 +14,12 @@ import (
 // already own one. Existing transactional callers receive a nested savepoint.
 // Callers constructing a full proposed row must lock its workspace schema before
 // reading the source. Reloading history here does not merge stale proposed edits.
-func (r *Repository) saveIssue(ctx context.Context, actor string, row, old map[string]any) (map[string]any, error) {
+func (r *Repository) saveIssue(ctx context.Context, actor string, row, old map[string]any) (_ map[string]any, resultErr error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	writer := *r
 	writer.db = tx
 	project, err := writer.project(ctx, stringValue(row["project_id"]))

@@ -8,6 +8,7 @@ import (
 	"maps"
 	"strings"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
@@ -18,7 +19,7 @@ import (
 
 const apiDefaultIssueTypeSQL = `SELECT (SELECT t.id::text FROM issue_types t JOIN project_issue_types p ON p.issue_type_id=t.id WHERE p.project_id=$1 AND NOT EXISTS(SELECT 1 FROM work_item_type_settings s WHERE s.workspace_id=t.workspace_id AND s.enabled) AND t.is_default AND t.deleted_at IS NULL ORDER BY t.id ASC LIMIT 1)`
 
-func (r *Repository) writeIssue(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
+func (r *Repository) writeIssue(ctx context.Context, q Request, body io.Reader, contentType string) (_ Result, resultErr error) {
 	if !q.API && q.Method == "PUT" {
 		args := []any{q.ActorID, q.Slug, q.ProjectID, q.IssueID}
 		if _, err := issuequery.BuildComplexFilter(q.Params["filters"], &args); err != nil {
@@ -29,7 +30,7 @@ func (r *Repository) writeIssue(ctx context.Context, q Request, body io.Reader, 
 	if err != nil {
 		return Result{}, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	writer := *r
 	writer.db, writer.transactionalEffects = tx, true
 	result, err := writer.writeIssueTransaction(ctx, q, body, contentType)
@@ -455,7 +456,9 @@ func (r *Repository) replaceIssueRelations(ctx context.Context, row map[string]a
 			}
 		}
 		if err != nil {
-			_ = tx.Rollback(ctx)
+			if rollbackErr := dbutil.RollbackTransaction(ctx, tx.Rollback, nil); rollbackErr != nil {
+				return errors.Join(err, rollbackErr)
+			}
 			var pg *pgconn.PgError
 			if errors.As(err, &pg) && pg.Code == "23505" {
 				continue
@@ -463,7 +466,7 @@ func (r *Repository) replaceIssueRelations(ctx context.Context, row map[string]a
 			return err
 		}
 		if err = tx.Commit(ctx); err != nil {
-			return err
+			return dbutil.RollbackTransaction(ctx, tx.Rollback, err)
 		}
 	}
 	return nil

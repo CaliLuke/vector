@@ -5,6 +5,7 @@ import (
 	"io"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 )
 
@@ -16,12 +17,12 @@ type draftLifecycle struct {
 	origin string
 }
 
-func (lifecycle draftLifecycle) execute(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
+func (lifecycle draftLifecycle) execute(ctx context.Context, q Request, body io.Reader, contentType string) (_ Result, resultErr error) {
 	tx, err := lifecycle.db.Begin(ctx)
 	if err != nil {
 		return Result{}, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	operation := newDraftOperation(tx, lifecycle.now, lifecycle.origin, nil)
 	result, err := operation.writeDraft(ctx, q, body, contentType)
 	if err != nil {

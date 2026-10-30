@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"slices"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/google/uuid"
 )
@@ -19,7 +20,7 @@ type ItemEditSource struct {
 	SourceVersion string `json:"source_version"`
 }
 
-func (r *Repository) ReadItemEditSource(ctx context.Context, q Request, mode, item, project string) (Result, error) {
+func (r *Repository) ReadItemEditSource(ctx context.Context, q Request, mode, item, project string) (_ Result, resultErr error) {
 	if mode != "edit" && mode != "draft" {
 		return Result{}, failure(400, "error", "Choose a saved work item or private draft.")
 	}
@@ -40,7 +41,7 @@ func (r *Repository) ReadItemEditSource(ctx context.Context, q Request, mode, it
 	if err != nil {
 		return Result{}, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, err = tx.Exec(ctx, `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY`); err != nil {
 		return Result{}, err
 	}

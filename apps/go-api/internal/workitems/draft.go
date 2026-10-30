@@ -7,6 +7,7 @@ import (
 	"maps"
 	"strings"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
@@ -398,11 +399,10 @@ func (r *draftOperation) replaceDraftRelations(ctx context.Context, q Request, r
 			}
 		}
 		if err != nil {
-			_ = tx.Rollback(ctx)
-			return err
+			return dbutil.RollbackTransaction(ctx, tx.Rollback, err)
 		}
 		if err = tx.Commit(ctx); err != nil {
-			return err
+			return dbutil.RollbackTransaction(ctx, tx.Rollback, err)
 		}
 	}
 	return nil
@@ -508,11 +508,10 @@ func (r *draftOperation) publishDraft(ctx context.Context, q Request, draft map[
 			}
 		}
 		if moduleAssignmentErr != nil {
-			_ = tx.Rollback(ctx)
-			return Result{}, moduleAssignmentErr
+			return Result{}, dbutil.RollbackTransaction(ctx, tx.Rollback, moduleAssignmentErr)
 		}
 		if moduleAssignmentErr = tx.Commit(ctx); moduleAssignmentErr != nil {
-			return Result{}, moduleAssignmentErr
+			return Result{}, dbutil.RollbackTransaction(ctx, tx.Rollback, moduleAssignmentErr)
 		}
 		for _, id := range ids {
 			requested, _ := pythoncompat.Dumps(map[string]any{"module_id": id}, nil)

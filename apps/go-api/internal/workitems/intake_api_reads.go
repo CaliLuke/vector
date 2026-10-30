@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 )
 
 // ReadIntake keeps the queue, its item projections and pagination in the same
 // authorized snapshot. The native HTTP reader retains its compatibility shape.
-func (r *Repository) ReadIntake(ctx context.Context, q Request) (Result, error) {
+func (r *Repository) ReadIntake(ctx context.Context, q Request) (_ Result, resultErr error) {
 	if q.ExpectedWorkspaceID == nil || q.ProjectID == "" || q.Method != "GET" || !q.API || q.Operation != "list" && q.Operation != "retrieve" {
 		return Result{}, forbidden()
 	}
@@ -17,7 +18,7 @@ func (r *Repository) ReadIntake(ctx context.Context, q Request) (Result, error) 
 	if err != nil {
 		return Result{}, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, err = tx.Exec(ctx, `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`); err != nil {
 		return Result{}, err
 	}
