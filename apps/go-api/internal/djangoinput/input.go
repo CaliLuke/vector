@@ -110,11 +110,12 @@ func Parse(body io.Reader, contentType string) (Input, error) {
 		input.Form = true
 		reader := multipart.NewReader(bytes.NewReader(raw), parameters["boundary"])
 		for {
-			part, err := reader.NextPart()
-			if err == io.EOF {
+			part, nextErr := reader.NextPart()
+			// Only bare EOF ends iteration; wrapped EOF remains a parse failure.
+			if nextErr == io.EOF {
 				break
 			}
-			if err != nil {
+			if nextErr != nil {
 				return input, Failure(400, "detail", "Multipart form parse error - Invalid boundary in multipart: None")
 			}
 			data, err := io.ReadAll(part)

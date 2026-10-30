@@ -404,14 +404,6 @@
     {
       "fingerprint": [
         "errorlint",
-        "cmd/system/sticky_routes.go",
-        "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
         "internal/assets/durable_metadata.go",
         "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
       ],
@@ -494,14 +486,6 @@
         "errorlint",
         "internal/cyclereads/lifecycle_test.go",
         "comparing with != will fail on wrapped errors. Use errors.Is to check for a specific error"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/djangoinput/input.go",
-        "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
       ],
       "count": 1
     },
@@ -644,14 +628,6 @@
     {
       "fingerprint": [
         "nilerr",
-        "cmd/system/account_authentication_adapters.go",
-        "error is not nil (line #) but it returns nil"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "nilerr",
         "cmd/system/instance_management_http_test.go",
         "error is not nil (line #) but it returns nil"
       ],
@@ -671,14 +647,6 @@
     },
     {
       "fingerprint": ["nilerr", "internal/workitems/input.go", "error is not nil (line #) but it returns nil"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "cmd/system/account_authentication_adapters.go",
-        "ST1005: error strings should not be capitalized"
-      ],
       "count": 1
     },
     {

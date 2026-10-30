@@ -265,12 +265,13 @@ func normalizeStickyRequestBody(contentType string, body []byte) ([]byte, error)
 		reader := multipart.NewReader(bytes.NewReader(body), boundary)
 		values := url.Values{}
 		for {
-			part, err := reader.NextPart()
-			if err == io.EOF {
+			part, nextErr := reader.NextPart()
+			// Only bare EOF ends iteration; wrapped EOF remains a parse failure.
+			if nextErr == io.EOF {
 				break
 			}
-			if err != nil {
-				return nil, err
+			if nextErr != nil {
+				return nil, nextErr
 			}
 			value, err := io.ReadAll(io.LimitReader(part, stickyRequestLimit+1))
 			_ = part.Close()

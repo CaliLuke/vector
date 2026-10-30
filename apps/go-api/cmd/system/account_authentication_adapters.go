@@ -90,7 +90,7 @@ type djangoPasswordResetTokenIssuer struct {
 
 func newDjangoPasswordResetTokenIssuer(secret string) (*djangoPasswordResetTokenIssuer, error) {
 	if secret == "" {
-		return nil, errors.New("Django secret key is required for password reset tokens")
+		return nil, errors.New("secret key for Django password reset tokens is required")
 	}
 	return &djangoPasswordResetTokenIssuer{secret: secret, now: time.Now}, nil
 }
@@ -112,29 +112,34 @@ func (issuer *djangoPasswordResetTokenIssuer) Issue(_ context.Context, user stor
 }
 
 func (issuer *djangoPasswordResetTokenIssuer) Verify(_ context.Context, user store.User, uidb64, token string) (bool, error) {
+	return issuer.matchesResetToken(user, uidb64, token), nil
+}
+
+// Malformed and expired tokens are ordinary negative verification results.
+func (issuer *djangoPasswordResetTokenIssuer) matchesResetToken(user store.User, uidb64, token string) bool {
 	decodedID, err := base64.RawURLEncoding.DecodeString(strings.TrimRight(uidb64, "="))
 	if err != nil || string(decodedID) != user.ID {
-		return false, nil
+		return false
 	}
 	parts := strings.Split(token, "-")
 	if len(parts) != 2 || len(parts[1]) != 32 {
-		return false, nil
+		return false
 	}
 	timestamp, err := strconv.ParseInt(parts[0], 36, 64)
 	if err != nil || timestamp < 0 {
-		return false, nil
+		return false
 	}
 	issuedAt := djangoPasswordResetEpoch.Add(time.Duration(timestamp) * time.Second)
 	age := issuer.now().UTC().Sub(issuedAt)
 	if age < 0 || age > 3*24*time.Hour {
-		return false, nil
+		return false
 	}
 	loginTimestamp := ""
 	if user.LastLogin != nil {
 		loginTimestamp = user.LastLogin.UTC().Truncate(time.Second).Format("2006-01-02 15:04:05")
 	}
 	expected := djangoBase36(timestamp) + "-" + issuer.hash(user, loginTimestamp, timestamp)
-	return subtle.ConstantTimeCompare([]byte(expected), []byte(token)) == 1, nil
+	return subtle.ConstantTimeCompare([]byte(expected), []byte(token)) == 1
 }
 
 func (issuer *djangoPasswordResetTokenIssuer) hash(user store.User, loginTimestamp string, timestamp int64) string {

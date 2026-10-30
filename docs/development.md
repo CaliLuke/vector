@@ -151,6 +151,12 @@ The test-result guard rejects failures, incomplete reports, and unreviewed skips
 fixtures; each entry states its prerequisite. Never point these tests at a database
 with valuable data.
 
+Multipart readers keep the `NextPart` error separate from body-read errors because
+[errorlint issue #49](https://codeberg.org/polyfloyd/go-errorlint/issues/49) describes
+incorrect EOF warnings when an error variable is reassigned. This separation can
+be simplified when the analyzer tracks assignments at each comparison. Preserve
+direct `io.EOF` comparisons: wrapped EOF errors must still report parse failures.
+
 Both fast and full Go gates enforce a maintainability index floor of 20 for new
 functions. Higher scores are better. `configs/quality/go-maintainability-baseline.json`
 records numeric floors for existing functions; any score decline fails even if
