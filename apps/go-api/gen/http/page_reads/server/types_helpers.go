@@ -67,6 +67,15 @@ func NewSummaryOptionsUnauthenticatedResponseBody(res *pagereads.PageReadsUnauth
 	return body
 }
 
+// NewListBadRequestResponseBody builds the HTTP response body from the result
+// of the "list" endpoint of the "page_reads" service.
+func NewListBadRequestResponseBody(res *pagereads.PageReadsBadRequest) *ListBadRequestResponseBody {
+	body := &ListBadRequestResponseBody{
+		Message: res.Message,
+	}
+	return body
+}
+
 // NewListForbiddenResponseBody builds the HTTP response body from the result
 // of the "list" endpoint of the "page_reads" service.
 func NewListForbiddenResponseBody(res *pagereads.PageReadsForbidden) *ListForbiddenResponseBody {

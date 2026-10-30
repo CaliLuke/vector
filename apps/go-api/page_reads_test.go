@@ -217,7 +217,7 @@ func TestPageReadsSummaryAndFavoriteOrderedList(t *testing.T) {
 		t.Fatalf("search=%q orderBy=%q timezone=%q", repository.search, repository.orderBy, repository.timezone)
 	}
 }
-func TestPageReadsPreservesExplicitEmptyOrderByForDjangoFailure(t *testing.T) {
+func TestPageReadsPreservesExplicitEmptyOrderByForValidation(t *testing.T) {
 	repository := &pageReadsRepositoryStub{list: json.RawMessage(`[]`)}
 	service, ctx := authenticatedPageReadsService(t, repository, &pageRecentVisitsStub{})
 	empty := ""
@@ -235,19 +235,20 @@ func TestPageReadsPreservesExplicitEmptyOrderByForDjangoFailure(t *testing.T) {
 		t.Fatalf("decoded empty orderBy=%q, want explicit empty", repository.orderBy)
 	}
 }
-func TestPageReadsLeavesInvalidOrderUnhandledForDjangoHTML500(t *testing.T) {
+func TestPageReadsMapsInvalidOrderToBadRequest(t *testing.T) {
 	service, ctx := authenticatedPageReadsService(
 		t,
 		&pageReadsRepositoryStub{err: store.ErrInvalidOrder},
 		&pageRecentVisitsStub{},
 	)
 	_, _, err := service.List(ctx, &api.ListPayload{Slug: "demo", ProjectID: pageReadsProjectID})
-	if !errors.Is(err, store.ErrInvalidOrder) {
+	var badRequest *api.PageReadsBadRequest
+	if !errors.As(err, &badRequest) || badRequest.Message != "Invalid order_by parameter." {
 		t.Fatalf("err=%T %v", err, err)
 	}
 }
 
-func TestPageReadsDetailLeavesInvalidOrderUnhandledForDjangoHTML500(t *testing.T) {
+func TestPageReadsDetailMapsInvalidOrderToBadRequest(t *testing.T) {
 	service, ctx := authenticatedPageReadsService(
 		t,
 		&pageReadsRepositoryStub{err: store.ErrInvalidOrder},
@@ -257,7 +258,8 @@ func TestPageReadsDetailLeavesInvalidOrderUnhandledForDjangoHTML500(t *testing.T
 	_, _, err := service.Detail(ctx, &api.DetailPayload{
 		Slug: "demo", ProjectID: pageReadsProjectID, PageID: pageReadsPageID, OrderBy: &invalid,
 	})
-	if !errors.Is(err, store.ErrInvalidOrder) {
+	var badRequest *api.PageReadsBadRequest
+	if !errors.As(err, &badRequest) || badRequest.Message != "Invalid order_by parameter." {
 		t.Fatalf("err=%T %v", err, err)
 	}
 }

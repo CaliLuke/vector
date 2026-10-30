@@ -163,7 +163,7 @@ var _ = Service("page_reads", func() {
 			Required("slug", "project_id")
 		})
 		Result(rawJSONResponseMetadata)
-		pageReadErrors(false, false)
+		pageReadErrors(true, false)
 		Error("invalid_search", ArrayOf(String))
 		HTTP(func() {
 			GET("/api/workspaces/{slug}/projects/{project_id}/pages/")
@@ -173,7 +173,7 @@ var _ = Service("page_reads", func() {
 			Param("project_id")
 			Param("search")
 			Param("order_by")
-			pageReadResponses(false, false)
+			pageReadResponses(true, false)
 			Response("invalid_search", StatusBadRequest)
 		})
 	})

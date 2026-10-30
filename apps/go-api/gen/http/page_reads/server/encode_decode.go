@@ -343,6 +343,38 @@ func EncodeListError(encoder func(context.Context, http.ResponseWriter) loomhttp
 			return encodeError(ctx, w, v)
 		}
 		switch errorResponse.Name {
+		case "bad_request":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*pagereads.PageReadsBadRequest)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = NewListBadRequestResponseBody(res)
+			}
+			w.Header().Set("loom-error", res.LoomErrorName())
+			w.WriteHeader(http.StatusBadRequest)
+			return enc.Encode(body)
+		case "invalid_search":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(pagereads.InvalidSearch)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res
+			}
+			w.Header().Set("loom-error", res.LoomErrorName())
+			w.WriteHeader(http.StatusBadRequest)
+			return enc.Encode(body)
 		case "forbidden":
 			//nolint:errorlint // Response ownership is already resolved.
 			res, ok := errorResponse.Owner.(*pagereads.PageReadsForbidden)
@@ -390,22 +422,6 @@ func EncodeListError(encoder func(context.Context, http.ResponseWriter) loomhttp
 			}
 			w.Header().Set("loom-error", res.LoomErrorName())
 			w.WriteHeader(http.StatusUnauthorized)
-			return enc.Encode(body)
-		case "invalid_search":
-			//nolint:errorlint // Response ownership is already resolved.
-			res, ok := errorResponse.Owner.(pagereads.InvalidSearch)
-			if !ok {
-				return encodeError(ctx, w, v)
-			}
-			enc := encoder(ctx, w)
-			var body any
-			if formatter != nil {
-				body = formatter(ctx, v)
-			} else {
-				body = res
-			}
-			w.Header().Set("loom-error", res.LoomErrorName())
-			w.WriteHeader(http.StatusBadRequest)
 			return enc.Encode(body)
 		default:
 			return encodeError(ctx, w, v)

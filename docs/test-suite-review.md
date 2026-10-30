@@ -26,6 +26,14 @@ neighbors, and next-page detection cannot overflow at the last valid offset.
 PostgreSQL tests retain supported infinite first-page cursors and large grouped
 bounds without changing their existing results.
 
+Page list and detail requests now return typed JSON 400 responses for invalid or
+empty ordering fields. The source design declares the list response, and the
+obsolete HTML 500 adapter is removed. Tests exercise GET and HEAD through the
+production middleware and prove that rejection stops after authorization without
+reading page content or recording a visit. Page-read validation responses retain
+the generated error-name header so clients can distinguish ordering and search
+errors that share status 400. Unexpected failures remain sanitized 500 responses.
+
 All floating-point ordering columns now have finite-value constraints. Migration
 43 repairs historical NaN and infinity positions to a fallback order of 65535.
 PostgreSQL tests cover all 20 additional columns alongside the existing label

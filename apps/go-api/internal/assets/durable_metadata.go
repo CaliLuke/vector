@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/loom/execution"
 	executionSelvedge "github.com/CaliLuke/loom/execution/selvedge"
 	"github.com/CaliLuke/selvedge"
@@ -16,7 +17,6 @@ import (
 	"github.com/aws/smithy-go"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 const (
@@ -154,19 +154,8 @@ func isObjectNotFound(err error) bool {
 }
 
 func classifyStorageMetadataError(err error) error {
-	var databaseError *pgconn.PgError
-	if errors.As(err, &databaseError) {
-		// PostgreSQL connection, transaction rollback, resource exhaustion, and
-		// shutdown classes can recover. Other server-reported SQL failures need
-		// operator or data correction and should not be retried by the worker.
-		if len(databaseError.Code) < 2 {
-			return fmt.Errorf("%w: %v", ErrPermanentStorageMetadata, err)
-		}
-		switch databaseError.Code[:2] {
-		case "08", "40", "53", "57":
-		default:
-			return fmt.Errorf("%w: %w", ErrPermanentStorageMetadata, err)
-		}
+	if database.IsPermanentPostgresError(err) {
+		return fmt.Errorf("%w: %w", ErrPermanentStorageMetadata, err)
 	}
 	var apiError smithy.APIError
 	if errors.As(err, &apiError) {

@@ -45,6 +45,12 @@ type SummaryOptionsUnauthenticatedResponseBody struct {
 	Detail string `form:"detail" json:"detail" xml:"detail"`
 }
 
+// ListBadRequestResponseBody is the type of the "page_reads" service "list"
+// endpoint HTTP response body for the "bad_request" error.
+type ListBadRequestResponseBody struct {
+	Message string `form:"error" json:"error" xml:"error"`
+}
+
 // ListForbiddenResponseBody is the type of the "page_reads" service "list"
 // endpoint HTTP response body for the "forbidden" error.
 type ListForbiddenResponseBody struct {

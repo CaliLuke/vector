@@ -29724,24 +29724,43 @@
             }
           },
           "400": {
-            "description": "invalid_search: Bad Request response.",
+            "description": "bad_request: Bad Request response.\n\ninvalid_search: Bad Request response.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "example": "Velit saepe molestiae expedita eveniet."
-                  },
-                  "example": [
-                    "Saepe itaque omnis.",
-                    "Ipsa unde molestiae voluptatum ullam optio ut."
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Velit saepe molestiae expedita eveniet."
+                      },
+                      "example": [
+                        "Saepe itaque omnis.",
+                        "Ipsa unde molestiae voluptatum ullam optio ut."
+                      ]
+                    },
+                    {
+                      "example": {
+                        "error": "Autem accusamus nihil molestiae quidem quia officia."
+                      },
+                      "$ref": "#/components/schemas/PageReadsBadRequest"
+                    }
                   ]
                 },
-                "example": [
-                  "Saepe itaque omnis.",
-                  "Ipsa unde molestiae voluptatum ullam optio ut."
-                ]
+                "examples": {
+                  "bad_request": {
+                    "value": {
+                      "error": "Autem accusamus nihil molestiae quidem quia officia."
+                    }
+                  },
+                  "invalid_search": {
+                    "value": [
+                      "Saepe itaque omnis.",
+                      "Ipsa unde molestiae voluptatum ullam optio ut."
+                    ]
+                  }
+                }
               }
             }
           },

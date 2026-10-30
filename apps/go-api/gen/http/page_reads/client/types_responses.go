@@ -50,6 +50,12 @@ type SummaryOptionsUnauthenticatedResponseBody struct {
 	Detail *string `form:"detail,omitempty" json:"detail,omitzero" xml:"detail,omitempty"`
 }
 
+// ListBadRequestResponseBody is the type of the "page_reads" service "list"
+// endpoint HTTP response body for the "bad_request" error.
+type ListBadRequestResponseBody struct {
+	Message *string `form:"error,omitempty" json:"error,omitzero" xml:"error,omitempty"`
+}
+
 // ListForbiddenResponseBody is the type of the "page_reads" service "list"
 // endpoint HTTP response body for the "forbidden" error.
 type ListForbiddenResponseBody struct {
@@ -522,6 +528,34 @@ func NewSummaryOptionsUnauthenticated(body *SummaryOptionsUnauthenticatedRespons
 	return v
 }
 
+// NewListBadRequest builds a page_reads service list endpoint bad_request
+// error.
+func NewListBadRequest(body *ListBadRequestResponseBody) *pagereads.PageReadsBadRequest {
+	v := &pagereads.PageReadsBadRequest{
+		Message: *body.Message,
+	}
+
+	return v
+}
+
+// NewListInvalidSearch builds a page_reads service list endpoint
+// invalid_search error.
+func NewListInvalidSearch(body []loom.Optional[string]) pagereads.InvalidSearch {
+	var v []string
+	if body != nil {
+		v = make([]string, len(body))
+		for i, val := range body {
+			actual, ok := val.Value()
+			if !ok {
+				continue
+			}
+			v[i] = actual
+		}
+	}
+
+	return v
+}
+
 // NewListForbidden builds a page_reads service list endpoint forbidden error.
 func NewListForbidden(body *ListForbiddenResponseBody) *pagereads.PageReadsForbidden {
 	v := &pagereads.PageReadsForbidden{
@@ -546,24 +580,6 @@ func NewListInternalError(body *ListInternalErrorResponseBody) *pagereads.PageRe
 func NewListUnauthenticated(body *ListUnauthenticatedResponseBody) *pagereads.PageReadsUnauthenticated {
 	v := &pagereads.PageReadsUnauthenticated{
 		Detail: *body.Detail,
-	}
-
-	return v
-}
-
-// NewListInvalidSearch builds a page_reads service list endpoint
-// invalid_search error.
-func NewListInvalidSearch(body []loom.Optional[string]) pagereads.InvalidSearch {
-	var v []string
-	if body != nil {
-		v = make([]string, len(body))
-		for i, val := range body {
-			actual, ok := val.Value()
-			if !ok {
-				continue
-			}
-			v[i] = actual
-		}
 	}
 
 	return v

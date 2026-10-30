@@ -7,6 +7,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
 	"github.com/CaliLuke/loom/execution"
 	executionSelvedge "github.com/CaliLuke/loom/execution/selvedge"
@@ -220,16 +221,8 @@ func nullableIPAddress(value any) (any, error) {
 }
 
 func classifyAPIActivityLogError(err error) error {
-	var databaseError *pgconn.PgError
-	if errors.As(err, &databaseError) {
-		if len(databaseError.Code) < 2 {
-			return fmt.Errorf("%w: %v", ErrPermanentAPIActivityLog, err)
-		}
-		switch databaseError.Code[:2] {
-		case "08", "40", "53", "57":
-		default:
-			return fmt.Errorf("%w: %w", ErrPermanentAPIActivityLog, err)
-		}
+	if database.IsPermanentPostgresError(err) {
+		return fmt.Errorf("%w: %w", ErrPermanentAPIActivityLog, err)
 	}
 	return err
 }

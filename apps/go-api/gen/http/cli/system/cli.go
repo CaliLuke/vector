@@ -7902,7 +7902,7 @@ func pageReadsDescriptionUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "page-reads description --slug \"Facilis eum voluptatem.\" --project-id \"6f63f675-8079-42b7-8b54-6f8189874e52\" --page-id \"8e4782d1-39df-43aa-8002-0ee097d4e892\" --session-id \"Eos nobis eligendi in quia ut.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "page-reads description --slug \"Minima accusamus facilis amet beatae facilis vel.\" --project-id \"1223c26d-d919-499e-b0ee-6d966e21f5ed\" --page-id \"f9d49789-fb9b-4029-8157-1fce4cfc37ca\" --session-id \"Aut voluptate fugit.\"")
 }
 func pageReadsVersionListUsage() {
 	// Header with flags
@@ -7927,7 +7927,7 @@ func pageReadsVersionListUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "page-reads version-list --slug \"Sunt quas in beatae exercitationem.\" --project-id \"d566b07c-7fdb-45b7-9b66-ebfbd4d91687\" --page-id \"3fdc486a-bfcd-4626-9af8-e63499ed73a1\" --search \"Ullam quae maiores velit non quam provident.\" --session-id \"Velit optio.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "page-reads version-list --slug \"Rerum et et perferendis et facere.\" --project-id \"12255ba2-07bb-4126-98aa-1027f918fb77\" --page-id \"436f7c6d-6fa7-4e99-b7b3-9fba7e4b0595\" --search \"In consequuntur aspernatur accusantium corrupti.\" --session-id \"Non et.\"")
 }
 func pageReadsVersionListOptionsUsage() {
 	// Header with flags
@@ -7950,7 +7950,7 @@ func pageReadsVersionListOptionsUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "page-reads version-list-options --slug \"Cumque quaerat.\" --project-id \"f146715d-d088-46d2-abc8-d0e19201c8a4\" --page-id \"158a5f46-0e3c-4094-b1e1-b2396ba64e75\" --session-id \"Et animi autem distinctio et et quo.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "page-reads version-list-options --slug \"Facere expedita totam voluptas ut harum eaque.\" --project-id \"a3b09e92-cad2-4166-93c1-d349c6054d29\" --page-id \"a368d6f8-cde2-4e17-9da9-44f3ecc0eca8\" --session-id \"Quasi laudantium perspiciatis eius reprehenderit animi iure.\"")
 }
 func pageReadsVersionDetailUsage() {
 	// Header with flags
@@ -7975,7 +7975,7 @@ func pageReadsVersionDetailUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "page-reads version-detail --slug \"Et qui qui.\" --project-id \"7998f1d5-410d-495d-a9f7-d330f15efb86\" --page-id \"dd61a5d7-701c-4153-9b88-2dc3cd5264da\" --pk \"111d3b56-05b7-4387-b485-3b953af1e376\" --session-id \"Laudantium autem cumque deleniti.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "page-reads version-detail --slug \"Eius unde maiores aspernatur error.\" --project-id \"49d776a2-46ef-4537-aee4-d3cafbe7fa32\" --page-id \"fed4d49a-9bc2-4bd5-8196-629987549019\" --pk \"80011347-ee33-4053-a2ff-83b4505a0694\" --session-id \"Quo ea perferendis sit ut laudantium autem.\"")
 }
 func pageReadsVersionDetailOptionsUsage() {
 	// Header with flags

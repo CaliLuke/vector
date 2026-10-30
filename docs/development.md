@@ -303,6 +303,13 @@ in [timakin/bodyclose#60](https://github.com/timakin/bodyclose/issues/60), with 
 Those call sites can use the shared helper when the pinned analyzer accepts that
 reproduction. No linter suppression or dependency patch was added.
 
+The analyzer also reports decoder-factory calls before a response exists; a
+[standalone factory reproduction](https://github.com/timakin/bodyclose/issues/71#issuecomment-6496543573)
+is already reported upstream. Direct decoder tests can drop their retained lint
+allowances when the pinned analyzer accepts that reproduction. The page validation
+tests exercise the generated client through HTTP, including request encoding and
+error decoding, without adding an allowance for the factory call.
+
 The legacy tooltip uses Floating UI's controlled element API with callback-ref
 state. Oxlint currently mistakes a callback property passed to JSX `ref` for a
 render-time ref read. [oxc#23753](https://github.com/oxc-project/oxc/issues/23753#issuecomment-6510863595)

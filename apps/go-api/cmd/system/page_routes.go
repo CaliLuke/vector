@@ -34,8 +34,6 @@ func mountPageReadsProtocolRoutes(mux loomhttp.Muxer, server *pagereadssvr.Serve
 
 func mountPageReadsRoutes(pending pendingReplacementEndpoints, mux loomhttp.Muxer, readServicesCORSPolicy loomhttp.RuntimeCORSPolicy, activityOptions *apiV1CompatibilityOptions) {
 	if pending.pageReads != nil {
-		pending.pageReads.List = markDjangoPageInternalError(pending.pageReads.List)
-		pending.pageReads.Detail = markDjangoPageInternalError(pending.pageReads.Detail)
 		server := pagereadssvr.New(pending.pageReads, mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil, readServicesCORSPolicy)
 		options := apiV1CompatibilityOptions{bodySizeLimit: pending.activityReadsBodyLimit, activityLogger: pending.activityReadsActivity, activitySecret: pending.activityReadsSecret}
 		if activityOptions != nil {

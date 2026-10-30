@@ -21008,20 +21008,32 @@ paths:
                                   view_props: Numquam aut dolor et et est maiores.
                                   workspace: 8ceeb228-90fc-41c8-ab5b-d218182e8188
                 "400":
-                    description: 'invalid_search: Bad Request response.'
+                    description: |-
+                        bad_request: Bad Request response.
+
+                        invalid_search: Bad Request response.
                     content:
                         application/json:
                             schema:
-                                type: array
-                                items:
-                                    type: string
-                                    example: Velit saepe molestiae expedita eveniet.
-                                example:
-                                    - Saepe itaque omnis.
-                                    - Ipsa unde molestiae voluptatum ullam optio ut.
-                            example:
-                                - Saepe itaque omnis.
-                                - Ipsa unde molestiae voluptatum ullam optio ut.
+                                anyOf:
+                                    - type: array
+                                      items:
+                                        type: string
+                                        example: Velit saepe molestiae expedita eveniet.
+                                      example:
+                                        - Saepe itaque omnis.
+                                        - Ipsa unde molestiae voluptatum ullam optio ut.
+                                    - example:
+                                        error: Autem accusamus nihil molestiae quidem quia officia.
+                                      $ref: '#/components/schemas/PageReadsBadRequest'
+                            examples:
+                                bad_request:
+                                    value:
+                                        error: Autem accusamus nihil molestiae quidem quia officia.
+                                invalid_search:
+                                    value:
+                                        - Saepe itaque omnis.
+                                        - Ipsa unde molestiae voluptatum ullam optio ut.
                 "401":
                     description: 'unauthenticated: Unauthorized response.'
                     content:

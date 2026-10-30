@@ -309,7 +309,7 @@ func pageReadsRepositoryError(err error, notFoundMessage string) error {
 	case errors.Is(err, store.ErrNotFound):
 		return pageReadsNotFound(notFoundMessage)
 	case errors.Is(err, store.ErrInvalidOrder):
-		return err
+		return &api.PageReadsBadRequest{Message: "Invalid order_by parameter."}
 	default:
 		return pageReadsInternalError()
 	}

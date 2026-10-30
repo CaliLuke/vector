@@ -344,10 +344,11 @@ func EncodeListRequest(encoder func(*http.Request) loomhttp.Encoder) func(*http.
 // page_reads list endpoint. restoreBody controls whether the response body
 // should be restored after having been read.
 // DecodeListResponse may return the following errors:
+//   - "bad_request" (type *pagereads.PageReadsBadRequest): http.StatusBadRequest
+//   - "invalid_search" (type pagereads.InvalidSearch): http.StatusBadRequest
 //   - "forbidden" (type *pagereads.PageReadsForbidden): http.StatusForbidden
 //   - "internal_error" (type *pagereads.PageReadsInternalError): http.StatusInternalServerError
 //   - "unauthenticated" (type *pagereads.PageReadsUnauthenticated): http.StatusUnauthorized
-//   - "invalid_search" (type pagereads.InvalidSearch): http.StatusBadRequest
 //   - error: internal error
 func DecodeListResponse(decoder func(*http.Response) loomhttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
 	return func(resp *http.Response) (any, error) {
@@ -373,6 +374,48 @@ func DecodeListResponse(decoder func(*http.Response) loomhttp.Decoder, restoreBo
 				}
 				res := NewSummaryRawJSONResponseMetadataOK(contentType)
 				return res, nil
+			case http.StatusBadRequest:
+				en := resp.Header.Get("loom-error")
+				switch en {
+				case "bad_request":
+					var (
+						body ListBadRequestResponseBody
+						err  error
+					)
+					err = decoder(resp).Decode(&body)
+					if err != nil {
+						return nil, loomhttp.ErrDecodingError("page_reads", "list", err)
+					}
+					err = ValidateListBadRequestResponseBody(&body)
+					if err != nil {
+						return nil, loomhttp.ErrValidationError("page_reads", "list", err)
+					}
+					return nil, NewListBadRequest(&body)
+				case "invalid_search":
+					var (
+						body []loom.Optional[string]
+						err  error
+					)
+					err = decoder(resp).Decode(&body)
+					if err != nil {
+						return nil, loomhttp.ErrDecodingError("page_reads", "list", err)
+					}
+					for i, e := range body {
+						if _, ok := e.Value(); !ok {
+							err = loom.MergeErrors(err, loom.InvalidNullElementError("body", i))
+						}
+					}
+					if err != nil {
+						return nil, loomhttp.ErrValidationError("page_reads", "list", err)
+					}
+					return nil, NewListInvalidSearch(body)
+				default:
+					body, err := loomhttp.ReadUnexpectedResponseBody(resp)
+					if err != nil {
+						return nil, err
+					}
+					return nil, loomhttp.ErrInvalidResponse("page_reads", "list", resp.StatusCode, string(body))
+				}
 			case http.StatusForbidden:
 				var (
 					body ListForbiddenResponseBody
@@ -415,24 +458,6 @@ func DecodeListResponse(decoder func(*http.Response) loomhttp.Decoder, restoreBo
 					return nil, loomhttp.ErrValidationError("page_reads", "list", err)
 				}
 				return nil, NewListUnauthenticated(&body)
-			case http.StatusBadRequest:
-				var (
-					body []loom.Optional[string]
-					err  error
-				)
-				err = decoder(resp).Decode(&body)
-				if err != nil {
-					return nil, loomhttp.ErrDecodingError("page_reads", "list", err)
-				}
-				for i, e := range body {
-					if _, ok := e.Value(); !ok {
-						err = loom.MergeErrors(err, loom.InvalidNullElementError("body", i))
-					}
-				}
-				if err != nil {
-					return nil, loomhttp.ErrValidationError("page_reads", "list", err)
-				}
-				return nil, NewListInvalidSearch(body)
 			default:
 				body, err := loomhttp.ReadUnexpectedResponseBody(resp)
 				if err != nil {

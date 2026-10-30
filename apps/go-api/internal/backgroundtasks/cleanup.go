@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/loom/execution"
 	executionSelvedge "github.com/CaliLuke/loom/execution/selvedge"
 	"github.com/CaliLuke/selvedge"
@@ -387,16 +388,8 @@ func classifyCleanupError(err error) error {
 	if errors.Is(err, ErrPermanentCleanup) {
 		return err
 	}
-	var databaseError *pgconn.PgError
-	if errors.As(err, &databaseError) {
-		if len(databaseError.Code) < 2 {
-			return fmt.Errorf("%w: %v", ErrPermanentCleanup, err)
-		}
-		switch databaseError.Code[:2] {
-		case "08", "40", "53", "57":
-		default:
-			return fmt.Errorf("%w: %w", ErrPermanentCleanup, err)
-		}
+	if database.IsPermanentPostgresError(err) {
+		return fmt.Errorf("%w: %w", ErrPermanentCleanup, err)
 	}
 	return err
 }

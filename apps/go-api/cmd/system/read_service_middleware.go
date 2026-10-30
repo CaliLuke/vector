@@ -12,9 +12,7 @@ import (
 
 	systemapi "github.com/CaliLuke/go-plane"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
-	pagereadsstore "github.com/CaliLuke/go-plane/internal/pagereads"
 	"github.com/CaliLuke/loom/clue/log"
-	loom "github.com/CaliLuke/loom/pkg"
 )
 
 var (
@@ -218,7 +216,8 @@ func readServicesGzipMiddlewareWithAuthBypass(next http.Handler, bypassAuthentic
 
 type readServicesResponseWriter struct {
 	http.ResponseWriter
-	wroteHeader bool
+	wroteHeader            bool
+	preserveBadRequestName bool
 }
 
 func (writer *readServicesResponseWriter) WriteHeader(status int) {
@@ -226,7 +225,9 @@ func (writer *readServicesResponseWriter) WriteHeader(status int) {
 		return
 	}
 	writer.wroteHeader = true
-	writer.Header().Del("loom-error")
+	if status != http.StatusBadRequest || !writer.preserveBadRequestName {
+		writer.Header().Del("loom-error")
+	}
 	writer.ResponseWriter.WriteHeader(status)
 }
 
@@ -346,16 +347,6 @@ func writeReadServicesSessionError(response http.ResponseWriter, request *http.R
 	}
 }
 
-func markDjangoPageInternalError(endpoint loom.Endpoint) loom.Endpoint {
-	return func(ctx context.Context, request any) (any, error) {
-		result, err := endpoint(ctx, request)
-		if errors.Is(err, pagereadsstore.ErrInvalidOrder) {
-			systemapi.MarkReadServiceDjangoHTML500(ctx)
-		}
-		return result, err
-	}
-}
-
 type djangoReadServiceHTML500ResponseWriter struct {
 	http.ResponseWriter
 	request     *http.Request
@@ -449,14 +440,12 @@ func readServicesCompatibilityMiddleware(next http.Handler) http.Handler {
 			})
 			return
 		}
-		compatibleResponse := http.ResponseWriter(&readServicesResponseWriter{ResponseWriter: response})
-		if (request.Method == http.MethodGet || request.Method == http.MethodHead) &&
-			readServiceUsesDjangoHTML500(protocol.pattern) {
-			request = request.WithContext(systemapi.WithReadServiceDjangoHTML500(request.Context()))
-			compatibleResponse = &djangoReadServiceHTML500ResponseWriter{
-				ResponseWriter: compatibleResponse,
-				request:        request,
-			}
+		// Page reads have distinct 400 response shapes. Preserve their generated
+		// error name so clients can decode both ordering and search failures.
+		compatibleResponse := &readServicesResponseWriter{
+			ResponseWriter: response,
+			preserveBadRequestName: protocol.pageLifecycle &&
+				(request.Method == http.MethodGet || request.Method == http.MethodHead),
 		}
 		next.ServeHTTP(compatibleResponse, request)
 	})
@@ -483,17 +472,6 @@ func writeReadServiceJSON(response http.ResponseWriter, status int, value any) {
 	response.Header().Set("Content-Type", "application/json")
 	response.WriteHeader(status)
 	_, _ = response.Write(body)
-}
-
-func readServiceUsesDjangoHTML500(pattern string) bool {
-	switch pattern {
-	case "/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/cycle-issues/",
-		"/api/workspaces/{slug}/projects/{project_id}/pages/",
-		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/":
-		return true
-	default:
-		return false
-	}
 }
 
 func setDjangoProtocolCompatibilityHeaders(headers http.Header, allow string) {

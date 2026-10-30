@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/loom/execution"
 	executionSelvedge "github.com/CaliLuke/loom/execution/selvedge"
 	"github.com/CaliLuke/selvedge"
 	"github.com/CaliLuke/selvedge/retry"
 	awsretry "github.com/aws/aws-sdk-go-v2/aws/retry"
 	"github.com/aws/smithy-go"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -236,16 +236,8 @@ func classifyExporterHistoryError(err error) error {
 	if errors.Is(err, ErrPermanentExporterHistory) {
 		return err
 	}
-	var databaseError *pgconn.PgError
-	if errors.As(err, &databaseError) {
-		if len(databaseError.Code) < 2 {
-			return fmt.Errorf("%w: %v", ErrPermanentExporterHistory, err)
-		}
-		switch databaseError.Code[:2] {
-		case "08", "40", "53", "57":
-		default:
-			return fmt.Errorf("%w: %w", ErrPermanentExporterHistory, err)
-		}
+	if database.IsPermanentPostgresError(err) {
+		return fmt.Errorf("%w: %w", ErrPermanentExporterHistory, err)
 	}
 	var apiError smithy.APIError
 	if errors.As(err, &apiError) {

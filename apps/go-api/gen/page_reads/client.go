@@ -86,6 +86,7 @@ func (c *Client) SummaryOptions(ctx context.Context, p *SummaryOptionsPayload) (
 // List may return the following errors:
 // - "unauthenticated" (type *PageReadsUnauthenticated)
 // - "forbidden" (type *PageReadsForbidden)
+// - "bad_request" (type *PageReadsBadRequest)
 // - "internal_error" (type *PageReadsInternalError)
 // - "invalid_search" (type InvalidSearch)
 // - error: internal error

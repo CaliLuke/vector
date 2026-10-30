@@ -5,7 +5,6 @@ import (
 	"compress/gzip"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -30,7 +29,6 @@ import (
 	pagereads "github.com/CaliLuke/go-plane/gen/page_reads"
 	workspaceprojectreads "github.com/CaliLuke/go-plane/gen/workspace_project_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
-	pagereadsstore "github.com/CaliLuke/go-plane/internal/pagereads"
 	workitemhistorysvr "github.com/CaliLuke/go-plane/workitemhistory/gen/http/work_item_history/server"
 	workitemhistoryapi "github.com/CaliLuke/go-plane/workitemhistory/gen/work_item_history"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -846,16 +844,11 @@ func TestReadServicesSessionLifecycleMatchesDjango(t *testing.T) {
 	})
 }
 
-func TestDjangoPageInternalErrorsUseHTML500(t *testing.T) {
+func TestMarkedInternalErrorsUseHTML500(t *testing.T) {
 	for _, method := range []string{http.MethodGet, http.MethodHead} {
 		t.Run(method, func(t *testing.T) {
 			ctx := systemapi.WithReadServiceDjangoHTML500(context.Background())
-			endpoint := markDjangoPageInternalError(func(context.Context, any) (any, error) {
-				return nil, pagereadsstore.ErrInvalidOrder
-			})
-			if _, err := endpoint(ctx, nil); !errors.Is(err, pagereadsstore.ErrInvalidOrder) || !systemapi.ReadServiceDjangoHTML500(ctx) {
-				t.Fatalf("endpoint err=%v marker=%v", err, systemapi.ReadServiceDjangoHTML500(ctx))
-			}
+			systemapi.MarkReadServiceDjangoHTML500(ctx)
 
 			response := httptest.NewRecorder()
 			request := httptest.NewRequest(method, "/api/workspaces/demo/projects/00000000-0000-4000-8000-000000000001/pages/", nil)

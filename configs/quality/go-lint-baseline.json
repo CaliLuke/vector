@@ -283,36 +283,12 @@
         "internal/assets/durable_metadata.go",
         "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
       ],
-      "count": 2
+      "count": 1
     },
     {
       "fingerprint": [
         "errorlint",
         "internal/backgroundtasks/admission.go",
-        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/backgroundtasks/api_activity_logs.go",
-        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/backgroundtasks/cleanup.go",
-        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "internal/backgroundtasks/exporter_history.go",
         "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
       ],
       "count": 1

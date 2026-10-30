@@ -107,6 +107,22 @@ func ValidateSummaryOptionsUnauthenticatedResponseBody(body *SummaryOptionsUnaut
 	return
 }
 
+// ValidateListBadRequestResponseBody runs the validations defined on
+// list_bad_request_response_body
+func ValidateListBadRequestResponseBody(body *ListBadRequestResponseBody, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if body.Message == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("error", validationPath))
+	}
+	return
+}
+
 // ValidateListForbiddenResponseBody runs the validations defined on
 // list_forbidden_response_body
 func ValidateListForbiddenResponseBody(body *ListForbiddenResponseBody, validationContext ...string) (err error) {
