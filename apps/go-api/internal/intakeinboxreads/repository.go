@@ -723,11 +723,14 @@ func addUUIDFilter(builder *whereBuilder, column, value string, allowNone bool) 
 		return
 	}
 	ids, hasNone := csvUUIDs(value)
-	if allowNone && hasNone {
-		builder.conditions = append(builder.conditions, column+" IS NULL")
-	}
 	if len(ids) > 0 {
-		builder.addCondition(column+" = ANY(%s)", ids)
+		condition := column + " = ANY(%s)"
+		if allowNone && hasNone {
+			condition = "(" + column + " IS NULL OR " + condition + ")"
+		}
+		builder.addCondition(condition, ids)
+	} else if allowNone && hasNone {
+		builder.conditions = append(builder.conditions, column+" IS NULL")
 	}
 }
 
@@ -763,7 +766,7 @@ func addStrictEstimatePointFilter(builder *whereBuilder, column, value string) e
 }
 
 func addRelationUUIDFilter(builder *whereBuilder, alias, table, owner, target, value string, allowNone, present, liveOnly bool) {
-	if value == "" && !present {
+	if value == "" && (!present || allowNone) {
 		return
 	}
 	relationScope := "filtered_relation." + owner + " = " + alias + ".id"
@@ -783,11 +786,16 @@ func addRelationUUIDFilter(builder *whereBuilder, alias, table, owner, target, v
 		labelRelation = false
 	}
 	ids, hasNone := csvUUIDs(value)
-	if allowNone && hasNone {
-		builder.conditions = append(builder.conditions, "NOT EXISTS (SELECT 1 FROM "+table+" filtered_relation WHERE "+relationScope+")")
-	}
 	if len(ids) > 0 {
-		builder.addCondition("EXISTS (SELECT 1 FROM "+table+" filtered_relation WHERE "+liveScope+" AND filtered_relation."+target+" = ANY(%s))", ids)
+		condition := "EXISTS (SELECT 1 FROM " + table + " filtered_relation WHERE " + liveScope + " AND filtered_relation." + target + " = ANY(%s))"
+		if allowNone && hasNone {
+			condition = "(NOT EXISTS (SELECT 1 FROM " + table + " filtered_relation WHERE " + liveScope + ") OR " + condition + ")"
+		}
+		builder.addCondition(condition, ids)
+		return
+	}
+	if allowNone && hasNone {
+		builder.conditions = append(builder.conditions, "NOT EXISTS (SELECT 1 FROM "+table+" filtered_relation WHERE "+liveScope+")")
 		return
 	}
 	if present && (!hasNone || !allowNone) && liveOnly && !labelRelation {

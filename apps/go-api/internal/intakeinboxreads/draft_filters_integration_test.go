@@ -43,6 +43,18 @@ INSERT INTO draft_issue_modules(draft_issue_id,module_id) SELECT id,'00000000-00
 		want        []string
 	}{
 		{"labels", testsupport.LabelKept, []string{testsupport.LabelDraft}},
+		{"labels", "None," + testsupport.LabelKept, []string{testsupport.LabelDraft, testsupport.LabelEmptyDraft}},
+		{"created_by", "None," + testsupport.LabelActor, []string{testsupport.LabelDraft, testsupport.LabelEmptyDraft, testsupport.LabelProjectlessDraft}},
+		{"parent", "None,00000000-0000-4000-8000-000000000090", []string{testsupport.LabelDraft, testsupport.LabelEmptyDraft, testsupport.LabelProjectlessDraft}},
+		{"assignees", "None", []string{testsupport.LabelEmptyDraft, testsupport.LabelProjectlessDraft}},
+		{"assignees", "", []string{testsupport.LabelDraft, testsupport.LabelEmptyDraft, testsupport.LabelProjectlessDraft}},
+		{"assignees", "None,00000000-0000-4000-8000-000000000003", []string{testsupport.LabelDraft, testsupport.LabelEmptyDraft, testsupport.LabelProjectlessDraft}},
+		{"cycle", "None", []string{testsupport.LabelEmptyDraft, testsupport.LabelProjectlessDraft}},
+		{"cycle", "", []string{testsupport.LabelDraft, testsupport.LabelEmptyDraft, testsupport.LabelProjectlessDraft}},
+		{"cycle", "None,00000000-0000-4000-8000-000000000090", []string{testsupport.LabelDraft, testsupport.LabelEmptyDraft, testsupport.LabelProjectlessDraft}},
+		{"module", "None", []string{testsupport.LabelEmptyDraft, testsupport.LabelProjectlessDraft}},
+		{"module", "", []string{testsupport.LabelDraft, testsupport.LabelEmptyDraft, testsupport.LabelProjectlessDraft}},
+		{"module", "None,00000000-0000-4000-8000-000000000091", []string{testsupport.LabelDraft, testsupport.LabelEmptyDraft, testsupport.LabelProjectlessDraft}},
 		{"labels", testsupport.LabelDeleted, []string{}},
 		{"labels", "None", []string{testsupport.LabelEmptyDraft}},
 		{"labels", "", []string{testsupport.LabelDraft, testsupport.LabelEmptyDraft, testsupport.LabelProjectlessDraft}},

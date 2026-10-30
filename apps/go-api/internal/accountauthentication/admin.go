@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -55,12 +56,12 @@ func (repository *Repository) CreateInitialAdmin(
 	email, firstName, lastName, companyName, passwordHash, clientIP, userAgent string,
 	telemetry bool,
 	now time.Time,
-) (InitialAdminResult, error) {
+) (result InitialAdminResult, resultErr error) {
 	tx, err := repository.db.Begin(ctx)
 	if err != nil {
 		return InitialAdminResult{}, fmt.Errorf("begin initial admin creation: %w", err)
 	}
-	defer tx.Rollback(context.WithoutCancel(ctx))
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 
 	var instanceID string
 	var setupDone bool

@@ -40,8 +40,8 @@ func (s *transportService) APIKeyAuth(ctx context.Context, key string, scheme *s
 }
 
 func (s *transportService) PostAPIWorkspacesBySlugProjectsByProjectIDIssues(_ context.Context, _ *api.PostAPIWorkspacesBySlugProjectsByProjectIDIssuesPayload, body io.ReadCloser) (*api.WorkItemResponse, io.ReadCloser, error) {
-	defer body.Close()
-	data, err := io.ReadAll(body)
+	data, readErr := io.ReadAll(body)
+	err := errors.Join(readErr, body.Close())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -58,8 +58,8 @@ func (s *transportService) GetAPIV1WorkspacesBySlugIssuesSearch(_ context.Contex
 }
 
 func (s *transportService) DeleteAPIWorkspacesBySlugProjectsByProjectIDBulkDeleteIssues(_ context.Context, _ *api.DeleteAPIWorkspacesBySlugProjectsByProjectIDBulkDeleteIssuesPayload, body io.ReadCloser) (*api.WorkItemResponse, io.ReadCloser, error) {
-	defer body.Close()
-	data, err := io.ReadAll(body)
+	data, readErr := io.ReadAll(body)
+	err := errors.Join(readErr, body.Close())
 	if err != nil {
 		return nil, nil, err
 	}

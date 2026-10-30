@@ -2,6 +2,7 @@ package design_test
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -48,8 +49,8 @@ func (s *publicTransportService) GetAPIPublicAnchorByAnchorIssuesByIssueIDReacti
 }
 
 func (s *publicTransportService) PostAPIPublicAnchorByAnchorIssuesByIssueIDComments(_ context.Context, _ *api.PostAPIPublicAnchorByAnchorIssuesByIssueIDCommentsPayload, body io.ReadCloser) (*api.CollaborationResponse, io.ReadCloser, error) {
-	defer body.Close()
-	data, err := io.ReadAll(body)
+	data, readErr := io.ReadAll(body)
+	err := errors.Join(readErr, body.Close())
 	s.body, s.called = string(data), true
 	return &api.CollaborationResponse{}, io.NopCloser(strings.NewReader(`{"id":"created"}`)), err
 }

@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	client "github.com/CaliLuke/go-plane/ticket_collaboration/gen/http/ticket_collaboration/client"
 	api "github.com/CaliLuke/go-plane/ticket_collaboration/gen/ticket_collaboration"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -71,6 +72,7 @@ func TestGeneratedClientAllowsAnonymousPublicCommentsAndProtectsReactions(t *tes
 	if !ok {
 		t.Fatalf("anonymous comment response has type %T", comments)
 	}
+	defer testsupport.Close(t, commentResponse.Body)
 	commentBody, err := io.ReadAll(commentResponse.Body)
 	if err != nil || string(commentBody) != "[]" || !service.called {
 		t.Fatalf("anonymous comments body=%q called=%v err=%v", commentBody, service.called, err)
@@ -88,8 +90,8 @@ func TestGeneratedClientAllowsAnonymousPublicCommentsAndProtectsReactions(t *tes
 }
 
 func (s *publicTransportService) PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDSubscribe(_ context.Context, _ *api.PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDSubscribePayload, body io.ReadCloser) (*api.CollaborationResponse, io.ReadCloser, error) {
-	defer body.Close()
-	data, err := io.ReadAll(body)
+	data, readErr := io.ReadAll(body)
+	err := errors.Join(readErr, body.Close())
 	s.body, s.called = string(data), true
 	return &api.CollaborationResponse{}, io.NopCloser(strings.NewReader(`{"subscribed":true}`)), err
 }
@@ -115,6 +117,7 @@ func TestGeneratedClientReceivesSelfSubscribeCreatedResponse(t *testing.T) {
 	if !ok {
 		t.Fatalf("self-subscribe response has type %T", value)
 	}
+	defer testsupport.Close(t, response.Body)
 	body, err := io.ReadAll(response.Body)
 	if err != nil || string(body) != `{"subscribed":true}` || doer.status != http.StatusCreated || !service.called || service.body != requestBody {
 		t.Fatalf("status=%d called=%v request=%q response=%q err=%v", doer.status, service.called, service.body, body, err)

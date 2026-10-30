@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -174,12 +175,12 @@ func scanUser(row pgx.Row, user *User) error {
 // CreateUser mirrors the user-creation defaults used by Django's signup path,
 // including the post-save notification-preference row. Username is supplied by
 // the auth workflow so the same generated identity value is available to audit.
-func (repository *Repository) CreateUser(ctx context.Context, email, username, passwordHash string, passwordAutoset, emailVerified bool) (User, error) {
+func (repository *Repository) CreateUser(ctx context.Context, email, username, passwordHash string, passwordAutoset, emailVerified bool) (result User, resultErr error) {
 	tx, err := repository.db.Begin(ctx)
 	if err != nil {
 		return User{}, fmt.Errorf("begin account user creation: %w", err)
 	}
-	defer tx.Rollback(context.WithoutCancel(ctx))
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 
 	userID := uuid.NewString()
 	profileID := uuid.NewString()
@@ -259,12 +260,12 @@ INSERT INTO profiles (
 
 // EnsureProfile mirrors Profile.objects.get_or_create(user=user), including
 // Django's model defaults when an older user has no profile row.
-func (repository *Repository) EnsureProfile(ctx context.Context, userID string) error {
+func (repository *Repository) EnsureProfile(ctx context.Context, userID string) (resultErr error) {
 	tx, err := repository.db.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin account profile ensure: %w", err)
 	}
-	defer tx.Rollback(context.WithoutCancel(ctx))
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if err := insertDefaultProfile(ctx, tx, userID, time.Now().UTC(), uuid.NewString()); err != nil {
 		return fmt.Errorf("ensure account profile: %w", err)
 	}

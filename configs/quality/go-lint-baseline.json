@@ -92,22 +92,6 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/accountauthentication/admin.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/accountauthentication/repository.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/backgroundtasks/description_asset_copy.go",
         "Error return value of `response.Body.Close` is not checked"
       ],
@@ -358,30 +342,6 @@
         "errcheck",
         "project_label_writes/design/transport_test.go",
         "Error return value of `s.record` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "ticket_collaboration/design/client_openapi_test.go",
-        "Error return value of `body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "ticket_collaboration/design/transport_test.go",
-        "Error return value of `body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "work_item_core/design/transport_test.go",
-        "Error return value of `body.Close` is not checked"
       ],
       "count": 2
     },

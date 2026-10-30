@@ -73,7 +73,7 @@ INSERT INTO draft_issue_labels(draft_issue_id,label_id,deleted_at) VALUES('00000
 		filters := []struct {
 			value string
 			ids   []string
-		}{{"", all}, {"None", none}, {testsupport.LabelKept, []string{mixed}}, {testsupport.LabelDeleted, []string{}}, {"00000000-0000-4000-8000-000000000009", []string{}}, {"00000000-0000-4000-8000-000000000010", []string{}}}
+		}{{"", all}, {"None", none}, {"None," + testsupport.LabelKept, slices.Concat([]string{mixed}, none)}, {testsupport.LabelKept, []string{mixed}}, {testsupport.LabelDeleted, []string{}}, {"00000000-0000-4000-8000-000000000009", []string{}}, {"00000000-0000-4000-8000-000000000010", []string{}}}
 		for _, filter := range filters {
 			t.Run(table+" filter "+filter.value, func(t *testing.T) {
 				builder := newWhereBuilder()
