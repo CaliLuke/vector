@@ -275,7 +275,7 @@
     },
     "github.com/CaliLuke/go-plane/internal/mcpactions": {
       "statements": 3559,
-      "percent": 84.24
+      "percent": 85.05
     },
     "github.com/CaliLuke/go-plane/internal/mcpauth": {
       "statements": 141,
@@ -326,8 +326,8 @@
       "percent": 100
     },
     "github.com/CaliLuke/go-plane/internal/projectconfiguration": {
-      "statements": 857,
-      "percent": 55.16
+      "statements": 858,
+      "percent": 60.72
     },
     "github.com/CaliLuke/go-plane/internal/projectidentifiers": {
       "statements": 27,

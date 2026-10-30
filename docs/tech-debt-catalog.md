@@ -5,8 +5,8 @@ debt. It consolidates the quality baselines, MCP acceptance tracker, test review
 and previously local work log. It does not claim an exhaustive audit of every
 possible defect.
 
-Snapshot: `87a791d9c442568fc191dd2e59696e2ebe5408b5`, 2026-10-30.
-Both full quality gates passed at this published revision, including 13,482 Go test events
+Snapshot: `1be8fcd5e84318be223af9ea49022d70248a80b8`, 2026-10-30.
+Both full quality gates passed at this published revision, including 13,567 Go test events
 with no failed or skipped cases. Passing gates allow the recorded debt below;
 they do not mean this catalog is complete.
 
@@ -106,9 +106,36 @@ receipts, native-writer revisions, atomic cascade effects, current roles/lifecyc
 authorization changes after lock waits, tenant/resource binding, request contention
 and competing revisions. Browser/proxy checks also passed in both edit directions,
 including stale-revision rejection and deletion/replay.
-Go fast checks and the refreshed duplication check pass. Duplication remains at
-474 reports, with no new allowances. The complete publication gates remain
-required; the published snapshot above predates this batch.
+Both full publication gates passed at `1be8fcd5`, including 13,567 Go test events
+with no failures or skips. Remote `main` matches that commit. Duplication remains
+at 474 reports, with no new allowances. The five label action rows are closed.
+
+The active MCP-01/MCP-02 batch is cycle/module acceptance. Existing read and
+lifecycle workflow tests cover both credentials and protocols. The next required
+proof is explicit:
+
+| Batch                                        | Required evidence                                                                                                                                                                     | Status                                                                                                                                                                                                      |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Planning receipts and rollback               | Changed input conflicts; other writers invalidate old revisions; replay preserves later edits; failed association/effect writes roll back relations, revisions and receipts.          | 52 MCP cases pass across both credentials, protocols and domains, including native relation-writer revisions and lifecycle replay. Three deletion-worker cases also pass. Complete batch gates remain open. |
+| Planning authorization and contention        | Current roles/lifecycle and credentials govern fresh writes and replay; workspace/project/resource bindings hold; competing requests and revisions admit only the documented commits. | Source reviewed; domain-specific regression gaps remain.                                                                                                                                                    |
+| Planning browser and contract reconciliation | Native/MCP edits and lifecycle changes agree through the local proxy; stale cycle documentation matches implemented actions.                                                          | Existing partial browser evidence; remaining checks open.                                                                                                                                                   |
+
+The planning batch fixes a reproduced MCP-02 gap: an administrator could delete
+another user's cycle/module, lose that role, and still replay the delete receipt.
+Current owner/admin authority is now checked before replay. Current administrators
+can also replay after the target disappears through a native owner cascade.
+Scheduled purge retains owner authorization rows during the receipt's retry window,
+then releases them after expiry. The focused run passes 52 MCP cases plus two purge
+cases and the existing durable cascade/retention regression, with no failures or
+skips. Complete publication gates remain required before this fix is published.
+
+These batches refine existing catalog entries. They do not introduce new product
+scope or replace the remaining inventory.
+
+The published `1be8fcd5` full profile also supports stricter COV-01 floors:
+`internal/mcpactions` rises from 84.24% to 85.05%, and
+`internal/projectconfiguration` from 55.16% to 60.72%. Only these two measured
+package floors change. File floors and other package allowances are preserved.
 
 COV-01 floor review uses the completed full profile at `17d1afdb`:
 `internal/features` increases from 80.92% to 83.21%, and `internal/mcpactions`

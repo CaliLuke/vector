@@ -27,7 +27,7 @@ func (r *LifecycleRepository) MutateResource(ctx context.Context, cmd projectmut
 	if !ok {
 		return projectmutations.Result{}, projectmutations.ErrInvalid
 	}
-	return projectmutations.Execute(ctx, db, projectmutations.Resource{Name: "module", Table: "modules", RevisionTable: "module_edit_revisions", RevisionColumn: "module_id", SchemaLock: true}, cmd, func(ctx context.Context, tx pgx.Tx) (json.RawMessage, error) {
+	return projectmutations.Execute(ctx, db, projectmutations.Resource{Name: "module", Table: "modules", RevisionTable: "module_edit_revisions", RevisionColumn: "module_id", SchemaLock: true, DeleteOwnerColumn: "created_by_id"}, cmd, func(ctx context.Context, tx pgx.Tx) (json.RawMessage, error) {
 		transaction := &LifecycleRepository{database: tx, reads: &Repository{database: tx}, effects: projectmutations.Effects{Tx: tx}, now: r.now, baseHost: r.baseHost}
 		switch cmd.Action {
 		case "manage_workitems":
@@ -37,9 +37,6 @@ func (r *LifecycleRepository) MutateResource(ctx context.Context, cmd projectmut
 		case "update":
 			return transaction.UpdateModuleV1(ctx, cmd.ActorID.String(), cmd.WorkspaceSlug, cmd.ProjectID.String(), cmd.ResourceID.String(), cmd.Fields, nil, r.baseHost)
 		case "delete":
-			if err := transaction.CheckDeleteModule(ctx, cmd.ActorID.String(), cmd.WorkspaceSlug, cmd.ProjectID.String(), cmd.ResourceID.String(), true); err != nil {
-				return nil, err
-			}
 			return nil, transaction.DeleteModule(ctx, cmd.ActorID.String(), cmd.WorkspaceSlug, cmd.ProjectID.String(), cmd.ResourceID.String(), true, r.baseHost)
 		}
 		_, err := transaction.SetModuleArchived(ctx, cmd.ActorID.String(), cmd.WorkspaceSlug, cmd.ProjectID.String(), cmd.ResourceID.String(), cmd.Action == "archive")

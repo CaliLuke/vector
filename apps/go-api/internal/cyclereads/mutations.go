@@ -41,7 +41,7 @@ func (r *LifecycleRepository) MutateResource(ctx context.Context, cmd projectmut
 	if !ok {
 		return projectmutations.Result{}, projectmutations.ErrInvalid
 	}
-	return projectmutations.Execute(ctx, db, projectmutations.Resource{Name: "cycle", Table: "cycles", RevisionTable: "cycle_edit_revisions", RevisionColumn: "cycle_id", SchemaLock: true}, cmd, func(ctx context.Context, tx pgx.Tx) (json.RawMessage, error) {
+	return projectmutations.Execute(ctx, db, projectmutations.Resource{Name: "cycle", Table: "cycles", RevisionTable: "cycle_edit_revisions", RevisionColumn: "cycle_id", SchemaLock: true, DeleteOwnerColumn: "owned_by_id"}, cmd, func(ctx context.Context, tx pgx.Tx) (json.RawMessage, error) {
 		transaction := &LifecycleRepository{database: tx, effects: projectmutations.Effects{Tx: tx}, now: r.now, origin: r.origin}
 		switch cmd.Action {
 		case "manage_workitems", "transfer_workitems":
@@ -59,9 +59,6 @@ func (r *LifecycleRepository) MutateResource(ctx context.Context, cmd projectmut
 			}
 			return json.Marshal(result)
 		case "delete":
-			if err := transaction.AuthorizeDelete(ctx, cmd.WorkspaceSlug, cmd.ProjectID.String(), cmd.ResourceID.String(), cmd.ActorID.String(), true); err != nil {
-				return nil, err
-			}
 			return nil, transaction.Delete(ctx, cmd.WorkspaceSlug, cmd.ProjectID.String(), cmd.ResourceID.String(), cmd.ActorID.String(), true)
 		}
 		cycle, err := transaction.Cycle(ctx, cmd.WorkspaceSlug, cmd.ProjectID.String(), cmd.ResourceID.String())

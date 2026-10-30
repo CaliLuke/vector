@@ -10,9 +10,9 @@ A domain application operation calls `Execute` on the primary database. Its auth
 
 The optional UUID `request_id` is scoped by actor, workspace, project (when applicable), tool, and action. A transaction-scoped advisory lock serializes concurrent calls with the same key. A lock-hash collision can delay an unrelated call but cannot make it match another receipt: the stored key comparison includes every scope field.
 
-After acquiring that lock, the authorization callback revalidates the credential, checks current account, workspace, project, and action permissions, and retains the relevant domain authorization locks through commit. Credential validation before entering `Execute` is insufficient: a call may have waited behind another transaction. The receipt helper cannot supply those resource-specific rules. A destructive replay checks the surviving scope and action permissions without requiring the deleted target to exist.
+After acquiring that lock, the authorization callback revalidates the credential, checks current account, workspace, project, and action permissions, and retains the relevant domain authorization locks through commit. Credential validation before entering `Execute` is insufficient: a call may have waited behind another transaction. The receipt helper cannot supply those resource-specific rules. A destructive replay checks the surviving scope and action permissions without requiring a live target. Domains that need retained ownership information must preserve that authorization scope throughout the receipt lifetime.
 
-An existing, unexpired receipt is examined only after authorization succeeds. Matching input returns its original safe result and expiry; changed input returns a conflict. Replay skips the mutation callback, so it precedes the optional `expected_revision` check. An expired key can be used for a new mutation. Receipt identities have no entity foreign keys, so target deletion does not erase retry protection or force entity lookup during replay.
+An existing, unexpired receipt is examined only after authorization succeeds. Matching input returns its original safe result and expiry; changed input returns a conflict. Replay skips the mutation callback, so it precedes the optional `expected_revision` check. An expired key can be used for a new mutation. Receipt identities have no entity foreign keys, so target deletion does not erase retry protection or force a live entity lookup during replay.
 
 ## Input and result handling
 
@@ -51,3 +51,14 @@ The receipt foundation alone does not establish resource parity. The [cleanup re
 Page and collection writes support the same optional receipt/revision extensions. Workspace revisions include all native page, project-link, collection, membership and item-page-link writers. Page body changes enqueue native transaction/version work atomically. See [page and collection contracts](mcp-pages-collections.md). Content workflows and the six-domain receipt batch pass under both authentication modes and protocol revisions; remaining acceptance is tracked in [MCP parity](mcp-parity.md).
 
 Template, initiative and feature-setting mutations support optional receipt/revision extensions, current authorization before replay and transactional audit events. Initiative work-item link changes enqueue native association history. Catalogue workflows and receipt checks pass under both authentication modes and protocol revisions; the parity tracker records remaining acceptance.
+
+Cycle and module delete receipts check current owner-or-project-administrator
+authority before replay. Active project members retain owner-based delete rights;
+losing administrator status removes rights over another user's resource.
+Current administrators can replay even after a native cascade removes the target.
+For owner-based replay, scheduled purge retains the deleted cycle/module while
+an unexpired delete receipt references it. Expired receipts do not extend retention.
+This protects the 48-hour receipt window even with a one-day purge policy.
+The [planning delete checks](../apps/go-api/internal/mcpactions/planning_delete_authorization_integration_test.go)
+and [purge regression](../apps/go-api/internal/backgroundtasks/planning_deletion_receipt_integration_test.go)
+cover these boundaries. Complete publication gates for this batch remain pending.

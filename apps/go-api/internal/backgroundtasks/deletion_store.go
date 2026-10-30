@@ -208,7 +208,18 @@ func (s *PostgresDeletionStore) HardDelete(ctx context.Context, in hardDeletionI
 	}
 	pk := pgx.Identifier{m.PK}.Sanitize()
 	table := deletionTable(m)
-	tag, err := tx.Exec(ctx, "DELETE FROM "+table+" WHERE "+pk+" IN (SELECT "+pk+" FROM "+table+" WHERE deleted_at<$1 ORDER BY "+pk+" LIMIT $2 FOR UPDATE SKIP LOCKED)", in.Cutoff, deletionBatchSize)
+	candidates := "SELECT " + pk + " FROM " + table + " candidate WHERE deleted_at<$1"
+	args := []any{in.Cutoff, deletionBatchSize}
+	if m.App == "db" && (m.Name == "cycle" || m.Name == "module") {
+		// These deleted rows supply current owner/admin authorization on replay.
+		// Even a one-day purge policy must preserve the receipt's retry window.
+		candidates += ` AND NOT EXISTS(SELECT 1 FROM mutation_receipts r
+ WHERE r.tool=$3 AND r.action='delete' AND r.replay_expires_at>statement_timestamp()
+ AND r.workspace_id=candidate.workspace_id AND r.project_id=candidate.project_id
+ AND r.result->>'id'=candidate.id::text)`
+		args = append(args, m.Name)
+	}
+	tag, err := tx.Exec(ctx, "DELETE FROM "+table+" WHERE "+pk+" IN ("+candidates+" ORDER BY "+pk+" LIMIT $2 FOR UPDATE SKIP LOCKED)", args...)
 	if err != nil {
 		return 0, err
 	}

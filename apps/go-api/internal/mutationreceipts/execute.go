@@ -44,7 +44,8 @@ type Command struct {
 // every invocation, after waiting for a concurrent receipt writer and before any
 // receipt is inspected. It must check current actor/workspace/project/action rights
 // and lock the domain's authorization rows through commit. Destructive replay must
-// not require the deleted target to exist. The caller must also revalidate the
+// not require a live target. Domains must retain any ownership scope they need
+// throughout the receipt lifetime. The caller must also revalidate the
 // credential in Authorize, after the receipt lock wait, on every invocation.
 //
 // Apply checks the optional revision, performs the domain mutation, and records

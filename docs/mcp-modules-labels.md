@@ -1,4 +1,4 @@
-# MCP module and label reads
+# MCP modules and labels
 
 The `module` and `label` read actions are `list` and `retrieve`. Both require
 `project_id`; retrieve also requires `module_id` or `label_id`. An optional
@@ -42,8 +42,8 @@ archive policies, scope changes after admission, every query projection, empty
 pages, and foreign relationships. [Discovery tests](../apps/go-api/internal/mcpactions/discovery_integration_test.go)
 verify current project-membership filtering. [Label repository regressions](../apps/go-api/internal/projectlabelreads/scoped_read_integration_test.go)
 cover denied versus empty queries and parent ownership directly. OAuth remains generic, with production issuer selection deferred. Local browser checks verified module creation and an MCP update in the native UI.
-The remaining catalogue actions have generated-server workflow coverage; final
-combined quality-gate review remains open.
+Module mutations have generated-server workflow coverage; their combined domain
+acceptance remains open. Label mutation acceptance is recorded below.
 
 ## Label mutation acceptance
 
@@ -85,4 +85,31 @@ MCP update stored position zero and displayed its new name/color in the browser
 after reload. Deletion/replay succeeded, detail rejected the deleted record, and
 both lists exactly matched their original empty baselines. The browser displayed
 its empty state afterward. These checks close the recorded label read browser gap;
-the complete publication gates are still required for the new regression batch.
+both full publication gates passed at `1be8fcd5`, including 13,567 Go test events
+with no failures or skips. All five label actions meet the recorded acceptance
+requirements. Other catalogue domains remain open.
+
+## Module mutation acceptance
+
+Module mutations use the native lifecycle and planning writers within the shared
+project transaction. Current active project membership with member or administrator
+role is required. Archived or deleted projects reject writes and receipt replay.
+Row, issue-association and module-member triggers advance the module revision for
+all writers. Optional receipt and revision extensions follow the
+[write contract](mcp-writes.md).
+
+The [core workflow batch](../apps/go-api/internal/mcpactions/core_batch_integration_test.go)
+covers create replay, update, association, archive, restore and deletion under
+both credentials and protocols. It passed in the full gate at `1be8fcd5`.
+The [planning receipt regressions](../apps/go-api/internal/mcpactions/planning_receipt_integration_test.go)
+add changed-input conflicts, direct-writer revision invalidation, preservation of
+later edits on replay, and atomic association/effect rollback with retry.
+[Relation-writer cases](../apps/go-api/internal/mcpactions/planning_revision_integration_test.go)
+cover insert, move and removal of work-item links and module memberships.
+[Lifecycle cases](../apps/go-api/internal/mcpactions/planning_lifecycle_receipt_integration_test.go)
+prove replay preserves later restoration and deletion.
+[Delete authorization](../apps/go-api/internal/mcpactions/planning_delete_authorization_integration_test.go)
+checks current owner/admin authority before replay, including a removed target.
+Their combined cycle/module run passes 52 focused MCP cases. The new regression batch
+still needs complete gates; domain authorization, contention and remaining browser
+acceptance stay open.

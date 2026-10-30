@@ -1,6 +1,9 @@
-# MCP cycle reads
+# MCP cycles
 
-The `cycle` tool implements `list` and `retrieve` from the pinned Plane MCP handler and `plane-sdk==0.3.1`. The other nine cycle actions remain unimplemented.
+The `cycle` tool implements all eleven actions from the pinned Plane MCP handler
+and `plane-sdk==0.3.1`: list, retrieve, create, update, delete, list_workitems,
+manage_workitems, transfer_workitems, complete, archive and unarchive.
+Implementation does not close the remaining mutation acceptance requirements.
 
 Both actions require `project_id`. Retrieve also requires `cycle_id`. Workspace selection follows the shared PAT/OAuth contract. Discovery advertises cycle reads only when the principal has an active membership in a live project in the selected workspace, or in any eligible workspace for context-free OAuth. Invocation requires access to the specific project.
 
@@ -14,4 +17,35 @@ Typed generated records and pages own the wire contract. A concrete entry carrie
 
 HTTP and MCP share timezone conversion. Modeled timestamps use the user's current timezone and preserve microsecond precision; arbitrary JSON such as `progress_snapshot` is unchanged.
 
-Generated-server PostgreSQL tests cover both credentials and protocol revisions, exact SDK field sets, filters and pagination, archived estimates, hidden/absent targets, empty pages, late authorization changes, cross-workspace relationships, and timezone behavior. Complete deployed issuer/browser proof and the broader 207-action catalogue remain open.
+Generated-server PostgreSQL tests cover both credentials and protocol revisions,
+exact SDK field sets, filters and pagination, archived estimates, hidden/absent
+targets, empty pages, late authorization changes, cross-workspace relationships,
+and timezone behavior. Remaining browser and mutation acceptance is tracked in
+[MCP parity](mcp-parity.md) and the [debt catalog](tech-debt-catalog.md).
+Production OAuth issuer selection remains an accepted deferral.
+
+## Mutation acceptance
+
+Cycle mutations use the native lifecycle and planning writers within the shared
+project transaction. Current active project membership with member or administrator
+role is required. Archived or deleted projects reject writes and receipt replay.
+Optional receipts and expected revisions follow the [write contract](mcp-writes.md).
+Database triggers advance cycle revisions for row changes and issue associations,
+including writes outside MCP.
+
+The [core workflow batch](../apps/go-api/internal/mcpactions/core_batch_integration_test.go)
+covers create replay, update, association, transfer, completion, archive, restore
+and deletion under both credentials and protocols. Deleting planning resources
+preserves their work items. Those workflows passed in the full gate at `1be8fcd5`.
+The [planning receipt regressions](../apps/go-api/internal/mcpactions/planning_receipt_integration_test.go)
+add changed-input conflicts, direct-writer revision invalidation, preservation of
+later edits on replay, and atomic association/effect rollback with retry.
+[Relation-writer cases](../apps/go-api/internal/mcpactions/planning_revision_integration_test.go)
+cover insert, move and removal of work-item links and module memberships.
+[Lifecycle cases](../apps/go-api/internal/mcpactions/planning_lifecycle_receipt_integration_test.go)
+prove replay preserves later restoration and deletion.
+[Delete authorization](../apps/go-api/internal/mcpactions/planning_delete_authorization_integration_test.go)
+checks current owner/admin authority before replay, including a removed target.
+Their combined cycle/module run passes 52 focused MCP cases. The new regression batch
+still needs complete gates; domain authorization, contention and remaining browser
+acceptance stay open. The receipt foundation alone does not close these requirements.

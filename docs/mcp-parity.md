@@ -20,7 +20,7 @@ The local collector recorded the revision conflict with its request ID and trace
 A controlled outage of the isolated Redis service returned a sanitized MCP 503
 and produced an error-level record with a matching error trace, without the token
 or authorization header. Full frontend and Go gates passed at published revision
-`87a791d9` on 2026-10-30, including 13,482 passing Go test cases with no failures or skips.
+`1be8fcd5` on 2026-10-30, including 13,567 passing Go test events with no failures or skips.
 The [debt catalog](tech-debt-catalog.md) records the remaining coverage and
 acceptance work; a passing gate does not close those requirements.
 
@@ -99,9 +99,9 @@ The [PQL foundation](pql.md) adds shared scalar, relationship (including native 
 | `intake.delete`                            | Mutation | `project_id`, `workitem_id`                              | Workflow verified     | Combined queue, triage, visibility, revision and effects checks                       |
 | `label.list`                               | Read     | `project_id`                                             | Contract verified     | Verified; see module/label contract and browser evidence                              |
 | `label.retrieve`                           | Read     | `project_id`, `label_id`                                 | Contract verified     | Verified; see module/label contract and browser evidence                              |
-| `label.create`                             | Mutation | `project_id`, `name`                                     | Workflow verified     | Complete publication gates for the new regression batch                               |
-| `label.update`                             | Mutation | `project_id`, `label_id`                                 | Workflow verified     | Complete publication gates for the new regression batch                               |
-| `label.delete`                             | Mutation | `project_id`, `label_id`                                 | Workflow verified     | Complete publication gates for the new regression batch                               |
+| `label.create`                             | Mutation | `project_id`, `name`                                     | Contract verified     | Verified; see module/label acceptance evidence                                        |
+| `label.update`                             | Mutation | `project_id`, `label_id`                                 | Contract verified     | Verified; see module/label acceptance evidence                                        |
+| `label.delete`                             | Mutation | `project_id`, `label_id`                                 | Contract verified     | Verified; see module/label acceptance evidence                                        |
 | `member.me`                                | Read     | None                                                     | PAT and OAuth         | Local browser/proxy verification                                                      |
 | `member.list_workspace`                    | Read     | None                                                     | PAT and OAuth         | Local browser/proxy verification                                                      |
 | `member.list_project`                      | Read     | `project_id`                                             | PAT and OAuth         | Local browser/proxy verification                                                      |

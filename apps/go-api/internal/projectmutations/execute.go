@@ -44,7 +44,10 @@ type Resource struct {
 	SchemaLock                                 bool
 	AllowGuests                                bool
 	ParentColumn                               string
-	Authorize                                  func(context.Context, pgx.Tx) error
+	// DeleteOwnerColumn opts into current owner/admin authorization, including
+	// receipt replay. The deletion worker retains these rows while receipts live.
+	DeleteOwnerColumn string
+	Authorize         func(context.Context, pgx.Tx) error
 }
 
 func Execute(ctx context.Context, db mutationreceipts.Database, resource Resource, cmd Command, apply func(context.Context, pgx.Tx) (json.RawMessage, error)) (Result, error) {
@@ -158,6 +161,11 @@ func Authorize(ctx context.Context, tx pgx.Tx, resource Resource, cmd Command) e
 	}
 	if resource.Authorize != nil {
 		if err := resource.Authorize(ctx, tx); err != nil {
+			return err
+		}
+	}
+	if cmd.Action == "delete" && resource.DeleteOwnerColumn != "" {
+		if err := authorizeOwnedDelete(ctx, tx, resource, cmd); err != nil {
 			return err
 		}
 	}
