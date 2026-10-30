@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/clioutput"
 	"github.com/CaliLuke/go-plane/internal/parity"
 )
 
@@ -55,53 +56,51 @@ func run(arguments []string, stdin io.Reader, stdout io.Writer, stderr io.Writer
 		return 2
 	}
 	if flags.NArg() != 0 {
-		fmt.Fprintln(stderr, "error: positional arguments are not supported")
-		return 2
+		return clioutput.Report(stderr, 2, "error: positional arguments are not supported\n")
 	}
 	config.ExpectedChangedTables = expectedTables
 	if normalizationPath != "" {
 		normalizations, err := parity.LoadNormalizations(normalizationPath)
 		if err != nil {
-			fmt.Fprintf(stderr, "error: %v\n", err)
-			return 2
+			return clioutput.Report(stderr, 2, "error: %v\n", err)
 		}
 		config.Normalizations = normalizations
 	}
 	if sourceResponsePath == "" || targetResponsePath == "" {
-		fmt.Fprintln(stderr, "error: --source-response and --target-response are required")
-		return 2
+		return clioutput.Report(stderr, 2, "error: --source-response and --target-response are required\n")
 	}
 	for role, path := range map[string]string{"source": sourceResponsePath, "target": targetResponsePath} {
 		if err := validateResponsePath(path); err != nil {
-			fmt.Fprintf(stderr, "error: %s response path: %v\n", role, err)
-			return 2
+			return clioutput.Report(stderr, 2, "error: %s response path: %v\n", role, err)
 		}
 	}
 	action, err := responseAction(stdin, stdout, sourceResponsePath, targetResponsePath)
 	if err != nil {
-		fmt.Fprintf(stderr, "error: response artifacts: %v\n", err)
-		return 2
+		return clioutput.Report(stderr, 2, "error: response artifacts: %v\n", err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	diff, err := parity.CaptureAndCompare(ctx, config, action)
+	return reportComparison(stdout, stderr, diff, err)
+}
+
+func reportComparison(stdout, stderr io.Writer, diff string, comparisonErr error) int {
 	var mismatch *parity.MismatchError
-	if errors.As(err, &mismatch) {
-		fmt.Fprintln(stdout, diff)
-		fmt.Fprintf(stderr, "error: %v\n", err)
-		return 1
+	if comparisonErr != nil && !errors.As(comparisonErr, &mismatch) {
+		return clioutput.Report(stderr, 1, "error: %v\n", comparisonErr)
 	}
-	if err != nil {
-		fmt.Fprintf(stderr, "error: %v\n", err)
-		return 1
+	message, exitCode := diff, 1
+	if comparisonErr == nil && diff == "" {
+		message, exitCode = "parity match: source and target transitions are equal", 0
 	}
-	if diff != "" {
-		fmt.Fprintln(stdout, diff)
-		return 1
+	if _, err := fmt.Fprintln(stdout, message); err != nil {
+		comparisonErr = errors.Join(comparisonErr, fmt.Errorf("write parity result: %w", err))
 	}
-	fmt.Fprintln(stdout, "parity match: source and target transitions are equal")
-	return 0
+	if comparisonErr != nil {
+		return clioutput.Report(stderr, 1, "error: %v\n", comparisonErr)
+	}
+	return exitCode
 }
 
 func validateResponsePath(path string) error {
@@ -161,7 +160,9 @@ func responseAction(
 		if sameResponseArtifact(sourcePath, sourceAtPrompt, targetPath, targetAtPrompt) {
 			return parity.ActionResult{}, fmt.Errorf("source and target response artifacts must be separate files")
 		}
-		fmt.Fprintln(stdout, "before snapshots captured; run the equivalent source and target actions, then press Enter")
+		if _, promptErr := fmt.Fprintln(stdout, "before snapshots captured; run the equivalent source and target actions, then press Enter"); promptErr != nil {
+			return parity.ActionResult{}, fmt.Errorf("write action prompt: %w", promptErr)
+		}
 		_, readErr := bufio.NewReader(stdin).ReadString('\n')
 		if readErr != nil && !errors.Is(readErr, io.EOF) {
 			return parity.ActionResult{}, readErr
@@ -195,7 +196,7 @@ func responseAction(
 	}, nil
 }
 
-func captureResponseArtifact(path string) (responseArtifactState, error) {
+func captureResponseArtifact(path string) (_ responseArtifactState, resultErr error) {
 	file, err := os.Open(path)
 	if os.IsNotExist(err) {
 		return responseArtifactState{}, nil
@@ -203,7 +204,11 @@ func captureResponseArtifact(path string) (responseArtifactState, error) {
 	if err != nil {
 		return responseArtifactState{}, fmt.Errorf("open file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			resultErr = errors.Join(resultErr, fmt.Errorf("close file: %w", closeErr))
+		}
+	}()
 	info, err := file.Stat()
 	if err != nil {
 		return responseArtifactState{}, fmt.Errorf("inspect file: %w", err)

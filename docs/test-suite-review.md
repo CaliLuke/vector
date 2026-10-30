@@ -89,6 +89,13 @@ remains accepted. The solar-coordinate columns belong to the retained Celery
 schema and have no active application writer; this review makes no claim about
 historical values in those tables.
 
+The parity comparison and support-migration commands now check output and cleanup
+errors. A failed action prompt returns before reading stdin. Successful work with
+failed result output exits nonzero. Migration failures retain source and database
+cleanup errors alongside the original cause, without repeating the migration.
+Focused tests cover these failure paths; a disposable PostgreSQL test proves that
+an output failure preserves the applied schema and leaves its version readable.
+
 ## Coverage and execution gaps
 
 The previous CI omitted Live and codemod tests. The default Go command omitted

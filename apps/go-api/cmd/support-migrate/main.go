@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/CaliLuke/go-plane/internal/clioutput"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/pgx/v5"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -28,41 +29,59 @@ func run(arguments []string, stdout io.Writer, stderr io.Writer) int {
 		return 2
 	}
 	if databaseURL == "" || flags.NArg() != 1 {
-		fmt.Fprintln(stderr, "usage: support-migrate --database-url URL [--migrations-path PATH] up|version")
-		return 2
+		return clioutput.Report(stderr, 2, "usage: support-migrate --database-url URL [--migrations-path PATH] up|version\n")
 	}
 	if flags.Arg(0) != "up" && flags.Arg(0) != "version" {
-		fmt.Fprintln(stderr, "command must be up or version")
-		return 2
+		return clioutput.Report(stderr, 2, "command must be up or version\n")
 	}
 	driverURL, err := supportDatabaseURL(databaseURL)
 	if err != nil {
-		fmt.Fprintf(stderr, "configure support migrations: %v\n", err)
-		return 1
+		return clioutput.Report(stderr, 1, "configure support migrations: %v\n", err)
 	}
 	migration, err := migrate.New("file://"+migrationsPath, driverURL)
 	if err != nil {
-		fmt.Fprintf(stderr, "configure support migrations: %v\n", err)
-		return 1
+		return clioutput.Report(stderr, 1, "configure support migrations: %v\n", err)
 	}
-	defer migration.Close()
+	if err := executeSupportMigration(migration, flags.Arg(0), stdout); err != nil {
+		return clioutput.Report(stderr, 1, "%v\n", err)
+	}
+	return 0
+}
 
-	switch flags.Arg(0) {
+type supportMigration interface {
+	Up() error
+	Version() (uint, bool, error)
+	Close() (error, error)
+}
+
+func executeSupportMigration(migration supportMigration, command string, stdout io.Writer) (resultErr error) {
+	defer func() {
+		sourceErr, databaseErr := migration.Close()
+		if sourceErr != nil {
+			resultErr = errors.Join(resultErr, fmt.Errorf("close migration source: %w", sourceErr))
+		}
+		if databaseErr != nil {
+			resultErr = errors.Join(resultErr, fmt.Errorf("close migration database: %w", databaseErr))
+		}
+	}()
+	switch command {
 	case "up":
 		if err := migration.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-			fmt.Fprintf(stderr, "apply support migrations: %v\n", err)
-			return 1
+			return fmt.Errorf("apply support migrations: %w", err)
 		}
-		fmt.Fprintln(stdout, "support migrations are current")
+		if _, err := fmt.Fprintln(stdout, "support migrations are current"); err != nil {
+			return fmt.Errorf("write migration result: %w", err)
+		}
 	case "version":
 		version, dirty, err := migration.Version()
 		if err != nil {
-			fmt.Fprintf(stderr, "read support migration version: %v\n", err)
-			return 1
+			return fmt.Errorf("read support migration version: %w", err)
 		}
-		fmt.Fprintf(stdout, "version=%d dirty=%t\n", version, dirty)
+		if _, err := fmt.Fprintf(stdout, "version=%d dirty=%t\n", version, dirty); err != nil {
+			return fmt.Errorf("write migration version: %w", err)
+		}
 	}
-	return 0
+	return nil
 }
 
 func supportDatabaseURL(databaseURL string) (string, error) {

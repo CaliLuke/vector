@@ -38,34 +38,6 @@
       "count": 1
     },
     {
-      "fingerprint": ["errcheck", "cmd/parity-diff/main.go", "Error return value of `file.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "cmd/parity-diff/main.go", "Error return value of `fmt.Fprintf` is not checked"],
-      "count": 5
-    },
-    {
-      "fingerprint": ["errcheck", "cmd/parity-diff/main.go", "Error return value of `fmt.Fprintln` is not checked"],
-      "count": 6
-    },
-    {
-      "fingerprint": ["errcheck", "cmd/support-migrate/main.go", "Error return value of `fmt.Fprintf` is not checked"],
-      "count": 5
-    },
-    {
-      "fingerprint": ["errcheck", "cmd/support-migrate/main.go", "Error return value of `fmt.Fprintln` is not checked"],
-      "count": 3
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "cmd/support-migrate/main.go",
-        "Error return value of `migration.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
       "fingerprint": [
         "errcheck",
         "cmd/system/main.go",

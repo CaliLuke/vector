@@ -70,16 +70,16 @@
       "percent": 68.04
     },
     "github.com/CaliLuke/go-plane/cmd/parity-diff": {
-      "statements": 139,
-      "percent": 35.25
+      "statements": 136,
+      "percent": 62.5
     },
     "github.com/CaliLuke/go-plane/cmd/route-policy": {
       "statements": 19,
       "percent": 0
     },
     "github.com/CaliLuke/go-plane/cmd/support-migrate": {
-      "statements": 42,
-      "percent": 42.86
+      "statements": 46,
+      "percent": 86.96
     },
     "github.com/CaliLuke/go-plane/cmd/system": {
       "statements": 6556,
@@ -156,6 +156,10 @@
     "github.com/CaliLuke/go-plane/internal/bootstrap": {
       "statements": 289,
       "percent": 72.32
+    },
+    "github.com/CaliLuke/go-plane/internal/clioutput": {
+      "statements": 3,
+      "percent": 100
     },
     "github.com/CaliLuke/go-plane/internal/commentmentions": {
       "statements": 63,
