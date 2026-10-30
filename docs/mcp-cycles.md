@@ -56,15 +56,15 @@ These transport cases cover both credentials and protocol revisions. Both full g
 Further isolation and contention checks are described below; browser acceptance
 remains open.
 
-The next locally applied acceptance batch adds
+The acceptance batch published at `a2e44d6f` adds
 [resource and receipt scope checks](../apps/go-api/internal/mcpactions/planning_scope_integration_test.go),
 [foreign work-item preservation](../apps/go-api/internal/mcpactions/planning_association_scope_integration_test.go),
 [competing requests and revisions](../apps/go-api/internal/mcpactions/planning_concurrency_integration_test.go),
 and [cancellation with safe retry](../apps/go-api/internal/mcpactions/planning_cancellation_integration_test.go).
 The combined cycle/module run passes 24 new cases against the applied source.
-Complete publication gates remain pending.
+Both full gates passed at `a2e44d6f`, including all 13,894 Go test events.
 
-The current local fixes cover calendar and transfer snapshot boundaries.
+The fixes published at `a2e44d6f` cover calendar and transfer snapshot boundaries.
 [Calendar regressions](../apps/go-api/internal/cyclereads/mutation_calendar_integration_test.go)
 verify that completion uses the current actor's calendar day, archive ends cycles
 whose end timestamp is still in the future (including later today), and a later
@@ -79,6 +79,45 @@ verify stored and returned snapshot totals, label/assignee distributions and
 completion charts, including estimate distributions, exclude malformed foreign
 associations. Three unfinished local items move while completed/cancelled and
 foreign associations remain in place; receipt replay leaves state and effects
-unchanged. These fixes are applied locally. The combined run passes 34 focused cases:
+unchanged. These fixes are published at `a2e44d6f`. The combined run passes 34 focused cases:
 seven calendar, seven existing native date, four transfer-scope and sixteen
-existing core workflow cases. The Go fast gate passes; full publication checks remain pending.
+existing core workflow cases. The fast and full publication gates pass at `a2e44d6f`.
+
+## Planning work-item query acceptance
+
+The shared cycle/module `list_workitems` path returns the seven-field toolkit
+page: `results`, `count`, `total_count`, `next_cursor`, `prev_cursor`,
+`next_page_results` and `prev_page_results`. PQL applies before counting and
+pagination; selected `fields` apply to each returned work item.
+
+[Generated-server query cases](../apps/go-api/internal/mcpactions/planning_query_integration_test.go)
+exercise scalar and actor-relative relationship predicates together, two-page
+traversal, sparse projection, matching grouped counts and unchanged stored state.
+The fixture separates matching rows from unlinked, archived, draft, deleted,
+foreign-item and incorrectly scoped association rows. Invalid predicates return
+the failed query and full PQL reference without partial results; a corrected
+request succeeds.
+
+[Scope cases](../apps/go-api/internal/mcpactions/planning_query_scope_integration_test.go)
+reject parents from another accessible project or workspace, reject a mismatched
+workspace/project pair, and distinguish an authorized empty page from revoked
+project membership. Access to the other authorized workspace remains available.
+All three behaviors cover both credentials and both supported protocol revisions,
+with explicit per-call workspace selection in the query and scope cases.
+
+[Custom-property cases](../apps/go-api/internal/mcpactions/planning_property_query_integration_test.go)
+also exercise the separate property-discovery snapshot through the generated
+server. Numeric zero matches before pagination, the unlinked item is excluded,
+counts agree with the parent predicate, and sparse projection and stored state
+remain intact. Both credentials and protocols are covered.
+
+The applied-source run passes 32 planning leaf cases (52 test events), with no
+failed or skipped cases. The Go fast gate and duplication ratchet pass with no added allowances.
+Publication remains required. This
+closes no broader PQL grammar or unrelated action acceptance requirement.
+
+The [PQL reference transport cases](../apps/go-api/internal/mcpactions/pql_reference_integration_test.go)
+verify exact default/full/brief responses and invalid-detail rejection without a
+workspace selector, for both credentials and protocols. Four additional applied-source
+cases pass, giving 36 leaf cases and 57 test events in the combined run. These supplement the existing language semantics tests; they do not
+change the accepted teamspace deferral or unsupported property mappings.

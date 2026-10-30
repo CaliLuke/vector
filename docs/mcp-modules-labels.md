@@ -123,10 +123,14 @@ workspace administrators. Both full gates passed at `97660842`, including all 13
 Further isolation and contention checks are described below; browser acceptance
 remains open.
 
-The next locally applied acceptance batch adds
+The acceptance batch published at `a2e44d6f` adds
 [resource and receipt scope checks](../apps/go-api/internal/mcpactions/planning_scope_integration_test.go),
 [foreign work-item preservation](../apps/go-api/internal/mcpactions/planning_association_scope_integration_test.go),
 [competing requests and revisions](../apps/go-api/internal/mcpactions/planning_concurrency_integration_test.go),
 and [cancellation with safe retry](../apps/go-api/internal/mcpactions/planning_cancellation_integration_test.go).
 The combined cycle/module run passes 24 new cases against the applied source.
-Complete publication gates remain pending.
+Both full gates passed at `a2e44d6f`, including all 13,894 Go test events.
+
+The [planning work-item query acceptance](mcp-cycles.md#planning-work-item-query-acceptance)
+records the shared cycle/module query and reference checks. Browser acceptance
+and publication of that test batch remain open.

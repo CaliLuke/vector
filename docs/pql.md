@@ -154,7 +154,7 @@ Error mapping must remain category-specific: query/type/catalog validation and t
 
 The API response shape stays unchanged: internal property projection for filtering does not automatically add property_values or discovery metadata to legacy API serializers. Queries without cf keep their existing execution path. Existing structured application property filters remain unchanged.
 
-The root candidate authorization remains outside every caller-controlled expression. ExpectedWorkspaceID must be bound in the same query/snapshot before this becomes an MCP core action; this extension must not imply that the existing general core reader is already MCP-ready.
+The root candidate authorization remains outside every caller-controlled expression. MCP `ReadWorkitem` requires `ExpectedWorkspaceID` and checks it with current actor and project admission inside the same transaction. Ordinary PQL uses a repeatable-read transaction; custom-property PQL uses the authorized property-discovery snapshot before counting and pagination. The [planning query acceptance](mcp-cycles.md#planning-work-item-query-acceptance) exercises both paths through the generated server.
 
 ### Required proof
 

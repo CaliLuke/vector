@@ -41,6 +41,14 @@ Project proof: [project contracts and primary data](../apps/go-api/internal/mcpa
 Cycle proof: [generated-server contracts, scope revocation, tenant isolation, and timezone behavior](../apps/go-api/internal/mcpactions/cycle_integration_test.go). [Cycle contract notes](mcp-cycles.md) record active/archived shapes and shared HTTP filtering.
 
 Module and label proof: [generated-server contracts, scope revocation, and relationship isolation](../apps/go-api/internal/mcpactions/resource_read_integration_test.go). [Contract notes](mcp-modules-labels.md) record their different page shapes and archive policies.
+The [planning query acceptance](mcp-cycles.md#planning-work-item-query-acceptance)
+adds 32 applied-source cases for ordinary/property query snapshots, parent and
+tenant scope, current access, filtered pagination, projection and recovery.
+Four reference cases verify default/full/brief output and invalid-detail rejection
+without a workspace selector. Both credentials and protocols are covered.
+Publication of this test batch remains pending; broader action acceptance stays
+open until its recorded requirements are reconciled.
+
 Work-item child reads: [contract and scope notes](mcp-workitem-reads.md) and [generated-server regression tests](../apps/go-api/internal/mcpactions/workitem_read_integration_test.go).
 
 Milestone proof: [native domain and contract](mcp-milestones.md), [generated-server lifecycle and receipts](../apps/go-api/internal/mcpactions/milestone_integration_test.go), [discovery and late scope changes](../apps/go-api/internal/mcpactions/milestone_scope_integration_test.go), and [sanitized telemetry](../apps/go-api/internal/mcpactions/milestone_observability_test.go). Native HTTP and MCP share the same seven operations, revision triggers, transactional outbox and worker delivery paths.
@@ -75,13 +83,13 @@ The [PQL foundation](pql.md) adds shared scalar, relationship (including native 
 | `cycle.create`                             | Mutation | `project_id`, `name`, `owned_by`                         | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `cycle.update`                             | Mutation | `project_id`, `cycle_id`                                 | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `cycle.delete`                             | Mutation | `project_id`, `cycle_id`                                 | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
-| `cycle.list_workitems`                     | Read     | `project_id`, `cycle_id`                                 | Workflow verified     | Combined query, projection, scope and protocol checks                                 |
+| `cycle.list_workitems`                     | Read     | `project_id`, `cycle_id`                                 | Applied tests pass    | 32 planning query cases pass; publication and browser acceptance pending              |
 | `cycle.manage_workitems`                   | Mutation | `project_id`, `cycle_id`                                 | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `cycle.transfer_workitems`                 | Mutation | `project_id`, `cycle_id`, `new_cycle_id`                 | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `cycle.complete`                           | Mutation | `project_id`, `cycle_id`                                 | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `cycle.archive`                            | Mutation | `project_id`, `cycle_id`                                 | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `cycle.unarchive`                          | Mutation | `project_id`, `cycle_id`                                 | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
-| `get_pql_reference`                        | Read     | None                                                     | Workflow verified     | Combined query, projection, scope and protocol checks                                 |
+| `get_pql_reference`                        | Read     | None                                                     | Applied tests pass    | Exact default/full/brief and invalid-detail checks pass; publication pending          |
 | `initiative.list`                          | Read     | None                                                     | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
 | `initiative.retrieve`                      | Read     | `initiative_id`                                          | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
 | `initiative.create`                        | Mutation | `name`                                                   | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
@@ -119,7 +127,7 @@ The [PQL foundation](pql.md) adds shared scalar, relationship (including native 
 | `module.create`                            | Mutation | `project_id`, `name`                                     | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `module.update`                            | Mutation | `project_id`, `module_id`                                | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `module.delete`                            | Mutation | `project_id`, `module_id`                                | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
-| `module.list_workitems`                    | Read     | `project_id`, `module_id`                                | Workflow verified     | Combined query, projection, scope and protocol checks                                 |
+| `module.list_workitems`                    | Read     | `project_id`, `module_id`                                | Applied tests pass    | 32 planning query cases pass; publication and browser acceptance pending              |
 | `module.manage_workitems`                  | Mutation | `project_id`, `module_id`                                | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `module.archive`                           | Mutation | `project_id`, `module_id`                                | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
 | `module.unarchive`                         | Mutation | `project_id`, `module_id`                                | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |

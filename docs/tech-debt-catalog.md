@@ -1,36 +1,58 @@
 # Technical debt catalog
 
-This is the working catalog for the requested retirement of all known technical
-debt. It consolidates the quality baselines, MCP acceptance tracker, test review,
-and previously local work log. It does not claim an exhaustive audit of every
-possible defect.
+This is the authoritative queue for the requested retirement of all known debt.
+It links the exact finding inventories, states the next acceptance work, and
+records the evidence needed to close each category. It does not claim an
+exhaustive audit of every possible defect. Counts overlap; they are not an
+estimate of equally sized tasks or time remaining.
 
-Snapshot: `976608423a9ebf4fbf0fb43b0aee8d67248f9228`, 2026-10-30.
-Both full quality gates passed at this published revision, including 13,814 Go test events
-with no failed or skipped cases. Passing gates allow the recorded debt below;
-they do not mean this catalog is complete.
+## Current state
 
-## Current batch
+Last verified published revision: `a2e44d6ff4eb070f4881807fc1fb31fe1a31afcd`,
+2026-10-30. Both full quality gates passed, including all 13,894 Go test events
+across 118 test-bearing packages, with no failures or skipped tests. Remote
+`main` was verified at that revision.
 
-| Catalog IDs    | Work in progress                                                | Evidence and next step                                                                                                                                                              |
-| -------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| MCP-01, MCP-02 | Cycle/module scope isolation, competing writes and cancellation | 24 new cases plus seven existing helper consumers pass against applied source. Quality commands passed at `1772ca79`; publication retry and browser/contract reconciliation remain. |
-| ERR-01, ERR-02 | Worker, metadata CLI and bootstrap output/cleanup errors        | 33 lifecycle/bootstrap cases plus two shared-output cases pass. Six configured findings removed; strict inventory refreshed at `6ba02d1d`.                                          |
-| COV-01         | Enforce coverage for the two previously unmeasured worker CLIs  | Applied-source coverage supports floors of 55% and 30.58%. Coverage gate passed at `1772ca79`; publication retry pending. No floor lowered.                                         |
+| Catalog IDs                     | Published work                                            | Evidence                                                                               | Status                                                           |
+| ------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| MCP-01, MCP-02                  | Cycle/module scope, receipts, contention and cancellation | Authorization batch at `97660842`; 31 additional focused cases at `6ba02d1d`           | Published; query and browser acceptance remain open              |
+| MCP-01, MCP-02 / NEW-03, NEW-04 | Calendar boundaries and transfer snapshot isolation       | `a2e44d6f`: 34 focused cases, fast gates and both full gates pass                      | Both reproduced defects fixed and published                      |
+| ERR-01, ERR-02                  | Worker and migration output/cleanup errors                | `6ba02d1d`: 35 focused cases; configured findings 162 → 156; strict findings 945 → 933 | This bounded batch is published; remaining inventories stay open |
+| COV-01                          | Worker CLI and module coverage floors                     | Worker floors 55% and 30.58%; module floor 65.51% → 67.84%                             | Published and enforced; no floor lowered                         |
 
-This batch is committed at `6ba02d1d` with 66 passing focused leaf cases
-(84 test events) and passing fast gates. The complete Go and TypeScript commands
-passed at `1772ca79`, including 13,881 Go test events with no failures or test
-skips. The push was rejected because documentation was edited while Prek was
-running; both hook wrappers detected tracked-file changes. Publication remains
-pending, and the retry must leave all tracked files untouched during hooks. The counts
-below distinguish current local baselines from the dated strict inventory.
-The next implementation must come from this catalog or its verified intake.
+The current local batch adds 32 planning query cases and four PQL reference
+cases. All 36 cases pass against the applied source (57 test events), with no failures
+or skipped cases. The Go fast gate passes; duplication remains at 474 reports and maintainability
+at 17 allowances, with no added baseline entries. Publication remains pending. They cover both credentials
+and protocols, ordinary and custom-property filtering, pagination, projection,
+parent/workspace binding, current membership, typed errors and reference defaults.
+The application rebuilt from `a2e44d6f` also passes native/MCP fixture read checks;
+remaining browser edits, lifecycle checks and fixture cleanup are open.
 
-The following batch is now applied locally: NEW-03 calendar boundaries and
-NEW-04 transfer snapshot isolation, both within MCP-01/MCP-02. Their reproductions
-and draft checks are recorded in intake below. All 34 focused applied-source cases and the Go fast gate pass; full publication gates remain pending;
-these are not published fixes.
+Keep the checkout unchanged while publication hooks run. Earlier full commands
+passed at `1772ca79`, but that push was rejected because tracked documentation
+changed during hooks. Its changes are now included in published `a2e44d6f`.
+
+## Ordered execution queue
+
+1. **MCP-01/MCP-02: finish cycle/module acceptance.** Publish the 36 passing query
+   and reference cases with their quality-check evidence. Complete native/MCP
+   browser checks through `http://localhost:8000/`, then reconcile the action rows
+   against their actual evidence.
+2. **MCP-01/MCP-02: continue the action-level acceptance tracker.** Select the
+   next documented domain gap from [the tracker](mcp-parity.md), prioritize current
+   authorization, tenant isolation and durable mutation guarantees, and record
+   that bounded batch here before implementation.
+3. **ERR-01/ERR-02 and COV-01: retire the next recorded runtime gap.** Select exact
+   file/message entries from the inventories below; state the observable failure
+   and regression proof before changing code. Coverage work follows the affected
+   behavior.
+4. **STRUCT-01, DUP-01/DUP-02, COV-02 and TS-01:** work through the remaining
+   bounded components after the higher-risk acceptance and runtime gaps. Do not
+   raise baselines or treat a changed fingerprint as retirement.
+
+Completed-batch details are in the [progress log](tech-debt-progress.md).
+The inventory below remains open even when a current batch passes its gates.
 
 ## Work selection
 
@@ -39,16 +61,6 @@ the evidence needed to close it. After a verified change, update its status and
 counts. Do not start another cleanup merely because it is adjacent to an edit.
 Record newly discovered concerns in the intake section first, with their evidence
 and impact. A source observation is not a reproduced defect.
-
-Priority order:
-
-1. Reconcile and complete the original MCP acceptance requirements, prioritizing
-   authorization, tenant isolation, data integrity, and durable effects.
-2. Correct known runtime failures and unsafe asynchronous behavior, with focused
-   regressions. Reduce coverage gaps in the affected behavior at the same time.
-3. Retire remaining coverage, maintainability, and duplication debt in bounded
-   components with clear ownership and behavior checks.
-4. Retire the remaining lower-impact lint and style findings.
 
 Dependency limitations and product follow-ups remain visible separately. They
 must not silently become dependency development or new product scope.
@@ -80,136 +92,24 @@ complexity findings, 78 shadowing findings, 68 console findings, 60 unsafe enum
 comparisons, 52 misused promises, and 51 unstable nested components. The full
 baseline contains the remaining categories and exact affected files.
 
-## Concrete queued work
+## Intake and resolved findings
 
-The next substantive task is **MCP-01**: reconcile the existing action-level
-acceptance table with current test evidence, identify the exact missing cases,
-and work through those cases by risk. Some tracker prose still describes earlier
-quality-gate gaps even though current full gates pass. Reconciliation must not
-close unrelated domain requirements.
-
-The first acceptance batch covers workspace listing, selection and live access.
-Its 62 focused leaf cases cover both credentials and protocols, membership
-revocation, preservation of another workspace, and credential changes after
-transport authentication. The [workspace acceptance evidence](mcp-parity.md#workspace-read-acceptance-mcp-01)
-records the exact scope. That published batch changed no application code and
-closed the recorded listing read-contract gap.
-
-Identity and feature-setting acceptance now includes exact responses and storage proof:
-41 focused leaf cases cover both credentials/protocols, native storage, tenant
-isolation, role restrictions, receipt conflicts, native-writer revisions,
-concurrent CAS, and audit-failure rollback. It also fixes a reproduced null-flag
-compatibility defect: explicit null must preserve the flag and normalize like an
-omitted field. [Feature acceptance evidence](mcp-parity.md#workspace-feature-acceptance-mcp-01-mcp-02)
-records the source contract and checks. The `264d505f` batch adds current
-authorization after waiting for workspace/project writes and replays,
-private-project permissions, project-bound receipts and native revisions, and
-atomic default-intake creation. This batch is published with the archive-read fix
-at `87a791d9`; both complete quality gates passed. The earlier unsuccessful push
-recorded the intermittent UI timeout in NEW-02 below.
-
-The published feature batch closes the foreign-workspace and archive gaps. It fixes
-archived settings reads to match native project retrieval while preserving write
-and replay rejection until restore. Its 102 focused leaf cases also cover current
-membership and competing project-feature writes. Its complete publication gates
-passed at `87a791d9`. The five state actions also completed their local
-browser/proxy check against that rebuilt application, supplementing fifteen
-reviewed passing server, storage and durable-effect test roots. The
-[state acceptance record](mcp-parity.md#state-acceptance-mcp-01-mcp-02) closes
-that domain's recorded gap: edits in both directions, stale-revision rejection,
-deletion/replay and exact preservation of the five initial states.
-Other action rows and inventory categories remain open.
-
-The subsequent [label acceptance batch](mcp-modules-labels.md#label-mutation-acceptance)
-has 75 passing label cases. Transport cases cover both credentials and protocols;
-repository cases cover concurrent requests and revisions. Four related feature
-cases also pass, giving 79 focused cases with no failures or skips. These cover
-receipts, native-writer revisions, atomic cascade effects, current roles/lifecycle,
-authorization changes after lock waits, tenant/resource binding, request contention
-and competing revisions. Browser/proxy checks also passed in both edit directions,
-including stale-revision rejection and deletion/replay.
-Both full publication gates passed at `1be8fcd5`, including 13,567 Go test events
-with no failures or skips. Remote `main` matches that commit. Duplication remains
-at 474 reports, with no new allowances. The five label action rows are closed.
-
-The active MCP-01/MCP-02 batch is cycle/module acceptance. Existing read and
-lifecycle workflow tests cover both credentials and protocols. The next required
-proof is explicit:
-
-| Batch                                        | Required evidence                                                                                                                                                                     | Status                                                                                                                                                                                                                                                                                                                   |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Planning receipts and rollback               | Changed input conflicts; other writers invalidate old revisions; replay preserves later edits; failed association/effect writes roll back relations, revisions and receipts.          | 52 MCP cases pass across both credentials, protocols and domains, including native relation-writer revisions and lifecycle replay. Three deletion-worker cases also pass. Published with complete gates at `97660842`.                                                                                                   |
-| Planning authorization and contention        | Current roles/lifecycle and credentials govern fresh writes and replay; workspace/project/resource bindings hold; competing requests and revisions admit only the documented commits. | 72 role/lifecycle and 40 lock-wait cases pass across both credentials/protocols and domains. Eight native module-delete authorization cases pass. These are published at `97660842`. Another 16 isolation, six contention and two cancellation cases pass against applied source; full publication gates remain pending. |
-| Planning browser and contract reconciliation | Native/MCP edits and lifecycle changes agree through the local proxy; stale cycle documentation matches implemented actions.                                                          | Existing partial browser evidence; remaining checks open.                                                                                                                                                                                                                                                                |
-
-The planning batch fixes a reproduced MCP-02 gap: an administrator could delete
-another user's cycle/module, lose that role, and still replay the delete receipt.
-Current owner/admin authority is now checked before replay. Current administrators
-can also replay after the target disappears through a native owner cascade.
-Scheduled purge retains owner authorization rows during the receipt's retry window,
-then releases them after expiry. The focused run passes 52 MCP cases plus two purge
-cases and the existing durable cascade/retention regression, with no failures or
-skips. The first full publication attempt passed all 13,660 Go test events and the
-TypeScript gate, but stopped at the module coverage floor (65.28% versus 65.51%).
-Direct native module-delete authorization coverage and the current-role/lock-wait
-batch resolved that gap without lowering a floor. Both full gates passed at
-`97660842`, including all 13,814 Go test events; remote `main` was verified there.
-
-The next MCP-01/MCP-02 batch is applied locally. Sixteen transport cases cover
-workspace/project/resource and receipt binding, plus preservation of foreign
-work-item associations under both credentials and protocols. Six repository cases
-cover identical and conflicting request keys and competing revisions. Two more
-prove cancellation during a lock wait leaves no mutation or receipt, permits a
-changed request with the same key, and preserves later replay. Three existing
-label contention cases and four milestone fixture cases also pass through the
-applied source: 31 leaf cases in total. Full publication gates remain required. The browser/contract gap and NEW-03 remain
-open.
-
-These batches refine existing catalog entries. They do not introduce new product
-scope or replace the remaining inventory.
-
-The published `1be8fcd5` full profile also supports stricter COV-01 floors:
-`internal/mcpactions` rises from 84.24% to 85.05%, and
-`internal/projectconfiguration` from 55.16% to 60.72%. Only these two measured
-package floors change. File floors and other package allowances are preserved.
-
-COV-01 floor review uses the completed full profile at `17d1afdb`:
-`internal/features` increases from 80.92% to 83.21%, and `internal/mcpactions`
-from 83.82% to 84.24%. Only these affected package floors change; no allowance is
-increased. The authorization-wait batch at `264d505f` changed tests and documentation;
-the following archive-read fix changes the owned feature scope query.
-
-The following runtime items are already members of ERR-01/ERR-02 and COV-01.
-Their fixes are applied and focused tests pass; full gates remain pending:
-
-| Item                               | Source                                                                                                                                      | Reason and required proof                                                                                                                                                                 | Status                                                                                                                             |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Worker readiness and shutdown      | [`cmd/background-worker/main.go`](../apps/go-api/cmd/background-worker/main.go)                                                             | Readiness output is unchecked; startup failure discards shutdown errors. Prove one shutdown, preserved primary/cleanup causes, usable bounded cleanup context, and graceful cancellation. | Two failures reproduced; five lifecycle cases pass against applied source. Full gates pending.                                     |
-| Metadata worker output and cleanup | [`cmd/durable-metadata/main.go`](../apps/go-api/cmd/durable-metadata/main.go)                                                               | Admission/readiness output and application shutdown errors can be discarded. Prove that output failure never repeats an admitted durable workflow.                                        | Output, workflow and cleanup causes covered by ten passing applied-source cases. Full gates pending.                               |
-| Bootstrap migration cleanup        | [`internal/bootstrap/support.go`](../apps/go-api/internal/bootstrap/support.go), [`schema.go`](../apps/go-api/internal/bootstrap/schema.go) | Migration/source/connection cleanup errors can be discarded. Preserve adoption order, migration effects, and session-lock release while retaining cleanup causes.                         | Twelve cleanup cases, five PostgreSQL migration/adoption cases and URL validation pass against applied source. Full gates pending. |
-
-The completed full profile at `1772ca79` also raises COV-01's
-`internal/modulereads` floor from 65.51% to 67.84% (981 covered statements out of
-1,446). The measured module source is unchanged in the calendar/snapshot batch.
-No package or file floor is lowered.
-
-## New findings awaiting verification and prioritization
-
-These are recorded to prevent silent scope growth. They are not automatically
-placed ahead of the existing catalog.
+These records preserve the intake decision and closure evidence. NEW-01 and
+NEW-02 remain open. NEW-03 and NEW-04 are fixed and published. New observations
+are not automatically placed ahead of the existing catalog.
 
 | ID     | Observation                                                                                                                      | Evidence strength                                                                                                     | Next decision                                                                                                                                                                              |
 | ------ | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | NEW-01 | `parity-diff`'s action prompt ignores its callback context while waiting for stdin, despite the complete-operation timeout flag. | Source observation in [`responseAction`](../apps/go-api/cmd/parity-diff/main.go); no cancellation regression has run. | Prove the deadline behavior with controlled blocking input, then assess priority. Any fix needs explicit input ownership and must avoid leaked blocked reads or closing an unowned stream. |
 
 **NEW-03 — cycle completion/archive calendar boundaries:**
-[`MutateResource`](../apps/go-api/internal/cyclereads/mutations.go) synthesizes a UTC
-date while the native date parser uses the current actor's timezone. Archive also
-compares date strings when deciding whether to end a running cycle. This is a
-reproduced defect: four of six initial frozen-clock cases fail. The local draft
+Before the fix, [`MutateResource`](../apps/go-api/internal/cyclereads/mutations.go)
+synthesized a UTC date while the native parser used the current actor's timezone.
+Archive compared date strings when deciding whether to end a running cycle.
+Four of six initial frozen-clock cases reproduced the defect. The published fix
 uses the actor's calendar day and compares end timestamps; seven new calendar
 cases and seven existing native date cases pass against the applied source. The
-fix is applied locally; 34 focused applied-source cases and the Go fast gate pass; full publication remains pending. [Upstream #266](https://github.com/makeplane/plane-mcp-server/issues/266)
+fix is published at `a2e44d6f`: 34 focused cases and both full gates pass. [Upstream #266](https://github.com/makeplane/plane-mcp-server/issues/266)
 records the date-only running check with a standalone helper reproduction.
 Keep the corrected instant comparison when reconciling a later upstream handler;
 only remove a compatibility adjustment when the pinned handler and local
@@ -217,18 +117,18 @@ same-day/DST/replay regressions agree. This belongs to MCP-01/MCP-02's existing
 cycle contract acceptance.
 
 **NEW-04 — cycle transfer snapshot tenant isolation:**
-[`transferSnapshot`](../apps/go-api/internal/workitems/cycle_transfer.go) counts
-foreign work items and incorrectly scoped relation rows in a cycle's saved
-progress snapshot. Four generated-server regressions (both credentials and
-protocols) reproduce a total of seven for five valid local associations. The
-writer transfers the expected three unfinished local items and preserves the
-foreign records; the saved and returned snapshot is incorrect. Tighten snapshot
-summary, distribution and chart scope while preserving native transfer behavior,
-then prove exact counts, retained associations and unchanged receipt replay.
+Before the fix, [`transferSnapshot`](../apps/go-api/internal/workitems/cycle_transfer.go)
+counted foreign work items and incorrectly scoped relation rows in a cycle's
+saved progress snapshot. Four generated-server regressions (both credentials and
+protocols) reproduced a total of seven for five valid local associations. The
+writer transferred the expected three unfinished local items and preserved the
+foreign records, but the saved and returned snapshot was incorrect. The fix
+binds snapshot summary, distribution and chart scope to the selected project
+and workspace while preserving native transfer behavior.
 This is part of MCP-01/MCP-02's existing planning isolation acceptance. The
-regression and fix are applied locally. Four transport cases pass for both issue and estimate totals, distributions and
+regression and fix are published at `a2e44d6f`. Four transport cases pass for both issue and estimate totals, distributions and
 charts, retained associations and receipt replay. The combined calendar, native
-date and existing core workflow run also passes. 34 focused applied-source cases and the Go fast gate pass; full publication remains pending.
+date and existing core workflow run also passes. The 34 focused cases and both full gates pass at `a2e44d6f`.
 
 The earlier publication check at `264d505f` recorded **NEW-02**: the UI
 color-picker pending-save regression timed out at its existing five-second limit;
@@ -240,25 +140,6 @@ coverage floor was relaxed. The complete retry at `87a791d9` passed both full
 gates and all 13,482 Go test events and was published. This removes the publication
 block, but does not establish the intermittent timeout's cause; keep the
 observation open for reproduction.
-
-## Completed recorded work
-
-These are completed bounded audits or batches, not claims that whole subsystems
-can never contain another defect. The [test-suite review](test-suite-review.md)
-records behavior and limitations; Git history preserves the implementation.
-
-| Work                                                 | Evidence                                                                                                                                                                                                                            |
-| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Multi-workspace MCP and accessible-workspace listing | `workspace.list` and per-call workspace selection are implemented; [MCP tracker](mcp-parity.md) links authentication/protocol regressions. Full action acceptance remains MCP-01.                                                   |
-| Recorded numeric storage/writer audit                | Ordering, activity epochs, asset sizes, and hierarchy levels: migrations 43–46 and the writer regressions described in the [test review](test-suite-review.md). Commits `c28cb4c1`, `621117ba`, `a9e54dd5`, `3ada7087`, `655b3e6b`. |
-| Recorded malformed-input error contracts             | Cycle pagination, page ordering, and project-member validation, with transport/storage regressions. Commits `e98d8d36`, `468dc922`, `c6104fc1`.                                                                                     |
-| Audited request cleanup                              | Checked transaction cleanup and failure regressions in `ed07f5be`. Other cleanup findings remain ERR-01/ERR-02.                                                                                                                     |
-| Audited clipboard callers                            | Rejection, retry, fallback cleanup, and scoped feedback in `d5cdb82d`. Browser evidence has the limitation recorded in UI-01.                                                                                                       |
-| Metadata/webhook error causes                        | Preserved causes with sanitized transport behavior in `7bbd4190`.                                                                                                                                                                   |
-| Route identifiers and shared issue headers           | `64727007`: 142 redundant conversions removed; full TypeScript findings 2,084 → 1,941; frontend clone pairs 264 → 263.                                                                                                              |
-| CLI output and migration cleanup                     | `593a73b6`: six reproduced failures fixed; 28 focused cases, including PostgreSQL; Go findings 183 → 162. Coverage floors: parity-diff 62.5%, support-migrate 86.96%, shared output helper 100%.                                    |
-| Requested Testcontainers fix pin                     | Core and PostgreSQL module use `v0.44.1-0.20261029064637-ff84c26717f1`; [development instructions](development.md#tests) link the upstream fix and removal condition. Separate reaper/forwarding limitations remain EXT-01.         |
-| Stale Vector worktrees                               | Rechecked on 2026-10-30: only the current `main` checkout exists. No outdated Vector worktrees remain.                                                                                                                              |
 
 ## Product follow-ups and accepted deferrals
 
