@@ -167,3 +167,28 @@ void test("callbacks captured for an old key cannot reset the current transient 
   await act(async () => previous.clearValue());
   assert.equal(observed.first.current.storedValue, "temporary-b");
 });
+
+void test("repeating an unchanged scalar preference does not rerender its subscribers", async (t) => {
+  const env = await setup(t);
+  const observed = createPreferenceRefs();
+  let commits = 0;
+  await env.render(
+    React.createElement(
+      React.Profiler,
+      {
+        id: "preference",
+        onRender: () => {
+          commits++;
+        },
+      },
+      React.createElement(Preference, { fallback: 280, observed })
+    )
+  );
+  const beforeWrite = commits;
+
+  await act(async () => observed.first.current.setValue(280));
+
+  assert.equal(window.localStorage.getItem("panel"), "280");
+  assert.equal(observed.first.current.storedValue, 280);
+  assert.equal(commits, beforeWrite);
+});

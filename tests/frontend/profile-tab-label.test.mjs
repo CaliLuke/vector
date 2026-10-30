@@ -40,14 +40,14 @@ registerHooks({
 
 test("narrow profile navigation receives the translated active-tab label", async (t) => {
   const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
+  t.after(() => environment.unmount(() => queryClient.clear()));
   const { Route } = await import("../../apps/web/app/(all)/[workspaceSlug]/(projects)/profile/[userId]/layout.tsx");
   const ProfileLayout = Route.options.component;
   const fixture = createRouterFixture("/default/profile/user/created/", {
     modules: { "(all)/[workspaceSlug]/(projects)/profile/[userId]/layout.tsx": Route },
   });
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
-  t.after(() => queryClient.clear());
+
   const { currentUserOptions } = await import("../../apps/web/core/queries/identity.ts");
   queryClient.setQueryData(currentUserOptions().queryKey, { id: "alice" });
   await seedPermissionQueries(queryClient, {

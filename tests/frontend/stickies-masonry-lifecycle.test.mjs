@@ -95,7 +95,12 @@ test("sticky masonry cancels pending imports and reloads changed cards until rem
     workspaceSlug: "workspace",
     workspaceRole: EUserWorkspaceRoles.ADMIN,
   });
-  t.after(() => cancelledEnvironment.unmount());
+  const disposeCancelledEnvironment = () =>
+    cancelledEnvironment.unmount(async () => {
+      await cancelledClient.cancelQueries();
+      cancelledClient.clear();
+    });
+  t.after(disposeCancelledEnvironment);
   await createRouterFixture("/workspace/stickies/").render(
     cancelledEnvironment,
     React.createElement(
@@ -105,9 +110,7 @@ test("sticky masonry cancels pending imports and reloads changed cards until rem
     )
   );
   await lifecycle.importReady;
-  await cancelledEnvironment.unmount();
-  await cancelledClient.cancelQueries();
-  cancelledClient.clear();
+  await disposeCancelledEnvironment();
   lifecycle.resolveImport();
   await settleEffects();
   assert.equal(lifecycle.instances.length, 0);
@@ -122,9 +125,10 @@ test("sticky masonry cancels pending imports and reloads changed cards until rem
   });
   const routerFixture = createRouterFixture("/workspace/stickies/");
   t.after(async () => {
-    await environment.unmount();
-    await client.cancelQueries();
-    client.clear();
+    await environment.unmount(async () => {
+      await client.cancelQueries();
+      client.clear();
+    });
   });
 
   await routerFixture.render(

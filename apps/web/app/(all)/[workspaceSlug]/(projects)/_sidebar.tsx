@@ -42,9 +42,6 @@ export function ProjectAppSidebar() {
 
   const isNotificationsPath = pathname.includes(`/${workspaceSlug}/notifications`);
 
-  // handlers
-  const handleWidthChange = (width: number) => setValue(width);
-
   if (isNotificationsPath) return null;
 
   return (
@@ -56,7 +53,7 @@ export function ProjectAppSidebar() {
         setWidth={setSidebarWidth}
         defaultCollapsed={sidebarCollapsed}
         peekDuration={1500}
-        onWidthChange={handleWidthChange}
+        onWidthChange={setValue}
         onCollapsedChange={toggleSidebar}
         isCollapsed={sidebarCollapsed}
         toggleCollapsed={toggleSidebar}

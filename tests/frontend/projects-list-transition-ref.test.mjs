@@ -102,12 +102,16 @@ void test("projects sidebar transitions through initial loading and closed/open 
   console.error = recordWarning;
   console.warn = recordWarning;
   t.after(async () => {
-    await environment.unmount();
-    console.error = originalError;
-    console.warn = originalWarn;
-    delete globalThis.projectsListReact;
-    await client.cancelQueries();
-    client.clear();
+    try {
+      await environment.unmount(async () => {
+        await client.cancelQueries();
+        client.clear();
+      });
+    } finally {
+      console.error = originalError;
+      console.warn = originalWarn;
+      delete globalThis.projectsListReact;
+    }
   });
 
   const { currentUserOptions } = await import("../../apps/web/core/queries/identity.ts");

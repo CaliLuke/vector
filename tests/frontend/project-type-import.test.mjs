@@ -125,11 +125,10 @@ await test("pending import locks choices and dismissal, and read-only access pre
 const { ProjectTypes } = await import("../../apps/web/core/components/work-item-types/project-types.tsx");
 await test("project removal failures stay inside the dialog and retry refreshes availability", async (t) => {
   const env = await createReactDomTestEnvironment();
-  t.after(() => env.unmount());
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
   });
-  t.after(() => client.clear());
+  t.after(() => env.unmount(() => client.clear()));
   let catalog = {
     enabled: true,
     can_manage: true,
@@ -176,11 +175,10 @@ await test("project removal failures stay inside the dialog and retry refreshes 
 const { WorkspaceTypeLibrary } = await import("../../apps/web/core/components/work-item-types/workspace-library.tsx");
 await test("late workspace type save cannot repopulate a cleared session cache", async (t) => {
   const env = await createReactDomTestEnvironment();
-  t.after(() => env.unmount());
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false, staleTime: Infinity }, mutations: { retry: false } },
   });
-  t.after(() => client.clear());
+  t.after(() => env.unmount(() => client.clear()));
   const key = ["workspace", "demo", "work-item-types"];
   const catalog = {
     enabled: true,

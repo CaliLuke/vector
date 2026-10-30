@@ -127,10 +127,8 @@ await test("calendar navigation persists across routes and derives weeks from th
 
 await test("calendar state resets when the session-keyed provider subtree remounts", async (t) => {
   const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
-
   const client = createClient();
-  t.after(() => client.clear());
+  t.after(() => environment.unmount(() => client.clear()));
   const renderSession = async (generation) =>
     environment.render(
       React.createElement(

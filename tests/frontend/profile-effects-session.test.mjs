@@ -57,9 +57,10 @@ await test("ProfileEffects clears old custom theme and serializes language chang
     await environment.render(null);
     effects.languageRequests.forEach(({ resolve }) => resolve());
     await flush();
-    await environment.unmount();
-    await client.cancelQueries();
-    client.clear();
+    await environment.unmount(async () => {
+      await client.cancelQueries();
+      client.clear();
+    });
   });
 
   const renderApp = () =>

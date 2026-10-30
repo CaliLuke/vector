@@ -33,14 +33,13 @@ const { IssueVotes } = await import("../../apps/space/components/issues/reaction
 
 test("vote buttons recover from a failed request and show an error toast", async (t) => {
   const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  t.after(() => environment.unmount(() => client.clear()));
   toastCalls.length = 0;
 
   let rejectVote;
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const { currentUserOptions } = await import("../../apps/space/queries/session.ts");
   client.setQueryData(currentUserOptions.queryKey, { id: "actor" });
-  t.after(() => client.clear());
   t.mock.method(
     SitesIssueService.prototype,
     "addVote",

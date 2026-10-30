@@ -51,7 +51,8 @@ export const useLocalStorage = <T,>(key: string, initialValue: T) => {
   }
 
   const updateStoredValue = useCallback(
-    (value: T | null) => setStored((current) => (current.key === key ? { key, value } : current)),
+    (value: T | null) =>
+      setStored((current) => (current.key === key && !Object.is(current.value, value) ? { key, value } : current)),
     [key]
   );
 

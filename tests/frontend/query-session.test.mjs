@@ -44,8 +44,7 @@ await test("application intake preferences retain each project selection and res
     );
   const sorting = () => environment.container.querySelector("output").textContent;
   t.after(async () => {
-    await environment.unmount();
-    client?.clear();
+    await environment.unmount(() => client?.clear());
   });
   await renderProject("first");
   assert.equal(sorting(), "desc");
@@ -71,8 +70,9 @@ await test("independent application providers do not share private query data", 
     return null;
   }
   t.after(async () => {
-    await environment.unmount();
-    for (const client of clients.values()) client.clear();
+    await environment.unmount(() => {
+      for (const client of clients.values()) client.clear();
+    });
   });
   await environment.render(
     React.createElement(
@@ -106,8 +106,7 @@ await test("a session reset discards private form drafts even when the same acco
     );
   }
   t.after(async () => {
-    await environment.unmount();
-    client?.clear();
+    await environment.unmount(() => client?.clear());
   });
   await environment.render(React.createElement(AppStateProvider, null, React.createElement(PrivateDraft)));
   await act(async () => {
@@ -128,8 +127,7 @@ await test("sign-out clears cached private data and prevents a late request from
   const client = new QueryClient();
   t.mock.method(userService, "currentUser", async () => null);
   t.after(async () => {
-    client.clear();
-    await environment.unmount();
+    await environment.unmount(() => client.clear());
   });
   const { authService } = await import("../../apps/web/core/services/auth.service.ts");
   t.mock.method(authService, "requestCSRFToken", async () => ({ csrf_token: "test-csrf" }));
@@ -170,8 +168,7 @@ await test("remounting a native query reuses its fresh result instead of reiniti
     return React.createElement("span", null, query.data?.name);
   }
   t.after(async () => {
-    await environment.unmount();
-    client?.clear();
+    await environment.unmount(() => client?.clear());
   });
   await environment.render(React.createElement(AppStateProvider, null, React.createElement(Reader)));
   await act(async () => new Promise((resolve) => setTimeout(resolve, 20)));
