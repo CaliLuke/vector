@@ -19,8 +19,11 @@ own native domain before they can be advertised as supported.
 
 The native reads, mutations, receipts, revisions and generated five-action MCP
 projection are implemented. Real PostgreSQL tests exercise both credential types
-and protocol revisions. Full quality gates and local browser/proxy verification
-remain required for the overall MCP completion claim.
+and protocol revisions. The full gates passed at `87a791d9`, and local
+browser/proxy verification passed on 2026-10-30. The
+[state acceptance evidence](mcp-parity.md#state-acceptance-mcp-01-mcp-02) records
+the reviewed tests, native/MCP edit sequence, stale-revision rejection and deletion
+checks. Other MCP domains retain their separate acceptance requirements.
 
 ## Canonical read boundary
 

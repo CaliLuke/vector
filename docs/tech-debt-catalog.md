@@ -5,8 +5,8 @@ debt. It consolidates the quality baselines, MCP acceptance tracker, test review
 and previously local work log. It does not claim an exhaustive audit of every
 possible defect.
 
-Snapshot: `17d1afdbf4fd4bcf298f460574f14063712052b6`, 2026-10-30.
-Both full quality gates passed at this revision, including 13,381 Go test events
+Snapshot: `87a791d9c442568fc191dd2e59696e2ebe5408b5`, 2026-10-30.
+Both full quality gates passed at this published revision, including 13,482 Go test events
 with no failed or skipped cases. Passing gates allow the recorded debt below;
 they do not mean this catalog is complete.
 
@@ -82,16 +82,33 @@ omitted field. [Feature acceptance evidence](mcp-parity.md#workspace-feature-acc
 records the source contract and checks. The `264d505f` batch adds current
 authorization after waiting for workspace/project writes and replays,
 private-project permissions, project-bound receipts and native revisions, and
-atomic default-intake creation. Its Go full gate passed 13,465 events; publication
-is blocked by the UI timeout recorded as NEW-02 below.
+atomic default-intake creation. This batch is published with the archive-read fix
+at `87a791d9`; both complete quality gates passed. The earlier unsuccessful push
+recorded the intermittent UI timeout in NEW-02 below.
 
-The next feature batch closes the foreign-workspace and archive gaps. It fixes
+The published feature batch closes the foreign-workspace and archive gaps. It fixes
 archived settings reads to match native project retrieval while preserving write
 and replay rejection until restore. Its 102 focused leaf cases also cover current
-membership and competing project-feature writes. Full publication gates remain
-required. Next complete the local browser/proxy check for the five state actions,
-using their existing reviewed server, storage and durable-effect evidence.
+membership and competing project-feature writes. Its complete publication gates
+passed at `87a791d9`. The five state actions also completed their local
+browser/proxy check against that rebuilt application, supplementing fifteen
+reviewed passing server, storage and durable-effect test roots. The
+[state acceptance record](mcp-parity.md#state-acceptance-mcp-01-mcp-02) closes
+that domain's recorded gap: edits in both directions, stale-revision rejection,
+deletion/replay and exact preservation of the five initial states.
 Other action rows and inventory categories remain open.
+
+The subsequent [label acceptance batch](mcp-modules-labels.md#label-mutation-acceptance)
+has 75 passing label cases. Transport cases cover both credentials and protocols;
+repository cases cover concurrent requests and revisions. Four related feature
+cases also pass, giving 79 focused cases with no failures or skips. These cover
+receipts, native-writer revisions, atomic cascade effects, current roles/lifecycle,
+authorization changes after lock waits, tenant/resource binding, request contention
+and competing revisions. Browser/proxy checks also passed in both edit directions,
+including stale-revision rejection and deletion/replay.
+Go fast checks and the refreshed duplication check pass. Duplication remains at
+474 reports, with no new allowances. The complete publication gates remain
+required; the published snapshot above predates this batch.
 
 COV-01 floor review uses the completed full profile at `17d1afdb`:
 `internal/features` increases from 80.92% to 83.21%, and `internal/mcpactions`
@@ -117,15 +134,16 @@ placed ahead of the existing catalog.
 | ------ | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | NEW-01 | `parity-diff`'s action prompt ignores its callback context while waiting for stdin, despite the complete-operation timeout flag. | Source observation in [`responseAction`](../apps/go-api/cmd/parity-diff/main.go); no cancellation regression has run. | Prove the deadline behavior with controlled blocking input, then assess priority. Any fix needs explicit input ownership and must avoid leaked blocked reads or closing an unowned stream. |
 
-The current publication check at `264d505f` also recorded **NEW-02**: the UI
+The earlier publication check at `264d505f` recorded **NEW-02**: the UI
 color-picker pending-save regression timed out at its existing five-second limit;
 the coverage summary was then absent. The unchanged isolated test and all 73 UI
 tests under the same resource limits pass on recheck, as does the UI coverage
 ratchet. The cause is not established, so no application defect or dependency bug
 is claimed. Keep this observation open for reproduction; no test deadline or
-coverage floor was relaxed. A new complete publication check is still required.
-The Go full gate passed all 13,465 events in the failed push; the last published
-snapshot remains unchanged.
+coverage floor was relaxed. The complete retry at `87a791d9` passed both full
+gates and all 13,482 Go test events and was published. This removes the publication
+block, but does not establish the intermittent timeout's cause; keep the
+observation open for reproduction.
 
 ## Completed recorded work
 

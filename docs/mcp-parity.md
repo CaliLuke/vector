@@ -19,7 +19,8 @@ covers both authentication modes and protocol versions.
 The local collector recorded the revision conflict with its request ID and trace.
 A controlled outage of the isolated Redis service returned a sanitized MCP 503
 and produced an error-level record with a matching error trace, without the token
-or authorization header. Full frontend and Go gates passed at `17d1afdb` on 2026-10-30.
+or authorization header. Full frontend and Go gates passed at published revision
+`87a791d9` on 2026-10-30, including 13,482 passing Go test cases with no failures or skips.
 The [debt catalog](tech-debt-catalog.md) records the remaining coverage and
 acceptance work; a passing gate does not close those requirements.
 
@@ -96,11 +97,11 @@ The [PQL foundation](pql.md) adds shared scalar, relationship (including native 
 | `intake.create`                            | Mutation | `project_id`, `name`                                     | Workflow verified     | Combined queue, triage, visibility, revision and effects checks                       |
 | `intake.update`                            | Mutation | `project_id`, `workitem_id`                              | Workflow verified     | Combined queue, triage, visibility, revision and effects checks                       |
 | `intake.delete`                            | Mutation | `project_id`, `workitem_id`                              | Workflow verified     | Combined queue, triage, visibility, revision and effects checks                       |
-| `label.list`                               | Read     | `project_id`                                             | Implemented           | Local browser/proxy verification                                                      |
-| `label.retrieve`                           | Read     | `project_id`, `label_id`                                 | Implemented           | Local browser/proxy verification                                                      |
-| `label.create`                             | Mutation | `project_id`, `name`                                     | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
-| `label.update`                             | Mutation | `project_id`, `label_id`                                 | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
-| `label.delete`                             | Mutation | `project_id`, `label_id`                                 | Workflow verified     | Combined regression, authorization, receipt and effect checks                         |
+| `label.list`                               | Read     | `project_id`                                             | Contract verified     | Verified; see module/label contract and browser evidence                              |
+| `label.retrieve`                           | Read     | `project_id`, `label_id`                                 | Contract verified     | Verified; see module/label contract and browser evidence                              |
+| `label.create`                             | Mutation | `project_id`, `name`                                     | Workflow verified     | Complete publication gates for the new regression batch                               |
+| `label.update`                             | Mutation | `project_id`, `label_id`                                 | Workflow verified     | Complete publication gates for the new regression batch                               |
+| `label.delete`                             | Mutation | `project_id`, `label_id`                                 | Workflow verified     | Complete publication gates for the new regression batch                               |
 | `member.me`                                | Read     | None                                                     | PAT and OAuth         | Local browser/proxy verification                                                      |
 | `member.list_workspace`                    | Read     | None                                                     | PAT and OAuth         | Local browser/proxy verification                                                      |
 | `member.list_project`                      | Read     | `project_id`                                             | PAT and OAuth         | Local browser/proxy verification                                                      |
@@ -171,11 +172,11 @@ The [PQL foundation](pql.md) adds shared scalar, relationship (including native 
 | `release_tag.create`                       | Mutation | `version`                                                | Workflow verified     | Combined catalogue, ownership, association, counts, revision and effects checks       |
 | `release_tag.update`                       | Mutation | `tag_id`                                                 | Workflow verified     | Combined catalogue, ownership, association, counts, revision and effects checks       |
 | `release_tag.delete`                       | Mutation | `tag_id`                                                 | Workflow verified     | Combined catalogue, ownership, association, counts, revision and effects checks       |
-| `state.list`                               | Read     | None                                                     | Implemented           | Local browser/proxy verification                                                      |
-| `state.retrieve`                           | Read     | `state_id`                                               | Implemented           | Local browser/proxy verification                                                      |
-| `state.create`                             | Mutation | `name`, `color`                                          | Implemented           | Local browser/proxy verification                                                      |
-| `state.update`                             | Mutation | `state_id`                                               | Implemented           | Local browser/proxy verification                                                      |
-| `state.delete`                             | Mutation | `state_id`                                               | Implemented           | Local browser/proxy verification                                                      |
+| `state.list`                               | Read     | None                                                     | Contract verified     | Verified; see state acceptance evidence below                                         |
+| `state.retrieve`                           | Read     | `state_id`                                               | Contract verified     | Verified; see state acceptance evidence below                                         |
+| `state.create`                             | Mutation | `name`, `color`                                          | Contract verified     | Verified; see state acceptance evidence below                                         |
+| `state.update`                             | Mutation | `state_id`                                               | Contract verified     | Verified; see state acceptance evidence below                                         |
+| `state.delete`                             | Mutation | `state_id`                                               | Contract verified     | Verified; see state acceptance evidence below                                         |
 | `work_log.list`                            | Read     | `project_id`, `workitem_id`                              | Workflow verified     | Combined ownership, duration, revision, replay and activity checks                    |
 | `work_log.create`                          | Mutation | `project_id`, `workitem_id`, `duration`                  | Workflow verified     | Combined ownership, duration, revision, replay and activity checks                    |
 | `work_log.update`                          | Mutation | `project_id`, `workitem_id`, `work_log_id`               | Workflow verified     | Combined ownership, duration, revision, replay and activity checks                    |
@@ -410,3 +411,32 @@ effects; restoration permits replay and a new update. This is the explicit Vecto
 native-lifecycle policy; the pinned handler/SDK do not specify a separate archive
 policy. The combined focused feature run passes 102 leaf cases, including project
 CAS and existing current-authorization, revision, receipt and rollback regressions.
+
+### State acceptance (MCP-01, MCP-02)
+
+The five state actions meet the documented [state contract](mcp-states.md).
+[Generated-server tests](../apps/go-api/internal/mcpactions/state_integration_test.go)
+cover both credentials and protocols, exact native projections, workspace errors,
+receipt conflicts/replay and revisions. [Scope tests](../apps/go-api/internal/mcpactions/state_scope_integration_test.go)
+cover current permissions and discovery. The [bound-read cases](../apps/go-api/internal/projectstatereads/bound_reads_integration_test.go)
+verify authorization before counts, tenant binding and deterministic pagination.
+[Mutation atomicity](../apps/go-api/internal/projectstatereads/mutation_atomicity_integration_test.go)
+and [reference races](../apps/go-api/internal/projectstatereads/reference_concurrency_integration_test.go)
+prove rollback, current credential checks after a lock wait, concurrent receipts/CAS,
+and assignment/deletion serialization. [Deletion recovery](../apps/go-api/internal/backgroundtasks/state_deletion_integration_test.go)
+proves durable admission, lost-acknowledgement reconciliation, retained history,
+purge and replay. All fifteen reviewed test roots passed in the complete gate at
+`87a791d9`.
+
+Local browser/proxy verification on 2026-10-30 used the rebuilt application at
+`http://localhost:8000/`, an existing personal token, protocol `2026-07-28`, and
+a dedicated acceptance project. MCP list matched its five native initial states.
+An MCP-created nondefault state appeared in settings. A browser name/description
+edit produced a new MCP revision; an old-revision update returned
+`revision_conflict` and left the edited record unchanged. A current-revision MCP
+update appeared in the browser. MCP deletion and replay succeeded, detail rejected
+the deleted state, and both native and MCP lists exactly matched their original
+five-state baselines. The browser showed only those original states afterward.
+External changes were verified after explicit reloads; this does not claim
+automatic cross-client refresh. OAuth and legacy-protocol coverage comes from
+the generated-server integration tests, not this browser session.
