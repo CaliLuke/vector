@@ -1,0 +1,25 @@
+BEGIN;
+SET LOCAL search_path = public, pg_catalog;
+
+-- Removing the constraints does not restore invalid historical values.
+ALTER TABLE cycles DROP CONSTRAINT cycles_sort_order_finite;
+ALTER TABLE draft_issues DROP CONSTRAINT draft_issues_sort_order_finite;
+ALTER TABLE issue_versions DROP CONSTRAINT issue_versions_sort_order_finite;
+ALTER TABLE issue_views DROP CONSTRAINT issue_views_sort_order_finite;
+ALTER TABLE issues DROP CONSTRAINT issues_sort_order_finite;
+ALTER TABLE modules DROP CONSTRAINT modules_sort_order_finite;
+ALTER TABLE pages DROP CONSTRAINT pages_sort_order_finite;
+ALTER TABLE project_members DROP CONSTRAINT project_members_sort_order_finite;
+ALTER TABLE project_user_properties DROP CONSTRAINT project_user_properties_sort_order_finite;
+ALTER TABLE states DROP CONSTRAINT states_sequence_finite;
+ALTER TABLE stickies DROP CONSTRAINT stickies_sort_order_finite;
+ALTER TABLE user_favorites DROP CONSTRAINT user_favorites_sequence_finite;
+ALTER TABLE workspace_home_preferences DROP CONSTRAINT workspace_home_preferences_sort_order_finite;
+ALTER TABLE workspace_user_preferences DROP CONSTRAINT workspace_user_preferences_sort_order_finite;
+ALTER TABLE work_item_relation_definitions DROP CONSTRAINT work_item_relation_definitions_sort_order_finite;
+ALTER TABLE release_labels DROP CONSTRAINT release_labels_sort_order_finite;
+ALTER TABLE page_collections DROP CONSTRAINT page_collections_sort_order_finite;
+ALTER TABLE page_collection_pages DROP CONSTRAINT page_collection_pages_sort_order_finite;
+ALTER TABLE customer_properties DROP CONSTRAINT customer_properties_sort_order_finite;
+ALTER TABLE customer_property_options DROP CONSTRAINT customer_property_options_sort_order_finite;
+COMMIT;

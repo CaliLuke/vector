@@ -22,8 +22,15 @@ negative ungrouped page sizes, invalid previous-page slices, and offset overflow
 Generated-server tests cover direct and wrapped repository errors and verify that
 unexpected failures still return a sanitized 500 response.
 
-Storage review remains open for other numeric ordering fields and legacy asset sizes.
-Parser rejection alone does not prove that historical stored values are finite.
+All floating-point ordering columns now have finite-value constraints. Migration
+43 repairs historical NaN and infinity positions to a fallback order of 65535.
+PostgreSQL tests cover all 20 additional columns alongside the existing label
+checks, including both tenants, soft-deleted rows, unchanged finite values and
+metadata, and the existing revision triggers.
+
+Storage review remains open for legacy asset sizes, activity epochs, and type
+hierarchy levels. End-to-end validation of the remaining numeric writers is
+also open; parser rejection alone does not prove their persisted effects.
 
 ## Coverage and execution gaps
 
