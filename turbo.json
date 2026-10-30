@@ -11,6 +11,7 @@
     "LOG_LEVEL",
     "NODE_ENV",
     "PLANE_DEV_HOST",
+    "PLANE_WEB_PORT",
     "PLANE_ADMIN_PORT",
     "PLANE_SPACE_PORT",
     "WEB_BASE_URL",

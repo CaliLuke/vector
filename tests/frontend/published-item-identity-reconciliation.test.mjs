@@ -84,8 +84,7 @@ await test("accepted published edit receipts reconcile exact source and destinat
   t.after(async () => {
     delete globalThis.nativeFixture.owner;
     delete globalThis.nativeFixture;
-    await environment.unmount();
-    client.clear();
+    await environment.unmount(() => client.clear());
   });
   await environment.render(React.createElement(QueryClientProvider, { client }, React.createElement(Probe)));
 

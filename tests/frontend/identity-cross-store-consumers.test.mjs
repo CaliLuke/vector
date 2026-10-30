@@ -39,8 +39,7 @@ async function mountPagePermissionProbe(t, { id, access }) {
   const environment = await createReactDomTestEnvironment();
   const client = createIdentityClient();
   t.after(async () => {
-    await environment.unmount();
-    client.clear();
+    await environment.unmount(() => client.clear());
   });
 
   const page = {

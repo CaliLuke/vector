@@ -91,8 +91,7 @@ async function screen(t, { catalog = initial(), preview, commit } = {}) {
   }
   await env.render(React.createElement(QueryClientProvider, { client }, React.createElement(Harness)));
   t.after(async () => {
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
   });
   return {
     env,

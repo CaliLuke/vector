@@ -53,8 +53,7 @@ async function setup(t) {
     defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false, gcTime: Infinity } },
   });
   t.after(async () => {
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
   });
   return {
     ...env,

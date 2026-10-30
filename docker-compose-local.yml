@@ -7,7 +7,7 @@ x-local-environment: &local-environment
   ADMIN_BASE_URL: http://localhost:8000
   SPACE_BASE_URL: http://localhost:8000
   LIVE_BASE_URL: http://localhost:8000
-  CORS_ALLOWED_ORIGINS: http://localhost:8000,http://localhost:3000,http://localhost:${PLANE_ADMIN_PORT:-3001},http://localhost:${PLANE_SPACE_PORT:-3002},http://localhost:3100
+  CORS_ALLOWED_ORIGINS: http://localhost:8000,http://localhost:${PLANE_WEB_PORT:-3000},http://localhost:${PLANE_ADMIN_PORT:-3001},http://localhost:${PLANE_SPACE_PORT:-3002},http://localhost:3100
 
 x-local-logging: &local-logging
   driver: json-file
@@ -65,7 +65,7 @@ services:
       RUSTFS_ADDRESS: ":9000"
       RUSTFS_CONSOLE_ADDRESS: ":9001"
       RUSTFS_CONSOLE_ENABLE: "true"
-      RUSTFS_CORS_ALLOWED_ORIGINS: http://localhost:8000,http://localhost:3000,http://localhost:${PLANE_ADMIN_PORT:-3001},http://localhost:${PLANE_SPACE_PORT:-3002},http://localhost:3100
+      RUSTFS_CORS_ALLOWED_ORIGINS: http://localhost:8000,http://localhost:${PLANE_WEB_PORT:-3000},http://localhost:${PLANE_ADMIN_PORT:-3001},http://localhost:${PLANE_SPACE_PORT:-3002},http://localhost:3100
     entrypoint: [/bin/sh, /scripts/start-rustfs.sh]
     volumes:
       - rustfs_uploads:/data
@@ -160,6 +160,7 @@ services:
     environment:
       FILE_SIZE_LIMIT: ${FILE_SIZE_LIMIT:-5242880}
       BUCKET_NAME: ${AWS_S3_BUCKET_NAME:-uploads}
+      PLANE_WEB_PORT: ${PLANE_WEB_PORT:-3000}
       PLANE_ADMIN_PORT: ${PLANE_ADMIN_PORT:-3001}
       PLANE_SPACE_PORT: ${PLANE_SPACE_PORT:-3002}
     volumes:

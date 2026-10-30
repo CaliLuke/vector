@@ -34,8 +34,7 @@ async function mount(t, Component, props, existingEnvironment) {
   const render = (values) =>
     environment.render(React.createElement(QueryClientProvider, { client }, React.createElement(Component, values)));
   t.after(async () => {
-    await environment.unmount();
-    client.clear();
+    await environment.unmount(() => client.clear());
   });
   await render(props);
   return {
@@ -212,8 +211,7 @@ await test("SMTP cannot be toggled while a configuration save is pending", async
   const environment = await createReactDomTestEnvironment();
   const client = new QueryClient();
   t.after(async () => {
-    await environment.unmount();
-    client.clear();
+    await environment.unmount(() => client.clear());
   });
   const saved = Object.entries(config).map(([key, value]) => ({ key, value }));
   client.setQueryData(

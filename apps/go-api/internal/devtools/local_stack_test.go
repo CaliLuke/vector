@@ -65,20 +65,20 @@ func TestLocalStackComposeContract(t *testing.T) {
 
 func TestSelectedLocalPortsReachComposeAndCaddy(t *testing.T) {
 	root := findRepositoryRoot(t)
-	services := composeServices(t, root, map[string]string{"PLANE_ADMIN_PORT": "3004", "PLANE_SPACE_PORT": "3005"})
+	services := composeServices(t, root, map[string]string{"PLANE_WEB_PORT": "3003", "PLANE_ADMIN_PORT": "3004", "PLANE_SPACE_PORT": "3005"})
 	proxyEnv := mapValue(mapValue(services["proxy"])["environment"])
-	if stringValue(proxyEnv["PLANE_ADMIN_PORT"]) != "3004" || stringValue(proxyEnv["PLANE_SPACE_PORT"]) != "3005" {
-		t.Fatalf("selected admin/space ports did not reach proxy: %#v", proxyEnv)
+	if stringValue(proxyEnv["PLANE_WEB_PORT"]) != "3003" || stringValue(proxyEnv["PLANE_ADMIN_PORT"]) != "3004" || stringValue(proxyEnv["PLANE_SPACE_PORT"]) != "3005" {
+		t.Fatalf("selected web/admin/space ports did not reach proxy: %#v", proxyEnv)
 	}
 	cors := strings.Split(stringValue(mapValue(mapValue(services["go-api"])["environment"])["CORS_ALLOWED_ORIGINS"]), ",")
-	if !contains(cors, "http://localhost:3004") || !contains(cors, "http://localhost:3005") {
+	if !contains(cors, "http://localhost:3003") || !contains(cors, "http://localhost:3004") || !contains(cors, "http://localhost:3005") {
 		t.Fatalf("selected upstream origins missing from CORS: %v", cors)
 	}
 	caddy, err := os.ReadFile(filepath.Join(root, "apps/proxy/Caddyfile.local"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, value := range []string{"host.docker.internal:{$PLANE_ADMIN_PORT:3001}", "host.docker.internal:{$PLANE_SPACE_PORT:3002}"} {
+	for _, value := range []string{"host.docker.internal:{$PLANE_WEB_PORT:3000}", "host.docker.internal:{$PLANE_ADMIN_PORT:3001}", "host.docker.internal:{$PLANE_SPACE_PORT:3002}"} {
 		if !strings.Contains(string(caddy), value) {
 			t.Errorf("Caddyfile is missing upstream port binding %q", value)
 		}

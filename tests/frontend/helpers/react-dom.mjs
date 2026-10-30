@@ -95,18 +95,26 @@ export async function createReactDomTestEnvironment() {
     async render(element) {
       await act(async () => root.render(element));
     },
-    async unmount() {
+    async unmount(cleanup) {
       if (disposed) return;
       disposed = true;
-      await act(async () => root.unmount());
-      // Allow live-view and source-collection idle cleanup before removing window.
-      // The captured real timer also works in tests with mocked application timers.
-      await settleCleanup(20);
-      resizeObservers.clear();
-      dom.window.close();
-      for (const [name, descriptor] of originalGlobals) {
-        if (descriptor) Object.defineProperty(globalThis, name, descriptor);
-        else delete globalThis[name];
+      try {
+        await act(async () => {
+          root.unmount();
+          // Retire query clients and other browser resources while their event
+          // listeners can still detach from this environment.
+          await cleanup?.();
+        });
+        // Allow live-view and source-collection idle cleanup before removing window.
+        // The captured real timer also works in tests with mocked application timers.
+        await settleCleanup(20);
+      } finally {
+        resizeObservers.clear();
+        dom.window.close();
+        for (const [name, descriptor] of originalGlobals) {
+          if (descriptor) Object.defineProperty(globalThis, name, descriptor);
+          else delete globalThis[name];
+        }
       }
     },
   };

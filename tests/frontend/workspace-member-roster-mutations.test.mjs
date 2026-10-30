@@ -109,8 +109,7 @@ await test("invitation hook hides cached rows after active membership refetch fa
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   const environment = await createReactDomTestEnvironment();
   t.after(async () => {
-    await environment.unmount();
-    client.clear();
+    await environment.unmount(() => client.clear());
   });
   client.setQueryData(identityKeys.currentUser(), { id: "actor" });
   const membershipKey = permissionKeys.workspaceMembership("actor", "acme");
@@ -143,8 +142,7 @@ await test("invitation hook hides cached rows after invitation-list refetch fail
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   const environment = await createReactDomTestEnvironment();
   t.after(async () => {
-    await environment.unmount();
-    client.clear();
+    await environment.unmount(() => client.clear());
   });
   client.setQueryData(identityKeys.currentUser(), { id: "actor" });
   client.setQueryData(permissionKeys.workspaceMembership("actor", "acme"), {

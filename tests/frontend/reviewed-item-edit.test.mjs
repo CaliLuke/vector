@@ -39,8 +39,7 @@ async function fixture(t) {
   const render = (show) =>
     env.render(React.createElement(QueryClientProvider, { client }, show ? React.createElement(Subject) : null));
   t.after(async () => {
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
   });
   await render(true);
   return {

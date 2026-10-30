@@ -54,8 +54,11 @@ checks. Mutations support optional [receipt and revision extensions](mcp-writes.
 Teamspaces are deferred until native support exists.
 The proxy serves all browser entry points. Frontend ports 3000–3100 are internal development upstreams.
 
-`PLANE_ADMIN_PORT` and `PLANE_SPACE_PORT` can override the admin and Sites upstream ports.
-These compatibility names remain supported in Vector.
+`PLANE_WEB_PORT`, `PLANE_ADMIN_PORT`, and `PLANE_SPACE_PORT` can override the web,
+admin, and Sites upstream ports. Choose distinct free ports; the servers fail if
+a selected port is occupied. The proxy uses the same selected ports, and the
+browser origin remains `http://localhost:8000/`. These compatibility names remain
+supported in Vector.
 
 The frontend launcher has a 6 GiB sampled process-tree RSS ceiling and a 1 GiB
 heap limit per Node process. It stops all frontend workers if the ceiling is

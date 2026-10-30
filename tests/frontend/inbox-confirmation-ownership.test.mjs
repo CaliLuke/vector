@@ -55,8 +55,7 @@ async function setup(t) {
   state.navigations = [];
   state.toasts = [];
   t.after(async () => {
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
   });
   const render = (inboxIssueId = "first") =>
     env.render(

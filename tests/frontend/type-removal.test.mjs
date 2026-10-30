@@ -43,8 +43,7 @@ async function fixture(t) {
       )
     );
   t.after(async () => {
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
   });
   await render(true);
   return {

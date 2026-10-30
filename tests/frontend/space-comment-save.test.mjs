@@ -38,8 +38,7 @@ await test("comment failures retain the draft; failed attachment finalization re
   const environment = await createReactDomTestEnvironment();
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   t.after(async () => {
-    await environment.unmount();
-    client.clear();
+    await environment.unmount(() => client.clear());
   });
   client.setQueryData(currentUserOptions.queryKey, { id: "reader" });
   client.setQueryData(publishSettingsOptions("A").queryKey, { workspace: "workspace" });

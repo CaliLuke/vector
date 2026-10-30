@@ -39,5 +39,5 @@
 	respond /static/* 404
 	reverse_proxy /{$BUCKET_NAME:uploads}/* plane-rustfs:9000
 	reverse_proxy /{$BUCKET_NAME:uploads} plane-rustfs:9000
-	reverse_proxy /* host.docker.internal:3000
+	reverse_proxy /* host.docker.internal:{$PLANE_WEB_PORT:3000}
 }

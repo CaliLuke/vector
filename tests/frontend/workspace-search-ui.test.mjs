@@ -54,8 +54,7 @@ async function fixture(t, active = true) {
   client.setQueryData(memberKey, { is_active: active, role: active ? 15 : null, updated_at: "v1" });
   client.setQueryData(permissionKeys.workspaceProjectRoles("alice", "acme", 15, "v1"), { project: 15 });
   t.after(async () => {
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
   });
   const render = (term = "unique field needle") =>
     env.render(

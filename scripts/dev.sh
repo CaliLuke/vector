@@ -11,13 +11,14 @@ if [[ "${1:-}" == "stop" ]]; then
     exit 0
 fi
 
+PLANE_WEB_PORT="${PLANE_WEB_PORT:-3000}"
 PLANE_ADMIN_PORT="${PLANE_ADMIN_PORT:-3001}"
 PLANE_SPACE_PORT="${PLANE_SPACE_PORT:-3002}"
-if [[ "$PLANE_ADMIN_PORT" == "$PLANE_SPACE_PORT" ]]; then
-    echo "PLANE_ADMIN_PORT and PLANE_SPACE_PORT must be different." >&2
+if [[ "$PLANE_WEB_PORT" == "$PLANE_ADMIN_PORT" || "$PLANE_WEB_PORT" == "$PLANE_SPACE_PORT" || "$PLANE_ADMIN_PORT" == "$PLANE_SPACE_PORT" ]]; then
+    echo "PLANE_WEB_PORT, PLANE_ADMIN_PORT and PLANE_SPACE_PORT must be different." >&2
     exit 1
 fi
-export PLANE_ADMIN_PORT PLANE_SPACE_PORT
+export PLANE_WEB_PORT PLANE_ADMIN_PORT PLANE_SPACE_PORT
 
 for env_file in .env apps/go-api/.env apps/web/.env apps/admin/.env apps/space/.env apps/live/.env; do
     if [[ ! -f "$env_file" ]]; then
@@ -55,7 +56,7 @@ export VITE_LOCAL_LOGGING=1
 
 echo "Vector: http://localhost:8000/"
 echo "Instance administration: http://localhost:8000/god-mode/"
-echo "Admin and space upstreams: localhost:${PLANE_ADMIN_PORT}, localhost:${PLANE_SPACE_PORT}"
+echo "Web, admin and space upstreams: localhost:${PLANE_WEB_PORT}, localhost:${PLANE_ADMIN_PORT}, localhost:${PLANE_SPACE_PORT}"
 echo "Ctrl-C stops the frontend servers. pnpm dev:stop stops the containers without deleting data."
 echo "Logal: Docker volume plane_logaldata (48-hour retention). Query with pnpm dev:logs."
 # Populate the development build cache serially before app servers start.

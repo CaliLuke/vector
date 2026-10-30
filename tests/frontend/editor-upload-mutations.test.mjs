@@ -55,8 +55,7 @@ async function fixture(t) {
     return React.createElement("output", { "data-editor": id }, JSON.stringify(handler.assetsUploadStatus));
   }
   t.after(async () => {
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
   });
   return {
     env,

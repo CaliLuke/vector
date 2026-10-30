@@ -5,7 +5,7 @@
  */
 
 import { forwardRef } from "react";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ForwardRefExoticComponent, RefAttributes } from "react";
 import { Tooltip } from "@plane/propel/tooltip";
 import { DragHandle } from "@plane/ui";
 import { cn } from "@plane/utils/common";
@@ -16,13 +16,14 @@ type SidebarDragHandleProps = Omit<TooltipProps, "children" | "className"> & {
   handleClassName?: string;
 };
 
-export const SidebarDragHandle = forwardRef<HTMLButtonElement, SidebarDragHandleProps>(function SidebarDragHandle(
-  { handleClassName, ...tooltipProps },
-  ref
-) {
-  return (
-    <Tooltip {...tooltipProps}>
-      <DragHandle className={cn("bg-transparent", handleClassName)} ref={ref} />
-    </Tooltip>
-  );
-});
+export const SidebarDragHandle: ForwardRefExoticComponent<SidebarDragHandleProps & RefAttributes<HTMLButtonElement>> =
+  forwardRef<HTMLButtonElement, SidebarDragHandleProps>(function SidebarDragHandle(
+    { handleClassName, ...tooltipProps },
+    ref
+  ) {
+    return (
+      <Tooltip {...tooltipProps}>
+        <DragHandle className={cn("bg-transparent", handleClassName)} ref={ref} />
+      </Tooltip>
+    );
+  });

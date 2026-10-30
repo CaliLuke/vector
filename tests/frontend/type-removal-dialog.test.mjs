@@ -69,8 +69,7 @@ async function screen(t) {
     );
   t.after(async () => {
     Object.defineProperties(workItemTypeRemovalService, { preview: original.preview, commit: original.commit });
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
   });
   await render(true);
   return {

@@ -47,8 +47,7 @@ async function setup(t) {
     { id: "state", group: "started", name: "State", sequence: 1 },
   ]);
   t.after(async () => {
-    await environment.unmount();
-    client.clear();
+    await environment.unmount(() => client.clear());
   });
   return {
     environment,

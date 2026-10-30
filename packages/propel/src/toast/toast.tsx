@@ -53,7 +53,7 @@ export type ToastProps = {
   theme: "light" | "dark" | "system";
 };
 
-const toastManager = BaseToast.createToastManager();
+const toastManager = BaseToast.createToastManager<SetToastProps>();
 
 export function Toast(props: ToastProps) {
   return (
@@ -107,13 +107,14 @@ const TOAST_DATA = {
 };
 
 function ToastList() {
-  const { toasts } = BaseToast.useToastManager();
+  const { toasts } = BaseToast.useToastManager<SetToastProps>();
   return toasts.map((toast) => <ToastRender key={toast.id} id={toast.id} toast={toast} />);
 }
 
-function ToastRender({ id, toast }: { id: React.Key; toast: BaseToast.Root.ToastObject }) {
-  const toastData = toast.data as SetToastProps;
-  const type = toastData.type as TOAST_TYPE;
+function ToastRender({ id, toast }: { id: React.Key; toast: BaseToast.Root.ToastObject<SetToastProps> }) {
+  const toastData = toast.data;
+  if (!toastData) return null;
+  const type = toastData.type;
   const data = TOAST_DATA[type];
 
   return (
@@ -291,32 +292,34 @@ export const setPromiseToast = <ToastData,>(
   promise: Promise<ToastData>,
   options: PromiseToastOptions<ToastData>
 ): void => {
-  toastManager.promise(promise, {
-    loading: {
-      data: {
-        title: options.loading ?? "Loading...",
-        type: TOAST_TYPE.LOADING,
-        message: undefined,
-        actionItems: undefined,
+  // The manager rethrows after showing failure. This observer owns that derived
+  // promise; callers still own the original request and its result.
+  void toastManager
+    .promise<ToastData, SetToastProps>(promise, {
+      loading: {
+        data: {
+          title: options.loading ?? "Loading...",
+          type: TOAST_TYPE.LOADING,
+        },
       },
-    },
-    success: (data) => ({
-      data: {
-        type: TOAST_TYPE.SUCCESS,
-        title: options.success.title,
-        message: options.success.message?.(data),
-        actionItems: options.success.actionItems?.(data),
-      },
-    }),
-    error: (data) => ({
-      data: {
-        type: TOAST_TYPE.ERROR,
-        title: options.error.title,
-        message: options.error.message?.(data),
-        actionItems: options.error.actionItems?.(data),
-      },
-    }),
-  });
+      success: (data) => ({
+        data: {
+          type: TOAST_TYPE.SUCCESS,
+          title: options.success.title,
+          message: options.success.message?.(data),
+          actionItems: options.success.actionItems?.(data),
+        },
+      }),
+      error: (data) => ({
+        data: {
+          type: TOAST_TYPE.ERROR,
+          title: options.error.title,
+          message: options.error.message?.(data),
+          actionItems: options.error.actionItems?.(data),
+        },
+      }),
+    })
+    .catch(() => undefined);
 };
 
 export const dismissToast = (tId: string) => {

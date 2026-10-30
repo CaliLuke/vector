@@ -49,8 +49,7 @@ async function environment(t) {
   const env = await createReactDomTestEnvironment();
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   t.after(async () => {
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
   });
   return { env, render: (child) => env.render(React.createElement(QueryClientProvider, { client }, child)) };
 }

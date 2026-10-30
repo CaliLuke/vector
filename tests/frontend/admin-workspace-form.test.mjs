@@ -32,8 +32,7 @@ await test("workspace form preserves an edited slug and retries unavailable URL 
   };
   const client = new QueryClient();
   t.after(async () => {
-    await environment.unmount();
-    client.clear();
+    await environment.unmount(() => client.clear());
   });
   let checkResult = "offline";
   let slugChecks = 0;

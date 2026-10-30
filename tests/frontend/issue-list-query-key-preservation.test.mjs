@@ -51,8 +51,7 @@ await test("workspace group observers preserve undefined key slots for native ca
     defaultOptions: { queries: { retry: false, gcTime: Infinity, staleTime: Infinity } },
   });
   t.after(async () => {
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
   });
   seedIssueQueryScope(client, { ...scope, projectRoles: { p1: 20 } });
 

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "mode": "full",
-  "fileCount": 3737,
+  "fileCount": 3740,
   "diagnostics": [
     {
       "diagnostic": {
@@ -10584,24 +10584,6 @@
         "severity": "warning",
         "code": "unicorn(consistent-function-scoping)",
         "message": "Function `handleUpdate` does not capture any variables from its parent scope"
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/propel/src/toast/toast.tsx",
-        "severity": "error",
-        "code": "typescript(no-floating-promises)",
-        "message": "Promises must be awaited, add void operator to ignore."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
-        "filename": "packages/propel/src/toast/toast.tsx",
-        "severity": "warning",
-        "code": "typescript(no-unsafe-type-assertion)",
-        "message": "Unsafe assertion from `any` detected."
       },
       "count": 1
     },

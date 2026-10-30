@@ -33,8 +33,7 @@ async function screen(t, persistence, props = {}) {
   const env = await createReactDomTestEnvironment();
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   t.after(async () => {
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
   });
   await env.render(
     React.createElement(

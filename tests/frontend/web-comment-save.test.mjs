@@ -43,8 +43,7 @@ await test("web comments preserve failed drafts and retry attachments without du
   const client = new QueryClient();
   await seedWorkspaceQuery(client);
   t.after(async () => {
-    await environment.unmount();
-    client.clear();
+    await environment.unmount(() => client.clear());
   });
   let failPost = true,
     failAssets = true;

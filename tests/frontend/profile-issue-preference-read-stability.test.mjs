@@ -27,8 +27,7 @@ await test("profile issue reads stay bounded across parent rerenders", async (t)
   const environment = await createReactDomTestEnvironment();
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   t.after(async () => {
-    await environment.unmount();
-    client.clear();
+    await environment.unmount(() => client.clear());
   });
   client.setQueryData(identityKeys.currentUser(), { id: "alice" });
   client.setQueryData(permissionKeys.workspaceMembership("alice", "acme"), {

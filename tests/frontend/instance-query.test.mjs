@@ -32,8 +32,7 @@ async function fixture(t) {
   const env = await createReactDomTestEnvironment();
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: "always" } } });
   t.after(async () => {
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
   });
   return {
     client,

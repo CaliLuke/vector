@@ -29,8 +29,7 @@ async function mountMention(t) {
   const environment = await createReactDomTestEnvironment();
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   t.after(async () => {
-    await environment.unmount();
-    client.clear();
+    await environment.unmount(() => client.clear());
   });
   const ref = React.createRef();
   await environment.render(React.createElement(QueryClientProvider, { client }, React.createElement(Harness, { ref })));

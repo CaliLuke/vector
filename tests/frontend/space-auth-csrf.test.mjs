@@ -72,8 +72,7 @@ await test("public sign-out preserves session data after CSRF failure and clears
   client.setQueryData(currentUserOptions.queryKey, user);
   client.setQueryData(["private-draft"], "retained");
   t.after(async () => {
-    await environment.unmount();
-    client.clear();
+    await environment.unmount(() => client.clear());
   });
   let fail = true;
   const posted = [];

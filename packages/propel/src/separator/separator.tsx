@@ -8,16 +8,8 @@ import * as React from "react";
 import { Separator as SeparatorPrimitive } from "@base-ui/react/separator";
 import { cn } from "@plane/utils/common";
 
-interface SeparatorProps extends React.ComponentProps<typeof SeparatorPrimitive> {
-  /**
-   * The orientation of the separator
-   * @default "horizontal"
-   */
-  orientation?: "horizontal" | "vertical";
-}
-
 const Separator = React.forwardRef(function Separator(
-  { orientation = "horizontal", className, ...props }: SeparatorProps,
+  { orientation = "horizontal", className, ...props }: React.ComponentProps<typeof SeparatorPrimitive>,
   ref: React.ForwardedRef<React.ElementRef<typeof SeparatorPrimitive>>
 ) {
   return (

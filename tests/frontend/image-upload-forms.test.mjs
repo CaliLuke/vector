@@ -40,8 +40,7 @@ async function fixture(t, props = {}, Component = UserImageUploadModal) {
   });
   t.mock.method(URL, "revokeObjectURL", (url) => revoked.push(url));
   t.after(async () => {
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
   });
   const render = (extra = {}) =>
     env.render(

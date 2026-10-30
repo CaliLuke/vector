@@ -29,5 +29,7 @@ export default defineConfig(() => ({
   },
   server: {
     host: process.env.PLANE_DEV_HOST || "127.0.0.1",
+    port: Number(process.env.PLANE_WEB_PORT ?? 3000),
+    strictPort: true,
   },
 }));

@@ -59,6 +59,7 @@ export const TopNavigationRoot = function TopNavigationRoot() {
         <Tooltip tooltipContent="Inbox" position="bottom">
           <AppSidebarItem
             variant="link"
+            aria-label="Inbox"
             item={{
               href: `/${workspaceSlug?.toString()}/notifications/`,
               icon: (

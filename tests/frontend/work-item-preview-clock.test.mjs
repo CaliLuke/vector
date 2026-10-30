@@ -54,8 +54,7 @@ async function mount(t, component, formulas = true) {
   focusManager.setFocused(true);
   const render = () => env.render(React.createElement(QueryClientProvider, { client }, React.createElement(component)));
   t.after(async () => {
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
     focusManager.setFocused(undefined);
   });
   await render();

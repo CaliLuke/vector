@@ -42,6 +42,8 @@ describe("collaboration websocket transport", () => {
   it.each(["nodebuffer", "arraybuffer", "fragments"] as const)(
     "authenticates clients, synchronizes %s messages in both directions, and releases closed connections",
     async (binaryType) => {
+      const connectionEvents: string[] = [];
+      const recordConnectionEvent = (event: string) => connectionEvents.push(`${performance.now()}: ${event}`);
       const disconnected = vi.fn();
       const hocuspocus = new Hocuspocus({
         quiet: true,
@@ -67,6 +69,8 @@ describe("collaboration websocket transport", () => {
         const socket = new HocuspocusProviderWebsocket({
           url: server.baseUrl.replace("http:", "ws:") + "/collaboration/",
           WebSocketPolyfill: WebSocket,
+          onStatus: ({ status }) => recordConnectionEvent(`status ${status}`),
+          onClose: ({ event }) => recordConnectionEvent(`close ${event.code}: ${event.reason}`),
         });
         sockets.push(socket);
         const provider = new HocuspocusProvider({
@@ -74,6 +78,7 @@ describe("collaboration websocket transport", () => {
           name: "transport-regression",
           token: "test-session",
           document,
+          onAuthenticationFailed: ({ reason }) => recordConnectionEvent(`authentication failed: ${reason}`),
         });
         provider.attach();
         clients.push(provider);
@@ -103,6 +108,8 @@ describe("collaboration websocket transport", () => {
         second.provider.destroy();
         await expect.poll(() => hocuspocus.getConnectionsCount()).toBe(1);
         expect(disconnected).toHaveBeenCalledOnce();
+      } catch (cause) {
+        throw new Error(`Collaboration transport events:\n${connectionEvents.join("\n")}`, { cause });
       } finally {
         clients.forEach((client) => client.destroy());
         sockets.forEach((socket) => socket.destroy());

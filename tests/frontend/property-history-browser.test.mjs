@@ -80,8 +80,7 @@ async function fixture(t, editable = false) {
     throw new Error("Browsing must not open an editor");
   });
   t.after(async () => {
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
   });
   await env.render(
     React.createElement(

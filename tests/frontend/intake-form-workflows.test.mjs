@@ -178,8 +178,7 @@ await test("changing the selector scope cancels its old search and excludes late
   const env = await createReactDomTestEnvironment();
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   t.after(async () => {
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
   });
   const pending = Promise.withResolvers();
   seedSearchPermissions(client, { first: 20, second: 20 });

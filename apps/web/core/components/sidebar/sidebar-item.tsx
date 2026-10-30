@@ -22,7 +22,7 @@ interface AppSidebarItemData {
   showLabel?: boolean;
 }
 
-interface AppSidebarItemProps {
+interface AppSidebarItemProps extends React.HTMLAttributes<HTMLElement> {
   variant?: "link" | "button" | "content";
   item?: AppSidebarItemData;
 }
@@ -117,7 +117,10 @@ function AppSidebarButtonItem({ children, onClick, disabled = false, className }
 }
 
 const AppSidebarItem = Object.assign(
-  forwardRef<HTMLElement, AppSidebarItemProps>(function AppSidebarItem({ variant = "link", item }, ref) {
+  forwardRef<HTMLElement, AppSidebarItemProps>(function AppSidebarItem(
+    { variant = "link", item, className, ...triggerProps },
+    ref
+  ) {
     if (!item) return null;
 
     const { icon, isActive, label, href, onClick, disabled, showLabel = true } = item;
@@ -133,7 +136,12 @@ const AppSidebarItem = Object.assign(
       if (!href) return null;
 
       return (
-        <Link to={href} ref={ref as React.Ref<HTMLAnchorElement>} className={styles.base}>
+        <Link
+          {...triggerProps}
+          to={href}
+          ref={ref as React.Ref<HTMLAnchorElement>}
+          className={cn(styles.base, className)}
+        >
           {commonItems}
         </Link>
       );
@@ -141,7 +149,7 @@ const AppSidebarItem = Object.assign(
 
     if (variant === "content") {
       return (
-        <span ref={ref as React.Ref<HTMLSpanElement>} className={styles.base}>
+        <span {...triggerProps} ref={ref as React.Ref<HTMLSpanElement>} className={cn(styles.base, className)}>
           {commonItems}
         </span>
       );
@@ -149,9 +157,13 @@ const AppSidebarItem = Object.assign(
 
     return (
       <button
+        {...triggerProps}
         ref={ref as React.Ref<HTMLButtonElement>}
-        className={styles.base}
-        onClick={onClick}
+        className={cn(styles.base, className)}
+        onClick={(event) => {
+          triggerProps.onClick?.(event);
+          if (!event.defaultPrevented) onClick?.();
+        }}
         disabled={disabled}
         type="button"
       >

@@ -62,8 +62,7 @@ async function screen(t, Component, property, extra = {}) {
     },
   };
   t.after(async () => {
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
   });
   await env.render(
     React.createElement(

@@ -38,8 +38,7 @@ async function setup(t, anonymous = false) {
   const client = new QueryClient({ defaultOptions: { queries: { gcTime: Infinity, retry: false } } });
   client.setQueryData(identityKeys.currentUser(), anonymous ? undefined : { id: "alice" });
   t.after(async () => {
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
   });
   const { InboxIssueActionsHeader } =
     await import("../../apps/web/core/components/inbox/content/inbox-issue-header.tsx");

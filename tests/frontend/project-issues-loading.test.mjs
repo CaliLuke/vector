@@ -56,8 +56,7 @@ await test("mounted list keeps per-group counts and paginates only the selected 
   const env = await createReactDomTestEnvironment();
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   t.after(async () => {
-    await env.unmount();
-    client.clear();
+    await env.unmount(() => client.clear());
   });
   seedIssueQueryScope(client, scope);
   const read = {

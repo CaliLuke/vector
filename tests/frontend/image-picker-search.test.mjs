@@ -38,10 +38,9 @@ registerHooks({
 test("cover image search retains typed text and searches without a parent form control", async (t) => {
   const environment = await createReactDomTestEnvironment();
   const routerFixture = createRouterFixture("/review/");
-  t.after(() => environment.unmount());
   const { ImagePickerPopover } = await import("../../apps/web/core/components/core/image-picker-popover.tsx");
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
-  t.after(() => queryClient.clear());
+  t.after(() => environment.unmount(() => queryClient.clear()));
   seedInstanceInfo(queryClient, { has_unsplash_configured: true });
   await routerFixture.render(
     environment,
@@ -79,8 +78,7 @@ await test("failed cover searches keep the input available and retry the same qu
   const routerFixture = createRouterFixture("/review/");
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   t.after(async () => {
-    await environment.unmount();
-    client.clear();
+    await environment.unmount(() => client.clear());
   });
   const { ImagePickerPopover } = await import("../../apps/web/core/components/core/image-picker-popover.tsx");
   const { FileService } = globalThis.imagePickerFileServiceFixture;
