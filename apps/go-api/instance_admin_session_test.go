@@ -49,16 +49,28 @@ func TestInstanceAdminSessionMe(t *testing.T) {
 		t.Fatal(err)
 	}
 	user, err := service.Me(ctx, &api.MePayload{})
-	parsed, _ := uuid.Parse(user.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	parsed, err := uuid.Parse(user.ID)
 	if err != nil || parsed != id || !user.AvatarURL.IsNull() {
 		t.Fatalf("user=%+v err=%v", user, err)
 	}
-	service, _ = NewInstanceAdminSession(instanceAdminSessionRepoStub{admin: false, membership: false, user: raw}, instanceAdminSessionStub{principal: djangosession.Principal{UserID: id.String()}})
-	ctx, _ = service.(api.Authorizer).APIKeyAuth(context.Background(), "cookie", nil)
+	service, err = NewInstanceAdminSession(instanceAdminSessionRepoStub{admin: false, membership: false, user: raw}, instanceAdminSessionStub{principal: djangosession.Principal{UserID: id.String()}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, err = service.(api.Authorizer).APIKeyAuth(context.Background(), "cookie", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if _, err = service.Me(ctx, &api.MePayload{}); err == nil || err.Error() != instanceAdminForbiddenDetail {
 		t.Fatalf("want forbidden, got %v", err)
 	}
-	service, _ = NewInstanceAdminSession(instanceAdminSessionRepoStub{admin: true, membership: true, user: raw}, instanceAdminSessionStub{err: errors.New("bad")})
+	service, err = NewInstanceAdminSession(instanceAdminSessionRepoStub{admin: true, membership: true, user: raw}, instanceAdminSessionStub{err: errors.New("bad")})
+	if err != nil {
+		t.Fatal(err)
+	}
 	if _, err = service.(api.Authorizer).APIKeyAuth(context.Background(), "cookie", nil); err == nil || err.Error() != instanceAdminUnauthenticatedDetail {
 		t.Fatalf("want unauthenticated, got %v", err)
 	}

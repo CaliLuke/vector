@@ -44,4 +44,7 @@ UPDATE estimate_points SET project_id='00000000-0000-4000-8000-000000000099' WHE
 UPDATE estimate_points SET workspace_id='00000000-0000-4000-8000-000000000099' WHERE id='00000000-0000-4000-8000-000000000206';
 UPDATE estimates SET project_id='00000000-0000-4000-8000-000000000099' WHERE id='00000000-0000-4000-8000-000000000107';
 UPDATE estimates SET workspace_id='00000000-0000-4000-8000-000000000099' WHERE id='00000000-0000-4000-8000-000000000108';
+-- Give the tiny fixture real cardinalities instead of default estimates that
+-- trigger expensive JIT compilation for these compound projections.
+ANALYZE;
 `

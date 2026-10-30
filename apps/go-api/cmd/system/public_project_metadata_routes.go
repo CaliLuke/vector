@@ -601,11 +601,7 @@ func publicProjectMetadataErrorAllow(allowMethods []string) string {
 }
 
 func publicProjectMetadataLazyAuthenticationError(err error) bool {
-	return errors.Is(err, djangosession.ErrStore) ||
-		errors.Is(err, djangosession.ErrSessionStore) ||
-		errors.Is(err, djangosession.ErrUserStore) ||
-		errors.Is(err, djangosession.ErrInvalidSessionShape) ||
-		errors.Is(err, djangosession.ErrInvalidUserID)
+	return djangosession.IsReadFailure(err)
 }
 
 func replacePublicProjectMetadataResponse(writer *publicProjectMetadataReadsResponseWriter, status int, contentType string, body []byte) {

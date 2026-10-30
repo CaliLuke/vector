@@ -3,6 +3,7 @@ package systemapi
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"uuid"
 
@@ -40,15 +41,28 @@ func NewInstanceAdminSession(repository instanceAdminSessionRepository, sessions
 }
 
 func (s *InstanceAdminSessionService) APIKeyAuth(ctx context.Context, key string, _ *security.APIKeyScheme) (context.Context, error) {
-	principal, err := s.sessions.Validate(ctx, key)
+	id, err := s.sessionActor(ctx, key)
 	if err != nil {
-		return ctx, &api.InstanceAdminSessionUnauthenticated{Detail: instanceAdminUnauthenticatedDetail}
+		return ctx, err
+	}
+	return context.WithValue(ctx, instanceAdminPrincipalKey{}, id), nil
+}
+
+// sessionActor separates session read failures from invalid credentials.
+// Session inspection can recover only the latter as an anonymous response.
+func (s *InstanceAdminSessionService) sessionActor(ctx context.Context, key string) (uuid.UUID, error) {
+	principal, err := s.sessions.Validate(ctx, key)
+	if djangosession.IsReadFailure(err) {
+		return uuid.UUID{}, instanceAdminInternal()
+	}
+	if err != nil {
+		return uuid.UUID{}, &api.InstanceAdminSessionUnauthenticated{Detail: instanceAdminUnauthenticatedDetail}
 	}
 	id, err := uuid.Parse(principal.UserID)
 	if err != nil {
-		return ctx, &api.InstanceAdminSessionUnauthenticated{Detail: instanceAdminUnauthenticatedDetail}
+		return uuid.UUID{}, &api.InstanceAdminSessionUnauthenticated{Detail: instanceAdminUnauthenticatedDetail}
 	}
-	return context.WithValue(ctx, instanceAdminPrincipalKey{}, id), nil
+	return id, nil
 }
 
 func (s *InstanceAdminSessionService) Me(ctx context.Context, _ *api.MePayload) (*api.InstanceAdminUser, error) {
@@ -70,13 +84,13 @@ func (s *InstanceAdminSessionService) Session(ctx context.Context, payload *api.
 	if payload == nil || payload.SessionID == nil {
 		return &api.SessionResult{}, nil
 	}
-	principal, err := s.sessions.Validate(ctx, *payload.SessionID)
-	if err != nil {
+	id, err := s.sessionActor(ctx, *payload.SessionID)
+	var invalid *api.InstanceAdminSessionUnauthenticated
+	if errors.As(err, &invalid) {
 		return &api.SessionResult{}, nil
 	}
-	id, err := uuid.Parse(principal.UserID)
 	if err != nil {
-		return &api.SessionResult{}, nil
+		return nil, err
 	}
 	membership, ok := s.repository.(instanceAdminMembershipRepository)
 	if !ok {

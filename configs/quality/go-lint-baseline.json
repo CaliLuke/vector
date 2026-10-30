@@ -286,10 +286,6 @@
       "count": 1
     },
     {
-      "fingerprint": ["nilerr", "instance_admin_session.go", "error is not nil (line #) but it returns nil"],
-      "count": 2
-    },
-    {
       "fingerprint": ["nilerr", "internal/assets/service.go", "error is not nil (line #) but it returns nil"],
       "count": 1
     },

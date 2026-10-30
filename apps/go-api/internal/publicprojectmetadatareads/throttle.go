@@ -261,11 +261,7 @@ func (throttle *AnonymousThrottle) inspectSession(ctx context.Context, request *
 				return true, false, &prepared, principal, nil
 			}
 			return true, false, nil, principal, nil
-		} else if errors.Is(validationErr, djangosession.ErrStore) ||
-			errors.Is(validationErr, djangosession.ErrSessionStore) ||
-			errors.Is(validationErr, djangosession.ErrUserStore) ||
-			errors.Is(validationErr, djangosession.ErrInvalidSessionShape) ||
-			errors.Is(validationErr, djangosession.ErrInvalidUserID) {
+		} else if djangosession.IsReadFailure(validationErr) {
 			// BaseAPIView can map the first lazy-authentication exception, but
 			// RequestLogger evaluates the still-unresolved SimpleLazyObject again
 			// outside the view and Django ultimately returns a technical 500.

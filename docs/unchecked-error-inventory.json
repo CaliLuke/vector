@@ -1,7 +1,7 @@
 {
   "version": 1,
   "catalog_id": "ERR-02",
-  "source_commit": "3f044c7a3915c86c54f93041631af73fd143d860",
+  "source_commit": "1e30845570c97629593071858e514a70b1aebcd0",
   "audit_date": "2026-10-30",
   "tool": "golangci-lint 2.15.0 (Go 1.27.3)",
   "configuration": "Repository .golangci.yml at source_commit; add linters.settings.errcheck.check-blank=true and select --enable-only errcheck. Existing integration tags, test inclusion, generated-source exclusions and timeout retained.",
@@ -9,10 +9,10 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 925,
+    "findings": 921,
     "also_in_ERR_01": 51,
-    "additional_ERR_02": 874,
-    "test_file_findings": 551,
+    "additional_ERR_02": 870,
+    "test_file_findings": 547,
     "non_test_file_findings": 374
   },
   "findings": [
@@ -655,7 +655,7 @@
     },
     {
       "file": "apps/go-api/cmd/system/public_project_metadata_routes.go",
-      "line": 684,
+      "line": 680,
       "column": 5,
       "message": "Error return value of `response.Write` is not checked",
       "also_in_configured_audit": false
@@ -1015,34 +1015,6 @@
       "line": 88,
       "column": 12,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/instance_admin_session_test.go",
-      "line": 52,
-      "column": 10,
-      "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/instance_admin_session_test.go",
-      "line": 56,
-      "column": 11,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/instance_admin_session_test.go",
-      "line": 57,
-      "column": 7,
-      "message": "Error return value of `(github.com/CaliLuke/go-plane/gen/instance_admin_session.Authorizer).APIKeyAuth` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/instance_admin_session_test.go",
-      "line": 61,
-      "column": 11,
-      "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -6492,5 +6464,5 @@
       "also_in_configured_audit": false
     }
   ],
-  "source_state": "Working tree containing the ERR-01/ERR-02 API cache-cleanup batch based on source_commit."
+  "source_state": "Working tree containing the admin-session read-failure and checked test-setup changes based on source_commit."
 }
