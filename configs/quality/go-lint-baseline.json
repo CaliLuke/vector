@@ -156,14 +156,6 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/backgroundtasks/workspace_seed_integration_test.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/bootstrap/instance.go",
         "Error return value of `response.Body.Close` is not checked"
       ],
@@ -244,14 +236,6 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/instancemanagement/repository.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 3
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/parity/normalization.go",
         "Error return value of `file.Close` is not checked"
       ],
@@ -272,60 +256,8 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/standardviews/mutation_validation_upgrade_integration_test.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/testsupport/postgres/pair.go",
         "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/workitems/collaboration_model.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/workitems/lifecycle.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "internal/workitems/model.go", "Error return value of `tx.Rollback` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/workitems/planning.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/workitems/relationships.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/workspaceprojectreads/lifecycle.go",
-        "Error return value of `tx.Rollback` is not checked"
       ],
       "count": 1
     },

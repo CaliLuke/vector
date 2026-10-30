@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/selvedge"
 	"github.com/CaliLuke/selvedge/retry"
 	"github.com/google/uuid"
@@ -42,7 +43,11 @@ func TestPostgresWorkspaceSeedAtomicRetryAndSourceContent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		if rollbackErr := dbutil.RollbackTransaction(ctx, tx.Rollback, nil); rollbackErr != nil {
+			t.Errorf("rollback test transaction: %v", rollbackErr)
+		}
+	}()
 	for _, id := range []string{owner, member} {
 		row := records.Rows["users"][0]
 		row["id"] = id

@@ -9,6 +9,7 @@ import (
 
 	"uuid"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
@@ -64,7 +65,11 @@ func TestMutationValidationPreservesDjangoPrecedence(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer tx.Rollback(ctx)
+			defer func() {
+				if rollbackErr := dbutil.RollbackTransaction(ctx, tx.Rollback, nil); rollbackErr != nil {
+					t.Errorf("rollback test transaction: %v", rollbackErr)
+				}
+			}()
 			if test.setup != "" {
 				if _, execErr := tx.Exec(ctx, test.setup); execErr != nil {
 					t.Fatal(execErr)

@@ -15,6 +15,7 @@ import (
 	"unicode/utf8"
 	"uuid"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/instanceadminsession"
@@ -379,7 +380,7 @@ func (r *Repository) SMTPConfiguration(ctx context.Context) (instancemail.SMTPCo
 	return instancemail.SMTPConfig{Host: values["EMAIL_HOST"], Port: port, Username: values["EMAIL_HOST_USER"], Password: values["EMAIL_HOST_PASSWORD"], UseTLS: values["EMAIL_USE_TLS"] == "1", UseSSL: values["EMAIL_USE_SSL"] == "1"}, values["EMAIL_FROM"], nil
 }
 
-func (r *Repository) PatchConfigurations(ctx context.Context, fields map[string]json.RawMessage) (json.RawMessage, error) {
+func (r *Repository) PatchConfigurations(ctx context.Context, fields map[string]json.RawMessage) (out json.RawMessage, resultErr error) {
 	keys := make([]string, 0, len(fields))
 	for key := range fields {
 		keys = append(keys, key)
@@ -416,7 +417,7 @@ func (r *Repository) PatchConfigurations(ctx context.Context, fields map[string]
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	for _, c := range configs {
 		value := pythonString(fields[c.key])
 		if c.encrypted {
@@ -530,7 +531,7 @@ func (r *Repository) Workspaces(ctx context.Context, search, perPage, cursor str
 	return json.Marshal(response)
 }
 
-func (r *Repository) CreateWorkspace(ctx context.Context, actor uuid.UUID, fields map[string]json.RawMessage, requestTimezone string) (json.RawMessage, error) {
+func (r *Repository) CreateWorkspace(ctx context.Context, actor uuid.UUID, fields map[string]json.RawMessage, requestTimezone string) (out json.RawMessage, resultErr error) {
 	name, namePresent, nameTruthy, nameErr := workspaceCharField(fields["name"])
 	slug, slugPresent, slugTruthy, slugErr := workspaceCharField(fields["slug"])
 	if !namePresent || !slugPresent || !nameTruthy || !slugTruthy {
@@ -644,7 +645,7 @@ func (r *Repository) CreateWorkspace(ctx context.Context, actor uuid.UUID, field
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var result []byte
 	var workspaceID uuid.UUID
 	err = tx.QueryRow(ctx, `INSERT INTO workspaces(id,created_at,updated_at,deleted_at,created_by_id,owner_id,name,slug,logo,logo_asset_id,organization_size,timezone,background_color) VALUES(gen_random_uuid(),NOW(),NOW(),@deleted_at,@actor,@actor,@name,@slug,@logo,@logo_asset,@organization_size,@timezone,@background_color) RETURNING id,json_build_object('id',id,'created_at',created_at,'updated_at',updated_at,'deleted_at',deleted_at,'name',name,'logo',logo,'logo_asset',logo_asset_id,'logo_url',CASE WHEN logo_asset_id IS NULL THEN NULLIF(logo,'') WHEN (SELECT entity_type FROM file_assets WHERE id=logo_asset_id) IN ('WORKSPACE_LOGO','USER_AVATAR','USER_COVER','PROJECT_COVER') THEN '/api/assets/v2/static/'||logo_asset_id::text||'/' ELSE NULL END,'owner',(SELECT json_build_object('id',id,'email',email,'first_name',first_name,'last_name',last_name) FROM users WHERE id=owner_id),'slug',slug,'organization_size',organization_size,'timezone',timezone,'background_color',background_color,'created_by',created_by_id,'updated_by',updated_by_id)`, pgx.StrictNamedArgs{"actor": actor, "deleted_at": deletedAt, "name": name, "slug": slug, "logo": logo, "logo_asset": assetID, "organization_size": org, "timezone": timezone, "background_color": backgroundColor}).Scan(&workspaceID, &result)
@@ -806,12 +807,12 @@ type WorkspaceDeletion struct {
 	DeletedAt      time.Time
 }
 
-func (r *Repository) PrepareWorkspaceDeletion(ctx context.Context, actor uuid.UUID, slug string) (WorkspaceDeletion, error) {
+func (r *Repository) PrepareWorkspaceDeletion(ctx context.Context, actor uuid.UUID, slug string) (out WorkspaceDeletion, resultErr error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return WorkspaceDeletion{}, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var deleted WorkspaceDeletion
 	err = tx.QueryRow(ctx, `SELECT w.id::text,w.name,w.slug FROM workspaces w WHERE w.slug=@slug AND w.deleted_at IS NULL AND EXISTS(SELECT 1 FROM workspace_members wm WHERE wm.workspace_id=w.id AND wm.member_id=@actor AND wm.role=20 AND wm.is_active AND wm.deleted_at IS NULL) FOR UPDATE`, pgx.StrictNamedArgs{"slug": slug, "actor": actor}).Scan(&deleted.ID, &deleted.Name, &deleted.Slug)
 	if errors.Is(err, pgx.ErrNoRows) {

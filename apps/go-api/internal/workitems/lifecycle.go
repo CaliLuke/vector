@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
@@ -186,7 +187,7 @@ func parseQueryDateTime(raw, zone string) (string, error) {
 	}
 	return "", failure(400, "error", "Please provide valid detail")
 }
-func (r *Repository) issueDates(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
+func (r *Repository) issueDates(ctx context.Context, q Request, body io.Reader, contentType string) (out Result, resultErr error) {
 	input, err := parseObject(body, contentType)
 	if err != nil {
 		return Result{}, err
@@ -276,7 +277,7 @@ func (r *Repository) issueDates(ctx context.Context, q Request, body io.Reader, 
 	if err != nil {
 		return Result{}, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	for id := range changed {
 		row := byID[id]
 		if _, err = tx.Exec(ctx, `UPDATE issues SET start_date=$2,target_date=$3 WHERE id=$1`, id, row["start_date"], row["target_date"]); err != nil {

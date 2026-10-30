@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
@@ -109,7 +110,7 @@ func (r *Repository) eligibleIssues(ctx context.Context, q Request, ids []string
 	return r.rows(ctx, sql+" ORDER BY i.created_at DESC", args...)
 }
 
-func (r *Repository) relations(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
+func (r *Repository) relations(ctx context.Context, q Request, body io.Reader, contentType string) (out Result, resultErr error) {
 	if q.Method == "GET" {
 		return r.listRelations(ctx, q)
 	}
@@ -189,7 +190,7 @@ func (r *Repository) relations(ctx context.Context, q Request, body io.Reader, c
 	if err != nil {
 		return Result{}, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	for _, target := range targets {
 		issue, related := q.IssueID, target["id"].(string)
 		if reverse {

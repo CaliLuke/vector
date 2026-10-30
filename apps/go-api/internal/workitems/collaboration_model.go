@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strings"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -85,7 +86,7 @@ func writeCollaborationRecord(ctx context.Context, tx pgx.Tx, q Request, table s
 // Comment and Description persist in the same transaction as IssueComment.save.
 // The second description-only save changes the serializer instance's updater,
 // while leaving the first save's persisted updater unchanged.
-func (r *Repository) saveCollaboration(ctx context.Context, q Request, table string, row, old map[string]any) (map[string]any, error) {
+func (r *Repository) saveCollaboration(ctx context.Context, q Request, table string, row, old map[string]any) (out map[string]any, resultErr error) {
 	now := timestamp(r.now())
 	row["updated_at"] = now
 	if old == nil {
@@ -100,7 +101,7 @@ func (r *Repository) saveCollaboration(ctx context.Context, q Request, table str
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if err = writeCollaborationRecord(ctx, tx, q, table, row, old == nil); err != nil {
 		return nil, err
 	}

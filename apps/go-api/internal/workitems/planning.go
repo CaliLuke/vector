@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
@@ -212,12 +213,12 @@ func beforeNow(raw any, now time.Time) bool {
 	value, e := time.Parse(time.RFC3339Nano, s)
 	return e == nil && value.Before(now)
 }
-func (r *Repository) insertPlanning(ctx context.Context, kind string, q Request, workspace any, issues []string, target string, audit any, ignore bool) ([]map[string]any, error) {
+func (r *Repository) insertPlanning(ctx context.Context, kind string, q Request, workspace any, issues []string, target string, audit any, ignore bool) (out []map[string]any, resultErr error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	rows := []map[string]any{}
 	conflict := ""
 	if ignore {
@@ -337,7 +338,7 @@ func (r *Repository) removePlanning(ctx context.Context, q Request, kind string,
 	}
 	return Result{Status: 204}, err
 }
-func (r *Repository) issueModules(ctx context.Context, q Request, input djangoinput.Input) (Result, error) {
+func (r *Repository) issueModules(ctx context.Context, q Request, input djangoinput.Input) (out Result, resultErr error) {
 	project, err := r.project(ctx, q.ProjectID)
 	if err != nil {
 		return Result{}, err
@@ -383,7 +384,7 @@ func (r *Repository) issueModules(ctx context.Context, q Request, input djangoin
 	if err != nil {
 		return Result{}, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	for _, id := range modules {
 		_, err = tx.Exec(ctx, `INSERT INTO module_issues(id,issue_id,module_id,project_id,workspace_id,created_at,updated_at,created_by_id,updated_by_id) VALUES($1,$2,$3,$4,$5,$6,$6,$7,$7) ON CONFLICT DO NOTHING`, uuid.NewString(), q.IssueID, id, q.ProjectID, project["workspace_id"], timestamp(r.now()), q.ActorID)
 		if err != nil {

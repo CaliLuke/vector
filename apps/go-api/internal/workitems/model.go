@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	"github.com/google/uuid"
@@ -45,7 +46,7 @@ func stripTags(value string) any {
 
 // saveIssue applies Issue.save and ProjectBaseModel.save. Callers retain the
 // serializer's operation-specific validation and the timing of durable effects.
-func (r *Repository) saveIssueRow(ctx context.Context, actor string, row map[string]any, old map[string]any) (map[string]any, error) {
+func (r *Repository) saveIssueRow(ctx context.Context, actor string, row map[string]any, old map[string]any) (out map[string]any, resultErr error) {
 	project, err := r.project(ctx, row["project_id"].(string))
 	if err != nil {
 		return nil, err
@@ -83,7 +84,7 @@ func (r *Repository) saveIssueRow(ctx context.Context, actor string, row map[str
 		if err != nil {
 			return nil, err
 		}
-		defer tx.Rollback(ctx)
+		defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 		// All schema-aware creation paths take locks in the same order.
 		if _, err = tx.Exec(ctx, `SELECT work_item_schema_lock($1::uuid)`, row["workspace_id"]); err != nil {
 			return nil, err

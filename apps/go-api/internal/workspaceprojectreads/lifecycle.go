@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	membership "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
@@ -164,7 +165,7 @@ func insertProjectRecordExec(ctx context.Context, db projectExecer, values map[s
 	_, err = db.Exec(ctx, `INSERT INTO projects (`+list+`) SELECT `+list+` FROM jsonb_populate_record(NULL::projects,$1::jsonb)`, string(raw))
 	return err
 }
-func (r *LifecycleRepository) CreateProject(ctx context.Context, user, slug string, input djangoinput.Input, app bool) (json.RawMessage, error) {
+func (r *LifecycleRepository) CreateProject(ctx context.Context, user, slug string, input djangoinput.Input, app bool) (out json.RawMessage, resultErr error) {
 	var workspace, timezone string
 	if err := r.writer.QueryRow(ctx, `SELECT id,timezone FROM workspaces WHERE slug=$1`, slug).Scan(&workspace, &timezone); err != nil {
 		return nil, err
@@ -196,7 +197,7 @@ func (r *LifecycleRepository) CreateProject(ctx context.Context, user, slug stri
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if err = insertProjectRecordExec(ctx, tx, defaults); err != nil {
 		return nil, r.projectIntegrityError(err, app)
 	}
