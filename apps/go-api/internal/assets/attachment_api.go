@@ -11,6 +11,7 @@ import (
 	"path"
 	"strings"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
@@ -58,12 +59,12 @@ func NewAttachmentApplication(repository *PostgresRepository, storage *Storage, 
 	return &AttachmentApplication{repository: repository, receipts: database, storage: storage, fetch: fetch, origin: origin, limit: min(limit, AttachmentUploadLimit)}, nil
 }
 
-func (a *AttachmentApplication) Read(ctx context.Context, q AttachmentQuery) (any, error) {
+func (a *AttachmentApplication) Read(ctx context.Context, q AttachmentQuery) (_ any, resultErr error) {
 	tx, err := a.repository.database.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, err = tx.Exec(ctx, `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`); err != nil {
 		return nil, err
 	}

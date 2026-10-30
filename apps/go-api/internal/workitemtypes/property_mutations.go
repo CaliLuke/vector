@@ -6,12 +6,13 @@ import (
 	"slices"
 	"strings"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/formula"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/jackc/pgx/v5"
 )
 
-func (r *Repository) MutateProperty(ctx context.Context, actor, slug string, input PropertyInput) (PropertyCatalog, error) {
+func (r *Repository) MutateProperty(ctx context.Context, actor, slug string, input PropertyInput) (_ PropertyCatalog, resultErr error) {
 	if input.ReviewID != "" {
 		return r.commitPropertyRemoval(ctx, actor, slug, input)
 	}
@@ -19,7 +20,7 @@ func (r *Repository) MutateProperty(ctx context.Context, actor, slug string, inp
 	if err != nil {
 		return PropertyCatalog{}, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	workspace, admin, err := lockWorkspaceSchema(ctx, tx, actor, slug)
 	if err != nil {
 		return PropertyCatalog{}, err

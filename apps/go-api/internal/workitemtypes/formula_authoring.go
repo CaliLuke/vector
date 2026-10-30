@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/formula"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/google/uuid"
@@ -27,7 +28,7 @@ type FormulaAuthoringResult struct {
 
 // PreviewFormula compiles a proposed definition, then evaluates an authorized
 // sample in one read-only snapshot. It never installs the proposed definition.
-func (r *Repository) PreviewFormula(ctx context.Context, actor, slug string, input FormulaAuthoringInput) (FormulaAuthoringResult, error) {
+func (r *Repository) PreviewFormula(ctx context.Context, actor, slug string, input FormulaAuthoringInput) (_ FormulaAuthoringResult, resultErr error) {
 	out := FormulaAuthoringResult{Contexts: []PropertyChoice{}}
 	input.TypeID, input.ProjectID, input.IssueID = strings.ToLower(input.TypeID), strings.ToLower(input.ProjectID), strings.ToLower(input.IssueID)
 	if _, err := uuid.Parse(input.TypeID); err != nil || input.IssueID != "" && input.ProjectID == "" {
@@ -37,7 +38,7 @@ func (r *Repository) PreviewFormula(ctx context.Context, actor, slug string, inp
 	if err != nil {
 		return out, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, err = tx.Exec(ctx, `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`); err != nil {
 		return out, err
 	}

@@ -3,11 +3,11 @@
 package workitemtypes_test
 
 import (
-	"context"
 	"errors"
 	"testing"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -31,7 +31,7 @@ func hierarchyTransaction(t *testing.T, f projectTypeFixture) pgx.Tx {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = tx.Rollback(context.WithoutCancel(f.ctx)) })
+	t.Cleanup(func() { testsupport.Rollback(t, tx, f.ctx) })
 	if _, err = tx.Exec(f.ctx, `SELECT work_item_schema_lock($1::uuid)`, f.workspace); err != nil {
 		t.Fatal(err)
 	}
@@ -184,7 +184,7 @@ func TestHierarchyRejectsSnapshotWriteIsolation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(f.ctx)) }()
+	defer func() { testsupport.Rollback(t, tx, f.ctx) }()
 	_, err = tx.Exec(f.ctx, `UPDATE issues SET name='Snapshot write' WHERE id=$1`, item)
 	var failure *pgconn.PgError
 	if !errors.As(err, &failure) || failure.Code != "25000" {

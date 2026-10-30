@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -81,12 +82,12 @@ func (s *PostgresWorkItemEffectStore) Drain(ctx context.Context) (int, error) {
 	return 50, nil
 }
 
-func (s *PostgresWorkItemEffectStore) admitNext(ctx context.Context) (bool, error) {
+func (s *PostgresWorkItemEffectStore) admitNext(ctx context.Context) (_ bool, resultErr error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return false, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var id, kind string
 	var payload []byte
 	err = tx.QueryRow(ctx, `SELECT id::text,kind,payload FROM work_item_effects WHERE admitted_at IS NULL AND next_attempt_at<=clock_timestamp() ORDER BY next_attempt_at,created_at,id LIMIT 1 FOR UPDATE SKIP LOCKED`).Scan(&id, &kind, &payload)

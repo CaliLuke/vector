@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/milestones"
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/require"
@@ -46,7 +47,7 @@ func TestMilestoneCredentialIsRevalidatedAfterDomainLockWait(t *testing.T) {
 	f := newWriteFixture(t)
 	tx, err := f.db.Begin(f.ctx)
 	require.NoError(t, err)
-	defer func() { _ = tx.Rollback(context.WithoutCancel(f.ctx)) }()
+	defer func() { testsupport.Rollback(t, tx, f.ctx) }()
 	_, err = tx.Exec(f.ctx, `SELECT id FROM projects WHERE id=$1 FOR UPDATE`, f.opts.ProjectID)
 	require.NoError(t, err)
 	var revoked atomic.Bool
@@ -96,7 +97,7 @@ func TestMilestoneAssociationRechecksEligibilityAndCredentialAfterItemWait(t *te
 			item := f.item(t)
 			tx, err := f.db.Begin(f.ctx)
 			require.NoError(t, err)
-			defer func() { _ = tx.Rollback(context.WithoutCancel(f.ctx)) }()
+			defer func() { testsupport.Rollback(t, tx, f.ctx) }()
 			_, err = tx.Exec(f.ctx, `UPDATE issues SET archived_at=now() WHERE id=$1`, item)
 			require.NoError(t, err)
 			credentialError := errors.New("credential revoked")

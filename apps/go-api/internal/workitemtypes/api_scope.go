@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -52,13 +53,13 @@ func authorizeAPI(ctx context.Context, tx pgx.Tx, in APIScope, write bool) (apiA
 
 type APICapabilities struct{ Read, WorkspaceWrite, ProjectWrite bool }
 
-func (r *Repository) APIVisibility(ctx context.Context, in APIScope) (APICapabilities, error) {
+func (r *Repository) APIVisibility(ctx context.Context, in APIScope) (_ APICapabilities, resultErr error) {
 	var out APICapabilities
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return out, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, err = tx.Exec(ctx, `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`); err != nil {
 		return out, err
 	}

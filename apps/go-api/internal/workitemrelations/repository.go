@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strings"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
@@ -125,12 +126,12 @@ func authorizeMutation(ctx context.Context, tx pgx.Tx, in Command) error {
 	}
 	return nil
 }
-func (r *Repository) Read(ctx context.Context, q Query) (json.RawMessage, error) {
+func (r *Repository) Read(ctx context.Context, q Query) (_ json.RawMessage, resultErr error) {
 	tx, err := r.db.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if err = workspaceScope(ctx, tx, q, false); err != nil {
 		return nil, err
 	}

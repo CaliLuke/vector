@@ -6,6 +6,7 @@ import (
 	"errors"
 	"strings"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 
@@ -46,7 +47,7 @@ func workspaceMemberProjection() string {
 	return `(to_jsonb(m)-'workspace_id'-'member_id'-'created_by_id'-'updated_by_id')||jsonb_build_object('workspace',m.workspace_id,'created_by',m.created_by_id,'updated_by',m.updated_by_id,'member',jsonb_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'avatar',u.avatar,'is_bot',u.is_bot,'display_name',u.display_name)||` + djangoapi.FileAssetURLFieldSQL("u.avatar_asset_id", "u.avatar", "avatar_url") + `)`
 }
 
-func (r *InvitationsRepository) mutateWorkspaceMember(ctx context.Context, c InvitationCommand) (json.RawMessage, error) {
+func (r *InvitationsRepository) mutateWorkspaceMember(ctx context.Context, c InvitationCommand) (_ json.RawMessage, resultErr error) {
 	leave := c.Operation == "member-leave"
 	var id, userID, workspace string
 	var role int
@@ -93,8 +94,8 @@ func (r *InvitationsRepository) mutateWorkspaceMember(ctx context.Context, c Inv
 		if memberUpdateErr != nil {
 			return nil, memberUpdateErr
 		}
-		// Commit or the returned error closes the transaction; rollback is best-effort cleanup.
-		defer func() { _ = tx.Rollback(ctx) }()
+		// Cleanup keeps its own deadline and retains failures alongside the operation error.
+		defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 		if cascade {
 			if _, memberUpdateErr = tx.Exec(ctx, `UPDATE project_members SET role=5 WHERE workspace_id=$1 AND member_id=$2 AND deleted_at IS NULL`, workspace, userID); memberUpdateErr != nil {
 				return nil, memberUpdateErr

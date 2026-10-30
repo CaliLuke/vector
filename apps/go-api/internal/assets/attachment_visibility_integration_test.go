@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
 )
 
@@ -44,7 +45,7 @@ func TestAttachmentCollectionChecksCurrentItemVisibility(t *testing.T) {
 			if beginErr != nil {
 				t.Fatal(beginErr)
 			}
-			defer func() { _ = tx.Rollback(context.WithoutCancel(f.ctx)) }()
+			defer func() { testsupport.Rollback(t, tx, f.ctx) }()
 			f.repository = &PostgresRepository{database: tx}
 			f.exec(tc.change)
 			// This raw snapshot is also used for write activity. It demonstrates

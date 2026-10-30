@@ -214,19 +214,19 @@ func TestFavoriteWritesAndReadsEnforceEntityAndFolderScope(t *testing.T) {
 		// Refresh statistics while the controller transaction retains its lock.
 		// Otherwise the first poll can hide a writer that blocks a moment later.
 		if _, err := lockerTransaction.Exec(ctx, `SELECT pg_stat_clear_snapshot()`); err != nil {
-			_ = lockerTransaction.Rollback(context.WithoutCancel(ctx))
+			testsupport.Rollback(t, lockerTransaction, ctx)
 			t.Fatal(err)
 		}
 		var blockedUpdates int
 		if err := lockerConnection.QueryRow(ctx, `SELECT COUNT(*) FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE 'SELECT wm.id FROM workspace_members wm%'`).Scan(&blockedUpdates); err != nil {
-			_ = lockerTransaction.Rollback(context.WithoutCancel(ctx))
+			testsupport.Rollback(t, lockerTransaction, ctx)
 			t.Fatal(err)
 		}
 		if blockedUpdates == 2 {
 			break
 		}
 		if time.Now().After(deadline) {
-			_ = lockerTransaction.Rollback(context.WithoutCancel(ctx))
+			testsupport.Rollback(t, lockerTransaction, ctx)
 			t.Fatalf("both reciprocal updates did not reach the shared membership lock; blocked=%d", blockedUpdates)
 		}
 		time.Sleep(10 * time.Millisecond)

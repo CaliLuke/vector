@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
@@ -27,12 +28,12 @@ type Query struct {
 
 const projection = `jsonb_build_object('id',l.id,'created_at',l.created_at,'updated_at',l.updated_at,'duration',l.duration,'description',l.description,'created_by',l.created_by_id,'updated_by',l.updated_by_id,'logged_by',l.logged_by_id,'project_id',l.project_id,'workspace_id',l.workspace_id)`
 
-func (r *Repository) List(ctx context.Context, q Query) (json.RawMessage, error) {
+func (r *Repository) List(ctx context.Context, q Query) (_ json.RawMessage, resultErr error) {
 	tx, err := r.db.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var allowed bool
 	err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM workspaces w JOIN workspace_members wm ON wm.workspace_id=w.id JOIN users u ON u.id=wm.member_id
  WHERE w.id=$1 AND w.slug=$2 AND w.deleted_at IS NULL AND u.id=$3 AND u.is_active AND wm.is_active AND wm.deleted_at IS NULL AND wm.role IN(5,15,20)

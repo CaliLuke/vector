@@ -3,7 +3,6 @@
 package workitemtypes_test
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"reflect"
@@ -11,6 +10,7 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
@@ -236,7 +236,7 @@ func TestReviewedItemEditLocksExplicitLabelUntilCommit(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%#v", err)
 	}
-	t.Cleanup(func() { _ = lock.Rollback(context.WithoutCancel(f.ctx)) })
+	t.Cleanup(func() { testsupport.Rollback(t, lock, f.ctx) })
 	if _, err = lock.Exec(f.ctx, `SELECT pg_advisory_xact_lock(88310)`); err != nil {
 		t.Fatalf("%#v", err)
 	}

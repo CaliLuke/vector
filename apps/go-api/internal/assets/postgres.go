@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -232,7 +233,7 @@ func (repository *PostgresRepository) WorkspaceRole(ctx context.Context, workspa
 	return role, nil
 }
 
-func (repository *PostgresRepository) CreateWorkspaceEntityUpload(ctx context.Context, id, userID, workspaceID, parentProjectID uuid.UUID, key string, attributes []byte, size int64, entityType, entityID string, projectAsset bool) error {
+func (repository *PostgresRepository) CreateWorkspaceEntityUpload(ctx context.Context, id, userID, workspaceID, parentProjectID uuid.UUID, key string, attributes []byte, size int64, entityType, entityID string, projectAsset bool) (resultErr error) {
 	if !json.Valid(attributes) {
 		return fmt.Errorf("asset attributes must be valid JSON")
 	}
@@ -273,7 +274,7 @@ func (repository *PostgresRepository) CreateWorkspaceEntityUpload(ctx context.Co
 			if err != nil {
 				return err
 			}
-			defer func() { _ = draftTransaction.Rollback(context.WithoutCancel(ctx)) }()
+			defer func() { resultErr = dbutil.RollbackTransaction(ctx, draftTransaction.Rollback, resultErr) }()
 			draftProject, err := lockOwnedAssetDraft(ctx, draftTransaction, workspaceID, userID, parsed)
 			if err != nil {
 				return err
@@ -459,12 +460,12 @@ func (repository *PostgresRepository) BulkAssociateProjectAssets(ctx context.Con
 	return nil
 }
 
-func (repository *PostgresRepository) DeleteLegacyIssueAttachment(ctx context.Context, userID, workspaceID, projectID, issueID, assetID uuid.UUID, activity map[string]any) error {
+func (repository *PostgresRepository) DeleteLegacyIssueAttachment(ctx context.Context, userID, workspaceID, projectID, issueID, assetID uuid.UUID, activity map[string]any) (resultErr error) {
 	tx, err := repository.database.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin legacy issue attachment deletion: %w", err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var objectKey string
 	err = tx.QueryRow(ctx, `SELECT file.asset FROM file_assets file
 		WHERE file.id=$1 AND file.workspace_id=$2 AND file.project_id=$3 AND file.issue_id=$4 AND file.deleted_at IS NULL
@@ -606,7 +607,7 @@ func (repository *PostgresRepository) LegacyRelationExists(ctx context.Context, 
 	return exists, nil
 }
 
-func (repository *PostgresRepository) CreateLegacyIssueAttachment(ctx context.Context, id, userID, workspaceID, projectID, issueID uuid.UUID, fields map[string]any, key, assetURL string, activity map[string]any) error {
+func (repository *PostgresRepository) CreateLegacyIssueAttachment(ctx context.Context, id, userID, workspaceID, projectID, issueID uuid.UUID, fields map[string]any, key, assetURL string, activity map[string]any) (resultErr error) {
 	if legacyUUIDField(fields, "draft_issue") != nil {
 		return notFoundAssetError()
 	}
@@ -615,7 +616,7 @@ func (repository *PostgresRepository) CreateLegacyIssueAttachment(ctx context.Co
 	if err != nil {
 		return fmt.Errorf("begin legacy issue attachment creation: %w", err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	result, err := tx.Exec(ctx, `
 		INSERT INTO file_assets (id,created_at,updated_at,attributes,asset,user_id,workspace_id,draft_issue_id,project_id,issue_id,comment_id,page_id,entity_type,entity_identifier,external_id,external_source,size,is_uploaded,is_deleted,is_archived,storage_metadata,created_by_id,deleted_at)
 		SELECT $1,NOW(),NOW(),$2::jsonb,$3,$4,$5,$6,$7,$8,$9,$10,'ISSUE_ATTACHMENT',$11,$12,$13,$14,$15,$16,$17,$18::jsonb,$19,$20
@@ -695,7 +696,7 @@ func (repository *PostgresRepository) PublicProjectAsset(ctx context.Context, wo
 	return asset, nil
 }
 
-func (repository *PostgresRepository) CreatePublicUpload(ctx context.Context, id, userID, workspaceID, projectID uuid.UUID, key string, attributes []byte, size int64, entityType, entityIdentifier string) error {
+func (repository *PostgresRepository) CreatePublicUpload(ctx context.Context, id, userID, workspaceID, projectID uuid.UUID, key string, attributes []byte, size int64, entityType, entityIdentifier string) (resultErr error) {
 	if !json.Valid(attributes) {
 		return fmt.Errorf("public asset attributes must be valid JSON")
 	}
@@ -703,7 +704,7 @@ func (repository *PostgresRepository) CreatePublicUpload(ctx context.Context, id
 	if err != nil {
 		return fmt.Errorf("begin public FileAsset insert: %w", err)
 	}
-	defer func() { _ = tx.Rollback(ctx) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var relationID any
 	relationColumn := "comment_id"
 	if entityIdentifier != "" {
@@ -792,7 +793,7 @@ func (repository *PostgresRepository) RestorePublicAsset(ctx context.Context, us
 	return nil
 }
 
-func (repository *PostgresRepository) BulkAssociatePublicAssetComments(ctx context.Context, userID, workspaceID, projectID, commentID uuid.UUID, assetIDs []uuid.UUID) error {
+func (repository *PostgresRepository) BulkAssociatePublicAssetComments(ctx context.Context, userID, workspaceID, projectID, commentID uuid.UUID, assetIDs []uuid.UUID) (resultErr error) {
 	ids := uniquePublicAssetIDs(assetIDs)
 	if len(ids) == 0 {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
@@ -801,7 +802,7 @@ func (repository *PostgresRepository) BulkAssociatePublicAssetComments(ctx conte
 	if err != nil {
 		return fmt.Errorf("begin public FileAsset association: %w", err)
 	}
-	defer func() { _ = tx.Rollback(ctx) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var authorizedComment uuid.UUID
 	if scanErr := tx.QueryRow(ctx, `SELECT id FROM issue_comments WHERE id=@comment AND workspace_id=@workspace AND project_id=@project AND created_by_id=@actor AND deleted_at IS NULL FOR KEY SHARE`, pgx.StrictNamedArgs{"comment": commentID, "workspace": workspaceID, "project": projectID, "actor": userID}).Scan(&authorizedComment); errors.Is(scanErr, pgx.ErrNoRows) {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
@@ -967,12 +968,12 @@ func (repository *PostgresRepository) IssueAttachment(ctx context.Context, userI
 	return asset, row, nil
 }
 
-func (repository *PostgresRepository) UpdateIssueAttachmentUploaded(ctx context.Context, userID, workspaceID, projectID, issueID, assetID uuid.UUID, activity map[string]any, enqueueMetadata bool) error {
+func (repository *PostgresRepository) UpdateIssueAttachmentUploaded(ctx context.Context, userID, workspaceID, projectID, issueID, assetID uuid.UUID, activity map[string]any, enqueueMetadata bool) (resultErr error) {
 	tx, err := repository.database.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin issue attachment confirmation: %w", err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var uploaded bool
 	err = tx.QueryRow(ctx, `SELECT file.is_uploaded FROM file_assets file WHERE file.id=$1 AND file.workspace_id=$2 AND file.project_id=$3 AND file.issue_id=$4
 		AND file.deleted_at IS NULL AND file.draft_issue_id IS NULL AND COALESCE(file.entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')
@@ -1011,12 +1012,12 @@ func (repository *PostgresRepository) UpdateIssueAttachmentUploaded(ctx context.
 	return nil
 }
 
-func (repository *PostgresRepository) DeleteIssueAttachment(ctx context.Context, userID, workspaceID, projectID, issueID, assetID uuid.UUID, activity map[string]any) error {
+func (repository *PostgresRepository) DeleteIssueAttachment(ctx context.Context, userID, workspaceID, projectID, issueID, assetID uuid.UUID, activity map[string]any) (resultErr error) {
 	tx, err := repository.database.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin issue attachment deletion: %w", err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	result, err := tx.Exec(ctx, `UPDATE file_assets SET is_deleted=true, deleted_at=NOW(), updated_by_id=$5, updated_at=NOW()
 		WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND issue_id=$4 AND deleted_at IS NULL AND draft_issue_id IS NULL
 		AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')
@@ -1111,12 +1112,12 @@ func (repository *PostgresRepository) assetsByKey(ctx context.Context, key strin
 // lookup. A nil owner means the workspace route, which relies on the class
 // workspace-membership permission; a non-nil owner matches UserAssetsEndpoint.
 
-func (repository *PostgresRepository) UpdateAssetDeletedByKey(ctx context.Context, key string, createdBy, workspaceID *uuid.UUID, actorID uuid.UUID, deleted bool) error {
+func (repository *PostgresRepository) UpdateAssetDeletedByKey(ctx context.Context, key string, createdBy, workspaceID *uuid.UUID, actorID uuid.UUID, deleted bool) (resultErr error) {
 	tx, err := repository.database.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin FileAsset key mutation: %w", err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	query := `SELECT asset.id FROM file_assets asset WHERE asset.asset=$1 AND asset.deleted_at IS NULL
 	 AND ($2::uuid IS NULL OR asset.created_by_id=$2) AND asset.draft_issue_id IS NULL
 	 AND COALESCE(asset.entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')`
@@ -1174,7 +1175,7 @@ func (repository *PostgresRepository) UpdateAssetDeletedByKey(ctx context.Contex
 	return tx.Commit(ctx)
 }
 
-func (repository *PostgresRepository) UpdateLegacyUserAsset(ctx context.Context, userID, assetID uuid.UUID, attributes []byte, enqueueMetadata bool) error {
+func (repository *PostgresRepository) UpdateLegacyUserAsset(ctx context.Context, userID, assetID uuid.UUID, attributes []byte, enqueueMetadata bool) (resultErr error) {
 	if !json.Valid(attributes) {
 		return fmt.Errorf("asset attributes must be valid JSON")
 	}
@@ -1182,7 +1183,7 @@ func (repository *PostgresRepository) UpdateLegacyUserAsset(ctx context.Context,
 	if err != nil {
 		return fmt.Errorf("begin legacy user FileAsset confirmation: %w", err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	result, err := tx.Exec(ctx, `
 UPDATE file_assets SET is_uploaded=true, attributes=$1::jsonb, updated_at=NOW()
 WHERE id=$2 AND user_id=$3 AND deleted_at IS NULL AND `+assetParentVisibilitySQL("file_assets", "$3::uuid")+`
@@ -1205,7 +1206,7 @@ WHERE id=$2 AND user_id=$3 AND deleted_at IS NULL AND `+assetParentVisibilitySQL
 // FileAsset upload confirmation in one database transaction. Reconfirming the
 // current asset preserves it; replacing it retires only the previous asset.
 // The domain service handles cache invalidation and metadata tasks.
-func (repository *PostgresRepository) UpdateUserAsset(ctx context.Context, userID, assetID uuid.UUID, attributes []byte, uploaded, enqueueMetadata bool) error {
+func (repository *PostgresRepository) UpdateUserAsset(ctx context.Context, userID, assetID uuid.UUID, attributes []byte, uploaded, enqueueMetadata bool) (resultErr error) {
 	if !json.Valid(attributes) {
 		return fmt.Errorf("asset attributes must be valid JSON")
 	}
@@ -1215,7 +1216,7 @@ func (repository *PostgresRepository) UpdateUserAsset(ctx context.Context, userI
 	if err != nil {
 		return fmt.Errorf("begin user FileAsset update: %w", err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var entityType string
 	var previous *uuid.UUID
 	err = tx.QueryRow(ctx, `
@@ -1266,14 +1267,14 @@ FOR UPDATE OF f
 	return nil
 }
 
-func (repository *PostgresRepository) DeleteUserAsset(ctx context.Context, userID, assetID uuid.UUID) error {
+func (repository *PostgresRepository) DeleteUserAsset(ctx context.Context, userID, assetID uuid.UUID) (resultErr error) {
 	tx, err := repository.database.(interface {
 		Begin(context.Context) (pgx.Tx, error)
 	}).Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin user FileAsset deletion: %w", err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var entityType string
 	err = tx.QueryRow(ctx, `SELECT COALESCE(entity_type,'') FROM file_assets WHERE id=$1 AND user_id=$2 AND deleted_at IS NULL AND `+assetParentVisibilitySQL("file_assets", "$2::uuid")+` FOR UPDATE`, assetID, userID).Scan(&entityType)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -1315,12 +1316,12 @@ func (repository *PostgresRepository) AssetByProjectAndID(ctx context.Context, w
 	return asset, nil
 }
 
-func (repository *PostgresRepository) UpdateWorkspaceAssetUploaded(ctx context.Context, actorID, workspaceID, assetID uuid.UUID, uploaded, enqueueMetadata bool) error {
+func (repository *PostgresRepository) UpdateWorkspaceAssetUploaded(ctx context.Context, actorID, workspaceID, assetID uuid.UUID, uploaded, enqueueMetadata bool) (resultErr error) {
 	tx, err := repository.database.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin workspace FileAsset upload-state update: %w", err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	result, err := tx.Exec(ctx, `
 UPDATE file_assets SET is_uploaded=$1
 WHERE id=$2 AND workspace_id=$3 AND is_deleted=false AND deleted_at IS NULL AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT') AND `+assetParentVisibilitySQL("file_assets", "$4::uuid")+`
@@ -1339,7 +1340,7 @@ WHERE id=$2 AND workspace_id=$3 AND is_deleted=false AND deleted_at IS NULL AND 
 	return tx.Commit(ctx)
 }
 
-func (repository *PostgresRepository) UpdateWorkspaceAsset(ctx context.Context, userID, workspaceID, assetID uuid.UUID, attributes []byte, enqueueMetadata bool) (bool, error) {
+func (repository *PostgresRepository) UpdateWorkspaceAsset(ctx context.Context, userID, workspaceID, assetID uuid.UUID, attributes []byte, enqueueMetadata bool) (_ bool, resultErr error) {
 	if !json.Valid(attributes) {
 		return false, fmt.Errorf("asset attributes must be valid JSON")
 	}
@@ -1349,7 +1350,7 @@ func (repository *PostgresRepository) UpdateWorkspaceAsset(ctx context.Context, 
 	if err != nil {
 		return false, fmt.Errorf("begin workspace FileAsset confirmation: %w", err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var entityType string
 	var projectID *uuid.UUID
 	err = tx.QueryRow(ctx, `
@@ -1410,14 +1411,14 @@ func (repository *PostgresRepository) UpdateWorkspaceAsset(ctx context.Context, 
 	return workspaceHookApplied, nil
 }
 
-func (repository *PostgresRepository) DeleteWorkspaceAsset(ctx context.Context, userID, workspaceID, assetID uuid.UUID) error {
+func (repository *PostgresRepository) DeleteWorkspaceAsset(ctx context.Context, userID, workspaceID, assetID uuid.UUID) (resultErr error) {
 	tx, err := repository.database.(interface {
 		Begin(context.Context) (pgx.Tx, error)
 	}).Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin workspace FileAsset deletion: %w", err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var entityType string
 	var projectID *uuid.UUID
 	err = tx.QueryRow(ctx, `
@@ -1462,7 +1463,7 @@ func (repository *PostgresRepository) DeleteWorkspaceAsset(ctx context.Context, 
 	return nil
 }
 
-func (repository *PostgresRepository) UpdateProjectAsset(ctx context.Context, actorID, workspaceID, projectID, assetID uuid.UUID, attributes []byte, enqueueMetadata bool) error {
+func (repository *PostgresRepository) UpdateProjectAsset(ctx context.Context, actorID, workspaceID, projectID, assetID uuid.UUID, attributes []byte, enqueueMetadata bool) (resultErr error) {
 	if !json.Valid(attributes) {
 		return fmt.Errorf("asset attributes must be valid JSON")
 	}
@@ -1470,7 +1471,7 @@ func (repository *PostgresRepository) UpdateProjectAsset(ctx context.Context, ac
 	if err != nil {
 		return fmt.Errorf("begin project FileAsset confirmation: %w", err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	command, err := tx.Exec(ctx, `
 		UPDATE file_assets SET is_uploaded=true, attributes=$5::jsonb
 		WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND deleted_at IS NULL AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT') AND `+assetParentVisibilitySQL("file_assets", "$4::uuid")+`

@@ -33,7 +33,7 @@ func TestDeleteViewCleansScopedReferences(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					defer func() { _ = tx.Rollback(ctx) }()
+					defer func() { testsupport.Rollback(t, tx, ctx) }()
 					// Both users' favorites are removed, while unrelated tenant, kind and
 					// project references to the same identifier must remain intact.
 					if _, err = tx.Exec(ctx, `INSERT INTO user_favorites(user_id,workspace_id,project_id,entity_identifier,entity_type)

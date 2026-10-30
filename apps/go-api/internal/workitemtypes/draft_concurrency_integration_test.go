@@ -3,13 +3,13 @@
 package workitemtypes_test
 
 import (
-	"context"
 	"errors"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -31,7 +31,7 @@ func TestConcurrentPublicationCreationAndDraftEditSerializeWithoutResurrection(t
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = lock.Rollback(context.WithoutCancel(f.ctx)) }()
+	defer func() { testsupport.Rollback(t, lock, f.ctx) }()
 	if _, err = lock.Exec(f.ctx, `SELECT work_item_schema_lock($1::uuid)`, f.workspace); err != nil {
 		t.Fatal(err)
 	}

@@ -3,7 +3,6 @@
 package workitemtypes_test
 
 import (
-	"context"
 	"errors"
 	"reflect"
 	"strings"
@@ -11,6 +10,7 @@ import (
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 )
@@ -21,7 +21,7 @@ func planTestItemTransition(t *testing.T, f projectTypeFixture, in types.ItemVal
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(f.ctx)) }()
+	defer func() { testsupport.Rollback(t, tx, f.ctx) }()
 	return types.PlanItemTransition(f.ctx, tx, in, description)
 }
 func transitionTestInput(f projectTypeFixture) types.ItemValueInput {

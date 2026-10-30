@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/labelhierarchy"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -145,12 +146,12 @@ func (r *WriteRepository) Write(ctx context.Context, user, slug, project, id, me
 	return r.writeMutation(ctx, user, slug, project, id, method, input, label)
 }
 
-func (r *WriteRepository) writeMutation(ctx context.Context, user, slug, project, id, method string, input labelInput, current *Label) (*Label, error) {
+func (r *WriteRepository) writeMutation(ctx context.Context, user, slug, project, id, method string, input labelInput, current *Label) (_ *Label, resultErr error) {
 	tx, err := r.writer.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 
 	transaction := &WriteRepository{Repository: &Repository{database: tx}, writer: r.writer}
 	workspaceID, err := labelhierarchy.LockProject(ctx, tx, project, slug)
@@ -213,12 +214,12 @@ func (r *WriteRepository) save(ctx context.Context, db database, user, project, 
 
 // The label change and cleanup admission record form one atomic statement.
 // Broker availability cannot turn an accepted deletion into a failed request.
-func (r *WriteRepository) deleteLabel(ctx context.Context, user, slug, project, id string) error {
+func (r *WriteRepository) deleteLabel(ctx context.Context, user, slug, project, id string) (resultErr error) {
 	tx, err := r.writer.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	workspaceID, err := labelhierarchy.LockProject(ctx, tx, project, slug)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Failure(404, "detail", "No Label matches the given query.")

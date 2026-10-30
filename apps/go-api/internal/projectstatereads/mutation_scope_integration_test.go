@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/require"
@@ -42,7 +43,7 @@ func TestStateMutationsAndDiscoveryRecheckCurrentScope(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			tx, err := f.db.Begin(t.Context())
 			require.NoError(t, err)
-			defer func() { _ = tx.Rollback(context.WithoutCancel(t.Context())) }()
+			defer func() { testsupport.Rollback(t, tx, t.Context()) }()
 			_, err = tx.Exec(t.Context(), test.change)
 			require.NoError(t, err)
 			// A savepoint-capable wrapper lets both operations observe this

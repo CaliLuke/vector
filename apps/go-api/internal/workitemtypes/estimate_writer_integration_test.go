@@ -35,7 +35,7 @@ func TestEstimateReassignmentWaitsForPropertyPreservation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(f.ctx)) }()
+	defer func() { testsupport.Rollback(t, tx, f.ctx) }()
 	if _, err = tx.Exec(f.ctx, `SELECT work_item_schema_lock($1::uuid)`, f.workspace); err != nil {
 		t.Fatal(err)
 	}

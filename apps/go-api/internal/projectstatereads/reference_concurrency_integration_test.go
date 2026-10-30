@@ -48,7 +48,7 @@ func TestStateDeletionWinningRaceRejectsConcurrentIssueAndDraft(t *testing.T) {
 			require.NoError(t, err)
 			controller, err := f.db.Begin(ctx)
 			require.NoError(t, err)
-			defer func() { _ = controller.Rollback(context.WithoutCancel(ctx)) }()
+			defer func() { testsupport.Rollback(t, controller, ctx) }()
 			_, err = controller.Exec(ctx, `SELECT pg_advisory_xact_lock(94612001)`)
 			require.NoError(t, err)
 			input := f.input
@@ -84,7 +84,7 @@ func TestStateAssignmentWinningRaceBlocksNativeDeletion(t *testing.T) {
 			defer cancel()
 			tx, err := f.db.Begin(ctx)
 			require.NoError(t, err)
-			defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+			defer func() { testsupport.Rollback(t, tx, ctx) }()
 			_, err = tx.Exec(ctx, stateReferenceInsert(table), uuid.New(), testsupport.LabelWorkspace, testsupport.LabelProject, state)
 			require.NoError(t, err)
 			_, err = tx.Exec(ctx, `SET CONSTRAINTS ALL IMMEDIATE`)

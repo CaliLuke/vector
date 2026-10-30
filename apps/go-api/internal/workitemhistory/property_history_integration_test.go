@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -19,7 +20,7 @@ func testRetainedPropertyReads(t *testing.T, ctx context.Context, db *pgx.Conn, 
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.Rollback(t, tx, ctx) }()
 		_, err = tx.Exec(ctx, `CREATE TEMP TABLE work_item_property_versions(id uuid PRIMARY KEY,workspace_id uuid NOT NULL,issue_id uuid NOT NULL,property_id uuid NOT NULL,value jsonb NOT NULL,actor_id uuid,created_at timestamptz NOT NULL,property_title text NOT NULL,source text NOT NULL)`)
 		if err != nil {
 			t.Fatal(err)

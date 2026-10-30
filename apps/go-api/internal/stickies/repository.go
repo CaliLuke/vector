@@ -8,6 +8,7 @@ import (
 	"time"
 	"uuid"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -255,7 +256,7 @@ func (repository *Repository) Retrieve(ctx context.Context, stickyID StickyID, s
 
 // Create locks its workspace before calculating sort_order, matching
 // CreateWithAllocatedSort and preventing concurrent duplicate allocations.
-func (repository *Repository) Create(ctx context.Context, stickyID StickyID, scope Scope, input CreateStickyInput) (Sticky, error) {
+func (repository *Repository) Create(ctx context.Context, stickyID StickyID, scope Scope, input CreateStickyInput) (_ Sticky, resultErr error) {
 	if uuid.UUID(stickyID) == uuid.Nil() || !validCreateScope(scope) {
 		return Sticky{}, ErrInvalidScope
 	}
@@ -263,7 +264,7 @@ func (repository *Repository) Create(ctx context.Context, stickyID StickyID, sco
 	if err != nil {
 		return Sticky{}, fmt.Errorf("%w: begin transaction: %w", ErrStickyCreateFailed, err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var workspace uuid.UUID
 	err = tx.QueryRow(ctx, `SELECT id FROM workspaces WHERE id=$1 AND deleted_at IS NULL FOR UPDATE`, uuid.UUID(scope.WorkspaceID)).Scan(&workspace)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -398,7 +399,7 @@ func (repository *Repository) DeleteOwned(ctx context.Context, stickyID StickyID
 	return repository.delete(ctx, stickyID, scope, false)
 }
 
-func (repository *Repository) delete(ctx context.Context, stickyID StickyID, scope Scope, requireCreator bool) error {
+func (repository *Repository) delete(ctx context.Context, stickyID StickyID, scope Scope, requireCreator bool) (resultErr error) {
 	if uuid.UUID(stickyID) == uuid.Nil() || !validOwnerScope(scope, OperationDelete, requireCreator) {
 		return ErrInvalidScope
 	}
@@ -406,7 +407,7 @@ func (repository *Repository) delete(ctx context.Context, stickyID StickyID, sco
 	if err != nil {
 		return fmt.Errorf("delete Sticky: begin transaction: %w", err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	query := `UPDATE stickies SET deleted_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP,updated_by_id=$1 WHERE id=$2 AND workspace_id=$3 AND owner_id=$1`
 	if requireCreator {
 		query += " AND created_by_id=$1"

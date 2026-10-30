@@ -3,7 +3,6 @@
 package projectstatereads
 
 import (
-	"context"
 	"testing"
 	"uuid"
 
@@ -31,7 +30,7 @@ func TestStateReferenceGuardChecksFinalIssueAndDraftRows(t *testing.T) {
 				t.Run(change.name, func(t *testing.T) {
 					tx, err := f.db.Begin(t.Context())
 					require.NoError(t, err)
-					defer func() { _ = tx.Rollback(context.WithoutCancel(t.Context())) }()
+					defer func() { testsupport.Rollback(t, tx, t.Context()) }()
 					id := uuid.New()
 					_, err = tx.Exec(t.Context(), stateReferenceInsert(table), id, testsupport.LabelWorkspace, testsupport.LabelProject, deleted)
 					require.NoError(t, err)
@@ -54,7 +53,7 @@ func TestStateReferenceGuardRetainsDeferredParentCreationOrder(t *testing.T) {
 	f := newStateMutationFixture(t)
 	tx, err := f.db.Begin(t.Context())
 	require.NoError(t, err)
-	defer func() { _ = tx.Rollback(context.WithoutCancel(t.Context())) }()
+	defer func() { testsupport.Rollback(t, tx, t.Context()) }()
 	state := uuid.New()
 	_, err = tx.Exec(t.Context(), stateReferenceInsert("issues"), uuid.New(), testsupport.LabelWorkspace, testsupport.LabelProject, state)
 	require.NoError(t, err)

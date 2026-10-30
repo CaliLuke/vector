@@ -35,7 +35,7 @@ func TestDraftAssetWritersWaitForConsumptionAndRejectConsumedDraft(t *testing.T)
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer func() { _ = tx.Rollback(f.ctx) }()
+			defer func() { testsupport.Rollback(t, tx, f.ctx) }()
 			if _, err = tx.Exec(f.ctx, `SELECT 1 FROM draft_issues WHERE id=$1 FOR UPDATE`, f.draft); err != nil {
 				t.Fatal(err)
 			}

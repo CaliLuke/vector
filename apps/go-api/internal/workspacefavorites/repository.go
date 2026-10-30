@@ -8,6 +8,7 @@ import (
 
 	"uuid"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -179,7 +180,7 @@ func (r *Repository) Create(ctx context.Context, user uuid.UUID, slug string, in
 	return body, err
 }
 
-func (r *Repository) Update(ctx context.Context, user uuid.UUID, slug string, id uuid.UUID, input UpdateInput) (json.RawMessage, error) {
+func (r *Repository) Update(ctx context.Context, user uuid.UUID, slug string, id uuid.UUID, input UpdateInput) (_ json.RawMessage, resultErr error) {
 	query := `WITH candidate AS (SELECT f.workspace_id,f.user_id,f.created_at,f.id,CASE WHEN $4 THEN $5 ELSE f.entity_type END AS entity_type,CASE WHEN $6 THEN $7 ELSE f.entity_identifier END AS entity_identifier,CASE WHEN $8 THEN $9 ELSE f.name END AS name,CASE WHEN $10 THEN $11 ELSE f.is_folder END AS is_folder,CASE WHEN $12 THEN $13 ELSE f.sequence END AS sequence,CASE WHEN $14 THEN $15 ELSE f.parent_id END AS parent_id,CASE WHEN $16 THEN $17 ELSE f.project_id END AS project_id FROM user_favorites f JOIN workspaces w ON w.id=f.workspace_id WHERE f.id=$3 AND f.workspace_id=w.id AND f.user_id=$1 AND w.slug=$2 AND f.deleted_at IS NULL AND w.deleted_at IS NULL), updated AS (UPDATE user_favorites f SET entity_type=CASE WHEN $4 THEN $5 ELSE f.entity_type END,entity_identifier=CASE WHEN $6 THEN $7 ELSE f.entity_identifier END,name=CASE WHEN $8 THEN $9 ELSE f.name END,is_folder=CASE WHEN $10 THEN $11 ELSE f.is_folder END,sequence=CASE WHEN $12 THEN $13 ELSE f.sequence END,parent_id=CASE WHEN $14 THEN $15 ELSE f.parent_id END,project_id=CASE WHEN $16 THEN $17 ELSE f.project_id END,updated_at=NOW(),updated_by_id=$1 FROM candidate c WHERE f.id=c.id AND ` + favoriteScopePredicate("c", "c.workspace_id") + ` RETURNING f.*) SELECT ` + favoriteJSON + ` FROM updated f`
 	args := []any{user, slug, id, input.EntityTypePresent, input.EntityType, input.EntityIdentifierPresent, input.EntityIdentifier, input.NamePresent, input.Name, input.IsFolderPresent, input.IsFolder, input.SequencePresent, input.Sequence, input.ParentPresent, input.Parent, input.ProjectIDPresent, input.ProjectID}
 	var body []byte
@@ -189,7 +190,7 @@ func (r *Repository) Update(ctx context.Context, user uuid.UUID, slug string, id
 		if beginErr != nil {
 			return nil, beginErr
 		}
-		defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+		defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 		var membershipID uuid.UUID
 		lockQuery := `SELECT wm.id FROM workspace_members wm JOIN workspaces w ON w.id=wm.workspace_id WHERE wm.member_id=$1 AND w.slug=$2 AND wm.role IN (15,20) AND wm.is_active=true AND wm.deleted_at IS NULL AND w.deleted_at IS NULL FOR UPDATE OF wm`
 		if err = tx.QueryRow(ctx, lockQuery, user, slug).Scan(&membershipID); err != nil {

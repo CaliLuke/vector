@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -66,12 +67,12 @@ func (repository *PostgresRepository) DraftAssetAllowed(ctx context.Context, wor
 
 // Take the draft lock before the asset lock, matching publication's lock order.
 // A stale confirmation cannot change a newly published work item's asset.
-func (repository *PostgresRepository) MutateDraftAsset(ctx context.Context, workspace, actor, asset uuid.UUID, action string, attributes []byte, uploaded bool) error {
+func (repository *PostgresRepository) MutateDraftAsset(ctx context.Context, workspace, actor, asset uuid.UUID, action string, attributes []byte, uploaded bool) (resultErr error) {
 	tx, err := repository.database.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var draft *uuid.UUID
 	err = tx.QueryRow(ctx, `SELECT draft_issue_id FROM file_assets WHERE id=$1 AND workspace_id=$2 AND created_by_id=$3 AND (draft_issue_id IS NOT NULL OR entity_type IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT'))`, asset, workspace, actor).Scan(&draft)
 	if errors.Is(err, pgx.ErrNoRows) {

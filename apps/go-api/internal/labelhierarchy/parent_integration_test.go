@@ -7,6 +7,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -66,7 +67,7 @@ func TestLockProjectAndValidateParentEnforceScopeAndAncestry(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { testsupport.Rollback(t, tx, ctx) }()
 
 	workspaceID, err := LockProject(ctx, tx, labelProjectID, "demo")
 	if err != nil {
@@ -110,7 +111,7 @@ func TestSoftDeleteTreeDeletesScopedDescendantsAndQueuesOneEffectPerLabel(t *tes
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { testsupport.Rollback(t, tx, ctx) }()
 
 	if _, err = LockProject(ctx, tx, labelProjectID, "demo"); err != nil {
 		t.Fatal(err)
@@ -160,7 +161,7 @@ func TestSoftDeleteTreeRejectsOutOfScopeChildWithoutChangingRows(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { testsupport.Rollback(t, tx, ctx) }()
 
 	if _, err = LockProject(ctx, tx, labelProjectID, "demo"); err != nil {
 		t.Fatal(err)
@@ -198,7 +199,7 @@ func TestSoftDeleteTreeRequiresMembershipAndRollsBackWithCallerTransaction(t *te
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.Rollback(t, tx, ctx) }()
 		if _, err = LockProject(ctx, tx, labelProjectID, "demo"); err != nil {
 			t.Fatal(err)
 		}
@@ -227,7 +228,7 @@ func TestSoftDeleteTreeRequiresMembershipAndRollsBackWithCallerTransaction(t *te
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.Rollback(t, tx, ctx) }()
 		if _, err = LockProject(ctx, tx, labelProjectID, "demo"); err != nil {
 			t.Fatal(err)
 		}

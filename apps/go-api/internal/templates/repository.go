@@ -9,6 +9,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
@@ -110,12 +111,12 @@ func projection(row map[string]any) map[string]any {
 	}
 	return out
 }
-func (r *Repository) List(ctx context.Context, q Query) (json.RawMessage, error) {
+func (r *Repository) List(ctx context.Context, q Query) (_ json.RawMessage, resultErr error) {
 	tx, err := r.db.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if err = scope(ctx, tx, q, false); err != nil {
 		return nil, err
 	}

@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -37,7 +38,7 @@ func TestPropertyActivityFeedsEnforceOwningItemVisibility(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer func() { _ = tx.Rollback(ctx) }()
+			defer func() { testsupport.Rollback(t, tx, ctx) }()
 			if _, err = tx.Exec(ctx, mutation); err != nil {
 				t.Fatal(err)
 			}

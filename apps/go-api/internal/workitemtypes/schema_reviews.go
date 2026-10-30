@@ -5,18 +5,19 @@ import (
 	"encoding/json"
 	"errors"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
 // Catalogs must use a single snapshot for definitions and their shared revision.
-func readSchemaCatalog[T any](ctx context.Context, r *Repository, actor, slug string, read func(context.Context, pgx.Tx, string, bool) (T, error)) (T, error) {
+func readSchemaCatalog[T any](ctx context.Context, r *Repository, actor, slug string, read func(context.Context, pgx.Tx, string, bool) (T, error)) (_ T, resultErr error) {
 	var zero T
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return zero, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, err = tx.Exec(ctx, `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`); err != nil {
 		return zero, err
 	}
@@ -33,13 +34,13 @@ func readSchemaCatalog[T any](ctx context.Context, r *Repository, actor, slug st
 
 // Schema writers serialize before reading the graph or taking row locks. Keep
 // READ COMMITTED so a waiter observes the transaction which released the lock.
-func withSchemaWrite[T any](ctx context.Context, r *Repository, actor, slug string, write func(pgx.Tx, string) (T, error)) (T, error) {
+func withSchemaWrite[T any](ctx context.Context, r *Repository, actor, slug string, write func(pgx.Tx, string) (T, error)) (_ T, resultErr error) {
 	var zero T
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return zero, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	workspace, _, err := lockWorkspaceSchema(ctx, tx, actor, slug)
 	if err != nil {
 		return zero, err

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	history "github.com/CaliLuke/go-plane/internal/workitemhistory"
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/google/uuid"
@@ -105,7 +106,7 @@ func TestPropertyHistoryReadsRetainedDefinitionsAndRejectsScopeMismatch(t *testi
 			if beginErr != nil {
 				t.Fatal(beginErr)
 			}
-			defer func() { _ = tx.Rollback(f.ctx) }()
+			defer func() { testsupport.Rollback(t, tx, f.ctx) }()
 			if _, execErr := tx.Exec(f.ctx, mutation); execErr != nil {
 				t.Fatal(execErr)
 			}

@@ -4,10 +4,11 @@ import (
 	"context"
 	"maps"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/google/uuid"
 )
 
-func (repository *PostgresRepository) createLegacyDraftAsset(ctx context.Context, id, actor, draft uuid.UUID, fields map[string]any, key string) (map[string]any, error) {
+func (repository *PostgresRepository) createLegacyDraftAsset(ctx context.Context, id, actor, draft uuid.UUID, fields map[string]any, key string) (_ map[string]any, resultErr error) {
 	workspace, ok := fields["workspace"].(uuid.UUID)
 	if !ok {
 		return nil, notFoundAssetError()
@@ -21,7 +22,7 @@ func (repository *PostgresRepository) createLegacyDraftAsset(ctx context.Context
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	project, err := lockOwnedAssetDraft(ctx, tx, workspace, actor, draft)
 	if err != nil {
 		return nil, err

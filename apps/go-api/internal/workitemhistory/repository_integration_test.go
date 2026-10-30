@@ -201,7 +201,7 @@ func testHistoryRevocationAtRead(t *testing.T, ctx context.Context, connection *
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer func() { _ = tx.Rollback(ctx) }()
+		defer func() { testsupport.Rollback(t, tx, ctx) }()
 		guarded := &historyReadBoundary{database: tx, beforeResult: func() {
 			if _, err = tx.Exec(ctx, "UPDATE workspace_members SET is_active=false"); err != nil {
 				t.Fatal(err)
@@ -237,7 +237,7 @@ func testHiddenItemHistory(t *testing.T, ctx context.Context, connection *pgx.Co
 				if err != nil {
 					t.Fatal(err)
 				}
-				defer func() { _ = tx.Rollback(ctx) }()
+				defer func() { testsupport.Rollback(t, tx, ctx) }()
 				if _, err = tx.Exec(ctx, scenario.change); err != nil {
 					t.Fatal(err)
 				}

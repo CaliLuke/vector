@@ -38,7 +38,7 @@ func TestDeletedItemUsageSerializesWithStructuralEdit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = writer.Rollback(context.WithoutCancel(f.ctx)) }()
+	defer func() { testsupport.Rollback(t, writer, f.ctx) }()
 	if _, err = writer.Exec(f.ctx, `UPDATE issues SET custom_properties=jsonb_build_object($2::text,0) WHERE id=$1`, issue, def.ID); err != nil {
 		t.Fatal(err)
 	}

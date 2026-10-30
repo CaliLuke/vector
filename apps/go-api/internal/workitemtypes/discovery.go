@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -36,13 +37,13 @@ func (c TypeIdentityCatalog) TypeIDs() map[string]bool {
 
 // WithTypeDiscoveryRead keeps authorization, identities and the caller's list/count
 // queries in one snapshot. The callback must use tx for every discovery read.
-func WithTypeDiscoveryRead[T any](ctx context.Context, db Database, actor, slug, project string, read func(pgx.Tx, TypeIdentityCatalog) (T, error)) (T, error) {
+func WithTypeDiscoveryRead[T any](ctx context.Context, db Database, actor, slug, project string, read func(pgx.Tx, TypeIdentityCatalog) (T, error)) (_ T, resultErr error) {
 	var zero T
 	tx, err := db.Begin(ctx)
 	if err != nil {
 		return zero, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, err = tx.Exec(ctx, `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`); err != nil {
 		return zero, err
 	}

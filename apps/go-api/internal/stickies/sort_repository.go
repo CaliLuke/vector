@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"uuid"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -50,7 +51,7 @@ func (repository *SortRepository) CreateWithAllocatedSort(
 	ctx context.Context,
 	stickyID StickyID,
 	scope Scope,
-) (CreatedSticky, error) {
+) (_ CreatedSticky, resultErr error) {
 	if uuid.UUID(stickyID) == uuid.Nil() || !validCreateScope(scope) {
 		return CreatedSticky{}, ErrInvalidScope
 	}
@@ -59,9 +60,7 @@ func (repository *SortRepository) CreateWithAllocatedSort(
 	if err != nil {
 		return CreatedSticky{}, fmt.Errorf("%w: begin transaction: %w", ErrStickyCreateFailed, err)
 	}
-	defer func() {
-		_ = transaction.Rollback(context.WithoutCancel(ctx))
-	}()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, transaction.Rollback, resultErr) }()
 
 	var lockedWorkspace uuid.UUID
 	err = transaction.QueryRow(ctx, `

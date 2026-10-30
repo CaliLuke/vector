@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -90,12 +91,12 @@ func loadCatalog(ctx context.Context, tx pgx.Tx, workspace string, admin bool) (
 	}
 	return out, rows.Err()
 }
-func (r *Repository) Mutate(ctx context.Context, actor, slug, action, id string, input Input) (Catalog, error) {
+func (r *Repository) Mutate(ctx context.Context, actor, slug, action, id string, input Input) (_ Catalog, resultErr error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return Catalog{}, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	workspace, admin, err := lockWorkspaceSchema(ctx, tx, actor, slug)
 	if err != nil {
 		return Catalog{}, err

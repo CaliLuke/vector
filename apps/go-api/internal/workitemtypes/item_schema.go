@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/jackc/pgx/v5"
 )
@@ -54,7 +55,7 @@ type schemaIdentity struct {
 
 // ItemSchema returns only the selected scope's effective presentation contract.
 // It does not expose configuration belonging to other project/type contexts.
-func (r *Repository) ItemSchema(ctx context.Context, actor, slug string, input ItemSchemaInput) (ItemSchema, error) {
+func (r *Repository) ItemSchema(ctx context.Context, actor, slug string, input ItemSchemaInput) (_ ItemSchema, resultErr error) {
 	input.ProjectID = strings.ToLower(input.ProjectID)
 	if input.TypeID != nil {
 		selected := strings.ToLower(*input.TypeID)
@@ -68,7 +69,7 @@ func (r *Repository) ItemSchema(ctx context.Context, actor, slug string, input I
 	if err != nil {
 		return out, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, err = tx.Exec(ctx, `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`); err != nil {
 		return out, err
 	}

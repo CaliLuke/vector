@@ -4,8 +4,8 @@ package milestones
 import (
 	"context"
 	"errors"
-	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/google/uuid"
@@ -51,17 +51,13 @@ func readSnapshot[T any](ctx context.Context, r *Repository, scope Scope, read f
 	})
 }
 
-func readTransaction[T any](ctx context.Context, r *Repository, read func(pgx.Tx) (T, error)) (T, error) {
+func readTransaction[T any](ctx context.Context, r *Repository, read func(pgx.Tx) (T, error)) (_ T, resultErr error) {
 	var zero T
 	tx, err := r.database.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
 	if err != nil {
 		return zero, err
 	}
-	defer func() {
-		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
-		defer cancel()
-		_ = tx.Rollback(cleanup)
-	}()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	result, err := read(tx)
 	if err != nil {
 		return zero, err

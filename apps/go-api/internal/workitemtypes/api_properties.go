@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"slices"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/formula"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
@@ -86,12 +87,12 @@ func loadAPIPropertyRows(ctx context.Context, tx pgx.Tx, q PropertyAPIQuery) ([]
 	}
 	return out, rows.Err()
 }
-func (r *Repository) ReadPropertyAPI(ctx context.Context, q PropertyAPIQuery) (json.RawMessage, error) {
+func (r *Repository) ReadPropertyAPI(ctx context.Context, q PropertyAPIQuery) (_ json.RawMessage, resultErr error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, err = tx.Exec(ctx, `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`); err != nil {
 		return nil, err
 	}

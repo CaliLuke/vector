@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -17,12 +18,12 @@ type APIRead struct {
 	IncludeRevision bool
 }
 
-func (r *Repository) ReadAPI(ctx context.Context, in APIRead) (json.RawMessage, error) {
+func (r *Repository) ReadAPI(ctx context.Context, in APIRead) (_ json.RawMessage, resultErr error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, err = tx.Exec(ctx, `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`); err != nil {
 		return nil, err
 	}

@@ -3,11 +3,11 @@
 package workitemtypes_test
 
 import (
-	"context"
 	"errors"
 	"testing"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 )
@@ -18,7 +18,7 @@ func validateTestItemValues(t *testing.T, f projectTypeFixture, input types.Item
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(f.ctx)) }()
+	defer func() { testsupport.Rollback(t, tx, f.ctx) }()
 	return types.ValidateItemValues(f.ctx, tx, input)
 }
 

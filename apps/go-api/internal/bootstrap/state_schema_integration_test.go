@@ -3,11 +3,11 @@
 package bootstrap_test
 
 import (
-	"context"
 	_ "embed"
 	"testing"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/stretchr/testify/require"
 )
 
@@ -34,7 +34,7 @@ func TestStateRevisionMigrationBackfillsAndTracksEveryRowWrite(t *testing.T) {
 	require.EqualValues(t, 2, revision)
 	tx, err := f.db.Begin(f.ctx)
 	require.NoError(t, err)
-	defer func() { _ = tx.Rollback(context.WithoutCancel(f.ctx)) }()
+	defer func() { testsupport.Rollback(t, tx, f.ctx) }()
 	_, err = tx.Exec(f.ctx, `UPDATE states SET "default"=true WHERE id=$1`, state)
 	require.NoError(t, err)
 	require.NoError(t, tx.Rollback(f.ctx))

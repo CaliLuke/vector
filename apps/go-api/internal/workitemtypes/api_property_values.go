@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
@@ -66,12 +67,12 @@ func LoadPropertyValueScope(ctx context.Context, tx pgx.Tx, q PropertyValueAPIQu
 	out.typeID, out.stored = typeID, stored
 	return out, nil
 }
-func (r *Repository) ReadPropertyValueAPI(ctx context.Context, q PropertyValueAPIQuery) (json.RawMessage, error) {
+func (r *Repository) ReadPropertyValueAPI(ctx context.Context, q PropertyValueAPIQuery) (_ json.RawMessage, resultErr error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, err = tx.Exec(ctx, `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`); err != nil {
 		return nil, err
 	}

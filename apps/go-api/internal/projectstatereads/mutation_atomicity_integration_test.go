@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
@@ -49,7 +50,7 @@ func TestStateMutationRevalidatesCredentialAfterProjectLockWait(t *testing.T) {
 	defer cancel()
 	controller, err := f.db.Begin(ctx)
 	require.NoError(t, err)
-	defer func() { _ = controller.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { testsupport.Rollback(t, controller, ctx) }()
 	_, err = controller.Exec(ctx, `SELECT id FROM projects WHERE id=$1 FOR UPDATE`, f.input.ProjectID)
 	require.NoError(t, err)
 	var revoked atomic.Bool

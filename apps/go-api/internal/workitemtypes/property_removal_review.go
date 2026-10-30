@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"slices"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/google/uuid"
@@ -51,7 +52,7 @@ func removalCommand(input PropertyInput) (propertyRemoval, error) {
 	return propertyRemoval{Revision: input.Revision, Action: input.Action, ID: input.ID, TypeID: input.TypeID, Permanent: input.Permanent}, nil
 }
 
-func (r *Repository) PreviewPropertyRemoval(ctx context.Context, actor, slug string, input PropertyInput) (PropertyReview, error) {
+func (r *Repository) PreviewPropertyRemoval(ctx context.Context, actor, slug string, input PropertyInput) (_ PropertyReview, resultErr error) {
 	command, err := removalCommand(input)
 	if err != nil {
 		return PropertyReview{}, err
@@ -60,7 +61,7 @@ func (r *Repository) PreviewPropertyRemoval(ctx context.Context, actor, slug str
 	if err != nil {
 		return PropertyReview{}, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	workspace, _, err := lockWorkspaceSchema(ctx, tx, actor, slug)
 	if err != nil {
 		return PropertyReview{}, err
@@ -99,7 +100,7 @@ func (r *Repository) PreviewPropertyRemoval(ctx context.Context, actor, slug str
 	return review, tx.Commit(ctx)
 }
 
-func (r *Repository) commitPropertyRemoval(ctx context.Context, actor, slug string, input PropertyInput) (PropertyCatalog, error) {
+func (r *Repository) commitPropertyRemoval(ctx context.Context, actor, slug string, input PropertyInput) (_ PropertyCatalog, resultErr error) {
 	command, err := removalCommand(input)
 	if err != nil {
 		return PropertyCatalog{}, err
@@ -108,7 +109,7 @@ func (r *Repository) commitPropertyRemoval(ctx context.Context, actor, slug stri
 	if err != nil {
 		return PropertyCatalog{}, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	workspace, _, err := lockWorkspaceSchema(ctx, tx, actor, slug)
 	if err != nil {
 		return PropertyCatalog{}, err

@@ -7,6 +7,7 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
@@ -31,7 +32,7 @@ func newHistoryRecorderFixture(t *testing.T) (projectTypeFixture, types.ItemHist
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = tx.Rollback(f.ctx) }()
+	defer func() { testsupport.Rollback(t, tx, f.ctx) }()
 	state, err := types.LoadItemHistoryState(f.ctx, tx, types.ItemHistoryState{ItemID: id, ProjectID: f.project, WorkspaceID: f.workspace, TypeID: f.task, Values: map[string]any{field: "<p>Before</p>"}})
 	if err != nil {
 		t.Fatal(err)
@@ -66,7 +67,7 @@ func TestPropertyHistoryRecordsCanonicalEditAndClear(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = tx.Rollback(f.ctx) }()
+	defer func() { testsupport.Rollback(t, tx, f.ctx) }()
 	after := recordHistoryChange(t, f, tx, before, field, "<p>After</p>")
 	if err = tx.Commit(f.ctx); err != nil {
 		t.Fatal(err)
@@ -87,7 +88,7 @@ func TestPropertyHistoryRecordsCanonicalEditAndClear(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = tx.Rollback(f.ctx) }()
+	defer func() { testsupport.Rollback(t, tx, f.ctx) }()
 	recordHistoryChange(t, f, tx, after, field, nil)
 	if err = tx.Commit(f.ctx); err != nil {
 		t.Fatal(err)
@@ -104,7 +105,7 @@ func TestPropertyHistoryRollsBackWithRejectedItemTransaction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = tx.Rollback(f.ctx) }()
+	defer func() { testsupport.Rollback(t, tx, f.ctx) }()
 	recordHistoryChange(t, f, tx, before, field, "<p>Rejected</p>")
 	if _, err = tx.Exec(f.ctx, `SELECT 1/0`); err == nil {
 		t.Fatal("expected late transaction failure")
@@ -126,7 +127,7 @@ func TestPropertyHistoryCapturesUnrecordedValueAfterPreservationOnlyHistory(t *t
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = tx.Rollback(f.ctx) }()
+	defer func() { testsupport.Rollback(t, tx, f.ctx) }()
 	recordHistoryChange(t, f, tx, before, field, "<p>After</p>")
 	if err = tx.Commit(f.ctx); err != nil {
 		t.Fatal(err)
@@ -143,7 +144,7 @@ func TestPropertyHistoryBaselineUsesPreviousDefinitionTitle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = tx.Rollback(f.ctx) }()
+	defer func() { testsupport.Rollback(t, tx, f.ctx) }()
 	after := before
 	after.Definitions = append([]property.Definition(nil), before.Definitions...)
 	after.Definitions[0].Title = "Renamed notes"

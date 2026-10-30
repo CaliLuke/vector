@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/selvedge"
 	"github.com/CaliLuke/selvedge/retry"
 	"github.com/google/uuid"
@@ -38,8 +39,7 @@ func TestPostgresAPIActivityLogAdmissionRollback(t *testing.T) {
 	instanceID := "api-activity-log:rollback:" + uuid.NewString()
 	input := testAPIActivityLogInput()
 	if _, err := selvedge.StartWorkflow(transactionContext, app, workflow, input, selvedge.WithInstanceID(instanceID)); err != nil {
-		_ = app.Storage().RollbackTransaction(transactionContext)
-		t.Fatalf("admit inside PostgreSQL transaction: %v", err)
+		t.Fatalf("admit inside PostgreSQL transaction: %v", dbutil.RollbackTransaction(transactionContext, app.Storage().RollbackTransaction, err))
 	}
 	if err := app.Storage().RollbackTransaction(transactionContext); err != nil {
 		t.Fatal(err)

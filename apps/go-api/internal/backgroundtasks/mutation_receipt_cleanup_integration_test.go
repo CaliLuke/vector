@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/selvedge"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -25,7 +26,7 @@ func TestMutationReceiptCleanupRetainsLiveAndRenewedReceipts(t *testing.T) {
 		seedCleanupReceipts(t, pool, 1, "48 hours")
 		renewal, beginErr := pool.Begin(ctx)
 		require.NoError(t, beginErr)
-		defer func() { _ = renewal.Rollback(context.WithoutCancel(ctx)) }()
+		defer func() { testsupport.Rollback(t, renewal, ctx) }()
 		var request uuid.UUID
 		require.NoError(t, renewal.QueryRow(ctx, `SELECT request_id FROM mutation_receipts WHERE replay_expires_at < statement_timestamp() LIMIT 1 FOR UPDATE`).Scan(&request))
 		input := CleanupBatchInput{Task: CleanupMutationReceipts, Cutoff: time.Now().Add(7 * 24 * time.Hour)}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/google/uuid"
@@ -73,7 +74,7 @@ func lockOwnedAssetDraft(ctx context.Context, tx pgx.Tx, workspace, actor, draft
 	return project, err
 }
 
-func (repository *PostgresRepository) BulkAssociateDraftAssets(ctx context.Context, workspace, actor, draft uuid.UUID, ids []uuid.UUID) error {
+func (repository *PostgresRepository) BulkAssociateDraftAssets(ctx context.Context, workspace, actor, draft uuid.UUID, ids []uuid.UUID) (resultErr error) {
 	unique := make(map[uuid.UUID]struct{}, len(ids))
 	for _, id := range ids {
 		unique[id] = struct{}{}
@@ -85,7 +86,7 @@ func (repository *PostgresRepository) BulkAssociateDraftAssets(ctx context.Conte
 	if err != nil {
 		return err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	project, err := lockOwnedAssetDraft(ctx, tx, workspace, actor, draft)
 	if err != nil {
 		return err

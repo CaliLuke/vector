@@ -3,7 +3,6 @@
 package issuequery_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/issuequery"
@@ -39,7 +38,7 @@ func TestMilestoneReadScopeRequiresCurrentOwnedMembership(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tx, err := db.Begin(ctx)
 			require.NoError(t, err)
-			t.Cleanup(func() { _ = tx.Rollback(context.WithoutCancel(ctx)) })
+			t.Cleanup(func() { testsupport.Rollback(t, tx, ctx) })
 			_, err = tx.Exec(ctx, tc.change)
 			require.NoError(t, err)
 			var admitted bool

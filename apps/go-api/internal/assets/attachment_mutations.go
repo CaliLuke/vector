@@ -8,6 +8,7 @@ import (
 	"path"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
@@ -127,7 +128,7 @@ func attachmentActivity(cmd projectmutations.Command, origin, verb string) map[s
 
 // CompleteAttachmentUpload is idempotent against an immutable staged object.
 // Locks serialize object creation with deletion; bytes survive ambiguous commits.
-func (a *AttachmentApplication) CompleteAttachmentUpload(ctx context.Context, rawID string) error {
+func (a *AttachmentApplication) CompleteAttachmentUpload(ctx context.Context, rawID string) (resultErr error) {
 	id, err := uuid.Parse(rawID)
 	if err != nil {
 		return err
@@ -136,7 +137,7 @@ func (a *AttachmentApplication) CompleteAttachmentUpload(ctx context.Context, ra
 	if err != nil {
 		return err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var key, contentType string
 	var contents, activity []byte
 	var deleted bool

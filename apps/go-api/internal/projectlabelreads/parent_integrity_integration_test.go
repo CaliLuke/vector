@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/projectconfiguration"
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -215,7 +216,7 @@ func TestRenameReloadsParentAfterWaitingForProjectMutationLock(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = lock.Rollback(context.WithoutCancel(context.Background())) }()
+	defer func() { testsupport.Rollback(t, lock, context.Background()) }()
 	var lockedProject string
 	if err = lock.QueryRow(context.Background(), `SELECT id::text FROM projects WHERE id=$1 FOR UPDATE`, parentProject).Scan(&lockedProject); err != nil {
 		t.Fatal(err)

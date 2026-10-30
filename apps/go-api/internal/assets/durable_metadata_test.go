@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/selvedge"
 	"github.com/CaliLuke/selvedge/retry"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -266,15 +267,13 @@ func TestStorageMetadataAdmissionJoinsSelvedgeTransaction(t *testing.T) {
 			t.Fatal(err)
 		}
 		if _, err := storage.Conn(txCtx).ExecContext(txCtx, `INSERT INTO admission_probe(event_id) VALUES(?)`, eventID); err != nil {
-			_ = storage.RollbackTransaction(txCtx)
-			t.Fatal(err)
+			t.Fatal(dbutil.RollbackTransaction(txCtx, storage.RollbackTransaction, err))
 		}
 		if _, err := selvedge.StartWorkflow(txCtx, app, workflow,
 			StorageMetadataWorkflowInput{AssetID: uuid.NewString(), EventID: eventID},
 			selvedge.WithInstanceID(runID),
 		); err != nil {
-			_ = storage.RollbackTransaction(txCtx)
-			t.Fatal(err)
+			t.Fatal(dbutil.RollbackTransaction(txCtx, storage.RollbackTransaction, err))
 		}
 		if commit {
 			if err := storage.CommitTransaction(txCtx); err != nil {

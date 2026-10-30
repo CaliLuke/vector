@@ -9,6 +9,7 @@ import (
 	"errors"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -22,7 +23,7 @@ func invitationToken(secret string, item map[string]any) string {
 	return message + "." + base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
 }
 
-func (r *InvitationsRepository) invitationCreate(ctx context.Context, c InvitationCommand, fields map[string]any) (json.RawMessage, error) {
+func (r *InvitationsRepository) invitationCreate(ctx context.Context, c InvitationCommand, fields map[string]any) (_ json.RawMessage, resultErr error) {
 	project := c.Operation == "project-create"
 	rawEmailsValue := fields["emails"]
 	emails, ok := rawEmailsValue.([]any)
@@ -108,8 +109,8 @@ func (r *InvitationsRepository) invitationCreate(ctx context.Context, c Invitati
 	if err != nil {
 		return nil, err
 	}
-	// Commit or the returned error closes the transaction; rollback is best-effort cleanup.
-	defer func() { _ = tx.Rollback(ctx) }()
+	// Cleanup keeps its own deadline and retains failures alongside the operation error.
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	for _, e := range entries {
 		if project {
 			_, err = tx.Exec(ctx, `INSERT INTO project_member_invites(id,project_id,workspace_id,email,role,token,accepted,created_by_id,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,false,$7,clock_timestamp(),clock_timestamp()) ON CONFLICT DO NOTHING`, uuid.NewString(), c.ProjectID, workspaceID, e.email, e.role, e.token, c.UserID)

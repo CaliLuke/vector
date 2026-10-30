@@ -12,6 +12,7 @@ import (
 
 	"uuid"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
@@ -286,12 +287,12 @@ WHERE p.id=$4 AND p.workspace_id=w.id AND p.deleted_at IS NULL`, user, slug, pro
 	return state, nil
 }
 
-func (repository *Repository) writePage(ctx context.Context, db lifecycleDatabase, operation func(pgx.Tx) error) error {
+func (repository *Repository) writePage(ctx context.Context, db lifecycleDatabase, operation func(pgx.Tx) error) (resultErr error) {
 	tx, err := db.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = tx.Rollback(ctx) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if err := operation(tx); err != nil {
 		return err
 	}

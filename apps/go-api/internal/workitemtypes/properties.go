@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/jackc/pgx/v5"
 )
@@ -42,12 +43,12 @@ type PropertyInput struct {
 	Permanent   bool
 }
 
-func (r *Repository) PropertyCatalog(ctx context.Context, actor, slug string) (PropertyCatalog, error) {
+func (r *Repository) PropertyCatalog(ctx context.Context, actor, slug string) (_ PropertyCatalog, resultErr error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return PropertyCatalog{}, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, err = tx.Exec(ctx, `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`); err != nil {
 		return PropertyCatalog{}, err
 	}

@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/require"
 )
@@ -45,7 +46,7 @@ func TestMilestoneSchemaSnapshotCannotDeleteNewlyLinkedTarget(t *testing.T) {
 	t.Cleanup(func() { require.NoError(t, reader.Close(context.WithoutCancel(f.ctx))) })
 	tx, err := reader.BeginTx(f.ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead})
 	require.NoError(t, err)
-	t.Cleanup(func() { _ = tx.Rollback(context.WithoutCancel(f.ctx)) })
+	t.Cleanup(func() { testsupport.Rollback(t, tx, f.ctx) })
 	var links int
 	require.NoError(t, tx.QueryRow(f.ctx, `SELECT count(*) FROM milestone_issues`).Scan(&links))
 	require.Zero(t, links)

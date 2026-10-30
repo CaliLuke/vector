@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	projects "github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	"github.com/google/uuid"
@@ -242,7 +243,7 @@ func TestArchiveCASSeesConcurrentOrdinaryWriterAfterLockWait(t *testing.T) {
 	defer cancel()
 	tx, err := f.db.Begin(ctx)
 	require.NoError(t, err)
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { testsupport.Rollback(t, tx, ctx) }()
 	var writerPID int
 	require.NoError(t, tx.QueryRow(ctx, `SELECT pg_backend_pid()`).Scan(&writerPID))
 	_, err = tx.Exec(ctx, `UPDATE projects SET name='HTTP update won' WHERE id=$1`, f.cmd.ProjectID)

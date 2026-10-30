@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
@@ -32,7 +33,7 @@ func pageAPIArgs(q PageAPIQuery) []any {
 func pageAPIRows(ctx context.Context, tx pgx.Tx, query string, args ...any) ([]map[string]any, error) {
 	return djangoapi.ReadJSONRows(ctx, tx, query, args...)
 }
-func (r *Repository) ReadPageAPI(ctx context.Context, q PageAPIQuery) (json.RawMessage, error) {
+func (r *Repository) ReadPageAPI(ctx context.Context, q PageAPIQuery) (_ json.RawMessage, resultErr error) {
 	db, ok := r.database.(mutationreceipts.Database)
 	if !ok {
 		return nil, projectmutations.ErrInvalid
@@ -41,7 +42,7 @@ func (r *Repository) ReadPageAPI(ctx context.Context, q PageAPIQuery) (json.RawM
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, err = pageAPIWorkspace(ctx, tx, q, false); err != nil {
 		return nil, err
 	}

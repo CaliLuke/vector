@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
@@ -998,7 +999,7 @@ func insertModuleMembersAtomically(
 	memberIDs []string,
 	createdBy, updatedBy *string,
 	now time.Time,
-) error {
+) (resultErr error) {
 	tx, err := begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin module member replacement: %w", err)
@@ -1006,7 +1007,7 @@ func insertModuleMembersAtomically(
 	committed := false
 	defer func() {
 		if !committed {
-			_ = tx.Rollback(ctx)
+			resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr)
 		}
 	}()
 	for offset := 0; offset < len(memberIDs); offset += 10 {

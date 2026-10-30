@@ -10,6 +10,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/activityreads"
 	"github.com/CaliLuke/go-plane/internal/mcpactions"
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/require"
@@ -135,7 +136,7 @@ func TestWorkitemChildReadsRecheckVisibilityInDataSnapshot(t *testing.T) {
 				for _, tool := range []string{"workitem_comment", "workitem_link", "workitem_activity"} {
 					tx, err := pool.Begin(t.Context())
 					require.NoError(t, err)
-					t.Cleanup(func() { _ = tx.Rollback(context.Background()) })
+					t.Cleanup(func() { testsupport.Rollback(t, tx, context.Background()) })
 					collaboration, err := workitems.NewRepository(tx, rosterPublisher{}, "https://vector.example")
 					require.NoError(t, err)
 					activities, err := activityreads.NewRepository(tx)

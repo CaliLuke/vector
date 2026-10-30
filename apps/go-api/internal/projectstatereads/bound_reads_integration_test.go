@@ -138,7 +138,7 @@ func TestBoundStateReadsApplyCurrentScopeBeforeCounts(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			tx, err := db.Begin(t.Context())
 			require.NoError(t, err)
-			defer func() { _ = tx.Rollback(context.WithoutCancel(t.Context())) }()
+			defer func() { testsupport.Rollback(t, tx, t.Context()) }()
 			_, err = tx.Exec(t.Context(), test.change)
 			require.NoError(t, err)
 			repository, err := NewRepository(tx)

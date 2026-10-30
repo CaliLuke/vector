@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -30,12 +31,12 @@ func Backfill(ctx context.Context, db backfillDatabase) error {
 		}
 	}
 }
-func backfillWorkspace(ctx context.Context, db backfillDatabase, workspace string) error {
+func backfillWorkspace(ctx context.Context, db backfillDatabase, workspace string) (resultErr error) {
 	tx, err := db.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if _, err = tx.Exec(ctx, `SET LOCAL search_path TO public`); err != nil {
 		return err
 	}

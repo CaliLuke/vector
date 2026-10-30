@@ -43,7 +43,7 @@ func notificationTestDB(t *testing.T) pgx.Tx {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = tx.Rollback(context.Background()) })
+	t.Cleanup(func() { testsupport.Rollback(t, tx, context.Background()) })
 	_, err = tx.Exec(ctx, `
  CREATE TEMP TABLE workspaces(id uuid PRIMARY KEY,slug text,deleted_at timestamptz);
  CREATE TEMP TABLE workspace_members(workspace_id uuid,member_id uuid,role integer,is_active boolean,deleted_at timestamptz);

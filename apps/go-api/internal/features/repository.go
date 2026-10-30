@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strings"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
@@ -39,13 +40,13 @@ type Capabilities struct {
 	Initiatives, ManageInitiatives, Customers, ManageCustomers bool
 }
 
-func (r *Repository) WorkspaceVisibility(ctx context.Context, q Query) (Capabilities, error) {
+func (r *Repository) WorkspaceVisibility(ctx context.Context, q Query) (_ Capabilities, resultErr error) {
 	var out Capabilities
 	tx, err := r.db.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
 	if err != nil {
 		return out, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	err = tx.QueryRow(ctx, `SELECT COALESCE(bool_or(f.initiatives),false),COALESCE(bool_or(f.initiatives AND wm.role=20),false),
  COALESCE(bool_or(f.customers),false),COALESCE(bool_or(f.customers AND wm.role=20),false)
  FROM users u JOIN workspace_members wm ON wm.member_id=u.id JOIN workspaces w ON w.id=wm.workspace_id
@@ -113,12 +114,12 @@ func read(ctx context.Context, tx pgx.Tx, q Query) (map[string]any, error) {
 	}
 	return out, nil
 }
-func (r *Repository) Read(ctx context.Context, q Query) (json.RawMessage, error) {
+func (r *Repository) Read(ctx context.Context, q Query) (_ json.RawMessage, resultErr error) {
 	tx, err := r.db.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if err = scope(ctx, tx, q, false); err != nil {
 		return nil, err
 	}

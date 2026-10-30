@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -37,7 +38,7 @@ func snapshotDatabase(
 	role string,
 	postgresURL string,
 	schema string,
-) (Snapshot, error) {
+) (_ Snapshot, resultErr error) {
 	pool, err := pgxpool.New(ctx, postgresURL)
 	if err != nil {
 		return Snapshot{}, safeDatabaseError(role, "configure connection", err)
@@ -51,7 +52,7 @@ func snapshotDatabase(
 	if err != nil {
 		return Snapshot{}, safeDatabaseError(role, "begin read-only snapshot", err)
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = rollbackSnapshot(ctx, role, tx.Rollback, resultErr) }()
 
 	tableNames, err := PlaneTables()
 	if err != nil {
@@ -189,4 +190,13 @@ func safeDatabaseError(role string, operation string, err error) error {
 		return fmt.Errorf("%s database %s failed with PostgreSQL code %s", role, operation, postgresError.Code)
 	}
 	return fmt.Errorf("%s database %s failed (%T)", role, operation, err)
+}
+
+// Snapshot diagnostics can be printed by the parity CLI. Keep cleanup failures
+// observable without exposing connection strings or PostgreSQL detail fields.
+func rollbackSnapshot(ctx context.Context, role string, rollback func(context.Context) error, operationErr error) error {
+	if rollbackErr := dbutil.RollbackTransaction(ctx, rollback, nil); rollbackErr != nil {
+		return errors.Join(operationErr, safeDatabaseError(role, "rollback snapshot", rollbackErr))
+	}
+	return operationErr
 }

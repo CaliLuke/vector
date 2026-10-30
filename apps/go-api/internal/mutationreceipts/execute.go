@@ -8,6 +8,7 @@ import (
 	"errors"
 	"time"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -65,7 +66,7 @@ type Result struct {
 // indeterminate even when cancellation or a connection failure caused it. The
 // original cause remains available to internal error classification via Unwrap.
 // Successful commit is never replaced by a late context cancellation error.
-func Execute(ctx context.Context, db Database, cmd Command, op Operation) (Result, error) {
+func Execute(ctx context.Context, db Database, cmd Command, op Operation) (_ Result, resultErr error) {
 	hash, err := prepare(cmd, op)
 	if err != nil || db == nil {
 		return Result{}, ErrInvalidRequest
@@ -74,10 +75,18 @@ func Execute(ctx context.Context, db Database, cmd Command, op Operation) (Resul
 	if err != nil {
 		return Result{}, err
 	}
+	committed := false
 	defer func() {
-		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
-		defer cancel()
-		_ = tx.Rollback(cleanup) // Commit closes tx; otherwise release cancelled work.
+		if committed {
+			return
+		}
+		// Preserve a sanitized indeterminate message without changing errors
+		// owned by an operation callback or another receipt execution.
+		operationErr := resultErr
+		resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, operationErr)
+		if errors.Is(operationErr, ErrIndeterminate) {
+			resultErr = &commitError{cause: resultErr}
+		}
 	}()
 	result, err := execute(ctx, tx, cmd, hash, op)
 	if err != nil {
@@ -89,6 +98,7 @@ func Execute(ctx context.Context, db Database, cmd Command, op Operation) (Resul
 	if err = tx.Commit(ctx); err != nil {
 		return Result{}, &commitError{cause: err}
 	}
+	committed = true
 	return result, nil
 }
 
