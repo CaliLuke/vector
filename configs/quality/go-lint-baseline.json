@@ -420,14 +420,6 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/projectstatereads/writes.go",
-        "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/standardviews/mutation_validation_upgrade_integration_test.go",
         "Error return value of `connection.Close` is not checked"
       ],

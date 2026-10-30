@@ -8,6 +8,7 @@ import (
 	"strings"
 	"unicode"
 
+	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/jackc/pgx/v5"
@@ -145,7 +146,7 @@ func (repository *WriteRepository) ResolveForUpdate(ctx context.Context, input S
 	return nil
 }
 
-func (repository *WriteRepository) mutate(ctx context.Context, input StateWriteInput, action string) (json.RawMessage, error) {
+func (repository *WriteRepository) mutate(ctx context.Context, input StateWriteInput, action string) (_ json.RawMessage, resultErr error) {
 	fields := cloneStateFields(input.Fields)
 	if action == "create" {
 		if err := validateStateFields(fields, true, input.App, input.Parsed); err != nil {
@@ -156,7 +157,7 @@ func (repository *WriteRepository) mutate(ctx context.Context, input StateWriteI
 	if err != nil {
 		return nil, fmt.Errorf("begin project state write: %w", err)
 	}
-	defer tx.Rollback(context.WithoutCancel(ctx))
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if lockStateProjectErr := lockStateProject(ctx, tx, input.Slug, input.ProjectID); lockStateProjectErr != nil {
 		return nil, lockStateProjectErr
 	}
@@ -295,12 +296,12 @@ func updateState(ctx context.Context, tx pgx.Tx, input StateWriteInput, fields m
 	return addAppOrderToResponse(data, input, fields)
 }
 
-func (repository *WriteRepository) Delete(ctx context.Context, input StateWriteInput) error {
+func (repository *WriteRepository) Delete(ctx context.Context, input StateWriteInput) (resultErr error) {
 	tx, err := repository.database.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if err = lockStateProject(ctx, tx, input.Slug, input.ProjectID); err != nil {
 		return err
 	}
@@ -310,12 +311,12 @@ func (repository *WriteRepository) Delete(ctx context.Context, input StateWriteI
 	return tx.Commit(ctx)
 }
 
-func (repository *WriteRepository) MarkDefault(ctx context.Context, input StateWriteInput) error {
+func (repository *WriteRepository) MarkDefault(ctx context.Context, input StateWriteInput) (resultErr error) {
 	tx, err := repository.database.Begin(ctx)
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback(context.WithoutCancel(ctx))
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	if err = lockStateProject(ctx, tx, input.Slug, input.ProjectID); err != nil {
 		return err
 	}
