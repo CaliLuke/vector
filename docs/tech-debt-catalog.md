@@ -6,14 +6,13 @@ sized tasks or an estimate of time remaining.
 
 ## Next work
 
-1. **NEW-06:** keep the complete typed-lint pass within its existing memory budget and verify GitHub CI.
-2. **NEW-02/NEW-03/NEW-04:** investigate the recorded UI, frontend shard, and
+1. **NEW-02/NEW-03/NEW-04:** investigate the recorded UI, frontend shard, and
    module-link test deadline failures under the existing time and resource limits.
-3. **MCP-01/MCP-02:** finish the remaining action-specific acceptance in the
+2. **MCP-01/MCP-02:** finish the remaining action-specific acceptance in the
    parity tracker.
-4. **ERR-01/ERR-02:** resolve the next unchecked-error finding by observable
+3. **ERR-01/ERR-02:** resolve the next unchecked-error finding by observable
    impact and resource ownership.
-5. Work through the remaining **STRUCT-01, DUP-01/DUP-02, COV-01/COV-02 and TS-01**
+4. Work through the remaining **STRUCT-01, DUP-01/DUP-02, COV-01/COV-02 and TS-01**
    scopes after the higher-risk acceptance and runtime gaps.
 
 ## Outstanding inventory
@@ -43,12 +42,11 @@ baseline contains the remaining categories and exact affected files.
 
 ## Open findings
 
-| ID     | Outstanding work                                                                                                                                                                                                          | Closure evidence                                                                                                                                |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| NEW-02 | Investigate the intermittent color-picker pending-save timeout at its existing five-second limit. The cause remains unknown; rechecks pass.                                                                               | Reproduce and resolve the cause, or establish that the observation is obsolete. Do not relax the deadline or coverage floor.                    |
-| NEW-03 | Investigate frontend behavior shard 2 exceeding its five-minute deadline without an earlier assertion failure. The runtime cause is unconfirmed.                                                                          | Identify and resolve the cause, or establish that the observation is obsolete. Preserve all tests, worker limits, and existing deadlines.       |
-| NEW-04 | Investigate `TestModuleLinkEditsPreserveOmittedMetadataAndAdmitScopedDeletion` exhausting its one-minute fixture deadline on the initial module-parent lookup. Coverage-enabled rechecks pass; the cause remains unknown. | Reproduce and resolve the cause, or establish that the observation is obsolete. Preserve the existing deadline and tenant-scoping assertions.   |
-| NEW-06 | Keep Oxlint’s full typed pass below 3,072 MiB. [Native CI](https://github.com/CaliLuke/vector/actions/runs/41199428163) exceeded the cap at 3,073 MiB: tsgolint used 1,943 MiB and Oxlint used 939 MiB, plus wrappers.    | Resolve combined memory use and pass local and GitHub gates with all linted files and diagnostics preserved under the existing resource limits. |
+| ID     | Outstanding work                                                                                                                                                                                                          | Closure evidence                                                                                                                              |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| NEW-02 | Investigate the intermittent color-picker pending-save timeout at its existing five-second limit. The cause remains unknown; rechecks pass.                                                                               | Reproduce and resolve the cause, or establish that the observation is obsolete. Do not relax the deadline or coverage floor.                  |
+| NEW-03 | Investigate frontend behavior shard 2 exceeding its five-minute deadline without an earlier assertion failure. The runtime cause is unconfirmed.                                                                          | Identify and resolve the cause, or establish that the observation is obsolete. Preserve all tests, worker limits, and existing deadlines.     |
+| NEW-04 | Investigate `TestModuleLinkEditsPreserveOmittedMetadataAndAdmitScopedDeletion` exhausting its one-minute fixture deadline on the initial module-parent lookup. Coverage-enabled rechecks pass; the cause remains unknown. | Reproduce and resolve the cause, or establish that the observation is obsolete. Preserve the existing deadline and tenant-scoping assertions. |
 
 ## Deferred work and product follow-ups
 
