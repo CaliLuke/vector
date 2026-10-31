@@ -27,8 +27,14 @@ func TestCustomerInterruptedMutationsPreserveStateAndRetryIdentity(t *testing.T)
 					})
 				} else {
 					table := "customers"
-					if scenario.tool == "customer_request" {
+					switch scenario.tool {
+					case "customer_request":
 						table = "customer_requests"
+					case "customer_property":
+						table = "customer_properties"
+						if scenario.action == "set_values" {
+							table = "customer_property_values"
+						}
 					}
 					tableName := pgx.Identifier{table}.Sanitize()
 					_, err := f.pool.Exec(t.Context(), `CREATE FUNCTION reject_customer_commit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'injected customer commit rejection'; END $$;

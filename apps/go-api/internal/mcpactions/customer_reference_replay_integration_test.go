@@ -55,10 +55,10 @@ func TestMCPCustomerDefaultReferencesReauthorizeReplay(t *testing.T) {
 
 func customerDefaultReplayInput(t *testing.T, call catalogueCall, action, relation, target string) map[string]any {
 	t.Helper()
-	input := map[string]any{"action": "create", "display_name": "Reference " + uuid.NewString(), "property_type": "RELATION", "relation_type": relation}
+	input := map[string]any{"action": "create", "workspace_slug": "workspace-one", "display_name": "Reference " + uuid.NewString(), "property_type": "RELATION", "relation_type": relation}
 	if action == "update" {
 		property := milestoneObject(t, call("customer_property", input))
-		input = map[string]any{"action": "update", "property_id": property["id"]}
+		input = map[string]any{"action": "update", "workspace_slug": "workspace-one", "property_id": property["id"]}
 	}
 	input["default_value"], input["request_id"] = target, uuid.NewString()
 	return input

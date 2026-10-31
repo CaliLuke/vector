@@ -86,14 +86,15 @@ rollback, workspace binding and receipt replay across identity replacement under
 both credentials and protocols. [Concurrent mutation tests](../apps/go-api/internal/mcpactions/customer_concurrency_integration_test.go)
 verify one identity with disjoint field preservation, receipt conflicts and competing
 revisions. [Recovery and authorization tests](../apps/go-api/internal/mcpactions/customer_identity_recovery_integration_test.go)
-cover customer create, upsert, update and delete, plus request create, update and
-delete: cancelled waits, rejected commits, reusable receipts, and current token,
-scope and membership after lock waits before
+cover customer create, upsert, update and delete; request create, update and delete;
+and property create, update, delete and value replacement. They exercise cancelled
+waits, rejected commits, reusable receipts, and current token, scope and membership
+after lock waits before
 new writes or replay. The latter generated-server matrix covers both credentials
 and protocols; concurrency and rollback use the same native repository. The
 [current role and feature checks](../apps/go-api/internal/mcpactions/customer_identity_access_integration_test.go)
-reject fresh customer and request writes and receipt replay for guests, members
-and a disabled customers feature. Restoring administrator access and the feature replays the original result
+reject fresh customer, request and property writes and receipt replay for guests,
+members and a disabled customers feature. Restoring administrator access and the feature replays the original result
 without another mutation.
 
 [Request ownership checks](../apps/go-api/internal/mcpactions/customer_request_ownership_integration_test.go)
@@ -123,7 +124,48 @@ retained associations after metadata edits, next/previous cursor navigation,
 default and empty pages, and search that excludes deleted and other customers'
 requests.
 
-Remaining acceptance includes the complete format and reference-visibility matrix,
-atomic association changes, property authorization on replay and lock waits,
-property CAS/recovery and durable activity, and full customer/property SDK page
-and record projections under both auth modes and MCP revisions.
+[Property format checks](../apps/go-api/internal/mcpactions/customer_property_formats_integration_test.go)
+cover all three text and four date display formats declared by the pinned SDK,
+including omitted defaults, multiline values and readonly protection. Type and
+format changes are rejected without stored effects, even when the replacement is
+valid for creation. Metadata edits preserve the format. Unsupported formats are
+rejected for every property kind. These checks use both credentials and protocols.
+
+[Native revision checks](../apps/go-api/internal/mcpactions/customer_native_revision_integration_test.go)
+cover direct inserts, updates and deletes in customer, request, association,
+property, option and value rows. Every change invalidates an earlier catalogue
+revision. A rejected stale mutation preserves the native result, audit and receipts;
+refreshing its revision leaves the same retry key usable, with stable replay.
+
+[Value-reference authorization checks](../apps/go-api/internal/mcpactions/customer_value_reference_authorization_integration_test.go)
+cover private project membership loss, archived/deleted projects, draft/deleted
+items, inactive users, inactive/deleted workspace memberships, unsupported roles,
+and inactive/deleted options. Reads hide unavailable references. Fresh writes and
+receipt replay reject them without changing customer state; restoring access
+replays the original result without another mutation. The same changes committed
+by a lock holder reject queued writes and replay. Expected state is read inside
+that transaction so legitimate option and revision changes remain accounted for.
+These checks use both credentials and protocol revisions.
+
+[Definition retry checks](../apps/go-api/internal/mcpactions/customer_value_definition_authorization_integration_test.go)
+use native property updates and deletion to reject fresh value writes and accepted
+receipt replay after a definition is inactive or deleted. Reactivation restores
+visible values and permits the original receipt to replay without another write.
+
+[Reference workspace checks](../apps/go-api/internal/mcpactions/customer_reference_workspace_integration_test.go)
+reject foreign items, members and options on value writes and default selection,
+even when the actor administers both workspaces. Rejected writes leave their retry
+keys usable. Reads mask imported foreign values and relation defaults; replay and
+read masking preserve the imported stored state. Both definition and workspace
+checks cover both credentials and protocol revisions.
+
+[Default-reference wait checks](../apps/go-api/internal/mcpactions/customer_default_reference_wait_integration_test.go)
+cover item/member selection on property creation and updates, and existing option
+selection on updates. Access changes committed by the lock holder reject queued
+new writes and receipt replay without changing customer state. Inline options on
+creation have no pre-existing reference IDs. The checks use both credentials and
+protocol revisions.
+
+Remaining acceptance includes atomic association changes, durable activity, and
+full customer/property SDK page and record projections under both auth modes and
+MCP revisions.

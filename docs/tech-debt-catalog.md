@@ -6,8 +6,9 @@ sized tasks or an estimate of time remaining.
 
 ## Next work
 
-1. **NEW-02/NEW-03/NEW-04:** investigate the recorded UI, frontend shard, and
-   module-link test deadline failures under the existing time and resource limits.
+1. **NEW-02/NEW-03/NEW-04/NEW-07:** investigate the recorded UI, frontend shard, and
+   module-link test deadline failures and process-memory sampling stalls under the
+   existing time and resource limits.
 2. **MCP-01/MCP-02:** finish the remaining action-specific acceptance in the
    parity tracker.
 3. **ERR-01/ERR-02:** resolve the next unchecked-error finding by observable
@@ -47,6 +48,8 @@ baseline contains the remaining categories and exact affected files.
 | NEW-02 | Investigate the intermittent color-picker pending-save timeout at its existing five-second limit. The cause remains unknown; rechecks pass.                                                                               | Reproduce and resolve the cause, or establish that the observation is obsolete. Do not relax the deadline or coverage floor.                  |
 | NEW-03 | Investigate frontend behavior shard 2 exceeding its five-minute deadline without an earlier assertion failure. The runtime cause is unconfirmed.                                                                          | Identify and resolve the cause, or establish that the observation is obsolete. Preserve all tests, worker limits, and existing deadlines.     |
 | NEW-04 | Investigate `TestModuleLinkEditsPreserveOmittedMetadataAndAdmitScopedDeletion` exhausting its one-minute fixture deadline on the initial module-parent lookup. Coverage-enabled rechecks pass; the cause remains unknown. | Reproduce and resolve the cause, or establish that the observation is obsolete. Preserve the existing deadline and tenant-scoping assertions. |
+
+| NEW-07 | Investigate consecutive two-second process-memory sample timeouts that stopped the frontend behavior gate. The monitor failed closed as designed; the cause of the stalled `ps` calls is unknown. Ten direct samples and all monitor regressions pass on recheck. | Establish and resolve the sampling failure cause, or prove the observation obsolete. Preserve memory enforcement, deadlines and fail-closed behavior. |
 
 ## Deferred work and product follow-ups
 

@@ -90,10 +90,11 @@ func TestMCPCustomerRequestLinksReauthorizeTargetsAfterWaiting(t *testing.T) {
 		for _, mode := range []string{"personal token", "OAuth"} {
 			changes = append(changes, mutationWaitChange{
 				name: change.name + "/" + mode, mode: mode, code: change.code,
-				apply: func(t *testing.T, ctx context.Context, writer pgx.Tx, input map[string]any) {
+				apply: func(t *testing.T, ctx context.Context, writer pgx.Tx, input map[string]any) []byte {
 					changed, err := writer.Exec(ctx, change.disable, change.arguments(input)...)
 					require.NoError(t, err)
 					require.EqualValues(t, 1, changed.RowsAffected())
+					return nil
 				},
 			})
 		}

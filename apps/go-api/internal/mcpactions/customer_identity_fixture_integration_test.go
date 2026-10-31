@@ -3,6 +3,7 @@
 package mcpactions_test
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
@@ -30,10 +31,17 @@ func customerIdentityCommand() customers.Command {
 
 func customerStorageSnapshot(t *testing.T, f milestoneFixture) []byte {
 	t.Helper()
+	return customerStorageSnapshotQuery(t, t.Context(), f.pool.QueryRow)
+}
+
+// Read through the changing transaction when a lock holder updates catalogue
+// references, so the expected state includes its legitimate uncommitted changes.
+func customerStorageSnapshotQuery(t *testing.T, ctx context.Context, query func(context.Context, string, ...any) pgx.Row) []byte {
+	t.Helper()
 	snapshot := map[string]string{}
 	for _, table := range []string{"customers", "customer_requests", "customer_work_items", "customer_properties", "customer_property_options", "customer_property_values", "customer_events", "customer_revisions", "mutation_receipts", "work_item_effects"} {
 		var rows string
-		require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text),'[]')::text FROM `+pgx.Identifier{table}.Sanitize()+` t`).Scan(&rows))
+		require.NoError(t, query(ctx, `SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text),'[]')::text FROM `+pgx.Identifier{table}.Sanitize()+` t`).Scan(&rows))
 		snapshot[table] = rows
 	}
 	raw, err := json.Marshal(snapshot)
@@ -63,6 +71,9 @@ func customerMutationWriteInput(t *testing.T, call catalogueCall, scenario custo
 	t.Helper()
 	if scenario.tool == "customer" {
 		return customerIdentityWriteInput(t, call, scenario.action)
+	}
+	if scenario.tool == "customer_property" {
+		return customerPropertyWriteInput(t, call, scenario.action)
 	}
 	parent := milestoneObject(t, call("customer", map[string]any{"action": "create", "workspace_slug": "workspace-one", "name": uuid.NewString()}))
 	input := map[string]any{"action": "create", "workspace_slug": "workspace-one", "customer_id": parent["id"], "name": uuid.NewString()}

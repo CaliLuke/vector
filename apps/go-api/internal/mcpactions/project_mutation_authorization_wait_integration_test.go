@@ -20,7 +20,7 @@ import (
 
 type mutationWaitChange struct {
 	name, mode, kind, code string
-	apply                  func(*testing.T, context.Context, pgx.Tx, map[string]any)
+	apply                  func(*testing.T, context.Context, pgx.Tx, map[string]any) []byte
 }
 
 type mutationWaitScenario struct {
@@ -96,7 +96,9 @@ func runMutationAuthorizationWait(t *testing.T, scenario mutationWaitScenario) {
 					}, 10*time.Second, 10*time.Millisecond, "request never waited on the held scope lock")
 					if change.apply != nil {
 						// Commit the simulated scope writer before releasing its lock.
-						change.apply(t, ctx, blocker, input)
+						if expected := change.apply(t, ctx, blocker, input); expected != nil {
+							before = expected
+						}
 					} else {
 						switch change.kind {
 						case "membership":

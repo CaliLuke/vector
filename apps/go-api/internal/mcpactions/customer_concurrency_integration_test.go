@@ -77,10 +77,14 @@ type customerMutationScenario struct{ tool, action string }
 var customerMutationScenarios = []customerMutationScenario{
 	{"customer", "create"}, {"customer", "upsert"}, {"customer", "update"}, {"customer", "delete"},
 	{"customer_request", "create"}, {"customer_request", "update"}, {"customer_request", "delete"},
+	{"customer_property", "create"}, {"customer_property", "update"}, {"customer_property", "delete"}, {"customer_property", "set_values"},
 }
 
 func customerMutationCase(t *testing.T, scenario customerMutationScenario) (milestoneFixture, *customers.Repository, customers.Command) {
 	t.Helper()
+	if scenario.tool == "customer_property" {
+		return customerPropertyMutationCase(t, scenario.action)
+	}
 	f := customerIdentityFixture(t)
 	repository := customers.NewRepository(f.pool)
 	command := customerIdentityCommand()
@@ -132,11 +136,19 @@ func TestCustomerCompetingReceiptsAndRevisionsCommitOnce(t *testing.T) {
 				switch mode {
 				case "changed input":
 					second.Fields = maps.Clone(first.Fields)
-					if first.Tool == "customer" {
+					switch {
+					case first.Tool == "customer":
 						second.Fields["external_source"] = "different-source"
-					} else if first.Action == "delete" {
+					case first.Action == "delete":
 						second.ExpectedRevision = nil
-					} else {
+					case first.Action == "set_values":
+						second.Values = map[string][]string{}
+						for id := range first.Values {
+							second.Values[id] = []string{}
+						}
+					case first.Tool == "customer_property":
+						second.Fields["description"] = "Different property"
+					default:
 						second.Fields["name"] = "Different request"
 					}
 					expectedError = mutationreceipts.ErrConflict
