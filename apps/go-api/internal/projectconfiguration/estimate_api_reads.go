@@ -48,18 +48,7 @@ func (r *Repository) ReadEstimate(ctx context.Context, in EstimateRead) (json.Ra
 	if len(body) == 0 {
 		return nil, projectmutations.ErrNotFound
 	}
-	return estimateAPITimestamps(body, in.Timezone)
-}
-
-func estimateAPITimestamps(raw json.RawMessage, timezone string) (json.RawMessage, error) {
-	if len(raw) == 0 {
-		return raw, nil
-	}
-	var value any
-	if err := djangoapi.DecodeJSON(raw, &value); err != nil {
-		return nil, err
-	}
-	return json.Marshal(djangoapi.Timestamps(value, timezone))
+	return djangoapi.JSONTimestamps(body, in.Timezone)
 }
 
 const estimateReadScopeSQL = `WITH scope AS MATERIALIZED (

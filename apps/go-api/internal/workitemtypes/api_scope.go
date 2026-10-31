@@ -12,7 +12,7 @@ import (
 
 type APIScope struct {
 	ActorID, WorkspaceID, ProjectID uuid.UUID
-	WorkspaceSlug                   string
+	WorkspaceSlug, Timezone         string
 }
 type apiAccess struct{ workspaceAdmin, projectAdmin bool }
 

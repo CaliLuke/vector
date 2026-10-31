@@ -1,9 +1,23 @@
 package djangoapi
 
 import (
+	"encoding/json"
 	"strings"
 	"time"
 )
+
+// JSONTimestamps applies the modeled timestamp serializer to a raw API result.
+// Call it before saving a receipt so replay retains the accepted representation.
+func JSONTimestamps(raw json.RawMessage, timezone string) (json.RawMessage, error) {
+	if len(raw) == 0 {
+		return raw, nil
+	}
+	var value any
+	if err := DecodeJSON(raw, &value); err != nil {
+		return nil, err
+	}
+	return json.Marshal(Timestamps(value, timezone))
+}
 
 // Timestamps renders modeled API timestamps in the user timezone, preserving
 // microsecond precision and leaving arbitrary JSON fields untouched.

@@ -7,20 +7,13 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
 func TestMCPConfigurationCatalogueBatch(t *testing.T) {
 	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, call catalogueCall) {
-		repo := workitemtypes.NewRepository(f.pool)
-		catalog, err := repo.Catalog(t.Context(), testsupport.LabelActor, "workspace-one")
-		require.NoError(t, err)
-		if !catalog.Enabled {
-			_, err = repo.Mutate(t.Context(), testsupport.LabelActor, "workspace-one", "enable", "", workitemtypes.Input{Revision: catalog.Revision})
-			require.NoError(t, err)
-		}
+		enableTypeCatalogue(t, f, "workspace-one")
 		t.Run("estimates", func(t *testing.T) { catalogueEstimates(t, call) })
 		t.Run("types and properties", func(t *testing.T) { catalogueTypesAndProperties(t, call) })
 		t.Run("relations", func(t *testing.T) { catalogueRelations(t, call) })

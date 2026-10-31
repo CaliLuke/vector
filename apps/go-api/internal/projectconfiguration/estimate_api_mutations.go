@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
@@ -68,7 +69,7 @@ func (r *Repository) MutateEstimate(ctx context.Context, cmd projectmutations.Co
 			if applyEstimateAPIErr != nil {
 				return nil, applyEstimateAPIErr
 			}
-			raw, applyEstimateAPIErr = estimateAPITimestamps(raw, cmd.Timezone)
+			raw, applyEstimateAPIErr = djangoapi.JSONTimestamps(raw, cmd.Timezone)
 			if applyEstimateAPIErr != nil {
 				return nil, applyEstimateAPIErr
 			}

@@ -35,7 +35,7 @@ func (s *Service) WorkitemType(ctx context.Context, input *api.WorkitemTypeReque
 	return s.mutateWorkitemType(ctx, selected)
 }
 func typeScope(actor mcpauth.Principal, project *string) (workitemtypes.APIScope, error) {
-	scope := workitemtypes.APIScope{ActorID: actor.UserID, WorkspaceID: actor.WorkspaceID, WorkspaceSlug: actor.WorkspaceSlug}
+	scope := workitemtypes.APIScope{ActorID: actor.UserID, WorkspaceID: actor.WorkspaceID, WorkspaceSlug: actor.WorkspaceSlug, Timezone: actor.Timezone}
 	if project != nil && *project != "" {
 		id, err := typeUUID(*project)
 		if err != nil {

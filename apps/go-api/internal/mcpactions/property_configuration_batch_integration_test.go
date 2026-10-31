@@ -6,20 +6,13 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
 func TestMCPPropertyConfigurationBatch(t *testing.T) {
 	runCatalogueMatrix(t, func(t *testing.T, f milestoneFixture, root catalogueCall) {
-		repo := workitemtypes.NewRepository(f.pool)
-		catalog, err := repo.Catalog(t.Context(), testsupport.LabelActor, "workspace-one")
-		require.NoError(t, err)
-		if !catalog.Enabled {
-			_, err = repo.Mutate(t.Context(), testsupport.LabelActor, "workspace-one", "enable", "", workitemtypes.Input{Revision: catalog.Revision})
-			require.NoError(t, err)
-		}
+		enableTypeCatalogue(t, f, "workspace-one")
 		typeRow := milestoneObject(t, root("workitem_type", map[string]any{"action": "resolve", "project_id": testsupport.LabelProject, "name": "Configured " + uuid.NewString()}))
 		create := func(kind string, fields map[string]any) map[string]any {
 			input := map[string]any{"action": "create", "display_name": "Configured " + uuid.NewString(), "property_type": kind, "workitem_type_id": typeRow["id"]}

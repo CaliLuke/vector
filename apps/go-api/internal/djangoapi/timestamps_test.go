@@ -7,6 +7,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestJSONTimestampsPreserveEmptyResults(t *testing.T) {
+	result, err := JSONTimestamps(nil, "Asia/Kolkata")
+	require.NoError(t, err)
+	require.Nil(t, result, "an absent result must not become a JSON null body")
+}
+
+func TestJSONTimestampsRejectMalformedResults(t *testing.T) {
+	result, err := JSONTimestamps(json.RawMessage(`{"created_at":`), "Asia/Kolkata")
+	require.Error(t, err)
+	require.Nil(t, result)
+}
+
+func TestJSONTimestampsKeepOpaqueJSONAndNumberPrecision(t *testing.T) {
+	result, err := JSONTimestamps(json.RawMessage(`{"created_at":"2024-01-01T00:00:00.123456Z","count":9007199254740993,"logo_props":{"created_at":"2024-01-01T00:00:00Z"}}`), "Asia/Kolkata")
+	require.NoError(t, err)
+	require.JSONEq(t, `{"created_at":"2024-01-01T05:30:00.123456+05:30","count":9007199254740993,"logo_props":{"created_at":"2024-01-01T00:00:00Z"}}`, string(result))
+	require.Contains(t, string(result), `"count":9007199254740993`, "decoding must retain integers above float64's exact range")
+}
+
 func TestTimestampsConvertModeledFieldsAndPreserveOpaqueJSON(t *testing.T) {
 	body := map[string]any{"results": []any{map[string]any{
 		"created_at": "2024-01-01T00:00:00Z", "end_date": "2024-01-01T01:00:00.123456+00:00",

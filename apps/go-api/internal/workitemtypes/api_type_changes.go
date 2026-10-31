@@ -62,52 +62,21 @@ func saveAPIType(ctx context.Context, tx pgx.Tx, in APIMutation, before Catalog)
 	}
 	return id, nil
 }
-func resolveAPIType(ctx context.Context, tx pgx.Tx, in APIMutation, access apiAccess, before Catalog) (uuid.UUID, error) {
-	catalog, err := loadProjectCatalog(ctx, tx, in.WorkspaceID.String(), in.ProjectID.String(), access.projectAdmin)
-	if err != nil {
-		return uuid.Nil, err
-	}
-	target := strings.TrimSpace(*in.Changes.Name)
-	for _, item := range catalog.Types {
-		if strings.TrimSpace(item.Name) == target && item.Available {
-			return uuid.Parse(item.ID)
-		}
-	}
-	var found *Type
-	for i := range before.Types {
-		if strings.TrimSpace(before.Types[i].Name) == target {
-			found = &before.Types[i]
-			break
-		}
-	}
-	id := uuid.Nil
-	if found == nil || !found.Active {
-		if !access.workspaceAdmin {
-			return id, projectmutations.ErrForbidden
-		}
+func applyAPITypeResolution(ctx context.Context, tx pgx.Tx, in APIMutation, plan apiTypeResolution, before Catalog) (uuid.UUID, error) {
+	id := plan.id
+	if plan.change != "" {
 		active := true
-		change := APIMutation{APIScope: in.APIScope, Action: "create", Changes: APIChanges{Name: &target, Active: &active}}
-		if found != nil {
-			change.Action = "update"
-			change.TypeID, err = uuid.Parse(found.ID)
-			if err != nil {
-				return id, err
-			}
-		}
+		change := APIMutation{APIScope: in.APIScope, Action: plan.change, TypeID: id, Changes: APIChanges{Name: in.Changes.Name, Active: &active}}
+		var err error
 		id, err = saveAPIType(ctx, tx, change, before)
 		if err != nil {
 			return id, err
 		}
-	} else {
-		id, err = uuid.Parse(found.ID)
-		if err != nil {
-			return id, err
-		}
 	}
-	if !access.projectAdmin {
-		return id, projectmutations.ErrForbidden
+	if plan.adopt {
+		return id, adoptAPIType(ctx, tx, in.APIScope, id)
 	}
-	return id, adoptAPIType(ctx, tx, in.APIScope, id)
+	return id, nil
 }
 
 func adoptAPIType(ctx context.Context, tx pgx.Tx, scope APIScope, id uuid.UUID) error {

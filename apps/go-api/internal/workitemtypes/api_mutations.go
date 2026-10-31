@@ -120,6 +120,7 @@ func (r *Repository) MutateAPI(ctx context.Context, in APIMutation) (projectmuta
 		return projectmutations.Result{}, err
 	}
 	var access apiAccess
+	var resolution apiTypeResolution
 	receipt, err := mutationreceipts.Execute(ctx, db, mutationreceipts.Command{ActorID: in.ActorID, WorkspaceID: in.WorkspaceID, ProjectID: project, Tool: "workitem_type", Action: in.Action, RequestID: in.RequestID, NormalizedInput: raw}, mutationreceipts.Operation{
 		Authorize: func(ctx context.Context, tx pgx.Tx) error {
 			if _, execErr := tx.Exec(ctx, `SELECT work_item_schema_lock($1::uuid)`, in.WorkspaceID); execErr != nil {
@@ -130,8 +131,9 @@ func (r *Repository) MutateAPI(ctx context.Context, in APIMutation) (projectmuta
 			if operationErr != nil {
 				return operationErr
 			}
-			if (in.Action == "create" || in.Action == "update" || in.Action == "delete") && !access.workspaceAdmin || in.Action == "import_to_project" && !access.projectAdmin {
-				return projectmutations.ErrForbidden
+			resolution, operationErr = authorizeAPITypeAction(ctx, tx, in, access)
+			if operationErr != nil {
+				return operationErr
 			}
 			if in.Revalidate != nil {
 				return in.Revalidate(ctx)
@@ -154,7 +156,7 @@ func (r *Repository) MutateAPI(ctx context.Context, in APIMutation) (projectmuta
 			if !before.Enabled {
 				return nil, reject(409, "Enable work item types in workspace settings first.")
 			}
-			id, loadCatalogErr := applyAPITypeMutation(ctx, tx, in, access, before)
+			id, loadCatalogErr := applyAPITypeMutation(ctx, tx, in, resolution, before)
 			if loadCatalogErr != nil {
 				return nil, loadCatalogErr
 			}
@@ -193,7 +195,7 @@ func (r *Repository) MutateAPI(ctx context.Context, in APIMutation) (projectmuta
 	}
 	return result, nil
 }
-func applyAPITypeMutation(ctx context.Context, tx pgx.Tx, in APIMutation, access apiAccess, before Catalog) (uuid.UUID, error) {
+func applyAPITypeMutation(ctx context.Context, tx pgx.Tx, in APIMutation, resolution apiTypeResolution, before Catalog) (uuid.UUID, error) {
 	switch in.Action {
 	case "delete":
 		return in.TypeID, remove(ctx, tx, in.WorkspaceID.String(), in.ActorID.String(), in.TypeID.String(), before)
@@ -205,7 +207,7 @@ func applyAPITypeMutation(ctx context.Context, tx pgx.Tx, in APIMutation, access
 		}
 		return in.ProjectID, nil
 	case "resolve":
-		return resolveAPIType(ctx, tx, in, access, before)
+		return applyAPITypeResolution(ctx, tx, in, resolution, before)
 	default:
 		id, err := saveAPIType(ctx, tx, in, before)
 		if err != nil {

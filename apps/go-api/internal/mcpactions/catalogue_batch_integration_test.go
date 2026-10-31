@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
@@ -205,4 +206,14 @@ func catalogueInitiatives(t *testing.T, f milestoneFixture, call catalogueCall) 
 	var retained bool
 	require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT deleted_at IS NULL FROM issues WHERE id=$1`, item).Scan(&retained))
 	require.True(t, retained)
+}
+
+func assertCatalogueTimezone(t *testing.T, record map[string]any) {
+	t.Helper()
+	for _, field := range []string{"created_at", "updated_at"} {
+		stamp, err := time.Parse(time.RFC3339Nano, record[field].(string))
+		require.NoError(t, err)
+		_, offset := stamp.Zone()
+		require.Equal(t, 19800, offset, field)
+	}
 }
