@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -98,7 +99,7 @@ func marshalLogBatch(records []map[string]any) ([]byte, error) {
 	return json.Marshal(map[string]any{"resourceLogs": records})
 }
 
-func postLogBatch(ctx context.Context, endpoint string, data []byte) error {
+func postLogBatch(ctx context.Context, endpoint string, data []byte) (err error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(data))
 	if err != nil {
 		return err
@@ -109,10 +110,10 @@ func postLogBatch(ctx context.Context, endpoint string, data []byte) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
-	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 64<<10))
+	defer func() { err = errors.Join(err, resp.Body.Close()) }()
+	_, readErr := io.Copy(io.Discard, io.LimitReader(resp.Body, 64<<10))
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("Logal returned HTTP %d", resp.StatusCode)
+		return errors.Join(fmt.Errorf("local log collector returned HTTP %d", resp.StatusCode), readErr)
 	}
-	return nil
+	return readErr
 }

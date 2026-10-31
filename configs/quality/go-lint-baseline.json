@@ -98,26 +98,6 @@
       "count": 1
     },
     {
-      "fingerprint": ["errcheck", "internal/devtools/checks.go", "Error return value of `fmt.Fprintf` is not checked"],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/devtools/checks.go",
-        "Error return value of `resp.Body.Close` is not checked"
-      ],
-      "count": 11
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/devtools/local_logs.go",
-        "Error return value of `resp.Body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
       "fingerprint": [
         "errcheck",
         "internal/estimatereads/repository_integration_test.go",
@@ -326,14 +306,6 @@
         "staticcheck",
         "internal/bootstrap/instance.go",
         "ST1005: error strings should not end with punctuation or newlines"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/devtools/local_logs.go",
-        "ST1005: error strings should not be capitalized"
       ],
       "count": 1
     },

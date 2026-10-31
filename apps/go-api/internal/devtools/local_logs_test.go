@@ -32,7 +32,10 @@ func TestRecordLogAuthorizationCookieAndMultiwordSecrets(t *testing.T) {
 		"login rejected secret: two private words",
 	} {
 		item := RecordLog(line, "plane-api", time.Time{})
-		encoded, _ := json.Marshal(item)
+		encoded, err := json.Marshal(item)
+		if err != nil {
+			t.Fatal(err)
+		}
 		if strings.Contains(string(encoded), "private") || strings.Contains(string(encoded), "alpha beta") {
 			t.Fatalf("secret survived redaction for %q: %s", line, encoded)
 		}
@@ -70,7 +73,9 @@ func TestCheckLocalLoginExercisesSessionEndpointsWithoutPrintingCredentials(t *t
 		switch r.URL.Path {
 		case "/auth/get-csrf-token/":
 			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.Write([]byte(`{"csrf_token":"csrf-test"}`))
+			if _, err := w.Write([]byte(`{"csrf_token":"csrf-test"}`)); err != nil {
+				t.Error(err)
+			}
 		case "/auth/sign-in/":
 			if err := r.ParseForm(); err != nil {
 				t.Error(err)
@@ -85,9 +90,13 @@ func TestCheckLocalLoginExercisesSessionEndpointsWithoutPrintingCredentials(t *t
 			if !strings.Contains(r.Header.Get("Cookie"), "session-id=session-value") {
 				t.Error("session cookie was not sent")
 			}
-			_, _ = w.Write([]byte(`{"email":"test@example.com"}`))
+			if _, err := w.Write([]byte(`{"email":"test@example.com"}`)); err != nil {
+				t.Error(err)
+			}
 		default:
-			_, _ = w.Write([]byte(`{}`))
+			if _, err := w.Write([]byte(`{}`)); err != nil {
+				t.Error(err)
+			}
 		}
 	}))
 	defer server.Close()

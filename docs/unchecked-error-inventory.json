@@ -8,11 +8,11 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 893,
-    "also_in_ERR_01": 38,
-    "additional_ERR_02": 855,
-    "test_file_findings": 545,
-    "non_test_file_findings": 348
+    "findings": 871,
+    "also_in_ERR_01": 24,
+    "additional_ERR_02": 847,
+    "test_file_findings": 541,
+    "non_test_file_findings": 330
   },
   "findings": [
     {
@@ -2256,162 +2256,8 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/devtools/checks.go",
-      "line": 62,
-      "column": 18,
-      "message": "Error return value of `resp.Body.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/checks.go",
-      "line": 69,
-      "column": 18,
-      "message": "Error return value of `resp.Body.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/checks.go",
-      "line": 72,
-      "column": 17,
-      "message": "Error return value of `resp.Body.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/checks.go",
-      "line": 83,
-      "column": 12,
-      "message": "Error return value of `url.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/devtools/checks.go",
-      "line": 85,
-      "column": 18,
-      "message": "Error return value of `resp.Body.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/checks.go",
-      "line": 89,
-      "column": 18,
-      "message": "Error return value of `resp.Body.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/checks.go",
-      "line": 92,
-      "column": 17,
-      "message": "Error return value of `resp.Body.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/checks.go",
-      "line": 102,
-      "column": 19,
-      "message": "Error return value of `resp.Body.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/checks.go",
-      "line": 110,
-      "column": 20,
-      "message": "Error return value of `resp.Body.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/checks.go",
-      "line": 114,
-      "column": 20,
-      "message": "Error return value of `resp.Body.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/checks.go",
-      "line": 118,
-      "column": 7,
-      "message": "Error return value of `io.Copy` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/devtools/checks.go",
-      "line": 120,
-      "column": 18,
-      "message": "Error return value of `resp.Body.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/checks.go",
-      "line": 121,
-      "column": 14,
-      "message": "Error return value of `fmt.Fprintf` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/checks.go",
-      "line": 123,
-      "column": 13,
-      "message": "Error return value of `fmt.Fprintf` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/checks.go",
-      "line": 287,
-      "column": 23,
-      "message": "Error return value of `resp.Body.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/checks.go",
-      "line": 288,
-      "column": 5,
-      "message": "Error return value of `io.Copy` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/devtools/local_logs.go",
-      "line": 112,
-      "column": 23,
-      "message": "Error return value of `resp.Body.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/local_logs.go",
-      "line": 113,
-      "column": 5,
-      "message": "Error return value of `io.Copy` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/devtools/local_logs_test.go",
-      "line": 35,
-      "column": 12,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/devtools/local_logs_test.go",
-      "line": 73,
-      "column": 7,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/devtools/local_logs_test.go",
-      "line": 88,
-      "column": 7,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/devtools/local_logs_test.go",
-      "line": 90,
-      "column": 7,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/devtools/local_logs_test.go",
-      "line": 127,
+      "line": 136,
       "column": 6,
       "message": "Error return value of `w.Write` is not checked",
       "also_in_configured_audit": false

@@ -59,17 +59,17 @@ func checkLocalLoginAt(ctx context.Context, email, password, origin string, outp
 		return fmt.Errorf("CSRF endpoint request failed: %w", err)
 	}
 	if resp.StatusCode != http.StatusOK {
-		resp.Body.Close()
-		return fmt.Errorf("CSRF endpoint returned HTTP %d", resp.StatusCode)
+		return errors.Join(fmt.Errorf("CSRF endpoint returned HTTP %d", resp.StatusCode), resp.Body.Close())
 	}
 	var csrf struct {
 		Token string `json:"csrf_token"`
 	}
-	if decodeErr := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&csrf); decodeErr != nil {
-		resp.Body.Close()
-		return fmt.Errorf("decode CSRF response: %w", decodeErr)
+	if decodeErr := decodeLocalCheckJSON(resp.Body, &csrf); decodeErr != nil {
+		return errors.Join(fmt.Errorf("decode CSRF response: %w", decodeErr), resp.Body.Close())
 	}
-	resp.Body.Close()
+	if closeErr := resp.Body.Close(); closeErr != nil {
+		return fmt.Errorf("close CSRF response: %w", closeErr)
+	}
 	if csrf.Token == "" {
 		return errors.New("CSRF endpoint returned no token")
 	}
@@ -80,16 +80,16 @@ func checkLocalLoginAt(ctx context.Context, email, password, origin string, outp
 	if err != nil {
 		return fmt.Errorf("sign-in request failed: %w", err)
 	}
-	location, _ := url.Parse(resp.Header.Get("Location"))
 	if resp.StatusCode != http.StatusFound {
-		resp.Body.Close()
-		return fmt.Errorf("sign-in endpoint returned HTTP %d", resp.StatusCode)
+		return errors.Join(fmt.Errorf("sign-in endpoint returned HTTP %d", resp.StatusCode), resp.Body.Close())
 	}
-	if location == nil || location.Scheme != base.Scheme || location.Host != base.Host || strings.Contains(location.RawQuery, "error_code=") {
-		resp.Body.Close()
-		return errors.New("sign-in failed or redirected outside the local proxy origin")
+	location, locationErr := url.Parse(resp.Header.Get("Location"))
+	if locationErr != nil || location == nil || location.Scheme != base.Scheme || location.Host != base.Host || strings.Contains(location.RawQuery, "error_code=") {
+		return errors.Join(errors.New("sign-in failed or redirected outside the local proxy origin"), resp.Body.Close())
 	}
-	resp.Body.Close()
+	if closeErr := resp.Body.Close(); closeErr != nil {
+		return fmt.Errorf("close sign-in response: %w", closeErr)
+	}
 	if !hasCookie(jar.Cookies(base), "session-id") {
 		return errors.New("sign-in did not issue a session cookie")
 	}
@@ -99,29 +99,32 @@ func checkLocalLoginAt(ctx context.Context, email, password, origin string, outp
 			return fmt.Errorf("%s request failed: %w", path, err)
 		}
 		if resp.StatusCode != http.StatusOK {
-			resp.Body.Close()
-			return fmt.Errorf("%s returned HTTP %d", path, resp.StatusCode)
+			return errors.Join(fmt.Errorf("%s returned HTTP %d", path, resp.StatusCode), resp.Body.Close())
 		}
 		if path == "/api/users/me/" {
 			var profile struct {
 				Email string `json:"email"`
 			}
-			if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&profile); err != nil {
-				resp.Body.Close()
-				return fmt.Errorf("decode authenticated account: %w", err)
+			if err := decodeLocalCheckJSON(resp.Body, &profile); err != nil {
+				return errors.Join(fmt.Errorf("decode authenticated account: %w", err), resp.Body.Close())
 			}
 			if profile.Email != email {
-				resp.Body.Close()
-				return errors.New("the authenticated account does not match the login")
+				return errors.Join(errors.New("the authenticated account does not match the login"), resp.Body.Close())
 			}
 		} else {
-			_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 1<<20))
+			if _, err := io.Copy(io.Discard, io.LimitReader(resp.Body, 1<<20)); err != nil {
+				return errors.Join(fmt.Errorf("read %s response: %w", path, err), resp.Body.Close())
+			}
 		}
-		resp.Body.Close()
-		fmt.Fprintf(output, "PASS %s\n", path)
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			return fmt.Errorf("close %s response: %w", path, closeErr)
+		}
+		if _, err := fmt.Fprintf(output, "PASS %s\n", path); err != nil {
+			return fmt.Errorf("write login check result: %w", err)
+		}
 	}
-	fmt.Fprintf(output, "Login and session verified through %s/\n", origin)
-	return nil
+	_, writeErr := fmt.Fprintf(output, "Login and session verified through %s/\n", origin)
+	return writeErr
 }
 
 func hasCookie(cookies []*http.Cookie, name string) bool {
@@ -131,6 +134,16 @@ func hasCookie(cookies []*http.Cookie, name string) bool {
 		}
 	}
 	return false
+}
+
+func decodeLocalCheckJSON(body io.Reader, target any) error {
+	// A decoder can accept a complete JSON value before noticing a truncated
+	// HTTP response. Finish the bounded read before accepting the response.
+	data, err := io.ReadAll(io.LimitReader(body, 1<<20))
+	if err != nil {
+		return err
+	}
+	return json.NewDecoder(bytes.NewReader(data)).Decode(target)
 }
 
 // CheckLocalLogging verifies proxy ingestion and correlated Go error logs and spans.
@@ -272,7 +285,7 @@ func hasLocalGoErrorTrace(ctx context.Context, root, traceID string, cutoff time
 	return false, nil
 }
 
-func localPost(ctx context.Context, endpoint string, body []byte, timeout time.Duration) error {
+func localPost(ctx context.Context, endpoint string, body []byte, timeout time.Duration) (err error) {
 	requestCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	req, err := http.NewRequestWithContext(requestCtx, http.MethodPost, endpoint, bytes.NewReader(body))
@@ -284,10 +297,10 @@ func localPost(ctx context.Context, endpoint string, body []byte, timeout time.D
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
-	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 64<<10))
+	defer func() { err = errors.Join(err, resp.Body.Close()) }()
+	_, readErr := io.Copy(io.Discard, io.LimitReader(resp.Body, 64<<10))
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("returned HTTP %d", resp.StatusCode)
+		return errors.Join(fmt.Errorf("returned HTTP %d", resp.StatusCode), readErr)
 	}
-	return nil
+	return readErr
 }
