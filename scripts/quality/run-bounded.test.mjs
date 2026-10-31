@@ -12,8 +12,8 @@ const runner = new URL("./run-bounded.mjs", import.meta.url).pathname;
 const memoryConsumer =
   "const {randomFillSync}=require('node:crypto'); const buffers=[]; setInterval(()=>{if(buffers.length<32)buffers.push(randomFillSync(Buffer.alloc(4*1024*1024)))},40)";
 const shellQuote = (value) => `'${value.replaceAll("'", "'\\''")}'`;
-function run(script, extra = []) {
-  const result = spawnSync(process.execPath, [runner, ...extra, "--", process.execPath, "-e", script], {
+function run(script, extra = [], childArgs = []) {
+  const result = spawnSync(process.execPath, [runner, ...extra, "--", process.execPath, "-e", script, ...childArgs], {
     encoding: "utf8",
     timeout: 7000,
   });
@@ -172,9 +172,18 @@ void test("external deadline interrupts a blocked child event loop", () => {
   assert.doesNotMatch(result.stdout, /finished/);
 });
 void test("memory ceiling includes native buffer allocations", () => {
-  const result = run(memoryConsumer, ["--memory-mib", "60", "--heap-mib", "64"]);
+  const result = run(memoryConsumer, ["--memory-mib", "60", "--heap-mib", "64"], ["private-command-argument"]);
   assert.equal(result.status, 137, result.stderr);
   assert.match(result.stderr, /RSS exceeded/);
+  const prefix = "[bounded] memory sample ";
+  const line = result.stderr.split("\n").find((value) => value.startsWith(prefix));
+  assert.ok(line, "memory failure must identify the processes in its failing sample");
+  const sample = JSON.parse(line.slice(prefix.length));
+  assert.ok(sample.totalMiB >= 60);
+  assert.ok(sample.processes.length > 0 && sample.processes.length <= 10);
+  assert.ok(sample.processes.some(({ command, rssMiB }) => /node/i.test(command) && rssMiB > 0));
+  assert.ok(sample.processes.every(({ pid, command }) => Number.isInteger(pid) && !command.includes("/")));
+  assert.doesNotMatch(result.stderr, /private-command-argument/);
 });
 for (const detached of [false, true]) {
   void test(`cleans up a ${detached ? "detached" : "shared-group"} worker when its parent exits`, async () => {

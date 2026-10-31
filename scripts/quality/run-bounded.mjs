@@ -2,6 +2,7 @@
 // Run a POSIX process tree with an external deadline and sampled RSS ceiling.
 // The deadline stays responsive even when a test blocks its own event loop.
 import { spawn, execFile } from "node:child_process";
+import path from "node:path";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
@@ -108,7 +109,7 @@ function stop(code, reason) {
   forceTimer = setTimeout(() => signalGroup("SIGKILL"), 500);
 }
 async function groupMemory() {
-  const { stdout } = await execFileAsync("ps", ["-axo", "pid=,ppid=,pgid=,rss="], {
+  const { stdout } = await execFileAsync("ps", ["-axo", "pid=,ppid=,pgid=,rss=,comm="], {
     timeout: 2000,
     maxBuffer: 2 * 1024 * 1024,
   });
@@ -116,8 +117,14 @@ async function groupMemory() {
     .trim()
     .split("\n")
     .map((row) => {
-      const [pid, parent, group, rss] = row.trim().split(/\s+/).map(Number);
-      return { pid, parent, group, rss };
+      const [pid, parent, group, rss, ...nameParts] = row.trim().split(/\s+/);
+      return {
+        pid: Number(pid),
+        parent: Number(parent),
+        group: Number(group),
+        rss: Number(rss),
+        command: nameParts.join(" "),
+      };
     });
   // A snapshot captured before exit can arrive after the child's close event.
   // Keep that ownership evidence and reap workers discovered by the final sample.
@@ -132,6 +139,22 @@ async function groupMemory() {
   return owned.reduce((total, row) => total + row.rss, 0);
 }
 
+function reportMemoryFailure(usage) {
+  const processes = trackedRows
+    .toSorted((left, right) => right.rss - left.rss)
+    .slice(0, 10)
+    .map((row) => ({
+      pid: row.pid,
+      parentPid: row.parent,
+      command: path.basename(row.command),
+      rssMiB: Math.round(row.rss / 1024),
+    }));
+  // Use executable names only: command arguments can contain credentials.
+  process.stderr.write(
+    `[bounded] memory sample ${JSON.stringify({ totalMiB: Math.round(usage / 1024), processes })}\n`
+  );
+}
+
 async function checkMemory() {
   if (monitoring || finished) return;
   monitoring = true;
@@ -140,7 +163,10 @@ async function checkMemory() {
     sampleFailures = 0;
     peakKiB = Math.max(peakKiB, usage);
     if (failureCode) signalGroup("SIGKILL");
-    if (usage > memoryMiB * 1024) stop(137, `RSS exceeded ${memoryMiB} MiB`);
+    if (usage > memoryMiB * 1024 && !failureCode) {
+      reportMemoryFailure(usage);
+      stop(137, `RSS exceeded ${memoryMiB} MiB`);
+    }
   } catch (error) {
     if (finished) return;
     // Process enumeration can briefly stall during compiler process churn.
