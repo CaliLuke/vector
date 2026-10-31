@@ -286,6 +286,22 @@ Coverage suites use separate commands without that cache setting.
 
 ### Dependency limitations
 
+Router CLI 1.167.46 loads the CommonJS build of `@tanstack/router-core@1.171.39`,
+which emits a circular-access warning for `replaceRouteChunk`. Route generation
+succeeds, but a standalone package import leaves the CommonJS class method
+undefined while the ESM import exposes a function. The reproduction and affected
+versions are recorded in
+[TanStack/router#8585](https://github.com/TanStack/router/issues/8585#issuecomment-6540692152).
+The dependency remains unpatched and the warning is not suppressed. Recheck both
+entry points and CLI route generation when adopting a release that fixes the
+CommonJS initialization order.
+
+`next-themes@0.4.6` emits a React development warning about its inline script on
+client rendering with React 19.3.1. A standalone reproduction is recorded in
+[upstream issue #385](https://github.com/pacocoursey/next-themes/issues/385#issuecomment-6378110860).
+The dependency remains unpatched and the warning is not suppressed. Recheck it
+when adopting an upstream release that fixes client-rendered providers.
+
 Multipart readers keep the `NextPart` error separate from body-read errors because
 [errorlint issue #49](https://codeberg.org/polyfloyd/go-errorlint/issues/49) describes
 incorrect EOF warnings when an error variable is reassigned. This separation can
@@ -398,12 +414,6 @@ watchers are stopped for checks. The development runner forwards frontend,
 migrator, and proxy output. It does not forward the API's stdout a second time.
 `dev:check-logs` exercises a read-only HTTP 500 and requires both its error log
 and matching server span, in addition to checking proxy ingestion.
-
-`next-themes@0.4.6` emits a React development warning about its inline script on
-client rendering with React 19.3.1. A standalone reproduction is recorded in
-[upstream issue #385](https://github.com/pacocoursey/next-themes/issues/385#issuecomment-6378110860).
-The dependency remains unpatched and the warning is not suppressed. Recheck it
-when adopting an upstream release that fixes client-rendered providers.
 
 ## Test account
 
