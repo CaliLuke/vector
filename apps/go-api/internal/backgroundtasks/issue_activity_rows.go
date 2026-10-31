@@ -73,7 +73,14 @@ func updatedIssueActivityRows(ctx context.Context, tx pgx.Tx, event issueActivit
 	if err != nil {
 		return nil, err
 	}
-	return append(rows, collectionRows...), nil
+	rows = append(rows, collectionRows...)
+	estimateRows, err := estimateIssueActivityRows(ctx, tx, event)
+	if err != nil {
+		return nil, err
+	}
+	// Append newly supported fields after existing rows: activity IDs use their
+	// event-relative position, so replay must retain the established order.
+	return append(rows, estimateRows...), nil
 }
 
 func scalarIssueActivityRows(ctx context.Context, tx pgx.Tx, event issueActivityEvent) ([]issueActivityRow, error) {

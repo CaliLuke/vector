@@ -8,6 +8,7 @@ import (
 	"time"
 
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
+	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
@@ -75,4 +76,13 @@ func cancelProjectWriteWhileLocked(t *testing.T, f milestoneFixture, project uui
 	case <-ctx.Done():
 		t.Fatal("cancelled request did not return while the project lock remained held")
 	}
+}
+
+func assertConcurrentReceiptReplay(t *testing.T, first, second projectmutations.Result) {
+	t.Helper()
+	require.NotNil(t, first.Replayed)
+	require.NotNil(t, second.Replayed)
+	require.NotEqual(t, *first.Replayed, *second.Replayed)
+	require.Equal(t, first.Revision, second.Revision)
+	require.JSONEq(t, string(first.Record), string(second.Record))
 }

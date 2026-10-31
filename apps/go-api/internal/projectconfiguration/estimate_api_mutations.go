@@ -68,6 +68,10 @@ func (r *Repository) MutateEstimate(ctx context.Context, cmd projectmutations.Co
 			if applyEstimateAPIErr != nil {
 				return nil, applyEstimateAPIErr
 			}
+			raw, applyEstimateAPIErr = estimateAPITimestamps(raw, cmd.Timezone)
+			if applyEstimateAPIErr != nil {
+				return nil, applyEstimateAPIErr
+			}
 			if applyEstimateAPIErr = tx.QueryRow(ctx, `SELECT revision FROM project_estimate_revisions WHERE project_id=$1`, cmd.ProjectID).Scan(&revision); applyEstimateAPIErr != nil {
 				return nil, applyEstimateAPIErr
 			}

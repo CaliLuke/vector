@@ -56,11 +56,7 @@ func TestProjectRecordContentionCommitsOneMutation(t *testing.T) {
 			switch mode {
 			case "identical request":
 				require.NoError(t, result[1].err)
-				require.NotNil(t, result[0].value.Replayed)
-				require.NotNil(t, result[1].value.Replayed)
-				require.NotEqual(t, *result[0].value.Replayed, *result[1].value.Replayed)
-				require.Equal(t, result[0].value.Revision, result[1].value.Revision)
-				require.JSONEq(t, string(result[0].value.Record), string(result[1].value.Record))
+				assertConcurrentReceiptReplay(t, result[0].value, result[1].value)
 			case "changed request input":
 				require.ErrorIs(t, result[1].err, mutationreceipts.ErrConflict)
 			case "competing revisions":

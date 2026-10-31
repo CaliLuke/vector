@@ -25,7 +25,7 @@ const estimatePointReadSQL = `SELECT jsonb_build_object('id',ep.id,'created_at',
  'project',ep.project_id,'key',ep.key,'value',ep.value,'description',ep.description)
  FROM estimate_points ep WHERE ep.id=$1`
 
-func (r *Repository) PatchEstimate(ctx context.Context, user, slug, project, estimateID string, body io.Reader, contentType string) (json.RawMessage, error) {
+func (r *Repository) PatchEstimate(ctx context.Context, user, slug, project, estimateID string, body io.Reader, contentType string) (_ json.RawMessage, resultErr error) {
 	input, err := djangoinput.Parse(body, contentType)
 	if err != nil {
 		return nil, err
@@ -38,8 +38,18 @@ func (r *Repository) PatchEstimate(ctx context.Context, user, slug, project, est
 	if !present || !ok || len(points) == 0 {
 		return nil, failure(http.StatusBadRequest, "error", "Estimate points are required")
 	}
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
+	// The native editor changes the estimate and its points as one catalogue
+	// operation, under the same schema lock used by MCP estimate mutations.
+	if _, err = tx.Exec(ctx, `SELECT work_item_schema_lock(p.workspace_id) FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$1 AND w.slug=$2`, project, slug); err != nil {
+		return nil, err
+	}
 	var exists bool
-	err = r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM estimates e JOIN projects p ON p.id=e.project_id JOIN workspaces w ON w.id=e.workspace_id WHERE e.id=$1 AND p.id=$2 AND w.slug=$3 AND e.deleted_at IS NULL)`, estimateID, project, slug).Scan(&exists)
+	err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM estimates e JOIN projects p ON p.id=e.project_id JOIN workspaces w ON w.id=e.workspace_id WHERE e.id=$1 AND p.id=$2 AND w.slug=$3 AND e.deleted_at IS NULL)`, estimateID, project, slug).Scan(&exists)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +64,7 @@ func (r *Repository) PatchEstimate(ctx context.Context, user, slug, project, est
 		if value, present := estimate["type"]; present {
 			typ = djangoinput.ScalarString(value)
 		}
-		_, err = r.db.Exec(ctx, `UPDATE estimates SET name=COALESCE($4,name),type=COALESCE($5,type),updated_at=clock_timestamp(),updated_by_id=$6 WHERE id=$1 AND project_id=$2 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$3)`, estimateID, project, slug, name, typ, user)
+		_, err = tx.Exec(ctx, `UPDATE estimates SET name=COALESCE($4,name),type=COALESCE($5,type),updated_at=clock_timestamp(),updated_by_id=$6 WHERE id=$1 AND project_id=$2 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$3)`, estimateID, project, slug, name, typ, user)
 		if err != nil {
 			return nil, err
 		}
@@ -65,7 +75,7 @@ func (r *Repository) PatchEstimate(ctx context.Context, user, slug, project, est
 			continue
 		}
 		id, _ := point["id"].(string)
-		if _, err := uuid.Parse(id); err != nil {
+		if _, parseErr := uuid.Parse(id); parseErr != nil {
 			continue
 		}
 		var key, value any
@@ -86,12 +96,19 @@ func (r *Repository) PatchEstimate(ctx context.Context, user, slug, project, est
 			}
 			value = text
 		}
-		_, err := r.db.Exec(ctx, `UPDATE estimate_points SET key=COALESCE($4,key),value=COALESCE($5,value),updated_at=clock_timestamp() WHERE id=$1 AND estimate_id=$2 AND project_id=$3 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$6) AND deleted_at IS NULL`, id, estimateID, project, key, value, slug)
+		_, err = tx.Exec(ctx, `UPDATE estimate_points SET key=COALESCE($4,key),value=COALESCE($5,value),updated_at=clock_timestamp() WHERE id=$1 AND estimate_id=$2 AND project_id=$3 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$6) AND deleted_at IS NULL`, id, estimateID, project, key, value, slug)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return scanJSON(ctx, r.db, estimateReadSQLForID, estimateID)
+	result, err := scanJSON(ctx, tx, estimateReadSQLForID, estimateID)
+	if err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 const estimateReadSQLForID = `SELECT jsonb_build_object('id',e.id,'created_at',e.created_at,'updated_at',e.updated_at,'created_by',e.created_by_id,'updated_by',e.updated_by_id,'deleted_at',e.deleted_at,'workspace',e.workspace_id,'project',e.project_id,'name',e.name,'description',e.description,'type',e.type,'last_used',e.last_used,'points',COALESCE((SELECT jsonb_agg(jsonb_build_object('id',ep.id,'created_at',ep.created_at,'updated_at',ep.updated_at,'created_by',ep.created_by_id,'updated_by',ep.updated_by_id,'deleted_at',ep.deleted_at,'estimate',ep.estimate_id,'workspace',ep.workspace_id,'project',ep.project_id,'key',ep.key,'value',ep.value,'description',ep.description) ORDER BY ep.value) FROM estimate_points ep WHERE ep.estimate_id=e.id AND ep.deleted_at IS NULL),'[]'::jsonb)) FROM estimates e WHERE e.id=$1`

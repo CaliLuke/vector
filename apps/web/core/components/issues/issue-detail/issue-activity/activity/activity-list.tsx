@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import type { ReactNode } from "react";
+
 // helpers
 import { getValidKeysFromObject } from "@plane/utils/array";
 // hooks
@@ -36,6 +38,21 @@ type TIssueActivityItem = {
   ends: "top" | "bottom" | undefined;
 };
 
+// These fields share the same activity props and precede relation dispatch.
+const propertyActivities = new Map<string, (props: TIssueActivityItem) => ReactNode>([
+  ["state", (props) => <IssueStateActivity {...props} showIssue={false} />],
+  ["name", (props) => <IssueNameActivity {...props} />],
+  ["description", (props) => <IssueDescriptionActivity {...props} showIssue={false} />],
+  ["assignees", (props) => <IssueAssigneeActivity {...props} showIssue={false} />],
+  ["priority", (props) => <IssuePriorityActivity {...props} showIssue={false} />],
+  ["estimate_points", (props) => <IssueEstimateActivity {...props} showIssue={false} />],
+  ["estimate_categories", (props) => <IssueEstimateActivity {...props} showIssue={false} />],
+  ["estimate_time", (props) => <IssueEstimateActivity {...props} showIssue={false} />],
+  // Retain history recorded before estimate fields included their type.
+  ["estimate_point", (props) => <IssueEstimateActivity {...props} showIssue={false} />],
+  ["parent", (props) => <IssueParentActivity {...props} showIssue={false} />],
+]);
+
 export const IssueActivityItem = function IssueActivityItem(props: TIssueActivityItem) {
   const { activity, ends } = props;
   // hooks
@@ -45,25 +62,12 @@ export const IssueActivityItem = function IssueActivityItem(props: TIssueActivit
   const componentDefaultProps = { activity, ends };
 
   const activityField = activity.field;
+  const renderProperty = propertyActivities.get(activityField ?? "");
+  if (renderProperty) return renderProperty(componentDefaultProps);
+
   switch (activityField) {
     case null: // default issue creation
       return <IssueDefaultActivity {...componentDefaultProps} />;
-    case "state":
-      return <IssueStateActivity {...componentDefaultProps} showIssue={false} />;
-    case "name":
-      return <IssueNameActivity {...componentDefaultProps} />;
-    case "description":
-      return <IssueDescriptionActivity {...componentDefaultProps} showIssue={false} />;
-    case "assignees":
-      return <IssueAssigneeActivity {...componentDefaultProps} showIssue={false} />;
-    case "priority":
-      return <IssuePriorityActivity {...componentDefaultProps} showIssue={false} />;
-    case "estimate_points":
-    case "estimate_categories":
-    case "estimate_point" /* This case is to handle all the older recorded activities for estimates. Field changed from  "estimate_point" -> `estimate_${estimate_type}`*/:
-      return <IssueEstimateActivity {...componentDefaultProps} showIssue={false} />;
-    case "parent":
-      return <IssueParentActivity {...componentDefaultProps} showIssue={false} />;
     case activityRelations.find((field) => field === activityField):
       return <IssueRelationActivity {...componentDefaultProps} />;
     case "start_date":

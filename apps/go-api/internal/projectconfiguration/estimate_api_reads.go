@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -12,7 +13,7 @@ import (
 
 type EstimateRead struct {
 	ActorID, WorkspaceID, ProjectID, EstimateID uuid.UUID
-	WorkspaceSlug                               string
+	WorkspaceSlug, Timezone                     string
 	Points, IncludeRevision                     bool
 }
 
@@ -47,7 +48,18 @@ func (r *Repository) ReadEstimate(ctx context.Context, in EstimateRead) (json.Ra
 	if len(body) == 0 {
 		return nil, projectmutations.ErrNotFound
 	}
-	return body, nil
+	return estimateAPITimestamps(body, in.Timezone)
+}
+
+func estimateAPITimestamps(raw json.RawMessage, timezone string) (json.RawMessage, error) {
+	if len(raw) == 0 {
+		return raw, nil
+	}
+	var value any
+	if err := djangoapi.DecodeJSON(raw, &value); err != nil {
+		return nil, err
+	}
+	return json.Marshal(djangoapi.Timestamps(value, timezone))
 }
 
 const estimateReadScopeSQL = `WITH scope AS MATERIALIZED (

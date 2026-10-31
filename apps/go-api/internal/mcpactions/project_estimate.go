@@ -69,7 +69,7 @@ func (s *Service) readProjectEstimate(ctx context.Context, selected resourceMuta
 	if err != nil {
 		return loom.Nullable[api.ProjectEstimateResult]{}, err
 	}
-	in := projectconfiguration.EstimateRead{ActorID: actor.UserID, WorkspaceID: actor.WorkspaceID, WorkspaceSlug: actor.WorkspaceSlug, Points: selected.action == "list_points", IncludeRevision: revision}
+	in := projectconfiguration.EstimateRead{ActorID: actor.UserID, WorkspaceID: actor.WorkspaceID, WorkspaceSlug: actor.WorkspaceSlug, Timezone: actor.Timezone, Points: selected.action == "list_points", IncludeRevision: revision}
 	in.ProjectID, err = uuid.Parse(selected.project)
 	if err != nil || in.ProjectID == uuid.Nil {
 		return loom.Nullable[api.ProjectEstimateResult]{}, api.MakeInvalidParams(errors.New("invalid project identifier"))

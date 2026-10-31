@@ -2948,15 +2948,6 @@
     },
     {
       "diagnostic": {
-        "filename": "apps/web/core/components/issues/issue-detail/issue-activity/activity/activity-list.tsx",
-        "severity": "warning",
-        "code": "eslint(complexity)",
-        "message": "function `IssueActivityItem` has a complexity of 22. Maximum allowed is 15."
-      },
-      "count": 1
-    },
-    {
-      "diagnostic": {
         "filename": "apps/web/core/components/issues/issue-detail/issue-activity/filter-root.tsx",
         "severity": "warning",
         "code": "typescript(no-unsafe-type-assertion)",
