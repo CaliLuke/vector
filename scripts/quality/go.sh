@@ -116,7 +116,7 @@ test_gate() {
 deadcode_gate() {
   local report="$REPORTS/go-deadcode.json"
   local packages filter
-  packages="$(cd "$MODULE" && go list -tags=integration -f '{{.ImportPath}}' ./... | rg -v '/(design|gen)(/|$)')"
+  packages="$(cd "$MODULE" && go list -tags=integration -f '{{.ImportPath}}' ./... | grep -Ev '/(design|gen)(/|$)')"
   filter="$(printf '%s\n' "$packages" | sed -E 's/[][(){}.+*?^$|\\]/\\&/g' | paste -sd '|' -)"
   (
     cd "$MODULE"
@@ -139,7 +139,7 @@ dupl_gate() {
 write_static_baselines() {
   local deadcode_report="$REPORTS/go-deadcode.json" dupl_report="$REPORTS/go-dupl.txt"
   local packages filter
-  packages="$(cd "$MODULE" && go list -tags=integration -f '{{.ImportPath}}' ./... | rg -v '/(design|gen)(/|$)')"
+  packages="$(cd "$MODULE" && go list -tags=integration -f '{{.ImportPath}}' ./... | grep -Ev '/(design|gen)(/|$)')"
   filter="$(printf '%s\n' "$packages" | sed -E 's/[][(){}.+*?^$|\\]/\\&/g' | paste -sd '|' -)"
   (
     cd "$MODULE"

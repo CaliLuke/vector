@@ -6,6 +6,10 @@ export default defineConfig({
     maxWorkers: 1,
     fileParallelism: false,
     environment: "node",
+    env: {
+      API_BASE_URL: "http://api.test",
+      LIVE_SERVER_SECRET_KEY: "live-test-secret",
+    },
     globals: true,
     include: ["tests/**/*.test.ts", "tests/**/*.spec.ts"],
     coverage: {
