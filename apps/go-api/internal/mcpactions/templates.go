@@ -89,7 +89,7 @@ func (s *Service) templateOperation(ctx context.Context, input *api.TemplateRequ
 	if err != nil {
 		return nil, err
 	}
-	cmd.ActorID, cmd.WorkspaceID, cmd.WorkspaceSlug = actor.UserID, actor.WorkspaceID, actor.WorkspaceSlug
+	cmd.ActorID, cmd.WorkspaceID, cmd.WorkspaceSlug, cmd.Timezone = actor.UserID, actor.WorkspaceID, actor.WorkspaceSlug, actor.Timezone
 	var raw json.RawMessage
 	if in.Action == "list" {
 		raw, err = s.templates.List(ctx, cmd.Query)
@@ -105,6 +105,9 @@ func (s *Service) templateOperation(ctx context.Context, input *api.TemplateRequ
 	}
 	if err != nil {
 		return nil, archiveResourceError(err)
+	}
+	if in.Action != "list" && (in.Request != nil || in.Revision != nil) {
+		return raw, nil
 	}
 	var value any
 	if djangoapi.DecodeJSON(raw, &value) != nil {

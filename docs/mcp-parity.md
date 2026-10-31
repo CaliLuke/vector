@@ -266,10 +266,10 @@ The [work-log contract](mcp-work-logs.md) defines minute-based entries, author/a
 | `workspace.retrieve`                       | Read     | None                                                     | Read verified         | None for the documented identity contract; see workspace evidence                     |
 | `workspace.get_features`                   | Read     | None                                                     | Read verified         | None for the documented workspace feature read contract                               |
 | `workspace.update_features`                | Mutation | None                                                     | Write verified        | None for the documented workspace feature write contract                              |
-| `template.list`                            | Read     | `kind`                                                   | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
-| `template.create`                          | Mutation | `kind`, `name`, `template_data`                          | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
-| `template.update`                          | Mutation | `kind`, `template_id`                                    | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
-| `template.delete`                          | Mutation | `kind`, `template_id`                                    | Workflow verified     | Combined scope, feature/governance, SDK, receipt, revision and effect checks          |
+| `template.list`                            | Read     | `kind`                                                   | Workflow verified     | Native row-writer revisions, parent deletion and rollback preservation                |
+| `template.create`                          | Mutation | `kind`, `name`, `template_data`                          | Workflow verified     | Native row-writer revisions, parent deletion and rollback preservation                |
+| `template.update`                          | Mutation | `kind`, `template_id`                                    | Workflow verified     | Native row-writer revisions, parent deletion and rollback preservation                |
+| `template.delete`                          | Mutation | `kind`, `template_id`                                    | Workflow verified     | Native row-writer revisions, parent deletion and rollback preservation                |
 | `collection.list`                          | Read     | None                                                     | Workflow verified     | Combined privacy, hierarchy, membership, receipt, revision and durable history checks |
 | `collection.retrieve`                      | Read     | `collection_id`                                          | Workflow verified     | Combined privacy, hierarchy, membership, receipt, revision and durable history checks |
 | `collection.create`                        | Mutation | `name`                                                   | Workflow verified     | Combined privacy, hierarchy, membership, receipt, revision and durable history checks |
@@ -321,7 +321,7 @@ The fixture pins Plane MCP Server revision `dc7cfd9f3c305891909e2372f0cc50729135
 
 [Page and collection contracts](mcp-pages-collections.md) cover workspace pages, project lifecycle reuse, hierarchy, private collection membership, work-item links and durable body-history admission. The generated-server content batch covers all 23 actions across both authentication modes and protocol revisions.
 
-[Templates](mcp-templates.md) and [features/initiatives](mcp-features-initiatives.md) are wired and covered by the generated-server workspace catalogue batch. Their full acceptance still requires the remaining domain checks and compatibility review. [Customer acceptance](mcp-customers.md) links the completed domain proofs.
+[Template acceptance](mcp-templates.md) records SDK, authorization, receipt and recovery proofs, with native writer and storage lifecycle checks still outstanding. [Features/initiatives](mcp-features-initiatives.md) are wired and covered by the generated-server workspace catalogue batch; their domain checks and compatibility review remain outstanding. [Customer acceptance](mcp-customers.md) links the completed domain proofs.
 
 The `workspace.list` extension returns the current user's active workspace memberships
 with IDs, names and slugs. Generated-server regressions cover listing and per-call

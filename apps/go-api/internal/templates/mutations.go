@@ -74,6 +74,14 @@ func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.R
 					return nil, operationErr
 				}
 			}
+			var data any
+			if in.Data != nil {
+				rawData, marshalErr := json.Marshal(in.Data)
+				if marshalErr != nil {
+					return nil, marshalErr
+				}
+				data = rawData
+			}
 			var operationErr2 error
 			switch in.Action {
 			case "create":
@@ -82,13 +90,8 @@ func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.R
 				if in.Description != nil {
 					summary = *in.Description
 				}
-				data, _ := json.Marshal(in.Data)
 				_, operationErr2 = tx.Exec(ctx, `INSERT INTO resource_templates(id,workspace_id,project_id,kind,name,summary,template_data,created_by_id,updated_by_id) VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$8)`, id, in.WorkspaceID, projectID(in.ProjectID), in.Kind, *in.Name, summary, data, in.ActorID)
 			case "update":
-				var data any
-				if in.Data != nil {
-					data, _ = json.Marshal(in.Data)
-				}
 				_, operationErr2 = tx.Exec(ctx, `UPDATE resource_templates SET name=COALESCE($3,name),summary=COALESCE($4,summary),template_data=template_data || COALESCE($5::jsonb,'{}'),updated_at=now(),updated_by_id=$6 WHERE id=$1 AND workspace_id=$2`, id, in.WorkspaceID, in.Name, in.Description, data, in.ActorID)
 			case "delete":
 				_, operationErr2 = tx.Exec(ctx, `UPDATE resource_templates SET deleted_at=now(),updated_at=now(),updated_by_id=$3 WHERE id=$1 AND workspace_id=$2`, id, in.WorkspaceID, in.ActorID)
@@ -104,8 +107,14 @@ func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.R
 					return nil, operationErr2
 				}
 			}
-			old, _ := json.Marshal(before)
-			current, _ := json.Marshal(after)
+			old, marshalErr := json.Marshal(before)
+			if marshalErr != nil {
+				return nil, marshalErr
+			}
+			current, marshalErr := json.Marshal(after)
+			if marshalErr != nil {
+				return nil, marshalErr
+			}
 			if _, operationErr2 = tx.Exec(ctx, `INSERT INTO template_events(workspace_id,template_id,actor_id,action,before_value,after_value) VALUES($1,$2,$3,$4,$5::jsonb,$6::jsonb)`, in.WorkspaceID, id, in.ActorID, in.Action, old, current); operationErr2 != nil {
 				return nil, operationErr2
 			}
@@ -117,6 +126,10 @@ func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.R
 				value = projection(after)
 			}
 			raw, operationErr2 := json.Marshal(value)
+			if operationErr2 != nil {
+				return nil, operationErr2
+			}
+			raw, operationErr2 = djangoapi.JSONTimestamps(raw, in.Timezone)
 			if operationErr2 != nil {
 				return nil, operationErr2
 			}

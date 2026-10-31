@@ -32,7 +32,7 @@ type Query struct {
 }
 type Command struct {
 	Query
-	Action            string
+	Action, Timezone  string
 	Name, Description *string
 	Data              map[string]any
 	RequestID         *uuid.UUID

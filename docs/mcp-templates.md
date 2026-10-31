@@ -32,14 +32,37 @@ Deletion retains a tombstone and removes the template from listing. Parent resou
 deletion cascades its templates; no copied work items, pages or projects are touched.
 Rollback refuses to discard template data.
 
-Proof must cover cross-workspace IDs, current membership and governance on replay,
-project visibility in workspace listings, all three kinds at valid scopes, merge
-and null behavior, summary/body separation, CAS and atomic audit/receipt writes.
+The [SDK record tests](../apps/go-api/internal/mcpactions/template_contract_integration_test.go)
+cover all five valid kind/scope combinations, summary/body separation, top-level
+merge and null preservation, record fields, storage, audit events and deletion.
+[Visibility checks](../apps/go-api/internal/mcpactions/template_visibility_integration_test.go)
+cover workspace/kind/project selection, foreign IDs, revoked project membership
+and archived projects. [Validation checks](../apps/go-api/internal/mcpactions/template_validation_integration_test.go)
+verify rejected writes leave records, audits, revisions and retry keys unchanged.
+
+[Role and governance checks](../apps/go-api/internal/mcpactions/template_authorization_integration_test.go)
+cover new writes and receipt replay. [Authorization after waiting](../apps/go-api/internal/mcpactions/template_recovery_integration_test.go)
+and [project scope changes](../apps/go-api/internal/mcpactions/template_scope_wait_integration_test.go)
+exercise revocation after admission under both credentials and MCP revisions.
+[Competing writes](../apps/go-api/internal/mcpactions/template_concurrency_integration_test.go)
+verify same-key replay, changed-input conflicts and one winner for a shared revision.
+The recovery tests also verify cancellation and commit rejection preserve state and
+leave the retry identity usable.
+
+[Receipt timestamp checks](../apps/go-api/internal/mcpactions/template_receipt_integration_test.go)
+verify create and update receipts retain the accepted user-timezone representation
+after a preference change. Template JSON retains its original timestamp-looking
+values and numeric precision. Older receipts did not retain the accepted timezone;
+they preserve their stored timestamps, and the original display offset cannot be
+reconstructed from those records.
+
+Remaining acceptance covers native row-writer revisions across scopes, parent
+resource deletion and migration rollback preservation.
+
 The workspace project summary intentionally follows the tool's documented intent;
 the pinned Python helper passes short_description to a model that ignores it.
 [Upstream issue #253](https://github.com/makeplane/plane-mcp-server/issues/253)
 records the confirmed helper defect. The compatibility exception can be removed
-when the pinned reference preserves the project summary. A focused native
-regression remains part of consolidated verification.
+when the pinned reference preserves the project summary. The SDK record tests verify the workspace project summary.
 
-Template JSON retains numeric precision, including integers above the JavaScript safe-integer range. Timestamp projection applies to catalogue records and receipts, not keys inside template_data. These preservation paths are included in the consolidated regression batch.
+Template JSON retains numeric precision, including integers above the JavaScript safe-integer range. Timestamp projection applies to catalogue records and receipts, not keys inside template_data. The SDK record and receipt timestamp tests exercise these preservation paths.

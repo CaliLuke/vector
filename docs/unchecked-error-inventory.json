@@ -8,11 +8,11 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 868,
+    "findings": 864,
     "also_in_ERR_01": 24,
-    "additional_ERR_02": 844,
+    "additional_ERR_02": 840,
     "test_file_findings": 541,
-    "non_test_file_findings": 327
+    "non_test_file_findings": 323
   },
   "findings": [
     {
@@ -4255,34 +4255,6 @@
       "line": 177,
       "column": 3,
       "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/templates/mutations.go",
-      "line": 85,
-      "column": 11,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/templates/mutations.go",
-      "line": 90,
-      "column": 12,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/templates/mutations.go",
-      "line": 107,
-      "column": 9,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/templates/mutations.go",
-      "line": 108,
-      "column": 13,
-      "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {

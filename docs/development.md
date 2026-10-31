@@ -270,6 +270,9 @@ not an isolation boundary for untrusted programs.
 The supervisor terminates the process group on failure or deadline and kills
 leftover workers when their parent exits. See `scripts/quality/run-bounded.mjs`
 for running focused commands under the same protection.
+Cancel checks through the launching terminal (Ctrl+C), or signal a separately
+owned invocation process group so the supervisor receives the cancellation and
+stops its workers. Sending a signal only to Prek does not reach detached workers.
 
 Frontend checks cover Oxlint, type diagnostics, Oxfmt, Knip, duplication, and the
 Node frontend, Live, codemod, editor, and UI suites. Full builds also compile both

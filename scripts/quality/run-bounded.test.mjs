@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
+import { once } from "node:events";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -316,3 +317,49 @@ setInterval(()=>{},1000);
     rmSync(directory, { recursive: true, force: true });
   }
 });
+
+function waitForWorker(pidPath) {
+  return new Promise((resolve, reject) => {
+    const interval = setInterval(() => {
+      if (!existsSync(pidPath)) return;
+      clearInterval(interval);
+      clearTimeout(deadline);
+      resolve(Number(readFileSync(pidPath, "utf8")));
+    }, 10);
+    const deadline = setTimeout(() => {
+      clearInterval(interval);
+      reject(new Error("worker did not start before the fixture deadline"));
+    }, 5000);
+  });
+}
+
+for (const [signal, code] of [
+  ["SIGINT", 130],
+  ["SIGTERM", 143],
+]) {
+  void test(`canceling the invocation group with ${signal} stops its detached worker`, async (t) => {
+    const directory = mkdtempSync(path.join(tmpdir(), "vector-group-cancellation-"));
+    const pidPath = path.join(directory, "worker.pid");
+    const script = `require('node:fs').writeFileSync(${JSON.stringify(pidPath)}, String(process.pid)); setInterval(()=>{},1000);`;
+    const child = spawn(process.execPath, [runner, "--seconds", "10", "--", process.execPath, "-e", script], {
+      detached: true,
+      stdio: ["ignore", "ignore", "pipe"],
+    });
+    t.after(() => {
+      cleanupWorkerFile(pidPath);
+      cleanupWorker(child.pid);
+      rmSync(directory, { recursive: true, force: true });
+    });
+    let stderr = "";
+    child.stderr.setEncoding("utf8").on("data", (chunk) => {
+      stderr += chunk;
+    });
+    const closed = once(child, "close");
+    const worker = await waitForWorker(pidPath);
+    process.kill(-child.pid, signal);
+    const [exitCode, exitSignal] = await closed;
+    assert.equal(exitCode, code, stderr);
+    assert.equal(exitSignal, null, stderr);
+    await assertWorkerStopped(worker);
+  });
+}
