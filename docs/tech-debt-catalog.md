@@ -7,7 +7,8 @@ sized tasks or an estimate of time remaining.
 ## Next work
 
 1. **MCP-01/MCP-02:** finish the remaining action-specific acceptance in the
-   parity tracker, including attachment concurrency and native worker delivery.
+   parity tracker, including attachment compatibility, scope isolation and
+   authorization changes during source downloads.
 2. **ERR-01/ERR-02:** resolve the next unchecked-error finding by observable
    impact and resource ownership.
 3. Work through the remaining **STRUCT-01, DUP-01/DUP-02, COV-01/COV-02 and TS-01**
