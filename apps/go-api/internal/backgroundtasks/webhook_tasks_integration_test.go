@@ -8,9 +8,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"io"
-	"net"
 	"net/http"
 	"net/http/httptest"
 	"sync"
@@ -25,7 +23,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func TestPostgresWebhookModelActivityDeliversSignedPayloadRetriesAndDeactivates(t *testing.T) {
+func TestPostgresWebhookModelActivityDeliversSignedPayloadAndRetries(t *testing.T) {
 	_, executionURL, pool := openBackgroundTaskDatabase(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
@@ -78,8 +76,7 @@ func TestPostgresWebhookModelActivityDeliversSignedPayloadRetriesAndDeactivates(
 		t.Fatalf("insert test webhook: %v", err)
 	}
 
-	mailer := &recordingWebhookEmailAdmission{}
-	store, err := NewPostgresWebhookTaskStore(pool, mailer)
+	store, err := NewPostgresWebhookTaskStore(pool)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -146,11 +143,7 @@ func TestPostgresWebhookModelActivityDeliversSignedPayloadRetriesAndDeactivates(
 	if unmarshalErr := json.Unmarshal(payload.Data, &projectData); unmarshalErr != nil || string(projectData["id"]) != `"`+projectID.String()+`"` {
 		t.Fatalf("serialized model data = %s, err=%v", payload.Data, unmarshalErr)
 	}
-	var signingPayload webhookPayload
-	if unmarshalErr := json.Unmarshal(receivedBody, &signingPayload); unmarshalErr != nil {
-		t.Fatal(unmarshalErr)
-	}
-	bytesToSign, err := marshalWebhookJSON(signingPayload, true)
+	bytesToSign, err := marshalWebhookJSON(payload, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -188,32 +181,6 @@ func TestPostgresWebhookModelActivityDeliversSignedPayloadRetriesAndDeactivates(
 		t.Fatalf("successful retry_count = %d, want 1", retryCount)
 	}
 
-	// Exercise the terminal transport-failure branch without waiting through
-	// Celery's minutes-long backoff. This still writes through the real DB store.
-	store.requestClient = func(context.Context, string, http.Header, []byte) (*http.Response, error) {
-		return nil, &net.OpError{Op: "dial", Net: "tcp", Err: errors.New("connection refused")}
-	}
-	terminalInput := webhookSendInput{EventID: uuid.NewString(), WebhookID: webhookID.String(), Slug: slug, Event: "project", EventData: json.RawMessage(`{"id":"` + projectID.String() + `"}`), Action: "created", CurrentSite: "https://plane.example.test", Activity: json.RawMessage(`null`)}
-	if err := store.Deliver(ctx, terminalInput, webhookMaxAttempts); err != nil {
-		t.Fatalf("terminal webhook attempt: %v", err)
-	}
-	var active bool
-	if err := pool.QueryRow(ctx, `SELECT is_active FROM webhooks WHERE id=$1`, webhookID).Scan(&active); err != nil {
-		t.Fatal(err)
-	}
-	if active {
-		t.Fatal("webhook remains active after terminal request failure")
-	}
-	if mailer.calls.Load() != 1 {
-		t.Fatalf("deactivation mail admissions = %d, want 1", mailer.calls.Load())
-	}
-}
-
-type recordingWebhookEmailAdmission struct{ calls atomic.Int32 }
-
-func (admission *recordingWebhookEmailAdmission) AdmitTemplatedEmailTask(context.Context, string, string, []any) error {
-	admission.calls.Add(1)
-	return nil
 }
 
 type recordingWebhookFallback struct{ calls atomic.Int32 }

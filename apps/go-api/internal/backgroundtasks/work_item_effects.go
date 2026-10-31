@@ -55,11 +55,12 @@ type PostgresWorkItemEffectStore struct {
 	assetMetadata effectFileAssetMetadataAdmission
 	linkPreviews  effectLinkPreviewAdmission
 	assetUploads  effectFileAssetUpload
+	emails        TemplatedEmailTaskAdmitter
 	pages         effectPageAdmission
 }
 
-func NewPostgresWorkItemEffectStore(pool *pgxpool.Pool, activities effectActivityAdmission, versions effectVersionAdmission, deletions effectDeletionAdmission, webhooks effectWebhookAdmission, assetDeletes effectFileAssetDeleteAdmission, assetMetadata effectFileAssetMetadataAdmission, linkPreviews effectLinkPreviewAdmission, assetUploads effectFileAssetUpload, pages ...effectPageAdmission) (*PostgresWorkItemEffectStore, error) {
-	if pool == nil || activities == nil || versions == nil || deletions == nil || webhooks == nil || assetDeletes == nil || assetMetadata == nil || linkPreviews == nil || assetUploads == nil {
+func NewPostgresWorkItemEffectStore(pool *pgxpool.Pool, activities effectActivityAdmission, versions effectVersionAdmission, deletions effectDeletionAdmission, webhooks effectWebhookAdmission, assetDeletes effectFileAssetDeleteAdmission, assetMetadata effectFileAssetMetadataAdmission, linkPreviews effectLinkPreviewAdmission, assetUploads effectFileAssetUpload, emails TemplatedEmailTaskAdmitter, pages ...effectPageAdmission) (*PostgresWorkItemEffectStore, error) {
+	if pool == nil || activities == nil || versions == nil || deletions == nil || webhooks == nil || assetDeletes == nil || assetMetadata == nil || linkPreviews == nil || assetUploads == nil || emails == nil {
 		return nil, errors.New("work item effect database and native admissions are required")
 	}
 	if len(pages) > 1 {
@@ -69,7 +70,11 @@ func NewPostgresWorkItemEffectStore(pool *pgxpool.Pool, activities effectActivit
 	if len(pages) == 1 {
 		pageAdmission = pages[0]
 	}
-	return &PostgresWorkItemEffectStore{pool, activities, versions, deletions, webhooks, assetDeletes, assetMetadata, linkPreviews, assetUploads, pageAdmission}, nil
+	return &PostgresWorkItemEffectStore{
+		pool: pool, activities: activities, versions: versions, deletions: deletions,
+		webhooks: webhooks, assetDeletes: assetDeletes, assetMetadata: assetMetadata,
+		linkPreviews: linkPreviews, assetUploads: assetUploads, emails: emails, pages: pageAdmission,
+	}, nil
 }
 
 func (s *PostgresWorkItemEffectStore) Drain(ctx context.Context) (int, error) {
@@ -151,15 +156,7 @@ func (s *PostgresWorkItemEffectStore) admit(ctx context.Context, id, kind string
 		_, err := s.linkPreviews.AdmitWithID(ctx, id, payload)
 		return err
 	case "webhook":
-		var payload struct {
-			Name   string         `json:"name"`
-			Args   []any          `json:"args"`
-			Kwargs map[string]any `json:"kwargs"`
-		}
-		if err := json.Unmarshal(raw, &payload); err != nil {
-			return err
-		}
-		return s.webhooks.AdmitWebhookTask(ctx, id, payload.Name, payload.Args, payload.Kwargs)
+		return s.admitWebhookEffect(ctx, id, raw)
 	case "activity":
 		var payload map[string]any
 		if err := json.Unmarshal(raw, &payload); err != nil {
@@ -206,4 +203,19 @@ func (s *PostgresWorkItemEffectStore) admit(ctx context.Context, id, kind string
 	default:
 		return fmt.Errorf("unsupported work item effect %q", kind)
 	}
+}
+
+func (s *PostgresWorkItemEffectStore) admitWebhookEffect(ctx context.Context, id string, raw []byte) error {
+	var payload struct {
+		Name   string         `json:"name"`
+		Args   []any          `json:"args"`
+		Kwargs map[string]any `json:"kwargs"`
+	}
+	if err := json.Unmarshal(raw, &payload); err != nil {
+		return err
+	}
+	if payload.Name == webhookDeactivationEmailTask {
+		return s.emails.AdmitTemplatedEmailTask(ctx, id, payload.Name, payload.Args)
+	}
+	return s.webhooks.AdmitWebhookTask(ctx, id, payload.Name, payload.Args, payload.Kwargs)
 }

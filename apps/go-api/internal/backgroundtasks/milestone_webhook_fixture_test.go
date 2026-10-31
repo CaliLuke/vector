@@ -32,7 +32,7 @@ func newMilestoneWebhookFixture(t *testing.T) milestoneWebhookFixture {
 	_, pool := openBackgroundTaskClone(t, ctx)
 	_, err := pool.Exec(ctx, testsupport.MilestoneWriteSeed)
 	require.NoError(t, err)
-	store, err := NewPostgresWebhookTaskStore(pool, nil)
+	store, err := NewPostgresWebhookTaskStore(pool)
 	require.NoError(t, err)
 	repo, err := milestones.NewRepository(pool)
 	require.NoError(t, err)

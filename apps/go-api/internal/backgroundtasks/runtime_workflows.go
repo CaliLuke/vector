@@ -178,7 +178,7 @@ func (runtime *Runtime) configureWorkItemEffects(assetWorkflows runtimeAssetWork
 	if err != nil {
 		return err
 	}
-	effectStore, err := NewPostgresWorkItemEffectStore(runtime.pool, effectActivities, effectVersions, runtime.Deletion, effectWebhooks, assetWorkflows.deletion, runtime.Assets, runtime.LinkPreviews, attachmentUploads, effectPages)
+	effectStore, err := NewPostgresWorkItemEffectStore(runtime.pool, effectActivities, effectVersions, runtime.Deletion, effectWebhooks, assetWorkflows.deletion, runtime.Assets, runtime.LinkPreviews, attachmentUploads, runtime.EmailTaskAdmission, effectPages)
 	if err != nil {
 		return err
 	}

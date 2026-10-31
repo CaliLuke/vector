@@ -295,15 +295,14 @@ func validateWebhookSendInput(input webhookSendInput) error {
 // fanout, safe delivery and attempt logging against Plane's application DB.
 type PostgresWebhookTaskStore struct {
 	pool          *pgxpool.Pool
-	mailer        TemplatedEmailTaskAdmitter
 	requestClient func(context.Context, string, http.Header, []byte) (*http.Response, error)
 }
 
-func NewPostgresWebhookTaskStore(pool *pgxpool.Pool, mailer TemplatedEmailTaskAdmitter) (*PostgresWebhookTaskStore, error) {
+func NewPostgresWebhookTaskStore(pool *pgxpool.Pool) (*PostgresWebhookTaskStore, error) {
 	if pool == nil {
 		return nil, errors.New("webhook task PostgreSQL pool is required")
 	}
-	return &PostgresWebhookTaskStore{pool: pool, mailer: mailer}, nil
+	return &PostgresWebhookTaskStore{pool: pool}, nil
 }
 
 func (store *PostgresWebhookTaskStore) ModelActivities(ctx context.Context, input WebhookTaskInput) ([]webhookActivityInput, error) {
@@ -481,13 +480,7 @@ func (store *PostgresWebhookTaskStore) Deliver(ctx context.Context, input webhoo
 			return err
 		}
 		if attempt >= webhookMaxAttempts {
-			if _, err := store.pool.Exec(ctx, `UPDATE webhooks SET is_active=false,updated_at=NOW() WHERE id=$1 AND deleted_at IS NULL`, webhook.ID); err != nil {
-				return fmt.Errorf("deactivate webhook after retries: %w", err)
-			}
-			if store.mailer != nil && webhook.CreatorID != nil {
-				_ = store.mailer.AdmitTemplatedEmailTask(ctx, uuid.NewString(), webhookDeactivationEmailTask, []any{webhook.ID, *webhook.CreatorID, input.CurrentSite, requestErr.Error()})
-			}
-			return nil
+			return store.deactivate(ctx, webhook, input.CurrentSite, requestErr)
 		}
 		return requestErr
 	}

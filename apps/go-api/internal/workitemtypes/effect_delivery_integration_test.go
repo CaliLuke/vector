@@ -50,6 +50,9 @@ func (r *effectAdmissionRecorder) AdmitIssueDescriptionVersion(_ context.Context
 func (r *effectAdmissionRecorder) AdmitWebhookTask(_ context.Context, id, _ string, _ []any, _ map[string]any) error {
 	return r.record(id)
 }
+func (r *effectAdmissionRecorder) AdmitTemplatedEmailTask(_ context.Context, id, _ string, _ []any) error {
+	return r.record(id)
+}
 func (r *effectAdmissionRecorder) Admit(_ context.Context, input backgroundtasks.DeletionInput) (string, error) {
 	return input.EventID, r.record(input.EventID)
 }
@@ -61,7 +64,7 @@ func effectStoreForTest(t *testing.T, f typeFixture, recorder *effectAdmissionRe
 		t.Fatal(err)
 	}
 	t.Cleanup(pool.Close)
-	store, err := backgroundtasks.NewPostgresWorkItemEffectStore(pool, recorder, recorder, recorder, recorder, fileAssetDeleteAdmissionRecorder{recorder}, fileAssetMetadataAdmissionRecorder{recorder}, recorder, recorder)
+	store, err := backgroundtasks.NewPostgresWorkItemEffectStore(pool, recorder, recorder, recorder, recorder, fileAssetDeleteAdmissionRecorder{recorder}, fileAssetMetadataAdmissionRecorder{recorder}, recorder, recorder, recorder)
 	if err != nil {
 		t.Fatal(err)
 	}

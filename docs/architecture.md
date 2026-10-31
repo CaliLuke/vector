@@ -12,6 +12,11 @@ Startup requires native background tasks. Legacy broker settings remain accepted
 for configuration compatibility, but no AMQP publisher is constructed.
 Static response fixtures remain for contract regression tests. No Python code or interpreter is required.
 
+Terminal webhook transport failures disable the webhook and queue its creator's
+deactivation email in the same database transaction. The existing effect worker
+retries email admission with the outbox identity, independently of the disabled
+webhook. Concurrent terminal deliveries queue one email per deactivation.
+
 The initial [remote MCP transport](mcp.md) lives in `apps/go-api/mcp` and
 `internal/mcptransport`. The proxy sends `/mcp` and `/mcp/*` to Go. The generated
 catalogue contains 208 actions across 30 tools; MCP is disabled by default. All action contracts are wired. Current generated-server workflow evidence covers all 208 actions; full acceptance checks remain incomplete. The [parity tracker](mcp-parity.md) separates wiring from verified behavior. Native project creation, editing and deletion, cycle/module work-item assignment and transfer, and work-item link/comment writes use transactional receipts and the existing effect outbox. Association, link and comment revisions include changes from native HTTP writers. Workspace retrieval reads current membership and returns the selected workspace metadata. Workspace listing returns all active memberships. Both authentication modes support per-tool workspace selection, with an optional fixed header default.

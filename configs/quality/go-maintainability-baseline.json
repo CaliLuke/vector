@@ -72,8 +72,8 @@
     {
       "file": "internal/backgroundtasks/webhook_tasks_integration_test.go",
       "package": "backgroundtasks",
-      "function": "TestPostgresWebhookModelActivityDeliversSignedPayloadRetriesAndDeactivates",
-      "score": 17
+      "function": "TestPostgresWebhookModelActivityDeliversSignedPayloadAndRetries",
+      "score": 19
     },
     {
       "file": "internal/cyclereads/live_labels_integration_test.go",

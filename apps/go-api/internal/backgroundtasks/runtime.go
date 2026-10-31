@@ -188,7 +188,7 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 	if err = runtime.registerExportWorkflows(assetWorkflows.config, instanceRepository); err != nil {
 		return nil, err
 	}
-	webhookStore, err := NewPostgresWebhookTaskStore(pool, runtime.EmailTaskAdmission)
+	webhookStore, err := NewPostgresWebhookTaskStore(pool)
 	if err != nil {
 		return nil, err
 	}

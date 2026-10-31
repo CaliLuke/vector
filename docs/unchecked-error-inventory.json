@@ -8,11 +8,11 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 871,
+    "findings": 870,
     "also_in_ERR_01": 24,
-    "additional_ERR_02": 847,
+    "additional_ERR_02": 846,
     "test_file_findings": 541,
-    "non_test_file_findings": 330
+    "non_test_file_findings": 329
   },
   "findings": [
     {
@@ -1830,56 +1830,49 @@
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/webhook_tasks.go",
-      "line": 340,
+      "line": 339,
       "column": 10,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/webhook_tasks.go",
-      "line": 371,
+      "line": 370,
       "column": 7,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/webhook_tasks.go",
-      "line": 488,
-      "column": 5,
-      "message": "Error return value of `store.mailer.AdmitTemplatedEmailTask` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/webhook_tasks.go",
-      "line": 494,
+      "line": 487,
       "column": 27,
       "message": "Error return value of `response.Body.Close` is not checked",
       "also_in_configured_audit": true
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/webhook_tasks.go",
-      "line": 599,
+      "line": 592,
       "column": 12,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/webhook_tasks.go",
-      "line": 753,
+      "line": 746,
       "column": 11,
       "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/webhook_tasks_integration_test.go",
-      "line": 55,
+      "line": 53,
       "column": 17,
       "message": "Error return value of `io.ReadAll` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/backgroundtasks/webhook_tasks_integration_test.go",
-      "line": 62,
+      "line": 60,
       "column": 6,
       "message": "Error return value of `io.WriteString` is not checked",
       "also_in_configured_audit": false
@@ -1928,14 +1921,14 @@
     },
     {
       "file": "apps/go-api/internal/customers/property_values.go",
-      "line": 181,
+      "line": 182,
       "column": 8,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/customers/property_values.go",
-      "line": 210,
+      "line": 211,
       "column": 8,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
