@@ -10,8 +10,8 @@ sized tasks or an estimate of time remaining.
 2. **NEW-02/NEW-03/NEW-04:** investigate the recorded UI, frontend shard, and
    module-link test deadline failures under the existing time and resource limits.
 3. **MCP-01/MCP-02:** finish the remaining action-specific acceptance in the
-   parity tracker. The next scope is work-item property compatibility,
-   authorization, revisions, preservation, and mutation recovery.
+   parity tracker. The remaining work-item property scope is native-worker
+   delivery and replay of activity/webhook effects for value writes.
 4. **ERR-01/ERR-02:** resolve the next unchecked-error finding by observable
    impact and resource ownership.
 5. Work through the remaining **STRUCT-01, DUP-01/DUP-02, COV-01/COV-02 and TS-01**

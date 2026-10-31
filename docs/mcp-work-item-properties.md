@@ -47,8 +47,26 @@ evaluation failures return a validation error. Their optional revision fingerpri
 the computed response, since time or configuration can change a value without an
 item write. These records remain read-only and do not create stored value rows.
 Optional receipts reauthorize the current property scope before replay, and item
-revisions cover both canonical values and companion metadata. All new paths
-remain subject to consolidated integration and quality checks.
+revisions cover both canonical values and companion metadata.
+
+The [scope tests](../apps/go-api/internal/mcpactions/workitem_property_read_scope_integration_test.go)
+recheck all five reads after admission, including revoked membership, invalid roles,
+project removal and reassigned workspace slugs. Value reads also recheck item,
+catalogue and property visibility, including restricted guests. All fourteen
+actions reject foreign identifiers even when the actor belongs to both workspaces.
+The [preservation tests](../apps/go-api/internal/mcpactions/workitem_property_preservation_integration_test.go)
+retain used values and history after rejected definition, option and association
+changes. The [asset tests](../apps/go-api/internal/mcpactions/workitem_property_asset_scope_integration_test.go)
+cover unavailable image references, reusable rejected request keys, and rollback
+of image bindings and history when durable writes fail.
+
+All nine mutations have [receipt-input binding](../apps/go-api/internal/mcpactions/workitem_property_receipt_binding_integration_test.go),
+[current authorization while waiting](../apps/go-api/internal/mcpactions/workitem_property_authorization_wait_integration_test.go),
+[contention and recovery](../apps/go-api/internal/mcpactions/workitem_property_recovery_integration_test.go),
+and [native-writer revision](../apps/go-api/internal/mcpactions/workitem_property_native_contention_integration_test.go)
+proofs. Value writes share the native item transaction and durable outbox.
+End-to-end native-worker delivery and replay of their activity and webhook effects
+remain outstanding; the value-write acceptance rows stay open for that proof.
 
 All fourteen property actions are wired. Email and File
 are native bounded text kinds; Email validates an address. Existing native number,
