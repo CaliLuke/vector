@@ -197,7 +197,7 @@ opening, Escape, and focus restoration with the real Headless UI components.
 
 Tooltip tests now verify keyboard access for both historical `renderByDefault`
 settings and object/callback-ref cleanup. The target handlers always mount, while
-Blueprint still lazily renders the overlay. Sticky-layout tests verify card
+Floating UI still lazily renders the overlay. Sticky-layout tests verify card
 reload/layout, resize notifications, cleanup, and cancellation when an async
 layout-library import completes after unmount.
 
