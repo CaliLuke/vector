@@ -1,7 +1,7 @@
 {
   "version": 1,
   "catalog_id": "ERR-02",
-  "source_commit": "e363bb832c490c48c1a9bb09663f2306b06de2ca",
+  "source_commit": "0403f50de0bc08d2d6ea4b71373333943bcff26d",
   "audit_date": "2026-10-30",
   "tool": "golangci-lint 2.15.0 (Go 1.27.3)",
   "configuration": "Repository .golangci.yml at source_commit; add linters.settings.errcheck.check-blank=true and select --enable-only errcheck. Existing integration tags, test inclusion, generated-source exclusions and timeout retained.",
@@ -9,11 +9,11 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 912,
+    "findings": 911,
     "also_in_ERR_01": 47,
-    "additional_ERR_02": 865,
+    "additional_ERR_02": 864,
     "test_file_findings": 545,
-    "non_test_file_findings": 367
+    "non_test_file_findings": 366
   },
   "findings": [
     {
@@ -1215,23 +1215,16 @@
     },
     {
       "file": "apps/go-api/internal/assets/attachment_api.go",
-      "line": 112,
+      "line": 113,
       "column": 11,
       "message": "Error return value of `url.Parse` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/assets/attachment_api.go",
-      "line": 185,
+      "line": 189,
       "column": 19,
       "message": "Error return value of `mime.ParseMediaType` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/assets/attachment_api.go",
-      "line": 197,
-      "column": 17,
-      "message": "Error return value of `response.Body.Close` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -6401,5 +6394,5 @@
       "also_in_configured_audit": false
     }
   ],
-  "source_state": "Working tree containing checked OAuth provider configuration reads and response cleanup based on source_commit."
+  "source_state": "Working tree containing the attachment read compatibility and response cleanup fixes based on source_commit."
 }

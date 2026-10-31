@@ -20,6 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"golang.org/x/text/encoding/unicode"
 )
 
 const AttachmentUploadLimit int64 = 5 << 20
@@ -139,7 +140,10 @@ func (a *AttachmentApplication) Read(ctx context.Context, q AttachmentQuery) (_ 
 	if kind == "image" {
 		result.Data = body
 	} else {
-		text := strings.ToValidUTF8(string(body), "\uFFFD")
+		text, decodeErr := unicode.UTF8.NewDecoder().String(string(body))
+		if decodeErr != nil {
+			return nil, decodeErr
+		}
 		result.Text = &text
 	}
 	return result, nil
@@ -189,12 +193,16 @@ func attachmentMIME(raw, name string) string {
 	}
 	return contentType
 }
-func (s *Storage) readAttachment(ctx context.Context, key string, limit int64) ([]byte, error) {
+func (s *Storage) readAttachment(ctx context.Context, key string, limit int64) (_ []byte, resultErr error) {
 	response, err := s.client.GetObject(ctx, &s3.GetObjectInput{Bucket: aws.String(s.bucket), Key: aws.String(key)})
 	if err != nil {
 		return nil, fmt.Errorf("read attachment storage: %w", err)
 	}
-	defer func() { _ = response.Body.Close() }()
+	defer func() {
+		if closeErr := response.Body.Close(); closeErr != nil {
+			resultErr = errors.Join(resultErr, fmt.Errorf("close attachment storage response: %w", closeErr))
+		}
+	}()
 	if response.ContentLength != nil && *response.ContentLength > limit {
 		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Attachment exceeds inline size limit. Use download_url."}}
 	}
