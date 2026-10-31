@@ -65,8 +65,12 @@ All nine mutations have [receipt-input binding](../apps/go-api/internal/mcpactio
 [contention and recovery](../apps/go-api/internal/mcpactions/workitem_property_recovery_integration_test.go),
 and [native-writer revision](../apps/go-api/internal/mcpactions/workitem_property_native_contention_integration_test.go)
 proofs. Value writes share the native item transaction and durable outbox.
-End-to-end native-worker delivery and replay of their activity and webhook effects
-remain outstanding; the value-write acceptance rows stay open for that proof.
+The [native-worker regression](../apps/go-api/internal/mcpactions/workitem_property_worker_integration_test.go)
+runs the durable activity and webhook workflows to completion. It checks retained
+native activity history and actual HTTP delivery of the committed value changes
+under both authentication modes and protocol revisions. Request replay and
+re-admission of completed outbox identities leave history, storage, and delivery
+counts unchanged.
 
 All fourteen property actions are wired. Email and File
 are native bounded text kinds; Email validates an address. Existing native number,

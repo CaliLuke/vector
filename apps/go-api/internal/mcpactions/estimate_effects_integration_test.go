@@ -3,13 +3,10 @@
 package mcpactions_test
 
 import (
-	"context"
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/backgroundtasks"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
-	"github.com/CaliLuke/selvedge"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,18 +14,7 @@ import (
 
 func TestMCPEstimateDeletionWorkerPreservesHistoryAndReplay(t *testing.T) {
 	f := newMilestoneFixture(t)
-	redis := testsupport.StartRedis(t)
-	// These workflows use PostgreSQL and Redis. An unexpected storage request
-	// must fail locally instead of inheriting a developer's S3 configuration.
-	for key, value := range map[string]string{
-		"PLANE_ASSETS_S3_BUCKET": "estimate-fixture", "PLANE_ASSETS_S3_REGION": "us-east-1",
-		"PLANE_ASSETS_S3_ACCESS_KEY_ID": "fixture", "PLANE_ASSETS_S3_SECRET_ACCESS_KEY": "fixture-secret",
-		"PLANE_ASSETS_S3_INTERNAL_ENDPOINT": "http://127.0.0.1:1", "PLANE_ASSETS_S3_PUBLIC_ENDPOINT": "http://127.0.0.1:1", "PLANE_ASSETS_S3_PATH_STYLE": "true",
-		"SIGNED_URL_EXPIRATION": "3600", "AWS_CONFIG_FILE": "/dev/null", "AWS_SHARED_CREDENTIALS_FILE": "/dev/null", "AWS_PROFILE": "", "AWS_EC2_METADATA_DISABLED": "true",
-		"SECRET_KEY": "estimate-fixture-secret", "REDIS_URL": "redis://" + redis.Options().Addr, "HARD_DELETE_AFTER_DAYS": "60", "WEB_URL": "https://app.example.test",
-	} {
-		t.Setenv(key, value)
-	}
+	configureCatalogueWorker(t)
 	var pointItems, systemItems, remainingPoints []string
 	var pointRequests, systemRequests []map[string]any
 	runCatalogueFixtureMatrix(t, f, func(t *testing.T, f milestoneFixture, root catalogueCall) {
@@ -62,14 +48,7 @@ func TestMCPEstimateDeletionWorkerPreservesHistoryAndReplay(t *testing.T) {
 	var activities int
 	require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT count(*) FROM issue_activities WHERE issue_id=ANY($1::uuid[]) AND field='estimate_points'`, pointItems).Scan(&activities))
 	require.Zero(t, activities)
-	runtime, err := backgroundtasks.NewRuntime(t.Context(), f.pool.Config().ConnString(), selvedge.WithActivityPollInterval(20*time.Millisecond), selvedge.WithWorkflowResumptionInterval(20*time.Millisecond))
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		ctx, cancel := context.WithTimeout(context.WithoutCancel(t.Context()), 20*time.Second)
-		defer cancel()
-		require.NoError(t, runtime.Shutdown(ctx))
-	})
-	require.NoError(t, runtime.Start(t.Context()))
+	startCatalogueWorker(t, f)
 	require.EventuallyWithT(t, func(collect *assert.CollectT) {
 		var history, cleared, deleted int
 		queryErr := f.pool.QueryRow(t.Context(), `SELECT
