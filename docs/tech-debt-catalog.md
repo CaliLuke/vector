@@ -7,8 +7,8 @@ sized tasks or an estimate of time remaining.
 ## Next work
 
 1. **MCP-01/MCP-02:** finish the remaining action-specific acceptance in the
-   parity tracker. Project estimates still need native point-writer contention
-   and deletion-race acceptance before their mutation rows can close.
+   parity tracker. The next domain is work-item types: SDK contracts, project
+   imports, preservation rules, native-writer revisions and receipt guarantees.
 2. **ERR-01/ERR-02:** resolve the next unchecked-error finding by observable
    impact and resource ownership.
 3. Work through the remaining **STRUCT-01, DUP-01/DUP-02, COV-01/COV-02 and TS-01**

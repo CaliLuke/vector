@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/require"
 )
 
@@ -30,6 +31,9 @@ func (db *rollbackProbeDatabase) Begin(context.Context) (pgx.Tx, error) {
 }
 func (db *rollbackProbeDatabase) QueryRow(context.Context, string, ...any) pgx.Row {
 	return rollbackProbeRow{err: db.queryErr}
+}
+func (db *rollbackProbeDatabase) Exec(context.Context, string, ...any) (pgconn.CommandTag, error) {
+	return pgconn.CommandTag{}, db.queryErr
 }
 func (db *rollbackProbeDatabase) Rollback(ctx context.Context) error {
 	db.rollbacks++
@@ -74,6 +78,14 @@ func TestTransactionFailuresRetainCleanupAndOperationErrors(t *testing.T) {
 		}},
 		{"delete estimate", func(ctx context.Context, repo *Repository) error {
 			return repo.DeleteEstimate(ctx, "user", "workspace", "project", "estimate")
+		}},
+		{"create estimate point", func(ctx context.Context, repo *Repository) error {
+			_, err := repo.CreateEstimatePoint(ctx, "user", "workspace", "project", "estimate", strings.NewReader(`{"key":1,"value":"1"}`), "application/json")
+			return err
+		}},
+		{"edit estimate point", func(ctx context.Context, repo *Repository) error {
+			_, err := repo.PatchEstimatePoint(ctx, "user", "workspace", "project", "estimate", "00000000-0000-4000-8000-000000000001", strings.NewReader(`{"value":"1"}`), "application/json")
+			return err
 		}},
 		{"delete estimate point", func(ctx context.Context, repo *Repository) error {
 			_, err := repo.DeleteEstimatePoint(ctx, "user", "workspace", "project", "estimate", "point", strings.NewReader(`{}`), "application/json")

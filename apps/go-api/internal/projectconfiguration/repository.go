@@ -163,6 +163,9 @@ func (r *Repository) CreateEstimate(ctx context.Context, user, slug, project str
 		return nil, err
 	}
 	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
+	if err = lockEstimateCatalogue(ctx, tx, slug, project); err != nil {
+		return nil, err
+	}
 	var estimateID string
 	err = tx.QueryRow(ctx, `INSERT INTO estimates (id,project_id,workspace_id,name,type,last_used,description,created_at,updated_at,created_by_id,updated_by_id)
 SELECT $1,p.id,p.workspace_id,$4,$5,$6,'',clock_timestamp(),clock_timestamp(),$7,NULL

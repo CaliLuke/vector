@@ -45,11 +45,11 @@ func (r *Repository) PatchEstimate(ctx context.Context, user, slug, project, est
 	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	// The native editor changes the estimate and its points as one catalogue
 	// operation, under the same schema lock used by MCP estimate mutations.
-	if _, err = tx.Exec(ctx, `SELECT work_item_schema_lock(p.workspace_id) FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$1 AND w.slug=$2`, project, slug); err != nil {
+	if err = lockEstimateCatalogue(ctx, tx, slug, project); err != nil {
 		return nil, err
 	}
 	var exists bool
-	err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM estimates e JOIN projects p ON p.id=e.project_id JOIN workspaces w ON w.id=e.workspace_id WHERE e.id=$1 AND p.id=$2 AND w.slug=$3 AND e.deleted_at IS NULL)`, estimateID, project, slug).Scan(&exists)
+	err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM estimates e JOIN projects p ON p.id=e.project_id AND p.workspace_id=e.workspace_id JOIN workspaces w ON w.id=e.workspace_id WHERE e.id=$1 AND p.id=$2 AND w.slug=$3 AND e.deleted_at IS NULL AND p.deleted_at IS NULL AND w.deleted_at IS NULL)`, estimateID, project, slug).Scan(&exists)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func (r *Repository) DeleteEstimate(ctx context.Context, user, slug, project, es
 	if err = writer.Authorize(ctx, user, slug, project, true); err != nil {
 		return err
 	}
-	if _, err = tx.Exec(ctx, `SELECT work_item_schema_lock(p.workspace_id) FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$1 AND w.slug=$2`, project, slug); err != nil {
+	if err = lockEstimateCatalogue(ctx, tx, slug, project); err != nil {
 		return err
 	}
 	result, err := tx.Exec(ctx, `UPDATE estimates SET deleted_at=clock_timestamp(),updated_at=clock_timestamp(),updated_by_id=$2 WHERE id=$1 AND project_id=$3 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$4) AND deleted_at IS NULL`, estimateID, user, project, slug)
@@ -166,23 +166,31 @@ func (r *Repository) CreateEstimatePoint(ctx context.Context, user, slug, projec
 	// The source create call only passes estimate/key/value; a request
 	// description is ignored and the model default remains in effect.
 	description := ""
-	var id string
-	err = r.db.QueryRow(ctx, `INSERT INTO estimate_points(id,estimate_id,project_id,workspace_id,key,value,description,created_at,updated_at,created_by_id,updated_by_id) SELECT $1,e.id,p.id,p.workspace_id,$4,$5,$6,clock_timestamp(),clock_timestamp(),$7,NULL FROM estimates e JOIN projects p ON p.id=e.project_id JOIN workspaces w ON w.id=p.workspace_id WHERE e.id=$2 AND p.id=$3 AND w.slug=$8 AND e.deleted_at IS NULL RETURNING id::text`, uuid.NewString(), estimateID, project, n, text, description, user, slug).Scan(&id)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, failure(404, "error", "Estimate not found")
-	}
-	if err != nil {
-		return nil, err
-	}
-	return scanJSON(ctx, r.db, estimatePointReadSQL, id)
+	return r.withEstimatePointMutation(ctx, slug, project, func(writer *Repository) (json.RawMessage, error) {
+		var id string
+		err := writer.db.QueryRow(ctx, `INSERT INTO estimate_points(id,estimate_id,project_id,workspace_id,key,value,description,created_at,updated_at,created_by_id,updated_by_id) SELECT $1,e.id,p.id,p.workspace_id,$4,$5,$6,clock_timestamp(),clock_timestamp(),$7,NULL FROM estimates e JOIN projects p ON p.id=e.project_id AND p.workspace_id=e.workspace_id JOIN workspaces w ON w.id=p.workspace_id WHERE e.id=$2 AND p.id=$3 AND w.slug=$8 AND e.deleted_at IS NULL AND p.deleted_at IS NULL AND w.deleted_at IS NULL RETURNING id::text`, uuid.NewString(), estimateID, project, n, text, description, user, slug).Scan(&id)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, failure(404, "error", "Estimate not found")
+		}
+		if err != nil {
+			return nil, err
+		}
+		return scanJSON(ctx, writer.db, estimatePointReadSQL, id)
+	})
 }
 
 func (r *Repository) PatchEstimatePoint(ctx context.Context, user, slug, project, estimateID, pointID string, body io.Reader, contentType string) (json.RawMessage, error) {
 	if _, err := uuid.Parse(pointID); err != nil {
 		return nil, failure(http.StatusBadRequest, "error", "Please provide valid detail")
 	}
+	return r.withEstimatePointMutation(ctx, slug, project, func(writer *Repository) (json.RawMessage, error) {
+		return writer.patchEstimatePoint(ctx, user, slug, project, estimateID, pointID, body, contentType)
+	})
+}
+
+func (r *Repository) patchEstimatePoint(ctx context.Context, user, slug, project, estimateID, pointID string, body io.Reader, contentType string) (json.RawMessage, error) {
 	var exists bool
-	err := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM estimate_points ep JOIN projects p ON p.id=ep.project_id JOIN workspaces w ON w.id=ep.workspace_id WHERE ep.id=$1 AND ep.estimate_id=$2 AND p.id=$3 AND w.slug=$4 AND ep.deleted_at IS NULL)`, pointID, estimateID, project, slug).Scan(&exists)
+	err := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM estimate_points ep JOIN estimates e ON e.id=ep.estimate_id AND e.project_id=ep.project_id AND e.workspace_id=ep.workspace_id JOIN projects p ON p.id=ep.project_id AND p.workspace_id=ep.workspace_id JOIN workspaces w ON w.id=ep.workspace_id WHERE ep.id=$1 AND ep.estimate_id=$2 AND p.id=$3 AND w.slug=$4 AND ep.deleted_at IS NULL AND e.deleted_at IS NULL AND p.deleted_at IS NULL AND w.deleted_at IS NULL)`, pointID, estimateID, project, slug).Scan(&exists)
 	if err != nil {
 		return nil, err
 	}
@@ -245,7 +253,7 @@ func (r *Repository) DeleteEstimatePoint(ctx context.Context, user, slug, projec
 	if err = writer.Authorize(ctx, user, slug, project, true); err != nil {
 		return nil, err
 	}
-	if _, err = tx.Exec(ctx, `SELECT work_item_schema_lock(p.workspace_id) FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$1 AND w.slug=$2`, project, slug); err != nil {
+	if err = lockEstimateCatalogue(ctx, tx, slug, project); err != nil {
 		return nil, err
 	}
 	result, err := writer.deleteEstimatePoint(ctx, user, slug, project, estimateID, pointID, body, contentType)

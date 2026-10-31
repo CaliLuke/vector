@@ -31,6 +31,20 @@ func estimatePointWriteFixture(t *testing.T) (milestoneFixture, *projectconfigur
 	return f, repository, command
 }
 
+func estimatePointEditFixture(t *testing.T) (milestoneFixture, *projectconfiguration.Repository, projectmutations.Command) {
+	t.Helper()
+	f, repository, command := estimatePointWriteFixture(t)
+	created, err := repository.MutateEstimate(t.Context(), command)
+	require.NoError(t, err)
+	var points []struct{ ID uuid.UUID }
+	require.NoError(t, json.Unmarshal(created.Record, &points))
+	require.Len(t, points, 2)
+	key := uuid.New()
+	command.Action, command.ParentID, command.RequestID, command.ExpectedRevision = "update_point", points[0].ID, &key, &created.Revision
+	command.Fields = map[string]any{"value": "mcp"}
+	return f, repository, command
+}
+
 func TestEstimateConcurrentPointBatchesCommitOnce(t *testing.T) {
 	for _, mode := range []string{"identical receipt", "changed input", "competing revision"} {
 		t.Run(mode, func(t *testing.T) {
