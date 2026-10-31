@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
-import { chmodSync, copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -51,15 +51,23 @@ try {
     `#!/bin/sh
 case "$*" in
   *oxlint*)
-    if [ "$OX_SIGNAL" = "1" ]; then kill -TERM "${"$"}"; fi
+    case "$*" in
+      *--ignore-pattern*)
+        if [ -n "$OX_REST_REPORT" ]; then OX_REPORT="$OX_REST_REPORT"; fi
+        if [ -n "$OX_REST_STATUS" ]; then OX_STATUS="$OX_REST_STATUS"; fi
+        if [ -n "$OX_REST_STDERR" ]; then OX_STDERR="$OX_REST_STDERR"; fi
+        if [ -n "$OX_REST_SIGNAL" ]; then OX_SIGNAL="$OX_REST_SIGNAL"; fi
+        ;;
+    esac
+    if [ "$OX_SIGNAL" = "1" ]; then kill -TERM "$$"; fi
     if [ -z "$OX_REPORT" ] || [ ! -f "$OX_REPORT" ]; then exit 2; fi
     if [ -n "$OX_STDERR" ]; then printf '%s\\n' "$OX_STDERR" >&2; fi
     cat "$OX_REPORT"
-    exit "${"$"}OX_STATUS"
+    exit "$OX_STATUS"
     ;;
   *knip*)
-    printf '%s\\n' "${"$"}KNIP_OUTPUT"
-    exit "${"$"}KNIP_STATUS"
+    printf '%s\\n' "$KNIP_OUTPUT"
+    exit "$KNIP_STATUS"
     ;;
   *) exit 2 ;;
 esac
@@ -165,10 +173,88 @@ esac
     runScript("check-oxlint-baseline.mjs", ["fast"], { OX_REPORT: oxReport, OX_STATUS: "2" }),
     "unexpected Oxlint exit status"
   );
-  assertFails(
-    runScript("check-oxlint-baseline.mjs", ["fast"], { OX_REPORT: oxReport, OX_SIGNAL: "1", OX_STATUS: "1" }),
-    "Oxlint signal termination"
+  const signaledOxlint = runScript("check-oxlint-baseline.mjs", ["fast"], {
+    OX_REPORT: oxReport,
+    OX_SIGNAL: "1",
+    OX_STATUS: "1",
+  });
+  assertFails(signaledOxlint, "Oxlint signal termination");
+  assert.match(signaledOxlint.stderr, /signal SIGTERM/);
+
+  const fullBaseline = path.join(qualityDirectory, "oxlint-full-baseline.json");
+  const webDiagnostic = { ...diagnostic, filename: "apps/web/a.ts" };
+  const restReport = path.join(fixtureRoot, "oxlint-rest-report.json");
+  writeJson(fullBaseline, {
+    version: 1,
+    mode: "full",
+    fileCount: 5,
+    diagnostics: [
+      { diagnostic: webDiagnostic, count: 1 },
+      { diagnostic, count: 1 },
+    ],
+  });
+  writeJson(oxReport, { number_of_files: 2, diagnostics: [webDiagnostic] });
+  writeJson(restReport, { number_of_files: 3, diagnostics: [diagnostic] });
+  const partitionEnv = { OX_REPORT: oxReport, OX_STATUS: "1", OX_REST_REPORT: restReport, OX_REST_STATUS: "1" };
+  const combined = runScript("check-oxlint-baseline.mjs", ["full"], partitionEnv);
+  assert.equal(combined.status, 0, combined.stderr);
+  assert.match(combined.stdout, /5 files, 0 errors and 2 warnings/);
+  assert.equal(runScript("check-oxlint-baseline.mjs", ["full", "--write-baseline"], partitionEnv).status, 0);
+  const savedFullBaseline = readFileSync(fullBaseline, "utf8");
+  const savedFull = JSON.parse(savedFullBaseline);
+  assert.equal(savedFull.fileCount, 5);
+  assert.deepEqual(
+    new Set(savedFull.diagnostics.map(({ diagnostic: entry }) => entry.filename)),
+    new Set(["apps/web/a.ts", "src/a.ts"])
   );
+
+  for (const { report, status, expected } of [
+    {
+      report: { number_of_files: 3, diagnostics: [diagnostic, diagnostic] },
+      status: "1",
+      expected: /introduced 1 diagnostic/,
+    },
+    { report: { number_of_files: 3, diagnostics: [] }, status: "1", expected: /failure but reported no diagnostics/ },
+    {
+      report: { number_of_files: 3, diagnostics: [diagnostic] },
+      status: "0",
+      expected: /successfully while reporting errors or warnings/,
+    },
+    { report: { number_of_files: 0, diagnostics: [] }, status: "0", expected: /no valid file count/ },
+    { report: { number_of_files: 2, diagnostics: [] }, status: "0", expected: /file count dropped from 5 to 4/ },
+    {
+      report: { number_of_files: 3, diagnostics: [{ message: "incomplete" }] },
+      status: "1",
+      expected: /malformed diagnostic/,
+    },
+  ]) {
+    writeJson(restReport, report);
+    const result = runScript("check-oxlint-baseline.mjs", ["full"], { ...partitionEnv, OX_REST_STATUS: status });
+    assertFails(result, "invalid remaining-files report");
+    assert.match(result.stderr, expected);
+  }
+  writeJson(restReport, {
+    number_of_files: 3,
+    diagnostics: [{ ...diagnostic, severity: "error", code: "typescript(TS2322)" }],
+  });
+  const compilerFailure = runScript("check-oxlint-baseline.mjs", ["full", "--write-baseline"], partitionEnv);
+  assertFails(compilerFailure, "remaining-files compiler error");
+  assert.match(compilerFailure.stderr, /compiler diagnostics cannot be baselined/);
+  assert.equal(readFileSync(fullBaseline, "utf8"), savedFullBaseline);
+  writeJson(restReport, { number_of_files: 3, diagnostics: [diagnostic] });
+  for (const { env, expected } of [
+    { env: { OX_REST_STATUS: "2" }, expected: /failed to run cleanly/ },
+    { env: { OX_REST_SIGNAL: "1" }, expected: /signal SIGTERM/ },
+    { env: { OX_REST_STDERR: "unexpected warning" }, expected: /unexpected stderr/ },
+  ]) {
+    const result = runScript("check-oxlint-baseline.mjs", ["full"], { ...partitionEnv, ...env });
+    assertFails(result, "remaining-files process failure");
+    assert.match(result.stderr, expected);
+  }
+  writeFileSync(restReport, "invalid JSON");
+  const malformedRest = runScript("check-oxlint-baseline.mjs", ["full"], partitionEnv);
+  assertFails(malformedRest, "remaining-files invalid JSON");
+  assert.match(malformedRest.stderr, /report could not be read/);
 
   const knipBaseline = path.join(qualityDirectory, "knip-baseline.json");
   const knipReport = (dependencies = []) => ({

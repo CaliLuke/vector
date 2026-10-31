@@ -253,6 +253,11 @@ sequential so generated package output is ready before typechecking. Frontend te
 Each shard has a 384 MiB JavaScript heap limit, a 1 GiB sampled process-tree RSS ceiling, and an external five-minute deadline. Every frontend file runs once. Either shard failing fails the gate.
 Individual tests retain their 15-second timeout. Each TypeScript gate
 has a ten-minute deadline and 3 GiB RSS ceiling.
+The full typed-lint gate runs `apps/web` and then the remaining tree sequentially
+under that single deadline and memory guard. Both passes retain type checking and
+all configured rules. Their file counts and diagnostics are combined before the
+baseline is checked; a failed or incomplete pass rejects the gate and cannot write
+a baseline. This bounds parser and type-checker memory without omitting source.
 Production builds use one Turbo task at a time with a 4 GiB RSS ceiling. The Go
 gate has a 6 GiB RSS ceiling and two Go runtime threads. These are process-group
 watchdogs sampled every 100 ms, not OS-enforced total-memory reservations. They
@@ -328,6 +333,13 @@ is already reported upstream. Direct decoder tests can drop their retained lint
 allowances when the pinned analyzer accepts that reproduction. The page validation
 tests exercise the generated client through HTTP, including request encoding and
 error decoding, without adding an allowance for the factory call.
+
+Three nilerr allowances preserve conversion of parsing or authentication failures
+into explicit validation or denial results. Returning an operational error would
+change those API contracts. [nilerr issue #12](https://github.com/gostaticanalysis/nilerr/issues/12#issuecomment-6543387375)
+contains a standalone reproduction with nilerr 0.1.2 and the pinned Go/linter
+versions. Retire these allowances when the analyzer accepts the intentional
+result conversions. No source suppression or dependency patch is used.
 
 The legacy tooltip uses Floating UI's controlled element API with callback-ref
 state. Oxlint currently mistakes a callback property passed to JSX `ref` for a

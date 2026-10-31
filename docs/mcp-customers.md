@@ -55,6 +55,10 @@ Mutations support optional receipts and revision guards. Customer and property t
 use request_id for retries. Customer-request actions instead use mutation_id because
 request_id already identifies the domain request; their receipts use mutation_id too.
 Current scope, feature state and selected references are rechecked before replay.
+Supplied property defaults require current item visibility, active workspace member
+status or active option state on every retry. Retained property metadata binds those
+checks after soft deletion. Receipts for property deletion remain replayable without
+live targets.
 Catalogue and association writers advance a workspace customer revision. Audit events
 retain inputs and before/after state; request/body updates are not external effects.
 Migrations refuse rollback that would discard customer data.
@@ -70,7 +74,9 @@ and invalid-value preservation for all nine kinds; literal and JSON defaults;
 option identity, omitted options and default changes; inactive and readonly values;
 required-field clearing, cardinality narrowing and atomic bulk rejection. Clearing
 an optional value keeps omitted properties and does not reapply defaults. Changing
-option defaults leaves existing customer values unchanged.
+option defaults leaves existing customer values unchanged. Default-reference retry
+checks cover issue/member access revocation and restoration, inactive options,
+soft-deleted definitions and cross-workspace property rejection.
 
 Remaining acceptance includes upsert identity/concurrency, complete customer/request
 binding and private-target filtering, the complete format and reference-visibility

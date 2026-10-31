@@ -166,8 +166,8 @@
       "percent": 55.56
     },
     "github.com/CaliLuke/go-plane/internal/customers": {
-      "statements": 738,
-      "percent": 80.35
+      "statements": 764,
+      "percent": 80.76
     },
     "github.com/CaliLuke/go-plane/internal/customviewcreation": {
       "statements": 49,

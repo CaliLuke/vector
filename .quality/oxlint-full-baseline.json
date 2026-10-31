@@ -11779,15 +11779,6 @@
       "diagnostic": {
         "filename": "scripts/quality/test-ratchets.mjs",
         "severity": "warning",
-        "code": "typescript(no-unnecessary-template-expression)",
-        "message": "Template literal expression is unnecessary and can be simplified."
-      },
-      "count": 4
-    },
-    {
-      "diagnostic": {
-        "filename": "scripts/quality/test-ratchets.mjs",
-        "severity": "warning",
         "code": "unicorn(consistent-function-scoping)",
         "message": "Function `knipReport` does not capture any variables from its parent scope"
       },

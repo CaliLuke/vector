@@ -81,6 +81,9 @@ func authorize(ctx context.Context, tx pgx.Tx, in Command) error {
 			}
 		}
 	}
+	if err := authorizeDefaultReferences(ctx, tx, in); err != nil {
+		return err
+	}
 	if in.Revalidate != nil {
 		return in.Revalidate(ctx)
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"maps"
 	"regexp"
 	"slices"
 	"strings"
@@ -210,6 +211,44 @@ func applyDefaults(ctx context.Context, tx pgx.Tx, in Command) error {
 		raw, _ := json.Marshal(values)
 		if _, err = tx.Exec(ctx, `INSERT INTO customer_property_values(customer_id,property_id,workspace_id,value_strings,updated_by_id) VALUES($1,$2,$3,$4::jsonb,$5)`, in.CustomerID, p["id"], in.WorkspaceID, raw, in.ActorID); err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+// authorizeDefaultReferences checks selected defaults before receipt lookup.
+// Retained definitions bind authorization after a property has been soft-deleted.
+func authorizeDefaultReferences(ctx context.Context, tx pgx.Tx, in Command) error {
+	defaults, _ := in.Fields["default_value"].([]string)
+	if in.Tool != "customer_property" || len(defaults) == 0 {
+		return nil
+	}
+	property := maps.Clone(in.Fields)
+	property["id"] = in.ID.String()
+	if in.Action == "update" {
+		var kind, relation string
+		err := tx.QueryRow(ctx, `SELECT property_type,COALESCE(relation_type,'') FROM customer_properties WHERE id=$1 AND workspace_id=$2 FOR SHARE`, in.ID, in.WorkspaceID).Scan(&kind, &relation)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return projectmutations.ErrNotFound
+		}
+		if err != nil {
+			return err
+		}
+		property["property_type"] = kind
+		if property["relation_type"] == nil {
+			property["relation_type"] = relation
+		}
+	}
+	if property["property_type"] != "RELATION" && property["property_type"] != "OPTION" {
+		return nil
+	}
+	for _, value := range defaults {
+		allowed, err := allowedReference(ctx, tx, in.Query, property, value, true)
+		if err != nil {
+			return err
+		}
+		if !allowed {
+			return projectmutations.ErrInvalid
 		}
 	}
 	return nil

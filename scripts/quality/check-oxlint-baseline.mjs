@@ -15,77 +15,92 @@ if (!new Set(["fast", "full"]).has(mode)) {
 }
 
 const baselinePath = path.join(root, ".quality", `oxlint-${mode}-baseline.json`);
-const args = ["exec", "oxlint", "--threads", "2", "--format", "json", "--deny-warnings"];
-if (mode === "full") args.push("--type-aware", "--type-check");
-args.push(".");
+// Keep the largest workspace separate so parser state and type-checker heaps
+// fit within the same process-tree budget. The two passes cover the entire tree.
+const inputGroups = mode === "full" ? [["apps/web"], [".", "--ignore-pattern", "apps/web/**"]] : [["."]];
+const reports = [];
+for (const inputs of inputGroups) {
+  const args = ["exec", "oxlint", "--threads", "2", "--format", "json", "--deny-warnings"];
+  if (mode === "full") args.push("--type-aware", "--type-check");
+  args.push(...inputs);
 
-const result = spawnSync("pnpm", args, {
-  cwd: root,
-  encoding: "utf8",
-  maxBuffer: 128 * 1024 * 1024,
-});
-if (result.error || result.signal || ![0, 1].includes(result.status)) {
-  console.error(
-    `Oxlint failed to run cleanly${result.error ? `: ${result.error.message}` : ""}${result.signal ? ` (signal ${result.signal})` : ` (exit ${result.status})`}`
-  );
-  process.exit(1);
-}
-if (result.stderr?.trim()) {
-  console.error(`Oxlint emitted unexpected stderr:\n${result.stderr.trim()}`);
-  process.exit(1);
-}
+  const result = spawnSync("pnpm", args, {
+    cwd: root,
+    encoding: "utf8",
+    maxBuffer: 128 * 1024 * 1024,
+  });
+  if (result.error || result.signal || ![0, 1].includes(result.status)) {
+    console.error(
+      `Oxlint failed to run cleanly${result.error ? `: ${result.error.message}` : ""}${result.signal ? ` (signal ${result.signal})` : ` (exit ${result.status})`}`
+    );
+    process.exit(1);
+  }
+  if (result.stderr?.trim()) {
+    console.error(`Oxlint emitted unexpected stderr:\n${result.stderr.trim()}`);
+    process.exit(1);
+  }
 
-let report;
-try {
-  report = JSON.parse(result.stdout);
-} catch (error) {
-  console.error(`Oxlint report could not be read: ${error.message}`);
-  if (result.stderr) console.error(result.stderr.trim());
-  process.exit(1);
-}
+  let report;
+  try {
+    report = JSON.parse(result.stdout);
+  } catch (error) {
+    console.error(`Oxlint report could not be read: ${error.message}`);
+    if (result.stderr) console.error(result.stderr.trim());
+    process.exit(1);
+  }
 
-if (!Number.isInteger(report.number_of_files) || report.number_of_files < 1 || !Array.isArray(report.diagnostics)) {
-  console.error("Oxlint JSON report has no valid file count or diagnostics array");
-  process.exit(1);
-}
-if (result.status === 1 && report.diagnostics.length === 0) {
-  console.error("Oxlint exited with failure but reported no diagnostics");
-  process.exit(1);
-}
-const compilerDiagnostics = [];
-for (const diagnostic of report.diagnostics) {
-  if (
-    !diagnostic ||
-    typeof diagnostic.filename !== "string" ||
-    !diagnostic.filename ||
-    typeof diagnostic.severity !== "string" ||
-    !["error", "warning", "advice"].includes(diagnostic.severity) ||
-    typeof diagnostic.code !== "string" ||
-    !diagnostic.code ||
-    typeof diagnostic.message !== "string"
-  ) {
-    console.error("Oxlint JSON report contains a malformed diagnostic");
+  if (!Number.isInteger(report.number_of_files) || report.number_of_files < 1 || !Array.isArray(report.diagnostics)) {
+    console.error("Oxlint JSON report has no valid file count or diagnostics array");
+    process.exit(1);
+  }
+  if (result.status === 1 && report.diagnostics.length === 0) {
+    console.error("Oxlint exited with failure but reported no diagnostics");
+    process.exit(1);
+  }
+  const compilerDiagnostics = [];
+  for (const diagnostic of report.diagnostics) {
+    if (
+      !diagnostic ||
+      typeof diagnostic.filename !== "string" ||
+      !diagnostic.filename ||
+      typeof diagnostic.severity !== "string" ||
+      !["error", "warning", "advice"].includes(diagnostic.severity) ||
+      typeof diagnostic.code !== "string" ||
+      !diagnostic.code ||
+      typeof diagnostic.message !== "string"
+    ) {
+      console.error("Oxlint JSON report contains a malformed diagnostic");
+      process.exit(1);
+    }
+    if (
+      mode === "full" &&
+      diagnostic.severity === "error" &&
+      /^typescript\((?:TS\d+|tsconfig-error)\)$/.test(diagnostic.code)
+    ) {
+      compilerDiagnostics.push(diagnostic);
+    }
+  }
+  if (compilerDiagnostics.length > 0) {
+    console.error(`TypeScript compiler diagnostics cannot be baselined (${compilerDiagnostics.length}):`);
+    for (const diagnostic of compilerDiagnostics) {
+      console.error(`  ${diagnostic.filename}: ${diagnostic.code} ${diagnostic.message}`);
+    }
     process.exit(1);
   }
   if (
-    mode === "full" &&
-    diagnostic.severity === "error" &&
-    /^typescript\((?:TS\d+|tsconfig-error)\)$/.test(diagnostic.code)
+    result.status === 0 &&
+    report.diagnostics.some(({ severity }) => severity === "error" || severity === "warning")
   ) {
-    compilerDiagnostics.push(diagnostic);
+    console.error("Oxlint exited successfully while reporting errors or warnings");
+    process.exit(1);
   }
+
+  reports.push(report);
 }
-if (compilerDiagnostics.length > 0) {
-  console.error(`TypeScript compiler diagnostics cannot be baselined (${compilerDiagnostics.length}):`);
-  for (const diagnostic of compilerDiagnostics) {
-    console.error(`  ${diagnostic.filename}: ${diagnostic.code} ${diagnostic.message}`);
-  }
-  process.exit(1);
-}
-if (result.status === 0 && report.diagnostics.some(({ severity }) => severity === "error" || severity === "warning")) {
-  console.error("Oxlint exited successfully while reporting errors or warnings");
-  process.exit(1);
-}
+const report = {
+  number_of_files: reports.reduce((total, part) => total + part.number_of_files, 0),
+  diagnostics: reports.flatMap((part) => part.diagnostics),
+};
 
 const normalized = report.diagnostics.map((diagnostic) => ({
   filename: path.relative(root, path.resolve(root, diagnostic.filename)).split(path.sep).join("/"),
