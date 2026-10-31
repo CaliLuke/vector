@@ -38,23 +38,19 @@ func OpenJournal(path, scope string) (*Journal, error) {
 		return nil, err
 	}
 	if err = syscall.Flock(int(lock.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
-		_ = lock.Close()
-		return nil, fmt.Errorf("another sync holds this journal: %w", err)
+		return nil, errors.Join(fmt.Errorf("another sync holds this journal: %w", err), lock.Close())
 	}
 	j := &Journal{Version: 1, Scope: scope, Entries: map[string]*Entry{}, path: path, lock: lock}
 	data, err := os.ReadFile(path)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		_ = j.Close()
-		return nil, err
+		return nil, errors.Join(err, j.Close())
 	}
 	if err == nil {
 		if err = json.Unmarshal(data, j); err != nil {
-			_ = j.Close()
-			return nil, err
+			return nil, errors.Join(err, j.Close())
 		}
 		if j.Version != 1 || j.Scope != scope || j.Entries == nil {
-			_ = j.Close()
-			return nil, fmt.Errorf("journal version or destination does not match this sync")
+			return nil, errors.Join(fmt.Errorf("journal version or destination does not match this sync"), j.Close())
 		}
 	}
 	return j, nil
@@ -62,7 +58,7 @@ func OpenJournal(path, scope string) (*Journal, error) {
 
 func (j *Journal) Close() error { return j.lock.Close() }
 
-func (j *Journal) Save() error {
+func (j *Journal) Save() (resultErr error) {
 	data, err := json.MarshalIndent(j, "", "  ")
 	if err != nil {
 		return err
@@ -72,14 +68,16 @@ func (j *Journal) Save() error {
 		return err
 	}
 	name := file.Name()
-	defer func() { _ = os.Remove(name) }()
+	defer func() {
+		if removeErr := os.Remove(name); removeErr != nil && !errors.Is(removeErr, os.ErrNotExist) {
+			resultErr = errors.Join(resultErr, fmt.Errorf("remove unfinished journal: %w", removeErr))
+		}
+	}()
 	if _, err = file.Write(data); err != nil {
-		_ = file.Close()
-		return err
+		return errors.Join(err, file.Close())
 	}
 	if err = file.Sync(); err != nil {
-		_ = file.Close()
-		return err
+		return errors.Join(err, file.Close())
 	}
 	if err = file.Close(); err != nil {
 		return err
@@ -91,6 +89,6 @@ func (j *Journal) Save() error {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = dir.Close() }()
+	defer func() { resultErr = errors.Join(resultErr, dir.Close()) }()
 	return dir.Sync()
 }

@@ -3,6 +3,7 @@ package parity
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -32,12 +33,12 @@ type VolatileValueRule struct {
 }
 
 // LoadNormalizations reads a strict JSON normalization file.
-func LoadNormalizations(path string) (Normalizations, error) {
+func LoadNormalizations(path string) (result Normalizations, resultErr error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return Normalizations{}, fmt.Errorf("open normalization file: %w", err)
 	}
-	defer file.Close()
+	defer func() { resultErr = errors.Join(resultErr, file.Close()) }()
 
 	decoder := json.NewDecoder(file)
 	decoder.DisallowUnknownFields()

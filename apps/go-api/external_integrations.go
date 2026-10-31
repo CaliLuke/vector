@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	api "github.com/CaliLuke/go-plane/externalintegrations/gen/external_integrations"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
@@ -134,7 +136,7 @@ func (s *externalIntegrationsService) Unsplash(ctx context.Context, p *api.Unspl
 	if err != nil {
 		return nil, nil, s.internal()
 	}
-	defer response.Body.Close()
+	defer func() { platform.LogResponseBodyCloseError(ctx, response.Body.Close()) }()
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, nil, s.internal()

@@ -317,7 +317,7 @@ func formatIssueExport(filename, format string, records []map[string]any) (strin
 	return formatIssueExportColumns(filename, format, records, nil)
 }
 
-func formatIssueExportColumns(filename, format string, records []map[string]any, columns []workitemtypes.PropertyExportColumn) (string, []byte, error) {
+func formatIssueExportColumns(filename, format string, records []map[string]any, columns []workitemtypes.PropertyExportColumn) (exportName string, data []byte, resultErr error) {
 	fields := append([]string{}, issueExportFields...)
 	titles := map[string]string{}
 	title := cases.Title(language.Und, cases.NoLower)
@@ -367,10 +367,13 @@ func formatIssueExportColumns(filename, format string, records []map[string]any,
 		return filename + ".csv", buffer.Bytes(), nil
 	case "xlsx":
 		workbook := excelize.NewFile()
-		defer workbook.Close()
+		defer func() { resultErr = errors.Join(resultErr, workbook.Close()) }()
 		sheet := workbook.GetSheetName(0)
 		for column, field := range fields {
-			cell, _ := excelize.CoordinatesToCellName(column+1, 1)
+			cell, err := excelize.CoordinatesToCellName(column+1, 1)
+			if err != nil {
+				return "", nil, fmt.Errorf("locate export header: %w", err)
+			}
 			if err := workbook.SetCellValue(sheet, cell, titles[field]); err != nil {
 				return "", nil, err
 			}
@@ -381,7 +384,10 @@ func formatIssueExportColumns(filename, format string, records []map[string]any,
 				if err != nil {
 					return "", nil, err
 				}
-				cell, _ := excelize.CoordinatesToCellName(column+1, rowIndex+2)
+				cell, err := excelize.CoordinatesToCellName(column+1, rowIndex+2)
+				if err != nil {
+					return "", nil, fmt.Errorf("locate export cell: %w", err)
+				}
 				if err := workbook.SetCellValue(sheet, cell, value); err != nil {
 					return "", nil, err
 				}

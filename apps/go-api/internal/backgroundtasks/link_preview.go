@@ -14,6 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"github.com/CaliLuke/go-plane/internal/workspacewebhooks"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/net/html"
@@ -70,7 +72,7 @@ func (s *PostgresLinkPreviewStore) fetch(ctx context.Context, method, rawURL str
 		}
 		redirect := response.StatusCode == 301 || response.StatusCode == 302 || response.StatusCode == 303 || response.StatusCode == 307 || response.StatusCode == 308
 		if method != http.MethodHead && redirect && response.Header.Get("Location") != "" {
-			response.Body.Close()
+			platform.LogResponseBodyCloseError(ctx, response.Body.Close())
 			if hop == 5 {
 				return nil, nil, current, 0, errors.New("link preview redirect limit")
 			}
@@ -86,7 +88,7 @@ func (s *PostgresLinkPreviewStore) fetch(ctx context.Context, method, rawURL str
 			continue
 		}
 		data, err := io.ReadAll(io.LimitReader(response.Body, limit+1))
-		response.Body.Close()
+		platform.LogResponseBodyCloseError(ctx, response.Body.Close())
 		if int64(len(data)) > limit {
 			return nil, nil, current, 0, errors.New("link preview response exceeds byte limit")
 		}

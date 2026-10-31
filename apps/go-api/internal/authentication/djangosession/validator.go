@@ -39,25 +39,25 @@ const (
 )
 
 var (
-	ErrNoCookie            = errors.New("Django session cookie is missing")
-	ErrInvalidKey          = errors.New("Django session key is invalid")
-	ErrSessionNotFound     = errors.New("Django session is missing or expired")
-	ErrInvalidData         = errors.New("Django session data is invalid")
-	ErrInvalidSessionShape = errors.New("Django session data is not an object")
-	ErrBadSignature        = errors.New("Django session signature does not match")
-	ErrUserMismatch        = errors.New("Django session user does not match its row")
-	ErrBackend             = errors.New("Django authentication backend is not configured")
-	ErrInvalidUserID       = errors.New("Django session user identifier is invalid")
-	ErrUserNotFound        = errors.New("Django session user does not exist")
-	ErrInactiveUser        = errors.New("Django session user is inactive")
-	ErrInvalidAuthHash     = errors.New("Django session authentication hash is invalid")
-	ErrInvalidTimezone     = errors.New("Django user timezone key is invalid")
-	ErrTimezoneNotFound    = errors.New("Django user timezone does not exist")
-	ErrStore               = errors.New("Django session store read failed")
-	ErrSessionStore        = errors.New("Django session table access failed")
-	ErrUserStore           = errors.New("Django user table access failed")
-	ErrKeyCollision        = errors.New("Django session key already exists")
-	ErrSessionUpdate       = errors.New("Django session update failed")
+	ErrNoCookie            = errors.New("session cookie is missing")
+	ErrInvalidKey          = errors.New("session key is invalid")
+	ErrSessionNotFound     = errors.New("session is missing or expired")
+	ErrInvalidData         = errors.New("session data is invalid")
+	ErrInvalidSessionShape = errors.New("session data is not an object")
+	ErrBadSignature        = errors.New("session signature does not match")
+	ErrUserMismatch        = errors.New("session user does not match its row")
+	ErrBackend             = errors.New("session authentication backend is not configured")
+	ErrInvalidUserID       = errors.New("session user identifier is invalid")
+	ErrUserNotFound        = errors.New("session user does not exist")
+	ErrInactiveUser        = errors.New("session user is inactive")
+	ErrInvalidAuthHash     = errors.New("session authentication hash is invalid")
+	ErrInvalidTimezone     = errors.New("session user timezone key is invalid")
+	ErrTimezoneNotFound    = errors.New("session user timezone does not exist")
+	ErrStore               = errors.New("session store read failed")
+	ErrSessionStore        = errors.New("session table access failed")
+	ErrUserStore           = errors.New("session user table access failed")
+	ErrKeyCollision        = errors.New("session key already exists")
+	ErrSessionUpdate       = errors.New("session update failed")
 )
 
 type Session struct {
@@ -133,10 +133,10 @@ type Validator struct {
 
 func New(reader Reader, config Config) (*Validator, error) {
 	if reader == nil {
-		return nil, errors.New("Django session reader is required")
+		return nil, errors.New("session reader is required")
 	}
 	if config.SecretKey == "" {
-		return nil, errors.New("Django SECRET_KEY is required")
+		return nil, errors.New("session SECRET_KEY is required")
 	}
 	if len(config.AllowedBackends) == 0 {
 		return nil, errors.New("at least one Django authentication backend is required")
@@ -149,14 +149,14 @@ func New(reader Reader, config Config) (*Validator, error) {
 	secrets = append(secrets, config.SecretKey)
 	for _, key := range config.FallbackKeys {
 		if key == "" {
-			return nil, errors.New("Django fallback SECRET_KEY must not be empty")
+			return nil, errors.New("session fallback SECRET_KEY must not be empty")
 		}
 		secrets = append(secrets, key)
 	}
 	backends := make(map[string]struct{}, len(config.AllowedBackends))
 	for _, backend := range config.AllowedBackends {
 		if backend == "" {
-			return nil, errors.New("Django authentication backend must not be empty")
+			return nil, errors.New("session authentication backend must not be empty")
 		}
 		backends[backend] = struct{}{}
 	}
@@ -531,7 +531,7 @@ func cookieExpiry(maxAgeSeconds float64, now time.Time) time.Time {
 
 func addSeconds(value time.Time, seconds float64) (time.Time, error) {
 	if math.IsNaN(seconds) || math.IsInf(seconds, 0) || seconds > math.MaxInt64 || seconds < math.MinInt64 {
-		return time.Time{}, errors.New("Django session expiry is outside the supported time range")
+		return time.Time{}, errors.New("session expiry is outside the supported time range")
 	}
 	whole, fraction := math.Modf(seconds)
 	// datetime.timedelta rounds fractional arguments to the nearest
@@ -547,11 +547,11 @@ func addSeconds(value time.Time, seconds float64) (time.Time, error) {
 	unix := value.Unix()
 	wholeSeconds := int64(whole)
 	if (wholeSeconds > 0 && unix > math.MaxInt64-wholeSeconds) || (wholeSeconds < 0 && unix < math.MinInt64-wholeSeconds) {
-		return time.Time{}, errors.New("Django session expiry is outside the supported time range")
+		return time.Time{}, errors.New("session expiry is outside the supported time range")
 	}
 	result := time.Unix(unix+wholeSeconds, int64(value.Nanosecond())+int64(microseconds)*1_000).In(value.Location())
 	if result.Year() < 1 || result.Year() > 9999 {
-		return time.Time{}, errors.New("Django session expiry is outside the datetime range")
+		return time.Time{}, errors.New("session expiry is outside the datetime range")
 	}
 	return result, nil
 }

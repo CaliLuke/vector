@@ -87,7 +87,7 @@ WHERE id = $1
 func (reader *PostgreSQLReader) UpdateSession(ctx context.Context, sessionKey string, sessionData string, expireAt time.Time, userID any, deviceInfo any) error {
 	database, ok := reader.database.(sessionUpdater)
 	if !ok {
-		return errors.New("Django session database does not support updates")
+		return errors.New("session database does not support updates")
 	}
 	tag, err := database.Exec(ctx, `
 UPDATE sessions
@@ -106,7 +106,7 @@ WHERE session_key = $1
 func (reader *PostgreSQLReader) CreateSession(ctx context.Context, sessionKey string, sessionData string, expireAt time.Time, userID any, deviceInfo any) error {
 	database, ok := reader.database.(sessionUpdater)
 	if !ok {
-		return errors.New("Django session database does not support creation")
+		return errors.New("session database does not support creation")
 	}
 	_, err := database.Exec(ctx, `
 INSERT INTO sessions (session_key, session_data, expire_date, user_id, device_info)
@@ -133,7 +133,7 @@ func (reader *PostgreSQLReader) CycleSession(
 ) error {
 	database, ok := reader.database.(sessionUpdater)
 	if !ok {
-		return errors.New("Django session database does not support key rotation")
+		return errors.New("session database does not support key rotation")
 	}
 	_, err := database.Exec(ctx, `
 INSERT INTO sessions (session_key, session_data, expire_date, user_id, device_info)
@@ -155,7 +155,7 @@ VALUES ($1, $2, $3, $4, $5)
 func (reader *PostgreSQLReader) DeleteSession(ctx context.Context, sessionKey string) error {
 	database, ok := reader.database.(sessionUpdater)
 	if !ok {
-		return errors.New("Django session database does not support deletion")
+		return errors.New("session database does not support deletion")
 	}
 	if _, err := database.Exec(ctx, "DELETE FROM sessions WHERE session_key = $1", sessionKey); err != nil {
 		return fmt.Errorf("delete Django session: %w", err)

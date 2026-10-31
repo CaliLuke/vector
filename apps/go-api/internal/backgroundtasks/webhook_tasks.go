@@ -15,6 +15,8 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"github.com/CaliLuke/loom/execution"
 	executionSelvedge "github.com/CaliLuke/loom/execution/selvedge"
 	"github.com/CaliLuke/selvedge"
@@ -484,7 +486,7 @@ func (store *PostgresWebhookTaskStore) Deliver(ctx context.Context, input webhoo
 		}
 		return requestErr
 	}
-	defer response.Body.Close()
+	defer func() { platform.LogResponseBodyCloseError(ctx, response.Body.Close()) }()
 	responseBody, readErr := io.ReadAll(io.LimitReader(response.Body, (1<<20)+1))
 	if readErr != nil {
 		return readErr

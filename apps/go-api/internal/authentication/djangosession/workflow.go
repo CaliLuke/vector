@@ -80,7 +80,7 @@ func (validator *Validator) Login(
 	now time.Time,
 ) (SessionRefresh, error) {
 	if identity.UserID == "" || identity.PasswordHash == "" || identity.Backend == "" {
-		return SessionRefresh{}, errors.New("Django login requires user id, password hash, and backend")
+		return SessionRefresh{}, errors.New("session login requires user id, password hash, and backend")
 	}
 	if _, ok := validator.backends[identity.Backend]; !ok {
 		return SessionRefresh{}, ErrBackend

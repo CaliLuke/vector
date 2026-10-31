@@ -14,6 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"github.com/CaliLuke/go-plane/internal/assets"
 	htmlcompat "github.com/CaliLuke/go-plane/internal/htmlcompat"
 	"github.com/CaliLuke/loom/execution"
@@ -327,7 +329,7 @@ func (store *PostgresDescriptionAssetCopyStore) Convert(ctx context.Context, inp
 	if err != nil {
 		return fmt.Errorf("request description conversion: %w", err)
 	}
-	defer response.Body.Close()
+	defer func() { platform.LogResponseBodyCloseError(ctx, response.Body.Close()) }()
 	if response.StatusCode != http.StatusOK {
 		return nil
 	}

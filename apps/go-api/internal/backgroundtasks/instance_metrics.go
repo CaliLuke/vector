@@ -364,7 +364,7 @@ func collectWorkspaceMetricCounts(ctx context.Context, tx pgx.Tx, workspaces []i
 
 type otlpInstanceMetricsExporter struct{}
 
-func (otlpInstanceMetricsExporter) Export(ctx context.Context, snapshot InstanceMetricsSnapshot) error {
+func (otlpInstanceMetricsExporter) Export(ctx context.Context, snapshot InstanceMetricsSnapshot) (resultErr error) {
 	if strings.TrimSpace(os.Getenv("OTLP_ENDPOINT")) == "" {
 		return nil
 	}
@@ -392,8 +392,7 @@ func (otlpInstanceMetricsExporter) Export(ctx context.Context, snapshot Instance
 		observations := byName[name]
 		gauge, err := meter.Int64ObservableGauge(name, metric.WithDescription(observations[0].Description))
 		if err != nil {
-			_ = provider.Shutdown(context.Background())
-			return fmt.Errorf("register metric %q: %w", name, err)
+			return errors.Join(fmt.Errorf("register metric %q: %w", name, err), provider.Shutdown(context.Background()))
 		}
 		registration, err := meter.RegisterCallback(func(_ context.Context, observer metric.Observer) error {
 			for _, observation := range observations {
@@ -406,14 +405,16 @@ func (otlpInstanceMetricsExporter) Export(ctx context.Context, snapshot Instance
 			return nil
 		}, gauge)
 		if err != nil {
-			_ = provider.Shutdown(context.Background())
-			return fmt.Errorf("register metric callback %q: %w", name, err)
+			return errors.Join(fmt.Errorf("register metric callback %q: %w", name, err), provider.Shutdown(context.Background()))
 		}
-		defer registration.Unregister()
+		defer func() {
+			if err := registration.Unregister(); err != nil {
+				resultErr = errors.Join(resultErr, fmt.Errorf("unregister metric %q: %w", name, err))
+			}
+		}()
 	}
 	if err := provider.ForceFlush(ctx); err != nil {
-		_ = provider.Shutdown(context.Background())
-		return fmt.Errorf("flush instance metrics to OTLP: %w", err)
+		return errors.Join(fmt.Errorf("flush instance metrics to OTLP: %w", err), provider.Shutdown(context.Background()))
 	}
 	if err := provider.Shutdown(ctx); err != nil {
 		return fmt.Errorf("shutdown OTLP metrics provider: %w", err)

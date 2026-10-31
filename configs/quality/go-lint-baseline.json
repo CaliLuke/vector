@@ -28,38 +28,6 @@
     {
       "fingerprint": [
         "errcheck",
-        "external_integrations.go",
-        "Error return value of `response.Body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/description_asset_copy.go",
-        "Error return value of `response.Body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/instance_metrics.go",
-        "Error return value of `registration.Unregister` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/issue_export.go",
-        "Error return value of `workbook.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/backgroundtasks/link_preview_test.go",
         "Error return value of `io.WriteString` is not checked"
       ],
@@ -68,32 +36,8 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/backgroundtasks/link_preview.go",
-        "Error return value of `response.Body.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/backgroundtasks/templated_email_tasks_integration_test.go",
         "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/webhook_tasks.go",
-        "Error return value of `response.Body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/bootstrap/instance.go",
-        "Error return value of `response.Body.Close` is not checked"
       ],
       "count": 1
     },
@@ -112,27 +56,7 @@
     {
       "fingerprint": [
         "errcheck",
-        "internal/parity/normalization.go",
-        "Error return value of `file.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "internal/parity/response.go", "Error return value of `file.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
         "internal/standardviews/mutation_validation_upgrade_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/testsupport/postgres/pair.go",
         "Error return value of `connection.Close` is not checked"
       ],
       "count": 1
@@ -260,30 +184,6 @@
         "ST1005: error strings should not be capitalized"
       ],
       "count": 11
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/authentication/djangosession/postgres.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 4
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/authentication/djangosession/validator.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 26
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/authentication/djangosession/workflow.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
     },
     {
       "fingerprint": [

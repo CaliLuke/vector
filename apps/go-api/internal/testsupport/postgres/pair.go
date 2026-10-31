@@ -146,12 +146,12 @@ func StartUncloned(ctx context.Context, migrate SeedMigration) (_ *Pair, err err
 }
 
 // Reset discards both targets and restores them independently from the unchanged seed database.
-func (pair *Pair) Reset(ctx context.Context) error {
+func (pair *Pair) Reset(ctx context.Context) (resultErr error) {
 	connection, err := pgx.Connect(ctx, pair.adminURL)
 	if err != nil {
 		return fmt.Errorf("connect to PostgreSQL testcontainer admin database: %w", err)
 	}
-	defer connection.Close(context.WithoutCancel(ctx))
+	defer func() { resultErr = errors.Join(resultErr, connection.Close(context.WithoutCancel(ctx))) }()
 
 	for _, database := range []string{sourceDatabase, targetDatabase} {
 		if _, execErr := connection.Exec(

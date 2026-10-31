@@ -15,6 +15,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/instancecipher"
 	"github.com/google/uuid"
@@ -137,7 +139,7 @@ func latestReleaseVersion(ctx context.Context, fallback string) string {
 	if err != nil {
 		return fallback
 	}
-	defer response.Body.Close()
+	defer func() { platform.LogResponseBodyCloseError(ctx, response.Body.Close()) }()
 	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
 		return fallback
 	}

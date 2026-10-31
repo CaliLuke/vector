@@ -5,8 +5,10 @@ import (
 	"bytes"
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"io"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -135,5 +137,19 @@ func TestCustomExportColumnsPreserveValuesAndSanitizeTitles(t *testing.T) {
 	formula, err := book.GetCellFormula(book.GetSheetName(0), cell)
 	if err != nil || formula != "" {
 		t.Fatalf("header became formula %q: %v", formula, err)
+	}
+}
+
+func TestIssueExportReportsSpreadsheetColumnLimit(t *testing.T) {
+	columns := make([]workitemtypes.PropertyExportColumn, excelize.MaxColumns-len(issueExportFields)+1)
+	for i := range columns {
+		columns[i] = workitemtypes.PropertyExportColumn{Key: "property_" + strconv.Itoa(i), Title: "Property"}
+	}
+	name, data, err := formatIssueExportColumns("too-wide", "xlsx", nil, columns)
+	if !errors.Is(err, excelize.ErrColumnNumber) {
+		t.Fatalf("expected spreadsheet column limit, got %v", err)
+	}
+	if name != "" || len(data) != 0 {
+		t.Fatal("invalid spreadsheet was returned as an export")
 	}
 }

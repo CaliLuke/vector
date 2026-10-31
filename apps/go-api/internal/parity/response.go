@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -14,12 +15,12 @@ import (
 )
 
 // LoadCapturedResponse reads a strict recorder-canonicalized response JSON file.
-func LoadCapturedResponse(path string) (CapturedResponse, error) {
+func LoadCapturedResponse(path string) (result CapturedResponse, resultErr error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return CapturedResponse{}, fmt.Errorf("open captured response: %w", err)
 	}
-	defer file.Close()
+	defer func() { resultErr = errors.Join(resultErr, file.Close()) }()
 	decoder := json.NewDecoder(file)
 	decoder.DisallowUnknownFields()
 	var response CapturedResponse
