@@ -17,7 +17,7 @@ func readProjectSchemaCatalog[T any](ctx context.Context, r *Repository, actor, 
 	if _, err = tx.Exec(ctx, `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`); err != nil {
 		return zero, err
 	}
-	workspace, admin, err := authorizeProject(ctx, tx, actor, slug, project, false)
+	workspace, admin, err := authorizeProject(ctx, tx, actor, slug, project, false, false)
 	if err != nil {
 		return zero, err
 	}
@@ -36,14 +36,14 @@ func withProjectSchemaWrite[T any](ctx context.Context, r *Repository, actor, sl
 		return zero, err
 	}
 	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
-	workspace, _, err := authorizeProject(ctx, tx, actor, slug, project, true)
+	workspace, _, err := authorizeProject(ctx, tx, actor, slug, project, true, false)
 	if err != nil {
 		return zero, err
 	}
 	if _, err = tx.Exec(ctx, `SELECT work_item_schema_lock($1::uuid)`, workspace); err != nil {
 		return zero, err
 	}
-	current, admin, err := authorizeProject(ctx, tx, actor, slug, project, true)
+	current, admin, err := authorizeProject(ctx, tx, actor, slug, project, true, true)
 	if err != nil {
 		return zero, err
 	}

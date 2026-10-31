@@ -52,7 +52,7 @@ func (r *Repository) PropertyCatalog(ctx context.Context, actor, slug string) (_
 	if _, err = tx.Exec(ctx, `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`); err != nil {
 		return PropertyCatalog{}, err
 	}
-	workspace, admin, err := authorize(ctx, tx, actor, slug, false)
+	workspace, admin, err := authorize(ctx, tx, actor, slug, false, false)
 	if err != nil {
 		return PropertyCatalog{}, err
 	}

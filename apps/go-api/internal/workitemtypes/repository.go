@@ -50,10 +50,14 @@ type Input struct {
 	Active, Mandatory              bool
 }
 
-func authorize(ctx context.Context, tx pgx.Tx, actor, slug string, write bool) (string, bool, error) {
+func authorize(ctx context.Context, tx pgx.Tx, actor, slug string, write, lock bool) (string, bool, error) {
 	var workspace string
 	var role int
-	err := tx.QueryRow(ctx, `SELECT w.id::text,m.role FROM workspaces w JOIN workspace_members m ON m.workspace_id=w.id WHERE w.slug=$1 AND w.deleted_at IS NULL AND m.member_id=$2 AND m.is_active AND m.deleted_at IS NULL`, slug, actor).Scan(&workspace, &role)
+	suffix := ""
+	if lock {
+		suffix = " FOR SHARE OF w,m"
+	}
+	err := tx.QueryRow(ctx, `SELECT w.id::text,m.role FROM workspaces w JOIN workspace_members m ON m.workspace_id=w.id WHERE w.slug=$1 AND w.deleted_at IS NULL AND m.member_id=$2 AND m.is_active AND m.deleted_at IS NULL`+suffix, slug, actor).Scan(&workspace, &role)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return "", false, reject(403, "You do not have access to this workspace.")
 	}

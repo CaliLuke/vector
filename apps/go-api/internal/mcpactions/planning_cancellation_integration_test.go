@@ -30,7 +30,7 @@ func TestPlanningCancelledLockWaitLeavesRequestReusable(t *testing.T) {
 				command.Fields["owned_by"] = testsupport.LabelActor
 			}
 			before := planningMutationSnapshot(t, f)
-			cancelProjectWriteWhileLocked(t, f, command.ProjectID, func(ctx context.Context) error {
+			cancelScopeWriteWhileLocked(t, f, projectMutationLock, command.ProjectID, func(ctx context.Context) error {
 				_, err := write(ctx, command)
 				return err
 			})

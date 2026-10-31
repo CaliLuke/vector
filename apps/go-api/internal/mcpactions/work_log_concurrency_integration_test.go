@@ -43,7 +43,7 @@ func TestWorkLogConcurrentMutationsCommitOnce(t *testing.T) {
 				second.RequestID = &key
 				rejected = projectmutations.ErrRevision
 			}
-			results := competingProjectWrites(t, f, first.ProjectID, [2]func(context.Context) (projectmutations.Result, error){
+			results := competingScopeWrites(t, f, projectMutationLock, first.ProjectID, [2]func(context.Context) (projectmutations.Result, error){
 				func(ctx context.Context) (projectmutations.Result, error) {
 					return repository.MutateResource(ctx, first)
 				},
@@ -84,7 +84,7 @@ func TestWorkLogConcurrentMutationsCommitOnce(t *testing.T) {
 func TestWorkLogCancelledLockWaitLeavesReceiptReusable(t *testing.T) {
 	f, repository, command := workLogMutationFixture(t)
 	before := workLogStorageSnapshot(t, f)
-	cancelProjectWriteWhileLocked(t, f, command.ProjectID, func(ctx context.Context) error { _, err := repository.MutateResource(ctx, command); return err })
+	cancelScopeWriteWhileLocked(t, f, projectMutationLock, command.ProjectID, func(ctx context.Context) error { _, err := repository.MutateResource(ctx, command); return err })
 	require.Equal(t, before, workLogStorageSnapshot(t, f))
 	result, err := repository.MutateResource(t.Context(), command)
 	require.NoError(t, err)

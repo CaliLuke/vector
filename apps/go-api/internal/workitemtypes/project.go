@@ -28,8 +28,8 @@ type ProjectInput struct {
 	TypeIDs  []string
 }
 
-func authorizeProject(ctx context.Context, tx pgx.Tx, actor, slug, project string, write bool) (string, bool, error) {
-	workspace, _, err := authorize(ctx, tx, actor, slug, false)
+func authorizeProject(ctx context.Context, tx pgx.Tx, actor, slug, project string, write, lock bool) (string, bool, error) {
+	workspace, _, err := authorize(ctx, tx, actor, slug, false, lock)
 	if err != nil {
 		return "", false, err
 	}
@@ -41,7 +41,11 @@ func authorizeProject(ctx context.Context, tx pgx.Tx, actor, slug, project strin
 		return "", false, reject(403, "You do not have access to this project.")
 	}
 	var admin bool
-	err = tx.QueryRow(ctx, `SELECT m.role=20 FROM projects p JOIN project_members m ON m.project_id=p.id AND m.workspace_id=p.workspace_id WHERE p.id=$1 AND p.workspace_id=$2 AND p.deleted_at IS NULL AND m.member_id=$3 AND m.is_active AND m.deleted_at IS NULL`, project, workspace, actor).Scan(&admin)
+	suffix := ""
+	if lock {
+		suffix = " FOR SHARE OF p,m"
+	}
+	err = tx.QueryRow(ctx, `SELECT m.role=20 FROM projects p JOIN project_members m ON m.project_id=p.id AND m.workspace_id=p.workspace_id WHERE p.id=$1 AND p.workspace_id=$2 AND p.deleted_at IS NULL AND m.member_id=$3 AND m.is_active AND m.deleted_at IS NULL`+suffix, project, workspace, actor).Scan(&admin)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return "", false, reject(404, "Project not found.")
 	}

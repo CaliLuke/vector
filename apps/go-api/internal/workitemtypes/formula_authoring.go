@@ -42,7 +42,7 @@ func (r *Repository) PreviewFormula(ctx context.Context, actor, slug string, inp
 	if _, err = tx.Exec(ctx, `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`); err != nil {
 		return out, err
 	}
-	workspace, _, err := authorize(ctx, tx, actor, slug, true)
+	workspace, _, err := authorize(ctx, tx, actor, slug, true, false)
 	if err != nil {
 		return out, err
 	}
@@ -57,7 +57,7 @@ func (r *Repository) PreviewFormula(ctx context.Context, actor, slug string, inp
 		return out, reject(404, "Work item type not found.")
 	}
 	if input.ProjectID != "" {
-		if _, _, err = authorizeProject(ctx, tx, actor, slug, input.ProjectID, false); err != nil {
+		if _, _, err = authorizeProject(ctx, tx, actor, slug, input.ProjectID, false, false); err != nil {
 			return out, err
 		}
 	}

@@ -63,7 +63,7 @@ func TestEstimateConcurrentPointBatchesCommitOnce(t *testing.T) {
 					return repository.MutateEstimate(ctx, command)
 				}
 			}
-			outcomes := competingProjectWrites(t, f, first.ProjectID, calls)
+			outcomes := competingScopeWrites(t, f, projectMutationLock, first.ProjectID, calls)
 			if outcomes[0].err != nil {
 				outcomes[0], outcomes[1] = outcomes[1], outcomes[0]
 			}
@@ -106,7 +106,7 @@ func TestEstimateConcurrentPointBatchesCommitOnce(t *testing.T) {
 func TestEstimateCancelledBatchLeavesReceiptReusable(t *testing.T) {
 	f, repository, command := estimatePointWriteFixture(t)
 	snapshot := estimateStorageSnapshot(t, f)
-	cancelProjectWriteWhileLocked(t, f, command.ProjectID, func(ctx context.Context) error { _, err := repository.MutateEstimate(ctx, command); return err })
+	cancelScopeWriteWhileLocked(t, f, projectMutationLock, command.ProjectID, func(ctx context.Context) error { _, err := repository.MutateEstimate(ctx, command); return err })
 	require.Equal(t, snapshot, estimateStorageSnapshot(t, f))
 	command.Fields = map[string]any{"points": `[{"value":"retry"}]`}
 	accepted, err := repository.MutateEstimate(t.Context(), command)

@@ -12,7 +12,7 @@ import (
 func TestMCPAttachmentWaitRechecksAuthorizationBeforeWriteAndReplay(t *testing.T) {
 	for _, action := range []string{"upload_from_url", "delete"} {
 		t.Run(action, func(t *testing.T) {
-			runProjectMutationAuthorizationWait(t, projectMutationWaitScenario{
+			runMutationAuthorizationWait(t, mutationWaitScenario{
 				tool: "workitem_attachment",
 				fixture: func(t *testing.T) milestoneFixture {
 					return attachmentRecoveryFixture(t).milestoneFixture

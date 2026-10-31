@@ -32,7 +32,7 @@ func competingLabelMutations(t *testing.T, f milestoneFixture, commands [2]label
 			return repository.MutateLabel(ctx, command)
 		}
 	}
-	return competingProjectWrites(t, f, commands[0].ProjectID, calls)
+	return competingScopeWrites(t, f, projectMutationLock, commands[0].ProjectID, calls)
 }
 
 func TestLabelConcurrentIdenticalRequestCommitsOnce(t *testing.T) {

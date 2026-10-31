@@ -46,7 +46,7 @@ func competingAttachmentWrites(t *testing.T, h attachmentRecoveryHarness, comman
 			return h.application.MutateResource(ctx, command)
 		}
 	}
-	return competingProjectWrites(t, h.milestoneFixture, commands[0].ProjectID, calls)
+	return competingScopeWrites(t, h.milestoneFixture, projectMutationLock, commands[0].ProjectID, calls)
 }
 
 func TestAttachmentConcurrentImportsFetchAndCommitOnce(t *testing.T) {
@@ -131,7 +131,7 @@ func TestAttachmentCancelledLockWaitLeavesReceiptReusable(t *testing.T) {
 				command = attachmentDeleteCommand(t, h)
 			}
 			before, fetched := attachmentStorageSnapshot(t, h.milestoneFixture), h.fetched.Load()
-			cancelProjectWriteWhileLocked(t, h.milestoneFixture, command.ProjectID, func(ctx context.Context) error { _, err := h.application.MutateResource(ctx, command); return err })
+			cancelScopeWriteWhileLocked(t, h.milestoneFixture, projectMutationLock, command.ProjectID, func(ctx context.Context) error { _, err := h.application.MutateResource(ctx, command); return err })
 			require.Equal(t, before, attachmentStorageSnapshot(t, h.milestoneFixture))
 			require.Equal(t, fetched, h.fetched.Load())
 			result, err := h.application.MutateResource(t.Context(), command)

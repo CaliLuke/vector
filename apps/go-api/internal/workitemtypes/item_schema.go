@@ -73,13 +73,13 @@ func (r *Repository) ItemSchema(ctx context.Context, actor, slug string, input I
 	if _, err = tx.Exec(ctx, `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`); err != nil {
 		return out, err
 	}
-	workspace, _, err := authorize(ctx, tx, actor, slug, false)
+	workspace, _, err := authorize(ctx, tx, actor, slug, false, false)
 	if err != nil {
 		return out, err
 	}
 	projectVisible := false
 	if input.ProjectID != "" && (input.Mode != "draft" || input.DraftID == "") {
-		if _, _, err = authorizeProject(ctx, tx, actor, slug, input.ProjectID, false); err != nil {
+		if _, _, err = authorizeProject(ctx, tx, actor, slug, input.ProjectID, false, false); err != nil {
 			return out, err
 		}
 		projectVisible = true
@@ -89,7 +89,7 @@ func (r *Repository) ItemSchema(ctx context.Context, actor, slug string, input I
 		return out, err
 	}
 	if input.ProjectID != "" && !projectVisible {
-		_, _, accessErr := authorizeProject(ctx, tx, actor, slug, input.ProjectID, false)
+		_, _, accessErr := authorizeProject(ctx, tx, actor, slug, input.ProjectID, false, false)
 		projectVisible = accessErr == nil
 		if accessErr != nil {
 			var denied *Error

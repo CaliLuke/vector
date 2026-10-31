@@ -48,7 +48,7 @@ func TestProjectRecordContentionCommitsOneMutation(t *testing.T) {
 			for i, cmd := range []projectmutations.Command{first, second} {
 				calls[i] = func(ctx context.Context) (projectmutations.Result, error) { return repo.MutateResource(ctx, cmd) }
 			}
-			result := competingProjectWrites(t, f, first.ProjectID, calls)
+			result := competingScopeWrites(t, f, projectMutationLock, first.ProjectID, calls)
 			if result[0].err != nil {
 				result[0], result[1] = result[1], result[0]
 			}
@@ -80,7 +80,7 @@ func TestProjectRecordContentionCommitsOneMutation(t *testing.T) {
 func TestProjectRecordCancelledLockWaitLeavesRequestReusable(t *testing.T) {
 	f, repo, cmd := projectRecordMutationFixture(t)
 	before := projectMutationStorageSnapshot(t, f)
-	cancelProjectWriteWhileLocked(t, f, cmd.ProjectID, func(ctx context.Context) error { _, err := repo.MutateResource(ctx, cmd); return err })
+	cancelScopeWriteWhileLocked(t, f, projectMutationLock, cmd.ProjectID, func(ctx context.Context) error { _, err := repo.MutateResource(ctx, cmd); return err })
 	require.Equal(t, before, projectMutationStorageSnapshot(t, f))
 	cmd.Fields["name"] = "Accepted retry"
 	accepted, err := repo.MutateResource(t.Context(), cmd)

@@ -21,7 +21,7 @@ func readSchemaCatalog[T any](ctx context.Context, r *Repository, actor, slug st
 	if _, err = tx.Exec(ctx, `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY`); err != nil {
 		return zero, err
 	}
-	workspace, admin, err := authorize(ctx, tx, actor, slug, false)
+	workspace, admin, err := authorize(ctx, tx, actor, slug, false, false)
 	if err != nil {
 		return zero, err
 	}
@@ -53,16 +53,17 @@ func withSchemaWrite[T any](ctx context.Context, r *Repository, actor, slug stri
 }
 
 // Resolve authorization again after waiting, without switching to a workspace
-// whose schema lock this transaction does not own.
+// whose schema lock this transaction does not own. Retain parent and membership
+// rows through commit so deletion or revocation cannot overtake this write.
 func lockWorkspaceSchema(ctx context.Context, tx pgx.Tx, actor, slug string) (string, bool, error) {
-	workspace, _, err := authorize(ctx, tx, actor, slug, true)
+	workspace, _, err := authorize(ctx, tx, actor, slug, true, false)
 	if err != nil {
 		return "", false, err
 	}
 	if _, err = tx.Exec(ctx, `SELECT work_item_schema_lock($1::uuid)`, workspace); err != nil {
 		return "", false, err
 	}
-	current, admin, err := authorize(ctx, tx, actor, slug, true)
+	current, admin, err := authorize(ctx, tx, actor, slug, true, true)
 	if err != nil {
 		return "", false, err
 	}

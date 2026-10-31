@@ -12,7 +12,7 @@ import (
 func TestMCPProjectRecordWaitRechecksAuthorizationBeforeWriteAndReplay(t *testing.T) {
 	for _, action := range []string{"update", "delete"} {
 		t.Run(action, func(t *testing.T) {
-			runProjectMutationAuthorizationWait(t, projectMutationWaitScenario{
+			runMutationAuthorizationWait(t, mutationWaitScenario{
 				tool: "project", action: action, fixture: newMilestoneFixture,
 				createFields: map[string]any{"name": "Project wait acceptance", "identifier": "WAIT"},
 				snapshot:     projectRecordAuthorizationSnapshot,

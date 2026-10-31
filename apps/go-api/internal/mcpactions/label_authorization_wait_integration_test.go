@@ -5,7 +5,7 @@ package mcpactions_test
 import "testing"
 
 func TestMCPLabelWaitRechecksAuthorizationBeforeWriteAndReplay(t *testing.T) {
-	runProjectMutationAuthorizationWait(t, projectMutationWaitScenario{
+	runMutationAuthorizationWait(t, mutationWaitScenario{
 		tool: "label", fixture: newMilestoneFixture, snapshot: labelMutationSnapshot,
 	})
 }

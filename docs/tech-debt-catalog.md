@@ -6,12 +6,14 @@ sized tasks or an estimate of time remaining.
 
 ## Next work
 
-1. **MCP-01/MCP-02:** finish the remaining action-specific acceptance in the
-   parity tracker. The next checks are work-item type mutation contention between
-   native and MCP writers, cancellation, commit failures, and authorization waits.
-2. **ERR-01/ERR-02:** resolve the next unchecked-error finding by observable
+1. **NEW-03:** investigate the frontend shard deadline failure under the existing
+   time and resource limits.
+2. **MCP-01/MCP-02:** finish the remaining action-specific acceptance in the
+   parity tracker. The next scope is work-item property compatibility,
+   authorization, revisions, preservation, and mutation recovery.
+3. **ERR-01/ERR-02:** resolve the next unchecked-error finding by observable
    impact and resource ownership.
-3. Work through the remaining **STRUCT-01, DUP-01/DUP-02, COV-01/COV-02 and TS-01**
+4. Work through the remaining **STRUCT-01, DUP-01/DUP-02, COV-01/COV-02 and TS-01**
    scopes after the higher-risk acceptance and runtime gaps.
 
 ## Outstanding inventory
@@ -42,9 +44,10 @@ baseline contains the remaining categories and exact affected files.
 
 ## Open findings
 
-| ID     | Outstanding work                                                                                                                            | Closure evidence                                                                                                             |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| NEW-02 | Investigate the intermittent color-picker pending-save timeout at its existing five-second limit. The cause remains unknown; rechecks pass. | Reproduce and resolve the cause, or establish that the observation is obsolete. Do not relax the deadline or coverage floor. |
+| ID     | Outstanding work                                                                                                                                 | Closure evidence                                                                                                                          |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| NEW-02 | Investigate the intermittent color-picker pending-save timeout at its existing five-second limit. The cause remains unknown; rechecks pass.      | Reproduce and resolve the cause, or establish that the observation is obsolete. Do not relax the deadline or coverage floor.              |
+| NEW-03 | Investigate frontend behavior shard 2 exceeding its five-minute deadline without an earlier assertion failure. The runtime cause is unconfirmed. | Identify and resolve the cause, or establish that the observation is obsolete. Preserve all tests, worker limits, and existing deadlines. |
 
 ## Deferred work and product follow-ups
 

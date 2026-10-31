@@ -55,7 +55,7 @@ func TestEstimateNativeWritersRecheckCommittedDeletion(t *testing.T) {
 				value, writeErr := writeNativeEstimateRace(ctx, repository, command, scenario)
 				done <- concurrentMutationOutcome[json.RawMessage]{value, writeErr}
 			}()
-			waitEstimateWriters(t, ctx, f, 1)
+			waitCatalogueWriters(t, ctx, f, 1)
 			require.NoError(t, deletion.Commit(ctx))
 			var result concurrentMutationOutcome[json.RawMessage]
 			select {

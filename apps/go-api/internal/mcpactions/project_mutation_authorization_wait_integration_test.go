@@ -17,7 +17,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type projectMutationWaitScenario struct {
+type mutationWaitScenario struct {
+	schemaLock   bool
 	tool         string
 	action       string
 	fixture      func(*testing.T) milestoneFixture
@@ -26,14 +27,14 @@ type projectMutationWaitScenario struct {
 	prepare      func(*testing.T, milestoneFixture, catalogueCall) map[string]any
 }
 
-func runProjectMutationAuthorizationWait(t *testing.T, scenario projectMutationWaitScenario) {
+func runMutationAuthorizationWait(t *testing.T, scenario mutationWaitScenario) {
 	t.Helper()
 	for _, change := range []struct{ name, mode, kind, code string }{
 		{"personal token revoked", "personal token", "token", "unauthorized"},
 		{"OAuth token revoked", "OAuth", "token", "unauthorized"},
 		{"OAuth write scope removed", "OAuth", "scope", "forbidden"},
-		{"personal token project membership revoked", "personal token", "membership", "forbidden"},
-		{"OAuth project membership revoked", "OAuth", "membership", "forbidden"},
+		{"personal token membership revoked", "personal token", "membership", "forbidden"},
+		{"OAuth membership revoked", "OAuth", "membership", "forbidden"},
 	} {
 		for _, version := range []string{"2025-11-25", "2026-07-28"} {
 			for _, replay := range []bool{false, true} {
@@ -54,8 +55,8 @@ func runProjectMutationAuthorizationWait(t *testing.T, scenario projectMutationW
 						require.NoError(t, err)
 						return oauthToolCall(t, handler, version, token, "", tool, string(body), http.StatusOK)
 					})
-					input := projectMutationWaitInput(t, f, scenario, call)
-					projectID := input["project_id"].(string)
+					input := mutationWaitInput(t, f, scenario, call)
+					projectID, _ := input["project_id"].(string)
 					arguments, err := json.Marshal(input)
 					require.NoError(t, err)
 					if replay {
@@ -66,7 +67,11 @@ func runProjectMutationAuthorizationWait(t *testing.T, scenario projectMutationW
 					blocker, err := f.pool.Begin(ctx)
 					require.NoError(t, err)
 					defer func() { require.NoError(t, dbutil.RollbackTransaction(ctx, blocker.Rollback, nil)) }()
-					_, err = blocker.Exec(ctx, `SELECT id FROM projects WHERE id=$1 FOR UPDATE`, projectID)
+					lockSQL, lockID := projectMutationLock, projectID
+					if scenario.schemaLock {
+						lockSQL, lockID = schemaMutationLock, testsupport.LabelWorkspace
+					}
+					_, err = blocker.Exec(ctx, lockSQL, lockID)
 					require.NoError(t, err)
 					request := oauthRequest(t, version, token, "", "tools/call", map[string]any{"name": scenario.tool, "arguments": json.RawMessage(arguments)}).WithContext(ctx)
 					response := httptest.NewRecorder()
@@ -77,10 +82,14 @@ func runProjectMutationAuthorizationWait(t *testing.T, scenario projectMutationW
 						queryErr := f.pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_stat_activity
  WHERE datname=current_database() AND $1=ANY(pg_blocking_pids(pid)))`, blocker.Conn().PgConn().PID()).Scan(&waiting)
 						return queryErr == nil && waiting
-					}, 10*time.Second, 10*time.Millisecond, "request never waited on the held project lock")
+					}, 10*time.Second, 10*time.Millisecond, "request never waited on the held scope lock")
 					switch change.kind {
 					case "membership":
-						_, err = f.pool.Exec(ctx, `UPDATE project_members SET is_active=false WHERE member_id=$1 AND project_id=$2`, testsupport.LabelActor, projectID)
+						if projectID == "" {
+							_, err = f.pool.Exec(ctx, `UPDATE workspace_members SET is_active=false WHERE member_id=$1 AND workspace_id=$2`, testsupport.LabelActor, testsupport.LabelWorkspace)
+						} else {
+							_, err = f.pool.Exec(ctx, `UPDATE project_members SET is_active=false WHERE member_id=$1 AND project_id=$2`, testsupport.LabelActor, projectID)
+						}
 						require.NoError(t, err)
 					case "scope":
 						f.issuer.mu.Lock()
@@ -102,7 +111,7 @@ func runProjectMutationAuthorizationWait(t *testing.T, scenario projectMutationW
 					select {
 					case <-done:
 					case <-ctx.Done():
-						t.Fatal("request did not finish after the project lock was released")
+						t.Fatal("request did not finish after the scope lock was released")
 					}
 					require.Equal(t, http.StatusOK, response.Code, response.Body.String())
 					var result struct {
@@ -122,7 +131,7 @@ func runProjectMutationAuthorizationWait(t *testing.T, scenario projectMutationW
 
 // Request construction belongs to the resource fixture; the wait harness owns
 // the concurrent revocation and verifies that no mutation escaped it.
-func projectMutationWaitInput(t *testing.T, f milestoneFixture, scenario projectMutationWaitScenario, call catalogueCall) map[string]any {
+func mutationWaitInput(t *testing.T, f milestoneFixture, scenario mutationWaitScenario, call catalogueCall) map[string]any {
 	t.Helper()
 	if scenario.prepare != nil {
 		return scenario.prepare(t, f, call)

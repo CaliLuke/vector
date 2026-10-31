@@ -13,7 +13,7 @@ import (
 func TestMCPEstimateWaitRechecksAuthorizationBeforeWriteAndReplay(t *testing.T) {
 	for _, action := range []string{"create", "update", "delete", "link", "create_points", "update_point", "delete_point"} {
 		t.Run(action, func(t *testing.T) {
-			runProjectMutationAuthorizationWait(t, projectMutationWaitScenario{
+			runMutationAuthorizationWait(t, mutationWaitScenario{
 				tool: "project_estimate", fixture: func(t *testing.T) milestoneFixture {
 					f := newMilestoneFixture(t)
 					_, err := f.pool.Exec(t.Context(), `UPDATE workspace_members SET role=20; UPDATE project_members SET role=20`)

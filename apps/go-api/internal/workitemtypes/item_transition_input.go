@@ -74,7 +74,7 @@ func transitionSourceVisible(ctx context.Context, tx pgx.Tx, in ItemValueInput) 
 	if err := tx.QueryRow(ctx, `SELECT slug FROM workspaces WHERE id=$1 AND deleted_at IS NULL`, in.WorkspaceID).Scan(&slug); err != nil {
 		return false, err
 	}
-	_, _, err := authorizeProject(ctx, tx, in.ActorID, slug, in.PreviousProjectID, false)
+	_, _, err := authorizeProject(ctx, tx, in.ActorID, slug, in.PreviousProjectID, false, false)
 	var denied *Error
 	if errors.As(err, &denied) && (denied.Status == 403 || denied.Status == 404) {
 		return false, nil

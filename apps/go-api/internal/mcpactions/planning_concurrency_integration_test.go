@@ -66,7 +66,7 @@ func TestPlanningCompetingReceiptsAndRevisions(t *testing.T) {
 				for i, command := range commands {
 					calls[i] = func(ctx context.Context) (projectmutations.Result, error) { return write(ctx, command) }
 				}
-				outcomes := competingProjectWrites(t, f, base.ProjectID, calls)
+				outcomes := competingScopeWrites(t, f, projectMutationLock, base.ProjectID, calls)
 				if outcomes[0].err != nil {
 					outcomes[0], outcomes[1] = outcomes[1], outcomes[0]
 				}

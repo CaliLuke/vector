@@ -50,6 +50,23 @@ revisions. The native
 [configuration deletion test](../apps/go-api/internal/workitemtypes/type_configuration_integration_test.go)
 checks cleanup without broadening property scope.
 
-Mutation acceptance still needs domain-specific native/MCP contention,
-cancellation, commit-failure, and authorization-wait checks. Shared receipt-engine
-tests establish the common transaction behavior but do not replace these checks.
+[Contention tests](../apps/go-api/internal/mcpactions/workitem_type_concurrency_integration_test.go)
+prove that concurrent retries commit once and competing revisions reject the
+losing write for all five mutations.
+[Native contention tests](../apps/go-api/internal/mcpactions/workitem_type_native_contention_integration_test.go)
+exercise definition and project-link writers against queued MCP requests.
+[Atomicity tests](../apps/go-api/internal/mcpactions/workitem_type_atomicity_integration_test.go)
+cancel blocked requests and reject commits after mutations and receipts have
+been written. Each failure leaves storage unchanged and the request reusable.
+The shared [receipt-engine tests](../apps/go-api/internal/mutationreceipts/commit_integration_test.go)
+also drop a real PostgreSQL commit acknowledgement and prove keyed recovery.
+
+[Authorization-wait tests](../apps/go-api/internal/mcpactions/workitem_type_authorization_wait_integration_test.go)
+revoke credentials, OAuth write scope, or membership while each mutation or
+receipt replay waits for the schema lock. They exercise both protocol revisions
+through the generated server.
+[Native parent-scope tests](../apps/go-api/internal/mcpactions/workitem_type_native_parent_integration_test.go)
+prove that workspace/project deletion and project membership revocation wait
+for an admitted native write to commit. Native schema writers acquire parent and
+membership row locks after the workspace schema lock and recheck their rights;
+read-only catalogues retain their snapshot behavior.

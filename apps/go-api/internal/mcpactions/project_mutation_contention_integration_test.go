@@ -18,14 +18,17 @@ type concurrentMutationOutcome[T any] struct {
 	err   error
 }
 
-func competingProjectWrites[T any](t *testing.T, f milestoneFixture, project uuid.UUID, calls [2]func(context.Context) (T, error)) [2]concurrentMutationOutcome[T] {
+const projectMutationLock = `SELECT id FROM projects WHERE id=$1 FOR UPDATE`
+const schemaMutationLock = `SELECT work_item_schema_lock($1::uuid)`
+
+func competingScopeWrites[T any](t *testing.T, f milestoneFixture, lockSQL string, scope uuid.UUID, calls [2]func(context.Context) (T, error)) [2]concurrentMutationOutcome[T] {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(t.Context(), 20*time.Second)
 	defer cancel()
 	blocker, err := f.pool.Begin(ctx)
 	require.NoError(t, err)
 	defer func() { require.NoError(t, dbutil.RollbackTransaction(ctx, blocker.Rollback, nil)) }()
-	_, err = blocker.Exec(ctx, `SELECT id FROM projects WHERE id=$1 FOR UPDATE`, project)
+	_, err = blocker.Exec(ctx, lockSQL, scope)
 	require.NoError(t, err)
 	done := make(chan concurrentMutationOutcome[T], 2)
 	for _, call := range calls {
@@ -45,20 +48,20 @@ func competingProjectWrites[T any](t *testing.T, f milestoneFixture, project uui
 		select {
 		case results[i] = <-done:
 		case <-ctx.Done():
-			t.Fatal("requests did not finish after releasing the project lock")
+			t.Fatal("requests did not finish after releasing the scope lock")
 		}
 	}
 	return results
 }
 
-func cancelProjectWriteWhileLocked(t *testing.T, f milestoneFixture, project uuid.UUID, call func(context.Context) error) {
+func cancelScopeWriteWhileLocked(t *testing.T, f milestoneFixture, lockSQL string, scope uuid.UUID, call func(context.Context) error) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(t.Context(), 20*time.Second)
 	defer cancel()
 	blocker, err := f.pool.Begin(ctx)
 	require.NoError(t, err)
 	defer func() { require.NoError(t, dbutil.RollbackTransaction(ctx, blocker.Rollback, nil)) }()
-	_, err = blocker.Exec(ctx, `SELECT id FROM projects WHERE id=$1 FOR UPDATE`, project)
+	_, err = blocker.Exec(ctx, lockSQL, scope)
 	require.NoError(t, err)
 	requestCtx, cancelRequest := context.WithCancel(ctx)
 	defer cancelRequest()
@@ -68,13 +71,13 @@ func cancelProjectWriteWhileLocked(t *testing.T, f milestoneFixture, project uui
 		var waiting bool
 		queryErr := f.pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND $1=ANY(pg_blocking_pids(pid)))`, blocker.Conn().PgConn().PID()).Scan(&waiting)
 		return queryErr == nil && waiting
-	}, 10*time.Second, 10*time.Millisecond, "request must reach the held project lock before cancellation")
+	}, 10*time.Second, 10*time.Millisecond, "request must reach the held scope lock before cancellation")
 	cancelRequest()
 	select {
 	case err = <-done:
 		require.ErrorIs(t, err, context.Canceled)
 	case <-ctx.Done():
-		t.Fatal("cancelled request did not return while the project lock remained held")
+		t.Fatal("cancelled request did not return while the scope lock remained held")
 	}
 }
 
