@@ -54,7 +54,7 @@ func (s *Service) WorkitemProperty(ctx context.Context, input *api.WorkitemPrope
 		value, err = s.mutateProperty(ctx, actor, in, cmd)
 		if err == nil {
 			if in.Request != nil || in.Revision != nil {
-				return propertyMutationReceipt(value, actor.Timezone, in.Request != nil)
+				return propertyMutationReceipt(value, in.Request != nil)
 			}
 			raw = value.Record
 		}
@@ -124,15 +124,11 @@ func projectPropertyResult(raw json.RawMessage, action, timezone string) (loom.N
 	return loom.NullableValue(result), nil
 }
 
-func propertyMutationReceipt(value projectmutations.Result, timezone string, requested bool) (result loom.Nullable[api.WorkitemPropertyResult], err error) {
+func propertyMutationReceipt(value projectmutations.Result, requested bool) (result loom.Nullable[api.WorkitemPropertyResult], err error) {
 	receipt := &api.WorkitemPropertyMutationReceipt{ResourceID: value.ID, Revision: value.Revision, Result: loom.NullValue[loom.JSONValue]()}
 	if len(value.Record) > 0 && string(value.Record) != "null" {
-		var projected any
-		if json.Unmarshal(value.Record, &projected) != nil {
+		if json.Unmarshal(value.Record, &receipt.Result) != nil {
 			return result, workitemResultError()
-		}
-		if err = decodeWorkitemProjection(projectNestedTimestamps(projected, timezone), &receipt.Result); err != nil {
-			return result, err
 		}
 	}
 	if requested {

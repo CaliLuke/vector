@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
@@ -96,6 +97,10 @@ func (r *Repository) MutatePropertyValue(ctx context.Context, cmd projectmutatio
 		if _, err = tx.Exec(ctx, `UPDATE work_item_property_value_identities SET external_source=COALESCE($3,external_source),external_id=COALESCE($4,external_id),updated_at=clock_timestamp() WHERE issue_id=$1 AND property_id=$2 AND deleted_at IS NULL AND (external_source IS DISTINCT FROM COALESCE($3,external_source) OR external_id IS DISTINCT FROM COALESCE($4,external_id))`, cmd.ResourceID, cmd.ParentID, cmd.Fields["external_source"], cmd.Fields["external_id"]); err != nil {
 			return nil, err
 		}
-		return workitemtypes.ProjectPropertyValueAPI(ctx, tx, q)
+		raw, err := workitemtypes.ProjectPropertyValueAPI(ctx, tx, q)
+		if err != nil {
+			return nil, err
+		}
+		return djangoapi.JSONTimestamps(raw, cmd.Timezone)
 	})
 }

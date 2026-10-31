@@ -53,7 +53,7 @@ func (s *Service) propertyValue(ctx context.Context, in propertyInput) (result l
 		value, err = s.mutateResource(ctx, "workitem_property", selected, propertyValueWriter{s.collaborationReads})
 		if err == nil {
 			if in.Request != nil || in.Revision != nil {
-				return propertyMutationReceipt(value, actor.Timezone, in.Request != nil)
+				return propertyMutationReceipt(value, in.Request != nil)
 			}
 			raw = value.Record
 		}

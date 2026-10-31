@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
@@ -88,6 +89,10 @@ func (r *Repository) MutatePropertyAPI(ctx context.Context, in PropertyAPIMutati
 				return nil, reject(409, "Enable work item types first.")
 			}
 			id, record, loadPropertiesErr := applyPropertyAPI(ctx, tx, in, before)
+			if loadPropertiesErr != nil {
+				return nil, loadPropertiesErr
+			}
+			record, loadPropertiesErr = djangoapi.JSONTimestamps(record, in.Timezone)
 			if loadPropertiesErr != nil {
 				return nil, loadPropertiesErr
 			}
