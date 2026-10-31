@@ -4,15 +4,15 @@
   "audit_date": "2026-10-31",
   "tool": "golangci-lint 2.15.0 (Go 1.27.3)",
   "configuration": "Repository apps/go-api/.golangci.yml in the same Git revision as this inventory; add linters.settings.errcheck.check-blank=true and select --enable-only errcheck. Existing integration tags, test inclusion, generated-source exclusions and timeout retained.",
-  "config_sha256": "2c1fa403a87733e2954776442ef2e3c388db337a20d5921daa3fe6eb2dff5b18",
+  "config_sha256": "50339d0f8ed7faa84b429fe70809295206325867ceea67a2b2843b2db32c2633",
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 870,
+    "findings": 868,
     "also_in_ERR_01": 24,
-    "additional_ERR_02": 846,
+    "additional_ERR_02": 844,
     "test_file_findings": 541,
-    "non_test_file_findings": 329
+    "non_test_file_findings": 327
   },
   "findings": [
     {
@@ -1904,20 +1904,6 @@
       "column": 27,
       "message": "Error return value of `response.Body.Close` is not checked",
       "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/customers/mutations.go",
-      "line": 41,
-      "column": 9,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/customers/mutations.go",
-      "line": 42,
-      "column": 13,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/customers/property_values.go",

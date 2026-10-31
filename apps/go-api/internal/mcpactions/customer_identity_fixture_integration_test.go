@@ -67,8 +67,11 @@ func customerIdentityWriteInput(t *testing.T, call catalogueCall, action string)
 	return input
 }
 
-func customerMutationWriteInput(t *testing.T, call catalogueCall, scenario customerMutationScenario) map[string]any {
+func customerMutationWriteInput(t *testing.T, f milestoneFixture, call catalogueCall, scenario customerMutationScenario) map[string]any {
 	t.Helper()
+	if scenario.action == "manage_workitems" {
+		return customerAssociationWriteInput(t, f, call)
+	}
 	if scenario.tool == "customer" {
 		return customerIdentityWriteInput(t, call, scenario.action)
 	}

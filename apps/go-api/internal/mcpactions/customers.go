@@ -206,6 +206,7 @@ func (s *Service) customerOperation(ctx context.Context, tool string, input inte
 		return nil, err
 	}
 	cmd.ActorID, cmd.WorkspaceID, cmd.WorkspaceSlug = actor.UserID, actor.WorkspaceID, actor.WorkspaceSlug
+	cmd.Timezone = actor.Timezone
 	var raw json.RawMessage
 	if !write {
 		raw, err = s.customers.Read(ctx, cmd.Query)
@@ -230,6 +231,9 @@ func (s *Service) customerOperation(ctx context.Context, tool string, input inte
 	}
 	if err != nil {
 		return nil, archiveResourceError(err)
+	}
+	if write && (cmd.RetryID != nil || cmd.ExpectedRevision != nil) {
+		return raw, nil
 	}
 	var value any
 	if json.Unmarshal(raw, &value) != nil {

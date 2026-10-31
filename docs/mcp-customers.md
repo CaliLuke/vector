@@ -166,6 +166,57 @@ new writes and receipt replay without changing customer state. Inline options on
 creation have no pre-existing reference IDs. The checks use both credentials and
 protocol revisions.
 
-Remaining acceptance includes atomic association changes, durable activity, and
-full customer/property SDK page and record projections under both auth modes and
-MCP revisions.
+[Association transaction checks](../apps/go-api/internal/mcpactions/customer_association_atomicity_integration_test.go)
+verify that a failed unlink rolls back earlier additions, activity, receipts and
+both item and catalogue revisions. The rejected key remains reusable. Duplicate
+adds preserve item revisions and enqueue no additional activity. Direct and
+request-specific links project each item once; filtered removals and request
+or customer deletion preserve other owners' links. Unfiltered unlink removes all
+links for that customer, including links added in the same call. These checks
+cover both credentials and protocol revisions.
+
+[Durable customer activity checks](../apps/go-api/internal/mcpactions/customer_association_worker_integration_test.go)
+queue direct and request-associated additions and removals while the worker is
+stopped. Starting the real worker delivers each committed name snapshot even after
+customer rename and deletion. Replaying deletion receipts and re-admitting completed
+outbox identities adds no history or effects. Linked work items remain live.
+
+[Customer and property SDK record checks](../apps/go-api/internal/mcpactions/customer_sdk_record_integration_test.go)
+verify all 26 customer, 23 property and 17 option fields from the pinned SDK.
+They cover create/retrieve equivalence, partial update preservation, actor and
+workspace metadata, timestamps, option identity and live request counts excluding
+soft-deleted requests.
+[SDK page checks](../apps/go-api/internal/mcpactions/customer_sdk_pagination_integration_test.go)
+verify all twelve envelope fields, forward/backward cursor navigation, default and
+empty pages, case-insensitive customer search and exclusion of deleted or foreign
+workspace rows. Both record and page checks use both credentials and protocols.
+
+[Association mutation recovery](../apps/go-api/internal/mcpactions/customer_association_mutation_fixture_integration_test.go)
+extends the shared contention, cancellation and rejected-commit tests to a mutation
+that adds one item and removes another. Rollback preserves the complete customer
+aggregate, linked item rows and native item revisions. Competing receipts and
+revision guards admit one mutation; failed keys remain reusable. Guest/member
+roles and a disabled feature reject fresh association writes and replay.
+[Association target authorization](../apps/go-api/internal/mcpactions/customer_association_authorization_integration_test.go)
+checks both added and removed items on fresh calls, replay and after lock waits,
+including current project membership, guest roles, archival/deletion and item
+visibility. The shared credential wait matrix also covers association writes.
+
+[Read-access checks](../apps/go-api/internal/mcpactions/customer_read_access_integration_test.go)
+exercise all eight read actions: guests and members retain reads, disabled features
+reject reads, and inactive workspace membership is rejected before tool dispatch.
+Restoring scope restores the same results without rewriting customer data.
+[Linked-item SDK checks](../apps/go-api/internal/mcpactions/customer_linked_item_contract_integration_test.go)
+verify the nine-field array projection and search by name, sequence number and
+project identifier. Both sets cover both credentials and protocol revisions.
+
+[Receipt timezone checks](../apps/go-api/internal/mcpactions/customer_timezone_integration_test.go)
+cover customer create/upsert/update, request create/update and property
+create/update, including nested options. Modeled timestamps are serialized in the
+accepted timezone before saving the receipt. Changing the user's timezone does
+not change that receipt's result or metadata on replay. Reads continue to use the
+current preference. The timezone is excluded from mutation identity.
+
+Receipts created before accepted-timezone serialization retain their stored
+representation. Their timestamp instants are unchanged, but an earlier response's
+user-specific offset cannot be reconstructed from those legacy receipts.

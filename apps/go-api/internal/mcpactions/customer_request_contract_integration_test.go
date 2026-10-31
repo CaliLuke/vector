@@ -64,10 +64,10 @@ func TestMCPCustomerRequestSDKPagesKeepSearchAndParentScope(t *testing.T) {
 		catalogueNull(t, call("customer_request", map[string]any{"action": "delete", "customer_id": parent["id"], "request_id": removed["id"]}))
 		input := map[string]any{"action": "list", "customer_id": parent["id"], "query": "Export", "per_page": 1}
 		first := milestoneObject(t, call("customer_request", input))
-		assertCustomerRequestSDKPage(t, first, false, true)
+		assertCustomerSDKPage(t, first, false, true)
 		input["cursor"] = first["next_cursor"]
 		second := milestoneObject(t, call("customer_request", input))
-		assertCustomerRequestSDKPage(t, second, true, false)
+		assertCustomerSDKPage(t, second, true, false)
 		items := append(slices.Clone(first["results"].([]any)), second["results"].([]any)...)
 		require.ElementsMatch(t, matching, items)
 		input["cursor"] = second["prev_cursor"]
@@ -82,21 +82,11 @@ func TestMCPCustomerRequestSDKPagesKeepSearchAndParentScope(t *testing.T) {
 		input["query"] = "No matching request"
 		empty := milestoneObject(t, call("customer_request", input))
 		require.Equal(t, slices.Sorted(maps.Keys(first)), slices.Sorted(maps.Keys(empty)))
-		require.Equal(t, []any{}, empty["results"])
-		for _, field := range []string{"count", "total_count", "total_pages", "total_results"} {
-			require.Equal(t, float64(0), empty[field], field)
-		}
-		for _, field := range []string{"extra_stats", "grouped_by", "sub_grouped_by"} {
-			require.Nil(t, empty[field], field)
-		}
-		require.Equal(t, false, empty["next_page_results"])
-		require.Equal(t, false, empty["prev_page_results"])
-		require.IsType(t, "", empty["next_cursor"])
-		require.IsType(t, "", empty["prev_cursor"])
+		assertCustomerSDKEmptyPage(t, empty)
 	})
 }
 
-func assertCustomerRequestSDKPage(t *testing.T, page map[string]any, previous, next bool) {
+func assertCustomerSDKPage(t *testing.T, page map[string]any, previous, next bool) {
 	t.Helper()
 	require.Equal(t, []string{"count", "extra_stats", "grouped_by", "next_cursor", "next_page_results", "prev_cursor", "prev_page_results", "results", "sub_grouped_by", "total_count", "total_pages", "total_results"}, slices.Sorted(maps.Keys(page)))
 	require.Len(t, page["results"], 1)
@@ -111,4 +101,20 @@ func assertCustomerRequestSDKPage(t *testing.T, page map[string]any, previous, n
 	require.Nil(t, page["grouped_by"])
 	require.Nil(t, page["sub_grouped_by"])
 	require.Nil(t, page["extra_stats"])
+}
+
+func assertCustomerSDKEmptyPage(t *testing.T, empty map[string]any) {
+	t.Helper()
+	require.Len(t, empty, 12)
+	require.Equal(t, []any{}, empty["results"])
+	for _, field := range []string{"count", "total_count", "total_pages", "total_results"} {
+		require.Equal(t, float64(0), empty[field], field)
+	}
+	for _, field := range []string{"extra_stats", "grouped_by", "sub_grouped_by"} {
+		require.Nil(t, empty[field], field)
+	}
+	require.Equal(t, false, empty["next_page_results"])
+	require.Equal(t, false, empty["prev_page_results"])
+	require.IsType(t, "", empty["next_cursor"])
+	require.IsType(t, "", empty["prev_cursor"])
 }

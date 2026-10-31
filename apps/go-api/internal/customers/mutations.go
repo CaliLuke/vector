@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
@@ -38,8 +39,14 @@ func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.R
 			if applyErr != nil {
 				return nil, applyErr
 			}
-			old, _ := json.Marshal(before)
-			current, _ := json.Marshal(after)
+			old, applyErr := json.Marshal(before)
+			if applyErr != nil {
+				return nil, applyErr
+			}
+			current, applyErr := json.Marshal(after)
+			if applyErr != nil {
+				return nil, applyErr
+			}
 			if _, applyErr = tx.Exec(ctx, `INSERT INTO customer_events(workspace_id,resource_id,resource_kind,action,actor_id,input,before_value,after_value) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,$8::jsonb)`, in.WorkspaceID, id, in.Tool, in.Action, in.ActorID, normalized, old, current); applyErr != nil {
 				return nil, applyErr
 			}
@@ -49,6 +56,12 @@ func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.R
 			// set_values and associations have null SDK results; their audit keeps full input.
 			if in.Action == "set_values" || in.Action == "manage_workitems" {
 				current = json.RawMessage("null")
+			}
+			// Freeze the accepted representation before persisting the receipt.
+			// Timezone preferences are not part of the normalized mutation identity.
+			current, applyErr = djangoapi.JSONTimestamps(current, in.Timezone)
+			if applyErr != nil {
+				return nil, applyErr
 			}
 			return json.Marshal(projectmutations.Result{ID: id.String(), Revision: token(in.WorkspaceID, rev), Record: current})
 		},

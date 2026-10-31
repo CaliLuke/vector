@@ -27,7 +27,7 @@ func TestMCPCustomerIdentityReceiptsRequireCurrentRoleAndFeature(t *testing.T) {
 				{"disabled feature", `UPDATE workspace_features SET customers=$2 WHERE workspace_id=$1`, "feature_disabled", []any{testsupport.LabelWorkspace}, false, true},
 			} {
 				t.Run(scenario.tool+"/"+scenario.action+"/"+change.name, func(t *testing.T) {
-					input := customerMutationWriteInput(t, call, scenario)
+					input := customerMutationWriteInput(t, f, call, scenario)
 					accepted := milestoneObject(t, call(scenario.tool, input))
 					before := customerStorageSnapshot(t, f)
 					set := func(value any) {

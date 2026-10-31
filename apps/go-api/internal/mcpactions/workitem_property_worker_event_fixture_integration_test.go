@@ -14,24 +14,34 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type propertyWorkerEvent struct {
+type catalogueWorkerEvent struct {
 	id, kind string
 	payload  json.RawMessage
 }
 
-func propertyWorkerEvents(t *testing.T, f milestoneFixture, cases []propertyWorkerCase) []propertyWorkerEvent {
+func catalogueWorkerEvents(t *testing.T, f milestoneFixture) []catalogueWorkerEvent {
 	t.Helper()
 	rows, err := f.pool.Query(t.Context(), `SELECT id::text,kind,payload FROM work_item_effects ORDER BY created_at,id`)
 	require.NoError(t, err)
 	defer rows.Close()
-	var events []propertyWorkerEvent
-	changes := map[string]int{}
+	var events []catalogueWorkerEvent
 	for rows.Next() {
-		var event propertyWorkerEvent
+		var event catalogueWorkerEvent
 		require.NoError(t, rows.Scan(&event.id, &event.kind, &event.payload))
 		require.Contains(t, []string{"activity", "webhook"}, event.kind)
+		events = append(events, event)
+	}
+	require.NoError(t, rows.Err())
+	return events
+}
+
+func propertyWorkerEvents(t *testing.T, f milestoneFixture, cases []propertyWorkerCase) []catalogueWorkerEvent {
+	t.Helper()
+	events := catalogueWorkerEvents(t, f)
+	changes := map[string]int{}
+	for _, event := range events {
 		if event.kind == "activity" {
-			input := propertyWorkerActivity(t, event.payload)
+			input := catalogueWorkerActivity(t, event.payload)
 			var requested map[string]json.RawMessage
 			require.NoError(t, json.Unmarshal(input.RequestedData, &requested))
 			if input.Type == "issue.activity.updated" && requested["custom_properties"] != nil {
@@ -39,16 +49,14 @@ func propertyWorkerEvents(t *testing.T, f milestoneFixture, cases []propertyWork
 				changes[*input.IssueID]++
 			}
 		}
-		events = append(events, event)
 	}
-	require.NoError(t, rows.Err())
 	for _, value := range cases {
 		require.Equal(t, 3, changes[value.itemID], "each committed value transition queues its native activity")
 	}
 	return events
 }
 
-func propertyWorkerActivity(t *testing.T, payload json.RawMessage) backgroundtasks.IssueActivityInput {
+func catalogueWorkerActivity(t *testing.T, payload json.RawMessage) backgroundtasks.IssueActivityInput {
 	t.Helper()
 	var fields map[string]json.RawMessage
 	require.NoError(t, json.Unmarshal(payload, &fields))
@@ -67,7 +75,7 @@ func propertyWorkerActivity(t *testing.T, payload json.RawMessage) backgroundtas
 	return input
 }
 
-func waitPropertyWorkerEvents(t *testing.T, ctx context.Context, f milestoneFixture, runtime *backgroundtasks.Runtime, events []propertyWorkerEvent) {
+func waitCatalogueWorkerEvents(t *testing.T, ctx context.Context, f milestoneFixture, runtime *backgroundtasks.Runtime, events []catalogueWorkerEvent) {
 	t.Helper()
 	ids := make([]string, len(events))
 	for i, event := range events {
@@ -83,7 +91,12 @@ func waitPropertyWorkerEvents(t *testing.T, ctx context.Context, f milestoneFixt
 		var workflow string
 		var err error
 		if event.kind == "activity" {
-			workflow, err = runtime.IssueActivities.Admit(ctx, event.id, propertyWorkerActivity(t, event.payload))
+			var payload map[string]any
+			require.NoError(t, json.Unmarshal(event.payload, &payload))
+			admission, admissionErr := backgroundtasks.NewIssueActivityAdmission(runtime.IssueActivities)
+			require.NoError(t, admissionErr)
+			err = admission.AdmitIssueActivityTask(ctx, event.id, payload)
+			workflow = "issue-activity:" + event.id
 		} else {
 			var task struct {
 				Name   string

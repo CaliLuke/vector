@@ -33,7 +33,7 @@ func TestMCPPropertyValueWorkerDeliversCommittedEffectsOnce(t *testing.T) {
 	runtime := startCatalogueWorker(t, f)
 	ctx, cancel := context.WithTimeout(t.Context(), 45*time.Second)
 	defer cancel()
-	waitPropertyWorkerEvents(t, ctx, f, runtime, events)
+	waitCatalogueWorkerEvents(t, ctx, f, runtime, events)
 	before := propertyStorageSnapshot(t, f)
 	for _, value := range cases {
 		assertPropertyWorkerHistory(t, f, value)
@@ -48,7 +48,7 @@ func TestMCPPropertyValueWorkerDeliversCommittedEffectsOnce(t *testing.T) {
 		}
 	})
 	// Reconcile the same outbox identities after completion, as recovery would.
-	waitPropertyWorkerEvents(t, ctx, f, runtime, events)
+	waitCatalogueWorkerEvents(t, ctx, f, runtime, events)
 	require.Equal(t, before, propertyStorageSnapshot(t, f))
 	for _, value := range cases {
 		receiver.assertChanges(t, value)

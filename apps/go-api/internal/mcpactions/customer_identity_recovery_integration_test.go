@@ -17,7 +17,7 @@ func TestCustomerInterruptedMutationsPreserveStateAndRetryIdentity(t *testing.T)
 		for _, failure := range []string{"cancelled lock wait", "rejected commit"} {
 			t.Run(scenario.tool+"/"+scenario.action+"/"+failure, func(t *testing.T) {
 				f, repository, command := customerMutationCase(t, scenario)
-				before := customerStorageSnapshot(t, f)
+				before := customerAssociationSnapshot(t, f)
 				var rejected projectmutations.Result
 				if failure == "cancelled lock wait" {
 					cancelScopeWriteWhileLocked(t, f, schemaMutationLock, command.WorkspaceID, func(ctx context.Context) error {
@@ -28,6 +28,10 @@ func TestCustomerInterruptedMutationsPreserveStateAndRetryIdentity(t *testing.T)
 				} else {
 					table := "customers"
 					switch scenario.tool {
+					case "customer":
+						if scenario.action == "manage_workitems" {
+							table = "customer_work_items"
+						}
 					case "customer_request":
 						table = "customer_requests"
 					case "customer_property":
@@ -46,12 +50,12 @@ CREATE CONSTRAINT TRIGGER reject_customer_commit AFTER INSERT OR UPDATE OR DELET
 					require.NoError(t, err)
 				}
 				require.Equal(t, projectmutations.Result{}, rejected, "failed writes return no accepted record or receipt")
-				require.Equal(t, before, customerStorageSnapshot(t, f), "rollback includes customer data, audit, receipts, revisions and effects")
+				require.Equal(t, before, customerAssociationSnapshot(t, f), "rollback includes customer data, audit, receipts, revisions and effects")
 				accepted, err := repository.Mutate(t.Context(), command)
 				require.NoError(t, err)
 				require.NotNil(t, accepted.Replayed)
 				require.False(t, *accepted.Replayed)
-				saved := customerStorageSnapshot(t, f)
+				saved := customerAssociationSnapshot(t, f)
 				require.NotEqual(t, before, saved)
 				replay, err := repository.Mutate(t.Context(), command)
 				require.NoError(t, err)
@@ -59,7 +63,7 @@ CREATE CONSTRAINT TRIGGER reject_customer_commit AFTER INSERT OR UPDATE OR DELET
 				require.True(t, *replay.Replayed)
 				accepted.Replayed = replay.Replayed
 				require.Equal(t, accepted, replay)
-				require.Equal(t, saved, customerStorageSnapshot(t, f))
+				require.Equal(t, saved, customerAssociationSnapshot(t, f))
 			})
 		}
 	}
@@ -70,8 +74,8 @@ func TestMCPCustomerIdentityWritesReauthorizeAfterWaiting(t *testing.T) {
 		t.Run(scenario.tool+"/"+scenario.action, func(t *testing.T) {
 			runMutationAuthorizationWait(t, mutationWaitScenario{
 				tool: scenario.tool, schemaLock: true, fixture: customerIdentityFixture, snapshot: customerStorageSnapshot,
-				prepare: func(t *testing.T, _ milestoneFixture, call catalogueCall) map[string]any {
-					return customerMutationWriteInput(t, call, scenario)
+				prepare: func(t *testing.T, f milestoneFixture, call catalogueCall) map[string]any {
+					return customerMutationWriteInput(t, f, call, scenario)
 				},
 			})
 		})

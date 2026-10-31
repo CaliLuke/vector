@@ -29,6 +29,7 @@ type Query struct {
 }
 type Command struct {
 	Query
+	Timezone         string
 	Fields           map[string]any
 	Options          []map[string]any
 	Values           map[string][]string

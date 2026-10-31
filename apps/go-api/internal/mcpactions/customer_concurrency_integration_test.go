@@ -75,13 +75,16 @@ func raceCustomerCommands(t *testing.T, f milestoneFixture, repository *customer
 type customerMutationScenario struct{ tool, action string }
 
 var customerMutationScenarios = []customerMutationScenario{
-	{"customer", "create"}, {"customer", "upsert"}, {"customer", "update"}, {"customer", "delete"},
+	{"customer", "create"}, {"customer", "upsert"}, {"customer", "update"}, {"customer", "delete"}, {"customer", "manage_workitems"},
 	{"customer_request", "create"}, {"customer_request", "update"}, {"customer_request", "delete"},
 	{"customer_property", "create"}, {"customer_property", "update"}, {"customer_property", "delete"}, {"customer_property", "set_values"},
 }
 
 func customerMutationCase(t *testing.T, scenario customerMutationScenario) (milestoneFixture, *customers.Repository, customers.Command) {
 	t.Helper()
+	if scenario.action == "manage_workitems" {
+		return customerAssociationMutationCase(t)
+	}
 	if scenario.tool == "customer_property" {
 		return customerPropertyMutationCase(t, scenario.action)
 	}
@@ -137,6 +140,8 @@ func TestCustomerCompetingReceiptsAndRevisionsCommitOnce(t *testing.T) {
 				case "changed input":
 					second.Fields = maps.Clone(first.Fields)
 					switch {
+					case first.Action == "manage_workitems":
+						second.Remove = nil
 					case first.Tool == "customer":
 						second.Fields["external_source"] = "different-source"
 					case first.Action == "delete":

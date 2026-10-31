@@ -46,17 +46,22 @@ func (change customerRequestLinkChange) setActive(t *testing.T, ctx context.Cont
 
 func customerRequestLinkedInput(t *testing.T, f milestoneFixture, call catalogueCall) map[string]any {
 	t.Helper()
-	input := customerMutationWriteInput(t, call, customerMutationScenario{tool: "customer_request", action: "create"})
+	input := customerMutationWriteInput(t, f, call, customerMutationScenario{tool: "customer_request", action: "create"})
 	input["workitem_ids"] = f.item(t)
 	return input
 }
 
 func TestMCPCustomerRequestLinkReceiptsRequireCurrentTargetAccess(t *testing.T) {
+	runCustomerLinkTargetReplay(t, "customer_request", customerRequestLinkedInput, customerRequestLinkChanges())
+}
+
+func runCustomerLinkTargetReplay(t *testing.T, tool string, prepare func(*testing.T, milestoneFixture, catalogueCall) map[string]any, changes []customerRequestLinkChange) {
+	t.Helper()
 	runCatalogueFixtureMatrix(t, customerIdentityFixture(t), func(t *testing.T, f milestoneFixture, call catalogueCall) {
-		for _, change := range customerRequestLinkChanges() {
+		for _, change := range changes {
 			t.Run(change.name, func(t *testing.T) {
-				input := customerRequestLinkedInput(t, f, call)
-				accepted := milestoneObject(t, call("customer_request", input))
+				input := prepare(t, f, call)
+				accepted := milestoneObject(t, call(tool, input))
 				require.Equal(t, false, accepted["replayed"])
 				t.Cleanup(func() {
 					ctx, cancel := context.WithTimeout(context.WithoutCancel(t.Context()), 5*time.Second)
@@ -66,16 +71,20 @@ func TestMCPCustomerRequestLinkReceiptsRequireCurrentTargetAccess(t *testing.T) 
 				change.setActive(t, t.Context(), f, input, false)
 				before := customerStorageSnapshot(t, f)
 				fresh := maps.Clone(input)
-				fresh["mutation_id"] = uuid.NewString()
+				retryField := "request_id"
+				if tool == "customer_request" {
+					retryField = "mutation_id"
+				}
+				fresh[retryField] = uuid.NewString()
 				for _, attempt := range []map[string]any{fresh, input} {
-					denied := call("customer_request", attempt)
+					denied := call(tool, attempt)
 					milestoneFailure(t, denied, change.code)
 					require.Empty(t, denied.StructuredContent)
 				}
 				require.Equal(t, before, customerStorageSnapshot(t, f))
 				change.setActive(t, t.Context(), f, input, true)
 				restored := customerStorageSnapshot(t, f)
-				replayed := milestoneObject(t, call("customer_request", input))
+				replayed := milestoneObject(t, call(tool, input))
 				require.Equal(t, true, replayed["replayed"])
 				require.Equal(t, accepted["result"], replayed["result"])
 				require.Equal(t, restored, customerStorageSnapshot(t, f), "restoring target access replays without another request, link or activity")
@@ -85,8 +94,13 @@ func TestMCPCustomerRequestLinkReceiptsRequireCurrentTargetAccess(t *testing.T) 
 }
 
 func TestMCPCustomerRequestLinksReauthorizeTargetsAfterWaiting(t *testing.T) {
+	runCustomerLinkTargetWait(t, "customer_request", customerRequestLinkedInput, customerRequestLinkChanges())
+}
+
+func runCustomerLinkTargetWait(t *testing.T, tool string, prepare func(*testing.T, milestoneFixture, catalogueCall) map[string]any, targets []customerRequestLinkChange) {
+	t.Helper()
 	var changes []mutationWaitChange
-	for _, change := range customerRequestLinkChanges() {
+	for _, change := range targets {
 		for _, mode := range []string{"personal token", "OAuth"} {
 			changes = append(changes, mutationWaitChange{
 				name: change.name + "/" + mode, mode: mode, code: change.code,
@@ -100,7 +114,7 @@ func TestMCPCustomerRequestLinksReauthorizeTargetsAfterWaiting(t *testing.T) {
 		}
 	}
 	runMutationAuthorizationWait(t, mutationWaitScenario{
-		tool: "customer_request", schemaLock: true, fixture: customerIdentityFixture,
-		snapshot: customerStorageSnapshot, prepare: customerRequestLinkedInput, changes: changes,
+		tool: tool, schemaLock: true, fixture: customerIdentityFixture,
+		snapshot: customerStorageSnapshot, prepare: prepare, changes: changes,
 	})
 }
