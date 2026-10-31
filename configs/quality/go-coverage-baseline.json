@@ -394,8 +394,8 @@
       "percent": 98.88
     },
     "github.com/CaliLuke/go-plane/internal/templates": {
-      "statements": 188,
-      "percent": 72.34
+      "statements": 197,
+      "percent": 84.26
     },
     "github.com/CaliLuke/go-plane/internal/testsupport": {
       "statements": 69,

@@ -30,7 +30,11 @@ receipts and revisions in one transaction. Current scope and governance are chec
 before replay. Every catalogue writer advances the workspace template revision.
 Deletion retains a tombstone and removes the template from listing. Parent resource
 deletion cascades its templates; no copied work items, pages or projects are touched.
-Rollback refuses to discard template data.
+The retention worker purges old tombstones while retaining template audit events
+and unexpired deletion receipts. Physical project deletion removes its definitions
+but retains their audit events; physical workspace deletion removes workspace-owned
+storage. Rollback refuses to discard records, audit events or configured workspace
+governance.
 
 The [SDK record tests](../apps/go-api/internal/mcpactions/template_contract_integration_test.go)
 cover all five valid kind/scope combinations, summary/body separation, top-level
@@ -56,8 +60,23 @@ values and numeric precision. Older receipts did not retain the accepted timezon
 they preserve their stored timestamps, and the original display offset cannot be
 reconstructed from those records.
 
-Remaining acceptance covers native row-writer revisions across scopes, parent
-resource deletion and migration rollback preservation.
+[Native writer checks](../apps/go-api/internal/mcpactions/template_native_revision_integration_test.go)
+cover inserts, edits, soft deletion and physical deletion in all five scopes,
+cross-workspace moves and governance changes. Each invalidates stale catalogue
+revisions while leaving the retry key usable after a refused write.
+[Project deletion](../apps/go-api/internal/mcpactions/template_parent_lifecycle_integration_test.go)
+and [workspace deletion](../apps/go-api/internal/mcpactions/template_workspace_lifecycle_integration_test.go)
+exercise durable parent cascades and preserve independent definitions and resources.
+[Retention checks](../apps/go-api/internal/mcpactions/template_retention_integration_test.go)
+verify deletion age, audit preservation and receipt replay after tombstone removal.
+
+The native template model is appended to the deletion registry so persisted model
+and relation indexes keep their meaning. The migration repairs missing tombstones
+under already deleted parents. [Migration checks](../apps/go-api/internal/bootstrap/template_parent_migration_integration_test.go)
+verify preserved definitions, audits, prior tombstones, governance and unrelated
+workspaces, along with revision changes, idempotence and safe rollback.
+[Storage rollback checks](../apps/go-api/internal/bootstrap/template_rollback_integration_test.go)
+verify data-loss refusal and empty-storage rollback/upgrade.
 
 The workspace project summary intentionally follows the tool's documented intent;
 the pinned Python helper passes short_description to a model that ignores it.

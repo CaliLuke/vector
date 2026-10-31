@@ -1,12 +1,14 @@
 package deletion
 
 import (
+	"encoding/json"
+	"reflect"
 	"testing"
 
 	"github.com/google/uuid"
 )
 
-func TestCapturedPolicyIsCompleteAndUnambiguous(t *testing.T) {
+func TestDeletionPolicyIsCompleteAndUnambiguous(t *testing.T) {
 	p, err := Load()
 	if err != nil {
 		t.Fatal(err)
@@ -33,8 +35,8 @@ func TestCapturedPolicyIsCompleteAndUnambiguous(t *testing.T) {
 			}
 		}
 	}
-	if len(p.Models) != 109 || soft != 92 || relations != 474 {
-		t.Fatalf("source registry counts models=%d soft=%d relations=%d", len(p.Models), soft, relations)
+	if len(p.Models) != 110 || soft != 93 || relations != 478 {
+		t.Fatalf("deletion registry counts models=%d soft=%d relations=%d", len(p.Models), soft, relations)
 	}
 	for _, m := range p.Models {
 		for _, r := range m.Relations {
@@ -79,5 +81,23 @@ func TestModelIdentifiersMatchTheirDatabaseKeyType(t *testing.T) {
 				t.Fatalf("identifier=%v (%T), want %v (%T), error=%v", got, got, tc.want, tc.want, err)
 			}
 		})
+	}
+}
+
+func TestNativeModelsPreserveCapturedDeletionIndexes(t *testing.T) {
+	policy, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := policyFiles.ReadFile("model_policy.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var captured Policy
+	if err = json.Unmarshal(data, &captured); err != nil {
+		t.Fatal(err)
+	}
+	if len(policy.Models) < len(captured.Models) || !reflect.DeepEqual(policy.Models[:len(captured.Models)], captured.Models) {
+		t.Fatal("native extensions changed model or relation indexes used by persisted deletion activities")
 	}
 }

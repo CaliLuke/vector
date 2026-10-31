@@ -356,7 +356,9 @@ for (const [signal, code] of [
     });
     const closed = once(child, "close");
     const worker = await waitForWorker(pidPath);
-    process.kill(-child.pid, signal);
+    const group = child.pid;
+    if (group === undefined || group <= 0) throw new Error("guard process did not start");
+    process.kill(-group, signal);
     const [exitCode, exitSignal] = await closed;
     assert.equal(exitCode, code, stderr);
     assert.equal(exitSignal, null, stderr);

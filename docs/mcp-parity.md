@@ -30,7 +30,9 @@ The nineteen customer, customer-request and customer-property actions have
 [contract acceptance](mcp-customers.md) for SDK projections and queries, current
 read/write access, tenant and reference isolation, receipts/revisions, contention,
 rollback and native worker delivery. Receipt timestamps retain the accepted
-timezone. Template, initiative and feature-setting acceptance remains separate.
+timezone. The four [template actions](mcp-templates.md) also have contract acceptance,
+including native revisions, durable parent cascades, retention and migration data
+preservation. Initiative and feature-setting acceptance remains separate.
 
 The [content workflow batch](../apps/go-api/internal/mcpactions/content_batch_integration_test.go) also passes the 43 page, collection and release actions across both authentication modes and protocol revisions, sharing one PostgreSQL fixture.
 
@@ -266,10 +268,10 @@ The [work-log contract](mcp-work-logs.md) defines minute-based entries, author/a
 | `workspace.retrieve`                       | Read     | None                                                     | Read verified         | None for the documented identity contract; see workspace evidence                     |
 | `workspace.get_features`                   | Read     | None                                                     | Read verified         | None for the documented workspace feature read contract                               |
 | `workspace.update_features`                | Mutation | None                                                     | Write verified        | None for the documented workspace feature write contract                              |
-| `template.list`                            | Read     | `kind`                                                   | Workflow verified     | Native row-writer revisions, parent deletion and rollback preservation                |
-| `template.create`                          | Mutation | `kind`, `name`, `template_data`                          | Workflow verified     | Native row-writer revisions, parent deletion and rollback preservation                |
-| `template.update`                          | Mutation | `kind`, `template_id`                                    | Workflow verified     | Native row-writer revisions, parent deletion and rollback preservation                |
-| `template.delete`                          | Mutation | `kind`, `template_id`                                    | Workflow verified     | Native row-writer revisions, parent deletion and rollback preservation                |
+| `template.list`                            | Read     | `kind`                                                   | Contract verified     | None within the documented template contract                                          |
+| `template.create`                          | Mutation | `kind`, `name`, `template_data`                          | Contract verified     | None within the documented template contract                                          |
+| `template.update`                          | Mutation | `kind`, `template_id`                                    | Contract verified     | None within the documented template contract                                          |
+| `template.delete`                          | Mutation | `kind`, `template_id`                                    | Contract verified     | None within the documented template contract                                          |
 | `collection.list`                          | Read     | None                                                     | Workflow verified     | Combined privacy, hierarchy, membership, receipt, revision and durable history checks |
 | `collection.retrieve`                      | Read     | `collection_id`                                          | Workflow verified     | Combined privacy, hierarchy, membership, receipt, revision and durable history checks |
 | `collection.create`                        | Mutation | `name`                                                   | Workflow verified     | Combined privacy, hierarchy, membership, receipt, revision and durable history checks |
@@ -321,7 +323,7 @@ The fixture pins Plane MCP Server revision `dc7cfd9f3c305891909e2372f0cc50729135
 
 [Page and collection contracts](mcp-pages-collections.md) cover workspace pages, project lifecycle reuse, hierarchy, private collection membership, work-item links and durable body-history admission. The generated-server content batch covers all 23 actions across both authentication modes and protocol revisions.
 
-[Template acceptance](mcp-templates.md) records SDK, authorization, receipt and recovery proofs, with native writer and storage lifecycle checks still outstanding. [Features/initiatives](mcp-features-initiatives.md) are wired and covered by the generated-server workspace catalogue batch; their domain checks and compatibility review remain outstanding. [Customer acceptance](mcp-customers.md) links the completed domain proofs.
+[Template acceptance](mcp-templates.md) links the completed SDK, authorization, receipt, recovery, native-writer and storage lifecycle proofs. [Features/initiatives](mcp-features-initiatives.md) are wired and covered by the generated-server workspace catalogue batch; their domain checks and compatibility review remain outstanding. [Customer acceptance](mcp-customers.md) links the completed domain proofs.
 
 The `workspace.list` extension returns the current user's active workspace memberships
 with IDs, names and slugs. Generated-server regressions cover listing and per-call

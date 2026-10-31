@@ -1,5 +1,6 @@
-// Package deletion contains the evaluated source model policy. PostgreSQL owns
-// physical cascading; this registry limits soft deletion to known Plane models.
+// Package deletion defines the model registry for durable deletion. PostgreSQL
+// owns physical cascading; soft deletion uses the captured compatibility policy
+// and registered Vector models.
 package deletion
 
 import (
@@ -47,6 +48,8 @@ func Load() (Policy, error) {
 	if err = json.Unmarshal(data, &result); err != nil {
 		return Policy{}, err
 	}
+	// Keep captured model and relation indexes stable for persisted activities.
+	result.Models = append(result.Models, nativeTemplateModel())
 	return result, nil
 }
 func (p Policy) Lookup(app, name string) (Model, error) {
