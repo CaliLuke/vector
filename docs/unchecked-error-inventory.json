@@ -1,7 +1,7 @@
 {
   "version": 1,
   "catalog_id": "ERR-02",
-  "source_commit": "0403f50de0bc08d2d6ea4b71373333943bcff26d",
+  "source_commit": "f3ce9764b2277583daafc0bd55fc693ec45c7596",
   "audit_date": "2026-10-30",
   "tool": "golangci-lint 2.15.0 (Go 1.27.3)",
   "configuration": "Repository .golangci.yml at source_commit; add linters.settings.errcheck.check-blank=true and select --enable-only errcheck. Existing integration tags, test inclusion, generated-source exclusions and timeout retained.",
@@ -9,11 +9,11 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 911,
+    "findings": 905,
     "also_in_ERR_01": 47,
-    "additional_ERR_02": 864,
+    "additional_ERR_02": 858,
     "test_file_findings": 545,
-    "non_test_file_findings": 366
+    "non_test_file_findings": 360
   },
   "findings": [
     {
@@ -1214,27 +1214,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/assets/attachment_api.go",
-      "line": 113,
-      "column": 11,
-      "message": "Error return value of `url.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/assets/attachment_api.go",
-      "line": 189,
-      "column": 19,
-      "message": "Error return value of `mime.ParseMediaType` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/assets/attachment_mutations.go",
-      "line": 85,
-      "column": 11,
-      "message": "Error return value of `url.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/assets/domain.go",
       "line": 391,
       "column": 2,
@@ -1715,27 +1694,6 @@
       "line": 185,
       "column": 5,
       "message": "Error return value of `results.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/public_fetch.go",
-      "line": 29,
-      "column": 4,
-      "message": "Error return value of `response.Body.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/public_fetch.go",
-      "line": 37,
-      "column": 4,
-      "message": "Error return value of `response.Body.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/public_fetch.go",
-      "line": 41,
-      "column": 4,
-      "message": "Error return value of `response.Body.Close` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -6394,5 +6352,5 @@
       "also_in_configured_audit": false
     }
   ],
-  "source_state": "Working tree containing the attachment read compatibility and response cleanup fixes based on source_commit."
+  "source_state": "Working tree containing attachment metadata, import and public-fetch contract fixes based on source_commit."
 }

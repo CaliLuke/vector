@@ -51,7 +51,7 @@ func Timestamps(value any, timezone string) any {
 				// JSON fields are not serializer objects. Django leaves timestamp-looking
 				// values inside them unchanged.
 				switch key {
-				case "comment_json", "description_json", "description_text", "description_html", "icon_prop", "logo_props", "meta", "metadata", "source_data", "view_props", "progress_snapshot", "template_data":
+				case "comment_json", "description_json", "description_text", "description_html", "icon_prop", "logo_props", "meta", "metadata", "attributes", "storage_metadata", "source_data", "view_props", "progress_snapshot", "template_data":
 					continue
 				}
 				convertContainer(raw)

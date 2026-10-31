@@ -1,6 +1,7 @@
 package djangoapi
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -26,4 +27,20 @@ func TestTimestampsDefaultOrUnknownTimezoneUsesUTC(t *testing.T) {
 		require.Equal(t, []map[string]any{{"created_at": "2024-01-01T00:00:00Z"}}, Timestamps(body, zone))
 	}
 	require.Equal(t, "unchanged", Timestamps("unchanged", "UTC"))
+}
+
+func TestTimestampsPreserveAttachmentJSON(t *testing.T) {
+	for _, field := range []string{"attributes", "storage_metadata"} {
+		t.Run(field, func(t *testing.T) {
+			opaque := []any{map[string]any{"created_at": "2024-01-01T00:00:00Z", "nested": map[string]any{"updated_at": "2024-02-01T00:00:00Z"}}}
+			before, err := json.Marshal(opaque)
+			require.NoError(t, err)
+			body := map[string]any{"created_at": "2024-01-01T00:00:00Z", field: opaque}
+			result := Timestamps(body, "Asia/Kolkata").(map[string]any)
+			require.Equal(t, "2024-01-01T05:30:00+05:30", result["created_at"])
+			after, err := json.Marshal(result[field])
+			require.NoError(t, err)
+			require.JSONEq(t, string(before), string(after))
+		})
+	}
 }

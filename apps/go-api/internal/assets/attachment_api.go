@@ -28,12 +28,13 @@ const AttachmentTextLimit int64 = 1 << 20
 
 type PublicFileFetcher func(context.Context, string, int64) ([]byte, string, error)
 type AttachmentApplication struct {
-	repository *PostgresRepository
-	receipts   mutationreceipts.Database
-	storage    *Storage
-	fetch      PublicFileFetcher
-	origin     string
-	limit      int64
+	repository     *PostgresRepository
+	receipts       mutationreceipts.Database
+	storage        *Storage
+	fetch          PublicFileFetcher
+	origin         string
+	downloadOrigin *url.URL
+	limit          int64
 }
 type AttachmentQuery struct {
 	ActorID, WorkspaceID, ProjectID, IssueID, AttachmentID uuid.UUID
@@ -58,7 +59,11 @@ func NewAttachmentApplication(repository *PostgresRepository, storage *Storage, 
 	if !ok {
 		return nil, errors.New("attachment receipt database is required")
 	}
-	return &AttachmentApplication{repository: repository, receipts: database, storage: storage, fetch: fetch, origin: origin, limit: min(limit, AttachmentUploadLimit)}, nil
+	downloadOrigin, err := url.Parse(origin)
+	if err != nil {
+		return nil, fmt.Errorf("parse attachment origin: %w", err)
+	}
+	return &AttachmentApplication{repository: repository, receipts: database, storage: storage, fetch: fetch, origin: origin, downloadOrigin: downloadOrigin, limit: min(limit, AttachmentUploadLimit)}, nil
 }
 
 func (a *AttachmentApplication) Read(ctx context.Context, q AttachmentQuery) (_ any, resultErr error) {
@@ -110,8 +115,7 @@ func (a *AttachmentApplication) Read(ctx context.Context, q AttachmentQuery) (_ 
 		name = q.AttachmentID.String()
 	}
 	if q.Action == "download_url" {
-		origin, _ := url.Parse(a.origin)
-		location, presignGetErr := a.storage.PresignGet(ctx, asset.Asset, "attachment", &name, origin.Scheme, origin.Host)
+		location, presignGetErr := a.storage.PresignGet(ctx, asset.Asset, "attachment", &name, a.downloadOrigin.Scheme, a.downloadOrigin.Host)
 		out := map[string]any{"download_url": location, "attachment_id": q.AttachmentID.String(), "name": name}
 		if revision, ok := row["revision"]; ok {
 			out["revision"] = revision
@@ -183,13 +187,27 @@ func normalizeAttachment(row map[string]any) {
 		row["size"] = size
 	}
 }
+
+// The inline formats advertised by MCP must not depend on the host MIME database.
+var attachmentExtensionMIMETypes = map[string]string{
+	".txt": "text/plain", ".md": "text/markdown", ".markdown": "text/markdown",
+	".csv": "text/csv", ".htm": "text/html", ".html": "text/html",
+	".xml": "application/xml", ".yaml": "application/yaml", ".yml": "application/yaml", ".json": "application/json",
+	".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif", ".webp": "image/webp",
+}
+
 func attachmentMIME(raw, name string) string {
 	contentType, _, err := mime.ParseMediaType(raw)
-	if err != nil || contentType == "" || contentType == "application/octet-stream" {
-		contentType, _, _ = mime.ParseMediaType(mime.TypeByExtension(strings.ToLower(path.Ext(name))))
+	if err == nil && contentType != "" && contentType != "application/octet-stream" {
+		return contentType
 	}
-	if contentType == "" {
-		contentType = "application/octet-stream"
+	extension := strings.ToLower(path.Ext(name))
+	if known := attachmentExtensionMIMETypes[extension]; known != "" {
+		return known
+	}
+	contentType, _, err = mime.ParseMediaType(mime.TypeByExtension(extension))
+	if err != nil || contentType == "" {
+		return "application/octet-stream"
 	}
 	return contentType
 }

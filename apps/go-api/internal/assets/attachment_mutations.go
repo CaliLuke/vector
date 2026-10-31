@@ -82,8 +82,17 @@ func (a *AttachmentApplication) stageAttachment(ctx context.Context, repository 
 		return nil, projectmutations.ErrInvalid
 	}
 	if name == "" {
-		parsed, _ := url.Parse(rawURL)
-		name = path.Base(parsed.Path)
+		parsed, parseErr := url.Parse(rawURL)
+		if parseErr != nil {
+			return nil, projectmutations.ErrInvalid
+		}
+		// Preserve the source path spelling used by the pinned importer, including
+		// percent escapes. EscapedPath alone would also escape raw Unicode names.
+		sourcePath := parsed.RawPath
+		if sourcePath == "" {
+			sourcePath = parsed.EscapedPath()
+		}
+		name = path.Base(sourcePath)
 	}
 	name = sanitizeFilename(name)
 	if name == "" || name == "." || name == "/" {
@@ -120,7 +129,7 @@ func (a *AttachmentApplication) stageAttachment(ctx context.Context, repository 
 	}
 	row["is_uploaded"] = true // Only released after CompleteAttachmentUpload succeeds.
 	normalizeAttachment(row)
-	return json.Marshal(row)
+	return json.Marshal(djangoapi.Timestamps(row, cmd.Timezone))
 }
 func attachmentActivity(cmd projectmutations.Command, origin, verb string) map[string]any {
 	return map[string]any{"type": "attachment.activity." + verb, "requested_data": nil, "actor_id": cmd.ActorID.String(), "issue_id": cmd.ParentID.String(), "project_id": cmd.ProjectID.String(), "epoch": time.Now().Unix(), "notification": true, "origin": origin}
