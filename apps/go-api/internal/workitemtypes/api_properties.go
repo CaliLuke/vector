@@ -113,10 +113,13 @@ func readPropertyAPI(ctx context.Context, tx pgx.Tx, q PropertyAPIQuery) (any, e
 	if err != nil {
 		return nil, err
 	}
-	selected, err := selectAPIProperties(ctx, tx, q, all)
+	selected, resolved, err := selectAPIProperties(ctx, tx, q, all)
 	if err != nil {
 		return nil, err
 	}
+	// Authorization was checked against the original request. Projection and
+	// pagination must follow the scope that actually supplied the fallback rows.
+	q = resolved
 	if q.PropertyID != uuid.Nil && len(selected) == 0 {
 		return nil, projectmutations.ErrNotFound
 	}
@@ -168,36 +171,36 @@ func readPropertyAPI(ctx context.Context, tx pgx.Tx, q PropertyAPIQuery) (any, e
 	}
 	return result, nil
 }
-func selectAPIProperties(ctx context.Context, tx pgx.Tx, q PropertyAPIQuery, all []apiPropertyRow) ([]apiPropertyRow, error) {
+func selectAPIProperties(ctx context.Context, tx pgx.Tx, q PropertyAPIQuery, all []apiPropertyRow) ([]apiPropertyRow, PropertyAPIQuery, error) {
 	if q.TypeID != uuid.Nil {
 		var found bool
 		err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issue_types t WHERE t.id=$1 AND t.workspace_id=$2 AND t.deleted_at IS NULL)`, q.TypeID, q.WorkspaceID).Scan(&found)
 		if err != nil {
-			return nil, err
+			return nil, q, err
 		}
 		if !found {
-			return nil, projectmutations.ErrNotFound
+			return nil, q, projectmutations.ErrNotFound
 		}
 	}
 	if q.ProjectID == uuid.Nil && q.TypeID == uuid.Nil {
-		return filterAPIPropertyID(all, q.PropertyID), nil
+		return filterAPIPropertyID(all, q.PropertyID), q, nil
 	}
 	rows, err := tx.Query(ctx, `SELECT DISTINCT l.property_id::text FROM work_item_type_properties l JOIN issue_types t ON t.id=l.type_id WHERE t.workspace_id=$1 AND t.deleted_at IS NULL AND ($2::uuid='00000000-0000-0000-0000-000000000000' OR t.id=$2) AND ($3::uuid='00000000-0000-0000-0000-000000000000' OR t.is_default OR t.mandatory OR EXISTS(SELECT 1 FROM project_issue_types pt WHERE pt.issue_type_id=t.id AND pt.project_id=$3 AND pt.workspace_id=$1 AND pt.is_active AND pt.deleted_at IS NULL))`, q.WorkspaceID, q.TypeID, q.ProjectID)
 	if err != nil {
-		return nil, err
+		return nil, q, err
 	}
 	ids := []string{}
 	for rows.Next() {
 		var id string
 		if err = rows.Scan(&id); err != nil {
 			rows.Close()
-			return nil, err
+			return nil, q, err
 		}
 		ids = append(ids, id)
 	}
 	rows.Close()
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return nil, q, err
 	}
 	selected := []apiPropertyRow{}
 	for _, row := range all {
@@ -205,21 +208,28 @@ func selectAPIProperties(ctx context.Context, tx pgx.Tx, q PropertyAPIQuery, all
 			selected = append(selected, row)
 		}
 	}
-	if q.Action == "list" && len(selected) == 0 && q.ProjectID != uuid.Nil && q.TypeID != uuid.Nil {
+	if q.Action == "list" && q.ProjectID != uuid.Nil && q.TypeID != uuid.Nil && !hasPropertyAPIPage(q, selected) {
 		flat := q
 		flat.TypeID = uuid.Nil
-		selected, err = selectAPIProperties(ctx, tx, flat, all)
-		if err != nil {
-			return nil, err
+		fallbackRows, resolved, fallbackErr := selectAPIProperties(ctx, tx, flat, all)
+		if fallbackErr != nil || hasPropertyAPIPage(resolved, fallbackRows) {
+			return fallbackRows, resolved, fallbackErr
 		}
-		if len(selected) == 0 {
-			workspace := q
-			workspace.ProjectID = uuid.Nil
-			selected, err = selectAPIProperties(ctx, tx, workspace, all)
-		}
+		workspace := q
+		workspace.ProjectID = uuid.Nil
+		return selectAPIProperties(ctx, tx, workspace, all)
 	}
-	return filterAPIPropertyID(selected, q.PropertyID), err
+	return filterAPIPropertyID(selected, q.PropertyID), q, nil
 }
+
+// Workspace lists are unpaged; project lists use the requested offset.
+func hasPropertyAPIPage(q PropertyAPIQuery, rows []apiPropertyRow) bool {
+	if q.ProjectID != uuid.Nil && q.Limit > 0 {
+		return q.Offset < len(rows)
+	}
+	return len(rows) > 0
+}
+
 func filterAPIPropertyID(rows []apiPropertyRow, id uuid.UUID) []apiPropertyRow {
 	if id == uuid.Nil {
 		return rows

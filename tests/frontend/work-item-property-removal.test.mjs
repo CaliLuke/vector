@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { React, act } from "./helpers/react.mjs";
 import { changeFormControl, submitForm } from "./helpers/native-forms.mjs";
+import { waitForDom } from "./helpers/wait-for-dom.mjs";
 import { registerWorkItemTypesFormHarness } from "./helpers/work-item-types-form-harness.mjs";
 registerWorkItemTypesFormHarness({
   sourceFiles: ["apps/web/core/components/work-item-types/property-removal-dialog.tsx"],
@@ -18,10 +19,14 @@ registerWorkItemTypesFormHarness({
 const { PropertyRemovalDialog } =
   await import("../../apps/web/core/components/work-item-types/property-removal-dialog.tsx");
 const button = (env, name) => [...env.container.querySelectorAll("button")].find((node) => node.textContent === name);
-const settle = () =>
-  act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 10));
-  });
+const waitForImpact = (env) =>
+  act(async () =>
+    waitForDom(
+      env.container,
+      () => /\d+ work items, \d+ types, and \d+ projects/.test(env.container.textContent),
+      "Property review did not render its authoritative impact"
+    )
+  );
 const deferred = () => {
   let resolve;
   const promise = new Promise((done) => {
@@ -49,7 +54,6 @@ async function screen(t, persistence, props = {}) {
       })
     )
   );
-  await settle();
   return env;
 }
 await test("removal waits for authoritative impact and retries the same receipt", async (t) => {
@@ -65,17 +69,15 @@ await test("removal waits for authoritative impact and retries the same receipt"
   });
   assert.equal(button(env, "Delete property").disabled, true);
   assert.doesNotMatch(env.container.textContent, /0 work items/);
-  response.resolve({ id: "review-one", items: 12, types: 2, projects: 3 });
-  await settle();
+  await act(async () => response.resolve({ id: "review-one", items: 12, types: 2, projects: 3 }));
+  await waitForImpact(env);
   assert.match(env.container.textContent, /12 work items, 2 types, and 3 projects/);
   await submitForm(env.container);
-  await settle();
   assert.match(env.container.textContent, /Connection lost/);
   assert.equal(button(env, "Refresh review"), undefined);
   assert.ok(button(env, "Retry removal"));
   assert.equal(env.container.querySelector("fieldset").disabled, true);
   await submitForm(env.container);
-  await settle();
   assert.equal(requests.length, 2);
   assert.deepEqual(requests[0], requests[1]);
   assert.equal(requests[0].review_id, "review-one");
@@ -92,8 +94,9 @@ await test("discarding current values requires a new review and exact confirmati
       commits.push(input);
     },
   });
+  await waitForImpact(env);
   await act(async () => env.container.querySelectorAll('input[type="radio"]')[1].click());
-  await settle();
+  await waitForImpact(env);
   assert.equal(reviews.at(-1).permanent, true);
   assert.match(env.container.textContent, /Existing history remains available/);
   await submitForm(env.container);
@@ -103,7 +106,6 @@ await test("discarding current values requires a new review and exact confirmati
   assert.equal(commits.length, 0);
   await changeFormControl(env.container.querySelector('input[autocomplete="off"]'), "Confirm");
   await submitForm(env.container);
-  await settle();
   assert.equal(commits.length, 1);
   assert.equal(commits[0].review_id, "discard-review");
   assert.equal(commits[0].permanent, true);
@@ -122,13 +124,12 @@ await test("stale commit refreshes configuration and obtains a new review", asyn
       if (input.revision === 7) throw Object.assign(new Error("Configuration changed"), { response: { status: 409 } });
     },
   });
+  await waitForImpact(env);
   await submitForm(env.container);
-  await settle();
   await act(async () => button(env, "Refresh review").click());
-  await settle();
+  await waitForImpact(env);
   assert.deepEqual(reviews, [7, 8]);
   await submitForm(env.container);
-  await settle();
   assert.equal(commits.at(-1).review_id, "review-8");
   assert.equal(commits.at(-1).revision, 8);
 });
@@ -180,6 +181,7 @@ await test("reviewed updates require Confirm for affected values and retry the i
       },
     }
   );
+  await waitForImpact(env);
   assert.equal(env.container.querySelectorAll('input[type="radio"]').length, 0);
   await submitForm(env.container);
   assert.equal(commits.length, 0);
@@ -188,12 +190,10 @@ await test("reviewed updates require Confirm for affected values and retry the i
   assert.equal(commits.length, 0);
   await changeFormControl(env.container.querySelector('input[autocomplete="off"]'), "Confirm");
   await submitForm(env.container);
-  await settle();
   assert.equal(saved, 0);
   assert.equal(button(env, "Refresh review"), undefined);
   assert.ok(button(env, "Retry changes"));
   await submitForm(env.container);
-  await settle();
   assert.equal(saved, 1);
   assert.equal(commits.length, 2);
   assert.deepEqual(commits[0], commits[1]);
@@ -217,10 +217,9 @@ await test("an outdated full-definition edit cannot refresh its revision and ove
     },
     { definition: revisedDefinition }
   );
+  await waitForImpact(env);
   await submitForm(env.container);
-  await settle();
   await act(async () => button(env, "Refresh review").click());
-  await settle();
   assert.match(env.container.textContent, /Close and reopen this property/);
   assert.deepEqual(revisions, [7]);
   assert.equal(commits.length, 1);

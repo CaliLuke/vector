@@ -8,7 +8,13 @@ read-only properties, type availability and preservation of existing data.
 Current known workspace members can read the workspace catalogue. Project reads
 require current project membership and return effective properties of available
 project types. Type-scoped lists fall back to project-flat and then workspace type
-properties when empty, as in the pinned handler. A supplied project never grants
+properties when the requested page is empty, as in the pinned handler. Fallback
+responses use the effective configuration and metadata of the scope that supplied
+the rows; workspace fallback remains unpaged. Authorization still checks the
+original project before selecting a fallback. The generated-server
+[fallback regressions](../apps/go-api/internal/mcpactions/workitem_property_fallback_integration_test.go)
+cover both fallback scopes, empty pages, and revoked project access.
+A supplied project never grants
 access to another project's names, references or configuration contexts.
 
 Workspace administrators own definition, option and association changes. Creation
@@ -29,6 +35,11 @@ with current item visibility and permissions. Rich text reuses asset ownership
 checks. Values remain in issues.custom_properties; a companion table supplies
 stable API identities and external metadata, synchronized by all item writers.
 Clearing removes stored presence after required-field and read-only validation.
+The [value contract tests](../apps/go-api/internal/mcpactions/workitem_property_value_contract_integration_test.go)
+check scalar wire types and surviving multiselect identities.
+The [rich-text history tests](../apps/go-api/internal/mcpactions/workitem_property_rich_text_integration_test.go)
+check value projection, one history entry per change, receipt replay, and clearing.
+Rollback snapshots include property versions and asset bindings and revisions.
 Formula and read-only text reads resolve the current effective configuration in
 the same authorized snapshot. They return stable derived value IDs, with null
 storage timestamps and external metadata. Empty formulas return a null value;

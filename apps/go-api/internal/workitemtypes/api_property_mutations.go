@@ -133,7 +133,7 @@ func applyPropertyAPI(ctx context.Context, tx pgx.Tx, in PropertyAPIMutation, be
 		if err != nil {
 			return in.PropertyID, nil, err
 		}
-		selected, err := selectAPIProperties(ctx, tx, in.PropertyAPIQuery, rows)
+		selected, _, err := selectAPIProperties(ctx, tx, in.PropertyAPIQuery, rows)
 		if err != nil {
 			return in.PropertyID, nil, err
 		}
