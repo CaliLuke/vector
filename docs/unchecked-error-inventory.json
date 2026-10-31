@@ -1,19 +1,18 @@
 {
   "version": 1,
   "catalog_id": "ERR-02",
-  "source_commit": "f3ce9764b2277583daafc0bd55fc693ec45c7596",
-  "audit_date": "2026-10-30",
+  "audit_date": "2026-10-31",
   "tool": "golangci-lint 2.15.0 (Go 1.27.3)",
-  "configuration": "Repository .golangci.yml at source_commit; add linters.settings.errcheck.check-blank=true and select --enable-only errcheck. Existing integration tags, test inclusion, generated-source exclusions and timeout retained.",
+  "configuration": "Repository apps/go-api/.golangci.yml in the same Git revision as this inventory; add linters.settings.errcheck.check-blank=true and select --enable-only errcheck. Existing integration tags, test inclusion, generated-source exclusions and timeout retained.",
   "config_sha256": "2c1fa403a87733e2954776442ef2e3c388db337a20d5921daa3fe6eb2dff5b18",
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 905,
-    "also_in_ERR_01": 47,
-    "additional_ERR_02": 858,
+    "findings": 893,
+    "also_in_ERR_01": 38,
+    "additional_ERR_02": 855,
     "test_file_findings": 545,
-    "non_test_file_findings": 360
+    "non_test_file_findings": 348
   },
   "findings": [
     {
@@ -2416,90 +2415,6 @@
       "column": 6,
       "message": "Error return value of `w.Write` is not checked",
       "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/devtools/runner.go",
-      "line": 68,
-      "column": 17,
-      "message": "Error return value of `fmt.Fprintln` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/runner.go",
-      "line": 94,
-      "column": 14,
-      "message": "Error return value of `pipe.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/runner.go",
-      "line": 95,
-      "column": 14,
-      "message": "Error return value of `sink.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/runner.go",
-      "line": 98,
-      "column": 3,
-      "message": "Error return value of `sink.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/devtools/runner.go",
-      "line": 114,
-      "column": 14,
-      "message": "Error return value of `fmt.Fprintf` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/runner.go",
-      "line": 122,
-      "column": 14,
-      "message": "Error return value of `fmt.Fprintf` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/runner.go",
-      "line": 148,
-      "column": 16,
-      "message": "Error return value of `fmt.Fprintln` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/runner.go",
-      "line": 156,
-      "column": 16,
-      "message": "Error return value of `fmt.Fprintf` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/runner.go",
-      "line": 192,
-      "column": 3,
-      "message": "Error return value of `syscall.Kill` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/devtools/runner.go",
-      "line": 205,
-      "column": 6,
-      "message": "Error return value of `syscall.Kill` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/devtools/runner.go",
-      "line": 238,
-      "column": 16,
-      "message": "Error return value of `fmt.Fprintln` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/devtools/runner.go",
-      "line": 259,
-      "column": 16,
-      "message": "Error return value of `fmt.Fprintf` is not checked",
-      "also_in_configured_audit": true
     },
     {
       "file": "apps/go-api/internal/devtools/runner_test.go",

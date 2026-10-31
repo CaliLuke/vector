@@ -42,6 +42,8 @@ func RunLocalDevelopment(ctx context.Context, root string, stdout, stderr io.Wri
 func runLocalDevelopment(ctx context.Context, root string, stdout, stderr io.Writer, endpoint string) int {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer cancel()
+	diagnostics := newRunnerDiagnostics(stderr)
+	readFailures := make(chan error, 1)
 	queue := make(chan map[string]any, queueCapacity)
 	var readers sync.WaitGroup
 	readerCtx, stopReaders := context.WithCancel(context.Background())
@@ -65,7 +67,7 @@ func runLocalDevelopment(ctx context.Context, root string, stdout, stderr io.Wri
 			}
 			warnMu.Lock()
 			if time.Since(lastQueueWarning) > 30*time.Second {
-				fmt.Fprintln(stderr, "Logal queue full; dropping oldest local log.")
+				diagnostics.printf("Logal queue full; dropping oldest local log.\n")
 				lastQueueWarning = time.Now()
 			}
 			warnMu.Unlock()
@@ -73,7 +75,7 @@ func runLocalDevelopment(ctx context.Context, root string, stdout, stderr io.Wri
 	}
 
 	writerDone := make(chan struct{})
-	go exportLoop(readerCtx, queue, endpoint, stderr, writerDone)
+	go exportLoop(readerCtx, queue, endpoint, diagnostics, writerDone)
 	start := func(docker bool) (*child, error) {
 		args := []string{"run", "dev:frontend"}
 		name := "pnpm"
@@ -91,16 +93,22 @@ func runLocalDevelopment(ctx context.Context, root string, stdout, stderr io.Wri
 		cmd.Stdout = sink
 		cmd.Stderr = sink
 		if err := cmd.Start(); err != nil {
-			pipe.Close()
-			sink.Close()
-			return nil, err
+			return nil, errors.Join(err, pipe.Close(), sink.Close())
 		}
-		_ = sink.Close()
+		if err := sink.Close(); err != nil {
+			killErr := signalChildren([]*child{{cmd: cmd}}, syscall.SIGKILL)
+			return nil, errors.Join(err, pipe.Close(), killErr, cmd.Wait())
+		}
 		c := &child{cmd: cmd, docker: docker, done: make(chan struct{})}
 		readers.Add(1)
 		go func() {
 			defer readers.Done()
-			scanChild(readerCtx, pipe, docker, stdout, addRecord)
+			if err := scanChild(readerCtx, pipe, docker, stdout, addRecord); err != nil {
+				select {
+				case readFailures <- err:
+				default:
+				}
+			}
 		}()
 		go func() {
 			c.err = cmd.Wait()
@@ -111,7 +119,7 @@ func runLocalDevelopment(ctx context.Context, root string, stdout, stderr io.Wri
 
 	dockerChild, err := start(true)
 	if err != nil {
-		fmt.Fprintf(stderr, "Start Docker log capture: %v\n", err)
+		diagnostics.printf("Start Docker log capture: %v\n", err)
 		stopReaders()
 		close(queue)
 		<-writerDone
@@ -119,8 +127,10 @@ func runLocalDevelopment(ctx context.Context, root string, stdout, stderr io.Wri
 	}
 	frontendChild, err := start(false)
 	if err != nil {
-		fmt.Fprintf(stderr, "Start frontend tasks: %v\n", err)
-		terminateChildren([]*child{dockerChild}, 10*time.Second)
+		diagnostics.printf("Start frontend tasks: %v\n", err)
+		if err := terminateChildren([]*child{dockerChild}, 10*time.Second); err != nil {
+			diagnostics.printf("Stop Docker log capture: %v\n", err)
+		}
 		stopReaders()
 		readers.Wait()
 		close(queue)
@@ -135,6 +145,13 @@ func runLocalDevelopment(ctx context.Context, root string, stdout, stderr io.Wri
 			dockerDone = dockerChild.done
 		}
 		select {
+		case err := <-readFailures:
+			diagnostics.printf("Read child logs: %v\n", err)
+			exit = 1
+			goto shutdown
+		case <-diagnostics.failed:
+			exit = 1
+			goto shutdown
 		case <-ctx.Done():
 			exit = 0
 			goto shutdown
@@ -145,7 +162,7 @@ func runLocalDevelopment(ctx context.Context, root string, stdout, stderr io.Wri
 			if ctx.Err() != nil {
 				goto shutdown
 			}
-			fmt.Fprintln(stderr, "Reconnecting local container log capture.")
+			diagnostics.printf("Reconnecting local container log capture.\n")
 			dockerChild = nil
 			dockerRetry = time.After(2 * time.Second)
 		case <-dockerRetry:
@@ -153,20 +170,32 @@ func runLocalDevelopment(ctx context.Context, root string, stdout, stderr io.Wri
 			var startErr error
 			dockerChild, startErr = start(true)
 			if startErr != nil {
-				fmt.Fprintf(stderr, "Restart Docker log capture: %v\n", startErr)
+				diagnostics.printf("Restart Docker log capture: %v\n", startErr)
 				dockerRetry = time.After(2 * time.Second)
 			}
 		}
 	}
 
 shutdown:
-	terminateChildren([]*child{dockerChild, frontendChild}, 10*time.Second)
+	if err := terminateChildren([]*child{dockerChild, frontendChild}, 10*time.Second); err != nil {
+		diagnostics.printf("Stop development children: %v\n", err)
+		exit = 1
+	}
 	stopReaders()
 	readers.Wait()
 	close(queue)
 	select {
 	case <-writerDone:
 	case <-time.After(5 * time.Second):
+	}
+	select {
+	case err := <-readFailures:
+		diagnostics.printf("Read child logs: %v\n", err)
+		exit = 1
+	default:
+	}
+	if diagnostics.err() != nil {
+		return 1
 	}
 	return exit
 }
@@ -184,13 +213,8 @@ func commandExitCode(err error) int {
 	return 1
 }
 
-func terminateChildren(children []*child, timeout time.Duration) {
-	for _, c := range children {
-		if c == nil || c.cmd.Process == nil {
-			continue
-		}
-		_ = syscall.Kill(-c.cmd.Process.Pid, syscall.SIGTERM)
-	}
+func terminateChildren(children []*child, timeout time.Duration) error {
+	err := signalChildren(children, syscall.SIGTERM)
 	deadline := time.NewTimer(timeout)
 	defer deadline.Stop()
 	for _, c := range children {
@@ -200,22 +224,40 @@ func terminateChildren(children []*child, timeout time.Duration) {
 		select {
 		case <-c.done:
 		case <-deadline.C:
-			for _, remaining := range children {
-				if remaining != nil && remaining.cmd.Process != nil {
-					_ = syscall.Kill(-remaining.cmd.Process.Pid, syscall.SIGKILL)
-				}
-			}
-			return
+			return errors.Join(err, signalChildren(children, syscall.SIGKILL))
 		}
 	}
+	return err
 }
 
-func scanChild(ctx context.Context, input io.Reader, docker bool, stdout io.Writer, add func(map[string]any)) {
+func signalChildren(children []*child, signal syscall.Signal) error {
+	var result error
+	for _, c := range children {
+		if c == nil || c.cmd.Process == nil {
+			continue
+		}
+		if err := syscall.Kill(-c.cmd.Process.Pid, signal); err != nil && !errors.Is(err, syscall.ESRCH) {
+			result = errors.Join(result, fmt.Errorf("signal child process group: %w", err))
+		}
+	}
+	return result
+}
+
+func scanChild(ctx context.Context, input io.ReadCloser, docker bool, stdout io.Writer, add func(map[string]any)) (err error) {
+	var closeOnce sync.Once
+	var closeErr error
+	closeInput := func() { closeOnce.Do(func() { closeErr = input.Close() }) }
+	stopClose := context.AfterFunc(ctx, closeInput)
+	defer func() {
+		stopClose()
+		closeInput()
+		err = errors.Join(err, closeErr)
+	}()
 	scanner := bufio.NewScanner(input)
 	scanner.Buffer(make([]byte, 64<<10), 1<<20)
 	for scanner.Scan() {
 		if ctx.Err() != nil {
-			return
+			return nil
 		}
 		line := scanner.Text()
 		service := "plane-frontend"
@@ -235,13 +277,19 @@ func scanChild(ctx context.Context, input io.Reader, docker bool, stdout io.Writ
 				}
 			}
 		} else {
-			fmt.Fprintln(stdout, line)
+			if _, writeErr := fmt.Fprintln(stdout, line); writeErr != nil {
+				return fmt.Errorf("write frontend output: %w", writeErr)
+			}
 		}
 		add(RecordLog(line, service, eventTime))
 	}
+	if ctx.Err() != nil {
+		return nil
+	}
+	return scanner.Err()
 }
 
-func exportLoop(ctx context.Context, queue chan map[string]any, endpoint string, stderr io.Writer, done chan<- struct{}) {
+func exportLoop(ctx context.Context, queue chan map[string]any, endpoint string, diagnostics *runnerDiagnostics, done chan<- struct{}) {
 	defer close(done)
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
@@ -256,7 +304,7 @@ func exportLoop(ctx context.Context, queue chan map[string]any, endpoint string,
 		cancel()
 		if err != nil {
 			if time.Since(lastWarning) > 30*time.Second {
-				fmt.Fprintf(stderr, "Logal export failed: %v\n", err)
+				diagnostics.printf("Logal export failed: %v\n", err)
 				lastWarning = time.Now()
 			}
 			if ctx.Err() == nil {

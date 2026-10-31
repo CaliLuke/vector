@@ -118,22 +118,6 @@
       "count": 1
     },
     {
-      "fingerprint": ["errcheck", "internal/devtools/runner.go", "Error return value of `fmt.Fprintf` is not checked"],
-      "count": 4
-    },
-    {
-      "fingerprint": ["errcheck", "internal/devtools/runner.go", "Error return value of `fmt.Fprintln` is not checked"],
-      "count": 3
-    },
-    {
-      "fingerprint": ["errcheck", "internal/devtools/runner.go", "Error return value of `pipe.Close` is not checked"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "internal/devtools/runner.go", "Error return value of `sink.Close` is not checked"],
-      "count": 1
-    },
-    {
       "fingerprint": [
         "errcheck",
         "internal/estimatereads/repository_integration_test.go",
