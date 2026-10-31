@@ -15,6 +15,7 @@ among live customers. An ambiguous legacy name match is rejected. Delete by ID
 requires the row; deleting an unmatched external pair succeeds. Stage and contract
 status retain free-form strings. Domain is industry, not a hostname. Revenue is text.
 Zero employees and empty optional strings retain the pinned tool's omitted sentinel.
+Updates with no supplied changes preserve the saved fields.
 
 Requests belong to exactly one customer. Creation can link work items atomically;
 update changes metadata only. Request IDs are never usable under another customer.
@@ -30,7 +31,12 @@ Supported kinds are TEXT, DATETIME, DECIMAL, BOOLEAN, OPTION, RELATION, URL, EMA
 and FILE. RELATION selects ISSUE or USER; values do not grant access to references.
 TEXT/DATETIME formats have the pinned defaults. Type and display format remain fixed
 after creation. Options have stable UUIDs; updates patch specified IDs or add new
-options, retaining omitted options. Default flags respect single/multi cardinality.
+options, retaining omitted options. Option-only updates keep the property definition
+and option identities intact. Default flags respect single/multi cardinality.
+Defaults accept a trimmed literal string, with commas preserved, or a JSON string
+array. A literal beginning with `[` is still text when it is not valid JSON. Null
+and non-string elements in JSON arrays are rejected. A blank default string omits the
+field; `[]` removes the default.
 
 Values map property UUIDs to string arrays. Setting a property replaces its array;
 omitted properties are unchanged. Required properties cannot be cleared, single
@@ -58,9 +64,16 @@ The native contract applies the advertised field, validating retained values bef
 narrowing cardinality. [Upstream issue #254](https://github.com/makeplane/plane-mcp-server/issues/254)
 tracks the omitted field. Remove this compatibility note when the pinned helper
 forwards is_multi to its SDK update model.
-Pending proof includes upsert identity/concurrency, customer/request binding, private target
-filtering, every property kind/default/option, inactive and readonly behavior,
-atomic bulk values/links, current authorization on replay, CAS and durable activity,
-and full SDK page and record projections under both auth modes and MCP revisions.
+Generated-server tests exercise all nineteen actions under both authentication modes
+and protocol revisions. Customer property checks cover defaults, replacement values
+and invalid-value preservation for all nine kinds; literal and JSON defaults;
+option identity, omitted options and default changes; inactive and readonly values;
+required-field clearing, cardinality narrowing and atomic bulk rejection. Clearing
+an optional value keeps omitted properties and does not reapply defaults. Changing
+option defaults leaves existing customer values unchanged.
 
-The consolidated catalogue workflow batch passes for all nineteen actions under both authentication modes and protocol revisions. It covers external-identity upsert, customer/request binding, request retry identity, link removal precedence, transactional activity, text defaults, cardinality narrowing and atomic value rejection. Other property kinds, concurrency and the complete permission matrix remain pending.
+Remaining acceptance includes upsert identity/concurrency, complete customer/request
+binding and private-target filtering, the complete format and reference-visibility
+matrix, atomic association changes, current authorization on replay, CAS and durable
+activity, and full SDK page and record projections under both auth modes and MCP
+revisions.

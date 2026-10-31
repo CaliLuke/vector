@@ -152,10 +152,12 @@ func selectCustomer(tool string, input interface{ Validate() error }) (customerI
 	if in.Default != nil && strings.TrimSpace(*in.Default) != "" {
 		value := strings.TrimSpace(*in.Default)
 		defaults := []string{value}
-		if strings.HasPrefix(value, "[") {
-			if json.Unmarshal([]byte(value), &defaults) != nil {
+		if strings.HasPrefix(value, "[") && json.Valid([]byte(value)) {
+			var decoded []string
+			if json.Unmarshal([]byte(value), &decoded) != nil {
 				return in, cmd, customerInputError()
 			}
+			defaults = decoded
 		}
 		cmd.Fields["default_value"] = defaults
 	}

@@ -253,7 +253,7 @@ func writeRow(ctx context.Context, tx pgx.Tx, in Command, id uuid.UUID) error {
 	query := `INSERT INTO initiatives (` + strings.Join(cols, ",") + `) SELECT ` + strings.Join(values, ",") + ` FROM jsonb_populate_record(NULL::initiatives,$1::jsonb) x`
 	args := []any{raw}
 	if !create {
-		query = `UPDATE initiatives SET (` + strings.Join(cols, ",") + `)=(` + strings.Join(values, ",") + `),updated_at=now() FROM jsonb_populate_record(NULL::initiatives,$1::jsonb) x WHERE initiatives.id=$2 AND initiatives.workspace_id=$3`
+		query = `UPDATE initiatives SET (` + strings.Join(cols, ",") + `)=ROW(` + strings.Join(values, ",") + `),updated_at=now() FROM jsonb_populate_record(NULL::initiatives,$1::jsonb) x WHERE initiatives.id=$2 AND initiatives.workspace_id=$3`
 		args = append(args, id, in.WorkspaceID)
 	}
 	_, err := tx.Exec(ctx, query, args...)

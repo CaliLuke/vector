@@ -145,7 +145,7 @@ func writeRow(ctx context.Context, tx pgx.Tx, name, key string, id uuid.UUID, in
 		for _, column := range columns {
 			current = append(current, "t."+column)
 		}
-		query = `UPDATE ` + quoted + ` t SET (` + strings.Join(columns, ",") + `)=(` + strings.Join(selected, ",") + `),updated_at=clock_timestamp() FROM jsonb_populate_record(NULL::` + quoted + `,$1::jsonb) x WHERE t.` + pgx.Identifier{key}.Sanitize() + `=$2 AND t.workspace_id=$3 AND ROW(` + strings.Join(current, ",") + `) IS DISTINCT FROM ROW(` + strings.Join(selected, ",") + `)`
+		query = `UPDATE ` + quoted + ` t SET (` + strings.Join(columns, ",") + `)=ROW(` + strings.Join(selected, ",") + `),updated_at=clock_timestamp() FROM jsonb_populate_record(NULL::` + quoted + `,$1::jsonb) x WHERE t.` + pgx.Identifier{key}.Sanitize() + `=$2 AND t.workspace_id=$3 AND ROW(` + strings.Join(current, ",") + `) IS DISTINCT FROM ROW(` + strings.Join(selected, ",") + `)`
 		args = append(args, id, in.WorkspaceID)
 	}
 	command, err := tx.Exec(ctx, query, args...)

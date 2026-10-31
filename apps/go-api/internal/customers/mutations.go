@@ -207,7 +207,7 @@ func writeRow(ctx context.Context, tx pgx.Tx, in Command, id uuid.UUID, create b
 	query := `INSERT INTO ` + name + ` (` + strings.Join(columns, ",") + `) SELECT ` + strings.Join(values, ",") + ` FROM jsonb_populate_record(NULL::` + name + `,$1::jsonb) x`
 	args := []any{raw}
 	if !create {
-		query = `UPDATE ` + name + ` t SET (` + strings.Join(columns, ",") + `)=(` + strings.Join(values, ",") + `),updated_at=now() FROM jsonb_populate_record(NULL::` + name + `,$1::jsonb) x WHERE t.id=$2 AND t.workspace_id=$3`
+		query = `UPDATE ` + name + ` t SET (` + strings.Join(columns, ",") + `)=ROW(` + strings.Join(values, ",") + `),updated_at=now() FROM jsonb_populate_record(NULL::` + name + `,$1::jsonb) x WHERE t.id=$2 AND t.workspace_id=$3`
 		args = append(args, id, in.WorkspaceID)
 	}
 	_, err = tx.Exec(ctx, query, args...)
