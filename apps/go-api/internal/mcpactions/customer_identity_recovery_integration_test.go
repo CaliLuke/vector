@@ -8,14 +8,15 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
+	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/require"
 )
 
 func TestCustomerInterruptedMutationsPreserveStateAndRetryIdentity(t *testing.T) {
-	for _, action := range []string{"create", "upsert", "update", "delete"} {
+	for _, scenario := range customerMutationScenarios {
 		for _, failure := range []string{"cancelled lock wait", "rejected commit"} {
-			t.Run(action+"/"+failure, func(t *testing.T) {
-				f, repository, command := customerMutationCase(t, action)
+			t.Run(scenario.tool+"/"+scenario.action+"/"+failure, func(t *testing.T) {
+				f, repository, command := customerMutationCase(t, scenario)
 				before := customerStorageSnapshot(t, f)
 				var rejected projectmutations.Result
 				if failure == "cancelled lock wait" {
@@ -25,12 +26,17 @@ func TestCustomerInterruptedMutationsPreserveStateAndRetryIdentity(t *testing.T)
 						return err
 					})
 				} else {
+					table := "customers"
+					if scenario.tool == "customer_request" {
+						table = "customer_requests"
+					}
+					tableName := pgx.Identifier{table}.Sanitize()
 					_, err := f.pool.Exec(t.Context(), `CREATE FUNCTION reject_customer_commit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'injected customer commit rejection'; END $$;
-CREATE CONSTRAINT TRIGGER reject_customer_commit AFTER INSERT OR UPDATE OR DELETE ON customers DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION reject_customer_commit()`)
+CREATE CONSTRAINT TRIGGER reject_customer_commit AFTER INSERT OR UPDATE OR DELETE ON `+tableName+` DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION reject_customer_commit()`)
 					require.NoError(t, err)
 					rejected, err = repository.Mutate(t.Context(), command)
 					require.ErrorIs(t, err, mutationreceipts.ErrIndeterminate)
-					_, err = f.pool.Exec(t.Context(), `DROP TRIGGER reject_customer_commit ON customers; DROP FUNCTION reject_customer_commit()`)
+					_, err = f.pool.Exec(t.Context(), `DROP TRIGGER reject_customer_commit ON `+tableName+`; DROP FUNCTION reject_customer_commit()`)
 					require.NoError(t, err)
 				}
 				require.Equal(t, projectmutations.Result{}, rejected, "failed writes return no accepted record or receipt")
@@ -54,12 +60,12 @@ CREATE CONSTRAINT TRIGGER reject_customer_commit AFTER INSERT OR UPDATE OR DELET
 }
 
 func TestMCPCustomerIdentityWritesReauthorizeAfterWaiting(t *testing.T) {
-	for _, action := range []string{"create", "upsert", "update", "delete"} {
-		t.Run(action, func(t *testing.T) {
+	for _, scenario := range customerMutationScenarios {
+		t.Run(scenario.tool+"/"+scenario.action, func(t *testing.T) {
 			runMutationAuthorizationWait(t, mutationWaitScenario{
-				tool: "customer", schemaLock: true, fixture: customerIdentityFixture, snapshot: customerStorageSnapshot,
+				tool: scenario.tool, schemaLock: true, fixture: customerIdentityFixture, snapshot: customerStorageSnapshot,
 				prepare: func(t *testing.T, _ milestoneFixture, call catalogueCall) map[string]any {
-					return customerIdentityWriteInput(t, call, action)
+					return customerMutationWriteInput(t, call, scenario)
 				},
 			})
 		})

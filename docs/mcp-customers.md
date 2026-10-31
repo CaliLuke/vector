@@ -86,13 +86,14 @@ rollback, workspace binding and receipt replay across identity replacement under
 both credentials and protocols. [Concurrent mutation tests](../apps/go-api/internal/mcpactions/customer_concurrency_integration_test.go)
 verify one identity with disjoint field preservation, receipt conflicts and competing
 revisions. [Recovery and authorization tests](../apps/go-api/internal/mcpactions/customer_identity_recovery_integration_test.go)
-cover customer create, upsert, update and delete: cancelled waits, rejected commits,
-reusable receipts, and current token, scope and membership after lock waits before
+cover customer create, upsert, update and delete, plus request create, update and
+delete: cancelled waits, rejected commits, reusable receipts, and current token,
+scope and membership after lock waits before
 new writes or replay. The latter generated-server matrix covers both credentials
 and protocols; concurrency and rollback use the same native repository. The
 [current role and feature checks](../apps/go-api/internal/mcpactions/customer_identity_access_integration_test.go)
-reject fresh writes and receipt replay for guests, members and a disabled customers
-feature. Restoring administrator access and the feature replays the original result
+reject fresh customer and request writes and receipt replay for guests, members
+and a disabled customers feature. Restoring administrator access and the feature replays the original result
 without another mutation.
 
 [Request ownership checks](../apps/go-api/internal/mcpactions/customer_request_ownership_integration_test.go)
@@ -104,12 +105,25 @@ revocation. Mixed-workspace request creation leaves no request, association, eff
 or receipt; its mutation key remains reusable. These generated-server checks cover
 both credentials and protocol revisions. Request projections omit linked IDs;
 clients read current visible links through `customer.list_workitems`.
+[Request-link authorization checks](../apps/go-api/internal/mcpactions/customer_request_target_authorization_integration_test.go)
+reject new writes and receipt replay after project membership loss, a guest-role
+change, project archival or deletion, and item draft or deletion. The same changes
+committed by a lock-holding writer reject waiting requests without customer data,
+receipt, revision or activity changes. Restoring target access replays the original
+result without duplicating effects. These checks cover both credentials and protocols.
 [Workspace binding checks](../apps/go-api/internal/mcpactions/customer_request_workspace_integration_test.go)
 reject foreign customer and request IDs for every request action and association
 filters, even when the actor has administrator membership in both workspaces.
 
+[Request SDK projection checks](../apps/go-api/internal/mcpactions/customer_request_contract_integration_test.go)
+verify the eight request fields and twelve pagination fields in
+[plane-sdk 0.3.1](https://pypi.org/project/plane-sdk/0.3.1/) under both credentials
+and protocols. They cover create/update/retrieve equivalence,
+retained associations after metadata edits, next/previous cursor navigation,
+default and empty pages, and search that excludes deleted and other customers'
+requests.
+
 Remaining acceptance includes the complete format and reference-visibility matrix,
-atomic association changes, property/request authorization on replay and lock waits,
-their CAS/recovery
-and durable activity, and full SDK page and record projections under both auth modes
-and MCP revisions.
+atomic association changes, property authorization on replay and lock waits,
+property CAS/recovery and durable activity, and full customer/property SDK page
+and record projections under both auth modes and MCP revisions.

@@ -14,10 +14,17 @@ import (
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/require"
 )
 
+type mutationWaitChange struct {
+	name, mode, kind, code string
+	apply                  func(*testing.T, context.Context, pgx.Tx, map[string]any)
+}
+
 type mutationWaitScenario struct {
+	changes      []mutationWaitChange
 	schemaLock   bool
 	tool         string
 	action       string
@@ -29,13 +36,17 @@ type mutationWaitScenario struct {
 
 func runMutationAuthorizationWait(t *testing.T, scenario mutationWaitScenario) {
 	t.Helper()
-	for _, change := range []struct{ name, mode, kind, code string }{
-		{"personal token revoked", "personal token", "token", "unauthorized"},
-		{"OAuth token revoked", "OAuth", "token", "unauthorized"},
-		{"OAuth write scope removed", "OAuth", "scope", "forbidden"},
-		{"personal token membership revoked", "personal token", "membership", "forbidden"},
-		{"OAuth membership revoked", "OAuth", "membership", "forbidden"},
-	} {
+	changes := scenario.changes
+	if changes == nil {
+		changes = []mutationWaitChange{
+			{"personal token revoked", "personal token", "token", "unauthorized", nil},
+			{"OAuth token revoked", "OAuth", "token", "unauthorized", nil},
+			{"OAuth write scope removed", "OAuth", "scope", "forbidden", nil},
+			{"personal token membership revoked", "personal token", "membership", "forbidden", nil},
+			{"OAuth membership revoked", "OAuth", "membership", "forbidden", nil},
+		}
+	}
+	for _, change := range changes {
 		for _, version := range []string{"2025-11-25", "2026-07-28"} {
 			for _, replay := range []bool{false, true} {
 				phase := "new write"
@@ -83,29 +94,34 @@ func runMutationAuthorizationWait(t *testing.T, scenario mutationWaitScenario) {
  WHERE datname=current_database() AND $1=ANY(pg_blocking_pids(pid)))`, blocker.Conn().PgConn().PID()).Scan(&waiting)
 						return queryErr == nil && waiting
 					}, 10*time.Second, 10*time.Millisecond, "request never waited on the held scope lock")
-					switch change.kind {
-					case "membership":
-						if projectID == "" {
-							_, err = f.pool.Exec(ctx, `UPDATE workspace_members SET is_active=false WHERE member_id=$1 AND workspace_id=$2`, testsupport.LabelActor, testsupport.LabelWorkspace)
-						} else {
-							_, err = f.pool.Exec(ctx, `UPDATE project_members SET is_active=false WHERE member_id=$1 AND project_id=$2`, testsupport.LabelActor, projectID)
-						}
-						require.NoError(t, err)
-					case "scope":
-						f.issuer.mu.Lock()
-						f.issuer.scope = "vector:read"
-						f.issuer.mu.Unlock()
-					case "token":
-						if change.mode == "OAuth" {
-							f.issuer.mu.Lock()
-							f.issuer.active = false
-							f.issuer.mu.Unlock()
-						} else {
-							_, err = f.pool.Exec(ctx, `UPDATE api_tokens SET is_active=false WHERE token='test-one'`)
+					if change.apply != nil {
+						// Commit the simulated scope writer before releasing its lock.
+						change.apply(t, ctx, blocker, input)
+					} else {
+						switch change.kind {
+						case "membership":
+							if projectID == "" {
+								_, err = f.pool.Exec(ctx, `UPDATE workspace_members SET is_active=false WHERE member_id=$1 AND workspace_id=$2`, testsupport.LabelActor, testsupport.LabelWorkspace)
+							} else {
+								_, err = f.pool.Exec(ctx, `UPDATE project_members SET is_active=false WHERE member_id=$1 AND project_id=$2`, testsupport.LabelActor, projectID)
+							}
 							require.NoError(t, err)
+						case "scope":
+							f.issuer.mu.Lock()
+							f.issuer.scope = "vector:read"
+							f.issuer.mu.Unlock()
+						case "token":
+							if change.mode == "OAuth" {
+								f.issuer.mu.Lock()
+								f.issuer.active = false
+								f.issuer.mu.Unlock()
+							} else {
+								_, err = f.pool.Exec(ctx, `UPDATE api_tokens SET is_active=false WHERE token='test-one'`)
+								require.NoError(t, err)
+							}
+						default:
+							t.Fatal("unknown authorization change")
 						}
-					default:
-						t.Fatal("unknown authorization change")
 					}
 					require.NoError(t, blocker.Commit(ctx))
 					select {

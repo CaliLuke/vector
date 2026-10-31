@@ -72,12 +72,27 @@ func raceCustomerCommands(t *testing.T, f milestoneFixture, repository *customer
 	return competingScopeWrites(t, f, schemaMutationLock, first.WorkspaceID, calls)
 }
 
-func customerMutationCase(t *testing.T, action string) (milestoneFixture, *customers.Repository, customers.Command) {
+type customerMutationScenario struct{ tool, action string }
+
+var customerMutationScenarios = []customerMutationScenario{
+	{"customer", "create"}, {"customer", "upsert"}, {"customer", "update"}, {"customer", "delete"},
+	{"customer_request", "create"}, {"customer_request", "update"}, {"customer_request", "delete"},
+}
+
+func customerMutationCase(t *testing.T, scenario customerMutationScenario) (milestoneFixture, *customers.Repository, customers.Command) {
 	t.Helper()
 	f := customerIdentityFixture(t)
 	repository := customers.NewRepository(f.pool)
 	command := customerIdentityCommand()
 	command.Fields["external_source"], command.Fields["external_id"] = "crm", uuid.NewString()
+	if scenario.tool == "customer_request" {
+		parent, err := repository.Mutate(t.Context(), command)
+		require.NoError(t, err)
+		command.Tool, command.CustomerID = scenario.tool, uuid.MustParse(parent.ID)
+		command.Fields = map[string]any{"name": "Request " + uuid.NewString()}
+		command.Add = []uuid.UUID{uuid.MustParse(f.item(t))}
+	}
+	action := scenario.action
 	if action != "create" {
 		created, err := repository.Mutate(t.Context(), command)
 		require.NoError(t, err)
@@ -85,6 +100,7 @@ func customerMutationCase(t *testing.T, action string) (milestoneFixture, *custo
 		if action != "upsert" {
 			command.ID = uuid.MustParse(created.ID)
 			command.Action = action
+			command.Add = nil
 			command.Fields = map[string]any{}
 		}
 		if action != "delete" {
@@ -107,16 +123,22 @@ func customerMutationCase(t *testing.T, action string) (milestoneFixture, *custo
 }
 
 func TestCustomerCompetingReceiptsAndRevisionsCommitOnce(t *testing.T) {
-	for _, action := range []string{"create", "upsert", "update", "delete"} {
+	for _, scenario := range customerMutationScenarios {
 		for _, mode := range []string{"same receipt", "changed input", "competing revision"} {
-			t.Run(action+"/"+mode, func(t *testing.T) {
-				f, repository, first := customerMutationCase(t, action)
+			t.Run(scenario.tool+"/"+scenario.action+"/"+mode, func(t *testing.T) {
+				f, repository, first := customerMutationCase(t, scenario)
 				second := first
 				expectedError := error(nil)
 				switch mode {
 				case "changed input":
 					second.Fields = maps.Clone(first.Fields)
-					second.Fields["external_source"] = "different-source"
+					if first.Tool == "customer" {
+						second.Fields["external_source"] = "different-source"
+					} else if first.Action == "delete" {
+						second.ExpectedRevision = nil
+					} else {
+						second.Fields["name"] = "Different request"
+					}
 					expectedError = mutationreceipts.ErrConflict
 				case "competing revision":
 					key := uuid.New()
@@ -135,7 +157,7 @@ func TestCustomerCompetingReceiptsAndRevisionsCommitOnce(t *testing.T) {
 					require.Equal(t, projectmutations.Result{}, outcomes[1].value)
 				}
 				var savedReceipts int
-				require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT count(*) FROM mutation_receipts WHERE tool='customer'`).Scan(&savedReceipts))
+				require.NoError(t, f.pool.QueryRow(t.Context(), `SELECT count(*) FROM mutation_receipts WHERE tool=$1`, first.Tool).Scan(&savedReceipts))
 				require.Equal(t, 1, savedReceipts)
 				beforeReplay := customerStorageSnapshot(t, f)
 				successfulReplays := 0
