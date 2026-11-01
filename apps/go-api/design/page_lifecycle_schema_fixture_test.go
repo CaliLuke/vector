@@ -109,7 +109,9 @@ var pageLifecycleUUIDAlias = regexp.MustCompile(`<uuid-([0-9]+)>`)
 func normalizePageLifecycleSchemaValues(value string) string {
 	value = pageLifecycleUUIDAlias.ReplaceAllStringFunc(value, func(alias string) string {
 		var number int
-		_, _ = fmt.Sscanf(alias, "<uuid-%d>", &number)
+		if _, err := fmt.Sscanf(alias, "<uuid-%d>", &number); err != nil {
+			return alias
+		}
 		return fmt.Sprintf("00000000-0000-4000-8000-%012d", number)
 	})
 	return strings.ReplaceAll(value, `"<timestamp>"`, `"2026-01-02T03:04:05Z"`)

@@ -144,7 +144,7 @@ VALUES ('null-user-session', $1, CURRENT_TIMESTAMP + interval '5 minutes', NULL)
 		{key: "invalid-device-surrogate-key", data: `{"device_info":{"\ud800":"value"}}`},
 		{key: "invalid-user-surrogate", data: `{"_auth_user_id":"\ud800"}`},
 	} {
-		invalidDeviceData := signPayloadForTest([]byte(invalidDevice.data), false, fixtureCurrentSecret)
+		invalidDeviceData := signPayloadForTest(t, []byte(invalidDevice.data), false, fixtureCurrentSecret)
 		if _, execErr := connection.Exec(ctx, `
 INSERT INTO sessions (session_key, session_data, expire_date)
 VALUES ($1, $2, CURRENT_TIMESTAMP + interval '5 minutes')

@@ -9,6 +9,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/intakeinboxreads"
 	"github.com/CaliLuke/go-plane/internal/workitemhistory"
@@ -52,7 +54,8 @@ func TestHierarchyRelatedVisibilityAcrossItemProjections(t *testing.T) {
 		if readErr != nil {
 			t.Fatal(readErr)
 		}
-		raw, _ := json.Marshal(result.Body)
+		raw, rawErr := json.Marshal(result.Body)
+		require.NoError(t, rawErr)
 		if strings.Contains(string(raw), parent) || strings.Contains(string(raw), child) || strings.Contains(string(raw), "Private related title") {
 			t.Fatalf("related item leaked (api=%v list=%v expand=%s): %s", api, list, expand, raw)
 		}

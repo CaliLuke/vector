@@ -29,7 +29,10 @@ func (s *publicTransportService) APIKeyAuth(ctx context.Context, _ string, schem
 		panic("unexpected authentication scheme")
 	}
 	if !s.allow {
-		value, _ := loom.JSONValueFrom(map[string]any{"detail": "Authentication credentials were not provided."})
+		value, err := loom.JSONValueFrom(map[string]any{"detail": "Authentication credentials were not provided."})
+		if err != nil {
+			return ctx, err
+		}
 		return ctx, &api.CollaborationError{Kind: "status_401", Body: value}
 	}
 	return ctx, nil

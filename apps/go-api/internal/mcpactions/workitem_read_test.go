@@ -39,12 +39,14 @@ const readIssue = "80000000-0000-4000-8000-000000000001"
 const readProject = "30000000-0000-4000-8000-000000000001"
 const readChild = "90000000-0000-4000-8000-000000000001"
 
-func itemReadInput(tool, action string) string {
+func itemReadInput(t *testing.T, tool, action string) string {
+	t.Helper()
 	input := map[string]any{"action": action, "project_id": readProject, "workitem_id": readIssue}
 	if action == "retrieve" {
 		input[tool[len("workitem_"):]+"_id"] = readChild
 	}
-	body, _ := json.Marshal(input)
+	body, err := json.Marshal(input)
+	require.NoError(t, err)
 	return string(body)
 }
 
@@ -60,7 +62,7 @@ func TestCommentMentionsMatchPinnedHandler(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			f := newFixture(t)
 			f.collaborationReads.value = map[string]any{"comment_html": tc.Input}
-			result := rpc(t, f.handler(t, nil), "test-one", "tools/call", resourceCall("workitem_comment", itemReadInput("workitem_comment", "retrieve")))
+			result := rpc(t, f.handler(t, nil), "test-one", "tools/call", resourceCall("workitem_comment", itemReadInput(t, "workitem_comment", "retrieve")))
 			require.False(t, result.IsError, result.Content)
 			var row map[string]any
 			require.NoError(t, json.Unmarshal(result.StructuredContent, &row))
@@ -84,7 +86,7 @@ func TestWorkitemReadFailuresAreSanitized(t *testing.T) {
 				f := newFixture(t)
 				f.collaborationReads.err = tc.err
 				f.activityReads.err = tc.err
-				result := rpc(t, f.handler(t, nil), "test-one", "tools/call", resourceCall(tool, itemReadInput(tool, "list")))
+				result := rpc(t, f.handler(t, nil), "test-one", "tools/call", resourceCall(tool, itemReadInput(t, tool, "list")))
 				require.True(t, result.IsError)
 				require.Contains(t, result.Content[0].Text, "["+tc.code+"]")
 				require.NotContains(t, result.Content[0].Text, "secret")
@@ -114,7 +116,7 @@ func TestWorkitemReadsRejectMalformedRecords(t *testing.T) {
 			f := newFixture(t)
 			f.collaborationReads.value = tc.value
 			f.activityReads.value = tc.value
-			result := rpc(t, f.handler(t, nil), "test-one", "tools/call", resourceCall(tc.tool, itemReadInput(tc.tool, "retrieve")))
+			result := rpc(t, f.handler(t, nil), "test-one", "tools/call", resourceCall(tc.tool, itemReadInput(t, tc.tool, "retrieve")))
 			require.True(t, result.IsError)
 			require.Contains(t, result.Content[0].Text, "[internal_error]")
 		})

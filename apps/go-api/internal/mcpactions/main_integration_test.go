@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/CaliLuke/go-plane/internal/bootstrap"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
@@ -15,12 +16,16 @@ import (
 )
 
 var milestoneSchema = postgresfixture.NewTemplate(bootstrap.MigrateSchema)
-var identitySchemaTemplate = postgresfixture.NewTemplate(func(ctx context.Context, databaseURL string) error {
+var identitySchemaTemplate = postgresfixture.NewTemplate(func(ctx context.Context, databaseURL string) (err error) {
 	connection, err := pgx.Connect(ctx, databaseURL)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = connection.Close(context.WithoutCancel(ctx)) }()
+	defer func() {
+		closeCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer cancel()
+		err = errors.Join(err, connection.Close(closeCtx))
+	}()
 	_, err = connection.Exec(ctx, identitySchema)
 	return err
 })

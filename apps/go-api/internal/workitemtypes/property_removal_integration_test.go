@@ -8,6 +8,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
@@ -39,7 +41,8 @@ func TestReviewedPropertyRemovalPreservesArchivedItemsAndPrivateDraftsOnce(t *te
 	if review.Items != 2 || review.Types != 1 || review.Projects != 1 {
 		t.Fatalf("impact %+v", review)
 	}
-	raw, _ := json.Marshal(review)
+	raw, rawErr := json.Marshal(review)
+	require.NoError(t, rawErr)
 	if strings.Contains(string(raw), draft) || strings.Contains(string(raw), "Archived") || strings.Contains(string(raw), "Risk") {
 		t.Fatalf("review exposed item content: %s", raw)
 	}

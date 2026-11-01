@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	store "github.com/CaliLuke/go-plane/internal/workitemhistory"
@@ -72,7 +74,9 @@ func TestWorkItemHistoryReadReturnsRawJSONAndMapsAuthorization(t *testing.T) {
 	if !errors.As(err, &response) || response.Name != "status_403" {
 		t.Fatalf("forbidden error = %v", err)
 	}
-	encoded, _ = json.Marshal(response.Body)
+	var encodedErr error
+	encoded, encodedErr = json.Marshal(response.Body)
+	require.NoError(t, encodedErr)
 	if !strings.Contains(string(encoded), "required permissions") {
 		t.Fatalf("forbidden body = %s", encoded)
 	}

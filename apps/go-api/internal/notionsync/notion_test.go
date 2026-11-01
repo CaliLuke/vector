@@ -2,11 +2,12 @@ package notionsync
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 )
 
 func TestNotionReaderPaginatesRelationsAndEscapesContent(t *testing.T) {
@@ -17,22 +18,22 @@ func TestNotionReaderPaginatesRelationsAndEscapesContent(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		switch r.URL.Path {
 		case "/pages/" + rootID:
-			_, _ = w.Write([]byte(`{"id":"` + rootID + `","parent":{"data_source_id":"root-source"},"properties":{"Name":{"type":"title","title":[{"plain_text":"Roadmap"}]},"🏗️ Projects":{"id":"a%3Ab","type":"relation"}}}`))
+			testsupport.Write(t, w, []byte(`{"id":"`+rootID+`","parent":{"data_source_id":"root-source"},"properties":{"Name":{"type":"title","title":[{"plain_text":"Roadmap"}]},"🏗️ Projects":{"id":"a%3Ab","type":"relation"}}}`))
 		case "/data_sources/root-source":
-			_, _ = w.Write([]byte(`{"properties":{"🏗️ Projects":{"relation":{"data_source_id":"project-source"}}}}`))
+			testsupport.Write(t, w, []byte(`{"properties":{"🏗️ Projects":{"relation":{"data_source_id":"project-source"}}}}`))
 		case "/data_sources/project-source":
-			_, _ = w.Write([]byte(`{}`))
+			testsupport.Write(t, w, []byte(`{}`))
 		case "/pages/" + rootID + "/properties/a:b":
 			if r.URL.Query().Get("start_cursor") == "" {
 				if r.URL.Query().Has("start_cursor") {
 					t.Error("empty start_cursor must be omitted")
 				}
-				_, _ = w.Write([]byte(`{"results":[{"relation":{"id":"` + moduleA + `"}}],"has_more":true,"next_cursor":"second"}`))
+				testsupport.Write(t, w, []byte(`{"results":[{"relation":{"id":"`+moduleA+`"}}],"has_more":true,"next_cursor":"second"}`))
 			} else {
-				_, _ = w.Write([]byte(`{"results":[{"relation":{"id":"` + moduleB + `"}}],"has_more":false}`))
+				testsupport.Write(t, w, []byte(`{"results":[{"relation":{"id":"`+moduleB+`"}}],"has_more":false}`))
 			}
 		case "/blocks/" + rootID + "/children":
-			_, _ = w.Write([]byte(`{"results":[{"id":"block","type":"paragraph","paragraph":{"rich_text":[{"plain_text":"<script>alert(1)</script>","text":{"link":{"url":"javascript:alert(1)"}}}]}},{"id":"image-block","type":"image","image":{}}],"has_more":false}`))
+			testsupport.Write(t, w, []byte(`{"results":[{"id":"block","type":"paragraph","paragraph":{"rich_text":[{"plain_text":"<script>alert(1)</script>","text":{"link":{"url":"javascript:alert(1)"}}}]}},{"id":"image-block","type":"image","image":{}}],"has_more":false}`))
 		default:
 			t.Errorf("unexpected path: %s", r.URL.Path)
 			w.WriteHeader(404)
@@ -68,11 +69,11 @@ func TestNotionReaderRejectsInaccessibleRelationDatabase(t *testing.T) {
 		}
 		switch r.URL.Path {
 		case "/pages/" + rootID:
-			_, _ = w.Write([]byte(`{"id":"` + rootID + `","parent":{"data_source_id":"root-source"},"properties":{"🏗️ Projects":{"id":"r","type":"relation"}}}`))
+			testsupport.Write(t, w, []byte(`{"id":"`+rootID+`","parent":{"data_source_id":"root-source"},"properties":{"🏗️ Projects":{"id":"r","type":"relation"}}}`))
 		case "/data_sources/root-source":
-			_, _ = w.Write([]byte(`{"properties":{"🏗️ Projects":{"relation":{"data_source_id":"private-source"}}}}`))
+			testsupport.Write(t, w, []byte(`{"properties":{"🏗️ Projects":{"relation":{"data_source_id":"private-source"}}}}`))
 		case "/blocks/" + rootID + "/children":
-			_, _ = w.Write([]byte(`{"results":[],"has_more":false}`))
+			testsupport.Write(t, w, []byte(`{"results":[],"has_more":false}`))
 		default:
 			w.WriteHeader(404)
 		}
@@ -101,13 +102,13 @@ func TestNotionReaderRejectsInaccessibleRelationDatabase(t *testing.T) {
 func TestVectorListFollowsCursorAndAcceptsArrayEndpoints(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/array/" {
-			_, _ = w.Write([]byte(`[{"id":"array-row"}]`))
+			testsupport.Write(t, w, []byte(`[{"id":"array-row"}]`))
 			return
 		}
 		if r.URL.Query().Get("cursor") == "" {
-			_ = json.NewEncoder(w).Encode(map[string]any{"results": []Object{{"id": "first"}}, "next_page_results": true, "next_cursor": "100:1:0"})
+			testsupport.WriteJSON(t, w, map[string]any{"results": []Object{{"id": "first"}}, "next_page_results": true, "next_cursor": "100:1:0"})
 		} else {
-			_, _ = w.Write([]byte(`{"results":[{"id":"second"}],"next_page_results":false}`))
+			testsupport.Write(t, w, []byte(`{"results":[{"id":"second"}],"next_page_results":false}`))
 		}
 	}))
 	defer server.Close()

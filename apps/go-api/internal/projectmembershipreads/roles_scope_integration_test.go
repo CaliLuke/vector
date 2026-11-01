@@ -57,12 +57,16 @@ func TestRolesExcludeUnavailableProjectsAndDeletedWorkspaces(t *testing.T) {
 	}
 }
 
-func seedRoleScope(ctx context.Context, url string) error {
+func seedRoleScope(ctx context.Context, url string) (err error) {
 	db, err := pgx.Connect(ctx, url)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = db.Close(context.WithoutCancel(ctx)) }()
+	defer func() {
+		closeCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer cancel()
+		err = errors.Join(err, db.Close(closeCtx))
+	}()
 	_, err = db.Exec(ctx, `
 CREATE TABLE workspaces(id uuid PRIMARY KEY,slug text,deleted_at timestamptz);
 CREATE TABLE workspace_members(workspace_id uuid,member_id uuid,is_active boolean,deleted_at timestamptz);

@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+
 	"github.com/CaliLuke/go-plane/internal/platform"
 	"github.com/CaliLuke/loom/clue/log"
 )
@@ -40,7 +42,7 @@ func TestHTTPServerErrorLoggingClassifiesStatusWithoutQueryOrBody(t *testing.T) 
 
 			serverErrorLogger := logHTTPServerErrors(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 				response.WriteHeader(test.status)
-				_, _ = response.Write([]byte("response-secret"))
+				testsupport.Write(t, response, []byte("response-secret"))
 			}))
 			handler := log.HTTP(ctx, log.WithDisableRequestID(), log.WithDisableRequestLogging())(serverErrorLogger)
 			wrapped := platform.RequestIDMiddleware(handler)

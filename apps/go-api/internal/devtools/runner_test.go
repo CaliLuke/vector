@@ -32,7 +32,12 @@ func TestRunnerMergesAndRedactsChildOutputAndUsesRepositoryRoot(t *testing.T) {
 	var exported []byte
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer testsupport.Close(t, r.Body)
-		body, _ := io.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			t.Errorf("read fixture export: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		recordsMu.Lock()
 		exported = append(exported, body...)
 		recordsMu.Unlock()

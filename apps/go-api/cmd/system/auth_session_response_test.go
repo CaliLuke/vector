@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 )
 
@@ -177,7 +179,7 @@ func TestReadServicesGzipMiddlewareSkipsPlainAuthenticationViews(t *testing.T) {
 	} {
 		t.Run(test.path, func(t *testing.T) {
 			handler := readServicesGzipMiddleware(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				_, _ = w.Write([]byte(strings.Repeat("x", 256)))
+				testsupport.Write(t, w, []byte(strings.Repeat("x", 256)))
 			}))
 			response := httptest.NewRecorder()
 			handler.ServeHTTP(response, httptest.NewRequest(http.MethodPost, test.path, nil))
@@ -200,7 +202,7 @@ func TestAccountAuthenticationGzipUsesDjangoResponseSizeThreshold(t *testing.T) 
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			handler := accountAuthenticationGzipMiddleware(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				_, _ = w.Write([]byte(strings.Repeat("x", test.size)))
+				testsupport.Write(t, w, []byte(strings.Repeat("x", test.size)))
 			}))
 			response := httptest.NewRecorder()
 			handler.ServeHTTP(response, httptest.NewRequest(http.MethodPost, "/auth/set-password/", nil))

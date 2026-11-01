@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
@@ -19,9 +21,11 @@ func TestV1InvitationSupportedMediaAndCompleteDocumentParsing(t *testing.T) {
 	for _, operation := range []string{"create", "patch"} {
 		var multipartBody bytes.Buffer
 		writer := multipart.NewWriter(&multipartBody)
-		_ = writer.WriteField("role", "15")
+		writeFieldErr := writer.WriteField("role", "15")
+		require.NoError(t, writeFieldErr)
 		if operation == "create" {
-			_ = writer.WriteField("email", "fresh@example.com")
+			writeFieldErr := writer.WriteField("email", "fresh@example.com")
+			require.NoError(t, writeFieldErr)
 		}
 		testsupport.Close(t, writer)
 		for _, test := range []struct {

@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	loomhttp "github.com/CaliLuke/loom/http"
 
 	api "github.com/CaliLuke/go-plane/externalintegrations/gen/external_integrations"
@@ -84,8 +86,10 @@ func TestUnsplashForwardsEncodedQueryAndUnusualJSONError(t *testing.T) {
 		t.Fatalf("decode preserved upstream JSON body: %v", err)
 	}
 	want := []any{"upstream error", map[string]any{"retry": false}}
-	gotJSON, _ := json.Marshal(got)
-	wantJSON, _ := json.Marshal(want)
+	gotJSON, gotJSONErr := json.Marshal(got)
+	require.NoError(t, gotJSONErr)
+	wantJSON, wantJSONErr := json.Marshal(want)
+	require.NoError(t, wantJSONErr)
 	if string(gotJSON) != string(wantJSON) {
 		t.Fatalf("upstream JSON body = %s, want %s", gotJSON, wantJSON)
 	}

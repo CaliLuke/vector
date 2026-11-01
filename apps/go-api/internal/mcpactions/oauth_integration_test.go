@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	oauth "github.com/CaliLuke/go-plane/internal/mcpoauth"
 	"github.com/CaliLuke/go-plane/internal/mcptransport"
@@ -43,7 +45,7 @@ func oauthForPool(t *testing.T, pool *pgxpool.Pool, actor string) (*mcpauth.OAut
 	issuer.server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if r.URL.Path == "/.well-known/openid-configuration" {
-			_ = json.NewEncoder(w).Encode(map[string]any{"issuer": issuer.server.URL, "authorization_endpoint": issuer.server.URL + "/authorize",
+			testsupport.WriteJSON(t, w, map[string]any{"issuer": issuer.server.URL, "authorization_endpoint": issuer.server.URL + "/authorize",
 				"token_endpoint": issuer.server.URL + "/token", "jwks_uri": issuer.server.URL + "/keys",
 				"response_types_supported": []string{"code"}, "response_modes_supported": []string{"form_post"},
 				"code_challenge_methods_supported": []string{"S256"}, "scopes_supported": []string{"openid"},
@@ -54,11 +56,11 @@ func oauthForPool(t *testing.T, pool *pgxpool.Pool, actor string) (*mcpauth.OAut
 		defer issuer.mu.Unlock()
 		issuer.calls++
 		if r.ParseForm() != nil || r.Form.Get("token") != "oauth-user" {
-			_, _ = w.Write([]byte(`{"active":false}`))
+			testsupport.Write(t, w, []byte(`{"active":false}`))
 			return
 		}
 		w.WriteHeader(issuer.status)
-		_ = json.NewEncoder(w).Encode(map[string]any{"active": issuer.active, "iss": issuer.server.URL, "sub": "subject-one", "client_id": issuer.client,
+		testsupport.WriteJSON(t, w, map[string]any{"active": issuer.active, "iss": issuer.server.URL, "sub": "subject-one", "client_id": issuer.client,
 			"aud": "https://vector.example/mcp", "exp": time.Now().Add(time.Hour).Unix(), "scope": issuer.scope, "token_type": "Bearer", "grant_type": "authorization_code"})
 	}))
 	t.Cleanup(issuer.server.Close)

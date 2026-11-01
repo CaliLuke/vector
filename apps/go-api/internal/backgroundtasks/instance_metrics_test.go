@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/pem"
+	"errors"
 	"io"
 	"net"
 	"net/http"
@@ -202,8 +203,7 @@ func TestOTLPInstanceMetricsExporterPreservesMetricsCertificate(t *testing.T) {
 		NextProtos:   []string{"h2"},
 	})))
 	colmetricpb.RegisterMetricsServiceServer(server, &recordingMetricsService{received: &received})
-	go func() { _ = server.Serve(listener) }()
-	t.Cleanup(server.Stop)
+	serveMetricsFixture(t, server, listener)
 	t.Setenv("OTLP_METRICS_PROTOCOL", "grpc")
 	t.Setenv("OTLP_ENDPOINT", "https://127.0.0.1:"+strconv.Itoa(listener.Addr().(*net.TCPAddr).Port))
 	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://unrelated.example.test:4318")
@@ -239,8 +239,7 @@ func TestOTLPInstanceMetricsExporterHonorsMetricsInsecureSetting(t *testing.T) {
 	var received atomic.Int32
 	server := grpc.NewServer()
 	colmetricpb.RegisterMetricsServiceServer(server, &recordingMetricsService{received: &received})
-	go func() { _ = server.Serve(listener) }()
-	t.Cleanup(server.Stop)
+	serveMetricsFixture(t, server, listener)
 	t.Setenv("OTLP_METRICS_PROTOCOL", "grpc")
 	t.Setenv("OTLP_ENDPOINT", "http://"+listener.Addr().String())
 	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "https://unrelated.example.test:4317")
@@ -276,4 +275,21 @@ type recordingMetricsService struct {
 func (service *recordingMetricsService) Export(context.Context, *colmetricpb.ExportMetricsServiceRequest) (*colmetricpb.ExportMetricsServiceResponse, error) {
 	service.received.Add(1)
 	return &colmetricpb.ExportMetricsServiceResponse{}, nil
+}
+
+func serveMetricsFixture(t *testing.T, server *grpc.Server, listener net.Listener) {
+	t.Helper()
+	done := make(chan error, 1)
+	go func() { done <- server.Serve(listener) }()
+	t.Cleanup(func() {
+		server.Stop()
+		select {
+		case err := <-done:
+			if err != nil && !errors.Is(err, grpc.ErrServerStopped) {
+				t.Errorf("serve metrics fixture: %v", err)
+			}
+		case <-time.After(5 * time.Second):
+			t.Error("metrics fixture did not stop")
+		}
+	})
 }

@@ -33,7 +33,7 @@ func TestPostgresEventTrackingWorkflowDeliversPostHogCaptureOverHTTP(t *testing.
 		}
 		writer.Header().Set("Content-Type", "application/json")
 		writer.WriteHeader(http.StatusOK)
-		_, _ = writer.Write([]byte(`{"status":"ok"}`))
+		testsupport.Write(t, writer, []byte(`{"status":"ok"}`))
 	}))
 	defer server.Close()
 	t.Setenv("SKIP_ENV_VAR", "0")

@@ -37,7 +37,10 @@ func (db *bulkIdentityDB) QueryRow(_ context.Context, query string, args ...any)
 			if value == nil {
 				value = []string{}
 			}
-			body, _ := json.Marshal(value)
+			body, err := json.Marshal(value)
+			if err != nil {
+				return err
+			}
 			*dest[0].(*[]byte) = body
 		default:
 			*dest[0].(*[]byte) = []byte(`[]`)

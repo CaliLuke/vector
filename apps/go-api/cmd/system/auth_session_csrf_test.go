@@ -23,7 +23,10 @@ func TestAuthRedirectPlainViewCSRFProductionMount(t *testing.T) {
 	endpoints := &redirectapi.Endpoints{}
 	endpoints.EmailSignIn = loom.Endpoint(func(ctx context.Context, req any) (any, error) {
 		effects++
-		body, _ := io.ReadAll(req.(*redirectapi.EmailSignInRequestData).Body)
+		body, err := io.ReadAll(req.(*redirectapi.EmailSignInRequestData).Body)
+		if err != nil {
+			return nil, err
+		}
 		if string(body) != "email=alice%40example.com&csrfmiddlewaretoken="+strings.Repeat("a", 32) {
 			t.Errorf("downstream request body=%q", body)
 		}

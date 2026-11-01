@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestStateWriteInputAggregatesRequiredBlankAndNullErrors(t *testing.T) {
@@ -63,7 +65,8 @@ func TestStateWriteInputPreservesFormAndUnicodeValidation(t *testing.T) {
 		}
 	}
 	name := strings.Repeat("界", 255)
-	encoded, _ := json.Marshal(map[string]any{"name": name, "color": "red"})
+	encoded, encodedErr := json.Marshal(map[string]any{"name": name, "color": "red"})
+	require.NoError(t, encodedErr)
 	input, err := ParseStateWriteBody(strings.NewReader(string(encoded)), "application/json")
 	if err != nil {
 		t.Fatal(err)

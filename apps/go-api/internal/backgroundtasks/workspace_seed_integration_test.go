@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/selvedge"
 	"github.com/CaliLuke/selvedge/retry"
@@ -155,8 +157,10 @@ func TestPostgresWorkspaceSeedAtomicRetryAndSourceContent(t *testing.T) {
 		if err = json.Unmarshal(raw, &gotJSON); err != nil {
 			t.Fatal(err)
 		}
-		expectedJSON, _ := json.Marshal(source["description_json"])
-		actualJSON, _ := json.Marshal(gotJSON)
+		expectedJSON, expectedJSONErr := json.Marshal(source["description_json"])
+		require.NoError(t, expectedJSONErr)
+		actualJSON, actualJSONErr := json.Marshal(gotJSON)
+		require.NoError(t, actualJSONErr)
 		if html != source["description_html"] || string(actualJSON) != string(expectedJSON) {
 			t.Fatalf("seed page content changed: %s", source["name"])
 		}

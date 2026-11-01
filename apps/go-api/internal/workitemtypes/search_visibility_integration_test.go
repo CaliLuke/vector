@@ -8,6 +8,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/CaliLuke/go-plane/internal/workspacesearch"
@@ -23,7 +25,8 @@ func testWorkspaceSearchVisibility(t *testing.T, richText bool) {
 	if richText {
 		field := uuid.New().String()
 		attachValueProperties(t, f, property.Definition{ID: field, Title: "Notes", Kind: property.RichText, Configuration: property.Configuration{Active: true}})
-		raw, _ := json.Marshal(map[string]any{"name": "Ordinary title", "custom_properties": map[string]any{field: "<p>Search acceptance</p>"}})
+		raw, rawErr := json.Marshal(map[string]any{"name": "Ordinary title", "custom_properties": map[string]any{field: "<p>Search acceptance</p>"}})
+		require.NoError(t, rawErr)
 		body = string(raw)
 	}
 	writer, err := workitems.NewRepository(f.db, noRequestEffects{t}, "http://example.test")

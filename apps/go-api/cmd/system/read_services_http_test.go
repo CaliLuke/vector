@@ -13,6 +13,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+
 	systemapi "github.com/CaliLuke/go-plane"
 	cyclereads "github.com/CaliLuke/go-plane/gen/cycle_reads"
 	deployboardreads "github.com/CaliLuke/go-plane/gen/deploy_board_reads"
@@ -507,7 +509,7 @@ func TestReadServicesNegotiateJSONBeforeDispatch(t *testing.T) {
 func TestReadServicesHonorJSONRendererIndent(t *testing.T) {
 	handler := readServicesContentNegotiationMiddleware(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 		response.Header().Set("Content-Type", "application/json")
-		_, _ = response.Write([]byte(`{"items":[{"id":1}]}`))
+		testsupport.Write(t, response, []byte(`{"items":[{"id":1}]}`))
 	}))
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
 	request.Header.Set("Accept", "application/json; indent=2")
@@ -600,7 +602,7 @@ func TestReadServicesGzipMiddlewareMatchesDjangoThreshold(t *testing.T) {
 			handler := readServicesGzipMiddleware(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 				response.Header().Set("Content-Type", "application/json")
 				response.Header().Set("Vary", "Cookie, origin")
-				_, _ = response.Write(body)
+				testsupport.Write(t, response, body)
 			}))
 			request := httptest.NewRequest(http.MethodGet, "/", nil)
 			if testCase.acceptGzip {
@@ -644,7 +646,7 @@ func TestReadServicesPageDescriptionMatchesDjangoStreamingGzip(t *testing.T) {
 	handler := readServicesGzipMiddleware(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 		response.Header().Set("Content-Type", "text/html; charset=utf-8")
 		response.Header().Set("Content-Length", strconv.Itoa(len(body)))
-		_, _ = response.Write(body)
+		testsupport.Write(t, response, body)
 	}))
 	path := "/api/workspaces/acme/projects/00000000-0000-4000-8000-000000000001/pages/00000000-0000-4000-8000-000000000002/description/"
 
@@ -705,7 +707,7 @@ func TestReadServicesDerivedHEADUsesCompressedGETRepresentation(t *testing.T) {
 	body := bytes.Repeat([]byte{'a'}, 300)
 	get := readServicesGzipMiddleware(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 		response.Header().Set("Content-Type", "application/json")
-		_, _ = response.Write(body)
+		testsupport.Write(t, response, body)
 	}))
 	mux := loomhttp.NewMuxer()
 	mountProtocolHandler(mux, http.MethodGet, "/api/users/me/workspaces/", get)
@@ -732,7 +734,7 @@ func TestReadServicesSessionLifecycleMatchesDjango(t *testing.T) {
 	config := djangoSessionCookieConfig{Name: "session-id", Domain: ".example.test", Secure: true, Configured: true}
 	next := http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 		response.WriteHeader(http.StatusOK)
-		_, _ = response.Write([]byte(`{"ok":true}`))
+		testsupport.Write(t, response, []byte(`{"ok":true}`))
 	})
 
 	t.Run("last configured session cookie wins", func(t *testing.T) {
@@ -860,7 +862,7 @@ func TestMarkedInternalErrorsUseHTML500(t *testing.T) {
 			writer.Header().Set("Content-Type", "application/json")
 			writer.Header().Set("loom-error", "internal")
 			writer.WriteHeader(http.StatusInternalServerError)
-			_, _ = writer.Write([]byte(`{"error":"internal"}`))
+			testsupport.Write(t, writer, []byte(`{"error":"internal"}`))
 
 			if response.Code != http.StatusInternalServerError ||
 				response.Header().Get("Content-Type") != "text/html; charset=utf-8" ||

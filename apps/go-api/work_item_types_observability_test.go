@@ -8,6 +8,9 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/require"
 
 	store "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	api "github.com/CaliLuke/go-plane/workitemtypes/gen/work_item_types"
@@ -37,8 +40,10 @@ func TestPropertyFailureDiagnosticsPreserveCorrelationAndPrivacy(t *testing.T) {
 				t.Fatal(err)
 			}
 			var logs bytes.Buffer
-			traceID, _ := trace.TraceIDFromHex("0123456789abcdef0123456789abcdef")
-			spanID, _ := trace.SpanIDFromHex("0123456789abcdef")
+			traceID, traceIDErr := trace.TraceIDFromHex("0123456789abcdef0123456789abcdef")
+			require.NoError(t, traceIDErr)
+			spanID, spanIDErr := trace.SpanIDFromHex("0123456789abcdef")
+			require.NoError(t, spanIDErr)
 			ctx := trace.ContextWithSpanContext(context.Background(), trace.NewSpanContext(trace.SpanContextConfig{TraceID: traceID, SpanID: spanID, TraceFlags: trace.FlagsSampled}))
 			ctx = log.Context(ctx, log.WithOutputs(log.Output{Writer: &logs, Format: log.FormatJSON}), log.WithFunc(log.Span), log.WithDisableBuffering(func(context.Context) bool { return true }))
 			ctx, err = service.(api.Authorizer).APIKeyAuth(ctx, "valid", nil)
@@ -80,15 +85,22 @@ func TestPropertyCommandsAnnotateSuccessAndRejectionSpans(t *testing.T) {
 	for _, tc := range []struct {
 		action, want string
 		failure      error
+		wantStatus   int
 	}{
-		{"create", "create", nil},
-		{"create", "create", &store.Error{Status: 409, Message: "Catalog changed"}},
-		{"private arbitrary input", "unknown", &store.Error{Status: 400, Message: "Unknown action"}},
+		{"create", "create", nil, 0},
+		{"create", "create", &store.Error{Status: 409, Message: "Catalog changed"}, 409},
+		{"private arbitrary input", "unknown", &store.Error{Status: 400, Message: "Unknown action"}, 400},
 	} {
 		t.Run(tc.want+fmt.Sprint(tc.failure != nil), func(t *testing.T) {
 			recorder := tracetest.NewSpanRecorder()
 			provider := sdktrace.NewTracerProvider(sdktrace.WithSpanProcessor(recorder))
-			defer func() { _ = provider.Shutdown(context.Background()) }()
+			defer func() {
+				shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				defer cancel()
+				if err := provider.Shutdown(shutdownCtx); err != nil {
+					t.Errorf("shutdown property trace provider: %v", err)
+				}
+			}()
 			ctx, span := provider.Tracer("test").Start(context.Background(), "property command")
 			service, err := NewWorkItemTypes(&typeServiceRepository{failure: tc.failure}, typeServiceSessions{})
 			if err != nil {
@@ -98,7 +110,14 @@ func TestPropertyCommandsAnnotateSuccessAndRejectionSpans(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			_, _ = service.MutateProperty(ctx, &api.MutatePropertyPayload{Slug: "workspace", Data: &api.PropertyInput{Action: tc.action, Definition: &api.PropertyDefinition{Name: "Task code", Kind: "text"}}})
+			_, err = service.MutateProperty(ctx, &api.MutatePropertyPayload{Slug: "workspace", Data: &api.PropertyInput{Action: tc.action, Definition: &api.PropertyDefinition{Name: "Task code", Kind: "text"}}})
+			if tc.wantStatus == 0 {
+				require.NoError(t, err)
+			} else {
+				var rejected *api.TypeError
+				require.ErrorAs(t, err, &rejected)
+				require.Equal(t, fmt.Sprintf("status_%d", tc.wantStatus), rejected.Kind)
+			}
 			span.End()
 			spans := recorder.Ended()
 			if len(spans) != 1 {

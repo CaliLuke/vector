@@ -16,6 +16,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+
 	systemapi "github.com/CaliLuke/go-plane"
 	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
 	assetslifecyclesvr "github.com/CaliLuke/go-plane/assetslifecycle/gen/http/plane_internal_django_migration_api/server"
@@ -518,7 +520,7 @@ func TestAssetsLifecycleDerivedHeadMountsOnlyEligibleGeneratedGets(t *testing.T)
 		GetAPIAssetsV2WorkspacesBySlugCheckByAssetID: http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 			called++
 			response.Header().Set("X-Assets-Head-Test", "preserved")
-			_, _ = io.WriteString(response, "get-response-body")
+			testsupport.Write(t, response, []byte("get-response-body"))
 		}),
 		GetAPIAssetsV2WorkspacesBySlug: http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 			t.Error("GET-invalid collection route should not be used as a HEAD companion")

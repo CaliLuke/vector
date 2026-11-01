@@ -7,6 +7,8 @@ import (
 	"time"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	stickyapi "github.com/CaliLuke/go-plane/gen/stickies"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	stickystore "github.com/CaliLuke/go-plane/internal/stickies"
@@ -96,7 +98,8 @@ func TestStickyServiceListMatchesDjangoCursorWrapper(t *testing.T) {
 		Stickies: []stickystore.Sticky{testSticky()}, TotalCount: 21, Page: 0, Limit: 20, HasNext: true,
 	}}
 	service := newTestStickyService(t, repository, stubSessions{})
-	ctx, _ := service.APIKeyAuth(context.Background(), "valid-session", &security.APIKeyScheme{})
+	ctx, ctxErr := service.APIKeyAuth(context.Background(), "valid-session", &security.APIKeyScheme{})
+	require.NoError(t, ctxErr)
 	page, err := service.List(ctx, &stickyapi.ListPayload{Slug: "test"})
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
@@ -115,7 +118,8 @@ func TestStickyServiceListMatchesDjangoCursorWrapper(t *testing.T) {
 func TestStickyServiceSanitizesCreateAndUpdate(t *testing.T) {
 	repository := &stubStickyRepository{sticky: testSticky()}
 	service := newTestStickyService(t, repository, stubSessions{})
-	ctx, _ := service.APIKeyAuth(context.Background(), "valid-session", &security.APIKeyScheme{})
+	ctx, ctxErr := service.APIKeyAuth(context.Background(), "valid-session", &security.APIKeyScheme{})
+	require.NoError(t, ctxErr)
 	html := `<p onclick="bad">safe<script>bad</script></p>`
 	name := "safe"
 	if _, err := service.Create(ctx, &stickyapi.CreatePayload{Slug: "test", Name: loom.NullableValue(name), DescriptionHTML: &html, Description: loom.JSONValue(`{"type":"doc"}`)}); err != nil {
@@ -137,7 +141,8 @@ func TestStickyServiceSanitizesCreateAndUpdate(t *testing.T) {
 func TestStickyServicePreservesEmptyHTMLStrippedNull(t *testing.T) {
 	repository := &stubStickyRepository{sticky: testSticky()}
 	service := newTestStickyService(t, repository, stubSessions{})
-	ctx, _ := service.APIKeyAuth(context.Background(), "valid-session", &security.APIKeyScheme{})
+	ctx, ctxErr := service.APIKeyAuth(context.Background(), "valid-session", &security.APIKeyScheme{})
+	require.NoError(t, ctxErr)
 	empty := ""
 
 	if _, err := service.Create(ctx, &stickyapi.CreatePayload{Slug: "test", DescriptionHTML: &empty}); err != nil {
@@ -158,7 +163,8 @@ func TestStickyServicePreservesEmptyHTMLStrippedNull(t *testing.T) {
 func TestStickyServicePreservesSourceAuditSortAndDeletionSemantics(t *testing.T) {
 	repository := &stubStickyRepository{sticky: testSticky()}
 	service := newTestStickyService(t, repository, stubSessions{})
-	ctx, _ := service.APIKeyAuth(context.Background(), "valid-session", &security.APIKeyScheme{})
+	ctx, ctxErr := service.APIKeyAuth(context.Background(), "valid-session", &security.APIKeyScheme{})
+	require.NoError(t, ctxErr)
 	createdBy := uuid.MustParse("0198a28d-d227-7752-82ac-bc4c1c290704").String()
 	updatedBy := uuid.MustParse("0198a28d-d227-7752-82ac-bc4c1c290705").String()
 	deletedAt := "2026-08-13T02:03:04Z"
@@ -203,7 +209,8 @@ func TestStickyServicePreservesSourceAuditSortAndDeletionSemantics(t *testing.T)
 func TestStickyServicePreservesNullableJSONPresence(t *testing.T) {
 	repository := &stubStickyRepository{sticky: testSticky()}
 	service := newTestStickyService(t, repository, stubSessions{})
-	ctx, _ := service.APIKeyAuth(context.Background(), "valid-session", &security.APIKeyScheme{})
+	ctx, ctxErr := service.APIKeyAuth(context.Background(), "valid-session", &security.APIKeyScheme{})
+	require.NoError(t, ctxErr)
 
 	if _, err := service.Create(ctx, &stickyapi.CreatePayload{Slug: "test"}); err != nil {
 		t.Fatalf("Create(absent) error = %v", err)
@@ -251,7 +258,8 @@ func TestStickyServicePreservesNullableJSONPresence(t *testing.T) {
 func TestStickyServicePreservesNullableTextWrites(t *testing.T) {
 	repository := &stubStickyRepository{sticky: testSticky()}
 	service := newTestStickyService(t, repository, stubSessions{})
-	ctx, _ := service.APIKeyAuth(context.Background(), "valid-session", &security.APIKeyScheme{})
+	ctx, ctxErr := service.APIKeyAuth(context.Background(), "valid-session", &security.APIKeyScheme{})
+	require.NoError(t, ctxErr)
 
 	if _, err := service.Create(ctx, &stickyapi.CreatePayload{
 		Slug: "test", Name: loom.NullValue[string](), Color: loom.NullValue[string](), BackgroundColor: loom.NullValue[string](),
@@ -301,7 +309,8 @@ func TestStickyServicePreservesNullableTextWrites(t *testing.T) {
 func TestStickyServiceMapsCreatorPermissionAndDelete(t *testing.T) {
 	repository := &stubStickyRepository{sticky: testSticky(), err: stickystore.ErrStickyForbidden}
 	service := newTestStickyService(t, repository, stubSessions{})
-	ctx, _ := service.APIKeyAuth(context.Background(), "valid-session", &security.APIKeyScheme{})
+	ctx, ctxErr := service.APIKeyAuth(context.Background(), "valid-session", &security.APIKeyScheme{})
+	require.NoError(t, ctxErr)
 	_, err := service.Update(ctx, &stickyapi.UpdatePayload{Slug: "test", Pk: testStickyID.String()})
 	var forbidden *stickyapi.StickyPermissionError
 	if !errors.As(err, &forbidden) {

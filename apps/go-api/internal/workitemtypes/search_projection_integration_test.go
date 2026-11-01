@@ -8,6 +8,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	"github.com/CaliLuke/go-plane/internal/workitemsearch"
 	"github.com/CaliLuke/go-plane/internal/workspacesearch"
@@ -99,7 +101,8 @@ func TestRichTextSearchCurrentValueAndEligibility(t *testing.T) {
 	}
 	setValue := func(value any) {
 		t.Helper()
-		raw, _ := json.Marshal(map[string]any{"custom_properties": map[string]any{field: value}})
+		raw, rawErr := json.Marshal(map[string]any{"custom_properties": map[string]any{field: value}})
+		require.NoError(t, rawErr)
 		if _, err = writeValueItem(f, writer, "PATCH", state.ItemID, string(raw)); err != nil {
 			t.Fatal(err)
 		}
@@ -133,7 +136,8 @@ func TestRichTextSearchCurrentValueAndEligibility(t *testing.T) {
 		f.exec(change.restore, f.workspace)
 		expectRichSearch(t, f, "Unindexed legacy", state.ItemID, field)
 	}
-	contexts, _ := json.Marshal([]map[string]any{{"id": uuid.New().String(), "name": "Hidden here", "project_ids": []string{f.project}, "type_ids": []string{f.task}, "override_keys": []string{"active"}, "configuration": map[string]any{"active": false}}})
+	contexts, contextsErr := json.Marshal([]map[string]any{{"id": uuid.New().String(), "name": "Hidden here", "project_ids": []string{f.project}, "type_ids": []string{f.task}, "override_keys": []string{"active"}, "configuration": map[string]any{"active": false}}})
+	require.NoError(t, contextsErr)
 	f.exec(`UPDATE work_item_properties SET definition=jsonb_set(definition,'{contexts}',$2::jsonb) WHERE id=$1`, field, contexts)
 	expectRichSearch(t, f, "Unindexed legacy", "", "")
 	f.exec(`UPDATE work_item_properties SET definition=jsonb_set(definition,'{contexts}','[]'::jsonb) WHERE id=$1`, field)
@@ -178,7 +182,8 @@ func TestRichTextSearchProjectionBackfillDoesNotEditItems(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	raw, _ := json.Marshal(map[string]any{"custom_properties": map[string]any{field: "<p>" + strings.Repeat("ø", 400) + "needle &lt;img onerror=bad&gt;" + strings.Repeat("界", 400) + "</p>"}})
+	raw, rawErr := json.Marshal(map[string]any{"custom_properties": map[string]any{field: "<p>" + strings.Repeat("ø", 400) + "needle &lt;img onerror=bad&gt;" + strings.Repeat("界", 400) + "</p>"}})
+	require.NoError(t, rawErr)
 	if _, err = writeValueItem(f, writer, "PATCH", state.ItemID, string(raw)); err != nil {
 		t.Fatal(err)
 	}

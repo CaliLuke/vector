@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+
 	systemapi "github.com/CaliLuke/go-plane"
 	activitysvr "github.com/CaliLuke/go-plane/activityreads/gen/http/plane_internal_django_migration_api/server"
 	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
@@ -665,7 +667,7 @@ func TestActivityCompatibilityLogsUncompressedBodyWithOriginalQuery(t *testing.T
 	inner := http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		apikey.EffectsFromContext(request.Context()).Authenticated = true
 		response.Header().Set("Content-Type", "application/json")
-		_, _ = response.Write([]byte(body))
+		testsupport.Write(t, response, []byte(body))
 	})
 	handler := readServicesCompatibilityMiddleware(activityReadsMiddlewareStack(apiV1CompatibilityOptions{
 		activityLogger: logger, activitySecret: "secret", bodySizeLimit: defaultFileSizeLimit,

@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 )
 
@@ -40,7 +42,8 @@ func TestHierarchyFirstSaveCountsPrivateUntitledDraftAndRetriesOnce(t *testing.T
 	if review.Links != 2 || review.RestrictedLinks != 1 || len(review.Pairs) != 1 || review.Pairs[0].ChildID != child {
 		t.Fatalf("incorrect visible/private impact: %+v", review)
 	}
-	raw, _ := json.Marshal(review)
+	raw, rawErr := json.Marshal(review)
+	require.NoError(t, rawErr)
 	if strings.Contains(string(raw), draft) {
 		t.Fatal("private draft identity exposed")
 	}

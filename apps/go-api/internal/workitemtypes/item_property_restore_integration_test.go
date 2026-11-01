@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	"github.com/google/uuid"
 )
@@ -128,7 +130,8 @@ func TestPropertyRestoreRejectsUnavailableCurrentField(t *testing.T) {
 			case "deleted":
 				f.exec(`DELETE FROM work_item_properties WHERE id=$1`, field)
 			case "context inactive":
-				contexts, _ := json.Marshal([]map[string]any{{"id": uuid.NewString(), "name": "Inactive here", "project_ids": []string{f.project}, "type_ids": []string{f.task}, "override_keys": []string{"active"}, "configuration": map[string]any{"active": false}}})
+				contexts, contextsErr := json.Marshal([]map[string]any{{"id": uuid.NewString(), "name": "Inactive here", "project_ids": []string{f.project}, "type_ids": []string{f.task}, "override_keys": []string{"active"}, "configuration": map[string]any{"active": false}}})
+				require.NoError(t, contextsErr)
 				f.exec(`UPDATE work_item_properties SET definition=jsonb_set(definition,'{contexts}',$2::jsonb) WHERE id=$1`, field, contexts)
 			case "inactive":
 				f.exec(`UPDATE work_item_properties SET definition=jsonb_set(definition,'{configuration,active}','false') WHERE id=$1`, field)
@@ -208,7 +211,8 @@ func TestPropertyRestoreRejectsMissingHistoricalAsset(t *testing.T) {
 	f.exec(`UPDATE work_item_property_versions SET value=to_jsonb($2::text) WHERE id=$1`, input.Restore.VersionID, value)
 	_, err := repo.PreviewItemChange(f.ctx, q, input)
 	requireEditStatus(t, err, 400)
-	detail, _ := json.Marshal(err)
+	detail, detailErr := json.Marshal(err)
+	require.NoError(t, detailErr)
 	if !strings.Contains(string(detail), "image") {
 		t.Fatal(err)
 	}

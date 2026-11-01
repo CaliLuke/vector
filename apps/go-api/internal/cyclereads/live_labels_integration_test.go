@@ -11,6 +11,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
@@ -136,7 +138,8 @@ func TestCycleLiveLabelRelationContract(t *testing.T) {
 		result := query(t, IssueListOptions{})
 		expected := map[string][]string{cycleCaseID("05"): {cycleCaseID("21")}, cycleCaseID("09"): {cycleCaseID("21")}, cycleCaseID("11"): {cycleCaseID("23")}}
 		for _, row := range result.rows {
-			raw, _ := json.Marshal(row["label_ids"])
+			raw, rawErr := json.Marshal(row["label_ids"])
+			require.NoError(t, rawErr)
 			var labels []string
 			if err := json.Unmarshal(raw, &labels); err != nil {
 				t.Fatal(err)

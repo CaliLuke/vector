@@ -15,6 +15,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"go.yaml.in/yaml/v3"
@@ -380,7 +382,7 @@ func newMembershipAllowUpstream(t *testing.T) namedUpstream {
 		if request.Method == http.MethodPost {
 			response.WriteHeader(http.StatusMethodNotAllowed)
 		}
-		_, _ = io.WriteString(response, "go")
+		testsupport.Write(t, response, []byte("go"))
 	}))
 	t.Cleanup(server.Close)
 	port := server.Listener.Addr().(*net.TCPAddr).Port
@@ -453,7 +455,7 @@ func newNamedUpstream(t *testing.T, name string) namedUpstream {
 		if allow := request.Header.Get("X-Test-Emit-Allow"); allow != "" {
 			response.Header().Set("Allow", allow)
 		}
-		_, _ = io.WriteString(response, name)
+		testsupport.Write(t, response, []byte(name))
 	}))
 	t.Cleanup(server.Close)
 	port := server.Listener.Addr().(*net.TCPAddr).Port

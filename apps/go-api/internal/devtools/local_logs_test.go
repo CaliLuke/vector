@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 )
 
 func TestRecordLogRedactsSecretsAndClassifiesErrors(t *testing.T) {
@@ -133,7 +135,7 @@ func TestExportLogsSendsOTLPJSONAndBoundsResponseRead(t *testing.T) {
 			t.Error("missing resourceLogs")
 		}
 		w.WriteHeader(http.StatusAccepted)
-		_, _ = w.Write([]byte(strings.Repeat("x", 100000)))
+		testsupport.Write(t, w, []byte(strings.Repeat("x", 100000)))
 	}))
 	defer server.Close()
 	if err := ExportLogs(context.Background(), server.URL, []map[string]any{RecordLog("hello", "plane-web", time.Time{})}); err != nil {

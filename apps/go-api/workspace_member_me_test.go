@@ -95,7 +95,8 @@ func TestWorkspaceMemberMeAuthenticationAndInternalErrors(t *testing.T) {
 
 	service, err = NewWorkspaceMemberMe(repository, memberMeSessionTest{})
 	require.NoError(t, err)
-	ctx, _ := service.(api.Authorizer).APIKeyAuth(context.Background(), "session", nil)
+	ctx, ctxErr := service.(api.Authorizer).APIKeyAuth(context.Background(), "session", nil)
+	require.NoError(t, ctxErr)
 	if _, err = service.Get(ctx, &api.GetPayload{Slug: "demo"}); err == nil || err.Error() != "internal" {
 		t.Fatalf("database error = %v", err)
 	}

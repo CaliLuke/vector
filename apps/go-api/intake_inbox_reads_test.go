@@ -10,6 +10,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/intake_inbox_reads"
@@ -220,18 +222,30 @@ func TestIntakeInboxReadsDispatchAllTwelveDistinctRepositoryPaths(t *testing.T) 
 		"description_version_list": jsontext.Value(intakeReadsVersionListFixture), "description_version_detail": jsontext.Value(intakeReadsVersionDetailFixture),
 	}}
 	service, ctx := authenticatedIntakeReadsService(t, repository)
-	_, _, _ = service.DraftIssueList(ctx, &api.DraftIssueListPayload{Slug: "demo"})
-	_, _, _ = service.DraftIssueDetail(ctx, &api.DraftIssueDetailPayload{Slug: "demo", Pk: intakeReadsObjectID})
-	_, _, _ = service.InboxIssueList(ctx, &api.InboxIssueListPayload{Slug: "demo", ProjectID: intakeReadsProjectID})
-	_, _, _ = service.InboxIssueDetail(ctx, &api.InboxIssueDetailPayload{Slug: "demo", ProjectID: intakeReadsProjectID, Pk: intakeReadsObjectID})
-	_, _, _ = service.InboxList(ctx, &api.InboxListPayload{Slug: "demo", ProjectID: intakeReadsProjectID})
-	_, _, _ = service.InboxDetail(ctx, &api.InboxDetailPayload{Slug: "demo", ProjectID: intakeReadsProjectID, Pk: intakeReadsObjectID})
-	_, _, _ = service.IntakeIssueList(ctx, &api.IntakeIssueListPayload{Slug: "demo", ProjectID: intakeReadsProjectID})
-	_, _, _ = service.IntakeIssueDetail(ctx, &api.IntakeIssueDetailPayload{Slug: "demo", ProjectID: intakeReadsProjectID, Pk: intakeReadsObjectID})
-	_, _, _ = service.DescriptionVersionList(ctx, &api.DescriptionVersionListPayload{Slug: "demo", ProjectID: intakeReadsProjectID, WorkItemID: intakeReadsObjectID})
-	_, _, _ = service.DescriptionVersionDetail(ctx, &api.DescriptionVersionDetailPayload{Slug: "demo", ProjectID: intakeReadsProjectID, WorkItemID: intakeReadsObjectID, Pk: intakeReadsVersionID})
-	_, _, _ = service.IntakeList(ctx, &api.IntakeListPayload{Slug: "demo", ProjectID: intakeReadsProjectID})
-	_, _, _ = service.IntakeDetail(ctx, &api.IntakeDetailPayload{Slug: "demo", ProjectID: intakeReadsProjectID, Pk: intakeReadsObjectID})
+	_, _, draftIssueListErr := service.DraftIssueList(ctx, &api.DraftIssueListPayload{Slug: "demo"})
+	require.NoError(t, draftIssueListErr)
+	_, _, draftIssueDetailErr := service.DraftIssueDetail(ctx, &api.DraftIssueDetailPayload{Slug: "demo", Pk: intakeReadsObjectID})
+	require.NoError(t, draftIssueDetailErr)
+	_, _, inboxIssueListErr := service.InboxIssueList(ctx, &api.InboxIssueListPayload{Slug: "demo", ProjectID: intakeReadsProjectID})
+	require.NoError(t, inboxIssueListErr)
+	_, _, inboxIssueDetailErr := service.InboxIssueDetail(ctx, &api.InboxIssueDetailPayload{Slug: "demo", ProjectID: intakeReadsProjectID, Pk: intakeReadsObjectID})
+	require.NoError(t, inboxIssueDetailErr)
+	_, _, inboxListErr := service.InboxList(ctx, &api.InboxListPayload{Slug: "demo", ProjectID: intakeReadsProjectID})
+	require.NoError(t, inboxListErr)
+	_, _, inboxDetailErr := service.InboxDetail(ctx, &api.InboxDetailPayload{Slug: "demo", ProjectID: intakeReadsProjectID, Pk: intakeReadsObjectID})
+	require.NoError(t, inboxDetailErr)
+	_, _, intakeIssueListErr := service.IntakeIssueList(ctx, &api.IntakeIssueListPayload{Slug: "demo", ProjectID: intakeReadsProjectID})
+	require.NoError(t, intakeIssueListErr)
+	_, _, intakeIssueDetailErr := service.IntakeIssueDetail(ctx, &api.IntakeIssueDetailPayload{Slug: "demo", ProjectID: intakeReadsProjectID, Pk: intakeReadsObjectID})
+	require.NoError(t, intakeIssueDetailErr)
+	_, _, descriptionVersionListErr := service.DescriptionVersionList(ctx, &api.DescriptionVersionListPayload{Slug: "demo", ProjectID: intakeReadsProjectID, WorkItemID: intakeReadsObjectID})
+	require.NoError(t, descriptionVersionListErr)
+	_, _, descriptionVersionDetailErr := service.DescriptionVersionDetail(ctx, &api.DescriptionVersionDetailPayload{Slug: "demo", ProjectID: intakeReadsProjectID, WorkItemID: intakeReadsObjectID, Pk: intakeReadsVersionID})
+	require.NoError(t, descriptionVersionDetailErr)
+	_, _, intakeListErr := service.IntakeList(ctx, &api.IntakeListPayload{Slug: "demo", ProjectID: intakeReadsProjectID})
+	require.NoError(t, intakeListErr)
+	_, _, intakeDetailErr := service.IntakeDetail(ctx, &api.IntakeDetailPayload{Slug: "demo", ProjectID: intakeReadsProjectID, Pk: intakeReadsObjectID})
+	require.NoError(t, intakeDetailErr)
 	want := []string{"draft_issue_list", "draft_issue_detail", "inbox_issue_list", "inbox_issue_detail", "inbox_list", "inbox_detail", "intake_issue_list", "intake_issue_detail", "description_version_list", "description_version_detail", "intake_list", "intake_detail"}
 	if !reflect.DeepEqual(repository.calls, want) {
 		t.Fatalf("repository calls=%v want=%v", repository.calls, want)

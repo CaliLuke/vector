@@ -4,17 +4,21 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestItemEditNormalizationDoesNotMutateProposedFields(t *testing.T) {
 	id := "61ED80B5-E9B2-43E1-91A6-EAE636146FED"
 	changes := map[string]any{"assignee_ids": []string{id}, "custom_properties": map[string]any{"value": json.Number("9007199254740993")}}
-	before, _ := json.Marshal(changes)
+	before, beforeErr := json.Marshal(changes)
+	require.NoError(t, beforeErr)
 	command, _, err := normalizedItemEdit(ItemEditInput{ExpectedSourceVersion: strings.Repeat("a", 64), Mode: "draft", ItemID: id, ProjectID: id, Changes: changes})
 	if err != nil {
 		t.Fatal(err)
 	}
-	after, _ := json.Marshal(changes)
+	after, afterErr := json.Marshal(changes)
+	require.NoError(t, afterErr)
 	if string(before) != string(after) {
 		t.Fatalf("normalization changed caller: %s -> %s", before, after)
 	}

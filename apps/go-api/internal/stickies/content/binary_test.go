@@ -174,6 +174,8 @@ func FuzzValidateBinaryDoesNotPanic(f *testing.F) {
 	f.Add([]byte("<script>alert(1)</script>"))
 	f.Add([]byte{0xff, 0xfe, 0xfd, 0x00})
 	f.Fuzz(func(t *testing.T, data []byte) {
-		_ = ValidateBinary(data)
+		if err := ValidateBinary(data); err != nil && !errors.Is(err, ErrBinaryTooLarge) && !errors.Is(err, ErrBinaryTooShort) && !errors.Is(err, ErrSuspiciousBinary) {
+			t.Fatalf("undocumented binary validation error: %v", err)
+		}
 	})
 }

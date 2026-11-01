@@ -84,7 +84,7 @@ func TestRepositoryFirstAccessAndRepeatUseDjangoDefaultsForEveryKind(t *testing.
 				t.Fatalf("created_at is invalid: %v", parseErr)
 			}
 			for key, expected := range tc.defaults {
-				if !jsonEqual(firstFields[key], expected) {
+				if !testsupport.JSONEqual(firstFields[key], expected) {
 					t.Errorf("%s default = %#v, want %#v", key, firstFields[key], expected)
 				}
 			}
@@ -134,14 +134,14 @@ func TestRepositoryPatchesOnlyProvidedFieldsAndIsolatesUsers(t *testing.T) {
 		t.Fatal(err)
 	}
 	before, after := propertyFields(t, projectBefore), propertyFields(t, projectAfter)
-	if !jsonEqual(after["filters"], map[string]any{"priority": []any{"high"}}) || !jsonEqual(after["preferences"], map[string]any{"pages": map[string]any{"block_display": false}}) {
+	if !testsupport.JSONEqual(after["filters"], map[string]any{"priority": []any{"high"}}) || !testsupport.JSONEqual(after["preferences"], map[string]any{"pages": map[string]any{"block_display": false}}) {
 		t.Fatalf("project patch fields = filters:%v preferences:%v", after["filters"], after["preferences"])
 	}
 	if after["created_by"] != userID || after["updated_by"] != userID {
 		t.Fatalf("project audit fields = created_by:%v updated_by:%v", after["created_by"], after["updated_by"])
 	}
 	for _, key := range []string{"display_filters", "display_properties", "rich_filters", "sort_order"} {
-		if !jsonEqual(after[key], before[key]) {
+		if !testsupport.JSONEqual(after[key], before[key]) {
 			t.Errorf("omitted project field %s changed: %v -> %v", key, before[key], after[key])
 		}
 	}
@@ -178,7 +178,7 @@ func TestRepositoryPatchesOnlyProvidedFieldsAndIsolatesUsers(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, key := range []string{"filters", "display_properties", "rich_filters"} {
-		if !jsonEqual(propertyFields(t, cycleAfter)[key], propertyFields(t, cycleBefore)[key]) {
+		if !testsupport.JSONEqual(propertyFields(t, cycleAfter)[key], propertyFields(t, cycleBefore)[key]) {
 			t.Errorf("cycle patch changed omitted %s: %s", key, cycleAfter)
 		}
 	}
@@ -196,7 +196,7 @@ func TestRepositoryPatchesOnlyProvidedFieldsAndIsolatesUsers(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, key := range []string{"filters", "display_filters", "display_properties"} {
-		if !jsonEqual(propertyFields(t, moduleAfter)[key], propertyFields(t, moduleBefore)[key]) {
+		if !testsupport.JSONEqual(propertyFields(t, moduleAfter)[key], propertyFields(t, moduleBefore)[key]) {
 			t.Errorf("module patch changed omitted %s: %s", key, moduleAfter)
 		}
 	}
@@ -205,7 +205,7 @@ func TestRepositoryPatchesOnlyProvidedFieldsAndIsolatesUsers(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if propertyFields(t, other)["id"] == propertyFields(t, projectAfter)["id"] || jsonEqual(propertyFields(t, other)["filters"], propertyFields(t, projectAfter)["filters"]) {
+	if propertyFields(t, other)["id"] == propertyFields(t, projectAfter)["id"] || testsupport.JSONEqual(propertyFields(t, other)["filters"], propertyFields(t, projectAfter)["filters"]) {
 		t.Fatalf("project properties leaked across users: %s", other)
 	}
 	if _, err := repository.GetCycle(ctx, user, "demo", uuid.MustParse(otherProjectID), cycle); err == nil {
@@ -261,12 +261,6 @@ func propertyFields(t *testing.T, body json.RawMessage) map[string]any {
 		t.Fatalf("decode property %s: %v", body, err)
 	}
 	return fields
-}
-
-func jsonEqual(actual, expected any) bool {
-	left, _ := json.Marshal(actual)
-	right, _ := json.Marshal(expected)
-	return string(left) == string(right)
 }
 
 func propertyTestDB(t *testing.T, ctx context.Context) *pgxpool.Pool {

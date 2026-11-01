@@ -15,6 +15,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+
 	"github.com/CaliLuke/selvedge"
 	"github.com/CaliLuke/selvedge/retry"
 	"github.com/google/uuid"
@@ -77,24 +79,24 @@ func TestPostgresLinkPreviewDurableRetryAndStaleRowGuards(t *testing.T) {
 		}
 		switch request.URL.Path {
 		case "/retry":
-			_, _ = writer.Write([]byte(`<html><title>Retry Preview</title><link rel="icon" href="/icon.png"></html>`))
+			testsupport.Write(t, writer, []byte(`<html><title>Retry Preview</title><link rel="icon" href="/icon.png"></html>`))
 		case "/stale":
 			if _, err := pool.Exec(request.Context(), `UPDATE issue_links SET url=$2,metadata='{"keep":"newer-edit"}'::jsonb WHERE id=$1`, staleLinkID, editedURL); err != nil {
 				t.Errorf("edit stale link during crawl: %v", err)
 				http.Error(writer, "database edit failed", http.StatusInternalServerError)
 				return
 			}
-			_, _ = writer.Write([]byte(`<html><title>Stale Preview</title><link rel="icon" href="/icon.png"></html>`))
+			testsupport.Write(t, writer, []byte(`<html><title>Stale Preview</title><link rel="icon" href="/icon.png"></html>`))
 		case "/deleted":
 			if _, err := pool.Exec(request.Context(), `UPDATE issue_links SET deleted_at=NOW(),metadata='{"keep":"deleted-row"}'::jsonb WHERE id=$1`, deletedLinkID); err != nil {
 				t.Errorf("soft-delete link during crawl: %v", err)
 				http.Error(writer, "database delete failed", http.StatusInternalServerError)
 				return
 			}
-			_, _ = writer.Write([]byte(`<html><title>Deleted Preview</title><link rel="icon" href="/icon.png"></html>`))
+			testsupport.Write(t, writer, []byte(`<html><title>Deleted Preview</title><link rel="icon" href="/icon.png"></html>`))
 		case "/icon.png":
 			writer.Header().Set("Content-Type", "image/png")
-			_, _ = writer.Write([]byte("icon"))
+			testsupport.Write(t, writer, []byte("icon"))
 		default:
 			http.NotFound(writer, request)
 		}

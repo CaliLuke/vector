@@ -143,7 +143,7 @@ func TestStorageMetadataWorkflowBoundsBlockedS3Read(t *testing.T) {
 	if startErr := app.Start(context.Background()); startErr != nil {
 		t.Fatal(startErr)
 	}
-	t.Cleanup(func() { _ = app.Shutdown(context.Background()) })
+	t.Cleanup(func() { shutdownMetadataFixture(t, app, 5*time.Second) })
 	runID := "asset-metadata:blocked-read"
 	if _, startWorkflowErr := selvedge.StartWorkflow(ctx, app, workflow,
 		StorageMetadataWorkflowInput{AssetID: uuid.NewString(), EventID: "blocked-read"},
@@ -222,7 +222,7 @@ func TestStorageMetadataWorkflowDuplicateRunIDIsRejected(t *testing.T) {
 	if err := app.Start(ctx); err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = app.Shutdown(context.Background()) }()
+	defer shutdownMetadataFixture(t, app, 5*time.Second)
 	input := StorageMetadataWorkflowInput{AssetID: uuid.NewString(), EventID: "duplicate"}
 	if _, err := selvedge.StartWorkflow(ctx, app, workflow, input, selvedge.WithInstanceID("asset-metadata:duplicate")); err != nil {
 		t.Fatal(err)
@@ -250,7 +250,7 @@ func TestStorageMetadataAdmissionJoinsSelvedgeTransaction(t *testing.T) {
 	if err := app.Start(ctx); err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = app.Shutdown(context.Background()) })
+	t.Cleanup(func() { shutdownMetadataFixture(t, app, 5*time.Second) })
 
 	storage := app.Storage()
 	if _, err := storage.Conn(ctx).ExecContext(ctx, `CREATE TABLE admission_probe (event_id TEXT PRIMARY KEY)`); err != nil {
@@ -319,11 +319,7 @@ func runMetadataWorkflow(t *testing.T, store storageMetadataStore, reader object
 	if startErr := app.Start(ctx); startErr != nil {
 		t.Fatal(startErr)
 	}
-	t.Cleanup(func() {
-		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), time.Second)
-		defer shutdownCancel()
-		_ = app.Shutdown(shutdownCtx)
-	})
+	t.Cleanup(func() { shutdownMetadataFixture(t, app, time.Second) })
 	runID := "asset-metadata:" + suffix
 	if _, startWorkflowErr := selvedge.StartWorkflow(ctx, app, workflow, StorageMetadataWorkflowInput{AssetID: uuid.NewString(), EventID: suffix}, selvedge.WithInstanceID(runID)); startWorkflowErr != nil {
 		t.Fatal(startWorkflowErr)
@@ -342,4 +338,13 @@ func equalJSONValue(got, want any) bool {
 	gotJSON, gotErr := json.Marshal(got)
 	wantJSON, wantErr := json.Marshal(want)
 	return gotErr == nil && wantErr == nil && bytes.Equal(gotJSON, wantJSON)
+}
+
+func shutdownMetadataFixture(t *testing.T, app *selvedge.App, timeout time.Duration) {
+	t.Helper()
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	if err := app.Shutdown(ctx); err != nil {
+		t.Errorf("shutdown metadata fixture: %v", err)
+	}
 }

@@ -233,10 +233,9 @@ func (doer *projectMembershipLifecycleStatusDoer) Do(request *http.Request) (*ht
 		doer.errorName = response.Header.Get("loom-error")
 		if response.Body != nil {
 			body, readAllErr := io.ReadAll(response.Body)
-			if readAllErr != nil {
-				return response, readAllErr
+			if bodyErr := errors.Join(readAllErr, response.Body.Close()); bodyErr != nil {
+				return response, errors.Join(err, bodyErr)
 			}
-			_ = response.Body.Close()
 			doer.body = string(body)
 			response.Body = io.NopCloser(strings.NewReader(doer.body))
 		}

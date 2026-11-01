@@ -12,6 +12,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/platform"
 	publicprojectmetadatareadsstore "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
@@ -150,7 +152,7 @@ func TestAPIV1CompatibilityAddsRateHeadersAndPublishesRedactedActivity(t *testin
 		response.Header().Set("Loom-Error", "internal")
 		response.Header().Set("Content-Type", "application/json")
 		response.WriteHeader(http.StatusCreated)
-		_, _ = response.Write([]byte(`{"name":"response"}`))
+		testsupport.Write(t, response, []byte(`{"name":"response"}`))
 	}))
 
 	request := httptest.NewRequest(http.MethodPost, "http://internal/api/v1/workspaces/acme/modules/?expand=lead", strings.NewReader(`{"name":"request"}`))
@@ -199,7 +201,7 @@ func TestAPIV1CompatibilityRendersDjangoThrottleResponse(t *testing.T) {
 		response.Header().Set("Content-Length", "999")
 		response.Header().Set("Vary", "Cookie")
 		response.WriteHeader(http.StatusTooManyRequests)
-		_, _ = response.Write([]byte(`{"detail":"Request was throttled."}`))
+		testsupport.Write(t, response, []byte(`{"detail":"Request was throttled."}`))
 	}))
 
 	request := httptest.NewRequest(http.MethodGet, "http://api.example.com/api/v1/workspaces/acme/modules/", nil)
@@ -237,7 +239,7 @@ func TestAPIV1CompatibilitySuppressesHEADBodyButAuditsRenderedBody(t *testing.T)
 	activity := &apiV1ActivityLoggerStub{}
 	handler := apiV1CompatibilityMiddleware(apiV1CompatibilityOptions{activityLogger: activity, activitySecret: "secret", bodySizeLimit: defaultFileSizeLimit})(
 		http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
-			_, _ = response.Write([]byte(`{"rendered":true}`))
+			testsupport.Write(t, response, []byte(`{"rendered":true}`))
 		}),
 	)
 	request := httptest.NewRequest(http.MethodHead, "http://api.example.com/api/v1/workspaces/acme/modules/", nil)

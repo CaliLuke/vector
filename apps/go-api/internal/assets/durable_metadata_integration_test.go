@@ -71,12 +71,19 @@ func TestStorageMetadataCrashAfterWriteBeforeCompletion(t *testing.T) {
 	childWaited := false
 	defer func() {
 		if !childWaited {
-			_ = child.Process.Kill()
-			if cleanupWaitErr := <-childDone; cleanupWaitErr != nil {
-				var exitErr *exec.ExitError
-				if !errors.As(cleanupWaitErr, &exitErr) {
-					t.Errorf("wait for activity subprocess cleanup: %v", cleanupWaitErr)
+			if killErr := child.Process.Kill(); killErr != nil && !errors.Is(killErr, os.ErrProcessDone) {
+				t.Errorf("kill activity subprocess: %v", killErr)
+			}
+			select {
+			case cleanupWaitErr := <-childDone:
+				if cleanupWaitErr != nil {
+					var exitErr *exec.ExitError
+					if !errors.As(cleanupWaitErr, &exitErr) {
+						t.Errorf("wait for activity subprocess cleanup: %v", cleanupWaitErr)
+					}
 				}
+			case <-time.After(5 * time.Second):
+				t.Error("activity subprocess did not exit after cleanup")
 			}
 		}
 	}()

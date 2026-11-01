@@ -78,7 +78,11 @@ func TestWebhookPinnedPostUsesTrustedLocalHostAndDoesNotFollowRedirects(t *testi
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		observedHost = r.Host
 		observedAgent = r.UserAgent()
-		_, _ = io.Copy(io.Discard, r.Body)
+		if _, err := io.Copy(io.Discard, r.Body); err != nil {
+			t.Errorf("drain webhook fixture request: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		w.Header().Set("Location", "/must-not-follow")
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	}))

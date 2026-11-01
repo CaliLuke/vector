@@ -8,10 +8,10 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 485,
+    "findings": 299,
     "also_in_ERR_01": 0,
-    "additional_ERR_02": 485,
-    "test_file_findings": 186,
+    "additional_ERR_02": 299,
+    "test_file_findings": 0,
     "non_test_file_findings": 299
   },
   "findings": [
@@ -142,13 +142,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/api_project_membership_lifecycle_test.go",
-      "line": 239,
-      "column": 4,
-      "message": "Error return value of `response.Body.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/api_state_reads.go",
       "line": 107,
       "column": 7,
@@ -240,31 +233,10 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/cmd/notion-sync/main_test.go",
-      "line": 57,
-      "column": 6,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/notion-sync/main_test.go",
-      "line": 94,
-      "column": 6,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/cmd/system-cli/main.go",
       "line": 94,
       "column": 6,
       "message": "Error return value of `json.MarshalIndent` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/activity_reads_http_test.go",
-      "line": 668,
-      "column": 6,
-      "message": "Error return value of `response.Write` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -352,41 +324,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/cmd/system/api_v1_compatibility_test.go",
-      "line": 153,
-      "column": 6,
-      "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/api_v1_compatibility_test.go",
-      "line": 202,
-      "column": 6,
-      "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/api_v1_compatibility_test.go",
-      "line": 240,
-      "column": 7,
-      "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/assets_lifecycle_transport_test.go",
-      "line": 521,
-      "column": 7,
-      "message": "Error return value of `io.WriteString` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/auth_session_csrf_test.go",
-      "line": 26,
-      "column": 9,
-      "message": "Error return value of `io.ReadAll` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/cmd/system/auth_session_http.go",
       "line": 100,
       "column": 18,
@@ -422,20 +359,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/cmd/system/auth_session_response_test.go",
-      "line": 180,
-      "column": 8,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/auth_session_response_test.go",
-      "line": 203,
-      "column": 8,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/cmd/system/http_cors.go",
       "line": 289,
       "column": 6,
@@ -464,41 +387,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/cmd/system/http_server_error_logging_test.go",
-      "line": 43,
-      "column": 8,
-      "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/http_test.go",
-      "line": 4681,
-      "column": 5,
-      "message": "Error return value of `writer.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/http_test.go",
-      "line": 6557,
-      "column": 4,
-      "message": "Error return value of `os.Setenv` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/http_test.go",
-      "line": 6559,
-      "column": 4,
-      "message": "Error return value of `os.Unsetenv` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/instance_management_http_test.go",
-      "line": 216,
-      "column": 6,
-      "message": "Error return value of `io.WriteString` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/cmd/system/json_request.go",
       "line": 22,
       "column": 12,
@@ -510,20 +398,6 @@
       "line": 35,
       "column": 13,
       "message": "Error return value of `url.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/module_lifecycle_transport_test.go",
-      "line": 475,
-      "column": 8,
-      "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/page_lifecycle_compression_test.go",
-      "line": 24,
-      "column": 8,
-      "message": "Error return value of `response.Write` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -611,48 +485,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/cmd/system/read_services_http_test.go",
-      "line": 510,
-      "column": 6,
-      "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/read_services_http_test.go",
-      "line": 603,
-      "column": 8,
-      "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/read_services_http_test.go",
-      "line": 647,
-      "column": 6,
-      "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/read_services_http_test.go",
-      "line": 708,
-      "column": 6,
-      "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/read_services_http_test.go",
-      "line": 735,
-      "column": 6,
-      "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/read_services_http_test.go",
-      "line": 863,
-      "column": 7,
-      "message": "Error return value of `writer.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/cmd/system/read_services_paths.go",
       "line": 164,
       "column": 7,
@@ -678,20 +510,6 @@
       "line": 371,
       "column": 2,
       "message": "Error return value of `(*encoding/json.Encoder).Encode` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/ticket_collaboration_paths_test.go",
-      "line": 45,
-      "column": 15,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/ticket_collaboration_paths_test.go",
-      "line": 54,
-      "column": 13,
-      "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -748,20 +566,6 @@
       "line": 259,
       "column": 2,
       "message": "Error return value of `service.recentVisits.Record` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/design/instance_management_transport_test.go",
-      "line": 21,
-      "column": 6,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/design/page_lifecycle_schema_fixture_test.go",
-      "line": 112,
-      "column": 6,
-      "message": "Error return value of `fmt.Sscanf` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -856,20 +660,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/external_integrations_test.go",
-      "line": 87,
-      "column": 11,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/external_integrations_test.go",
-      "line": 88,
-      "column": 12,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/instance_management.go",
       "line": 442,
       "column": 2,
@@ -888,90 +678,6 @@
       "line": 664,
       "column": 3,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/intake_inbox_reads_test.go",
-      "line": 223,
-      "column": 8,
-      "message": "Error return value of `service.DraftIssueList` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/intake_inbox_reads_test.go",
-      "line": 224,
-      "column": 8,
-      "message": "Error return value of `service.DraftIssueDetail` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/intake_inbox_reads_test.go",
-      "line": 225,
-      "column": 8,
-      "message": "Error return value of `service.InboxIssueList` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/intake_inbox_reads_test.go",
-      "line": 226,
-      "column": 8,
-      "message": "Error return value of `service.InboxIssueDetail` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/intake_inbox_reads_test.go",
-      "line": 227,
-      "column": 8,
-      "message": "Error return value of `service.InboxList` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/intake_inbox_reads_test.go",
-      "line": 228,
-      "column": 8,
-      "message": "Error return value of `service.InboxDetail` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/intake_inbox_reads_test.go",
-      "line": 229,
-      "column": 8,
-      "message": "Error return value of `service.IntakeIssueList` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/intake_inbox_reads_test.go",
-      "line": 230,
-      "column": 8,
-      "message": "Error return value of `service.IntakeIssueDetail` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/intake_inbox_reads_test.go",
-      "line": 231,
-      "column": 8,
-      "message": "Error return value of `service.DescriptionVersionList` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/intake_inbox_reads_test.go",
-      "line": 232,
-      "column": 8,
-      "message": "Error return value of `service.DescriptionVersionDetail` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/intake_inbox_reads_test.go",
-      "line": 233,
-      "column": 8,
-      "message": "Error return value of `service.IntakeList` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/intake_inbox_reads_test.go",
-      "line": 234,
-      "column": 8,
-      "message": "Error return value of `service.IntakeDetail` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1038,41 +744,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/assets/durable_metadata_integration_test.go",
-      "line": 74,
-      "column": 4,
-      "message": "Error return value of `child.Process.Kill` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/assets/durable_metadata_test.go",
-      "line": 146,
-      "column": 21,
-      "message": "Error return value of `app.Shutdown` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/assets/durable_metadata_test.go",
-      "line": 225,
-      "column": 17,
-      "message": "Error return value of `app.Shutdown` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/assets/durable_metadata_test.go",
-      "line": 253,
-      "column": 21,
-      "message": "Error return value of `app.Shutdown` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/assets/durable_metadata_test.go",
-      "line": 325,
-      "column": 3,
-      "message": "Error return value of `app.Shutdown` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/assets/legacy_multipart.go",
       "line": 39,
       "column": 3,
@@ -1115,13 +786,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/assets/storage_rustfs_test.go",
-      "line": 147,
-      "column": 9,
-      "message": "Error return value of `io.ReadAll` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/authentication/djangosession/django_json.go",
       "line": 324,
       "column": 12,
@@ -1140,20 +804,6 @@
       "line": 900,
       "column": 24,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/authentication/djangosession/validator_test.go",
-      "line": 971,
-      "column": 6,
-      "message": "Error return value of `writer.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/authentication/djangosession/validator_test.go",
-      "line": 972,
-      "column": 3,
-      "message": "Error return value of `writer.Close` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1182,13 +832,6 @@
       "line": 593,
       "column": 3,
       "message": "Error return value of `service.activation.Task` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/analytics_export_integration_test.go",
-      "line": 66,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1224,34 +867,6 @@
       "line": 281,
       "column": 14,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/description_asset_copy_integration_test.go",
-      "line": 76,
-      "column": 6,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/event_tracking_integration_test.go",
-      "line": 36,
-      "column": 6,
-      "message": "Error return value of `writer.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/instance_metrics_test.go",
-      "line": 205,
-      "column": 14,
-      "message": "Error return value of `server.Serve` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/instance_metrics_test.go",
-      "line": 242,
-      "column": 14,
-      "message": "Error return value of `server.Serve` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1318,13 +933,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/backgroundtasks/issue_export_test.go",
-      "line": 136,
-      "column": 8,
-      "message": "Error return value of `excelize.CoordinatesToCellName` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/backgroundtasks/issue_notifications.go",
       "line": 37,
       "column": 13,
@@ -1374,34 +982,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/backgroundtasks/link_preview_integration_test.go",
-      "line": 80,
-      "column": 7,
-      "message": "Error return value of `writer.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/link_preview_integration_test.go",
-      "line": 87,
-      "column": 7,
-      "message": "Error return value of `writer.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/link_preview_integration_test.go",
-      "line": 94,
-      "column": 7,
-      "message": "Error return value of `writer.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/link_preview_integration_test.go",
-      "line": 97,
-      "column": 7,
-      "message": "Error return value of `writer.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/backgroundtasks/page_transactions.go",
       "line": 185,
       "column": 5,
@@ -1437,20 +1017,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/backgroundtasks/version_history_integration_test.go",
-      "line": 119,
-      "column": 16,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/version_history_integration_test.go",
-      "line": 180,
-      "column": 17,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/backgroundtasks/webhook_tasks.go",
       "line": 341,
       "column": 10,
@@ -1479,41 +1045,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/backgroundtasks/webhook_tasks_integration_test.go",
-      "line": 53,
-      "column": 17,
-      "message": "Error return value of `io.ReadAll` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/webhook_tasks_integration_test.go",
-      "line": 60,
-      "column": 6,
-      "message": "Error return value of `io.WriteString` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/webhook_tasks_test.go",
-      "line": 81,
-      "column": 6,
-      "message": "Error return value of `io.Copy` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/workspace_seed_integration_test.go",
-      "line": 158,
-      "column": 17,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/workspace_seed_integration_test.go",
-      "line": 159,
-      "column": 15,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/customers/property_values.go",
       "line": 182,
       "column": 8,
@@ -1525,55 +1056,6 @@
       "line": 211,
       "column": 8,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/live_labels_integration_test.go",
-      "line": 139,
-      "column": 9,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 642,
-      "column": 12,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 664,
-      "column": 17,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 678,
-      "column": 12,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/cyclereads/repository_test.go",
-      "line": 710,
-      "column": 12,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/devtools/local_logs_test.go",
-      "line": 136,
-      "column": 6,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/devtools/runner_test.go",
-      "line": 35,
-      "column": 9,
-      "message": "Error return value of `io.ReadAll` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1661,41 +1143,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/instancemanagement/repository_test.go",
-      "line": 122,
-      "column": 10,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/instancemanagement/repository_test.go",
-      "line": 123,
-      "column": 10,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/instancemanagement/repository_test.go",
-      "line": 133,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/instancemanagement/repository_test.go",
-      "line": 134,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/instancemanagement/repository_test.go",
-      "line": 179,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/intakeinboxreads/repository.go",
       "line": 882,
       "column": 8,
@@ -1752,13 +1199,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/mcpactions/main_integration_test.go",
-      "line": 23,
-      "column": 17,
-      "message": "Error return value of `connection.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/mcpactions/milestone_writes.go",
       "line": 28,
       "column": 8,
@@ -1777,34 +1217,6 @@
       "line": 53,
       "column": 7,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/mcpactions/oauth_integration_test.go",
-      "line": 46,
-      "column": 4,
-      "message": "Error return value of `(*encoding/json.Encoder).Encode` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/mcpactions/oauth_integration_test.go",
-      "line": 57,
-      "column": 7,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/mcpactions/oauth_integration_test.go",
-      "line": 61,
-      "column": 3,
-      "message": "Error return value of `(*encoding/json.Encoder).Encode` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/mcpactions/workitem_read_test.go",
-      "line": 47,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1836,55 +1248,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/mcpoauth/provider_test.go",
-      "line": 72,
-      "column": 3,
-      "message": "Error return value of `(*encoding/json.Encoder).Encode` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/mcpoauth/provider_test.go",
-      "line": 78,
-      "column": 3,
-      "message": "Error return value of `(*encoding/json.Encoder).Encode` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/mcpoauth/provider_test.go",
-      "line": 87,
-      "column": 7,
-      "message": "Error return value of `io.WriteString` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/mcpoauth/provider_test.go",
-      "line": 92,
-      "column": 7,
-      "message": "Error return value of `io.WriteString` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/mcpoauth/provider_test.go",
-      "line": 95,
-      "column": 3,
-      "message": "Error return value of `(*encoding/json.Encoder).Encode` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/mcpoauth/provider_test.go",
-      "line": 110,
-      "column": 11,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/mcpoauth/provider_test.go",
-      "line": 121,
-      "column": 3,
-      "message": "Error return value of `(*encoding/json.Encoder).Encode` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/mcptransport/handler.go",
       "line": 131,
       "column": 12,
@@ -1913,122 +1276,10 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/milestones/read_snapshot_integration_test.go",
-      "line": 27,
-      "column": 20,
-      "message": "Error return value of `f.db.Exec` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/mutationreceipts/execute_integration_test.go",
-      "line": 220,
-      "column": 35,
-      "message": "Error return value of `receipts.Execute` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/notionsync/http.go",
       "line": 75,
       "column": 3,
       "message": "Error return value of `response.Body.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/http_test.go",
-      "line": 47,
-      "column": 6,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/http_test.go",
-      "line": 74,
-      "column": 6,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/notion_test.go",
-      "line": 20,
-      "column": 7,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/notion_test.go",
-      "line": 22,
-      "column": 7,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/notion_test.go",
-      "line": 24,
-      "column": 7,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/notion_test.go",
-      "line": 30,
-      "column": 8,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/notion_test.go",
-      "line": 32,
-      "column": 8,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/notion_test.go",
-      "line": 35,
-      "column": 7,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/notion_test.go",
-      "line": 71,
-      "column": 7,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/notion_test.go",
-      "line": 73,
-      "column": 7,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/notion_test.go",
-      "line": 75,
-      "column": 7,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/notion_test.go",
-      "line": 104,
-      "column": 7,
-      "message": "Error return value of `w.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/notion_test.go",
-      "line": 108,
-      "column": 4,
-      "message": "Error return value of `(*encoding/json.Encoder).Encode` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/notion_test.go",
-      "line": 110,
-      "column": 7,
-      "message": "Error return value of `w.Write` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -2043,41 +1294,6 @@
       "line": 44,
       "column": 9,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/reconcile_test.go",
-      "line": 45,
-      "column": 4,
-      "message": "Error return value of `(*encoding/json.Encoder).Encode` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/reconcile_test.go",
-      "line": 64,
-      "column": 4,
-      "message": "Error return value of `(*encoding/json.Encoder).Encode` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/reconcile_test.go",
-      "line": 73,
-      "column": 3,
-      "message": "Error return value of `(*encoding/json.Encoder).Encode` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/reconcile_test.go",
-      "line": 90,
-      "column": 3,
-      "message": "Error return value of `(*encoding/json.Encoder).Encode` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/reconcile_test.go",
-      "line": 105,
-      "column": 3,
-      "message": "Error return value of `(*encoding/json.Encoder).Encode` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -2144,20 +1360,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/projectmembershipreads/invitations_contract_regressions_test.go",
-      "line": 22,
-      "column": 3,
-      "message": "Error return value of `writer.WriteField` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/invitations_contract_regressions_test.go",
-      "line": 24,
-      "column": 4,
-      "message": "Error return value of `writer.WriteField` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/projectmembershipreads/invitations_create.go",
       "line": 19,
       "column": 11,
@@ -2214,41 +1416,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/projectmembershipreads/lifecycle_bulk_identity_test.go",
-      "line": 40,
-      "column": 10,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/lifecycle_test.go",
-      "line": 54,
-      "column": 2,
-      "message": "Error return value of `repo.AuthorizeLifecycle` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/lifecycle_test.go",
-      "line": 59,
-      "column": 2,
-      "message": "Error return value of `repo.AuthorizeLifecycle` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/lifecycle_test.go",
-      "line": 131,
-      "column": 9,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/projectmembershipreads/roles_scope_integration_test.go",
-      "line": 65,
-      "column": 17,
-      "message": "Error return value of `db.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/projectmembershipreads/workspace_member_mutations.go",
       "line": 28,
       "column": 3,
@@ -2263,31 +1430,10 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/projectstatereads/write_input_test.go",
-      "line": 66,
-      "column": 11,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/projectstatereads/writes.go",
       "line": 77,
       "column": 3,
       "message": "Error return value of `repository.cache.Invalidate` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/proxy/caddy_integration_test.go",
-      "line": 383,
-      "column": 6,
-      "message": "Error return value of `io.WriteString` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/proxy/caddy_integration_test.go",
-      "line": 456,
-      "column": 6,
-      "message": "Error return value of `io.WriteString` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -2361,27 +1507,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/standardviews/filters_test.go",
-      "line": 83,
-      "column": 5,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/standardviews/filters_test.go",
-      "line": 84,
-      "column": 5,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/stickies/content/binary_test.go",
-      "line": 177,
-      "column": 3,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/testsupport/postgres/pair.go",
       "line": 61,
       "column": 17,
@@ -2428,20 +1553,6 @@
       "line": 258,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/userproperties/repository_integration_test.go",
-      "line": 267,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/userproperties/repository_integration_test.go",
-      "line": 268,
-      "column": 9,
-      "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -2494,13 +1605,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/workitems/datetime_test.go",
-      "line": 25,
-      "column": 10,
-      "message": "Error return value of `time.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/workitems/draft.go",
       "line": 490,
       "column": 12,
@@ -2547,20 +1651,6 @@
       "line": 590,
       "column": 6,
       "message": "Error return value of `number.Float64` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitems/item_edit_command_test.go",
-      "line": 12,
-      "column": 10,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitems/item_edit_command_test.go",
-      "line": 17,
-      "column": 9,
-      "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -2669,227 +1759,10 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/workitemtypes/draft_destination_integration_test.go",
-      "line": 48,
-      "column": 10,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/draft_values_integration_test.go",
-      "line": 58,
-      "column": 9,
-      "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/draft_values_integration_test.go",
-      "line": 59,
-      "column": 9,
-      "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/draft_values_integration_test.go",
-      "line": 70,
-      "column": 9,
-      "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/hierarchy_integration_test.go",
-      "line": 43,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/hierarchy_selection_integration_test.go",
-      "line": 135,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/hierarchy_selection_integration_test.go",
-      "line": 142,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/hierarchy_visibility_integration_test.go",
-      "line": 55,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/item_edit_review_integration_test.go",
-      "line": 28,
-      "column": 10,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/item_property_restore_integration_test.go",
-      "line": 131,
-      "column": 15,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/item_property_restore_integration_test.go",
-      "line": 211,
-      "column": 10,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/item_writes_integration_test.go",
-      "line": 92,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/item_writes_integration_test.go",
-      "line": 189,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/item_writes_integration_test.go",
-      "line": 198,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/item_writes_integration_test.go",
-      "line": 231,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/property_discovery_integration_test.go",
-      "line": 105,
-      "column": 14,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/property_edit_review_integration_test.go",
-      "line": 134,
-      "column": 9,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/property_export_integration_test.go",
-      "line": 91,
-      "column": 13,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/property_export_integration_test.go",
-      "line": 92,
-      "column": 12,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/property_grouping_integration_test.go",
-      "line": 21,
-      "column": 9,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/property_grouping_integration_test.go",
-      "line": 83,
-      "column": 9,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/workitemtypes/property_predicate.go",
       "line": 226,
       "column": 9,
       "message": "Error return value of `time.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/property_removal_integration_test.go",
-      "line": 42,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/schema_authorization_integration_test.go",
-      "line": 70,
-      "column": 16,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/schema_authorization_integration_test.go",
-      "line": 71,
-      "column": 15,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/search_projection_integration_test.go",
-      "line": 102,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/search_projection_integration_test.go",
-      "line": 136,
-      "column": 12,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/search_projection_integration_test.go",
-      "line": 181,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/search_removal_integration_test.go",
-      "line": 30,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/search_removal_integration_test.go",
-      "line": 73,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitemtypes/search_visibility_integration_test.go",
-      "line": 26,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workspaceuserinsights/activity_visibility_integration_test.go",
-      "line": 100,
-      "column": 6,
-      "message": "Error return value of `db.Exec` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -2925,55 +1798,6 @@
       "line": 237,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/invitations_membership_test.go",
-      "line": 166,
-      "column": 11,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/invitations_membership_test.go",
-      "line": 196,
-      "column": 11,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/invitations_membership_test.go",
-      "line": 198,
-      "column": 2,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/invitations_membership_test.go",
-      "line": 287,
-      "column": 11,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/invitations_membership_test.go",
-      "line": 320,
-      "column": 4,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/invitations_membership_test.go",
-      "line": 344,
-      "column": 2,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/invitations_membership_test.go",
-      "line": 372,
-      "column": 12,
-      "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -3082,13 +1906,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/project_lifecycle_test.go",
-      "line": 193,
-      "column": 7,
-      "message": "Error return value of `io.ReadAll` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/project_member_preferences.go",
       "line": 115,
       "column": 10,
@@ -3117,13 +1934,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/project_state_writes_test.go",
-      "line": 139,
-      "column": 12,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/public_feedback.go",
       "line": 358,
       "column": 3,
@@ -3131,73 +1941,10 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/service_session_test.go",
-      "line": 98,
-      "column": 9,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/stickies_test.go",
-      "line": 99,
-      "column": 7,
-      "message": "Error return value of `service.APIKeyAuth` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/stickies_test.go",
-      "line": 118,
-      "column": 7,
-      "message": "Error return value of `service.APIKeyAuth` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/stickies_test.go",
-      "line": 140,
-      "column": 7,
-      "message": "Error return value of `service.APIKeyAuth` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/stickies_test.go",
-      "line": 161,
-      "column": 7,
-      "message": "Error return value of `service.APIKeyAuth` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/stickies_test.go",
-      "line": 206,
-      "column": 7,
-      "message": "Error return value of `service.APIKeyAuth` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/stickies_test.go",
-      "line": 254,
-      "column": 7,
-      "message": "Error return value of `service.APIKeyAuth` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/stickies_test.go",
-      "line": 304,
-      "column": 7,
-      "message": "Error return value of `service.APIKeyAuth` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/ticket_collaboration.go",
       "line": 106,
       "column": 5,
       "message": "Error return value of `fmt.Sscanf` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/ticket_collaboration/design/transport_test.go",
-      "line": 32,
-      "column": 10,
-      "message": "Error return value of `loom.JSONValueFrom` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -3212,13 +1959,6 @@
       "line": 509,
       "column": 3,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/user_api_tokens_test.go",
-      "line": 79,
-      "column": 11,
-      "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -3240,41 +1980,6 @@
       "line": 125,
       "column": 11,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/work_item_history_test.go",
-      "line": 75,
-      "column": 11,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/work_item_types_observability_test.go",
-      "line": 40,
-      "column": 13,
-      "message": "Error return value of `trace.TraceIDFromHex` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/work_item_types_observability_test.go",
-      "line": 41,
-      "column": 12,
-      "message": "Error return value of `trace.SpanIDFromHex` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/work_item_types_observability_test.go",
-      "line": 91,
-      "column": 19,
-      "message": "Error return value of `provider.Shutdown` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/work_item_types_observability_test.go",
-      "line": 101,
-      "column": 7,
-      "message": "Error return value of `service.MutateProperty` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -3345,13 +2050,6 @@
       "line": 356,
       "column": 3,
       "message": "Error return value of `body.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_member_me_test.go",
-      "line": 98,
-      "column": 7,
-      "message": "Error return value of `(github.com/CaliLuke/go-plane/gen/workspace_member_me.Authorizer).APIKeyAuth` is not checked",
       "also_in_configured_audit": false
     },
     {

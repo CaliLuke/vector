@@ -21,6 +21,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+
 	"uuid"
 
 	systemapi "github.com/CaliLuke/go-plane"
@@ -4678,7 +4680,7 @@ func TestBufferedResponseWriterPreservesDjangoJSONEscaping(t *testing.T) {
 	}
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(http.StatusOK)
-	_, _ = writer.Write([]byte(`{"display_name":"R\u0026D \u003cops\u003e"}`))
+	testsupport.Write(t, writer, []byte(`{"display_name":"R\u0026D \u003cops\u003e"}`))
 	writer.finish()
 	const want = `{"display_name":"R&D <ops>","separator":"\u2028"}`
 	if response.Body.String() != want {
@@ -6554,9 +6556,13 @@ func TestParseConfigUsesDjangoCORSAllowedOrigins(t *testing.T) {
 	}
 	t.Cleanup(func() {
 		if hadCSRFOrigins {
-			_ = os.Setenv("CSRF_TRUSTED_ORIGINS", previousCSRFOrigins)
+			if err := os.Setenv("CSRF_TRUSTED_ORIGINS", previousCSRFOrigins); err != nil {
+				t.Errorf("restore CSRF origins: %v", err)
+			}
 		} else {
-			_ = os.Unsetenv("CSRF_TRUSTED_ORIGINS")
+			if err := os.Unsetenv("CSRF_TRUSTED_ORIGINS"); err != nil {
+				t.Errorf("restore absent CSRF origins: %v", err)
+			}
 		}
 	})
 	t.Setenv("CORS_ALLOWED_ORIGINS", " https://one.example.test,https://two.example.test, ")

@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/instancemail"
 	"github.com/CaliLuke/selvedge"
 	"github.com/google/uuid"
@@ -63,7 +65,8 @@ func TestPostgresAnalyticsExportBuildsAndEmailsCSV(t *testing.T) {
 			t.Errorf("shutdown analytics export test runtime for %s: %v", databaseURL, shutdownErr)
 		}
 	}()
-	data, _ := json.Marshal(map[string]any{"x_axis": "priority", "y_axis": "issue_count"})
+	data, dataErr := json.Marshal(map[string]any{"x_axis": "priority", "y_axis": "issue_count"})
+	require.NoError(t, dataErr)
 	workflowID, err := dispatcher.Admit(ctx, AnalyticsExportInput{EventID: uuid.NewString(), Email: "actor@example.test", Slug: slug, Data: data})
 	if err != nil {
 		t.Fatalf("admit analytics export workflow: %v", err)

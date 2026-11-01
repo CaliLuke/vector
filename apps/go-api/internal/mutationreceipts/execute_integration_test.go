@@ -217,7 +217,11 @@ func TestMutationFailureAndCancellationRollBackReceiptAndEffects(t *testing.T) {
 				return value, nil
 			}
 			if failure == "panic" {
-				require.Panics(t, func() { _, _ = receipts.Execute(ctx, f.db, f.command, op) })
+				require.Panics(t, func() {
+					if _, err := receipts.Execute(ctx, f.db, f.command, op); err != nil {
+						t.Errorf("receipt operation returned an error instead of panicking: %v", err)
+					}
+				})
 			} else {
 				result, err := receipts.Execute(ctx, f.db, f.command, op)
 				require.Error(t, err)

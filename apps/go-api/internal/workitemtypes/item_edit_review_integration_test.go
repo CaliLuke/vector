@@ -10,6 +10,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/jackc/pgx/v5/pgconn"
 
@@ -25,7 +27,8 @@ func reviewedEditFixture(t *testing.T) (projectTypeFixture, *workitems.Repositor
 	attachValueProperties(t, f, property.Definition{ID: field, Title: "Old details", Kind: property.RichText, Configuration: property.Configuration{Active: true}})
 	f.mutate(t, "import", f.bug)
 	item := addHierarchyItem(t, f, f.task, "")
-	values, _ := json.Marshal(map[string]any{field: "<p>Preserve this value</p>"})
+	values, valuesErr := json.Marshal(map[string]any{field: "<p>Preserve this value</p>"})
+	require.NoError(t, valuesErr)
 	f.exec(`UPDATE issues SET description_html='<p>Before</p>',custom_properties=$2 WHERE id=$1`, item, values)
 	repo, err := workitems.NewRepository(f.db, noRequestEffects{t}, "http://example.test")
 	if err != nil {

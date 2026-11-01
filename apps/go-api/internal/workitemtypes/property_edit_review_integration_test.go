@@ -9,6 +9,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 )
@@ -131,7 +133,8 @@ func TestCascadeEditRejectsDiscardAndUsedStructuralChanges(t *testing.T) {
 	def := editableCascade()
 	attachValueProperties(t, f, def)
 	repo, _, _ := seedPublicationDraft(t, f)
-	value, _ := json.Marshal([]string{def.Configuration.Options[0].ID})
+	value, valueErr := json.Marshal([]string{def.Configuration.Options[0].ID})
+	require.NoError(t, valueErr)
 	if _, err := writeValueItem(f, repo, "POST", "", `{"name":"Used","custom_properties":{"`+def.ID+`":`+string(value)+`}}`); err != nil {
 		t.Fatal(err)
 	}

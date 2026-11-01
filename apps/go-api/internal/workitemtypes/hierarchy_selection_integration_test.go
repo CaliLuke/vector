@@ -9,6 +9,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 )
@@ -132,15 +134,19 @@ func TestHierarchySearchExcludesCyclesThroughHiddenNodesAndRejectsPrivateAnchor(
 	if !errors.As(err, &httpErr) || httpErr.Status != 404 {
 		t.Fatalf("private anchor: %#v %v", result, err)
 	}
-	raw, _ := json.Marshal(httpErr.Body)
+	raw, rawErr := json.Marshal(httpErr.Body)
+	require.NoError(t, rawErr)
 	if strings.Contains(string(raw), hidden) {
 		t.Fatal("error exposed private anchor")
 	}
 }
 
 func attachHierarchyChildren(f projectTypeFixture, repo *workitems.Repository, parent string, children ...string) error {
-	raw, _ := json.Marshal(map[string]any{"sub_issue_ids": children})
-	_, err := repo.Execute(f.ctx, workitems.Request{Operation: "api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_sub_issues", Method: "POST", ActorID: f.member, Slug: "types", ProjectID: f.project, IssueID: parent, Params: map[string]string{}}, strings.NewReader(string(raw)), "application/json")
+	raw, err := json.Marshal(map[string]any{"sub_issue_ids": children})
+	if err != nil {
+		return err
+	}
+	_, err = repo.Execute(f.ctx, workitems.Request{Operation: "api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_sub_issues", Method: "POST", ActorID: f.member, Slug: "types", ProjectID: f.project, IssueID: parent, Params: map[string]string{}}, strings.NewReader(string(raw)), "application/json")
 	return err
 }
 

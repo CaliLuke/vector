@@ -24,7 +24,13 @@ func TestMilestoneReadsShareAuthorizationCountAndRowSnapshot(t *testing.T) {
  CREATE VIEW milestones AS SELECT * FROM stored_milestones WHERE milestone_read_gate();
  SELECT pg_advisory_lock(38118);`)
 	require.NoError(t, err)
-	defer func() { _, _ = f.db.Exec(context.WithoutCancel(f.ctx), `SELECT pg_advisory_unlock(38118)`) }()
+	defer func() {
+		cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(f.ctx), 5*time.Second)
+		defer cancel()
+		if _, unlockErr := f.db.Exec(cleanupCtx, `SELECT pg_advisory_unlock(38118)`); unlockErr != nil {
+			t.Errorf("release fixture advisory lock: %v", unlockErr)
+		}
+	}()
 	reader, err := pgx.ConnectConfig(f.ctx, f.db.Config().Copy())
 	require.NoError(t, err)
 	repo, err := milestones.NewRepository(reader)

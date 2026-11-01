@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"uuid"
 
 	statessvr "github.com/CaliLuke/go-plane/gen/http/project_state_reads/server"
@@ -136,7 +138,8 @@ func TestProjectStateWritesPreserveSerializerErrorBody(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	expected, _ := json.Marshal(want)
+	expected, expectedErr := json.Marshal(want)
+	require.NoError(t, expectedErr)
 	if string(raw) != string(expected) {
 		t.Fatalf("serializer response=%s, want=%s", raw, expected)
 	}

@@ -7,6 +7,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	api "github.com/CaliLuke/go-plane/gen/user_api_tokens"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/userapitokens"
@@ -76,7 +78,8 @@ func TestAPITokensAuthDefaultsAndRedaction(t *testing.T) {
 	if e != nil || len(list) != 1 || list[0].ID != tokenID {
 		t.Fatalf("List=%#v err=%v", list, e)
 	}
-	encoded, _ := json.Marshal(list[0])
+	encoded, encodedErr := json.Marshal(list[0])
+	require.NoError(t, encodedErr)
 	if string(encoded) == "" {
 		t.Fatal("empty list response")
 	}

@@ -7,6 +7,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 )
@@ -67,8 +69,10 @@ func TestQueuedSchemaWritesRecheckWorkspaceAdministrator(t *testing.T) {
 				t.Fatal(err)
 			}
 			before.CanManage = false
-			beforeJSON, _ := json.Marshal(before)
-			afterJSON, _ := json.Marshal(after)
+			beforeJSON, beforeJSONErr := json.Marshal(before)
+			require.NoError(t, beforeJSONErr)
+			afterJSON, afterJSONErr := json.Marshal(after)
+			require.NoError(t, afterJSONErr)
 			if string(beforeJSON) != string(afterJSON) {
 				t.Fatal("demoted administrator changed configuration")
 			}

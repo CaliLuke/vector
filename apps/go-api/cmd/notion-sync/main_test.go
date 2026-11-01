@@ -54,7 +54,7 @@ func TestTeamPreviewUsesItsOwnScopeWithoutWriting(t *testing.T) {
 		if r.Method != http.MethodGet || r.URL.Path != "/api/v1/workspaces/example/projects/" {
 			t.Errorf("unexpected preview request: %s %s", r.Method, r.URL.Path)
 		}
-		_, _ = w.Write([]byte(`[]`))
+		testsupport.Write(t, w, []byte(`[]`))
 	}))
 	defer server.Close()
 	const roadmapID = "00000000-0000-4000-8000-000000000002"
@@ -91,7 +91,7 @@ func TestPreviewAndSourceFailureNeverWrite(t *testing.T) {
 		if r.Method != http.MethodGet {
 			t.Errorf("preview attempted %s", r.Method)
 		}
-		_, _ = w.Write([]byte(`[]`))
+		testsupport.Write(t, w, []byte(`[]`))
 	}))
 	defer server.Close()
 	vector, err := notionsync.NewVector(server.URL, "example", "test-key")

@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 
+	"github.com/stretchr/testify/require"
+
 	"strings"
 	"testing"
 
@@ -42,7 +44,8 @@ func TestCollaborationOptionsMetadataRetainsPermittedPutAction(t *testing.T) {
 			t.Fatalf("%s lost PUT metadata: %s", kind, raw)
 		}
 		_, missing := workItemProtocolMetadata(protocol, systemapi.WorkItemProtocolMetadata{OmitPutAction: true})
-		missingRaw, _ := json.Marshal(missing)
+		missingRaw, missingRawErr := json.Marshal(missing)
+		require.NoError(t, missingRawErr)
 		var missingFields map[string]any
 		if err = json.Unmarshal(missingRaw, &missingFields); err != nil {
 			t.Fatal(err)
@@ -51,7 +54,8 @@ func TestCollaborationOptionsMetadataRetainsPermittedPutAction(t *testing.T) {
 			t.Fatalf("unavailable %s exposes writable fields", kind)
 		}
 		_, again := workItemProtocolMetadata(protocol, systemapi.WorkItemProtocolMetadata{})
-		againRaw, _ := json.Marshal(again)
+		againRaw, againRawErr := json.Marshal(again)
+		require.NoError(t, againRawErr)
 		if string(againRaw) != string(raw) {
 			t.Fatal("request mutated shared OPTIONS metadata")
 		}

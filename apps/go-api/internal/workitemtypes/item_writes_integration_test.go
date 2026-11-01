@@ -10,6 +10,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
@@ -89,7 +91,8 @@ func TestOrdinaryItemEffectFailureRollsBackValuesAndSubscriptions(t *testing.T) 
 		t.Fatal(err)
 	}
 	f.exec(`CREATE FUNCTION reject_webhook_effect() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.kind='webhook' THEN RAISE EXCEPTION 'injected outbox failure'; END IF; RETURN NEW; END $$; CREATE TRIGGER reject_webhook_effect BEFORE INSERT ON work_item_effects FOR EACH ROW EXECUTE FUNCTION reject_webhook_effect()`)
-	body, _ := json.Marshal(map[string]any{"name": "Must rollback", "custom_properties": map[string]any{member: f.member}})
+	body, bodyErr := json.Marshal(map[string]any{"name": "Must rollback", "custom_properties": map[string]any{member: f.member}})
+	require.NoError(t, bodyErr)
 	if _, err = writeValueItem(f, repo, "POST", "", string(body)); err == nil {
 		t.Fatal("injected late failure did not fail")
 	}
@@ -186,7 +189,8 @@ func TestAPIValuesRespectGuestVisibilityAcrossReadPaths(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	raw, _ := json.Marshal(listed.Body)
+	raw, rawErr := json.Marshal(listed.Body)
+	require.NoError(t, rawErr)
 	if strings.Contains(string(raw), id) || strings.Contains(string(raw), propertyID) {
 		t.Fatalf("list exposed restricted item: %s", raw)
 	}
@@ -195,7 +199,9 @@ func TestAPIValuesRespectGuestVisibilityAcrossReadPaths(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	raw, _ = json.Marshal(listed.Body)
+	var reencodedErr error
+	raw, reencodedErr = json.Marshal(listed.Body)
+	require.NoError(t, reencodedErr)
 	if !strings.Contains(string(raw), propertyID) {
 		t.Fatalf("authorized guest list omitted values: %s", raw)
 	}
@@ -228,7 +234,8 @@ func TestSubissueValuesRespectAnchorAndChildVisibility(t *testing.T) {
 		if readErr != nil {
 			t.Fatal(readErr)
 		}
-		raw, _ := json.Marshal(result.Body)
+		raw, rawErr := json.Marshal(result.Body)
+		require.NoError(t, rawErr)
 		if strings.Contains(string(raw), child) || strings.Contains(string(raw), propertyID) {
 			t.Fatalf("child exposed in result/distribution: %s", raw)
 		}

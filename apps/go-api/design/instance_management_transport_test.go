@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+
 	client "github.com/CaliLuke/go-plane/gen/http/instance_management/client"
 	api "github.com/CaliLuke/go-plane/gen/instance_management"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -18,7 +20,7 @@ func TestInstancePublicGeneratedClientsRecognizeAnonymousThrottle(t *testing.T) 
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Retry-After", "60")
 		w.WriteHeader(http.StatusTooManyRequests)
-		_, _ = w.Write([]byte(`{"error_code":5900,"error_message":"RATE_LIMIT_EXCEEDED"}`))
+		testsupport.Write(t, w, []byte(`{"error_code":5900,"error_message":"RATE_LIMIT_EXCEEDED"}`))
 	}))
 	defer remote.Close()
 	transport := client.NewClient("http", strings.TrimPrefix(remote.URL, "http://"), remote.Client(), loomhttp.RequestEncoder, loomhttp.ResponseDecoder, false)

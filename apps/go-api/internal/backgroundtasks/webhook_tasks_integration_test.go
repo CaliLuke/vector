@@ -49,15 +49,21 @@ func TestPostgresWebhookModelActivityDeliversSignedPayloadAndRetries(t *testing.
 			}
 			return
 		}
+		body, readErr := io.ReadAll(r.Body)
+		if readErr != nil {
+			t.Errorf("read webhook fixture request: %v", readErr)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		captureMu.Lock()
-		receivedBody, _ = io.ReadAll(r.Body)
+		receivedBody = body
 		receivedSignature = r.Header.Get("X-Plane-Signature")
 		receivedDelivery = r.Header.Get("X-Plane-Delivery")
 		receivedEvent = r.Header.Get("X-Plane-Event")
 		receivedAgent = r.UserAgent()
 		captureMu.Unlock()
 		w.WriteHeader(http.StatusAccepted)
-		_, _ = io.WriteString(w, "accepted")
+		testsupport.Write(t, w, []byte("accepted"))
 	}))
 	defer server.Close()
 	t.Setenv("WEBHOOK_ALLOWED_HOSTS", "127.0.0.1")

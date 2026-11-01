@@ -163,7 +163,8 @@ func TestWorkspaceRosterCursorUsesPageIndexForMultirowPage(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	encoded, _ := json.Marshal(result)
+	encoded, encodedErr := json.Marshal(result)
+	require.NoError(t, encodedErr)
 	var body struct {
 		Results []struct {
 			ID string `json:"id"`
@@ -193,9 +194,11 @@ func TestInvitationSerializerUsesActorTimezoneAndPreservesJSONData(t *testing.T)
 	if err != nil {
 		t.Fatal(err)
 	}
-	encoded, _ := json.Marshal(result)
+	encoded, encodedErr := json.Marshal(result)
+	require.NoError(t, encodedErr)
 	var body map[string]any
-	_ = json.Unmarshal(encoded, &body)
+	unmarshalErr := json.Unmarshal(encoded, &body)
+	require.NoError(t, unmarshalErr)
 	if body["created_at"] != "2026-01-01T06:32:03.100000+05:30" {
 		t.Fatalf("created_at=%v", body["created_at"])
 	}
@@ -284,7 +287,8 @@ func TestInvitationRosterParsesOriginalInvalidPageSizeAfterAuthentication(t *tes
 	if !errors.As(err, &failure) || failure.Name != "status_400" {
 		t.Fatalf("error=%v", err)
 	}
-	encoded, _ := json.Marshal(failure)
+	encoded, encodedErr := json.Marshal(failure)
+	require.NoError(t, encodedErr)
 	if !strings.Contains(string(encoded), "Invalid per_page parameter.") {
 		t.Fatalf("error=%s", encoded)
 	}
@@ -317,7 +321,8 @@ func TestInvitationGeneratedMissingObjectsRemain404AfterAuthentication(t *testin
 			response := httptest.NewRecorder()
 			mux.ServeHTTP(response, request)
 			var body map[string]any
-			_ = json.Unmarshal(response.Body.Bytes(), &body)
+			unmarshalErr := json.Unmarshal(response.Body.Bytes(), &body)
+			require.NoError(t, unmarshalErr)
 			if response.Code != 404 || body["error"] != "The required object does not exist." || !effects.Authenticated || validator.calls != 1 {
 				t.Fatalf("status=%d authenticated=%t calls=%d body=%s", response.Code, effects.Authenticated, validator.calls, response.Body.String())
 			}
@@ -341,7 +346,8 @@ func TestInvitationGeneratedTransportPreservesUnsupportedMedia415(t *testing.T) 
 	}
 	loomhttp.RequestMetadataMiddleware(policy)(mux).ServeHTTP(response, request)
 	var body map[string]any
-	_ = json.Unmarshal(response.Body.Bytes(), &body)
+	unmarshalErr := json.Unmarshal(response.Body.Bytes(), &body)
+	require.NoError(t, unmarshalErr)
 	if response.Code != 415 || body["detail"] != `Unsupported media type "text/plain" in request.` {
 		t.Fatalf("status=%d body=%s", response.Code, response.Body.String())
 	}
@@ -369,7 +375,8 @@ func TestInvitationBodyReaderPreservesEmptyRequestsForSerializerValidation(t *te
 		service := &invitationsMembershipService{repository: repository}
 		ctx := context.WithValue(context.Background(), invitationsMembershipPrincipalKey{}, invitationsMembershipPrincipal{UserID: uuid.New(), Timezone: "UTC"})
 		_, err := service.PostAPIV1WorkspacesBySlugInvitations(ctx, &api.PostAPIV1WorkspacesBySlugInvitationsPayload{Slug: "workspace"}, body)
-		encoded, _ := json.Marshal(err)
+		encoded, encodedErr := json.Marshal(err)
+		require.NoError(t, encodedErr)
 		if !repository.called || !strings.Contains(string(encoded), "This field is required.") {
 			t.Fatalf("empty request did not reach serializer: called=%t error=%s", repository.called, encoded)
 		}

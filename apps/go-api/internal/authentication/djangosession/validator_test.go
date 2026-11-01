@@ -14,6 +14,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+
 	"github.com/CaliLuke/loom/clue/log"
 )
 
@@ -232,7 +234,7 @@ func TestBadSessionSignatureEmitsSuspiciousSessionWarning(t *testing.T) {
 func TestSignedNonObjectSessionFailsWithoutCorruptionRewrite(t *testing.T) {
 	for _, serialized := range []string{`[]`, `null`, `"session"`, `1`} {
 		t.Run(serialized, func(t *testing.T) {
-			data := signPayloadForTest([]byte(serialized), false, fixtureCurrentSecret)
+			data := signPayloadForTest(t, []byte(serialized), false, fixtureCurrentSecret)
 			reader := fixtureReader(data, fixturePassword, true)
 			validator := configuredValidator(t, reader)
 			var logs bytes.Buffer
@@ -336,7 +338,7 @@ func TestDjangoJSONSerializerUsesLatin1(t *testing.T) {
 	data := []byte(`{"_auth_user_id":"` + fixtureUserID + `","_auth_user_backend":"` + fixtureBackend + `","_auth_user_hash":"` + fixtureCurrentHash + `","note":"`)
 	data = append(data, 0xe9)
 	data = append(data, []byte(`"}`)...)
-	values, _, err := decode(signPayloadForTest(data, false, fixtureCurrentSecret), []string{fixtureCurrentSecret})
+	values, _, err := decode(signPayloadForTest(t, data, false, fixtureCurrentSecret), []string{fixtureCurrentSecret})
 	if err != nil {
 		t.Fatalf("decode() error = %v", err)
 	}
@@ -347,7 +349,7 @@ func TestDjangoJSONSerializerUsesLatin1(t *testing.T) {
 
 func TestDjangoJSONSerializerPreservesPythonConstantsAndLoneSurrogates(t *testing.T) {
 	serialized := []byte(`{"_auth_user_id":"` + fixtureUserID + `","_auth_user_backend":"` + fixtureBackend + `","_auth_user_hash":"` + fixtureCurrentHash + `","nan":NaN,"positive":Infinity,"negative":-Infinity,"surrogate":"\ud800"}`)
-	reader := fixtureReader(signPayloadForTest(serialized, false, fixtureCurrentSecret), fixturePassword, true)
+	reader := fixtureReader(signPayloadForTest(t, serialized, false, fixtureCurrentSecret), fixturePassword, true)
 	validator := configuredValidator(t, reader)
 	principal, err := validator.Validate(context.Background(), fixtureSessionKey)
 	if err != nil {
@@ -388,7 +390,7 @@ func TestDjangoJSONFieldRejectsLoneSurrogatesInKeysAndValues(t *testing.T) {
 
 func TestSessionSaveCanonicalizesDuplicateKeys(t *testing.T) {
 	serialized := []byte(`{ "x" : 1, "x": 2, "nan": NaN }`)
-	reader := fixtureReader(signPayloadForTest(serialized, false, fixtureCurrentSecret), fixturePassword, true)
+	reader := fixtureReader(signPayloadForTest(t, serialized, false, fixtureCurrentSecret), fixturePassword, true)
 	validator := configuredValidator(t, reader)
 	if _, err := validator.RefreshUnaccessed(context.Background(), fixtureSessionKey, 3600, time.Now()); err != nil {
 		t.Fatal(err)
@@ -412,7 +414,7 @@ func TestSessionSaveCoercesUserIDThroughDjangoCharField(t *testing.T) {
 		{name: "NUL escape", serialized: `{"_auth_user_id":["\u0000"]}`, want: `['\x00']`},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
-			reader := fixtureReader(signPayloadForTest([]byte(testCase.serialized), false, fixtureCurrentSecret), fixturePassword, true)
+			reader := fixtureReader(signPayloadForTest(t, []byte(testCase.serialized), false, fixtureCurrentSecret), fixturePassword, true)
 			validator := configuredValidator(t, reader)
 			if _, err := validator.RefreshUnaccessed(context.Background(), fixtureSessionKey, 3600, time.Now()); err != nil {
 				t.Fatal(err)
@@ -429,7 +431,7 @@ func TestDjangoUUIDFieldAcceptsIntegerAndBooleanSessionIDs(t *testing.T) {
 	for _, rawID := range []string{"1", "true"} {
 		t.Run(rawID, func(t *testing.T) {
 			serialized := []byte(`{"_auth_user_id":` + rawID + `,"_auth_user_backend":"` + fixtureBackend + `","_auth_user_hash":"` + fixtureCurrentHash + `"}`)
-			reader := fixtureReader(signPayloadForTest(serialized, false, fixtureCurrentSecret), fixturePassword, true)
+			reader := fixtureReader(signPayloadForTest(t, serialized, false, fixtureCurrentSecret), fixturePassword, true)
 			reader.users = map[string]User{normalized: {Password: fixturePassword, Active: true, Timezone: "UTC"}}
 			validator := configuredValidator(t, reader)
 			principal, err := validator.Validate(context.Background(), fixtureSessionKey)
@@ -442,7 +444,7 @@ func TestDjangoUUIDFieldAcceptsIntegerAndBooleanSessionIDs(t *testing.T) {
 
 func TestFallbackHashRotationPreservesPythonJSONExtensions(t *testing.T) {
 	serialized := []byte(`{"_auth_user_id":"` + fixtureUserID + `","_auth_user_backend":"` + fixtureBackend + `","_auth_user_hash":"` + fixtureFallbackHash + `","nan":NaN,"surrogate":"\ud800"}`)
-	reader := fixtureReader(signPayloadForTest(serialized, false, fixtureCurrentSecret), fixturePassword, true)
+	reader := fixtureReader(signPayloadForTest(t, serialized, false, fixtureCurrentSecret), fixturePassword, true)
 	validator := configuredValidator(t, reader)
 	principal, err := validator.Validate(context.Background(), fixtureSessionKey)
 	if err != nil || !principal.AuthHashUsedFallback {
@@ -580,7 +582,7 @@ func TestRefreshReSignsAndExtendsDjangoSession(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	reader := fixtureReader(signPayloadForTest(djangoASCIIJSON(serialized), false, fixtureCurrentSecret), fixturePassword, true)
+	reader := fixtureReader(signPayloadForTest(t, djangoASCIIJSON(serialized), false, fixtureCurrentSecret), fixturePassword, true)
 	validator := configuredValidator(t, reader)
 	now := time.Date(2026, time.September, 1, 12, 0, 0, 0, time.UTC)
 	refresh, err := validator.Refresh(context.Background(), fixtureSessionKey, 604800, now)
@@ -723,7 +725,7 @@ func TestSessionExpiryMatchesDjangoJSONCoercion(t *testing.T) {
 	for _, expiry := range []string{"NaN", "Infinity", "-Infinity"} {
 		t.Run(expiry, func(t *testing.T) {
 			serialized := []byte(`{"_session_expiry":` + expiry + `}`)
-			reader := fixtureReader(signPayloadForTest(serialized, false, fixtureCurrentSecret), fixturePassword, true)
+			reader := fixtureReader(signPayloadForTest(t, serialized, false, fixtureCurrentSecret), fixturePassword, true)
 			validator := configuredValidator(t, reader)
 			if _, err := validator.RefreshUnaccessed(context.Background(), fixtureSessionKey, 3600, now); !errors.Is(err, ErrStore) {
 				t.Fatalf("RefreshUnaccessed() error=%v", err)
@@ -732,7 +734,7 @@ func TestSessionExpiryMatchesDjangoJSONCoercion(t *testing.T) {
 	}
 
 	surrogateSeparator := []byte(`{"_session_expiry":"2026-09-01\ud80012:01:02+00:00"}`)
-	reader := fixtureReader(signPayloadForTest(surrogateSeparator, false, fixtureCurrentSecret), fixturePassword, true)
+	reader := fixtureReader(signPayloadForTest(t, surrogateSeparator, false, fixtureCurrentSecret), fixturePassword, true)
 	validator := configuredValidator(t, reader)
 	refresh, err := validator.RefreshUnaccessed(context.Background(), fixtureSessionKey, 3600, now)
 	if err != nil || !refresh.ExpiresAt.Equal(time.Date(2026, time.September, 1, 12, 1, 2, 0, time.UTC)) ||
@@ -834,9 +836,9 @@ func TestMalformedAndCorruptSessionsAreRejected(t *testing.T) {
 		{name: "corrupt signature", data: fixtureCurrentSession[:len(fixtureCurrentSession)-1] + "A"},
 		{name: "invalid timestamp", data: resignWithTimestamp(fixtureCurrentSession, "bad timestamp", fixtureCurrentSecret)},
 		{name: "invalid base64", data: signForTest("*:1AbC", fixtureCurrentSecret)},
-		{name: "invalid JSON", data: signPayloadForTest([]byte("{"), false, fixtureCurrentSecret)},
-		{name: "corrupt zlib", data: signPayloadForTest([]byte("not-zlib"), true, fixtureCurrentSecret)},
-		{name: "JSON array", data: signPayloadForTest([]byte("[]"), false, fixtureCurrentSecret)},
+		{name: "invalid JSON", data: signPayloadForTest(t, []byte("{"), false, fixtureCurrentSecret)},
+		{name: "corrupt zlib", data: signPayloadForTest(t, []byte("not-zlib"), true, fixtureCurrentSecret)},
+		{name: "JSON array", data: signPayloadForTest(t, []byte("[]"), false, fixtureCurrentSecret)},
 		{name: "wrong field type", data: encodeValuesForTest(t, fixtureCurrentSecret, map[string]any{
 			"_auth_user_id": 7, "_auth_user_backend": fixtureBackend, "_auth_user_hash": fixtureCurrentHash,
 		}, false)},
@@ -961,15 +963,16 @@ func encodeValuesForTest(t *testing.T, secret string, values map[string]any, com
 	if err != nil {
 		t.Fatalf("json.Marshal() error = %v", err)
 	}
-	return signPayloadForTest(data, compressed, secret)
+	return signPayloadForTest(t, data, compressed, secret)
 }
 
-func signPayloadForTest(data []byte, compressed bool, secret string) string {
+func signPayloadForTest(t *testing.T, data []byte, compressed bool, secret string) string {
+	t.Helper()
 	if compressed {
 		var output bytes.Buffer
 		writer := zlib.NewWriter(&output)
-		_, _ = writer.Write(data)
-		_ = writer.Close()
+		testsupport.Write(t, writer, data)
+		testsupport.Close(t, writer)
 		data = output.Bytes()
 	}
 	payload := base64.RawURLEncoding.EncodeToString(data)

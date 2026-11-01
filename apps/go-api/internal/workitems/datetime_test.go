@@ -3,6 +3,8 @@ package workitems
 import (
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestDateTimeInputPreservesDjangoISOForms(t *testing.T) {
@@ -22,7 +24,8 @@ func TestDateTimeInputPreservesDjangoISOForms(t *testing.T) {
 				t.Fatal(err)
 			}
 			parsed, err := time.Parse(time.RFC3339Nano, got)
-			want, _ := time.Parse(time.RFC3339Nano, tc.instant)
+			want, wantErr := time.Parse(time.RFC3339Nano, tc.instant)
+			require.NoError(t, wantErr)
 			if err != nil || !parsed.Equal(want) {
 				t.Fatalf("input %q parsed as %q, want instant %s: %v", tc.input, got, tc.instant, err)
 			}

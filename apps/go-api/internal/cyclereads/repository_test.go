@@ -639,13 +639,14 @@ func TestGroupedIssueEmptyPageHasNoBucketsOrTotalPages(t *testing.T) {
 }
 
 func TestGroupedIssueSQLUsesPageGroupsForManyToManyAndRewritesMappedIDs(t *testing.T) {
-	query, _, _ := groupedIssueListQuery(
+	query, _, queryErr := groupedIssueListQuery(
 		uuid.New(),
 		"alpha",
 		uuid.New(),
 		uuid.New(),
 		IssueListOptions{GroupBy: "labels__id"}, 30, 30, 0,
 	)
+	require.NoError(t, queryErr)
 	for _, fragment := range []string{
 		"SELECT DISTINCT group_key,'__none__'::text subgroup_key FROM paged",
 		"jsonb_build_object('label_ids'",
@@ -661,13 +662,14 @@ func TestGroupedIssueSQLUsesPageGroupsForManyToManyAndRewritesMappedIDs(t *testi
 	if strings.Contains(query, "%!") {
 		t.Fatalf("grouped SQL format mismatch: %s", query)
 	}
-	subgrouped, _, _ := groupedIssueListQuery(
+	subgrouped, _, subgroupedErr := groupedIssueListQuery(
 		uuid.New(),
 		"alpha",
 		uuid.New(),
 		uuid.New(),
 		IssueListOptions{GroupBy: "labels__id", SubGroupBy: "priority"}, 30, 30, 0,
 	)
+	require.NoError(t, subgroupedErr)
 	if strings.Contains(subgrouped, "SELECT DISTINCT ON (processed.issue_id)") {
 		t.Fatal("subgrouped paginator must preserve duplicate source rows")
 	}
@@ -675,13 +677,14 @@ func TestGroupedIssueSQLUsesPageGroupsForManyToManyAndRewritesMappedIDs(t *testi
 }
 
 func TestModuleGroupingUsesRelationIDsButOtherPayloadsOmitArchivedModules(t *testing.T) {
-	query, _, _ := groupedIssueListQuery(
+	query, _, queryErr := groupedIssueListQuery(
 		uuid.New(),
 		"alpha",
 		uuid.New(),
 		uuid.New(),
 		IssueListOptions{GroupBy: "issue_module__module_id"}, 30, 30, 0,
 	)
+	require.NoError(t, queryErr)
 	for _, fragment := range []string{
 		"grouped_module.issue_id=matching.issue_id",
 		"projected_module.archived_at IS NULL",
@@ -707,13 +710,14 @@ func TestGroupedTotalsApplyDjangoIntakeCountFilter(t *testing.T) {
 		strings.Contains(subgrouped, "GREATEST") {
 		t.Fatalf("subgroup total must preserve a zero filtered count: %s", subgrouped)
 	}
-	query, _, _ := groupedIssueListQuery(
+	query, _, queryErr := groupedIssueListQuery(
 		uuid.New(),
 		"alpha",
 		uuid.New(),
 		uuid.New(),
 		IssueListOptions{GroupBy: "priority"}, 30, 30, 0,
 	)
+	require.NoError(t, queryErr)
 	for _, fragment := range []string{
 		"count_intake.status IN (-1,1,2)",
 		"max(group_total.countable_results)",

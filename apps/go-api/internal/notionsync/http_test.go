@@ -8,6 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 )
 
 func TestNotionPageRejectsTruncatedResponse(t *testing.T) {
@@ -44,7 +46,7 @@ func TestTransientReadRetriesButUncertainWriteDoesNot(t *testing.T) {
 			w.WriteHeader(503)
 			return
 		}
-		_, _ = w.Write([]byte(`{"id":"recovered"}`))
+		testsupport.Write(t, w, []byte(`{"id":"recovered"}`))
 	}))
 	defer server.Close()
 	client := newAPI(server.URL, nil, 0)
@@ -71,7 +73,7 @@ func TestVectorRequestPacingHonorsCancellation(t *testing.T) {
 	requests := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests++
-		_, _ = w.Write([]byte(`{}`))
+		testsupport.Write(t, w, []byte(`{}`))
 	}))
 	defer server.Close()
 	vector, err := NewVector(server.URL, "workspace", "test-key")

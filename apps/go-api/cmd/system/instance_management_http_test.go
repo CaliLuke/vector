@@ -12,6 +12,8 @@ import (
 	"time"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+
 	systemapi "github.com/CaliLuke/go-plane"
 	adminapi "github.com/CaliLuke/go-plane/gen/instance_admin_session"
 	api "github.com/CaliLuke/go-plane/gen/instance_management"
@@ -213,7 +215,7 @@ func TestInstanceManagementPlainRedirectProtocolMatchesDjangoHeaders(t *testing.
 
 func TestInstanceManagementAdminRedirectUsesPlainDjangoGzipContract(t *testing.T) {
 	handler := readServicesGzipMiddleware(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
-		_, _ = io.WriteString(response, strings.Repeat("x", 300))
+		testsupport.Write(t, response, []byte(strings.Repeat("x", 300)))
 	}))
 	request := httptest.NewRequest(http.MethodPost, "/api/instances/admins/sign-in/", strings.NewReader("email=x"))
 	request.Header.Set("Accept-Encoding", "gzip")

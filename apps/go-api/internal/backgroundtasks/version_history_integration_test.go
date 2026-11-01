@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/selvedge"
 	"github.com/CaliLuke/selvedge/retry"
 	"github.com/google/uuid"
@@ -116,7 +118,8 @@ func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 		}
 	}()
 
-	pageSnapshot, _ := json.Marshal(map[string]string{"description_html": priorHTML})
+	pageSnapshot, pageSnapshotErr := json.Marshal(map[string]string{"description_html": priorHTML})
+	require.NoError(t, pageSnapshotErr)
 	pageInput := PageVersionInput{PageID: pageID.String(), ExistingInstance: string(pageSnapshot), UserID: pageOwner.String()}
 	pageInstance, err := dispatcher.AdmitPage(ctx, uuid.NewString(), pageInput)
 	if err != nil {
@@ -177,7 +180,8 @@ func TestPostgresVersionHistoryWorkflowsTrackAndCoalesce(t *testing.T) {
 		t.Fatalf("replayed page snapshot created %d rows, want coalesced one", pageCount)
 	}
 
-	issueSnapshot, _ := json.Marshal(map[string]string{"description_html": priorHTML})
+	issueSnapshot, issueSnapshotErr := json.Marshal(map[string]string{"description_html": priorHTML})
+	require.NoError(t, issueSnapshotErr)
 	issueInput := IssueDescriptionVersionInput{IssueID: issueID.String(), UpdatedIssue: string(issueSnapshot), UserID: issueOwner.String()}
 	issueInstance, err := dispatcher.AdmitIssueDescription(ctx, uuid.NewString(), issueInput)
 	if err != nil {

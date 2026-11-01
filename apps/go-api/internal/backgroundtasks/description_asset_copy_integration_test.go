@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+
 	"github.com/CaliLuke/selvedge"
 	"github.com/CaliLuke/selvedge/retry"
 	"github.com/google/uuid"
@@ -73,7 +75,7 @@ func TestPostgresDescriptionAssetCopyUsesDurableWorkflowAndStableS3Key(t *testin
 			t.Errorf("conversion request=%v", request)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"description_json":{"type":"doc","content":[]},"description_binary":"` + base64.StdEncoding.EncodeToString([]byte("converted")) + `"}`))
+		testsupport.Write(t, w, []byte(`{"description_json":{"type":"doc","content":[]},"description_binary":"`+base64.StdEncoding.EncodeToString([]byte("converted"))+`"}`))
 	}))
 	defer converter.Close()
 	store := &PostgresDescriptionAssetCopyStore{pool: pool, storage: copier, client: converter.Client(), liveURL: converter.URL}

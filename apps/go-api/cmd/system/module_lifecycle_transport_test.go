@@ -11,6 +11,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+
 	systemapi "github.com/CaliLuke/go-plane"
 	modulereadapi "github.com/CaliLuke/go-plane/gen/module_reads"
 	"github.com/CaliLuke/go-plane/gen/system"
@@ -472,7 +474,7 @@ func TestModuleLifecycleCompressionMiddlewareAddsVaryAtDjangoThreshold(t *testin
 		t.Run(test.name, func(t *testing.T) {
 			handler := readServicesGzipMiddleware(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 				mergeVary(response.Header(), "Cookie", "origin")
-				_, _ = response.Write([]byte(test.body))
+				testsupport.Write(t, response, []byte(test.body))
 			}))
 			request := httptest.NewRequest(http.MethodGet, "/api/workspaces/acme/projects/"+moduleLifecycleTransportProject+"/modules/", nil)
 			request.Header.Set("Accept-Encoding", "gzip")

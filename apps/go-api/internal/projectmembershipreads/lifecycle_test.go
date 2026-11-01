@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 )
 
@@ -51,12 +53,18 @@ func TestLifecyclePermissionsPrecedeRateAndNeverRequireWorkspaceMembershipForAPI
 		t.Fatalf("read permission args=%#v", db.args)
 	}
 	command.Method = "HEAD"
-	_ = repo.AuthorizeLifecycle(context.Background(), command)
+	err = repo.AuthorizeLifecycle(context.Background(), command)
+	if !errors.As(err, &denied) || denied.Status != 403 {
+		t.Fatalf("HEAD permission denial=%v", err)
+	}
 	if db.args[3] != false {
 		t.Fatalf("collection HEAD must use source admin permission: %#v", db.args)
 	}
 	command.Operation = "v1-list-members-lite"
-	_ = repo.AuthorizeLifecycle(context.Background(), command)
+	err = repo.AuthorizeLifecycle(context.Background(), command)
+	if !errors.As(err, &denied) || denied.Status != 403 {
+		t.Fatalf("lite HEAD permission denial=%v", err)
+	}
 	if db.args[3] != true {
 		t.Fatalf("lite HEAD must retain SAFE_METHOD membership permission: %#v", db.args)
 	}
@@ -128,7 +136,8 @@ func TestLegacyPatchNonObjectParsingRetainsViewGuardPrecedence(t *testing.T) {
 
 func TestLegacyMemberRenderingRejectsPersistedNonfiniteSortOrder(t *testing.T) {
 	for _, order := range []string{"NaN", "Infinity", "-Infinity"} {
-		body, _ := json.Marshal(map[string]any{"sort_order": order})
+		body, bodyErr := json.Marshal(map[string]any{"sort_order": order})
+		require.NoError(t, bodyErr)
 		db := &databaseStub{row: rowFunc(func(dest ...any) error { *dest[0].(*[]byte) = body; return nil })}
 		repository, err := NewLifecycleRepository(db, &lifecycleTaskSpy{}, "http://localhost:8000")
 		if err != nil {

@@ -144,8 +144,8 @@ func checkStoragePostCORS(t *testing.T, ctx context.Context, postURL, origin str
 		}
 	}()
 	if response.StatusCode != http.StatusOK && response.StatusCode != http.StatusNoContent {
-		body, _ := io.ReadAll(response.Body)
-		t.Fatalf("POST CORS preflight status=%d body=%s", response.StatusCode, body)
+		body, readErr := io.ReadAll(response.Body)
+		t.Fatalf("POST CORS preflight status=%d body=%s read_error=%v", response.StatusCode, body, readErr)
 	}
 	if response.Header.Get("Access-Control-Allow-Origin") != origin {
 		t.Fatalf("POST CORS allow-origin=%q, want %q", response.Header.Get("Access-Control-Allow-Origin"), origin)

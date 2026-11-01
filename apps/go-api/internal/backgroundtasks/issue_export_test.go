@@ -12,6 +12,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/xuri/excelize/v2"
@@ -133,7 +135,8 @@ func TestCustomExportColumnsPreserveValuesAndSanitizeTitles(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer func() { testsupport.Close(t, book) }()
-	cell, _ := excelize.CoordinatesToCellName(offset+1, 1)
+	cell, cellErr := excelize.CoordinatesToCellName(offset+1, 1)
+	require.NoError(t, cellErr)
 	formula, err := book.GetCellFormula(book.GetSheetName(0), cell)
 	if err != nil || formula != "" {
 		t.Fatalf("header became formula %q: %v", formula, err)

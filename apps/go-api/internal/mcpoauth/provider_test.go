@@ -16,21 +16,25 @@ import (
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/testsupport"
+
 	oauth "github.com/CaliLuke/go-plane/internal/mcpoauth"
 	"github.com/go-jose/go-jose/v4"
 	"golang.org/x/oauth2"
 )
 
 type issuerFixture struct {
-	server    *httptest.Server
-	key       *rsa.PrivateKey
-	claims    map[string]any
-	idClaims  map[string]any
-	status    int
-	raw       string
-	calls     int
-	challenge string
-	grant     string
+	t                         *testing.T
+	server                    *httptest.Server
+	key                       *rsa.PrivateKey
+	claims                    map[string]any
+	idClaims                  map[string]any
+	status                    int
+	raw                       string
+	calls                     int
+	challenge                 string
+	grant                     string
+	allowResponseCancellation bool
 }
 
 func newIssuer(t *testing.T) *issuerFixture {
@@ -39,7 +43,7 @@ func newIssuer(t *testing.T) *issuerFixture {
 	if err != nil {
 		t.Fatal(err)
 	}
-	f := &issuerFixture{key: key, status: 200}
+	f := &issuerFixture{t: t, key: key, status: 200}
 	f.server = httptest.NewTLSServer(http.HandlerFunc(f.serve))
 	t.Cleanup(f.server.Close)
 	f.claims = map[string]any{"active": true, "iss": f.server.URL, "sub": "person-1", "client_id": "agent-1",
@@ -69,13 +73,13 @@ func (f *issuerFixture) serve(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	switch r.URL.Path {
 	case "/.well-known/openid-configuration":
-		_ = json.NewEncoder(w).Encode(map[string]any{"issuer": f.server.URL, "authorization_endpoint": f.server.URL + "/authorize",
+		testsupport.WriteJSON(f.t, w, map[string]any{"issuer": f.server.URL, "authorization_endpoint": f.server.URL + "/authorize",
 			"token_endpoint": f.server.URL + "/token", "jwks_uri": f.server.URL + "/keys",
 			"response_types_supported": []string{"code"}, "response_modes_supported": []string{"form_post"},
 			"code_challenge_methods_supported": []string{"S256"}, "scopes_supported": []string{"openid"},
 			"token_endpoint_auth_methods_supported": []string{"client_secret_basic"}, "id_token_signing_alg_values_supported": []string{"RS256"}})
 	case "/keys":
-		_ = json.NewEncoder(w).Encode(jose.JSONWebKeySet{Keys: []jose.JSONWebKey{{Key: &f.key.PublicKey, KeyID: "key-1", Algorithm: "RS256", Use: "sig"}}})
+		testsupport.WriteJSON(f.t, w, jose.JSONWebKeySet{Keys: []jose.JSONWebKey{{Key: &f.key.PublicKey, KeyID: "key-1", Algorithm: "RS256", Use: "sig"}}})
 	case "/introspect":
 		f.calls++
 		client, secret, ok := r.BasicAuth()
@@ -84,15 +88,23 @@ func (f *issuerFixture) serve(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if r.ParseForm() != nil || r.Form.Get("token") != "access-user" || r.Form.Get("token_type_hint") != "access_token" {
-			_, _ = io.WriteString(w, `{"active":false}`)
+			testsupport.Write(f.t, w, []byte(`{"active":false}`))
 			return
 		}
 		w.WriteHeader(f.status)
 		if f.raw != "" {
-			_, _ = io.WriteString(w, f.raw)
+			if f.allowResponseCancellation {
+				// The oversized-response proof deliberately abandons the body
+				// when the consumer's read budget is exhausted.
+				if _, writeErr := io.WriteString(w, f.raw); writeErr != nil && r.Context().Err() == nil {
+					f.t.Errorf("write oversized issuer fixture: %v", writeErr)
+				}
+			} else {
+				testsupport.Write(f.t, w, []byte(f.raw))
+			}
 			return
 		}
-		_ = json.NewEncoder(w).Encode(f.claims)
+		testsupport.WriteJSON(f.t, w, f.claims)
 	case "/token":
 		client, secret, ok := r.BasicAuth()
 		if !ok || client != "link-client" || secret != "link-secret" || r.ParseForm() != nil ||
@@ -107,7 +119,12 @@ func (f *issuerFixture) serve(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "signer failed", 500)
 			return
 		}
-		claims, _ := json.Marshal(f.idClaims)
+		claims, err := json.Marshal(f.idClaims)
+		if err != nil {
+			f.t.Errorf("encode issuer claims: %v", err)
+			http.Error(w, "claims encoding failed", http.StatusInternalServerError)
+			return
+		}
 		signed, err := signer.Sign(claims)
 		if err != nil {
 			http.Error(w, "signing failed", 500)
@@ -118,7 +135,7 @@ func (f *issuerFixture) serve(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "encoding failed", 500)
 			return
 		}
-		_ = json.NewEncoder(w).Encode(map[string]any{"access_token": "link-only-access", "token_type": "Bearer", "id_token": raw})
+		testsupport.WriteJSON(f.t, w, map[string]any{"access_token": "link-only-access", "token_type": "Bearer", "id_token": raw})
 	default:
 		http.NotFound(w, r)
 	}
@@ -179,6 +196,7 @@ func TestIntrospectionFailsClosedWithoutDisclosingIssuerBodies(t *testing.T) {
 			f := newIssuer(t)
 			p := f.provider(t)
 			f.raw = test.body
+			f.allowResponseCancellation = test.name == "oversized"
 			f.status = test.status
 			_, err := p.Introspect(context.Background(), "access-user")
 			if !errors.Is(err, oauth.ErrUnavailable) || strings.Contains(fmt.Sprint(err), "credential-secret") {

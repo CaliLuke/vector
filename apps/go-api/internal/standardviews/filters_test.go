@@ -3,6 +3,8 @@ package standardviews
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 )
 
 func TestNormalizeFiltersUsesIssueFilterNames(t *testing.T) {
@@ -24,7 +26,7 @@ func TestNormalizeFiltersUsesIssueFilterNames(t *testing.T) {
 		"issue_assignee__deleted_at__isnull": true,
 		"parent__isnull":                     true,
 	} {
-		if !jsonEquivalent(result[key], want) {
+		if !testsupport.JSONEqual(result[key], want) {
 			t.Errorf("%s = %#v, want %#v", key, result[key], want)
 		}
 	}
@@ -59,10 +61,10 @@ func TestNormalizeFiltersPreservesPostValues(t *testing.T) {
 	if err := json.Unmarshal(got, &result); err != nil {
 		t.Fatal(err)
 	}
-	if !jsonEquivalent(result["parent__in"], []any{"None"}) || !jsonEquivalent(result["labels__in"], []any{"None"}) {
+	if !testsupport.JSONEqual(result["parent__in"], []any{"None"}) || !testsupport.JSONEqual(result["labels__in"], []any{"None"}) {
 		t.Fatalf("POST relation filters = %#v", result)
 	}
-	if !jsonEquivalent(result["start_date"], []any{"2024-01-01;after"}) {
+	if !testsupport.JSONEqual(result["start_date"], []any{"2024-01-01;after"}) {
 		t.Fatalf("POST date filter = %#v", result["start_date"])
 	}
 	if _, ok := result["parent__isnull"]; ok {
@@ -77,10 +79,4 @@ func TestNormalizeFiltersEmptyIsEmptyObject(t *testing.T) {
 			t.Fatalf("normalizeFilters(%s) = %s, %v", input, got, err)
 		}
 	}
-}
-
-func jsonEquivalent(got, want any) bool {
-	a, _ := json.Marshal(got)
-	b, _ := json.Marshal(want)
-	return string(a) == string(b)
 }

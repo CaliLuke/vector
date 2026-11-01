@@ -71,7 +71,7 @@ func TestWorkitemChildReadsMatchPinnedContracts(t *testing.T) {
 					{"workitem_comment", 12, 20}, {"workitem_link", 12, 12}, {"workitem_activity", 7, 18},
 				} {
 					t.Run(tc.tool, func(t *testing.T) {
-						page := cyclePageWire(t, call(tc.tool, strings.TrimSuffix(itemReadInput(tc.tool, "list"), "}")+`,"per_page":1}`))
+						page := cyclePageWire(t, call(tc.tool, strings.TrimSuffix(itemReadInput(t, tc.tool, "list"), "}")+`,"per_page":1}`))
 						require.Len(t, page, tc.pageFields)
 						require.Equal(t, float64(2), page["total_count"])
 						require.Equal(t, "1:1:0", page["next_cursor"])
@@ -79,20 +79,20 @@ func TestWorkitemChildReadsMatchPinnedContracts(t *testing.T) {
 						row := page["results"].([]any)[0].(map[string]any)
 						require.Len(t, row, tc.recordFields)
 						require.Equal(t, readChild, row["id"])
-						detail := cyclePageWire(t, call(tc.tool, itemReadInput(tc.tool, "retrieve")))
+						detail := cyclePageWire(t, call(tc.tool, itemReadInput(t, tc.tool, "retrieve")))
 						require.Equal(t, row, detail)
-						next := cyclePageWire(t, call(tc.tool, strings.TrimSuffix(itemReadInput(tc.tool, "list"), "}")+`,"per_page":1,"cursor":"1:1:0"}`))
+						next := cyclePageWire(t, call(tc.tool, strings.TrimSuffix(itemReadInput(t, tc.tool, "list"), "}")+`,"per_page":1,"cursor":"1:1:0"}`))
 						require.Equal(t, "90000000-0000-4000-8000-000000000002", next["results"].([]any)[0].(map[string]any)["id"])
 						require.Equal(t, true, next["prev_page_results"])
-						zero := cyclePageWire(t, call(tc.tool, strings.TrimSuffix(itemReadInput(tc.tool, "list"), "}")+`,"per_page":0,"cursor":""}`))
+						zero := cyclePageWire(t, call(tc.tool, strings.TrimSuffix(itemReadInput(t, tc.tool, "list"), "}")+`,"per_page":0,"cursor":""}`))
 						require.Equal(t, "1000:1:0", zero["next_cursor"])
 					})
 				}
-				comment := cyclePageWire(t, call("workitem_comment", itemReadInput("workitem_comment", "retrieve")))
+				comment := cyclePageWire(t, call("workitem_comment", itemReadInput(t, "workitem_comment", "retrieve")))
 				require.Equal(t, "<p>Hello @[10000000-0000-4000-8000-000000000001]</p>", comment["comment_html"])
 				require.Nil(t, comment["comment_stripped"])
 				require.Equal(t, true, comment["is_member"])
-				activity := cyclePageWire(t, call("workitem_activity", itemReadInput("workitem_activity", "retrieve")))
+				activity := cyclePageWire(t, call("workitem_activity", itemReadInput(t, "workitem_activity", "retrieve")))
 				require.Equal(t, float64(1704153600), activity["epoch"])
 			})
 		}
@@ -148,7 +148,7 @@ func TestWorkitemChildReadsRecheckVisibilityInDataSnapshot(t *testing.T) {
 					f.service, err = mcpactions.New(apps)
 					require.NoError(t, err)
 					h := oauthHandler(t, f, auth.Authenticate)
-					result := oauthToolCall(t, h, "2026-07-28", "oauth-user", "workspace-one", tool, itemReadInput(tool, action), 200)
+					result := oauthToolCall(t, h, "2026-07-28", "oauth-user", "workspace-one", tool, itemReadInput(t, tool, action), 200)
 					require.True(t, result.IsError, result.Content)
 					require.Empty(t, result.StructuredContent)
 					require.NotContains(t, result.Content[0].Text, "[internal_error]")
@@ -175,19 +175,19 @@ func TestWorkitemChildReadsHideForeignRelationsAndPreserveOpaqueMetadata(t *test
 	call := func(tool, input string) rpcResult {
 		return oauthToolCall(t, h, "2026-07-28", "oauth-user", "workspace-one", tool, input, 200)
 	}
-	comment := cyclePageWire(t, call("workitem_comment", itemReadInput("workitem_comment", "retrieve")))
+	comment := cyclePageWire(t, call("workitem_comment", itemReadInput(t, "workitem_comment", "retrieve")))
 	require.Nil(t, comment["parent"])
 	require.Nil(t, comment["description"])
 	require.Equal(t, "2024-01-01T16:00:00-08:00", comment["created_at"])
-	link := cyclePageWire(t, call("workitem_link", itemReadInput("workitem_link", "retrieve")))
+	link := cyclePageWire(t, call("workitem_link", itemReadInput(t, "workitem_link", "retrieve")))
 	require.Equal(t, "2024-01-01T16:00:00-08:00", link["created_at"])
 	require.Equal(t, "2024-01-02T00:00:00Z", link["metadata"].(map[string]any)["created_at"])
-	activity := cyclePageWire(t, call("workitem_activity", itemReadInput("workitem_activity", "retrieve")))
+	activity := cyclePageWire(t, call("workitem_activity", itemReadInput(t, "workitem_activity", "retrieve")))
 	require.Nil(t, activity["issue_comment"])
 	for _, tool := range []string{"workitem_comment", "workitem_link"} {
-		page := cyclePageWire(t, call(tool, itemReadInput(tool, "list")))
+		page := cyclePageWire(t, call(tool, itemReadInput(t, tool, "list")))
 		require.Equal(t, float64(1), page["total_count"])
-		hidden := call(tool, strings.ReplaceAll(itemReadInput(tool, "retrieve"), readChild, "90000000-0000-4000-8000-000000000002"))
+		hidden := call(tool, strings.ReplaceAll(itemReadInput(t, tool, "retrieve"), readChild, "90000000-0000-4000-8000-000000000002"))
 		require.True(t, hidden.IsError)
 		require.Contains(t, hidden.Content[0].Text, "[not_found]")
 	}
@@ -207,20 +207,20 @@ func TestWorkitemChildReadsAllowEligibleGuestsAndDistinguishEmptyParents(t *test
 		_, err := pool.Exec(t.Context(), mutation)
 		require.NoError(t, err)
 		for _, tool := range []string{"workitem_comment", "workitem_link", "workitem_activity"} {
-			require.Equal(t, float64(2), cyclePageWire(t, call(tool, itemReadInput(tool, "list")))["total_count"])
+			require.Equal(t, float64(2), cyclePageWire(t, call(tool, itemReadInput(t, tool, "list")))["total_count"])
 		}
 	}
 	_, err := pool.Exec(t.Context(), `UPDATE issue_comments SET deleted_at=now(); UPDATE issue_links SET deleted_at=now(); UPDATE issue_activities SET deleted_at=now()`)
 	require.NoError(t, err)
 	for _, tool := range []string{"workitem_comment", "workitem_link", "workitem_activity"} {
-		require.Empty(t, cyclePageWire(t, call(tool, itemReadInput(tool, "list")))["results"])
-		missing := call(tool, itemReadInput(tool, "retrieve"))
+		require.Empty(t, cyclePageWire(t, call(tool, itemReadInput(t, tool, "list")))["results"])
+		missing := call(tool, itemReadInput(t, tool, "retrieve"))
 		require.True(t, missing.IsError)
 		require.Contains(t, missing.Content[0].Text, "[not_found]")
-		invalid := call(tool, strings.TrimSuffix(itemReadInput(tool, "list"), "}")+`,"cursor":"invalid"}`)
+		invalid := call(tool, strings.TrimSuffix(itemReadInput(t, tool, "list"), "}")+`,"cursor":"invalid"}`)
 		require.True(t, invalid.IsError)
 		require.Contains(t, invalid.Content[0].Text, "[invalid_params]")
-		absent := call(tool, strings.ReplaceAll(itemReadInput(tool, "list"), readIssue, "80000000-0000-4000-8000-000000000099"))
+		absent := call(tool, strings.ReplaceAll(itemReadInput(t, tool, "list"), readIssue, "80000000-0000-4000-8000-000000000099"))
 		require.True(t, absent.IsError)
 		require.Contains(t, absent.Content[0].Text, "[not_found]")
 	}

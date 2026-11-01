@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/google/uuid"
@@ -102,7 +104,8 @@ func TestPropertyDiscoveryFreezesSchemaAndFormulaTimeAcrossRows(t *testing.T) {
 
 func TestPropertyDiscoveryRejectsOverflowWithoutCallingReader(t *testing.T) {
 	f := newProjectTypeFixture(t)
-	definition, _ := json.Marshal(property.Definition{Title: "Extra", Kind: property.Number, Configuration: property.Configuration{Active: true}})
+	definition, definitionErr := json.Marshal(property.Definition{Title: "Extra", Kind: property.Number, Configuration: property.Configuration{Active: true}})
+	require.NoError(t, definitionErr)
 	f.exec(`WITH inserted AS (INSERT INTO work_item_properties(id,workspace_id,definition) SELECT gen_random_uuid(),$1,$2::jsonb FROM generate_series(1,1001) RETURNING id) INSERT INTO work_item_type_properties(type_id,property_id) SELECT $3,id FROM inserted`, f.workspace, string(definition), f.task)
 	_, err := types.WithPropertyDiscoveryRead(f.ctx, f.db, f.member, "types", f.project, func(_ pgx.Tx, _ *types.PropertyDiscoverySnapshot) (bool, error) {
 		t.Fatal("partial catalog reached reader")

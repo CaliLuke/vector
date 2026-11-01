@@ -18,6 +18,7 @@ import (
 // apiFixture implements the public collection/detail contract with persisted
 // records, so retries and reconciliation are tested through actual HTTP calls.
 type apiFixture struct {
+	t             *testing.T
 	rows          map[string]Object
 	creates       int
 	patches       int
@@ -42,7 +43,7 @@ func (a *apiFixture) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			for _, id := range a.members[r.URL.Path] {
 				values = append(values, Object{"id": id})
 			}
-			_ = json.NewEncoder(w).Encode(values)
+			testsupport.WriteJSON(a.t, w, values)
 		case http.MethodPost:
 			var body struct {
 				Issues []string `json:"issues"`
@@ -61,7 +62,7 @@ func (a *apiFixture) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		if object, ok := a.rows[r.URL.Path]; ok {
-			_ = json.NewEncoder(w).Encode(object)
+			testsupport.WriteJSON(a.t, w, object)
 			return
 		}
 		values := []Object{}
@@ -70,7 +71,7 @@ func (a *apiFixture) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				values = append(values, object)
 			}
 		}
-		_ = json.NewEncoder(w).Encode(map[string]any{"results": values, "next_page_results": false})
+		testsupport.WriteJSON(a.t, w, map[string]any{"results": values, "next_page_results": false})
 	case http.MethodPost:
 		var body Object
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -87,7 +88,7 @@ func (a *apiFixture) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.WriteHeader(201)
-		_ = json.NewEncoder(w).Encode(body)
+		testsupport.WriteJSON(a.t, w, body)
 	case http.MethodPatch:
 		object, ok := a.rows[r.URL.Path]
 		if !ok {
@@ -102,7 +103,7 @@ func (a *apiFixture) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.normalizeDescription(patch)
 		maps.Copy(object, patch)
 		a.patches++
-		_ = json.NewEncoder(w).Encode(object)
+		testsupport.WriteJSON(a.t, w, object)
 	default:
 		w.WriteHeader(405)
 	}
@@ -157,7 +158,7 @@ func TestServerNormalizedDescriptionIsUnchangedAfterRestart(t *testing.T) {
 
 func fixtureRunner(t *testing.T) (*Runner, *apiFixture) {
 	t.Helper()
-	api := &apiFixture{rows: map[string]Object{}}
+	api := &apiFixture{t: t, rows: map[string]Object{}}
 	server := httptest.NewServer(api)
 	t.Cleanup(server.Close)
 	vector, err := NewVector(server.URL, "example", "test-key")

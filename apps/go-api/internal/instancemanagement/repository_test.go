@@ -8,6 +8,8 @@ import (
 	"unicode/utf8"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 )
 
@@ -119,8 +121,10 @@ func TestCreateWorkspaceReturnsSourceValidationFailuresBeforeDatabaseAccess(t *t
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			name, _ := json.Marshal(test.workspaceName)
-			slug, _ := json.Marshal(test.slug)
+			name, nameErr := json.Marshal(test.workspaceName)
+			require.NoError(t, nameErr)
+			slug, slugErr := json.Marshal(test.slug)
+			require.NoError(t, slugErr)
 			repository := &Repository{}
 			_, err := repository.CreateWorkspace(t.Context(), uuid.Nil(), map[string]json.RawMessage{"name": name, "slug": slug}, "UTC")
 			var validation *WorkspaceValidationError
@@ -130,8 +134,10 @@ func TestCreateWorkspaceReturnsSourceValidationFailuresBeforeDatabaseAccess(t *t
 		})
 	}
 
-	name, _ := json.Marshal(strings.Repeat("東", 80) + " ")
-	slug, _ := json.Marshal("raw-length-before-trim")
+	name, nameErr := json.Marshal(strings.Repeat("東", 80) + " ")
+	require.NoError(t, nameErr)
+	slug, slugErr := json.Marshal("raw-length-before-trim")
+	require.NoError(t, slugErr)
 	_, err := (&Repository{}).CreateWorkspace(t.Context(), uuid.Nil(), map[string]json.RawMessage{"name": name, "slug": slug}, "UTC")
 	var validation *WorkspaceValidationError
 	if !errors.As(err, &validation) || validation.Message != "The maximum length for name is 80 and for slug is 48" {
@@ -176,7 +182,8 @@ func workspaceValidationMessage(validation *WorkspaceValidationError, field stri
 
 func TestWorkspaceBackgroundColorFieldConstraints(t *testing.T) {
 	for _, value := range []string{"", strings.Repeat("a", 256)} {
-		raw, _ := json.Marshal(value)
+		raw, rawErr := json.Marshal(value)
+		require.NoError(t, rawErr)
 		_, err := workspaceBackgroundColor(map[string]json.RawMessage{"background_color": raw})
 		var validation *WorkspaceValidationError
 		if !errors.As(err, &validation) || validation.Field != "background_color" {

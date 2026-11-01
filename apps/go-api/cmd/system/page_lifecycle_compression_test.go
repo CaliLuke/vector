@@ -5,6 +5,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/CaliLuke/go-plane/internal/testsupport"
 )
 
 func TestPageDescriptionCompressionExceptionAppliesOnlyToReads(t *testing.T) {
@@ -21,7 +23,7 @@ func TestPageDescriptionCompressionExceptionAppliesOnlyToReads(t *testing.T) {
 		t.Run(test.method, func(t *testing.T) {
 			handler := readServicesGzipMiddleware(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 				mergeVary(response.Header(), "Cookie", "origin")
-				_, _ = response.Write([]byte(test.body))
+				testsupport.Write(t, response, []byte(test.body))
 			}))
 			request := httptest.NewRequest(test.method, path, nil)
 			request.Header.Set("Accept-Encoding", "gzip")

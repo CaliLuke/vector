@@ -7,6 +7,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	"github.com/CaliLuke/go-plane/internal/workitemsearch"
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
@@ -27,7 +29,8 @@ func TestRichTextSearchReviewedTypeSwitchAndFieldRemoval(t *testing.T) {
 	assertSearchBackfillCounts(t, f, 0, 1)
 	// An independent field has its current projection removed by the reviewed
 	// definition-deletion transaction, while its history remains separate.
-	raw, _ := json.Marshal(map[string]any{"name": "Current field item", "type_id": f.task, "custom_properties": map[string]any{field: "<p>Delete this field value</p>"}})
+	raw, rawErr := json.Marshal(map[string]any{"name": "Current field item", "type_id": f.task, "custom_properties": map[string]any{field: "<p>Delete this field value</p>"}})
+	require.NoError(t, rawErr)
 	result, err := writeValueItem(f, writer, "POST", "", string(raw))
 	if err != nil {
 		t.Fatal(err)
@@ -70,7 +73,8 @@ func TestRichTextSearchTypeReplacementKeepsSharedFieldOnly(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	raw, _ := json.Marshal(map[string]any{"name": "Replacement item", "type_id": f.bug, "custom_properties": map[string]any{shared: "<p>Retained needle</p>", removed: "<p>Preserved needle</p>"}})
+	raw, rawErr := json.Marshal(map[string]any{"name": "Replacement item", "type_id": f.bug, "custom_properties": map[string]any{shared: "<p>Retained needle</p>", removed: "<p>Preserved needle</p>"}})
+	require.NoError(t, rawErr)
 	result, err := writeValueItem(f, writer, "POST", "", string(raw))
 	if err != nil {
 		t.Fatal(err)

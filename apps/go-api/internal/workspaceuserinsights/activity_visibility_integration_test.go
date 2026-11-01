@@ -92,12 +92,15 @@ func TestActivityExportUsesRequesterMembershipInsteadOfActor(t *testing.T) {
 
 type revokeActivityAccess struct {
 	*pgx.Conn
+	t         *testing.T
 	preflight bool
 }
 
 func (db *revokeActivityAccess) revoke(ctx context.Context) {
 	if db.preflight {
-		_, _ = db.Exec(ctx, `UPDATE workspace_members SET is_active=false`)
+		if _, err := db.Exec(ctx, `UPDATE workspace_members SET is_active=false`); err != nil {
+			db.t.Errorf("revoke fixture workspace access: %v", err)
+		}
 	}
 	db.preflight = true
 }
@@ -117,7 +120,7 @@ func TestActivityResultQueriesRecheckRevokedWorkspaceMembership(t *testing.T) {
 			if _, err := db.Exec(ctx, `UPDATE workspace_members SET role=15`); err != nil {
 				t.Fatal(err)
 			}
-			repo, err := NewRepository(&revokeActivityAccess{Conn: db})
+			repo, err := NewRepository(&revokeActivityAccess{Conn: db, t: t})
 			if err != nil {
 				t.Fatal(err)
 			}

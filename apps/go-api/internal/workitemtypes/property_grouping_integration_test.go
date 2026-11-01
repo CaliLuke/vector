@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/google/uuid"
 )
@@ -18,7 +20,8 @@ func TestCustomGroupsUseScalarValuesCountsAndIndependentSelectors(t *testing.T) 
 		property.Definition{ID: flag, Title: "Ready", Kind: property.Boolean, Configuration: property.Configuration{Active: true}},
 		property.Definition{ID: choice, Title: "Category", Kind: property.Dropdown, Configuration: property.Configuration{Active: true, Options: []property.Option{{ID: option, Name: "Alpha"}}}},
 	)
-	saved, _ := json.Marshal(map[string]any{flag: false, choice: option})
+	saved, savedErr := json.Marshal(map[string]any{flag: false, choice: option})
+	require.NoError(t, savedErr)
 	f.exec(`UPDATE issues SET custom_properties=$2::jsonb WHERE id=ANY($1::uuid[])`, ids[:2], saved)
 	axis := "customproperty_" + flag
 	for _, project := range []string{f.project, ""} {
@@ -80,7 +83,8 @@ func TestCustomGroupsCoverSingleReferencesCascadeLevelsAndEmptyValues(t *testing
 		property.Definition{ID: cascade, Title: "Location", Kind: property.Cascading, Configuration: property.Configuration{Active: true, Levels: []property.Level{{ID: level, Name: "Country"}, {ID: uuid.NewString(), Name: "Region"}}, Options: []property.Option{{ID: option, Name: "Country one"}}}},
 	)
 	f.exec(`INSERT INTO work_item_releases(id,workspace_id,project_id,name) VALUES($1,$2,$3,'Release one')`, version, f.workspace, f.project)
-	saved, _ := json.Marshal(map[string]any{member: f.owner, release: version, cascade: []string{option}})
+	saved, savedErr := json.Marshal(map[string]any{member: f.owner, release: version, cascade: []string{option}})
+	require.NoError(t, savedErr)
 	f.exec(`UPDATE issues SET custom_properties=$2::jsonb WHERE id=$1`, ids[0], saved)
 	for _, sample := range []struct{ axis, value string }{
 		{"customproperty_" + member, f.owner}, {"customproperty_" + release, version}, {"customproperty_" + cascade + "_level_" + level + "_catalog_base", option},

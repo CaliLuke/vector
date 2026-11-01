@@ -95,7 +95,9 @@ func TestServiceSessionIdentityWithoutRequestFallbackUsesEmptyCredential(t *test
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
 	request.AddCookie(&http.Cookie{Name: "session-id", Value: "cookie-token"})
 	loomhttp.RequestMetadataMiddleware(policy)(http.HandlerFunc(func(_ http.ResponseWriter, request *http.Request) {
-		_, _, _ = serviceSessionIdentity(request.Context(), "", validator)
+		if _, _, err := serviceSessionIdentity(request.Context(), "", validator); err != nil {
+			t.Errorf("validate empty service credential: %v", err)
+		}
 	})).ServeHTTP(httptest.NewRecorder(), request)
 	if validator.calls != 1 || validator.credential != "" {
 		t.Fatalf("Validate calls=%d credential=%q", validator.calls, validator.credential)

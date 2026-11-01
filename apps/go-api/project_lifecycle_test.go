@@ -190,7 +190,10 @@ func TestProjectLifecycleLiteReadPreservesOriginalIntegerQuery(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer testsupport.Close(t, body)
-	raw, _ := io.ReadAll(body)
+	raw, readErr := io.ReadAll(body)
+	if readErr != nil {
+		t.Fatal(readErr)
+	}
 	if metadata.ContentType != "application/json" || string(raw) != `{"results":[{"id":"p"}]}` {
 		t.Fatalf("raw=%s metadata=%v", raw, metadata)
 	}

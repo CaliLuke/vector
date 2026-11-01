@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/google/uuid"
@@ -88,8 +90,10 @@ func TestPropertyExportSeparatesCascadingContextsAndRetainsErrorStates(t *testin
 		property.Definition{ID: badFormula, Title: "Broken calculation", Kind: property.Formula, Configuration: property.Configuration{Active: true, Expression: "1 / 0", Result: "Number"}},
 	)
 	f.exec(`INSERT INTO work_item_type_properties(type_id,property_id) VALUES($1,$2)`, f.bug, cascade)
-	taskSaved, _ := json.Marshal(map[string]any{cascade: []string{root}})
-	bugSaved, _ := json.Marshal(map[string]any{cascade: []string{otherRoot}})
+	taskSaved, taskSavedErr := json.Marshal(map[string]any{cascade: []string{root}})
+	require.NoError(t, taskSavedErr)
+	bugSaved, bugSavedErr := json.Marshal(map[string]any{cascade: []string{otherRoot}})
+	require.NoError(t, bugSavedErr)
 	f.exec(`UPDATE issues SET custom_properties=$2::jsonb WHERE id=$1`, ids[0], taskSaved)
 	f.exec(`UPDATE issues SET custom_properties=$2::jsonb WHERE id=$1`, ids[2], bugSaved)
 	rows := []map[string]any{{"id": ids[0], "project_id": f.project, "type_id": f.task}, {"id": ids[2], "project_id": f.project, "type_id": f.bug}}

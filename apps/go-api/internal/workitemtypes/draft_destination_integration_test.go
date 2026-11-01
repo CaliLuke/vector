@@ -9,6 +9,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 )
@@ -45,7 +47,8 @@ func TestDraftPublicationChoosesDestinationWithoutSavingDraftFirst(t *testing.T)
 			if err != nil || schema.TypeID != f.task {
 				t.Fatalf("destination schema: %+v %v", schema, err)
 			}
-			body, _ := json.Marshal(map[string]any{"project_id": strings.ToUpper(target), "label_ids": []string{}, "assignee_ids": []string{}})
+			body, bodyErr := json.Marshal(map[string]any{"project_id": strings.ToUpper(target), "label_ids": []string{}, "assignee_ids": []string{}})
+			require.NoError(t, bodyErr)
 			result, err := publishDraftForTest(f, repo, draft, f.member, string(body))
 			if err != nil {
 				t.Fatal(err)

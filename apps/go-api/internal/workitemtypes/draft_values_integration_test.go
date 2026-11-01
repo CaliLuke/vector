@@ -11,6 +11,8 @@ import (
 	"testing"
 	"uuid"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/intakeinboxreads"
 	"github.com/CaliLuke/go-plane/internal/workitems"
@@ -55,8 +57,10 @@ func TestDraftCreationDefaultsReadBackAndFormPublication(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	owner, _ := uuid.Parse(f.member)
-	draft, _ := uuid.Parse(id)
+	owner, ownerErr := uuid.Parse(f.member)
+	require.NoError(t, ownerErr)
+	draft, draftErr := uuid.Parse(id)
+	require.NoError(t, draftErr)
 	raw, err := reader.DraftIssueDetail(f.ctx, owner, "types", draft)
 	if err != nil {
 		t.Fatal(err)
@@ -67,7 +71,8 @@ func TestDraftCreationDefaultsReadBackAndFormPublication(t *testing.T) {
 	if err = json.Unmarshal(raw, &read); err != nil || read.Values[number] != float64(7) {
 		t.Fatalf("read lost defaults: %s %v", raw, err)
 	}
-	admin, _ := uuid.Parse(f.owner)
+	admin, adminErr := uuid.Parse(f.owner)
+	require.NoError(t, adminErr)
 	if _, err = reader.DraftIssueDetail(f.ctx, admin, "types", draft); !errors.Is(err, intakeinboxreads.ErrForbidden) {
 		t.Fatalf("administrator read another member's private draft: %v", err)
 	}
