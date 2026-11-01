@@ -178,8 +178,8 @@ func analyticTruthy(value any) bool {
 		if strings.ContainsAny(string(typed), ".eE") {
 			// Python's JSON decoder uses binary64 for decimals and exponents.
 			// Underflow therefore becomes false even while the raw value survives.
-			number, _ := strconv.ParseFloat(string(typed), 64)
-			return number != 0
+			number, floatErr := pythoncompat.DecimalFloat64(string(typed))
+			return floatErr != nil || number != 0
 		}
 		return strings.Trim(string(typed), "-0") != ""
 	default:

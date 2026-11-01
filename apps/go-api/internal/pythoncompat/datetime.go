@@ -266,7 +266,11 @@ func parseDjangoISOClock(value string, allowEmptyFraction bool) (int, int, int, 
 			fraction = fraction[:6]
 		}
 		fraction += strings.Repeat("0", 6-len(fraction))
-		microsecond, _ = strconv.Atoi(fraction)
+		parsed, fractionErr := asciiInteger(fraction)
+		if fractionErr != nil {
+			return 0, 0, 0, 0, fractionErr
+		}
+		microsecond = parsed
 	}
 	return components[0], components[1], components[2], microsecond, nil
 }

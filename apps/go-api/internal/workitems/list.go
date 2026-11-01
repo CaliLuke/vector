@@ -109,7 +109,7 @@ func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs ma
 		}
 	}
 	if shape.v2 {
-		return v2Envelope(q, page.rows, page.total, page.limit, page.page), nil
+		return v2Envelope(q, page.rows, page.total, page.limit, page.page)
 	}
 	results := []any{}
 	for _, row := range page.rows {
@@ -375,7 +375,10 @@ func (r *Repository) projectIssueListRow(ctx context.Context, q Request, shape i
 	if !shape.byIDs && !shape.details || shape.user {
 		fields = append(append([]string{}, compactFields...), "state__group")
 	}
-	value := projectFields(row, fields)
+	value, projectionErr := projectFields(row, fields)
+	if projectionErr != nil {
+		return nil, projectionErr
+	}
 	if shape.byIDs && (q.Params["expand"] != "" || q.Params["fields"] != "") {
 		value, err = r.expandedCompact(ctx, row, q, value)
 		if err != nil {
@@ -450,7 +453,10 @@ func (r *Repository) expandedCompact(ctx context.Context, row map[string]any, q 
 	return r.expandAppIssue(ctx, row, q, value)
 }
 func (r *Repository) listDetailProjection(ctx context.Context, row map[string]any, q Request) (map[string]any, error) {
-	value := projectFields(row, compactFields)
+	value, projectionErr := projectFields(row, compactFields)
+	if projectionErr != nil {
+		return nil, projectionErr
+	}
 	for _, rel := range []struct{ field, table, column string }{{"module_ids", "module_issues", "module_id"}, {"label_ids", "issue_labels", "label_id"}, {"assignee_ids", "issue_assignees", "assignee_id"}} {
 		query := `SELECT jsonb_build_object('id',` + rel.column + `) FROM ` + rel.table + ` WHERE issue_id=$1 AND deleted_at IS NULL ORDER BY created_at DESC`
 		if rel.field == "label_ids" {
@@ -480,7 +486,11 @@ func (r *Repository) listDetailProjection(ctx context.Context, row map[string]an
 		}
 		items := []any{}
 		for _, item := range rows {
-			items = append(items, projectFields(item, strings.Fields("id project_id sequence_id name relation_type state_id priority created_by created_at updated_at updated_by")))
+			projected, projectionErr := projectFields(item, strings.Fields("id project_id sequence_id name relation_type state_id priority created_by created_at updated_at updated_by"))
+			if projectionErr != nil {
+				return nil, projectionErr
+			}
+			items = append(items, projected)
 		}
 		value[field] = items
 	}
@@ -494,7 +504,7 @@ func (r *Repository) v2Page(q Request, rows []map[string]any) (Result, error) {
 	total := len(rows)
 	start := min(total, max(0, page)*limit)
 	end := min(total, start+limit)
-	return v2Envelope(q, rows[start:end], total, limit, page), nil
+	return v2Envelope(q, rows[start:end], total, limit, page)
 }
 
 func v2Window(q Request) (int, int, error) {
@@ -520,7 +530,7 @@ func v2Window(q Request) (int, int, error) {
 	return limit, page, nil
 }
 
-func v2Envelope(q Request, rows []map[string]any, total, limit, page int) Result {
+func v2Envelope(q Request, rows []map[string]any, total, limit, page int) (Result, error) {
 	start := min(total, max(0, page)*limit)
 	end := min(total, start+limit)
 	results := []any{}
@@ -537,11 +547,15 @@ func v2Envelope(q Request, rows []map[string]any, total, limit, page int) Result
 				row[field] = nil
 			}
 		}
-		results = append(results, projectFields(row, fields))
+		projected, projectionErr := projectFields(row, fields)
+		if projectionErr != nil {
+			return Result{}, projectionErr
+		}
+		results = append(results, projected)
 	}
 	var next any
 	if end < total {
 		next = fmt.Sprintf("%d:%d:0", limit, page+1)
 	}
-	return Result{200, map[string]any{"results": results, "cursor": fmt.Sprintf("%d:%d:0", limit, page), "next_cursor": next, "prev_cursor": fmt.Sprintf("%d:%d:0", limit, page-1), "next_page_results": end < total, "prev_page_results": page > 0, "page_count": len(results), "total_pages": int(math.Ceil(float64(total) / float64(limit))), "total_results": total}}
+	return Result{200, map[string]any{"results": results, "cursor": fmt.Sprintf("%d:%d:0", limit, page), "next_cursor": next, "prev_cursor": fmt.Sprintf("%d:%d:0", limit, page-1), "next_page_results": end < total, "prev_page_results": page > 0, "page_count": len(results), "total_pages": int(math.Ceil(float64(total) / float64(limit))), "total_results": total}}, nil
 }

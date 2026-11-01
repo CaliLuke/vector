@@ -269,8 +269,11 @@ func (r *Repository) collaborationIssueDetail(ctx context.Context, id any) (map[
 		return map[string]any{}, err
 	}
 	if number, ok := row["sort_order"].(json.Number); ok {
-		f, _ := number.Float64()
-		row["sort_order"] = json.Number(pythoncompat.FloatString(f))
+		formatted, formatErr := issueSortOrder(number)
+		if formatErr != nil {
+			return nil, formatErr
+		}
+		row["sort_order"] = formatted
 	}
 	return row, nil
 }

@@ -135,7 +135,11 @@ func (repository *Repository) PublicIssueList(ctx context.Context, scope PublicF
 		}
 		results := make([]any, 0, len(rows))
 		for _, row := range rows {
-			results = append(results, publicIssueProjection(row, subgroupOnlyModule))
+			projected, projectionErr := publicIssueProjection(row, subgroupOnlyModule)
+			if projectionErr != nil {
+				return Result{}, projectionErr
+			}
+			results = append(results, projected)
 		}
 		return Result{Status: 200, Body: djangoapi.Envelope(results, total, limit, page)}, nil
 	}
@@ -145,23 +149,30 @@ func (repository *Repository) PublicIssueList(ctx context.Context, scope PublicF
 	}
 	results := make([]any, 0, len(rows))
 	for _, row := range rows {
-		results = append(results, publicIssueProjection(row, false))
+		projected, projectionErr := publicIssueProjection(row, false)
+		if projectionErr != nil {
+			return Result{}, projectionErr
+		}
+		results = append(results, projected)
 	}
 	return repository.groupedPageWithVisibleRowCounts(ctx, q, results, rows, limit, page, true)
 }
 
-func publicIssueProjection(row map[string]any, subgroupOnlyModule bool) map[string]any {
+func publicIssueProjection(row map[string]any, subgroupOnlyModule bool) (map[string]any, error) {
 	fields := strings.Fields("id name state_id sort_order estimate_point priority start_date target_date sequence_id project_id parent_id cycle_id created_by state__group assignee_ids label_ids module_ids vote_items reaction_items")
 	if subgroupOnlyModule {
 		fields = slices.DeleteFunc(fields, func(field string) bool { return field == "module_ids" })
 		fields = append(fields, "issue_module__module_id")
 	}
-	value := projectFields(row, fields)
+	value, projectionErr := projectFields(row, fields)
+	if projectionErr != nil {
+		return nil, projectionErr
+	}
 	if row["vote_items"] == nil {
 		value["vote_items"] = nil
 	}
 	if row["reaction_items"] == nil {
 		value["reaction_items"] = nil
 	}
-	return value
+	return value, nil
 }

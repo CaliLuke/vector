@@ -64,7 +64,7 @@ func buildIssueComplexFilter(raw string, args *[]any) (string, error) {
 	return issuequery.BuildComplexFilter(raw, args)
 }
 
-func addIssueDateFilters(where []string, args []any, value, column string) ([]string, []any) {
+func addIssueDateFilters(where []string, args []any, value, column string) ([]string, []any, error) {
 	return issuequery.AddDateFilters(where, args, value, column)
 }
 
@@ -299,11 +299,19 @@ func (repository *Repository) issueResults(ctx context.Context, userID uuid.UUID
 	if options.Name != "" {
 		add("%"+escapeLikePattern(options.Name)+"%", `issue.name ILIKE $%d ESCAPE '\'`)
 	}
-	where, args = addIssueDateFilters(where, args, options.CreatedAt, requesterDateSQL("issue.created_at"))
-	where, args = addIssueDateFilters(where, args, options.UpdatedAt, requesterDateSQL("issue.updated_at"))
-	where, args = addIssueDateFilters(where, args, options.StartDate, "issue.start_date")
-	where, args = addIssueDateFilters(where, args, options.TargetDate, "issue.target_date")
-	where, args = addIssueDateFilters(where, args, options.CompletedAt, requesterDateSQL("issue.completed_at"))
+	for _, date := range []struct{ value, column string }{
+		{options.CreatedAt, requesterDateSQL("issue.created_at")},
+		{options.UpdatedAt, requesterDateSQL("issue.updated_at")},
+		{options.StartDate, "issue.start_date"},
+		{options.TargetDate, "issue.target_date"},
+		{options.CompletedAt, requesterDateSQL("issue.completed_at")},
+	} {
+		var dateErr error
+		where, args, dateErr = addIssueDateFilters(where, args, date.value, date.column)
+		if dateErr != nil {
+			return IssuePage{}, dateErr
+		}
+	}
 	cycles, noCycle := validUUIDFilter(options.Cycle, true)
 	if noCycle {
 		where = append(where, "NOT EXISTS (SELECT 1 FROM cycle_issues filter_cycle WHERE filter_cycle.issue_id = issue.id)")

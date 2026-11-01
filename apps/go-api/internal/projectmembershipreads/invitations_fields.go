@@ -37,9 +37,13 @@ func invitationRole(value any) (int, bool) {
 			return v, true
 		}
 	case string:
-		if v == "5" || v == "15" || v == "20" {
-			n, _ := strconv.Atoi(v)
-			return n, true
+		switch v {
+		case "5":
+			return 5, true
+		case "15":
+			return 15, true
+		case "20":
+			return 20, true
 		}
 	}
 	return 0, false
@@ -73,8 +77,8 @@ func invitationTruth(value any) bool {
 	case string:
 		return v != ""
 	case json.Number:
-		f, _ := strconv.ParseFloat(string(v), 64)
-		return f != 0
+		f, floatErr := pythoncompat.DecimalFloat64(string(v))
+		return floatErr != nil || f != 0
 	case float64:
 		return v != 0
 	case []any:

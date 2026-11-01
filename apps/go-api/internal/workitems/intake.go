@@ -366,18 +366,30 @@ func (r *Repository) intakeProjection(ctx context.Context, q Request, row map[st
 			if annotateIntakeIssueErr := r.annotateIntakeIssue(ctx, issue); annotateIntakeIssueErr != nil {
 				return nil, annotateIntakeIssueErr
 			}
-			result["issue"] = projectFields(issue, detailFields)
+			projected, projectionErr := projectFields(issue, detailFields)
+			if projectionErr != nil {
+				return nil, projectionErr
+			}
+			result["issue"] = projected
 			result["duplicate_issue_detail"] = nil
 			if row["duplicate_to_id"] != nil {
 				duplicate, e := r.row(ctx, `SELECT to_jsonb(i) FROM issues i WHERE id=$1`, row["duplicate_to_id"])
 				if e != nil {
 					return nil, e
 				}
-				result["duplicate_issue_detail"] = projectFields(duplicate, strings.Fields("id name priority sequence_id project_id created_at created_by"))
+				projected, projectionErr := projectFields(duplicate, strings.Fields("id name priority sequence_id project_id created_at created_by"))
+				if projectionErr != nil {
+					return nil, projectionErr
+				}
+				result["duplicate_issue_detail"] = projected
 			}
 		} else {
 			delete(issue, "label_ids")
-			result["issue"] = projectFields(issue, strings.Fields("id name priority sequence_id project_id created_at label_ids created_by"))
+			projected, projectionErr := projectFields(issue, strings.Fields("id name priority sequence_id project_id created_at label_ids created_by"))
+			if projectionErr != nil {
+				return nil, projectionErr
+			}
+			result["issue"] = projected
 			result["created_by"] = row["created_by_id"]
 		}
 		return result, nil
@@ -546,7 +558,10 @@ func (r *Repository) prepareIntakeIssueEdit(ctx context.Context, q Request, proj
 		if err = r.validateTypeTenant(ctx, changes.values, data, project["workspace_id"]); err != nil {
 			return intakeIssueEdit{}, err
 		}
-		projected := projectFields(old, detailFields)
+		projected, projectionErr := projectFields(old, detailFields)
+		if projectionErr != nil {
+			return intakeIssueEdit{}, projectionErr
+		}
 		order := detailFields
 		if q.API {
 			projected, err = r.serializeAuthorizedIssue(ctx, old, "", "")

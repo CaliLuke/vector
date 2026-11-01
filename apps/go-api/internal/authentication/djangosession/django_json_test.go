@@ -7,6 +7,18 @@ import (
 	"testing"
 )
 
+func TestDjangoJSONPreservesParsedFloatRangeAndSignedZero(t *testing.T) {
+	values, canonical, err := decodeDjangoJSON([]byte(`{"large":1e999,"small":-1e999,"zero":-1e-999,"finite":1.25}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(canonical) != `{"large":Infinity,"small":-Infinity,"zero":-0.0,"finite":1.25}` ||
+		!math.IsInf(values["large"].(float64), 1) || !math.IsInf(values["small"].(float64), -1) ||
+		values["zero"].(float64) != 0 || !math.Signbit(values["zero"].(float64)) || values["finite"] != 1.25 {
+		t.Fatalf("values=%v canonical=%s", values, canonical)
+	}
+}
+
 func TestDjangoJSONCanonicalizesLikePython(t *testing.T) {
 	input := []byte(`{ "x" : 1, "x": 2, "nan": NaN, "positive": Infinity, "negative": -Infinity, "text": "<>&\u2028\ud800", "pair": "\ud83d\ude00", "floats": [1.0, 1e15, 1e16, 1e-4, 1e-5] }`)
 	values, canonical, err := decodeDjangoJSON(input)

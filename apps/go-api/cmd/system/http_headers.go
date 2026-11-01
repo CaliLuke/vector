@@ -291,8 +291,12 @@ func decodePythonUnicodeEscape(value []byte, raw bool) string {
 			for end < len(value) && end < index+4 && value[end] >= '0' && value[end] <= '7' {
 				end++
 			}
-			character, _ := strconv.ParseUint(string(value[index+1:end]), 8, 8)
-			decoded.WriteRune(rune(character))
+			character, parseErr := strconv.ParseUint(string(value[index+1:end]), 8, 32)
+			if parseErr != nil {
+				decoded.WriteRune(utf8.RuneError)
+			} else {
+				decoded.WriteRune(rune(character))
+			}
 			index = end
 			continue
 		}

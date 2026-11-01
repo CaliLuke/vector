@@ -413,7 +413,10 @@ func (r *draftOperation) draftProjection(ctx context.Context, row map[string]any
 	if err != nil {
 		return nil, err
 	}
-	result := projectFields(row, []string{"id", "name", "state_id", "sort_order", "completed_at", "estimate_point", "priority", "start_date", "target_date", "project_id", "parent_id", "created_at", "updated_at", "created_by", "updated_by", "type_id", "description_html", "custom_properties"})
+	result, projectionErr := projectFields(row, []string{"id", "name", "state_id", "sort_order", "completed_at", "estimate_point", "priority", "start_date", "target_date", "project_id", "parent_id", "created_at", "updated_at", "created_by", "updated_by", "type_id", "description_html", "custom_properties"})
+	if projectionErr != nil {
+		return nil, projectionErr
+	}
 	var cycle *string
 	if err := r.db.QueryRow(ctx, `SELECT (SELECT cycle_id::text FROM draft_issue_cycles WHERE draft_issue_id=$1 AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1)`, row["id"]).Scan(&cycle); err != nil {
 		return nil, err

@@ -27,12 +27,13 @@ const (
 )
 
 type djangoJSONValue struct {
-	kind    djangoJSONKind
-	boolean bool
-	text    []rune
-	number  string
-	array   []djangoJSONValue
-	object  *djangoJSONObjectValue
+	kind     djangoJSONKind
+	boolean  bool
+	text     []rune
+	number   string
+	floating float64
+	array    []djangoJSONValue
+	object   *djangoJSONObjectValue
 }
 
 type djangoJSONObjectValue struct {
@@ -120,15 +121,15 @@ func (parser *djangoJSONParser) parseValue() (djangoJSONValue, error) {
 		}
 	case 'N':
 		if parser.consume("NaN") {
-			return djangoJSONValue{kind: djangoJSONFloat, number: "NaN"}, nil
+			return djangoJSONValue{kind: djangoJSONFloat, floating: math.NaN()}, nil
 		}
 	case 'I':
 		if parser.consume("Infinity") {
-			return djangoJSONValue{kind: djangoJSONFloat, number: "Infinity"}, nil
+			return djangoJSONValue{kind: djangoJSONFloat, floating: math.Inf(1)}, nil
 		}
 	case '-':
 		if parser.consume("-Infinity") {
-			return djangoJSONValue{kind: djangoJSONFloat, number: "-Infinity"}, nil
+			return djangoJSONValue{kind: djangoJSONFloat, floating: math.Inf(-1)}, nil
 		}
 		return parser.parseNumber()
 	default:
@@ -240,10 +241,11 @@ func (parser *djangoJSONParser) parseNumber() (djangoJSONValue, error) {
 	}
 	token := string(parser.input[start:parser.index])
 	if isFloat {
-		if _, err := strconv.ParseFloat(token, 64); err != nil && !errors.Is(err, strconv.ErrRange) {
+		number, parseErr := strconv.ParseFloat(token, 64)
+		if parseErr != nil && !errors.Is(parseErr, strconv.ErrRange) {
 			return djangoJSONValue{}, ErrInvalidData
 		}
-		return djangoJSONValue{kind: djangoJSONFloat, number: token}, nil
+		return djangoJSONValue{kind: djangoJSONFloat, floating: number}, nil
 	}
 	digits := strings.TrimPrefix(token, "-")
 	if len(digits) > 4300 {
@@ -313,17 +315,7 @@ func djangoJSONPlainValue(value djangoJSONValue) any {
 	case djangoJSONInteger:
 		return json.Number(value.number)
 	case djangoJSONFloat:
-		switch value.number {
-		case "NaN":
-			return math.NaN()
-		case "Infinity":
-			return math.Inf(1)
-		case "-Infinity":
-			return math.Inf(-1)
-		default:
-			parsed, _ := strconv.ParseFloat(value.number, 64)
-			return parsed
-		}
+		return value.floating
 	case djangoJSONArray:
 		result := make([]any, 0, len(value.array))
 		for _, item := range value.array {
@@ -394,7 +386,7 @@ func writeDjangoJSON(output *bytes.Buffer, value djangoJSONValue) {
 		integer, _ := new(big.Int).SetString(value.number, 10)
 		output.WriteString(integer.String())
 	case djangoJSONFloat:
-		writeDjangoJSONFloat(output, value.number)
+		writeDjangoJSONFloat(output, value.floating)
 	case djangoJSONArray:
 		output.WriteByte('[')
 		for index, item := range value.array {
@@ -418,12 +410,7 @@ func writeDjangoJSON(output *bytes.Buffer, value djangoJSONValue) {
 	}
 }
 
-func writeDjangoJSONFloat(output *bytes.Buffer, token string) {
-	if token == "NaN" || token == "Infinity" || token == "-Infinity" {
-		output.WriteString(token)
-		return
-	}
-	value, _ := strconv.ParseFloat(token, 64)
+func writeDjangoJSONFloat(output *bytes.Buffer, value float64) {
 	if math.IsNaN(value) {
 		output.WriteString("NaN")
 		return

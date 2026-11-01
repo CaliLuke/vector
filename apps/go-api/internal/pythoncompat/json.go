@@ -80,7 +80,10 @@ func normalizeJSONNumbers(data []byte, preserveOverflow bool) ([]byte, error) {
 func FloatString(value float64) string {
 	scientific := strconv.FormatFloat(value, 'e', -1, 64)
 	coefficient, exponentText, _ := strings.Cut(scientific, "e")
-	exponent, _ := strconv.Atoi(exponentText)
+	exponent, exponentErr := strconv.Atoi(exponentText)
+	if exponentErr != nil {
+		return scientific
+	}
 	if exponent < -4 || exponent >= 16 {
 		return scientific
 	}

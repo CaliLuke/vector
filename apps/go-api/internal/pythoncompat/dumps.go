@@ -33,8 +33,15 @@ func dumpValue(output *strings.Builder, value any, original []byte) error {
 	case string:
 		dumpString(output, value)
 	case json.Number:
-		if strings.ContainsAny(string(value), ".eE") {
-			f, _ := strconv.ParseFloat(string(value), 64)
+		token := string(value)
+		if !json.Valid([]byte(token)) || len(token) == 0 || (token[0] != '-' && (token[0] < '0' || token[0] > '9')) {
+			return fmt.Errorf("invalid JSON number")
+		}
+		if strings.ContainsAny(token, ".eE") {
+			f, floatErr := DecimalFloat64(token)
+			if floatErr != nil {
+				return floatErr
+			}
 			dumpFloat(output, f)
 		} else if value == "-0" {
 			output.WriteByte('0')

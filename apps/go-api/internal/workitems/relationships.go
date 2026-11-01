@@ -201,10 +201,13 @@ func (r *Repository) relations(ctx context.Context, q Request, body io.Reader, c
 		if err != nil {
 			return Result{}, err
 		}
-		result := relationProjection(map[string]any{
+		result, projectionErr := relationProjection(map[string]any{
 			"relation_type": actual, "created_by_id": q.ActorID, "updated_by_id": q.ActorID,
 			"created_at": now, "updated_at": now,
 		}, target)
+		if projectionErr != nil {
+			return Result{}, projectionErr
+		}
 		created = append(created, result)
 	}
 	if err = tx.Commit(ctx); err != nil {
@@ -232,13 +235,20 @@ func (r *Repository) relations(ctx context.Context, q Request, body io.Reader, c
 		}
 		created = []any{}
 		for _, row := range rows {
-			created = append(created, relationProjection(row, row["target"].(map[string]any)))
+			projected, projectionErr := relationProjection(row, row["target"].(map[string]any))
+			if projectionErr != nil {
+				return Result{}, projectionErr
+			}
+			created = append(created, projected)
 		}
 	}
 	return Result{201, created}, nil
 }
-func relationProjection(relation, target map[string]any) map[string]any {
-	out := projectFields(target, strings.Fields("id project_id sequence_id name state_id priority"))
+func relationProjection(relation, target map[string]any) (map[string]any, error) {
+	out, projectionErr := projectFields(target, strings.Fields("id project_id sequence_id name state_id priority"))
+	if projectionErr != nil {
+		return nil, projectionErr
+	}
 	// The source field traverses state.id; a missing state omits the field.
 	if out["state_id"] == nil {
 		delete(out, "state_id")
@@ -247,7 +257,7 @@ func relationProjection(relation, target map[string]any) map[string]any {
 		out[key] = relation[key]
 	}
 	out["created_by"], out["updated_by"] = relation["created_by_id"], relation["updated_by_id"]
-	return out
+	return out, nil
 }
 func (r *Repository) listRelations(ctx context.Context, q Request) (Result, error) {
 	rows, err := r.visibleCollaborationRows(ctx, q, "relation", `SELECT to_jsonb(rel)||jsonb_build_object('left_project',i.project_id,'right_project',j.project_id) FROM issue_relations rel JOIN issues i ON i.id=rel.issue_id JOIN issues j ON j.id=rel.related_issue_id JOIN workspaces w ON w.id=rel.workspace_id WHERE (rel.issue_id=$1 OR rel.related_issue_id=$1) AND w.slug=$2 AND rel.deleted_at IS NULL AND `+djangoapi.IssueVisibleSQL("i", "$3::uuid", "w.id")+` AND `+djangoapi.IssueVisibleSQL("j", "$3::uuid", "w.id")+` ORDER BY rel.created_at DESC`, q.IssueID, q.Slug, q.ActorID)
@@ -300,7 +310,10 @@ func (r *Repository) listRelations(ctx context.Context, q Request) (Result, erro
 			if err != nil {
 				return Result{}, err
 			}
-			item := projectFields(row, strings.Fields("id name state_id sort_order priority sequence_id project_id label_ids assignee_ids created_at updated_at created_by updated_by"))
+			item, projectionErr := projectFields(row, strings.Fields("id name state_id sort_order priority sequence_id project_id label_ids assignee_ids created_at updated_at created_by updated_by"))
+			if projectionErr != nil {
+				return Result{}, projectionErr
+			}
 			item["relation_type"] = key
 			out[key] = append(out[key].([]any), item)
 		}
@@ -325,7 +338,11 @@ func (r *Repository) removeRelation(ctx context.Context, q Request, input django
 		return Result{}, errors.New("relation missing before instance delete")
 	}
 	row := rows[0]
-	previous, err := orderedDump(relationProjection(row, row["target"].(map[string]any)), strings.Fields("id project_id sequence_id relation_type name state_id priority created_by created_at updated_at updated_by"))
+	projected, projectionErr := relationProjection(row, row["target"].(map[string]any))
+	if projectionErr != nil {
+		return Result{}, projectionErr
+	}
+	previous, err := orderedDump(projected, strings.Fields("id project_id sequence_id relation_type name state_id priority created_by created_at updated_at updated_by"))
 	if err != nil {
 		return Result{}, err
 	}
@@ -462,7 +479,10 @@ func (r *Repository) subissuesTransaction(ctx context.Context, q Request, body i
 				return Result{}, err
 			}
 		}
-		item := projectFields(row, compactFields)
+		item, projectionErr := projectFields(row, compactFields)
+		if projectionErr != nil {
+			return Result{}, projectionErr
+		}
 		if q.Method == "GET" {
 			item["state_group"] = group
 		}

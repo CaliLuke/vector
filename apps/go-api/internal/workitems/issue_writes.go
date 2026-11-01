@@ -329,7 +329,8 @@ func (r *Repository) finishIssueWrite(ctx context.Context, q Request, input djan
 	if err != nil {
 		return Result{}, err
 	}
-	return Result{201, projectFields(annotated, append(append([]string{}, compactFields...), "deleted_at"))}, nil
+	projected, projectionErr := projectFields(annotated, append(append([]string{}, compactFields...), "deleted_at"))
+	return Result{201, projected}, projectionErr
 }
 
 func (r *Repository) createdAppIssueResponse(ctx context.Context, q Request, input djangoinput.Input) (Result, error) {
@@ -350,7 +351,8 @@ func (r *Repository) createdAppIssueResponse(ctx context.Context, q Request, inp
 	if e = r.issueWriteFollowups(ctx, q, input, nil, requested, true); e != nil {
 		return Result{}, e
 	}
-	return Result{201, projectFields(annotated, append(append([]string{}, compactFields...), "deleted_at"))}, nil
+	projected, projectionErr := projectFields(annotated, append(append([]string{}, compactFields...), "deleted_at"))
+	return Result{201, projected}, projectionErr
 }
 
 func (r *Repository) saveAPIIssueCreationAudit(ctx context.Context, q Request, input djangoinput.Input) error {
@@ -569,10 +571,10 @@ func visibleAppWriteProjection(ctx context.Context, db Database, q Request, row 
 	if err != nil {
 		return nil, err
 	}
-	return appWriteProjection(row, input), nil
+	return appWriteProjection(row, input)
 }
 
-func appWriteProjection(row map[string]any, input djangoinput.Input) map[string]any {
+func appWriteProjection(row map[string]any, input djangoinput.Input) (map[string]any, error) {
 	result := maps.Clone(row)
 	for _, field := range []string{"created_by", "updated_by", "workspace", "project", "state", "parent", "estimate_point", "type"} {
 		result[field] = row[field+"_id"]
@@ -587,8 +589,11 @@ func appWriteProjection(row map[string]any, input djangoinput.Input) map[string]
 		}
 	}
 	if number, ok := result["sort_order"].(json.Number); ok {
-		f, _ := number.Float64()
-		result["sort_order"] = json.Number(pythoncompat.FloatString(f))
+		formatted, formatErr := issueSortOrder(number)
+		if formatErr != nil {
+			return nil, formatErr
+		}
+		result["sort_order"] = formatted
 	}
-	return result
+	return result, nil
 }

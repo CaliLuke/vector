@@ -879,10 +879,10 @@ func parseDjangoDate(value string) (string, bool) {
 		!asciiDecimalDigits(parts[0]) || !asciiDecimalDigits(parts[1]) || !asciiDecimalDigits(parts[2]) {
 		return "", false
 	}
-	year, _ := strconv.Atoi(parts[0])
-	month, _ := strconv.Atoi(parts[1])
-	day, _ := strconv.Atoi(parts[2])
-	if year < 1 || year > 9999 {
+	year, yearErr := strconv.Atoi(parts[0])
+	month, monthErr := strconv.Atoi(parts[1])
+	day, dayErr := strconv.Atoi(parts[2])
+	if yearErr != nil || monthErr != nil || dayErr != nil || year < 1 || year > 9999 {
 		return "", false
 	}
 	parsed := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
@@ -909,10 +909,10 @@ func parseDjangoISOWeekDate(value string) (time.Time, bool) {
 	if !asciiDecimalDigits(yearText) || !asciiDecimalDigits(weekText) || !asciiDecimalDigits(weekdayText) {
 		return time.Time{}, false
 	}
-	year, _ := strconv.Atoi(yearText)
-	week, _ := strconv.Atoi(weekText)
-	weekday, _ := strconv.Atoi(weekdayText)
-	if year < 1 || year > 9999 || week < 1 || week > 53 || weekday < 1 || weekday > 7 {
+	year, yearErr := strconv.Atoi(yearText)
+	week, weekErr := strconv.Atoi(weekText)
+	weekday, weekdayErr := strconv.Atoi(weekdayText)
+	if yearErr != nil || weekErr != nil || weekdayErr != nil || year < 1 || year > 9999 || week < 1 || week > 53 || weekday < 1 || weekday > 7 {
 		return time.Time{}, false
 	}
 	januaryFourth := time.Date(year, time.January, 4, 0, 0, 0, 0, time.UTC)

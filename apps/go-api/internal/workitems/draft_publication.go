@@ -48,7 +48,10 @@ func (r *draftOperation) publicationInput(ctx context.Context, draft map[string]
 	if err != nil {
 		return input, err
 	}
-	fields := projectFields(draft, []string{"name", "description_html", "description_json", "priority", "start_date", "target_date", "state_id", "parent_id", "type_id", "estimate_point", "external_id", "external_source", "custom_properties"})
+	fields, projectionErr := projectFields(draft, []string{"name", "description_html", "description_json", "priority", "start_date", "target_date", "state_id", "parent_id", "type_id", "estimate_point", "external_id", "external_source", "custom_properties"})
+	if projectionErr != nil {
+		return input, projectionErr
+	}
 	for _, relation := range []struct{ table, column, field string }{
 		{"draft_issue_cycles", "cycle_id", "cycle_id"}, {"draft_issue_modules", "module_id", "module_ids"},
 		{"draft_issue_assignees", "assignee_id", "assignee_ids"}, {"draft_issue_labels", "label_id", "label_ids"},

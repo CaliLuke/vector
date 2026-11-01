@@ -18,7 +18,10 @@ function run(script, extra = [], childArgs = []) {
     encoding: "utf8",
     timeout: 7000,
   });
-  assert.ifError(result.error);
+  assert.ok(
+    !result.error,
+    `guard fixture failed (${result.error?.code ?? "unknown"}, signal=${result.signal ?? "none"}, status=${result.status ?? "none"}); stderr:\n${result.stderr}`
+  );
   return result;
 }
 
@@ -64,7 +67,10 @@ fi
     timeout: 10_000,
     env: { ...process.env, PATH: `${directory}${path.delimiter}${process.env.PATH}` },
   });
-  assert.ifError(result.error);
+  assert.ok(
+    !result.error,
+    `sampling fixture failed (${result.error?.code ?? "unknown"}, signal=${result.signal ?? "none"}, status=${result.status ?? "none"}); stderr:\n${result.stderr}`
+  );
   return result;
 }
 

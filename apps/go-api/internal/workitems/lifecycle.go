@@ -40,7 +40,11 @@ func (r *Repository) lifecycleTransaction(ctx context.Context, q Request, body i
 		}
 		// Archive retrieval annotates only subscription. Missing list annotations
 		// are omitted by IssueDetailSerializer, rather than rendered as empty/null.
-		v, e := r.expandAppIssue(ctx, row, q, projectFields(row, detailFields))
+		projected, projectionErr := projectFields(row, detailFields)
+		if projectionErr != nil {
+			return Result{}, projectionErr
+		}
+		v, e := r.expandAppIssue(ctx, row, q, projected)
 		return Result{200, v}, e
 	}
 	row, err := r.issue(ctx, q, q.Method == "POST")
@@ -96,7 +100,11 @@ func (r *Repository) archiveActivity(ctx context.Context, q Request, row map[str
 	if err != nil {
 		return err
 	}
-	previous, err := orderedDump(timestampProjection(projectFields(row, compactFields), q.Timezone).(map[string]any), compactFields)
+	projected, projectionErr := projectFields(row, compactFields)
+	if projectionErr != nil {
+		return projectionErr
+	}
+	previous, err := orderedDump(timestampProjection(projected, q.Timezone).(map[string]any), compactFields)
 	if err != nil {
 		return err
 	}

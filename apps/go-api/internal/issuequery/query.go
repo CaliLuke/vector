@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+
 	"uuid"
 )
 
@@ -78,11 +80,11 @@ func RequesterDateSQL(column string) string {
     )::date)`
 }
 
-func AddDateFilters(where []string, args []any, value, column string) ([]string, []any) {
+func AddDateFilters(where []string, args []any, value, column string) ([]string, []any, error) {
 	filters := strings.Split(value, ",")
 	for _, filter := range filters {
 		if filter == "" {
-			return where, args
+			return where, args, nil
 		}
 	}
 	type dateFilter struct {
@@ -111,11 +113,17 @@ func AddDateFilters(where []string, args []any, value, column string) ([]string,
 		duration := strings.SplitN(parts[0], "_", 2)
 		if len(duration) == 2 && asciiDigits(duration[0]) && (duration[1] == "weeks" || duration[1] == "months") {
 			if len(parts) == 3 {
-				count, _ := strconv.Atoi(duration[0])
-				days := count * 7
+				factor := 7
 				if duration[1] == "months" {
-					days = count * 30
+					factor = 30
 				}
+				count, countErr := strconv.Atoi(duration[0])
+				// Python timedelta rejects a normalized duration beyond 999999999 days.
+				// Check before multiplying so a large count cannot reverse the range.
+				if countErr != nil || count > 999999999/factor {
+					return nil, args, fmt.Errorf("relative date duration exceeds supported range")
+				}
+				days := count * factor
 				comparison := "<="
 				kind := "lte"
 				if parts[1] == "after" {
@@ -150,7 +158,7 @@ func AddDateFilters(where []string, args []any, value, column string) ([]string,
 			where = append(where, fmt.Sprintf("%s %s $%d::date", column, filter.comparison, len(args)))
 		}
 	}
-	return where, args
+	return where, args, nil
 }
 
 var issueComplexFilterFields = map[string]struct{}{
@@ -317,8 +325,8 @@ func emptyComplexFilter(decoded any) bool {
 			return true
 		}
 	case json.Number:
-		number, _ := strconv.ParseFloat(value.String(), 64)
-		if number == 0 {
+		number, numberErr := pythoncompat.DecimalFloat64(value.String())
+		if numberErr == nil && number == 0 {
 			return true
 		}
 	case []any:

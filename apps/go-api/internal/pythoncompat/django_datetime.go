@@ -30,7 +30,14 @@ func DjangoDateTime(value string, naiveLocation *time.Location) (time.Time, erro
 	}
 	numbers := make([]int, 6)
 	for i := range numbers {
-		numbers[i], _ = strconv.Atoi(parts[i+1])
+		if parts[i+1] == "" {
+			continue
+		}
+		parsed, componentErr := strconv.Atoi(parts[i+1])
+		if componentErr != nil {
+			return time.Time{}, fmt.Errorf("invalid Django datetime component: %w", componentErr)
+		}
+		numbers[i] = parsed
 	}
 	fraction := parts[7]
 	if len(fraction) > 6 {

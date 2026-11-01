@@ -113,11 +113,19 @@ func appFiltersWithTypes(options issuequery.Options, where []string, args []any,
 	if options.Name != "" {
 		add("%"+issuequery.EscapeLikePattern(options.Name)+"%", `issue.name ILIKE $%d ESCAPE '\'`)
 	}
-	where, args = issuequery.AddDateFilters(where, args, options.CreatedAt, issuequery.RequesterDateSQL("issue.created_at"))
-	where, args = issuequery.AddDateFilters(where, args, options.UpdatedAt, issuequery.RequesterDateSQL("issue.updated_at"))
-	where, args = issuequery.AddDateFilters(where, args, options.StartDate, "issue.start_date")
-	where, args = issuequery.AddDateFilters(where, args, options.TargetDate, "issue.target_date")
-	where, args = issuequery.AddDateFilters(where, args, options.CompletedAt, issuequery.RequesterDateSQL("issue.completed_at"))
+	for _, date := range []struct{ value, column string }{
+		{options.CreatedAt, issuequery.RequesterDateSQL("issue.created_at")},
+		{options.UpdatedAt, issuequery.RequesterDateSQL("issue.updated_at")},
+		{options.StartDate, "issue.start_date"},
+		{options.TargetDate, "issue.target_date"},
+		{options.CompletedAt, issuequery.RequesterDateSQL("issue.completed_at")},
+	} {
+		var dateErr error
+		where, args, dateErr = issuequery.AddDateFilters(where, args, date.value, date.column)
+		if dateErr != nil {
+			return nil, args, dateErr
+		}
+	}
 	cycles, noCycle := issuequery.ValidUUIDFilter(options.Cycle, true)
 	if noCycle {
 		where = append(where, "NOT EXISTS (SELECT 1 FROM cycle_issues filter_cycle WHERE filter_cycle.issue_id = issue.id)")

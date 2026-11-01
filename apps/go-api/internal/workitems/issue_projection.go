@@ -3,6 +3,7 @@ package workitems
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"slices"
 	"strings"
 
@@ -40,7 +41,7 @@ func (r *Repository) serializeVisibleIssue(ctx context.Context, row map[string]a
 	return r.serializeAuthorizedIssue(ctx, row, fields, expand)
 }
 
-func projectFields(row map[string]any, fields []string) map[string]any {
+func projectFields(row map[string]any, fields []string) (map[string]any, error) {
 	out := map[string]any{}
 	for _, key := range fields {
 		source := key
@@ -51,14 +52,31 @@ func projectFields(row map[string]any, fields []string) map[string]any {
 		if value, ok := row[source]; ok {
 			if key == "sort_order" {
 				if number, ok := value.(json.Number); ok {
-					f, _ := number.Float64()
-					value = json.Number(pythoncompat.FloatString(f))
+					formatted, formatErr := issueSortOrder(number)
+					if formatErr != nil {
+						return nil, formatErr
+					}
+					value = formatted
 				}
 			}
 			out[key] = value
 		}
 	}
-	return out
+	return out, nil
+}
+
+func issueSortOrder(number json.Number) (json.Number, error) {
+	if number == "" {
+		return "", fmt.Errorf("issue sort order is empty")
+	}
+	if _, err := json.Marshal(number); err != nil {
+		return "", fmt.Errorf("invalid issue sort order: %w", err)
+	}
+	value, err := number.Float64()
+	if err != nil {
+		return "", fmt.Errorf("convert issue sort order: %w", err)
+	}
+	return json.Number(pythoncompat.FloatString(value)), nil
 }
 
 func (r *Repository) annotateIssue(ctx context.Context, row map[string]any, actor string, identifier bool) (map[string]any, error) {
@@ -88,7 +106,10 @@ func (r *Repository) detail(ctx context.Context, row map[string]any, q Request, 
 	if !subscribed {
 		delete(row, "is_subscribed")
 	}
-	result := projectFields(row, detailFields)
+	result, projectionErr := projectFields(row, detailFields)
+	if projectionErr != nil {
+		return nil, projectionErr
+	}
 	return r.expandAppIssue(ctx, row, q, result)
 }
 

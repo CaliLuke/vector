@@ -90,7 +90,11 @@ func (r *Repository) appIssueExpansion(ctx context.Context, row map[string]any, 
 		rows, err := r.rows(ctx, query, args...)
 		if field == "labels" {
 			for _, label := range rows {
-				label["sort_order"] = projectFields(label, []string{"sort_order"})["sort_order"]
+				projected, projectionErr := projectFields(label, []string{"sort_order"})
+				if projectionErr != nil {
+					return nil, true, projectionErr
+				}
+				label["sort_order"] = projected["sort_order"]
 			}
 		}
 		return rows, true, err
@@ -132,7 +136,11 @@ func (r *Repository) appIssueState(ctx context.Context, row map[string]any, q Re
 		if field == "labels" {
 			labels := []any{}
 			for _, label := range value.([]map[string]any) {
-				labels = append(labels, projectFields(label, []string{"id", "name", "color"}))
+				projected, projectionErr := projectFields(label, []string{"id", "name", "color"})
+				if projectionErr != nil {
+					return nil, projectionErr
+				}
+				labels = append(labels, projected)
 			}
 			value = labels
 		}

@@ -328,7 +328,8 @@ func TestIssueListHandlesNullFiltersAndIndependentModuleFilter(t *testing.T) {
 }
 
 func TestIssueFiltersMatchDjangoSanitizingAndDateSemantics(t *testing.T) {
-	where, args := addIssueDateFilters(nil, nil, "2026-08,2_months;after;fromnow", "issue.start_date")
+	where, args, dateErr := addIssueDateFilters(nil, nil, "2026-08,2_months;after;fromnow", "issue.start_date")
+	require.NoError(t, dateErr)
 	joined := strings.Join(where, " ")
 	if !strings.Contains(joined, "::text LIKE $1 ESCAPE") || !strings.Contains(joined, "CURRENT_DATE + ($2 * INTERVAL '1 day')") {
 		t.Fatalf("date predicates=%q", joined)
