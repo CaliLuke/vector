@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { registerHooks } from "node:module";
 import test from "node:test";
 import { createReactDomTestEnvironment, waitForReactCondition } from "./helpers/react-dom.mjs";
 import { React } from "./helpers/react.mjs";
@@ -21,12 +22,33 @@ function EmptyCommands() {
 }
 
 void test("the shortcuts dialog focuses search and returns focus to its launcher", async (t) => {
+  const started = performance.now();
+  const phases = [];
+  const mark = (phase) => phases.push(`${phase}: ${(performance.now() - started).toFixed(1)}ms`);
+  t.after(() => {
+    if (t.signal.aborted) t.diagnostic(`shortcuts lifecycle phases: ${phases.join(", ")}`);
+  });
+  const moduleGuard = registerHooks({
+    resolve(specifier, context, nextResolve) {
+      const result = nextResolve(specifier, context);
+      assert.ok(
+        !result.url.endsWith("/power-k/ui/pages/context-based/root.tsx"),
+        "shortcut labels must not load contextual command pages"
+      );
+      return result;
+    },
+  });
+  t.after(() => moduleGuard.deregister());
+  mark("create environment");
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   installAnimationFixture(t);
+  mark("import registry");
   const { PowerKRegistryContext } = await import("../../apps/web/core/providers/native-command-state.tsx");
   const { PowerKCommandRegistry } = await import("../../apps/web/core/components/power-k/core/registry.ts");
+  mark("import dialog");
   const { ShortcutsModal } = await import("../../apps/web/core/components/power-k/ui/modal/shortcuts-root.tsx");
+  mark("render dialog");
 
   function Harness() {
     const [open, setOpen] = React.useState(false);
@@ -40,15 +62,18 @@ void test("the shortcuts dialog focuses search and returns focus to its launcher
   await environment.render(React.createElement(Harness));
   const launcher = environment.container.querySelector("button");
   launcher.focus();
+  mark("open dialog");
   await React.act(async () => launcher.click());
   await waitForReactCondition(
     () => document.activeElement?.getAttribute("placeholder") === "Search for shortcuts",
     "search receives dialog focus"
   );
+  mark("close dialog");
   await React.act(async () =>
     document.activeElement.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))
   );
   await waitForReactCondition(() => document.activeElement === launcher, "dialog restores launcher focus");
+  mark("focus restored");
 });
 
 void test("palette reopening cancels stale reset work and a closed palette resets only its current context", async (t) => {

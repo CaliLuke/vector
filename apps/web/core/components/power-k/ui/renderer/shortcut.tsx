@@ -11,9 +11,8 @@ import { substringMatch } from "@plane/utils/string";
 import type { TPowerKCommandConfig } from "@/components/power-k/core/types";
 import { KeySequenceBadge, ShortcutBadge } from "@/components/power-k/ui/modal/command-item-shortcut-badge";
 // types
-import { CONTEXT_ENTITY_MAP } from "@/components/power-k/ui/pages/context-based";
 // local imports
-import { POWER_K_GROUP_I18N_TITLES, POWER_K_GROUP_PRIORITY } from "./shared";
+import { CONTEXT_ENTITY_MAP, POWER_K_GROUP_I18N_TITLES, POWER_K_GROUP_PRIORITY } from "../command-labels";
 
 type Props = {
   searchQuery: string;

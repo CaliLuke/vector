@@ -10,7 +10,7 @@ import { useTranslation } from "@plane/i18n";
 // local imports
 import type { TPowerKContextType } from "../../core/types";
 import { useContextIndicator } from "../../hooks/use-context-indicator";
-import { CONTEXT_ENTITY_MAP } from "../pages/context-based";
+import { CONTEXT_ENTITY_MAP } from "../command-labels";
 
 type Props = {
   activeContext: TPowerKContextType | null;

@@ -11,8 +11,7 @@ import { useTranslation } from "@plane/i18n";
 // local imports
 import type { TPowerKCommandConfig, TPowerKCommandGroup, TPowerKContext } from "../../core/types";
 import { PowerKModalCommandItem } from "../modal/command-item";
-import { CONTEXT_ENTITY_MAP } from "../pages/context-based";
-import { POWER_K_GROUP_PRIORITY, POWER_K_GROUP_I18N_TITLES } from "./shared";
+import { CONTEXT_ENTITY_MAP, POWER_K_GROUP_PRIORITY, POWER_K_GROUP_I18N_TITLES } from "../command-labels";
 
 type Props = {
   commands: TPowerKCommandConfig[];

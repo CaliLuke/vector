@@ -7033,6 +7033,12 @@
       "functions": 0,
       "branches": 0
     },
+    "core/components/power-k/ui/command-labels.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
     "core/components/power-k/ui/modal/command-item-shortcut-badge.tsx": {
       "lines": 3.22,
       "statements": 2.94,
@@ -7118,8 +7124,8 @@
       "branches": 0
     },
     "core/components/power-k/ui/pages/context-based/index.ts": {
-      "lines": 0,
-      "statements": 0,
+      "lines": 100,
+      "statements": 100,
       "functions": 100,
       "branches": 100
     },
@@ -7338,12 +7344,6 @@
       "statements": 0,
       "functions": 0,
       "branches": 0
-    },
-    "core/components/power-k/ui/renderer/shared.ts": {
-      "lines": 0,
-      "statements": 0,
-      "functions": 100,
-      "branches": 100
     },
     "core/components/power-k/ui/renderer/shortcut.tsx": {
       "lines": 0,
@@ -11101,16 +11101,16 @@
       "functions": 100,
       "branches": 75
     },
-    "core/services/cycle_archive.service.ts": {
-      "lines": 11.11,
-      "statements": 11.11,
-      "functions": 11.11,
-      "branches": 100
-    },
     "core/services/cycle.service.ts": {
       "lines": 69.23,
       "statements": 69.23,
       "functions": 69.23,
+      "branches": 100
+    },
+    "core/services/cycle_archive.service.ts": {
+      "lines": 11.11,
+      "statements": 11.11,
+      "functions": 11.11,
       "branches": 100
     },
     "core/services/estimate.service.ts": {
@@ -11173,17 +11173,17 @@
       "functions": 0,
       "branches": 100
     },
-    "core/services/issue_filter.service.ts": {
-      "lines": 6.66,
-      "statements": 6.66,
-      "functions": 6.66,
-      "branches": 100
-    },
     "core/services/issue/index.ts": {
       "lines": 100,
       "statements": 100,
       "functions": 100,
       "branches": 100
+    },
+    "core/services/issue/issue.service.ts": {
+      "lines": 28.15,
+      "statements": 29.52,
+      "functions": 23.95,
+      "branches": 59.37
     },
     "core/services/issue/issue_activity.service.ts": {
       "lines": 50,
@@ -11227,12 +11227,6 @@
       "functions": 40,
       "branches": 100
     },
-    "core/services/issue/issue.service.ts": {
-      "lines": 28.15,
-      "statements": 29.52,
-      "functions": 23.95,
-      "branches": 59.37
-    },
     "core/services/issue/work_item_version.service.ts": {
       "lines": 0,
       "statements": 0,
@@ -11245,22 +11239,28 @@
       "functions": 9.09,
       "branches": 0
     },
+    "core/services/issue_filter.service.ts": {
+      "lines": 6.66,
+      "statements": 6.66,
+      "functions": 6.66,
+      "branches": 100
+    },
     "core/services/mcp-link.service.ts": {
       "lines": 51.72,
       "statements": 48.38,
       "functions": 66.66,
       "branches": 9.09
     },
-    "core/services/module_archive.service.ts": {
-      "lines": 11.11,
-      "statements": 11.11,
-      "functions": 11.11,
-      "branches": 100
-    },
     "core/services/module.service.ts": {
       "lines": 72.72,
       "statements": 72.72,
       "functions": 72.72,
+      "branches": 100
+    },
+    "core/services/module_archive.service.ts": {
+      "lines": 11.11,
+      "statements": 11.11,
+      "functions": 11.11,
       "branches": 100
     },
     "core/services/page/index.ts": {
