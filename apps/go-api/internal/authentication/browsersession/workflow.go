@@ -1,4 +1,4 @@
-package djangosession
+package browsersession
 
 import (
 	"context"
@@ -8,19 +8,20 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
 )
 
-// AuthenticatedSession contains the Django authentication fields needed when
+// AuthenticatedSession contains the authentication fields needed when
 // login() writes the session. User timestamps and request device metadata are
-// owned by the caller; DeviceInfo is copied into the Django session row.
+// owned by the caller; DeviceInfo is copied into the session row.
 type AuthenticatedSession struct {
 	UserID       string
 	PasswordHash string
-	Backend      string
 	DeviceInfo   any
 }
 
-// Get reads a value from the request-local Django session snapshot.
+// Get reads a value from the request-local session snapshot.
 func (refresh SessionRefresh) Get(key string) (any, bool) {
 	if refresh.principal == nil || refresh.principal.values == nil {
 		return nil, false
@@ -53,7 +54,7 @@ func (refresh *SessionRefresh) Delete(key string) {
 }
 
 // SaveValues merges values into the current request snapshot and persists the
-// result using Django's database session format. With no current session it
+// result using the native JSON session format. With no current session it
 // creates a new anonymous session row.
 func (validator *Validator) SaveValues(
 	ctx context.Context,
@@ -69,7 +70,7 @@ func (validator *Validator) SaveValues(
 	return validator.saveValues(ctx, current, base, false, defaultAgeSeconds, now)
 }
 
-// Login writes Django's authenticated-session fields, preserves unrelated
+// Login writes authenticated-session fields, preserves unrelated
 // request session values, cycles an existing session key, and returns the
 // cookie attributes required by the HTTP response.
 func (validator *Validator) Login(
@@ -79,20 +80,22 @@ func (validator *Validator) Login(
 	defaultAgeSeconds int64,
 	now time.Time,
 ) (SessionRefresh, error) {
-	if identity.UserID == "" || identity.PasswordHash == "" || identity.Backend == "" {
-		return SessionRefresh{}, errors.New("session login requires user id, password hash, and backend")
+	if identity.UserID == "" || identity.PasswordHash == "" {
+		return SessionRefresh{}, errors.New("session login requires user id and password hash")
 	}
-	if _, ok := validator.backends[identity.Backend]; !ok {
-		return SessionRefresh{}, ErrBackend
+	identifier, err := uuid.Parse(identity.UserID)
+	if err != nil {
+		return SessionRefresh{}, ErrInvalidUserID
 	}
+	identity.UserID = identifier.String()
 	values := requestSessionSnapshot(current)
-	userHash := fmt.Sprintf("%x", djangoHMAC(AuthHashSalt, identity.PasswordHash, validator.secrets[0]))
+	userHash := fmt.Sprintf("%x", sessionHMAC(AuthHashSalt, identity.PasswordHash, validator.secrets[0]))
 	flush := false
 	flushCurrent := current
-	_, hasAuthenticatedUser := values["_auth_user_id"]
+	_, hasAuthenticatedUser := values["user_id"]
 	if hasAuthenticatedUser {
-		sessionUserID, _ := stringValue(values, "_auth_user_id")
-		existingHash, _ := stringValue(values, "_auth_user_hash")
+		sessionUserID, _ := stringValue(values, "user_id")
+		existingHash, _ := stringValue(values, "auth_hash")
 		flush = sessionUserID != identity.UserID || subtle.ConstantTimeCompare([]byte(existingHash), []byte(userHash)) != 1
 	}
 	if flush {
@@ -104,9 +107,8 @@ func (validator *Validator) Login(
 		values = map[string]any{}
 		flushCurrent = nil
 	}
-	values["_auth_user_id"] = identity.UserID
-	values["_auth_user_backend"] = identity.Backend
-	values["_auth_user_hash"] = userHash
+	values["user_id"] = identity.UserID
+	values["auth_hash"] = userHash
 	if identity.DeviceInfo != nil {
 		values["device_info"] = identity.DeviceInfo
 	}
@@ -114,7 +116,7 @@ func (validator *Validator) Login(
 	return validator.saveValues(ctx, flushCurrent, values, rotateKey, defaultAgeSeconds, now)
 }
 
-// Flush removes the current database row. Django's SessionMiddleware expires
+// Flush removes the current database row. The response middleware expires
 // the cookie for the now-empty session instead of creating an empty row.
 func (validator *Validator) Flush(
 	ctx context.Context,
@@ -131,10 +133,10 @@ func (validator *Validator) Flush(
 func (validator *Validator) deleteSession(ctx context.Context, sessionKey string) error {
 	deleter, ok := validator.reader.(sessionDeleteWriter)
 	if !ok {
-		return fmt.Errorf("%w: Django session store does not support deletion", ErrStore)
+		return fmt.Errorf("%w: session store does not support deletion", ErrStore)
 	}
 	if err := deleter.DeleteSession(ctx, sessionKey); err != nil {
-		return fmt.Errorf("%w: delete Django session: %w", ErrStore, err)
+		return fmt.Errorf("%w: delete session: %w", ErrStore, err)
 	}
 	return nil
 }
@@ -149,9 +151,12 @@ func (validator *Validator) saveValues(
 ) (SessionRefresh, error) {
 	serialized, err := json.Marshal(values)
 	if err != nil {
-		return SessionRefresh{}, fmt.Errorf("%w: serialize Django session: %w", ErrStore, err)
+		return SessionRefresh{}, fmt.Errorf("%w: serialize session: %w", ErrStore, err)
 	}
-	serialized = djangoASCIIJSON(serialized)
+	values, serialized, err = decodeNativeJSON(serialized)
+	if err != nil {
+		return SessionRefresh{}, fmt.Errorf("%w: serialize session values: %w", ErrStore, err)
+	}
 	if current == nil || current.SessionKey == "" {
 		return validator.refreshValues(ctx, "", values, serialized, false, true, defaultAgeSeconds, now)
 	}
@@ -187,7 +192,7 @@ func WithResponseSessionAction(ctx context.Context) (context.Context, *ResponseS
 }
 
 // WithCurrentSession makes the middleware's prepared request snapshot
-// available to auth handlers that need to preserve arbitrary Django session
+// available to auth handlers that need to preserve arbitrary session
 // values across login or OAuth state changes.
 func WithCurrentSession(ctx context.Context, refresh SessionRefresh) context.Context {
 	copy := cloneSessionRefresh(refresh)
@@ -204,7 +209,7 @@ func CurrentSessionFromContext(ctx context.Context) (*SessionRefresh, bool) {
 	return &copy, true
 }
 
-// SetResponseSession asks the system middleware to emit the returned Django
+// SetResponseSession asks the system middleware to emit the returned browser
 // session cookie instead of refreshing the original request snapshot.
 func SetResponseSession(ctx context.Context, refresh SessionRefresh) bool {
 	action, ok := ctx.Value(responseActionKey{}).(*ResponseSessionAction)
@@ -219,7 +224,7 @@ func SetResponseSession(ctx context.Context, refresh SessionRefresh) bool {
 	return true
 }
 
-// ExpireResponseSession asks the system middleware to expire the Django
+// ExpireResponseSession asks the system middleware to expire the browser
 // session cookie and skip the automatic refresh.
 func ExpireResponseSession(ctx context.Context) bool {
 	action, ok := ctx.Value(responseActionKey{}).(*ResponseSessionAction)

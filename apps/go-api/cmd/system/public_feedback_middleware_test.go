@@ -14,7 +14,7 @@ import (
 	systemapi "github.com/CaliLuke/go-plane"
 	publicfeedback "github.com/CaliLuke/go-plane/gen/public_feedback"
 	system "github.com/CaliLuke/go-plane/gen/system"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	metadata "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 )
@@ -225,7 +225,7 @@ func TestPublicFeedbackProductionMiddlewareOrdersSessionTimezoneAndEffects(t *te
 		t.Fatalf("authenticated vote status=%d session calls=%d vote calls=%d task count=%d body=%s", authenticatedResponse.Code, session.calls, items.voteCreateCalls, items.taskCount, authenticatedResponse.Body.String())
 	}
 
-	timezoneSession := &publicProjectMetadataThrottleStub{allowed: true, timezoneErr: djangosession.ErrTimezoneNotFound}
+	timezoneSession := &publicProjectMetadataThrottleStub{allowed: true, timezoneErr: browsersession.ErrTimezoneNotFound}
 	timezoneItems := &publicFeedbackMiddlewareItems{}
 	timezoneHandler := publicFeedbackProductionHandler(timezoneSession, timezoneItems)
 	timezoneResponse := httptest.NewRecorder()
@@ -391,7 +391,7 @@ func TestPublicFeedbackRequiredOptionsRunsTimezoneBeforeAuthAndDispatch(t *testi
 			session := &publicProjectMetadataThrottleStub{
 				allowed:     true,
 				userID:      "00000000-0000-4000-8000-000000000002",
-				timezoneErr: djangosession.ErrTimezoneNotFound,
+				timezoneErr: browsersession.ErrTimezoneNotFound,
 			}
 			items := &publicFeedbackMiddlewareItems{}
 			handler := publicFeedbackProductionHandler(session, items)

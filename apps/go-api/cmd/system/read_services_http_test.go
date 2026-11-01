@@ -30,7 +30,7 @@ import (
 	modulereads "github.com/CaliLuke/go-plane/gen/module_reads"
 	pagereads "github.com/CaliLuke/go-plane/gen/page_reads"
 	workspaceprojectreads "github.com/CaliLuke/go-plane/gen/workspace_project_reads"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	workitemhistorysvr "github.com/CaliLuke/go-plane/workitemhistory/gen/http/work_item_history/server"
 	workitemhistoryapi "github.com/CaliLuke/go-plane/workitemhistory/gen/work_item_history"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -760,7 +760,7 @@ func TestReadServicesSessionLifecycleMatchesDjango(t *testing.T) {
 	})
 
 	t.Run("session storage failure is Django HTML 500", func(t *testing.T) {
-		sessions := &publicProjectMetadataThrottleStub{err: fmt.Errorf("session store unavailable: %w", djangosession.ErrSessionStore)}
+		sessions := &publicProjectMetadataThrottleStub{err: fmt.Errorf("session store unavailable: %w", browsersession.ErrSessionStore)}
 		response := httptest.NewRecorder()
 		response.Header().Set("Allow", "GET, HEAD, OPTIONS")
 		request := httptest.NewRequest(http.MethodGet, "/api/workspaces/", nil)
@@ -783,9 +783,9 @@ func TestReadServicesSessionLifecycleMatchesDjango(t *testing.T) {
 			"/api/workspaces/acme/projects/00000000-0000-4000-8000-000000000001/project-deploy-boards/",
 		} {
 			sessions := &publicProjectMetadataThrottleStub{
-				err:     fmt.Errorf("activate user timezone: %w", djangosession.ErrTimezoneNotFound),
-				rotated: &djangosession.SessionRefresh{SessionKey: "prepared"},
-				result:  djangosession.SessionRefresh{SessionKey: "refreshed"},
+				err:     fmt.Errorf("activate user timezone: %w", browsersession.ErrTimezoneNotFound),
+				rotated: &browsersession.SessionRefresh{SessionKey: "prepared"},
+				result:  browsersession.SessionRefresh{SessionKey: "refreshed"},
 			}
 			response := httptest.NewRecorder()
 			response.Header().Set("Allow", "GET, HEAD, OPTIONS")
@@ -807,9 +807,9 @@ func TestReadServicesSessionLifecycleMatchesDjango(t *testing.T) {
 
 	t.Run("malformed timezone is modeled JSON 500", func(t *testing.T) {
 		sessions := &publicProjectMetadataThrottleStub{
-			err:     fmt.Errorf("activate user timezone: %w", djangosession.ErrInvalidTimezone),
-			rotated: &djangosession.SessionRefresh{SessionKey: "prepared"},
-			result:  djangosession.SessionRefresh{SessionKey: "must-not-save"},
+			err:     fmt.Errorf("activate user timezone: %w", browsersession.ErrInvalidTimezone),
+			rotated: &browsersession.SessionRefresh{SessionKey: "prepared"},
+			result:  browsersession.SessionRefresh{SessionKey: "must-not-save"},
 		}
 		response := httptest.NewRecorder()
 		response.Header().Set("Allow", "GET, HEAD, OPTIONS")
@@ -830,8 +830,8 @@ func TestReadServicesSessionLifecycleMatchesDjango(t *testing.T) {
 
 	t.Run("prepared session is saved before response commit", func(t *testing.T) {
 		sessions := &publicProjectMetadataThrottleStub{
-			rotated: &djangosession.SessionRefresh{SessionKey: "prepared"},
-			result:  djangosession.SessionRefresh{SessionKey: "refreshed", BrowserClose: true},
+			rotated: &browsersession.SessionRefresh{SessionKey: "prepared"},
+			result:  browsersession.SessionRefresh{SessionKey: "refreshed", BrowserClose: true},
 		}
 		response := httptest.NewRecorder()
 		request := httptest.NewRequest(http.MethodGet, "/api/workspaces/", nil)

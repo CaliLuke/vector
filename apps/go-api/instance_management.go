@@ -16,7 +16,7 @@ import (
 
 	api "github.com/CaliLuke/go-plane/gen/instance_management"
 	"github.com/CaliLuke/go-plane/internal/accountauthentication"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/authentication/password"
 	"github.com/CaliLuke/go-plane/internal/authredirects"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
@@ -48,7 +48,7 @@ type instanceManagementRepository interface {
 }
 
 type instanceManagementSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
 type InstanceManagementAdminAccounts interface {
@@ -135,10 +135,10 @@ func (service *instanceManagementService) adminRedirect(ctx context.Context, bod
 	}
 	result := run(request)
 	if result.Session != nil {
-		djangosession.SetResponseSession(ctx, *result.Session)
+		browsersession.SetResponseSession(ctx, *result.Session)
 	}
 	if result.ExpireSession {
-		djangosession.ExpireResponseSession(ctx)
+		browsersession.ExpireResponseSession(ctx)
 	}
 	if result.Status != http.StatusFound {
 		return nil, nil, instanceManagementInternal()
@@ -191,7 +191,7 @@ func (service *instanceManagementService) adminRedirectRequest(ctx context.Conte
 	if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok {
 		userAgent, clientIP = metadata.UserAgent, metadata.ClientAddr
 	}
-	current, _ := djangosession.CurrentSessionFromContext(ctx)
+	current, _ := browsersession.CurrentSessionFromContext(ctx)
 	telemetry := true
 	if raw, present := input.FieldValue("is_telemetry_enabled", false, true, false); present {
 		telemetry = raw != nil && fmt.Sprint(raw) != ""
@@ -238,7 +238,7 @@ func (service *instanceManagementService) admin(ctx context.Context) (uuid.UUID,
 		return uuid.Nil(), instanceManagementError("forbidden", 403, map[string]any{"detail": instanceAdminForbiddenDetail})
 	}
 	if timezone, ok := ReadServiceSessionTimezone(ctx); ok {
-		if err := djangosession.ValidateUserTimezone(timezone); err != nil {
+		if err := browsersession.ValidateUserTimezone(timezone); err != nil {
 			return uuid.Nil(), instanceManagementError("bad_request", 400, map[string]any{"error": "The required key does not exist."})
 		}
 	}
@@ -262,7 +262,7 @@ func (service *instanceManagementService) AuthorizeSessionResourceProtocol(ctx c
 		return instanceManagementProtocolError(err)
 	}
 	if timezone, ok := ReadServiceSessionTimezone(ctx); ok {
-		if err := djangosession.ValidateUserTimezone(timezone); err != nil {
+		if err := browsersession.ValidateUserTimezone(timezone); err != nil {
 			return http.StatusBadRequest, map[string]any{"error": "The required key does not exist."}
 		}
 	}

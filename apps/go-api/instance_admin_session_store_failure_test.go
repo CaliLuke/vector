@@ -11,16 +11,16 @@ import (
 
 	server "github.com/CaliLuke/go-plane/gen/http/instance_admin_session/server"
 	api "github.com/CaliLuke/go-plane/gen/instance_admin_session"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	loomhttp "github.com/CaliLuke/loom/http"
 	"github.com/stretchr/testify/require"
 )
 
 func TestInstanceAdminSessionStoreFailuresRemainFailures(t *testing.T) {
 	for _, cause := range []error{
-		djangosession.ErrSessionStore, djangosession.ErrUserStore, djangosession.ErrInvalidSessionShape, djangosession.ErrInvalidUserID,
-		fmt.Errorf("%w: %w: database unavailable", djangosession.ErrStore, djangosession.ErrSessionStore),
-		fmt.Errorf("%w: %w: %w", djangosession.ErrStore, djangosession.ErrUserStore, context.Canceled),
+		browsersession.ErrSessionStore, browsersession.ErrUserStore, browsersession.ErrInvalidSessionShape, browsersession.ErrInvalidUserID,
+		fmt.Errorf("%w: %w: database unavailable", browsersession.ErrStore, browsersession.ErrSessionStore),
+		fmt.Errorf("%w: %w: %w", browsersession.ErrStore, browsersession.ErrUserStore, context.Canceled),
 	} {
 		t.Run(cause.Error(), func(t *testing.T) {
 			service, err := NewInstanceAdminSession(instanceAdminSessionRepoStub{}, instanceAdminSessionStub{err: cause})
@@ -38,7 +38,7 @@ func TestInstanceAdminSessionStoreFailuresRemainFailures(t *testing.T) {
 }
 
 func TestInstanceAdminSessionInvalidCredentialsRemainAnonymous(t *testing.T) {
-	for _, cause := range []error{djangosession.ErrSessionNotFound, djangosession.ErrBadSignature, djangosession.ErrInactiveUser, errors.New("invalid session")} {
+	for _, cause := range []error{browsersession.ErrSessionNotFound, browsersession.ErrBadSignature, browsersession.ErrInactiveUser, errors.New("invalid session")} {
 		t.Run(cause.Error(), func(t *testing.T) {
 			service, err := NewInstanceAdminSession(instanceAdminSessionRepoStub{}, instanceAdminSessionStub{err: cause})
 			require.NoError(t, err)
@@ -54,7 +54,7 @@ func TestInstanceAdminSessionInvalidCredentialsRemainAnonymous(t *testing.T) {
 }
 
 func TestInstanceAdminSessionStoreFailureHTTP(t *testing.T) {
-	service, err := NewInstanceAdminSession(instanceAdminSessionRepoStub{}, instanceAdminSessionStub{err: fmt.Errorf("%w: private storage diagnostic", djangosession.ErrStore)})
+	service, err := NewInstanceAdminSession(instanceAdminSessionRepoStub{}, instanceAdminSessionStub{err: fmt.Errorf("%w: private storage diagnostic", browsersession.ErrStore)})
 	require.NoError(t, err)
 	mux := loomhttp.NewMuxer()
 	handler := server.New(api.NewEndpoints(service), mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, nil, nil)
@@ -72,7 +72,7 @@ func TestInstanceAdminSessionStoreFailureHTTP(t *testing.T) {
 }
 
 func TestInstanceAdminSessionMalformedActorRemainsAnonymous(t *testing.T) {
-	service, err := NewInstanceAdminSession(instanceAdminSessionRepoStub{}, instanceAdminSessionStub{principal: djangosession.Principal{UserID: "not-a-uuid"}})
+	service, err := NewInstanceAdminSession(instanceAdminSessionRepoStub{}, instanceAdminSessionStub{principal: browsersession.Principal{UserID: "not-a-uuid"}})
 	require.NoError(t, err)
 	result, err := service.Session(t.Context(), &api.SessionPayload{SessionID: strptr("invalid-actor")})
 	require.NoError(t, err)

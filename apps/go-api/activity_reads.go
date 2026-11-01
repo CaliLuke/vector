@@ -17,7 +17,7 @@ import (
 	api "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
 	activitystore "github.com/CaliLuke/go-plane/internal/activityreads"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	loomhttp "github.com/CaliLuke/loom/http"
 	"github.com/CaliLuke/loom/security"
 	"github.com/google/uuid"
@@ -32,7 +32,7 @@ type activityReadsAPIKeys interface {
 	Validate(context.Context, string) (apikey.Principal, error)
 }
 type activityReadsSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 type activityReadsThrottle interface {
 	Allow(context.Context, string) (apikey.Rate, error)
@@ -164,8 +164,8 @@ func (service *activityReadsService) authorizeRequest(ctx context.Context, repos
 			return activityStatusError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))})
 		}
 	}
-	if err := djangosession.ValidateUserTimezone(principal.Timezone); err != nil {
-		if errors.Is(err, djangosession.ErrTimezoneNotFound) {
+	if err := browsersession.ValidateUserTimezone(principal.Timezone); err != nil {
+		if errors.Is(err, browsersession.ErrTimezoneNotFound) {
 			return activityStatusError(400, map[string]any{"error": "The required key does not exist."})
 		}
 		return activityStatusError(500, map[string]any{"error": "Something went wrong please try again later"})

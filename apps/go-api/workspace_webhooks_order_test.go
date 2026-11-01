@@ -12,7 +12,7 @@ import (
 
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/workspacewebhooks"
 	api "github.com/CaliLuke/go-plane/workspace_webhooks/gen/workspace_webhooks"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -61,8 +61,8 @@ func (*missingWebhookRepository) Logs(context.Context, string, uuid.UUID) (json.
 
 type unusedWebhookSessions struct{}
 
-func (unusedWebhookSessions) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{}, errors.New("unexpected session validation")
+func (unusedWebhookSessions) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{}, errors.New("unexpected session validation")
 }
 
 type unusedWebhookPublisher struct{}

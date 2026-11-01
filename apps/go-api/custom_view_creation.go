@@ -12,7 +12,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	api "github.com/CaliLuke/go-plane/customviewcreation/gen/custom_view_creation"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/customviewcreation"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
@@ -24,7 +24,7 @@ import (
 )
 
 type customViewCreationSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 type customViewCreationRepository interface {
 	ProjectTarget(context.Context, string, string, string) error
@@ -71,7 +71,7 @@ func (s *customViewCreationService) AuthorizeSessionProtocol(ctx context.Context
 		return status, body
 	}
 	principal, _ := ctx.Value(customViewCreationPrincipalKey{}).(customViewCreationPrincipal)
-	if err := djangosession.ValidateUserTimezone(principal.timezone); err != nil {
+	if err := browsersession.ValidateUserTimezone(principal.timezone); err != nil {
 		return 500, map[string]any{"error": "Something went wrong please try again later"}
 	}
 	return 0, nil
@@ -117,7 +117,7 @@ func (s *customViewCreationService) prepare(ctx context.Context) (customViewCrea
 	if err != nil {
 		return principal, err
 	}
-	if err := djangosession.ValidateUserTimezone(principal.timezone); err != nil {
+	if err := browsersession.ValidateUserTimezone(principal.timezone); err != nil {
 		return principal, s.error(http.StatusInternalServerError, map[string]any{"error": "Something went wrong please try again later"})
 	}
 	return principal, nil

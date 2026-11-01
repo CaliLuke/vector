@@ -11,14 +11,13 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/accountauthentication"
 	"github.com/CaliLuke/go-plane/internal/authentication/authworkflow"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/emailvalidation"
 	"github.com/google/uuid"
 )
 
 const (
-	djangoModelBackend = "django.contrib.auth.backends.ModelBackend"
-	defaultSessionAge  = int64(14 * 24 * 60 * 60)
+	defaultSessionAge = int64(14 * 24 * 60 * 60)
 )
 
 type PasswordHasher interface {
@@ -89,7 +88,7 @@ type Request struct {
 	IsSpace           bool
 	SessionAgeSeconds int64
 	BaseOrigin        string
-	CurrentSession    *djangosession.SessionRefresh
+	CurrentSession    *browsersession.SessionRefresh
 	Now               time.Time
 }
 
@@ -97,7 +96,7 @@ type Result struct {
 	Status        int
 	Location      string
 	Body          map[string]any
-	Session       *djangosession.SessionRefresh
+	Session       *browsersession.SessionRefresh
 	ExpireSession bool
 }
 
@@ -105,7 +104,7 @@ type Service struct {
 	accounts    AccountRepository
 	passwords   PasswordHasher
 	strength    PasswordStrength
-	sessions    *djangosession.Validator
+	sessions    *browsersession.Validator
 	workflow    *authworkflow.PostUserAuthWorkflow
 	activation  ActivationPublisher
 	resetTokens PasswordResetTokenVerifier
@@ -118,7 +117,7 @@ type ActivationPublisher interface {
 	Task(context.Context, string, []any, map[string]any) error
 }
 
-func NewService(accounts AccountRepository, passwords PasswordHasher, strength PasswordStrength, sessions *djangosession.Validator, workflow *authworkflow.PostUserAuthWorkflow, activation ActivationPublisher) (*Service, error) {
+func NewService(accounts AccountRepository, passwords PasswordHasher, strength PasswordStrength, sessions *browsersession.Validator, workflow *authworkflow.PostUserAuthWorkflow, activation ActivationPublisher) (*Service, error) {
 	if accounts == nil || passwords == nil || strength == nil || sessions == nil {
 		return nil, errors.New("auth redirect service requires accounts, password, strength, and session dependencies")
 	}
@@ -474,8 +473,8 @@ func (service *Service) AdminSignIn(ctx context.Context, request Request) Result
 	if age <= 0 {
 		age = defaultSessionAge
 	}
-	refresh, err := service.sessions.Login(ctx, request.CurrentSession, djangosession.AuthenticatedSession{
-		UserID: user.ID, PasswordHash: user.Password, Backend: djangoModelBackend, DeviceInfo: device,
+	refresh, err := service.sessions.Login(ctx, request.CurrentSession, browsersession.AuthenticatedSession{
+		UserID: user.ID, PasswordHash: user.Password, DeviceInfo: device,
 	}, age, now)
 	if err != nil {
 		return Result{Status: http.StatusInternalServerError}
@@ -562,8 +561,8 @@ func (service *Service) AdminSignUp(ctx context.Context, request Request) Result
 	if age <= 0 {
 		age = defaultSessionAge
 	}
-	refresh, err := service.sessions.Login(ctx, request.CurrentSession, djangosession.AuthenticatedSession{
-		UserID: user.ID, PasswordHash: user.Password, Backend: djangoModelBackend, DeviceInfo: device,
+	refresh, err := service.sessions.Login(ctx, request.CurrentSession, browsersession.AuthenticatedSession{
+		UserID: user.ID, PasswordHash: user.Password, DeviceInfo: device,
 	}, age, now)
 	if err != nil {
 		return Result{Status: http.StatusInternalServerError}
@@ -603,8 +602,8 @@ func (service *Service) completeLogin(ctx context.Context, request Request, user
 		}
 	}
 	device := map[string]string{"user_agent": request.UserAgent, "ip_address": request.ClientIP, "domain": request.BaseURL}
-	refresh, err := service.sessions.Login(ctx, request.CurrentSession, djangosession.AuthenticatedSession{
-		UserID: user.ID, PasswordHash: user.Password, Backend: djangoModelBackend, DeviceInfo: device,
+	refresh, err := service.sessions.Login(ctx, request.CurrentSession, browsersession.AuthenticatedSession{
+		UserID: user.ID, PasswordHash: user.Password, DeviceInfo: device,
 	}, service.sessionAge(request), now)
 	if err != nil {
 		return Result{Status: http.StatusInternalServerError}

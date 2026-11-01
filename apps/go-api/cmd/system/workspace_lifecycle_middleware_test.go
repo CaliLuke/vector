@@ -13,7 +13,7 @@ import (
 	"uuid"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/instancemanagement"
 	workspaceapi "github.com/CaliLuke/go-plane/workspacelifecycle/gen/workspace_lifecycle"
 )
@@ -49,52 +49,52 @@ type workspaceLifecycleMiddlewareSessions struct {
 // Catch signature drift before the middleware's optional type assertion fails.
 var _ sessionPrincipalInspector = workspaceLifecycleMiddlewareSessions{}
 
-func (sessions workspaceLifecycleMiddlewareSessions) Validate(context.Context, string) (djangosession.Principal, error) {
+func (sessions workspaceLifecycleMiddlewareSessions) Validate(context.Context, string) (browsersession.Principal, error) {
 	sessions.trace.add("session-authentication")
-	return djangosession.Principal{UserID: cycleMiddlewareActor, UserTimezone: "UTC"}, nil
+	return browsersession.Principal{UserID: cycleMiddlewareActor, UserTimezone: "UTC"}, nil
 }
 
-func (sessions workspaceLifecycleMiddlewareSessions) InspectReadServiceSession(_ context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
+func (sessions workspaceLifecycleMiddlewareSessions) InspectReadServiceSession(_ context.Context, request *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error) {
 	sessions.trace.add("session-authentication")
 	if len(request.CookiesNamed("session-id")) == 0 {
-		return false, false, nil, djangosession.Principal{}, nil
+		return false, false, nil, browsersession.Principal{}, nil
 	}
 	sessions.trace.add("timezone")
 	if sessions.trace.invalidTimezone {
-		return false, false, nil, djangosession.Principal{}, djangosession.ErrTimezoneNotFound
+		return false, false, nil, browsersession.Principal{}, browsersession.ErrTimezoneNotFound
 	}
-	return false, false, nil, djangosession.Principal{UserID: cycleMiddlewareActor, UserTimezone: "UTC"}, nil
+	return false, false, nil, browsersession.Principal{UserID: cycleMiddlewareActor, UserTimezone: "UTC"}, nil
 }
 
-func (sessions workspaceLifecycleMiddlewareSessions) InspectReadServiceSessionWithoutTimezone(_ context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
+func (sessions workspaceLifecycleMiddlewareSessions) InspectReadServiceSessionWithoutTimezone(_ context.Context, request *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error) {
 	sessions.trace.add("session-authentication")
 	if len(request.CookiesNamed("session-id")) == 0 {
-		return false, false, nil, djangosession.Principal{}, nil
+		return false, false, nil, browsersession.Principal{}, nil
 	}
-	return false, false, nil, djangosession.Principal{UserID: cycleMiddlewareActor, UserTimezone: "UTC"}, nil
+	return false, false, nil, browsersession.Principal{UserID: cycleMiddlewareActor, UserTimezone: "UTC"}, nil
 }
 
-func (workspaceLifecycleMiddlewareSessions) InspectSession(context.Context, *http.Request) (bool, bool, *djangosession.SessionRefresh, string, error) {
+func (workspaceLifecycleMiddlewareSessions) InspectSession(context.Context, *http.Request) (bool, bool, *browsersession.SessionRefresh, string, error) {
 	return false, false, nil, cycleMiddlewareActor, nil
 }
 
-func (workspaceLifecycleMiddlewareSessions) InspectSessionWithTimezone(context.Context, *http.Request) (bool, bool, *djangosession.SessionRefresh, string, error) {
+func (workspaceLifecycleMiddlewareSessions) InspectSessionWithTimezone(context.Context, *http.Request) (bool, bool, *browsersession.SessionRefresh, string, error) {
 	return false, false, nil, cycleMiddlewareActor, nil
 }
 
-func (workspaceLifecycleMiddlewareSessions) RefreshSession(_ context.Context, _ *http.Request, refresh djangosession.SessionRefresh) (djangosession.SessionRefresh, error) {
+func (workspaceLifecycleMiddlewareSessions) RefreshSession(_ context.Context, _ *http.Request, refresh browsersession.SessionRefresh) (browsersession.SessionRefresh, error) {
 	return refresh, nil
 }
 
-func (workspaceLifecycleMiddlewareSessions) AllowRequest(context.Context, *http.Request) (bool, time.Duration, bool, bool, *djangosession.SessionRefresh, string, error) {
+func (workspaceLifecycleMiddlewareSessions) AllowRequest(context.Context, *http.Request) (bool, time.Duration, bool, bool, *browsersession.SessionRefresh, string, error) {
 	return true, 0, false, false, nil, cycleMiddlewareActor, nil
 }
 
-func (workspaceLifecycleMiddlewareSessions) AllowRequestWithoutTimezone(context.Context, *http.Request) (bool, time.Duration, bool, bool, *djangosession.SessionRefresh, string, error) {
+func (workspaceLifecycleMiddlewareSessions) AllowRequestWithoutTimezone(context.Context, *http.Request) (bool, time.Duration, bool, bool, *browsersession.SessionRefresh, string, error) {
 	return true, 0, false, false, nil, cycleMiddlewareActor, nil
 }
 
-func (workspaceLifecycleMiddlewareSessions) FinalizeUnaccessedSession(context.Context, *http.Request, int) (bool, *djangosession.SessionRefresh, error) {
+func (workspaceLifecycleMiddlewareSessions) FinalizeUnaccessedSession(context.Context, *http.Request, int) (bool, *browsersession.SessionRefresh, error) {
 	return false, nil, nil
 }
 

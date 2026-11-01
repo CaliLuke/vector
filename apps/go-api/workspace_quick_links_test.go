@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_quick_links"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/workspacequicklinks"
 	pkg "github.com/CaliLuke/loom/pkg"
 )
@@ -52,8 +52,8 @@ func (r *quickRepoStub) Delete(context.Context, uuid.UUID, string, uuid.UUID) er
 
 type quickSessionStub struct{ err error }
 
-func (s quickSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{UserID: quickUser}, s.err
+func (s quickSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{UserID: quickUser}, s.err
 }
 func quickService(t *testing.T, r *quickRepoStub) (api.Service, context.Context) {
 	t.Helper()

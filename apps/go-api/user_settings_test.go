@@ -8,13 +8,13 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/user_settings"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 )
 
 type userSettingsAdapterSessionStub struct{ err error }
 
-func (s userSettingsAdapterSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{UserID: "00000000-0000-4000-8000-000000000011"}, s.err
+func (s userSettingsAdapterSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{UserID: "00000000-0000-4000-8000-000000000011"}, s.err
 }
 
 type userSettingsAdapterRepositoryStub struct {

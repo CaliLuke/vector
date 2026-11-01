@@ -16,7 +16,7 @@ import (
 
 	api "github.com/CaliLuke/go-plane/gen/analytic_views"
 	store "github.com/CaliLuke/go-plane/internal/analyticviews"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/loom/security"
 )
 
@@ -29,7 +29,7 @@ type analyticViewsRepository interface {
 	Delete(context.Context, uuid.UUID, string, uuid.UUID) error
 }
 type analyticViewsSession interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 type analyticViewsService struct {
 	repository analyticViewsRepository

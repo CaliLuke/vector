@@ -19,7 +19,7 @@
       "package": "main",
       "function": "run",
       "score": 0,
-      "sourceHash": "64117e33a797070f1ecc61bc5fa9e89793431cf6a09b5e7361cbdab16750a4b5"
+      "sourceHash": "bfcbb1c3863d7c90480dd032920ca1f6716aa033477842a1dfde3c76bd54f189"
     },
     {
       "file": "cmd/system/read_services_http_test.go",
@@ -50,12 +50,6 @@
       "package": "assets",
       "function": "TestPublicAssetAuthorizationPostgres",
       "score": 14
-    },
-    {
-      "file": "internal/authentication/djangosession/postgres_integration_test.go",
-      "package": "djangosession",
-      "function": "TestPostgreSQLReaderUsesDatabaseExpiryAndDoesNotMutate",
-      "score": 18
     },
     {
       "file": "internal/backgroundtasks/issue_activities_integration_test.go",

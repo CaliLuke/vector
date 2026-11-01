@@ -15,7 +15,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/module_reads"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/modulereads"
 	"github.com/CaliLuke/go-plane/internal/platform"
 	"github.com/CaliLuke/loom/clue/log"
@@ -84,11 +84,11 @@ func (stub *moduleReadsRepositoryStub) Detail(context.Context, uuid.UUID, string
 
 type moduleReadsSessionsStub struct{ err error }
 
-func (stub moduleReadsSessionsStub) Validate(context.Context, string) (djangosession.Principal, error) {
+func (stub moduleReadsSessionsStub) Validate(context.Context, string) (browsersession.Principal, error) {
 	if stub.err != nil {
-		return djangosession.Principal{}, stub.err
+		return browsersession.Principal{}, stub.err
 	}
-	return djangosession.Principal{UserID: userIDFixture}, nil
+	return browsersession.Principal{UserID: userIDFixture}, nil
 }
 
 type moduleRecentVisitsStub struct {

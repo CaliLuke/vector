@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	workspaceapi "github.com/CaliLuke/go-plane/gen/workspace_slug_check"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/workspacevalidation"
 )
 
@@ -23,11 +23,11 @@ func (stub *workspaceSlugRepositoryStub) Exists(_ context.Context, slug string) 
 
 type workspaceSlugSessionStub struct{ err error }
 
-func (stub workspaceSlugSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
+func (stub workspaceSlugSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
 	if stub.err != nil {
-		return djangosession.Principal{}, stub.err
+		return browsersession.Principal{}, stub.err
 	}
-	return djangosession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}, nil
+	return browsersession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}, nil
 }
 
 func TestWorkspaceSlugCheck(t *testing.T) {

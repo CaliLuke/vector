@@ -11,7 +11,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_recent_visits"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/workspacerecentvisits"
 )
 
@@ -35,8 +35,8 @@ func (r *recentVisitRepoStub) List(_ context.Context, _ uuid.UUID, _ string, ent
 
 type recentVisitSessionStub struct{ err error }
 
-func (s recentVisitSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{UserID: recentVisitTestUser}, s.err
+func (s recentVisitSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{UserID: recentVisitTestUser}, s.err
 }
 
 func recentVisitService(t *testing.T, repository *recentVisitRepoStub) (api.Service, context.Context) {

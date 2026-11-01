@@ -14,7 +14,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/cycle_reads"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/cyclereads"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/loom/security"
@@ -89,16 +89,16 @@ func (stub *cycleReadsRepositoryStub) Detail(context.Context, uuid.UUID, string,
 }
 
 type cycleReadsSessionsStub struct {
-	principal djangosession.Principal
+	principal browsersession.Principal
 	err       error
 }
 
-func (stub cycleReadsSessionsStub) Validate(context.Context, string) (djangosession.Principal, error) {
+func (stub cycleReadsSessionsStub) Validate(context.Context, string) (browsersession.Principal, error) {
 	if stub.err != nil {
-		return djangosession.Principal{}, stub.err
+		return browsersession.Principal{}, stub.err
 	}
 	if stub.principal.UserID == "" {
-		return djangosession.Principal{UserID: "00000000-0000-4000-8000-000000000020"}, nil
+		return browsersession.Principal{UserID: "00000000-0000-4000-8000-000000000020"}, nil
 	}
 	return stub.principal, nil
 }

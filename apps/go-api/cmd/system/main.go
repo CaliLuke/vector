@@ -90,7 +90,7 @@ import (
 	assetsstore "github.com/CaliLuke/go-plane/internal/assets"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/authworkflow"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/authentication/password"
 	"github.com/CaliLuke/go-plane/internal/authentication/passwordstrength"
 	"github.com/CaliLuke/go-plane/internal/authredirects"
@@ -428,12 +428,11 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	sessionValidator, err := djangosession.New(djangosession.NewPostgreSQLReader(pool), djangosession.Config{
+	sessionValidator, err := browsersession.New(browsersession.NewPostgreSQLReader(pool), browsersession.Config{
 		CookieName: cfg.sessionCookie, CookieNameConfigured: true, SecretKey: cfg.secretKey, FallbackKeys: cfg.fallbackKeys,
-		AllowedBackends: []string{"django.contrib.auth.backends.ModelBackend"},
 	})
 	if err != nil {
-		return fmt.Errorf("configure Django session validation: %w", err)
+		return fmt.Errorf("configure browser session validation: %w", err)
 	}
 	stickyService, err := systemapi.NewStickies(repository, sessionValidator)
 	if err != nil {
@@ -1700,28 +1699,28 @@ func parseConfig(args []string) (config, error) {
 		csrfTrustedOriginsRaw = os.Getenv("CORS_ALLOWED_ORIGINS")
 	}
 	flags.StringVar(&csrfTrustedOriginsRaw, "csrf-trusted-origins", csrfTrustedOriginsRaw, "comma-separated trusted origins for account-authentication CSRF checks")
-	flags.StringVar(&cfg.sessionCookie, "django-session-cookie-name", envValueOrDefault("SESSION_COOKIE_NAME", djangosession.DefaultCookieName), "Django session cookie name")
-	flags.StringVar(&cfg.adminSessionCookie, "django-admin-session-cookie-name", "admin-session-id", "Django admin session cookie name")
-	flags.StringVar(&cfg.cookieDomain, "django-session-cookie-domain", os.Getenv("COOKIE_DOMAIN"), "Django session cookie domain")
-	flags.Func("django-session-cookie-age", "Django session cookie age", func(value string) error {
+	flags.StringVar(&cfg.sessionCookie, "session-cookie-name", envValueOrDefault("SESSION_COOKIE_NAME", browsersession.DefaultCookieName), "browser session cookie name")
+	flags.StringVar(&cfg.adminSessionCookie, "admin-session-cookie-name", "admin-session-id", "admin browser session cookie name")
+	flags.StringVar(&cfg.cookieDomain, "session-cookie-domain", os.Getenv("COOKIE_DOMAIN"), "browser session cookie domain")
+	flags.Func("session-cookie-age", "browser session cookie age", func(value string) error {
 		age, sessionAgeFlagErr := sessionAgeFlag(value)
 		if sessionAgeFlagErr == nil {
 			cfg.sessionCookieAge = age
 		}
 		return sessionAgeFlagErr
 	})
-	flags.Func("django-admin-session-cookie-age", "Django admin session cookie age", func(value string) error {
+	flags.Func("admin-session-cookie-age", "admin browser session cookie age", func(value string) error {
 		age, sessionAgeFlagErr := sessionAgeFlag(value)
 		if sessionAgeFlagErr == nil {
 			cfg.adminSessionCookieAge = age
 		}
 		return sessionAgeFlagErr
 	})
-	flags.BoolVar(&cfg.saveEveryRequest, "django-session-save-every-request", os.Getenv("SESSION_SAVE_EVERY_REQUEST") == "1", "refresh Django sessions after every successful request")
-	flags.StringVar(&cfg.secretKey, "django-secret-key", os.Getenv("SECRET_KEY"), "Django session signing key")
+	flags.BoolVar(&cfg.saveEveryRequest, "session-refresh-on-request", os.Getenv("SESSION_REFRESH_ON_REQUEST") == "1", "refresh browser sessions after every successful request")
+	flags.StringVar(&cfg.secretKey, "secret-key", os.Getenv("SECRET_KEY"), "browser session signing key")
 	var fallbackKeys string
-	flags.StringVar(&fallbackKeys, "django-fallback-secret-keys", os.Getenv("SECRET_KEY_FALLBACKS"), "comma-separated Django fallback signing keys")
-	flags.Int64Var(&cfg.fileSizeLimit, "file-size-limit", fileSizeLimit, "Django request body size limit")
+	flags.StringVar(&fallbackKeys, "fallback-secret-keys", os.Getenv("SECRET_KEY_FALLBACKS"), "comma-separated fallback signing keys")
+	flags.Int64Var(&cfg.fileSizeLimit, "file-size-limit", fileSizeLimit, "request body size limit")
 
 	if parseErr := flags.Parse(args); parseErr != nil {
 		return config{}, fmt.Errorf("parse flags: %w", parseErr)
@@ -1749,10 +1748,10 @@ func parseConfig(args []string) (config, error) {
 		return config{}, fmt.Errorf("shutdown-timeout must be positive")
 	}
 	if cfg.secretKey == "" {
-		return config{}, fmt.Errorf("django-secret-key is required")
+		return config{}, fmt.Errorf("secret-key is required")
 	}
 	if cfg.adminSessionCookie == "" {
-		return config{}, fmt.Errorf("django-admin-session-cookie-name must not be empty")
+		return config{}, fmt.Errorf("admin-session-cookie-name must not be empty")
 	}
 	for _, key := range strings.Split(fallbackKeys, ",") {
 		if key = strings.TrimSpace(key); key != "" {

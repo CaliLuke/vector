@@ -8,13 +8,13 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/projectpublication"
 )
 
-type projectPublicationSessionsStub struct{ principal djangosession.Principal }
+type projectPublicationSessionsStub struct{ principal browsersession.Principal }
 
-func (s projectPublicationSessionsStub) Validate(context.Context, string) (djangosession.Principal, error) {
+func (s projectPublicationSessionsStub) Validate(context.Context, string) (browsersession.Principal, error) {
 	return s.principal, nil
 }
 
@@ -42,7 +42,7 @@ func (*projectPublicationRepositoryStub) Delete(context.Context, string, string,
 
 func TestProjectPublicationClassPermissionRunsBeforeTimezoneActivation(t *testing.T) {
 	repository := &projectPublicationRepositoryStub{authorizationErr: projectpublication.ErrForbidden}
-	serviceValue, err := NewProjectPublication(repository, projectPublicationSessionsStub{principal: djangosession.Principal{UserID: "00000000-0000-4000-8000-000000000001", UserTimezone: "Not/A_Timezone"}})
+	serviceValue, err := NewProjectPublication(repository, projectPublicationSessionsStub{principal: browsersession.Principal{UserID: "00000000-0000-4000-8000-000000000001", UserTimezone: "Not/A_Timezone"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,7 +57,7 @@ func TestProjectPublicationClassPermissionRunsBeforeTimezoneActivation(t *testin
 }
 func TestProjectPublicationAllowedPermissionActivatesTimezoneBeforeHandler(t *testing.T) {
 	repository := &projectPublicationRepositoryStub{}
-	serviceValue, constructorErr := NewProjectPublication(repository, projectPublicationSessionsStub{principal: djangosession.Principal{UserID: "00000000-0000-4000-8000-000000000001", UserTimezone: "Not/A_Timezone"}})
+	serviceValue, constructorErr := NewProjectPublication(repository, projectPublicationSessionsStub{principal: browsersession.Principal{UserID: "00000000-0000-4000-8000-000000000001", UserTimezone: "Not/A_Timezone"}})
 	require.NoError(t, constructorErr)
 	status, _ := serviceValue.(*projectPublicationService).AuthorizeSessionResourceProtocol(context.Background(), "session", SessionProtocolResource{Method: "POST", Slug: "demo", ProjectID: "00000000-0000-4000-8000-000000000100"})
 	if status != 400 {

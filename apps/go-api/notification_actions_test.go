@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/notifications"
 	api "github.com/CaliLuke/go-plane/notificationactions/gen/notification_actions"
 )
@@ -53,7 +53,7 @@ func (s *notificationActionStub) MarkAllRead(_ context.Context, _ store.Principa
 }
 func actionService(t *testing.T, repository *notificationActionStub) (*notificationActionsService, context.Context) {
 	t.Helper()
-	value, err := NewNotificationActions(repository, &activitySessionStub{principal: djangosession.Principal{UserID: "00000000-0000-0000-0000-000000000001", UserTimezone: "UTC"}})
+	value, err := NewNotificationActions(repository, &activitySessionStub{principal: browsersession.Principal{UserID: "00000000-0000-0000-0000-000000000001", UserTimezone: "UTC"}})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -6,12 +6,12 @@ import (
 	"uuid"
 
 	instanceworkspaceapi "github.com/CaliLuke/go-plane/gen/instance_workspace_slug_check"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/loom/security"
 )
 
 type instanceWorkspaceSlugSessionValidator interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
 type instanceWorkspaceSlugRepository interface {

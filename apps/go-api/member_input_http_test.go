@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	server "github.com/CaliLuke/go-plane/projectmembershiplifecycle/gen/http/project_membership_lifecycle/server"
 	api "github.com/CaliLuke/go-plane/projectmembershiplifecycle/gen/project_membership_lifecycle"
@@ -78,7 +78,7 @@ func TestMalformedMemberWritesReturn400WithoutEffects(t *testing.T) {
 			database := &memberInputDatabase{t: t, denied: test.denied}
 			repository, err := store.NewLifecycleRepository(database, database, "http://localhost:8000")
 			require.NoError(t, err)
-			sessions := &activitySessionStub{principal: djangosession.Principal{UserID: "00000000-0000-4000-8000-00000000000a", UserTimezone: "UTC"}}
+			sessions := &activitySessionStub{principal: browsersession.Principal{UserID: "00000000-0000-4000-8000-00000000000a", UserTimezone: "UTC"}}
 			service, err := NewProjectMembershipLifecycle(repository, &activityAPIKeyStub{}, &activityThrottleStub{}, sessions)
 			require.NoError(t, err)
 			mux := loomhttp.NewMuxer()

@@ -17,7 +17,7 @@ import (
 	api "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
 	activitystore "github.com/CaliLuke/go-plane/internal/activityreads"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	loomhttp "github.com/CaliLuke/loom/http"
 	"github.com/CaliLuke/loom/security"
@@ -62,13 +62,13 @@ func (stub *activityAPIKeyStub) Validate(_ context.Context, key string) (apikey.
 }
 
 type activitySessionStub struct {
-	principal djangosession.Principal
+	principal browsersession.Principal
 	err       error
 	calls     int
 	key       string
 }
 
-func (stub *activitySessionStub) Validate(_ context.Context, key string) (djangosession.Principal, error) {
+func (stub *activitySessionStub) Validate(_ context.Context, key string) (browsersession.Principal, error) {
 	stub.calls++
 	stub.key = key
 	return stub.principal, stub.err
@@ -144,7 +144,7 @@ func TestActivityReadsRoutesUserAndAPIOperationsToTheirConfiguredRepositories(t 
 		userRepository,
 		apiRepository,
 		&activityAPIKeyStub{principal: apikey.Principal{UserID: userID, Timezone: "UTC"}},
-		&activitySessionStub{principal: djangosession.Principal{UserID: userID.String(), UserTimezone: "UTC"}},
+		&activitySessionStub{principal: browsersession.Principal{UserID: userID.String(), UserTimezone: "UTC"}},
 		&activityThrottleStub{rate: apikey.Rate{Allowed: true}},
 	)
 	if err != nil {
@@ -193,7 +193,7 @@ func TestActivityReadsSessionAuthenticationAndProjection(t *testing.T) {
 		"extra_stats": nil,
 		"results":     []any{map[string]any{"id": uuid.New().String(), "created_at": "2026-01-10T08:00:00Z", "field": "name", "icon_prop": map[string]any{"created_at": "2026-01-10T08:00:00Z"}, "description_json": map[string]any{"updated_at": "2026-01-10T08:00:00Z"}}},
 	}}
-	serviceValue, constructorErr := NewActivityReads(repository, repository, &activityAPIKeyStub{}, &activitySessionStub{principal: djangosession.Principal{UserID: userID.String(), UserTimezone: "Asia/Kolkata"}}, &activityThrottleStub{})
+	serviceValue, constructorErr := NewActivityReads(repository, repository, &activityAPIKeyStub{}, &activitySessionStub{principal: browsersession.Principal{UserID: userID.String(), UserTimezone: "Asia/Kolkata"}}, &activityThrottleStub{})
 	require.NoError(t, constructorErr)
 	service := serviceValue.(*activityReadsService)
 	ctx, err := service.APIKeyAuth(context.Background(), "session", &security.APIKeyScheme{Name: "PlaneSessionCookie"})
@@ -226,7 +226,7 @@ func TestActivityReadsRejectInvalidSessionTimezones(t *testing.T) {
 	} {
 		t.Run(timezone, func(t *testing.T) {
 			repository := &activityRepositoryStub{body: emptyActivityPage()}
-			serviceValue, constructorErr := NewActivityReads(repository, repository, &activityAPIKeyStub{}, &activitySessionStub{principal: djangosession.Principal{UserID: uuid.New().String(), UserTimezone: timezone}}, &activityThrottleStub{})
+			serviceValue, constructorErr := NewActivityReads(repository, repository, &activityAPIKeyStub{}, &activitySessionStub{principal: browsersession.Principal{UserID: uuid.New().String(), UserTimezone: timezone}}, &activityThrottleStub{})
 			require.NoError(t, constructorErr)
 			service := serviceValue.(*activityReadsService)
 			ctx, authErr := service.APIKeyAuth(context.Background(), "session", &security.APIKeyScheme{Name: "PlaneSessionCookie"})
@@ -247,7 +247,7 @@ func TestActivityReadsRejectInvalidSessionTimezones(t *testing.T) {
 
 func TestActivityReadsRejectAuthenticationFailures(t *testing.T) {
 	repository := &activityRepositoryStub{}
-	serviceValue, constructorErr := NewActivityReads(repository, repository, &activityAPIKeyStub{err: apikey.ErrInvalid}, &activitySessionStub{err: djangosession.ErrSessionNotFound}, &activityThrottleStub{})
+	serviceValue, constructorErr := NewActivityReads(repository, repository, &activityAPIKeyStub{err: apikey.ErrInvalid}, &activitySessionStub{err: browsersession.ErrSessionNotFound}, &activityThrottleStub{})
 	require.NoError(t, constructorErr)
 	service := serviceValue.(*activityReadsService)
 
@@ -318,7 +318,7 @@ func TestActivityReadsAuthorizeBeforeThrottle(t *testing.T) {
 }
 
 func TestActivityReadsSessionAuthUsesRetainedCookieMetadata(t *testing.T) {
-	sessions := &activitySessionStub{principal: djangosession.Principal{UserID: uuid.New().String(), UserTimezone: "UTC"}}
+	sessions := &activitySessionStub{principal: browsersession.Principal{UserID: uuid.New().String(), UserTimezone: "UTC"}}
 	serviceValue, constructorErr := NewActivityReads(&activityRepositoryStub{}, &activityRepositoryStub{}, &activityAPIKeyStub{}, sessions, &activityThrottleStub{})
 	require.NoError(t, constructorErr)
 	service := serviceValue.(*activityReadsService)
@@ -339,7 +339,7 @@ func TestActivityReadsSessionAuthUsesRetainedCookieMetadata(t *testing.T) {
 }
 
 func TestActivityReadsInspectedSessionCannotUseGeneratedFallbackCookie(t *testing.T) {
-	sessions := &activitySessionStub{principal: djangosession.Principal{UserID: uuid.New().String(), UserTimezone: "UTC"}}
+	sessions := &activitySessionStub{principal: browsersession.Principal{UserID: uuid.New().String(), UserTimezone: "UTC"}}
 	serviceValue, constructorErr := NewActivityReads(&activityRepositoryStub{}, &activityRepositoryStub{}, &activityAPIKeyStub{}, sessions, &activityThrottleStub{})
 	require.NoError(t, constructorErr)
 	service := serviceValue.(*activityReadsService)

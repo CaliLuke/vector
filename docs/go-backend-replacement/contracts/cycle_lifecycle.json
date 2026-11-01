@@ -950,7 +950,7 @@
     "policy": "Operation fixtures cover valid principals and denials; invalid API key is represented by v1 create. Inactive project memberships retain the authenticated principal kind and exercise role checks in both PATCH stacks. Shared session/token validation is reused, not multiplied across every operation.",
     "files": [
       "apps/go-api/cycle_lifecycle_test.go",
-      "apps/go-api/internal/authentication/djangosession/validator_test.go",
+      "apps/go-api/internal/authentication/browsersession/validator_test.go",
       "apps/go-api/internal/authentication/apikey/validator_test.go"
     ],
     "production_transport": "Pending candidate mount tests and final production-proxy differential receipt."

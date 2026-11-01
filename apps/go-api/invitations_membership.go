@@ -15,7 +15,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
@@ -94,7 +94,7 @@ func (service *invitationsMembershipService) AuthorizeInvitationsMembershipProto
 		if !inspected || userID == "" {
 			return 0, nil
 		}
-		if zoneErr := djangosession.ValidateUserTimezone(timezone); zoneErr != nil {
+		if zoneErr := browsersession.ValidateUserTimezone(timezone); zoneErr != nil {
 			return 400, map[string]any{"error": "The required key does not exist."}
 		}
 		return 0, nil
@@ -141,8 +141,8 @@ func (service *invitationsMembershipService) AuthorizeInvitationsMembershipProto
 			err = service.repository.AuthorizeWorkspaceRole(requestContext, principal.UserID, resource.Slug, 15, 20)
 		}
 		if err == nil {
-			if zoneErr := djangosession.ValidateUserTimezone(principal.Timezone); zoneErr != nil {
-				if errors.Is(zoneErr, djangosession.ErrTimezoneNotFound) {
+			if zoneErr := browsersession.ValidateUserTimezone(principal.Timezone); zoneErr != nil {
+				if errors.Is(zoneErr, browsersession.ErrTimezoneNotFound) {
 					err = invitationsMembershipError(400, map[string]any{"error": "The required key does not exist."})
 				} else {
 					err = zoneErr
@@ -349,8 +349,8 @@ func (service *invitationsMembershipService) authorizeWorkspace(ctx context.Cont
 			return invitationsMembershipError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait.Seconds()))})
 		}
 	}
-	if err := djangosession.ValidateUserTimezone(principal.Timezone); err != nil {
-		if errors.Is(err, djangosession.ErrTimezoneNotFound) {
+	if err := browsersession.ValidateUserTimezone(principal.Timezone); err != nil {
+		if errors.Is(err, browsersession.ErrTimezoneNotFound) {
 			return invitationsMembershipError(400, map[string]any{"error": "The required key does not exist."})
 		}
 		return invitationsMembershipError(500, map[string]any{"error": "Something went wrong please try again later"})
@@ -705,8 +705,8 @@ func (service *invitationsMembershipService) executeInvitation(ctx context.Conte
 		}
 	}
 	if principal.UserID != uuid.Nil {
-		if err := djangosession.ValidateUserTimezone(principal.Timezone); err != nil {
-			if errors.Is(err, djangosession.ErrTimezoneNotFound) {
+		if err := browsersession.ValidateUserTimezone(principal.Timezone); err != nil {
+			if errors.Is(err, browsersession.ErrTimezoneNotFound) {
 				return nil, invitationsMembershipError(400, map[string]any{"error": "The required key does not exist."})
 			}
 			return nil, invitationsMembershipRepositoryError(err)

@@ -133,7 +133,7 @@
       "statements": 41,
       "percent": 65.85
     },
-    "github.com/CaliLuke/go-plane/internal/authentication/djangosession": {
+    "github.com/CaliLuke/go-plane/internal/authentication/browsersession": {
       "statements": 1045,
       "percent": 82.3
     },

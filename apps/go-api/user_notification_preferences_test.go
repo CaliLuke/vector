@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	usernotificationapi "github.com/CaliLuke/go-plane/gen/user_notification_preferences"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	usernotificationstore "github.com/CaliLuke/go-plane/internal/usernotificationpreferences"
 	loom "github.com/CaliLuke/loom/pkg"
 )
@@ -35,8 +35,8 @@ func (stub *notificationPreferencesRepositoryStub) Patch(_ context.Context, _ uu
 
 type notificationPreferencesSessionStub struct{ err error }
 
-func (stub notificationPreferencesSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{UserID: "00000000-0000-4000-8000-000000000010"}, stub.err
+func (stub notificationPreferencesSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{UserID: "00000000-0000-4000-8000-000000000010"}, stub.err
 }
 
 func notificationPreferencesContext(t *testing.T, service usernotificationapi.Service) context.Context {

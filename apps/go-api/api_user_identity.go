@@ -13,7 +13,7 @@ import (
 
 	api "github.com/CaliLuke/go-plane/apiuseridentity/gen/api_user_identity"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/useridentity"
 	"github.com/CaliLuke/loom/security"
 )
@@ -75,8 +75,8 @@ func (s *apiUserIdentityReadsService) authorize(ctx context.Context) (apikey.Pri
 	if !rate.Allowed {
 		return apikey.Principal{}, apiUserIdentityError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))})
 	}
-	if err := djangosession.ValidateUserTimezone(principal.Timezone); err != nil {
-		if errors.Is(err, djangosession.ErrTimezoneNotFound) {
+	if err := browsersession.ValidateUserTimezone(principal.Timezone); err != nil {
+		if errors.Is(err, browsersession.ErrTimezoneNotFound) {
 			return apikey.Principal{}, apiUserIdentityError(400, map[string]any{"error": "The required key does not exist."})
 		}
 		return apikey.Principal{}, mapAPIUserIdentityError(err)

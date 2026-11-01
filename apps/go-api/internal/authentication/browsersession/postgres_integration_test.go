@@ -1,6 +1,6 @@
 //go:build integration
 
-package djangosession
+package browsersession
 
 import (
 	"context"
@@ -69,7 +69,8 @@ VALUES ($1, $2, CURRENT_TIMESTAMP + interval '5 minutes', $3)
 	if _, readUserErr := NewPostgreSQLReader(connection).ReadUser(ctx, "not-a-uuid"); !errors.Is(readUserErr, ErrInvalidUserID) {
 		t.Fatalf("malformed ReadUser() error = %v, want ErrInvalidUserID", readUserErr)
 	}
-	if _, validationErr := validator.Validate(ctx, fixtureSessionKey); validationErr != nil {
+	loaded, validationErr := validator.Validate(ctx, fixtureSessionKey)
+	if validationErr != nil {
 		t.Fatalf("Validate() error = %v", validationErr)
 	}
 	if _, execErr := connection.Exec(ctx, "UPDATE sessions SET expire_date = $2 WHERE session_key = $1", fixtureSessionKey, time.Now().Add(-time.Minute)); execErr != nil {
@@ -80,7 +81,10 @@ VALUES ($1, $2, CURRENT_TIMESTAMP + interval '5 minutes', $3)
 	if scanErr := connection.QueryRow(ctx, "SELECT CURRENT_TIMESTAMP").Scan(&refreshNow); scanErr != nil {
 		t.Fatalf("read database time: %v", scanErr)
 	}
-	refresh, err := validator.Refresh(ctx, fixtureSessionKey, 86400, refreshNow)
+	if _, coldRefreshErr := validator.Refresh(ctx, fixtureSessionKey, 86400, refreshNow); !errors.Is(coldRefreshErr, ErrSessionNotFound) {
+		t.Fatalf("cold refresh accepted an expired session: %v", coldRefreshErr)
+	}
+	refresh, err := validator.RefreshPrincipal(ctx, loaded, 86400, refreshNow)
 	if err != nil {
 		t.Fatalf("Refresh() error = %v", err)
 	}
@@ -116,16 +120,9 @@ VALUES ($1, $2, CURRENT_TIMESTAMP + interval '5 minutes', $3)
 	if principal, validationErr := validator.Validate(ctx, rotated.SessionKey); validationErr != nil || principal.UsedFallback {
 		t.Fatalf("rotated fallback principal=%#v err=%v", principal, validationErr)
 	}
-	concurrentKey := "concurrent-cycle-new-key"
-	if cycleSessionErr := NewPostgreSQLReader(connection).CycleSession(
-		ctx, "already-deleted-old-key", concurrentKey, fixtureCurrentSession,
-		time.Now().Add(time.Hour), fixtureUserID, nil,
-	); cycleSessionErr != nil {
-		t.Fatalf("cycle after concurrent old-key deletion: %v", cycleSessionErr)
-	}
-	if _, validationErr := validator.Validate(ctx, concurrentKey); validationErr != nil {
-		t.Fatalf("new session missing after concurrent old-key deletion: %v", validationErr)
-	}
+	assertRevokedFallbackSessionStaysRevoked(t, ctx, connection, validator)
+	assertSessionCollisionPreservesOriginal(t, ctx, connection)
+
 	if _, execErr := connection.Exec(ctx, `
 INSERT INTO sessions (session_key, session_data, expire_date, user_id)
 VALUES ('null-user-session', $1, CURRENT_TIMESTAMP + interval '5 minutes', NULL)
@@ -133,28 +130,18 @@ VALUES ('null-user-session', $1, CURRENT_TIMESTAMP + interval '5 minutes', NULL)
 		t.Fatalf("seed NULL-user session: %v", execErr)
 	}
 	if _, validationErr := validator.Validate(ctx, "null-user-session"); validationErr != nil {
-		t.Fatalf("NULL denormalized user must not affect Django validation: %v", validationErr)
+		t.Fatalf("Signed user identity must not depend on denormalized metadata: %v", validationErr)
 	}
-	for _, invalidDevice := range []struct {
+	for _, invalid := range []struct {
 		key  string
-		data string
+		data []byte
 	}{
-		{key: "invalid-device-nan", data: `{"device_info":{"value":NaN}}`},
-		{key: "invalid-device-surrogate", data: `{"device_info":{"value":"\ud800"}}`},
-		{key: "invalid-device-surrogate-key", data: `{"device_info":{"\ud800":"value"}}`},
-		{key: "invalid-user-surrogate", data: `{"_auth_user_id":"\ud800"}`},
+		{key: "invalid-json-nan", data: []byte(`{"device_info":{"value":NaN}}`)},
+		{key: "invalid-json-utf8", data: []byte{'{', '"', 'n', '"', ':', '"', 0xff, '"', '}'}},
 	} {
-		invalidDeviceData := signPayloadForTest(t, []byte(invalidDevice.data), false, fixtureCurrentSecret)
-		if _, execErr := connection.Exec(ctx, `
-INSERT INTO sessions (session_key, session_data, expire_date)
-VALUES ($1, $2, CURRENT_TIMESTAMP + interval '5 minutes')
-`, invalidDevice.key, invalidDeviceData); execErr != nil {
-			t.Fatalf("seed invalid device session: %v", execErr)
-		}
-		if _, refreshUnaccessedErr := validator.RefreshUnaccessed(ctx, invalidDevice.key, 3600, time.Now()); !errors.Is(refreshUnaccessedErr, ErrStore) || !errors.Is(refreshUnaccessedErr, ErrSessionUpdate) {
-			t.Fatalf("invalid JSONField refresh for %s error=%v", invalidDevice.key, refreshUnaccessedErr)
-		}
+		assertStoredSessionRejectsInvalidJSON(t, ctx, connection, validator, invalid.key, invalid.data)
 	}
+
 	var sessionData string
 	var rowCount int
 	if scanErr := connection.QueryRow(ctx, "SELECT session_data, count(*) OVER () FROM sessions WHERE session_key = $1", fixtureSessionKey).Scan(&sessionData, &rowCount); scanErr != nil {
@@ -170,20 +157,87 @@ VALUES ($1, $2, CURRENT_TIMESTAMP + interval '5 minutes')
 		t.Fatalf("expired Validate() error = %v, want ErrSessionNotFound", validationErr)
 	}
 	replacement, err := validator.RefreshUnaccessed(ctx, fixtureSessionKey, 3600, time.Now())
-	if err != nil || replacement.SessionKey == fixtureSessionKey || len(replacement.SessionKey) != 128 {
+	if !errors.Is(err, ErrSessionNotFound) || replacement.SessionKey != "" {
 		t.Fatalf("refresh expired unaccessed session=%#v err=%v", replacement, err)
 	}
 	var expiredCount int
 	if err := connection.QueryRow(ctx, "SELECT count(*) FROM sessions WHERE session_key = $1", fixtureSessionKey).Scan(&expiredCount); err != nil || expiredCount != 1 {
 		t.Fatalf("expired source session count=%d err=%v", expiredCount, err)
 	}
-	if _, err := validator.Validate(ctx, replacement.SessionKey); !errors.Is(err, ErrUserMismatch) {
-		t.Fatalf("replacement Validate() error=%v, want ErrUserMismatch", err)
-	}
 	if _, err := connection.Exec(ctx, "DELETE FROM sessions WHERE session_key = $1", fixtureSessionKey); err != nil {
 		t.Fatalf("delete session: %v", err)
 	}
 	if _, err := validator.Validate(ctx, fixtureSessionKey); !errors.Is(err, ErrSessionNotFound) {
 		t.Fatalf("deleted Validate() error = %v, want ErrSessionNotFound", err)
+	}
+}
+
+func assertStoredSessionRejectsInvalidJSON(t *testing.T, ctx context.Context, db *pgx.Conn, validator *Validator, key string, payload []byte) {
+	t.Helper()
+	data := signPayloadForTest(t, payload, false, fixtureCurrentSecret)
+	if _, err := db.Exec(ctx, `INSERT INTO sessions(session_key,session_data,expire_date) VALUES($1,$2,CURRENT_TIMESTAMP+interval '5 minutes')`, key, data); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := validator.RefreshUnaccessed(ctx, key, 3600, time.Now()); !errors.Is(err, ErrInvalidData) {
+		t.Fatalf("invalid session error=%v", err)
+	}
+	var retained string
+	if err := db.QueryRow(ctx, `SELECT session_data FROM sessions WHERE session_key=$1`, key).Scan(&retained); err != nil {
+		t.Fatal(err)
+	}
+	if retained != data {
+		t.Fatal("invalid stored session was rewritten")
+	}
+}
+
+func assertRevokedFallbackSessionStaysRevoked(t *testing.T, ctx context.Context, db *pgx.Conn, validator *Validator) {
+	t.Helper()
+	const key = "revoked-fallback-session"
+	if _, err := db.Exec(ctx, `INSERT INTO sessions(session_key,session_data,expire_date,user_id) VALUES($1,$2,CURRENT_TIMESTAMP+interval '5 minutes',$3)`, key, fixtureFallbackSession, fixtureUserID); err != nil {
+		t.Fatal(err)
+	}
+	principal, err := validator.Validate(ctx, key)
+	if err != nil || !principal.AuthHashUsedFallback {
+		t.Fatalf("fallback principal=%+v error=%v", principal, err)
+	}
+	prepared := principal.PrepareRefresh()
+	if err := validator.Flush(ctx, &prepared); err != nil {
+		t.Fatal(err)
+	}
+	var before int
+	if err := db.QueryRow(ctx, `SELECT count(*) FROM sessions`).Scan(&before); err != nil {
+		t.Fatal(err)
+	}
+	if refresh, err := validator.RefreshPrincipal(ctx, principal, 3600, time.Now()); !errors.Is(err, ErrSessionNotFound) || refresh.SessionKey != "" {
+		t.Fatalf("revoked session refreshed: refresh=%+v error=%v", refresh, err)
+	}
+	var after int
+	if err := db.QueryRow(ctx, `SELECT count(*) FROM sessions`).Scan(&after); err != nil {
+		t.Fatal(err)
+	}
+	if before != after {
+		t.Fatalf("refresh after logout created a session: before=%d after=%d", before, after)
+	}
+}
+
+func assertSessionCollisionPreservesOriginal(t *testing.T, ctx context.Context, db *pgx.Conn) {
+	t.Helper()
+	const source = "collision-source"
+	const target = "collision-target"
+	if _, err := db.Exec(ctx, `INSERT INTO sessions(session_key,session_data,expire_date) VALUES($1,$2,CURRENT_TIMESTAMP+interval '5 minutes'),($3,$4,CURRENT_TIMESTAMP+interval '5 minutes')`, source, fixtureCurrentSession, target, fixtureFallbackSession); err != nil {
+		t.Fatal(err)
+	}
+	if err := NewPostgreSQLReader(db).CycleSession(ctx, source, target, "replacement", time.Now().Add(time.Hour), nil, nil); !errors.Is(err, ErrKeyCollision) {
+		t.Fatalf("collision error=%v", err)
+	}
+	var original, occupied string
+	if err := db.QueryRow(ctx, `SELECT session_data FROM sessions WHERE session_key=$1`, source).Scan(&original); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.QueryRow(ctx, `SELECT session_data FROM sessions WHERE session_key=$1`, target).Scan(&occupied); err != nil {
+		t.Fatal(err)
+	}
+	if original != fixtureCurrentSession || occupied != fixtureFallbackSession {
+		t.Fatal("key collision changed existing session data")
 	}
 }

@@ -15,7 +15,7 @@ import (
 	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
 	system "github.com/CaliLuke/go-plane/gen/system"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	api "github.com/CaliLuke/go-plane/projectmembershiplifecycle/gen/project_membership_lifecycle"
@@ -63,8 +63,8 @@ func (t membershipHTTPThrottle) Allow(context.Context, string) (apikey.Rate, err
 
 type membershipHTTPSessions struct{}
 
-func (membershipHTTPSessions) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{}, errors.New("production session middleware should supply the principal")
+func (membershipHTTPSessions) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{}, errors.New("production session middleware should supply the principal")
 }
 
 func TestProjectMembershipLifecycleMiddlewareOrderAndEffects(t *testing.T) {

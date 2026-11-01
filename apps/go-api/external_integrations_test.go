@@ -15,7 +15,7 @@ import (
 	loomhttp "github.com/CaliLuke/loom/http"
 
 	api "github.com/CaliLuke/go-plane/externalintegrations/gen/external_integrations"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 )
 
@@ -41,8 +41,8 @@ func (externalIntegrationsTestRepository) ProjectLite(context.Context, string) (
 
 type externalIntegrationsTestSessions struct{}
 
-func (externalIntegrationsTestSessions) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{}, nil
+func (externalIntegrationsTestSessions) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{}, nil
 }
 
 type externalIntegrationsRoundTripper func(*http.Request) (*http.Response, error)

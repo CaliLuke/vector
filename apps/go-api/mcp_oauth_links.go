@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	oauth "github.com/CaliLuke/go-plane/internal/mcpoauth"
 	api "github.com/CaliLuke/go-plane/mcpoauthlinks/gen/mcp_oauth_links"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -17,7 +17,7 @@ import (
 )
 
 type mcpLinkSessions interface {
-	ValidateRequest(context.Context, *http.Request) (djangosession.Principal, error)
+	ValidateRequest(context.Context, *http.Request) (browsersession.Principal, error)
 }
 
 type mcpOAuthLinksService struct {
@@ -44,7 +44,7 @@ func (s *mcpOAuthLinksService) APIKeyAuth(ctx context.Context, _ string, _ *secu
 		return ctx, mcpLinkError(oauth.ErrInvalidCredential)
 	}
 	principal, err := s.sessions.ValidateRequest(ctx, &http.Request{Header: metadata.Headers()})
-	if errors.Is(err, djangosession.ErrStore) {
+	if errors.Is(err, browsersession.ErrStore) {
 		return ctx, mcpLinkError(oauth.ErrUnavailable)
 	}
 	user, parseErr := uuid.Parse(principal.UserID)

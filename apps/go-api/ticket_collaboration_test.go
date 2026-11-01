@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/workitems"
 	server "github.com/CaliLuke/go-plane/ticket_collaboration/gen/http/ticket_collaboration/server"
@@ -67,7 +67,7 @@ func TestCollaborationPublicCommentReadInitializesOptionalSession(t *testing.T) 
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			repository := &collaborationRepositorySpy{}
-			sessions := &activitySessionStub{principal: djangosession.Principal{UserID: tc.user, UserTimezone: tc.zone}}
+			sessions := &activitySessionStub{principal: browsersession.Principal{UserID: tc.user, UserTimezone: tc.zone}}
 			request := httptest.NewRequest(http.MethodGet, "/api/public/anchor/board/issues/00000000-0000-4000-8000-000000000001/comments/", nil)
 			if tc.cookie != "" {
 				request.AddCookie(&http.Cookie{Name: "session-id", Value: tc.cookie})
@@ -116,7 +116,7 @@ func TestCollaborationMalformedFiltersReachAuthorizedDomainValidation(t *testing
 			if denied {
 				repository.authorizeErr = &djangoapi.HTTPError{Status: 403, Body: map[string]any{"detail": "Not permitted."}}
 			}
-			sessions := &activitySessionStub{principal: djangosession.Principal{UserID: "reader", UserTimezone: "UTC"}}
+			sessions := &activitySessionStub{principal: browsersession.Principal{UserID: "reader", UserTimezone: "UTC"}}
 			path := "/api/workspaces/test/projects/00000000-0000-4000-8000-000000000001/issues/00000000-0000-4000-8000-000000000002/comments/?" + field + "=not-a-uuid"
 			request := httptest.NewRequest(http.MethodGet, path, nil)
 			request.AddCookie(&http.Cookie{Name: "session-id", Value: "session"})
@@ -141,7 +141,7 @@ func TestCollaborationGeneratedTransportAcceptsDjangoUUIDVariants(t *testing.T) 
 		} {
 			t.Run(prefix+id, func(t *testing.T) {
 				repository := &collaborationRepositorySpy{}
-				sessions := &activitySessionStub{principal: djangosession.Principal{UserID: "reader", UserTimezone: "UTC"}}
+				sessions := &activitySessionStub{principal: browsersession.Principal{UserID: "reader", UserTimezone: "UTC"}}
 				request := httptest.NewRequest(http.MethodGet, prefix+id+"/comments/", nil)
 				request.AddCookie(&http.Cookie{Name: "session-id", Value: "session"})
 				response := httptest.NewRecorder()

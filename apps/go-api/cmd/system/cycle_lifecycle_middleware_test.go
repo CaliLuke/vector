@@ -14,7 +14,7 @@ import (
 	cycleapi "github.com/CaliLuke/go-plane/cyclelifecycle/gen/cycle_lifecycle_api"
 	"github.com/CaliLuke/go-plane/gen/system"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	cyclereads "github.com/CaliLuke/go-plane/internal/cyclereads"
 	publicprojectmetadatareads "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
 	"github.com/google/uuid"
@@ -91,44 +91,44 @@ type cycleMiddlewareSessions struct {
 	userTimezone string
 }
 
-func (sessions *cycleMiddlewareSessions) Validate(_ context.Context, key string) (djangosession.Principal, error) {
+func (sessions *cycleMiddlewareSessions) Validate(_ context.Context, key string) (browsersession.Principal, error) {
 	sessions.recorder.add("session-authentication")
 	if key != "valid-session" {
-		return djangosession.Principal{}, djangosession.ErrSessionNotFound
+		return browsersession.Principal{}, browsersession.ErrSessionNotFound
 	}
-	return djangosession.Principal{UserID: cycleMiddlewareActor, UserTimezone: sessions.userTimezone}, nil
+	return browsersession.Principal{UserID: cycleMiddlewareActor, UserTimezone: sessions.userTimezone}, nil
 }
-func (sessions *cycleMiddlewareSessions) InspectReadServiceSession(_ context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
+func (sessions *cycleMiddlewareSessions) InspectReadServiceSession(_ context.Context, request *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error) {
 	sessions.recorder.add("session-inspection")
 	if len(request.CookiesNamed("session-id")) == 0 {
-		return false, false, nil, djangosession.Principal{}, nil
+		return false, false, nil, browsersession.Principal{}, nil
 	}
 	if sessions.invalidZone {
 		sessions.recorder.add("timezone")
-		return false, false, nil, djangosession.Principal{}, djangosession.ErrTimezoneNotFound
+		return false, false, nil, browsersession.Principal{}, browsersession.ErrTimezoneNotFound
 	}
 	sessions.recorder.add("timezone")
-	return false, false, nil, djangosession.Principal{UserID: cycleMiddlewareActor, UserTimezone: sessions.userTimezone}, nil
+	return false, false, nil, browsersession.Principal{UserID: cycleMiddlewareActor, UserTimezone: sessions.userTimezone}, nil
 }
-func (sessions *cycleMiddlewareSessions) InspectReadServiceSessionWithoutTimezone(ctx context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
+func (sessions *cycleMiddlewareSessions) InspectReadServiceSessionWithoutTimezone(ctx context.Context, request *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error) {
 	return sessions.InspectReadServiceSession(ctx, request)
 }
-func (sessions *cycleMiddlewareSessions) InspectSession(context.Context, *http.Request) (bool, bool, *djangosession.SessionRefresh, string, error) {
+func (sessions *cycleMiddlewareSessions) InspectSession(context.Context, *http.Request) (bool, bool, *browsersession.SessionRefresh, string, error) {
 	return false, false, nil, cycleMiddlewareActor, nil
 }
-func (*cycleMiddlewareSessions) InspectSessionWithTimezone(context.Context, *http.Request) (bool, bool, *djangosession.SessionRefresh, string, error) {
+func (*cycleMiddlewareSessions) InspectSessionWithTimezone(context.Context, *http.Request) (bool, bool, *browsersession.SessionRefresh, string, error) {
 	return false, false, nil, cycleMiddlewareActor, nil
 }
-func (*cycleMiddlewareSessions) RefreshSession(_ context.Context, _ *http.Request, refresh djangosession.SessionRefresh) (djangosession.SessionRefresh, error) {
+func (*cycleMiddlewareSessions) RefreshSession(_ context.Context, _ *http.Request, refresh browsersession.SessionRefresh) (browsersession.SessionRefresh, error) {
 	return refresh, nil
 }
-func (*cycleMiddlewareSessions) AllowRequest(context.Context, *http.Request) (bool, time.Duration, bool, bool, *djangosession.SessionRefresh, string, error) {
+func (*cycleMiddlewareSessions) AllowRequest(context.Context, *http.Request) (bool, time.Duration, bool, bool, *browsersession.SessionRefresh, string, error) {
 	return true, 0, false, false, nil, cycleMiddlewareActor, nil
 }
-func (*cycleMiddlewareSessions) AllowRequestWithoutTimezone(context.Context, *http.Request) (bool, time.Duration, bool, bool, *djangosession.SessionRefresh, string, error) {
+func (*cycleMiddlewareSessions) AllowRequestWithoutTimezone(context.Context, *http.Request) (bool, time.Duration, bool, bool, *browsersession.SessionRefresh, string, error) {
 	return true, 0, false, false, nil, cycleMiddlewareActor, nil
 }
-func (*cycleMiddlewareSessions) FinalizeUnaccessedSession(context.Context, *http.Request, int) (bool, *djangosession.SessionRefresh, error) {
+func (*cycleMiddlewareSessions) FinalizeUnaccessedSession(context.Context, *http.Request, int) (bool, *browsersession.SessionRefresh, error) {
 	return false, nil, nil
 }
 

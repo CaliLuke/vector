@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/notifications"
 	notificationssvr "github.com/CaliLuke/go-plane/notificationreads/gen/http/notifications/server"
 	notificationsapi "github.com/CaliLuke/go-plane/notificationreads/gen/notifications"
@@ -38,7 +38,7 @@ func (*notificationMiddlewareRepository) Detail(context.Context, store.Principal
 
 type notificationMiddlewareSessionValidator struct{}
 
-func (notificationMiddlewareSessionValidator) Validate(context.Context, string) (djangosession.Principal, error) {
+func (notificationMiddlewareSessionValidator) Validate(context.Context, string) (browsersession.Principal, error) {
 	panic("session middleware must provide the inspected principal")
 }
 

@@ -7,7 +7,7 @@ import (
 	"uuid"
 
 	userprofileapi "github.com/CaliLuke/go-plane/gen/user_profile_flags"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/userprofileflags"
 	"github.com/CaliLuke/loom/security"
 )
@@ -18,7 +18,7 @@ type userProfileFlagsRepository interface {
 }
 
 type userProfileFlagsSessionValidator interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
 type userProfileFlagsService struct {

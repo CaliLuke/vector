@@ -11,7 +11,7 @@ import (
 
 	activitystore "github.com/CaliLuke/go-plane/internal/activityreads"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 )
 
 type apiV1ReadErrorFactory func(int, map[string]any) error
@@ -47,8 +47,8 @@ func (pipeline apiV1ReadPipeline) execute(ctx context.Context) (io.ReadCloser, e
 		return nil, pipeline.newError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))})
 	}
 
-	if timezoneErr := djangosession.ValidateUserTimezone(pipeline.principal.Timezone); timezoneErr != nil {
-		if errors.Is(timezoneErr, djangosession.ErrTimezoneNotFound) {
+	if timezoneErr := browsersession.ValidateUserTimezone(pipeline.principal.Timezone); timezoneErr != nil {
+		if errors.Is(timezoneErr, browsersession.ErrTimezoneNotFound) {
 			return nil, pipeline.newError(400, map[string]any{"error": "The required key does not exist."})
 		}
 		return nil, pipeline.mapError(timezoneErr)

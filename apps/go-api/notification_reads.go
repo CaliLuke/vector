@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/notifications"
 	api "github.com/CaliLuke/go-plane/notificationreads/gen/notifications"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -107,8 +107,8 @@ func (s *notificationsService) principal(ctx context.Context, slug string, autho
 	if p.UserID == "" {
 		return p, notificationError(401, map[string]any{"detail": "Authentication credentials were not provided."})
 	}
-	if err := djangosession.ValidateUserTimezone(p.Timezone); err != nil {
-		if errors.Is(err, djangosession.ErrTimezoneNotFound) {
+	if err := browsersession.ValidateUserTimezone(p.Timezone); err != nil {
+		if errors.Is(err, browsersession.ErrTimezoneNotFound) {
 			return p, notificationError(400, map[string]any{"error": "The required key does not exist."})
 		}
 		return p, mapNotificationError(err)

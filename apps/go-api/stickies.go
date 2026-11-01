@@ -14,7 +14,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 
 	stickyapi "github.com/CaliLuke/go-plane/gen/stickies"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	stickystore "github.com/CaliLuke/go-plane/internal/stickies"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	loom "github.com/CaliLuke/loom/pkg"
@@ -28,7 +28,7 @@ const (
 )
 
 type stickySessionValidator interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
 type stickyRepository interface {

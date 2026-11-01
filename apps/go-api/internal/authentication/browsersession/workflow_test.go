@@ -1,4 +1,4 @@
-package djangosession
+package browsersession
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func TestSaveValuesPreservesOtherDjangoSessionValues(t *testing.T) {
+func TestSaveValuesPreservesUnrelatedSessionValues(t *testing.T) {
 	validator, key := newFixtureValidator(t, fixtureCurrentSession, fixturePassword)
 	principal, prepared, err := validator.Inspect(context.Background(), key)
 	if err != nil {
@@ -22,7 +22,7 @@ func TestSaveValuesPreservesOtherDjangoSessionValues(t *testing.T) {
 	if updated.SessionKey != key {
 		t.Fatalf("SaveValues() changed session key: got %q, want %q", updated.SessionKey, key)
 	}
-	if got, ok := updated.Get("_auth_user_id"); !ok || got != fixtureUserID {
+	if got, ok := updated.Get("user_id"); !ok || got != fixtureUserID {
 		t.Fatalf("SaveValues() lost authenticated user: value=%#v found=%v", got, ok)
 	}
 	if got, ok := updated.Get("state"); !ok || got != "oauth-state" {
@@ -47,7 +47,6 @@ func TestLoginCyclesAnonymousSessionAndPreservesOAuthState(t *testing.T) {
 	loggedIn, err := validator.Login(ctx, &initial, AuthenticatedSession{
 		UserID:       fixtureUserID,
 		PasswordHash: fixturePassword,
-		Backend:      fixtureBackend,
 		DeviceInfo:   map[string]any{"user_agent": "test-agent"},
 	}, 3600, time.Now())
 	if err != nil {
@@ -60,11 +59,10 @@ func TestLoginCyclesAnonymousSessionAndPreservesOAuthState(t *testing.T) {
 		t.Fatalf("Login() retained old session key %q", oldKey)
 	}
 	for key, want := range map[string]any{
-		"host":               "app.example.test",
-		"next_path":          "/settings/",
-		"state":              "oauth-state",
-		"_auth_user_id":      fixtureUserID,
-		"_auth_user_backend": fixtureBackend,
+		"host":      "app.example.test",
+		"next_path": "/settings/",
+		"state":     "oauth-state",
+		"user_id":   fixtureUserID,
 	} {
 		if got, ok := loggedIn.Get(key); !ok || got != want {
 			t.Errorf("loggedIn.Get(%q) = %#v, found=%v; want %#v", key, got, ok, want)
@@ -78,15 +76,15 @@ func TestLoginCyclesAnonymousSessionAndPreservesOAuthState(t *testing.T) {
 	}
 }
 
-func TestLoginMatchesDjangoExistingAuthenticationDecision(t *testing.T) {
+func TestLoginPreservesStateOnlyForTheSameAuthenticatedIdentity(t *testing.T) {
 	ctx := context.Background()
 	identity := AuthenticatedSession{
-		UserID: fixtureUserID, PasswordHash: fixturePassword, Backend: fixtureBackend,
+		UserID: fixtureUserID, PasswordHash: fixturePassword,
 		DeviceInfo: map[string]any{"user_agent": "test-agent"},
 	}
 	matchingHash := ""
 	for _, secret := range []string{fixtureCurrentSecret} {
-		matchingHash = fmt.Sprintf("%x", djangoHMAC(AuthHashSalt, fixturePassword, secret))
+		matchingHash = fmt.Sprintf("%x", sessionHMAC(AuthHashSalt, fixturePassword, secret))
 	}
 	tests := []struct {
 		name       string
@@ -95,10 +93,10 @@ func TestLoginMatchesDjangoExistingAuthenticationDecision(t *testing.T) {
 		wantState  bool
 	}{
 		{name: "anonymous session cycles and preserves state", values: map[string]any{"state": "keep"}, wantRotate: true, wantState: true},
-		{name: "same user with matching auth hash retains key", values: map[string]any{"_auth_user_id": fixtureUserID, "_auth_user_hash": matchingHash, "state": "keep"}, wantState: true},
-		{name: "same user with missing hash flushes", values: map[string]any{"_auth_user_id": fixtureUserID, "state": "discard"}, wantRotate: true},
-		{name: "different user flushes", values: map[string]any{"_auth_user_id": "22222222-2222-2222-2222-222222222222", "_auth_user_hash": matchingHash, "state": "discard"}, wantRotate: true},
-		{name: "mismatched auth hash flushes", values: map[string]any{"_auth_user_id": fixtureUserID, "_auth_user_hash": "wrong", "state": "discard"}, wantRotate: true},
+		{name: "same user with matching auth hash retains key", values: map[string]any{"user_id": fixtureUserID, "auth_hash": matchingHash, "state": "keep"}, wantState: true},
+		{name: "same user with missing hash flushes", values: map[string]any{"user_id": fixtureUserID, "state": "discard"}, wantRotate: true},
+		{name: "different user flushes", values: map[string]any{"user_id": "22222222-2222-2222-2222-222222222222", "auth_hash": matchingHash, "state": "discard"}, wantRotate: true},
+		{name: "mismatched auth hash flushes", values: map[string]any{"user_id": fixtureUserID, "auth_hash": "wrong", "state": "discard"}, wantRotate: true},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

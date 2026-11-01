@@ -16,7 +16,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/page_reads"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/pagereads"
@@ -344,7 +344,7 @@ func pageLifecycleValidateTimezone(ctx context.Context) error {
 	if !ok {
 		return pageLifecycleError(http.StatusBadRequest, map[string]any{"error": "The required key does not exist."})
 	}
-	if err := djangosession.ValidateUserTimezone(timezone); err != nil {
+	if err := browsersession.ValidateUserTimezone(timezone); err != nil {
 		return pageLifecycleError(http.StatusBadRequest, map[string]any{"error": "The required key does not exist."})
 	}
 	return nil

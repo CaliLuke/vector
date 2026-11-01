@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/loom/clue/log"
 )
 
@@ -243,7 +243,7 @@ type readServicesSessionResponseWriter struct {
 	request       *http.Request
 	sessions      readServicesSessionLifecycle
 	sessionCookie djangoSessionCookieConfig
-	refresh       *djangosession.SessionRefresh
+	refresh       *browsersession.SessionRefresh
 	wroteHeader   bool
 	failed        bool
 }
@@ -253,7 +253,7 @@ func (writer *readServicesSessionResponseWriter) WriteHeader(status int) {
 		return
 	}
 	writer.wroteHeader = true
-	override, expire, explicit := djangosession.ResponseSessionActionFromContext(writer.request.Context())
+	override, expire, explicit := browsersession.ResponseSessionActionFromContext(writer.request.Context())
 	if expire || status < http.StatusInternalServerError && (explicit || writer.refresh != nil) {
 		var err error
 		switch {
@@ -262,7 +262,7 @@ func (writer *readServicesSessionResponseWriter) WriteHeader(status int) {
 		case explicit:
 			err = refreshDjangoSessionCookie(writer.Header(), writer.sessionCookie, *override)
 		default:
-			var refresh djangosession.SessionRefresh
+			var refresh browsersession.SessionRefresh
 			refresh, err = writer.sessions.RefreshSession(writer.request.Context(), writer.request, *writer.refresh)
 			if err == nil {
 				err = refreshDjangoSessionCookie(writer.Header(), writer.sessionCookie, refresh)
@@ -309,11 +309,11 @@ func readServicesSessionMiddleware(
 
 func writeReadServicesSessionInspectionError(response http.ResponseWriter, request *http.Request, err error) {
 	switch {
-	case errors.Is(err, djangosession.ErrTimezoneNotFound):
+	case errors.Is(err, browsersession.ErrTimezoneNotFound):
 		writeReadServiceJSON(response, http.StatusBadRequest, map[string]string{
 			"error": "The required key does not exist.",
 		})
-	case errors.Is(err, djangosession.ErrInvalidTimezone):
+	case errors.Is(err, browsersession.ErrInvalidTimezone):
 		writeReadServiceJSON(response, http.StatusInternalServerError, map[string]string{
 			"error": "Something went wrong please try again later",
 		})
@@ -325,7 +325,7 @@ func writeReadServicesSessionInspectionError(response http.ResponseWriter, reque
 func writeReadServicesSessionError(response http.ResponseWriter, request *http.Request, causes ...error) {
 	status := http.StatusInternalServerError
 	body := djangoServerErrorBody
-	if len(causes) != 0 && (errors.Is(causes[0], djangosession.ErrSessionNotFound) || errors.Is(causes[0], djangosession.ErrSessionUpdate)) {
+	if len(causes) != 0 && (errors.Is(causes[0], browsersession.ErrSessionNotFound) || errors.Is(causes[0], browsersession.ErrSessionUpdate)) {
 		status = http.StatusBadRequest
 		body = djangoBadRequestBody
 	}

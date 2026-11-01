@@ -15,7 +15,7 @@ import (
 
 	pagereadssvr "github.com/CaliLuke/go-plane/gen/http/page_reads/server"
 	api "github.com/CaliLuke/go-plane/gen/page_reads"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/pagereads"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
@@ -144,18 +144,18 @@ type pageReadsSessionsStub struct {
 	timezone string
 }
 
-func (stub pageReadsSessionsStub) Validate(context.Context, string) (djangosession.Principal, error) {
+func (stub pageReadsSessionsStub) Validate(context.Context, string) (browsersession.Principal, error) {
 	if stub.calls != nil {
 		*stub.calls++
 	}
 	if stub.err != nil {
-		return djangosession.Principal{}, stub.err
+		return browsersession.Principal{}, stub.err
 	}
 	timezone := stub.timezone
 	if timezone == "" {
 		timezone = "America/New_York"
 	}
-	return djangosession.Principal{UserID: pageReadsUserID, UserTimezone: timezone}, nil
+	return browsersession.Principal{UserID: pageReadsUserID, UserTimezone: timezone}, nil
 }
 
 type pageRecentVisitsStub struct {

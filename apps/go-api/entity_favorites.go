@@ -9,7 +9,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/entity_favorites"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/entityfavorites"
 	"github.com/CaliLuke/loom/security"
 )
@@ -32,7 +32,7 @@ type entityFavoritesRepository interface {
 	DeletePage(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID) error
 }
 type entityFavoritesSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 type entityFavoritesPrincipal struct{}
 type entityFavoritesService struct {

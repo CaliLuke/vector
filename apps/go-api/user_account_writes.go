@@ -21,7 +21,7 @@ import (
 	"math/big"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/emailvalidation"
@@ -45,7 +45,7 @@ type userAccountWritesRepository interface {
 }
 
 type userAccountWritesSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
 type userAccountWritesCache interface {
@@ -134,8 +134,8 @@ func (service *userAccountWritesService) validateSessionTimezone(ctx context.Con
 	if !ok {
 		return 401, map[string]any{"detail": "Authentication credentials were not provided."}
 	}
-	if err := djangosession.ValidateUserTimezone(principal.timezone); err != nil {
-		if errors.Is(err, djangosession.ErrTimezoneNotFound) {
+	if err := browsersession.ValidateUserTimezone(principal.timezone); err != nil {
+		if errors.Is(err, browsersession.ErrTimezoneNotFound) {
 			return 400, map[string]any{"error": "The required key does not exist."}
 		}
 		return 500, map[string]any{"error": userAccountWritesInternalMessage}
@@ -228,7 +228,7 @@ func (service *userAccountWritesService) Deactivate(ctx context.Context, _ *api.
 	}
 	// Django's logout(request) clears the session cookie after deleting every
 	// persisted session for the deactivated user.
-	djangosession.ExpireResponseSession(ctx)
+	browsersession.ExpireResponseSession(ctx)
 	if err := service.tasks.Task(ctx, "plane.bgtasks.user_deactivation_email_task.user_deactivation_email", []any{service.appBaseURL, principal.userID.String()}, nil); err != nil {
 		return nil, userAccountWritesInternal()
 	}
@@ -291,7 +291,7 @@ func (service *userAccountWritesService) UpdateEmail(ctx context.Context, payloa
 	}
 	// Django logout() removes the session and expires the browser cookie in
 	// SessionMiddleware's response finalizer.
-	djangosession.ExpireResponseSession(ctx)
+	browsersession.ExpireResponseSession(ctx)
 	if taskErr := service.tasks.Task(ctx, "plane.bgtasks.user_email_update_task.send_email_update_confirmation", []any{newEmail}, nil); taskErr != nil {
 		return nil, nil, userAccountWritesInternal()
 	}

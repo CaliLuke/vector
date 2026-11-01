@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 )
 
 type sessionProtocolAuthorizerStub struct{ allowed bool }
@@ -150,7 +150,7 @@ func TestSessionServiceProtocolFinalizesSessionsAfterEarlyResponses(t *testing.T
 		{"malformed UUID", http.MethodGet, "/api/workspaces/demo/users/notifications/not-a-uuid/", "", 404},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			sessions := &publicProjectMetadataThrottleStub{earlyRefresh: &djangosession.SessionRefresh{SessionKey: "refreshed", BrowserClose: true}}
+			sessions := &publicProjectMetadataThrottleStub{earlyRefresh: &browsersession.SessionRefresh{SessionKey: "refreshed", BrowserClose: true}}
 			cookie := djangoSessionCookieConfig{Name: "session-id", Configured: true}
 			policy, err := djangoRuntimeCORSPolicy(nil)
 			if err != nil {

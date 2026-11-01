@@ -14,7 +14,7 @@ import (
 
 	api "github.com/CaliLuke/go-plane/accountauthentication/gen/account_authentication"
 	store "github.com/CaliLuke/go-plane/internal/accountauthentication"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/authentication/password"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 )
@@ -109,14 +109,12 @@ func (m accountAuthenticationTestResetTokens) Issue(context.Context, store.User)
 
 type accountAuthenticationTestSessionReader struct{}
 
-func (accountAuthenticationTestSessionReader) ReadSession(context.Context, string) (djangosession.Session, error) {
-	return djangosession.Session{}, errors.New("unused")
+func (accountAuthenticationTestSessionReader) ReadSession(context.Context, string) (browsersession.Session, error) {
+	return browsersession.Session{}, errors.New("unused")
 }
-func (accountAuthenticationTestSessionReader) ReadSessionForRefresh(context.Context, string) (djangosession.Session, error) {
-	return djangosession.Session{}, errors.New("unused")
-}
-func (accountAuthenticationTestSessionReader) ReadUser(context.Context, string) (djangosession.User, error) {
-	return djangosession.User{}, errors.New("unused")
+
+func (accountAuthenticationTestSessionReader) ReadUser(context.Context, string) (browsersession.User, error) {
+	return browsersession.User{}, errors.New("unused")
 }
 func (accountAuthenticationTestSessionReader) CreateSession(context.Context, string, string, time.Time, any, any) error {
 	return nil
@@ -127,7 +125,7 @@ func (accountAuthenticationTestSessionReader) UpdateSession(context.Context, str
 
 func newAccountAuthenticationTestService(t *testing.T, repo *accountAuthenticationTestRepo, throttle *accountAuthenticationTestThrottle, tasks *accountAuthenticationTestTasks, magic accountAuthenticationTestMagic) *accountAuthenticationService {
 	t.Helper()
-	sessions, err := djangosession.New(accountAuthenticationTestSessionReader{}, djangosession.Config{SecretKey: "test-secret", AllowedBackends: []string{accountAuthenticationBackend}})
+	sessions, err := browsersession.New(accountAuthenticationTestSessionReader{}, browsersession.Config{SecretKey: "test-secret"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -187,7 +185,7 @@ func TestPasswordWriteRefreshesSessionWithoutMutatingLoginMetadata(t *testing.T)
 		user:       store.User{ID: "00000000-0000-4000-8000-000000000001", Email: "auth@example.test", PasswordAutoset: true, Active: true},
 	}
 	service := newAccountAuthenticationTestService(t, repo, &accountAuthenticationTestThrottle{allowed: true}, &accountAuthenticationTestTasks{}, accountAuthenticationTestMagic{})
-	ctx, _ := djangosession.WithResponseSessionAction(context.Background())
+	ctx, _ := browsersession.WithResponseSessionAction(context.Background())
 	ctx = context.WithValue(ctx, accountAuthenticationPrincipalKey{}, accountAuthenticationPrincipal{userID: repo.user.ID, timezone: "UTC"})
 	contentType := "application/json"
 	_, body, err := service.SetPassword(ctx, &api.SetPasswordPayload{ContentType: &contentType}, io.NopCloser(strings.NewReader(`{"password":"correct-horse-battery-staple-47!"}`)))
@@ -200,7 +198,7 @@ func TestPasswordWriteRefreshesSessionWithoutMutatingLoginMetadata(t *testing.T)
 	if repo.setPasswordCalls != 1 || repo.updateLoginCalls != 0 {
 		t.Fatalf("password writes=%d login metadata writes=%d", repo.setPasswordCalls, repo.updateLoginCalls)
 	}
-	refresh, expire, found := djangosession.ResponseSessionActionFromContext(ctx)
+	refresh, expire, found := browsersession.ResponseSessionActionFromContext(ctx)
 	if !found || refresh == nil || expire {
 		t.Fatalf("session action found=%t refresh=%v expire=%t", found, refresh != nil, expire)
 	}

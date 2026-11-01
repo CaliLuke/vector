@@ -7,7 +7,7 @@ import (
 
 	systemapi "github.com/CaliLuke/go-plane"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/google/uuid"
 )
 
@@ -58,7 +58,7 @@ func assetDuplicateThrottleMiddleware(throttle *apikey.Throttle) func(http.Handl
 				return
 			}
 			timezone, _ := systemapi.ReadServiceSessionTimezone(request.Context())
-			if err := djangosession.ValidateUserTimezone(timezone); err != nil {
+			if err := browsersession.ValidateUserTimezone(timezone); err != nil {
 				writeReadServicesSessionInspectionError(response, request, err)
 				return
 			}

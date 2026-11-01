@@ -10,7 +10,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 )
 
 func TestAuthSessionMiddlewareUsesExplicitCookieWithoutSavingOldSession(t *testing.T) {
@@ -31,20 +31,20 @@ func TestAuthSessionMiddlewareUsesExplicitCookieWithoutSavingOldSession(t *testi
 		t.Run(tc.name, func(t *testing.T) {
 			sessions := &publicProjectMetadataThrottleStub{}
 			if tc.incoming {
-				sessions.rotated = &djangosession.SessionRefresh{SessionKey: "old-session"}
+				sessions.rotated = &browsersession.SessionRefresh{SessionKey: "old-session"}
 			}
 			handler := djangoAuthSessionMiddleware(sessions, djangoSessionCookieConfig{Name: "admin-session-id", Configured: true}, func(*http.Request) bool { return true })(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				current, found := djangosession.CurrentSessionFromContext(r.Context())
+				current, found := browsersession.CurrentSessionFromContext(r.Context())
 				if found != tc.incoming || found && current.SessionKey != "old-session" {
 					t.Fatalf("wrong current session: %v %v", current, found)
 				}
 				switch tc.action {
 				case "set":
-					if !djangosession.SetResponseSession(r.Context(), djangosession.SessionRefresh{SessionKey: "new-session", MaxAgeSeconds: 3600, ExpiresAt: time.Now().Add(time.Hour)}) {
+					if !browsersession.SetResponseSession(r.Context(), browsersession.SessionRefresh{SessionKey: "new-session", MaxAgeSeconds: 3600, ExpiresAt: time.Now().Add(time.Hour)}) {
 						t.Fatal("missing response action")
 					}
 				case "expire":
-					if !djangosession.ExpireResponseSession(r.Context()) {
+					if !browsersession.ExpireResponseSession(r.Context()) {
 						t.Fatal("missing response action")
 					}
 				}
@@ -80,12 +80,12 @@ func TestAuthSessionIsAvailableWithoutAutomaticSaving(t *testing.T) {
 		t.Run(fmt.Sprintf("expire=%v", expire), func(t *testing.T) {
 			sessions := &publicProjectMetadataThrottleStub{userID: "user-id", sessionKey: "authenticated-session"}
 			handler := djangoAuthSessionMiddleware(sessions, djangoSessionCookieConfig{Name: "session-id", Configured: true}, authRedirectSessionPath)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				current, found := djangosession.CurrentSessionFromContext(r.Context())
+				current, found := browsersession.CurrentSessionFromContext(r.Context())
 				if !found || current.SessionKey != sessions.sessionKey {
 					t.Fatal("authenticated session is unavailable to the sign-out handler")
 				}
 				if expire {
-					djangosession.ExpireResponseSession(r.Context())
+					browsersession.ExpireResponseSession(r.Context())
 				}
 				w.WriteHeader(http.StatusFound)
 			}))
@@ -108,8 +108,8 @@ func TestAuthSessionIsAvailableWithoutAutomaticSaving(t *testing.T) {
 
 func TestPasswordLoginRotatesDjangoCSRFCookie(t *testing.T) {
 	request := httptest.NewRequest(http.MethodPost, "/auth/set-password/", nil)
-	ctx, _ := djangosession.WithResponseSessionAction(request.Context())
-	if !djangosession.SetResponseSession(ctx, djangosession.SessionRefresh{SessionKey: "session-key"}) {
+	ctx, _ := browsersession.WithResponseSessionAction(request.Context())
+	if !browsersession.SetResponseSession(ctx, browsersession.SessionRefresh{SessionKey: "session-key"}) {
 		t.Fatal("missing session response action")
 	}
 	request = request.WithContext(ctx)
@@ -131,7 +131,7 @@ func TestPasswordLoginRotatesDjangoCSRFCookie(t *testing.T) {
 
 func TestPasswordLoginDoesNotRotateCSRFCookieAfterFailedResponse(t *testing.T) {
 	request := httptest.NewRequest(http.MethodPost, "/auth/change-password/", nil)
-	ctx, _ := djangosession.WithResponseSessionAction(request.Context())
+	ctx, _ := browsersession.WithResponseSessionAction(request.Context())
 	request = request.WithContext(ctx)
 	handler := passwordLoginCSRFCookieMiddleware(djangoCSRFCookieConfig{})(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)

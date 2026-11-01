@@ -13,7 +13,7 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	workitemstore "github.com/CaliLuke/go-plane/internal/workitems"
@@ -311,7 +311,7 @@ func TestWorkItemOptionsChecksPutObjectAfterAuthorizationOnlyForDetailMetadata(t
 		t.Run(test.name, func(t *testing.T) {
 			repository := &workItemCoreRepositoryStub{authorizeErr: test.authorizeErr, putActionAvailable: test.available, putActionErr: test.lookupErr}
 			service := newWorkItemCoreTestService(t, repository, nil, nil).(WorkItemProtocolAuthorizer)
-			service.(*workItemCoreService).sessions = &activitySessionStub{principal: djangosession.Principal{UserID: uuid.NewString(), UserTimezone: "UTC"}}
+			service.(*workItemCoreService).sessions = &activitySessionStub{principal: browsersession.Principal{UserID: uuid.NewString(), UserTimezone: "UTC"}}
 			metadata, err := service.AuthorizeWorkItemProtocol(context.Background(), WorkItemProtocolResource{Method: test.method, Pattern: test.pattern, SessionID: "valid", Params: map[string]string{"slug": "workspace", "project_id": "project", "pk": "issue", "filters": "query"}})
 			if (err != nil) != test.wantError || metadata.OmitPutAction != test.wantOmit || repository.putActionCalls != test.wantCalls || repository.executeCalls != 0 {
 				t.Fatalf("metadata=%#v err=%v lookup calls=%d writes=%d", metadata, err, repository.putActionCalls, repository.executeCalls)

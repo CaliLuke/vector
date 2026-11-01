@@ -8,7 +8,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_sidebar_preferences"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/workspacesidebarpreferences"
 	"github.com/CaliLuke/loom/security"
 )
@@ -19,7 +19,7 @@ type workspaceSidebarPreferencesBackend interface {
 }
 
 type workspaceSidebarPreferencesSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
 type workspaceSidebarPreferencesService struct {

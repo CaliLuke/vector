@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	api "github.com/CaliLuke/go-plane/workspacepersonal/gen/personal_dashboard"
 	loom "github.com/CaliLuke/loom/pkg"
@@ -19,7 +19,7 @@ import (
 )
 
 type personalDashboardSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 type personalDashboardRepository interface {
 	Dashboard(context.Context, string, string, string) (json.RawMessage, error)
@@ -48,8 +48,8 @@ func (s *personalDashboardService) APIKeyAuth(ctx context.Context, key string, _
 	if _, err := uuid.Parse(userID); userID == "" || err != nil {
 		return ctx, s.error(http.StatusUnauthorized, map[string]any{"detail": unauthenticatedDetail})
 	}
-	if err := djangosession.ValidateUserTimezone(timezone); err != nil {
-		if errors.Is(err, djangosession.ErrTimezoneNotFound) {
+	if err := browsersession.ValidateUserTimezone(timezone); err != nil {
+		if errors.Is(err, browsersession.ErrTimezoneNotFound) {
 			return ctx, s.error(http.StatusBadRequest, map[string]any{"error": "The required key does not exist."})
 		}
 		return ctx, s.error(http.StatusInternalServerError, map[string]any{"error": "Something went wrong please try again later"})

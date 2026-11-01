@@ -13,7 +13,7 @@ import (
 
 	systemapi "github.com/CaliLuke/go-plane"
 	"github.com/CaliLuke/go-plane/gen/system"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	store "github.com/CaliLuke/go-plane/internal/workitemtypes"
@@ -56,11 +56,11 @@ func (r *typeHTTPRepository) MutateProject(ctx context.Context, actor, slug, pro
 
 type typeHTTPSessions struct{}
 
-func (typeHTTPSessions) Validate(_ context.Context, credential string) (djangosession.Principal, error) {
+func (typeHTTPSessions) Validate(_ context.Context, credential string) (browsersession.Principal, error) {
 	if credential != "types-session" {
-		return djangosession.Principal{}, errors.New("invalid session")
+		return browsersession.Principal{}, errors.New("invalid session")
 	}
-	return djangosession.Principal{UserID: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"}, nil
+	return browsersession.Principal{UserID: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"}, nil
 }
 func TestWorkItemTypesHTTPProtection(t *testing.T) {
 	const releaseBody = `{"revision":4,"action":"create","id":"eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee","values":{"name":"October","description":"Notes","target_date":"2026-10-31"}}`

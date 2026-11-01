@@ -1,20 +1,15 @@
-package djangosession
+package browsersession
 
 import (
 	"bytes"
-	"compress/zlib"
 	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/CaliLuke/go-plane/internal/testsupport"
 
 	"github.com/CaliLuke/loom/clue/log"
 )
@@ -24,12 +19,11 @@ const (
 	fixtureFallbackSecret    = "fallback-secret-for-go-session-fixture"
 	fixturePassword          = "pbkdf2_sha256$1000000$opaque$opaquehash"
 	fixtureUserID            = "11111111-1111-1111-1111-111111111111"
-	fixtureBackend           = "django.contrib.auth.backends.ModelBackend"
-	fixtureCurrentHash       = "9f00eb5e11226e52f614483745d3b745e8a38f8efacd8b4792e4e1d817cf98c3"
-	fixtureFallbackHash      = "0fbf54d64306e83d54602e7c14f72fccc5349abd612c1b37d41f90d61c1caa9d"
-	fixtureCurrentSession    = ".eJxtjMsOwiAURP-FtZLyKheX7v0GwuMiVQNJaVfGf7dNMNHEWcxmzpknsW5dsl0bznaK5ERYz_FPfUIO35p34Y5ld-PNlWuloZZlnjzdEdrXRi814uPc2Z-D7FrebJOGAb1CxjgfUfE0MilBaKmi8FsjOAEJMLkQwUttOEpkEZgOyUAQ5PUGIa0-Xg:1AbC:xXWGwnCfPtoweEMR_QW1DR1egdVd0BEMax3RSgk9N8k"
-	fixtureFallbackSession   = ".eJxtjM0KwjAQhN8lZw3Z5qfWY-8-Q9jsJrYqDTTtSXx3W4ig4BwGhplvnsLjugx-LXH2I4uzgKrjH_tIHL6xgHSP087yDadrlpSnZR6D3CeytkVeMsdHX7c_BwOWYaNVCskadkYrF0-arXGqiS2BSW2TiMhq02FgBw1B0C0bSJ3aIgEhdixebzHXPsM:1AbC:E6Ynd_kHlQMDD4kkn0oBayJpDU6jRwZR7jlyStciXlo"
-	fixtureCompressedSession = ".eJztjE0OgjAUhO_StTT0jz5cuvcM5LV9FZSAKbAy3t2SYKKJFzBhFjOLmW8erMFlbptlotR0gR2Z2FT8sLfY4RNz6G80rGy44nAZuR-HOXWOrxO-tRM_j4H607b9OmhxajNdx7IkZ0gIKSsyMlZCa1BWm6BcdgJUEIEi-gBO21qSJhFAWB9r8Cqfxq7vKeWvRHfCudhjj78L9nwBuypN0Q:1AbC:sfcjhI0sJHafs9aaJ2VSnVxjzGDWPGpq9kujit6rKKQ"
+	fixtureCurrentHash       = "14254b029477bbf9b6e7c90a133ecb722cb4c50f77199f73839bb2c05527d58a"
+	fixtureFallbackHash      = "c36eb78278595dc39e296f158eec17c4c1e2d61e01fb5a0629420f04dd4d1df7"
+	fixtureCurrentSession    = "v1.eyJ1c2VyX2lkIjoiMTExMTExMTEtMTExMS0xMTExLTExMTEtMTExMTExMTExMTExIiwiYXV0aF9oYXNoIjoiMTQyNTRiMDI5NDc3YmJmOWI2ZTdjOTBhMTMzZWNiNzIyY2I0YzUwZjc3MTk5ZjczODM5YmIyYzA1NTI3ZDU4YSJ9.ViWMqrXhdUPFA9McK1sDDAlUgGQh-p9hsu3RkP08VUE"
+	fixtureFallbackSession   = "v1.eyJ1c2VyX2lkIjoiMTExMTExMTEtMTExMS0xMTExLTExMTEtMTExMTExMTExMTExIiwiYXV0aF9oYXNoIjoiYzM2ZWI3ODI3ODU5NWRjMzllMjk2ZjE1OGVlYzE3YzRjMWUyZDYxZTAxZmI1YTA2Mjk0MjBmMDRkZDRkMWRmNyJ9.Z4UzRM3ycYI0sII9CVpMNGUFdKrVRIJVaLaHjPR5BVM"
+	fixtureCompressedSession = "v1.eyJmaWxsZXIiOiJyZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtcmVwZWF0LXJlcGVhdC1yZXBlYXQtIiwidXNlcl9pZCI6IjExMTExMTExLTExMTEtMTExMS0xMTExLTExMTExMTExMTExMSIsImF1dGhfaGFzaCI6IjE0MjU0YjAyOTQ3N2JiZjliNmU3YzkwYTEzM2VjYjcyMmNiNGM1MGY3NzE5OWY3MzgzOWJiMmMwNTUyN2Q1OGEifQ.Yy6_Uihm23GiE2mx-WdFGo4Jp6FVcV5FAbsm2dc4NK4"
 )
 
 type memoryReader struct {
@@ -52,10 +46,6 @@ func (reader *memoryReader) ReadSession(_ context.Context, key string) (Session,
 		return Session{}, ErrSessionNotFound
 	}
 	return session, nil
-}
-
-func (reader *memoryReader) ReadSessionForRefresh(ctx context.Context, key string) (Session, error) {
-	return reader.ReadSession(ctx, key)
 }
 
 func (reader *memoryReader) ReadUser(_ context.Context, id string) (User, error) {
@@ -100,6 +90,9 @@ func (reader *memoryReader) CycleSession(_ context.Context, oldKey string, newKe
 	if _, found := reader.sessions[newKey]; found {
 		return ErrKeyCollision
 	}
+	if _, found := reader.sessions[oldKey]; !found {
+		return ErrSessionNotFound
+	}
 	reader.sessions[newKey] = Session{Data: data}
 	delete(reader.sessions, oldKey)
 	reader.expiry = expireAt
@@ -113,7 +106,7 @@ func (reader *memoryReader) DeleteSession(_ context.Context, key string) error {
 	return nil
 }
 
-func TestDjango5215FixturesValidateCurrentAndFallbackSecrets(t *testing.T) {
+func TestNativeFixturesValidateCurrentAndFallbackSecrets(t *testing.T) {
 	tests := []struct {
 		name         string
 		data         string
@@ -136,35 +129,6 @@ func TestDjango5215FixturesValidateCurrentAndFallbackSecrets(t *testing.T) {
 				t.Fatalf("ValidateRequest() = %#v", principal)
 			}
 		})
-	}
-}
-
-func TestValidateAcceptsDjangoPaddedBase64Payload(t *testing.T) {
-	serialized, err := json.Marshal(claims(fixtureUserID, fixtureBackend, fixtureCurrentHash))
-	if err != nil {
-		t.Fatal(err)
-	}
-	serialized = djangoASCIIJSON(serialized)
-	payload := base64.URLEncoding.EncodeToString(serialized)
-	data := signForTest(payload+":1AbC", fixtureCurrentSecret)
-	validator, _ := newFixtureValidator(t, data, fixturePassword)
-	principal, err := validator.Validate(context.Background(), fixtureSessionKey)
-	if err != nil || principal.UserID != fixtureUserID {
-		t.Fatalf("Validate() principal=%#v error=%v", principal, err)
-	}
-}
-
-func TestDjangoBase64DecodeMatchesPythonPaddingTolerance(t *testing.T) {
-	for _, value := range []string{"e30", "e30=", "e30===", "e!3!0", "e30=garbage"} {
-		decoded, err := djangoBase64Decode(value)
-		if err != nil || string(decoded) != "{}" {
-			t.Fatalf("djangoBase64Decode(%q)=%q error=%v", value, decoded, err)
-		}
-	}
-	for _, value := range []string{"e=30", "e30\n"} {
-		if _, err := djangoBase64Decode(value); err == nil {
-			t.Fatalf("djangoBase64Decode(%q) unexpectedly succeeded", value)
-		}
 	}
 }
 
@@ -197,20 +161,14 @@ func TestSessionKeyMinimumUsesUnicodeCharacters(t *testing.T) {
 	}
 }
 
-func TestExplicitEmptyCookieNameDoesNotUseDjangoDefault(t *testing.T) {
+func TestSessionConfigurationRejectsInvalidCookieNames(t *testing.T) {
 	reader := fixtureReader(fixtureCurrentSession, fixturePassword, true)
-	validator, err := New(reader, Config{
-		CookieNameConfigured: true,
-		SecretKey:            fixtureCurrentSecret,
-		AllowedBackends:      []string{fixtureBackend},
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	request := httptest.NewRequest("GET", "/", nil)
-	request.AddCookie(&http.Cookie{Name: DefaultCookieName, Value: fixtureSessionKey})
-	if _, err := validator.ValidateRequest(request.Context(), request); !errors.Is(err, ErrNoCookie) {
-		t.Fatalf("ValidateRequest() error=%v", err)
+	for _, name := range []string{"", "session name", "session;id"} {
+		t.Run(name, func(t *testing.T) {
+			if _, err := New(reader, Config{SecretKey: fixtureCurrentSecret, CookieName: name, CookieNameConfigured: true}); err == nil {
+				t.Fatal("invalid cookie name accepted")
+			}
+		})
 	}
 }
 
@@ -226,7 +184,7 @@ func TestBadSessionSignatureEmitsSuspiciousSessionWarning(t *testing.T) {
 	if _, err := validator.Validate(ctx, fixtureSessionKey); !errors.Is(err, ErrBadSignature) || !errors.Is(err, ErrInvalidData) {
 		t.Fatalf("Validate() error=%v", err)
 	}
-	if !strings.Contains(logs.String(), "django.security.SuspiciousSession") || !strings.Contains(logs.String(), "Session data corrupted") {
+	if !strings.Contains(logs.String(), "vector.security.session") || !strings.Contains(logs.String(), "Session data corrupted") {
 		t.Fatalf("warning log=%s", logs.String())
 	}
 }
@@ -246,10 +204,10 @@ func TestSignedNonObjectSessionFailsWithoutCorruptionRewrite(t *testing.T) {
 			if _, prepared, err := validator.Inspect(ctx, fixtureSessionKey); !errors.Is(err, ErrInvalidSessionShape) || errors.Is(err, ErrInvalidData) || prepared.SessionKey != "" {
 				t.Fatalf("Inspect() prepared=%#v error=%v", prepared, err)
 			}
-			if strings.Contains(logs.String(), "django.security.SuspiciousSession") {
+			if strings.Contains(logs.String(), "vector.security.session") {
 				t.Fatalf("valid signed payload logged as corrupt: %s", logs.String())
 			}
-			if _, err := validator.RefreshUnaccessed(ctx, fixtureSessionKey, 3600, time.Now()); !errors.Is(err, ErrInvalidSessionShape) || !errors.Is(err, ErrStore) {
+			if _, err := validator.RefreshUnaccessed(ctx, fixtureSessionKey, 3600, time.Now()); !errors.Is(err, ErrInvalidSessionShape) {
 				t.Fatalf("RefreshUnaccessed() error=%v", err)
 			}
 			if reader.sessions[fixtureSessionKey].Data != data {
@@ -274,7 +232,7 @@ func TestValidateClassifiesSessionAndUserTableFailures(t *testing.T) {
 }
 
 func TestValidateRejectsMalformedUserIdentifier(t *testing.T) {
-	values := claims("not-a-uuid", fixtureBackend, fixtureCurrentHash)
+	values := claims("not-a-uuid", fixtureCurrentHash)
 	reader := fixtureReader(encodeValuesForTest(t, fixtureCurrentSecret, values, false), fixturePassword, true)
 	reader.userErr = ErrInvalidUserID
 	validator := configuredValidator(t, reader)
@@ -284,7 +242,7 @@ func TestValidateRejectsMalformedUserIdentifier(t *testing.T) {
 }
 
 func TestValidateConvertsUserIdentifierBeforeReadingBackendOrHash(t *testing.T) {
-	values := map[string]any{"_auth_user_id": "not-a-uuid"}
+	values := map[string]any{"user_id": "not-a-uuid"}
 	reader := fixtureReader(encodeValuesForTest(t, fixtureCurrentSecret, values, false), fixturePassword, true)
 	validator := configuredValidator(t, reader)
 	if _, err := validator.Validate(context.Background(), fixtureSessionKey); !errors.Is(err, ErrInvalidUserID) {
@@ -294,23 +252,22 @@ func TestValidateConvertsUserIdentifierBeforeReadingBackendOrHash(t *testing.T) 
 
 func TestValidateTreatsNullUserIdentifierAsMissingUser(t *testing.T) {
 	values := map[string]any{
-		"_auth_user_id":      nil,
-		"_auth_user_backend": fixtureBackend,
-		"_auth_user_hash":    fixtureCurrentHash,
+		"user_id": nil,
+
+		"auth_hash": fixtureCurrentHash,
 	}
 	reader := fixtureReader(encodeValuesForTest(t, fixtureCurrentSecret, values, false), fixturePassword, true)
 	reader.userErr = errors.New("null UUID must not query the user table")
 	validator := configuredValidator(t, reader)
 	_, prepared, err := validator.Inspect(context.Background(), fixtureSessionKey)
-	if !errors.Is(err, ErrUserNotFound) || errors.Is(err, ErrInvalidUserID) || prepared.SessionKey != fixtureSessionKey {
+	if !errors.Is(err, ErrInvalidUserID) || prepared.SessionKey != fixtureSessionKey {
 		t.Fatalf("Inspect() prepared=%#v error=%v", prepared, err)
 	}
 }
 
 func TestValidateLooksUpUserBeforeCheckingAuthenticationHash(t *testing.T) {
 	values := map[string]any{
-		"_auth_user_id":      fixtureUserID,
-		"_auth_user_backend": fixtureBackend,
+		"user_id": fixtureUserID,
 	}
 	for _, testCase := range []struct {
 		name        string
@@ -334,154 +291,16 @@ func TestValidateLooksUpUserBeforeCheckingAuthenticationHash(t *testing.T) {
 	}
 }
 
-func TestDjangoJSONSerializerUsesLatin1(t *testing.T) {
-	data := []byte(`{"_auth_user_id":"` + fixtureUserID + `","_auth_user_backend":"` + fixtureBackend + `","_auth_user_hash":"` + fixtureCurrentHash + `","note":"`)
-	data = append(data, 0xe9)
-	data = append(data, []byte(`"}`)...)
-	values, _, err := decode(signPayloadForTest(t, data, false, fixtureCurrentSecret), []string{fixtureCurrentSecret})
-	if err != nil {
-		t.Fatalf("decode() error = %v", err)
-	}
-	if values["note"] != "é" {
-		t.Fatalf("decode() note = %#v, want Latin-1 é", values["note"])
-	}
-}
-
-func TestDjangoJSONSerializerPreservesPythonConstantsAndLoneSurrogates(t *testing.T) {
-	serialized := []byte(`{"_auth_user_id":"` + fixtureUserID + `","_auth_user_backend":"` + fixtureBackend + `","_auth_user_hash":"` + fixtureCurrentHash + `","nan":NaN,"positive":Infinity,"negative":-Infinity,"surrogate":"\ud800"}`)
-	reader := fixtureReader(signPayloadForTest(t, serialized, false, fixtureCurrentSecret), fixturePassword, true)
-	validator := configuredValidator(t, reader)
-	principal, err := validator.Validate(context.Background(), fixtureSessionKey)
-	if err != nil {
-		t.Fatalf("Validate() error = %v", err)
-	}
-	if _, refreshPrincipalErr := validator.RefreshPrincipal(context.Background(), principal, 3600, time.Now()); refreshPrincipalErr != nil {
-		t.Fatalf("RefreshPrincipal() error = %v", refreshPrincipalErr)
-	}
-	_, refreshed, _, err := decodeSessionData(reader.sessions[fixtureSessionKey].Data, []string{fixtureCurrentSecret})
-	if err != nil {
-		t.Fatalf("decode refreshed session: %v", err)
-	}
-	for _, token := range [][]byte{[]byte(`"nan":NaN`), []byte(`"positive":Infinity`), []byte(`"negative":-Infinity`), []byte(`"surrogate":"\ud800"`)} {
-		if !bytes.Contains(refreshed, token) {
-			t.Fatalf("refreshed session %q does not preserve %q", refreshed, token)
-		}
-	}
-}
-
-func TestDjangoJSONFieldRejectsLoneSurrogatesInKeysAndValues(t *testing.T) {
-	for _, serialized := range []string{
-		`{"device_info":{"value":"\ud800"}}`,
-		`{"device_info":{"\ud800":"value"}}`,
-	} {
-		values, _, err := decodeDjangoJSON([]byte(serialized))
-		if err != nil {
-			t.Fatal(err)
-		}
-		deviceInfo, ok := djangoJSONToMap(values["device_info"])
-		if !ok {
-			t.Fatalf("device_info=%#v", values["device_info"])
-		}
-		if _, err := json.Marshal(deviceInfo); err == nil {
-			t.Fatalf("json.Marshal(%s) unexpectedly succeeded", serialized)
-		}
-	}
-}
-
 func TestSessionSaveCanonicalizesDuplicateKeys(t *testing.T) {
-	serialized := []byte(`{ "x" : 1, "x": 2, "nan": NaN }`)
+	serialized := []byte(`{ "x" : 1, "x": 2 }`)
 	reader := fixtureReader(signPayloadForTest(t, serialized, false, fixtureCurrentSecret), fixturePassword, true)
 	validator := configuredValidator(t, reader)
 	if _, err := validator.RefreshUnaccessed(context.Background(), fixtureSessionKey, 3600, time.Now()); err != nil {
 		t.Fatal(err)
 	}
 	_, refreshed, _, err := decodeSessionData(reader.sessions[fixtureSessionKey].Data, []string{fixtureCurrentSecret})
-	if err != nil || string(refreshed) != `{"x":2,"nan":NaN}` {
+	if err != nil || string(refreshed) != `{"x":2}` {
 		t.Fatalf("refreshed=%q err=%v", refreshed, err)
-	}
-}
-
-func TestSessionSaveCoercesUserIDThroughDjangoCharField(t *testing.T) {
-	for _, testCase := range []struct {
-		name       string
-		serialized string
-		want       string
-	}{
-		{name: "float", serialized: `{"_auth_user_id":1.5}`, want: "1.5"},
-		{name: "list", serialized: `{"_auth_user_id":[1,"x"]}`, want: `[1, 'x']`},
-		{name: "object", serialized: `{"_auth_user_id":{"a":1}}`, want: `{'a': 1}`},
-		{name: "contextual quote", serialized: `{"_auth_user_id":["a'b"]}`, want: `["a'b"]`},
-		{name: "NUL escape", serialized: `{"_auth_user_id":["\u0000"]}`, want: `['\x00']`},
-	} {
-		t.Run(testCase.name, func(t *testing.T) {
-			reader := fixtureReader(signPayloadForTest(t, []byte(testCase.serialized), false, fixtureCurrentSecret), fixturePassword, true)
-			validator := configuredValidator(t, reader)
-			if _, err := validator.RefreshUnaccessed(context.Background(), fixtureSessionKey, 3600, time.Now()); err != nil {
-				t.Fatal(err)
-			}
-			if reader.updatedUserID != testCase.want {
-				t.Fatalf("user_id=%#v want=%q", reader.updatedUserID, testCase.want)
-			}
-		})
-	}
-}
-
-func TestDjangoUUIDFieldAcceptsIntegerAndBooleanSessionIDs(t *testing.T) {
-	const normalized = "00000000-0000-0000-0000-000000000001"
-	for _, rawID := range []string{"1", "true"} {
-		t.Run(rawID, func(t *testing.T) {
-			serialized := []byte(`{"_auth_user_id":` + rawID + `,"_auth_user_backend":"` + fixtureBackend + `","_auth_user_hash":"` + fixtureCurrentHash + `"}`)
-			reader := fixtureReader(signPayloadForTest(t, serialized, false, fixtureCurrentSecret), fixturePassword, true)
-			reader.users = map[string]User{normalized: {Password: fixturePassword, Active: true, Timezone: "UTC"}}
-			validator := configuredValidator(t, reader)
-			principal, err := validator.Validate(context.Background(), fixtureSessionKey)
-			if err != nil || principal.UserID != normalized {
-				t.Fatalf("principal=%#v err=%v", principal, err)
-			}
-		})
-	}
-}
-
-func TestFallbackHashRotationPreservesPythonJSONExtensions(t *testing.T) {
-	serialized := []byte(`{"_auth_user_id":"` + fixtureUserID + `","_auth_user_backend":"` + fixtureBackend + `","_auth_user_hash":"` + fixtureFallbackHash + `","nan":NaN,"surrogate":"\ud800"}`)
-	reader := fixtureReader(signPayloadForTest(t, serialized, false, fixtureCurrentSecret), fixturePassword, true)
-	validator := configuredValidator(t, reader)
-	principal, err := validator.Validate(context.Background(), fixtureSessionKey)
-	if err != nil || !principal.AuthHashUsedFallback {
-		t.Fatalf("fallback principal=%#v err=%v", principal, err)
-	}
-	refresh, err := validator.RefreshPrincipal(context.Background(), principal, 3600, time.Now())
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, refreshed, _, err := decodeSessionData(reader.sessions[refresh.SessionKey].Data, []string{fixtureCurrentSecret})
-	if err != nil || !bytes.Contains(refreshed, []byte(`"nan":NaN`)) || !bytes.Contains(refreshed, []byte(`"surrogate":"\ud800"`)) || !bytes.Contains(refreshed, []byte(`"_auth_user_hash":"`+fixtureCurrentHash+`"`)) {
-		t.Fatalf("refreshed session=%q err=%v", refreshed, err)
-	}
-}
-
-func TestFallbackHashRotationWritesOldHashUntilResponseRefresh(t *testing.T) {
-	reader := fixtureReader(fixtureFallbackSession, fixturePassword, true)
-	validator := configuredValidator(t, reader)
-	principal, prepared, err := validator.Inspect(context.Background(), fixtureSessionKey)
-	if err != nil || !principal.AuthHashUsedFallback {
-		t.Fatalf("fallback principal=%#v err=%v", principal, err)
-	}
-	now := time.Date(2026, time.September, 1, 12, 0, 0, 0, time.UTC)
-	rotated, err := validator.RotateFallbackPrepared(context.Background(), prepared, 604800, now)
-	if err != nil || rotated.SessionKey == fixtureSessionKey {
-		t.Fatalf("rotated=%#v err=%v", rotated, err)
-	}
-	values, _, err := decode(reader.sessions[rotated.SessionKey].Data, []string{fixtureCurrentSecret})
-	if err != nil || values["_auth_user_hash"] != fixtureFallbackHash {
-		t.Fatalf("cycle_key values=%#v err=%v", values, err)
-	}
-	if _, refreshPreparedErr := validator.RefreshPrepared(context.Background(), rotated, 604800, now); refreshPreparedErr != nil {
-		t.Fatal(refreshPreparedErr)
-	}
-	values, _, err = decode(reader.sessions[rotated.SessionKey].Data, []string{fixtureCurrentSecret})
-	if err != nil || values["_auth_user_hash"] != fixtureCurrentHash {
-		t.Fatalf("response refresh values=%#v err=%v", values, err)
 	}
 }
 
@@ -516,7 +335,7 @@ func TestRefreshDoesNotCycleSignatureOnlyFallback(t *testing.T) {
 	}
 }
 
-func TestRefreshPrincipalCyclesFallbackAfterConcurrentOldKeyDeletion(t *testing.T) {
+func TestRefreshPrincipalRejectsFallbackAfterConcurrentLogout(t *testing.T) {
 	reader := fixtureReader(fixtureFallbackSession, fixturePassword, true)
 	validator := configuredValidator(t, reader)
 	principal, err := validator.Validate(context.Background(), fixtureSessionKey)
@@ -525,16 +344,13 @@ func TestRefreshPrincipalCyclesFallbackAfterConcurrentOldKeyDeletion(t *testing.
 	}
 	delete(reader.sessions, fixtureSessionKey)
 	refresh, err := validator.RefreshPrincipal(context.Background(), principal, 3600, time.Now())
-	if err != nil || refresh.SessionKey == fixtureSessionKey {
-		t.Fatalf("concurrent rotation refresh=%#v err=%v", refresh, err)
-	}
-	if refreshed, err := validator.Validate(context.Background(), refresh.SessionKey); err != nil || refreshed.UsedFallback {
-		t.Fatalf("refreshed principal=%#v err=%v", refreshed, err)
+	if !errors.Is(err, ErrSessionNotFound) || refresh.SessionKey != "" || len(reader.sessions) != 0 {
+		t.Fatalf("revoked session refreshed=%#v err=%v remaining=%d", refresh, err, len(reader.sessions))
 	}
 }
 
 func TestRefreshPrincipalPersistsRequestLocalSnapshotAfterConcurrentUpdate(t *testing.T) {
-	original := claims(fixtureUserID, fixtureBackend, fixtureCurrentHash)
+	original := claims(fixtureUserID, fixtureCurrentHash)
 	original["note"] = "request snapshot"
 	reader := fixtureReader(encodeValuesForTest(t, fixtureCurrentSecret, original, false), fixturePassword, true)
 	validator := configuredValidator(t, reader)
@@ -542,7 +358,7 @@ func TestRefreshPrincipalPersistsRequestLocalSnapshotAfterConcurrentUpdate(t *te
 	if err != nil {
 		t.Fatal(err)
 	}
-	concurrent := claims(fixtureUserID, fixtureBackend, fixtureCurrentHash)
+	concurrent := claims(fixtureUserID, fixtureCurrentHash)
 	concurrent["note"] = "concurrent database update"
 	reader.sessions[fixtureSessionKey] = Session{Data: encodeValuesForTest(t, fixtureCurrentSecret, concurrent, false)}
 	if _, refreshPrincipalErr := validator.RefreshPrincipal(context.Background(), principal, 3600, time.Now()); refreshPrincipalErr != nil {
@@ -574,15 +390,15 @@ func TestInspectPreservesAnonymousRequestLocalSnapshot(t *testing.T) {
 	}
 }
 
-func TestRefreshReSignsAndExtendsDjangoSession(t *testing.T) {
-	values := claims(fixtureUserID, fixtureBackend, fixtureCurrentHash)
+func TestRefreshReSignsAndExtendsNativeSession(t *testing.T) {
+	values := claims(fixtureUserID, fixtureCurrentHash)
 	values["note"] = "Plane ✈"
 	values["device_info"] = map[string]any{"browser": "test"}
 	serialized, err := json.Marshal(values)
 	if err != nil {
 		t.Fatal(err)
 	}
-	reader := fixtureReader(signPayloadForTest(t, djangoASCIIJSON(serialized), false, fixtureCurrentSecret), fixturePassword, true)
+	reader := fixtureReader(signPayloadForTest(t, serialized, false, fixtureCurrentSecret), fixturePassword, true)
 	validator := configuredValidator(t, reader)
 	now := time.Date(2026, time.September, 1, 12, 0, 0, 0, time.UTC)
 	refresh, err := validator.Refresh(context.Background(), fixtureSessionKey, 604800, now)
@@ -609,7 +425,7 @@ func TestRefreshReSignsAndExtendsDjangoSession(t *testing.T) {
 }
 
 func TestRefreshUnaccessedSavesWithoutAuthentication(t *testing.T) {
-	values := claims(fixtureUserID, fixtureBackend, "authentication-hash-not-validated")
+	values := claims(fixtureUserID, "authentication-hash-not-validated")
 	values["note"] = "request snapshot"
 	reader := fixtureReader(encodeValuesForTest(t, fixtureFallbackSecret, values, false), fixturePassword, true)
 	reader.userErr = errors.New("user lookup must not run")
@@ -620,56 +436,12 @@ func TestRefreshUnaccessedSavesWithoutAuthentication(t *testing.T) {
 		t.Fatalf("refresh=%#v err=%v", refresh, err)
 	}
 	decoded, secretIndex, err := decode(reader.sessions[fixtureSessionKey].Data, []string{fixtureCurrentSecret})
-	if err != nil || secretIndex != 0 || decoded["note"] != "request snapshot" || decoded["_auth_user_hash"] != "authentication-hash-not-validated" {
+	if err != nil || secretIndex != 0 || decoded["note"] != "request snapshot" || decoded["auth_hash"] != "authentication-hash-not-validated" {
 		t.Fatalf("decoded=%#v secret=%d err=%v", decoded, secretIndex, err)
 	}
 }
 
-func TestRefreshUnaccessedRewritesCorruptAndReplacesMissingSessions(t *testing.T) {
-	reader := fixtureReader("corrupt", fixturePassword, true)
-	validator := configuredValidator(t, reader)
-	now := time.Date(2026, time.September, 1, 12, 0, 0, 0, time.UTC)
-	corrupt, err := validator.RefreshUnaccessed(context.Background(), fixtureSessionKey, 3600, now)
-	if err != nil || corrupt.SessionKey != fixtureSessionKey {
-		t.Fatalf("corrupt refresh=%#v err=%v", corrupt, err)
-	}
-	decoded, _, err := decode(reader.sessions[fixtureSessionKey].Data, []string{fixtureCurrentSecret})
-	if err != nil || len(decoded) != 0 {
-		t.Fatalf("corrupt decoded=%#v err=%v", decoded, err)
-	}
-
-	delete(reader.sessions, fixtureSessionKey)
-	replacement, err := validator.RefreshUnaccessed(context.Background(), fixtureSessionKey, 3600, now)
-	if err != nil || replacement.SessionKey == fixtureSessionKey || len(replacement.SessionKey) != 128 {
-		t.Fatalf("missing refresh=%#v err=%v", replacement, err)
-	}
-	if len(reader.sessions) != 1 {
-		t.Fatalf("missing refresh sessions=%#v", reader.sessions)
-	}
-	decoded, _, err = decode(reader.sessions[replacement.SessionKey].Data, []string{fixtureCurrentSecret})
-	if err != nil || len(decoded) != 0 {
-		t.Fatalf("replacement decoded=%#v err=%v", decoded, err)
-	}
-}
-
-func TestRefreshAcceptsNonPositiveDefaultAges(t *testing.T) {
-	for _, age := range []int64{0, -1} {
-		t.Run(strconv.FormatInt(age, 10), func(t *testing.T) {
-			reader := fixtureReader(fixtureCurrentSession, fixturePassword, true)
-			validator := configuredValidator(t, reader)
-			now := time.Date(2026, time.September, 1, 12, 0, 0, 0, time.UTC)
-			refresh, err := validator.Refresh(context.Background(), fixtureSessionKey, age, now)
-			if err != nil || refresh.MaxAgeSeconds != float64(age) || refresh.BrowserClose || !refresh.ExpiresAt.Equal(now.Add(time.Duration(age)*time.Second)) {
-				t.Fatalf("Refresh()=%#v err=%v", refresh, err)
-			}
-			if !reader.expiry.Equal(now.Add(time.Duration(age) * time.Second)) {
-				t.Fatalf("database expiry=%v, want %v", reader.expiry, now.Add(time.Duration(age)*time.Second))
-			}
-		})
-	}
-}
-
-func TestRefreshPreservesLargeDjangoSessionAge(t *testing.T) {
+func TestRefreshPreservesLargeSessionAge(t *testing.T) {
 	reader := fixtureReader(fixtureCurrentSession, fixturePassword, true)
 	validator := configuredValidator(t, reader)
 	now := time.Date(2026, time.September, 1, 12, 0, 0, 0, time.UTC)
@@ -683,63 +455,11 @@ func TestRefreshPreservesLargeDjangoSessionAge(t *testing.T) {
 	}
 }
 
-func TestRefreshRejectsAgeOutsidePythonDateTimeRange(t *testing.T) {
+func TestRefreshRejectsExpiryOutsideCalendarRange(t *testing.T) {
 	reader := fixtureReader(fixtureCurrentSession, fixturePassword, true)
 	validator := configuredValidator(t, reader)
 	if _, err := validator.Refresh(context.Background(), fixtureSessionKey, 1_000_000_000_000, time.Now()); !errors.Is(err, ErrStore) {
 		t.Fatalf("Refresh() error=%v", err)
-	}
-}
-
-func TestSessionExpiryMatchesDjangoJSONCoercion(t *testing.T) {
-	now := time.Date(2026, time.September, 1, 12, 0, 0, 250_000_000, time.UTC)
-	for _, testCase := range []struct {
-		name       string
-		expiry     any
-		wantAge    float64
-		wantExpiry time.Time
-		wantCookie time.Time
-		browser    bool
-	}{
-		{name: "true", expiry: true, wantAge: 1, wantExpiry: now.Add(time.Second), wantCookie: now.Add(time.Second)},
-		{name: "false", expiry: false, wantAge: 3600, wantExpiry: now.Add(time.Hour), wantCookie: now.Add(time.Hour), browser: true},
-		{name: "fraction", expiry: 1.5, wantAge: 1.5, wantExpiry: now.Add(1500 * time.Millisecond), wantCookie: now.Add(1500 * time.Millisecond)},
-		{name: "fraction rounds into next second", expiry: 1.9999999, wantAge: 1.9999999, wantExpiry: now.Add(2 * time.Second), wantCookie: now.Add(1_999_999_900 * time.Nanosecond)},
-		{name: "half microsecond rounds to even zero", expiry: 0.0000005, wantAge: 0.0000005, wantExpiry: now, wantCookie: now.Add(500 * time.Nanosecond)},
-		{name: "one-and-half microseconds rounds to two", expiry: 0.0000015, wantAge: 0.0000015, wantExpiry: now.Add(2 * time.Microsecond), wantCookie: now.Add(1500 * time.Nanosecond)},
-		{name: "negative fraction rounds into prior second", expiry: -1.9999999, wantAge: -1.9999999, wantExpiry: now.Add(-2 * time.Second), wantCookie: now.Add(-1_999_999_900 * time.Nanosecond)},
-		{name: "ISO space separator", expiry: "2026-09-01 12:01:02+00:00", wantAge: 61, wantExpiry: time.Date(2026, time.September, 1, 12, 1, 2, 0, time.UTC), wantCookie: now.Add(61 * time.Second)},
-	} {
-		t.Run(testCase.name, func(t *testing.T) {
-			values := map[string]any{"_session_expiry": testCase.expiry}
-			reader := fixtureReader(encodeValuesForTest(t, fixtureCurrentSecret, values, false), fixturePassword, true)
-			validator := configuredValidator(t, reader)
-			refresh, err := validator.RefreshUnaccessed(context.Background(), fixtureSessionKey, 3600, now)
-			if err != nil || refresh.MaxAgeSeconds != testCase.wantAge || refresh.BrowserClose != testCase.browser ||
-				!refresh.ExpiresAt.Equal(testCase.wantExpiry) || !refresh.CookieExpiresAt.Equal(testCase.wantCookie) {
-				t.Fatalf("refresh=%#v err=%v", refresh, err)
-			}
-		})
-	}
-
-	for _, expiry := range []string{"NaN", "Infinity", "-Infinity"} {
-		t.Run(expiry, func(t *testing.T) {
-			serialized := []byte(`{"_session_expiry":` + expiry + `}`)
-			reader := fixtureReader(signPayloadForTest(t, serialized, false, fixtureCurrentSecret), fixturePassword, true)
-			validator := configuredValidator(t, reader)
-			if _, err := validator.RefreshUnaccessed(context.Background(), fixtureSessionKey, 3600, now); !errors.Is(err, ErrStore) {
-				t.Fatalf("RefreshUnaccessed() error=%v", err)
-			}
-		})
-	}
-
-	surrogateSeparator := []byte(`{"_session_expiry":"2026-09-01\ud80012:01:02+00:00"}`)
-	reader := fixtureReader(signPayloadForTest(t, surrogateSeparator, false, fixtureCurrentSecret), fixturePassword, true)
-	validator := configuredValidator(t, reader)
-	refresh, err := validator.RefreshUnaccessed(context.Background(), fixtureSessionKey, 3600, now)
-	if err != nil || !refresh.ExpiresAt.Equal(time.Date(2026, time.September, 1, 12, 1, 2, 0, time.UTC)) ||
-		!refresh.CookieExpiresAt.Equal(now.Add(61*time.Second)) {
-		t.Fatalf("surrogate-separator refresh=%#v err=%v", refresh, err)
 	}
 }
 
@@ -762,20 +482,8 @@ func TestRefreshCyclesFallbackSessionAndReplacesAuthHash(t *testing.T) {
 		t.Fatalf("rotated session principal=%#v err=%v", principal, err)
 	}
 	values, secretIndex, err := decode(reader.sessions[refresh.SessionKey].Data, []string{fixtureCurrentSecret})
-	if err != nil || secretIndex != 0 || values["_auth_user_hash"] != fixtureCurrentHash {
+	if err != nil || secretIndex != 0 || values["auth_hash"] != fixtureCurrentHash {
 		t.Fatalf("rotated values=%#v secret=%d err=%v", values, secretIndex, err)
-	}
-}
-
-func TestRefreshPreservesBrowserCloseExpiry(t *testing.T) {
-	values := claims(fixtureUserID, fixtureBackend, fixtureCurrentHash)
-	values["_session_expiry"] = 0
-	reader := fixtureReader(encodeValuesForTest(t, fixtureCurrentSecret, values, false), fixturePassword, true)
-	validator := configuredValidator(t, reader)
-	now := time.Date(2026, time.September, 1, 12, 0, 0, 0, time.UTC)
-	refresh, err := validator.Refresh(context.Background(), fixtureSessionKey, 86400, now)
-	if err != nil || !refresh.BrowserClose || refresh.MaxAgeSeconds != 86400 || !reader.expiry.Equal(now.Add(24*time.Hour)) {
-		t.Fatalf("Refresh()=%#v database expiry=%v err=%v", refresh, reader.expiry, err)
 	}
 }
 
@@ -786,23 +494,6 @@ func TestRefreshClassifiesDatabaseUpdateFailures(t *testing.T) {
 	_, err := validator.Refresh(context.Background(), fixtureSessionKey, 3600, time.Now())
 	if !errors.Is(err, ErrStore) || !errors.Is(err, ErrSessionUpdate) {
 		t.Fatalf("Refresh() error=%v", err)
-	}
-}
-
-func TestRefreshReplacesCorruptStoredDataWithEmptyDjangoSession(t *testing.T) {
-	reader := fixtureReader("corrupt-session-data", fixturePassword, true)
-	validator := configuredValidator(t, reader)
-	now := time.Date(2026, time.September, 1, 12, 0, 0, 0, time.UTC)
-	refresh, err := validator.Refresh(context.Background(), fixtureSessionKey, 3600, now)
-	if err != nil {
-		t.Fatalf("Refresh() error = %v", err)
-	}
-	values, _, err := decode(reader.sessions[fixtureSessionKey].Data, []string{fixtureCurrentSecret})
-	if err != nil || len(values) != 0 {
-		t.Fatalf("refreshed corrupt values=%#v err=%v", values, err)
-	}
-	if reader.updatedUserID != nil || reader.updatedDeviceInfo != nil || !refresh.ExpiresAt.Equal(now.Add(time.Hour)) {
-		t.Fatalf("updated user=%#v device=%#v refresh=%#v", reader.updatedUserID, reader.updatedDeviceInfo, refresh)
 	}
 }
 
@@ -840,7 +531,7 @@ func TestMalformedAndCorruptSessionsAreRejected(t *testing.T) {
 		{name: "corrupt zlib", data: signPayloadForTest(t, []byte("not-zlib"), true, fixtureCurrentSecret)},
 		{name: "JSON array", data: signPayloadForTest(t, []byte("[]"), false, fixtureCurrentSecret)},
 		{name: "wrong field type", data: encodeValuesForTest(t, fixtureCurrentSecret, map[string]any{
-			"_auth_user_id": 7, "_auth_user_backend": fixtureBackend, "_auth_user_hash": fixtureCurrentHash,
+			"user_id": 7, "auth_hash": fixtureCurrentHash,
 		}, false)},
 	}
 	for _, test := range tests {
@@ -886,15 +577,14 @@ func TestAuthenticationRejections(t *testing.T) {
 	}
 }
 
-func TestWrongBackendAndUserClaimsAreRejected(t *testing.T) {
+func TestInvalidUserClaimsAreRejected(t *testing.T) {
 	tests := []struct {
 		name   string
 		values map[string]any
 		want   error
 	}{
-		{name: "wrong backend", values: claims(fixtureUserID, "other.Backend", fixtureCurrentHash), want: ErrBackend},
-		{name: "unknown auth user", values: claims("22222222-2222-2222-2222-222222222222", fixtureBackend, fixtureCurrentHash), want: ErrUserNotFound},
-		{name: "missing auth hash", values: claims(fixtureUserID, fixtureBackend, ""), want: ErrInvalidAuthHash},
+		{name: "unknown auth user", values: claims("22222222-2222-2222-2222-222222222222", fixtureCurrentHash), want: ErrUserNotFound},
+		{name: "missing auth hash", values: claims(fixtureUserID, ""), want: ErrInvalidAuthHash},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -940,7 +630,7 @@ func fixtureReader(data string, password string, active bool) *memoryReader {
 func configuredValidator(t *testing.T, reader Reader) *Validator {
 	t.Helper()
 	validator, err := New(reader, Config{
-		SecretKey: fixtureCurrentSecret, FallbackKeys: []string{fixtureFallbackSecret}, AllowedBackends: []string{fixtureBackend},
+		SecretKey: fixtureCurrentSecret, FallbackKeys: []string{fixtureFallbackSecret},
 	})
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
@@ -948,13 +638,13 @@ func configuredValidator(t *testing.T, reader Reader) *Validator {
 	return validator
 }
 
-func claims(userID string, backend string, authHash string) map[string]any {
-	return map[string]any{"_auth_user_id": userID, "_auth_user_backend": backend, "_auth_user_hash": authHash}
+func claims(userID string, authHash string) map[string]any {
+	return map[string]any{"user_id": userID, "auth_hash": authHash}
 }
 
 func encodeForTest(t *testing.T, secret string, authHash string, compressed bool) string {
 	t.Helper()
-	return encodeValuesForTest(t, secret, claims(fixtureUserID, fixtureBackend, authHash), compressed)
+	return encodeValuesForTest(t, secret, claims(fixtureUserID, authHash), compressed)
 }
 
 func encodeValuesForTest(t *testing.T, secret string, values map[string]any, compressed bool) string {
@@ -966,24 +656,14 @@ func encodeValuesForTest(t *testing.T, secret string, values map[string]any, com
 	return signPayloadForTest(t, data, compressed, secret)
 }
 
-func signPayloadForTest(t *testing.T, data []byte, compressed bool, secret string) string {
-	t.Helper()
-	if compressed {
-		var output bytes.Buffer
-		writer := zlib.NewWriter(&output)
-		testsupport.Write(t, writer, data)
-		testsupport.Close(t, writer)
-		data = output.Bytes()
-	}
-	payload := base64.RawURLEncoding.EncodeToString(data)
-	if compressed {
-		payload = "." + payload
-	}
-	return signForTest(payload+":1AbC", secret)
+func signPayloadForTest(_ *testing.T, data []byte, _ bool, secret string) string {
+	value := "v1." + base64.RawURLEncoding.EncodeToString(data)
+	signature := base64.RawURLEncoding.EncodeToString(sessionHMAC(SessionSigningSalt+"signer", value, secret))
+	return value + "." + signature
 }
 
 func signForTest(value string, secret string) string {
-	signature := base64.RawURLEncoding.EncodeToString(djangoHMAC(SessionSigningSalt+"signer", value, secret))
+	signature := base64.RawURLEncoding.EncodeToString(sessionHMAC(SessionSigningSalt+"signer", value, secret))
 	return value + ":" + signature
 }
 

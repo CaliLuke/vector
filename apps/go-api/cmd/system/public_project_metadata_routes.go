@@ -17,7 +17,7 @@ import (
 
 	systemapi "github.com/CaliLuke/go-plane"
 	publicprojectmetadatareadssvr "github.com/CaliLuke/go-plane/gen/http/public_project_metadata_reads/server"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	publicprojectmetadatareadsstore "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
 	"github.com/CaliLuke/loom/clue/log"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -173,12 +173,12 @@ func publicProjectMetadataNotFoundHandler(
 			writer.finish()
 			return
 		}
-		var preparedSessionRefresh *djangosession.SessionRefresh
+		var preparedSessionRefresh *browsersession.SessionRefresh
 		if rotatedSession != nil {
 			preparedSessionRefresh = rotatedSession
 		} else if refreshSession {
 			if cookie := lastDjangoSessionCookie(request, sessionCookieName(sessionCookie)); cookie != nil {
-				preparedSessionRefresh = &djangosession.SessionRefresh{SessionKey: cookie.Value}
+				preparedSessionRefresh = &browsersession.SessionRefresh{SessionKey: cookie.Value}
 			}
 		}
 		if preparedSessionRefresh != nil {
@@ -356,12 +356,12 @@ func (writer *publicProjectMetadataReadsResponseWriter) finish() {
 // publicMetadataSessionEffects retains cookie changes until audit logging has
 // captured the inner response. Refresh failures can then replace the response.
 type publicMetadataSessionEffects struct {
-	refresh   *djangosession.SessionRefresh
+	refresh   *browsersession.SessionRefresh
 	userID    string
 	cookieErr error
 }
 
-func (effects *publicMetadataSessionEffects) apply(headers http.Header, request *http.Request, sessionCookie djangoSessionCookieConfig, expireSession, refreshSession bool, rotatedSession *djangosession.SessionRefresh, resolvedUserID string) {
+func (effects *publicMetadataSessionEffects) apply(headers http.Header, request *http.Request, sessionCookie djangoSessionCookieConfig, expireSession, refreshSession bool, rotatedSession *browsersession.SessionRefresh, resolvedUserID string) {
 	if resolvedUserID != "" {
 		effects.userID = resolvedUserID
 	}
@@ -372,7 +372,7 @@ func (effects *publicMetadataSessionEffects) apply(headers http.Header, request 
 		effects.refresh = rotatedSession
 	} else if refreshSession {
 		if cookie := lastDjangoSessionCookie(request, sessionCookieName(sessionCookie)); cookie != nil {
-			effects.refresh = &djangosession.SessionRefresh{SessionKey: cookie.Value}
+			effects.refresh = &browsersession.SessionRefresh{SessionKey: cookie.Value}
 		}
 	}
 }
@@ -459,7 +459,7 @@ func publicProjectMetadataReadsCompatibilityMiddleware(
 			var effects publicMetadataSessionEffects
 			inspectSessionAfterResponse := false
 			skipInnerRequestLog := false
-			applySessionEffects := func(expireSession bool, refreshSession bool, rotatedSession *djangosession.SessionRefresh, resolvedUserID string) {
+			applySessionEffects := func(expireSession bool, refreshSession bool, rotatedSession *browsersession.SessionRefresh, resolvedUserID string) {
 				effects.apply(headers, request, sessionCookie, expireSession, refreshSession, rotatedSession, resolvedUserID)
 			}
 			defer func() {
@@ -584,7 +584,7 @@ func writePublicProjectMetadataInternalError(writer *publicProjectMetadataReadsR
 		replacePublicProjectMetadataResponse(writer, http.StatusInternalServerError, "text/html; charset=utf-8", djangoServerErrorBody)
 		return
 	}
-	if errors.Is(err, djangosession.ErrTimezoneNotFound) {
+	if errors.Is(err, browsersession.ErrTimezoneNotFound) {
 		replacePublicProjectMetadataResponse(writer, http.StatusBadRequest, "application/json", []byte(`{"error":"The required key does not exist."}`))
 		writer.Header().Set("Allow", publicProjectMetadataErrorAllow(allowMethods))
 		return
@@ -601,7 +601,7 @@ func publicProjectMetadataErrorAllow(allowMethods []string) string {
 }
 
 func publicProjectMetadataLazyAuthenticationError(err error) bool {
-	return djangosession.IsReadFailure(err)
+	return browsersession.IsReadFailure(err)
 }
 
 func replacePublicProjectMetadataResponse(writer *publicProjectMetadataReadsResponseWriter, status int, contentType string, body []byte) {
@@ -619,7 +619,7 @@ func replacePublicProjectMetadataResponse(writer *publicProjectMetadataReadsResp
 func replacePublicProjectMetadataSessionError(writer *publicProjectMetadataReadsResponseWriter, err error) {
 	status := http.StatusInternalServerError
 	body := djangoServerErrorBody
-	if errors.Is(err, djangosession.ErrSessionNotFound) || errors.Is(err, djangosession.ErrSessionUpdate) {
+	if errors.Is(err, browsersession.ErrSessionNotFound) || errors.Is(err, browsersession.ErrSessionUpdate) {
 		status = http.StatusBadRequest
 		body = djangoBadRequestBody
 	}

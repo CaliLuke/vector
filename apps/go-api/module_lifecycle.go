@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/modulereads"
@@ -433,7 +433,7 @@ func (s *moduleLifecycleService) moduleAPILimit(ctx context.Context, p moduleLif
 	if !rate.Allowed {
 		return moduleLifecycleError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))})
 	}
-	if err := djangosession.ValidateUserTimezone(p.timezone); err != nil {
+	if err := browsersession.ValidateUserTimezone(p.timezone); err != nil {
 		return moduleLifecycleError(400, map[string]any{"error": "The required key does not exist."})
 	}
 	return nil

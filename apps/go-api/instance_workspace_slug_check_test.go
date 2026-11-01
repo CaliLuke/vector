@@ -7,7 +7,7 @@ import (
 	"uuid"
 
 	instanceworkspaceapi "github.com/CaliLuke/go-plane/gen/instance_workspace_slug_check"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 )
 
 type instanceWorkspaceSlugRepositoryStub struct {
@@ -31,11 +31,11 @@ func firstError(primary, fallback error) error {
 }
 
 type instanceWorkspaceSlugSessionStub struct {
-	principal djangosession.Principal
+	principal browsersession.Principal
 	err       error
 }
 
-func (stub instanceWorkspaceSlugSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
+func (stub instanceWorkspaceSlugSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
 	return stub.principal, stub.err
 }
 
@@ -82,8 +82,8 @@ func TestInstanceWorkspaceSlugAuthentication(t *testing.T) {
 		wantError string
 	}{
 		{name: "anonymous", session: instanceWorkspaceSlugSessionStub{err: errors.New("invalid")}, wantError: "unauthenticated"},
-		{name: "ordinary user", session: instanceWorkspaceSlugSessionStub{principal: djangosession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}}, wantError: "forbidden"},
-		{name: "admin", session: instanceWorkspaceSlugSessionStub{principal: djangosession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}}, admin: true},
+		{name: "ordinary user", session: instanceWorkspaceSlugSessionStub{principal: browsersession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}}, wantError: "forbidden"},
+		{name: "admin", session: instanceWorkspaceSlugSessionStub{principal: browsersession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}}, admin: true},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -106,7 +106,7 @@ func TestInstanceWorkspaceSlugAuthentication(t *testing.T) {
 }
 
 func TestInstanceWorkspaceSlugRepositoryFailure(t *testing.T) {
-	service, err := NewInstanceWorkspaceSlugCheck(&instanceWorkspaceSlugRepositoryStub{adminErr: errors.New("database unavailable")}, instanceWorkspaceSlugSessionStub{principal: djangosession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}})
+	service, err := NewInstanceWorkspaceSlugCheck(&instanceWorkspaceSlugRepositoryStub{adminErr: errors.New("database unavailable")}, instanceWorkspaceSlugSessionStub{principal: browsersession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -118,7 +118,7 @@ func TestInstanceWorkspaceSlugRepositoryFailure(t *testing.T) {
 }
 
 func TestInstanceWorkspaceSlugCheckRepositoryFailure(t *testing.T) {
-	service, err := NewInstanceWorkspaceSlugCheck(&instanceWorkspaceSlugRepositoryStub{existsErr: errors.New("database unavailable"), admin: true}, instanceWorkspaceSlugSessionStub{principal: djangosession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}})
+	service, err := NewInstanceWorkspaceSlugCheck(&instanceWorkspaceSlugRepositoryStub{existsErr: errors.New("database unavailable"), admin: true}, instanceWorkspaceSlugSessionStub{principal: browsersession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -131,7 +131,7 @@ func TestInstanceWorkspaceSlugCheckRepositoryFailure(t *testing.T) {
 }
 
 func TestInstanceWorkspaceSlugCheckInvalidPrincipal(t *testing.T) {
-	service, err := NewInstanceWorkspaceSlugCheck(&instanceWorkspaceSlugRepositoryStub{admin: true}, instanceWorkspaceSlugSessionStub{principal: djangosession.Principal{UserID: "not-a-uuid"}})
+	service, err := NewInstanceWorkspaceSlugCheck(&instanceWorkspaceSlugRepositoryStub{admin: true}, instanceWorkspaceSlugSessionStub{principal: browsersession.Principal{UserID: "not-a-uuid"}})
 	if err != nil {
 		t.Fatal(err)
 	}

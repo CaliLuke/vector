@@ -15,7 +15,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	api "github.com/CaliLuke/go-plane/projectmembershiplifecycle/gen/project_membership_lifecycle"
@@ -112,8 +112,8 @@ func (s *projectMembershipLifecycleService) execute(ctx context.Context, method,
 			return nil, projectMembershipLifecycleError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))})
 		}
 	}
-	if err := djangosession.ValidateUserTimezone(principal.Timezone); err != nil {
-		if errors.Is(err, djangosession.ErrTimezoneNotFound) {
+	if err := browsersession.ValidateUserTimezone(principal.Timezone); err != nil {
+		if errors.Is(err, browsersession.ErrTimezoneNotFound) {
 			return nil, projectMembershipLifecycleError(400, map[string]any{"error": "The required key does not exist."})
 		}
 		return nil, projectMembershipLifecycleMapError(err)
@@ -264,8 +264,8 @@ func (s *projectMembershipLifecycleService) AuthorizeMembershipLifecycleProtocol
 			}
 		}
 		if err == nil {
-			if zoneErr := djangosession.ValidateUserTimezone(principal.Timezone); zoneErr != nil {
-				if errors.Is(zoneErr, djangosession.ErrTimezoneNotFound) {
+			if zoneErr := browsersession.ValidateUserTimezone(principal.Timezone); zoneErr != nil {
+				if errors.Is(zoneErr, browsersession.ErrTimezoneNotFound) {
 					err = projectMembershipLifecycleError(400, map[string]any{"error": "The required key does not exist."})
 				} else {
 					err = zoneErr

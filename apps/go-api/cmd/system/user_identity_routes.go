@@ -11,7 +11,7 @@ import (
 	useridentitysvr "github.com/CaliLuke/go-plane/gen/http/user_identity/server"
 	userinstanceadminsvr "github.com/CaliLuke/go-plane/gen/http/user_instance_admin/server"
 	userinstanceadmin "github.com/CaliLuke/go-plane/gen/user_instance_admin"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	publicprojectmetadatareadsstore "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
 	loomhttp "github.com/CaliLuke/loom/http"
 )
@@ -106,12 +106,12 @@ func userMeReadCompatibilityMiddleware(
 			}
 			capture := &systemapi.UserIdentityResponseCapture{}
 			writer.capturedResponse = func() json.RawMessage { return capture.Data }
-			var preparedSessionRefresh *djangosession.SessionRefresh
+			var preparedSessionRefresh *browsersession.SessionRefresh
 			var sessionCookieErr error
 			var userID string
 			sessionInspected := false
 			inspectSessionAfterResponse := false
-			applySessionEffects := func(expireSession bool, refreshSession bool, rotatedSession *djangosession.SessionRefresh, resolvedUserID string) {
+			applySessionEffects := func(expireSession bool, refreshSession bool, rotatedSession *browsersession.SessionRefresh, resolvedUserID string) {
 				if resolvedUserID != "" {
 					userID = resolvedUserID
 				}
@@ -122,7 +122,7 @@ func userMeReadCompatibilityMiddleware(
 					preparedSessionRefresh = rotatedSession
 				} else if refreshSession {
 					if cookie := lastDjangoSessionCookie(request, sessionCookieName(sessionCookie)); cookie != nil {
-						preparedSessionRefresh = &djangosession.SessionRefresh{SessionKey: cookie.Value}
+						preparedSessionRefresh = &browsersession.SessionRefresh{SessionKey: cookie.Value}
 					}
 				}
 			}

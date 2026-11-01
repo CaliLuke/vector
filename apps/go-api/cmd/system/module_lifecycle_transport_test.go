@@ -17,7 +17,7 @@ import (
 	modulereadapi "github.com/CaliLuke/go-plane/gen/module_reads"
 	"github.com/CaliLuke/go-plane/gen/system"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	modulereadsstore "github.com/CaliLuke/go-plane/internal/modulereads"
 	modulelifecyclesvr "github.com/CaliLuke/go-plane/modulelifecycle/gen/http/module_lifecycle_api/server"
 	moduleapi "github.com/CaliLuke/go-plane/modulelifecycle/gen/module_lifecycle_api"
@@ -157,11 +157,11 @@ func (moduleLifecycleTransportKeys) Validate(_ context.Context, key string) (api
 
 type moduleLifecycleTransportSessions struct{}
 
-func (moduleLifecycleTransportSessions) Validate(_ context.Context, key string) (djangosession.Principal, error) {
+func (moduleLifecycleTransportSessions) Validate(_ context.Context, key string) (browsersession.Principal, error) {
 	if key != "valid-session" {
-		return djangosession.Principal{}, djangosession.ErrSessionNotFound
+		return browsersession.Principal{}, browsersession.ErrSessionNotFound
 	}
-	return djangosession.Principal{UserID: assetsTransportUserID, UserTimezone: "UTC"}, nil
+	return browsersession.Principal{UserID: assetsTransportUserID, UserTimezone: "UTC"}, nil
 }
 
 type moduleLifecycleTransportThrottle struct{}

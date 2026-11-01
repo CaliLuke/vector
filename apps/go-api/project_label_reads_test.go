@@ -11,7 +11,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/project_label_reads"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/projectlabelreads"
 	"github.com/CaliLuke/loom/security"
 )
@@ -34,11 +34,11 @@ func (stub *projectLabelReadsRepositoryStub) Detail(context.Context, uuid.UUID, 
 
 type projectLabelReadsSessionsStub struct{ err error }
 
-func (stub projectLabelReadsSessionsStub) Validate(context.Context, string) (djangosession.Principal, error) {
+func (stub projectLabelReadsSessionsStub) Validate(context.Context, string) (browsersession.Principal, error) {
 	if stub.err != nil {
-		return djangosession.Principal{}, stub.err
+		return browsersession.Principal{}, stub.err
 	}
-	return djangosession.Principal{UserID: "00000000-0000-4000-8000-000000000010"}, nil
+	return browsersession.Principal{UserID: "00000000-0000-4000-8000-000000000010"}, nil
 }
 
 func TestNewProjectLabelReadsRequiresDependencies(t *testing.T) {

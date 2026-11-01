@@ -9,7 +9,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/workitemhistory"
 	api "github.com/CaliLuke/go-plane/workitemhistory/gen/work_item_history"
@@ -19,7 +19,7 @@ import (
 )
 
 type workItemHistorySessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
 type workItemHistoryRepository interface {
@@ -71,7 +71,7 @@ func (service *workItemHistoryService) AuthorizeSessionProtocol(ctx context.Cont
 	if err != nil {
 		return workItemHistoryProtocolError(err)
 	}
-	return workItemHistoryTimezoneError(djangosession.ValidateUserTimezone(principal.timezone))
+	return workItemHistoryTimezoneError(browsersession.ValidateUserTimezone(principal.timezone))
 }
 
 func (service *workItemHistoryService) AuthorizeSessionResourceProtocol(ctx context.Context, credential string, resource SessionProtocolResource) (int, map[string]any) {
@@ -84,7 +84,7 @@ func (service *workItemHistoryService) AuthorizeSessionResourceProtocol(ctx cont
 		if principalErr != nil {
 			return workItemHistoryProtocolError(principalErr)
 		}
-		return workItemHistoryTimezoneError(djangosession.ValidateUserTimezone(principal.timezone))
+		return workItemHistoryTimezoneError(browsersession.ValidateUserTimezone(principal.timezone))
 	}
 	projectID, parseErr := uuid.Parse(resource.ProjectID)
 	principal, principalErr := service.principal(ctx)
@@ -98,14 +98,14 @@ func (service *workItemHistoryService) AuthorizeSessionResourceProtocol(ctx cont
 	if !allowed {
 		return 403, map[string]any{"detail": "You do not have permission to perform this action."}
 	}
-	return workItemHistoryTimezoneError(djangosession.ValidateUserTimezone(principal.timezone))
+	return workItemHistoryTimezoneError(browsersession.ValidateUserTimezone(principal.timezone))
 }
 
 func workItemHistoryTimezoneError(err error) (int, map[string]any) {
 	if err == nil {
 		return 0, nil
 	}
-	if errors.Is(err, djangosession.ErrTimezoneNotFound) {
+	if errors.Is(err, browsersession.ErrTimezoneNotFound) {
 		return 400, map[string]any{"error": "The required key does not exist."}
 	}
 	return 500, map[string]any{"error": "Something went wrong please try again later"}
@@ -156,7 +156,7 @@ func (service *workItemHistoryService) read(ctx context.Context, request store.R
 			return nil, nil, service.error(403, map[string]any{"detail": "You do not have permission to perform this action."})
 		}
 	}
-	if validateUserTimezoneErr := djangosession.ValidateUserTimezone(principal.timezone); validateUserTimezoneErr != nil {
+	if validateUserTimezoneErr := browsersession.ValidateUserTimezone(principal.timezone); validateUserTimezoneErr != nil {
 		status, body := workItemHistoryTimezoneError(validateUserTimezoneErr)
 		return nil, nil, service.error(status, body)
 	}

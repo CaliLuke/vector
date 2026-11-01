@@ -7,7 +7,7 @@ import (
 	"errors"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/mcptransport"
 	membership "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
@@ -158,7 +158,7 @@ func actionActor(ctx context.Context, workspace *string, mutation bool) (context
 		}
 		return nil, mcpauth.Principal{}, authenticationError(err)
 	}
-	if timezoneErr := djangosession.ValidateUserTimezone(actor.Timezone); timezoneErr != nil {
+	if timezoneErr := browsersession.ValidateUserTimezone(actor.Timezone); timezoneErr != nil {
 		return nil, mcpauth.Principal{}, memberReadFailure()
 	}
 

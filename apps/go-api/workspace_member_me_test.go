@@ -11,7 +11,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_member_me"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 )
 
 type memberMeRepoTest struct {
@@ -28,8 +28,8 @@ func (r *memberMeRepoTest) Get(_ context.Context, user uuid.UUID, slug string) (
 
 type memberMeSessionTest struct{ err error }
 
-func (s memberMeSessionTest) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{UserID: "00000000-0000-4000-8000-000000000001"}, s.err
+func (s memberMeSessionTest) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{UserID: "00000000-0000-4000-8000-000000000001"}, s.err
 }
 
 func TestWorkspaceMemberMeGetPreservesActiveAndNullMemberShapes(t *testing.T) {

@@ -7,25 +7,25 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 )
 
 func TestReadServiceSessionInspectionDefersTimezoneAfterAuthentication(t *testing.T) {
 	sessions := &throttleSessionsStub{
 		valid: true, timezone: "Mars/Olympus",
-		prepared: djangosession.SessionRefresh{SessionKey: "session-key"},
+		prepared: browsersession.SessionRefresh{SessionKey: "session-key"},
 	}
-	throttle, err := NewAnonymousThrottle(&throttleCacheStub{data: map[string][]byte{}}, sessions, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, true, 3600)
+	throttle, err := NewAnonymousThrottle(&throttleCacheStub{data: map[string][]byte{}}, sessions, &throttleInvalidatorStub{}, browsersession.DefaultCookieName, true, 3600)
 	if err != nil {
 		t.Fatal(err)
 	}
 	request := httptest.NewRequest(http.MethodPost, "/test/deferred/", nil)
-	request.AddCookie(&http.Cookie{Name: djangosession.DefaultCookieName, Value: "session-key"})
+	request.AddCookie(&http.Cookie{Name: browsersession.DefaultCookieName, Value: "session-key"})
 
 	_, _, _, _, ordinaryErr := throttle.InspectReadServiceSession(context.Background(), request)
 	expire, refresh, prepared, principal, deferredErr := throttle.InspectReadServiceSessionWithoutTimezone(context.Background(), request)
 
-	if !errors.Is(ordinaryErr, djangosession.ErrTimezoneNotFound) {
+	if !errors.Is(ordinaryErr, browsersession.ErrTimezoneNotFound) {
 		t.Fatalf("ordinary inspection error=%v", ordinaryErr)
 	}
 	if deferredErr != nil || expire || refresh || prepared == nil || prepared.SessionKey != "session-key" {
@@ -39,15 +39,15 @@ func TestReadServiceSessionInspectionDefersTimezoneAfterAuthentication(t *testin
 func TestReadServiceDeferredTimezoneRetainsFallbackRotation(t *testing.T) {
 	sessions := &throttleSessionsStub{
 		valid: true, usedFallback: true, timezone: "Mars/Olympus",
-		prepared: djangosession.SessionRefresh{SessionKey: "old-session"},
-		refresh:  djangosession.SessionRefresh{SessionKey: "rotated-session"},
+		prepared: browsersession.SessionRefresh{SessionKey: "old-session"},
+		refresh:  browsersession.SessionRefresh{SessionKey: "rotated-session"},
 	}
-	throttle, err := NewAnonymousThrottle(&throttleCacheStub{data: map[string][]byte{}}, sessions, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, true, 3600)
+	throttle, err := NewAnonymousThrottle(&throttleCacheStub{data: map[string][]byte{}}, sessions, &throttleInvalidatorStub{}, browsersession.DefaultCookieName, true, 3600)
 	if err != nil {
 		t.Fatal(err)
 	}
 	request := httptest.NewRequest(http.MethodPatch, "/test/deferred/", nil)
-	request.AddCookie(&http.Cookie{Name: djangosession.DefaultCookieName, Value: "old-session"})
+	request.AddCookie(&http.Cookie{Name: browsersession.DefaultCookieName, Value: "old-session"})
 
 	expire, refresh, prepared, principal, err := throttle.InspectReadServiceSessionWithoutTimezone(context.Background(), request)
 
@@ -69,12 +69,12 @@ func TestReadServiceDeferredTimezonePreservesSaveEverySetting(t *testing.T) {
 	} {
 		t.Run(scenario.name, func(t *testing.T) {
 			sessions := &throttleSessionsStub{valid: true, timezone: "Mars/Olympus"}
-			throttle, err := NewAnonymousThrottle(&throttleCacheStub{data: map[string][]byte{}}, sessions, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, scenario.saveEvery, 3600)
+			throttle, err := NewAnonymousThrottle(&throttleCacheStub{data: map[string][]byte{}}, sessions, &throttleInvalidatorStub{}, browsersession.DefaultCookieName, scenario.saveEvery, 3600)
 			if err != nil {
 				t.Fatal(err)
 			}
 			request := httptest.NewRequest(http.MethodPut, "/test/deferred/", nil)
-			request.AddCookie(&http.Cookie{Name: djangosession.DefaultCookieName, Value: "session-key"})
+			request.AddCookie(&http.Cookie{Name: browsersession.DefaultCookieName, Value: "session-key"})
 
 			_, _, prepared, principal, err := throttle.InspectReadServiceSessionWithoutTimezone(context.Background(), request)
 

@@ -21,7 +21,7 @@ import (
 	loomhttp "github.com/CaliLuke/loom/http"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	api "github.com/CaliLuke/go-plane/invitationsmembership/gen/invitations_membership"
 	"github.com/CaliLuke/loom/security"
 	"github.com/google/uuid"
@@ -41,8 +41,8 @@ func (validator *invitationsMembershipKeyValidator) Validate(_ context.Context, 
 
 type invitationsMembershipSessionValidator struct{}
 
-func (invitationsMembershipSessionValidator) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{}, errors.New("unexpected session validation")
+func (invitationsMembershipSessionValidator) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{}, errors.New("unexpected session validation")
 }
 
 func TestInvitationsMembershipAPIKeyAuthValidatesKeyAndRecordsAuthentication(t *testing.T) {
@@ -332,7 +332,7 @@ func TestInvitationGeneratedMissingObjectsRemain404AfterAuthentication(t *testin
 
 func TestInvitationGeneratedTransportPreservesUnsupportedMedia415(t *testing.T) {
 	events := []string{}
-	service := &invitationsMembershipService{repository: &store.InvitationsRepository{}, sessions: &activitySessionStub{principal: djangosession.Principal{UserID: uuid.NewString(), UserTimezone: "UTC"}}, cache: invitationCacheSpy{&events}}
+	service := &invitationsMembershipService{repository: &store.InvitationsRepository{}, sessions: &activitySessionStub{principal: browsersession.Principal{UserID: uuid.NewString(), UserTimezone: "UTC"}}, cache: invitationCacheSpy{&events}}
 	mux := loomhttp.NewMuxer()
 	transport := invitationserver.New(api.NewEndpoints(service), mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, nil, nil)
 	transport.Mount(mux)

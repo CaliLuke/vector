@@ -13,7 +13,7 @@ import (
 	storeuuid "uuid"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
@@ -127,7 +127,7 @@ func (s *projectLifecycleService) read(ctx context.Context, operation string, pa
 	if !rate.Allowed {
 		return nil, nil, projectLifecycleError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))})
 	}
-	if validateUserTimezoneErr := djangosession.ValidateUserTimezone(p.timezone); validateUserTimezoneErr != nil {
+	if validateUserTimezoneErr := browsersession.ValidateUserTimezone(p.timezone); validateUserTimezoneErr != nil {
 		return nil, nil, projectLifecycleError(400, map[string]any{"error": "The required key does not exist."})
 	}
 	get := func(key string) *string {
@@ -200,7 +200,7 @@ func (s *projectLifecycleService) prepareWrite(ctx context.Context, slug, id, op
 		return p, projectLifecycleError(401, map[string]any{"detail": moduleLifecycleUnauthenticatedDetail})
 	}
 	if app {
-		if err := djangosession.ValidateUserTimezone(p.timezone); err != nil {
+		if err := browsersession.ValidateUserTimezone(p.timezone); err != nil {
 			return p, projectLifecycleError(400, map[string]any{"error": "The required key does not exist."})
 		}
 	}
@@ -218,7 +218,7 @@ func (s *projectLifecycleService) prepareWrite(ctx context.Context, slug, id, op
 		if !rate.Allowed {
 			return p, projectLifecycleError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))})
 		}
-		if err := djangosession.ValidateUserTimezone(p.timezone); err != nil {
+		if err := browsersession.ValidateUserTimezone(p.timezone); err != nil {
 			return p, projectLifecycleError(400, map[string]any{"error": "The required key does not exist."})
 		}
 	}
@@ -408,7 +408,7 @@ func (s *projectLifecycleService) AuthorizeProjectLifecycleAPIProtocol(ctx conte
 				err = projectLifecycleRepoError(ctx, limitErr)
 			} else if !rate.Allowed {
 				err = projectLifecycleError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))})
-			} else if zoneErr := djangosession.ValidateUserTimezone(p.timezone); zoneErr != nil {
+			} else if zoneErr := browsersession.ValidateUserTimezone(p.timezone); zoneErr != nil {
 				err = projectLifecycleError(400, map[string]any{"error": "The required key does not exist."})
 			}
 		}

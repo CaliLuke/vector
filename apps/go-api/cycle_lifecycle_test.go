@@ -12,19 +12,19 @@ import (
 
 	api "github.com/CaliLuke/go-plane/cyclelifecycle/gen/cycle_lifecycle_api"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/cyclereads"
 	"github.com/CaliLuke/loom/security"
 	"github.com/google/uuid"
 )
 
 type cycleLifecycleSessionValidatorStub struct {
-	principal djangosession.Principal
+	principal browsersession.Principal
 	err       error
 	key       string
 }
 
-func (stub *cycleLifecycleSessionValidatorStub) Validate(_ context.Context, key string) (djangosession.Principal, error) {
+func (stub *cycleLifecycleSessionValidatorStub) Validate(_ context.Context, key string) (browsersession.Principal, error) {
 	stub.key = key
 	return stub.principal, stub.err
 }
@@ -42,7 +42,7 @@ func (stub *cycleLifecycleAPIKeyValidatorStub) Validate(_ context.Context, key s
 
 func TestCycleLifecycleAuthUsesSchemeSpecificCredentialValidator(t *testing.T) {
 	userID := uuid.MustParse("00000000-0000-4000-8000-000000000101")
-	sessions := &cycleLifecycleSessionValidatorStub{principal: djangosession.Principal{UserID: userID.String(), UserTimezone: "UTC"}}
+	sessions := &cycleLifecycleSessionValidatorStub{principal: browsersession.Principal{UserID: userID.String(), UserTimezone: "UTC"}}
 	keys := &cycleLifecycleAPIKeyValidatorStub{principal: apikey.Principal{UserID: userID, Timezone: "America/Los_Angeles"}}
 	service := &cycleLifecycleService{sessions: sessions, keys: keys}
 
@@ -258,7 +258,7 @@ func TestCycleSessionDeletePermissionUsesCreatorDecoratorOnlyForDetail(t *testin
 			repository := &cycleLifecycleRepositoryStub{}
 			service := &cycleLifecycleService{
 				repo: repository,
-				sessions: &cycleLifecycleSessionValidatorStub{principal: djangosession.Principal{
+				sessions: &cycleLifecycleSessionValidatorStub{principal: browsersession.Principal{
 					UserID: userID.String(), UserTimezone: "UTC",
 				}},
 			}
@@ -365,7 +365,7 @@ func TestCycleLifecycleLegacyCreateUsesOnlyWritableFields(t *testing.T) {
 		"is_favorite": false, "assignee_ids": []any{},
 	}}
 	service := &cycleLifecycleService{
-		repo: repository, sessions: &cycleLifecycleSessionValidatorStub{principal: djangosession.Principal{UserID: userID.String(), UserTimezone: "UTC"}},
+		repo: repository, sessions: &cycleLifecycleSessionValidatorStub{principal: browsersession.Principal{UserID: userID.String(), UserTimezone: "UTC"}},
 	}
 	ctx, err := service.APIKeyAuth(context.Background(), "session-token", &security.APIKeyScheme{Name: "PlaneSessionCookie"})
 	if err != nil {

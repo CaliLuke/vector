@@ -9,7 +9,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/user_api_tokens"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/userapitokens"
 	"github.com/CaliLuke/loom/security"
 )
@@ -22,7 +22,7 @@ type apiTokensRepository interface {
 	Delete(context.Context, uuid.UUID, uuid.UUID) error
 }
 type apiTokensSessionValidator interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 type apiTokensService struct {
 	repository apiTokensRepository

@@ -11,7 +11,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_project_reads"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	"github.com/CaliLuke/loom/security"
 )
@@ -29,7 +29,7 @@ type workspaceProjectReadsRepository interface {
 }
 
 type workspaceProjectReadsSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
 type workspaceProjectRecentVisits interface {

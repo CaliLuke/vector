@@ -13,7 +13,7 @@ import (
 	api "github.com/CaliLuke/go-plane/apistatereads/gen/api_state_reads"
 	activitystore "github.com/CaliLuke/go-plane/internal/activityreads"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/projectstatereads"
@@ -157,8 +157,8 @@ func (s *apiStateReadsService) executeWrite(ctx context.Context, operation, stat
 	if !rate.Allowed {
 		return nil, nil, apiStateWriteError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))})
 	}
-	if validateUserTimezoneErr := djangosession.ValidateUserTimezone(principal.Timezone); validateUserTimezoneErr != nil {
-		if errors.Is(validateUserTimezoneErr, djangosession.ErrTimezoneNotFound) {
+	if validateUserTimezoneErr := browsersession.ValidateUserTimezone(principal.Timezone); validateUserTimezoneErr != nil {
+		if errors.Is(validateUserTimezoneErr, browsersession.ErrTimezoneNotFound) {
 			return nil, nil, apiStateWriteError(400, map[string]any{"error": "The required key does not exist."})
 		}
 		return nil, nil, mapAPIStateWriteError(validateUserTimezoneErr)

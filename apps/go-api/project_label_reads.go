@@ -9,7 +9,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/project_label_reads"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/projectlabelreads"
 	"github.com/CaliLuke/loom/security"
 )
@@ -22,7 +22,7 @@ type projectLabelReadsRepository interface {
 }
 
 type projectLabelReadsSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
 type projectLabelReadsService struct {

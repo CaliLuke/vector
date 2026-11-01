@@ -14,7 +14,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
@@ -28,7 +28,7 @@ import (
 )
 
 type workspaceUserInsightsSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
 type workspaceUserInsightsRepository interface {
@@ -110,7 +110,7 @@ func workspaceUserInsightsPermissionError(err error) (int, map[string]any) {
 }
 
 func workspaceUserInsightsValidateTimezone(timezone string) error {
-	if err := djangosession.ValidateUserTimezone(timezone); err != nil {
+	if err := browsersession.ValidateUserTimezone(timezone); err != nil {
 		return fmt.Errorf("invalid user timezone: %w", err)
 	}
 	return nil

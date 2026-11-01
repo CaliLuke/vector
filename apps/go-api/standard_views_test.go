@@ -10,7 +10,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/standard_views"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/standardviews"
 )
 
@@ -71,8 +71,8 @@ func (s *standardViewsRepositoryStub) RecordRecentVisit(context.Context, uuid.UU
 
 type standardViewsSessionStub struct{ err error }
 
-func (s standardViewsSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{UserID: "00000000-0000-4000-8000-000000000010"}, s.err
+func (s standardViewsSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{UserID: "00000000-0000-4000-8000-000000000010"}, s.err
 }
 
 func standardViewsContext(t *testing.T, repository *standardViewsRepositoryStub) (api.Service, context.Context) {

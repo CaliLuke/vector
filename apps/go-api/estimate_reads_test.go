@@ -9,7 +9,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/estimate_reads"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/estimatereads"
 	"github.com/CaliLuke/loom/security"
 )
@@ -53,19 +53,19 @@ func (stub *estimateReadsRepositoryStub) ProjectDetail(_ context.Context, userID
 }
 
 type estimateReadsSessionsStub struct {
-	principal djangosession.Principal
+	principal browsersession.Principal
 	err       error
 }
 
-func (stub estimateReadsSessionsStub) Validate(context.Context, string) (djangosession.Principal, error) {
+func (stub estimateReadsSessionsStub) Validate(context.Context, string) (browsersession.Principal, error) {
 	if stub.err != nil {
-		return djangosession.Principal{}, stub.err
+		return browsersession.Principal{}, stub.err
 	}
 	return stub.principal, nil
 }
 
 func TestNewEstimateReadsRequiresDependencies(t *testing.T) {
-	sessions := estimateReadsSessionsStub{principal: djangosession.Principal{UserID: uuid.New().String()}}
+	sessions := estimateReadsSessionsStub{principal: browsersession.Principal{UserID: uuid.New().String()}}
 	if _, err := NewEstimateReads(nil, sessions); err == nil {
 		t.Fatal("missing repository returned nil error")
 	}
@@ -83,7 +83,7 @@ func TestEstimateReadsUsesAuthenticatedUserAndExactTenantPaths(t *testing.T) {
 		projectData:   json.RawMessage(`[` + estimateReadFixture + `]`),
 		detailData:    json.RawMessage(estimateReadFixture),
 	}
-	serviceValue, err := NewEstimateReads(repository, estimateReadsSessionsStub{principal: djangosession.Principal{UserID: userID.String()}})
+	serviceValue, err := NewEstimateReads(repository, estimateReadsSessionsStub{principal: browsersession.Principal{UserID: userID.String()}})
 	if err != nil {
 		t.Fatal(err)
 	}

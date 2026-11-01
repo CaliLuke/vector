@@ -172,14 +172,6 @@
     {
       "fingerprint": [
         "staticcheck",
-        "internal/publicprojectmetadatareads/throttle.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 5
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
         "internal/stickies/content/binary.go",
         "ST1005: error strings should not be capitalized"
       ],

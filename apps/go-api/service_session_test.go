@@ -9,18 +9,18 @@ import (
 
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	loomhttp "github.com/CaliLuke/loom/http"
 )
 
 type serviceSessionValidatorStub struct {
-	principal  djangosession.Principal
+	principal  browsersession.Principal
 	err        error
 	calls      int
 	credential string
 }
 
-func (stub *serviceSessionValidatorStub) Validate(_ context.Context, credential string) (djangosession.Principal, error) {
+func (stub *serviceSessionValidatorStub) Validate(_ context.Context, credential string) (browsersession.Principal, error) {
 	stub.calls++
 	stub.credential = credential
 	return stub.principal, stub.err
@@ -40,7 +40,7 @@ func TestServiceSessionIdentityUsesCachedPrincipalWithoutValidation(t *testing.T
 }
 
 func TestServiceSessionIdentityDoesNotFallbackFromCachedEmptyPrincipal(t *testing.T) {
-	validator := &serviceSessionValidatorStub{principal: djangosession.Principal{UserID: "fallback-user", UserTimezone: "UTC"}}
+	validator := &serviceSessionValidatorStub{principal: browsersession.Principal{UserID: "fallback-user", UserTimezone: "UTC"}}
 	ctx := WithReadServiceSessionPrincipal(context.Background(), "", "")
 
 	userID, timezone, err := serviceSessionIdentityFromRequest(ctx, "", validator)
@@ -53,7 +53,7 @@ func TestServiceSessionIdentityDoesNotFallbackFromCachedEmptyPrincipal(t *testin
 }
 
 func TestServiceSessionIdentityValidatesCredentialAndPreservesResult(t *testing.T) {
-	validator := &serviceSessionValidatorStub{principal: djangosession.Principal{
+	validator := &serviceSessionValidatorStub{principal: browsersession.Principal{
 		UserID: "validated-user", UserTimezone: "Asia/Kolkata",
 	}}
 	userID, timezone, err := serviceSessionIdentity(context.Background(), "session-token", validator)
@@ -70,7 +70,7 @@ func TestServiceSessionIdentityFromRequestUsesCookieWhenCredentialIsEmpty(t *tes
 	if err != nil {
 		t.Fatal(err)
 	}
-	validator := &serviceSessionValidatorStub{principal: djangosession.Principal{
+	validator := &serviceSessionValidatorStub{principal: browsersession.Principal{
 		UserID: "cookie-user", UserTimezone: "UTC",
 	}}
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -91,7 +91,7 @@ func TestServiceSessionIdentityWithoutRequestFallbackUsesEmptyCredential(t *test
 	if err != nil {
 		t.Fatal(err)
 	}
-	validator := &serviceSessionValidatorStub{principal: djangosession.Principal{UserID: "validated-user"}}
+	validator := &serviceSessionValidatorStub{principal: browsersession.Principal{UserID: "validated-user"}}
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
 	request.AddCookie(&http.Cookie{Name: "session-id", Value: "cookie-token"})
 	loomhttp.RequestMetadataMiddleware(policy)(http.HandlerFunc(func(_ http.ResponseWriter, request *http.Request) {
@@ -107,7 +107,7 @@ func TestServiceSessionIdentityWithoutRequestFallbackUsesEmptyCredential(t *test
 func TestServiceSessionIdentityReturnsPrincipalAlongsideValidationError(t *testing.T) {
 	validationErr := errors.New("session backend unavailable")
 	validator := &serviceSessionValidatorStub{
-		principal: djangosession.Principal{UserID: "partial-user", UserTimezone: "UTC"},
+		principal: browsersession.Principal{UserID: "partial-user", UserTimezone: "UTC"},
 		err:       validationErr,
 	}
 	userID, timezone, err := serviceSessionIdentity(context.Background(), "session-token", validator)
@@ -121,7 +121,7 @@ func TestValidateSessionUserUUIDAlwaysValidatesCredential(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	validator := &serviceSessionValidatorStub{principal: djangosession.Principal{UserID: wantID.String()}}
+	validator := &serviceSessionValidatorStub{principal: browsersession.Principal{UserID: wantID.String()}}
 	ctx := WithReadServiceSessionPrincipal(context.Background(), "cached-user", "UTC")
 
 	gotID, err := validateSessionUserUUID(ctx, "explicit-session", validator)
@@ -142,7 +142,7 @@ func TestValidateSessionUserUUIDReturnsValidationError(t *testing.T) {
 }
 
 func TestValidateSessionUserUUIDRejectsInvalidUserID(t *testing.T) {
-	validator := &serviceSessionValidatorStub{principal: djangosession.Principal{UserID: "not-a-uuid"}}
+	validator := &serviceSessionValidatorStub{principal: browsersession.Principal{UserID: "not-a-uuid"}}
 	if _, err := validateSessionUserUUID(context.Background(), "session-token", validator); err == nil {
 		t.Fatal("invalid user ID was accepted")
 	}

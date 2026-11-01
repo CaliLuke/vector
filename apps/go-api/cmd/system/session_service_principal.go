@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 )
 
 type sessionPrincipalInspector interface {
-	InspectReadServiceSessionWithoutTimezone(context.Context, *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error)
+	InspectReadServiceSessionWithoutTimezone(context.Context, *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error)
 }
 
 type sessionServiceLifecycle struct{ readServicesSessionLifecycle }
@@ -22,14 +22,14 @@ func sessionServicePrincipalLifecycle(sessions readServicesSessionLifecycle) rea
 	return sessionServiceLifecycle{sessions}
 }
 
-func (s sessionServiceLifecycle) InspectReadServiceSession(ctx context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
+func (s sessionServiceLifecycle) InspectReadServiceSession(ctx context.Context, request *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error) {
 	protocol, _ := resolveReadServiceProtocol(request.URL.Path)
 	permissionBeforeTimezone := protocol.permissionBeforeTimezone && !slices.Contains(protocol.permissionBeforeTimezoneExceptMethods, request.Method)
 	if permissionBeforeTimezone || protocol.throttleBeforeTimezone {
 		if inspector, ok := s.readServicesSessionLifecycle.(sessionPrincipalInspector); ok {
 			return inspector.InspectReadServiceSessionWithoutTimezone(ctx, request)
 		}
-		return false, false, nil, djangosession.Principal{}, errors.New("session principal inspection without timezone is unavailable")
+		return false, false, nil, browsersession.Principal{}, errors.New("session principal inspection without timezone is unavailable")
 	}
 	return s.readServicesSessionLifecycle.InspectReadServiceSession(ctx, request)
 }

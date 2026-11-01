@@ -18,7 +18,7 @@ import (
 	adminapi "github.com/CaliLuke/go-plane/gen/instance_admin_session"
 	api "github.com/CaliLuke/go-plane/gen/instance_management"
 	"github.com/CaliLuke/go-plane/gen/system"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/instancemail"
 	store "github.com/CaliLuke/go-plane/internal/instancemanagement"
 )
@@ -47,18 +47,18 @@ func (r instanceHTTPRepository) ListAdmins(context.Context) (json.RawMessage, er
 
 type instanceHTTPSessions struct{ *cycleMiddlewareSessions }
 
-func (s instanceHTTPSessions) InspectReadServiceSession(ctx context.Context, r *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
+func (s instanceHTTPSessions) InspectReadServiceSession(ctx context.Context, r *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error) {
 	cookies := r.CookiesNamed("admin-session-id")
 	if len(cookies) == 0 {
-		return false, false, nil, djangosession.Principal{}, nil
+		return false, false, nil, browsersession.Principal{}, nil
 	}
 	principal, err := s.Validate(ctx, cookies[0].Value)
 	if err != nil {
-		return true, false, nil, djangosession.Principal{}, nil
+		return true, false, nil, browsersession.Principal{}, nil
 	}
 	return false, false, nil, principal, nil
 }
-func (s instanceHTTPSessions) InspectReadServiceSessionWithoutTimezone(ctx context.Context, r *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
+func (s instanceHTTPSessions) InspectReadServiceSessionWithoutTimezone(ctx context.Context, r *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error) {
 	return s.InspectReadServiceSession(ctx, r)
 }
 

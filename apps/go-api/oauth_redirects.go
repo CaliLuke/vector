@@ -15,15 +15,14 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/authworkflow"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	oauthredirects "github.com/CaliLuke/go-plane/oauthredirects/gen/oauth_redirects"
 	loomhttp "github.com/CaliLuke/loom/http"
 	"golang.org/x/oauth2"
 )
 
 const (
-	oauthSessionBackend = "django.contrib.auth.backends.ModelBackend"
-	oauthSessionAge     = int64(1209600)
+	oauthSessionAge = int64(1209600)
 )
 
 type oauthIdentity struct {
@@ -72,14 +71,14 @@ type oauthRedirectRepository interface {
 
 type oauthRedirectService struct {
 	repository oauthRedirectRepository
-	sessions   *djangosession.Validator
+	sessions   *browsersession.Validator
 	workflow   interface {
 		Run(context.Context, string, string) error
 	}
 	client *http.Client
 }
 
-func NewOAuthRedirects(repository oauthRedirectRepository, sessions *djangosession.Validator, workflow *authworkflow.PostUserAuthWorkflow, client *http.Client) (oauthredirects.Service, error) {
+func NewOAuthRedirects(repository oauthRedirectRepository, sessions *browsersession.Validator, workflow *authworkflow.PostUserAuthWorkflow, client *http.Client) (oauthredirects.Service, error) {
 	if repository == nil || sessions == nil || workflow == nil {
 		return nil, errors.New("OAuth redirects require a repository, Django sessions, and post-login workflow")
 	}
@@ -143,7 +142,7 @@ func (s *oauthRedirectService) initiate(ctx context.Context, provider string, sp
 	if err != nil {
 		return nil, nil, err
 	}
-	current, _ := djangosession.CurrentSessionFromContext(ctx)
+	current, _ := browsersession.CurrentSessionFromContext(ctx)
 	values := map[string]any{"host": host}
 	if !space && nextPath != "" {
 		values["next_path"] = nextPath
@@ -155,7 +154,7 @@ func (s *oauthRedirectService) initiate(ctx context.Context, provider string, sp
 	if err != nil {
 		return nil, nil, err
 	}
-	djangosession.SetResponseSession(ctx, refresh)
+	browsersession.SetResponseSession(ctx, refresh)
 	current = &refresh
 	configured, err := s.repository.InstanceConfigured(ctx)
 	if err != nil {
@@ -180,13 +179,13 @@ func (s *oauthRedirectService) initiate(ctx context.Context, provider string, sp
 	if err != nil {
 		return nil, nil, err
 	}
-	djangosession.SetResponseSession(ctx, refresh)
+	browsersession.SetResponseSession(ctx, refresh)
 	response, body := oauthResponse(oauthSourceOrderAuthURL(config.AuthCodeURL(state, config.options...), provider))
 	return response, body, nil
 }
 
 func (s *oauthRedirectService) callback(ctx context.Context, provider string, space bool, code, state string) (*oauthredirects.OAuthRedirectResponse, io.ReadCloser, error) {
-	current, _ := djangosession.CurrentSessionFromContext(ctx)
+	current, _ := browsersession.CurrentSessionFromContext(ctx)
 	baseHost, err := s.baseHost(ctx, space)
 	if err != nil {
 		return nil, nil, err
@@ -313,7 +312,7 @@ func oauthString(value *string) string {
 	return *value
 }
 func oauthNextPath(value *string) string { return oauthString(value) }
-func sessionString(session *djangosession.SessionRefresh, key string) (string, bool) {
+func sessionString(session *browsersession.SessionRefresh, key string) (string, bool) {
 	if session == nil {
 		return "", false
 	}
@@ -376,10 +375,10 @@ func (s *oauthRedirectService) baseHost(ctx context.Context, space bool) (string
 	return strings.TrimRight(base, "/") + spacePath, nil
 }
 
-func (s *oauthRedirectService) loginSession(ctx context.Context, current *djangosession.SessionRefresh, user oauthLoginUser, host string, metadata loomhttp.RequestMetadata) (djangosession.SessionRefresh, error) {
-	refresh, err := s.sessions.Login(ctx, current, djangosession.AuthenticatedSession{UserID: user.ID, PasswordHash: user.PasswordHash, Backend: oauthSessionBackend, DeviceInfo: map[string]string{"user_agent": metadata.UserAgent, "ip_address": metadata.ClientAddr, "domain": host}}, oauthSessionAge, time.Now())
+func (s *oauthRedirectService) loginSession(ctx context.Context, current *browsersession.SessionRefresh, user oauthLoginUser, host string, metadata loomhttp.RequestMetadata) (browsersession.SessionRefresh, error) {
+	refresh, err := s.sessions.Login(ctx, current, browsersession.AuthenticatedSession{UserID: user.ID, PasswordHash: user.PasswordHash, DeviceInfo: map[string]string{"user_agent": metadata.UserAgent, "ip_address": metadata.ClientAddr, "domain": host}}, oauthSessionAge, time.Now())
 	if err == nil {
-		djangosession.SetResponseSession(ctx, refresh)
+		browsersession.SetResponseSession(ctx, refresh)
 	}
 	return refresh, err
 }

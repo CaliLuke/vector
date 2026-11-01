@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	useraccountsapi "github.com/CaliLuke/go-plane/gen/user_accounts"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	useraccountsstore "github.com/CaliLuke/go-plane/internal/useraccounts"
 )
 
@@ -38,8 +38,8 @@ func (stub *userAccountsRepositoryStub) Delete(_ context.Context, userID, accoun
 
 type userAccountsSessionStub struct{ err error }
 
-func (stub userAccountsSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{UserID: "00000000-0000-4000-8000-000000000010"}, stub.err
+func (stub userAccountsSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{UserID: "00000000-0000-4000-8000-000000000010"}, stub.err
 }
 
 func userAccountsContext(t *testing.T, service useraccountsapi.Service) context.Context {

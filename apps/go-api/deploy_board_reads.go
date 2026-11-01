@@ -10,7 +10,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/deploy_board_reads"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/deployboardreads"
 	"github.com/CaliLuke/loom/security"
 )
@@ -23,7 +23,7 @@ type deployBoardReadsRepository interface {
 }
 
 type deployBoardReadsSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
 type deployBoardReadsService struct {

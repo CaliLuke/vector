@@ -12,7 +12,7 @@ import (
 	"testing"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/projectlabelreads"
 	labelssvr "github.com/CaliLuke/go-plane/project_label_writes/gen/http/project_label_writes/server"
 	labelsapi "github.com/CaliLuke/go-plane/project_label_writes/gen/project_label_writes"
@@ -65,7 +65,7 @@ func (c *labelWriteHTTPCache) Invalidate(_ context.Context, slug string, all boo
 
 type labelWriteHTTPSessionValidator struct{}
 
-func (labelWriteHTTPSessionValidator) Validate(context.Context, string) (djangosession.Principal, error) {
+func (labelWriteHTTPSessionValidator) Validate(context.Context, string) (browsersession.Principal, error) {
 	panic("session middleware must provide the inspected principal")
 }
 

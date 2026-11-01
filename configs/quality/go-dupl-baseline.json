@@ -1443,15 +1443,6 @@
     },
     {
       "fingerprint": [
-        "cmd/system/http_headers.go",
-        "internal/authentication/djangosession/validator.go",
-        "8dce43c37b29f172ad2133b6b75331b768507aebb94eb2cc18632559190e9a49",
-        "8dce43c37b29f172ad2133b6b75331b768507aebb94eb2cc18632559190e9a49"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
         "cmd/system/http_middleware.go",
         "cmd/system/session_routes.go",
         "59441fc432f5286a35b201ff97aeff08074e1a1cc0cba13a16f27724ba7b9a6f",
@@ -1553,8 +1544,8 @@
       "fingerprint": [
         "cycle_lifecycle.go",
         "module_lifecycle.go",
-        "b11c2651785f35295e32c6aa3b6a89328020321a929651ea450a2aec565e7d94",
-        "ee2f6ceee80263d6a0023e5728146caebdbbf938ded8e79de83529d768205b30"
+        "833a786273e475b09a535e46176b132e02cff8de79171b13eb1c6e77e0a84c04",
+        "b44717d789e339fdd6b920f4d08a63d3a0ebda86598278e0920b138947719deb"
       ],
       "count": 2
     },
@@ -1562,8 +1553,8 @@
       "fingerprint": [
         "cycle_lifecycle.go",
         "module_lifecycle.go",
-        "dbe6f9b259e11bfd12f2e51a4a89b5adaa1071f889f28b577b023528abdce81e",
-        "e38904c46c1a010ff96a1cf063a043a46c3e8af1b76ea03d141daa069db208ca"
+        "b11c2651785f35295e32c6aa3b6a89328020321a929651ea450a2aec565e7d94",
+        "ee2f6ceee80263d6a0023e5728146caebdbbf938ded8e79de83529d768205b30"
       ],
       "count": 2
     },

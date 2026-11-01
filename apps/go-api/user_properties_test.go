@@ -9,7 +9,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/user_properties"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/userproperties"
 	loom "github.com/CaliLuke/loom/pkg"
 )
@@ -58,11 +58,11 @@ func (r *userPropertiesRepositoryStub) PatchModule(context.Context, uuid.UUID, s
 
 type userPropertiesSessionStub struct{ err error }
 
-func (s userPropertiesSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
+func (s userPropertiesSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
 	if s.err != nil {
-		return djangosession.Principal{}, s.err
+		return browsersession.Principal{}, s.err
 	}
-	return djangosession.Principal{UserID: "00000000-0000-4000-8000-000000000001"}, nil
+	return browsersession.Principal{UserID: "00000000-0000-4000-8000-000000000001"}, nil
 }
 
 func userPropertiesJSON() json.RawMessage {

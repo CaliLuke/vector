@@ -19,7 +19,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/instancecipher"
 	oauth "github.com/CaliLuke/go-plane/internal/mcpoauth"
 	server "github.com/CaliLuke/go-plane/mcpoauthlinks/gen/http/mcp_oauth_links/server"
@@ -34,11 +34,11 @@ func TestGeneratedLinkHTTPUsesCurrentSignedInSession(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	validator, err := djangosession.New(djangosession.NewPostgreSQLReader(db), djangosession.Config{SecretKey: "test-only-session-signing-key", AllowedBackends: []string{"django.contrib.auth.backends.ModelBackend"}})
+	validator, err := browsersession.New(browsersession.NewPostgreSQLReader(db), browsersession.Config{SecretKey: "test-only-session-signing-key"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	login, err := validator.Login(t.Context(), nil, djangosession.AuthenticatedSession{UserID: "10000000-0000-4000-8000-000000000001", PasswordHash: "test-password-hash", Backend: "django.contrib.auth.backends.ModelBackend"}, 3600, time.Now())
+	login, err := validator.Login(t.Context(), nil, browsersession.AuthenticatedSession{UserID: "10000000-0000-4000-8000-000000000001", PasswordHash: "test-password-hash"}, 3600, time.Now())
 	if err != nil {
 		t.Fatal(err)
 	}

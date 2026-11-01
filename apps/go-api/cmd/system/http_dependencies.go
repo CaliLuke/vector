@@ -45,7 +45,7 @@ import (
 	workspaceprojectreads "github.com/CaliLuke/go-plane/gen/workspace_project_reads"
 	workspacesidebarpreferences "github.com/CaliLuke/go-plane/gen/workspace_sidebar_preferences"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	publicprojectmetadatareadsstore "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
 	invitationsapi "github.com/CaliLuke/go-plane/invitationsmembership/gen/invitations_membership"
 	mcpoauthlinksapi "github.com/CaliLuke/go-plane/mcpoauthlinks/gen/mcp_oauth_links"
@@ -74,15 +74,15 @@ import (
 )
 
 type djangoSessionLifecycle interface {
-	InspectSession(context.Context, *http.Request) (bool, bool, *djangosession.SessionRefresh, string, error)
-	RefreshSession(context.Context, *http.Request, djangosession.SessionRefresh) (djangosession.SessionRefresh, error)
+	InspectSession(context.Context, *http.Request) (bool, bool, *browsersession.SessionRefresh, string, error)
+	RefreshSession(context.Context, *http.Request, browsersession.SessionRefresh) (browsersession.SessionRefresh, error)
 }
 
 type publicProjectMetadataThrottle interface {
 	djangoSessionLifecycle
-	AllowRequest(context.Context, *http.Request) (bool, time.Duration, bool, bool, *djangosession.SessionRefresh, string, error)
-	AllowRequestWithoutTimezone(context.Context, *http.Request) (bool, time.Duration, bool, bool, *djangosession.SessionRefresh, string, error)
-	FinalizeUnaccessedSession(context.Context, *http.Request, int) (bool, *djangosession.SessionRefresh, error)
+	AllowRequest(context.Context, *http.Request) (bool, time.Duration, bool, bool, *browsersession.SessionRefresh, string, error)
+	AllowRequestWithoutTimezone(context.Context, *http.Request) (bool, time.Duration, bool, bool, *browsersession.SessionRefresh, string, error)
+	FinalizeUnaccessedSession(context.Context, *http.Request, int) (bool, *browsersession.SessionRefresh, error)
 }
 
 type instanceManagementAnonymousThrottle interface {
@@ -91,12 +91,12 @@ type instanceManagementAnonymousThrottle interface {
 
 type userIdentitySessionLifecycle interface {
 	publicProjectMetadataThrottle
-	InspectSessionWithTimezone(context.Context, *http.Request) (bool, bool, *djangosession.SessionRefresh, string, error)
+	InspectSessionWithTimezone(context.Context, *http.Request) (bool, bool, *browsersession.SessionRefresh, string, error)
 }
 
 type readServicesSessionLifecycle interface {
 	userIdentitySessionLifecycle
-	InspectReadServiceSession(context.Context, *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error)
+	InspectReadServiceSession(context.Context, *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error)
 }
 
 type pendingReplacementEndpoints struct {

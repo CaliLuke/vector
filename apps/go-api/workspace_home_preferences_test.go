@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_home_preferences"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/workspacehomepreferences"
 	loom "github.com/CaliLuke/loom/pkg"
 )
@@ -41,8 +41,8 @@ func (r *homeRepoTest) Update(_ context.Context, _ uuid.UUID, _, _ string, newKe
 
 type homeSessionTest struct{ err error }
 
-func (s homeSessionTest) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{UserID: "00000000-0000-4000-8000-000000000001"}, s.err
+func (s homeSessionTest) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{UserID: "00000000-0000-4000-8000-000000000001"}, s.err
 }
 
 func homePreferenceService(t *testing.T, repository *homeRepoTest) (api.Service, context.Context) {

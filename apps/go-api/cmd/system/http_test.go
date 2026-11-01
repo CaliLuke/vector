@@ -52,7 +52,7 @@ import (
 	workspacerecentvisitsapi "github.com/CaliLuke/go-plane/gen/workspace_recent_visits"
 	workspaceapi "github.com/CaliLuke/go-plane/gen/workspace_slug_check"
 	workspacethemesapi "github.com/CaliLuke/go-plane/gen/workspace_themes"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/platform"
 	publicprojectmetadatareadsstore "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
 	"github.com/CaliLuke/loom/clue/log"
@@ -383,11 +383,11 @@ type publicProjectMetadataThrottleStub struct {
 	allowCalls            int
 	throttleErr           error
 	refreshCalls          int
-	result                djangosession.SessionRefresh
-	rotated               *djangosession.SessionRefresh
+	result                browsersession.SessionRefresh
+	rotated               *browsersession.SessionRefresh
 	userID                string
 	earlyExpire           bool
-	earlyRefresh          *djangosession.SessionRefresh
+	earlyRefresh          *browsersession.SessionRefresh
 	earlyErr              error
 	earlyCalls            int
 	earlyStatus           int
@@ -409,7 +409,7 @@ func (stub *publicProjectMetadataActivityStub) Log(_ context.Context, record pub
 	return stub.err
 }
 
-func (stub *publicProjectMetadataThrottleStub) AllowRequest(context.Context, *http.Request) (bool, time.Duration, bool, bool, *djangosession.SessionRefresh, string, error) {
+func (stub *publicProjectMetadataThrottleStub) AllowRequest(context.Context, *http.Request) (bool, time.Duration, bool, bool, *browsersession.SessionRefresh, string, error) {
 	stub.calls++
 	stub.allowCalls++
 	if stub.throttleErr != nil {
@@ -421,7 +421,7 @@ func (stub *publicProjectMetadataThrottleStub) AllowRequest(context.Context, *ht
 	return stub.allowed, stub.wait, stub.expire, stub.refresh, stub.rotated, stub.userID, stub.err
 }
 
-func (stub *publicProjectMetadataThrottleStub) AllowRequestWithoutTimezone(context.Context, *http.Request) (bool, time.Duration, bool, bool, *djangosession.SessionRefresh, string, error) {
+func (stub *publicProjectMetadataThrottleStub) AllowRequestWithoutTimezone(context.Context, *http.Request) (bool, time.Duration, bool, bool, *browsersession.SessionRefresh, string, error) {
 	stub.calls++
 	stub.allowCalls++
 	if stub.throttleErr != nil {
@@ -430,51 +430,51 @@ func (stub *publicProjectMetadataThrottleStub) AllowRequestWithoutTimezone(conte
 	return stub.allowed, stub.wait, stub.expire, stub.refresh, stub.rotated, stub.userID, stub.err
 }
 
-func (stub *publicProjectMetadataThrottleStub) FinalizeUnaccessedSession(_ context.Context, _ *http.Request, status int) (bool, *djangosession.SessionRefresh, error) {
+func (stub *publicProjectMetadataThrottleStub) FinalizeUnaccessedSession(_ context.Context, _ *http.Request, status int) (bool, *browsersession.SessionRefresh, error) {
 	stub.earlyCalls++
 	stub.earlyStatus = status
 	return stub.earlyExpire, stub.earlyRefresh, stub.earlyErr
 }
 
-func (stub *publicProjectMetadataThrottleStub) InspectSession(context.Context, *http.Request) (bool, bool, *djangosession.SessionRefresh, string, error) {
+func (stub *publicProjectMetadataThrottleStub) InspectSession(context.Context, *http.Request) (bool, bool, *browsersession.SessionRefresh, string, error) {
 	stub.calls++
 	return stub.expire, stub.refresh, stub.rotated, stub.userID, stub.err
 }
 
-func (stub *publicProjectMetadataThrottleStub) InspectSessionWithTimezone(ctx context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, string, error) {
+func (stub *publicProjectMetadataThrottleStub) InspectSessionWithTimezone(ctx context.Context, request *http.Request) (bool, bool, *browsersession.SessionRefresh, string, error) {
 	stub.timezoneCalls++
 	if stub.timezoneErr != nil {
 		return stub.expire, stub.refresh, stub.rotated, stub.userID, stub.timezoneErr
 	}
 	return stub.InspectSession(ctx, request)
 }
-func (stub *publicProjectMetadataThrottleStub) InspectReadServiceSession(_ context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
+func (stub *publicProjectMetadataThrottleStub) InspectReadServiceSession(_ context.Context, request *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error) {
 	stub.timezoneCalls++
 	stub.calls++
 	if cookie, err := request.Cookie("session-id"); err == nil {
 		stub.inspectedCookie = cookie.Value
 	}
-	return stub.expire, stub.refresh, stub.rotated, djangosession.Principal{
+	return stub.expire, stub.refresh, stub.rotated, browsersession.Principal{
 		UserID:       stub.userID,
 		SessionKey:   stub.sessionKey,
 		UserTimezone: stub.userTimezone,
 	}, stub.err
 }
 
-func (stub *publicProjectMetadataThrottleStub) InspectReadServiceSessionWithoutTimezone(_ context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
+func (stub *publicProjectMetadataThrottleStub) InspectReadServiceSessionWithoutTimezone(_ context.Context, request *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error) {
 	stub.deferredTimezoneCalls++
 	stub.calls++
 	if cookie, err := request.Cookie("session-id"); err == nil {
 		stub.inspectedCookie = cookie.Value
 	}
-	return stub.expire, stub.refresh, stub.rotated, djangosession.Principal{
+	return stub.expire, stub.refresh, stub.rotated, browsersession.Principal{
 		UserID:       stub.userID,
 		SessionKey:   stub.sessionKey,
 		UserTimezone: stub.userTimezone,
 	}, stub.err
 }
 
-func (stub *publicProjectMetadataThrottleStub) RefreshSession(_ context.Context, _ *http.Request, prepared djangosession.SessionRefresh) (djangosession.SessionRefresh, error) {
+func (stub *publicProjectMetadataThrottleStub) RefreshSession(_ context.Context, _ *http.Request, prepared browsersession.SessionRefresh) (browsersession.SessionRefresh, error) {
 	stub.refreshCalls++
 	if stub.result.SessionKey == "" {
 		stub.result.SessionKey = prepared.SessionKey
@@ -2416,7 +2416,7 @@ func TestUserMeReadRejectsOversizedBodyBeforeSessionOrDispatch(t *testing.T) {
 	}
 
 	now := time.Date(2026, 7, 2, 3, 4, 5, 0, time.UTC)
-	refreshThrottle := &publicProjectMetadataThrottleStub{earlyRefresh: &djangosession.SessionRefresh{
+	refreshThrottle := &publicProjectMetadataThrottleStub{earlyRefresh: &browsersession.SessionRefresh{
 		SessionKey: "refreshed", MaxAgeSeconds: 3600, ExpiresAt: now.Add(time.Hour), CookieExpiresAt: now.Add(time.Hour),
 	}}
 	refreshHandler := newHTTPHandlerWithPendingReplacements(
@@ -2477,7 +2477,7 @@ func TestUserMeReadNegotiationRunsRequestLoggerSessionInspection(t *testing.T) {
 		},
 		{
 			name:       "lazy authentication failure replaces negotiation response",
-			throttle:   &publicProjectMetadataThrottleStub{err: fmt.Errorf("session store unavailable: %w", djangosession.ErrSessionStore)},
+			throttle:   &publicProjectMetadataThrottleStub{err: fmt.Errorf("session store unavailable: %w", browsersession.ErrSessionStore)},
 			wantStatus: http.StatusInternalServerError,
 			wantBody:   string(djangoServerErrorBody),
 		},
@@ -2562,8 +2562,8 @@ func TestUserMeReadAppliesDjangoSessionLifecycle(t *testing.T) {
 	now := time.Date(2026, 7, 2, 3, 4, 5, 0, time.UTC)
 	throttle := &publicProjectMetadataThrottleStub{
 		userID:  "00000000-0000-4000-8000-000000000b01",
-		rotated: &djangosession.SessionRefresh{SessionKey: "prepared"},
-		result: djangosession.SessionRefresh{
+		rotated: &browsersession.SessionRefresh{SessionKey: "prepared"},
+		result: browsersession.SessionRefresh{
 			SessionKey:      "refreshed",
 			MaxAgeSeconds:   3600,
 			ExpiresAt:       now.Add(time.Hour),
@@ -2597,7 +2597,7 @@ func TestUserMeReadAppliesDjangoSessionLifecycle(t *testing.T) {
 		t.Fatalf("session error=%d %q headers=%v", errorResponse.Code, errorResponse.Body.String(), errorResponse.Header())
 	}
 
-	throttle.err = fmt.Errorf("fallback rotation unavailable: %w", djangosession.ErrStore)
+	throttle.err = fmt.Errorf("fallback rotation unavailable: %w", browsersession.ErrStore)
 	rotationErrorResponse := httptest.NewRecorder()
 	handler.ServeHTTP(rotationErrorResponse, request)
 	if rotationErrorResponse.Code != http.StatusInternalServerError || rotationErrorResponse.Body.String() != string(djangoServerErrorBody) ||
@@ -2605,7 +2605,7 @@ func TestUserMeReadAppliesDjangoSessionLifecycle(t *testing.T) {
 		t.Fatalf("rotation error=%d %q headers=%v", rotationErrorResponse.Code, rotationErrorResponse.Body.String(), rotationErrorResponse.Header())
 	}
 
-	throttle.err = djangosession.ErrTimezoneNotFound
+	throttle.err = browsersession.ErrTimezoneNotFound
 	timezoneErrorResponse := httptest.NewRecorder()
 	handler.ServeHTTP(timezoneErrorResponse, request)
 	if timezoneErrorResponse.Code != http.StatusBadRequest ||
@@ -3154,7 +3154,7 @@ func TestPublicProjectMetadataReadsHTTPProcessesSessionsOnNegotiationErrors(t *t
 		t.Run(testCase.name, func(t *testing.T) {
 			throttle := &publicProjectMetadataThrottleStub{
 				allowed: true, expire: testCase.expire, refresh: testCase.refresh,
-				result: djangosession.SessionRefresh{
+				result: browsersession.SessionRefresh{
 					SessionKey: "valid-session-key", ExpiresAt: time.Date(2026, time.September, 2, 3, 4, 5, 0, time.UTC), MaxAgeSeconds: 604800,
 				},
 			}
@@ -3168,7 +3168,7 @@ func TestPublicProjectMetadataReadsHTTPProcessesSessionsOnNegotiationErrors(t *t
 			)
 			request := httptest.NewRequest(http.MethodGet, testCase.path, nil)
 			request.Header.Set("Accept", testCase.accept)
-			request.AddCookie(&http.Cookie{Name: djangosession.DefaultCookieName, Value: "valid-session-key"})
+			request.AddCookie(&http.Cookie{Name: browsersession.DefaultCookieName, Value: "valid-session-key"})
 			response := httptest.NewRecorder()
 			handler.ServeHTTP(response, request)
 			if response.Code != testCase.status || response.Header().Get("Set-Cookie") != testCase.wantCookie || throttle.calls != 1 {
@@ -3231,38 +3231,6 @@ func TestPublicProjectMetadataReadsHTTPDeletionCookiesUseSecurePrefixes(t *testi
 	}
 }
 
-func TestPublicProjectMetadataReadsHTTPEmptyCookieNameFailsWhenSessionMustChange(t *testing.T) {
-	ctx := newLogContext(context.Background(), io.Discard, false)
-	for _, testCase := range []struct {
-		name     string
-		throttle *publicProjectMetadataThrottleStub
-	}{
-		{name: "delete", throttle: &publicProjectMetadataThrottleStub{allowed: true, expire: true}},
-		{name: "refresh", throttle: &publicProjectMetadataThrottleStub{
-			allowed: true, refresh: true, result: djangosession.SessionRefresh{SessionKey: "refreshed-session-key"},
-		}},
-	} {
-		t.Run(testCase.name, func(t *testing.T) {
-			handler := newHTTPHandlerWithPendingReplacements(
-				ctx, system.NewEndpoints(systemapi.NewSystem()), false,
-				nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-				pendingReplacementEndpoints{
-					publicProjectMetadataReads:    publicprojectmetadatareadsapi.NewEndpoints(publicProjectMetadataReadsHTTPStub{}),
-					publicProjectMetadataThrottle: testCase.throttle,
-					publicProjectMetadataCookie:   djangoSessionCookieConfig{Configured: true},
-				},
-			)
-			request := httptest.NewRequest(http.MethodGet, "/api/public/anchor/example/labels/", nil)
-			request.Header.Set("Cookie", "=valid-session-key")
-			response := httptest.NewRecorder()
-			handler.ServeHTTP(response, request)
-			if response.Code != http.StatusInternalServerError || response.Body.String() != string(djangoServerErrorBody) || response.Header().Get("Set-Cookie") != "" {
-				t.Fatalf("response=%d %q headers=%v", response.Code, response.Body.String(), response.Header())
-			}
-		})
-	}
-}
-
 func TestPublicProjectMetadataReadsHTTPDoesNotChangeAdminCookieForAnchorText(t *testing.T) {
 	for _, scenario := range []struct {
 		name      string
@@ -3279,7 +3247,7 @@ func TestPublicProjectMetadataReadsHTTPDoesNotChangeAdminCookieForAnchorText(t *
 		t.Run(scenario.name, func(t *testing.T) {
 			throttle := &publicProjectMetadataThrottleStub{
 				allowed: true, expire: !scenario.refresh, refresh: scenario.refresh,
-				result: djangosession.SessionRefresh{SessionKey: scenario.wantValue, MaxAgeSeconds: 604800},
+				result: browsersession.SessionRefresh{SessionKey: scenario.wantValue, MaxAgeSeconds: 604800},
 			}
 			handler := newHTTPHandlerWithPendingReplacements(
 				newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false,
@@ -3310,7 +3278,7 @@ func TestPublicProjectMetadataReadsHTTPRefreshesDjangoSessionAfterSuccess(t *tes
 	throttle := &publicProjectMetadataThrottleStub{
 		allowed: true,
 		refresh: true,
-		result: djangosession.SessionRefresh{
+		result: browsersession.SessionRefresh{
 			SessionKey: "valid-session-key", ExpiresAt: expiresAt, MaxAgeSeconds: 604800,
 		},
 	}
@@ -3346,7 +3314,7 @@ func TestPublicProjectMetadataReadsHTTPSessionRefreshFailureReplacesBufferedResp
 	)
 	request := httptest.NewRequest(http.MethodGet, "/api/public/anchor/example/labels/", nil)
 	request.Header.Set("Accept-Encoding", "gzip")
-	request.AddCookie(&http.Cookie{Name: djangosession.DefaultCookieName, Value: "valid-session-key"})
+	request.AddCookie(&http.Cookie{Name: browsersession.DefaultCookieName, Value: "valid-session-key"})
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)
 	want := string(djangoServerErrorBody)
@@ -3403,7 +3371,7 @@ func TestPublicProjectAnchorDuplicateQueryUsesDjangoJSON500(t *testing.T) {
 
 func TestPublicProjectMetadataReadsHTTPConcurrentSessionDeletionReturnsDjangoBadRequest(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
-	for _, refreshErr := range []error{djangosession.ErrSessionNotFound, djangosession.ErrSessionUpdate} {
+	for _, refreshErr := range []error{browsersession.ErrSessionNotFound, browsersession.ErrSessionUpdate} {
 		throttle := &publicProjectMetadataThrottleStub{allowed: true, refresh: true, refreshErr: refreshErr}
 		handler := newHTTPHandlerWithPendingReplacements(
 			ctx, system.NewEndpoints(systemapi.NewSystem()), false,
@@ -3414,7 +3382,7 @@ func TestPublicProjectMetadataReadsHTTPConcurrentSessionDeletionReturnsDjangoBad
 			},
 		)
 		request := httptest.NewRequest(http.MethodGet, "/api/public/anchor/example/labels/", nil)
-		request.AddCookie(&http.Cookie{Name: djangosession.DefaultCookieName, Value: "deleted-session-key"})
+		request.AddCookie(&http.Cookie{Name: browsersession.DefaultCookieName, Value: "deleted-session-key"})
 		response := httptest.NewRecorder()
 		handler.ServeHTTP(response, request)
 		if response.Code != http.StatusBadRequest || response.Body.String() != string(djangoBadRequestBody) ||
@@ -3428,7 +3396,7 @@ func TestPublicProjectMetadataReadsHTTPConcurrentSessionDeletionReturnsDjangoBad
 
 func TestRefreshDjangoSessionCookieOmitsPersistenceForBrowserClose(t *testing.T) {
 	headers := make(http.Header)
-	if err := refreshDjangoSessionCookie(headers, djangoSessionCookieConfig{}, djangosession.SessionRefresh{
+	if err := refreshDjangoSessionCookie(headers, djangoSessionCookieConfig{}, browsersession.SessionRefresh{
 		SessionKey: "valid-session-key", BrowserClose: true,
 	}); err != nil {
 		t.Fatal(err)
@@ -3440,7 +3408,7 @@ func TestRefreshDjangoSessionCookieOmitsPersistenceForBrowserClose(t *testing.T)
 
 func TestRefreshDjangoSessionCookieUsesSeparateCookieExpiry(t *testing.T) {
 	headers := make(http.Header)
-	if err := refreshDjangoSessionCookie(headers, djangoSessionCookieConfig{}, djangosession.SessionRefresh{
+	if err := refreshDjangoSessionCookie(headers, djangoSessionCookieConfig{}, browsersession.SessionRefresh{
 		SessionKey: "valid-session-key", ExpiresAt: time.Date(2026, time.September, 2, 3, 4, 5, 0, time.UTC),
 		CookieExpiresAt: time.Date(2026, time.September, 2, 3, 4, 4, 0, time.UTC), MaxAgeSeconds: 61,
 	}); err != nil {
@@ -3456,52 +3424,26 @@ func TestDjangoSessionCookieHelpersRejectExplicitEmptyName(t *testing.T) {
 	if err := expireDjangoSessionCookie(make(http.Header), config); err == nil {
 		t.Fatal("expireDjangoSessionCookie() accepted an empty cookie name")
 	}
-	if err := refreshDjangoSessionCookie(make(http.Header), config, djangosession.SessionRefresh{SessionKey: "valid-session-key"}); err == nil {
+	if err := refreshDjangoSessionCookie(make(http.Header), config, browsersession.SessionRefresh{SessionKey: "valid-session-key"}); err == nil {
 		t.Fatal("refreshDjangoSessionCookie() accepted an empty cookie name")
 	}
 }
 
-func TestLastDjangoSessionCookieMatchesDjangoDuplicateCookieParsing(t *testing.T) {
+func TestSessionCookiesUseHTTPHeaderParsing(t *testing.T) {
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
 	request.Header.Set("Cookie", "session-id=first-session; session-id=last-session")
 	cookie := lastDjangoSessionCookie(request, "session-id")
-	if cookie == nil || cookie.Value != "last-session" {
-		t.Fatalf("cookie=%#v", cookie)
+	if cookie == nil || cookie.Value != "first-session" {
+		t.Fatalf("cookie=%+v", cookie)
 	}
-
 	request.Header["Cookie"] = []string{"session-id=first-session", "session-id=second-session"}
 	cookie = lastDjangoSessionCookie(request, "session-id")
-	if cookie == nil || cookie.Value != "first-session,session-id=second-session" {
-		t.Fatalf("repeated-header cookie=%#v", cookie)
+	if cookie == nil || cookie.Value != "first-session" {
+		t.Fatalf("repeated-header cookie=%+v", cookie)
 	}
-
-	request.Header.Set("Cookie", `session-id="quoted\054value\x"`)
-	cookie = lastDjangoSessionCookie(request, "session-id")
-	if cookie == nil || cookie.Value != "quoted,valuex" {
-		t.Fatalf("quoted cookie=%#v", cookie)
-	}
-
-	request.Header.Set("Cookie", `session-id="\303\251abcdef"`)
-	cookie = lastDjangoSessionCookie(request, "session-id")
-	if cookie == nil || cookie.Value != "\u00c3\u00a9abcdef" {
-		t.Fatalf("octal-unquoted cookie=%#v", cookie)
-	}
-
-	request.Header.Set("Cookie", `session-id="éabcdef"`)
-	cookie = lastDjangoSessionCookie(request, "session-id")
-	if cookie == nil || cookie.Value != "\u00c3\u00a9abcdef" {
-		t.Fatalf("Latin-1 raw-byte cookie=%#v", cookie)
-	}
-
-	request.Header.Set("Cookie", "session-id=\""+string([]byte{0xff})+"abcdefg\"")
-	cookie = lastDjangoSessionCookie(request, "session-id")
-	if cookie == nil || cookie.Value != "\u00ffabcdefg" {
-		t.Fatalf("isolated Latin-1 cookie=%#v", cookie)
-	}
-
-	request.Header.Set("Cookie", "; ;")
-	if cookie := lastDjangoSessionCookie(request, ""); cookie != nil {
-		t.Fatalf("empty cookie chunks produced cookie=%#v", cookie)
+	request.Header.Set("Cookie", `session-id="quoted\054value"`)
+	if cookie := lastDjangoSessionCookie(request, "session-id"); cookie != nil {
+		t.Fatalf("invalid cookie accepted: %+v", cookie)
 	}
 }
 
@@ -3697,7 +3639,7 @@ func TestPublicProjectMetadataReadsHTTPRejectsOversizedBodiesBeforeAuditOrDispat
 			)
 			request := httptest.NewRequest(testCase.method, testCase.path, strings.NewReader("123456789"))
 			request.Header.Set("X-Api-Key", "sensitive-token")
-			request.AddCookie(&http.Cookie{Name: djangosession.DefaultCookieName, Value: "short"})
+			request.AddCookie(&http.Cookie{Name: browsersession.DefaultCookieName, Value: "short"})
 			response := httptest.NewRecorder()
 			handler.ServeHTTP(response, request)
 			if response.Code != http.StatusRequestEntityTooLarge || response.Body.String() != string(djangoRequestTooLargeBody) ||
@@ -3845,7 +3787,7 @@ func TestPublicProjectMetadataReadsHTTPEarlyBodyFailureExpiresOnlyInvalidCookie(
 			)
 			request := httptest.NewRequest(http.MethodGet, "/api/public/anchor/example/labels/", strings.NewReader("123456789"))
 			if testCase.cookie != "" {
-				request.AddCookie(&http.Cookie{Name: djangosession.DefaultCookieName, Value: testCase.cookie})
+				request.AddCookie(&http.Cookie{Name: browsersession.DefaultCookieName, Value: testCase.cookie})
 			}
 			response := httptest.NewRecorder()
 			handler.ServeHTTP(response, request)
@@ -3873,7 +3815,7 @@ func TestPublicProjectMetadataReadsHTTPRefreshesUnaccessedSessionAfter413(t *tes
 		{name: "instances anchor", path: "/api/public/anchor/instances-example/labels/", cookieName: "session-id", wantCookie: "session-id=refreshed-session"},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
-			refresh := &djangosession.SessionRefresh{SessionKey: "refreshed-session", MaxAgeSeconds: 3600, ExpiresAt: time.Date(2026, time.September, 2, 3, 4, 5, 0, time.UTC)}
+			refresh := &browsersession.SessionRefresh{SessionKey: "refreshed-session", MaxAgeSeconds: 3600, ExpiresAt: time.Date(2026, time.September, 2, 3, 4, 5, 0, time.UTC)}
 			throttle := &publicProjectMetadataThrottleStub{allowed: true, earlyRefresh: refresh}
 			handler := newHTTPHandlerWithPendingReplacements(
 				newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false,
@@ -3906,13 +3848,13 @@ func TestPublicProjectMetadataReadsHTTPReplaces413OnUnaccessedSessionFailure(t *
 		status       int
 		body         string
 		expire       bool
-		refresh      *djangosession.SessionRefresh
+		refresh      *browsersession.SessionRefresh
 		cookieConfig djangoSessionCookieConfig
 	}{
-		{name: "session store", err: fmt.Errorf("database unavailable: %w", djangosession.ErrSessionStore), status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
-		{name: "signed non-object session", err: djangosession.ErrInvalidSessionShape, status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
+		{name: "session store", err: fmt.Errorf("database unavailable: %w", browsersession.ErrSessionStore), status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
+		{name: "signed non-object session", err: browsersession.ErrInvalidSessionShape, status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
 		{name: "cookie expiry", expire: true, cookieConfig: djangoSessionCookieConfig{Configured: true}, status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
-		{name: "cookie refresh", refresh: &djangosession.SessionRefresh{SessionKey: "refreshed"}, cookieConfig: djangoSessionCookieConfig{Configured: true}, status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
+		{name: "cookie refresh", refresh: &browsersession.SessionRefresh{SessionKey: "refreshed"}, cookieConfig: djangoSessionCookieConfig{Configured: true}, status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			var logs bytes.Buffer
@@ -3949,8 +3891,8 @@ func TestPublicProjectMetadataReadsHTTPBodyReadFailureRetainsValidUnaccessedSess
 		wantFrame    string
 		wantLog      string
 	}{
-		{name: "valid unaccessed session", cookie: djangosession.DefaultCookieName + "=valid-session-key", wantFrame: "DENY", wantLog: "read request body: request body unavailable"},
-		{name: "invalid cookie cannot be expired", cookie: "=short", cookieConfig: djangoSessionCookieConfig{Configured: true}, wantLog: "delete Django session cookie"},
+		{name: "valid unaccessed session", cookie: browsersession.DefaultCookieName + "=valid-session-key", wantFrame: "DENY", wantLog: "read request body: request body unavailable"},
+		{name: "nameless cookie ignored", cookie: "=short", wantFrame: "DENY", wantLog: "read request body: request body unavailable"},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			var logs bytes.Buffer
@@ -3997,7 +3939,7 @@ func TestPublicProjectMetadataReadsHTTPSlashlessRequestsReachMiddlewareBeforeRed
 	)
 	request := httptest.NewRequest(http.MethodPost, "/api/public/anchor/example/labels?search=bug", nil)
 	request.Header.Set("Origin", "https://app.example.test")
-	request.AddCookie(&http.Cookie{Name: djangosession.DefaultCookieName, Value: "missing-session-key"})
+	request.AddCookie(&http.Cookie{Name: browsersession.DefaultCookieName, Value: "missing-session-key"})
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)
 	if response.Code != http.StatusMovedPermanently || response.Header().Get("Location") != "/api/public/anchor/example/labels/?search=bug" ||
@@ -4235,7 +4177,7 @@ func TestPublicProjectMetadataReadsHTTPRequestLogSkipsLazyAuthenticationFailure(
 		pendingReplacementEndpoints{
 			publicProjectMetadataReads: publicprojectmetadatareadsapi.NewEndpoints(publicProjectMetadataReadsHTTPStub{}),
 			publicProjectMetadataThrottle: &publicProjectMetadataThrottleStub{
-				err: fmt.Errorf("database unavailable: %w", djangosession.ErrSessionStore),
+				err: fmt.Errorf("database unavailable: %w", browsersession.ErrSessionStore),
 			},
 		},
 	)
@@ -4323,7 +4265,7 @@ func TestPublicProjectMetadataReadsHTTPPersistsRedactedXAPIKeyAuditLog(t *testin
 	request.Header["X-Api-Key"] = []string{"sensitive-token", "second-token-part"}
 	request.Header["User-Agent"] = []string{"audit-test", "second-agent-part"}
 	request.Header["X_Underscored"] = []string{"discarded"}
-	request.AddCookie(&http.Cookie{Name: djangosession.DefaultCookieName, Value: "session-key"})
+	request.AddCookie(&http.Cookie{Name: browsersession.DefaultCookieName, Value: "session-key"})
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)
 	select {
@@ -4459,7 +4401,7 @@ func TestPublicProjectMetadataReadsHTTPSlashlessSessionFailureAuditsHTML500(t *t
 		pendingReplacementEndpoints{
 			publicProjectMetadataReads: publicprojectmetadatareadsapi.NewEndpoints(publicProjectMetadataReadsHTTPStub{}),
 			publicProjectMetadataThrottle: &publicProjectMetadataThrottleStub{
-				err: fmt.Errorf("database unavailable: %w", djangosession.ErrSessionStore),
+				err: fmt.Errorf("database unavailable: %w", browsersession.ErrSessionStore),
 			},
 			publicProjectMetadataActivity: activity,
 			publicProjectMetadataSecret:   "audit-secret",
@@ -4484,8 +4426,8 @@ func TestPublicProjectMetadataReadsHTTPSlashlessSessionFailureAuditsHTML500(t *t
 
 func TestPublicProjectMetadataReadsHTTPNegotiationSessionFailureAuditsHTML500(t *testing.T) {
 	for _, sessionErr := range []error{
-		fmt.Errorf("database unavailable: %w", djangosession.ErrSessionStore),
-		djangosession.ErrInvalidSessionShape,
+		fmt.Errorf("database unavailable: %w", browsersession.ErrSessionStore),
+		browsersession.ErrInvalidSessionShape,
 		fmt.Errorf("delete failed: %w", publicprojectmetadatareadsstore.ErrSessionInvalidation),
 	} {
 		t.Run(sessionErr.Error(), func(t *testing.T) {
@@ -4538,27 +4480,27 @@ func TestPublicProjectMetadataReadsHTTPDistinguishesSessionAndThrottleFailures(t
 		allow       string
 	}{
 		{
-			name: "session store", err: fmt.Errorf("database unavailable: %w", djangosession.ErrSessionStore),
+			name: "session store", err: fmt.Errorf("database unavailable: %w", browsersession.ErrSessionStore),
 			contentType: "text/html; charset=utf-8", body: string(djangoServerErrorBody),
 		},
 		{
-			name: "user store", err: fmt.Errorf("database unavailable: %w", djangosession.ErrUserStore),
+			name: "user store", err: fmt.Errorf("database unavailable: %w", browsersession.ErrUserStore),
 			contentType: "text/html; charset=utf-8", body: string(djangoServerErrorBody),
 		},
 		{
-			name: "malformed user identifier", err: djangosession.ErrInvalidUserID,
+			name: "malformed user identifier", err: browsersession.ErrInvalidUserID,
 			contentType: "text/html; charset=utf-8", body: string(djangoServerErrorBody),
 		},
 		{
-			name: "signed non-object session", err: djangosession.ErrInvalidSessionShape,
+			name: "signed non-object session", err: browsersession.ErrInvalidSessionShape,
 			contentType: "text/html; charset=utf-8", body: string(djangoServerErrorBody),
 		},
 		{
-			name: "missing user timezone", err: djangosession.ErrTimezoneNotFound, status: http.StatusBadRequest,
+			name: "missing user timezone", err: browsersession.ErrTimezoneNotFound, status: http.StatusBadRequest,
 			contentType: "application/json", body: `{"error":"The required key does not exist."}`, allow: "GET, HEAD, OPTIONS",
 		},
 		{
-			name: "invalid user timezone", err: djangosession.ErrInvalidTimezone,
+			name: "invalid user timezone", err: browsersession.ErrInvalidTimezone,
 			contentType: "application/json", body: `{"error":"Something went wrong please try again later"}`, allow: "GET, HEAD, OPTIONS",
 		},
 		{
@@ -4600,7 +4542,7 @@ func TestPublicProjectMetadataReadsHTTPTimezoneFailurePrecedesEndpointMethods(t 
 				pendingReplacementEndpoints{
 					publicProjectMetadataReads: publicprojectmetadatareadsapi.NewEndpoints(publicProjectMetadataReadsHTTPStub{}),
 					publicProjectMetadataThrottle: &publicProjectMetadataThrottleStub{
-						err: djangosession.ErrTimezoneNotFound,
+						err: browsersession.ErrTimezoneNotFound,
 					},
 				},
 			)
@@ -5488,7 +5430,7 @@ func TestCSRFTokenHTTPSessionLifecycle(t *testing.T) {
 			sessions := &publicProjectMetadataThrottleStub{
 				allowed:     true,
 				userID:      "00000000-0000-4000-8000-000000000b01",
-				timezoneErr: djangosession.ErrInvalidTimezone,
+				timezoneErr: browsersession.ErrInvalidTimezone,
 			}
 			request := httptest.NewRequest(method, "/auth/get-csrf-token/", nil)
 			request.AddCookie(&http.Cookie{Name: "session-id", Value: "authenticated-session"})
@@ -5501,11 +5443,11 @@ func TestCSRFTokenHTTPSessionLifecycle(t *testing.T) {
 	}
 
 	now := time.Date(2026, time.September, 2, 16, 0, 0, 0, time.UTC)
-	prepared := &djangosession.SessionRefresh{SessionKey: "existing-session"}
+	prepared := &browsersession.SessionRefresh{SessionKey: "existing-session"}
 	sessions := &publicProjectMetadataThrottleStub{
 		allowed: true,
 		rotated: prepared,
-		result: djangosession.SessionRefresh{
+		result: browsersession.SessionRefresh{
 			SessionKey:      "refreshed-session",
 			ExpiresAt:       now.Add(time.Hour),
 			CookieExpiresAt: now.Add(time.Hour),
@@ -5617,14 +5559,14 @@ func TestCSRFTokenHTTPSessionLifecycle(t *testing.T) {
 	}
 
 	for name, refreshErr := range map[string]error{
-		"missing session": fmt.Errorf("refresh: %w", djangosession.ErrSessionNotFound),
-		"update race":     fmt.Errorf("refresh: %w", djangosession.ErrSessionUpdate),
+		"missing session": fmt.Errorf("refresh: %w", browsersession.ErrSessionNotFound),
+		"update race":     fmt.Errorf("refresh: %w", browsersession.ErrSessionUpdate),
 	} {
 		t.Run(name, func(t *testing.T) {
 			response := httptest.NewRecorder()
 			newRoute(http.MethodGet, &publicProjectMetadataThrottleStub{
 				allowed:    true,
-				rotated:    &djangosession.SessionRefresh{SessionKey: "existing-session"},
+				rotated:    &browsersession.SessionRefresh{SessionKey: "existing-session"},
 				refreshErr: refreshErr,
 			}).ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/auth/get-csrf-token/", nil))
 			if response.Code != http.StatusBadRequest || response.Body.String() != string(djangoBadRequestBody) ||
@@ -5638,7 +5580,7 @@ func TestCSRFTokenHTTPSessionLifecycle(t *testing.T) {
 	storeErrorResponse := httptest.NewRecorder()
 	newRoute(http.MethodGet, &publicProjectMetadataThrottleStub{
 		allowed: true,
-		err:     fmt.Errorf("inspect: %w", djangosession.ErrStore),
+		err:     fmt.Errorf("inspect: %w", browsersession.ErrStore),
 	}).ServeHTTP(storeErrorResponse, httptest.NewRequest(http.MethodGet, "/auth/get-csrf-token/", nil))
 	if storeErrorResponse.Code != http.StatusInternalServerError || storeErrorResponse.Body.String() != string(djangoServerErrorBody) ||
 		storeErrorResponse.Header().Get("Cross-Origin-Opener-Policy") != "same-origin" {
@@ -6506,7 +6448,7 @@ func TestRunRequiresDatabaseURL(t *testing.T) {
 
 func TestParseConfigRequiresDjangoSecretKey(t *testing.T) {
 	t.Setenv("SECRET_KEY", "")
-	if _, err := parseConfig(nil); err == nil || err.Error() != "django-secret-key is required" {
+	if _, err := parseConfig(nil); err == nil || err.Error() != "secret-key is required" {
 		t.Fatalf("parseConfig() error = %v", err)
 	}
 }
@@ -6517,7 +6459,7 @@ func TestParseConfigUsesDjangoSessionCookieName(t *testing.T) {
 	t.Setenv("COOKIE_DOMAIN", ".example.test")
 	t.Setenv("SESSION_COOKIE_AGE", "3600")
 	t.Setenv("ADMIN_SESSION_COOKIE_AGE", "1800")
-	t.Setenv("SESSION_SAVE_EVERY_REQUEST", "1")
+	t.Setenv("SESSION_REFRESH_ON_REQUEST", "1")
 	t.Setenv("SECRET_KEY_FALLBACKS", " old-one,old-two, ")
 	cfg, err := parseConfig(nil)
 	if err != nil {

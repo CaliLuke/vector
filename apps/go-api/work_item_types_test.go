@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/platform"
 	store "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	api "github.com/CaliLuke/go-plane/workitemtypes/gen/work_item_types"
@@ -62,11 +62,11 @@ func (r *typeServiceRepository) MutateProject(ctx context.Context, actor, slug, 
 
 type typeServiceSessions struct{}
 
-func (typeServiceSessions) Validate(_ context.Context, credential string) (djangosession.Principal, error) {
+func (typeServiceSessions) Validate(_ context.Context, credential string) (browsersession.Principal, error) {
 	if credential != "valid" {
-		return djangosession.Principal{}, errors.New("invalid session")
+		return browsersession.Principal{}, errors.New("invalid session")
 	}
-	return djangosession.Principal{UserID: "actor"}, nil
+	return browsersession.Principal{UserID: "actor"}, nil
 }
 func TestTypeServiceDoesNotDispatchWithoutAuthentication(t *testing.T) {
 	repo := &typeServiceRepository{}

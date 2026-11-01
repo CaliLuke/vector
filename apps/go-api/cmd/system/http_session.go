@@ -9,7 +9,7 @@ import (
 	"unicode/utf8"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 )
 
 // djangoSessionLifecycleMiddleware also serves auth routes that are outside the
@@ -38,7 +38,7 @@ func djangoSessionLifecycleMiddleware(
 			}
 			if prepared == nil && refreshSession {
 				if cookie := lastDjangoSessionCookie(request, sessionCookieName(sessionCookie)); cookie != nil {
-					prepared = &djangosession.SessionRefresh{SessionKey: cookie.Value}
+					prepared = &browsersession.SessionRefresh{SessionKey: cookie.Value}
 				}
 			}
 			if err != nil {
@@ -56,12 +56,12 @@ func djangoSessionLifecycleMiddleware(
 				writeReadServicesSessionInspectionError(errorResponse, request, err)
 				return
 			}
-			ctx, _ := djangosession.WithResponseSessionAction(request.Context())
+			ctx, _ := browsersession.WithResponseSessionAction(request.Context())
 			if prepared != nil {
-				ctx = djangosession.WithCurrentSession(ctx, *prepared)
+				ctx = browsersession.WithCurrentSession(ctx, *prepared)
 			} else if principal.SessionKey != "" {
 				// Auth handlers need the loaded session even when automatic saving is disabled.
-				ctx = djangosession.WithCurrentSession(ctx, principal.PrepareRefresh())
+				ctx = browsersession.WithCurrentSession(ctx, principal.PrepareRefresh())
 			}
 			request = request.WithContext(systemapi.WithReadServiceSessionPrincipal(
 				ctx, principal.UserID, principal.UserTimezone,
@@ -140,7 +140,7 @@ func removeResponseCookie(headers http.Header, name string) {
 }
 
 func lastDjangoSessionCookie(request *http.Request, name string) *http.Cookie {
-	return djangosession.CookieFromHeaderValues(request.Header.Values("Cookie"), name)
+	return browsersession.CookieFromHeaderValues(request.Header.Values("Cookie"), name)
 }
 
 func djangoLatin1String(value []byte) string {
@@ -188,15 +188,15 @@ func expireDjangoSessionCookie(headers http.Header, config djangoSessionCookieCo
 	return nil
 }
 
-func refreshDjangoSessionCookie(headers http.Header, config djangoSessionCookieConfig, refresh djangosession.SessionRefresh) error {
+func refreshDjangoSessionCookie(headers http.Header, config djangoSessionCookieConfig, refresh browsersession.SessionRefresh) error {
 	return writeDjangoSessionCookie(headers, config, refresh, true)
 }
 
-func refreshUnaccessedDjangoSessionCookie(headers http.Header, config djangoSessionCookieConfig, refresh djangosession.SessionRefresh) error {
+func refreshUnaccessedDjangoSessionCookie(headers http.Header, config djangoSessionCookieConfig, refresh browsersession.SessionRefresh) error {
 	return writeDjangoSessionCookie(headers, config, refresh, false)
 }
 
-func writeDjangoSessionCookie(headers http.Header, config djangoSessionCookieConfig, refresh djangosession.SessionRefresh, varyCookie bool) error {
+func writeDjangoSessionCookie(headers http.Header, config djangoSessionCookieConfig, refresh browsersession.SessionRefresh, varyCookie bool) error {
 	config.Name = sessionCookieName(config)
 	cookie := &http.Cookie{Name: config.Name, Value: refresh.SessionKey, Path: "/", Domain: config.Domain}
 	if err := cookie.Valid(); err != nil {
@@ -232,5 +232,5 @@ func sessionCookieName(config djangoSessionCookieConfig) string {
 	if config.Configured || config.Name != "" {
 		return config.Name
 	}
-	return djangosession.DefaultCookieName
+	return browsersession.DefaultCookieName
 }

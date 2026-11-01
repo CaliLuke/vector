@@ -8,16 +8,16 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 207,
+    "findings": 206,
     "also_in_ERR_01": 0,
-    "additional_ERR_02": 207,
+    "additional_ERR_02": 206,
     "test_file_findings": 0,
-    "non_test_file_findings": 207
+    "non_test_file_findings": 206
   },
   "findings": [
     {
       "file": "apps/go-api/account_authentication.go",
-      "line": 441,
+      "line": 440,
       "column": 11,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
@@ -625,29 +625,22 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/authentication/djangosession/validator.go",
-      "line": 900,
-      "column": 24,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/authredirects/service.go",
-      "line": 576,
+      "line": 575,
       "column": 3,
       "message": "Error return value of `service.accounts.UpdateLogoutMetadata` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/authredirects/service.go",
-      "line": 577,
+      "line": 576,
       "column": 3,
       "message": "Error return value of `service.sessions.Flush` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/authredirects/service.go",
-      "line": 593,
+      "line": 592,
       "column": 3,
       "message": "Error return value of `service.activation.Task` is not checked",
       "also_in_configured_audit": false

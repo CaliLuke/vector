@@ -17,7 +17,7 @@ import (
 	publicprojectmetadatareadsapi "github.com/CaliLuke/go-plane/gen/public_project_metadata_reads"
 	system "github.com/CaliLuke/go-plane/gen/system"
 	useridentityapi "github.com/CaliLuke/go-plane/gen/user_identity"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 )
 
 type djangoOriginalQueryLimitFixture struct {
@@ -122,12 +122,12 @@ type queryLimitMetadataSession struct {
 	throttleCalls int
 }
 
-func (sessions *queryLimitMetadataSession) AllowRequest(ctx context.Context, request *http.Request) (bool, time.Duration, bool, bool, *djangosession.SessionRefresh, string, error) {
+func (sessions *queryLimitMetadataSession) AllowRequest(ctx context.Context, request *http.Request) (bool, time.Duration, bool, bool, *browsersession.SessionRefresh, string, error) {
 	sessions.throttleCalls++
 	return sessions.publicProjectMetadataThrottleStub.AllowRequest(ctx, request)
 }
 
-func (sessions *queryLimitMetadataSession) AllowRequestWithoutTimezone(ctx context.Context, request *http.Request) (bool, time.Duration, bool, bool, *djangosession.SessionRefresh, string, error) {
+func (sessions *queryLimitMetadataSession) AllowRequestWithoutTimezone(ctx context.Context, request *http.Request) (bool, time.Duration, bool, bool, *browsersession.SessionRefresh, string, error) {
 	sessions.throttleCalls++
 	return sessions.publicProjectMetadataThrottleStub.AllowRequestWithoutTimezone(ctx, request)
 }
@@ -142,7 +142,7 @@ func TestDjangoQueryOriginalFieldLimitThroughPublicMetadataMount(t *testing.T) {
 				t.Run(fixture.Name+"/"+strconv.Itoa(fixture.FieldCount)+"/"+method+"/"+accept, func(t *testing.T) {
 					sessions := &queryLimitMetadataSession{publicProjectMetadataThrottleStub: publicProjectMetadataThrottleStub{
 						allowed: true, refresh: true,
-						result: djangosession.SessionRefresh{SessionKey: "valid-session-key", BrowserClose: true},
+						result: browsersession.SessionRefresh{SessionKey: "valid-session-key", BrowserClose: true},
 					}}
 					handler := queryLimitProductionHandler(pendingReplacementEndpoints{
 						publicProjectMetadataReads:    publicprojectmetadatareadsapi.NewEndpoints(publicProjectMetadataReadsHTTPStub{}),

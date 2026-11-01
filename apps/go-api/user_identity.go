@@ -9,7 +9,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/user_identity"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/useridentity"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
@@ -20,7 +20,7 @@ const userIdentityInternalErrorDetail = "Something went wrong please try again l
 type userIdentityService struct {
 	repository *store.Repository
 	sessions   interface {
-		Validate(context.Context, string) (djangosession.Principal, error)
+		Validate(context.Context, string) (browsersession.Principal, error)
 	}
 }
 
@@ -37,7 +37,7 @@ type UserIdentityResponseCapture struct{ Data json.RawMessage }
 type userIdentityResponseCaptureKey struct{}
 
 func NewUserIdentity(repository *store.Repository, sessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }) (api.Service, error) {
 	if repository == nil {
 		return nil, fmt.Errorf("user identity repository is required")
@@ -94,8 +94,8 @@ func (service *userIdentityService) Session(ctx context.Context, _ *api.SessionP
 	if !ok || authentication.userID == uuid.Nil() {
 		return &api.UserSession{IsAuthenticated: false}, nil
 	}
-	if err := djangosession.ValidateUserTimezone(authentication.userTimezone); err != nil {
-		if errors.Is(err, djangosession.ErrTimezoneNotFound) {
+	if err := browsersession.ValidateUserTimezone(authentication.userTimezone); err != nil {
+		if errors.Is(err, browsersession.ErrTimezoneNotFound) {
 			return nil, &api.UserIdentityTimezoneNotFound{Message: "The required key does not exist."}
 		}
 		return nil, &api.UserIdentityInternalError{Message: userIdentityInternalErrorDetail}

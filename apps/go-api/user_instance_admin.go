@@ -6,7 +6,7 @@ import (
 	"uuid"
 
 	userinstanceadminapi "github.com/CaliLuke/go-plane/gen/user_instance_admin"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/loom/security"
 )
 
@@ -15,7 +15,7 @@ type userInstanceAdminRepository interface {
 }
 
 type userInstanceAdminSessionValidator interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
 type userInstanceAdminService struct {

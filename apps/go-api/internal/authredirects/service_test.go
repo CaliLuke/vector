@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/accountauthentication"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 )
 
 type accountStub struct {
@@ -86,14 +86,12 @@ func (stub resetTokenVerifierStub) Verify(context.Context, accountauthentication
 
 type sessionStore struct{}
 
-func (sessionStore) ReadSession(context.Context, string) (djangosession.Session, error) {
-	return djangosession.Session{}, djangosession.ErrSessionNotFound
+func (sessionStore) ReadSession(context.Context, string) (browsersession.Session, error) {
+	return browsersession.Session{}, browsersession.ErrSessionNotFound
 }
-func (sessionStore) ReadSessionForRefresh(context.Context, string) (djangosession.Session, error) {
-	return djangosession.Session{}, djangosession.ErrSessionNotFound
-}
-func (sessionStore) ReadUser(context.Context, string) (djangosession.User, error) {
-	return djangosession.User{}, djangosession.ErrUserNotFound
+
+func (sessionStore) ReadUser(context.Context, string) (browsersession.User, error) {
+	return browsersession.User{}, browsersession.ErrUserNotFound
 }
 func (sessionStore) UpdateSession(context.Context, string, string, time.Time, any, any) error {
 	return nil
@@ -108,8 +106,8 @@ func (sessionStore) DeleteSession(context.Context, string) error { return nil }
 
 func newTestService(t *testing.T, accounts *accountStub, score int) *Service {
 	t.Helper()
-	sessions, err := djangosession.New(sessionStore{}, djangosession.Config{
-		SecretKey: "test-secret-key", AllowedBackends: []string{djangoModelBackend},
+	sessions, err := browsersession.New(sessionStore{}, browsersession.Config{
+		SecretKey: "test-secret-key",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -155,7 +153,7 @@ func TestAdminSignOutExpiresOnlyAnAuthenticatedSession(t *testing.T) {
 
 	authenticated := service.AdminSignOut(context.Background(), Request{
 		BaseURL:        "https://admin.example.test/god-mode",
-		CurrentSession: &djangosession.SessionRefresh{SessionKey: "admin-session"},
+		CurrentSession: &browsersession.SessionRefresh{SessionKey: "admin-session"},
 	}, "admin-user")
 	if authenticated.Status != http.StatusFound || !authenticated.ExpireSession {
 		t.Fatalf("authenticated sign-out result = %#v, want redirect with cookie expiry", authenticated)

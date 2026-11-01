@@ -13,7 +13,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/module_reads"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	store "github.com/CaliLuke/go-plane/internal/modulereads"
 	loom "github.com/CaliLuke/loom/pkg"
@@ -36,7 +36,7 @@ type moduleReadsRepository interface {
 }
 
 type moduleReadsSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
 type moduleRecentVisits interface {

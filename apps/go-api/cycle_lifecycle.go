@@ -13,7 +13,7 @@ import (
 
 	api "github.com/CaliLuke/go-plane/cyclelifecycle/gen/cycle_lifecycle_api"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/cyclereads"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
@@ -450,7 +450,7 @@ func (service *cycleLifecycleService) allowAPIRequest(ctx context.Context, princ
 	if !rate.Allowed {
 		return cycleLifecycleError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))})
 	}
-	if err := djangosession.ValidateUserTimezone(principal.timezone); err != nil {
+	if err := browsersession.ValidateUserTimezone(principal.timezone); err != nil {
 		return cycleLifecycleError(400, map[string]any{"error": "The required key does not exist."})
 	}
 	return nil

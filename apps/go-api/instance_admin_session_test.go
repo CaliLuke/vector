@@ -8,7 +8,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/instance_admin_session"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 )
 
 type instanceAdminSessionRepoStub struct {
@@ -29,18 +29,18 @@ func (r instanceAdminSessionRepoStub) User(context.Context, uuid.UUID) (json.Raw
 }
 
 type instanceAdminSessionStub struct {
-	principal djangosession.Principal
+	principal browsersession.Principal
 	err       error
 }
 
-func (s instanceAdminSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
+func (s instanceAdminSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
 	return s.principal, s.err
 }
 
 func TestInstanceAdminSessionMe(t *testing.T) {
 	id := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 	raw := json.RawMessage(`{"id":"00000000-0000-0000-0000-000000000001","avatar":"","avatar_url":null,"cover_image":null,"date_joined":"2026-01-01T00:00:00Z","display_name":"Admin","email":"a@example.com","first_name":"A","last_name":"D","is_active":true,"is_bot":false,"is_email_verified":false,"user_timezone":"UTC","username":"admin","is_password_autoset":false}`)
-	service, err := NewInstanceAdminSession(instanceAdminSessionRepoStub{admin: true, membership: true, user: raw}, instanceAdminSessionStub{principal: djangosession.Principal{UserID: id.String()}})
+	service, err := NewInstanceAdminSession(instanceAdminSessionRepoStub{admin: true, membership: true, user: raw}, instanceAdminSessionStub{principal: browsersession.Principal{UserID: id.String()}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +56,7 @@ func TestInstanceAdminSessionMe(t *testing.T) {
 	if err != nil || parsed != id || !user.AvatarURL.IsNull() {
 		t.Fatalf("user=%+v err=%v", user, err)
 	}
-	service, err = NewInstanceAdminSession(instanceAdminSessionRepoStub{admin: false, membership: false, user: raw}, instanceAdminSessionStub{principal: djangosession.Principal{UserID: id.String()}})
+	service, err = NewInstanceAdminSession(instanceAdminSessionRepoStub{admin: false, membership: false, user: raw}, instanceAdminSessionStub{principal: browsersession.Principal{UserID: id.String()}})
 	if err != nil {
 		t.Fatal(err)
 	}

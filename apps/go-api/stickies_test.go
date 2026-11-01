@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	stickyapi "github.com/CaliLuke/go-plane/gen/stickies"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	stickystore "github.com/CaliLuke/go-plane/internal/stickies"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
@@ -24,11 +24,11 @@ var (
 
 type stubSessions struct{ err error }
 
-func (sessions stubSessions) Validate(context.Context, string) (djangosession.Principal, error) {
+func (sessions stubSessions) Validate(context.Context, string) (browsersession.Principal, error) {
 	if sessions.err != nil {
-		return djangosession.Principal{}, sessions.err
+		return browsersession.Principal{}, sessions.err
 	}
-	return djangosession.Principal{UserID: testUserID.String()}, nil
+	return browsersession.Principal{UserID: testUserID.String()}, nil
 }
 
 type stubStickyRepository struct {
@@ -85,7 +85,7 @@ func TestStickyServiceSessionAuthenticationAndMembershipDifference(t *testing.T)
 	if err != nil {
 		t.Fatal("valid stub unexpectedly rejected session")
 	}
-	invalid := newTestStickyService(t, repository, stubSessions{err: djangosession.ErrSessionNotFound})
+	invalid := newTestStickyService(t, repository, stubSessions{err: browsersession.ErrSessionNotFound})
 	_, err = invalid.APIKeyAuth(context.Background(), "not-secret", &security.APIKeyScheme{})
 	var unauthenticated *stickyapi.StickyUnauthenticatedError
 	if !errors.As(err, &unauthenticated) || unauthenticated.Detail != unauthenticatedDetail {

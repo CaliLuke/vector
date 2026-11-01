@@ -7,7 +7,7 @@ import (
 	"uuid"
 
 	userprofileapi "github.com/CaliLuke/go-plane/gen/user_profile_flags"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/userprofileflags"
 )
 
@@ -27,17 +27,17 @@ func (stub *userProfileFlagsRepositoryStub) UpdateTourCompleted(_ context.Contex
 }
 
 type userProfileFlagsSessionStub struct {
-	principal djangosession.Principal
+	principal browsersession.Principal
 	err       error
 }
 
-func (stub userProfileFlagsSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
+func (stub userProfileFlagsSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
 	return stub.principal, stub.err
 }
 
 func TestUserProfileFlagsDefaultsAndResponses(t *testing.T) {
 	repository := &userProfileFlagsRepositoryStub{}
-	service, err := NewUserProfileFlags(repository, userProfileFlagsSessionStub{principal: djangosession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}})
+	service, err := NewUserProfileFlags(repository, userProfileFlagsSessionStub{principal: browsersession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +65,7 @@ func TestUserProfileFlagsAuthenticationAndFailure(t *testing.T) {
 	if !containsLoomError(err, "unauthenticated") {
 		t.Fatalf("error = %v", err)
 	}
-	service, err = NewUserProfileFlags(&userProfileFlagsRepositoryStub{err: errors.New("boom")}, userProfileFlagsSessionStub{principal: djangosession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}})
+	service, err = NewUserProfileFlags(&userProfileFlagsRepositoryStub{err: errors.New("boom")}, userProfileFlagsSessionStub{principal: browsersession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,7 +77,7 @@ func TestUserProfileFlagsAuthenticationAndFailure(t *testing.T) {
 	if !containsLoomError(err, "internal_error") {
 		t.Fatalf("error = %v", err)
 	}
-	service, err = NewUserProfileFlags(&userProfileFlagsRepositoryStub{err: userprofileflags.ErrProfileNotFound}, userProfileFlagsSessionStub{principal: djangosession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}})
+	service, err = NewUserProfileFlags(&userProfileFlagsRepositoryStub{err: userprofileflags.ErrProfileNotFound}, userProfileFlagsSessionStub{principal: browsersession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}})
 	if err != nil {
 		t.Fatal(err)
 	}

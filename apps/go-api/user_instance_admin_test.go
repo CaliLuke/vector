@@ -7,7 +7,7 @@ import (
 	"uuid"
 
 	userinstanceadminapi "github.com/CaliLuke/go-plane/gen/user_instance_admin"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 )
 
 type userInstanceAdminRepositoryStub struct {
@@ -22,11 +22,11 @@ func (stub *userInstanceAdminRepositoryStub) IsInstanceAdmin(_ context.Context, 
 }
 
 type userInstanceAdminSessionStub struct {
-	principal djangosession.Principal
+	principal browsersession.Principal
 	err       error
 }
 
-func (stub userInstanceAdminSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
+func (stub userInstanceAdminSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
 	return stub.principal, stub.err
 }
 
@@ -37,7 +37,7 @@ func TestUserInstanceAdminRetrieve(t *testing.T) {
 	}{{"member", false}, {"admin", true}} {
 		t.Run(test.name, func(t *testing.T) {
 			repository := &userInstanceAdminRepositoryStub{isAdmin: test.isAdmin}
-			service, err := NewUserInstanceAdmin(repository, userInstanceAdminSessionStub{principal: djangosession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}})
+			service, err := NewUserInstanceAdmin(repository, userInstanceAdminSessionStub{principal: browsersession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -63,7 +63,7 @@ func TestUserInstanceAdminAuthenticationAndFailures(t *testing.T) {
 		t.Fatalf("error = %v, want unauthenticated", err)
 	}
 
-	service, err = NewUserInstanceAdmin(&userInstanceAdminRepositoryStub{}, userInstanceAdminSessionStub{principal: djangosession.Principal{UserID: "not-a-uuid"}})
+	service, err = NewUserInstanceAdmin(&userInstanceAdminRepositoryStub{}, userInstanceAdminSessionStub{principal: browsersession.Principal{UserID: "not-a-uuid"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,7 +72,7 @@ func TestUserInstanceAdminAuthenticationAndFailures(t *testing.T) {
 		t.Fatalf("error = %v, want unauthenticated", err)
 	}
 
-	service, err = NewUserInstanceAdmin(&userInstanceAdminRepositoryStub{err: errors.New("boom")}, userInstanceAdminSessionStub{principal: djangosession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}})
+	service, err = NewUserInstanceAdmin(&userInstanceAdminRepositoryStub{err: errors.New("boom")}, userInstanceAdminSessionStub{principal: browsersession.Principal{UserID: "00000000-0000-0000-0000-000000000001"}})
 	if err != nil {
 		t.Fatal(err)
 	}

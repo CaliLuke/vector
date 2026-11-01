@@ -1,10 +1,9 @@
-package djangosession
+package browsersession
 
 import "errors"
 
-// IsReadFailure reports storage failures and malformed signed session data that
-// prevent authentication from completing. These failures must not be treated as
-// an ordinary anonymous session.
+// IsReadFailure reports unavailable storage or malformed stored claims that
+// prevent reliable authentication. These failures require an error response.
 func IsReadFailure(err error) bool {
 	return errors.Is(err, ErrStore) ||
 		errors.Is(err, ErrSessionStore) ||

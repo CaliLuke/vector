@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 
 	systemapi "github.com/CaliLuke/go-plane"
 )
@@ -82,7 +82,7 @@ func assetsProtocolTimezone(request *http.Request, protocol readServiceProtocol)
 		return 0, nil
 	}
 	timezone, ok := systemapi.ReadServiceSessionTimezone(request.Context())
-	if ok && djangosession.ValidateUserTimezone(timezone) != nil {
+	if ok && browsersession.ValidateUserTimezone(timezone) != nil {
 		return 400, map[string]any{"error": "The required key does not exist."}
 	}
 	return 0, nil

@@ -25,7 +25,7 @@ import (
 	system "github.com/CaliLuke/go-plane/gen/system"
 	assetdomain "github.com/CaliLuke/go-plane/internal/assets"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	publicprojectmetadatareadsstore "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
 	notificationsapi "github.com/CaliLuke/go-plane/notificationreads/gen/notifications"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -52,14 +52,14 @@ type assetsTransportSession struct {
 	*publicProjectMetadataThrottleStub
 }
 
-func (session *assetsTransportSession) InspectReadServiceSession(ctx context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
+func (session *assetsTransportSession) InspectReadServiceSession(ctx context.Context, request *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error) {
 	if len(request.CookiesNamed("session-id")) == 0 {
-		return false, false, nil, djangosession.Principal{}, nil
+		return false, false, nil, browsersession.Principal{}, nil
 	}
-	return false, false, nil, djangosession.Principal{UserID: session.userID, UserTimezone: session.userTimezone}, nil
+	return false, false, nil, browsersession.Principal{UserID: session.userID, UserTimezone: session.userTimezone}, nil
 }
 
-func (session *assetsTransportSession) InspectReadServiceSessionWithoutTimezone(ctx context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
+func (session *assetsTransportSession) InspectReadServiceSessionWithoutTimezone(ctx context.Context, request *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error) {
 	return session.InspectReadServiceSession(ctx, request)
 }
 

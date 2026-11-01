@@ -12,7 +12,7 @@ import (
 	systemapi "github.com/CaliLuke/go-plane"
 	customapi "github.com/CaliLuke/go-plane/customviewcreation/gen/custom_view_creation"
 	externalapi "github.com/CaliLuke/go-plane/externalintegrations/gen/external_integrations"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	notificationstore "github.com/CaliLuke/go-plane/internal/notifications"
 	publicationstore "github.com/CaliLuke/go-plane/internal/projectpublication"
 	notificationapi "github.com/CaliLuke/go-plane/notificationactions/gen/notification_actions"
@@ -32,7 +32,7 @@ type remainingReadMiddlewareSessions struct {
 	inspections int
 }
 
-func (s *remainingReadMiddlewareSessions) InspectReadServiceSessionWithoutTimezone(ctx context.Context, r *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
+func (s *remainingReadMiddlewareSessions) InspectReadServiceSessionWithoutTimezone(ctx context.Context, r *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error) {
 	s.inspections++
 	return s.searchMountSessions.InspectReadServiceSessionWithoutTimezone(ctx, r)
 }

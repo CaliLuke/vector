@@ -11,7 +11,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_metadata"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 )
 
 const workspaceMetadataTestUser = "00000000-0000-4000-8000-000000000010"
@@ -35,8 +35,8 @@ func (s *workspaceMetadataRepositoryStub) ListStates(context.Context, uuid.UUID,
 
 type workspaceMetadataSessionStub struct{ err error }
 
-func (s workspaceMetadataSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{UserID: workspaceMetadataTestUser}, s.err
+func (s workspaceMetadataSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{UserID: workspaceMetadataTestUser}, s.err
 }
 
 func workspaceMetadataServiceForTest(t *testing.T, repository *workspaceMetadataRepositoryStub) (api.Service, context.Context) {

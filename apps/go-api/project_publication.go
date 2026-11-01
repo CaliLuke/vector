@@ -12,7 +12,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/projectpublication"
@@ -24,7 +24,7 @@ import (
 )
 
 type projectPublicationSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 type projectPublicationRepository interface {
 	Authorize(context.Context, string, string, string, string) error
@@ -76,7 +76,7 @@ func (s *projectPublicationService) AuthorizeSessionResourceProtocol(ctx context
 	if err := s.repo.Authorize(validated, principal.userID, resource.Method, resource.Slug, resource.ProjectID); err != nil {
 		return projectPublicationProtocolError(s.mapError(err))
 	}
-	if err := djangosession.ValidateUserTimezone(principal.timezone); err != nil {
+	if err := browsersession.ValidateUserTimezone(principal.timezone); err != nil {
 		return http.StatusBadRequest, map[string]any{"error": "The required key does not exist."}
 	}
 	return 0, nil
@@ -107,7 +107,7 @@ func (s *projectPublicationService) principal(ctx context.Context) (projectPubli
 	if !ok {
 		return p, s.err(401, map[string]any{"detail": unauthenticatedDetail})
 	}
-	if e := djangosession.ValidateUserTimezone(p.timezone); e != nil {
+	if e := browsersession.ValidateUserTimezone(p.timezone); e != nil {
 		return p, s.err(500, map[string]any{"error": "Something went wrong please try again later"})
 	}
 	return p, nil

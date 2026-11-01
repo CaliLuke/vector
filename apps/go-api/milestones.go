@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/milestones"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
@@ -82,7 +82,7 @@ func (s *milestoneService) scope(ctx context.Context, slug, project string) (sto
 	if !rate.Allowed {
 		return store.Scope{}, milestoneFailure("rate_limited", "Request was throttled.")
 	}
-	if err = djangosession.ValidateUserTimezone(actor.Timezone); err != nil {
+	if err = browsersession.ValidateUserTimezone(actor.Timezone); err != nil {
 		return store.Scope{}, milestoneFailure("invalid_input", "Invalid account timezone.")
 	}
 	id, err := milestoneUUID(project)

@@ -11,7 +11,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_favorites"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/workspacefavorites"
 	loom "github.com/CaliLuke/loom/pkg"
 )
@@ -67,8 +67,8 @@ func (r *favoriteRepoStub) Delete(context.Context, uuid.UUID, string, uuid.UUID)
 
 type favoriteSessionStub struct{ err error }
 
-func (s favoriteSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{UserID: favoriteTestUser}, s.err
+func (s favoriteSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{UserID: favoriteTestUser}, s.err
 }
 
 func favoriteService(t *testing.T, repository *favoriteRepoStub) (api.Service, context.Context) {

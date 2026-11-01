@@ -11,7 +11,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/projectlabelreads"
 	api "github.com/CaliLuke/go-plane/project_label_writes/gen/project_label_writes"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -81,11 +81,11 @@ func (s *projectLabelWritesService) APIKeyAuth(ctx context.Context, key string, 
 	if id == "" {
 		return ctx, labelWriteError(store.Failure(401, "detail", unauthenticatedDetail))
 	}
-	return context.WithValue(ctx, labelWritesPrincipalKey{}, djangosession.Principal{UserID: id, UserTimezone: zone}), nil
+	return context.WithValue(ctx, labelWritesPrincipalKey{}, browsersession.Principal{UserID: id, UserTimezone: zone}), nil
 }
 
 func (s *projectLabelWritesService) principal(ctx context.Context, slug, project, method string) (string, error) {
-	p, _ := ctx.Value(labelWritesPrincipalKey{}).(djangosession.Principal)
+	p, _ := ctx.Value(labelWritesPrincipalKey{}).(browsersession.Principal)
 	if p.UserID == "" {
 		return "", store.Failure(401, "detail", unauthenticatedDetail)
 	}
@@ -93,8 +93,8 @@ func (s *projectLabelWritesService) principal(ctx context.Context, slug, project
 	if err := s.repository.Authorize(ctx, p.UserID, slug, project, method); err != nil {
 		return "", err
 	}
-	if err := djangosession.ValidateUserTimezone(p.UserTimezone); err != nil {
-		if errors.Is(err, djangosession.ErrTimezoneNotFound) {
+	if err := browsersession.ValidateUserTimezone(p.UserTimezone); err != nil {
+		if errors.Is(err, browsersession.ErrTimezoneNotFound) {
 			return "", store.Failure(400, "error", "The required key does not exist.")
 		}
 		return "", err

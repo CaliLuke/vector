@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/workspacewebhooks"
 	server "github.com/CaliLuke/go-plane/workspace_webhooks/gen/http/workspace_webhooks/server"
 	api "github.com/CaliLuke/go-plane/workspace_webhooks/gen/workspace_webhooks"
@@ -64,7 +64,7 @@ func TestWebhookWriteFailuresRetainSanitizedHTTPContracts(t *testing.T) {
 				db := &webhookFailureDatabase{cause: fmt.Errorf("write: %w", tc.cause), denied: tc.denied}
 				repository, err := store.NewRepository(db)
 				require.NoError(t, err)
-				sessions := &activitySessionStub{principal: djangosession.Principal{UserID: "00000000-0000-4000-8000-000000034201", UserTimezone: "UTC"}}
+				sessions := &activitySessionStub{principal: browsersession.Principal{UserID: "00000000-0000-4000-8000-000000034201", UserTimezone: "UTC"}}
 				service, err := NewWorkspaceWebhooks(repository, sessions, unusedWebhookPublisher{})
 				require.NoError(t, err)
 				mux := loomhttp.NewMuxer()

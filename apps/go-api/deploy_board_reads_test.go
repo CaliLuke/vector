@@ -11,7 +11,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/deploy_board_reads"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/deployboardreads"
 	"github.com/CaliLuke/loom/security"
 )
@@ -44,16 +44,16 @@ func (stub *deployBoardReadsRepositoryStub) Detail(_ context.Context, userID uui
 }
 
 type deployBoardReadsSessionsStub struct {
-	principal djangosession.Principal
+	principal browsersession.Principal
 	err       error
 }
 
-func (stub deployBoardReadsSessionsStub) Validate(context.Context, string) (djangosession.Principal, error) {
+func (stub deployBoardReadsSessionsStub) Validate(context.Context, string) (browsersession.Principal, error) {
 	if stub.err != nil {
-		return djangosession.Principal{}, stub.err
+		return browsersession.Principal{}, stub.err
 	}
 	if stub.principal.UserID == "" {
-		return djangosession.Principal{UserID: "00000000-0000-4000-8000-000000000010"}, nil
+		return browsersession.Principal{UserID: "00000000-0000-4000-8000-000000000010"}, nil
 	}
 	return stub.principal, nil
 }

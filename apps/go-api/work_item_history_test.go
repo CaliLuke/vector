@@ -10,16 +10,16 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	store "github.com/CaliLuke/go-plane/internal/workitemhistory"
 	api "github.com/CaliLuke/go-plane/workitemhistory/gen/work_item_history"
 	"github.com/google/uuid"
 )
 
-type workItemHistorySessionStub struct{ principal djangosession.Principal }
+type workItemHistorySessionStub struct{ principal browsersession.Principal }
 
-func (stub workItemHistorySessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
+func (stub workItemHistorySessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
 	return stub.principal, nil
 }
 
@@ -44,7 +44,7 @@ func TestWorkItemHistoryReadReturnsRawJSONAndMapsAuthorization(t *testing.T) {
 	projectID := "1d989b61-12b9-4e3c-9fe3-1491efef66be"
 	issueID := "f74111b0-0dc6-4d3e-96e1-0c8d32471ff5"
 	repository := &workItemHistoryRepositoryStub{result: json.RawMessage(`[{"id":"x"}]`), entityAllowed: true}
-	service, err := NewWorkItemHistory(repository, workItemHistorySessionStub{principal: djangosession.Principal{UserID: userID.String(), UserTimezone: "UTC"}})
+	service, err := NewWorkItemHistory(repository, workItemHistorySessionStub{principal: browsersession.Principal{UserID: userID.String(), UserTimezone: "UTC"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -84,7 +84,7 @@ func TestWorkItemHistoryReadReturnsRawJSONAndMapsAuthorization(t *testing.T) {
 
 func TestWorkItemHistoryProtocolAppliesActivityClassPermissionOnly(t *testing.T) {
 	repository := &workItemHistoryRepositoryStub{result: json.RawMessage(`[]`), entityAllowed: true}
-	service, err := NewWorkItemHistory(repository, workItemHistorySessionStub{principal: djangosession.Principal{
+	service, err := NewWorkItemHistory(repository, workItemHistorySessionStub{principal: browsersession.Principal{
 		UserID: "59961101-634c-4f9e-a436-5f8ec26e5f7b", UserTimezone: "UTC",
 	}})
 	if err != nil {
@@ -116,7 +116,7 @@ func TestWorkItemHistoryProtocolAppliesActivityClassPermissionOnly(t *testing.T)
 
 func TestWorkItemHistoryPermissionPrecedesTimezoneForActivityProtocol(t *testing.T) {
 	repository := &workItemHistoryRepositoryStub{entityAllowed: false}
-	service, err := NewWorkItemHistory(repository, workItemHistorySessionStub{principal: djangosession.Principal{
+	service, err := NewWorkItemHistory(repository, workItemHistorySessionStub{principal: browsersession.Principal{
 		UserID: "59961101-634c-4f9e-a436-5f8ec26e5f7b", UserTimezone: "Unknown/Timezone",
 	}})
 	if err != nil {

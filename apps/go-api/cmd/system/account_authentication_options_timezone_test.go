@@ -9,7 +9,7 @@ import (
 
 	systemapi "github.com/CaliLuke/go-plane"
 	api "github.com/CaliLuke/go-plane/accountauthentication/gen/account_authentication"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/authentication/password"
 )
 
@@ -42,7 +42,7 @@ func TestAccountAuthenticationMountedOptionsIgnoresInvalidSessionTimezone(t *tes
 		accountAuthenticationHTTPMagicIssuer{},
 		accountAuthenticationHTTPResetIssuer{},
 		password.Default(),
-		&djangosession.Validator{},
+		&browsersession.Validator{},
 		"https://app.example",
 		"https://space.example",
 	)

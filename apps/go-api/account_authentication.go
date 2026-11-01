@@ -14,7 +14,7 @@ import (
 
 	api "github.com/CaliLuke/go-plane/accountauthentication/gen/account_authentication"
 	store "github.com/CaliLuke/go-plane/internal/accountauthentication"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/authentication/password"
 	"github.com/CaliLuke/go-plane/internal/authentication/passwordstrength"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
@@ -27,7 +27,6 @@ import (
 )
 
 const accountAuthenticationInternalMessage = "Something went wrong please try again later"
-const accountAuthenticationBackend = "django.contrib.auth.backends.ModelBackend"
 
 type accountAuthenticationRepository interface {
 	InstanceConfigured(context.Context) (bool, error)
@@ -64,13 +63,13 @@ type accountAuthenticationService struct {
 	resetTokens  accountAuthenticationResetTokenIssuer
 	passwords    *password.Hasher
 	strength     passwordstrength.Scorer
-	sessions     *djangosession.Validator
+	sessions     *browsersession.Validator
 	appBaseURL   string
 	spaceBaseURL string
 	now          func() time.Time
 }
 
-func NewAccountAuthentication(repository accountAuthenticationRepository, throttle accountAuthenticationThrottle, cache accountAuthenticationCache, tasks accountAuthenticationTasks, magic accountAuthenticationMagicIssuer, resetTokens accountAuthenticationResetTokenIssuer, passwords *password.Hasher, sessions *djangosession.Validator, appBaseURL, spaceBaseURL string) (api.Service, error) {
+func NewAccountAuthentication(repository accountAuthenticationRepository, throttle accountAuthenticationThrottle, cache accountAuthenticationCache, tasks accountAuthenticationTasks, magic accountAuthenticationMagicIssuer, resetTokens accountAuthenticationResetTokenIssuer, passwords *password.Hasher, sessions *browsersession.Validator, appBaseURL, spaceBaseURL string) (api.Service, error) {
 	if repository == nil || throttle == nil || cache == nil || tasks == nil || magic == nil || resetTokens == nil || passwords == nil || sessions == nil {
 		return nil, errors.New("account authentication dependencies are required")
 	}
@@ -97,7 +96,7 @@ func (s *accountAuthenticationService) APIKeyAuth(ctx context.Context, key strin
 		if err != nil || principal.UserID != userID {
 			return ctx, s.unauthenticated()
 		}
-		ctx = djangosession.WithCurrentSession(ctx, current)
+		ctx = browsersession.WithCurrentSession(ctx, current)
 		return context.WithValue(ctx, accountAuthenticationPrincipalKey{}, accountAuthenticationPrincipal{userID, timezone}), nil
 	}
 	if key == "" {
@@ -110,7 +109,7 @@ func (s *accountAuthenticationService) APIKeyAuth(ctx context.Context, key strin
 	if err != nil {
 		return ctx, s.unauthenticated()
 	}
-	ctx = djangosession.WithCurrentSession(ctx, current)
+	ctx = browsersession.WithCurrentSession(ctx, current)
 	return context.WithValue(ctx, accountAuthenticationPrincipalKey{}, accountAuthenticationPrincipal{principal.UserID, principal.UserTimezone}), nil
 }
 func (s *accountAuthenticationService) AuthorizeSessionProtocol(ctx context.Context, key string) (int, map[string]any) {
@@ -382,17 +381,17 @@ func (s *accountAuthenticationService) passwordChange(ctx context.Context, conte
 func (s *accountAuthenticationService) completePasswordLogin(ctx context.Context, user store.User, now time.Time) error {
 	metadata, _ := loomhttp.RequestMetadataFromContext(ctx)
 	clientIP, userAgent := metadata.ClientAddr, metadata.UserAgent
-	current, hasCurrent := djangosession.CurrentSessionFromContext(ctx)
-	var currentPtr *djangosession.SessionRefresh
+	current, hasCurrent := browsersession.CurrentSessionFromContext(ctx)
+	var currentPtr *browsersession.SessionRefresh
 	if hasCurrent {
 		currentPtr = current
 	}
 	deviceInfo := map[string]any{"user_agent": userAgent, "ip_address": clientIP, "domain": s.appBaseURL}
-	refresh, err := s.sessions.Login(ctx, currentPtr, djangosession.AuthenticatedSession{UserID: user.ID, PasswordHash: user.Password, Backend: accountAuthenticationBackend, DeviceInfo: deviceInfo}, 14*24*60*60, now)
+	refresh, err := s.sessions.Login(ctx, currentPtr, browsersession.AuthenticatedSession{UserID: user.ID, PasswordHash: user.Password, DeviceInfo: deviceInfo}, 14*24*60*60, now)
 	if err != nil {
 		return err
 	}
-	if !djangosession.SetResponseSession(ctx, refresh) {
+	if !browsersession.SetResponseSession(ctx, refresh) {
 		return errors.New("session response middleware is unavailable")
 	}
 	return nil

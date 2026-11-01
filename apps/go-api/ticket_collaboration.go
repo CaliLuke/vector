@@ -15,7 +15,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	store "github.com/CaliLuke/go-plane/internal/workitems"
@@ -79,7 +79,7 @@ func (s *ticketCollaborationService) AuthorizeWorkItemProtocol(ctx context.Conte
 			return WorkItemProtocolMetadata{}, workItemError(&djangoapi.HTTPError{Status: 429, Body: map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))}})
 		}
 	}
-	if err = djangosession.ValidateUserTimezone(p.timezone); errors.Is(err, djangosession.ErrTimezoneNotFound) {
+	if err = browsersession.ValidateUserTimezone(p.timezone); errors.Is(err, browsersession.ErrTimezoneNotFound) {
 		err = &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "The required key does not exist."}}
 	}
 	if err != nil {
@@ -260,8 +260,8 @@ func (s *ticketCollaborationService) execute(ctx context.Context, operation stri
 			return nil, nil, collaborationError(&djangoapi.HTTPError{Status: 429, Body: map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))}})
 		}
 	}
-	if err := djangosession.ValidateUserTimezone(p.timezone); p.user != "" && err != nil {
-		if errors.Is(err, djangosession.ErrTimezoneNotFound) {
+	if err := browsersession.ValidateUserTimezone(p.timezone); p.user != "" && err != nil {
+		if errors.Is(err, browsersession.ErrTimezoneNotFound) {
 			err = &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "The required key does not exist."}}
 		}
 		return nil, nil, collaborationError(err)

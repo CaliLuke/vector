@@ -10,7 +10,7 @@ import (
 
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/instancemanagement"
 	api "github.com/CaliLuke/go-plane/workspacelifecycle/gen/workspace_lifecycle"
 )
@@ -52,7 +52,7 @@ func (repository workspaceLifecycleTestRepository) SoftDeleteWorkspace(_ context
 
 type workspaceLifecycleTestSessions struct{}
 
-func (workspaceLifecycleTestSessions) Validate(context.Context, string) (djangosession.Principal, error) {
+func (workspaceLifecycleTestSessions) Validate(context.Context, string) (browsersession.Principal, error) {
 	panic("unexpected session validation")
 }
 

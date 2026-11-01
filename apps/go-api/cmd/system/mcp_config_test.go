@@ -68,7 +68,7 @@ func TestMCPUnavailableAuthenticationFailsBeforeDatabaseStartup(t *testing.T) {
 	t.Setenv("MCP_AUTH_MODE", "oauth")
 	t.Setenv("MCP_RESOURCE_URL", "https://vector.example/mcp")
 	t.Setenv("DATABASE_URL", "not-a-database-url")
-	err := run(context.Background(), []string{"--django-secret-key", "test-only-secret"}, io.Discard)
+	err := run(context.Background(), []string{"--secret-key", "test-only-secret"}, io.Discard)
 	require.ErrorContains(t, err, "MCP OAuth configuration is invalid")
 }
 

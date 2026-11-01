@@ -15,7 +15,7 @@ import (
 	activitysvr "github.com/CaliLuke/go-plane/activityreads/gen/http/plane_internal_django_migration_api/server"
 	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	loomhttp "github.com/CaliLuke/loom/http"
 	"github.com/CaliLuke/loom/security"
 )
@@ -302,7 +302,7 @@ func TestActivitySlashlessUsesOuterSessionResponseSemantics(t *testing.T) {
 	cookie := djangoSessionCookieConfig{Name: "session-id", Configured: true}
 
 	t.Run("timezone validation stays view-local", func(t *testing.T) {
-		sessions := &publicProjectMetadataThrottleStub{err: djangosession.ErrTimezoneNotFound}
+		sessions := &publicProjectMetadataThrottleStub{err: browsersession.ErrTimezoneNotFound}
 		handler := newActivityHTTPHandlerWithSession(&activityHTTPService{}, apiV1CompatibilityOptions{bodySizeLimit: defaultFileSizeLimit}, sessions, cookie)
 		request := httptest.NewRequest(http.MethodGet, "/api/users/me/activities", nil)
 		request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
@@ -314,7 +314,7 @@ func TestActivitySlashlessUsesOuterSessionResponseSemantics(t *testing.T) {
 	})
 
 	t.Run("unsafe server error does not refresh", func(t *testing.T) {
-		sessions := &publicProjectMetadataThrottleStub{earlyRefresh: &djangosession.SessionRefresh{SessionKey: "refreshed", BrowserClose: true}}
+		sessions := &publicProjectMetadataThrottleStub{earlyRefresh: &browsersession.SessionRefresh{SessionKey: "refreshed", BrowserClose: true}}
 		handler := newActivityHTTPHandlerWithSession(&activityHTTPService{}, apiV1CompatibilityOptions{bodySizeLimit: defaultFileSizeLimit}, sessions, cookie)
 		request := httptest.NewRequest(http.MethodPost, "/api/users/me/activities", nil)
 		request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
@@ -473,8 +473,8 @@ func TestActivityMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizationTh
 		sessions := &publicProjectMetadataThrottleStub{
 			userID:       "00000000-0000-4000-8000-000000000003",
 			userTimezone: "UTC",
-			rotated:      &djangosession.SessionRefresh{SessionKey: "session"},
-			refreshErr:   djangosession.ErrSessionNotFound,
+			rotated:      &browsersession.SessionRefresh{SessionKey: "session"},
+			refreshErr:   browsersession.ErrSessionNotFound,
 		}
 		logger := &apiV1ActivityLoggerStub{}
 		logger.beforeLog = func() {
@@ -535,7 +535,7 @@ func TestActivityMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizationTh
 	})
 
 	t.Run("timezone precedes OPTIONS dispatch", func(t *testing.T) {
-		sessions := &publicProjectMetadataThrottleStub{err: djangosession.ErrTimezoneNotFound}
+		sessions := &publicProjectMetadataThrottleStub{err: browsersession.ErrTimezoneNotFound}
 		service := &activityHTTPService{}
 		handler := newActivityHTTPHandlerWithSession(service, apiV1CompatibilityOptions{bodySizeLimit: defaultFileSizeLimit}, sessions, djangoSessionCookieConfig{})
 		request := httptest.NewRequest(http.MethodOptions, "/api/users/me/activities/", nil)
@@ -701,7 +701,7 @@ func TestActivityFinalizesSessionsOutsideEarlyResponses(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			sessions := &publicProjectMetadataThrottleStub{earlyRefresh: &djangosession.SessionRefresh{SessionKey: "refreshed", BrowserClose: true}}
+			sessions := &publicProjectMetadataThrottleStub{earlyRefresh: &browsersession.SessionRefresh{SessionKey: "refreshed", BrowserClose: true}}
 			handler := newActivityHTTPHandlerWithSession(&activityHTTPService{}, apiV1CompatibilityOptions{bodySizeLimit: 4}, sessions, cookie)
 			request := httptest.NewRequest(test.method, test.path, strings.NewReader(test.body))
 			if test.accept != "" {

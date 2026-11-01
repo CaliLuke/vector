@@ -13,7 +13,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	api "github.com/CaliLuke/go-plane/authredirects/gen/auth_redirects"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	core "github.com/CaliLuke/go-plane/internal/authredirects"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -88,10 +88,10 @@ func (s *authRedirectsService) execute(ctx context.Context, body io.ReadCloser, 
 	}
 	result := run(request)
 	if result.Session != nil {
-		djangosession.SetResponseSession(ctx, *result.Session)
+		browsersession.SetResponseSession(ctx, *result.Session)
 	}
 	if result.ExpireSession {
-		djangosession.ExpireResponseSession(ctx)
+		browsersession.ExpireResponseSession(ctx)
 	}
 	if result.Status != 302 {
 		return nil, nil, authRedirectHTTPError(errors.New("authentication redirect failed"))
@@ -170,7 +170,7 @@ func (s *authRedirectsService) request(ctx context.Context, body io.ReadCloser, 
 	if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok {
 		userAgent, clientIP = metadata.UserAgent, metadata.ClientAddr
 	}
-	current, _ := djangosession.CurrentSessionFromContext(ctx)
+	current, _ := browsersession.CurrentSessionFromContext(ctx)
 	request := core.Request{Email: text("email"), Password: text("password"), Code: text("code"), NextPath: text("next_path"), BaseURL: base, AllowedHosts: allowed, UserAgent: userAgent, ClientIP: clientIP, IsSpace: space, BaseOrigin: web, CurrentSession: current, Now: time.Now().UTC()}
 	return request, nil
 }
@@ -183,11 +183,11 @@ func authRedirectRequestContentType(ctx context.Context) string {
 	return metadata.Headers().Get("Content-Type")
 }
 
-func authRedirectSessionUser(session *djangosession.SessionRefresh) string {
+func authRedirectSessionUser(session *browsersession.SessionRefresh) string {
 	if session == nil {
 		return ""
 	}
-	value, _ := session.Get("_auth_user_id")
+	value, _ := session.Get("user_id")
 	userID, _ := value.(string)
 	return userID
 }

@@ -12,7 +12,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/workspacewebhooks"
 	api "github.com/CaliLuke/go-plane/workspace_webhooks/gen/workspace_webhooks"
@@ -33,7 +33,7 @@ type workspaceWebhooksRepo interface {
 }
 
 type workspaceWebhooksSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
 type workspaceWebhooksPublisher interface {
@@ -118,7 +118,7 @@ func (s *workspaceWebhooksService) APIKeyAuth(ctx context.Context, key string, _
 		return ctx, &api.WebhookUnauthenticated{Detail: unauthenticatedDetail}
 	}
 	ctx = context.WithValue(ctx, workspaceWebhooksActor{}, actor)
-	ctx = context.WithValue(ctx, workspaceWebhooksPrincipal{}, djangosession.Principal{UserID: userID, UserTimezone: timezone})
+	ctx = context.WithValue(ctx, workspaceWebhooksPrincipal{}, browsersession.Principal{UserID: userID, UserTimezone: timezone})
 	return ctx, nil
 }
 

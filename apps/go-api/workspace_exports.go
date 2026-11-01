@@ -11,7 +11,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
@@ -24,7 +24,7 @@ import (
 )
 
 type workspaceExportsSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 type workspaceExportsPublisher interface {
 	Task(context.Context, string, []any, map[string]any) error
@@ -58,7 +58,7 @@ func (s *workspaceExportsService) APIKeyAuth(ctx context.Context, key string, _ 
 	if _, err := uuid.Parse(userID); userID == "" || err != nil {
 		return ctx, s.error(401, map[string]any{"detail": unauthenticatedDetail})
 	}
-	if err := djangosession.ValidateUserTimezone(tz); err != nil {
+	if err := browsersession.ValidateUserTimezone(tz); err != nil {
 		return ctx, s.internal()
 	}
 	return context.WithValue(ctx, workspaceExportsPrincipalKey{}, workspaceExportsPrincipal{userID: userID, email: email, timezone: tz}), nil

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	store "github.com/CaliLuke/go-plane/internal/workspaceuserinsights"
@@ -30,9 +30,9 @@ func TestWorkspaceActivityCSVMatchesPythonDialect(t *testing.T) {
 	}
 }
 
-type workspaceUserInsightsSessionStub struct{ principal djangosession.Principal }
+type workspaceUserInsightsSessionStub struct{ principal browsersession.Principal }
 
-func (s workspaceUserInsightsSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
+func (s workspaceUserInsightsSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
 	return s.principal, nil
 }
 
@@ -74,7 +74,7 @@ func (r *workspaceUserInsightsRepositoryStub) CanExportActivity(context.Context,
 
 func newWorkspaceUserInsightsTestService(t *testing.T, repo *workspaceUserInsightsRepositoryStub, timezone string) *workspaceUserInsightsService {
 	t.Helper()
-	service, err := NewWorkspaceUserInsights(repo, workspaceUserInsightsSessionStub{principal: djangosession.Principal{
+	service, err := NewWorkspaceUserInsights(repo, workspaceUserInsightsSessionStub{principal: browsersession.Principal{
 		UserID: "00000000-0000-4000-8000-000000000001", UserTimezone: timezone,
 	}})
 	if err != nil {

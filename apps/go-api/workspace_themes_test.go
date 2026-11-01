@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_themes"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/workspacethemes"
 	loom "github.com/CaliLuke/loom/pkg"
 )
@@ -50,8 +50,8 @@ func (r *themeRepoStub) Delete(context.Context, uuid.UUID, string, uuid.UUID) er
 
 type themeSessionStub struct{ err error }
 
-func (s themeSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{UserID: themeUser}, s.err
+func (s themeSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{UserID: themeUser}, s.err
 }
 
 func themeService(t *testing.T, repo *themeRepoStub) (api.Service, context.Context) {

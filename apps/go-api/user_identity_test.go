@@ -9,7 +9,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/user_identity"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/useridentity"
 	"github.com/CaliLuke/loom/security"
 	"github.com/jackc/pgx/v5"
@@ -21,12 +21,12 @@ type identitySessionValidator struct {
 	err       error
 }
 
-func (validator identitySessionValidator) Validate(context.Context, string) (djangosession.Principal, error) {
+func (validator identitySessionValidator) Validate(context.Context, string) (browsersession.Principal, error) {
 	timezone := validator.timezone
 	if timezone == "" {
 		timezone = "UTC"
 	}
-	return djangosession.Principal{UserID: validator.principal, UserTimezone: timezone}, validator.err
+	return browsersession.Principal{UserID: validator.principal, UserTimezone: timezone}, validator.err
 }
 
 func TestNewUserIdentityRejectsMissingDependencies(t *testing.T) {

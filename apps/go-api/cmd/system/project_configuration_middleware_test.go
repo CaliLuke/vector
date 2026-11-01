@@ -11,7 +11,7 @@ import (
 
 	systemapi "github.com/CaliLuke/go-plane"
 	"github.com/CaliLuke/go-plane/gen/system"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/projectconfiguration"
 	api "github.com/CaliLuke/go-plane/projectconfiguration/gen/project_configuration"
 	"github.com/jackc/pgx/v5"
@@ -68,19 +68,19 @@ type configurationMiddlewareSessions struct {
 // The middleware discovers this optional contract through a type assertion.
 var _ sessionPrincipalInspector = configurationMiddlewareSessions{}
 
-func (sessions configurationMiddlewareSessions) InspectReadServiceSessionWithoutTimezone(_ context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
+func (sessions configurationMiddlewareSessions) InspectReadServiceSessionWithoutTimezone(_ context.Context, request *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error) {
 	sessions.recorder.add("session-inspection")
 	if sessions.expired {
-		return true, false, nil, djangosession.Principal{}, nil
+		return true, false, nil, browsersession.Principal{}, nil
 	}
 	if len(request.CookiesNamed("session-id")) == 0 {
-		return false, false, nil, djangosession.Principal{}, nil
+		return false, false, nil, browsersession.Principal{}, nil
 	}
 	zone := sessions.userTimezone
 	if sessions.invalidZone {
 		zone = "Not/AZone"
 	}
-	return false, false, nil, djangosession.Principal{UserID: cycleMiddlewareActor, UserTimezone: zone}, nil
+	return false, false, nil, browsersession.Principal{UserID: cycleMiddlewareActor, UserTimezone: zone}, nil
 }
 
 func (effects configurationMiddlewareEffects) Task(context.Context, string, []any, map[string]any) error {

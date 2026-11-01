@@ -6,13 +6,13 @@ import (
 	"uuid"
 
 	workspaceapi "github.com/CaliLuke/go-plane/gen/workspace_slug_check"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/workspacevalidation"
 	"github.com/CaliLuke/loom/security"
 )
 
 type workspaceSlugSessionValidator interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
 type workspaceSlugService struct {

@@ -12,7 +12,7 @@ import (
 
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	store "github.com/CaliLuke/go-plane/internal/workspacesearch"
@@ -22,7 +22,7 @@ import (
 )
 
 type workspaceSearchSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 type workspaceSearchRepository interface {
 	WorkspaceAllowed(context.Context, uuid.UUID, string) (bool, error)
@@ -83,8 +83,8 @@ func (s *workspaceSearchService) AuthorizeSessionResourceProtocol(ctx context.Co
 }
 
 func workspaceSearchTimezoneError(timezone string) (int, map[string]any) {
-	if err := djangosession.ValidateUserTimezone(timezone); err != nil {
-		if errors.Is(err, djangosession.ErrTimezoneNotFound) {
+	if err := browsersession.ValidateUserTimezone(timezone); err != nil {
+		if errors.Is(err, browsersession.ErrTimezoneNotFound) {
 			return 400, map[string]any{"error": "The required key does not exist."}
 		}
 		return 500, map[string]any{"detail": "Something went wrong please try again later"}

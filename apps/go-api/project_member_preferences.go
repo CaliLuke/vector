@@ -9,7 +9,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/projectmemberpreferences"
 	api "github.com/CaliLuke/go-plane/projectmemberpreferences/gen/project_member_preferences"
@@ -24,7 +24,7 @@ type projectMemberPreferencesRepository interface {
 }
 
 type projectMemberPreferencesSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
 type projectMemberPreferencesService struct {
@@ -79,7 +79,7 @@ func (s *projectMemberPreferencesService) AuthorizeSessionResourceProtocol(ctx c
 	if !ok || principal.userID == "" {
 		return http.StatusUnauthorized, map[string]any{"detail": unauthenticatedDetail}
 	}
-	if err := djangosession.ValidateUserTimezone(principal.timezone); err != nil {
+	if err := browsersession.ValidateUserTimezone(principal.timezone); err != nil {
 		return http.StatusBadRequest, map[string]any{"error": "Invalid timezone"}
 	}
 	// The source endpoint has a role decorator on PATCH only. OPTIONS and
@@ -130,7 +130,7 @@ func (s *projectMemberPreferencesService) Patch(ctx context.Context, payload *ap
 	if !ok || identity.userID == "" {
 		return nil, preferenceError(401, map[string]any{"detail": unauthenticatedDetail})
 	}
-	if err := djangosession.ValidateUserTimezone(identity.timezone); err != nil {
+	if err := browsersession.ValidateUserTimezone(identity.timezone); err != nil {
 		return nil, preferenceError(400, map[string]any{"error": "Invalid timezone"})
 	}
 	if err := s.repository.Authorize(ctx, identity.userID, payload.Slug, payload.ProjectID); err != nil {

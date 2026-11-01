@@ -8,7 +8,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/project_identifiers"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/projectidentifiers"
 )
 
@@ -16,8 +16,8 @@ const projectIdentifierAdapterUser = "00000000-0000-4000-8000-000000000010"
 
 type projectIdentifierAdapterSessionStub struct{ err error }
 
-func (s projectIdentifierAdapterSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{UserID: projectIdentifierAdapterUser}, s.err
+func (s projectIdentifierAdapterSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{UserID: projectIdentifierAdapterUser}, s.err
 }
 
 type projectIdentifierAdapterRepositoryStub struct {

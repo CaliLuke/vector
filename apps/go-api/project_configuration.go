@@ -14,7 +14,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/projectconfiguration"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
@@ -25,7 +25,7 @@ import (
 )
 
 type sessionValidator interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 type keyValidator interface {
 	Validate(context.Context, string) (apikey.Principal, error)
@@ -392,8 +392,8 @@ func (service *projectConfigurationService) appPrincipal(ctx context.Context, sl
 }
 
 func validateConfigurationTimezone(value string) error {
-	err := djangosession.ValidateUserTimezone(value)
-	if errors.Is(err, djangosession.ErrTimezoneNotFound) {
+	err := browsersession.ValidateUserTimezone(value)
+	if errors.Is(err, browsersession.ErrTimezoneNotFound) {
 		return &djangoapi.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error": "The required key does not exist."}}
 	}
 	return err

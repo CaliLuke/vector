@@ -17,7 +17,7 @@ import (
 
 	systemapi "github.com/CaliLuke/go-plane"
 	csrftoken "github.com/CaliLuke/go-plane/gen/csrf_token"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	loomhttp "github.com/CaliLuke/loom/http"
 )
@@ -27,7 +27,7 @@ var authRedirectCSRFFailureTemplate []byte
 
 type authSessionLifecycle interface {
 	readServicesSessionLifecycle
-	InspectReadServiceSessionWithoutTimezone(context.Context, *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error)
+	InspectReadServiceSessionWithoutTimezone(context.Context, *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error)
 }
 
 func authRedirectSessionPath(request *http.Request) bool {
@@ -328,7 +328,7 @@ func (writer *passwordLoginCSRFCookieWriter) WriteHeader(status int) {
 	}
 	writer.wrote = true
 	if status >= http.StatusOK && status < http.StatusMultipleChoices {
-		if refresh, expire, found := djangosession.ResponseSessionActionFromContext(writer.request.Context()); found && !expire && refresh != nil {
+		if refresh, expire, found := browsersession.ResponseSessionActionFromContext(writer.request.Context()); found && !expire && refresh != nil {
 			result, err := systemapi.NewCSRFToken().CsrfToken(writer.request.Context(), &csrftoken.CsrfTokenPayload{})
 			if err == nil {
 				cookie := &http.Cookie{
@@ -351,7 +351,7 @@ func (writer *passwordLoginCSRFCookieWriter) Write(body []byte) (int, error) {
 
 type authSessionWithoutTimezone struct{ authSessionLifecycle }
 
-func (sessions authSessionWithoutTimezone) InspectReadServiceSession(ctx context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
+func (sessions authSessionWithoutTimezone) InspectReadServiceSession(ctx context.Context, request *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error) {
 	return sessions.InspectReadServiceSessionWithoutTimezone(ctx, request)
 }
 

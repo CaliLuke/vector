@@ -7,7 +7,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_member_me"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/workspacememberme"
 	"github.com/CaliLuke/loom/security"
 )
@@ -16,7 +16,7 @@ type workspaceMemberMeRepo interface {
 	Get(context.Context, uuid.UUID, string) (json.RawMessage, error)
 }
 type workspaceMemberMeSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 type workspaceMemberMeService struct {
 	repo     workspaceMemberMeRepo

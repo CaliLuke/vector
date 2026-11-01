@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	api "github.com/CaliLuke/go-plane/gen/user_api_tokens"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/userapitokens"
 	loom "github.com/CaliLuke/loom/pkg"
 )
@@ -55,8 +55,8 @@ func (s *apiTokenRepositoryStub) Delete(context.Context, uuid.UUID, uuid.UUID) e
 
 type apiTokenSessionStub struct{ err error }
 
-func (s apiTokenSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{UserID: tokenUser}, s.err
+func (s apiTokenSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{UserID: tokenUser}, s.err
 }
 func tokenService(t *testing.T, repo *apiTokenRepositoryStub) (api.Service, context.Context) {
 	t.Helper()

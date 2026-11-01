@@ -15,7 +15,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/intake_inbox_reads"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/intakeinboxreads"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/loom/security"
@@ -90,13 +90,13 @@ func (stub *intakeInboxReadsRepositoryStub) IntakeDetail(context.Context, uuid.U
 }
 
 type intakeInboxReadsSessionsStub struct {
-	principal djangosession.Principal
+	principal browsersession.Principal
 	err       error
 }
 
-func (stub intakeInboxReadsSessionsStub) Validate(context.Context, string) (djangosession.Principal, error) {
+func (stub intakeInboxReadsSessionsStub) Validate(context.Context, string) (browsersession.Principal, error) {
 	if stub.err != nil {
-		return djangosession.Principal{}, stub.err
+		return browsersession.Principal{}, stub.err
 	}
 	return stub.principal, nil
 }
@@ -105,14 +105,14 @@ type intakeInboxReadsCountingSessions struct {
 	calls int
 }
 
-func (stub *intakeInboxReadsCountingSessions) Validate(context.Context, string) (djangosession.Principal, error) {
+func (stub *intakeInboxReadsCountingSessions) Validate(context.Context, string) (browsersession.Principal, error) {
 	stub.calls++
-	return djangosession.Principal{}, errors.New("unexpected session validation")
+	return browsersession.Principal{}, errors.New("unexpected session validation")
 }
 
 func authenticatedIntakeReadsService(t *testing.T, repository *intakeInboxReadsRepositoryStub) (*intakeInboxReadsService, context.Context) {
 	t.Helper()
-	value, err := NewIntakeInboxReads(repository, intakeInboxReadsSessionsStub{principal: djangosession.Principal{UserID: intakeReadsUserID, UserTimezone: "UTC"}})
+	value, err := NewIntakeInboxReads(repository, intakeInboxReadsSessionsStub{principal: browsersession.Principal{UserID: intakeReadsUserID, UserTimezone: "UTC"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -440,7 +440,7 @@ func TestDescriptionVersionListKeepsLastSavedAtUTCButConvertsAuditTimes(t *testi
 		"description_version_list":   jsontext.Value(intakeReadsVersionListFixture),
 		"description_version_detail": jsontext.Value(intakeReadsVersionDetailFixture),
 	}}
-	value, err := NewIntakeInboxReads(repository, intakeInboxReadsSessionsStub{principal: djangosession.Principal{UserID: intakeReadsUserID, UserTimezone: "America/New_York"}})
+	value, err := NewIntakeInboxReads(repository, intakeInboxReadsSessionsStub{principal: browsersession.Principal{UserID: intakeReadsUserID, UserTimezone: "America/New_York"}})
 	if err != nil {
 		t.Fatal(err)
 	}

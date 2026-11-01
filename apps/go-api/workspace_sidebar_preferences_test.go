@@ -8,15 +8,15 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_sidebar_preferences"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/workspacesidebarpreferences"
 	loom "github.com/CaliLuke/loom/pkg"
 )
 
 type workspaceSidebarPreferencesAdapterSessionStub struct{ err error }
 
-func (s workspaceSidebarPreferencesAdapterSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{UserID: "00000000-0000-4000-8000-000000000021"}, s.err
+func (s workspaceSidebarPreferencesAdapterSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{UserID: "00000000-0000-4000-8000-000000000021"}, s.err
 }
 
 type workspaceSidebarPreferencesAdapterBackendStub struct {

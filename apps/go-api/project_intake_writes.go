@@ -10,7 +10,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/projectintakewrites"
 	api "github.com/CaliLuke/go-plane/projectintakewrites/gen/project_intake_writes"
@@ -26,7 +26,7 @@ type projectIntakeWritesRepository interface {
 	Delete(context.Context, string, string, string, string) error
 }
 type projectIntakeWritesSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 type projectIntakeWritesService struct {
 	repository projectIntakeWritesRepository
@@ -71,7 +71,7 @@ func (s *projectIntakeWritesService) AuthorizeSessionProtocol(ctx context.Contex
 	if !ok {
 		return 401, map[string]any{"detail": unauthenticatedDetail}
 	}
-	if err := djangosession.ValidateUserTimezone(principal.timezone); err != nil {
+	if err := browsersession.ValidateUserTimezone(principal.timezone); err != nil {
 		return 400, map[string]any{"error": "Invalid timezone"}
 	}
 	return 0, nil
@@ -87,7 +87,7 @@ func (s *projectIntakeWritesService) AuthorizeSessionResourceProtocol(ctx contex
 	if !ok {
 		return 401, map[string]any{"detail": unauthenticatedDetail}
 	}
-	if err := djangosession.ValidateUserTimezone(principal.timezone); err != nil {
+	if err := browsersession.ValidateUserTimezone(principal.timezone); err != nil {
 		return 400, map[string]any{"error": "Invalid timezone"}
 	}
 	// POST checks the project role in perform_create, after serializer/body
@@ -121,7 +121,7 @@ func (s *projectIntakeWritesService) principal(ctx context.Context) (projectInta
 	if !ok || p.userID == "" {
 		return p, intakeWriteError(401, map[string]any{"detail": unauthenticatedDetail})
 	}
-	if err := djangosession.ValidateUserTimezone(p.timezone); err != nil {
+	if err := browsersession.ValidateUserTimezone(p.timezone); err != nil {
 		return p, intakeWriteError(400, map[string]any{"error": "Invalid timezone"})
 	}
 	return p, nil

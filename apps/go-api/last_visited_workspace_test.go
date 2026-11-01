@@ -11,7 +11,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/last_visited_workspace"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 )
 
 const lastVisitedWorkspaceTestUser = "00000000-0000-4000-8000-000000000010"
@@ -27,8 +27,8 @@ func (stub lastVisitedWorkspaceRepositoryStub) Get(context.Context, uuid.UUID) (
 
 type lastVisitedWorkspaceSessionStub struct{ err error }
 
-func (stub lastVisitedWorkspaceSessionStub) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{UserID: lastVisitedWorkspaceTestUser}, stub.err
+func (stub lastVisitedWorkspaceSessionStub) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{UserID: lastVisitedWorkspaceTestUser}, stub.err
 }
 
 func TestLastVisitedWorkspaceReturnsRepositoryContract(t *testing.T) {

@@ -8,7 +8,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/instance_admin_session"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/loom/security"
 )
 
@@ -23,7 +23,7 @@ type instanceAdminMembershipRepository interface {
 	HasAdminMembership(context.Context, uuid.UUID) (bool, error)
 }
 type instanceAdminSessionValidator interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 type InstanceAdminSessionService struct {
 	repository instanceAdminSessionRepository
@@ -52,7 +52,7 @@ func (s *InstanceAdminSessionService) APIKeyAuth(ctx context.Context, key string
 // Session inspection can recover only the latter as an anonymous response.
 func (s *InstanceAdminSessionService) sessionActor(ctx context.Context, key string) (uuid.UUID, error) {
 	principal, err := s.sessions.Validate(ctx, key)
-	if djangosession.IsReadFailure(err) {
+	if browsersession.IsReadFailure(err) {
 		return uuid.UUID{}, instanceAdminInternal()
 	}
 	if err != nil {

@@ -8,7 +8,7 @@ import (
 	"uuid"
 
 	usernotificationapi "github.com/CaliLuke/go-plane/gen/user_notification_preferences"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	usernotificationstore "github.com/CaliLuke/go-plane/internal/usernotificationpreferences"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
@@ -20,7 +20,7 @@ type userNotificationPreferencesRepository interface {
 	Patch(context.Context, uuid.UUID, map[string]any) (uuid.UUID, error)
 }
 type userNotificationPreferencesSessionValidator interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 type userNotificationPreferencesService struct {
 	repository userNotificationPreferencesRepository

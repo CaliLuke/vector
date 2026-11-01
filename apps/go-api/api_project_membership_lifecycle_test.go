@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
@@ -84,7 +84,7 @@ func TestProjectMembershipLifecycleAPIKeyAndSessionAuthenticationStayIsolated(t 
 	userID := uuid.New()
 	repository := &projectMembershipLifecycleRepositoryStub{result: map[string]any{"ok": true}}
 	keys := &activityAPIKeyStub{principal: apikey.Principal{UserID: userID, Timezone: "UTC"}}
-	sessions := &activitySessionStub{principal: djangosession.Principal{UserID: "session-user", UserTimezone: "UTC"}}
+	sessions := &activitySessionStub{principal: browsersession.Principal{UserID: "session-user", UserTimezone: "UTC"}}
 	throttle := &activityThrottleStub{rate: apikey.Rate{Allowed: true}}
 	service := lifecycleService(t, repository, keys, sessions, throttle)
 	effects := &apikey.Effects{}
@@ -182,7 +182,7 @@ func TestProjectMembershipLifecycleReturnsRawJSONMetadataAndResponse(t *testing.
 func TestProjectMembershipLifecycleLegacySessionDoesNotUseAPIKeyThrottleEffects(t *testing.T) {
 	repository := &projectMembershipLifecycleRepositoryStub{result: map[string]any{"ok": true}}
 	throttle := &activityThrottleStub{rate: apikey.Rate{Allowed: true}}
-	service := lifecycleService(t, repository, &activityAPIKeyStub{}, &activitySessionStub{principal: djangosession.Principal{UserID: "session-user", UserTimezone: "UTC"}}, throttle)
+	service := lifecycleService(t, repository, &activityAPIKeyStub{}, &activitySessionStub{principal: browsersession.Principal{UserID: "session-user", UserTimezone: "UTC"}}, throttle)
 	effects := &apikey.Effects{}
 	ctx, err := service.APIKeyAuth(apikey.WithEffects(context.Background(), effects), "session-secret", &security.APIKeyScheme{Name: "PlaneSessionCookie"})
 	if err != nil {
@@ -372,7 +372,7 @@ func TestProjectMembershipLifecycleGeneratedLegacyRouteAuthenticatesSessionCooki
 	projectID := uuid.NewString()
 	repository := &projectMembershipLifecycleRepositoryStub{result: map[string]any{"created": true}}
 	keys := &activityAPIKeyStub{}
-	sessions := &activitySessionStub{principal: djangosession.Principal{UserID: "session-user", UserTimezone: "UTC"}}
+	sessions := &activitySessionStub{principal: browsersession.Principal{UserID: "session-user", UserTimezone: "UTC"}}
 	throttle := &activityThrottleStub{rate: apikey.Rate{Allowed: true}}
 	service := lifecycleService(t, repository, keys, sessions, throttle)
 	httpClient, _ := projectMembershipLifecycleHTTPClient(t, service, projectMembershipLifecycleCookieDoer{doer: http.DefaultClient})

@@ -15,7 +15,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	api "github.com/CaliLuke/go-plane/externalintegrations/gen/external_integrations"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/externalintegrations"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
@@ -27,7 +27,7 @@ import (
 )
 
 type externalIntegrationsSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
 type externalIntegrationsRepository interface {
@@ -78,7 +78,7 @@ func (s *externalIntegrationsService) APIKeyAuth(ctx context.Context, credential
 	if userID == "" {
 		return ctx, s.error(401, map[string]any{"detail": "Authentication credentials were not provided."})
 	}
-	if err := djangosession.ValidateUserTimezone(timezone); err != nil {
+	if err := browsersession.ValidateUserTimezone(timezone); err != nil {
 		return ctx, s.internal()
 	}
 	return context.WithValue(ctx, externalIntegrationsPrincipalKey{}, externalIntegrationsPrincipal{userID: userID, timezone: timezone}), nil

@@ -13,7 +13,7 @@ import (
 
 	api "github.com/CaliLuke/go-plane/gen/analytic_views"
 	store "github.com/CaliLuke/go-plane/internal/analyticviews"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	loom "github.com/CaliLuke/loom/pkg"
 )
 
@@ -54,8 +54,8 @@ func (r *analyticRepoTest) Delete(_ context.Context, _ uuid.UUID, _ string, id u
 
 type analyticSessionTest struct{ err error }
 
-func (s analyticSessionTest) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{UserID: "00000000-0000-4000-8000-000000000001"}, s.err
+func (s analyticSessionTest) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{UserID: "00000000-0000-4000-8000-000000000001"}, s.err
 }
 
 func analyticRaw(name string) json.RawMessage {

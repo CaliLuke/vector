@@ -8,7 +8,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/user_properties"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/userproperties"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
@@ -17,7 +17,7 @@ import (
 type userPropertiesService struct {
 	repo     userPropertiesRepository
 	sessions interface {
-		Validate(context.Context, string) (djangosession.Principal, error)
+		Validate(context.Context, string) (browsersession.Principal, error)
 	}
 }
 
@@ -36,7 +36,7 @@ type userPropertiesRepository interface {
 }
 
 func NewUserProperties(r userPropertiesRepository, s interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }) (api.Service, error) {
 	if r == nil || s == nil {
 		return nil, fmt.Errorf("user properties dependencies are required")

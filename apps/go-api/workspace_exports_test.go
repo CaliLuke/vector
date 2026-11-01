@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
@@ -56,8 +56,8 @@ func (*projectValuesRepository) History(context.Context, string, string, djangoa
 
 type projectValuesSessions struct{}
 
-func (projectValuesSessions) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{}, nil
+func (projectValuesSessions) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{}, nil
 }
 
 type projectValuesPublisher struct {

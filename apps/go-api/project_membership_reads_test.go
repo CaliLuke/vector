@@ -13,7 +13,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/project_membership_reads"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	"github.com/CaliLuke/loom/security"
 )
@@ -122,11 +122,11 @@ type projectMembershipReadsSessionsStub struct{ err error }
 func (sessions projectMembershipReadsSessionsStub) Validate(
 	context.Context,
 	string,
-) (djangosession.Principal, error) {
+) (browsersession.Principal, error) {
 	if sessions.err != nil {
-		return djangosession.Principal{}, sessions.err
+		return browsersession.Principal{}, sessions.err
 	}
-	return djangosession.Principal{UserID: "00000000-0000-4000-8000-000000000010"}, nil
+	return browsersession.Principal{UserID: "00000000-0000-4000-8000-000000000010"}, nil
 }
 
 func TestNewProjectMembershipReadsRequiresDependencies(t *testing.T) {

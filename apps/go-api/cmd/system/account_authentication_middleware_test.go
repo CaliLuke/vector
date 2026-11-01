@@ -12,7 +12,7 @@ import (
 	api "github.com/CaliLuke/go-plane/accountauthentication/gen/account_authentication"
 	csrftoken "github.com/CaliLuke/go-plane/gen/csrf_token"
 	store "github.com/CaliLuke/go-plane/internal/accountauthentication"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/authentication/password"
 )
 
@@ -34,9 +34,9 @@ type accountAuthenticationMiddlewareSessions struct {
 	userID      string
 }
 
-func (sessions *accountAuthenticationMiddlewareSessions) InspectReadServiceSessionWithoutTimezone(ctx context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
+func (sessions *accountAuthenticationMiddlewareSessions) InspectReadServiceSessionWithoutTimezone(ctx context.Context, request *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error) {
 	sessions.inspections++
-	return false, false, nil, djangosession.Principal{UserID: sessions.userID, UserTimezone: "Not/AZone"}, nil
+	return false, false, nil, browsersession.Principal{UserID: sessions.userID, UserTimezone: "Not/AZone"}, nil
 }
 
 func TestAccountAuthenticationAPIViewUsesOptionalSessionCSRFWithoutTimezone(t *testing.T) {
@@ -54,7 +54,7 @@ func TestAccountAuthenticationAPIViewUsesOptionalSessionCSRFWithoutTimezone(t *t
 		accountAuthenticationHTTPMagicIssuer{},
 		accountAuthenticationHTTPResetIssuer{},
 		password.Default(),
-		&djangosession.Validator{},
+		&browsersession.Validator{},
 		"https://app.example",
 		"https://space.example",
 	)
@@ -94,7 +94,7 @@ func TestAccountAuthenticationProductionMiddlewareOrderAndTimezoneProfile(t *tes
 		accountAuthenticationHTTPMagicIssuer{},
 		accountAuthenticationHTTPResetIssuer{},
 		password.Default(),
-		&djangosession.Validator{},
+		&browsersession.Validator{},
 		"https://app.example",
 		"https://space.example",
 	)
@@ -189,7 +189,7 @@ func TestAccountAuthenticationProductionMountSeparatesCSRFTrustFromCORS(t *testi
 		accountAuthenticationHTTPMagicIssuer{},
 		accountAuthenticationHTTPResetIssuer{},
 		password.Default(),
-		&djangosession.Validator{},
+		&browsersession.Validator{},
 		"https://app.example",
 		"https://space.example",
 	)
@@ -238,7 +238,7 @@ func TestAccountAuthenticationUnsupportedMediaTypeUses415ThroughProductionMount(
 		accountAuthenticationHTTPMagicIssuer{},
 		accountAuthenticationHTTPResetIssuer{},
 		password.Default(),
-		&djangosession.Validator{},
+		&browsersession.Validator{},
 		"https://app.example",
 		"https://space.example",
 	)

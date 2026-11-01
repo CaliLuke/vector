@@ -10,14 +10,14 @@ import (
 	"github.com/stretchr/testify/require"
 
 	api "github.com/CaliLuke/go-plane/customviewcreation/gen/custom_view_creation"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/customviewcreation"
 )
 
 type customViewCreationSessionsStub struct{}
 
-func (customViewCreationSessionsStub) Validate(context.Context, string) (djangosession.Principal, error) {
-	return djangosession.Principal{}, errors.New("unexpected session lookup")
+func (customViewCreationSessionsStub) Validate(context.Context, string) (browsersession.Principal, error) {
+	return browsersession.Principal{}, errors.New("unexpected session lookup")
 }
 
 type customViewCreationRepositoryStub struct {

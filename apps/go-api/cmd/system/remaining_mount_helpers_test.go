@@ -7,20 +7,20 @@ import (
 
 	systemapi "github.com/CaliLuke/go-plane"
 	"github.com/CaliLuke/go-plane/gen/system"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 )
 
 type searchMountSessions struct{ *cycleMiddlewareSessions }
 
-func (s searchMountSessions) InspectReadServiceSessionWithoutTimezone(_ context.Context, request *http.Request) (bool, bool, *djangosession.SessionRefresh, djangosession.Principal, error) {
+func (s searchMountSessions) InspectReadServiceSessionWithoutTimezone(_ context.Context, request *http.Request) (bool, bool, *browsersession.SessionRefresh, browsersession.Principal, error) {
 	if len(request.CookiesNamed("session-id")) == 0 {
-		return false, false, nil, djangosession.Principal{}, nil
+		return false, false, nil, browsersession.Principal{}, nil
 	}
 	zone := s.userTimezone
 	if s.invalidZone {
 		zone = "Not/AZone"
 	}
-	return false, false, nil, djangosession.Principal{UserID: cycleMiddlewareActor, UserTimezone: zone}, nil
+	return false, false, nil, browsersession.Principal{UserID: cycleMiddlewareActor, UserTimezone: zone}, nil
 }
 
 func extensionHTTPHandler(pending pendingReplacementEndpoints) http.Handler {

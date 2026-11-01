@@ -7,7 +7,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/last_visited_workspace"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/lastvisitedworkspace"
 	"github.com/CaliLuke/loom/security"
 )
@@ -16,7 +16,7 @@ type lastVisitedWorkspaceRepository interface {
 	Get(context.Context, uuid.UUID) (json.RawMessage, error)
 }
 type lastVisitedWorkspaceSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 type lastVisitedWorkspaceService struct {
 	repository lastVisitedWorkspaceRepository

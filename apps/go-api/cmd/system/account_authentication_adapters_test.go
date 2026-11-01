@@ -13,7 +13,7 @@ import (
 	api "github.com/CaliLuke/go-plane/accountauthentication/gen/account_authentication"
 	accountauthsvr "github.com/CaliLuke/go-plane/accountauthentication/gen/http/account_authentication/server"
 	store "github.com/CaliLuke/go-plane/internal/accountauthentication"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/authentication/password"
 	"github.com/CaliLuke/go-plane/internal/authredirects"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
@@ -163,7 +163,7 @@ func TestAccountAuthenticationGeneratedEmailCheckAcceptsRequest(t *testing.T) {
 	service, err := systemapi.NewAccountAuthentication(
 		accountAuthenticationHTTPRepository{}, accountAuthenticationHTTPThrottle{}, accountAuthenticationHTTPCache{},
 		accountAuthenticationHTTPTasks{}, accountAuthenticationHTTPMagicIssuer{}, accountAuthenticationHTTPResetIssuer{},
-		password.Default(), &djangosession.Validator{}, "https://app.example", "https://space.example",
+		password.Default(), &browsersession.Validator{}, "https://app.example", "https://space.example",
 	)
 	if err != nil {
 		t.Fatal(err)

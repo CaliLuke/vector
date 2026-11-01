@@ -918,8 +918,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-v1-search-malformed-limit.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -970,8 +970,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-search-project-other-workspace.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -2789,8 +2789,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-no-hyphen-authenticated.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -2858,8 +2858,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-no-hyphen-authenticated.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -9041,8 +9041,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-v1-issues-list-query-projection-pagination.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -9104,8 +9104,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-list-project-archived.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -12169,8 +12169,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-v1-issues-list-post-invalid-binary-ignored.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -12231,8 +12231,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-v1-issues-list-post-invalid-binary-ignored.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -12758,8 +12758,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-v1-delete-creator-member.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -12798,8 +12798,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-followup-v1-issues-detail-delete-archived.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -13922,8 +13922,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-v1-issues-detail-query-ignored-and-projection.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -13972,8 +13972,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-detail-project-archived.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -17738,8 +17738,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-v1-issues-detail-sanitized-valid-binary-ignored.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -17818,8 +17818,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-v1-issues-detail-sanitized-valid-binary-ignored.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -20218,8 +20218,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-v1-order-desc-labels-name.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -20282,8 +20282,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-list-project-archived.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -23285,8 +23285,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-v1-issues-list-post-invalid-binary-ignored.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -23347,8 +23347,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-v1-issues-list-post-invalid-binary-ignored.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -24903,8 +24903,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-v1-delete-creator-member.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -24943,8 +24943,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-followup-v1-issues-detail-delete-archived.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -26054,8 +26054,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-v1-issues-detail-relations-soft-deleted.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -26104,8 +26104,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-detail-project-archived.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -29894,8 +29894,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-v1-issues-detail-sanitized-valid-binary-ignored.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -29974,8 +29974,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-v1-issues-detail-sanitized-valid-binary-ignored.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -31005,8 +31005,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-v1-search-malformed-limit.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -31058,8 +31058,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-search-project-other-workspace.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -32182,8 +32182,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-v1-identifier-case-sensitive.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -32236,8 +32236,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-followup-v1-issues-identifier-deleted-duplicate-identifier.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -35620,8 +35620,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-app-workspace-guest.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -35667,8 +35667,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-gate-query-app-workspace-logged-by-source-error.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -42547,8 +42547,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-app-detail-list-fields-ignored.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -42592,8 +42592,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-gate-query-app-detail-list-logged-by-source-error.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -48229,8 +48229,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-app-filter-type-all.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -48355,8 +48355,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-gate-query-app-updated-after.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -51873,8 +51873,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-app-list-sanitized-valid-binary-ignored.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -51941,8 +51941,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-app-list-sanitized-valid-binary-ignored.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -52865,8 +52865,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-app-ids-guest-all-mixed.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -52914,8 +52914,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-app-ids-guest-all-mixed.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -55767,8 +55767,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-app-detail-delete-anonymous.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -55805,8 +55805,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-followup-app-detail-delete-archived.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -56914,8 +56914,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-app-detail-inactive-workspace-before-creator.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -56966,8 +56966,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-app-detail-deleted-project-member.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -60286,8 +60286,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-app-detail-patch-invalid-binary-ignored.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -60369,8 +60369,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-app-detail-patch-invalid-binary-ignored.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -61130,8 +61130,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-app-detail-put-oversized-html-rejected.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -61177,8 +61177,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-app-detail-put-oversized-html-rejected.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -63809,8 +63809,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-app-search-guest-all-still-own.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -63866,8 +63866,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-app-search-invalid-issue.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -64598,8 +64598,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-app-v2-search-ignored.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -64643,8 +64643,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-app-v2-search-ignored.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -65280,8 +65280,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-app-user-guest.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -65327,8 +65327,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-gate-query-app-user-logged-by-source-error.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -67012,8 +67012,8 @@
           "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-no-hyphen-authenticated.json"
         ],
         "shared_protocol_contracts": [
-          "apps/go-api/internal/authentication/djangosession/validator_test.go",
-          "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+          "apps/go-api/internal/authentication/browsersession/validator_test.go",
+          "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
           "apps/go-api/internal/djangoapi/pagination_test.go",
@@ -67082,8 +67082,8 @@
         "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-no-hyphen-authenticated.json"
       ],
       "shared_protocol_contracts": [
-        "apps/go-api/internal/authentication/djangosession/validator_test.go",
-        "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+        "apps/go-api/internal/authentication/browsersession/validator_test.go",
+        "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/go-api/internal/djangoapi/pagination_test.go",

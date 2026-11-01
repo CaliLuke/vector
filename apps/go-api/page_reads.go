@@ -13,7 +13,7 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/page_reads"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/pagereads"
@@ -46,7 +46,7 @@ type pageLifecycleRepository interface {
 }
 
 type pageReadsSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
+	Validate(context.Context, string) (browsersession.Principal, error)
 }
 
 type pageRecentVisits interface {
