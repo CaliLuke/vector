@@ -6,6 +6,8 @@ import (
 	"errors"
 	"io"
 	"net/http"
+
+	"github.com/CaliLuke/go-plane/internal/platform"
 )
 
 // workspaceSelectorStatus rejects conflicting authentication scope before tool
@@ -17,7 +19,7 @@ func workspaceSelectorStatus(request *http.Request) int {
 		return 0
 	}
 	body, err := io.ReadAll(request.Body)
-	_ = request.Body.Close()
+	platform.CloseRequestBody(request.Context(), request.Body)
 	request.Body = io.NopCloser(bytes.NewReader(body))
 	if err != nil {
 		var limit *http.MaxBytesError

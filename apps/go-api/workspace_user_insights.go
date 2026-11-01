@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
@@ -253,11 +255,7 @@ func (s *workspaceUserInsightsService) ExportActivity(ctx context.Context, p *ap
 		return nil, nil, s.error(500, map[string]any{"error": "Something went wrong please try again later"})
 	}
 	contentType := ""
-	defer func() {
-		if body != nil {
-			_ = body.Close()
-		}
-	}()
+	defer platform.CloseRequestBody(ctx, body)
 	if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok {
 		contentType = metadata.Headers().Get("Content-Type")
 	}

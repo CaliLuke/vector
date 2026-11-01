@@ -209,8 +209,7 @@ func (store *PostgresIssueDescriptionSyncStore) SyncIssueDescriptionVersionBatch
 		for index := 0; index < len(batch)-result.Skipped; index++ {
 			tag, err := batchResults.Exec()
 			if err != nil {
-				_ = batchResults.Close()
-				return IssueDescriptionSyncBatchOutput{}, fmt.Errorf("insert issue description sync version: %w", err)
+				return IssueDescriptionSyncBatchOutput{}, fmt.Errorf("insert issue description sync version: %w", errors.Join(err, batchResults.Close()))
 			}
 			result.Inserted += int(tag.RowsAffected())
 		}

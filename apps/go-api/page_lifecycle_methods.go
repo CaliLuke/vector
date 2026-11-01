@@ -315,7 +315,7 @@ func (service *pageReadsService) pageLifecycle(ctx context.Context, operation, s
 	input := djangoinput.Input{Fields: map[string]any{}, Surrogates: map[string][]string{}}
 	if operation == "duplicate" {
 		if body != nil {
-			_ = body.Close()
+			platform.CloseRequestBody(ctx, body)
 		}
 	} else if body != nil {
 		defer platform.CloseRequestBody(ctx, body)

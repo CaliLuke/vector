@@ -60,8 +60,7 @@ func serveHTTP(
 		defer cancel()
 
 		if err := server.Shutdown(shutdownCtx); err != nil {
-			_ = server.Close()
-			return fmt.Errorf("shut down HTTP server: %w", err)
+			return fmt.Errorf("shut down HTTP server: %w", errors.Join(err, server.Close()))
 		}
 		if err := <-serveErr; err != nil && !errors.Is(err, http.ErrServerClosed) {
 			return fmt.Errorf("serve HTTP during shutdown: %w", err)

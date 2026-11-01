@@ -182,8 +182,7 @@ func (store *PostgresPageTransactionStore) TrackPageTransactions(ctx context.Con
 		results := tx.SendBatch(ctx, batch)
 		for range newRecords {
 			if _, err := results.Exec(); err != nil {
-				_ = results.Close()
-				return fmt.Errorf("insert page transaction log: %w", err)
+				return fmt.Errorf("insert page transaction log: %w", errors.Join(err, results.Close()))
 			}
 		}
 		if err := results.Close(); err != nil {

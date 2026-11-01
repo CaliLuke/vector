@@ -106,7 +106,7 @@ func execute(ctx context.Context, o options) error {
 	}
 }
 
-func sourceFor(o options) (notionsync.Source, error) {
+func sourceFor(o options) (_ notionsync.Source, resultErr error) {
 	if o.snapshot == "" {
 		return notionsync.NewNotion(os.Getenv("NOTION_TOKEN"), !o.roadmapOnly)
 	}
@@ -117,11 +117,11 @@ func sourceFor(o options) (notionsync.Source, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = file.Close() }()
+	defer func() { resultErr = errors.Join(resultErr, file.Close()) }()
 	return notionsync.ReadSnapshot(file)
 }
 
-func syncOnce(ctx context.Context, o options, source notionsync.Source, vector *notionsync.Vector, users map[string]string) error {
+func syncOnce(ctx context.Context, o options, source notionsync.Source, vector *notionsync.Vector, users map[string]string) (resultErr error) {
 	selection := o.roadmap
 	if o.team != "" {
 		selection = "team:" + o.team
@@ -131,7 +131,7 @@ func syncOnce(ctx context.Context, o options, source notionsync.Source, vector *
 	if err != nil {
 		return err
 	}
-	defer func() { _ = journal.Close() }()
+	defer func() { resultErr = errors.Join(resultErr, journal.Close()) }()
 	graph, err := discover(ctx, o, source)
 	if err != nil {
 		return err

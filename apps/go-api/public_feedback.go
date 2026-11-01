@@ -10,6 +10,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	api "github.com/CaliLuke/go-plane/gen/public_feedback"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	metadata "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
@@ -95,7 +97,7 @@ func (service *publicFeedbackService) VoteList(ctx context.Context, payload *api
 }
 
 func (service *publicFeedbackService) VoteCreate(ctx context.Context, payload *api.VoteCreatePayload, body io.ReadCloser) (*api.PublicFeedbackResponseMetadata, io.ReadCloser, error) {
-	defer closePublicFeedbackBody(body)
+	defer platform.CloseRequestBody(ctx, body)
 	actorID, err := publicFeedbackAuthenticatedUser(ctx)
 	if err != nil {
 		return nil, nil, publicFeedbackError(err)
@@ -152,7 +154,7 @@ func (service *publicFeedbackService) IntakeDetail(ctx context.Context, payload 
 }
 
 func (service *publicFeedbackService) IntakeUpdate(ctx context.Context, payload *api.IntakeUpdatePayload, body io.ReadCloser) (*api.PublicFeedbackResponseMetadata, io.ReadCloser, error) {
-	defer closePublicFeedbackBody(body)
+	defer platform.CloseRequestBody(ctx, body)
 	actorID, err := publicFeedbackAuthenticatedUser(ctx)
 	if err != nil {
 		return nil, nil, publicFeedbackError(err)
@@ -200,7 +202,7 @@ func (service *publicFeedbackService) publicIntakeList(ctx context.Context, anch
 }
 
 func (service *publicFeedbackService) publicIntakeCreate(ctx context.Context, anchor, intakeID string, body io.ReadCloser) (*api.PublicFeedbackResponseMetadata, io.ReadCloser, error) {
-	defer closePublicFeedbackBody(body)
+	defer platform.CloseRequestBody(ctx, body)
 	actorID, err := publicFeedbackAuthenticatedUser(ctx)
 	if err != nil {
 		return nil, nil, publicFeedbackError(err)
@@ -351,10 +353,4 @@ func requestContentType(ctx context.Context) string {
 		return ""
 	}
 	return metadata.Headers().Get("Content-Type")
-}
-
-func closePublicFeedbackBody(body io.ReadCloser) {
-	if body != nil {
-		_ = body.Close()
-	}
 }

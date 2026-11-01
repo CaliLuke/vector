@@ -36,7 +36,6 @@ func parseLegacyAssetFile(body io.Reader, contentType string) (legacyUploadedFil
 		contents, readErr := io.ReadAll(part)
 		name, filename := part.FormName(), part.FileName()
 		partType := part.Header.Get("Content-Type")
-		_ = part.Close()
 		if readErr != nil {
 			return legacyUploadedFile{}, readErr
 		}

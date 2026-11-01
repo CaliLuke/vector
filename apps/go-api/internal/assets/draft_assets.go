@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
@@ -29,7 +31,7 @@ func (service *LifecycleService) bulkAssociateDraftAssets(ctx context.Context, s
 	if body == nil {
 		return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "No asset ids provided."}}
 	}
-	defer func() { _ = body.Close() }()
+	defer platform.CloseRequestBody(ctx, body)
 	contentType := RequestContentType(ctx)
 	if contentType == "" {
 		contentType = "application/json"

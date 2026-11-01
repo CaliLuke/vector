@@ -14,6 +14,8 @@ import (
 	"time"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	api "github.com/CaliLuke/go-plane/apiv1stickies/gen/api_v1_stickies"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
@@ -149,7 +151,7 @@ func (service *apiV1StickiesService) List(ctx context.Context, payload *api.List
 }
 
 func (service *apiV1StickiesService) Create(ctx context.Context, payload *api.CreatePayload, body io.ReadCloser) (*api.APIV1StickyRawResponseMetadata, io.ReadCloser, error) {
-	defer closeStickyBody(body)
+	defer platform.CloseRequestBody(ctx, body)
 	scope, err := service.scope(ctx, payload.Slug, stickystore.OperationCreate)
 	if err != nil {
 		return nil, nil, err
@@ -237,7 +239,7 @@ func (service *apiV1StickiesService) Update(ctx context.Context, payload *api.Up
 }
 
 func (service *apiV1StickiesService) update(ctx context.Context, slug, rawID string, body io.ReadCloser, full bool) (*api.APIV1StickyRawResponseMetadata, io.ReadCloser, error) {
-	defer closeStickyBody(body)
+	defer platform.CloseRequestBody(ctx, body)
 	scope, err := service.scope(ctx, slug, stickystore.OperationUpdate)
 	if err != nil {
 		return nil, nil, err
@@ -767,12 +769,6 @@ func apiV1StickyWorkspaceNotFound() error {
 
 func apiV1StickyStickyInternalError() error {
 	return apiV1StickyError(http.StatusInternalServerError, map[string]any{"error": "Something went wrong please try again later"})
-}
-
-func closeStickyBody(body io.Closer) {
-	if body != nil {
-		_ = body.Close()
-	}
 }
 
 var _ api.Service = (*apiV1StickiesService)(nil)

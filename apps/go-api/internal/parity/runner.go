@@ -2,6 +2,7 @@ package parity
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 	"time"
@@ -150,12 +151,18 @@ func requireSeparateDatabases(ctx context.Context, sourceURL string, targetURL s
 	return nil
 }
 
-func loadDatabaseIdentity(ctx context.Context, role string, postgresURL string) (databaseIdentity, error) {
+func loadDatabaseIdentity(ctx context.Context, role string, postgresURL string) (_ databaseIdentity, resultErr error) {
 	connection, err := pgx.Connect(ctx, postgresURL)
 	if err != nil {
 		return databaseIdentity{}, safeDatabaseError(role, "connect for identity check", err)
 	}
-	defer func() { _ = connection.Close(context.WithoutCancel(ctx)) }()
+	defer func() {
+		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer cancel()
+		if closeErr := connection.Close(cleanup); closeErr != nil {
+			resultErr = errors.Join(resultErr, safeDatabaseError(role, "close identity connection", closeErr))
+		}
+	}()
 
 	const query = `
 SELECT database.datname,

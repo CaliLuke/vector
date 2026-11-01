@@ -15,6 +15,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"github.com/coreos/go-oidc/v3/oidc"
 	"golang.org/x/oauth2"
 )
@@ -153,7 +155,7 @@ func (p *Provider) Introspect(ctx context.Context, token string) (Identity, erro
 	if err != nil {
 		return Identity{}, ErrUnavailable
 	}
-	defer func() { _ = response.Body.Close() }()
+	defer func() { platform.LogResponseBodyCloseError(ctx, response.Body.Close()) }()
 	if response.StatusCode != http.StatusOK {
 		return Identity{}, ErrUnavailable
 	}

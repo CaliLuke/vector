@@ -16,6 +16,8 @@ import (
 	"time"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	"math/big"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
@@ -154,7 +156,7 @@ func (service *userAccountWritesService) PatchMe(ctx context.Context, payload *a
 	if err != nil {
 		return nil, nil, err
 	}
-	input, err := parseUserAccountInput(body, payload.ContentType)
+	input, err := parseUserAccountInput(ctx, body, payload.ContentType)
 	if err != nil {
 		return nil, nil, userAccountWritesInputError(err)
 	}
@@ -238,7 +240,7 @@ func (service *userAccountWritesService) UpdateEmail(ctx context.Context, payloa
 	if err != nil {
 		return nil, nil, err
 	}
-	input, err := parseUserAccountInput(body, payload.ContentType)
+	input, err := parseUserAccountInput(ctx, body, payload.ContentType)
 	if err != nil {
 		return nil, nil, userAccountWritesInputError(err)
 	}
@@ -323,7 +325,7 @@ func (service *userAccountWritesService) GenerateEmailCode(ctx context.Context, 
 		}
 		return nil, nil, userAccountWritesInternal()
 	}
-	input, err := parseUserAccountInput(body, payload.ContentType)
+	input, err := parseUserAccountInput(ctx, body, payload.ContentType)
 	if err != nil {
 		return nil, nil, userAccountWritesInputError(err)
 	}
@@ -383,12 +385,8 @@ func (service *userAccountWritesService) validateNewEmail(ctx context.Context, u
 	return nil
 }
 
-func parseUserAccountInput(body io.ReadCloser, contentType *string) (djangoinput.Input, error) {
-	defer func() {
-		if body != nil {
-			_ = body.Close()
-		}
-	}()
+func parseUserAccountInput(ctx context.Context, body io.ReadCloser, contentType *string) (djangoinput.Input, error) {
+	defer platform.CloseRequestBody(ctx, body)
 	var reader io.Reader
 	if body != nil {
 		reader = body

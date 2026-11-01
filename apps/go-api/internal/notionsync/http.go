@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/CaliLuke/go-plane/internal/platform"
 )
 
 type apiClient struct {
@@ -72,7 +74,7 @@ func (c *apiClient) request(ctx context.Context, method, path string, body, resu
 			return fmt.Errorf("%s request failed; retry the sync to reconcile its outcome: %w", path, err)
 		}
 		data, readErr := io.ReadAll(io.LimitReader(response.Body, 16<<20))
-		_ = response.Body.Close()
+		platform.LogResponseBodyCloseError(ctx, response.Body.Close())
 		if readErr != nil {
 			return readErr
 		}

@@ -274,7 +274,6 @@ func normalizeStickyRequestBody(contentType string, body []byte) ([]byte, error)
 				return nil, nextErr
 			}
 			value, err := io.ReadAll(io.LimitReader(part, stickyRequestLimit+1))
-			_ = part.Close()
 			if err != nil || len(value) > stickyRequestLimit {
 				return nil, fmt.Errorf("read multipart field")
 			}

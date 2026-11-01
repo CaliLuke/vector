@@ -105,8 +105,7 @@ func NewAuthenticationDRFThrottle(redisURL, rate string) (*AuthenticationDRFThro
 	}
 	throttle, err := apikey.NewThrottle(cache, rate)
 	if err != nil {
-		_ = cache.Close()
-		return nil, nil, err
+		return nil, nil, errors.Join(err, cache.Close())
 	}
 	return &AuthenticationDRFThrottle{throttle: throttle}, cache, nil
 }

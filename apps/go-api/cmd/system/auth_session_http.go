@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/platform"
+
 	systemapi "github.com/CaliLuke/go-plane"
 	csrftoken "github.com/CaliLuke/go-plane/gen/csrf_token"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
@@ -221,7 +223,7 @@ func accountAuthenticationCSRFSubmittedToken(request *http.Request) (string, str
 		// generated handler. The outer request-size boundary remains in force.
 		var raw bytes.Buffer
 		input, err := djangoinput.Parse(io.TeeReader(request.Body, &raw), contentType)
-		_ = request.Body.Close()
+		platform.CloseRequestBody(request.Context(), request.Body)
 		request.Body = io.NopCloser(bytes.NewReader(raw.Bytes()))
 		if err == nil {
 			if token, ok := input.Fields["csrfmiddlewaretoken"].(string); ok && token != "" {

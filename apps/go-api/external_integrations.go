@@ -153,24 +153,24 @@ func (s *externalIntegrationsService) Unsplash(ctx context.Context, p *api.Unspl
 func (s *externalIntegrationsService) WorkspaceAiAssistant(ctx context.Context, p *api.WorkspaceAiAssistantPayload, body io.ReadCloser) (*api.ExternalIntegrationRawJSON, io.ReadCloser, error) {
 	actor, err := s.actor(ctx)
 	if err != nil {
-		closeExternalBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return nil, nil, err
 	}
 	role, err := s.repository.WorkspaceRole(ctx, actor.userID, p.Slug)
 	if err != nil {
-		closeExternalBody(body)
+		platform.CloseRequestBody(ctx, body)
 		if errors.Is(err, store.ErrWorkspaceForbidden) {
 			return nil, nil, s.error(403, map[string]any{"error": "You don't have the required permissions."})
 		}
 		return nil, nil, s.internal()
 	}
 	if role != 15 && role != 20 {
-		closeExternalBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return nil, nil, s.error(403, map[string]any{"error": "You don't have the required permissions."})
 	}
 	config, err := s.llmConfiguration(ctx)
 	if err != nil {
-		closeExternalBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return nil, nil, s.error(400, map[string]any{"error": "LLM provider API key and model are required"})
 	}
 	request, err := parseExternalAIRequest(ctx, body)
@@ -188,21 +188,21 @@ func (s *externalIntegrationsService) WorkspaceAiAssistant(ctx context.Context, 
 func (s *externalIntegrationsService) ProjectAiAssistant(ctx context.Context, p *api.ProjectAiAssistantPayload, body io.ReadCloser) (*api.ExternalIntegrationRawJSON, io.ReadCloser, error) {
 	actor, err := s.actor(ctx)
 	if err != nil {
-		closeExternalBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return nil, nil, err
 	}
 	allowed, err := s.repository.ProjectAllowed(ctx, actor.userID, p.Slug, p.ProjectID)
 	if err != nil {
-		closeExternalBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return nil, nil, s.internal()
 	}
 	if !allowed {
-		closeExternalBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return nil, nil, s.error(403, map[string]any{"error": "You don't have the required permissions."})
 	}
 	config, err := s.llmConfiguration(ctx)
 	if err != nil {
-		closeExternalBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return nil, nil, s.error(400, map[string]any{"error": "LLM provider API key and model are required"})
 	}
 	request, err := parseExternalAIRequest(ctx, body)
@@ -241,7 +241,7 @@ type externalAIRequest struct {
 }
 
 func parseExternalAIRequest(ctx context.Context, body io.ReadCloser) (externalAIRequest, error) {
-	defer closeExternalBody(body)
+	defer platform.CloseRequestBody(ctx, body)
 	contentType := ""
 	if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok {
 		contentType = metadata.Headers().Get("Content-Type")
@@ -375,12 +375,6 @@ func externalIntegrationsRaw(value any) (*api.ExternalIntegrationRawJSON, io.Rea
 		return nil, nil, err
 	}
 	return &api.ExternalIntegrationRawJSON{ContentType: "application/json"}, rawJSONReadCloser(data), nil
-}
-
-func closeExternalBody(body io.ReadCloser) {
-	if body != nil {
-		_ = body.Close()
-	}
 }
 
 func openAIComplete(ctx context.Context, key, model, prompt string) (string, error) {

@@ -8,11 +8,11 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 252,
+    "findings": 228,
     "also_in_ERR_01": 0,
-    "additional_ERR_02": 252,
+    "additional_ERR_02": 228,
     "test_file_findings": 0,
-    "non_test_file_findings": 252
+    "non_test_file_findings": 228
   },
   "findings": [
     {
@@ -135,13 +135,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/api_v1_stickies.go",
-      "line": 774,
-      "column": 3,
-      "message": "Error return value of `body.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/auth_redirects.go",
       "line": 196,
       "column": 8,
@@ -153,20 +146,6 @@
       "line": 147,
       "column": 4,
       "message": "Error return value of `runtime.Shutdown` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/notion-sync/main.go",
-      "line": 120,
-      "column": 17,
-      "message": "Error return value of `file.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/notion-sync/main.go",
-      "line": 134,
-      "column": 17,
-      "message": "Error return value of `journal.Close` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -262,35 +241,28 @@
     },
     {
       "file": "apps/go-api/cmd/system/auth_session_http.go",
-      "line": 100,
+      "line": 102,
       "column": 18,
       "message": "Error return value of `mime.ParseMediaType` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/cmd/system/auth_session_http.go",
-      "line": 119,
+      "line": 121,
       "column": 5,
       "message": "Error return value of `response.Write` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/cmd/system/auth_session_http.go",
-      "line": 218,
+      "line": 220,
       "column": 16,
       "message": "Error return value of `mime.ParseMediaType` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/cmd/system/auth_session_http.go",
-      "line": 224,
-      "column": 3,
-      "message": "Error return value of `request.Body.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/auth_session_http.go",
-      "line": 336,
+      "line": 338,
       "column": 5,
       "message": "Error return value of `loomhttp.SetResponseCookie` is not checked",
       "also_in_configured_audit": false
@@ -314,13 +286,6 @@
       "line": 93,
       "column": 8,
       "message": "Error return value of `(*golang.org/x/text/encoding.Decoder).String` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/http_server.go",
-      "line": 63,
-      "column": 4,
-      "message": "Error return value of `server.Close` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -437,14 +402,7 @@
     },
     {
       "file": "apps/go-api/cmd/system/sticky_routes.go",
-      "line": 277,
-      "column": 4,
-      "message": "Error return value of `part.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/sticky_routes.go",
-      "line": 371,
+      "line": 370,
       "column": 2,
       "message": "Error return value of `(*encoding/json.Encoder).Encode` is not checked",
       "also_in_configured_audit": false
@@ -569,13 +527,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/external_integrations.go",
-      "line": 382,
-      "column": 3,
-      "message": "Error return value of `body.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/instance_management.go",
       "line": 442,
       "column": 2,
@@ -653,20 +604,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/assets/draft_assets.go",
-      "line": 32,
-      "column": 17,
-      "message": "Error return value of `body.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/assets/legacy_multipart.go",
-      "line": 39,
-      "column": 3,
-      "message": "Error return value of `part.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/assets/service.go",
       "line": 492,
       "column": 11,
@@ -720,13 +657,6 @@
       "line": 900,
       "column": 24,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/authredirects/redis.go",
-      "line": 108,
-      "column": 3,
-      "message": "Error return value of `cache.Close` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -828,13 +758,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/backgroundtasks/issue_description_sync.go",
-      "line": 212,
-      "column": 5,
-      "message": "Error return value of `batchResults.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/backgroundtasks/issue_email_notifications.go",
       "line": 463,
       "column": 9,
@@ -870,13 +793,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/backgroundtasks/issue_version_sync.go",
-      "line": 206,
-      "column": 5,
-      "message": "Error return value of `batchResults.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/backgroundtasks/issue_version_task.go",
       "line": 153,
       "column": 11,
@@ -895,13 +811,6 @@
       "line": 106,
       "column": 10,
       "message": "Error return value of `html.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/page_transactions.go",
-      "line": 185,
-      "column": 5,
-      "message": "Error return value of `results.Close` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -976,21 +885,14 @@
     },
     {
       "file": "apps/go-api/internal/djangoinput/input.go",
-      "line": 122,
-      "column": 4,
-      "message": "Error return value of `part.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/djangoinput/input.go",
-      "line": 242,
+      "line": 241,
       "column": 11,
       "message": "Error return value of `url.QueryUnescape` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/djangoinput/input.go",
-      "line": 346,
+      "line": 345,
       "column": 12,
       "message": "Error return value of `value.Float64` is not checked",
       "also_in_configured_audit": false
@@ -1144,23 +1046,16 @@
     },
     {
       "file": "apps/go-api/internal/mcpoauth/provider.go",
-      "line": 49,
+      "line": 51,
       "column": 12,
       "message": "Error return value of `url.Parse` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/mcpoauth/provider.go",
-      "line": 106,
+      "line": 108,
       "column": 12,
       "message": "Error return value of `url.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/mcpoauth/provider.go",
-      "line": 156,
-      "column": 17,
-      "message": "Error return value of `response.Body.Close` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1182,20 +1077,6 @@
       "line": 33,
       "column": 12,
       "message": "Error return value of `url.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/mcptransport/workspace_selector.go",
-      "line": 20,
-      "column": 2,
-      "message": "Error return value of `request.Body.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/notionsync/http.go",
-      "line": 75,
-      "column": 3,
-      "message": "Error return value of `response.Body.Close` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1259,13 +1140,6 @@
       "line": 113,
       "column": 11,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/parity/runner.go",
-      "line": 158,
-      "column": 17,
-      "message": "Error return value of `connection.Close` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1675,13 +1549,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/page_lifecycle_methods.go",
-      "line": 318,
-      "column": 4,
-      "message": "Error return value of `body.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/page_reads.go",
       "line": 180,
       "column": 3,
@@ -1710,22 +1577,8 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/public_feedback.go",
-      "line": 358,
-      "column": 3,
-      "message": "Error return value of `body.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/user_account_writes.go",
-      "line": 389,
-      "column": 4,
-      "message": "Error return value of `body.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/user_account_writes.go",
-      "line": 509,
+      "line": 507,
       "column": 3,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
@@ -1746,23 +1599,9 @@
     },
     {
       "file": "apps/go-api/workspace_exports.go",
-      "line": 272,
-      "column": 3,
-      "message": "Error return value of `body.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_exports.go",
-      "line": 288,
+      "line": 283,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_lifecycle.go",
-      "line": 349,
-      "column": 3,
-      "message": "Error return value of `body.Close` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1770,13 +1609,6 @@
       "line": 210,
       "column": 2,
       "message": "Error return value of `service.recentVisits.Record` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_user_insights.go",
-      "line": 258,
-      "column": 4,
-      "message": "Error return value of `body.Close` is not checked",
       "also_in_configured_audit": false
     }
   ]

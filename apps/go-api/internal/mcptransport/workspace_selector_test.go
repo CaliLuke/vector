@@ -1,6 +1,9 @@
 package mcptransport_test
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -8,9 +11,51 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/mcptransport"
+	"github.com/CaliLuke/loom/clue/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+type workspaceCleanupBody struct {
+	*strings.Reader
+	closes int
+}
+
+func (body *workspaceCleanupBody) Close() error {
+	body.closes++
+	return errors.New("private workspace request")
+}
+
+func TestWorkspaceInspectionReportsCleanupWithoutChangingBoundedRequest(t *testing.T) {
+	for _, scenario := range []struct {
+		name, selector string
+		status         int
+	}{
+		{"matching", "current", http.StatusOK},
+		{"conflicting", "other", http.StatusBadRequest},
+	} {
+		t.Run(scenario.name, func(t *testing.T) {
+			h := handler(t, config("both"), options())
+			body := &workspaceCleanupBody{Reader: strings.NewReader(`{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"member","arguments":{"action":"me","workspace_slug":"` + scenario.selector + `"}}}`)}
+			r := httptest.NewRequest(http.MethodPost, "https://vector.example/mcp/api-key", nil)
+			r.Body = body
+			r.Header.Set("X-Workspace-Slug", "current")
+			r.Header.Set("Mcp-Protocol-Version", "2025-11-25")
+			r.Header.Set("Content-Type", "application/json")
+			r.Header.Set("Accept", "application/json, text/event-stream")
+			var output bytes.Buffer
+			ctx := log.Context(t.Context(), log.WithOutputs(log.Output{Writer: &output, Format: log.FormatJSON}), log.WithDisableBuffering(func(context.Context) bool { return true }))
+			response := httptest.NewRecorder()
+			h.ServeHTTP(response, r.WithContext(ctx))
+			require.Equal(t, scenario.status, response.Code, response.Body.String())
+			require.Equal(t, 1, body.closes)
+			var event map[string]any
+			require.NoError(t, json.Unmarshal(output.Bytes(), &event))
+			require.NotEmpty(t, event["error_type"])
+			require.NotContains(t, output.String(), "private")
+		})
+	}
+}
 
 func TestWorkspaceSelectorConflictsFailAtTheTransportBoundary(t *testing.T) {
 	for _, path := range []string{"/mcp", "/mcp/api-key"} {

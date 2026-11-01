@@ -215,7 +215,7 @@ func workspaceLifecycleRaw(body json.RawMessage) (*api.WorkspaceLifecycleRawJSON
 func (service *workspaceLifecycleService) CreateWorkspace(ctx context.Context, _ *api.CreateWorkspacePayload, body io.ReadCloser) (*api.WorkspaceLifecycleRawJSON, io.ReadCloser, error) {
 	principal, err := service.principal(ctx)
 	if err != nil {
-		closeWorkspaceLifecycleBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return nil, nil, err
 	}
 	fields, err := workspaceLifecycleRequestBody(ctx, body)
@@ -280,7 +280,7 @@ func (service *workspaceLifecycleService) CreateWorkspace(ctx context.Context, _
 func (service *workspaceLifecycleService) updateWorkspace(ctx context.Context, slug string, body io.ReadCloser) (*api.WorkspaceLifecycleRawJSON, io.ReadCloser, error) {
 	principal, err := service.workspaceAdmin(ctx, slug, false)
 	if err != nil {
-		closeWorkspaceLifecycleBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return nil, nil, err
 	}
 	fields, err := workspaceLifecycleRequestBody(ctx, body)
@@ -342,10 +342,4 @@ func (service *workspaceLifecycleService) DeleteWorkspace(ctx context.Context, p
 		return service.internal()
 	}
 	return nil
-}
-
-func closeWorkspaceLifecycleBody(body io.ReadCloser) {
-	if body != nil {
-		_ = body.Close()
-	}
 }

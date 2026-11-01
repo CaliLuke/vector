@@ -154,7 +154,7 @@ func (s *workspaceExportsService) GetIssueExports(ctx context.Context, p *api.Ge
 func (s *workspaceExportsService) CreateIssueExport(ctx context.Context, p *api.CreateIssueExportPayload, body io.ReadCloser) (*api.WorkspaceExportsRawJSON, io.ReadCloser, error) {
 	principal, err := s.actor(ctx, p.Slug)
 	if err != nil {
-		closeWorkspaceExportsBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return nil, nil, err
 	}
 	input, err := exportBody(ctx, body)
@@ -227,7 +227,7 @@ func workspaceExportProjectValues(input djangoinput.Input) ([]any, error) {
 func (s *workspaceExportsService) ExportAnalytics(ctx context.Context, p *api.ExportAnalyticsPayload, body io.ReadCloser) (*api.WorkspaceExportsRawJSON, io.ReadCloser, error) {
 	principal, err := s.actor(ctx, p.Slug)
 	if err != nil {
-		closeWorkspaceExportsBody(body)
+		platform.CloseRequestBody(ctx, body)
 		return nil, nil, err
 	}
 	input, err := exportBody(ctx, body)
@@ -266,11 +266,6 @@ func (s *workspaceExportsService) ExportAnalytics(ctx context.Context, p *api.Ex
 		return nil, nil, s.internal()
 	}
 	return workspaceExportsRaw(json.RawMessage(fmt.Sprintf(`{"message":%s}`, strconv.Quote("Once the export is ready it will be emailed to you at "+principal.email))))
-}
-func closeWorkspaceExportsBody(body io.ReadCloser) {
-	if body != nil {
-		_ = body.Close()
-	}
 }
 func workspaceExportsInputError(s *workspaceExportsService, err error) error {
 	var httpErr *djangoapi.HTTPError
