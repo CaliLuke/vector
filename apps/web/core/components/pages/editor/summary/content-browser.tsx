@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useSyncExternalStore, useCallback } from "react";
 // plane imports
 import type { EditorRefApi, IMarking } from "@plane/editor";
 import { cn } from "@plane/utils/common";
@@ -20,19 +20,21 @@ type Props = {
   showOutline?: boolean;
 };
 
+const EMPTY_HEADINGS: IMarking[] = [];
+
+const HeadingComponent: {
+  [key: number]: React.FC<THeadingComponentProps>;
+} = {
+  1: OutlineHeading1,
+  2: OutlineHeading2,
+  3: OutlineHeading3,
+};
+
 export function PageContentBrowser(props: Props) {
   const { className, editorRef, emptyState, setSidePeekVisible, showOutline = false } = props;
-  // states
-  const [headings, setHeadings] = useState<IMarking[]>([]);
-
-  useEffect(() => {
-    const unsubscribe = editorRef?.onHeadingChange(setHeadings);
-    // for initial render of this component to get the editor headings
-    setHeadings(editorRef?.getHeadings() ?? []);
-    return () => {
-      unsubscribe?.();
-    };
-  }, [editorRef]);
+  const subscribe = useCallback((notify: () => void) => editorRef?.onHeadingChange(notify) ?? (() => {}), [editorRef]);
+  const getSnapshot = useCallback(() => editorRef?.getHeadings() ?? EMPTY_HEADINGS, [editorRef]);
+  const headings = useSyncExternalStore(subscribe, getSnapshot, () => EMPTY_HEADINGS);
 
   const handleOnClick = useCallback(
     (marking: IMarking) => {
@@ -41,14 +43,6 @@ export function PageContentBrowser(props: Props) {
     },
     [editorRef, setSidePeekVisible]
   );
-
-  const HeadingComponent: {
-    [key: number]: React.FC<THeadingComponentProps>;
-  } = {
-    1: OutlineHeading1,
-    2: OutlineHeading2,
-    3: OutlineHeading3,
-  };
 
   if (headings.length === 0) return emptyState ?? null;
 
@@ -65,7 +59,7 @@ export function PageContentBrowser(props: Props) {
       {headings.map((marking) => {
         const Component = HeadingComponent[marking.level];
         if (!Component) return null;
-        if (showOutline === true)
+        if (showOutline)
           return (
             <div
               key={`${marking.level}-${marking.sequence}`}

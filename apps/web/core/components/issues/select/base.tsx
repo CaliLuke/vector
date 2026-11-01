@@ -140,7 +140,7 @@ function LabelPicker(props: TWorkItemLabelSelectBaseProps) {
 
   return (
     <ComboDropDown
-      as="div"
+      as="fieldset"
       ref={dropdownRef}
       value={value}
       onChange={onChange}
@@ -152,7 +152,6 @@ function LabelPicker(props: TWorkItemLabelSelectBaseProps) {
         if (!submitting) form.reset();
       }}
       button={button}
-      role="group"
     >
       {({ open, restoreButtonFocusOnClose }) =>
         open && (
@@ -257,6 +256,8 @@ function LabelPicker(props: TWorkItemLabelSelectBaseProps) {
                           </div>
                         </div>
                       );
+
+                    return undefined;
                   })
                 ) : submitting ? (
                   <Loader className="h-3.5 w-3.5 animate-spin" />

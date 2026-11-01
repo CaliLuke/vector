@@ -12,6 +12,7 @@ import { useTranslation } from "@plane/i18n";
 import { cn } from "@plane/utils/common";
 import { findHowManyDaysLeft } from "@plane/utils/datetime";
 // store
+import { EInboxIssueStatus } from "@plane/types";
 import type { TInboxIssue } from "@plane/types";
 import { ICON_PROPERTIES, InboxStatusIcon } from "./inbox-status-icon";
 import { useCurrentTime } from "@/hooks/use-current-time";
@@ -30,7 +31,8 @@ export const InboxIssueStatus = function InboxIssueStatus(props: Props) {
   // derived values
   const inboxIssueStatusDetail = INBOX_STATUS.find((s) => s.status === inboxIssue.status);
 
-  const isSnoozedDatePassed = inboxIssue.status === 0 && new Date(inboxIssue.snoozed_till ?? "") < currentTime;
+  const isSnoozedDatePassed =
+    inboxIssue.status === EInboxIssueStatus.SNOOZED && new Date(inboxIssue.snoozed_till ?? "") < currentTime;
   if (!inboxIssueStatusDetail || isSnoozedDatePassed) return <></>;
 
   const description = t(inboxIssueStatusDetail.i18n_description(), {
@@ -49,7 +51,9 @@ export const InboxIssueStatus = function InboxIssueStatus(props: Props) {
       <div className={`flex items-center gap-1`}>
         <InboxStatusIcon type={inboxIssue?.status} size={iconSize} className="flex-shrink-0" renderColor={false} />
         <div className="text-11 font-medium whitespace-nowrap">
-          {inboxIssue?.status === 0 && inboxIssue?.snoozed_till ? description : t(inboxIssueStatusDetail.i18n_title)}
+          {inboxIssue?.status === EInboxIssueStatus.SNOOZED && inboxIssue?.snoozed_till
+            ? description
+            : t(inboxIssueStatusDetail.i18n_title)}
         </div>
       </div>
       {showDescription && <div className="text-13 whitespace-nowrap">{description}</div>}

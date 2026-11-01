@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import type { ComponentType, ReactNode } from "react";
+import type { IUser } from "@plane/types";
 // ui
 
 import { ArrowDownWideNarrow, ArrowUpNarrowWide, CheckIcon, ChevronDownIcon, Eraser, MoveRight } from "lucide-react";
@@ -22,7 +24,58 @@ interface Props {
   handleDisplayFilterUpdate: (data: Partial<IMemberFilters>) => void;
 }
 
-export const MemberHeaderColumn = function MemberHeaderColumn(props: Props) {
+type MemberColumn<Row> = {
+  key: string;
+  content: string;
+  property?: Props["property"];
+  thClassName?: string;
+  tdRender: (row: Row) => ReactNode;
+};
+
+export function createMemberColumns<Row>(
+  nameColumn: {
+    key: string;
+    content: string;
+    component: ComponentType<{
+      rowData: Row;
+      workspaceSlug: string;
+      isAdmin: boolean;
+      currentUser: IUser | undefined;
+      setRemoveMemberModal: (row: Row) => void;
+    }>;
+    workspaceSlug: string;
+    isAdmin: boolean;
+    currentUser: IUser | undefined;
+    setRemoveMemberModal: (row: Row) => void;
+  },
+  columns: MemberColumn<Row>[],
+  displayFilters: Props["displayFilters"],
+  handleDisplayFilterUpdate: Props["handleDisplayFilterUpdate"]
+) {
+  const { key, content, component: NameColumn, ...nameProps } = nameColumn;
+  const fullName: MemberColumn<Row> = {
+    key,
+    content,
+    property: "full_name",
+    thClassName: "text-left",
+    tdRender: (rowData) => <NameColumn rowData={rowData} {...nameProps} />,
+  };
+  return [fullName, ...columns].map(({ property, ...column }) =>
+    Object.assign(column, {
+      thRender: property
+        ? () => (
+            <MemberHeaderColumn
+              property={property}
+              displayFilters={displayFilters}
+              handleDisplayFilterUpdate={handleDisplayFilterUpdate}
+            />
+          )
+        : undefined,
+    })
+  );
+}
+
+const MemberHeaderColumn = function MemberHeaderColumn(props: Props) {
   const { displayFilters, handleDisplayFilterUpdate, property } = props;
   // i18n
   const { t } = useTranslation();

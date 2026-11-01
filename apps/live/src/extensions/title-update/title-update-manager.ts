@@ -17,7 +17,7 @@ import { DebounceManager } from "./debounce";
 export class TitleUpdateManager {
   private documentName: string;
   private context: HocusPocusServerContext;
-  private debounceManager: DebounceManager;
+  private debounceManager: DebounceManager<[title: string]>;
   private lastTitle: string | null = null;
   private lastKnownTitle: string | null;
   private inFlightTitle: string | null = null;

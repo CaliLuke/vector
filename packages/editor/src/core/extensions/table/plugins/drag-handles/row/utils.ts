@@ -129,7 +129,7 @@ export const constructRowDragPreview = (
   selection: Selection,
   table: TableNodeLocation
 ): HTMLElement | undefined => {
-  if (!isCellSelection(selection)) return;
+  if (!isCellSelection(selection)) return undefined;
 
   const tableMap = TableMap.get(table.node);
   const selectedRowRect = getSelectedRect(selection, tableMap);

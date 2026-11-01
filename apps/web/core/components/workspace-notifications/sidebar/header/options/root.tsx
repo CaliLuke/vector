@@ -51,7 +51,7 @@ export const NotificationSidebarHeaderOptions = function NotificationSidebarHead
           variant="ghost"
           icon={markAllRead.isPending ? Spinner : CheckCheck}
           onClick={() => {
-            handleMarkAllNotificationsAsRead();
+            void handleMarkAllNotificationsAsRead();
           }}
         />
       </Tooltip>
@@ -63,7 +63,7 @@ export const NotificationSidebarHeaderOptions = function NotificationSidebarHead
           variant="ghost"
           icon={RefreshCw}
           className={list.isRefetching ? "animate-spin" : ""}
-          onClick={refreshNotifications}
+          onClick={() => void refreshNotifications()}
         />
       </Tooltip>
 

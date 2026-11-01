@@ -10,7 +10,7 @@ import { AlignCenter, AlignLeft, AlignRight } from "lucide-react";
 // plane utils
 import { cn } from "@plane/utils/common";
 // components
-import { TextAlignItem } from "@/components/menus";
+import { createTextAlignItem } from "@/components/menus";
 // types
 import type { TEditorCommands } from "@/types";
 import type { EditorStateType } from "./root";
@@ -22,11 +22,12 @@ type Props = {
 
 export function TextAlignmentSelector(props: Props) {
   const { editor, editorState } = props;
-  const menuItem = TextAlignItem(editor);
+  const menuItem = createTextAlignItem(editor);
 
   const textAlignmentOptions: {
     itemKey: TEditorCommands;
     renderKey: string;
+    label: string;
     icon: LucideIcon;
     command: () => void;
     isActive: () => boolean;
@@ -34,6 +35,7 @@ export function TextAlignmentSelector(props: Props) {
     {
       itemKey: "text-align",
       renderKey: "text-align-left",
+      label: "Align left",
       icon: AlignLeft,
       command: () =>
         menuItem.command({
@@ -44,6 +46,7 @@ export function TextAlignmentSelector(props: Props) {
     {
       itemKey: "text-align",
       renderKey: "text-align-center",
+      label: "Align center",
       icon: AlignCenter,
       command: () =>
         menuItem.command({
@@ -54,6 +57,7 @@ export function TextAlignmentSelector(props: Props) {
     {
       itemKey: "text-align",
       renderKey: "text-align-right",
+      label: "Align right",
       icon: AlignRight,
       command: () =>
         menuItem.command({
@@ -69,6 +73,8 @@ export function TextAlignmentSelector(props: Props) {
       {textAlignmentOptions.map((item) => (
         <button
           key={item.renderKey}
+          aria-label={item.label}
+          aria-pressed={item.isActive()}
           type="button"
           onClick={(e) => {
             e.stopPropagation();

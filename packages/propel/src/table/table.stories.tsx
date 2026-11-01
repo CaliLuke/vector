@@ -19,34 +19,54 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+const exampleUsers = [
+  { name: "John Doe", email: "john@example.com", role: "Admin" },
+  { name: "Jane Smith", email: "jane@example.com", role: "User" },
+  { name: "Bob Wilson", email: "bob@example.com", role: "Moderator" },
+];
+
+function UserTableHeader({ selectable = false }: { selectable?: boolean }) {
+  return (
+    <TableHeader>
+      <TableRow>
+        {selectable && (
+          <TableHead>
+            <input type="checkbox" className="h-4 w-4" aria-label="Select all rows" />
+          </TableHead>
+        )}
+        <TableHead>Name</TableHead>
+        <TableHead>Email</TableHead>
+        <TableHead>Role</TableHead>
+      </TableRow>
+    </TableHeader>
+  );
+}
+
+function UserTableBody({ selectable = false }: { selectable?: boolean }) {
+  return (
+    <TableBody>
+      {exampleUsers.map((user) => (
+        <TableRow key={user.email}>
+          {selectable && (
+            <TableCell>
+              <input type="checkbox" className="h-4 w-4" aria-label={`Select row for ${user.name}`} />
+            </TableCell>
+          )}
+          <TableCell>{user.name}</TableCell>
+          <TableCell>{user.email}</TableCell>
+          <TableCell>{user.role}</TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  );
+}
+
 export const Default: Story = {
   render() {
     return (
       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow>
-            <TableCell>John Doe</TableCell>
-            <TableCell>john@example.com</TableCell>
-            <TableCell>Admin</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Jane Smith</TableCell>
-            <TableCell>jane@example.com</TableCell>
-            <TableCell>User</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Bob Wilson</TableCell>
-            <TableCell>bob@example.com</TableCell>
-            <TableCell>Moderator</TableCell>
-          </TableRow>
-        </TableBody>
+        <UserTableHeader />
+        <UserTableBody />
       </Table>
     );
   },
@@ -216,42 +236,8 @@ export const WithCheckboxes: Story = {
   render() {
     return (
       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>
-              <input type="checkbox" className="h-4 w-4" aria-label="Select all rows" />
-            </TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow>
-            <TableCell>
-              <input type="checkbox" className="h-4 w-4" aria-label="Select row for John Doe" />
-            </TableCell>
-            <TableCell>John Doe</TableCell>
-            <TableCell>john@example.com</TableCell>
-            <TableCell>Admin</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>
-              <input type="checkbox" className="h-4 w-4" aria-label="Select row for Jane Smith" />
-            </TableCell>
-            <TableCell>Jane Smith</TableCell>
-            <TableCell>jane@example.com</TableCell>
-            <TableCell>User</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>
-              <input type="checkbox" className="h-4 w-4" aria-label="Select row for Bob Wilson" />
-            </TableCell>
-            <TableCell>Bob Wilson</TableCell>
-            <TableCell>bob@example.com</TableCell>
-            <TableCell>Moderator</TableCell>
-          </TableRow>
-        </TableBody>
+        <UserTableHeader selectable />
+        <UserTableBody selectable />
       </Table>
     );
   },
@@ -261,13 +247,7 @@ export const EmptyState: Story = {
   render() {
     return (
       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-          </TableRow>
-        </TableHeader>
+        <UserTableHeader />
         <TableBody>
           <TableRow>
             <TableCell colSpan={3} className="h-24 text-center">

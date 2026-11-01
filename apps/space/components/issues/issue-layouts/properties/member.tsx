@@ -38,7 +38,7 @@ const ButtonAvatars = function ButtonAvatars(props: AvatarProps) {
       return (
         <AvatarGroup size="md" showTooltip={!showTooltip}>
           {members.map((member) => {
-            if (!member) return;
+            if (!member) return undefined;
             return <Avatar key={member.id} src={member.member__avatar} name={member.member__display_name} />;
           })}
         </AvatarGroup>

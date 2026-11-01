@@ -4,12 +4,15 @@
  * See the LICENSE file for details.
  */
 
+import type { ReactNode } from "react";
 import { useState } from "react";
+import { useExampleReactions } from "./reaction-examples";
+import { ReactionMessageExample } from "./message-example";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { SmilePlus } from "lucide-react";
 import { stringToEmoji } from "../emoji-icon-picker";
-import type { EmojiReactionType } from "./emoji-reaction";
 import { EmojiReactionGroup } from "./emoji-reaction";
+import type { EmojiReactionPickerProps } from "./emoji-reaction-picker";
 import { EmojiReactionPicker } from "./emoji-reaction-picker";
 
 const meta = {
@@ -24,6 +27,31 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+function SelectedEmojiExample({
+  renderLabel,
+  resultClassName = "text-13",
+  ...pickerProps
+}: Pick<EmojiReactionPickerProps, "searchDisabled" | "searchPlaceholder"> & {
+  renderLabel: (selected: string | null) => ReactNode;
+  resultClassName?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
+  return (
+    <div className="space-y-4 p-4">
+      <EmojiReactionPicker
+        {...pickerProps}
+        isOpen={isOpen}
+        handleToggle={setIsOpen}
+        onChange={setSelectedEmoji}
+        closeOnSelect
+        label={renderLabel(selectedEmoji)}
+      />
+      {selectedEmoji && <div className={resultClassName}>Selected: {selectedEmoji}</div>}
+    </div>
+  );
+}
+
 export const Default: Story = {
   args: {
     isOpen: false,
@@ -32,26 +60,15 @@ export const Default: Story = {
     label: "Pick Emoji",
   },
   render() {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
-
     return (
-      <div className="space-y-4 p-4">
-        <EmojiReactionPicker
-          isOpen={isOpen}
-          handleToggle={setIsOpen}
-          onChange={setSelectedEmoji}
-          closeOnSelect
-          label={
-            <span className="flex size-8 items-center justify-center rounded-md px-2 text-18">
-              {selectedEmoji ? stringToEmoji(selectedEmoji) : <SmilePlus className="h-6 text-primary" />}
-            </span>
-          }
-        />
-        {selectedEmoji && (
-          <div className="rounded-sm border border-subtle bg-layer-1 p-4 text-13">Selected: {selectedEmoji}</div>
+      <SelectedEmojiExample
+        resultClassName="rounded-sm border border-subtle bg-layer-1 p-4 text-13"
+        renderLabel={(selectedEmoji) => (
+          <span className="flex size-8 items-center justify-center rounded-md px-2 text-18">
+            {selectedEmoji ? stringToEmoji(selectedEmoji) : <SmilePlus className="h-6 text-primary" />}
+          </span>
         )}
-      </div>
+      />
     );
   },
 };
@@ -64,25 +81,15 @@ export const WithCustomLabel: Story = {
     label: "Add Reaction",
   },
   render() {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
-
     return (
-      <div className="space-y-4 p-4">
-        <EmojiReactionPicker
-          isOpen={isOpen}
-          handleToggle={setIsOpen}
-          onChange={setSelectedEmoji}
-          closeOnSelect
-          label={
-            <button className="flex items-center gap-2 rounded-sm border border-subtle bg-layer-1 px-4 py-2 hover:bg-surface-2">
-              {selectedEmoji ? stringToEmoji(selectedEmoji) : <SmilePlus className="h-4 w-4" />}
-              <span className="text-13">Add Reaction</span>
-            </button>
-          }
-        />
-        {selectedEmoji && <div className="text-13">Selected: {selectedEmoji}</div>}
-      </div>
+      <SelectedEmojiExample
+        renderLabel={(selectedEmoji) => (
+          <button className="flex items-center gap-2 rounded-sm border border-subtle bg-layer-1 px-4 py-2 hover:bg-surface-2">
+            {selectedEmoji ? stringToEmoji(selectedEmoji) : <SmilePlus className="h-4 w-4" />}
+            <span className="text-13">Add Reaction</span>
+          </button>
+        )}
+      />
     );
   },
 };
@@ -96,35 +103,14 @@ export const InlineReactions: Story = {
   },
   render() {
     const [isOpen, setIsOpen] = useState(false);
-    const [reactions, setReactions] = useState<EmojiReactionType[]>([
+    const {
+      reactions,
+      addReaction: handleReactionAdd,
+      toggleReaction: handleReactionClick,
+    } = useExampleReactions([
       { emoji: "👍", count: 3, reacted: false, users: ["Alice", "Bob", "Charlie"] },
       { emoji: "❤️", count: 2, reacted: true, users: ["You", "David"] },
     ]);
-
-    const handleReactionAdd = (emoji: string) => {
-      setReactions((prev) => {
-        const existing = prev.find((r) => r.emoji === emoji);
-        if (existing) {
-          return prev.map((r) => (r.emoji === emoji ? { ...r, count: r.count + 1, reacted: true } : r));
-        }
-        return [...prev, { emoji, count: 1, reacted: true, users: ["You"] }];
-      });
-    };
-
-    const handleReactionClick = (emoji: string) => {
-      setReactions((prev) =>
-        prev.map((r) => {
-          if (r.emoji === emoji) {
-            return {
-              ...r,
-              reacted: !r.reacted,
-              count: r.reacted ? r.count - 1 : r.count + 1,
-            };
-          }
-          return r;
-        })
-      );
-    };
 
     return (
       <div className="p-4">
@@ -218,25 +204,13 @@ export const SearchDisabled: Story = {
     label: "No Search",
   },
   render() {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
-
     return (
-      <div className="space-y-4 p-4">
-        <EmojiReactionPicker
-          isOpen={isOpen}
-          handleToggle={setIsOpen}
-          onChange={setSelectedEmoji}
-          closeOnSelect
-          searchDisabled
-          label={
-            <button className="rounded-sm border border-subtle bg-layer-1 px-4 py-2 hover:bg-surface-2">
-              No Search
-            </button>
-          }
-        />
-        {selectedEmoji && <div className="text-13">Selected: {selectedEmoji}</div>}
-      </div>
+      <SelectedEmojiExample
+        searchDisabled
+        renderLabel={() => (
+          <button className="rounded-sm border border-subtle bg-layer-1 px-4 py-2 hover:bg-surface-2">No Search</button>
+        )}
+      />
     );
   },
 };
@@ -249,25 +223,15 @@ export const CustomSearchPlaceholder: Story = {
     label: "Custom Search",
   },
   render() {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
-
     return (
-      <div className="space-y-4 p-4">
-        <EmojiReactionPicker
-          isOpen={isOpen}
-          handleToggle={setIsOpen}
-          onChange={setSelectedEmoji}
-          closeOnSelect
-          searchPlaceholder="Find your emoji..."
-          label={
-            <button className="rounded-sm border border-subtle bg-layer-1 px-4 py-2 hover:bg-surface-2">
-              Custom Search
-            </button>
-          }
-        />
-        {selectedEmoji && <div className="text-13">Selected: {selectedEmoji}</div>}
-      </div>
+      <SelectedEmojiExample
+        searchPlaceholder="Find your emoji..."
+        renderLabel={() => (
+          <button className="rounded-sm border border-subtle bg-layer-1 px-4 py-2 hover:bg-surface-2">
+            Custom Search
+          </button>
+        )}
+      />
     );
   },
 };
@@ -281,10 +245,11 @@ export const CloseOnSelectDisabled: Story = {
   },
   render() {
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedEmojis, setSelectedEmojis] = useState<string[]>([]);
+    const [selectedEmojis, setSelectedEmojis] = useState<{ id: string; emoji: string }[]>([]);
 
     const handleChange = (emoji: string) => {
-      setSelectedEmojis((prev) => [...prev, emoji]);
+      const selection = { id: crypto.randomUUID(), emoji };
+      setSelectedEmojis((prev) => [...prev, selection]);
     };
 
     return (
@@ -312,8 +277,8 @@ export const CloseOnSelectDisabled: Story = {
           <div className="rounded-sm border border-subtle bg-layer-1 p-4 text-13">
             <div className="mb-2 font-medium">Selected ({selectedEmojis.length}):</div>
             <div className="flex flex-wrap gap-2">
-              {selectedEmojis.map((emoji, idx) => (
-                <span key={idx} className="text-18">
+              {selectedEmojis.map(({ emoji, id }) => (
+                <span key={id} className="text-18">
                   {emoji}
                 </span>
               ))}
@@ -334,48 +299,14 @@ export const InMessageContext: Story = {
   },
   render() {
     const [isOpen, setIsOpen] = useState(false);
-    const [reactions, setReactions] = useState<EmojiReactionType[]>([
-      { emoji: "👍", count: 5, reacted: false, users: ["Alice", "Bob", "Charlie"] },
-    ]);
-
-    const handleReactionAdd = (emoji: string) => {
-      setReactions((prev) => {
-        const existing = prev.find((r) => r.emoji === emoji);
-        if (existing) {
-          return prev.map((r) => (r.emoji === emoji ? { ...r, count: r.count + 1, reacted: true } : r));
-        }
-        return [...prev, { emoji, count: 1, reacted: true, users: ["You"] }];
-      });
-    };
-
-    const handleReactionClick = (emoji: string) => {
-      setReactions((prev) =>
-        prev.map((r) => {
-          if (r.emoji === emoji) {
-            return {
-              ...r,
-              reacted: !r.reacted,
-              count: r.reacted ? r.count - 1 : r.count + 1,
-            };
-          }
-          return r;
-        })
-      );
-    };
+    const {
+      reactions,
+      addReaction: handleReactionAdd,
+      toggleReaction: handleReactionClick,
+    } = useExampleReactions([{ emoji: "👍", count: 5, reacted: false, users: ["Alice", "Bob", "Charlie"] }]);
 
     return (
-      <div className="max-w-md space-y-3 rounded-lg border border-subtle p-4">
-        <div className="flex items-start gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-primary text-13 text-on-color">
-            AB
-          </div>
-          <div className="flex-1">
-            <div className="text-13 font-medium">Alice Brown</div>
-            <div className="mt-1 text-13 text-tertiary">
-              Just finished the design for the new dashboard! Would love to hear your thoughts.
-            </div>
-          </div>
-        </div>
+      <ReactionMessageExample message="Just finished the design for the new dashboard! Would love to hear your thoughts.">
         <div className="flex gap-2">
           <EmojiReactionGroup reactions={reactions} onReactionClick={handleReactionClick} showAddButton={false} />
           <EmojiReactionPicker
@@ -390,7 +321,7 @@ export const InMessageContext: Story = {
             }
           />
         </div>
-      </div>
+      </ReactionMessageExample>
     );
   },
 };

@@ -1,3 +1,4 @@
+import range from "lodash-es/range.js";
 import type { WorkItemPropertyIdentity } from "@/services/work-item-types.service";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
@@ -86,14 +87,16 @@ export const SpreadsheetTable = function SpreadsheetTable(props: Props) {
 
     //The shadow styles are added this way to avoid re-render of all the rows of table, which could be costly
     if (scrollLeft > 0 !== isScrolled.current) {
-      const firstColumns = containerRef.current.querySelectorAll("table tr td:first-child, th:first-child");
+      const firstColumns = containerRef.current.querySelectorAll<HTMLTableCellElement>(
+        "table tr td:first-child, th:first-child"
+      );
 
       for (let i = 0; i < firstColumns.length; i++) {
         const shadow = i === 0 ? headerShadow : columnShadow;
         if (scrollLeft > 0) {
-          (firstColumns[i] as HTMLElement).style.boxShadow = shadow;
+          firstColumns[i].style.boxShadow = shadow;
         } else {
-          (firstColumns[i] as HTMLElement).style.boxShadow = "none";
+          firstColumns[i].style.boxShadow = "none";
         }
       }
       isScrolled.current = scrollLeft > 0;
@@ -114,7 +117,7 @@ export const SpreadsheetTable = function SpreadsheetTable(props: Props) {
 
   useIntersectionObserver(containerRef, isPaginating ? null : intersectionElement, loadMoreIssues, `100% 0% 100% 0%`);
 
-  const handleKeyBoardNavigation = useTableKeyboardNavigation();
+  const gridNavigation = useTableKeyboardNavigation();
 
   const displayPropertiesCount =
     spreadsheetColumnsList.filter(
@@ -122,7 +125,11 @@ export const SpreadsheetTable = function SpreadsheetTable(props: Props) {
     ).length + customColumns.length;
 
   return (
-    <table className="w-full overflow-y-auto bg-surface-1" onKeyDown={handleKeyBoardNavigation}>
+    <table
+      className="w-full overflow-y-auto bg-surface-1"
+      aria-label={isEpic ? "Epics" : "Work items"}
+      {...gridNavigation}
+    >
       <SpreadsheetHeader
         customColumns={customColumns}
         displayProperties={displayProperties}
@@ -159,8 +166,8 @@ export const SpreadsheetTable = function SpreadsheetTable(props: Props) {
       </tbody>
       {canLoadMoreIssues && (
         <tfoot ref={setIntersectionElement}>
-          {Array.from({ length: 3 }).map((_, index) => (
-            <SpreadsheetIssueRowLoader key={index} columnCount={displayPropertiesCount} />
+          {range(3).map((slot) => (
+            <SpreadsheetIssueRowLoader key={slot} columnCount={displayPropertiesCount} />
           ))}
         </tfoot>
       )}

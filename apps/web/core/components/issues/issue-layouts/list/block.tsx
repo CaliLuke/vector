@@ -26,6 +26,7 @@ import { IssueProperties } from "@/components/issues/issue-layouts/properties";
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
 // hooks
 import { useSidebarCollapsed } from "@/providers/sidebar-state";
+import type { TPeekIssue } from "@/providers/issue-detail-ui-state";
 import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
 import { useRouteProject, useWorkspaceProjectDetails } from "@/hooks/use-projects";
 import type { TSelectionHelper } from "@/hooks/use-multiple-select";
@@ -101,7 +102,6 @@ export const IssueBlock = function IssueBlock(props: IssueBlockProps) {
 
   // derived values
   const issue = issuesMap[issueId];
-  const subIssuesCount = issue?.sub_issues_count ?? 0;
   const canEditIssueProperties = canEditProperties(issue?.project_id ?? undefined);
   const isDraggingAllowed = canDrag && canEditIssueProperties;
 
@@ -128,6 +128,7 @@ export const IssueBlock = function IssueBlock(props: IssueBlockProps) {
   }, [isDraggingAllowed, issueId, groupId, setIsCurrentBlockDragging]);
 
   if (!issue) return null;
+  const subIssuesCount = issue.sub_issues_count ?? 0;
 
   const projectIdentifier = projectRows?.find((project) => project.id === issue.project_id)?.identifier ?? "";
   const isIssueSelected = selectionHelpers.getIsEntitySelected(issue.id);
@@ -147,21 +148,14 @@ export const IssueBlock = function IssueBlock(props: IssueBlockProps) {
     }
   };
 
-  // Calculate width for: projectIdentifier + "-" + dynamic sequence number digits
-  // Use next_work_item_sequence from backend (static value from project endpoint)
-  const maxSequenceId = currentProjectNextSequenceId ?? 1;
-  const keyMinWidth = displayProperties?.key
-    ? calculateIdentifierWidth(projectIdentifier?.length ?? 0, maxSequenceId)
-    : 0;
-
   const workItemLink = generateWorkItemLink({
     workspaceSlug,
-    projectId: issue?.project_id,
+    projectId: issue.project_id,
     issueId,
     projectIdentifier,
-    sequenceId: issue?.sequence_id,
+    sequenceId: issue.sequence_id,
     isEpic,
-    isArchived: !!issue?.archived_at,
+    isArchived: !!issue.archived_at,
   });
   return (
     <ControlLink
@@ -169,22 +163,19 @@ export const IssueBlock = function IssueBlock(props: IssueBlockProps) {
       href={workItemLink}
       onClick={() => handleIssuePeekOverview(issue)}
       className="w-full cursor-pointer"
-      disabled={!!issue?.tempId || issue?.is_draft}
+      disabled={!!issue.tempId || issue.is_draft}
     >
       <Row
         ref={issueRef}
-        className={cn(
-          "group/list-block relative flex min-h-11 flex-col gap-3 bg-layer-transparent py-3 text-13 transition-colors hover:bg-layer-transparent-hover",
-          {
-            "border-accent-strong": getIsIssuePeeked(issue.id) && peekIssue?.nestingLevel === nestingLevel,
-            "border-strong-1": isIssueActive,
-            "last:border-b-transparent": !getIsIssuePeeked(issue.id) && !isIssueActive,
-            "bg-accent-primary/5 hover:bg-accent-primary/10": isIssueSelected,
-            "bg-layer-1": isCurrentBlockDragging,
-            "md:flex-row md:items-center": isSidebarCollapsed,
-            "lg:flex-row lg:items-center": !isSidebarCollapsed,
-          }
-        )}
+        className={issueBlockRowClasses({
+          isPeeked: getIsIssuePeeked(issue.id),
+          peekIssue,
+          nestingLevel,
+          isIssueActive,
+          isIssueSelected,
+          isCurrentBlockDragging,
+          isSidebarCollapsed,
+        })}
         onDragStart={() => {
           if (!isDraggingAllowed) {
             setToast({
@@ -206,7 +197,8 @@ export const IssueBlock = function IssueBlock(props: IssueBlockProps) {
           isEpic={isEpic}
           isSubIssue={isSubIssue}
           marginLeft={marginLeft}
-          keyMinWidth={keyMinWidth}
+          projectIdentifier={projectIdentifier}
+          nextSequenceId={currentProjectNextSequenceId}
           subIssuesCount={subIssuesCount}
           isExpanded={isExpanded}
           onToggleExpand={handleToggleExpand}
@@ -246,7 +238,8 @@ type IssueBlockHeadingProps = {
   isEpic: boolean;
   isSubIssue: boolean;
   marginLeft: string;
-  keyMinWidth: number;
+  projectIdentifier: string;
+  nextSequenceId: number | undefined;
   subIssuesCount: number;
   isExpanded: boolean;
   onToggleExpand: React.MouseEventHandler<HTMLButtonElement>;
@@ -264,14 +257,10 @@ type IssueBlockHeadingProps = {
 function IssueBlockHeading(props: IssueBlockHeadingProps) {
   const {
     issue,
-    issueId,
-    workspaceSlug,
     projectId,
-    displayProperties,
     isEpic,
     isSubIssue,
     marginLeft,
-    keyMinWidth,
     subIssuesCount,
     isExpanded,
     onToggleExpand,
@@ -315,26 +304,14 @@ function IssueBlockHeading(props: IssueBlockHeadingProps) {
               </div>
             </Tooltip>
           )}
-          {displayProperties && (displayProperties.key || displayProperties.issue_type) && (
-            <div className="flex-shrink-0" style={{ minWidth: `${keyMinWidth}px` }}>
-              {issue.project_id && (
-                <IssueIdentifier
-                  workspaceSlug={workspaceSlug}
-                  issueId={issueId}
-                  projectId={issue.project_id}
-                  size="xs"
-                  variant="tertiary"
-                  displayProperties={displayProperties}
-                />
-              )}
-            </div>
-          )}
+          <IssueBlockIdentifier {...props} />
           <div className="grid size-4 flex-shrink-0 place-items-center">
             {subIssuesCount > 0 && !isEpic && (
               <button
                 type="button"
                 className="grid size-4 place-items-center rounded-xs text-placeholder hover:text-tertiary"
                 onClick={onToggleExpand}
+                aria-label={isExpanded ? "Collapse sub-items" : "Expand sub-items"}
               >
                 <ChevronRightIcon className={cn("size-4", { "rotate-90": isExpanded })} strokeWidth={2.5} />
               </button>
@@ -411,5 +388,65 @@ function IssueBlockProperties({
         {quickActions({ issue, parentRef: issueRef })}
       </div>
     </>
+  );
+}
+
+function issueBlockRowClasses({
+  isPeeked,
+  peekIssue,
+  nestingLevel,
+  isIssueActive,
+  isIssueSelected,
+  isCurrentBlockDragging,
+  isSidebarCollapsed,
+}: {
+  isPeeked: boolean;
+  peekIssue: TPeekIssue | undefined;
+  nestingLevel: number;
+  isIssueActive: boolean;
+  isIssueSelected: boolean;
+  isCurrentBlockDragging: boolean;
+  isSidebarCollapsed: boolean | undefined;
+}) {
+  return cn(
+    "group/list-block relative flex min-h-11 flex-col gap-3 bg-layer-transparent py-3 text-13 transition-colors hover:bg-layer-transparent-hover",
+    {
+      "border-accent-strong": isPeeked && peekIssue?.nestingLevel === nestingLevel,
+      "border-strong-1": isIssueActive,
+      "last:border-b-transparent": !isPeeked && !isIssueActive,
+      "bg-accent-primary/5 hover:bg-accent-primary/10": isIssueSelected,
+      "bg-layer-1": isCurrentBlockDragging,
+      "md:flex-row md:items-center": isSidebarCollapsed,
+      "lg:flex-row lg:items-center": !isSidebarCollapsed,
+    }
+  );
+}
+
+function IssueBlockIdentifier({
+  displayProperties,
+  projectIdentifier,
+  nextSequenceId,
+  issue,
+  workspaceSlug,
+  issueId,
+}: Pick<
+  IssueBlockHeadingProps,
+  "displayProperties" | "projectIdentifier" | "nextSequenceId" | "issue" | "workspaceSlug" | "issueId"
+>) {
+  if (!displayProperties || (!displayProperties.key && !displayProperties.issue_type)) return null;
+  const minWidth = displayProperties.key ? calculateIdentifierWidth(projectIdentifier.length, nextSequenceId ?? 1) : 0;
+  return (
+    <div className="flex-shrink-0" style={{ minWidth: `${minWidth}px` }}>
+      {issue.project_id && (
+        <IssueIdentifier
+          workspaceSlug={workspaceSlug}
+          issueId={issueId}
+          projectId={issue.project_id}
+          size="xs"
+          variant="tertiary"
+          displayProperties={displayProperties}
+        />
+      )}
+    </div>
   );
 }

@@ -75,7 +75,7 @@ export function SidebarMenuItems() {
     }
 
     // Sort personal items by sort_order
-    personalItems.sort((a, b) => a.sort_order - b.sort_order);
+    personalItems.toSorted((a, b) => a.sort_order - b.sort_order);
 
     // Merge static items with sorted personal items
     return [...items, ...personalItems];
@@ -90,7 +90,7 @@ export function SidebarMenuItems() {
           ...item,
           sort_order: preference ? preference.sort_order : 0,
         };
-      }).sort((a, b) => a.sort_order - b.sort_order),
+      }).toSorted((a, b) => a.sort_order - b.sort_order),
     [workspacePreferences]
   );
 

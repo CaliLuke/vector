@@ -7,95 +7,104 @@ function fail(message) {
   throw new Error(message);
 }
 
+function parseEvent(line, lineNumber) {
+  if (!line.trim()) fail(`Malformed empty JSONL record at line ${lineNumber}.`);
+  let event;
+  try {
+    event = JSON.parse(line);
+  } catch (error) {
+    fail(`Malformed JSON at line ${lineNumber}: ${error.message}`);
+  }
+  if (
+    !event ||
+    typeof event !== "object" ||
+    typeof event.Package !== "string" ||
+    !event.Package ||
+    !allowedActions.has(event.Action)
+  )
+    fail(`Invalid go test event at line ${lineNumber}.`);
+  return event;
+}
+
+const terminalActions = new Set(["pass", "fail", "skip"]);
+
+class GoTestReport {
+  tests = new Map();
+  packages = new Map();
+  startedPackages = new Set();
+  noTestFiles = new Set();
+  passed = 0;
+  skips = [];
+
+  accept(event) {
+    const pkg = event.Package;
+    if (event.Action === "start") this.startedPackages.add(pkg);
+    if (event.Action === "output" && typeof event.Output === "string" && event.Output.includes("[no test files]")) {
+      this.noTestFiles.add(pkg);
+    }
+    if (event.Test) this.acceptTest(event);
+    else this.acceptPackage(event);
+  }
+
+  acceptTest(event) {
+    const pkg = event.Package;
+    const key = `${pkg}\0${event.Test}`;
+    const state = this.tests.get(key) ?? { pkg, name: event.Test, started: false, terminal: false, output: "" };
+    if (event.Action === "output" && typeof event.Output === "string") state.output += event.Output;
+    if (event.Action === "run") {
+      if (state.started || state.terminal) fail(`Duplicate test start: ${pkg} ${event.Test}.`);
+      state.started = true;
+    }
+    if (terminalActions.has(event.Action)) this.finishTest(state, event.Action);
+    this.tests.set(key, state);
+  }
+
+  finishTest(state, action) {
+    const { pkg, name } = state;
+    if (!state.started || state.terminal)
+      fail(`Test terminal event without one active start: ${pkg} ${name} (${action}).`);
+    state.terminal = true;
+    if (action === "pass") this.passed += 1;
+    if (action === "fail") fail(`Go test failed: ${pkg} ${name}${state.output ? `\n${state.output.trim()}` : ""}`);
+    if (action === "skip") this.skips.push({ pkg, name, output: state.output.trim() });
+  }
+
+  acceptPackage(event) {
+    if (!terminalActions.has(event.Action)) return;
+    const pkg = event.Package;
+    if (event.Action === "fail") fail(`Go package failed: ${pkg}.`);
+    if (event.Action === "skip" && !this.noTestFiles.has(pkg))
+      fail(`Package skipped without a no-test-files marker: ${pkg}.`);
+    this.packages.set(pkg, event.Action);
+  }
+
+  complete(allowlist) {
+    const requiredPackages = new Set(this.startedPackages);
+    for (const { pkg, name, started, terminal } of this.tests.values()) {
+      if (!started || !terminal)
+        fail(`Incomplete test lifecycle: ${pkg} ${name} (started=${started}, terminal=${terminal}).`);
+      requiredPackages.add(pkg);
+    }
+    for (const pkg of requiredPackages) {
+      if (!this.packages.has(pkg)) fail(`Package has no terminal result: ${pkg}.`);
+    }
+    const allowed = new Map((allowlist.skips ?? []).map((entry) => [`${entry.package}\0${entry.test}`, entry]));
+    const novel = this.skips.filter((skip) => !allowed.has(`${skip.pkg}\0${skip.name}`));
+    if (novel.length)
+      fail(`Unreviewed skipped tests:\n${novel.map((skip) => `  ${skip.pkg} ${skip.name}`).join("\n")}`);
+    if (this.passed === 0) fail("Go test report contains zero executed passing tests.");
+    return { passed: this.passed, skips: this.skips, noTestFiles: [...this.noTestFiles], packages: this.packages.size };
+  }
+}
+
 export function validateGoTestJSON(text, allowlist) {
   if (!text.trim()) fail("Go test JSON report is empty.");
   if (!text.endsWith("\n")) fail("Go test JSON report is truncated (missing final newline).");
-
-  const tests = new Map();
-  const packages = new Map();
-  const startedPackages = new Set();
-  const noTestFiles = new Set();
-  let passed = 0;
-  const skips = [];
-
+  const report = new GoTestReport();
   const lines = text.split("\n");
   lines.pop();
-  for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index];
-    if (!line.trim()) fail(`Malformed empty JSONL record at line ${index + 1}.`);
-    let event;
-    try {
-      event = JSON.parse(line);
-    } catch (error) {
-      fail(`Malformed JSON at line ${index + 1}: ${error.message}`);
-    }
-    if (
-      !event ||
-      typeof event !== "object" ||
-      typeof event.Package !== "string" ||
-      !event.Package ||
-      !allowedActions.has(event.Action)
-    ) {
-      fail(`Invalid go test event at line ${index + 1}.`);
-    }
-    const pkg = event.Package;
-    if (event.Action === "start") startedPackages.add(pkg);
-    if (event.Action === "output" && typeof event.Output === "string" && event.Output.includes("[no test files]")) {
-      noTestFiles.add(pkg);
-    }
-
-    if (event.Test) {
-      const key = `${pkg}\0${event.Test}`;
-      const state = tests.get(key) ?? { pkg, name: event.Test, started: false, terminal: false, output: "" };
-      if (event.Action === "output" && typeof event.Output === "string") state.output += event.Output;
-      if (event.Action === "run") {
-        if (state.started || state.terminal) fail(`Duplicate test start: ${pkg} ${event.Test}.`);
-        state.started = true;
-      }
-      if (["pass", "fail", "skip"].includes(event.Action)) {
-        if (!state.started || state.terminal)
-          fail(`Test terminal event without one active start: ${pkg} ${event.Test} (${event.Action}).`);
-        state.terminal = true;
-        if (event.Action === "pass") passed += 1;
-        if (event.Action === "fail")
-          fail(`Go test failed: ${pkg} ${event.Test}${state.output ? `\n${state.output.trim()}` : ""}`);
-        if (event.Action === "skip") skips.push({ pkg, name: event.Test, output: state.output.trim() });
-      }
-      tests.set(key, state);
-      continue;
-    }
-
-    if (["pass", "fail", "skip"].includes(event.Action)) {
-      if (event.Action === "fail") fail(`Go package failed: ${pkg}.`);
-      if (event.Action === "skip" && !noTestFiles.has(pkg))
-        fail(`Package skipped without a no-test-files marker: ${pkg}.`);
-      packages.set(pkg, event.Action);
-    }
-  }
-
-  for (const { pkg, name, started, terminal } of tests.values()) {
-    if (!started || !terminal)
-      fail(`Incomplete test lifecycle: ${pkg} ${name} (started=${started}, terminal=${terminal}).`);
-  }
-  for (const [pkg, state] of tests.values().reduce((map, test) => map.set(test.pkg, test.terminal), new Map())) {
-    if (!state) fail(`Package has a non-terminal test: ${pkg}.`);
-  }
-  for (const [pkg, status] of packages) {
-    if (status !== "pass" && !(status === "skip" && noTestFiles.has(pkg)))
-      fail(`Package did not pass: ${pkg} (${status}).`);
-  }
-  for (const pkg of startedPackages) {
-    if (!packages.has(pkg)) fail(`Package has no terminal result: ${pkg}.`);
-  }
-  for (const pkg of new Set([...tests.values()].map((test) => test.pkg))) {
-    if (!packages.has(pkg)) fail(`Package has no terminal result: ${pkg}.`);
-  }
-  const allowed = new Map((allowlist.skips ?? []).map((entry) => [`${entry.package}\0${entry.test}`, entry]));
-  const novel = skips.filter((skip) => !allowed.has(`${skip.pkg}\0${skip.name}`));
-  if (novel.length) fail(`Unreviewed skipped tests:\n${novel.map((skip) => `  ${skip.pkg} ${skip.name}`).join("\n")}`);
-  if (passed === 0) fail("Go test report contains zero executed passing tests.");
-
-  return { passed, skips, noTestFiles: [...noTestFiles], packages: packages.size };
+  for (const [index, line] of lines.entries()) report.accept(parseEvent(line, index + 1));
+  return report.complete(allowlist);
 }
 
 async function main() {

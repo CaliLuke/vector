@@ -12,7 +12,7 @@ export type TProjectLinkEditableFields = {
 export type TProjectLink = TProjectLinkEditableFields & {
   created_by_id: string;
   id: string;
-  metadata: any;
+  metadata: unknown;
   project_id: string;
 
   //need

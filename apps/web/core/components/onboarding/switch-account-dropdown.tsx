@@ -28,7 +28,7 @@ export const SwitchAccountDropdown = function SwitchAccountDropdown(props: TSwit
   const { data: user } = useCurrentUser();
 
   const displayName = user?.first_name
-    ? `${user?.first_name} ${user?.last_name ?? ""}`
+    ? `${user.first_name} ${user.last_name ?? ""}`
     : fullName && fullName.trim().length > 0
       ? fullName
       : user?.email;
@@ -43,8 +43,8 @@ export const SwitchAccountDropdown = function SwitchAccountDropdown(props: TSwit
           <div className="flex size-6 items-center justify-center rounded-full bg-success-primary text-13 font-semibold text-on-color capitalize">
             {user?.avatar_url ? (
               <img
-                src={getFileURL(user?.avatar_url)}
-                alt={user?.display_name}
+                src={getFileURL(user.avatar_url)}
+                alt={user.display_name}
                 className="h-full w-full rounded-full object-cover"
               />
             ) : (

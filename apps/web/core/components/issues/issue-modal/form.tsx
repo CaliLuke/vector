@@ -77,6 +77,7 @@ export interface IssueFormProps {
 export const IssueFormRoot = function IssueFormRoot(props: IssueFormProps) {
   const { t } = useTranslation();
   const { data, persistedData, version: sourceVersion } = useFormSource(props);
+  const { id: sourceIssueId, description_html: sourceDescription } = data ?? {};
   const [sourceConflict, setSourceConflict] = useState(false);
   const [reloading, setReloading] = useState(false);
   const {
@@ -131,7 +132,7 @@ export const IssueFormRoot = function IssueFormRoot(props: IssueFormProps) {
         const dirtyFields = Object.fromEntries(
           Object.entries(fieldMeta).map(([key, meta]) => [key, isDirtyFieldMeta(meta)])
         );
-        const payload = issueSubmissionPayload(value, dirtyFields, data?.id, isDraft, activeFields.submitted());
+        const payload = issueSubmissionPayload(value, dirtyFields, sourceIssueId, isDraft, activeFields.submitted());
         const references = itemAssetReferences(value, activeFields.schema);
         const outcome = await submitIssueDraftAction(action, {
           data,
@@ -200,7 +201,7 @@ export const IssueFormRoot = function IssueFormRoot(props: IssueFormProps) {
     form,
     workspaceSlug,
     data,
-    itemSchemaMode(publishing, isDraft, !!data?.id),
+    itemSchemaMode(publishing, isDraft, !!sourceIssueId),
     persistedData
   );
   useEffect(() => {
@@ -218,7 +219,9 @@ export const IssueFormRoot = function IssueFormRoot(props: IssueFormProps) {
   const isDirty = useStore(form.store, (state) => state.isDirty);
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
   const submitError = useStore(form.store, (state) => state.errorMap.onSubmit);
+  const savingToProject = !isDraft || publishing;
   const formLocked = isSubmitting || reloading;
+  const disableEditing = isSubmitting || readOnly;
   useEffect(() => {
     if (isSubmitting || !pendingFieldFocus.current) return;
     const field = pendingFieldFocus.current;
@@ -229,6 +232,7 @@ export const IssueFormRoot = function IssueFormRoot(props: IssueFormProps) {
   }, [isSubmitting]);
   const projectId = values.project_id;
   const { projectRole } = useProjectPermissions(workspaceSlug, projectId ?? undefined);
+  const authorizedProjectId = projectRole ? projectId : null;
   const { getStateById } = useProjectStates(workspaceSlug, projectId);
   const notifyChange = useEffectEvent((value: typeof values, dirty: boolean) => {
     onChange?.(dirty ? value : null);
@@ -240,10 +244,10 @@ export const IssueFormRoot = function IssueFormRoot(props: IssueFormProps) {
     issueTitleRef.current?.focus();
   }, [issueTitleRef]);
   useEffect(() => {
-    if (data?.description_html !== undefined && !form.getFieldMeta("description_html")?.isDirty) {
-      form.setFieldValue("description_html", data.description_html, { dontUpdateMeta: true });
+    if (sourceDescription !== undefined && !form.getFieldMeta("description_html")?.isDirty) {
+      form.setFieldValue("description_html", sourceDescription, { dontUpdateMeta: true });
     }
-  }, [data?.description_html, form]);
+  }, [sourceDescription, form]);
   useEffect(() => {
     if (!values.parent_id || values.parent_id === selectedParentIssue?.id) return;
     const issue = parentDetail.issue;
@@ -308,7 +312,7 @@ export const IssueFormRoot = function IssueFormRoot(props: IssueFormProps) {
                 onProjectChange={changeProject}
                 beforeChange={editorReady}
                 disabled={projectSelectionDisabled(isSubmitting, isDraft, data, isProjectSelectionDisabled)}
-                allowEmpty={isDraft && !publishing}
+                allowEmpty={!savingToProject}
               />
               <form.Field name="type_id">
                 {(field) => (
@@ -333,21 +337,21 @@ export const IssueFormRoot = function IssueFormRoot(props: IssueFormProps) {
                 />
               </div>
             )}
-            <IssueTitleInput form={form} issueTitleRef={issueTitleRef} required={!isDraft || publishing} />
+            <IssueTitleInput form={form} issueTitleRef={issueTitleRef} required={savingToProject} />
           </div>
           <div className="space-y-3 bg-surface-1 px-5 pb-4">
             <IssueDescriptionEditor
               form={form}
               isDraft={isDraft}
-              disabled={isSubmitting || readOnly}
+              disabled={disableEditing}
               issueName={values.name}
-              issueId={data?.id}
-              descriptionHtmlData={data?.description_html}
+              issueId={sourceIssueId}
+              descriptionHtmlData={sourceDescription}
               editorRef={editorRef}
               submitBtnRef={submitBtnRef}
               gptAssistantModal={gptAssistantModal}
               workspaceSlug={workspaceSlug}
-              projectId={projectRole ? projectId : null}
+              projectId={authorizedProjectId}
               setGptAssistantModal={setGptAssistantModal}
               onAssetUpload={onAssetUpload}
             />
@@ -358,16 +362,16 @@ export const IssueFormRoot = function IssueFormRoot(props: IssueFormProps) {
             values={values}
             workspaceSlug={workspaceSlug}
             isDraft={isDraft}
-            projectId={projectRole ? projectId : null}
-            disabled={isSubmitting || readOnly}
+            projectId={authorizedProjectId}
+            disabled={disableEditing}
             onAssetUpload={onAssetUpload}
           />
           <div className="border-t-[0.5px] border-subtle bg-surface-1 px-4 py-3">
             <div className="pb-3">
               <IssueDefaultProperties
                 form={form}
-                id={data?.id}
-                projectId={projectRole ? projectId : null}
+                id={sourceIssueId}
+                projectId={authorizedProjectId}
                 workspaceSlug={workspaceSlug}
                 selectedParentIssue={selectedParentIssue}
                 startDate={values.start_date}
@@ -379,16 +383,15 @@ export const IssueFormRoot = function IssueFormRoot(props: IssueFormProps) {
             </div>
           </div>
         </fieldset>
-        {sourceConflict && props.onReloadSource && (
-          <div className="bg-surface-1 px-4 pb-3">
-            <button type="button" className="text-13 text-accent-primary" onClick={() => void reloadSource()}>
-              {reloading ? "Reloading…" : "Discard changes and reload saved work item"}
-            </button>
-          </div>
-        )}
+        <IssueSourceReload
+          visible={sourceConflict}
+          available={Boolean(props.onReloadSource)}
+          reloading={reloading}
+          onReload={reloadSource}
+        />
         <IssueFormActions
           form={form}
-          isNew={!data?.id}
+          isNew={!sourceIssueId}
           submitError={submitError}
           showActionButtons={showActionButtons}
           isCreateMoreToggleEnabled={isCreateMoreToggleEnabled}
@@ -491,4 +494,25 @@ function itemSchemaMode(
   if (publishing) return "publish";
   if (isDraft) return "draft";
   return existing ? "edit" : "create";
+}
+
+function IssueSourceReload({
+  visible,
+  available,
+  reloading,
+  onReload,
+}: {
+  visible: boolean;
+  available: boolean;
+  reloading: boolean;
+  onReload: () => Promise<void>;
+}) {
+  if (!visible || !available) return null;
+  return (
+    <div className="bg-surface-1 px-4 pb-3">
+      <button type="button" className="text-13 text-accent-primary" onClick={() => void onReload()}>
+        {reloading ? "Reloading…" : "Discard changes and reload saved work item"}
+      </button>
+    </div>
+  );
 }

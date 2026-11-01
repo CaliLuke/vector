@@ -108,6 +108,8 @@ export const CustomKeymap = Extension.create({
           if (ranges.length && autoJoin(ranges, newTr, joinableNodes)) {
             return newTr;
           }
+
+          return undefined;
         },
       }),
     ];

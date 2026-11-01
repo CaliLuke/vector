@@ -6,7 +6,7 @@
 
 import React, { useMemo } from "react";
 // plane imports
-import type { TBottomSectionConfig, TContentVisibility, TTopSectionConfig } from "@plane/types";
+import type { TBottomSectionConfig, TContentVisibility, TTopSectionConfig, TreeMapItem } from "@plane/types";
 import { cn } from "@plane/utils/common";
 
 const LAYOUT = {
@@ -153,18 +153,25 @@ const truncateText = (text: string | number, maxWidth: number, fontSize: number,
 };
 
 export function CustomTreeMapContent({
-  x,
-  y,
-  width,
-  height,
-  name,
-  value,
+  x = 0,
+  y = 0,
+  width = 0,
+  height = 0,
+  name = "",
+  value = 0,
   label,
   fillColor,
   fillClassName,
   textClassName,
   icon,
-}: any) {
+}: Partial<Pick<TreeMapItem, "name" | "value" | "label" | "textClassName" | "icon">> & {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  fillColor?: string;
+  fillClassName?: string;
+}) {
   const dimensions = useMemo(() => {
     const pX = x + LAYOUT.PADDING;
     const pY = y + LAYOUT.PADDING;
@@ -183,9 +190,6 @@ export function CustomTreeMapContent({
   const renderContent = () => {
     const { pX, pY, pWidth, pHeight } = dimensions;
     const { top, bottom } = visibility;
-
-    const availableTextWidth = pWidth - LAYOUT.TEXT.PADDING_LEFT - LAYOUT.TEXT.PADDING_RIGHT;
-    const iconSpace = top.showIcon ? LAYOUT.ICON.SIZE + LAYOUT.ICON.GAP : 0;
 
     return (
       <g>
@@ -206,63 +210,14 @@ export function CustomTreeMapContent({
           fill={fillColor ?? "currentColor"}
         />
 
-        {/* Top section */}
-        <g>
-          {top.showIcon && icon && (
-            <foreignObject
-              x={pX + LAYOUT.TEXT.PADDING_LEFT}
-              y={pY + LAYOUT.TEXT.PADDING_LEFT}
-              width={LAYOUT.ICON.SIZE}
-              height={LAYOUT.ICON.SIZE}
-              className={textClassName || "text-tertiary"}
-            >
-              {React.cloneElement(icon, {
-                className: cn("size-4", icon?.props?.className),
-                "aria-hidden": true,
-              })}
-            </foreignObject>
-          )}
-          {top.showName && (
-            <text
-              x={pX + LAYOUT.TEXT.PADDING_LEFT + iconSpace}
-              y={pY + LAYOUT.TEXT.VERTICAL_OFFSET}
-              textAnchor="start"
-              className={cn("tracking-wider text-13 font-light select-none", textClassName || "text-tertiary")}
-              fill="currentColor"
-            >
-              {top.nameTruncated ? truncateText(name, availableTextWidth, LAYOUT.TEXT.FONT_SIZES.SM, iconSpace) : name}
-            </text>
-          )}
-        </g>
-
-        {/* Bottom section */}
-        {bottom.show && (
-          <g>
-            {bottom.showValue && value !== undefined && (
-              <text
-                x={pX + LAYOUT.TEXT.PADDING_LEFT}
-                y={pY + pHeight - LAYOUT.TEXT.PADDING_LEFT}
-                textAnchor="start"
-                className={cn("tracking-wider text-13 font-light select-none", textClassName || "text-tertiary")}
-                fill="currentColor"
-              >
-                {value.toLocaleString()}
-                {bottom.showLabel && label && (
-                  <tspan dx={4}>
-                    {bottom.labelTruncated
-                      ? truncateText(
-                          label,
-                          availableTextWidth - calculateContentWidth(value, LAYOUT.TEXT.FONT_SIZES.SM) - 4,
-                          LAYOUT.TEXT.FONT_SIZES.SM
-                        )
-                      : label}
-                  </tspan>
-                )}
-                {!bottom.showLabel && label && <tspan dx={4}>...</tspan>}
-              </text>
-            )}
-          </g>
-        )}
+        <TreeMapTopSection dimensions={dimensions} top={top} name={name} icon={icon} textClassName={textClassName} />
+        <TreeMapBottomSection
+          dimensions={dimensions}
+          bottom={bottom}
+          value={value}
+          label={label}
+          textClassName={textClassName}
+        />
       </g>
     );
   };
@@ -272,5 +227,100 @@ export function CustomTreeMapContent({
       <rect x={x} y={y} width={width} height={height} fill="transparent" />
       {renderContent()}
     </g>
+  );
+}
+
+type MapDimensions = { pX: number; pY: number; pWidth: number; pHeight: number };
+
+function TreeMapTopSection({
+  dimensions,
+  top,
+  name,
+  icon,
+  textClassName,
+}: {
+  dimensions: MapDimensions;
+  top: TContentVisibility["top"];
+  name: string;
+  icon: TreeMapItem["icon"];
+  textClassName?: string;
+}) {
+  const { pX, pY, pWidth } = dimensions;
+  const availableTextWidth = pWidth - LAYOUT.TEXT.PADDING_LEFT - LAYOUT.TEXT.PADDING_RIGHT;
+  const iconSpace = top.showIcon ? LAYOUT.ICON.SIZE + LAYOUT.ICON.GAP : 0;
+  return (
+    <g>
+      {top.showIcon && icon && (
+        <foreignObject
+          x={pX + LAYOUT.TEXT.PADDING_LEFT}
+          y={pY + LAYOUT.TEXT.PADDING_LEFT}
+          width={LAYOUT.ICON.SIZE}
+          height={LAYOUT.ICON.SIZE}
+          className={textClassName || "text-tertiary"}
+        >
+          {React.cloneElement(icon, {
+            className: cn("size-4", icon?.props?.className),
+            "aria-hidden": true,
+          })}
+        </foreignObject>
+      )}
+      {top.showName && (
+        <text
+          x={pX + LAYOUT.TEXT.PADDING_LEFT + iconSpace}
+          y={pY + LAYOUT.TEXT.VERTICAL_OFFSET}
+          textAnchor="start"
+          className={cn("tracking-wider text-13 font-light select-none", textClassName || "text-tertiary")}
+          fill="currentColor"
+        >
+          {top.nameTruncated ? truncateText(name, availableTextWidth, LAYOUT.TEXT.FONT_SIZES.SM, iconSpace) : name}
+        </text>
+      )}
+    </g>
+  );
+}
+
+function TreeMapBottomSection({
+  dimensions,
+  bottom,
+  value,
+  label,
+  textClassName,
+}: {
+  dimensions: MapDimensions;
+  bottom: TContentVisibility["bottom"];
+  value: number;
+  label?: string;
+  textClassName?: string;
+}) {
+  const { pX, pY, pWidth, pHeight } = dimensions;
+  const availableTextWidth = pWidth - LAYOUT.TEXT.PADDING_LEFT - LAYOUT.TEXT.PADDING_RIGHT;
+  return (
+    bottom.show && (
+      <g>
+        {bottom.showValue && value !== undefined && (
+          <text
+            x={pX + LAYOUT.TEXT.PADDING_LEFT}
+            y={pY + pHeight - LAYOUT.TEXT.PADDING_LEFT}
+            textAnchor="start"
+            className={cn("tracking-wider text-13 font-light select-none", textClassName || "text-tertiary")}
+            fill="currentColor"
+          >
+            {value.toLocaleString()}
+            {bottom.showLabel && label && (
+              <tspan dx={4}>
+                {bottom.labelTruncated
+                  ? truncateText(
+                      label,
+                      availableTextWidth - calculateContentWidth(value, LAYOUT.TEXT.FONT_SIZES.SM) - 4,
+                      LAYOUT.TEXT.FONT_SIZES.SM
+                    )
+                  : label}
+              </tspan>
+            )}
+            {!bottom.showLabel && label && <tspan dx={4}>...</tspan>}
+          </text>
+        )}
+      </g>
+    )
   );
 }

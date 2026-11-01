@@ -32,7 +32,8 @@ export function PowerKOpenProjectSettingsMenu(props: Props) {
     (setting) => context.params.workspaceSlug && context.params.projectId && can(setting.access)
   );
   const settingsListWithIcons = settingsList.map((setting) => ({
-    ...setting,
+    key: setting.key,
+    href: setting.href,
     label: t(setting.i18n_label),
     icon: PROJECT_SETTINGS_ICONS[setting.key],
   }));

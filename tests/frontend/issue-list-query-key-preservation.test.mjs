@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createRequire } from "node:module";
@@ -30,7 +31,7 @@ const scope = {
   accountId: "alice",
   sessionGeneration: 0,
   workspaceSlug: "acme",
-  workspaceRole: 15,
+  workspaceRole: ContractEnums.EUserPermissions.MEMBER,
   membershipRevision: "membership-1",
   projectRoles: [["p1", 20]],
 };
@@ -65,7 +66,7 @@ await test("workspace group observers preserve undefined key slots for native ca
         viewId: "my_issues",
         accountId: "alice",
         richFilters: {},
-        displayFilters: { layout: "kanban", group_by: "state", sub_group_by: null },
+        displayFilters: { layout: ContractEnums.EIssueLayoutTypes.KANBAN, group_by: "state", sub_group_by: null },
         isReadScopeCurrent: () => true,
       },
       isReadCurrent: () => true,
@@ -100,7 +101,7 @@ await test("workspace group observers preserve undefined key slots for native ca
   assert.ok(groupQuery);
   assert.equal(groupQuery.queryKey[6], undefined, "the optional catalogue revision remains undefined");
 
-  const owner = currentIssueListMutationOwner(client, "acme", "p1", "issues", () => true);
+  const owner = currentIssueListMutationOwner(client, "acme", "p1", ContractEnums.EIssueServiceType.ISSUES, () => true);
   const captured = captureIssueListMutationOwner(client, owner);
   assert.equal(captured.queries.has(groupQuery), true, "the accepted-write owner captures the native group query");
 

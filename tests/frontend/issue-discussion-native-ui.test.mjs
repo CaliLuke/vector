@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { registerHooks } from "node:module";
@@ -68,7 +69,7 @@ const comment = {
 async function fixture(t) {
   const f = await createPermissionUiFixture(t, {
     path: "/acme/projects/p1/issues/",
-    workspaceRole: 15,
+    workspaceRole: ContractEnums.EUserPermissions.MEMBER,
     projectRoles: { p1: 15 },
   });
   f.client.setQueryData(workspaceKeys.list("alice"), [{ id: "w1", slug: "acme" }]);
@@ -316,7 +317,7 @@ await test("one Retry rebuilds fresh permission and discussion options after mem
   const { permissionKeys } = await import("../../apps/web/core/queries/permissions.ts");
   t.mock.method(WorkspaceService.prototype, "workspaceMemberMe", async () => ({
     is_active: true,
-    role: 15,
+    role: ContractEnums.EUserPermissions.MEMBER,
     updated_at: "recovered",
   }));
   const membership = f.client
@@ -331,7 +332,9 @@ await test("one Retry rebuilds fresh permission and discussion options after mem
   await settleQuery();
   assert.match(f.environment.container.textContent, /Canonical comment/);
   assert.equal(
-    f.client.getQueryState(permissionKeys.workspaceProjectRoles("alice", "acme", 15, "recovered")).status,
+    f.client.getQueryState(
+      permissionKeys.workspaceProjectRoles("alice", "acme", ContractEnums.EUserPermissions.MEMBER, "recovered")
+    ).status,
     "success"
   );
 });

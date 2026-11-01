@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { executeToolbarCommand } from "@plane/editor";
 import { useEditorHandlers } from "@/hooks/editor/use-editor-handlers";
 import React, { useState } from "react";
 // plane constants
@@ -70,17 +71,17 @@ export const LiteTextEditor = React.forwardRef(function LiteTextEditor(
     issue_id,
     accessSpecifier,
     handleAccessChange,
-    showAccessSpecifier = false,
-    showSubmitButton = true,
-    isSubmitting = false,
+    showAccessSpecifier,
+    showSubmitButton,
+    isSubmitting,
     showToolbarInitially = true,
     variant = "full",
-    parentClassName = "",
+    parentClassName,
     placeholder = t("issue.comments.placeholder"),
     disabledExtensions: additionalDisabledExtensions = [],
     editorClassName = "",
     showPlaceholderOnEmpty = true,
-    submitButtonText = "common.comment",
+    submitButtonText,
     ...rest
   } = props;
   // states
@@ -93,11 +94,26 @@ export const LiteTextEditor = React.forwardRef(function LiteTextEditor(
     searchMentionCallback: async (payload) =>
       workspaceService.searchEntity(workspaceSlug, { ...payload, project_id: projectId, issue_id }),
   });
-  function isMutableRefObject<T>(ref: React.ForwardedRef<T>): ref is React.MutableRefObject<T | null> {
-    return !!ref && typeof ref === "object" && "current" in ref;
-  }
   // derived values
   const isEmpty = isCommentEmpty(props.initialValue);
+
+  const inlineEditable = isLiteVariant && editable;
+  const toolbar = (
+    <CommentEditorToolbar
+      variant={variant}
+      editable={editable}
+      editorRef={editorRef}
+      isFocused={isFocused}
+      isEmpty={isEmpty}
+      onEnterKeyPress={rest.onEnterKeyPress}
+      isSubmitting={isSubmitting}
+      accessSpecifier={accessSpecifier}
+      handleAccessChange={handleAccessChange}
+      showAccessSpecifier={showAccessSpecifier}
+      showSubmitButton={showSubmitButton}
+      submitButtonText={submitButtonText}
+    />
+  );
 
   return (
     <div
@@ -112,9 +128,9 @@ export const LiteTextEditor = React.forwardRef(function LiteTextEditor(
       onBlur={() => isFullVariant && !showToolbarInitially && setIsFocused(false)}
     >
       {/* Wrapper for lite toolbar layout */}
-      <div className={cn(isLiteVariant && editable ? "flex items-end gap-1" : "")}>
+      <div className={cn(inlineEditable ? "flex items-end gap-1" : "")}>
         {/* Main Editor - always rendered once */}
-        <div className={cn(isLiteVariant && editable ? "min-w-0 flex-1" : "")}>
+        <div className={cn(inlineEditable ? "min-w-0 flex-1" : "")}>
           <LiteTextEditorWithRef
             ref={ref}
             disabledExtensions={[...DISABLED_EDITOR_EXTENSIONS, ...additionalDisabledExtensions]}
@@ -124,7 +140,7 @@ export const LiteTextEditor = React.forwardRef(function LiteTextEditor(
             getEditorMetaData={getEditorMetaData}
             handleEditorReady={(ready) => {
               if (ready) {
-                setEditorRef(isMutableRefObject<EditorRefApi>(ref) ? ref.current : null);
+                setEditorRef(ref && typeof ref === "object" ? ref.current : null);
               }
             }}
             mentionHandler={mentionHandler}
@@ -139,55 +155,76 @@ export const LiteTextEditor = React.forwardRef(function LiteTextEditor(
           />
         </div>
 
-        {/* Lite Toolbar - conditionally rendered */}
-        {isLiteVariant && editable && (
-          <LiteToolbar
-            executeCommand={(item) => {
-              // TODO: update this while toolbar homogenization
-              // @ts-expect-error type mismatch here
-              editorRef?.executeMenuItemCommand({
-                itemKey: item.itemKey,
-                ...item.extraProps,
-              });
-            }}
-            onSubmit={(e) => rest.onEnterKeyPress?.(e)}
-            isSubmitting={isSubmitting}
-            isEmpty={isEmpty}
-          />
-        )}
+        {isLiteVariant && toolbar}
       </div>
 
-      {/* Full Toolbar - conditionally rendered */}
-      {isFullVariant && editable && (
-        <div
-          className={cn(
-            "origin-top overflow-hidden transition-all duration-300 ease-out",
-            isFocused ? "mt-3 max-h-[200px] scale-y-100 opacity-100" : "invisible max-h-0 scale-y-0 opacity-0"
-          )}
-        >
-          <IssueCommentToolbar
-            accessSpecifier={accessSpecifier}
-            executeCommand={(item) => {
-              // TODO: update this while toolbar homogenization
-              // @ts-expect-error type mismatch here
-              editorRef?.executeMenuItemCommand({
-                itemKey: item.itemKey,
-                ...item.extraProps,
-              });
-            }}
-            handleAccessChange={handleAccessChange}
-            handleSubmit={(e) => rest.onEnterKeyPress?.(e)}
-            isCommentEmpty={isEmpty}
-            isSubmitting={isSubmitting}
-            showAccessSpecifier={showAccessSpecifier}
-            editorRef={editorRef}
-            showSubmitButton={showSubmitButton}
-            submitButtonText={submitButtonText}
-          />
-        </div>
-      )}
+      {!isLiteVariant && toolbar}
     </div>
   );
 });
 
 LiteTextEditor.displayName = "LiteTextEditor";
+
+type ToolbarProps = Pick<
+  LiteTextEditorWrapperProps,
+  | "variant"
+  | "editable"
+  | "onEnterKeyPress"
+  | "isSubmitting"
+  | "accessSpecifier"
+  | "handleAccessChange"
+  | "showAccessSpecifier"
+  | "showSubmitButton"
+  | "submitButtonText"
+> & { editorRef: EditorRefApi | null; isFocused: boolean; isEmpty: boolean };
+
+function CommentEditorToolbar({
+  variant,
+  editable,
+  editorRef,
+  isFocused,
+  isEmpty,
+  onEnterKeyPress,
+  isSubmitting = false,
+  accessSpecifier,
+  handleAccessChange,
+  showAccessSpecifier = false,
+  showSubmitButton = true,
+  submitButtonText = "common.comment",
+}: ToolbarProps) {
+  if (!editable || variant === "none") return null;
+  const executeCommand = (item: Parameters<typeof executeToolbarCommand>[1]) => {
+    if (editorRef) executeToolbarCommand(editorRef.executeMenuItemCommand, item);
+  };
+  if (variant === "lite") {
+    return (
+      <LiteToolbar
+        executeCommand={executeCommand}
+        onSubmit={(event) => onEnterKeyPress?.(event)}
+        isSubmitting={isSubmitting}
+        isEmpty={isEmpty}
+      />
+    );
+  }
+  return (
+    <div
+      className={cn(
+        "origin-top overflow-hidden transition-all duration-300 ease-out",
+        isFocused ? "mt-3 max-h-[200px] scale-y-100 opacity-100" : "invisible max-h-0 scale-y-0 opacity-0"
+      )}
+    >
+      <IssueCommentToolbar
+        accessSpecifier={accessSpecifier}
+        executeCommand={executeCommand}
+        handleAccessChange={handleAccessChange}
+        handleSubmit={(event) => onEnterKeyPress?.(event)}
+        isCommentEmpty={isEmpty}
+        isSubmitting={isSubmitting}
+        showAccessSpecifier={showAccessSpecifier}
+        editorRef={editorRef}
+        showSubmitButton={showSubmitButton}
+        submitButtonText={submitButtonText}
+      />
+    </div>
+  );
+}

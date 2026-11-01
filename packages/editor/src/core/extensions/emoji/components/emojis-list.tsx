@@ -13,7 +13,7 @@ import { cn } from "@plane/utils/common";
 
 export type EmojiItem = {
   name: string;
-  emoji: string;
+  emoji?: string;
   shortcodes: string[];
   tags: string[];
 };
@@ -22,7 +22,10 @@ export type EmojiListRef = {
   onKeyDown: (props: SuggestionKeyDownProps) => boolean;
 };
 
-export type EmojisListDropdownProps = SuggestionProps<EmojiItem, { name: string }> & {
+export type EmojisListDropdownProps = Pick<
+  SuggestionProps<EmojiItem, { name: string }>,
+  "items" | "command" | "query"
+> & {
   onClose: () => void;
   forceOpen?: boolean;
 };
@@ -35,6 +38,11 @@ export const EmojisListDropdown = forwardRef(function EmojisListDropdown(
   // states
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [isVisible, setIsVisible] = useState(false);
+  const [previousItems, setPreviousItems] = useState(items);
+  if (previousItems !== items) {
+    setPreviousItems(items);
+    setSelectedIndex(0);
+  }
   // refs
   const dropdownContainerRef = useRef<HTMLDivElement>(null);
 
@@ -82,13 +90,9 @@ export const EmojisListDropdown = forwardRef(function EmojisListDropdown(
 
   // Show animation
   useEffect(() => {
-    setIsVisible(false);
     const timeout = setTimeout(() => setIsVisible(true), 50);
     return () => clearTimeout(timeout);
   }, []);
-
-  // Reset selection when items change
-  useEffect(() => setSelectedIndex(0), [items]);
 
   // Scroll selected item into view
   useEffect(() => {
@@ -128,6 +132,7 @@ export const EmojisListDropdown = forwardRef(function EmojisListDropdown(
         lockScroll
       />
       <div
+        role="presentation"
         ref={dropdownContainerRef}
         className={cn(
           "invisible relative max-h-80 w-[14rem] space-y-2 overflow-y-auto rounded-md border-[0.5px] border-strong bg-surface-1 px-2 py-2.5 opacity-0 shadow-raised-200 transition-opacity",

@@ -75,11 +75,11 @@ export const AuthHeader = function AuthHeader(props: TAuthHeader) {
   const getHeaderSubHeader = (
     step: EAuthSteps,
     mode: EAuthModes,
-    invitation: IWorkspaceMemberInvitation | undefined,
+    pendingInvitation: IWorkspaceMemberInvitation | undefined,
     email: string | undefined
   ) => {
-    if (invitation && email && invitation.email === email && invitation.workspace) {
-      const workspace = invitation.workspace;
+    if (pendingInvitation && email && pendingInvitation.email === email && pendingInvitation.workspace) {
+      const workspace = pendingInvitation.workspace;
       return {
         header: (
           <div className="relative inline-flex items-center gap-2">

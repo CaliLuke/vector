@@ -27,7 +27,7 @@ export function cycleIsCompleted(cycle: ICycle) {
 }
 export function cycleHasPoints(cycle: ICycle | undefined) {
   if (!cycle) return false;
-  if (cycle.version === 2) return cycle.progress?.some((row) => row.total_estimate_points > 0) ?? false;
+  if (cycle.version === 2) return cycle.progress?.some((row) => (row.total_estimate_points ?? 0) > 0) ?? false;
   return (
     cycle.version === 1 &&
     Object.values(cycle.estimate_distribution?.completion_chart ?? {}).some(

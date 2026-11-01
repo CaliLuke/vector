@@ -40,7 +40,7 @@ interface IBaseGanttRoot {
   isEpic?: boolean;
 }
 
-export type GanttStoreType =
+type GanttStoreType =
   | EIssuesStoreType.PROJECT
   | EIssuesStoreType.MODULE
   | EIssuesStoreType.CYCLE
@@ -143,6 +143,8 @@ export function BaseGanttRoot(props: IBaseGanttRoot) {
       />
     ) : undefined;
 
+  const renderBlock = useCallback((data: TIssue) => <IssueGanttBlock issue={data} isEpic={isEpic} />, [isEpic]);
+
   const renderSidebar = useCallback(
     (sidebarProps: Parameters<typeof IssueGanttSidebar>[0]) => (
       <IssueGanttSidebar {...sidebarProps} showAllBlocks isEpic={isEpic} isPaginating={readState.isFetchingNextPage} />
@@ -160,10 +162,8 @@ export function BaseGanttRoot(props: IBaseGanttRoot) {
             loaderTitle={isEpic ? t("epic.label", { count: 2 }) : t("issue.label", { count: 2 })}
             blockIds={issuesIds}
             blockItems={issuesIds.flatMap((id) => (issueMap[id] ? [issueMap[id]] : []))}
-            blockUpdateHandler={(issue, data) => {
-              void updateIssueBlockStructure(issue, data);
-            }}
-            blockToRender={(data: TIssue) => <IssueGanttBlock issue={data} isEpic={isEpic} />}
+            blockUpdateHandler={updateIssueBlockStructure}
+            blockToRender={renderBlock}
             sidebarToRender={renderSidebar}
             enableBlockLeftResize={isAllowed}
             enableBlockRightResize={isAllowed}

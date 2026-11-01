@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { MutationObserver, QueryClient } from "@tanstack/react-query";
@@ -25,7 +26,7 @@ function authorizedItem(client, permissionKeys) {
   const itemKey = ["work-item", "detail", "alice", "acme", "p1", "i1"];
   client.setQueryData(membershipKey, {
     is_active: true,
-    role: 15,
+    role: ContractEnums.EUserPermissions.MEMBER,
     updated_at: "membership-rev",
   });
   client.setQueryData(rolesKey, { p1: 15 });
@@ -34,9 +35,9 @@ function authorizedItem(client, permissionKeys) {
     accountId: "alice",
     workspaceSlug: "acme",
     projectId: "p1",
-    membershipRole: 15,
+    membershipRole: ContractEnums.EUserPermissions.MEMBER,
     membershipRevision: "membership-rev",
-    projectRole: 15,
+    projectRole: ContractEnums.EUserPermissions.MEMBER,
   };
   return { membershipKey, rolesKey, itemKey, scope };
 }
@@ -142,13 +143,20 @@ await test("accepted item lineage never survives a retained permission 403", asy
   );
   assert.equal(membershipGuard(), false, "a cached membership cannot override an explicit denial");
 
-  client.setQueryData(membershipKey, { is_active: true, role: 15, updated_at: "membership-rev" });
+  client.setQueryData(membershipKey, {
+    is_active: true,
+    role: ContractEnums.EUserPermissions.MEMBER,
+    updated_at: "membership-rev",
+  });
   const roleGuard = captureItemLineageScope(client, scope, itemKey);
   t.mock.method(WorkspaceService.prototype, "getWorkspaceUserProjectsRole", async () => {
     throw { response: { status: 403 } };
   });
   await assert.rejects(
-    client.fetchQuery({ ...workspaceProjectRolesOptions("alice", "acme", 15, "membership-rev"), staleTime: 0 }),
+    client.fetchQuery({
+      ...workspaceProjectRolesOptions("alice", "acme", ContractEnums.EUserPermissions.MEMBER, "membership-rev"),
+      staleTime: 0,
+    }),
     (error) => error?.response?.status === 403
   );
   assert.deepEqual(client.getQueryData(rolesKey), { p1: 15 });
@@ -385,7 +393,13 @@ await test("an old subscription mutation cannot cancel or overwrite a replacemen
   const { issueSubscriptionOptions, updateIssueSubscriptionOptions } =
     await import("../../apps/web/core/queries/issue-subscription.ts");
   const { IssueService } = await import("../../apps/web/core/services/issue/issue.service.ts");
-  const scope = { userId: "alice", workspaceSlug: "acme", projectId: "p1", issueId: "i1", serviceType: "issues" };
+  const scope = {
+    userId: "alice",
+    workspaceSlug: "acme",
+    projectId: "p1",
+    issueId: "i1",
+    serviceType: ContractEnums.EIssueServiceType.ISSUES,
+  };
   const options = issueSubscriptionOptions(scope);
   client.setQueryData(options.queryKey, false);
   const pending = Promise.withResolvers();

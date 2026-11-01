@@ -42,13 +42,14 @@ export function AvatarGroup(props: Props) {
   const { children, max = 2, showTooltip = true, size = "md" } = props;
 
   // calculate total length of avatars inside the group
-  const totalAvatars = React.Children.toArray(children).length;
+  const avatarElements = React.Children.toArray(children).filter(React.isValidElement<Partial<Props>>);
+  const totalAvatars = avatarElements.length;
 
   // if avatars are equal to max + 1, then we need to show the last avatar as well, if avatars are more than max + 1, then we need to show the count of the remaining avatars
   const maxAvatarsToRender = totalAvatars <= max + 1 ? max + 1 : max;
 
   // slice the children to the maximum number of avatars
-  const avatars = React.Children.toArray(children).slice(0, maxAvatarsToRender);
+  const avatars = avatarElements.slice(0, maxAvatarsToRender);
 
   // assign the necessary props from the AvatarGroup component to the Avatar components
   const avatarsWithUpdatedProps = avatars.map((avatar) => {
@@ -57,7 +58,7 @@ export function AvatarGroup(props: Props) {
       size,
     };
 
-    return React.cloneElement(avatar as React.ReactElement, updatedProps);
+    return React.cloneElement(avatar, updatedProps);
   });
 
   // get size details based on the size prop
@@ -65,8 +66,8 @@ export function AvatarGroup(props: Props) {
 
   return (
     <div className={cn("flex", sizeInfo.spacing)}>
-      {avatarsWithUpdatedProps.map((avatar, index) => (
-        <div key={index} className="rounded-full border border-subtle-1">
+      {avatarsWithUpdatedProps.map((avatar) => (
+        <div key={avatar.key} className="rounded-full border border-subtle-1">
           {avatar}
         </div>
       ))}

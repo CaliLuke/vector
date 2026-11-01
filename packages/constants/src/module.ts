@@ -89,26 +89,32 @@ export const MODULE_VIEW_LAYOUTS: {
 
 export const MODULE_ORDER_BY_OPTIONS: {
   key: TModuleOrderByOptions;
+  descendingKey?: TModuleOrderByOptions;
   i18n_label: string;
 }[] = [
   {
     key: "name",
+    descendingKey: "-name",
     i18n_label: "project_modules.order_by.name",
   },
   {
     key: "progress",
+    descendingKey: "-progress",
     i18n_label: "project_modules.order_by.progress",
   },
   {
     key: "issues_length",
+    descendingKey: "-issues_length",
     i18n_label: "project_modules.order_by.issues",
   },
   {
     key: "target_date",
+    descendingKey: "-target_date",
     i18n_label: "project_modules.order_by.due_date",
   },
   {
     key: "created_at",
+    descendingKey: "-created_at",
     i18n_label: "project_modules.order_by.created_at",
   },
   {

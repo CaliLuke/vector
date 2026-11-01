@@ -44,6 +44,7 @@ await test("workspace creation preserves edited slugs, retries checks and contin
   const { currentUserOptions } = await import("../../apps/web/core/queries/identity.ts");
   client.setQueryData(currentUserOptions().queryKey, { id: "user" });
   const creates = [];
+  let unavailable = true;
   let available = false,
     failCompletion = true,
     completions = 0;
@@ -51,7 +52,10 @@ await test("workspace creation preserves edited slugs, retries checks and contin
     creates.push(data);
     return { id: "workspace", ...data };
   });
-  t.mock.method(WorkspaceService.prototype, "workspaceSlugCheck", async () => ({ status: available }));
+  t.mock.method(WorkspaceService.prototype, "workspaceSlugCheck", async () => {
+    if (unavailable) throw new Error("offline");
+    return { status: available };
+  });
   await render(
     React.createElement(CreateWorkspaceForm, {
       onSubmit: async () => {
@@ -61,13 +65,28 @@ await test("workspace creation preserves edited slugs, retries checks and contin
     })
   );
   const input = (name) => environment.container.querySelector(`[name="${name}"]`);
+  await change(input("name"), " ");
+  assert.match(environment.container.textContent, /common.errors.required/);
+  await change(input("name"), "x".repeat(81));
+  assert.match(environment.container.textContent, /validation.name_length/);
   await change(input("name"), "Team");
   assert.equal(input("slug").value, "team");
+  await change(input("slug"), "");
+  assert.match(environment.container.textContent, /common.errors.required/);
+  await change(input("slug"), "x".repeat(49));
+  assert.match(environment.container.textContent, /validation.url_length/);
+  await change(input("slug"), "api");
+  assert.match(environment.container.textContent, /validation.url_already_taken/);
   await change(input("slug"), "custom");
   await change(input("name"), "Updated team");
   assert.equal(input("slug").value, "custom");
   const select = environment.container.querySelector("select");
   await change(select, select.options[1].value);
+  await submit(environment.container);
+  await settle();
+  assert.equal(creates.length, 0);
+  assert.match(environment.container.textContent, /Could not verify this workspace URL/);
+  unavailable = false;
   await submit(environment.container);
   await settle();
   assert.equal(creates.length, 0);

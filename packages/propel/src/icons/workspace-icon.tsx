@@ -15,9 +15,9 @@ export function WorkspaceIcon({ className }: ISvgIcons) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      role="img"
       aria-label="Workspace icon"
     >
+      <title>Workspace</title>
       <path
         fillRule="evenodd"
         clipRule="evenodd"

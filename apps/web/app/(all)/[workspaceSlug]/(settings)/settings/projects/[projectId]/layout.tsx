@@ -21,10 +21,9 @@ function ProjectDetailSettingsLayout(): React.JSX.Element | null {
 
   return (
     <>
-      <SettingsMobileNav
-        hamburgerContent={(props) => <ProjectSettingsSidebarRoot {...props} projectId={projectId} />}
-        activePath={getProjectActivePath(pathname) || ""}
-      />
+      <SettingsMobileNav activePath={getProjectActivePath(pathname) || ""}>
+        <ProjectSettingsSidebarRoot projectId={projectId} />
+      </SettingsMobileNav>
       <div className="inset-y-0 flex h-full w-full flex-row">
         <div className="relative flex size-full">
           <div className="hidden h-full shrink-0 md:block">

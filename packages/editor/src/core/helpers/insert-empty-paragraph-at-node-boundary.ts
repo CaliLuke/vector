@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import type { KeyboardShortcutCommand } from "@tiptap/core";
+import type { Editor, KeyboardShortcutCommand } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 // constants
 import { CORE_EXTENSIONS } from "@/constants/extension";
@@ -45,25 +45,7 @@ export const insertEmptyParagraphAtNodeBoundaries: (
           // Ensure the insert position is within the document boundaries
           if (insertPosUp < 0 || insertPosUp > docSize) return false;
 
-          if (insertPosUp === 0) {
-            // If at the very start of the document, insert a new paragraph at the start
-            editor.chain().insertContentAt(insertPosUp, { type: CORE_EXTENSIONS.PARAGRAPH }).run();
-            editor.chain().setTextSelection(insertPosUp).run(); // Set the cursor to the new paragraph
-          } else {
-            // Otherwise, check the node immediately before the target node
-            const prevNode = doc.nodeAt(insertPosUp - 1);
-
-            if (prevNode && prevNode.type.name === CORE_EXTENSIONS.PARAGRAPH) {
-              // If the previous node is a paragraph, move the cursor there
-              editor
-                .chain()
-                .setTextSelection(insertPosUp - 1)
-                .run();
-            } else {
-              return false; // If the previous node is not a paragraph, do not proceed
-            }
-          }
-          break;
+          return focusParagraphBefore(editor, doc, insertPosUp);
         }
 
         case "down": {
@@ -102,3 +84,25 @@ export const insertEmptyParagraphAtNodeBoundaries: (
       return false; // Return false if an error occurred
     }
   };
+
+function focusParagraphBefore(editor: Editor, doc: ProseMirrorNode, insertPosUp: number) {
+  if (insertPosUp === 0) {
+    // If at the very start of the document, insert a new paragraph at the start
+    editor.chain().insertContentAt(insertPosUp, { type: CORE_EXTENSIONS.PARAGRAPH }).run();
+    editor.chain().setTextSelection(insertPosUp).run(); // Set the cursor to the new paragraph
+  } else {
+    // Otherwise, check the node immediately before the target node
+    const prevNode = doc.resolve(insertPosUp).nodeBefore;
+
+    if (prevNode && prevNode.type.name === CORE_EXTENSIONS.PARAGRAPH) {
+      // If the previous node is a paragraph, move the cursor there
+      editor
+        .chain()
+        .setTextSelection(insertPosUp - 1)
+        .run();
+    } else {
+      return false; // If the previous node is not a paragraph, do not proceed
+    }
+  }
+  return true;
+}

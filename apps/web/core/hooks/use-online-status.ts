@@ -4,25 +4,22 @@
  * See the LICENSE file for details.
  */
 
-import { useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
 
-const useOnlineStatus = () => {
-  // states
-  const [isOnline, setIsOnline] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
+function subscribeToConnection(notify: () => void) {
+  window.addEventListener("online", notify);
+  window.addEventListener("offline", notify);
+  return () => {
+    window.removeEventListener("online", notify);
+    window.removeEventListener("offline", notify);
+  };
+}
 
-  const updateOnlineStatus = () => setIsOnline(navigator.onLine);
+const getOnlineStatus = () => navigator.onLine;
+const getServerOnlineStatus = () => true;
 
-  useEffect(() => {
-    window.addEventListener("online", updateOnlineStatus);
-    window.addEventListener("offline", updateOnlineStatus);
-
-    return () => {
-      window.removeEventListener("online", updateOnlineStatus);
-      window.removeEventListener("offline", updateOnlineStatus);
-    };
-  }, []);
-
-  return { isOnline };
-};
+const useOnlineStatus = () => ({
+  isOnline: useSyncExternalStore(subscribeToConnection, getOnlineStatus, getServerOnlineStatus),
+});
 
 export default useOnlineStatus;

@@ -4,7 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import React, { useCallback, useMemo, useRef, useEffect } from "react";
+import React from "react";
+import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import { cn } from "@plane/utils/common";
 import {
   EPortalWidth,
@@ -46,71 +47,66 @@ export function ModalPortal({
   showOverlay = true,
   closeOnOverlayClick = true,
   closeOnEscape = true,
+  ariaLabel = "Dialog",
+  zIndex = MODAL_Z_INDEX,
 }: ModalPortalProps) {
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  // Memoized overlay click handler
-  const handleOverlayClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (closeOnOverlayClick && onClose && e.target === e.currentTarget) {
-        onClose();
-      }
-    },
-    [closeOnOverlayClick, onClose]
+  const modalClasses = cn(
+    "shadow-lg absolute top-0 h-full bg-white transition-transform duration-300 ease-out",
+    fullScreen ? "h-full w-full" : PORTAL_WIDTH_CLASSES[width],
+    fullScreen ? "" : PORTAL_POSITION_CLASSES[position],
+    contentClassName
   );
-
-  // close on escape
-  const handleEscape = useCallback(
-    (e: KeyboardEvent) => {
-      if (closeOnEscape && onClose && e.key === "Escape") {
-        onClose();
-      }
-    },
-    [closeOnEscape, onClose]
-  );
-
-  // add event listener for escape
-  useEffect(() => {
-    if (!isOpen) return;
-    document.addEventListener("keydown", handleEscape);
-    return () => {
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [isOpen, handleEscape]);
-
-  // Memoized style classes
-  const modalClasses = useMemo(() => {
-    const widthClass = fullScreen ? "w-full h-full" : PORTAL_WIDTH_CLASSES[width];
-    const positionClass = fullScreen ? "" : PORTAL_POSITION_CLASSES[position];
-
-    return cn(
-      "shadow-lg absolute top-0 h-full bg-white transition-transform duration-300 ease-out",
-      widthClass,
-      positionClass,
-      contentClassName
-    );
-  }, [fullScreen, width, position, contentClassName]);
-
   if (!isOpen) return null;
 
-  const content = (
-    <div
-      className={cn("absolute inset-0 h-full w-full overflow-y-auto", className)}
-      style={{ zIndex: MODAL_Z_INDEX }}
-      role="dialog"
+  return (
+    <BaseDialog.Root
+      open={isOpen}
+      disablePointerDismissal={!closeOnOverlayClick || !showOverlay}
+      onOpenChange={(open, details) => {
+        if (open) return;
+        if (!onClose || (!closeOnEscape && details.reason === "escape-key")) {
+          details.cancel();
+          return;
+        }
+        onClose();
+      }}
     >
-      {showOverlay && (
-        <div
-          className={cn("absolute inset-0 bg-black/50 transition-colors duration-300", overlayClassName)}
-          onClick={handleOverlayClick}
-          aria-hidden="true"
-        />
-      )}
-      <div ref={contentRef} className={cn(modalClasses)} style={{ zIndex: MODAL_Z_INDEX + 1 }} role="document">
-        {children}
-      </div>
-    </div>
+      <PortalWrapper portalId={portalId}>
+        <ModalLayer portalId={portalId} className={className} zIndex={zIndex}>
+          {showOverlay && (
+            <BaseDialog.Backdrop
+              className={cn("absolute inset-0 bg-black/50 transition-colors duration-300", overlayClassName)}
+            />
+          )}
+          <BaseDialog.Popup className={modalClasses} style={{ zIndex: zIndex + 1 }} aria-label={ariaLabel}>
+            {children}
+          </BaseDialog.Popup>
+        </ModalLayer>
+      </PortalWrapper>
+    </BaseDialog.Root>
   );
+}
 
-  return <PortalWrapper portalId={portalId}>{content}</PortalWrapper>;
+// PortalWrapper owns the shared DOM container and renders this layer only after
+// it exists. Base UI owns modal focus, nested dismissal, and scroll locking.
+function ModalLayer({
+  zIndex,
+  portalId,
+  className,
+  children,
+}: {
+  zIndex: number;
+  portalId: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <BaseDialog.Portal
+      container={document.getElementById(portalId)}
+      className={cn("fixed inset-0 h-full w-full overflow-y-auto", className)}
+      style={{ zIndex }}
+    >
+      {children}
+    </BaseDialog.Portal>
+  );
 }

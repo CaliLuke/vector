@@ -10,6 +10,7 @@ import React, { useState } from "react";
 import { useTheme } from "next-themes";
 import { ArrowRightLeft } from "lucide-react";
 import { Dialog, Transition } from "@headlessui/react";
+import { ModalBackdrop } from "@plane/ui";
 // ui
 import { Button } from "@plane/propel/button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
@@ -41,36 +42,22 @@ export function SwitchAccountModal(props: Props) {
   const handleSwitchAccount = async () => {
     setSwitchingAccount(true);
 
-    await signOut()
-      .then(() => {
-        setTheme("system");
-        void router.navigate({ href: "/" });
-        handleClose();
-      })
-      .catch(() =>
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: "Error!",
-          message: "Failed to sign out. Please try again.",
-        })
-      )
-      .finally(() => setSwitchingAccount(false));
+    try {
+      await signOut();
+      setTheme("system");
+      void router.navigate({ href: "/" });
+      handleClose();
+    } catch {
+      setToast({ type: TOAST_TYPE.ERROR, title: "Error!", message: "Failed to sign out. Please try again." });
+    } finally {
+      setSwitchingAccount(false);
+    }
   };
 
   return (
     <Transition.Root show={isOpen} as={React.Fragment}>
       <Dialog as="div" className="relative z-20" onClose={handleClose}>
-        <Transition.Child
-          as={React.Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-backdrop transition-opacity" />
-        </Transition.Child>
+        <ModalBackdrop />
 
         <div className="fixed inset-0 z-20 overflow-y-auto">
           <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
@@ -105,7 +92,12 @@ export function SwitchAccountModal(props: Props) {
                   </div>
                 </div>
                 <div className="mb-2 flex items-center justify-end gap-3 p-4 sm:px-6">
-                  <Button variant="secondary" size="lg" onClick={handleSwitchAccount} disabled={switchingAccount}>
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    onClick={() => void handleSwitchAccount()}
+                    disabled={switchingAccount}
+                  >
                     {switchingAccount ? "Switching..." : "Switch account"}
                   </Button>
                 </div>

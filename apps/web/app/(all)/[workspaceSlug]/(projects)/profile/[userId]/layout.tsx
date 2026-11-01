@@ -73,7 +73,7 @@ function UseProfileLayout(): React.JSX.Element | null {
             <ContentWrapper>
               <div className="flex h-full w-full flex-row md:flex-col md:overflow-hidden">
                 <div className="flex w-full flex-col md:h-full md:overflow-hidden">
-                  <ProfileNavbar isAuthorized={!!isAuthorized} />
+                  <ProfileNavbar isAuthorized={isAuthorized} />
                   {isAuthorized || !isAuthorizedPath ? (
                     <div className={`h-full w-full overflow-hidden`}>
                       <Outlet />

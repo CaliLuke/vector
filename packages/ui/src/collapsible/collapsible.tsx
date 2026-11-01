@@ -5,7 +5,7 @@
  */
 
 import { Disclosure, Transition } from "@headlessui/react";
-import React, { useState, useEffect, useCallback, useId } from "react";
+import React, { useState, useCallback, useId } from "react";
 
 export type TCollapsibleProps = {
   title: string | React.ReactNode;
@@ -27,11 +27,8 @@ export function Collapsible(props: TCollapsibleProps) {
   const isDisclosureOpen = isOpen ?? localIsOpen;
   const panelId = useId();
 
-  useEffect(() => {
-    if (isOpen !== undefined) {
-      setLocalIsOpen(isOpen);
-    }
-  }, [isOpen]);
+  // Retain the last controlled value if the parent releases control.
+  if (isOpen !== undefined && localIsOpen !== isOpen) setLocalIsOpen(isOpen);
 
   // handlers
   const handleOnClick = useCallback(() => {

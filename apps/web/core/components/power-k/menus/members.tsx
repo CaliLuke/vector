@@ -30,7 +30,7 @@ export const PowerKMembersMenu = function PowerKMembersMenu(props: Props) {
     <Command.Group heading={heading}>
       {userIds?.map((memberId) => {
         const memberDetails = memberById(memberId)?.member;
-        if (!memberDetails) return;
+        if (!memberDetails) return undefined;
 
         return (
           <PowerKModalCommandItem

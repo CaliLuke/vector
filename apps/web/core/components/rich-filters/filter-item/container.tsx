@@ -26,12 +26,12 @@ export function FilterItemContainer(props: FilterItemContainerProps) {
 
   // effects
   useEffect(() => {
-    if (!showTransition) return;
+    if (!showTransition) return undefined;
 
     const element = itemRef.current;
-    if (!element) return;
+    if (!element) return undefined;
 
-    if (hasValidValue(conditionValue)) return;
+    if (hasValidValue(conditionValue)) return undefined;
 
     const applyInitialStyles = () => {
       element.style.opacity = "0";

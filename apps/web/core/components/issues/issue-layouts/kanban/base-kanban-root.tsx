@@ -10,17 +10,15 @@ import { useIssueListPresentation } from "@/hooks/use-issue-list-presentation";
 import { useIssueListPaginationOptions } from "@/hooks/use-issue-list-pagination-options";
 import { useParams } from "@tanstack/react-router";
 import type { FC } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
-import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { autoScrollForElements } from "@atlaskit/pragmatic-drag-and-drop-auto-scroll/element";
 
 import { EUserPermissions } from "@plane/constants";
-import { EIssuesStoreType } from "@plane/types";
 import { EIssueLayoutTypes } from "@plane/types";
 import type { TIssue } from "@plane/types";
 //hooks
-import { KanbanDragStateProvider, useKanbanDragState } from "@/providers/issue-layout-ui-state";
+import { KanbanDragStateProvider } from "@/providers/issue-layout-ui-state";
 import { useProjectPermissions } from "@/hooks/use-permissions";
 import { useIssueLayoutActions } from "@/hooks/use-issue-layout-actions";
 import { useIssueKanbanCollapse } from "@/hooks/use-issue-kanban-collapse";
@@ -29,25 +27,15 @@ import { useGroupIssuesDragNDrop } from "@/hooks/use-group-dragndrop";
 import { useIssueListType } from "@/hooks/use-issue-list-type";
 
 // components
-import { DeleteIssueModal } from "../../delete-issue-modal";
+import { KanbanDragDelete } from "./drag-delete";
 import { IssueLayoutHOC } from "../issue-layout-HOC";
 import type { IQuickActionProps } from "../list/list-view-types";
 import { KanBan } from "./default";
 import { KanBanSwimLanes } from "./swimlanes";
 // helpers
 import { projectGroupedIssueIdsByDisplayOrder } from "../issue-display-ordering";
-import { getSourceFromDropPayload, isSubscribedProfileRequest } from "../utils";
+import { issueLayoutCapabilities, isIssuePropertyEditable } from "../utils";
 import { IssueListViewProvider } from "@/providers/issue-list-view";
-
-type KanbanStoreType =
-  | EIssuesStoreType.PROJECT
-  | EIssuesStoreType.MODULE
-  | EIssuesStoreType.CYCLE
-  | EIssuesStoreType.PROJECT_VIEW
-  | EIssuesStoreType.PROFILE
-  | EIssuesStoreType.TEAM
-  | EIssuesStoreType.TEAM_VIEW
-  | EIssuesStoreType.EPIC;
 
 export interface IBaseKanBanLayout {
   QuickActions: FC<IQuickActionProps>;
@@ -78,24 +66,18 @@ function BaseKanBanRootContent(props: IBaseKanBanLayout) {
   const { workspaceSlug, projectId } = useParams({ strict: false });
   const { membersById } = useWorkspaceMemberRoster(workspaceSlug);
   // store hooks
-  const storeType = useIssueListType() as KanbanStoreType;
+  const storeType = useIssueListType();
   const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
   const { issueFilters: displayPreferences, requestInput, actions } = useIssueLayoutActions(storeType);
   const { quickAddIssue, updateIssue, removeIssue, updateFilters } = actions;
+  const { displayFilters, displayProperties, kanbanFilters } = displayPreferences ?? {};
   const { filters: collapsedGroups, toggle: toggleCollapsedGroup } = useIssueKanbanCollapse(
     storeType,
     workspaceSlug,
     projectId,
-    displayPreferences?.kanbanFilters,
+    kanbanFilters,
     updateFilters
   );
-
-  const deleteAreaRef = useRef<HTMLDivElement | null>(null);
-  const [isDragOverDelete, setIsDragOverDelete] = useState(false);
-  const { isDragging } = useKanbanDragState();
-
-  const displayFilters = displayPreferences?.displayFilters;
-  const displayProperties = displayPreferences?.displayProperties;
 
   const sub_group_by = displayFilters?.sub_group_by;
   const group_by = displayFilters?.group_by;
@@ -125,21 +107,17 @@ function BaseKanBanRootContent(props: IBaseKanBanLayout) {
     parentProjection
   );
 
-  const userDisplayFilters = displayFilters || null;
-  const showEmptyGroup = userDisplayFilters?.show_empty_groups ?? true;
+  const showEmptyGroup = displayFilters?.show_empty_groups ?? true;
 
   const KanBanView = sub_group_by ? KanBanSwimLanes : KanBan;
 
-  const enableQuickAdd = storeType !== EIssuesStoreType.PROFILE;
-  const isSubscribedProfile = isSubscribedProfileRequest(requestInput);
-  const enableIssueCreation = !isSubscribedProfile;
-  const enableInlineEditing = true;
+  const { enableQuickAdd, enableIssueCreation, enableInlineEditing } = issueLayoutCapabilities(
+    "kanban",
+    storeType,
+    requestInput
+  );
 
   const scrollableContainerRef = useRef<HTMLDivElement | null>(null);
-
-  // states
-  const [draggedIssueId, setDraggedIssueId] = useState<string | undefined>(undefined);
-  const [deleteIssueModal, setDeleteIssueModal] = useState(false);
 
   const isEditingAllowed = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
@@ -154,14 +132,8 @@ function BaseKanBanRootContent(props: IBaseKanBanLayout) {
   );
 
   const canEditProperties = useCallback(
-    (targetProjectId: string | undefined) => {
-      const isEditingAllowedBasedOnProject =
-        canEditPropertiesBasedOnProject && targetProjectId
-          ? canEditPropertiesBasedOnProject(targetProjectId)
-          : isEditingAllowed;
-
-      return enableInlineEditing && isEditingAllowedBasedOnProject;
-    },
+    (targetProjectId: string | undefined) =>
+      isIssuePropertyEditable(targetProjectId, canEditPropertiesBasedOnProject, enableInlineEditing, isEditingAllowed),
     [canEditPropertiesBasedOnProject, enableInlineEditing, isEditingAllowed]
   );
 
@@ -178,35 +150,6 @@ function BaseKanBanRootContent(props: IBaseKanBanLayout) {
     );
   }, []);
 
-  // Make the Issue Delete Box a Drop Target
-  useEffect(() => {
-    const element = deleteAreaRef.current;
-
-    if (!element) return undefined;
-
-    return combine(
-      dropTargetForElements({
-        element,
-        getData: () => ({ columnId: "issue-trash-box", groupId: "issue-trash-box", type: "DELETE" }),
-        onDragEnter: () => {
-          setIsDragOverDelete(true);
-        },
-        onDragLeave: () => {
-          setIsDragOverDelete(false);
-        },
-        onDrop: (payload) => {
-          setIsDragOverDelete(false);
-          const source = getSourceFromDropPayload(payload);
-
-          if (!source) return;
-
-          setDraggedIssueId(source.id);
-          setDeleteIssueModal(true);
-        },
-      })
-    );
-  }, [setIsDragOverDelete, setDraggedIssueId, setDeleteIssueModal]);
-
   const renderQuickActions = useIssueLayoutQuickActions({
     QuickActions,
     actions,
@@ -214,50 +157,12 @@ function BaseKanBanRootContent(props: IBaseKanBanLayout) {
     isCompletedCycle,
   });
 
-  const handleDeleteIssue = async () => {
-    const draggedIssue = issueMap[draggedIssueId ?? ""];
-
-    if (!draggedIssueId || !draggedIssue) return;
-
-    try {
-      await removeIssue(draggedIssue.project_id, draggedIssueId);
-      setDeleteIssueModal(false);
-      setDraggedIssueId(undefined);
-    } catch (_error) {
-      setDeleteIssueModal(false);
-      setDraggedIssueId(undefined);
-    }
-  };
-
   const handleCollapsedGroups = toggleCollapsedGroup;
 
   return (
     <IssueListViewProvider readState={readState}>
       <>
-        <DeleteIssueModal
-          data={issueMap[draggedIssueId ?? ""]}
-          isOpen={deleteIssueModal}
-          handleClose={() => setDeleteIssueModal(false)}
-          onSubmit={handleDeleteIssue}
-          isEpic={isEpic}
-        />
-        {/* drag and delete component */}
-        <div
-          className={`fixed left-1/2 -translate-x-1/2 ${
-            isDragging ? "z-40" : ""
-          } top-3 mx-3 flex w-72 items-center justify-center`}
-          ref={deleteAreaRef}
-        >
-          <div
-            className={`${
-              isDragging ? `opacity-100` : `opacity-0`
-            } flex w-full items-center justify-center rounded-sm border-2 border-danger-strong/20 bg-surface-1 px-3 py-5 text-11 font-medium text-danger-primary italic ${
-              isDragOverDelete ? "bg-danger-primary blur-2xl" : ""
-            } transition duration-300`}
-          >
-            Drop here to delete the work item.
-          </div>
-        </div>
+        <KanbanDragDelete issuesById={issueMap} removeIssue={removeIssue} isEpic={isEpic} />
         <IssueLayoutHOC
           allowEmptyGroups={showEmptyDiscoveryGroups(group_by, showEmptyGroup)}
           readState={readState}

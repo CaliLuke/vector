@@ -11,8 +11,7 @@ import type { IEditorProps } from "@/types";
 
 type Props = Pick<IEditorProps, "disabledExtensions" | "flaggedExtensions">;
 
-export const coreEditorAdditionalSlashCommandOptions = (props: Props): TSlashCommandAdditionalOption[] => {
-  const {} = props;
+export const coreEditorAdditionalSlashCommandOptions = (_props: Props): TSlashCommandAdditionalOption[] => {
   const options: TSlashCommandAdditionalOption[] = [];
   return options;
 };

@@ -38,8 +38,8 @@ export const clientLoader = async ({ params, request }: Route.ClientLoaderArgs) 
   if (response?.entity_name === "project") {
     let redirectUrl = `/issues/${response?.anchor}`;
     const urlParams = new URLSearchParams();
-    if (board) urlParams.append("board", String(board));
-    if (peekId) urlParams.append("peekId", String(peekId));
+    if (board) urlParams.append("board", board);
+    if (peekId) urlParams.append("peekId", peekId);
     if (urlParams.toString()) redirectUrl += `?${urlParams.toString()}`;
 
     throw redirect(redirectUrl);

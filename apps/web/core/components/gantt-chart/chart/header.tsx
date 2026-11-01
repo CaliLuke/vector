@@ -51,8 +51,10 @@ export function GanttChartHeader(props: Props) {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {VIEWS_LIST.map((chartView: any) => (
-          <div
+        {VIEWS_LIST.map((chartView) => (
+          <button
+            type="button"
+            aria-pressed={currentView === chartView.key}
             key={chartView?.key}
             className={cn(
               "cursor-pointer rounded-md bg-layer-transparent p-1 px-2 text-11 hover:bg-layer-transparent-hover",
@@ -63,7 +65,7 @@ export function GanttChartHeader(props: Props) {
             onClick={() => handleChartView(chartView?.key)}
           >
             {t(chartView?.i18n_title)}
-          </div>
+          </button>
         ))}
       </div>
 

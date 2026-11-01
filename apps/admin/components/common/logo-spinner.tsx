@@ -4,18 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { useTheme } from "next-themes";
-import LogoSpinnerDark from "@/app/assets/vector.svg?url";
-import LogoSpinnerLight from "@/app/assets/vector.svg?url";
+import logoSrc from "@/app/assets/vector.svg?url";
 
 export function LogoSpinner() {
-  const { resolvedTheme } = useTheme();
-
-  const logoSrc = resolvedTheme === "dark" ? LogoSpinnerLight : LogoSpinnerDark;
-
   return (
     <div className="flex items-center justify-center">
-      <img src={logoSrc} alt="logo" className="h-6 w-auto sm:h-11" />
+      <img src={logoSrc} alt="Vector" className="h-6 w-auto sm:h-11" />
     </div>
   );
 }

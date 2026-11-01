@@ -58,12 +58,13 @@ export function CreateUpdateIssueModalBase(props: IssuesModalProps) {
     storeType: issueStoreFromProps,
     isDraft = false,
     fetchIssueDetails = true,
-    moveToIssue = false,
+    moveToIssue,
     modalTitle,
     primaryButtonText,
-    isProjectSelectionDisabled = false,
+    isProjectSelectionDisabled,
     showActionItemsOnUpdate = false,
   } = props;
+  const { id: sourceIssueId, project_id: sourceProjectId } = data ?? {};
   const issueStoreType = useIssueListType();
   const client = useQueryClient(),
     accountId = useCurrentUserId(),
@@ -89,7 +90,7 @@ export function CreateUpdateIssueModalBase(props: IssuesModalProps) {
     cycleId,
     moduleId,
     workItem,
-    data?.id,
+    sourceIssueId,
     isOpen,
     sourceGeneration,
   ]);
@@ -102,7 +103,7 @@ export function CreateUpdateIssueModalBase(props: IssuesModalProps) {
   const actions = useIssuesActions(mutationStoreType);
   const projectActions = useIssuesActions(EIssuesStoreType.PROJECT);
   const resolveListOwner = useIssueListMutationOwner(mutationStoreType);
-  const edits = useReviewedItemEdit(workspaceSlug, data?.id, {
+  const edits = useReviewedItemEdit(workspaceSlug, sourceIssueId, {
     captureAccess: () => {
       return () => {
         if (!sourceAccessAllowed || !editAccessCurrent())
@@ -138,9 +139,9 @@ export function CreateUpdateIssueModalBase(props: IssuesModalProps) {
   const detailServiceType = issueModalServiceType(issueStoreFromProps, issueStoreType);
   const detailMutationAccess = useWorkItemDetailScope(
     workspaceSlug,
-    issueDetailProjectId(activeProjectId, data?.project_id, routerProjectId),
+    issueDetailProjectId(activeProjectId, sourceProjectId, routerProjectId),
     detailServiceType,
-    data?.id
+    sourceIssueId
   );
 
   const addIssueToCycle = async (issue: { id: string; project_id?: string | null }, targetCycleId: string) => {
@@ -189,7 +190,7 @@ export function CreateUpdateIssueModalBase(props: IssuesModalProps) {
         ? draftMutations.captureReceiptOwner(command.item_id)
         : undefined;
     const detailReceiptOwner = captureEditReceiptOwner(client, command, detailMutationAccess);
-    const projectIds = editedIssueProjectIds(data?.project_id, command.project_id);
+    const projectIds = editedIssueProjectIds(sourceProjectId, command.project_id);
     const capturedLists = await captureEditedIssueLists(client, resolveListOwner, workspaceSlug, projectIds);
     const receipt = await edits.submit(command, draft);
     if (!edits.isCurrent()) return;
@@ -220,14 +221,14 @@ export function CreateUpdateIssueModalBase(props: IssuesModalProps) {
     revision?: number,
     version?: string
   ): ItemEditCommand => {
-    if (!data?.id) throw new Error("Select a work item to save.");
+    if (!sourceIssueId) throw new Error("Select a work item to save.");
     if (revision === undefined) throw new Error("Wait for the work item configuration to load.");
     const expected = edits.rejectedAttempt ? edits.rejectedAttempt.command.expected_source_version : version;
     if (!expected) throw { data: { source_changed: true, error: "Reload the saved work item before editing." } };
     return {
       expected_source_version: expected,
       mode,
-      item_id: data.id,
+      item_id: sourceIssueId,
       project_id:
         (Object.hasOwn(payload, "project_id")
           ? payload.project_id
@@ -343,7 +344,7 @@ export function CreateUpdateIssueModalBase(props: IssuesModalProps) {
   ) => {
     const { sourceIssueId: _sourceIssueId, ...values } = payload;
     if (beforeFormSubmit) await beforeFormSubmit();
-    if (!data?.id) await handleCreateIssue(values, is_draft_issue, assetReferences);
+    if (!sourceIssueId) await handleCreateIssue(values, is_draft_issue, assetReferences);
     else await saveReviewedChange(editCommand(values, isDraft ? "draft" : "edit", revision, version), draft);
   };
 

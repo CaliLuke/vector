@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import type { Editor } from "@tiptap/core";
+
 export type CommandListInstance = {
   onKeyDown: (props: { event: KeyboardEvent }) => boolean;
 };
@@ -11,7 +13,7 @@ export type CommandListInstance = {
 type TArgs = {
   event: KeyboardEvent;
   sections: {
-    items: any[];
+    items: unknown[];
   }[];
   selectedIndex: {
     section: number;
@@ -30,35 +32,40 @@ export const getNextValidIndex = (
     }
   | undefined => {
   const { event, sections, selectedIndex } = args;
-  const direction = event.key === "ArrowUp" ? "up" : "down";
-  if (!sections.length) return { section: 0, item: 0 };
-  // next available selection
-  let nextSection = selectedIndex.section;
-  let nextItem = selectedIndex.item;
-
-  if (direction === "up") {
-    nextItem--;
-    if (nextItem < 0) {
-      // Move to previous section
-      nextSection--;
-      if (nextSection < 0) {
-        // Wrap to last section
-        nextSection = sections?.length - 1;
-      }
-      nextItem = sections?.[nextSection]?.items?.length - 1;
-    }
-  } else {
-    nextItem++;
-    if (nextItem >= sections?.[nextSection]?.items?.length) {
-      // Move to next section
-      nextSection++;
-      if (nextSection >= sections?.length) {
-        // Wrap to first section
-        nextSection = 0;
-      }
-      nextItem = 0;
-    }
-  }
-
-  return { section: nextSection, item: nextItem };
+  const positions = sections.flatMap((section, sectionIndex) =>
+    section.items.map((_, itemIndex) => ({ section: sectionIndex, item: itemIndex }))
+  );
+  if (!positions.length) return undefined;
+  const current = positions.findIndex(
+    ({ section, item }) => section === selectedIndex.section && item === selectedIndex.item
+  );
+  const direction = event.key === "ArrowUp" ? -1 : 1;
+  if (current === -1) return direction === -1 ? positions.at(-1) : positions[0];
+  return positions[(current + direction + positions.length) % positions.length];
 };
+
+export function createSuggestionKeyHandlers({
+  getComponent,
+  close,
+}: {
+  getComponent: () => { element: HTMLElement; ref: CommandListInstance | null } | null;
+  close: (editor?: Editor) => void;
+}) {
+  return {
+    onKeyDown: ({ event }: { event: KeyboardEvent }) => {
+      if ([...DROPDOWN_NAVIGATION_KEYS, "Escape"].includes(event.key)) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      if (event.key === "Escape") {
+        close();
+        return true;
+      }
+      return getComponent()?.ref?.onKeyDown({ event }) ?? false;
+    },
+    onExit: ({ editor }: { editor: Editor }) => {
+      getComponent()?.element.remove();
+      close(editor);
+    },
+  };
+}

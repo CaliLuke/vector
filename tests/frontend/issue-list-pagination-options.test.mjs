@@ -7,9 +7,9 @@ const { getCalendarState } =
   await import("../../apps/web/core/components/issues/issue-layouts/calendar/calendar-state.ts");
 const { getIssueListPaginationOptions } =
   await import("../../apps/web/core/hooks/use-issue-list-pagination-options.ts");
-const { EIssueLayoutTypes, EIssuesStoreType } = await import("../../packages/types/dist/index.mjs");
+const { EIssueLayoutTypes, EIssuesStoreType, EStartOfTheWeek } = await import("../../packages/types/dist/index.mjs");
 
-const calendarState = getCalendarState(new Date(2026, 9, 26), new Date(2026, 9, 26), 1);
+const calendarState = getCalendarState(new Date(2026, 9, 26), new Date(2026, 9, 26), EStartOfTheWeek.MONDAY);
 
 await test("list and Kanban pagination match their layout page sizes and grouping inputs", () => {
   assert.deepEqual(

@@ -20,32 +20,20 @@ const sizeClasses = {
 };
 
 export function AnimatedCounter({ count, className, size = "md" }: AnimatedCounterProps) {
-  // states
-  const [displayCount, setDisplayCount] = useState(count);
-  const [prevCount, setPrevCount] = useState(count);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [direction, setDirection] = useState<"up" | "down" | null>(null);
-  const [animationKey, setAnimationKey] = useState(0);
+  const [transition, setTransition] = useState({ count, previous: count, key: 0 });
+  const [completedKey, setCompletedKey] = useState(0);
+  if (transition.count !== count) {
+    setTransition({ count, previous: transition.count, key: transition.key + 1 });
+  }
+  const { count: displayCount, previous: prevCount, key: animationKey } = transition;
+  const isAnimating = animationKey !== completedKey;
+  const direction = displayCount > prevCount ? "up" : "down";
 
   useEffect(() => {
-    if (count !== prevCount) {
-      setDirection(count > prevCount ? "up" : "down");
-      setIsAnimating(true);
-      setAnimationKey((prev) => prev + 1);
-
-      // Update the display count immediately, animation will show the transition
-      setDisplayCount(count);
-
-      // End animation after CSS transition
-      const timer = setTimeout(() => {
-        setIsAnimating(false);
-        setDirection(null);
-        setPrevCount(count);
-      }, 250);
-
-      return () => clearTimeout(timer);
-    }
-  }, [count, prevCount]);
+    if (animationKey === 0) return undefined;
+    const timer = setTimeout(() => setCompletedKey(animationKey), 250);
+    return () => clearTimeout(timer);
+  }, [animationKey]);
 
   const sizeClass = sizeClasses[size];
 

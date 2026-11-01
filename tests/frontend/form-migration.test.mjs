@@ -23,9 +23,10 @@ const stubs = {
     export const EModalPosition = {CENTER: "center"}; export const EModalWidth = {XXL: "xxl"};
     export const ModalCore = ({children}) => React.createElement("div", {role:"dialog"}, children);
     export const InputColorPicker = ({hasError, onChange, ...props}) => React.createElement("input", {...props, onChange:event => onChange(event.target.value)});
-    export const Input = ({hasError, ...props}) => React.createElement("input", props);`,
+    export const Input = ({hasError, ...props}) => React.createElement("input", props);
+    export const CustomSelect = ({value,onChange,children})=>React.createElement('select',{'aria-label':'Date relation',value,onChange:event=>onChange(event.target.value==='cancelled'?null:event.target.value)},React.createElement('option',{value:'cancelled'},'Cancelled'),children);
+    CustomSelect.Option=({value})=>React.createElement('option',{value},value);`,
   "@plane/propel/calendar": `const React = globalThis.migrationFormReact; export const Calendar = ({selected, onSelect}) => React.createElement("input", {"aria-label":"Calendar date", type:"date", value:selected.toISOString().slice(0,10), onChange:event => onSelect(new Date(event.target.value + "T12:00:00"))});`,
-  "./date-filter-select": `const React = globalThis.migrationFormReact; export const DateFilterSelect = ({value, onChange}) => React.createElement("select", {value, onChange: event => onChange(event.target.value)}, ["before","after","range"].map(value => React.createElement("option", {key:value, value}, value)));`,
 };
 registerHooks({
   resolve: (specifier, context, nextResolve) => resolvePackageStub(specifier, stubs, context, nextResolve),
@@ -119,6 +120,21 @@ await test("date ranges cannot apply an end date before the start date", async (
       onSelect: (value) => selections.push(value),
     })
   );
+  const relation = environment.container.querySelector('[aria-label="Date relation"]');
+  await act(async () => {
+    relation.value = "before";
+    relation.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  assert.equal(environment.container.querySelectorAll('input[type="date"]').length, 1);
+  await act(async () => {
+    relation.value = "cancelled";
+    relation.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  assert.equal(relation.value, "before", "a nullable picker cancellation keeps the selected date relation");
+  await act(async () => {
+    relation.value = "range";
+    relation.dispatchEvent(new Event("change", { bubbles: true }));
+  });
   const dates = environment.container.querySelectorAll('input[type="date"]');
   await change(dates[0], "2030-05-10");
   await change(dates[1], "2030-05-01");

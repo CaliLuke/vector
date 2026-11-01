@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
@@ -40,7 +41,7 @@ await test("an archived list record can be restored without an active-project de
   await seedPermissionQueries(client, {
     userId: "alice",
     workspaceSlug: "acme",
-    workspaceRole: 20,
+    workspaceRole: ContractEnums.EUserPermissions.ADMIN,
     projectRoles: { "project-1": 20 },
   });
   const detail = t.mock.method(ProjectService.prototype, "getProject", async () => {

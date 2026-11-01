@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../../packages/types/dist/index.mjs";
 import { seedPermissionQueries } from "./permission-query-fixture.mjs";
 import { notifyManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createReactDomTestEnvironment } from "./react-dom.mjs";
@@ -30,7 +31,7 @@ export async function createProjectQueryDomFixture(t, projectRole) {
   await seedPermissionQueries(fixture.client, {
     userId: "alice",
     workspaceSlug: "acme",
-    workspaceRole: 15,
+    workspaceRole: ContractEnums.EUserPermissions.MEMBER,
     projectRoles: { p: projectRole },
     revision: "v1",
   });

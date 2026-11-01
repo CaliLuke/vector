@@ -5,7 +5,6 @@
  */
 
 import type { Dispatch, SetStateAction } from "react";
-import { useState } from "react";
 
 import { Disclosure, Transition } from "@headlessui/react";
 // plane imports
@@ -13,7 +12,7 @@ import { EditIcon, TrashIcon, ChevronDownIcon } from "@plane/propel/icons";
 import type { IIssueLabel } from "@plane/types";
 // components
 import type { TLabelOperationsCallbacks } from "./create-update-label-inline";
-import { CreateUpdateLabelInline } from "./create-update-label-inline";
+import { useLabelRowEditor } from "./use-label-row-editor";
 import type { ICustomMenuItem } from "./label-block/label-item-block";
 import { LabelItemBlock } from "./label-block/label-item-block";
 import { LabelDndHOC } from "./label-drag-n-drop-HOC";
@@ -50,15 +49,12 @@ export const ProjectSettingLabelGroup = function ProjectSettingLabelGroup(props:
   } = props;
 
   // states
-  const [isEditLabelForm, setEditLabelForm] = useState(false);
+  const { editor, edit } = useLabelRowEditor({ label, setIsUpdating, labelOperationsCallbacks });
 
   const customMenuItems: ICustomMenuItem[] = [
     {
       CustomIcon: EditIcon,
-      onClick: () => {
-        setEditLabelForm(true);
-        setIsUpdating(true);
-      },
+      onClick: edit,
       isVisible: true,
       text: "Edit label",
       key: "edit_label",
@@ -92,19 +88,7 @@ export const ProjectSettingLabelGroup = function ProjectSettingLabelGroup(props:
                 <div className={`py-3 pr-3 pl-1 ${!isUpdating && "max-h-full overflow-y-hidden"}`}>
                   <>
                     <div className="relative flex cursor-pointer items-center justify-between gap-2">
-                      {isEditLabelForm ? (
-                        <CreateUpdateLabelInline
-                          labelForm={isEditLabelForm}
-                          setLabelForm={setEditLabelForm}
-                          isUpdating
-                          labelToUpdate={label}
-                          labelOperationsCallbacks={labelOperationsCallbacks}
-                          onClose={() => {
-                            setEditLabelForm(false);
-                            setIsUpdating(false);
-                          }}
-                        />
-                      ) : (
+                      {editor ?? (
                         <LabelItemBlock
                           label={label}
                           isDragging={isDragging}
@@ -112,6 +96,7 @@ export const ProjectSettingLabelGroup = function ProjectSettingLabelGroup(props:
                           handleLabelDelete={handleLabelDelete}
                           isLabelGroup
                           dragHandleRef={dragHandleRef}
+                          disabled={!isEditable}
                         />
                       )}
 

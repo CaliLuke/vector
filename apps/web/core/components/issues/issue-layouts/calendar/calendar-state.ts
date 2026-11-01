@@ -4,11 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import type { ICalendarPayload, ICalendarWeek } from "@plane/types";
+import type { EStartOfTheWeek, ICalendarPayload, ICalendarWeek } from "@plane/types";
 import { generateCalendarData } from "@plane/utils/calendar";
 import sortBy from "lodash-es/sortBy.js";
 
-export function getCalendarState(activeMonthDate: Date, activeWeekDate: Date, startOfWeek: number) {
+export function getCalendarState(activeMonthDate: Date, activeWeekDate: Date, startOfWeek: EStartOfTheWeek) {
   let calendarPayload: ICalendarPayload = generateCalendarData(null, activeMonthDate, startOfWeek);
   if (
     activeWeekDate.getFullYear() !== activeMonthDate.getFullYear() ||

@@ -34,7 +34,7 @@ export const ActiveCycleProgress = function ActiveCycleProgress(props: ActiveCyc
   const progressIndicatorData = PROGRESS_STATE_GROUPS_DETAILS.map((group, index) => ({
     id: index,
     name: group.title,
-    value: cycle && cycle.total_issues > 0 ? (cycle[group.key as keyof ICycle] as number) : 0,
+    value: cycle && cycle.total_issues > 0 ? cycle[group.key] : 0,
     color: group.color,
   }));
   const groupedIssues = cycle

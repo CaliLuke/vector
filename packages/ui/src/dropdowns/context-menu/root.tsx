@@ -4,13 +4,16 @@
  * See the LICENSE file for details.
  */
 
-import React, { useEffect, useRef, useState } from "react";
+import { useSubmenuRegistry } from "@plane/propel/menu";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 // hooks
 import { usePlatformOS } from "../../hooks/use-platform-os";
 // helpers
 import { cn } from "../../utils";
 // components
+import { getDropdownEventTarget } from "../helper";
+export { DropdownPortal as Portal } from "../portal";
 import { ContextMenuItem } from "./item";
 
 export type TContextMenuItem = {
@@ -18,7 +21,7 @@ export type TContextMenuItem = {
   customContent?: React.ReactNode;
   title?: string;
   description?: string;
-  icon?: React.FC<any>;
+  icon?: React.ComponentType<{ className?: string }>;
   action: () => void;
   shouldRender?: boolean;
   closeOnClick?: boolean;
@@ -27,28 +30,6 @@ export type TContextMenuItem = {
   iconClassName?: string;
   nestedMenuItems?: TContextMenuItem[];
 };
-
-// Portal component for nested menus
-interface PortalProps {
-  children: React.ReactNode;
-  container?: Element | null;
-}
-
-export function Portal({ children, container }: PortalProps) {
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
-
-  if (!mounted) {
-    return null;
-  }
-
-  const targetContainer = container || document.body;
-  return ReactDOM.createPortal(children, targetContainer);
-}
 
 // Context for managing nested menus
 export const ContextMenuContext = React.createContext<{
@@ -74,33 +55,22 @@ function ContextMenuWithoutPortal(props: ContextMenuProps) {
   const [activeItemIndex, setActiveItemIndex] = useState<number>(0);
   // refs
   const contextMenuRef = useRef<HTMLDivElement>(null);
-  const submenuClosersRef = useRef<Set<() => void>>(new Set());
+  const { closeAllSubmenus, registerSubmenu } = useSubmenuRegistry();
   // derived values
-  const renderedItems = items.filter((item) => item.shouldRender !== false);
+  const renderedItems = useMemo(() => items.filter((item) => item.shouldRender !== false), [items]);
   const { isMobile } = usePlatformOS();
 
-  const closeAllSubmenus = React.useCallback(() => {
-    submenuClosersRef.current.forEach((closeSubmenu) => closeSubmenu());
-  }, []);
-
-  const registerSubmenu = React.useCallback((closeSubmenu: () => void) => {
-    submenuClosersRef.current.add(closeSubmenu);
-    return () => {
-      submenuClosersRef.current.delete(closeSubmenu);
-    };
-  }, []);
-
-  const handleClose = () => {
+  const handleClose = React.useCallback(() => {
     closeAllSubmenus();
     setIsOpen(false);
     setActiveItemIndex(0);
-  };
+  }, [closeAllSubmenus]);
 
   // calculate position of context menu
   useEffect(() => {
     const parentElement = parentRef.current;
     const contextMenu = contextMenuRef.current;
-    if (!parentElement || !contextMenu) return;
+    if (!parentElement || !contextMenu) return undefined;
 
     const handleContextMenu = (e: MouseEvent) => {
       if (isMobile) return;
@@ -137,12 +107,12 @@ function ContextMenuWithoutPortal(props: ContextMenuProps) {
       parentElement.removeEventListener("contextmenu", handleContextMenu);
       window.removeEventListener("keydown", hideContextMenu);
     };
-  }, [contextMenuRef, isMobile, isOpen, parentRef, setIsOpen, setPosition]);
+  }, [isMobile, isOpen, parentRef, handleClose]);
 
   // handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isOpen) return;
+      if (!isOpen || !renderedItems.length || e.defaultPrevented) return;
 
       if (e.key === "ArrowDown") {
         e.preventDefault();
@@ -155,7 +125,7 @@ function ContextMenuWithoutPortal(props: ContextMenuProps) {
       if (e.key === "Enter") {
         e.preventDefault();
         const item = renderedItems[activeItemIndex];
-        if (!item.disabled) {
+        if (item && !item.disabled) {
           renderedItems[activeItemIndex].action();
           if (item.closeOnClick !== false) handleClose();
         }
@@ -167,12 +137,13 @@ function ContextMenuWithoutPortal(props: ContextMenuProps) {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [activeItemIndex, isOpen, renderedItems, setIsOpen]);
+  }, [activeItemIndex, isOpen, renderedItems, handleClose]);
 
   // Custom handler for nested menu portal clicks
   React.useEffect(() => {
     const handleDocumentClick = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
+      const target = getDropdownEventTarget(event);
+      if (!target) return;
 
       // Check if the click is on a nested menu element
       const isNestedMenuClick = target.closest('[data-context-submenu="true"]');
@@ -199,7 +170,14 @@ function ContextMenuWithoutPortal(props: ContextMenuProps) {
         document.removeEventListener("mousedown", handleDocumentClick, true);
       };
     }
+
+    return undefined;
   }, [isOpen, handleClose]);
+
+  const contextValue = useMemo(
+    () => ({ closeAllSubmenus, registerSubmenu, portalContainer }),
+    [closeAllSubmenus, registerSubmenu, portalContainer]
+  );
 
   return (
     <div
@@ -219,7 +197,7 @@ function ContextMenuWithoutPortal(props: ContextMenuProps) {
         }}
         data-context-menu="true"
       >
-        <ContextMenuContext.Provider value={{ closeAllSubmenus, registerSubmenu, portalContainer }}>
+        <ContextMenuContext.Provider value={contextValue}>
           {renderedItems.map((item, index) => (
             <ContextMenuItem
               key={item.key}

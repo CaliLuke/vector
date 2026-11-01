@@ -20,17 +20,17 @@ const notifications = {
   updateFilters: (...args) => notifications.calls.push(args),
   updateBulkFilters: (value) => notifications.calls.push(value),
 };
-globalThis.__notificationMenuTest = { React, notifications };
+globalThis.notificationMenuTest = { React, notifications };
 
 // Keep the actual menu and item components. The surrounding popover is opened
 // unconditionally here so the test exercises their render callback and actions
 // without depending on positioning, translation, or the application singleton.
 const substitutes = {
   "@/components/workspace-notifications/provider":
-    "export const useNotifications = () => globalThis.__notificationMenuTest.notifications;",
+    "export const useNotifications = () => globalThis.notificationMenuTest.notifications;",
   "@plane/i18n": "export const useTranslation = () => ({ t: key => key });",
   "@plane/ui": `export function PopoverMenu({ data, render }) {
-    return globalThis.__notificationMenuTest.React.createElement('div', null, data.map(render));
+    return globalThis.notificationMenuTest.React.createElement('div', null, data.map(render));
   }`,
   "@plane/propel/icons": "export const ArchiveIcon = () => null; export const CheckIcon = () => null;",
   "@plane/propel/icon-button": "export const IconButton = () => null;",
@@ -50,7 +50,8 @@ registerHooks({
 
 const { createReactDomTestEnvironment } = await import("./helpers/react-dom.mjs");
 
-test("notification filter items render without key warnings and expose their active state", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("notification filter items render without key warnings and expose their active state", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   const errors = [];

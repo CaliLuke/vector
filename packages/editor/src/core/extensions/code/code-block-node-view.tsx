@@ -6,8 +6,6 @@
 
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { NodeViewWrapper, NodeViewContent } from "@tiptap/react";
-import ts from "highlight.js/lib/languages/typescript";
-import { common, createLowlight } from "lowlight";
 import { CheckIcon } from "lucide-react";
 import { useClipboardCopy } from "@plane/hooks";
 import { copyTextToClipboard } from "@plane/utils/string";
@@ -18,12 +16,7 @@ import { Tooltip } from "@plane/propel/tooltip";
 // plane utils
 import { cn } from "@plane/utils/common";
 // types
-import type { TCodeBlockAttributes } from "./types";
 import { ECodeBlockAttributeNames } from "./types";
-
-// we just have ts support for now
-const lowlight = createLowlight(common);
-lowlight.register("ts", ts);
 
 type Props = {
   node: ProseMirrorNode;
@@ -31,10 +24,11 @@ type Props = {
 
 export function CodeBlockComponent({ node }: Props) {
   // derived values
-  const attrs = node.attrs as TCodeBlockAttributes;
-  const { copied, copy } = useClipboardCopy(JSON.stringify([attrs[ECodeBlockAttributeNames.ID], node.textContent]));
+  const rawId: unknown = node.attrs[ECodeBlockAttributeNames.ID];
+  const id = typeof rawId === "string" ? rawId : undefined;
+  const { copied, copy } = useClipboardCopy(JSON.stringify([id, node.textContent]));
 
-  const copyToClipboard = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const copyToClipboard = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     if ((await copy(() => copyTextToClipboard(node.textContent))) === "failed") {
@@ -43,7 +37,7 @@ export function CodeBlockComponent({ node }: Props) {
   };
 
   return (
-    <NodeViewWrapper key={attrs[ECodeBlockAttributeNames.ID]} className="code-block group/code relative">
+    <NodeViewWrapper key={id} className="code-block group/code relative">
       <Tooltip tooltipContent="Copy code">
         <button
           type="button"

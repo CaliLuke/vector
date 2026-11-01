@@ -1,3 +1,4 @@
+import type { IGanttBlock, IModule } from "@plane/types";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -17,15 +18,14 @@ import { daysFromGanttWidth } from "../../state";
 import { GanttSidebarDuration } from "../common";
 
 type Props = {
-  blockId: string;
+  block: IGanttBlock<IModule> | undefined;
   isDragging: boolean;
 };
 
 export const ModulesSidebarBlock = function ModulesSidebarBlock(props: Props) {
-  const { blockId, isDragging } = props;
+  const { block, isDragging } = props;
   // store hooks
-  const { blocksById, activeBlockId, setActiveBlockId, viewData } = useGanttChartState();
-  const block = blocksById[blockId];
+  const { activeBlockId, setActiveBlockId, viewData } = useGanttChartState();
 
   if (!block) return <></>;
 

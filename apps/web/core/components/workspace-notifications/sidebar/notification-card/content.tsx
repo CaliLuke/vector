@@ -34,7 +34,10 @@ export type TNotificationContentDetails = {
   showConnector?: boolean;
 };
 
-type TNotificationContentHandler = (data: TNotificationFieldData) => TNotificationContentDetails | null;
+type TNotificationContentHandler = (
+  data: TNotificationFieldData,
+  renderCommentBox?: boolean
+) => TNotificationContentDetails | null;
 
 export type TNotificationContentMap = {
   [key: string]: TNotificationContentHandler;
@@ -123,23 +126,11 @@ const getNotificationContentDetails = (
   const { field } = fieldData;
   if (!field) return null;
 
-  // Check base map first
-  const baseHandler = BASE_NOTIFICATION_CONTENT_MAP[field];
-  if (baseHandler) {
-    // Special case for comment field that needs renderCommentBox
-    if (field === "comment") {
-      return (baseHandler as (data: TNotificationFieldData, renderCommentBox?: boolean) => TNotificationContentDetails)(
-        fieldData,
-        renderCommentBox
-      );
-    }
-    return baseHandler(fieldData);
+  if (Object.hasOwn(BASE_NOTIFICATION_CONTENT_MAP, field)) {
+    return BASE_NOTIFICATION_CONTENT_MAP[field](fieldData, renderCommentBox);
   }
-
-  // Check additional map from plane-web (EE extensions)
-  const additionalHandler = ADDITIONAL_NOTIFICATION_CONTENT_MAP[field];
-  if (additionalHandler) {
-    return additionalHandler(fieldData);
+  if (Object.hasOwn(ADDITIONAL_NOTIFICATION_CONTENT_MAP, field)) {
+    return ADDITIONAL_NOTIFICATION_CONTENT_MAP[field](fieldData);
   }
 
   return null;

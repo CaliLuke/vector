@@ -11,12 +11,13 @@ import { useRouter } from "@tanstack/react-router";
 import { DevErrorComponent } from "./dev";
 import { ProdErrorComponent } from "./prod";
 
+const handleReload = () => window.location.reload();
+
 export function CustomErrorComponent({ error }: { error: unknown }) {
   // router
   const router = useRouter();
 
   const handleGoHome = () => void router.navigate({ href: "/" });
-  const handleReload = () => window.location.reload();
 
   if (import.meta.env.DEV) {
     return <DevErrorComponent error={error} onGoHome={handleGoHome} onReload={handleReload} />;

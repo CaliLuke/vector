@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import type { TFilterValue } from "@plane/types";
 import React from "react";
 
 // plane imports
@@ -17,8 +18,8 @@ import { DateRangeDropdown } from "@/components/dropdowns/date-range";
 import { COMMON_FILTER_ITEM_BORDER_CLASSNAME, EMPTY_FILTER_PLACEHOLDER_TEXT } from "../../shared";
 
 type TDateRangeFilterValueInputProps<P extends TFilterProperty> = {
-  config: TDateRangeFilterFieldConfig<string>;
-  condition: TFilterConditionNodeForDisplay<P, string>;
+  config: TDateRangeFilterFieldConfig<TFilterValue>;
+  condition: TFilterConditionNodeForDisplay<P, TFilterValue>;
   isDisabled?: boolean;
   onChange: (value: string[]) => void;
 };

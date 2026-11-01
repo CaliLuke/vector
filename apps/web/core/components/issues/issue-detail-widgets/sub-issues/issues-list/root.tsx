@@ -10,7 +10,7 @@ import { useGroupColumns } from "@/components/issues/issue-layouts/use-group-col
 import { ListFilter } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
-import type { GroupByColumnTypes, TIssueServiceType } from "@plane/types";
+import type { TIssueServiceType } from "@plane/types";
 import { EIssueServiceType, EIssuesStoreType } from "@plane/types";
 // hooks
 import { SectionEmptyState } from "@/components/empty-state/section-empty-state-root";
@@ -43,8 +43,8 @@ export const SubIssuesListRoot = function SubIssuesListRoot(props: Props) {
     canEdit,
     onAction,
     issueServiceType = EIssueServiceType.ISSUES,
-    storeType = EIssuesStoreType.PROJECT,
-    spacingLeft = 0,
+    storeType,
+    spacingLeft,
   } = props;
   const { t } = useTranslation();
   // store hooks
@@ -70,7 +70,7 @@ export const SubIssuesListRoot = function SubIssuesListRoot(props: Props) {
 
   const groups = useGroupColumns({
     workspaceSlug,
-    groupBy: group_by as GroupByColumnTypes,
+    groupBy: group_by,
     includeNone: true,
     isWorkspaceLevel: isWorkspaceLevel(storeType),
     isEpic: issueServiceType === EIssueServiceType.EPICS,

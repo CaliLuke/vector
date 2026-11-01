@@ -32,7 +32,7 @@ export const StateDelete = function StateDelete(props: TStateDelete) {
   const [isDeleteModal, setIsDeleteModal] = useState(false);
   const [isDelete, setIsDelete] = useState(false);
   // derived values
-  const isDeleteDisabled = Boolean(state.default) || totalStates === 1;
+  const isDeleteDisabled = state.default || totalStates === 1;
 
   const handleDeleteState = async () => {
     if (isDeleteDisabled) return;
@@ -43,8 +43,7 @@ export const StateDelete = function StateDelete(props: TStateDelete) {
       await deleteStateCallback(state.id);
       setIsDelete(false);
     } catch (error) {
-      const errorStatus = error as { status: number; data: { error: string } };
-      if (errorStatus.status === 400) {
+      if (error && typeof error === "object" && "status" in error && error.status === 400) {
         setToast({
           type: TOAST_TYPE.ERROR,
           title: "Error!",
@@ -66,7 +65,7 @@ export const StateDelete = function StateDelete(props: TStateDelete) {
     <>
       <AlertModalCore
         handleClose={() => setIsDeleteModal(false)}
-        handleSubmit={handleDeleteState}
+        handleSubmit={() => void handleDeleteState()}
         isSubmitting={isDelete}
         isOpen={isDeleteModal}
         title="Delete State"

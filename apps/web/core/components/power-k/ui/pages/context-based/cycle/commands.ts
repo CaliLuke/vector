@@ -11,7 +11,7 @@ import { Star, StarOff } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 import { LinkIcon } from "@plane/propel/icons";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
-import { copyTextToClipboard } from "@plane/utils/string";
+import { copyPowerKCurrentUrl } from "@/components/power-k/core/execute-action";
 // components
 import type { TPowerKCommandConfig } from "@/components/power-k/core/types";
 // hooks
@@ -45,23 +45,11 @@ export const usePowerKCycleContextBasedActions = (): TPowerKCommandConfig[] => {
     });
   }, [toggleFavorite, workspaceSlug, cycleDetails]);
 
-  const copyCycleUrlToClipboard = useCallback(() => {
-    const url = new URL(window.location.href);
-    copyTextToClipboard(url.href)
-      .then(() => {
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: t("power_k.contextual_actions.cycle.copy_url_toast_success"),
-        });
-      })
-      .catch(() => {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: t("power_k.contextual_actions.cycle.copy_url_toast_error"),
-        });
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const copyCycleUrlToClipboard = () =>
+    copyPowerKCurrentUrl(
+      t("power_k.contextual_actions.cycle.copy_url_toast_success"),
+      t("power_k.contextual_actions.cycle.copy_url_toast_error")
+    );
 
   return [
     {

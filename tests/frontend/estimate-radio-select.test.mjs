@@ -7,7 +7,8 @@ import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 registerWebModuleHooks();
 
-test("estimate radio choices use native changes once and respect disabled choices", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("estimate radio choices use native changes once and respect disabled choices", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   const { RadioInput } = await import("../../apps/web/core/components/estimates/radio-select.tsx");

@@ -9,11 +9,11 @@ import { useImperativeHandle, useEffect, useLayoutEffect, useMemo } from "react"
 import type { EditorState } from "@tiptap/pm/state";
 import type { MarkdownStorage } from "tiptap-markdown";
 // extensions
-import { CoreEditorExtensions } from "@/extensions";
+import { createCoreEditorExtensions } from "@/extensions";
 // helpers
 import { getEditorRefHelpers } from "@/helpers/editor-ref";
 // props
-import { CoreEditorProps } from "@/props";
+import { createCoreEditorProps } from "@/props";
 // types
 import type { TEditorHookProps } from "@/types";
 
@@ -29,7 +29,7 @@ export const useEditor = (props: TEditorHookProps) => {
   const {
     autofocus = false,
     disabledExtensions,
-    editable = true,
+    editable,
     editorClassName = "",
     editorProps = emptyEditorProps,
     enableHistory,
@@ -40,7 +40,7 @@ export const useEditor = (props: TEditorHookProps) => {
     forwardedRef,
     getEditorMetaData,
     handleEditorReady,
-    id = "",
+    id,
     initialValue,
     isTouchDevice,
     mentionHandler,
@@ -56,7 +56,7 @@ export const useEditor = (props: TEditorHookProps) => {
   } = props;
 
   const currentEditorProps = useMemo(() => {
-    const defaults = CoreEditorProps({ editorClassName });
+    const defaults = createCoreEditorProps({ editorClassName });
     return {
       ...defaults,
       ...editorProps,
@@ -75,7 +75,7 @@ export const useEditor = (props: TEditorHookProps) => {
       parseOptions: { preserveWhitespace: true },
       editorProps: currentEditorProps,
       extensions: [
-        ...CoreEditorExtensions({
+        ...createCoreEditorExtensions({
           disabledExtensions,
           editable,
           enableHistory,
@@ -97,15 +97,15 @@ export const useEditor = (props: TEditorHookProps) => {
       onTransaction: () => {
         onTransaction?.();
       },
-      onUpdate: ({ editor, transaction }) => {
+      onUpdate: ({ editor: currentEditor, transaction }) => {
         // Check if this update is only due to migration update
         const isMigrationUpdate = transaction?.getMeta("uniqueIdOnlyChange") === true;
-        onChange?.(editor.getJSON(), editor.getHTML(), { isMigrationUpdate });
+        onChange?.(currentEditor.getJSON(), currentEditor.getHTML(), { isMigrationUpdate });
       },
       onDestroy: () => handleEditorReady?.(false),
       onFocus: onEditorFocus,
     },
-    [editable]
+    [editable, id]
   );
 
   // Refresh field labels/errors without recreating the editor or its undo history.
@@ -148,7 +148,7 @@ export const useEditor = (props: TEditorHookProps) => {
         }
       }
     }
-  }, [editor, value, id]);
+  }, [editor, value]);
 
   // update assets upload status
   useEffect(() => {
@@ -160,8 +160,8 @@ export const useEditor = (props: TEditorHookProps) => {
   // subscribe to assets list changes
   const assetsList = useEditorState({
     editor,
-    selector: ({ editor }) => ({
-      assets: editor?.storage.utility?.assetsList ?? [],
+    selector: ({ editor: currentEditor }) => ({
+      assets: currentEditor?.storage.utility?.assetsList ?? [],
     }),
   });
   // trigger callback when assets list changes

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { observeSelectionDrag } from "@/helpers/selection-drag";
 import { isNodeSelection } from "@tiptap/core";
 import type { Editor } from "@tiptap/core";
 import { useEditorState } from "@tiptap/react";
@@ -15,16 +16,16 @@ import { cn } from "@plane/utils/common";
 // components
 import type { EditorMenuItem } from "@/components/menus";
 import {
-  BackgroundColorItem,
-  BoldItem,
+  createBackgroundColorItem,
+  createBoldItem,
   BubbleMenuColorSelector,
   BubbleMenuNodeSelector,
-  CodeItem,
-  ItalicItem,
-  StrikeThroughItem,
-  TextAlignItem,
-  TextColorItem,
-  UnderLineItem,
+  createCodeItem,
+  createItalicItem,
+  createStrikeThroughItem,
+  createTextAlignItem,
+  createTextColorItem,
+  createUnderLineItem,
 } from "@/components/menus";
 // constants
 import { COLORS_LIST } from "@/constants/common";
@@ -81,19 +82,19 @@ export function EditorBubbleMenu(props: Props) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   const formattingItems = {
-    code: CodeItem(editor),
-    bold: BoldItem(editor),
-    italic: ItalicItem(editor),
-    underline: UnderLineItem(editor),
-    strikethrough: StrikeThroughItem(editor),
-    "text-align": TextAlignItem(editor),
+    code: createCodeItem(editor),
+    bold: createBoldItem(editor),
+    italic: createItalicItem(editor),
+    underline: createUnderLineItem(editor),
+    strikethrough: createStrikeThroughItem(editor),
+    "text-align": createTextAlignItem(editor),
   } satisfies {
     [K in TEditorCommands]?: EditorMenuItem<K>;
   };
 
   const editorState: EditorStateType = useEditorState({
     editor,
-    selector: ({ editor }) => ({
+    selector: ({ editor: currentEditor }) => ({
       code: formattingItems.code.isActive(),
       bold: formattingItems.bold.isActive(),
       italic: formattingItems.italic.isActive(),
@@ -102,8 +103,8 @@ export function EditorBubbleMenu(props: Props) {
       left: formattingItems["text-align"].isActive({ alignment: "left" }),
       right: formattingItems["text-align"].isActive({ alignment: "right" }),
       center: formattingItems["text-align"].isActive({ alignment: "center" }),
-      color: COLORS_LIST.find((c) => TextColorItem(editor).isActive({ color: c.key })),
-      backgroundColor: COLORS_LIST.find((c) => BackgroundColorItem(editor).isActive({ color: c.key })),
+      color: COLORS_LIST.find((c) => createTextColorItem(currentEditor).isActive({ color: c.key })),
+      backgroundColor: COLORS_LIST.find((c) => createBackgroundColorItem(currentEditor).isActive({ color: c.key })),
     }),
   });
 
@@ -114,15 +115,15 @@ export function EditorBubbleMenu(props: Props) {
   const bubbleMenuProps: EditorBubbleMenuProps = {
     editor,
     style: { zIndex: 9 },
-    shouldShow: ({ state, editor }) => {
+    shouldShow: ({ state, editor: currentEditor }) => {
       const { selection } = state;
       const { empty } = selection;
 
       if (
         empty ||
-        !editor.isEditable ||
-        editor.isActive(CORE_EXTENSIONS.IMAGE) ||
-        editor.isActive(CORE_EXTENSIONS.CUSTOM_IMAGE) ||
+        !currentEditor.isEditable ||
+        currentEditor.isActive(CORE_EXTENSIONS.IMAGE) ||
+        currentEditor.isActive(CORE_EXTENSIONS.CUSTOM_IMAGE) ||
         isNodeSelection(selection) ||
         isCellSelection(selection) ||
         isSelecting
@@ -133,15 +134,11 @@ export function EditorBubbleMenu(props: Props) {
     },
     options: {
       onShow: () => {
-        if (editor.storage.link) {
-          editor.storage.link.isBubbleMenuOpen = true;
-        }
+        editor.commands.setLinkBubbleMenuOpen?.(true);
         editor.commands.addActiveDropbarExtension("bubble-menu");
       },
       onHide: () => {
-        if (editor.storage.link) {
-          editor.storage.link.isBubbleMenuOpen = false;
-        }
+        editor.commands.setLinkBubbleMenuOpen?.(false);
         setTimeout(() => {
           editor.commands.removeActiveDropbarExtension("bubble-menu");
         }, 0);
@@ -149,33 +146,7 @@ export function EditorBubbleMenu(props: Props) {
     },
   };
 
-  useEffect(() => {
-    function handleMouseDown(e: MouseEvent) {
-      if (menuRef.current?.contains(e.target as Node)) return;
-
-      function handleMouseMove() {
-        if (!editor.state.selection.empty) {
-          setIsSelecting(true);
-          document.removeEventListener("mousemove", handleMouseMove);
-        }
-      }
-
-      function handleMouseUp() {
-        setIsSelecting(false);
-        document.removeEventListener("mousemove", handleMouseMove);
-        document.removeEventListener("mouseup", handleMouseUp);
-      }
-
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-    }
-
-    document.addEventListener("mousedown", handleMouseDown);
-
-    return () => {
-      document.removeEventListener("mousedown", handleMouseDown);
-    };
-  }, [editor]);
+  useEffect(() => observeSelectionDrag(editor, () => menuRef.current, setIsSelecting), [editor]);
 
   return (
     <BubbleMenu {...bubbleMenuProps}>
@@ -201,6 +172,8 @@ export function EditorBubbleMenu(props: Props) {
             {basicFormattingOptions.map((item) => (
               <button
                 key={item.key}
+                aria-label={item.name}
+                aria-pressed={editorState[item.key]}
                 type="button"
                 onClick={(e) => {
                   item.command();

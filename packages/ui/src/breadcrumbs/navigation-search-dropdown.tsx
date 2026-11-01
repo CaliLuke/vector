@@ -117,7 +117,8 @@ export function BreadcrumbNavigationSearchDropdown(props: TBreadcrumbNavigationS
         onClose={() => setIsDropdownOpen(false)}
         options={navigationItems}
         value={selectedItem}
-        onChange={(value: string) => {
+        onChange={(value) => {
+          if (value === null) return;
           if (value !== selectedItem) onChange?.(value);
         }}
         disabled={navigationDisabled}

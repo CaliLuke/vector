@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { registerHooks } from "node:module";
@@ -52,7 +53,10 @@ async function fixture(t, active = true) {
   client.setQueryData(identityKeys.currentUser(), { id: "alice" });
   const memberKey = permissionKeys.workspaceMembership("alice", "acme");
   client.setQueryData(memberKey, { is_active: active, role: active ? 15 : null, updated_at: "v1" });
-  client.setQueryData(permissionKeys.workspaceProjectRoles("alice", "acme", 15, "v1"), { project: 15 });
+  client.setQueryData(
+    permissionKeys.workspaceProjectRoles("alice", "acme", ContractEnums.EUserPermissions.MEMBER, "v1"),
+    { project: 15 }
+  );
   t.after(async () => {
     await env.unmount(() => client.clear());
   });

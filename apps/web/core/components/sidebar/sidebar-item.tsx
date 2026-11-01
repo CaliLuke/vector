@@ -121,6 +121,10 @@ const AppSidebarItem = Object.assign(
     { variant = "link", item, className, ...triggerProps },
     ref
   ) {
+    const setRootRef = (element: HTMLElement | null) => {
+      if (typeof ref === "function") return ref(element);
+      if (ref) ref.current = element;
+    };
     if (!item) return null;
 
     const { icon, isActive, label, href, onClick, disabled, showLabel = true } = item;
@@ -136,12 +140,7 @@ const AppSidebarItem = Object.assign(
       if (!href) return null;
 
       return (
-        <Link
-          {...triggerProps}
-          to={href}
-          ref={ref as React.Ref<HTMLAnchorElement>}
-          className={cn(styles.base, className)}
-        >
+        <Link {...triggerProps} to={href} ref={setRootRef} className={cn(styles.base, className)}>
           {commonItems}
         </Link>
       );
@@ -149,7 +148,7 @@ const AppSidebarItem = Object.assign(
 
     if (variant === "content") {
       return (
-        <span {...triggerProps} ref={ref as React.Ref<HTMLSpanElement>} className={cn(styles.base, className)}>
+        <span {...triggerProps} ref={setRootRef} className={cn(styles.base, className)}>
           {commonItems}
         </span>
       );
@@ -158,7 +157,7 @@ const AppSidebarItem = Object.assign(
     return (
       <button
         {...triggerProps}
-        ref={ref as React.Ref<HTMLButtonElement>}
+        ref={setRootRef}
         className={cn(styles.base, className)}
         onClick={(event) => {
           triggerProps.onClick?.(event);

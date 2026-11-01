@@ -13,8 +13,8 @@ import { ChevronRightIcon } from "@plane/propel/icons";
 type EmptySpaceProps = {
   title: string;
   description: string;
-  children: any;
-  Icon?: any;
+  children: React.ReactNode;
+  Icon?: React.ComponentType<{ className?: string }>;
   link?: { text: string; href: string };
 };
 
@@ -30,9 +30,7 @@ function EmptySpace({ title, description, children, Icon, link }: EmptySpaceProp
 
         <h2 className="text-16 font-medium text-primary">{title}</h2>
         <div className="mt-1 text-13 text-secondary">{description}</div>
-        <ul role="list" className="mt-6 divide-y divide-subtle-1 border-t border-b border-subtle">
-          {children}
-        </ul>
+        <ul className="mt-6 divide-y divide-subtle-1 border-t border-b border-subtle">{children}</ul>
         {link ? (
           <div className="mt-6 flex">
             <Link to={link.href}>
@@ -50,8 +48,8 @@ function EmptySpace({ title, description, children, Icon, link }: EmptySpaceProp
 
 type EmptySpaceItemProps = {
   title: string;
-  description?: React.ReactNode | string;
-  Icon: any;
+  description?: React.ReactNode;
+  Icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
   action?: () => void;
   href?: string;
 };
@@ -75,14 +73,22 @@ function EmptySpaceItem({ title, description, Icon, action, href }: EmptySpaceIt
   );
 
   if (href) {
-    spaceItem = <Link to={href}>{spaceItem}</Link>;
+    spaceItem = (
+      <Link to={href} onClick={action}>
+        {spaceItem}
+      </Link>
+    );
+  } else if (action) {
+    spaceItem = (
+      <button type="button" className="w-full text-left" onClick={action}>
+        {spaceItem}
+      </button>
+    );
   }
 
   return (
     <>
-      <li className="cursor-pointer" onClick={action} role="button">
-        {spaceItem}
-      </li>
+      <li>{spaceItem}</li>
     </>
   );
 }

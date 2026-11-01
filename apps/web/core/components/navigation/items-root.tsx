@@ -4,19 +4,16 @@
  * See the LICENSE file for details.
  */
 
-// components/AppSidebarItemsRoot.tsx
-
 import React from "react";
-import type { AppSidebarItemData } from "@/components/sidebar/sidebar-item";
 import { AppSidebarItem } from "@/components/sidebar/sidebar-item";
-import { withDockItems } from "./app-rail-hoc";
+import { useAppRailItems } from "./use-app-rail-items";
 
 type Props = {
-  dockItems: (AppSidebarItemData & { shouldRender: boolean })[];
   showLabel?: boolean;
 };
 
-function Component({ dockItems, showLabel = true }: Props) {
+export function AppSidebarItemsRoot({ showLabel = true }: Props) {
+  const dockItems = useAppRailItems();
   return (
     <>
       {dockItems
@@ -27,5 +24,3 @@ function Component({ dockItems, showLabel = true }: Props) {
     </>
   );
 }
-
-export const AppSidebarItemsRoot = withDockItems(Component);

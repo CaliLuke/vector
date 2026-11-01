@@ -6,16 +6,13 @@
 
 import { useState } from "react";
 
-import { MoreHorizontal } from "lucide-react";
 // types
 import { EUserPermissions } from "@plane/constants";
-import { IconButton } from "@plane/propel/icon-button";
 import { useViewLinkCopy } from "@/components/views/use-view-link-copy";
 import type { IProjectView } from "@plane/types";
 // ui
-import type { TContextMenuItem } from "@plane/ui";
-import { ContextMenu, CustomMenu } from "@plane/ui";
-import { cn } from "@plane/utils/common";
+import { QuickActionsMenu } from "@/components/common/quick-actions-menu";
+import { normalizeQuickActions } from "@/components/common/quick-actions-helper";
 // helpers
 import { useViewMenuItems } from "@/components/common/quick-actions-helper";
 // hooks
@@ -60,24 +57,13 @@ export const ViewQuickActions = function ViewQuickActions(props: Props) {
     view,
     handleEdit: () => setCreateUpdateViewModal(true),
     handleDelete: () => setDeleteViewModal(true),
-    handleCopyLink: handleCopyText,
+    handleCopyLink: () => void handleCopyText(),
     handleOpenInNewTab,
   });
 
-  // Handle both CE (array) and EE (object) return types
-  const MENU_ITEMS: TContextMenuItem[] = Array.isArray(menuResult) ? menuResult : menuResult.items;
-  const additionalModals = Array.isArray(menuResult) ? null : menuResult.modals;
+  const { items: MENU_ITEMS, modals: additionalModals } = normalizeQuickActions(menuResult);
 
   if (publishContextMenu) MENU_ITEMS.splice(2, 0, publishContextMenu);
-
-  const CONTEXT_MENU_ITEMS = MENU_ITEMS.map(function CONTEXT_MENU_ITEMS(item) {
-    return {
-      ...item,
-      action: () => {
-        item.action();
-      },
-    };
-  });
 
   return (
     <>
@@ -90,48 +76,7 @@ export const ViewQuickActions = function ViewQuickActions(props: Props) {
       />
       <DeleteProjectViewModal data={view} isOpen={deleteViewModal} onClose={() => setDeleteViewModal(false)} />
       {additionalModals}
-      <ContextMenu parentRef={parentRef} items={CONTEXT_MENU_ITEMS} />
-      <CustomMenu
-        customButtonAsChild
-        customButton={<IconButton variant="tertiary" size="lg" icon={MoreHorizontal} />}
-        placement="bottom-end"
-        closeOnSelect
-        buttonClassName={customClassName}
-      >
-        {MENU_ITEMS.map((item) => {
-          if (item.shouldRender === false) return null;
-          return (
-            <CustomMenu.MenuItem
-              key={item.key}
-              onClick={() => {
-                item.action();
-              }}
-              className={cn(
-                "flex items-center gap-2",
-                {
-                  "text-placeholder": item.disabled,
-                },
-                item.className
-              )}
-              disabled={item.disabled}
-            >
-              {item.icon && <item.icon className={cn("h-3 w-3", item.iconClassName)} />}
-              <div>
-                <h5>{item.title}</h5>
-                {item.description && (
-                  <p
-                    className={cn("whitespace-pre-line text-tertiary", {
-                      "text-placeholder": item.disabled,
-                    })}
-                  >
-                    {item.description}
-                  </p>
-                )}
-              </div>
-            </CustomMenu.MenuItem>
-          );
-        })}
-      </CustomMenu>
+      <QuickActionsMenu parentRef={parentRef} items={MENU_ITEMS} className={customClassName} />
     </>
   );
 };

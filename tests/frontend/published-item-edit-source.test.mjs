@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { QueryClient, QueryObserver } from "@tanstack/react-query";
@@ -16,18 +17,21 @@ function fixture(t) {
   client.setQueryData(identityKeys.currentUser(), { id: "alice" });
   client.setQueryData(permissionKeys.workspaceMembership("alice", "acme"), {
     is_active: true,
-    role: 15,
+    role: ContractEnums.EUserPermissions.MEMBER,
     updated_at: "v1",
   });
-  client.setQueryData(permissionKeys.workspaceProjectRoles("alice", "acme", 15, "v1"), { p: 15 });
+  client.setQueryData(
+    permissionKeys.workspaceProjectRoles("alice", "acme", ContractEnums.EUserPermissions.MEMBER, "v1"),
+    { p: 15 }
+  );
   const scope = {
     accountId: "alice",
     workspaceSlug: "acme",
     projectId: "p",
     issueId: "item",
-    membershipRole: 15,
+    membershipRole: ContractEnums.EUserPermissions.MEMBER,
     membershipRevision: "v1",
-    projectRole: 15,
+    projectRole: ContractEnums.EUserPermissions.MEMBER,
     generation: getIdentitySessionGeneration(client),
   };
   const f = {

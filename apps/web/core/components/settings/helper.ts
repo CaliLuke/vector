@@ -6,32 +6,26 @@
 
 import { GROUPED_WORKSPACE_SETTINGS, PROJECT_SETTINGS_FLAT_MAP } from "@plane/constants";
 
-const hrefToLabelMap = (options: Record<string, Array<{ href: string; i18n_label: string; [key: string]: any }>>) =>
+const hrefToLabelMap = (options: Record<string, Array<{ href: string; i18n_label: string }>>) =>
   Object.values(options)
     .flat()
-    .reduce(
-      (acc, setting) => {
-        acc[setting.href] = setting.i18n_label;
-        return acc;
-      },
-      {} as Record<string, string>
-    );
+    .reduce<Record<string, string>>((acc, setting) => {
+      acc[setting.href] = setting.i18n_label;
+      return acc;
+    }, {});
 
 const workspaceHrefToLabelMap = hrefToLabelMap(GROUPED_WORKSPACE_SETTINGS);
 
-const projectHrefToLabelMap = PROJECT_SETTINGS_FLAT_MAP.reduce(
-  (acc, setting) => {
-    acc[setting.href] = setting.i18n_label;
-    return acc;
-  },
-  {} as Record<string, string>
-);
+const projectHrefToLabelMap = PROJECT_SETTINGS_FLAT_MAP.reduce<Record<string, string>>((acc, setting) => {
+  acc[setting.href] = setting.i18n_label;
+  return acc;
+}, {});
 
 export const pathnameToAccessKey = (pathname: string) => {
   const pathArray = pathname.replace(/^\/|\/$/g, "").split("/"); // Regex removes leading and trailing slashes
   const workspaceSlug = pathArray[0];
   const accessKey = pathArray.slice(1, 3).join("/");
-  return { workspaceSlug, accessKey: `/${accessKey}` || "" };
+  return { workspaceSlug, accessKey: `/${accessKey}` };
 };
 
 export const getWorkspaceActivePath = (pathname: string) => {

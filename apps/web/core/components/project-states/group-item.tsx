@@ -59,11 +59,13 @@ export const GroupItem = function GroupItem(props: TGroupItem) {
       ref={dropElementRef}
     >
       <div className="flex items-center justify-between gap-2">
-        <div
+        <button
+          type="button"
+          aria-expanded={currentStateExpanded}
           className="flex w-full cursor-pointer items-center py-1"
           onClick={() => (!currentStateExpanded ? handleExpand(groupKey) : handleGroupCollapse(groupKey))}
         >
-          <div
+          <span
             className={cn(
               "flex h-5 w-5 flex-shrink-0 items-center justify-center overflow-hidden rounded-sm transition-all",
               {
@@ -73,12 +75,12 @@ export const GroupItem = function GroupItem(props: TGroupItem) {
             )}
           >
             <ChevronDownIcon className="h-4 w-4" />
-          </div>
-          <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center overflow-hidden rounded-sm">
+          </span>
+          <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center overflow-hidden rounded-sm">
             <StateGroupIcon stateGroup={groupKey} size={EIconSize.XL} />
-          </div>
-          <div className="px-1 text-14 font-medium text-secondary capitalize">{groupKey}</div>
-        </div>
+          </span>
+          <span className="px-1 text-14 font-medium text-secondary capitalize">{groupKey}</span>
+        </button>
         <button
           type="button"
           data-ph-element={STATE_TRACKER_ELEMENTS.STATE_GROUP_ADD_BUTTON}

@@ -44,7 +44,7 @@ export const IssueLabel = function IssueLabel(props: TIssueLabel) {
     workspaceSlug,
     projectId,
     issueId,
-    disabled = false,
+    disabled,
     isInboxIssue = false,
     onLabelUpdate,
     issueServiceType = EIssueServiceType.ISSUES,

@@ -68,7 +68,7 @@ export function ExtendedSidebarItem(props: TExtendedSidebarItemProps) {
     const element = navigationIemRef.current;
     const dragHandleElement = dragHandleRef.current;
 
-    if (!element) return;
+    if (!element) return undefined;
 
     return combine(
       draggable({
@@ -123,7 +123,7 @@ export function ExtendedSidebarItem(props: TExtendedSidebarItemProps) {
         className={cn(
           "group/project-item relative flex w-full items-center rounded-md text-primary hover:bg-surface-2"
         )}
-        id={`${item.key}`}
+        id={item.key}
       >
         {!disableDrag && (
           <SidebarDragHandle

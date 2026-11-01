@@ -80,7 +80,7 @@ export function AskPiMenu(props: Props) {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    handleRegenerate();
+                    void handleRegenerate();
                   }}
                   disabled={isRegenerating}
                 >

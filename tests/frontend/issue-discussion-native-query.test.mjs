@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
@@ -26,11 +27,11 @@ const scope = {
   workspaceSlug: "acme",
   projectId: "p1",
   issueId: "i1",
-  membershipRole: 15,
+  membershipRole: ContractEnums.EUserPermissions.MEMBER,
   membershipRevision: "m1",
-  projectRole: 20,
-  projectMembershipRole: 20,
-  serviceType: "issues",
+  projectRole: ContractEnums.EUserPermissions.ADMIN,
+  projectMembershipRole: ContractEnums.EUserPermissions.ADMIN,
+  serviceType: ContractEnums.EIssueServiceType.ISSUES,
 };
 const comment = {
   id: "c1",
@@ -87,7 +88,11 @@ await test("late history cannot populate cache after same-value permission query
   assert.equal(client.getQueryData(discussionKey(scope, "activity")), undefined);
 });
 await test("raw guest role changes invalidate a read even when workspace admin keeps effective role unchanged", async (t) => {
-  const admin = { ...scope, membershipRole: 20, projectMembershipRole: 5 };
+  const admin = {
+    ...scope,
+    membershipRole: ContractEnums.EUserPermissions.ADMIN,
+    projectMembershipRole: ContractEnums.EUserPermissions.GUEST,
+  };
   const { client, roles } = fixture(t, admin);
   const pending = Promise.withResolvers();
   t.mock.method(IssueActivityService.prototype, "getIssueActivities", () => pending.promise);
@@ -170,7 +175,7 @@ await test("activity invalidation targets item/service and does not touch anothe
   const { client } = fixture(t);
   client.setQueryData(discussionKey(scope, "activity"), []);
   const other = { ...scope, issueId: "other" },
-    epic = { ...scope, serviceType: "epics" };
+    epic = { ...scope, serviceType: ContractEnums.EIssueServiceType.EPICS };
   client.setQueryData(discussionKey(other, "activity"), []);
   client.setQueryData(discussionKey(epic, "activity"), []);
   await refreshIssueActivity(client, scope, captureIssueActivityRefreshOwner(client, scope));
@@ -190,7 +195,11 @@ await test("a retired history read cannot release a replacement item's native pe
   const old = client.fetchQuery(issueActivityOptions(scope));
   const rejected = assert.rejects(old, /access changed/);
   const next = client.fetchQuery(issueActivityOptions(replacement));
-  client.setQueryData(membership, { is_active: false, role: 15, updated_at: "revoked" });
+  client.setQueryData(membership, {
+    is_active: false,
+    role: ContractEnums.EUserPermissions.MEMBER,
+    updated_at: "revoked",
+  });
   first.resolve([{ id: "private" }]);
   await rejected;
   assert.equal(client.getQueryState(discussionKey(replacement, "activity")).fetchStatus, "fetching");
@@ -244,7 +253,7 @@ await test("native epic history forwards cancellation and the epic service endpo
     requested = { path, options };
     return { data: [] };
   });
-  await client.fetchQuery(issueCommentsOptions({ ...scope, serviceType: "epics" }));
+  await client.fetchQuery(issueCommentsOptions({ ...scope, serviceType: ContractEnums.EIssueServiceType.EPICS }));
   assert.match(requested.path, /\/epics\/i1\/history\/$/);
   assert.equal(requested.options.params.activity_type, "epic-comment");
   assert.ok(requested.options.signal instanceof AbortSignal);
@@ -286,7 +295,11 @@ await test("queued reaction toggles resolve against the latest acknowledged nati
 });
 
 await test("guest reaction reads use the visible parent projection and retain authorization status", async (t) => {
-  const guest = { ...scope, projectRole: 5, projectMembershipRole: 5 };
+  const guest = {
+    ...scope,
+    projectRole: ContractEnums.EUserPermissions.GUEST,
+    projectMembershipRole: ContractEnums.EUserPermissions.GUEST,
+  };
   const { client } = fixture(t, guest);
   let requested;
   const reaction = { id: "r1", issue: "i1", actor: "alice", reaction: "128077", display_name: "Alice" };
@@ -431,7 +444,7 @@ await test("Retry retires a denied read before clearing access so its late succe
 });
 await test("a wrong-kind denial and eviction preserve a valid sibling service family", async (t) => {
   const { client } = fixture(t),
-    epic = { ...scope, serviceType: "epics" };
+    epic = { ...scope, serviceType: ContractEnums.EIssueServiceType.EPICS };
   const { forgetItemReads, isItemAccessDenied } = await import("../../apps/web/core/queries/work-item-access.ts");
   t.mock.method(IssueActivityService.prototype, "getIssueActivities", async () => {
     throw { response: { status: 404 } };
@@ -472,10 +485,13 @@ await test("an old actor activity refresh cannot cancel a replacement actor read
   client.setQueryData(identityKeys.currentUser(), { id: "bob" });
   client.setQueryData(permissionKeys.workspaceMembership("bob", "acme"), {
     is_active: true,
-    role: 15,
+    role: ContractEnums.EUserPermissions.MEMBER,
     updated_at: "m1",
   });
-  client.setQueryData(permissionKeys.workspaceProjectRoles("bob", "acme", 15, "m1"), { p1: 20 });
+  client.setQueryData(
+    permissionKeys.workspaceProjectRoles("bob", "acme", ContractEnums.EUserPermissions.MEMBER, "m1"),
+    { p1: 20 }
+  );
   t.mock.method(IssueActivityService.prototype, "getIssueActivities", () => pending.promise);
   const reading = client.fetchQuery(issueActivityOptions(replacement));
   await refreshIssueActivity(client, scope, owner);

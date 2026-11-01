@@ -6,7 +6,8 @@
 
 import { useStore } from "@tanstack/react-form";
 // plane imports
-import { ROLE } from "@plane/constants";
+import { EUserWorkspaceRoles } from "@plane/types";
+import { EUserPermissions, ROLE } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { CloseIcon } from "@plane/propel/icons";
 import { CustomSelect, Input } from "@plane/ui";
@@ -15,6 +16,12 @@ import { checkEmailValidity } from "@plane/utils/string";
 // hooks
 import { useWorkspacePermissions } from "@/hooks/use-permissions";
 import type { InvitationFormApi } from "@/hooks/use-workspace-invitation";
+
+const invitationRoles = [
+  { role: EUserPermissions.GUEST, minimumRole: EUserWorkspaceRoles.GUEST },
+  { role: EUserPermissions.MEMBER, minimumRole: EUserWorkspaceRoles.MEMBER },
+  { role: EUserPermissions.ADMIN, minimumRole: EUserWorkspaceRoles.ADMIN },
+];
 
 type TInvitationFieldsProps = {
   workspaceSlug: string;
@@ -86,16 +93,19 @@ export function InvitationFields(props: TInvitationFieldsProps) {
                             {ROLE[field.state.value]}
                           </span>
                         }
-                        onChange={field.handleChange}
+                        onChange={(selection) => (selection !== null ? field.handleChange(selection) : undefined)}
                         disabled={isSubmitting}
                         className="w-24 flex-grow"
                         input
                       >
-                        {Object.entries(ROLE)
-                          .filter(([role]) => currentWorkspaceRole && currentWorkspaceRole >= Number(role))
-                          .map(([role, label]) => (
-                            <CustomSelect.Option key={role} value={Number(role)}>
-                              {label}
+                        {invitationRoles
+                          .filter(
+                            ({ minimumRole }) =>
+                              currentWorkspaceRole !== undefined && currentWorkspaceRole >= minimumRole
+                          )
+                          .map(({ role }) => (
+                            <CustomSelect.Option key={role} value={role}>
+                              {ROLE[role]}
                             </CustomSelect.Option>
                           ))}
                       </CustomSelect>

@@ -74,11 +74,11 @@ export function SidebarFavoritesMenu() {
   };
 
   const handleDrop = (self: DropTargetRecord, source: ElementDragPayload, location: DragLocationHistory) => {
-    const isFolder = self.data?.isGroup;
-    const dropTargets = location?.current?.dropTargets ?? [];
-    if (!dropTargets || dropTargets.length <= 0) return;
+    const isFolder = self.data.isGroup;
+    const dropTargets = location.current.dropTargets;
+    if (dropTargets.length === 0) return;
     const dropTarget =
-      dropTargets.length > 1 ? dropTargets.find((target: DropTargetRecord) => target?.data?.isChild) : dropTargets[0];
+      dropTargets.length > 1 ? dropTargets.find((target: DropTargetRecord) => target.data.isChild) : dropTargets[0];
 
     const dropTargetData = dropTarget?.data;
 
@@ -89,23 +89,11 @@ export function SidebarFavoritesMenu() {
     const sourceData = source.data;
 
     if (!isTreeDropTargetData(sourceData)) return;
-    if (isFolder) {
-      // handle move to a new parent folder if dropped on a folder
-      if (parentId && parentId !== sourceData.parentId) {
-        handleMoveToFolder(sourceData.id, parentId); /**parent id  */
-      }
-      // handle reordering at root level
-      if (droppedFavId) {
-        if (instruction != "make-child") {
-          handleReorder(sourceData.id, droppedFavId, instruction); /** sequence */
-        }
-      }
-    } else {
-      //handling reordering for favorites
-      if (droppedFavId) {
-        handleReorder(sourceData.id, droppedFavId, instruction); /** sequence */
-      }
+    if (isFolder && parentId && parentId !== sourceData.parentId) {
+      handleMoveToFolder(sourceData.id, parentId);
     }
+    // A make-child instruction has no sibling destination to reorder against.
+    if (droppedFavId) handleReorder(sourceData.id, droppedFavId, instruction);
 
     /**remove if dropped outside and source is a child */
     if (!parentId && sourceData.isChild) {
@@ -158,7 +146,7 @@ export function SidebarFavoritesMenu() {
   useEffect(() => {
     const element = elementRef.current;
 
-    if (!element) return;
+    if (!element) return undefined;
 
     return combine(
       dropTargetForElements({

@@ -6,10 +6,8 @@
 
 import { useLayoutEffect } from "react";
 
-export const useAutoResizeTextArea = (
-  textAreaRef: React.RefObject<HTMLTextAreaElement>,
-  value: string | number | readonly string[]
-) => {
+export const useAutoResizeTextArea = (textAreaRef: React.RefObject<HTMLTextAreaElement | null>) => {
+  // Measure committed DOM after each render: both content and styles can change its height.
   useLayoutEffect(() => {
     const textArea = textAreaRef.current;
     if (!textArea) return;
@@ -18,5 +16,5 @@ export const useAutoResizeTextArea = (
     textArea.style.height = "0px";
     const scrollHeight = textArea.scrollHeight;
     textArea.style.height = scrollHeight + "px";
-  }, [textAreaRef, value]);
+  });
 };

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { EIssueCommentAccessSpecifier } from "@plane/types";
 import type {
   TIssueGroupByOptions,
   TIssueOrderByOptions,
@@ -36,8 +37,7 @@ export enum EIssueGroupByToServerOptions {
   target_date = "target_date",
   project = "project_id",
   created_by = "created_by",
-  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
-  team_project = "project_id",
+  team_project = project,
 }
 
 export enum EIssueGroupBYServerToProperty {
@@ -54,10 +54,7 @@ export enum EIssueGroupBYServerToProperty {
   created_by = "created_by",
 }
 
-export enum EIssueCommentAccessSpecifier {
-  EXTERNAL = "EXTERNAL",
-  INTERNAL = "INTERNAL",
-}
+export { EIssueCommentAccessSpecifier };
 
 export enum EIssueListRow {
   HEADER = "HEADER",

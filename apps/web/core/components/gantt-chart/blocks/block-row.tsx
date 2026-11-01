@@ -21,7 +21,7 @@ import { ChartAddBlock } from "../helpers";
 type Props = {
   blockId: string;
   showAllBlocks: boolean;
-  blockUpdateHandler: (block: any, payload: IBlockUpdateData) => void;
+  blockUpdateHandler: (blockId: string, payload: IBlockUpdateData) => void;
   handleScrollToBlock: (block: IGanttBlock) => void;
   enableAddBlock: boolean;
   selectionHelpers: TSelectionHelper;
@@ -50,7 +50,7 @@ export const BlockRow = function BlockRow(props: Props) {
   useEffect(() => {
     const intersectionRoot = ganttContainerRef.current;
     const timelineBlock = document.getElementById(`gantt-block-${block?.id}`);
-    if (!timelineBlock || !intersectionRoot) return;
+    if (!timelineBlock || !intersectionRoot) return undefined;
 
     setIsBlockHiddenOnLeft(
       !!block.position?.marginLeft &&

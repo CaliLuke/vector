@@ -49,7 +49,7 @@ export const RelationIssueListItem = function RelationIssueListItem(props: Props
     issueId,
     relationKey,
     issue,
-    disabled = false,
+    disabled,
     onAction,
     issueServiceType = EIssueServiceType.ISSUES,
   } = props;
@@ -108,27 +108,27 @@ export const RelationIssueListItem = function RelationIssueListItem(props: Props
     handleRedirection(workspaceSlug, relatedIssue, isMobile);
   };
 
-  const handleEditIssue = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleEditIssue = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     e.preventDefault();
     onAction({ kind: "update", issue: { ...issue } });
     toggleCreateIssueModal(true);
   };
 
-  const handleDeleteIssue = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleDeleteIssue = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     e.preventDefault();
     onAction({ kind: "delete", issue });
     toggleDeleteIssueModal(issue.id);
   };
 
-  const handleCopyIssueLink = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleCopyIssueLink = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     e.preventDefault();
     copyLink.copy();
   };
 
-  const handleRemoveRelation = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleRemoveRelation = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     removal.run(() => removeRelation(relationKey, issue.id));

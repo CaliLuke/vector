@@ -63,6 +63,7 @@ export const Default: Story = {
               <a
                 key={item.key}
                 href={item.href}
+                aria-label={item.name}
                 onClick={(e) => {
                   e.preventDefault();
                   setActiveNavTab(item.key);

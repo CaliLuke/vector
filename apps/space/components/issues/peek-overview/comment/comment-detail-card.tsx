@@ -60,8 +60,8 @@ export const CommentCard = function CommentCard(props: Props) {
     },
   });
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
-  const submit = (event: React.SyntheticEvent) => {
-    event.preventDefault();
+  const submit = (event?: React.SyntheticEvent) => {
+    event?.preventDefault();
     void form.handleSubmit().catch(() => {
       // The mutation already reported the failed comment update.
     });
@@ -90,8 +90,8 @@ export const CommentCard = function CommentCard(props: Props) {
             className={`bg-gray-500 grid size-7 place-items-center rounded-full border-2 border-strong-1 text-on-color`}
           >
             {comment.actor_detail.is_bot
-              ? comment?.actor_detail?.first_name?.charAt(0)
-              : comment?.actor_detail?.display_name?.charAt(0)}
+              ? comment.actor_detail.first_name?.charAt(0)
+              : comment.actor_detail.display_name?.charAt(0)}
           </div>
         )}
 
@@ -158,7 +158,7 @@ export const CommentCard = function CommentCard(props: Props) {
               </button>
             </div>
           </form>
-          <div className={`${isEditing ? "hidden" : ""}`}>
+          <div className={isEditing ? "hidden" : ""}>
             <LiteTextEditor
               editable={false}
               anchor={anchor}
@@ -174,7 +174,7 @@ export const CommentCard = function CommentCard(props: Props) {
           </div>
         </div>
       </div>
-      {!isInIframe && currentUser?.id === comment?.actor_detail?.id && (
+      {!isInIframe && currentUser?.id === comment.actor_detail.id && (
         <Menu as="div" className="relative w-min text-left">
           <Menu.Button
             type="button"

@@ -6,7 +6,7 @@
 
 import { Combobox, Portal } from "@headlessui/react";
 import { Info } from "lucide-react";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
 import { usePopper } from "react-popper";
 import { useOutsideClickDetector } from "@plane/hooks";
 import { CheckIcon, SearchIcon, ChevronDownIcon } from "@plane/propel/icons";
@@ -15,8 +15,8 @@ import { CheckIcon, SearchIcon, ChevronDownIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 import { useDropdownButtonKeyDown, useDropdownKeyDown } from "../hooks/use-dropdown-key-down";
 import { cn } from "../utils";
-import { isCustomButtonDisabled, SyncComboboxOpenState } from "./helper";
-import type { ICustomSearchSelectProps, TAsChildButtonProps } from "./helper";
+import { isCustomButtonDisabled, SyncComboboxOpenState, searchSelectOptionKey } from "./helper";
+import type { ICustomSearchSelectProps } from "./helper";
 
 // This picker mounts its search input only while open. Its button therefore owns
 // the closed-state Tab stop (a standard Combobox leaves that to its input).
@@ -29,25 +29,22 @@ function SearchSelectButton({
   return React.createElement(elementType, { ...props, tabIndex: triggerTabIndex });
 }
 
-const HeadlessComboboxButton = Combobox.Button as unknown as React.ComponentType<TAsChildButtonProps>;
-
-export function CustomSearchSelect(props: ICustomSearchSelectProps) {
+export function CustomSearchSelect<T>(props: ICustomSearchSelectProps<T>) {
   const {
     customButtonClassName = "",
     buttonClassName = "",
     className = "",
     chevronClassName = "",
     customButton,
-    customButtonAsChild = false,
+    customButtonAsChild,
     placement,
     disabled = false,
     footerOption,
     input = false,
     label,
     maxHeight = "md",
-    multiple = false,
+    multiple,
     noChevron = false,
-    onChange,
     options,
     onOpen,
     onClose,
@@ -69,11 +66,10 @@ export function CustomSearchSelect(props: ICustomSearchSelectProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const customButtonDisabled = isCustomButtonDisabled(disabled, customButton);
 
-  const onOpenRef = useRef(onOpen);
-  onOpenRef.current = onOpen;
+  const notifyOpen = useEffectEvent(() => onOpen?.());
 
   useEffect(() => {
-    if (isOpen) onOpenRef.current?.();
+    if (isOpen) notifyOpen();
   }, [isOpen]);
   // refs
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -84,16 +80,6 @@ export function CustomSearchSelect(props: ICustomSearchSelectProps) {
 
   const filteredOptions =
     query === "" ? options : options?.filter((option) => option.query.toLowerCase().includes(query.toLowerCase()));
-
-  const comboboxProps: any = {
-    value,
-    onChange: (nextValue: unknown) => {
-      if (nextValue !== null || value !== null) onChange(nextValue);
-    },
-    disabled: customButtonDisabled,
-  };
-
-  if (multiple) comboboxProps.multiple = true;
 
   const openDropdown = () => {
     setIsOpen(true);
@@ -117,7 +103,7 @@ export function CustomSearchSelect(props: ICustomSearchSelectProps) {
   const handleCustomButtonKeyDown = useDropdownButtonKeyDown(customButtonDisabled, isOpen, openDropdown, closeDropdown);
 
   return (
-    <Combobox
+    <Combobox<unknown, boolean, "div">
       as="div"
       role="presentation"
       ref={dropdownRef}
@@ -131,21 +117,41 @@ export function CustomSearchSelect(props: ICustomSearchSelectProps) {
         setIsOpen(false);
         onClose?.();
       }}
-      {...comboboxProps}
+      value={value}
+      multiple={multiple}
+      disabled={customButtonDisabled}
+      onChange={(nextValue) => {
+        if (props.multiple) {
+          if (!Array.isArray(nextValue)) return;
+          const candidates = [...(options ?? []), ...(props.value ?? []).map((selected) => ({ value: selected }))];
+          props.onChange(
+            nextValue.flatMap((selected: unknown) => {
+              const match = candidates.find((option) => Object.is(option.value, selected));
+              return match ? [match.value] : [];
+            })
+          );
+        } else if (nextValue !== null || value !== null) {
+          const match = options?.find((option) => Object.is(option.value, nextValue));
+          if (match) props.onChange(match.value);
+          else if (nextValue === null) props.onChange(null);
+        }
+      }}
     >
       {({ open }) => (
         <>
           <SyncComboboxOpenState open={open} onOpenChange={setIsOpen} />
           {customButton ? (
             customButtonAsChild ? (
-              <HeadlessComboboxButton
+              <Combobox.Button
                 as={React.Fragment}
-                ref={setReferenceElement}
-                type="button"
-                className={customButtonClassName}
-                onClick={(event) => handleButtonClick(event, open)}
-                onKeyDown={handleCustomButtonKeyDown}
-                disabled={customButtonDisabled}
+                {...({
+                  ref: setReferenceElement,
+                  type: "button",
+                  className: customButtonClassName,
+                  onClick: (event) => handleButtonClick(event, open),
+                  onKeyDown: handleCustomButtonKeyDown,
+                  disabled: customButtonDisabled,
+                } satisfies React.ComponentPropsWithRef<"button">)}
               >
                 {React.isValidElement<React.ComponentPropsWithRef<"button">>(customButton) ? (
                   <SearchSelectButton
@@ -156,7 +162,7 @@ export function CustomSearchSelect(props: ICustomSearchSelectProps) {
                 ) : (
                   customButton
                 )}
-              </HeadlessComboboxButton>
+              </Combobox.Button>
             ) : (
               <Combobox.Button as={React.Fragment}>
                 <SearchSelectButton
@@ -229,7 +235,6 @@ export function CustomSearchSelect(props: ICustomSearchSelectProps) {
                       }
                     }}
                     placeholder="Search"
-                    displayValue={(assigned: any) => assigned?.name}
                   />
                 </div>
                 <div
@@ -246,7 +251,7 @@ export function CustomSearchSelect(props: ICustomSearchSelectProps) {
                     filteredOptions.length > 0 ? (
                       filteredOptions.map((option) => (
                         <Combobox.Option
-                          key={option.value}
+                          key={searchSelectOptionKey(option.value, option.query)}
                           value={option.value}
                           className={({ active }) =>
                             cn(

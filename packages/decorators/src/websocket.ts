@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import "reflect-metadata";
+import { defineMetadata } from "reflect-metadata/no-conflict";
 
 /**
  * WebSocket method decorator
@@ -13,7 +13,7 @@ import "reflect-metadata";
  */
 export function WebSocket(route: string): MethodDecorator {
   return function (target: object, propertyKey: string | symbol) {
-    Reflect.defineMetadata("method", "ws", target, propertyKey);
-    Reflect.defineMetadata("route", route, target, propertyKey);
+    defineMetadata("method", "ws", target, propertyKey);
+    defineMetadata("route", route, target, propertyKey);
   };
 }

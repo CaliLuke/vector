@@ -7,7 +7,8 @@
 import React, { useState } from "react";
 import { AuthPasswordInput } from "./auth-password-input";
 
-type TAuthConfirmPasswordInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
+type TAuthConfirmPasswordInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "value"> & {
+  value?: string;
   password: string;
   label?: string;
   error?: string;
@@ -28,7 +29,7 @@ export function AuthConfirmPasswordInput({
 }: TAuthConfirmPasswordInputProps) {
   const [isFocused, setIsFocused] = useState(false);
 
-  const confirmPassword = value as string;
+  const confirmPassword = value;
   const passwordsMatch = password === confirmPassword && password.length > 0;
   const showMatchError =
     confirmPassword.length > 0 && !passwordsMatch && (!isFocused || confirmPassword.length >= password.length);

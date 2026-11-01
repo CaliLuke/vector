@@ -20,7 +20,7 @@ import { CycleIcon } from "./project/cycle-icon";
 import { HomeIcon } from "./workspace/home-icon";
 import { ProjectIcon } from "./workspace/project-icon";
 
-const meta: Meta = {
+const meta = {
   title: "Icons",
   parameters: {
     layout: "padded",
@@ -31,109 +31,52 @@ const meta: Meta = {
       },
     },
   },
-};
+} satisfies Meta;
 
 export default meta;
-type Story = StoryObj;
+type Story = StoryObj<typeof meta>;
+
+const iconCategories = [
+  { title: "Sub-Brand Icons", icons: SubBrandIconsMap },
+  { title: "Workspace Icons", icons: WorkspaceIconsMap },
+  { title: "Project Icons", icons: ProjectIconsMap },
+  { title: "Layout Icons", icons: LayoutIconsMap },
+  { title: "Property Icons", icons: PropertyIconsMap },
+  { title: "Actions Icons", icons: ActionsIconsMap },
+  { title: "Arrows Icons", icons: ArrowsIconsMap },
+  { title: "Misc Icons", icons: MiscIconsMap, legacy: true },
+];
+
+function IconGrid({ items, legacy = false }: { items: { title: string; icon: React.ReactNode }[]; legacy?: boolean }) {
+  return (
+    <div className="grid w-full grid-cols-12 gap-6">
+      {items.map((item) => (
+        <div key={item.title} className="col-span-2 flex flex-col items-center justify-center gap-3 p-4">
+          <div className={legacy ? "text-custom-text-200" : "text-secondary"}>{item.icon}</div>
+          <p className={legacy ? "text-xs text-custom-text-300 text-center" : "text-center text-11 text-tertiary"}>
+            {item.title}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export const AllIcons: Story = {
   render: () => (
     <div className="space-y-12">
-      <div className="space-y-4">
-        <h3 className="text-16 font-semibold text-primary">Sub-Brand Icons</h3>
-        <div className="grid w-full grid-cols-12 gap-6">
-          {SubBrandIconsMap.map((item) => (
-            <div key={item.title} className="col-span-2 flex flex-col items-center justify-center gap-3 p-4">
-              <div className="text-secondary">{item.icon}</div>
-              <p className="text-center text-11 text-tertiary">{item.title}</p>
-            </div>
-          ))}
+      {iconCategories.map((category) => (
+        <div key={category.title} className="space-y-4">
+          <h3
+            className={
+              category.legacy ? "text-lg text-custom-text-100 font-semibold" : "text-16 font-semibold text-primary"
+            }
+          >
+            {category.title}
+          </h3>
+          <IconGrid items={category.icons} legacy={category.legacy} />
         </div>
-      </div>
-
-      <div className="space-y-4">
-        <h3 className="text-16 font-semibold text-primary">Workspace Icons</h3>
-        <div className="grid w-full grid-cols-12 gap-6">
-          {WorkspaceIconsMap.map((item) => (
-            <div key={item.title} className="col-span-2 flex flex-col items-center justify-center gap-3 p-4">
-              <div className="text-secondary">{item.icon}</div>
-              <p className="text-center text-11 text-tertiary">{item.title}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <h3 className="text-16 font-semibold text-primary">Project Icons</h3>
-        <div className="grid w-full grid-cols-12 gap-6">
-          {ProjectIconsMap.map((item) => (
-            <div key={item.title} className="col-span-2 flex flex-col items-center justify-center gap-3 p-4">
-              <div className="text-secondary">{item.icon}</div>
-              <p className="text-center text-11 text-tertiary">{item.title}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <h3 className="text-16 font-semibold text-primary">Layout Icons</h3>
-        <div className="grid w-full grid-cols-12 gap-6">
-          {LayoutIconsMap.map((item) => (
-            <div key={item.title} className="col-span-2 flex flex-col items-center justify-center gap-3 p-4">
-              <div className="text-secondary">{item.icon}</div>
-              <p className="text-center text-11 text-tertiary">{item.title}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <h3 className="text-16 font-semibold text-primary">Property Icons</h3>
-        <div className="grid w-full grid-cols-12 gap-6">
-          {PropertyIconsMap.map((item) => (
-            <div key={item.title} className="col-span-2 flex flex-col items-center justify-center gap-3 p-4">
-              <div className="text-secondary">{item.icon}</div>
-              <p className="text-center text-11 text-tertiary">{item.title}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <h3 className="text-16 font-semibold text-primary">Actions Icons</h3>
-        <div className="grid w-full grid-cols-12 gap-6">
-          {ActionsIconsMap.map((item) => (
-            <div key={item.title} className="col-span-2 flex flex-col items-center justify-center gap-3 p-4">
-              <div className="text-secondary">{item.icon}</div>
-              <p className="text-center text-11 text-tertiary">{item.title}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <h3 className="text-16 font-semibold text-primary">Arrows Icons</h3>
-        <div className="grid w-full grid-cols-12 gap-6">
-          {ArrowsIconsMap.map((item) => (
-            <div key={item.title} className="col-span-2 flex flex-col items-center justify-center gap-3 p-4">
-              <div className="text-secondary">{item.icon}</div>
-              <p className="text-center text-11 text-tertiary">{item.title}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <h3 className="text-lg text-custom-text-100 font-semibold">Misc Icons</h3>
-        <div className="grid w-full grid-cols-12 gap-6">
-          {MiscIconsMap.map((item) => (
-            <div key={item.title} className="col-span-2 flex flex-col items-center justify-center gap-3 p-4">
-              <div className="text-custom-text-200">{item.icon}</div>
-              <p className="text-xs text-custom-text-300 text-center">{item.title}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+      ))}
     </div>
   ),
 };
@@ -147,24 +90,12 @@ export const RegistryUsage: Story = {
           Use the <code className="rounded-sm bg-layer-1 px-1 py-0.5">Icon</code> component with{" "}
           <code className="rounded-sm bg-layer-1 px-1 py-0.5">name</code> prop for dynamic icon selection.
         </p>
-        <div className="grid w-full grid-cols-12 gap-6">
-          <div className="col-span-2 flex flex-col items-center justify-center gap-3 p-4">
-            <Icon name="workspace.home" className="text-secondary" />
-            <p className="text-center text-11 text-tertiary">workspace.home</p>
-          </div>
-          <div className="col-span-2 flex flex-col items-center justify-center gap-3 p-4">
-            <Icon name="project.cycle" className="text-secondary" />
-            <p className="text-center text-11 text-tertiary">project.cycle</p>
-          </div>
-          <div className="col-span-2 flex flex-col items-center justify-center gap-3 p-4">
-            <Icon name="layout.board" className="text-secondary" />
-            <p className="text-center text-11 text-tertiary">layout.board</p>
-          </div>
-          <div className="col-span-2 flex flex-col items-center justify-center gap-3 p-4">
-            <Icon name="property.priority" className="text-secondary" />
-            <p className="text-center text-11 text-tertiary">property.priority</p>
-          </div>
-        </div>
+        <IconGrid
+          items={(["workspace.home", "project.cycle", "layout.board", "property.priority"] as const).map((name) => ({
+            title: name,
+            icon: <Icon name={name} className="text-secondary" />,
+          }))}
+        />
       </div>
 
       <div className="space-y-4">
@@ -172,20 +103,13 @@ export const RegistryUsage: Story = {
         <p className="text-13 text-tertiary">
           Import icon components directly for better tree-shaking and type safety.
         </p>
-        <div className="grid w-full grid-cols-12 gap-6">
-          <div className="col-span-2 flex flex-col items-center justify-center gap-3 p-4">
-            <HomeIcon className="text-secondary" />
-            <p className="text-center text-11 text-tertiary">HomeIcon</p>
-          </div>
-          <div className="col-span-2 flex flex-col items-center justify-center gap-3 p-4">
-            <CycleIcon className="text-secondary" />
-            <p className="text-center text-11 text-tertiary">CycleIcon</p>
-          </div>
-          <div className="col-span-2 flex flex-col items-center justify-center gap-3 p-4">
-            <ProjectIcon className="text-secondary" />
-            <p className="text-center text-11 text-tertiary">ProjectIcon</p>
-          </div>
-        </div>
+        <IconGrid
+          items={[
+            { title: "HomeIcon", icon: <HomeIcon className="text-secondary" /> },
+            { title: "CycleIcon", icon: <CycleIcon className="text-secondary" /> },
+            { title: "ProjectIcon", icon: <ProjectIcon className="text-secondary" /> },
+          ]}
+        />
       </div>
     </div>
   ),
@@ -200,26 +124,15 @@ export const IconSizes: Story = {
       </div>
 
       <div className="flex items-end gap-8">
-        <div className="flex flex-col items-center gap-2">
-          <Icon name="workspace.home" width="12" height="12" className="text-secondary" />
-          <p className="text-11 text-tertiary">12x12</p>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <Icon name="workspace.home" width="16" height="16" className="text-secondary" />
-          <p className="text-11 text-tertiary">16x16 (default)</p>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <Icon name="workspace.home" width="24" height="24" className="text-secondary" />
-          <p className="text-11 text-tertiary">24x24</p>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <Icon name="workspace.home" width="32" height="32" className="text-secondary" />
-          <p className="text-11 text-tertiary">32x32</p>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <Icon name="workspace.home" width="48" height="48" className="text-secondary" />
-          <p className="text-11 text-tertiary">48x48</p>
-        </div>
+        {[12, 16, 24, 32, 48].map((size) => (
+          <div key={size} className="flex flex-col items-center gap-2">
+            <Icon name="workspace.home" width={size} height={size} className="text-secondary" />
+            <p className="text-11 text-tertiary">
+              {size}x{size}
+              {size === 16 ? " (default)" : ""}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   ),

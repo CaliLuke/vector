@@ -35,7 +35,8 @@ registerHooks({
   },
 });
 
-test("cover image search retains typed text and searches without a parent form control", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("cover image search retains typed text and searches without a parent form control", async (t) => {
   const environment = await createReactDomTestEnvironment();
   const routerFixture = createRouterFixture("/review/");
   const { ImagePickerPopover } = await import("../../apps/web/core/components/core/image-picker-popover.tsx");
@@ -58,9 +59,8 @@ test("cover image search retains typed text and searches without a parent form c
   await React.act(async () => environment.container.querySelector("button").click());
   const input = environment.container.querySelector('input[placeholder="Search for images"]');
   assert.ok(input, "the image-search input should be available");
-  const setValue = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
   await React.act(async () => {
-    setValue.call(input, "mountains");
+    Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set.call(input, "mountains");
     input.dispatchEvent(new window.Event("input", { bubbles: true }));
   });
   assert.equal(input.value, "mountains");

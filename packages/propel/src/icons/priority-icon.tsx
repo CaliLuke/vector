@@ -10,7 +10,10 @@ import { cn } from "@plane/utils/common";
 
 export type TIssuePriorities = "urgent" | "high" | "medium" | "low" | "none";
 
-interface IPriorityIcon extends React.SVGProps<SVGSVGElement> {
+interface IPriorityIcon
+  extends
+    React.HTMLAttributes<SVGSVGElement | HTMLDivElement>,
+    Omit<React.SVGProps<SVGSVGElement>, keyof React.HTMLAttributes<SVGSVGElement | HTMLDivElement> | "ref"> {
   className?: string;
   containerClassName?: string;
   priority: TIssuePriorities | undefined | null;
@@ -23,7 +26,7 @@ export const PriorityIcon = React.forwardRef<SVGSVGElement | HTMLDivElement, IPr
     const { priority, className = "", containerClassName = "", size = 14, withContainer = false, ...rest } = props;
 
     const setRootRef = (node: SVGSVGElement | HTMLDivElement | null) => {
-      if (typeof ref === "function") ref(node);
+      if (typeof ref === "function") return ref(node);
       else if (ref) ref.current = node;
     };
 
@@ -52,7 +55,7 @@ export const PriorityIcon = React.forwardRef<SVGSVGElement | HTMLDivElement, IPr
         {withContainer ? (
           <div
             ref={setRootRef}
-            {...(rest as React.HTMLAttributes<HTMLDivElement>)}
+            {...rest}
             className={cn(
               "flex flex-shrink-0 items-center justify-center rounded-sm border p-0.5",
               priorityClasses[priority ?? "none"],

@@ -78,7 +78,8 @@ async function flushAnimationFrames() {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 }
 
-test("switching peek modes keeps one dialog, focus, Escape close, and full-screen sizing", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("switching peek modes keeps one dialog, focus, Escape close, and full-screen sizing", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(async () => {
     await environment.unmount();

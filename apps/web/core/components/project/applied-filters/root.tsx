@@ -1,13 +1,14 @@
-import { useParams } from "@tanstack/react-router";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
 
+import { ClearAppliedFilters, RemoveAppliedFilter } from "@/components/common/applied-filters/tag";
+import { orderedFilterKeys } from "@/components/common/applied-filters/keys";
+import { useParams } from "@tanstack/react-router";
 import { PROJECT_CREATED_AT_FILTER_OPTIONS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import { CloseIcon } from "@plane/propel/icons";
 // plane imports
 import { Tooltip } from "@plane/propel/tooltip";
 import type { TProjectAppliedDisplayFilterKeys, TProjectFilters } from "@plane/types";
@@ -18,6 +19,8 @@ import { AppliedAccessFilters } from "./access";
 import { AppliedDateFilters } from "@/components/common/applied-filters/date";
 import { AppliedMembersFilters } from "@/components/common/applied-filters/members";
 import { AppliedProjectDisplayFilters } from "./project-display-filters";
+
+const FILTER_KEYS = ["access", "lead", "members", "created_at"] as const satisfies readonly (keyof TProjectFilters)[];
 
 type Props = {
   appliedFilters: TProjectFilters;
@@ -56,11 +59,11 @@ export function ProjectAppliedFiltersList(props: Props) {
     <Header variant={EHeaderVariant.TERNARY}>
       <Header.LeftItem>
         {/* Applied filters */}
-        {Object.entries(appliedFilters ?? {}).map(([key, value]) => {
-          const filterKey = key as keyof TProjectFilters;
+        {orderedFilterKeys(appliedFilters ?? {}, FILTER_KEYS).map((filterKey) => {
+          const value = appliedFilters[filterKey];
 
-          if (!value) return;
-          if (Array.isArray(value) && value.length === 0) return;
+          if (!value) return undefined;
+          if (Array.isArray(value) && value.length === 0) return undefined;
 
           return (
             <Tag key={filterKey}>
@@ -89,13 +92,7 @@ export function ProjectAppliedFiltersList(props: Props) {
                 />
               )}
               {isEditingAllowed && (
-                <button
-                  type="button"
-                  className="grid place-items-center text-tertiary hover:text-secondary"
-                  onClick={() => handleRemoveFilter(filterKey, null)}
-                >
-                  <CloseIcon height={12} width={12} strokeWidth={2} />
-                </button>
+                <RemoveAppliedFilter filterKey={filterKey} onRemove={() => handleRemoveFilter(filterKey, null)} />
               )}
             </Tag>
           );
@@ -111,14 +108,7 @@ export function ProjectAppliedFiltersList(props: Props) {
             />
           </Tag>
         )}
-        {isEditingAllowed && (
-          <button type="button" onClick={handleClearAllFilters}>
-            <Tag>
-              {t("common.clear_all")}
-              <CloseIcon height={12} width={12} strokeWidth={2} />
-            </Tag>
-          </button>
-        )}
+        {isEditingAllowed && <ClearAppliedFilters onClear={handleClearAllFilters} />}
       </Header.LeftItem>
       <Header.RightItem>
         <Tooltip

@@ -12,10 +12,6 @@ type NodeHighlightState = {
   decorations: DecorationSet;
 };
 
-type NodeHighlightMeta = {
-  nodeId?: string | null;
-};
-
 export const nodeHighlightPluginKey = new PluginKey<NodeHighlightState>("nodeHighlight");
 
 const buildDecorations = (doc: Parameters<typeof DecorationSet.create>[0], highlightedNodeId: string | null) => {
@@ -68,10 +64,10 @@ export const NodeHighlightPlugin = () =>
         let highlightedNodeId = value.highlightedNodeId;
         let decorations = value.decorations;
 
-        const meta = tr.getMeta(nodeHighlightPluginKey) as NodeHighlightMeta | undefined;
+        const meta: unknown = tr.getMeta(nodeHighlightPluginKey);
         let shouldRecalculate = tr.docChanged;
 
-        if (meta) {
+        if (meta && typeof meta === "object" && "nodeId" in meta) {
           if (meta.nodeId !== undefined) {
             highlightedNodeId = typeof meta.nodeId === "string" && meta.nodeId.length > 0 ? meta.nodeId : null;
             shouldRecalculate = true;

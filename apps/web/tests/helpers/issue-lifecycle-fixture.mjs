@@ -14,7 +14,7 @@ registerWebTestModules({
   "@plane/propel/toast":
     "export const TOAST_TYPE={ERROR:'error',SUCCESS:'success'};export const setToast=t=>globalThis.lifecycleState.toasts.push(t);",
   "@plane/propel/icons":
-    "export const CopyLinkIcon=()=>null,CenterPanelIcon=()=>null,FullScreenPanelIcon=()=>null,SidePanelIcon=()=>null,LinkIcon=()=>null,CopyIcon=()=>null,NewTabIcon=()=>null,EditIcon=()=>null,ArchiveIcon=()=>null,TrashIcon=()=>null;",
+    "export const CopyLinkIcon=()=>null,CenterPanelIcon=()=>null,FullScreenPanelIcon=()=>null,SidePanelIcon=()=>null,LinkIcon=()=>null,CopyIcon=()=>null,NewTabIcon=()=>null,EditIcon=()=>null,ArchiveIcon=()=>null,TrashIcon=()=>null,CheckIcon=()=>null,ChevronDownIcon=()=>null;",
   "@plane/propel/icon-button":
     "export const IconButton=({icon,...props})=>globalThis.React.createElement('button',props);",
   "@plane/propel/tooltip": "export const Tooltip=({children})=>children;",
@@ -45,13 +45,21 @@ for (const parent of ["use-cycles", "use-modules", "use-workspace-issue-properti
       "export const useProjectEstimates=()=>({isEnabled:true,estimates:[],selectedId:null});export const useWorkspaceEstimates=()=>({});",
   });
 registerPermissionUiStubs("/components/issues/peek-overview/view.tsx", {
+  "@/hooks/use-keypress": `export {default} from ${JSON.stringify(new URL("../../core/hooks/use-keypress.tsx", import.meta.url).href)};`,
   "../issue-detail/issue-activity": "export const IssueActivity=()=>null;",
   "../issue-detail-widgets": "export const IssueDetailWidgets=()=>null;",
   "./error": "export const IssuePeekOverviewError=()=>null;",
   "./loader": "export const IssuePeekOverviewLoader=()=>null;",
   "./issue-detail":
-    "export const PeekOverviewIssueDetails=props=>{globalThis.lifecycleOperations=props.issueOperations;return null;};",
-  "./properties": "export const PeekOverviewProperties=()=>null;",
+    "export const PeekOverviewIssueDetails=props=>{globalThis.lifecycleOperations=props.issueOperations;return globalThis.React.createElement('article',{'data-peek-details':''});};",
+  "./properties":
+    "export const PeekOverviewProperties=()=>globalThis.React.createElement('aside',{'data-peek-properties':''});",
+});
+registerPermissionUiStubs("/components/issues/peek-overview/header.tsx", {
+  "@plane/ui": `export {CustomSelect} from ${JSON.stringify(new URL("../../../../packages/ui/src/dropdowns/custom-select.tsx", import.meta.url).href)};`,
+});
+registerPermissionUiStubs("/packages/ui/src/dropdowns/custom-select.tsx", {
+  "../utils": `export {cn} from ${JSON.stringify(new URL("../../../../packages/utils/src/common.ts", import.meta.url).href)};`,
 });
 for (const parent of ["peek-overview/header.tsx", "issue-detail/issue-detail-quick-actions.tsx"])
   registerPermissionUiStubs(`/components/issues/${parent}`, {
@@ -64,12 +72,6 @@ for (const parent of ["peek-overview/header.tsx", "issue-detail/issue-detail-qui
 registerPermissionUiStubs("/components/issues/issue-layouts/quick-action-dropdowns/issue-quick-action-modals.tsx", {
   "../../issue-modal/modal": "export const CreateUpdateIssueModal=()=>null;",
 });
-globalThis.lifecycleQuickActions = (
-  await import("../../core/components/issues/issue-layouts/quick-action-dropdowns/issue-detail.tsx")
-).WorkItemDetailQuickActions;
-const { IssuePeekOverview } = await import("../../core/components/issues/peek-overview/root.tsx");
-const { IssueDetailQuickActions } =
-  await import("../../core/components/issues/issue-detail/issue-detail-quick-actions.tsx");
 const { IssueService } = await import("../../core/services/issue/issue.service.ts");
 const { IssueArchiveService } = await import("../../core/services/issue/issue_archive.service.ts");
 const { LocalIssuePreferencesProvider } = await import("../../core/providers/local-issue-preferences.tsx");
@@ -96,6 +98,20 @@ async function setup(t, mode = "peek", options = {}) {
     workspaceRole: 15,
     projectRoles: { p1: 20, p2: 20 },
   });
+  // Headless UI detects the client environment when its module is loaded.
+  // Load these browser consumers after the fixture installs its DOM.
+  globalThis.lifecycleQuickActions = (
+    await import("../../core/components/issues/issue-layouts/quick-action-dropdowns/issue-detail.tsx")
+  ).WorkItemDetailQuickActions;
+  const { IssuePeekOverview } = await import("../../core/components/issues/peek-overview/root.tsx");
+  const { IssueDetailQuickActions } =
+    await import("../../core/components/issues/issue-detail/issue-detail-quick-actions.tsx");
+  const container = options.portal ? document.createElement("div") : fixture.environment.container;
+  if (options.portal) {
+    container.id = "full-screen-portal";
+    document.body.append(container);
+    t.after(() => container.remove());
+  }
   const state = {
     peek: { workspaceSlug: "acme", projectId: "p1", issueId: "item", isArchived: !!options.archived },
     closed: 0,
@@ -154,7 +170,7 @@ async function setup(t, mode = "peek", options = {}) {
   const content = () =>
     mode === "peek"
       ? React.createElement(IssuePeekOverview, {
-          embedIssue: true,
+          embedIssue: options.embedIssue ?? true,
           embedRemoveCurrentNotification: options.onDismiss,
           storeType:
             options.parent === "cycle"
@@ -186,19 +202,20 @@ async function setup(t, mode = "peek", options = {}) {
     );
   await render();
   await settleQuery();
-  const action = (key) => fixture.environment.container.querySelector(`[data-action="${key}"]`);
+  const action = (key) => container.querySelector(`[data-action="${key}"]`);
   assert.ok(action("delete"), "native action menu mounted");
 
   return {
     ...fixture,
+    container,
     state,
     transport,
     render,
     renderElement: fixture.render,
     action,
     click,
-    dialog: () => fixture.environment.container.querySelector('[role="dialog"]'),
-    confirm: () => fixture.environment.container.querySelector('[data-confirm="delete"]'),
+    dialog: () => container.querySelector('[role="dialog"]'),
+    confirm: () => container.querySelector('[data-confirm="delete"]'),
   };
 }
 export { setup, React, act, identity, settleQuery };

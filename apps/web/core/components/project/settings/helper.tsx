@@ -11,12 +11,14 @@ import { EPillVariant, Pill, EPillSize } from "@plane/propel/pill";
 import { ToggleSwitch } from "@plane/ui";
 import { joinUrlPath } from "@plane/utils/string";
 
+export type TProjectFeatureProperty = "cycle_view" | "module_view" | "issue_views_view" | "page_view" | "inbox_view";
+
 type Props = {
   workspaceSlug: string;
   projectId: string;
-  featureItem: { href?: string; key: string; property: string };
+  featureItem: { href?: string; key: string; property: TProjectFeatureProperty };
   value: boolean;
-  handleSubmit: (featureKey: string, featureProperty: string) => void;
+  handleSubmit: (featureKey: string, featureProperty: TProjectFeatureProperty) => void;
   disabled?: boolean;
 };
 

@@ -7,7 +7,7 @@ import { React, act } from "./helpers/react.mjs";
 registerWebModuleHooks();
 const { useRecordCollection } = await import("../../packages/hooks/src/use-record-collection.ts");
 const { getRecordCollection } = await import("../../packages/hooks/src/record-collection.ts");
-const { QueryClient } = await import("@tanstack/react-query");
+const { QueryClient, useQuery } = await import("@tanstack/react-query");
 
 function observer(options, receive) {
   return function Observer() {
@@ -28,6 +28,30 @@ function probe(options) {
     },
   };
 }
+
+await test("a collection mounting after its ancestor loads cannot update the ancestor during render", async (t) => {
+  const fixture = await createQueryDomFixture(t);
+  const errors = [];
+  t.mock.method(console, "error", (...args) => errors.push(args.join(" ")));
+  const options = {
+    queryKey: ["records", "loading-parent"],
+    staleTime: Infinity,
+    queryFn: async () => [{ id: "a", name: "Current" }],
+  };
+  const active = probe(options);
+  function LoadingParent() {
+    useRecordCollection(options);
+    const gate = useQuery({ queryKey: ["records", "parent-ready"], queryFn: async () => true });
+    return gate.isSuccess ? React.createElement(active.Component) : null;
+  }
+  await fixture.render(React.createElement(LoadingParent));
+  assert.equal(active.current.get("a").name, "Current");
+  assert.equal(
+    errors.some((message) => message.includes("Cannot update a component")),
+    false,
+    errors.join("\n")
+  );
+});
 
 await test("live records share one transport and follow replacements, reordering, and deletion", async (t) => {
   const fixture = await createQueryDomFixture(t);

@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import { setPositioningGeometry } from "./helpers/positioning.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
@@ -50,25 +51,31 @@ await test("a cycle picker shares one native catalogue read across repeated open
   await seedPermissionQueries(fixture.client, {
     userId: "alice",
     workspaceSlug: "acme",
-    workspaceRole: 15,
-    projectRoles: { "project-1": 20 },
+    workspaceRole: ContractEnums.EUserPermissions.MEMBER,
+    projectRoles: { "project-1": 20, "empty-project": 20 },
   });
   const fetches = [];
   t.mock.method(CycleService.prototype, "getWithParams", async (workspaceSlug, projectId) => {
     fetches.push([workspaceSlug, projectId]);
-    return [];
+    if (projectId === "empty-project") return [];
+    return [{ id: "cycle-1", project_id: "project-1", workspace_id: "w1", name: "Sprint one", status: "CURRENT" }];
   });
   const { CycleDropdown } = await import("../../apps/web/core/components/dropdowns/cycle/index.tsx");
 
-  await fixture.render(
-    React.createElement(CycleDropdown, {
-      buttonVariant: "transparent-with-text",
-      onChange() {},
-      projectId: "project-1",
-      value: null,
-      canRemoveCycle: false,
-    })
-  );
+  const selections = [];
+  const renderCycle = (projectId) =>
+    fixture.render(
+      React.createElement(CycleDropdown, {
+        buttonVariant: "transparent-with-text",
+        onChange(value) {
+          selections.push(value);
+        },
+        projectId,
+        value: null,
+        canRemoveCycle: false,
+      })
+    );
+  await renderCycle("project-1");
   const trigger = environment.container.querySelector("button");
   assert.ok(trigger);
   setPositioningGeometry(trigger);
@@ -90,6 +97,25 @@ await test("a cycle picker shares one native catalogue read across repeated open
   await settleQuery();
   assert.equal(trigger.getAttribute("aria-expanded"), "true");
   assert.deepEqual(fetches, [["acme", "project-1"]]);
+  const choice = [...document.querySelectorAll('[role="option"]')].find((option) =>
+    option.textContent.includes("Sprint one")
+  );
+  assert.ok(choice);
+  await clickWithPointer(choice);
+  assert.deepEqual(selections, ["cycle-1"]);
+  assert.equal(trigger.getAttribute("aria-expanded"), "false");
+  await renderCycle("empty-project");
+  const emptyTrigger = environment.container.querySelector("button");
+  await clickWithPointer(emptyTrigger);
+  await settleQuery();
+  assert.equal(document.querySelectorAll('[role="option"]').length, 0);
+  assert.match(document.querySelector('[role="listbox"]').textContent, /common.search.no_matches_found/);
+  assert.doesNotMatch(document.querySelector('[role="listbox"]').textContent, /Sprint one/);
+  assert.deepEqual(fetches, [
+    ["acme", "project-1"],
+    ["acme", "empty-project"],
+  ]);
+  assert.deepEqual(selections, ["cycle-1"], "a project change must not emit an old cycle selection");
 });
 
 await test("the module picker positions its public options element with Popper", async (t) => {
@@ -101,7 +127,7 @@ await test("the module picker positions its public options element with Popper",
   await seedPermissionQueries(fixture.client, {
     userId: "alice",
     workspaceSlug: "acme",
-    workspaceRole: 15,
+    workspaceRole: ContractEnums.EUserPermissions.MEMBER,
     projectRoles: { "project-1": 20 },
   });
   const fetches = [];

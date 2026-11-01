@@ -8,12 +8,13 @@ import { computePosition, flip, shift, autoUpdate } from "@floating-ui/dom";
 import type { Placement, ReferenceElement, Strategy } from "@floating-ui/dom";
 import { posToDOMRect } from "@tiptap/core";
 import type { Editor } from "@tiptap/core";
+import type { CSSProperties } from "react";
 
 export type UpdateFloatingUIFloaterPosition = (
   editor: Editor,
   element: HTMLElement,
   options?: {
-    elementStyle?: Partial<CSSStyleDeclaration>;
+    elementStyle?: CSSProperties;
     placement?: Placement;
     strategy?: Strategy;
   }
@@ -34,15 +35,15 @@ export const updateFloatingUIFloaterPosition: UpdateFloatingUIFloaterPosition = 
       strategy: options?.strategy ?? "fixed",
       middleware: [shift(), flip()],
     })
-      .then(({ x, y, strategy }) => {
+      .then(({ x, y, strategy }) =>
         Object.assign(element.style, {
           width: "max-content",
           position: strategy,
           left: `${x}px`,
           top: `${y}px`,
           ...options?.elementStyle,
-        });
-      })
+        })
+      )
       .catch((error) => console.error("An error occurred while updating floating UI floater position:", error));
   });
 

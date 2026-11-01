@@ -28,7 +28,7 @@ export const ProjectSelect = function ProjectSelect(props: Props) {
     const projectDetails = projectRows?.find((project) => project.id === projectId);
 
     return {
-      value: projectDetails?.id,
+      value: projectId,
       query: `${projectDetails?.name} ${projectDetails?.identifier}`,
       content: (
         <div className="flex max-w-[300px] items-center gap-2">
@@ -46,7 +46,10 @@ export const ProjectSelect = function ProjectSelect(props: Props) {
   return (
     <CustomSearchSelect
       value={value ?? []}
-      onChange={(val: string[]) => onChange(val)}
+      onChange={(val) => {
+        if (val === null) return;
+        return onChange(val);
+      }}
       options={options}
       className="border-none p-0"
       customButton={

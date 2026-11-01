@@ -5,7 +5,6 @@
  */
 
 // types
-import type { TIssueRelationTypes } from "@plane/types";
 // hooks
 import type { TIssueActivity } from "@plane/types";
 // components
@@ -26,7 +25,15 @@ export const IssueRelationActivity = function IssueRelationActivity(props: TIssu
   if (!activity) return <></>;
   return (
     <IssueActivityBlockComponent
-      icon={activity.field ? ISSUE_RELATION_OPTIONS[activity.field as TIssueRelationTypes]?.icon(14) : <></>}
+      icon={
+        activity.field ? (
+          Object.values(ISSUE_RELATION_OPTIONS)
+            .find((option) => option.key === activity.field)
+            ?.icon(14)
+        ) : (
+          <></>
+        )
+      }
       activity={activity}
       ends={ends}
     >

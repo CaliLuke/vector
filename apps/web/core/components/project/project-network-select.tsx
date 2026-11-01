@@ -21,7 +21,7 @@ export function ProjectNetworkSelect({ value, onChange, disabled, tabIndex, inpu
   return (
     <CustomSelect
       value={value}
-      onChange={onChange}
+      onChange={(selection) => (selection !== null ? onChange(selection) : undefined)}
       disabled={disabled}
       tabIndex={tabIndex}
       input={input}

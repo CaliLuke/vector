@@ -6,7 +6,7 @@
 
 // plane imports
 import { StateGroupIcon } from "@plane/propel/icons";
-import type { TStateGroups } from "@plane/types";
+import { STATE_GROUPS } from "@plane/constants";
 // components
 import { SingleProgressStats } from "@/components/core/sidebar/single-progress-stats";
 
@@ -29,12 +29,14 @@ export const StateGroupStatComponent = function StateGroupStatComponent(props: T
 
   return (
     <div>
-      {distribution.map((group, index) => (
+      {distribution.map((group) => (
         <SingleProgressStats
-          key={index}
+          key={group.state}
           title={
             <div className="flex items-center gap-2">
-              <StateGroupIcon stateGroup={group.state as TStateGroups} />
+              <StateGroupIcon
+                stateGroup={Object.values(STATE_GROUPS).find((state) => state.key === group.state)?.key ?? "unstarted"}
+              />
               <span className="text-11 capitalize">{group.state}</span>
             </div>
           }

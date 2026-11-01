@@ -5,28 +5,30 @@
  */
 
 import React from "react";
+import { isRecord } from "@plane/utils/common";
 // plane imports
 import { Card, ECardSpacing } from "../../card";
 
 interface TreeMapTooltipProps {
-  active: boolean | undefined;
-  payload: readonly any[] | undefined;
+  active?: boolean;
+  payload?: readonly { payload?: unknown }[];
 }
 
 export const TreeMapTooltip = React.memo(function TreeMapTooltip({ active, payload }: TreeMapTooltipProps) {
   if (!active || !payload || !payload[0]?.payload) return null;
 
   const data = payload[0].payload;
+  if (!isRecord(data) || typeof data.name !== "string" || typeof data.value !== "number") return null;
 
   return (
     <Card className="flex flex-col space-y-1.5" spacing={ECardSpacing.SM}>
       <div className="flex items-center gap-2 border-b border-subtle pb-2.5">
-        {data?.icon}
+        {React.isValidElement(data.icon) ? data.icon : null}
         <p className="text-11 font-medium text-primary capitalize">{data?.name}</p>
       </div>
       <span className="text-11 font-medium text-secondary">
         {data?.value.toLocaleString()}
-        {data.label && ` ${data.label}`}
+        {typeof data.label === "string" && ` ${data.label}`}
       </span>
     </Card>
   );

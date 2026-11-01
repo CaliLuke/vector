@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
@@ -12,10 +13,10 @@ registerWebModuleHooks();
 const emojiPickerSource = new URL("../../packages/propel/src/emoji-icon-picker/index.ts", import.meta.url).href;
 const pageMenuStubs = {
   "@/hooks/use-page-filters": `export const usePageFilters = () => ({
-    isFullWidth: globalThis.__pageActionsTest.fullWidth,
-    handleFullWidth: value => globalThis.__pageActionsTest.fullWidthChanges.push(value),
-    isStickyToolbarEnabled: globalThis.__pageActionsTest.stickyToolbar,
-    handleStickyToolbar: value => globalThis.__pageActionsTest.stickyChanges.push(value),
+    isFullWidth: globalThis.pageActionsTest.fullWidth,
+    handleFullWidth: value => globalThis.pageActionsTest.fullWidthChanges.push(value),
+    isStickyToolbarEnabled: globalThis.pageActionsTest.stickyToolbar,
+    handleStickyToolbar: value => globalThis.pageActionsTest.stickyChanges.push(value),
   });`,
   "@/hooks/use-query-params": `export const useQueryParams = () => ({ updateQueryParams: () => "" });`,
   "@/hooks/use-page-operations": `export const usePageOperations = () => ({ pageOperations: {
@@ -32,7 +33,7 @@ async function renderPageWithIdentity(environment, routerFixture, identityFixtur
   await seedPermissionQueries(identityFixture.client, {
     userId: "owner",
     workspaceSlug: "acme",
-    workspaceRole: 20,
+    workspaceRole: ContractEnums.EUserPermissions.ADMIN,
     projectRoles: { "project-1": 20 },
   });
   await routerFixture.render(environment, identityFixture.wrap(element));
@@ -81,7 +82,7 @@ async function renderPageIconPicker(t, environment, disabled = false) {
   await seedPermissionQueries(identityFixture.client, {
     userId: "owner",
     workspaceSlug: "acme",
-    workspaceRole: 20,
+    workspaceRole: ContractEnums.EUserPermissions.ADMIN,
     projectRoles: { "project-1": 20 },
   });
   const { PageEditorHeaderRoot } = await import("../../apps/web/core/components/pages/editor/header/root.tsx");
@@ -106,7 +107,8 @@ async function renderPageIconPicker(t, environment, disabled = false) {
   );
 }
 
-test("Avatar forwards the Tooltip trigger ref to its rendered element", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("Avatar forwards the Tooltip trigger ref to its rendered element", async (t) => {
   const environment = await createReactDomTestEnvironment();
   const routerFixture = createRouterFixture("/workspace/");
   t.after(() => environment.unmount());
@@ -149,7 +151,7 @@ test("Avatar forwards the Tooltip trigger ref to its rendered element", async (t
   assert.equal(clickCount, 1, "Avatar preserves caller event handlers on the Tooltip trigger");
 });
 
-test("page editor icon picker opens, closes with Escape, and returns focus from search to the trigger", async (t) => {
+void test("page editor icon picker opens, closes with Escape, and returns focus from search to the trigger", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   await renderPageIconPicker(t, environment);
@@ -172,7 +174,7 @@ test("page editor icon picker opens, closes with Escape, and returns focus from 
   assert.equal(document.activeElement, trigger);
 });
 
-test("page editor icon picker has one button trigger", async (t) => {
+void test("page editor icon picker has one button trigger", async (t) => {
   const environment = await createReactDomTestEnvironment();
   const routerFixture = createRouterFixture("/workspace/");
   const identityFixture = await createPageIdentityFixture(t);
@@ -210,7 +212,7 @@ test("page editor icon picker has one button trigger", async (t) => {
   );
 });
 
-test("page editor icon picker keeps a disabled trigger closed", async (t) => {
+void test("page editor icon picker keeps a disabled trigger closed", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   await renderPageIconPicker(t, environment, true);
@@ -221,18 +223,18 @@ test("page editor icon picker keeps a disabled trigger closed", async (t) => {
   assert.equal(trigger.getAttribute("aria-expanded"), "false");
 });
 
-test("page options menu uses one selectable button per toggle item", async (t) => {
+void test("page options menu uses one selectable button per toggle item", async (t) => {
   const environment = await createReactDomTestEnvironment();
   const routerFixture = createRouterFixture("/workspace/");
   const identityFixture = await createPageIdentityFixture(t);
   t.after(() => environment.unmount());
-  globalThis.__pageActionsTest = {
+  globalThis.pageActionsTest = {
     fullWidth: false,
     stickyToolbar: true,
     fullWidthChanges: [],
     stickyChanges: [],
   };
-  t.after(() => delete globalThis.__pageActionsTest);
+  t.after(() => delete globalThis.pageActionsTest);
 
   const errors = [];
   const originalError = console.error;
@@ -278,13 +280,13 @@ test("page options menu uses one selectable button per toggle item", async (t) =
   assert.equal(stickyItem.querySelector(".sr-only")?.textContent, "On");
 
   await React.act(() => fullWidthItem.click());
-  assert.deepEqual(globalThis.__pageActionsTest.fullWidthChanges, [true]);
+  assert.deepEqual(globalThis.pageActionsTest.fullWidthChanges, [true]);
   await React.act(() => trigger.click());
   const reopenedStickyItem = [...document.querySelectorAll("button")].find((button) =>
     button.textContent.includes("Sticky toolbar")
   );
   await React.act(() => reopenedStickyItem.click());
-  assert.deepEqual(globalThis.__pageActionsTest.stickyChanges, [false]);
+  assert.deepEqual(globalThis.pageActionsTest.stickyChanges, [false]);
   assert.equal(
     errors.some((message) => message.includes("validateDOMNesting")),
     false

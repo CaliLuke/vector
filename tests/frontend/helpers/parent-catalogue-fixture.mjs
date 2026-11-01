@@ -1,13 +1,14 @@
+import * as ContractEnums from "../../../packages/types/dist/index.mjs";
 import { createPermissionQueryClient } from "./permission-query-fixture.mjs";
 export const parentScope = {
   accountId: "alice",
   sessionGeneration: 0,
   workspaceSlug: "acme",
-  workspaceRole: 15,
+  workspaceRole: ContractEnums.EUserPermissions.MEMBER,
   membershipRevision: "2026-10-24T00:00:00Z",
   projectId: "p1",
-  projectMembershipRole: 20,
-  projectRole: 20,
+  projectMembershipRole: ContractEnums.EUserPermissions.ADMIN,
+  projectRole: ContractEnums.EUserPermissions.ADMIN,
 };
 export async function parentCatalogueFixture(t, scope = parentScope) {
   return createPermissionQueryClient(t, {

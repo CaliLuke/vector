@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { QueryClient } from "@tanstack/react-query";
@@ -14,17 +15,17 @@ const scope = {
   workspaceSlug: "acme",
   projectId: "p",
   issueId: "i",
-  membershipRole: 15,
+  membershipRole: ContractEnums.EUserPermissions.MEMBER,
   membershipRevision: "v1",
-  projectRole: 15,
+  projectRole: ContractEnums.EUserPermissions.MEMBER,
   refreshVersion: "optimistic",
 };
 function setup(t) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   client.setQueryData(identityKeys.currentUser(), { id: "alice" });
   const memberKey = permissionKeys.workspaceMembership("alice", "acme");
-  const rolesKey = permissionKeys.workspaceProjectRoles("alice", "acme", 15, "v1");
-  client.setQueryData(memberKey, { is_active: true, role: 15, updated_at: "v1" });
+  const rolesKey = permissionKeys.workspaceProjectRoles("alice", "acme", ContractEnums.EUserPermissions.MEMBER, "v1");
+  client.setQueryData(memberKey, { is_active: true, role: ContractEnums.EUserPermissions.MEMBER, updated_at: "v1" });
   client.setQueryData(rolesKey, { p: 15 });
   t.after(() => client.clear());
   return { client, memberKey, rolesKey, options: itemDetailSchemaOptions(scope) };
@@ -57,7 +58,12 @@ for (const change of ["membership", "role", "session", "query"]) {
     const reading = f.client.fetchQuery(f.options);
     const rejected = assert.rejects(reading);
     await started.promise;
-    if (change === "membership") f.client.setQueryData(f.memberKey, { is_active: false, role: 15, updated_at: "v2" });
+    if (change === "membership")
+      f.client.setQueryData(f.memberKey, {
+        is_active: false,
+        role: ContractEnums.EUserPermissions.MEMBER,
+        updated_at: "v2",
+      });
     if (change === "role") f.client.setQueryData(f.rolesKey, {});
     if (change === "session") advanceIdentitySession(f.client);
     if (change === "query") f.client.removeQueries({ queryKey: f.options.queryKey, exact: true });

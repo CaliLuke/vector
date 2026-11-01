@@ -67,8 +67,10 @@ export function ColorPalette(props: TProps) {
           <button
             key={color.key}
             type="button"
+            aria-label={color.label}
             onClick={() => {
-              handleUpdate({
+              // The sticky owner reports update failures before resolving this action.
+              void handleUpdate({
                 background_color: color.key,
               });
             }}

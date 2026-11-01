@@ -23,9 +23,9 @@ type TSelectedOptionsDisplayProps<V extends TFilterValue> = {
 export function SelectedOptionsDisplay<V extends TFilterValue>(props: TSelectedOptionsDisplayProps<V>) {
   const { selectedValue, options, displayCount = 2, emptyValue = EMPTY_FILTER_PLACEHOLDER_TEXT, fallbackText } = props;
   // derived values
-  const selectedArray = toFilterArray(selectedValue);
+  const selectedArray = toFilterArray<V>(selectedValue);
   const remainingCount = selectedArray.length - displayCount;
-  const selectedOptions = selectedArray.map(
+  const selectedOptions = selectedArray.map<IFilterOption<V>>(
     (value) =>
       options.find((opt) => opt.value === value) ?? {
         id: String(value),
@@ -47,7 +47,7 @@ export function SelectedOptionsDisplay<V extends TFilterValue>(props: TSelectedO
   return (
     <div className="flex h-full items-center overflow-hidden">
       {selectedOptions.slice(0, displayCount).map((option, index) => (
-        <React.Fragment key={index}>
+        <React.Fragment key={option.id}>
           <div className="flex items-center whitespace-nowrap">
             {option?.icon && <span className={cn("mr-1", option.iconClassName)}>{option.icon}</span>}
             <span className="max-w-24 truncate">{option?.label}</span>

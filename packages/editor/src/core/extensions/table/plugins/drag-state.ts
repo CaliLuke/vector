@@ -27,7 +27,7 @@ export const TableDragStatePlugin = new Plugin({
     },
     apply(tr, oldState) {
       // Get metadata about which cells to hide
-      const hiddenCellPositions = tr.getMeta(TABLE_DRAG_STATE_PLUGIN_KEY) as number[] | null;
+      const hiddenCellPositions: unknown = tr.getMeta(TABLE_DRAG_STATE_PLUGIN_KEY);
 
       if (hiddenCellPositions === undefined) {
         // No change, map decorations through the transaction

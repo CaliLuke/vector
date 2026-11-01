@@ -35,6 +35,7 @@ export function BubbleMenuLinkSelector(props: Props) {
 
   return (
     <FloatingMenuRoot
+      key={editor.instanceId}
       classNames={{
         buttonContainer: "h-full",
         button: cn(
@@ -125,7 +126,6 @@ function LinkUrlForm({ editor, linkHref, onClose }: { editor: Editor; linkHref: 
                     event.currentTarget.form?.requestSubmit();
                   }
                 }}
-                autoFocus
                 disabled={busy}
               />
               {linkHref ? (

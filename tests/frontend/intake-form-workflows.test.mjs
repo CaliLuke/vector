@@ -1,3 +1,5 @@
+import { createProjectAccessScope } from "./helpers/permission-query-fixture.mjs";
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { registerHooks } from "node:module";
@@ -38,26 +40,24 @@ function seedSearchPermissions(client, projectRoles) {
   client.setQueryData(identityKeys.currentUser(), { id: "alice" });
   client.setQueryData(permissionKeys.workspaceMembership("alice", "workspace"), {
     is_active: true,
-    role: 15,
+    role: ContractEnums.EUserPermissions.MEMBER,
     updated_at: "v1",
   });
-  client.setQueryData(permissionKeys.workspaceProjectRoles("alice", "workspace", 15, "v1"), projectRoles);
+  client.setQueryData(
+    permissionKeys.workspaceProjectRoles("alice", "workspace", ContractEnums.EUserPermissions.MEMBER, "v1"),
+    projectRoles
+  );
 }
 function intake(t) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } },
   });
   t.after(() => client.clear());
-  const scope = {
-    accountId: "alice",
-    sessionGeneration: 0,
+  const scope = createProjectAccessScope({
     workspaceSlug: "workspace",
-    membershipRole: 15,
-    membershipRevision: "v1",
     projectId: "project",
-    projectMembershipRole: 20,
-    projectRole: 20,
-  };
+    membershipRevision: "v1",
+  });
   seedSearchPermissions(client, { project: 20 });
   const key = intakeKeys.detail(scope, "current");
   client.setQueryData(key, initialIssue);

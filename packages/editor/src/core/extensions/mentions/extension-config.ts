@@ -6,14 +6,13 @@
 
 import { mergeAttributes } from "@tiptap/core";
 import type { Editor } from "@tiptap/core";
-import Mention from "@tiptap/extension-mention";
+import { Mention } from "@tiptap/extension-mention";
 import type { MarkdownSerializerState } from "prosemirror-markdown";
 import type { Node as NodeType } from "@tiptap/pm/model";
 // types
 import type { TMentionHandler } from "@/types";
 // local types
-import type { TMentionComponentAttributes } from "./types";
-import { EMentionComponentAttributeNames } from "./types";
+import { EMentionComponentAttributeNames, getMentionAttributes } from "./types";
 
 export const CustomMentionExtensionConfig = Mention.extend({
   addAttributes() {
@@ -65,7 +64,7 @@ function getMentionDisplayText(
   getMentionedEntityDetails: TMentionHandler["getMentionedEntityDetails"],
   node: NodeType
 ): string {
-  const attrs = node.attrs as TMentionComponentAttributes;
+  const attrs = getMentionAttributes(node.attrs);
   const mentionEntityId = attrs[EMentionComponentAttributeNames.ENTITY_IDENTIFIER];
   const mentionEntityDetails = getMentionedEntityDetails?.(mentionEntityId ?? "");
   return `@${mentionEntityDetails?.display_name ?? attrs[EMentionComponentAttributeNames.ID] ?? mentionEntityId}`;

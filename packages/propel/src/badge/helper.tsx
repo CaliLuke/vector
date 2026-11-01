@@ -30,8 +30,8 @@ export const badgeVariants = cva("inline-flex items-center justify-center gap-1 
 
 export type BadgeProps = Omit<React.HTMLAttributes<HTMLSpanElement>, "className"> &
   VariantProps<typeof badgeVariants> & {
-    appendIcon?: React.ReactElement;
-    prependIcon?: React.ReactElement;
+    appendIcon?: React.ReactElement<{ className?: string; strokeWidth?: number }>;
+    prependIcon?: React.ReactElement<{ className?: string; strokeWidth?: number }>;
   };
 
 export type TBadgeVariant = NonNullable<BadgeProps["variant"]>;

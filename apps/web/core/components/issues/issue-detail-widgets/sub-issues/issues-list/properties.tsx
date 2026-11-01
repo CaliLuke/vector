@@ -54,13 +54,15 @@ export const SubIssuesListItemProperties = function SubIssuesListItemProperties(
   //derived values
   const stateDetails = getStateById(issue.state_id);
   const shouldHighlight = shouldHighlightIssueDueDate(issue.target_date, stateDetails?.group);
+  if (!displayProperties) return null;
+
   // date range is enabled only when both dates are available and both dates are enabled
   const isDateRangeEnabled: boolean = Boolean(
-    issue.start_date && issue.target_date && displayProperties?.start_date && displayProperties?.due_date
+    issue.start_date && issue.target_date && displayProperties.start_date && displayProperties.due_date
   );
 
-  if (!displayProperties) return <></>;
-
+  const hasAssignees = issue.assignee_ids.length > 0;
+  const projectId = issue.project_id ?? undefined;
   const maxDate = getDate(issue.target_date);
   const minDate = getDate(issue.start_date);
 
@@ -70,7 +72,7 @@ export const SubIssuesListItemProperties = function SubIssuesListItemProperties(
         <div className="h-5 flex-shrink-0">
           <StateDropdown
             value={issue.state_id}
-            projectId={issue.project_id ?? undefined}
+            projectId={projectId}
             onChange={(val) => update({ state_id: val })}
             disabled={change.disabled}
             buttonVariant="transparent-without-text"
@@ -99,7 +101,7 @@ export const SubIssuesListItemProperties = function SubIssuesListItemProperties(
         displayPropertyKey={["start_date", "due_date"]}
         shouldRenderProperty={() => isDateRangeEnabled}
       >
-        <div className="h-5" onFocus={handleEventPropagation} onClick={handleEventPropagation}>
+        <div role="presentation" className="h-5" onFocus={handleEventPropagation} onClick={handleEventPropagation}>
           <IssuePropertyDateRange
             dates={issue}
             onChange={update}
@@ -160,12 +162,12 @@ export const SubIssuesListItemProperties = function SubIssuesListItemProperties(
           <MemberDropdown
             workspaceSlug={workspaceSlug}
             value={issue.assignee_ids}
-            projectId={issue.project_id ?? undefined}
+            projectId={projectId}
             onChange={(val) => update({ assignee_ids: val })}
             disabled={change.disabled}
             multiple
-            buttonVariant={issue.assignee_ids.length > 0 ? "transparent-without-text" : "border-without-text"}
-            buttonClassName={issue.assignee_ids.length > 0 ? "hover:bg-transparent px-0" : ""}
+            buttonVariant={hasAssignees ? "transparent-without-text" : "border-without-text"}
+            buttonClassName={hasAssignees ? "hover:bg-transparent px-0" : ""}
           />
         </div>
       </WithDisplayPropertiesHOC>

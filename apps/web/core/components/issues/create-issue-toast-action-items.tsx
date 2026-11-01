@@ -52,7 +52,7 @@ export const CreateIssueToastActionItems = function CreateIssueToastActionItems(
     isEpic,
   });
 
-  const copyToClipboard = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const copyToClipboard = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     if ((await copy(() => copyUrlToClipboard(workItemLink))) === "failed") {
@@ -79,7 +79,7 @@ export const CreateIssueToastActionItems = function CreateIssueToastActionItems(
         <>
           <button
             className="hidden cursor-pointer rounded-sm px-2 py-1 text-tertiary group-hover:flex hover:bg-surface-2 hover:text-secondary"
-            onClick={copyToClipboard}
+            onClick={(event) => void copyToClipboard(event)}
           >
             Copy link
           </button>

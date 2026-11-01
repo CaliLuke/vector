@@ -11,6 +11,7 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { setTimeout as delay } from "node:timers/promises";
 import { Hocuspocus } from "@hocuspocus/server";
+import RedisClient from "ioredis";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { AdminCommand } from "../../src/types/admin-commands";
 import type { HealthCheckCommandData } from "../../src/types/admin-commands";
@@ -95,12 +96,13 @@ describe("Redis manager and collaboration transport", () => {
   const extensions: Redis[] = [];
 
   beforeAll(async () => {
+    const bindHost = process.env.LIVE_TEST_REDIS_BIND_HOST || "127.0.0.1";
     const container = await run("docker", [
       "run",
       "--detach",
       "--rm",
       "--publish",
-      "127.0.0.1::6379",
+      `${bindHost}::6379`,
       "valkey/valkey:9.1.2-alpine",
     ]);
     containerId = container.stdout.trim();
@@ -175,7 +177,7 @@ describe("Redis manager and collaboration transport", () => {
     const [publisher, subscriber] = extensions;
     if (!publisher || !subscriber) throw new Error("Collaboration Redis instances were not initialized");
     const received: HealthCheckCommandData[] = [];
-    subscriber.onAdminCommand<HealthCheckCommandData>(AdminCommand.HEALTH_CHECK, (command) => {
+    subscriber.onAdminCommand(AdminCommand.HEALTH_CHECK, (command) => {
       received.push(command);
     });
     const command: HealthCheckCommandData = {
@@ -185,6 +187,34 @@ describe("Redis manager and collaboration transport", () => {
     };
     expect(await publisher.publishAdminCommand(command)).toBeGreaterThanOrEqual(2);
     await expect.poll(() => received).toEqual([command]);
+  });
+
+  it("rejects malformed messages before dispatching admin handlers", async () => {
+    const subscriber = extensions[1];
+    if (!subscriber) throw new Error("Collaboration Redis was not initialized");
+    const forceClose = vi.fn();
+    const healthCheck = vi.fn();
+    subscriber.onAdminCommand(AdminCommand.FORCE_CLOSE, forceClose);
+    subscriber.onAdminCommand(AdminCommand.HEALTH_CHECK, healthCheck);
+    const client = new RedisClient(redisUrl);
+    try {
+      const malformed = [
+        null,
+        {},
+        { command: "force_close" },
+        { command: "health_check", originServer: 7 },
+        { command: "force_close", docId: "page", reason: "unsupported", code: 4000, originServer: "test" },
+        { command: "force_close", docId: "page", reason: "admin_request", code: "4000", originServer: "test" },
+      ];
+      await client.publish("hocuspocus:admin", "invalid-json");
+      await Promise.all(malformed.map((data) => client.publish("hocuspocus:admin", JSON.stringify(data))));
+      const marker = { command: AdminCommand.HEALTH_CHECK, originServer: "test", timestamp: "marker" };
+      await client.publish("hocuspocus:admin", JSON.stringify(marker));
+      await expect.poll(() => healthCheck.mock.calls).toEqual([[marker]]);
+      expect(forceClose).not.toHaveBeenCalled();
+    } finally {
+      await client.quit();
+    }
   });
 
   it("starts the built server, serves health, and exits cleanly on SIGTERM", async () => {

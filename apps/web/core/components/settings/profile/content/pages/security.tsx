@@ -11,7 +11,7 @@ import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { AuthPasswordInput, AuthConfirmPasswordInput } from "@plane/ui";
 import { isPasswordConfirmationValid } from "@plane/utils/auth";
 import { ProfileSettingsHeading } from "@/components/settings/profile/heading";
-import { authErrorHandler, EAuthenticationErrorCodes, passwordErrors } from "@/helpers/authentication.helper";
+import { authErrorHandler, passwordErrors } from "@/helpers/authentication.helper";
 import { useCurrentUser, usePasswordMutation } from "@/hooks/use-current-user";
 import { authService } from "@/services/auth.service";
 
@@ -52,7 +52,7 @@ export function SecurityProfileSettings() {
       } catch (error) {
         passwordMutation.reset();
         const code = error && typeof error === "object" && "error_code" in error ? String(error.error_code) : undefined;
-        const info = code ? authErrorHandler(code as EAuthenticationErrorCodes) : undefined;
+        const info = code ? authErrorHandler(code) : undefined;
         const message =
           typeof info?.message === "string"
             ? info.message
@@ -62,7 +62,7 @@ export function SecurityProfileSettings() {
           title: info?.title ?? t("auth.common.password.toast.change_password.error.title"),
           message,
         });
-        if (code && passwordErrors.includes(code as EAuthenticationErrorCodes)) {
+        if (info && passwordErrors.includes(info.code)) {
           formApi.setFieldMeta("new_password", (meta) => ({
             ...meta,
             errorMap: { ...meta.errorMap, onChange: message },

@@ -112,11 +112,19 @@ export const ILLUSTRATION_ASSETS: Record<IllustrationAssetType, React.ComponentT
   search: SearchIllustration,
 };
 
+const COMPACT_ASSETS = new Map<string, React.ComponentType<{ className?: string }>>(
+  Object.entries({ ...HORIZONTAL_STACK_ASSETS, ...ILLUSTRATION_ASSETS })
+);
+const DETAILED_ASSETS = new Map<string, React.ComponentType<{ className?: string }>>(
+  Object.entries({ ...VERTICAL_STACK_ASSETS, ...ILLUSTRATION_ASSETS })
+);
+
 // Helper functions to get assets
-export const getCompactAsset = (assetKey: CompactAssetType, className?: string): React.ReactNode => {
-  const AssetComponent =
-    (HORIZONTAL_STACK_ASSETS[assetKey as HorizontalStackAssetType] as React.ComponentType<{ className?: string }>) ||
-    ILLUSTRATION_ASSETS[assetKey as IllustrationAssetType];
+export const getCompactAsset = (
+  assetKey: CompactAssetType | DetailedAssetType,
+  className?: string
+): React.ReactNode => {
+  const AssetComponent = COMPACT_ASSETS.get(assetKey);
 
   if (!AssetComponent) {
     console.warn(`Asset "${assetKey}" not found in compact asset registry`);
@@ -126,10 +134,11 @@ export const getCompactAsset = (assetKey: CompactAssetType, className?: string):
   return <AssetComponent className={className} />;
 };
 
-export const getDetailedAsset = (assetKey: DetailedAssetType, className?: string): React.ReactNode => {
-  const AssetComponent =
-    (VERTICAL_STACK_ASSETS[assetKey as VerticalStackAssetType] as React.ComponentType<{ className?: string }>) ||
-    ILLUSTRATION_ASSETS[assetKey as IllustrationAssetType];
+export const getDetailedAsset = (
+  assetKey: CompactAssetType | DetailedAssetType,
+  className?: string
+): React.ReactNode => {
+  const AssetComponent = DETAILED_ASSETS.get(assetKey);
 
   if (!AssetComponent) {
     console.warn(`Asset "${assetKey}" not found in detailed asset registry`);

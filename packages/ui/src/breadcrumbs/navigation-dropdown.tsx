@@ -58,24 +58,22 @@ export function BreadcrumbNavigationDropdown(props: TBreadcrumbNavigationDropdow
   // if no selected item, return null
   if (!selectedItem) return null;
 
-  function NavigationButton() {
-    return (
-      <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (!isLast) handleOnClick?.();
-        }}
-        className="group flex h-full cursor-pointer items-center gap-2 rounded-sm rounded-r-none px-1.5 py-1 text-13 font-medium text-tertiary hover:bg-layer-1 hover:text-primary"
-      >
-        {label}
-      </button>
-    );
-  }
+  const navigationButton = (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!isLast) handleOnClick?.();
+      }}
+      className="group flex h-full cursor-pointer items-center gap-2 rounded-sm rounded-r-none px-1.5 py-1 text-13 font-medium text-tertiary hover:bg-layer-1 hover:text-primary"
+    >
+      {label}
+    </button>
+  );
 
   if (navigationDisabled) {
-    return <NavigationButton />;
+    return navigationButton;
   }
 
   const trigger = isLast ? (
@@ -91,7 +89,7 @@ export function BreadcrumbNavigationDropdown(props: TBreadcrumbNavigationDropdow
 
   return (
     <div className="flex h-full items-center gap-0.5 rounded-sm hover:bg-surface-2">
-      {!isLast && <NavigationButton />}
+      {!isLast && navigationButton}
       <CustomMenu
         customButton={trigger}
         customButtonAsChild
@@ -108,43 +106,21 @@ export function BreadcrumbNavigationDropdown(props: TBreadcrumbNavigationDropdow
           setIsOpen(false);
         }}
       >
-        {navigationItems.map((item) => {
-          if (item.shouldRender === false) return null;
-          return (
-            <CustomMenu.MenuItem
-              key={item.key}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (item.key === selectedItemKey) return;
-                item.action();
-              }}
-              className={cn(
-                "flex items-center gap-2",
-                {
-                  "text-placeholder": item.disabled,
-                },
-                item.className
-              )}
-              disabled={item.disabled}
-            >
-              {item.icon && <item.icon className={cn("size-4 flex-shrink-0", item.iconClassName)} />}
-              <div className="w-full">
-                <h5>{item.title}</h5>
-                {item.description && (
-                  <p
-                    className={cn("whitespace-pre-line text-tertiary", {
-                      "text-placeholder": item.disabled,
-                    })}
-                  >
-                    {item.description}
-                  </p>
-                )}
-              </div>
-              {item.key === selectedItemKey && <CheckIcon className="size-3.5 flex-shrink-0" />}
-            </CustomMenu.MenuItem>
-          );
-        })}
+        {navigationItems.map((item) => (
+          <CustomMenu.ActionItem
+            key={item.key}
+            item={item}
+            iconClassName="size-4 flex-shrink-0"
+            contentClassName="w-full"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              if (item.key !== selectedItemKey) item.action();
+            }}
+          >
+            {item.key === selectedItemKey && <CheckIcon className="size-3.5 flex-shrink-0" />}
+          </CustomMenu.ActionItem>
+        ))}
       </CustomMenu>
     </div>
   );

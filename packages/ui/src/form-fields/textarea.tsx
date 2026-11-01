@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import React, { useRef } from "react";
+import React, { useCallback, useRef } from "react";
 // helpers
 import { useAutoResizeTextArea } from "../hooks/use-auto-resize-textarea";
 import { cn } from "../utils";
@@ -32,15 +32,24 @@ const TextArea = React.forwardRef(function TextArea(
     ...rest
   } = props;
   // refs
-  const textAreaRef = useRef<any>(ref);
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const attachRef = useCallback(
+    (element: HTMLTextAreaElement | null) => {
+      textAreaRef.current = element;
+      if (typeof ref === "function") return ref(element);
+      if (ref) ref.current = element;
+      return undefined;
+    },
+    [ref]
+  );
   // auto re-size
-  useAutoResizeTextArea(textAreaRef, value);
+  useAutoResizeTextArea(textAreaRef);
 
   return (
     <textarea
       id={id}
       name={name}
-      ref={textAreaRef}
+      ref={attachRef}
       value={value}
       className={cn(
         "no-scrollbar w-full bg-layer-2 placeholder-(--text-color-placeholder) outline-none",

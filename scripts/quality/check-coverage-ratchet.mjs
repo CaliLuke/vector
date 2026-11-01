@@ -27,8 +27,8 @@ function parseArgs(argv) {
     if (argument === "--write-baseline") {
       options.writeBaseline = true;
     } else if (argument === "--help") {
-      console.log(
-        "Usage: check-coverage-ratchet.mjs [--summary FILE] [--baseline FILE] [--root DIR] [--scope-file FILE --scope-key DIR] --new-file-min PERCENT [--tolerance PERCENT] [--write-baseline]"
+      process.stdout.write(
+        "Usage: check-coverage-ratchet.mjs [--summary FILE] [--baseline FILE] [--root DIR] [--scope-file FILE --scope-key DIR] --new-file-min PERCENT [--tolerance PERCENT] [--write-baseline]\n"
       );
       process.exit(0);
     } else if (
@@ -48,7 +48,7 @@ function parseArgs(argv) {
         "--scope-file": "scopeFile",
         "--scope-key": "scopeKey",
       }[argument];
-      options[key] = value;
+      options[key] = ["--tolerance", "--new-file-min"].includes(argument) ? Number(value) : value;
     } else {
       fail(`unknown argument: ${argument}`);
     }
@@ -58,7 +58,6 @@ function parseArgs(argv) {
   options.summary = resolve(options.root, options.summary);
   options.baseline = resolve(options.root, options.baseline);
   if (options.scopeFile) options.scopeFile = resolve(process.cwd(), options.scopeFile);
-  options.tolerance = Number(options.tolerance);
   options.newFileMin = Number(options.newFileMin);
 
   if (!Number.isFinite(options.newFileMin) || options.newFileMin < 0 || options.newFileMin > 100) {
@@ -121,6 +120,8 @@ function readJson(path, label) {
   } catch (error) {
     fail(`${label} is invalid JSON: ${error.message}`);
   }
+
+  return undefined;
 }
 
 function normalizeFile(file, root) {
@@ -147,13 +148,25 @@ function extractSummary(summary, root) {
     }
   }
   if (Object.keys(files).length === 0) fail("coverage summary contains no source files");
-  return Object.fromEntries(Object.entries(files).sort(([left], [right]) => left.localeCompare(right)));
+  return Object.fromEntries(Object.entries(files).toSorted(([left], [right]) => left.localeCompare(right)));
 }
 
 function writeBaseline(path, files) {
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, `${JSON.stringify({ version: 1, files }, null, 2)}\n`);
-  console.log(`Coverage baseline written: ${path}`);
+  process.stdout.write(`Coverage baseline written: ${path}\n`);
+}
+
+function compareExistingFile(file, current, expected, tolerance) {
+  const failures = [];
+  for (const metric of METRICS) {
+    const floor = Number(expected?.[metric]);
+    if (!Number.isFinite(floor)) failures.push(`${file}: invalid baseline ${metric}`);
+    else if (current[metric] + tolerance < floor) {
+      failures.push(`${file}: ${metric} fell from ${floor}% to ${current[metric]}%`);
+    }
+  }
+  return failures;
 }
 
 function compare(files, baseline, options) {
@@ -168,13 +181,7 @@ function compare(files, baseline, options) {
       if (existsSync(resolve(options.root, file))) failures.push(`${file}: missing from coverage summary`);
       continue;
     }
-    for (const metric of METRICS) {
-      const floor = Number(expected?.[metric]);
-      if (!Number.isFinite(floor)) failures.push(`${file}: invalid baseline ${metric}`);
-      else if (current[metric] + options.tolerance < floor) {
-        failures.push(`${file}: ${metric} fell from ${floor}% to ${current[metric]}%`);
-      }
-    }
+    failures.push(...compareExistingFile(file, current, expected, options.tolerance));
   }
 
   for (const [file, current] of Object.entries(files)) {
@@ -187,7 +194,7 @@ function compare(files, baseline, options) {
   }
 
   if (failures.length > 0) fail(`failed:\n  - ${failures.join("\n  - ")}`);
-  console.log(`Coverage ratchet passed for ${Object.keys(files).length} files.`);
+  process.stdout.write(`Coverage ratchet passed for ${Object.keys(files).length} files.\n`);
 }
 
 const options = parseArgs(process.argv.slice(2));

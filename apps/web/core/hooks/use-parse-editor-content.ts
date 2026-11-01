@@ -6,7 +6,7 @@
 
 import { useCallback } from "react";
 // plane types
-import type { TSearchEntities } from "@plane/types";
+import { SEARCH_ENTITY_TYPES } from "@plane/types";
 // helpers
 import { getBase64Image } from "@plane/utils/file";
 import { getEditorAssetSrc } from "@plane/utils/editor/common";
@@ -59,12 +59,13 @@ export const useParseEditorContent = (args: TArgs) => {
         span.setAttribute("data-node-type", "mention-block");
         // get the user id from the component
         const id = component.getAttribute("entity_identifier") || "";
-        const entityType = (component.getAttribute("entity_name") || "user_mention") as TSearchEntities;
+        const entityName = component.getAttribute("entity_name") || "user_mention";
+        const entityType = SEARCH_ENTITY_TYPES.find((entity) => entity === entityName);
         let textContent = "user";
         if (entityType === "user_mention") {
           const userDetails = membersById?.get(id)?.member;
           textContent = userDetails?.display_name ?? id;
-        } else {
+        } else if (entityType) {
           const mentionDetails = parseAdditionalEditorContent({
             id,
             entityType,
@@ -189,25 +190,28 @@ export const useParseEditorContent = (args: TArgs) => {
       const mentionRegex =
         /<mention-component[^>]*entity_identifier="([^"]+)"[^>]*entity_name="([^"]+)"[^>]*><\/mention-component>/g;
       const originUrl = typeof window !== "undefined" && (window.location.origin ?? "");
-      parsedMarkdownContent = parsedMarkdownContent.replace(mentionRegex, (_match, id, entity_type) => {
-        const entityType = entity_type as TSearchEntities;
-        if (!id || !entityType) return "";
-        if (entityType === "user_mention") {
-          const userDetails = membersById?.get(id)?.member;
-          return `[${userDetails?.display_name ?? id}](${originUrl}/${workspaceSlug}/profile/${id})`;
-        } else {
-          const mentionDetails = parseAdditionalEditorContent({
-            id,
-            entityType,
-          });
-          if (!mentionDetails) {
-            return "";
+      parsedMarkdownContent = parsedMarkdownContent.replace(
+        mentionRegex,
+        (_match: string, id: string, entity_type: string) => {
+          const entityType = SEARCH_ENTITY_TYPES.find((entity) => entity === entity_type);
+          if (!id || !entityType) return "";
+          if (entityType === "user_mention") {
+            const userDetails = membersById?.get(id)?.member;
+            return `[${userDetails?.display_name ?? id}](${originUrl}/${workspaceSlug}/profile/${id})`;
           } else {
-            const { redirectionPath, textContent } = mentionDetails;
-            return `[${textContent}](${originUrl}/${redirectionPath})`;
+            const mentionDetails = parseAdditionalEditorContent({
+              id,
+              entityType,
+            });
+            if (!mentionDetails) {
+              return "";
+            } else {
+              const { redirectionPath, textContent } = mentionDetails;
+              return `[${textContent}](${originUrl}/${redirectionPath})`;
+            }
           }
         }
-      });
+      );
       // replace the matched image components with <img src={src} >
       const imageComponentRegex = /<image-component[^>]*src="([^"]+)"[^>]*>[^]*<\/image-component>/g;
       const imgTagRegex = /<img[^>]*src="([^"]+)"[^>]*\/?>/g;

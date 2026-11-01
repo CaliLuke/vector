@@ -4,28 +4,23 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
-import React from "react";
+import type { ReactNode } from "react";
 
 // lucide icons
 import { Minimize2, Maximize2, Circle } from "lucide-react";
 import { PlusIcon } from "@plane/propel/icons";
-import type { TIssue, ISearchIssueResponse, TIssueKanbanFilters, TIssueGroupByOptions } from "@plane/types";
+import type { TIssue, TIssueKanbanFilters, TIssueGroupByOptions } from "@plane/types";
 // ui
 import { CustomMenu } from "@plane/ui";
 // components
-import { addSelectedIssuesToView } from "../../add-selected-issues";
-import { ExistingIssuesListModal } from "@/components/core/modals/existing-issues-list-modal";
-import { CreateUpdateIssueModal } from "@/components/issues/issue-modal/modal";
+import { useGroupWorkItemModals } from "../../group-work-item-modals";
 // constants
-import { useIssueListType } from "@/hooks/use-issue-list-type";
-import { CreateUpdateEpicModal } from "@/components/epic-modal";
 
 interface IHeaderGroupByCard {
   sub_group_by: TIssueGroupByOptions | undefined;
   group_by: TIssueGroupByOptions | undefined;
   column_id: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   title: string;
   count: number;
   collapsedGroups: TIssueKanbanFilters;
@@ -50,77 +45,27 @@ export const HeaderGroupByCard = function HeaderGroupByCard(props: IHeaderGroupB
     addIssuesToView,
     isEpic = false,
   } = props;
-  const verticalAlignPosition = sub_group_by ? false : collapsedGroups?.group_by.includes(column_id);
-  // states
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [openExistingIssueListModal, setOpenExistingIssueListModal] = React.useState(false);
-  // hooks
-  const storeType = useIssueListType();
-  // router
-  const { workspaceSlug, projectId, moduleId, cycleId } = useParams({ strict: false });
-
-  const renderExistingIssueModal = moduleId || cycleId;
-  const ExistingIssuesListModalPayload = moduleId ? { module: moduleId } : { cycle: true };
-
-  const handleAddIssuesToView = async (data: ISearchIssueResponse[]) => {
-    if (!workspaceSlug || !projectId) return;
-
-    await addSelectedIssuesToView(data, addIssuesToView);
-  };
+  const verticalAlignPosition = sub_group_by ? false : collapsedGroups.group_by.includes(column_id);
+  const { canAddExisting, openCreate, openExisting, modals } = useGroupWorkItemModals({
+    issuePayload,
+    isEpic,
+    addIssuesToView,
+  });
 
   return (
     <>
-      {isEpic ? (
-        <CreateUpdateEpicModal isOpen={isOpen} onClose={() => setIsOpen(false)} data={issuePayload} />
-      ) : (
-        <CreateUpdateIssueModal
-          isOpen={isOpen}
-          onClose={() => setIsOpen(false)}
-          data={issuePayload}
-          storeType={storeType}
-        />
-      )}
-
-      {renderExistingIssueModal && (
-        <ExistingIssuesListModal
-          workspaceSlug={workspaceSlug?.toString()}
-          projectId={projectId?.toString()}
-          isOpen={openExistingIssueListModal}
-          handleClose={() => setOpenExistingIssueListModal(false)}
-          searchParams={ExistingIssuesListModalPayload}
-          handleOnSubmit={handleAddIssuesToView}
-        />
-      )}
+      {modals}
       <div
         className={`relative flex flex-shrink-0 gap-1 py-1.5 ${
           verticalAlignPosition ? `w-[44px] flex-col items-center` : `w-full flex-row items-center`
         }`}
       >
-        <div className="flex size-5 flex-shrink-0 items-center justify-center overflow-hidden rounded-xs">
-          {icon ? icon : <Circle width={14} strokeWidth={2} />}
-        </div>
-
-        <div
-          className={`relative flex gap-1 ${
-            verticalAlignPosition ? `flex-col items-center` : `w-full flex-row items-baseline overflow-hidden`
-          }`}
-        >
-          <div
-            className={`line-clamp-1 inline-block truncate overflow-hidden font-medium text-primary ${
-              verticalAlignPosition ? `max-h-[400px] vertical-lr` : ``
-            }`}
-          >
-            {title}
-          </div>
-          <div
-            className={`flex-shrink-0 text-13 font-medium text-tertiary ${verticalAlignPosition ? `pr-0.5` : `pl-2`}`}
-          >
-            {count || 0}
-          </div>
-        </div>
+        <GroupHeading icon={icon} title={title} count={count} verticalAlignPosition={verticalAlignPosition} />
 
         {sub_group_by === null && (
           <button
+            type="button"
+            aria-label={verticalAlignPosition ? "Expand group" : "Collapse group"}
             className="flex h-[20px] w-[20px] flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-sm bg-layer-transparent transition-all hover:bg-layer-transparent-hover"
             onClick={() => handleCollapsedGroups("group_by", column_id)}
           >
@@ -132,42 +77,79 @@ export const HeaderGroupByCard = function HeaderGroupByCard(props: IHeaderGroupB
           </button>
         )}
 
-        {!disableIssueCreation &&
-          (renderExistingIssueModal ? (
-            <CustomMenu
-              customButton={
-                <span className="flex h-[20px] w-[20px] flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-sm bg-layer-transparent transition-all hover:bg-layer-transparent-hover">
-                  <PlusIcon height={14} width={14} strokeWidth={2} />
-                </span>
-              }
-              placement="bottom-end"
-            >
-              <CustomMenu.MenuItem
-                onClick={() => {
-                  setIsOpen(true);
-                }}
-              >
-                <span className="flex items-center justify-start gap-2">Create work item</span>
-              </CustomMenu.MenuItem>
-              <CustomMenu.MenuItem
-                onClick={() => {
-                  setOpenExistingIssueListModal(true);
-                }}
-              >
-                <span className="flex items-center justify-start gap-2">Add an existing work item</span>
-              </CustomMenu.MenuItem>
-            </CustomMenu>
-          ) : (
-            <button
-              className="flex h-[20px] w-[20px] flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-sm bg-layer-transparent transition-all hover:bg-layer-transparent-hover"
-              onClick={() => {
-                setIsOpen(true);
-              }}
-            >
-              <PlusIcon width={14} strokeWidth={2} />
-            </button>
-          ))}
+        {!disableIssueCreation && (
+          <GroupCreationControl canAddExisting={canAddExisting} onCreate={openCreate} onAddExisting={openExisting} />
+        )}
       </div>
     </>
   );
 };
+
+function GroupCreationControl({
+  canAddExisting,
+  onCreate,
+  onAddExisting,
+}: {
+  canAddExisting: boolean;
+  onCreate: () => void;
+  onAddExisting: () => void;
+}) {
+  const className =
+    "flex h-[20px] w-[20px] flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-sm bg-layer-transparent transition-all hover:bg-layer-transparent-hover";
+  if (!canAddExisting) {
+    return (
+      <button type="button" aria-label="Create work item" className={className} onClick={onCreate}>
+        <PlusIcon width={14} strokeWidth={2} />
+      </button>
+    );
+  }
+  return (
+    <CustomMenu
+      customButton={
+        <span className={className}>
+          <PlusIcon height={14} width={14} strokeWidth={2} />
+        </span>
+      }
+      placement="bottom-end"
+    >
+      <CustomMenu.MenuItem onClick={onCreate}>
+        <span className="flex items-center justify-start gap-2">Create work item</span>
+      </CustomMenu.MenuItem>
+      <CustomMenu.MenuItem onClick={onAddExisting}>
+        <span className="flex items-center justify-start gap-2">Add an existing work item</span>
+      </CustomMenu.MenuItem>
+    </CustomMenu>
+  );
+}
+
+function GroupHeading({
+  icon,
+  title,
+  count,
+  verticalAlignPosition,
+}: Pick<IHeaderGroupByCard, "icon" | "title" | "count"> & { verticalAlignPosition: boolean }) {
+  return (
+    <>
+      {" "}
+      <div className="flex size-5 flex-shrink-0 items-center justify-center overflow-hidden rounded-xs">
+        {icon ? icon : <Circle width={14} strokeWidth={2} />}
+      </div>
+      <div
+        className={`relative flex gap-1 ${
+          verticalAlignPosition ? `flex-col items-center` : `w-full flex-row items-baseline overflow-hidden`
+        }`}
+      >
+        <div
+          className={`line-clamp-1 inline-block truncate overflow-hidden font-medium text-primary ${
+            verticalAlignPosition ? `max-h-[400px] vertical-lr` : ``
+          }`}
+        >
+          {title}
+        </div>
+        <div className={`flex-shrink-0 text-13 font-medium text-tertiary ${verticalAlignPosition ? `pr-0.5` : `pl-2`}`}>
+          {count || 0}
+        </div>
+      </div>
+    </>
+  );
+}

@@ -38,7 +38,7 @@ function handleCalendarIssueDrop(
   issueId: string,
   sourceDate: string,
   destinationDate: string,
-  issue: TIssue | undefined,
+  issue: TIssue,
   sourceElementId: string | undefined,
   handleDragAndDrop: CalendarDayContentProps["handleDragAndDrop"]
 ) {
@@ -117,36 +117,42 @@ export const CalendarDayTile = function CalendarDayTile(props: Props) {
   useEffect(() => {
     const element = dayTileRef.current;
 
-    if (!element) return;
+    if (!element || !formattedDatePayload) return undefined;
+    const getSourceIssue = (data: Record<string | symbol, unknown>) => {
+      if (readOnly || typeof data.id !== "string" || typeof data.date !== "string") return undefined;
+      if (!issues || !Object.hasOwn(issues, data.id)) return undefined;
+      const issue = issues[data.id];
+      if (issue.target_date !== data.date || !canEditProperties(issue.project_id ?? undefined)) return undefined;
+      return issue;
+    };
 
     return combine(
       dropTargetForElements({
         element,
         getData: () => ({ date: formattedDatePayload }),
+        canDrop: ({ source }) => !!getSourceIssue(source.data),
         onDragEnter: () => {
           setIsDraggingOver(true);
         },
         onDragLeave: () => {
           setIsDraggingOver(false);
         },
-        onDrop: ({ source, self }) => {
+        onDrop: ({ source }) => {
           setIsDraggingOver(false);
-          const sourceData = source?.data as { id: string; date: string } | undefined;
-          const destinationData = self?.data as { date: string } | undefined;
-          if (!sourceData || !destinationData) return;
-
+          const issue = getSourceIssue(source.data);
+          if (!issue || typeof source.data.date !== "string") return;
           handleCalendarIssueDrop(
-            sourceData.id,
-            sourceData.date,
-            destinationData.date,
-            issues?.[sourceData.id],
-            source?.element?.id,
+            issue.id,
+            source.data.date,
+            formattedDatePayload,
+            issue,
+            source.element.id,
             handleDragAndDrop
           );
         },
       })
     );
-  }, [formattedDatePayload, handleDragAndDrop, issues]);
+  }, [formattedDatePayload, handleDragAndDrop, issues, readOnly, canEditProperties]);
 
   if (!formattedDatePayload) return null;
   const issueIds = getGroupedIssueIds(groupedIssueIds, formattedDatePayload) ?? [];

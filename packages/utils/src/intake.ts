@@ -10,7 +10,7 @@ import { EPastDurationFilters } from "@plane/constants";
 // local imports
 import { renderFormattedPayloadDate } from "./datetime";
 
-export const getCustomDates = (duration: EPastDurationFilters): string => {
+export const getCustomDates = (duration: unknown): string => {
   const today = new Date();
   let firstDay, lastDay;
 
@@ -37,4 +37,6 @@ export const getCustomDates = (duration: EPastDurationFilters): string => {
       return `${firstDay};after,${lastDay};before`;
     }
   }
+
+  throw new RangeError("Unsupported intake duration");
 };

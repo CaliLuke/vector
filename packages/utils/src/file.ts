@@ -42,12 +42,7 @@ export const getBase64Image = async (url: string): Promise<string> => {
     throw new Error("Invalid URL provided");
   }
 
-  // Try to create a URL object to validate the URL
-  try {
-    new URL(url);
-  } catch {
-    throw new Error("Invalid URL format");
-  }
+  if (!URL.canParse(url)) throw new Error("Invalid URL format");
 
   const response = await fetch(url);
   // check if the response is OK
@@ -59,17 +54,28 @@ export const getBase64Image = async (url: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
-    reader.onloadend = () => {
-      if (reader.result) {
-        resolve(reader.result as string);
-      } else {
-        reject(new Error("Failed to convert image to base64."));
-      }
-    };
+    reader.addEventListener(
+      "load",
+      () => {
+        if (typeof reader.result === "string" && reader.result.length > 0) {
+          resolve(reader.result);
+        } else {
+          reject(new Error("Failed to convert image to base64."));
+        }
+      },
+      { once: true }
+    );
 
-    reader.onerror = () => {
-      reject(new Error("Failed to read the image file."));
-    };
+    reader.addEventListener(
+      "error",
+      () => {
+        reject(new Error("Failed to read the image file."));
+      },
+      { once: true }
+    );
+    reader.addEventListener("abort", () => reject(new DOMException("Image read canceled", "AbortError")), {
+      once: true,
+    });
 
     reader.readAsDataURL(blob);
   });

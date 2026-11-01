@@ -16,6 +16,8 @@ import { ModuleDropdown } from "@/components/dropdowns/module/dropdown";
 import { useIssueListType } from "@/hooks/use-issue-list-type";
 import { useIssuesActions } from "@/hooks/use-issues-actions";
 
+import { useSpreadsheetMutationFeedback } from "../use-mutation-feedback";
+
 type Props = {
   issue: TIssue;
   onClose: () => void;
@@ -28,6 +30,7 @@ export function SpreadsheetModuleColumn(props: Props) {
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // hooks
   const actions = useIssuesActions(useIssueListType());
+  const reportFailure = useSpreadsheetMutationFeedback(issue);
 
   const handleModule = useCallback(
     async (moduleIds: string[] | null) => {
@@ -50,7 +53,7 @@ export function SpreadsheetModuleColumn(props: Props) {
       <ModuleDropdown
         projectId={issue?.project_id ?? undefined}
         value={issue?.module_ids ?? []}
-        onChange={handleModule}
+        onChange={(value) => void handleModule(value).catch(reportFailure)}
         disabled={disabled}
         placeholder="Select modules"
         buttonVariant="transparent-with-text"

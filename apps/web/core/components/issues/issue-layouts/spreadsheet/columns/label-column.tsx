@@ -7,20 +7,13 @@
 import React from "react";
 import { useParams } from "@tanstack/react-router";
 // types
-import type { TIssue } from "@plane/types";
+import type { TSpreadsheetColumnProps } from "@plane/types";
 // hooks
 import { useProjectLabels } from "@/hooks/use-labels";
 // components
 import { IssuePropertyLabels } from "../../properties";
 
-type Props = {
-  issue: TIssue;
-  onClose: () => void;
-  onChange: (issue: TIssue, data: Partial<TIssue>, updates: any) => void;
-  disabled: boolean;
-};
-
-export function SpreadsheetLabelColumn(props: Props) {
+export function SpreadsheetLabelColumn(props: TSpreadsheetColumnProps) {
   const { issue, onChange, disabled, onClose } = props;
   // hooks
   const { workspaceSlug } = useParams({ strict: false });

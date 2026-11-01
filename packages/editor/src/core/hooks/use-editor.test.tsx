@@ -17,7 +17,7 @@ vi.mock("@/extensions", async () => {
   const { Extension } = await import("@tiptap/core");
   const { default: StarterKit } = await import("@tiptap/starter-kit");
   return {
-    CoreEditorExtensions: ({ fileHandler, getEditorMetaData, mentionHandler }: TEditorHookProps) => [
+    createCoreEditorExtensions: ({ fileHandler, getEditorMetaData, mentionHandler }: TEditorHookProps) => [
       StarterKit,
       Extension.create({
         name: "utility",
@@ -49,7 +49,7 @@ vi.mock("@/extensions", async () => {
     ],
   };
 });
-vi.mock("@/props", () => ({ CoreEditorProps: () => ({ attributes: { class: "base-editor" } }) }));
+vi.mock("@/props", () => ({ createCoreEditorProps: () => ({ attributes: { class: "base-editor" } }) }));
 vi.mock("@/helpers/editor-ref", () => ({ getEditorRefHelpers: () => ({}) }));
 const host = document.createElement("div");
 let root: ReturnType<typeof createRoot>;
@@ -220,4 +220,32 @@ it("commits current mention handlers without replacing the editor or its selecti
   ).toBeUndefined();
   expect(installedEditors.at(-1)).toBe(installed);
   expect(installed.state.selection.from).toBe(3);
+});
+
+it("changing document identity replaces the editor and clears the previous document's undo history", async () => {
+  document.body.append(host);
+  const installed: Editor[] = [];
+  function Harness({ documentId }: { documentId: string }) {
+    const editor = useEditor(createEditorHookProps({ id: documentId, initialValue: `<p>${documentId}</p>` }));
+    useEffect(() => {
+      if (editor && !installed.includes(editor)) installed.push(editor);
+    }, [editor]);
+    return <EditorContent editor={editor} />;
+  }
+  await act(async () => root.render(<Harness documentId="First document" />));
+  const first = installed.at(-1);
+  if (!first) throw new Error("First editor did not mount");
+  act(() => {
+    first.commands.insertContent("unsaved edit");
+  });
+  await act(async () => root.render(<Harness documentId="Second document" />));
+  const second = installed.at(-1);
+  if (!second) throw new Error("Second editor did not mount");
+  expect(second).not.toBe(first);
+  expect(first.isDestroyed).toBe(true);
+  expect(second.getHTML()).toBe("<p>Second document</p>");
+  act(() => {
+    second.commands.undo();
+  });
+  expect(second.getHTML()).toBe("<p>Second document</p>");
 });

@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { STATE_GROUPS } from "@plane/constants";
 
 // plane imports
 import type { IState, TStateGroups, TStateOperationsCallbacks } from "@plane/types";
@@ -33,7 +34,7 @@ export const GroupList = function GroupList(props: TGroupList) {
     stateItemClassName,
   } = props;
   // states
-  const [groupsExpanded, setGroupsExpanded] = useState<Partial<TStateGroups>[]>([
+  const [groupsExpanded, setGroupsExpanded] = useState<TStateGroups[]>([
     "backlog",
     "unstarted",
     "started",
@@ -61,7 +62,8 @@ export const GroupList = function GroupList(props: TGroupList) {
   return (
     <div className={cn("space-y-5", groupListClassName)}>
       {Object.entries(groupedStates).map(([key, value]) => {
-        const groupKey = key as TStateGroups;
+        const groupKey = Object.values(STATE_GROUPS).find((group) => group.key === key)?.key;
+        if (!groupKey) return null;
         const groupStates = value;
         return (
           <GroupItem

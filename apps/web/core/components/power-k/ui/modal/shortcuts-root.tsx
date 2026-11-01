@@ -4,7 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { useState, Fragment } from "react";
+import { ModalBackdrop } from "@plane/ui/modals";
+import { useState, useRef, Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 // plane imports
 import { CloseIcon, SearchIcon } from "@plane/propel/icons";
@@ -23,6 +24,7 @@ type Props = {
 export function ShortcutsModal(props: Props) {
   const { isOpen, onClose } = props;
   // states
+  const searchRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   // store hooks
   const { commandRegistry } = usePowerKCommandRegistry();
@@ -37,18 +39,8 @@ export function ShortcutsModal(props: Props) {
 
   return (
     <Transition.Root show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-30" onClose={handleClose}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-backdrop transition-opacity" />
-        </Transition.Child>
+      <Dialog initialFocus={searchRef} as="div" className="relative z-30" onClose={handleClose}>
+        <ModalBackdrop />
 
         <div className="fixed inset-0 z-30 overflow-y-auto">
           <div className="my-10 flex items-center justify-center p-4 text-center sm:p-0 md:my-20">
@@ -80,8 +72,7 @@ export function ShortcutsModal(props: Props) {
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder="Search for shortcuts"
                         className="w-full border-none bg-transparent py-1 text-11 text-secondary outline-none"
-                        autoFocus
-                        tabIndex={1}
+                        ref={searchRef}
                       />
                     </div>
                   </div>

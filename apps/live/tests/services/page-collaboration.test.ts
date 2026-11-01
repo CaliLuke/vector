@@ -19,6 +19,26 @@ const response = (data: unknown): AxiosResponse<unknown> => ({
 });
 
 describe("page collaboration generations", () => {
+  it("accepts string redirect locations and rejects malformed response headers", async () => {
+    const page = service();
+    const get = vi.spyOn(page, "get").mockResolvedValue({
+      ...response(null),
+      status: 302,
+      headers: { location: "https://assets.example/image.png" },
+    });
+    await expect(page.resolveImageAssetUrl("workspace", "asset", "project")).resolves.toBe(
+      "https://assets.example/image.png"
+    );
+    get.mockResolvedValue({ ...response(null), status: 302, headers: { location: ["unexpected"] } });
+    await expect(page.resolveImageAssetUrl("workspace", "asset", "project")).resolves.toBeNull();
+  });
+
+  it("handles non-Error transport rejections without failing image export", async () => {
+    const page = service();
+    vi.spyOn(page, "get").mockRejectedValue(null);
+    await expect(page.resolveImageAssetUrl("workspace", "asset", "project")).resolves.toBeNull();
+  });
+
   it("authorizes the canonical page and rejects a replaced document", async () => {
     const page = service();
     const get = vi.spyOn(page, "get").mockResolvedValue(response({ collaboration_revision: 2, name: "Current" }));

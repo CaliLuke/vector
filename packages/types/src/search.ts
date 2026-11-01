@@ -12,7 +12,8 @@ import type { IProject } from "./project";
 import type { IUser } from "./users";
 import type { IWorkspace } from "./workspace";
 
-export type TSearchEntities = "user_mention" | "issue" | "project" | "cycle" | "module" | "page";
+export const SEARCH_ENTITY_TYPES = ["user_mention", "issue", "project", "cycle", "module", "page"] as const;
+export type TSearchEntities = (typeof SEARCH_ENTITY_TYPES)[number];
 
 export type TUserSearchResponse = {
   member__avatar_url: IUser["avatar_url"];

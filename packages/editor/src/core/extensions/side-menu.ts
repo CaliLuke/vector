@@ -11,7 +11,8 @@ import type { EditorView } from "@tiptap/pm/view";
 import { CORE_EXTENSIONS } from "@/constants/extension";
 // plugins
 import { AIHandlePlugin } from "@/plugins/ai-handle";
-import { DragHandlePlugin, nodeDOMAtCoords } from "@/plugins/drag-handle";
+import { DragHandlePlugin } from "@/plugins/drag-handle";
+import { nodeDOMAtCoords } from "@/plugins/block-hit-testing";
 
 type Props = {
   aiEnabled: boolean;
@@ -31,13 +32,16 @@ export type SideMenuPluginProps = {
 };
 
 export type SideMenuHandleOptions = {
-  view: (view: EditorView, sideMenu: HTMLDivElement | null) => void;
+  view: (view: EditorView, sideMenu: HTMLDivElement | null) => { destroy: () => void };
   domEvents?: {
-    [key: string]: (...args: any) => void;
+    mousemove?: () => void;
+    dragenter?: (view: EditorView) => void;
+    drop?: (view: EditorView, event: DragEvent) => void;
+    dragend?: (view: EditorView) => void;
   };
 };
 
-export const SideMenuExtension = (props: Props) => {
+export const createSideMenuExtension = (props: Props) => {
   const { aiEnabled, dragDropEnabled } = props;
 
   return Extension.create({
@@ -67,6 +71,39 @@ const absoluteRect = (node: Element) => {
   };
 };
 
+function sideMenuRect(node: Element, aiEnabled: boolean) {
+  const compStyle = window.getComputedStyle(node);
+  const lineHeight = parseInt(compStyle.lineHeight, 10);
+  const paddingTop = parseInt(compStyle.paddingTop, 10);
+
+  const rect = absoluteRect(node);
+
+  rect.top += (lineHeight - 20) / 2;
+  rect.top += paddingTop;
+
+  if (aiEnabled) {
+    rect.left -= 20;
+  }
+
+  if (node.parentElement?.parentElement?.matches("td") || node.parentElement?.parentElement?.matches("th")) {
+    if (node.matches("ul:not([data-type=taskList]) li, ol li")) {
+      rect.left -= 5;
+    }
+  } else {
+    // Li markers
+    if (node.matches("ul:not([data-type=taskList]) li, ol li")) {
+      rect.left -= 18;
+    }
+  }
+
+  if (node.matches("table")) {
+    rect.top += 8;
+    rect.left -= 8;
+  }
+
+  return rect;
+}
+
 const SideMenu = (options: SideMenuPluginProps) => {
   const { handlesConfig } = options;
   const editorSideMenu: HTMLDivElement | null = document.createElement("div");
@@ -85,17 +122,21 @@ const SideMenu = (options: SideMenuPluginProps) => {
     view: (view) => {
       hideSideMenu();
       view?.dom.parentElement?.appendChild(editorSideMenu);
+      const handles: { destroy: () => void }[] = [];
       // side menu elements' initialization
       if (handlesConfig.ai && !editorSideMenu.querySelector("#ai-handle")) {
-        aiHandleView(view, editorSideMenu);
+        handles.push(aiHandleView(view, editorSideMenu));
       }
 
       if (handlesConfig.dragDrop && !editorSideMenu.querySelector("#drag-handle")) {
-        dragHandleView(view, editorSideMenu);
+        handles.push(dragHandleView(view, editorSideMenu));
       }
 
       return {
-        destroy: () => hideSideMenu(),
+        destroy: () => {
+          for (const handle of handles) handle.destroy();
+          editorSideMenu.remove();
+        },
       };
     },
     props: {
@@ -113,34 +154,7 @@ const SideMenu = (options: SideMenuPluginProps) => {
             return;
           }
 
-          const compStyle = window.getComputedStyle(node);
-          const lineHeight = parseInt(compStyle.lineHeight, 10);
-          const paddingTop = parseInt(compStyle.paddingTop, 10);
-
-          const rect = absoluteRect(node);
-
-          rect.top += (lineHeight - 20) / 2;
-          rect.top += paddingTop;
-
-          if (handlesConfig.ai) {
-            rect.left -= 20;
-          }
-
-          if (node.parentElement?.parentElement?.matches("td") || node.parentElement?.parentElement?.matches("th")) {
-            if (node.matches("ul:not([data-type=taskList]) li, ol li")) {
-              rect.left -= 5;
-            }
-          } else {
-            // Li markers
-            if (node.matches("ul:not([data-type=taskList]) li, ol li")) {
-              rect.left -= 18;
-            }
-          }
-
-          if (node.matches("table")) {
-            rect.top += 8;
-            rect.left -= 8;
-          }
+          const rect = sideMenuRect(node, handlesConfig.ai);
 
           rect.width = options.dragHandleWidth;
 
@@ -150,7 +164,7 @@ const SideMenu = (options: SideMenuPluginProps) => {
           editorSideMenu.style.top = `${rect.top}px`;
           showSideMenu();
           if (handlesConfig.dragDrop) {
-            dragHandleDOMEvents?.mousemove();
+            dragHandleDOMEvents?.mousemove?.();
           }
           if (handlesConfig.ai) {
             aiHandleDOMEvents?.mousemove?.();

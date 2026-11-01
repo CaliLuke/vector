@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { EIssueLayoutTypes } from "@plane/types";
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { PropsWithChildren } from "react";
 import { EIssueFilterType } from "@plane/constants";
@@ -227,8 +228,9 @@ function ProjectViewIssuePreferencesState(props: ProjectViewPreferencesProps) {
           const current = applyDraft(canonical.displayFilters, changes);
           const filters = { ...current, ...values };
           if (filters.group_by === null) filters.sub_group_by = null;
-          if (filters.layout === "kanban" && filters.group_by === filters.sub_group_by) filters.sub_group_by = null;
-          if (filters.layout === "kanban" && filters.group_by === null) filters.group_by = "state";
+          if (filters.layout === EIssueLayoutTypes.KANBAN && filters.group_by === filters.sub_group_by)
+            filters.sub_group_by = null;
+          if (filters.layout === EIssueLayoutTypes.KANBAN && filters.group_by === null) filters.group_by = "state";
           if (filters.group_by !== current.group_by) changes.group_by = filters.group_by;
           if (filters.sub_group_by !== current.sub_group_by) changes.sub_group_by = filters.sub_group_by;
           if (filters.group_by === null) changes.sub_group_by = null;

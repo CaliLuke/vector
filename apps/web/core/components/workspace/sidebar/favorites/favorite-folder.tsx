@@ -62,7 +62,7 @@ export function FavoriteFolder(props: Props) {
   useEffect(() => {
     const rootElement = elementRef.current;
 
-    if (!rootElement) return;
+    if (!rootElement) return undefined;
     const initialData = { id: favorite.id, parentId: null, isGroup: true, isChild: false };
 
     return combine(
@@ -137,7 +137,7 @@ export function FavoriteFolder(props: Props) {
     />
   ) : (
     <>
-      <Disclosure key={`${favorite.id}`} ref={elementRef} defaultOpen={false}>
+      <Disclosure key={favorite.id} ref={elementRef} defaultOpen={false}>
         {({ open }) => (
           <div
             // id={`sidebar-${projectId}-${projectListType}`}
@@ -163,7 +163,7 @@ export function FavoriteFolder(props: Props) {
               </div>
 
               <>
-                <Tooltip tooltipContent={`${favorite.name}`} position="right" className="ml-8" isMobile={isMobile}>
+                <Tooltip tooltipContent={favorite.name} position="right" className="ml-8" isMobile={isMobile}>
                   <div className="flex flex-grow truncate">
                     <Disclosure.Button
                       as="button"

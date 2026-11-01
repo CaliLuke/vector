@@ -15,8 +15,8 @@ type EmptyStateSize = "sm" | "base" | "lg";
 
 type ButtonConfig = {
   text: string;
-  prependIcon?: React.ReactElement;
-  appendIcon?: React.ReactElement;
+  prependIcon?: React.ComponentProps<typeof Button>["prependIcon"];
+  appendIcon?: React.ComponentProps<typeof Button>["prependIcon"];
   onClick?: () => void;
   disabled?: boolean;
 };

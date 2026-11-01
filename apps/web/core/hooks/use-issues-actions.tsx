@@ -29,7 +29,7 @@ export interface IssueActions {
   removeIssue: (projectId: string | undefined | null, issueId: string) => Promise<void>;
   removeIssues: (projectId: string | undefined | null, issueIds: string[]) => Promise<void>;
   createIssue?: (projectId: string | undefined | null, data: Partial<TIssue>) => Promise<TIssue | undefined>;
-  quickAddIssue?: (projectId: string | undefined | null, data: TIssue) => Promise<TIssue | undefined>;
+  quickAddIssue?: IssueActions["createIssue"];
   updateIssue?: (
     projectId: string | undefined | null,
     issueId: string,

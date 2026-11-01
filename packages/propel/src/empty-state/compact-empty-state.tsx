@@ -5,10 +5,9 @@
  */
 
 import React from "react";
-import { Button } from "../button/button";
+import { EmptyStateActions } from "./actions";
 import { cn } from "@plane/utils/common";
 import { getCompactAsset } from "./assets/asset-registry";
-import type { CompactAssetType } from "./assets/asset-types";
 import type { BaseEmptyStateCommonProps } from "./types";
 
 export function EmptyStateCompact({
@@ -24,7 +23,7 @@ export function EmptyStateCompact({
   customButton,
 }: BaseEmptyStateCommonProps) {
   // Determine which asset to use: assetKey takes precedence, fallback to custom asset
-  const resolvedAsset = assetKey ? getCompactAsset(assetKey as CompactAssetType, assetClassName) : asset;
+  const resolvedAsset = assetKey ? getCompactAsset(assetKey, assetClassName) : asset;
 
   const rootAlignClasses = align === "center" ? "items-center" : "items-start";
   const containerAlignClasses = align === "center" ? "items-center text-center" : "items-start text-left";
@@ -46,21 +45,7 @@ export function EmptyStateCompact({
             title && <p className="text-13 leading-5 text-tertiary">{title}</p>
           )}
 
-          {customButton
-            ? customButton
-            : actions &&
-              actions.length > 0 && (
-                <div className="flex flex-col gap-4 sm:flex-row">
-                  {actions.map((action, index) => {
-                    const { label, variant, ...rest } = action;
-                    return (
-                      <Button key={index} variant={variant} size="base" {...rest}>
-                        {label}
-                      </Button>
-                    );
-                  })}
-                </div>
-              )}
+          <EmptyStateActions actions={actions} customButton={customButton} size="base" />
         </div>
       </div>
     </div>

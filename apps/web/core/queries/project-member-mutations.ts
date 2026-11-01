@@ -9,7 +9,6 @@ import sortBy from "lodash-es/sortBy.js";
 import type { Query, QueryClient } from "@tanstack/react-query";
 import { EUserPermissions, EUserWorkspaceRoles } from "@plane/types";
 import type {
-  EUserProjectRoles,
   IProjectBulkAddFormData,
   IWorkspaceMember,
   IWorkspaceMemberMe,
@@ -248,15 +247,13 @@ const PROJECT_ROLE_BY_VALUE: ReadonlyMap<number, TUserPermissions> = new Map([
   [EUserPermissions.GUEST, EUserPermissions.GUEST],
 ]);
 
-function normalizeProjectRole(
-  role: TUserPermissions | EUserProjectRoles | EUserWorkspaceRoles
-): TUserPermissions | undefined {
+function normalizeProjectRole(role: TUserPermissions): TUserPermissions | undefined {
   return PROJECT_ROLE_BY_VALUE.get(role);
 }
 
 function projectRoleAllowedForWorkspace(
-  role: TUserPermissions | EUserProjectRoles,
-  workspaceRole: EUserWorkspaceRoles | TUserPermissions,
+  role: TUserPermissions,
+  workspaceRole: TUserPermissions,
   projectRole: TUserPermissions
 ) {
   const normalizedRole = normalizeProjectRole(role);

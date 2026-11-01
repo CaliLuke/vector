@@ -15,6 +15,8 @@ import { CycleDropdown } from "@/components/dropdowns/cycle";
 import { useIssueListType } from "@/hooks/use-issue-list-type";
 import { useIssuesActions } from "@/hooks/use-issues-actions";
 
+import { useSpreadsheetMutationFeedback } from "../use-mutation-feedback";
+
 type Props = {
   issue: TIssue;
   onClose: () => void;
@@ -27,6 +29,7 @@ export function SpreadsheetCycleColumn(props: Props) {
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // hooks
   const actions = useIssuesActions(useIssueListType());
+  const reportFailure = useSpreadsheetMutationFeedback(issue);
 
   const handleCycle = useCallback(
     async (cycleId: string | null) => {
@@ -42,7 +45,7 @@ export function SpreadsheetCycleColumn(props: Props) {
       <CycleDropdown
         projectId={issue.project_id ?? undefined}
         value={issue.cycle_id}
-        onChange={handleCycle}
+        onChange={(value) => void handleCycle(value).catch(reportFailure)}
         disabled={disabled}
         placeholder="Select cycle"
         buttonVariant="transparent-with-text"

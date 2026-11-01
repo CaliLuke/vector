@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
@@ -65,10 +66,10 @@ function formulaTable(t) {
     workspaceSlug: "acme",
     projectId: "p1",
     generation: 0,
-    membershipRole: 15,
+    membershipRole: ContractEnums.EUserPermissions.MEMBER,
     membershipRevision: "membership-1",
-    projectRole: 20,
-    membershipProjectRole: 20,
+    projectRole: ContractEnums.EUserPermissions.ADMIN,
+    membershipProjectRole: ContractEnums.EUserPermissions.ADMIN,
   };
   const item = { id: "item", updated_at: "unchanged" };
   t.mock.method(IssueService.prototype, "retrieveIssues", async () => [
@@ -121,7 +122,7 @@ await test("clock refresh replaces formula-filtered membership and counts withou
     workspaceSlug: "acme",
     projectId: "p1",
     richFilters: { and: [{ not: { customproperty_elapsed__lt: 1 } }] },
-    displayFilters: { layout: "list", group_by: null, sub_group_by: null },
+    displayFilters: { layout: ContractEnums.EIssueLayoutTypes.LIST, group_by: null, sub_group_by: null },
   };
   const read = {
     scope: projectIssueScope(),

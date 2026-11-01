@@ -53,7 +53,7 @@ export function DeleteLabelModal(props: Props) {
   return (
     <AlertModalCore
       handleClose={onClose}
-      handleSubmit={handleDeletion}
+      handleSubmit={() => void handleDeletion()}
       isSubmitting={mutation.isPending}
       isOpen
       title="Delete Label"

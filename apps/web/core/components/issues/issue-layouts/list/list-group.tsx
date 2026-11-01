@@ -1,3 +1,5 @@
+import { canDragDropForGrouping } from "@/providers/issue-layout-ui-state";
+import type { IssueQuickAddCallback } from "../quick-add/types";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -10,7 +12,6 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { useParams } from "@tanstack/react-router";
 // plane imports
-import { DRAG_ALLOWED_GROUPS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type {
@@ -35,9 +36,9 @@ import { useRouteProjectStates } from "@/hooks/use-project-states";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import type { TSelectionHelper } from "@/hooks/use-multiple-select";
 // local imports
-import { canQuickAddToGroup } from "../quick-add/grouping";
-import { GroupDragOverlay } from "../group-drag-overlay";
-import { ListQuickAddIssueButton, QuickAddIssueRoot } from "../quick-add";
+import { GroupPagination } from "../group-pagination";
+import { GroupDragOverlay, groupDropPolicy } from "../group-drag-overlay";
+import { GroupQuickAdd } from "../quick-add";
 import type { GroupDropLocation } from "../utils";
 import {
   getDestinationFromDropPayload,
@@ -62,7 +63,7 @@ interface Props {
   enableIssueQuickAdd: boolean;
   canEditProperties: (projectId: string | undefined) => boolean;
   containerRef: MutableRefObject<HTMLDivElement | null>;
-  quickAddCallback?: ((projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>) | undefined;
+  quickAddCallback?: IssueQuickAddCallback;
   handleOnDrop: (source: GroupDropLocation, destination: GroupDropLocation) => Promise<void>;
   disableIssueCreation?: boolean;
   addIssuesToView?: (issueIds: string[]) => Promise<void | TIssue>;
@@ -110,7 +111,7 @@ export function ListGroup(props: Props) {
 
   const [isDraggingOverColumn, setIsDraggingOverColumn] = useState(false);
   const [dragColumnOrientation, setDragColumnOrientation] = useState<"justify-start" | "justify-end">("justify-start");
-  const isExpanded = !collapsedGroups?.group_by.includes(group.id);
+  const isExpanded = !collapsedGroups.group_by.includes(group.id);
   const groupRef = useRef<HTMLDivElement | null>(null);
   const { t } = useTranslation();
   const { projectId } = useParams({ strict: false });
@@ -128,25 +129,6 @@ export function ListGroup(props: Props) {
 
   useIntersectionObserver(containerRef, isPaginating ? null : intersectionElement, loadMoreIssues, `100% 0% 100% 0%`);
 
-  const shouldLoadMore =
-    nextPageResults === undefined && groupIssueCount !== undefined && groupIssueIds
-      ? groupIssueIds.length < groupIssueCount
-      : !!nextPageResults;
-
-  const loadMore = isPaginating ? (
-    <ListLoaderItemRow />
-  ) : (
-    // oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions
-    <div
-      className={
-        "relative flex h-11 cursor-pointer items-center gap-3 border border-transparent border-t-subtle-1 bg-surface-1 p-3 pl-8 text-13 font-medium text-accent-primary hover:text-accent-secondary hover:underline"
-      }
-      onClick={() => loadMoreIssues(group.id)}
-    >
-      {t("common.load_more")} &darr;
-    </div>
-  );
-
   const validateEmptyIssueGroups = (issueCount: number = 0) => {
     if (!showEmptyGroup && issueCount <= 0) return false;
     return true;
@@ -161,7 +143,7 @@ export function ListGroup(props: Props) {
   useEffect(() => {
     const element = groupRef.current;
 
-    if (!element) return;
+    if (!element) return undefined;
 
     return combine(
       dropTargetForElements({
@@ -177,7 +159,8 @@ export function ListGroup(props: Props) {
           setIsDraggingOverColumn(true);
         },
         onDrag: ({ source }) => {
-          const sourceGroupId = source?.data?.groupId as string | undefined;
+          const sourceGroupId = source.data.groupId;
+          if (typeof sourceGroupId !== "string") return;
           const currentGroupId = group.id;
 
           // oxlint-disable-next-line no-unused-expressions
@@ -234,11 +217,15 @@ export function ListGroup(props: Props) {
     t,
   ]);
 
-  const isDragAllowed = group_by ? DRAG_ALLOWED_GROUPS.includes(group_by) : true;
-  const canOverlayBeVisible = isWorkflowDropDisabled || orderBy !== "sort_order" || !!group.isDropDisabled;
-  const isDropDisabled = isWorkflowDropDisabled || !!group.isDropDisabled;
+  const isDragAllowed = canDragDropForGrouping(group_by, undefined, { allowUngrouped: true });
+  const { canOverlayBeVisible, isDropDisabled } = groupDropPolicy(
+    orderBy,
+    isWorkflowDropDisabled,
+    group.isDropDisabled
+  );
 
-  const isGroupByCreatedBy = group_by === "created_by";
+  const isIssueCreationDisabled =
+    disableIssueCreation || group_by === "created_by" || isCompletedCycle || isWorkflowIssueCreationDisabled;
   const shouldExpand = (!!groupIssueCount && isExpanded) || !group_by;
 
   return validateEmptyIssueGroups(groupIssueCount) ? (
@@ -262,9 +249,7 @@ export function ListGroup(props: Props) {
           count={groupIssueCount}
           issuePayload={group.payload}
           canEditProperties={canEditProperties}
-          disableIssueCreation={
-            disableIssueCreation || isGroupByCreatedBy || isCompletedCycle || isWorkflowIssueCreationDisabled
-          }
+          disableIssueCreation={isIssueCreationDisabled}
           addIssuesToView={addIssuesToView}
           selectionHelpers={selectionHelpers}
           handleCollapsedGroups={handleCollapsedGroups}
@@ -283,52 +268,42 @@ export function ListGroup(props: Props) {
             isDraggingOverColumn={isDraggingOverColumn}
             isEpic={isEpic}
           />
-          {groupIssueIds && (
-            <IssueBlocksList
-              issueIds={groupIssueIds}
-              groupId={group.id}
-              issuesMap={issuesMap}
-              updateIssue={updateIssue}
-              quickActions={quickActions}
-              displayProperties={displayProperties}
-              canEditProperties={canEditProperties}
-              containerRef={containerRef}
-              isDragAllowed={isDragAllowed}
-              canDropOverIssue={!canOverlayBeVisible}
-              selectionHelpers={selectionHelpers}
-              isEpic={isEpic}
-            />
-          )}
+          <IssueBlocksList
+            issueIds={groupIssueIds}
+            groupId={group.id}
+            issuesMap={issuesMap}
+            updateIssue={updateIssue}
+            quickActions={quickActions}
+            displayProperties={displayProperties}
+            canEditProperties={canEditProperties}
+            containerRef={containerRef}
+            isDragAllowed={isDragAllowed}
+            canDropOverIssue={!canOverlayBeVisible}
+            selectionHelpers={selectionHelpers}
+            isEpic={isEpic}
+          />
 
-          {shouldLoadMore &&
-            (group_by ? (
-              <>{loadMore}</>
-            ) : (
-              <>
-                {Array.from({ length: 2 }).map((_, index) => (
-                  // oxlint-disable-next-line react/no-array-index-key
-                  <ListLoaderItemRow key={index} />
-                ))}
-                <ListLoaderItemRow ref={setIntersectionElement} />
-              </>
-            ))}
+          <GroupPagination
+            layout="list"
+            manual={Boolean(group_by)}
+            loadedCount={groupIssueIds.length}
+            totalCount={groupIssueCount}
+            nextPageResults={nextPageResults}
+            isPaginating={isPaginating}
+            loadMore={() => loadMoreIssues(group.id)}
+            loader={<ListLoaderItemRow />}
+            sentinel={<ListLoaderItemRow ref={setIntersectionElement} />}
+          />
 
-          {canQuickAddToGroup(enableIssueQuickAdd, group_by) &&
-            !disableIssueCreation &&
-            !isGroupByCreatedBy &&
-            !isCompletedCycle &&
-            !isWorkflowIssueCreationDisabled && (
-              <div className="sticky bottom-0 z-[1] w-full flex-shrink-0">
-                <QuickAddIssueRoot
-                  layout={EIssueLayoutTypes.LIST}
-                  QuickAddButton={ListQuickAddIssueButton}
-                  prePopulatedData={prePopulateQuickAddData()}
-                  containerClassName="border-b border-t border-subtle bg-surface-1 "
-                  quickAddCallback={quickAddCallback}
-                  isEpic={isEpic}
-                />
-              </div>
-            )}
+          <GroupQuickAdd
+            layout={EIssueLayoutTypes.LIST}
+            enabled={enableIssueQuickAdd}
+            creationDisabled={isIssueCreationDisabled}
+            groupBy={group_by}
+            prePopulate={prePopulateQuickAddData}
+            quickAddCallback={quickAddCallback}
+            isEpic={isEpic}
+          />
         </div>
       )}
     </div>

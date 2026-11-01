@@ -16,11 +16,7 @@ export class StickyService extends APIService {
   }
 
   async createSticky(workspaceSlug: string, payload: Partial<TSticky>): Promise<TSticky> {
-    return this.post(`/api/workspaces/${workspaceSlug}/stickies/`, payload)
-      .then((res) => res?.data)
-      .catch((err) => {
-        throw err?.response?.data ?? err;
-      });
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/stickies/`, payload), "data-or-error");
   }
 
   async getStickies(
@@ -30,41 +26,31 @@ export class StickyService extends APIService {
     per_page?: number,
     signal?: AbortSignal
   ): Promise<TPaginationInfo & { results: TSticky[] }> {
-    return this.get(`/api/workspaces/${workspaceSlug}/stickies/`, {
-      signal,
-      params: {
-        cursor,
-        per_page: per_page || STICKIES_PER_PAGE,
-        query,
-      },
-    })
-      .then((res) => res?.data)
-      .catch((err) => {
-        throw err?.response?.data ?? err;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/stickies/`, {
+        signal,
+        params: {
+          cursor,
+          per_page: per_page || STICKIES_PER_PAGE,
+          query,
+        },
+      }),
+      "data-or-error"
+    );
   }
 
   async getSticky(workspaceSlug: string, id: string) {
-    return this.get(`/api/workspaces/${workspaceSlug}/stickies/${id}`)
-      .then((res) => res?.data)
-      .catch((err) => {
-        throw err?.response?.data ?? err;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/stickies/${id}`), "data-or-error");
   }
 
   async updateSticky(workspaceSlug: string, id: string, data: Partial<TSticky>): Promise<TSticky> {
-    return await this.patch(`/api/workspaces/${workspaceSlug}/stickies/${id}/`, data)
-      .then((res) => res?.data)
-      .catch((err) => {
-        throw err?.response?.data ?? err;
-      });
+    return await this.responseData(
+      this.patch(`/api/workspaces/${workspaceSlug}/stickies/${id}/`, data),
+      "data-or-error"
+    );
   }
 
   async deleteSticky(workspaceSlug: string, id: string) {
-    return await this.delete(`/api/workspaces/${workspaceSlug}/stickies/${id}`)
-      .then((res) => res?.data)
-      .catch((err) => {
-        throw err?.response?.data ?? err;
-      });
+    return await this.responseData(this.delete(`/api/workspaces/${workspaceSlug}/stickies/${id}`), "data-or-error");
   }
 }

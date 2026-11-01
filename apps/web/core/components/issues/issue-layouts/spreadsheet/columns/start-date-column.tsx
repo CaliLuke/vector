@@ -8,20 +8,13 @@ import React from "react";
 
 import { StartDatePropertyIcon } from "@plane/propel/icons";
 // types
-import type { TIssue } from "@plane/types";
+import type { TSpreadsheetColumnProps } from "@plane/types";
 // components
 import { getDate, renderFormattedPayloadDate } from "@plane/utils/datetime";
 import { DateDropdown } from "@/components/dropdowns/date";
 // helpers
 
-type Props = {
-  issue: TIssue;
-  onClose: () => void;
-  onChange: (issue: TIssue, data: Partial<TIssue>, updates: any) => void;
-  disabled: boolean;
-};
-
-export const SpreadsheetStartDateColumn = function SpreadsheetStartDateColumn(props: Props) {
+export const SpreadsheetStartDateColumn = function SpreadsheetStartDateColumn(props: TSpreadsheetColumnProps) {
   const { issue, onChange, disabled, onClose } = props;
 
   return (

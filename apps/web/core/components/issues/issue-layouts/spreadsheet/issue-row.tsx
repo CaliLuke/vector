@@ -12,7 +12,6 @@ import { useContext, useMemo, useRef, useState } from "react";
 import { MoreHorizontal } from "lucide-react";
 import { SPREADSHEET_SELECT_GROUP } from "@plane/constants";
 // plane helpers
-import { useOutsideClickDetector } from "@plane/hooks";
 import { ChevronRightIcon } from "@plane/propel/icons";
 // types
 import { Tooltip } from "@plane/propel/tooltip";
@@ -128,6 +127,7 @@ export function SpreadsheetIssueRow(props: Props) {
         placeholderChildren={
           <td
             colSpan={100}
+            aria-hidden="true"
             className="border-[0.5px] border-transparent border-b-subtle-1"
             style={{ height: "calc(2.75rem - 1px)" }}
           />
@@ -229,10 +229,8 @@ function IssueRowDetails(props: IssueRowDetailsProps) {
     isEpic = false,
   } = props;
   // states
-  const [isMenuActive, setIsMenuActive] = useState(false);
   // refs
   const cellRef = useRef(null);
-  const menuActionRef = useRef<HTMLDivElement | null>(null);
   // router
   const { workspaceSlug, projectId } = useParams({ strict: false });
   const router = useRouter();
@@ -273,23 +271,15 @@ function IssueRowDetails(props: IssueRowDetailsProps) {
 
   const subIssueIndentation = `${spacingLeft}px`;
 
-  useOutsideClickDetector(menuActionRef, () => setIsMenuActive(false));
-
   const customActionButton = (
-    <div
-      ref={menuActionRef}
-      className={`flex h-full w-full cursor-pointer items-center rounded-sm p-1 text-placeholder hover:bg-layer-1 ${
-        isMenuActive ? "bg-layer-1 text-primary" : "text-secondary"
-      }`}
-      onClick={() => setIsMenuActive(!isMenuActive)}
-    >
+    <span className="flex h-full w-full items-center rounded-sm p-1 text-secondary hover:bg-layer-1 [[aria-expanded=true]_&]:bg-layer-1 [[aria-expanded=true]_&]:text-primary">
       <MoreHorizontal className="h-3.5 w-3.5" />
-    </div>
+    </span>
   );
   if (!issueDetail) return null;
 
   const disableUserActions = !canEditProperties(issueDetail.project_id ?? undefined);
-  const subIssuesCount = issueDetail?.sub_issues_count ?? 0;
+  const subIssuesCount = issueDetail.sub_issues_count ?? 0;
   const isIssueSelected = selectionHelpers.getIsEntitySelected(issueDetail.id);
   const projectIdentifier = projectRows?.find((project) => project.id === issueDetail.project_id)?.identifier ?? "";
 
@@ -297,10 +287,10 @@ function IssueRowDetails(props: IssueRowDetailsProps) {
 
   const workItemLink = generateWorkItemLink({
     workspaceSlug: workspaceSlug?.toString(),
-    projectId: issueDetail?.project_id,
+    projectId: issueDetail.project_id,
     issueId,
     projectIdentifier,
-    sequenceId: issueDetail?.sequence_id,
+    sequenceId: issueDetail.sequence_id,
     isEpic,
   });
 
@@ -309,6 +299,7 @@ function IssueRowDetails(props: IssueRowDetailsProps) {
       {/* Single sticky column containing both identifier and workitem */}
       <td
         id={`issue-${issueId}`}
+        aria-label={issueDetail.name}
         ref={cellRef}
         tabIndex={0}
         className="group/list-block relative left-0 z-10 max-w-lg bg-surface-1 md:sticky"
@@ -317,7 +308,7 @@ function IssueRowDetails(props: IssueRowDetailsProps) {
           href={workItemLink}
           onClick={() => handleIssuePeekOverview(issueDetail)}
           className="outline-none"
-          disabled={!!issueDetail?.tempId}
+          disabled={!!issueDetail.tempId}
         >
           <Row
             className={cn(
@@ -360,7 +351,8 @@ function IssueRowDetails(props: IssueRowDetailsProps) {
                   </div>
                 </div>
                 <div
-                  className={`opacity-0 transition-opacity group-hover:opacity-100 ${isMenuActive ? "!opacity-100" : ""}`}
+                  role="presentation"
+                  className="opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {quickActions({
@@ -471,7 +463,7 @@ function SpreadsheetIssueNavigation({
             <div className="absolute left-1 mr-1 grid w-3.5 flex-shrink-0 place-items-center">
               <MultipleSelectEntityAction
                 className={cn(
-                  "pointer-events-none opacity-0 transition-opacity group-hover/list-block:pointer-events-auto group-hover/list-block:opacity-100",
+                  "pointer-events-none opacity-0 transition-opacity group-focus-within/list-block:pointer-events-auto group-focus-within/list-block:opacity-100 group-hover/list-block:pointer-events-auto group-hover/list-block:opacity-100",
                   { "pointer-events-auto opacity-100": isIssueSelected }
                 )}
                 groupId={SPREADSHEET_SELECT_GROUP}

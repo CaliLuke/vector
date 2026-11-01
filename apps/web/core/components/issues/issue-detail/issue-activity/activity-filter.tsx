@@ -21,7 +21,7 @@ type TActivityFilter = {
 };
 
 export const ActivityFilter = function ActivityFilter(props: TActivityFilter) {
-  const { selectedFilters = [], filterOptions } = props;
+  const { selectedFilters, filterOptions } = props;
 
   // hooks
   const { t } = useTranslation();

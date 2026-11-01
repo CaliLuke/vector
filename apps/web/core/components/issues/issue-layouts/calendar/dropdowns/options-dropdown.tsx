@@ -42,7 +42,7 @@ export const CalendarOptionsDropdown = function CalendarOptionsDropdown(props: I
   const calendarLayout = displayFilters.calendar?.layout ?? "month";
   const showWeekends = displayFilters.calendar?.show_weekends ?? false;
 
-  const handleLayoutChange = (layout: TCalendarLayouts, closePopover: any) => {
+  const handleLayoutChange = (layout: TCalendarLayouts, closePopover: () => void) => {
     if (!projectId) return;
 
     void updateFilters(projectId, { calendar: { layout } });
@@ -51,12 +51,12 @@ export const CalendarOptionsDropdown = function CalendarOptionsDropdown(props: I
   };
 
   const handleToggleWeekends = () => {
-    const showWeekends = displayFilters.calendar?.show_weekends ?? false;
+    const currentShowWeekends = displayFilters.calendar?.show_weekends ?? false;
 
     if (!projectId) return;
 
     void updateFilters(projectId, {
-      calendar: { show_weekends: !showWeekends },
+      calendar: { show_weekends: !currentShowWeekends },
     });
   };
 

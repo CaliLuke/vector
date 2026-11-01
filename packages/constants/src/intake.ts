@@ -58,7 +58,7 @@ export const INBOX_ISSUE_ORDER_BY_OPTIONS = [
     key: "issue__sequence_id",
     i18n_label: "inbox_issue.order_by.id",
   },
-];
+] as const;
 
 export const INBOX_ISSUE_SORT_BY_OPTIONS = [
   {
@@ -69,7 +69,7 @@ export const INBOX_ISSUE_SORT_BY_OPTIONS = [
     key: "desc",
     i18n_label: "common.sort.desc",
   },
-];
+] as const;
 
 export enum EPastDurationFilters {
   TODAY = "today",

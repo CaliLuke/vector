@@ -6,7 +6,7 @@
 
 import type { ChartDataType, IBlockUpdateDependencyData, IGanttBlock } from "@plane/types";
 import { renderFormattedPayloadDate } from "@plane/utils/datetime";
-import { getItemPositionWidth, getDateFromPositionOnGantt } from "./views/helpers";
+import { getItemPositionWidth, getDateFromPositionOnGantt, getNumberOfDaysBetweenTwoDates } from "./views/helpers";
 
 export type TGanttItemData = {
   id: string;
@@ -17,9 +17,7 @@ export type TGanttItemData = {
   project_id?: string | null;
 };
 
-export type TGanttBlock<TItem extends TGanttItemData = TGanttItemData> = Omit<IGanttBlock, "data"> & {
-  data: TItem;
-};
+export type TGanttBlock<TItem extends TGanttItemData = TGanttItemData> = IGanttBlock<TItem>;
 
 export type TGanttBlockPosition = { marginLeft: number; width: number };
 
@@ -86,4 +84,39 @@ export function shiftBlockPositions(
       { ...position, marginLeft: position.marginLeft + addedWidth },
     ])
   );
+}
+
+export function ganttResizeRange(block: IGanttBlock, viewData: ChartDataType, direction: "left" | "right") {
+  if (!block.position) return undefined;
+  const { dayWidth, startDate, endDate } = viewData.data;
+  const start = Math.round(block.position.marginLeft / dayWidth);
+  const end = Math.round((block.position.marginLeft + block.position.width) / dayWidth) - 1;
+  const lastDay = getNumberOfDaysBetweenTwoDates(new Date(endDate), new Date(startDate));
+  if (direction === "left") {
+    return { value: start, min: Math.min(0, start), max: block.target_date ? end : Math.max(lastDay, start) };
+  }
+  return { value: end, min: block.start_date ? start : Math.min(0, end), max: Math.max(lastDay, end) };
+}
+
+export function resizedGanttPosition(
+  block: IGanttBlock,
+  viewData: ChartDataType,
+  direction: "left" | "right",
+  day: number
+) {
+  const range = ganttResizeRange(block, viewData, direction);
+  if (!range || !block.position || !Number.isFinite(day)) return undefined;
+  const nextDay = Math.max(range.min, Math.min(range.max, Math.round(day)));
+  if (nextDay === range.value) return undefined;
+  const { dayWidth } = viewData.data;
+  const { marginLeft, width } = block.position;
+  if (direction === "left") {
+    const nextLeft = nextDay * dayWidth;
+    return { marginLeft: nextLeft, width: block.target_date ? marginLeft + width - nextLeft : width };
+  }
+  const nextRight = (nextDay + 1) * dayWidth;
+  return {
+    marginLeft: block.start_date ? marginLeft : nextRight - width,
+    width: block.start_date ? nextRight - marginLeft : width,
+  };
 }

@@ -33,21 +33,17 @@ export class FileService extends APIService {
    * @throws {Error} If the request fails
    */
   async deleteNewAsset(assetPath: string): Promise<void> {
-    return this.delete(assetPath)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.delete(assetPath));
   }
 
   /**
    * Deletes an old editor asset
    * @param {string} workspaceId - The workspace identifier
    * @param {string} src - The asset source
-   * @returns {Promise<any>} Promise resolving to void
+   * @returns {Promise<number>} Promise resolving to void
    * @throws {Error} If the request fails
    */
-  async deleteOldEditorAsset(workspaceId: string, src: string): Promise<any> {
+  async deleteOldEditorAsset(workspaceId: string, src: string): Promise<number> {
     const assetKey = getAssetIdFromUrl(src);
     return this.delete(`/api/workspaces/file-assets/${workspaceId}/${assetKey}/`)
       .then((response) => response?.status)
@@ -65,11 +61,7 @@ export class FileService extends APIService {
    */
   async restoreOldEditorAsset(workspaceId: string, src: string): Promise<void> {
     const assetKey = getAssetIdFromUrl(src);
-    return this.post(`/api/workspaces/file-assets/${workspaceId}/${assetKey}/restore/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.post(`/api/workspaces/file-assets/${workspaceId}/${assetKey}/restore/`));
   }
 
   /**
@@ -80,10 +72,6 @@ export class FileService extends APIService {
    * @throws {Error} If the request fails
    */
   async duplicateAssets(workspaceSlug: string, data: TDuplicateAssetData): Promise<TDuplicateAssetResponse> {
-    return this.post(`/api/assets/v2/workspaces/${workspaceSlug}/duplicate-assets/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.post(`/api/assets/v2/workspaces/${workspaceSlug}/duplicate-assets/`, data));
   }
 }

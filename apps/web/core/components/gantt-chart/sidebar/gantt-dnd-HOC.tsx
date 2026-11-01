@@ -33,7 +33,7 @@ export const GanttDnDHOC = function GanttDnDHOC(props: Props) {
   useEffect(() => {
     const element = blockRef.current;
 
-    if (!element) return;
+    if (!element) return undefined;
 
     return combine(
       draggable({

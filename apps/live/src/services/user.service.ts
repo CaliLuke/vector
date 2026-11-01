@@ -12,10 +12,6 @@ import { AppError } from "@/lib/errors";
 import { APIService } from "@/services/api.service";
 
 export class UserService extends APIService {
-  constructor() {
-    super();
-  }
-
   currentUserConfig() {
     return {
       url: `${this.baseURL}/api/users/me/`,
@@ -23,7 +19,7 @@ export class UserService extends APIService {
   }
 
   async currentUser(cookie: string): Promise<IUser> {
-    return this.get("/api/users/me/", {
+    return this.get<IUser>("/api/users/me/", {
       headers: {
         Cookie: cookie,
       },

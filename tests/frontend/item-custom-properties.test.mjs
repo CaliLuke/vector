@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import { createQueryDomFixture } from "./helpers/query-dom.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -34,8 +35,11 @@ await test("detail properties preserve attachment order, readonly rich text, and
   });
   client.setQueryData(identityKeys.currentUser(), { id: "alice" });
   const memberKey = permissionKeys.workspaceMembership("alice", "acme");
-  client.setQueryData(memberKey, { is_active: true, role: 15, updated_at: "v1" });
-  client.setQueryData(permissionKeys.workspaceProjectRoles("alice", "acme", 15, "v1"), { p: 5 });
+  client.setQueryData(memberKey, { is_active: true, role: ContractEnums.EUserPermissions.MEMBER, updated_at: "v1" });
+  client.setQueryData(
+    permissionKeys.workspaceProjectRoles("alice", "acme", ContractEnums.EUserPermissions.MEMBER, "v1"),
+    { p: 5 }
+  );
   // Keep permission reads deterministic while exercising the real permission hooks.
   client.setQueryDefaults(["permissions"], { refetchOnMount: false, refetchOnWindowFocus: false });
   // The hook options specify refetchOnMount, so serve the native read transports too.
@@ -85,6 +89,8 @@ await test("detail properties preserve attachment order, readonly rich text, and
     await new Promise((resolve) => setTimeout(resolve, 0));
   });
   assert.match(document.body.textContent, /Private notes/);
-  await act(async () => client.setQueryData(memberKey, { is_active: false, role: 15, updated_at: "v2" }));
+  await act(async () =>
+    client.setQueryData(memberKey, { is_active: false, role: ContractEnums.EUserPermissions.MEMBER, updated_at: "v2" })
+  );
   assert.doesNotMatch(document.body.textContent, /Private notes/);
 });

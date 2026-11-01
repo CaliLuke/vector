@@ -11,11 +11,11 @@ import { logger } from "@plane/logger";
 import { AppError } from "@/lib/errors";
 import { env } from "@/env";
 import { getRedisConfiguration } from "./redis-configuration";
-import { AdminCommand } from "@/types/admin-commands";
-import type { AdminCommandData, AdminCommandHandler } from "@/types/admin-commands";
+import { AdminCommand, adminCommandSchema } from "@/types/admin-commands";
+import type { AdminCommandData, AdminCommandHandlers } from "@/types/admin-commands";
 
 export class Redis extends HocuspocusRedis {
-  private adminHandlers = new Map<AdminCommand, AdminCommandHandler>();
+  private adminHandlers: AdminCommandHandlers = {};
   private readonly ADMIN_CHANNEL = "hocuspocus:admin";
   private readonly adminSubscriber: HocuspocusRedis["sub"];
 
@@ -51,20 +51,23 @@ export class Redis extends HocuspocusRedis {
     if (channel !== this.ADMIN_CHANNEL) return;
 
     try {
-      const data = JSON.parse(message) as AdminCommandData;
-
-      // Validate command
-      if (!data.command || !Object.values(AdminCommand).includes(data.command as AdminCommand)) {
-        logger.warn(`[Redis] Invalid admin command received: ${data.command}`);
+      const parsed = adminCommandSchema.safeParse(JSON.parse(message));
+      if (!parsed.success) {
+        logger.warn("[Redis] Invalid admin command received", parsed.error);
         return;
       }
-
-      const handler = this.adminHandlers.get(data.command);
-
-      if (handler) {
-        await handler(data);
-      } else {
+      const data = parsed.data;
+      if (!this.adminHandlers[data.command]) {
         logger.warn(`[Redis] No handler registered for admin command: ${data.command}`);
+        return;
+      }
+      switch (data.command) {
+        case AdminCommand.FORCE_CLOSE:
+          await this.adminHandlers[AdminCommand.FORCE_CLOSE]?.(data);
+          break;
+        case AdminCommand.HEALTH_CHECK:
+          await this.adminHandlers[AdminCommand.HEALTH_CHECK]?.(data);
+          break;
       }
     } catch (error) {
       logger.error("[Redis] Error handling admin message:", error);
@@ -74,24 +77,21 @@ export class Redis extends HocuspocusRedis {
   /**
    * Register handler for an admin command
    */
-  public onAdminCommand<T extends AdminCommandData = AdminCommandData>(
-    command: AdminCommand,
-    handler: AdminCommandHandler<T>
+  public onAdminCommand<Command extends AdminCommandData["command"]>(
+    command: Command,
+    handler: NonNullable<AdminCommandHandlers[Command]>
   ) {
-    this.adminHandlers.set(command, handler as AdminCommandHandler);
+    this.adminHandlers[command] = handler;
     logger.info(`[Redis] Registered admin command: ${command}`);
   }
 
   /**
    * Publish admin command to global channel
    */
-  public async publishAdminCommand<T extends AdminCommandData>(data: T): Promise<number> {
-    // Validate command data
-    if (!data.command || !Object.values(AdminCommand).includes(data.command)) {
-      throw new AppError(`Invalid admin command: ${data.command}`);
-    }
-
-    const message = JSON.stringify(data);
+  public async publishAdminCommand(data: AdminCommandData): Promise<number> {
+    const validated = adminCommandSchema.safeParse(data);
+    if (!validated.success) throw new AppError(validated.error);
+    const message = JSON.stringify(validated.data);
     const receivers = await this.pub.publish(this.ADMIN_CHANNEL, message);
 
     logger.info(`[Redis] Published "${data.command}" command, received by ${receivers} server(s)`);

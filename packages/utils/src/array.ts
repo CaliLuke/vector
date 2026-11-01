@@ -4,7 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import isEmpty from "lodash-es/isEmpty.js";
+import get from "lodash-es/get.js";
+import groupByProperty from "lodash-es/groupBy.js";
 import type { IIssueLabel, IIssueLabelTree } from "@plane/types";
 
 /**
@@ -16,13 +17,9 @@ import type { IIssueLabel, IIssueLabelTree } from "@plane/types";
  * const array = [{type: 'A', value: 1}, {type: 'B', value: 2}, {type: 'A', value: 3}];
  * groupBy(array, 'type') // returns { A: [{type: 'A', value: 1}, {type: 'A', value: 3}], B: [{type: 'B', value: 2}] }
  */
-export const groupBy = (array: any[], key: string) => {
-  const innerKey = key.split("."); // split the key by dot
-  return array.reduce((result, currentValue) => {
-    const key = innerKey.reduce((obj, i) => obj?.[i], currentValue) ?? "None"; // get the value of the inner key
-    (result[key] = result[key] || []).push(currentValue);
-    return result;
-  }, {});
+export const groupBy = <T>(array: T[], key: string): Record<string, T[]> => {
+  const path = key.split(".");
+  return groupByProperty(array, (item) => get(item, path) ?? "None");
 };
 
 /**
@@ -35,10 +32,12 @@ export const groupBy = (array: any[], key: string) => {
  * const array = [{value: 2}, {value: 1}, {value: 3}];
  * orderArrayBy(array, 'value', 'ascending') // returns [{value: 1}, {value: 2}, {value: 3}]
  */
-export const orderArrayBy = (orgArray: any[], key: string, ordering: "ascending" | "descending" = "ascending") => {
+export const orderArrayBy = <T>(
+  orgArray: T[],
+  key: string,
+  ordering: "ascending" | "descending" = "ascending"
+): T[] => {
   if (!orgArray || !Array.isArray(orgArray) || orgArray.length === 0) return [];
-
-  const array = [...orgArray];
 
   if (key[0] === "-") {
     ordering = "descending";
@@ -47,9 +46,9 @@ export const orderArrayBy = (orgArray: any[], key: string, ordering: "ascending"
 
   const innerKey = key.split("."); // split the key by dot
 
-  return array.sort((a, b) => {
-    const keyA = innerKey.reduce((obj, i) => obj[i], a); // get the value of the inner key
-    const keyB = innerKey.reduce((obj, i) => obj[i], b); // get the value of the inner key
+  return orgArray.toSorted((a, b) => {
+    const keyA = get(a, innerKey);
+    const keyB = get(b, innerKey);
     if (keyA < keyB) {
       return ordering === "ascending" ? -1 : 1;
     }
@@ -68,7 +67,7 @@ export const orderArrayBy = (orgArray: any[], key: string, ordering: "ascending"
  * checkDuplicates([1, 2, 2, 3]) // returns true
  * checkDuplicates([1, 2, 3]) // returns false
  */
-export const checkDuplicates = (array: any[]) => new Set(array).size !== array.length;
+export const checkDuplicates = (array: readonly unknown[]) => new Set(array).size !== array.length;
 
 /**
  * @description Finds the string with the most characters in an array of strings
@@ -94,7 +93,10 @@ export const findStringWithMostCharacters = (strings: string[]): string => {
  * checkIfArraysHaveSameElements([1, 2], [2, 1]) // returns true
  * checkIfArraysHaveSameElements([1, 2], [1, 3]) // returns false
  */
-export const checkIfArraysHaveSameElements = (arr1: any[] | null, arr2: any[] | null): boolean => {
+export const checkIfArraysHaveSameElements = (
+  arr1: readonly unknown[] | null,
+  arr2: readonly unknown[] | null
+): boolean => {
   if (!arr1 || !arr2) return false;
   if (!Array.isArray(arr1) || !Array.isArray(arr2)) return false;
   if (arr1.length === 0 && arr2.length === 0) return true;
@@ -114,11 +116,7 @@ type GroupedItems<T> = { [key: string]: T[] };
  * groupByField(array, 'type') // returns { A: [{type: 'A', value: 1}], B: [{type: 'B', value: 2}] }
  */
 export const groupByField = <T>(array: T[], field: keyof T): GroupedItems<T> =>
-  array.reduce((grouped: GroupedItems<T>, item: T) => {
-    const key = String(item[field]);
-    grouped[key] = (grouped[key] || []).concat(item);
-    return grouped;
-  }, {});
+  groupByProperty(array, (item) => String(item[field]));
 
 /**
  * @description Sorts an array of objects by a specified field
@@ -129,8 +127,10 @@ export const groupByField = <T>(array: T[], field: keyof T): GroupedItems<T> =>
  * const array = [{value: 2}, {value: 1}];
  * sortByField(array, 'value') // returns [{value: 1}, {value: 2}]
  */
-export const sortByField = (array: any[], field: string): any[] =>
+export const sortByField = <T>(array: T[], field: keyof T): T[] => {
   array.sort((a, b) => (a[field] < b[field] ? -1 : a[field] > b[field] ? 1 : 0));
+  return array;
+};
 
 /**
  * @description Orders grouped data by a specified field
@@ -140,8 +140,8 @@ export const sortByField = (array: any[], field: string): any[] =>
  */
 export const orderGroupedDataByField = <T>(groupedData: GroupedItems<T>, orderBy: keyof T): GroupedItems<T> => {
   for (const key in groupedData) {
-    if (groupedData.hasOwnProperty(key)) {
-      groupedData[key] = groupedData[key].sort((a, b) => {
+    if (Object.hasOwn(groupedData, key)) {
+      groupedData[key].sort((a, b) => {
         if (a[orderBy] < b[orderBy]) return -1;
         if (a[orderBy] > b[orderBy]) return 1;
         return 0;
@@ -157,14 +157,13 @@ export const orderGroupedDataByField = <T>(groupedData: GroupedItems<T>, orderBy
  * @param {any} parent Parent ID
  * @returns {IIssueLabelTree[]} Tree structure
  */
-export const buildTree = (array: IIssueLabel[], parent = null) => {
+export const buildTree = (array: IIssueLabel[], parent: string | null = null): IIssueLabelTree[] => {
   const tree: IIssueLabelTree[] = [];
 
-  array.forEach((item: any) => {
+  array.forEach((item) => {
     if (item.parent === parent) {
       const children = buildTree(array, item.id);
-      item.children = children;
-      tree.push(item);
+      tree.push(Object.assign(item, { children }));
     }
   });
 
@@ -178,10 +177,12 @@ export const buildTree = (array: IIssueLabel[], parent = null) => {
  * @example
  * getValidKeysFromObject({a: 1, b: 0, c: null}) // returns ['a']
  */
-export const getValidKeysFromObject = (obj: any) => {
-  if (!obj || isEmpty(obj) || typeof obj !== "object" || Array.isArray(obj)) return [];
+export const getValidKeysFromObject = (obj: unknown): string[] => {
+  if (!obj || typeof obj !== "object" || Array.isArray(obj)) return [];
 
-  return Object.keys(obj).filter((key) => !!obj[key]);
+  return Object.entries(obj)
+    .filter(([, value]) => Boolean(value))
+    .map(([key]) => key);
 };
 
 /**
@@ -191,15 +192,8 @@ export const getValidKeysFromObject = (obj: any) => {
  * @example
  * convertStringArrayToBooleanObject(['a', 'b']) // returns {a: true, b: true}
  */
-export const convertStringArrayToBooleanObject = (arrayStrings: string[]) => {
-  const obj: { [key: string]: boolean } = {};
-
-  for (const arrayString of arrayStrings) {
-    obj[arrayString] = true;
-  }
-
-  return obj;
-};
+export const convertStringArrayToBooleanObject = (arrayStrings: string[]): Record<string, boolean> =>
+  Object.fromEntries(arrayStrings.map((value) => [value, true]));
 
 /**
  * @description Sorts dropdown options with selected items appearing first
@@ -222,15 +216,8 @@ export const sortBySelectedFirst = <T extends { value: string | null }>(
   if (selectedSet.size === 0) return options;
 
   // Create a shallow copy to avoid mutating the original array
-  return [...options].sort((a, b) => {
-    const aSelected = a.value !== null && selectedSet.has(a.value);
-    const bSelected = b.value !== null && selectedSet.has(b.value);
-
-    // If both selected or both unselected, maintain original order
-    if (aSelected === bSelected) return 0;
-
-    // Selected items come first
-    return aSelected ? -1 : 1;
+  return options.toSorted((a, b) => {
+    return compareSelection(a.value, b.value, selectedSet);
   });
 };
 
@@ -256,7 +243,7 @@ export const sortByCurrentUserThenSelected = <T extends { value: string | null }
   const selectedSet = new Set(Array.isArray(selectedValues) ? selectedValues : selectedValues ? [selectedValues] : []);
 
   // Create a shallow copy to avoid mutating the original array
-  return [...options].sort((a, b) => {
+  return options.toSorted((a, b) => {
     const aIsCurrent = currentUserId && a.value === currentUserId;
     const bIsCurrent = currentUserId && b.value === currentUserId;
 
@@ -266,13 +253,12 @@ export const sortByCurrentUserThenSelected = <T extends { value: string | null }
     if (aIsCurrent && bIsCurrent) return 0;
 
     // If neither is current user, sort by selection state
-    const aSelected = a.value !== null && selectedSet.has(a.value);
-    const bSelected = b.value !== null && selectedSet.has(b.value);
-
-    // If both selected or both unselected, maintain original order
-    if (aSelected === bSelected) return 0;
-
-    // Selected items come before unselected
-    return aSelected ? -1 : 1;
+    return compareSelection(a.value, b.value, selectedSet);
   });
 };
+
+function compareSelection(a: string | null, b: string | null, selected: ReadonlySet<string>) {
+  const aSelected = a !== null && selected.has(a);
+  const bSelected = b !== null && selected.has(b);
+  return aSelected === bSelected ? 0 : aSelected ? -1 : 1;
+}

@@ -18,12 +18,20 @@ export type TControlLink = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
 
 export const ControlLink = React.forwardRef(function ControlLink(
   props: TControlLink,
-  ref: React.ForwardedRef<HTMLAnchorElement>
+  ref: React.ForwardedRef<HTMLElement>
 ) {
   const { href, onClick, children, target = "_blank", disabled = false, className, draggable = false, ...rest } = props;
+  const setElement = React.useCallback(
+    (node: HTMLElement | null) => {
+      if (typeof ref === "function") return ref(node);
+      if (ref) ref.current = node;
+      return undefined;
+    },
+    [ref]
+  );
   const LEFT_CLICK_EVENT_CODE = 0;
 
-  const handleOnClick = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+  const handleOnClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     const clickCondition = (event.metaKey || event.ctrlKey) && event.button === LEFT_CLICK_EVENT_CODE;
     if (!clickCondition) {
       event.preventDefault();
@@ -34,9 +42,9 @@ export const ControlLink = React.forwardRef(function ControlLink(
   // if disabled but still has a ref or a className then it has to be rendered without a href
   if (disabled && (ref || className))
     return (
-      <a ref={ref} className={className}>
+      <div ref={setElement} className={className} aria-disabled="true">
         {children}
-      </a>
+      </div>
     );
 
   // else if just disabled return without the parent wrapper
@@ -48,7 +56,7 @@ export const ControlLink = React.forwardRef(function ControlLink(
       target={target}
       onClick={handleOnClick}
       {...rest}
-      ref={ref}
+      ref={setElement}
       className={className}
       draggable={draggable}
     >

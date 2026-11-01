@@ -11,12 +11,14 @@ export type IdleTaskHandle = {
 const requestIdleFallback = (callback: IdleRequestCallback, options?: IdleRequestOptions): number => {
   const start = Date.now();
 
-  return globalThis.setTimeout(() => {
-    callback({
-      didTimeout: false,
-      timeRemaining: () => Math.max(0, 50 - (Date.now() - start)),
-    });
-  }, options?.timeout ?? 1) as unknown as number;
+  return Number(
+    globalThis.setTimeout(() => {
+      callback({
+        didTimeout: false,
+        timeRemaining: () => Math.max(0, 50 - (Date.now() - start)),
+      });
+    }, options?.timeout ?? 1)
+  );
 };
 
 const cancelIdleFallback = (id: number) => {

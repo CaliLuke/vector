@@ -19,5 +19,5 @@ export const getPageService = (documentType: TDocumentTypes, context: HocusPocus
     });
   }
 
-  throw new AppError(`Invalid document type ${documentType} provided.`);
+  throw new AppError(`Invalid document type ${String(documentType)} provided.`);
 };

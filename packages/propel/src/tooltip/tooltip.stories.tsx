@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useId } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { HelpCircle } from "lucide-react";
 import { Tooltip } from "./root";
@@ -223,7 +224,7 @@ export const IconButtons: Story = {
     return (
       <div className="flex gap-2">
         <Tooltip tooltipContent="Edit" position="top">
-          <button className="hover:bg-gray-100 rounded-sm p-2">
+          <button aria-label="Edit" className="hover:bg-gray-100 rounded-sm p-2">
             <svg
               className="text-gray-600 h-5 w-5"
               fill="none"
@@ -241,7 +242,7 @@ export const IconButtons: Story = {
           </button>
         </Tooltip>
         <Tooltip tooltipContent="Delete" position="top">
-          <button className="hover:bg-gray-100 rounded-sm p-2">
+          <button aria-label="Delete" className="hover:bg-gray-100 rounded-sm p-2">
             <svg
               className="h-5 w-5 text-danger-primary"
               fill="none"
@@ -259,7 +260,7 @@ export const IconButtons: Story = {
           </button>
         </Tooltip>
         <Tooltip tooltipContent="Share" position="top">
-          <button className="hover:bg-gray-100 rounded-sm p-2">
+          <button aria-label="Share" className="hover:bg-gray-100 rounded-sm p-2">
             <svg
               className="text-blue-600 h-5 w-5"
               fill="none"
@@ -286,9 +287,10 @@ export const InFormField: Story = {
     children: <div />,
   },
   render() {
+    const emailId = useId();
     return (
       <div className="w-80">
-        <label className="text-gray-700 mb-1 flex items-center gap-2 text-13 font-medium">
+        <label htmlFor={emailId} className="text-gray-700 mb-1 flex items-center gap-2 text-13 font-medium">
           Email Address
           <Tooltip
             tooltipHeading="Email Requirements"
@@ -299,6 +301,7 @@ export const InFormField: Story = {
           </Tooltip>
         </label>
         <input
+          id={emailId}
           type="email"
           className="border-gray-300 w-full rounded-sm border px-3 py-2 text-13"
           placeholder="you@example.com"

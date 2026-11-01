@@ -5,22 +5,45 @@
  */
 
 import React from "react";
-import type { NameType, Payload, ValueType } from "recharts/types/component/DefaultTooltipContent";
+import { Tooltip } from "recharts";
+import type { TBaseChartProps } from "@plane/types";
+import type { Payload } from "recharts/types/component/DefaultTooltipContent";
 import { Card, ECardSpacing } from "../../card";
 import { cn } from "@plane/utils/common";
 
+export type ChartTooltipPayload = readonly Payload[];
+
 type Props = {
-  active: boolean | undefined;
+  active?: boolean;
   activeKey?: string | null;
-  label: React.ReactNode;
-  payload: readonly Payload<ValueType, NameType>[] | undefined;
+  label?: React.ReactNode;
+  payload?: ChartTooltipPayload;
   itemKeys: string[];
   itemLabels: Record<string, string>;
-  itemDotColors: Record<string, string>;
+  itemDotColors: Record<string, string> | ((payload: ChartTooltipPayload) => Record<string, string>);
+  renderContent?: TBaseChartProps<string, string>["customTooltipContent"];
 };
 
+const DEFAULT_CURSOR = { stroke: "var(--text-color-tertiary)", strokeDasharray: "4 4" };
+
+export function ChartTooltip({
+  cursor = DEFAULT_CURSOR,
+  ...content
+}: Pick<Props, "activeKey" | "itemKeys" | "itemLabels" | "itemDotColors" | "renderContent"> & {
+  cursor?: React.ComponentProps<typeof Tooltip>["cursor"];
+}) {
+  return <Tooltip cursor={cursor} wrapperStyle={{ pointerEvents: "auto" }} content={<CustomTooltip {...content} />} />;
+}
+
 export const CustomTooltip = React.memo(function CustomTooltip(props: Props) {
-  const { active, activeKey, label, payload, itemKeys, itemLabels, itemDotColors } = props;
+  const { active, activeKey, label, payload, itemKeys, itemLabels, itemDotColors, renderContent } = props;
+  if (renderContent)
+    return renderContent({
+      active,
+      label: typeof label === "string" || typeof label === "number" ? String(label) : "",
+      payload,
+    });
+  const dotColors = typeof itemDotColors === "function" ? itemDotColors(payload ?? []) : itemDotColors;
   // derived values
   const filteredPayload = payload?.filter((item) => {
     const key = typeof item.dataKey === "string" || typeof item.dataKey === "number" ? String(item.dataKey) : null;
@@ -47,11 +70,11 @@ export const CustomTooltip = React.memo(function CustomTooltip(props: Props) {
             })}
           >
             <div className="flex items-center gap-2 truncate">
-              {itemDotColors[key] && (
+              {dotColors[key] && (
                 <div
                   className="size-2 flex-shrink-0 rounded-xs"
                   style={{
-                    backgroundColor: itemDotColors[key],
+                    backgroundColor: dotColors[key],
                   }}
                 />
               )}

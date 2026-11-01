@@ -41,4 +41,6 @@ export const getSidebarNavigationItemIcon = (key: string, className: string = ""
     case "stickies":
       return <MultipleStickyIcon className={cn("size-4 flex-shrink-0", className)} />;
   }
+
+  return undefined;
 };

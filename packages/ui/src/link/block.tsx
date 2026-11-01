@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import React from "react";
+import React, { useMemo } from "react";
 // plane utils
 import { calculateTimeAgo } from "@plane/utils/datetime";
 import { cn } from "@plane/utils/common";
@@ -25,22 +25,44 @@ export function LinkItemBlock(props: TLinkItemBlockProps) {
   // props
   const { title, url, createdAt, menuItems, onClick } = props;
   // icons
-  const Icon = getIconForLink(url);
+  const icon = useMemo(
+    () =>
+      React.createElement(getIconForLink(url), {
+        className: "size-4 stroke-2 text-tertiary group-hover:text-primary",
+      }),
+    [url]
+  );
+  const content = (
+    <>
+      <span className="grid size-8 flex-shrink-0 place-items-center rounded-sm bg-surface-2 p-2">{icon}</span>
+      <span className="min-w-0 flex-1 truncate">
+        <span className="block truncate text-13 font-medium">{title}</span>
+        {createdAt && <span className="block text-11 font-medium text-placeholder">{calculateTimeAgo(createdAt)}</span>}
+      </span>
+    </>
+  );
+  const actionClassName =
+    "flex min-w-0 flex-1 items-center gap-4 self-stretch text-left focus-visible:outline-2 focus-visible:outline-accent-strong";
   return (
-    <div
-      onClick={onClick}
-      className="group flex h-[56px] w-[230px] cursor-pointer items-center gap-4 rounded-md border-[0.5px] border-subtle bg-surface-1 px-4"
-    >
-      <div className="grid size-8 flex-shrink-0 place-items-center rounded-sm bg-surface-2 p-2">
-        <Icon className="size-4 stroke-2 text-tertiary group-hover:text-primary" />
-      </div>
-      <div className="flex-1 truncate">
-        <div className="truncate text-13 font-medium">{title}</div>
-        {createdAt && <div className="text-11 font-medium text-placeholder">{calculateTimeAgo(createdAt)}</div>}
-      </div>
+    <div className="group flex h-[56px] w-[230px] items-center gap-4 rounded-md border-[0.5px] border-subtle bg-surface-1 px-4">
+      {onClick ? (
+        <button type="button" className={actionClassName} onClick={onClick}>
+          {content}
+        </button>
+      ) : (
+        <a href={url} target="_blank" rel="noopener noreferrer" className={actionClassName}>
+          {content}
+        </a>
+      )}
       {menuItems && (
-        <div className="hidden group-hover:block">
-          <CustomMenu placement="bottom-end" menuItemsClassName="z-20" closeOnSelect verticalEllipsis>
+        <div className="invisible group-focus-within:visible group-hover:visible">
+          <CustomMenu
+            ariaLabel="Link actions"
+            placement="bottom-end"
+            menuItemsClassName="z-20"
+            closeOnSelect
+            verticalEllipsis
+          >
             {menuItems.map((item) => (
               <CustomMenu.MenuItem
                 key={item.key}

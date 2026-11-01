@@ -21,7 +21,7 @@ type DocumentEditorWrapperProps = MakeOptional<
   Omit<IDocumentEditorProps, "fileHandler" | "mentionHandler" | "user" | "extendedEditorProps">,
   "disabledExtensions" | "editable" | "flaggedExtensions" | "getEditorMetaData"
 > & {
-  extendedEditorProps?: Partial<IEditorPropsExtended>;
+  extendedEditorProps?: IEditorPropsExtended;
   workspaceSlug: string;
   workspaceId: string;
   projectId?: string;

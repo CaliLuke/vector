@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import type { DocumentCollaborativeEvents } from "@/constants/document-collaborative-events";
+import type { DocumentCollaborativeEvents, DocumentEventPayloads } from "@/constants/document-collaborative-events";
 
 // Base type for all action payloads
 export type BaseActionPayload = {
@@ -30,7 +30,7 @@ export type TAllEventTypes = TDocumentEventsClient;
 export type EventToPayloadMap = {
   [
     K in keyof typeof DocumentCollaborativeEvents as (typeof DocumentCollaborativeEvents)[K]["client"]
-  ]: (typeof DocumentCollaborativeEvents)[K]["payloadType"];
+  ]: DocumentEventPayloads[K];
 };
 
 // Common fields for every realtime event

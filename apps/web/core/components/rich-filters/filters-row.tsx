@@ -103,7 +103,7 @@ function ReadyFiltersRow<P extends TFilterProperty>(props: TFiltersRowProps<P>) 
       editor={editor}
       disabled={disabledAllOperations}
       isUpdating={isUpdating}
-      onUpdate={handleUpdate}
+      onUpdate={() => void handleUpdate()}
       trackerElements={trackerElements}
     />
   );
@@ -161,7 +161,7 @@ function FilterRowActionButtons<P extends TFilterProperty>(props: TFilterRowActi
         <Button
           variant="secondary"
           className={COMMON_OPERATION_BUTTON_CLASSNAME}
-          onClick={editor.onClear}
+          onClick={() => void editor.onClear()}
           data-ph-element={trackerElements?.clearFilter}
         >
           {editor.clearLabel ?? "Clear all"}
@@ -171,7 +171,7 @@ function FilterRowActionButtons<P extends TFilterProperty>(props: TFilterRowActi
         <Button
           variant="secondary"
           className={COMMON_OPERATION_BUTTON_CLASSNAME}
-          onClick={editor.onSave}
+          onClick={() => void editor.onSave()}
           data-ph-element={trackerElements?.saveView}
         >
           {editor.saveLabel ?? "Save view"}

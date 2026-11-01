@@ -1,3 +1,4 @@
+import type { IssueQuickAddCallback } from "../quick-add/types";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -5,7 +6,7 @@
  */
 
 import { useTranslation } from "@plane/i18n";
-import type { TIssue, TPaginationData } from "@plane/types";
+import type { TPaginationData } from "@plane/types";
 // components
 import { renderFormattedPayloadDate } from "@plane/utils/datetime";
 // helpers
@@ -25,7 +26,7 @@ type Props = {
   isDragDisabled?: boolean;
   enableQuickIssueCreate?: boolean;
   disableIssueCreation?: boolean;
-  quickAddCallback?: (projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>;
+  quickAddCallback?: IssueQuickAddCallback;
   addIssuesToView?: (issueIds: string[]) => Promise<unknown>;
   readOnly?: boolean;
   isMobileView?: boolean;
@@ -62,12 +63,12 @@ export function CalendarIssueBlocks(props: Props) {
 
   const shouldLoadMore =
     nextPageResults === undefined && dayIssueCount !== undefined
-      ? issueIdList?.length < dayIssueCount
+      ? issueIdList.length < dayIssueCount
       : !!nextPageResults;
 
   return (
     <>
-      {issueIdList?.map((issueId) => (
+      {issueIdList.map((issueId) => (
         <div key={issueId} className="relative cursor-pointer p-1 px-2">
           <CalendarIssueBlockRoot
             issueId={issueId}

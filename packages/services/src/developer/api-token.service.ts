@@ -19,11 +19,7 @@ export class APITokenService extends APIService {
    * @throws {Error} Throws response data if the request fails
    */
   async list(signal?: AbortSignal): Promise<IApiToken[]> {
-    return this.get(`/api/users/api-tokens/`, {}, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.get(`/api/users/api-tokens/`, {}, { signal }), "data-or-error");
   }
 
   /**
@@ -33,11 +29,7 @@ export class APITokenService extends APIService {
    * @throws {Error} Throws response data if the request fails
    */
   async retrieve(tokenId: string): Promise<IApiToken> {
-    return this.get(`/api/users/api-tokens/${tokenId}`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.get(`/api/users/api-tokens/${tokenId}`), "data-or-error");
   }
 
   /**
@@ -47,11 +39,7 @@ export class APITokenService extends APIService {
    * @throws {Error} Throws response data if the request fails
    */
   async create(data: Partial<IApiToken>): Promise<IApiToken> {
-    return this.post(`/api/users/api-tokens/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.post(`/api/users/api-tokens/`, data), "data-or-error");
   }
 
   /**
@@ -61,10 +49,6 @@ export class APITokenService extends APIService {
    * @throws {Error} Throws response data if the request fails
    */
   async destroy(tokenId: string): Promise<IApiToken> {
-    return this.delete(`/api/users/api-tokens/${tokenId}`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.delete(`/api/users/api-tokens/${tokenId}`), "data-or-error");
   }
 }

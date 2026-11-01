@@ -25,11 +25,7 @@ export default class WebhookService extends APIService {
    * @throws {Error} If the API request fails
    */
   async list(workspaceSlug: string): Promise<IWebhook[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/webhooks/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/webhooks/`));
   }
 
   /**
@@ -40,11 +36,7 @@ export default class WebhookService extends APIService {
    * @throws {Error} If the API request fails
    */
   async retrieve(workspaceSlug: string, webhookId: string): Promise<IWebhook> {
-    return this.get(`/api/workspaces/${workspaceSlug}/webhooks/${webhookId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/webhooks/${webhookId}/`));
   }
 
   /**
@@ -55,11 +47,7 @@ export default class WebhookService extends APIService {
    * @throws {Error} If the API request fails
    */
   async create(workspaceSlug: string, data = {}): Promise<IWebhook> {
-    return this.post(`/api/workspaces/${workspaceSlug}/webhooks/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/webhooks/`, data));
   }
 
   /**
@@ -71,11 +59,7 @@ export default class WebhookService extends APIService {
    * @throws {Error} If the API request fails
    */
   async update(workspaceSlug: string, webhookId: string, data = {}): Promise<IWebhook> {
-    return this.patch(`/api/workspaces/${workspaceSlug}/webhooks/${webhookId}/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.patch(`/api/workspaces/${workspaceSlug}/webhooks/${webhookId}/`, data));
   }
 
   /**
@@ -86,11 +70,7 @@ export default class WebhookService extends APIService {
    * @throws {Error} If the API request fails
    */
   async destroy(workspaceSlug: string, webhookId: string): Promise<void> {
-    return this.delete(`/api/workspaces/${workspaceSlug}/webhooks/${webhookId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.delete(`/api/workspaces/${workspaceSlug}/webhooks/${webhookId}/`));
   }
 
   /**
@@ -101,11 +81,7 @@ export default class WebhookService extends APIService {
    * @throws {Error} If the API request fails
    */
   async regenerateSecretKey(workspaceSlug: string, webhookId: string): Promise<IWebhook> {
-    return this.post(`/api/workspaces/${workspaceSlug}/webhooks/${webhookId}/regenerate/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/webhooks/${webhookId}/regenerate/`));
   }
 }
 

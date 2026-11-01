@@ -4,9 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import React, { useState, useEffect, useCallback, createContext, useContext } from "react";
+import React, { useState, useMemo, useCallback, createContext, useContext } from "react";
 import { Collapsible as BaseCollapsible } from "@base-ui/react/collapsible";
-import clsx from "clsx";
+import { clsx } from "clsx";
 
 // Types
 type CollapsibleContextType = {
@@ -47,13 +47,11 @@ const useCollapsible = () => {
 
 // Components
 function Root({ children, className, isOpen: controlledIsOpen, onToggle, defaultOpen }: RootProps) {
-  const [localIsOpen, setLocalIsOpen] = useState<boolean>(controlledIsOpen || defaultOpen || false);
+  const [localIsOpen, setLocalIsOpen] = useState<boolean>(controlledIsOpen ?? defaultOpen ?? false);
 
-  useEffect(() => {
-    if (controlledIsOpen !== undefined) {
-      setLocalIsOpen(controlledIsOpen);
-    }
-  }, [controlledIsOpen]);
+  const isOpen = controlledIsOpen ?? localIsOpen;
+  // Retain the last controlled value if the parent releases control.
+  if (controlledIsOpen !== undefined && localIsOpen !== controlledIsOpen) setLocalIsOpen(controlledIsOpen);
 
   const handleToggle = useCallback(() => {
     if (controlledIsOpen !== undefined) {
@@ -63,12 +61,14 @@ function Root({ children, className, isOpen: controlledIsOpen, onToggle, default
     }
   }, [controlledIsOpen, onToggle]);
 
+  const context = useMemo(() => ({ isOpen, onToggle: handleToggle }), [isOpen, handleToggle]);
+
   return (
-    <CollapsibleContext.Provider value={{ isOpen: localIsOpen, onToggle: handleToggle }}>
+    <CollapsibleContext.Provider value={context}>
       <BaseCollapsible.Root
         className={clsx(className)}
         defaultOpen={defaultOpen}
-        open={localIsOpen}
+        open={isOpen}
         onOpenChange={handleToggle}
       >
         {children}

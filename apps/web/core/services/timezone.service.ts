@@ -16,11 +16,7 @@ class TimezoneService extends APIService {
   }
 
   async fetch(): Promise<TTimezones> {
-    return this.get(`/api/timezones/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/timezones/`));
   }
 }
 

@@ -302,18 +302,23 @@ export const uploadFirstFileAndInsertRemaining = async (args: TMultipleFileArgs)
 
   // Upload the first file
   const firstFile = filesArray[0];
-  uploader(firstFile);
-  // Insert the remaining files
-  const remainingFiles = filesArray.slice(1);
-  if (remainingFiles.length > 0) {
-    const docSize = editor.state.doc.content.size;
-    const posOfNextFileToBeInserted = Math.min(pos + 1, docSize);
-    insertFilesSafely({
-      editor,
-      files: remainingFiles,
-      initialPos: posOfNextFileToBeInserted,
-      event: "drop",
-      type,
-    });
+  const upload = uploader(firstFile);
+  try {
+    // Insert the remaining files
+    const remainingFiles = filesArray.slice(1);
+    if (remainingFiles.length > 0) {
+      const docSize = editor.state.doc.content.size;
+      const posOfNextFileToBeInserted = Math.min(pos + 1, docSize);
+      insertFilesSafely({
+        editor,
+        files: remainingFiles,
+        initialPos: posOfNextFileToBeInserted,
+        event: "drop",
+        type,
+      });
+    }
+  } finally {
+    // Insertion stays immediate; completion and failures belong to the caller.
+    await upload;
   }
 };

@@ -5,6 +5,8 @@
  */
 
 import { mergeAttributes, Node, textblockTypeInputRule } from "@tiptap/core";
+import type { NodeType } from "@tiptap/pm/model";
+import type { EditorView } from "@tiptap/pm/view";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 // constants
 import { CORE_EXTENSIONS } from "@/constants/extension";
@@ -48,6 +50,31 @@ declare module "@tiptap/core" {
 
 const backtickInputRegex = /^```([a-z]+)?[\s\n]$/;
 const tildeInputRegex = /^~~~([a-z]+)?[\s\n]$/;
+
+function pasteInlineCode(view: EditorView, text: string): boolean {
+  const { tr, schema } = view.state;
+  const { from, to } = tr.selection;
+  const code = schema.marks.code;
+  if (!code || from > to || from < 0 || to > tr.doc.content.size) return false;
+  tr.replaceWith(from, to, schema.text(text, [code.create()]));
+  view.dispatch(tr);
+  return true;
+}
+
+function pasteCodeBlock(view: EditorView, type: NodeType, text: string, metadata: string): boolean {
+  if (!metadata) return false;
+  const data: unknown = JSON.parse(metadata);
+  if (!data || typeof data !== "object" || !("mode" in data) || typeof data.mode !== "string" || !data.mode)
+    return false;
+  const { tr, schema } = view.state;
+  const { $from } = tr.selection;
+  const insertPos = !$from.parent.textContent.trim() ? $from.pos - 1 : $from.end($from.depth) + 1;
+  if (insertPos < 0 || insertPos > tr.doc.content.size) return false;
+  const textNode = schema.text(text.replace(/\r\n?/g, "\n"));
+  tr.insert(insertPos, type.create({ language: data.mode }, textNode));
+  view.dispatch(tr);
+  return true;
+}
 
 export const CodeBlock = Node.create<CodeBlockOptions>({
   name: CORE_EXTENSIONS.CODE_BLOCK,
@@ -258,89 +285,14 @@ export const CodeBlock = Node.create<CodeBlockOptions>({
         props: {
           handlePaste: (view, event) => {
             try {
-              if (!event.clipboardData) {
-                return false;
-              }
-
-              if (this.editor.isActive(this.type.name)) {
-                return false;
-              }
-
-              if (this.editor.isActive(CORE_EXTENSIONS.CODE_INLINE)) {
-                // Check if it's an inline code block
-                event.preventDefault();
-                const text = event.clipboardData.getData("text/plain");
-
-                if (!text) {
-                  console.error("Pasted text is empty.");
-                  return false;
-                }
-
-                const { tr } = view.state;
-                const { $from, $to } = tr.selection;
-
-                if ($from.pos > $to.pos) {
-                  console.error("Invalid selection range.");
-                  return false;
-                }
-
-                const docSize = tr.doc.content.size;
-                if ($from.pos < 0 || $to.pos > docSize) {
-                  console.error("Selection range is out of document bounds.");
-                  return false;
-                }
-
-                // Extend the current selection to replace it with the pasted text
-                // wrapped in an inline code mark
-                const codeMark = view.state.schema.marks.code.create();
-                tr.replaceWith($from.pos, $to.pos, view.state.schema.text(text, [codeMark]));
-                view.dispatch(tr);
-                return true;
-              }
-
-              event.preventDefault();
+              if (!event.clipboardData || this.editor.isActive(this.type.name)) return false;
               const text = event.clipboardData.getData("text/plain");
-              const vscode = event.clipboardData.getData("vscode-editor-data");
-              const vscodeData = vscode ? JSON.parse(vscode) : undefined;
-              const language = vscodeData?.mode;
-
-              if (vscodeData && language) {
-                const { tr } = view.state;
-                const { $from } = tr.selection;
-
-                // Check if the current line is empty
-                const isCurrentLineEmpty = !$from.parent.textContent.trim();
-
-                let insertPos;
-
-                if (isCurrentLineEmpty) {
-                  // If the current line is empty, use the current position
-                  insertPos = $from.pos - 1;
-                } else {
-                  // If the current line is not empty, insert below the current block node
-                  insertPos = $from.end($from.depth) + 1;
-                }
-
-                // Ensure insertPos is within document bounds
-                if (insertPos < 0 || insertPos > tr.doc.content.size) {
-                  console.error("Invalid insert position.");
-                  return false;
-                }
-
-                // Create a new code block node with the pasted content
-                const textNode = view.state.schema.text(text.replace(/\r\n?/g, "\n"));
-                const codeBlock = this.type.create({ language }, textNode);
-                if (insertPos <= tr.doc.content.size) {
-                  tr.insert(insertPos, codeBlock);
-                  view.dispatch(tr);
-                  return true;
-                }
-
-                return false;
-              } else {
-                // TODO: complicated paste logic, to be handled later
-                return false;
-              }
+              if (!text) return false;
+              const handled = this.editor.isActive(CORE_EXTENSIONS.CODE_INLINE)
+                ? pasteInlineCode(view, text)
+                : pasteCodeBlock(view, this.type, text, event.clipboardData.getData("vscode-editor-data"));
+              if (handled) event.preventDefault();
+              return handled;
             } catch (error) {
               console.error("Error handling paste in CodeBlock extension:", error);
               return false;

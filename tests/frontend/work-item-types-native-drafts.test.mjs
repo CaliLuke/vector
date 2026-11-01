@@ -244,6 +244,30 @@ await test("work-item draft mode is a native value that skips publication-only r
   assert.equal(workItemForm.state.isSubmitSuccessful, true);
 });
 
+await test("draft mode still rejects a blank work-item title and keeps the draft available for correction", async (t) => {
+  t.after(async () => environment.render(null));
+  await environment.render(
+    React.createElement(WorkItemTypesPreviewProvider, null, React.createElement(WorkItemsScreen))
+  );
+  const originalCount = readContent().items.length;
+  await click(button("Add work item"));
+  await click(document.body.querySelector('input[aria-label="Save as draft"]'));
+  const title = document.body.querySelector('input[placeholder="What needs to be done?"]');
+  await changeFormControl(title, "   ");
+  await click(saveWorkItem());
+  const form = nativeForms.getForms("apps/web/core/components/work-item-types/work-item-preview.tsx").at(-1);
+  assert.equal(form.state.isSubmitSuccessful, false);
+  assert.match(document.body.querySelector('[role="alert"]').textContent, /Enter a work item title/);
+  assert.equal(readContent().items.length, originalCount);
+  assert.equal(document.body.querySelector('input[aria-label="Save as draft"]').checked, true);
+  await changeFormControl(title, "A valid draft");
+  await click(saveWorkItem());
+  assert.equal(form.state.isSubmitSuccessful, true);
+  assert.equal(readContent().items.length, originalCount + 1);
+  assert.equal(readContent().items.at(-1).name, "A valid draft");
+  assert.equal(readContent().items.at(-1).draft, true);
+});
+
 await test("attachment reordering preserves identities and no-op drops", () => {
   const ids = ["a", "b", "c"];
   assert.deepEqual(reorderAttachedProperties(ids, "a", "c", true), ["b", "c", "a"]);

@@ -5,18 +5,14 @@
  */
 
 import { useRouter } from "@tanstack/react-router";
-import { useState } from "react";
 
-import { MoreHorizontal } from "lucide-react";
 // ui
 import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import { IconButton } from "@plane/propel/icon-button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { TContextMenuItem } from "@plane/ui";
-import { ContextMenu, CustomMenu } from "@plane/ui";
+import { QuickActionsMenu } from "@/components/common/quick-actions-menu";
+import { normalizeQuickActions, useQuickActionDialogs } from "@/components/common/quick-actions-helper";
 import { copyUrlToClipboard } from "@plane/utils/string";
-import { cn } from "@plane/utils/common";
 // hooks
 import { useCycleMenuItems } from "@/components/common/quick-actions-helper";
 import { useProjectCycles } from "@/hooks/use-cycles";
@@ -42,10 +38,7 @@ export const CycleQuickActions = function CycleQuickActions(props: Props) {
   const { parentRef, cycleId, projectId, workspaceSlug, customClassName } = props;
   // router
   const router = useRouter();
-  // states
-  const [updateModal, setUpdateModal] = useState(false);
-  const [archiveCycleModal, setArchiveCycleModal] = useState(false);
-  const [deleteModal, setDeleteModal] = useState(false);
+  const dialogs = useQuickActionDialogs();
   // store hooks
   const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
   const { mutation, scope } = useProjectCycles(workspaceSlug, projectId, Boolean(props.cycle.archived_at));
@@ -100,25 +93,13 @@ export const CycleQuickActions = function CycleQuickActions(props: Props) {
     projectId,
     cycleId,
     isEditingAllowed,
-    handleEdit: () => setUpdateModal(true),
-    handleArchive: () => setArchiveCycleModal(true),
-    handleRestore: handleRestoreCycle,
-    handleDelete: () => setDeleteModal(true),
-    handleCopyLink: handleCopyText,
+    ...dialogs.handlers,
+    handleRestore: () => void handleRestoreCycle(),
+    handleCopyLink: () => void handleCopyText(),
     handleOpenInNewTab,
   });
 
-  const MENU_ITEMS: TContextMenuItem[] = Array.isArray(menuResult) ? menuResult : menuResult.items;
-  const additionalModals = Array.isArray(menuResult) ? null : menuResult.modals;
-
-  const CONTEXT_MENU_ITEMS = MENU_ITEMS.map(function CONTEXT_MENU_ITEMS(item) {
-    return {
-      ...item,
-      action: () => {
-        item.action();
-      },
-    };
-  });
+  const { items: MENU_ITEMS, modals: additionalModals } = normalizeQuickActions(menuResult);
 
   return (
     <>
@@ -126,8 +107,8 @@ export const CycleQuickActions = function CycleQuickActions(props: Props) {
         <div className="fixed">
           <CycleCreateUpdateModal
             data={cycleDetails}
-            isOpen={updateModal}
-            handleClose={() => setUpdateModal(false)}
+            isOpen={dialogs.edit.isOpen}
+            handleClose={dialogs.edit.close}
             workspaceSlug={workspaceSlug}
             projectId={projectId}
           />
@@ -135,62 +116,20 @@ export const CycleQuickActions = function CycleQuickActions(props: Props) {
             workspaceSlug={workspaceSlug}
             projectId={projectId}
             cycleId={cycleId}
-            isOpen={archiveCycleModal}
-            handleClose={() => setArchiveCycleModal(false)}
+            isOpen={dialogs.archive.isOpen}
+            handleClose={dialogs.archive.close}
           />
           <CycleDeleteModal
             cycle={cycleDetails}
-            isOpen={deleteModal}
-            handleClose={() => setDeleteModal(false)}
+            isOpen={dialogs.delete.isOpen}
+            handleClose={dialogs.delete.close}
             workspaceSlug={workspaceSlug}
             projectId={projectId}
           />
           {additionalModals}
         </div>
       )}
-      <ContextMenu parentRef={parentRef} items={CONTEXT_MENU_ITEMS} />
-      <CustomMenu
-        customButtonAsChild
-        customButton={<IconButton variant="tertiary" size="lg" icon={MoreHorizontal} />}
-        placement="bottom-end"
-        closeOnSelect
-        maxHeight="lg"
-        buttonClassName={customClassName}
-      >
-        {MENU_ITEMS.map((item) => {
-          if (item.shouldRender === false) return null;
-          return (
-            <CustomMenu.MenuItem
-              key={item.key}
-              onClick={() => {
-                item.action();
-              }}
-              className={cn(
-                "flex items-center gap-2",
-                {
-                  "text-placeholder": item.disabled,
-                },
-                item.className
-              )}
-              disabled={item.disabled}
-            >
-              {item.icon && <item.icon className={cn("h-3 w-3 flex-shrink-0", item.iconClassName)} />}
-              <div>
-                <h5>{item.title}</h5>
-                {item.description && (
-                  <p
-                    className={cn("whitespace-pre-line text-tertiary", {
-                      "text-placeholder": item.disabled,
-                    })}
-                  >
-                    {item.description}
-                  </p>
-                )}
-              </div>
-            </CustomMenu.MenuItem>
-          );
-        })}
-      </CustomMenu>
+      <QuickActionsMenu parentRef={parentRef} items={MENU_ITEMS} className={customClassName} maxHeight="lg" />
     </>
   );
 };

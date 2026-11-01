@@ -6,7 +6,7 @@
 
 import { queryOptions, skipToken } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
-import type { EUserWorkspaceRoles, IWorkspaceMemberMe } from "@plane/types";
+import type { IWorkspaceMemberMe } from "@plane/types";
 import { captureIdentityScope, isIdentityScopeVerified } from "@/queries/identity";
 import { WorkspaceService } from "@/services/workspace.service";
 import { isWorkspaceRole } from "@/helpers/permission-policy";
@@ -19,7 +19,7 @@ export const permissionKeys = {
   workspaceProjectRoles: (
     userId: string | undefined,
     slug: string | undefined,
-    role: EUserWorkspaceRoles | undefined,
+    role: number | undefined,
     membershipUpdatedAt: string | undefined
   ) => ["permissions", userId, slug, "project-roles", role, membershipUpdatedAt] as const,
 };
@@ -54,7 +54,7 @@ export function workspaceMembershipOptions(userId: string | undefined, slug: str
 export function workspaceProjectRolesOptions(
   userId: string | undefined,
   slug: string | undefined,
-  role: EUserWorkspaceRoles | undefined,
+  role: number | undefined,
   membershipUpdatedAt: string | undefined
 ) {
   const queryKey = permissionKeys.workspaceProjectRoles(userId, slug, role, membershipUpdatedAt);

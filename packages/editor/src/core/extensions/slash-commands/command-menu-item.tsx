@@ -13,7 +13,7 @@ type Props = {
   isSelected: boolean;
   item: ISlashCommandItem;
   itemIndex: number;
-  onClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   onMouseEnter: () => void;
   sectionIndex: number;
   query?: string;

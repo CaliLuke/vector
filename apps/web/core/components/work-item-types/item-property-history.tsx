@@ -1,3 +1,4 @@
+import * as ContractEnums from "@plane/types";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -23,7 +24,16 @@ export const ItemPropertyHistory = function ItemPropertyHistory({
   const generation = useIdentityGeneration(client);
   const permissions = useProjectPermissions(target.workspaceSlug, target.projectId);
   const item = useWorkItemDetail(target.workspaceSlug, target.projectId, target.issueId).issue;
-  if (!permissions.can([5, 15, 20]) || permissions.isError || permissions.isPending) return null;
+  if (
+    !permissions.can([
+      ContractEnums.EUserPermissions.GUEST,
+      ContractEnums.EUserPermissions.MEMBER,
+      ContractEnums.EUserPermissions.ADMIN,
+    ]) ||
+    permissions.isError ||
+    permissions.isPending
+  )
+    return null;
   const membership = permissions.membershipQuery.data;
   const scope = {
     ...target,
@@ -46,7 +56,7 @@ export const ItemPropertyHistory = function ItemPropertyHistory({
       scope={scope}
       editable={
         !disabled &&
-        permissions.can([15, 20]) &&
+        permissions.can([ContractEnums.EUserPermissions.MEMBER, ContractEnums.EUserPermissions.ADMIN]) &&
         !!item &&
         !item.archived_at &&
         !item.is_draft &&

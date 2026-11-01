@@ -42,6 +42,22 @@ export function ModalForm({ busy, onSubmit, handleClose, children, ...modalProps
   );
 }
 
+export function ModalBackdrop() {
+  return (
+    <Transition.Child
+      as={Fragment}
+      enter="ease-out duration-300"
+      enterFrom="opacity-0"
+      enterTo="opacity-100"
+      leave="ease-in duration-200"
+      leaveFrom="opacity-100"
+      leaveTo="opacity-0"
+    >
+      <div className="fixed inset-0 bg-backdrop transition-opacity" />
+    </Transition.Child>
+  );
+}
+
 export function ModalCore(props: Props) {
   const {
     children,
@@ -55,17 +71,7 @@ export function ModalCore(props: Props) {
   return (
     <Transition.Root show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-30" onClose={() => handleClose && handleClose()}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-backdrop transition-opacity" />
-        </Transition.Child>
+        <ModalBackdrop />
 
         <div className="fixed inset-0 z-30 overflow-y-auto">
           <div className={position}>

@@ -20,11 +20,9 @@ export class ProjectMemberService extends APIService {
     projectId: string,
     signal?: AbortSignal
   ): Promise<TProjectMembership[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/members/`, {}, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/members/`, {}, { signal })
+    );
   }
 
   async bulkAddMembersToProject(
@@ -32,19 +30,11 @@ export class ProjectMemberService extends APIService {
     projectId: string,
     data: IProjectBulkAddFormData
   ): Promise<TProjectMembership[]> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/members/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/members/`, data));
   }
 
   async getProjectMember(workspaceSlug: string, projectId: string, memberId: string): Promise<TProjectMembership> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/members/${memberId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/members/${memberId}/`));
   }
 
   async updateProjectMember(
@@ -53,18 +43,14 @@ export class ProjectMemberService extends APIService {
     memberId: string,
     data: Partial<TProjectMembership>
   ): Promise<TProjectMembership> {
-    return this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/members/${memberId}/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/members/${memberId}/`, data)
+    );
   }
 
   async deleteProjectMember(workspaceSlug: string, projectId: string, memberId: string): Promise<void> {
-    return this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/members/${memberId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/members/${memberId}/`)
+    );
   }
 }

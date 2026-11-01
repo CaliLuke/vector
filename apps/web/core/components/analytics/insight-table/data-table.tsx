@@ -28,10 +28,15 @@ interface DataTableProps<TData extends RowData> {
   columns: AnalyticsColumnDef<TData>[];
   data: TData[];
   searchPlaceholder: string;
-  actions?: (table: AnalyticsTable<TData>) => React.ReactNode;
+  renderActions?: (table: AnalyticsTable<TData>) => React.ReactNode;
 }
 
-export function DataTable<TData extends RowData>({ columns, data, searchPlaceholder, actions }: DataTableProps<TData>) {
+export function DataTable<TData extends RowData>({
+  columns,
+  data,
+  searchPlaceholder,
+  renderActions,
+}: DataTableProps<TData>) {
   const [rowSelection, _setRowSelection] = React.useState<RowSelectionState>({});
   const [columnVisibility, setColumnVisibility] = React.useState<ColumnVisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -115,7 +120,7 @@ export function DataTable<TData extends RowData>({ columns, data, searchPlacehol
             )}
           </div>
         </div>
-        {actions && <div>{actions(table)}</div>}
+        {renderActions && <div>{renderActions(table)}</div>}
       </div>
 
       <div className="rounded-md">
@@ -125,9 +130,7 @@ export function DataTable<TData extends RowData>({ columns, data, searchPlacehol
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id} colSpan={header.colSpan} className="whitespace-nowrap">
-                    {header.isPlaceholder
-                      ? null
-                      : (flexRender(header.column.columnDef.header, header.getContext()) as any)}
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
@@ -138,9 +141,7 @@ export function DataTable<TData extends RowData>({ columns, data, searchPlacehol
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext()) as any}
-                    </TableCell>
+                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}
                 </TableRow>
               ))

@@ -33,16 +33,13 @@ const iconCases = [
 ];
 
 for (const { name, Icon, props, nodeName } of iconCases) {
-  test(`${name} forwards Tooltip refs and consumer events to its rendered trigger`, async (t) => {
+  // Register eagerly; node:test owns completion and reports failures before suite cleanup.
+  void test(`${name} forwards Tooltip refs and consumer events to its rendered trigger`, async (t) => {
     const environment = await createReactDomTestEnvironment();
     t.after(() => environment.unmount());
 
     const errors = [];
-    const originalError = console.error;
-    console.error = (...args) => errors.push(args.join(" "));
-    t.after(() => {
-      console.error = originalError;
-    });
+    t.mock.method(console, "error", (...args) => errors.push(args.join(" ")));
 
     const ref = React.createRef();
     let clickCount = 0;

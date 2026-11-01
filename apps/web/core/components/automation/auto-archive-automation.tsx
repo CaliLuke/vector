@@ -12,9 +12,10 @@ import { ArchiveRestore } from "lucide-react";
 import { PROJECT_AUTOMATION_MONTHS, EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import type { IProject } from "@plane/types";
-import { CustomSelect, Loader, ToggleSwitch } from "@plane/ui";
+import { CustomSelect, ToggleSwitch } from "@plane/ui";
 // component
 import { SelectMonthModal } from "@/components/automation";
+import { AutomationOptionsLoader } from "./automation-options-loader";
 import { SettingsControlItem } from "@/components/settings/control-item";
 // hooks
 import { useRouteProject } from "@/hooks/use-projects";
@@ -72,7 +73,12 @@ export const AutoArchiveAutomation = function AutoArchiveAutomation(props: Props
             title={t("project_settings.automations.auto-archive.title")}
             description={t("project_settings.automations.auto-archive.description")}
             control={
-              <ToggleSwitch value={autoArchiveStatus} onChange={handleToggleArchive} size="sm" disabled={!isAdmin} />
+              <ToggleSwitch
+                value={autoArchiveStatus}
+                onChange={() => void handleToggleArchive()}
+                size="sm"
+                disabled={!isAdmin}
+              />
             }
           />
         </div>
@@ -89,7 +95,10 @@ export const AutoArchiveAutomation = function AutoArchiveAutomation(props: Props
                     label={`${currentProjectDetails?.archive_in} ${
                       currentProjectDetails?.archive_in === 1 ? "month" : "months"
                     }`}
-                    onChange={(val: number) => void handleChange({ archive_in: val })}
+                    onChange={(val) => {
+                      if (val === null) return;
+                      void handleChange({ archive_in: val });
+                    }}
                     input
                     disabled={!isAdmin}
                   >
@@ -114,9 +123,7 @@ export const AutoArchiveAutomation = function AutoArchiveAutomation(props: Props
             </div>
           )
         ) : (
-          <Loader className="ml-13">
-            <Loader.Item height="50px" />
-          </Loader>
+          <AutomationOptionsLoader />
         )}
       </div>
     </>

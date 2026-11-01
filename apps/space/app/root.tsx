@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createAppMetadata } from "@plane/utils/metadata";
 import { Links, Meta, Outlet, Scripts } from "react-router";
 // assets
 import appleTouchIcon from "@/app/assets/vector.svg?url";
@@ -72,19 +73,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const meta: Route.MetaFunction = () => [
-  { title: APP_TITLE },
-  { name: "description", content: APP_DESCRIPTION },
-  { property: "og:title", content: APP_TITLE },
-  { property: "og:description", content: APP_DESCRIPTION },
-  { property: "og:url", content: "https://github.com/CaliLuke/vector" },
-  {
-    name: "keywords",
-    content:
-      "software development, customer feedback, software, accelerate, code management, release management, project management, work item tracking, agile, scrum, kanban, collaboration",
-  },
-  { name: "twitter:site", content: "Vector" },
-];
+export const meta: Route.MetaFunction = () =>
+  createAppMetadata(
+    APP_TITLE,
+    APP_DESCRIPTION,
+    "software development, customer feedback, software, accelerate, code management, release management, project management, work item tracking, agile, scrum, kanban, collaboration"
+  );
 
 export default function Root() {
   return <Outlet />;

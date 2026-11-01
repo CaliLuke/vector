@@ -34,30 +34,30 @@ export const AssigneeStatComponent = function AssigneeStatComponent(props: TAssi
   const { t } = useTranslation();
   return (
     <div>
-      {distribution && distribution.length > 0 ? (
-        distribution.map((assignee, index) => {
-          if (assignee?.id)
+      {distribution.length > 0 ? (
+        distribution.map((assignee) => {
+          if (assignee.id)
             return (
               <SingleProgressStats
-                key={assignee?.id}
+                key={assignee.id}
                 title={
                   <div className="flex items-center gap-2">
-                    <Avatar name={assignee?.title ?? undefined} src={getFileURL(assignee?.avatar_url ?? "")} />
-                    <span>{assignee?.title ?? ""}</span>
+                    <Avatar name={assignee.title ?? undefined} src={getFileURL(assignee.avatar_url ?? "")} />
+                    <span>{assignee.title ?? ""}</span>
                   </div>
                 }
-                completed={assignee?.completed ?? 0}
-                total={assignee?.total ?? 0}
+                completed={assignee.completed}
+                total={assignee.total}
                 {...(isEditable && {
                   onClick: () => handleAssigneeFiltersUpdate(assignee.id),
-                  selected: assignee.id ? selectedAssigneeIds.includes(assignee.id) : false,
+                  selected: selectedAssigneeIds.includes(assignee.id),
                 })}
               />
             );
           else
             return (
               <SingleProgressStats
-                key={`unassigned-${index}`}
+                key="unassigned"
                 title={
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4 rounded-full border-2 border-subtle bg-layer-1">
@@ -66,8 +66,8 @@ export const AssigneeStatComponent = function AssigneeStatComponent(props: TAssi
                     <span>{t("no_assignee")}</span>
                   </div>
                 }
-                completed={assignee?.completed ?? 0}
-                total={assignee?.total ?? 0}
+                completed={assignee.completed}
+                total={assignee.total}
               />
             );
         })

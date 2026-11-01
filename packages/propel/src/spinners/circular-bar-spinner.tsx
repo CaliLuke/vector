@@ -14,7 +14,7 @@ export interface ICircularBarSpinner extends React.SVGAttributes<SVGElement> {
 
 export function CircularBarSpinner({ height = "16px", width = "16px", className = "" }: ICircularBarSpinner) {
   return (
-    <div role="status">
+    <output className="block" aria-label="Loading">
       <svg xmlns="http://www.w3.org/2000/svg" width={width} height={height} viewBox="0 0 24 24" className={className}>
         <g>
           <rect width={2} height={5} x={11} y={1} fill="currentColor" opacity={0.14} />
@@ -34,6 +34,6 @@ export function CircularBarSpinner({ height = "16px", width = "16px", className 
           />
         </g>
       </svg>
-    </div>
+    </output>
   );
 }

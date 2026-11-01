@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { EIssueLayoutTypes } from "@plane/types";
 import { useParams } from "@tanstack/react-router";
 
 // plane imports
@@ -47,9 +48,9 @@ export function ProfileIssuesPage(props: Props) {
           <div className="flex h-full w-full flex-col">
             {profileWorkItemsFilter && <WorkItemFiltersRow editor={profileWorkItemsFilter} />}
             <div className="relative h-full w-full overflow-auto">
-              {activeLayout === "list" ? (
+              {activeLayout === EIssueLayoutTypes.LIST ? (
                 <ProfileIssuesListLayout />
-              ) : activeLayout === "kanban" ? (
+              ) : activeLayout === EIssueLayoutTypes.KANBAN ? (
                 <ProfileIssuesKanBanLayout />
               ) : null}
             </div>

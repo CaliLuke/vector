@@ -86,7 +86,7 @@ if (missingPackages.length) {
 
 const measured = Object.fromEntries(
   [...totals.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
+    .toSorted(([a], [b]) => a.localeCompare(b))
     .map(([name, value]) => [
       name,
       {
@@ -104,7 +104,9 @@ if (mode === "write") {
     baselinePath,
     `${JSON.stringify({ version: 1, packages: measured, ...(fileFloors ? { files: fileFloors } : {}) }, null, 2)}\n`
   );
-  console.log(`wrote coverage floors for ${Object.keys(measured).length} production packages to ${baselinePath}`);
+  process.stdout.write(
+    `wrote coverage floors for ${Object.keys(measured).length} production packages to ${baselinePath}\n`
+  );
   process.exit(0);
 }
 
@@ -160,4 +162,6 @@ if (failures.length) {
   );
   process.exit(1);
 }
-console.log(`coverage ratchet passed (${Object.keys(measured).length} production packages; generated files excluded)`);
+process.stdout.write(
+  `coverage ratchet passed (${Object.keys(measured).length} production packages; generated files excluded)\n`
+);

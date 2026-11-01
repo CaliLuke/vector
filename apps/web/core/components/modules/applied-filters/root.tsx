@@ -1,12 +1,13 @@
-import { useParams } from "@tanstack/react-router";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
 
+import { ClearAppliedFilters, RemoveAppliedFilter } from "@/components/common/applied-filters/tag";
+import { orderedFilterKeys } from "@/components/common/applied-filters/keys";
+import { useParams } from "@tanstack/react-router";
 import { DATE_AFTER_FILTER_OPTIONS } from "@plane/constants";
-import { useTranslation } from "@plane/i18n";
 import { CloseIcon } from "@plane/propel/icons";
 import type { TModuleDisplayFilters, TModuleFilters } from "@plane/types";
 // components
@@ -17,6 +18,14 @@ import { AppliedDateFilters } from "@/components/common/applied-filters/date";
 import { AppliedStatusFilters } from "./status";
 // helpers
 // types
+
+const FILTER_KEYS = [
+  "lead",
+  "members",
+  "start_date",
+  "status",
+  "target_date",
+] as const satisfies readonly (keyof TModuleFilters)[];
 
 type Props = {
   appliedFilters: TModuleFilters;
@@ -42,7 +51,6 @@ export function ModuleAppliedFiltersList(props: Props) {
     alwaysAllowEditing,
     isArchived = false,
   } = props;
-  const { t } = useTranslation();
 
   if (!appliedFilters && !isFavoriteFilterApplied) return null;
   if (Object.keys(appliedFilters).length === 0 && !isFavoriteFilterApplied) return null;
@@ -52,11 +60,11 @@ export function ModuleAppliedFiltersList(props: Props) {
   return (
     <Header variant={EHeaderVariant.TERNARY}>
       <div className="flex flex-wrap gap-2">
-        {Object.entries(appliedFilters).map(([key, value]) => {
-          const filterKey = key as keyof TModuleFilters;
+        {orderedFilterKeys(appliedFilters, FILTER_KEYS).map((filterKey) => {
+          const value = appliedFilters[filterKey];
 
-          if (!value) return;
-          if (Array.isArray(value) && value.length === 0) return;
+          if (!value) return undefined;
+          if (Array.isArray(value) && value.length === 0) return undefined;
 
           return (
             <Tag key={filterKey}>
@@ -88,13 +96,7 @@ export function ModuleAppliedFiltersList(props: Props) {
                   />
                 )}
                 {isEditingAllowed && (
-                  <button
-                    type="button"
-                    className="grid place-items-center text-tertiary hover:text-secondary"
-                    onClick={() => handleRemoveFilter(filterKey, null)}
-                  >
-                    <CloseIcon height={12} width={12} strokeWidth={2} />
-                  </button>
+                  <RemoveAppliedFilter filterKey={filterKey} onRemove={() => handleRemoveFilter(filterKey, null)} />
                 )}
               </div>
             </Tag>
@@ -127,14 +129,7 @@ export function ModuleAppliedFiltersList(props: Props) {
             </div>
           </div>
         )}
-        {isEditingAllowed && (
-          <button type="button" onClick={handleClearAllFilters}>
-            <Tag>
-              {t("common.clear_all")}
-              <CloseIcon height={12} width={12} strokeWidth={2} />
-            </Tag>
-          </button>
-        )}
+        {isEditingAllowed && <ClearAppliedFilters onClear={handleClearAllFilters} />}
       </div>
     </Header>
   );

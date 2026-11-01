@@ -82,11 +82,11 @@ export const generateCalendarData = (
  * @param startOfWeek The day to start the week on.
  */
 export const getOrderedDays = <T>(
-  items: T[],
+  items: readonly T[],
   getDayIndex: (item: T) => number,
   startOfWeek: EStartOfTheWeek = EStartOfTheWeek.SUNDAY
 ): T[] =>
-  [...items].sort((a, b) => {
+  items.toSorted((a, b) => {
     const dayA = (7 + getDayIndex(a) - startOfWeek) % 7;
     const dayB = (7 + getDayIndex(b) - startOfWeek) % 7;
     return dayA - dayB;

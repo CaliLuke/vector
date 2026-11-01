@@ -25,124 +25,101 @@ export type DropdownButtonProps = {
   renderToolTipByDefault?: boolean;
 };
 
-type ButtonProps = {
-  children: React.ReactNode;
-  className?: string;
-  isActive: boolean;
-  tooltipContent?: string | React.ReactNode | null;
-  tooltipHeading: string;
-  showTooltip: boolean;
-  renderToolTipByDefault?: boolean;
-};
+// Each dropdown owns the native trigger; this component supplies its appearance
+// and tooltip without adding a second focus target.
+export function DropdownButton({
+  children,
+  className,
+  isActive,
+  tooltipContent,
+  tooltipHeading,
+  showTooltip,
+  variant,
+  renderToolTipByDefault = true,
+}: DropdownButtonProps) {
+  const { isMobile } = usePlatformOS();
+  const hasBorder = BORDER_BUTTON_VARIANTS.includes(variant);
+  const hasBackground = BACKGROUND_BUTTON_VARIANTS.includes(variant);
 
-export function DropdownButton(props: DropdownButtonProps) {
+  return (
+    <Tooltip
+      tooltipHeading={tooltipHeading}
+      tooltipContent={<>{tooltipContent}</>}
+      disabled={!showTooltip}
+      isMobile={isMobile}
+      renderByDefault={renderToolTipByDefault}
+    >
+      <span
+        className={cn(
+          getButtonStyling("ghost", "sm"),
+          "flex h-full w-full items-center gap-1.5",
+          hasBorder ? "justify-start border-[0.5px] border-strong" : "justify-between",
+          hasBackground && "bg-layer-3 hover:bg-layer-1-hover",
+          !hasBackground && isActive && "bg-layer-transparent-active",
+          className
+        )}
+      >
+        {children}
+      </span>
+    </Tooltip>
+  );
+}
+
+type TriggerAppearance = Pick<
+  import("./types").TDropdownProps,
+  "buttonVariant" | "buttonClassName" | "buttonContainerClassName" | "disabled" | "showTooltip"
+> & { button?: React.ReactNode; renderByDefault?: boolean };
+export const DropdownTrigger = React.forwardRef<
+  HTMLButtonElement,
+  {
+    appearance: TriggerAppearance;
+    isActive: boolean;
+    children: React.ReactNode;
+    tooltipHeading: string;
+    tooltipContent?: React.ReactNode;
+    tabIndex?: number;
+    hoverBackground?: boolean;
+  }
+>(function DropdownTrigger(
+  { appearance, children, hoverBackground, isActive, tooltipHeading, tooltipContent, ...props },
+  ref
+) {
   const {
-    children,
-    className,
-    isActive,
-    tooltipContent,
-    renderToolTipByDefault = true,
-    tooltipHeading,
-    showTooltip,
-    variant,
-  } = props;
-  const ButtonToRender: React.FC<ButtonProps> = BORDER_BUTTON_VARIANTS.includes(variant)
-    ? BorderButton
-    : BACKGROUND_BUTTON_VARIANTS.includes(variant)
-      ? BackgroundButton
-      : TransparentButton;
-
+    disabled,
+    buttonClassName,
+    buttonContainerClassName,
+    buttonVariant,
+    button: customContent,
+    showTooltip = false,
+    renderByDefault = true,
+  } = appearance;
   return (
-    <ButtonToRender
-      className={className}
-      isActive={isActive}
-      tooltipContent={tooltipContent}
-      tooltipHeading={tooltipHeading}
-      showTooltip={showTooltip}
-      renderToolTipByDefault={renderToolTipByDefault}
+    <button
+      {...props}
+      ref={ref}
+      type="button"
+      disabled={disabled}
+      className={cn(
+        "clickable block h-full outline-none",
+        customContent ? "w-full" : "max-w-full",
+        !customContent && (disabled ? "cursor-not-allowed text-secondary" : "cursor-pointer"),
+        hoverBackground && "hover:bg-layer-1",
+        buttonContainerClassName
+      )}
     >
-      {children}
-    </ButtonToRender>
+      {customContent || (
+        <DropdownButton
+          className={buttonClassName}
+          variant={buttonVariant}
+          isActive={isActive}
+          tooltipHeading={tooltipHeading}
+          tooltipContent={tooltipContent}
+          showTooltip={showTooltip}
+          renderToolTipByDefault={renderByDefault}
+        >
+          {children}
+        </DropdownButton>
+      )}
+    </button>
   );
-}
-
-// Each dropdown owns the native trigger button; these variants only provide its
-// visual content and tooltip so they must not introduce a second focus target.
-function BorderButton(props: ButtonProps) {
-  const { children, className, isActive, tooltipContent, renderToolTipByDefault, tooltipHeading, showTooltip } = props;
-  const { isMobile } = usePlatformOS();
-
-  return (
-    <Tooltip
-      tooltipHeading={tooltipHeading}
-      tooltipContent={<>{tooltipContent}</>}
-      disabled={!showTooltip}
-      isMobile={isMobile}
-      renderByDefault={renderToolTipByDefault}
-    >
-      <span
-        className={cn(
-          getButtonStyling("ghost", "sm"),
-          "flex h-full w-full items-center justify-start gap-1.5 border-[0.5px] border-strong",
-          {
-            "bg-layer-transparent-active": isActive,
-          },
-          className
-        )}
-      >
-        {children}
-      </span>
-    </Tooltip>
-  );
-}
-
-function BackgroundButton(props: ButtonProps) {
-  const { children, className, tooltipContent, tooltipHeading, renderToolTipByDefault, showTooltip } = props;
-  const { isMobile } = usePlatformOS();
-  return (
-    <Tooltip
-      tooltipHeading={tooltipHeading}
-      tooltipContent={<>{tooltipContent}</>}
-      disabled={!showTooltip}
-      isMobile={isMobile}
-      renderByDefault={renderToolTipByDefault}
-    >
-      <span
-        className={cn(
-          getButtonStyling("ghost", "sm"),
-          "flex h-full w-full items-center justify-between gap-1.5 bg-layer-3 hover:bg-layer-1-hover",
-          className
-        )}
-      >
-        {children}
-      </span>
-    </Tooltip>
-  );
-}
-
-function TransparentButton(props: ButtonProps) {
-  const { children, className, isActive, tooltipContent, tooltipHeading, renderToolTipByDefault, showTooltip } = props;
-  const { isMobile } = usePlatformOS();
-  return (
-    <Tooltip
-      tooltipHeading={tooltipHeading}
-      tooltipContent={<>{tooltipContent}</>}
-      disabled={!showTooltip}
-      isMobile={isMobile}
-      renderByDefault={renderToolTipByDefault}
-    >
-      <span
-        className={cn(
-          getButtonStyling("ghost", "sm"),
-          "flex h-full w-full items-center justify-between gap-1.5",
-          {
-            "bg-layer-transparent-active": isActive,
-          },
-          className
-        )}
-      >
-        {children}
-      </span>
-    </Tooltip>
-  );
-}
+});

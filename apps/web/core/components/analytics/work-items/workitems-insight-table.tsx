@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useMemo } from "react";
+import { createContext, useContext, useMemo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import { UserRound } from "lucide-react";
@@ -23,8 +23,52 @@ import { analyticsStatsOptions } from "@/queries/analytics";
 // plane web components
 import { AnalyticsAccessDenied, AnalyticsQueryError } from "../query-error";
 import { exportCSV } from "../export";
+import { AnalyticsColumnHeader, AnalyticsValueCell } from "../insight-table/column-renderers";
 import { InsightTable } from "../insight-table";
 import type { AnalyticsColumnDef, AnalyticsRow } from "../insight-table/table-features";
+
+const COUNT_COLUMNS = [
+  "backlog_work_items",
+  "started_work_items",
+  "un_started_work_items",
+  "completed_work_items",
+  "cancelled_work_items",
+] as const;
+
+const ProjectCatalogueContext = createContext<ReturnType<typeof useWorkspaceProjectDetails>["projects"]>([]);
+
+function ProjectCell({ row }: { row: AnalyticsRow<WorkItemInsightColumns> }) {
+  const projectRows = useContext(ProjectCatalogueContext);
+  const project = projectRows?.find((candidate) => candidate.id === row.original.project_id);
+  return (
+    <div className="flex items-center gap-2">
+      {project?.logo_props ? <Logo logo={project.logo_props} size={18} /> : <ProjectIcon className="h-4 w-4" />}
+      {project?.name}
+    </div>
+  );
+}
+
+function AssigneeCell({ row }: { row: AnalyticsRow<WorkItemInsightColumns> }) {
+  const { t } = useTranslation();
+  return (
+    <div className="text-left">
+      <div className="flex items-center gap-2">
+        {row.original.avatar_url && row.original.avatar_url !== "" ? (
+          <Avatar name={row.original.display_name} src={getFileURL(row.original.avatar_url)} size={24} shape="circle" />
+        ) : (
+          <div className="flex h-4 w-4 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-layer-1 capitalize">
+            {row.original.display_name ? (
+              row.original.display_name?.[0]
+            ) : (
+              <UserRound className="text-secondary" size={12} />
+            )}
+          </div>
+        )}
+        <span className="break-words text-secondary">{row.original.display_name ?? t(`Unassigned`)}</span>
+      </div>
+    </div>
+  );
+}
 
 const WorkItemsInsightTable = function WorkItemsInsightTable() {
   const { t } = useTranslation();
@@ -54,20 +98,8 @@ const WorkItemsInsightTable = function WorkItemsInsightTable() {
       !isPeekView
         ? {
             accessorKey: "project__name",
-            header: () => <div className="text-left">{columnsLabels["project__name"]}</div>,
-            cell: ({ row }) => {
-              const project = projectRows?.find((candidate) => candidate.id === row.original.project_id);
-              return (
-                <div className="flex items-center gap-2">
-                  {project?.logo_props ? (
-                    <Logo logo={project.logo_props} size={18} />
-                  ) : (
-                    <ProjectIcon className="h-4 w-4" />
-                  )}
-                  {project?.name}
-                </div>
-              );
-            },
+            header: AnalyticsColumnHeader,
+            cell: ProjectCell,
             meta: {
               export: {
                 key: columnsLabels["project__name"],
@@ -77,30 +109,8 @@ const WorkItemsInsightTable = function WorkItemsInsightTable() {
           }
         : {
             accessorKey: "display_name",
-            header: () => <div className="text-left">{columnsLabels["display_name"]}</div>,
-            cell: ({ row }: { row: AnalyticsRow<WorkItemInsightColumns> }) => (
-              <div className="text-left">
-                <div className="flex items-center gap-2">
-                  {row.original.avatar_url && row.original.avatar_url !== "" ? (
-                    <Avatar
-                      name={row.original.display_name}
-                      src={getFileURL(row.original.avatar_url)}
-                      size={24}
-                      shape="circle"
-                    />
-                  ) : (
-                    <div className="flex h-4 w-4 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-layer-1 capitalize">
-                      {row.original.display_name ? (
-                        row.original.display_name?.[0]
-                      ) : (
-                        <UserRound className="text-secondary" size={12} />
-                      )}
-                    </div>
-                  )}
-                  <span className="break-words text-secondary">{row.original.display_name ?? t(`Unassigned`)}</span>
-                </div>
-              </div>
-            ),
+            header: AnalyticsColumnHeader,
+            cell: AssigneeCell,
             meta: {
               export: {
                 key: columnsLabels["display_name"],
@@ -108,63 +118,17 @@ const WorkItemsInsightTable = function WorkItemsInsightTable() {
               },
             },
           },
-      {
-        accessorKey: "backlog_work_items",
-        header: () => <div className="text-right">{columnsLabels["backlog_work_items"]}</div>,
-        cell: ({ row }) => <div className="text-right">{row.original.backlog_work_items}</div>,
+      ...COUNT_COLUMNS.map((key): AnalyticsColumnDef<WorkItemInsightColumns> => ({
+        accessorKey: key,
+        header: AnalyticsColumnHeader,
+        cell: AnalyticsValueCell,
         meta: {
-          export: {
-            key: columnsLabels["backlog_work_items"],
-            value: (row) => row.original.backlog_work_items.toString(),
-          },
+          align: "right",
+          export: { key: columnsLabels[key], value: (row) => row.original[key].toString() },
         },
-      },
-      {
-        accessorKey: "started_work_items",
-        header: () => <div className="text-right">{columnsLabels["started_work_items"]}</div>,
-        cell: ({ row }) => <div className="text-right">{row.original.started_work_items}</div>,
-        meta: {
-          export: {
-            key: columnsLabels["started_work_items"],
-            value: (row) => row.original.started_work_items.toString(),
-          },
-        },
-      },
-      {
-        accessorKey: "un_started_work_items",
-        header: () => <div className="text-right">{columnsLabels["un_started_work_items"]}</div>,
-        cell: ({ row }) => <div className="text-right">{row.original.un_started_work_items}</div>,
-        meta: {
-          export: {
-            key: columnsLabels["un_started_work_items"],
-            value: (row) => row.original.un_started_work_items.toString(),
-          },
-        },
-      },
-      {
-        accessorKey: "completed_work_items",
-        header: () => <div className="text-right">{columnsLabels["completed_work_items"]}</div>,
-        cell: ({ row }) => <div className="text-right">{row.original.completed_work_items}</div>,
-        meta: {
-          export: {
-            key: columnsLabels["completed_work_items"],
-            value: (row) => row.original.completed_work_items.toString(),
-          },
-        },
-      },
-      {
-        accessorKey: "cancelled_work_items",
-        header: () => <div className="text-right">{columnsLabels["cancelled_work_items"]}</div>,
-        cell: ({ row }) => <div className="text-right">{row.original.cancelled_work_items}</div>,
-        meta: {
-          export: {
-            key: columnsLabels["cancelled_work_items"],
-            value: (row) => row.original.cancelled_work_items.toString(),
-          },
-        },
-      },
+      })),
     ],
-    [columnsLabels, isPeekView, projectRows, t]
+    [columnsLabels, isPeekView]
   );
   return (
     <div className="flex flex-col gap-2">
@@ -173,15 +137,17 @@ const WorkItemsInsightTable = function WorkItemsInsightTable() {
       ) : query.isError ? (
         <AnalyticsQueryError onRetry={() => void query.refetch()} />
       ) : (
-        <InsightTable<"work-items">
-          analyticsType="work-items"
-          data={workItemsData}
-          isLoading={isLoading}
-          columns={columns}
-          columnsLabels={columnsLabels}
-          headerText={isPeekView ? t("common.assignee") : t("common.projects")}
-          onExport={(rows) => workItemsData && exportCSV(rows, columns, scope.workspaceSlug ?? "")}
-        />
+        <ProjectCatalogueContext.Provider value={projectRows}>
+          <InsightTable<"work-items">
+            analyticsType="work-items"
+            data={workItemsData}
+            isLoading={isLoading}
+            columns={columns}
+            columnsLabels={columnsLabels}
+            headerText={isPeekView ? t("common.assignee") : t("common.projects")}
+            onExport={(rows) => workItemsData && exportCSV(rows, columns, scope.workspaceSlug ?? "")}
+          />
+        </ProjectCatalogueContext.Provider>
       )}
     </div>
   );

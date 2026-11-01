@@ -7,18 +7,11 @@
 import React from "react";
 
 // types
-import type { TIssue } from "@plane/types";
+import type { TSpreadsheetColumnProps } from "@plane/types";
 // components
 import { StateDropdown } from "@/components/dropdowns/state/dropdown";
 
-type Props = {
-  issue: TIssue;
-  onClose: () => void;
-  onChange: (issue: TIssue, data: Partial<TIssue>, updates: any) => void;
-  disabled: boolean;
-};
-
-export const SpreadsheetStateColumn = function SpreadsheetStateColumn(props: Props) {
+export const SpreadsheetStateColumn = function SpreadsheetStateColumn(props: TSpreadsheetColumnProps) {
   const { issue, onChange, disabled, onClose } = props;
 
   return (

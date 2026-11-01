@@ -6,7 +6,7 @@
 
 import { Download, Minus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import ReactDOM from "react-dom";
+import { ModalPortal } from "@plane/propel/portal";
 import { NewTabIcon, PlusIcon, CloseIcon } from "@plane/propel/icons";
 // plane imports
 import { cn } from "@plane/utils/common";
@@ -15,6 +15,12 @@ const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 2;
 const ZOOM_SPEED = 0.05;
 const ZOOM_STEPS = [0.5, 1, 1.5, 2];
+const PAN_OFFSETS = new Map<string, [number, number]>([
+  ["ArrowLeft", [-40, 0]],
+  ["ArrowRight", [40, 0]],
+  ["ArrowUp", [0, -40]],
+  ["ArrowDown", [0, 40]],
+]);
 
 type Props = {
   aspectRatio: number;
@@ -26,7 +32,7 @@ type Props = {
   width: string;
 };
 
-function ImageFullScreenModalWithoutPortal(props: Props) {
+export function ImageFullScreenModal(props: Props) {
   const { aspectRatio, isFullScreenEnabled, isTouchDevice, downloadSrc, src, toggleFullScreenMode, width } = props;
   // refs
   const dragStart = useRef({ x: 0, y: 0 });
@@ -35,7 +41,6 @@ function ImageFullScreenModalWithoutPortal(props: Props) {
   const [magnification, setMagnification] = useState<number>(1);
   const [initialMagnification, setInitialMagnification] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
-  const modalRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
 
   const widthInNumber = useMemo(() => {
@@ -82,7 +87,7 @@ function ImageFullScreenModalWithoutPortal(props: Props) {
         targetZoom = ZOOM_STEPS.find((step) => step > prev) ?? MAX_ZOOM;
       } else {
         // Reverse the array to find the next lower step
-        targetZoom = [...ZOOM_STEPS].reverse().find((step) => step < prev) ?? MIN_ZOOM;
+        targetZoom = ZOOM_STEPS.toReversed().find((step) => step < prev) ?? MIN_ZOOM;
       }
 
       // Reset position when zoom matches initial magnification
@@ -97,16 +102,15 @@ function ImageFullScreenModalWithoutPortal(props: Props) {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === "Escape" || e.key === "+" || e.key === "=" || e.key === "-") {
+      if (e.key === "+" || e.key === "=" || e.key === "-") {
         e.preventDefault();
         e.stopPropagation();
 
-        if (e.key === "Escape") handleClose();
         if (e.key === "+" || e.key === "=") handleMagnification("increase");
         if (e.key === "-") handleMagnification("decrease");
       }
     },
-    [handleClose, handleMagnification]
+    [handleMagnification]
   );
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -180,7 +184,7 @@ function ImageFullScreenModalWithoutPortal(props: Props) {
 
   // Event listeners
   useEffect(() => {
-    if (!isFullScreenEnabled) return;
+    if (!isFullScreenEnabled) return undefined;
 
     document.addEventListener("keydown", handleKeyDown);
     window.addEventListener("mousemove", handleMouseMove);
@@ -198,46 +202,66 @@ function ImageFullScreenModalWithoutPortal(props: Props) {
   if (!isFullScreenEnabled) return null;
 
   return (
-    <div
-      className={cn("pointer-events-none fixed inset-0 z-50 size-full bg-black/90 opacity-0 transition-opacity", {
-        "editor-image-full-screen-modal pointer-events-auto opacity-100": isFullScreenEnabled,
-        "cursor-default": !isDragging,
-        "cursor-grabbing": isDragging,
-      })}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Fullscreen image viewer"
+    <ModalPortal
+      isOpen={isFullScreenEnabled}
+      onClose={handleClose}
+      portalId="editor-portal"
+      fullScreen
+      zIndex={50}
+      ariaLabel="Fullscreen image viewer"
+      overlayClassName="bg-black/90"
+      contentClassName="pointer-events-none grid place-items-center overflow-hidden bg-transparent shadow-none"
     >
       <div
-        ref={modalRef}
-        onMouseDown={(e) => e.target === modalRef.current && handleClose()}
-        className="relative grid size-full place-items-center overflow-hidden"
+        className={cn("relative grid size-full place-items-center overflow-hidden", { "cursor-grabbing": isDragging })}
       >
         <button
           type="button"
           onClick={handleClose}
-          className="absolute top-10 right-10 grid size-8 place-items-center"
+          className="pointer-events-auto absolute top-10 right-10 z-10 grid size-8 place-items-center"
           aria-label="Close image viewer"
         >
           <CloseIcon className="size-8 text-white/60 transition-colors hover:text-white" />
         </button>
-        <img
-          ref={setImageRef}
-          src={src}
-          className="read-only-image rounded-lg"
-          style={{
-            width: `${widthInNumber * initialMagnification}px`,
-            maxWidth: "none",
-            maxHeight: "none",
-            aspectRatio,
-            position: "relative",
-            transform: `scale(${magnification})`,
-            transformOrigin: "center",
-            transition: "width 0.2s ease, transform 0.2s ease",
-          }}
+        <button
+          type="button"
+          aria-label="Pan image with arrow keys; press Enter to center"
+          className="pointer-events-auto rounded-lg focus-visible:outline-2 focus-visible:outline-white"
           onMouseDown={handleMouseDown}
-        />
-        <div className="fixed bottom-10 left-1/2 flex -translate-x-1/2 items-center justify-center gap-1 divide-x divide-subtle-1 rounded-md border border-subtle-1 bg-black py-2">
+          onClick={(event) => {
+            if (event.detail === 0 && imgRef.current) {
+              imgRef.current.style.left = "0px";
+              imgRef.current.style.top = "0px";
+            }
+          }}
+          onKeyDown={(event) => {
+            const direction = PAN_OFFSETS.get(event.key);
+            const image = imgRef.current;
+            if (!direction || !image) return;
+            event.preventDefault();
+            image.style.left = `${parseFloat(image.style.left || "0") + direction[0] / magnification}px`;
+            image.style.top = `${parseFloat(image.style.top || "0") + direction[1] / magnification}px`;
+          }}
+        >
+          <img
+            alt="Expanded attachment"
+            draggable={false}
+            ref={setImageRef}
+            src={src}
+            className="read-only-image rounded-lg"
+            style={{
+              width: `${widthInNumber * initialMagnification}px`,
+              maxWidth: "none",
+              maxHeight: "none",
+              aspectRatio,
+              position: "relative",
+              transform: `scale(${magnification})`,
+              transformOrigin: "center",
+              transition: "width 0.2s ease, transform 0.2s ease",
+            }}
+          />
+        </button>
+        <div className="pointer-events-auto fixed bottom-10 left-1/2 flex -translate-x-1/2 items-center justify-center gap-1 divide-x divide-subtle-1 rounded-md border border-subtle-1 bg-black py-2">
           <div className="flex items-center">
             <button
               type="button"
@@ -293,20 +317,6 @@ function ImageFullScreenModalWithoutPortal(props: Props) {
           )}
         </div>
       </div>
-    </div>
+    </ModalPortal>
   );
-}
-
-export function ImageFullScreenModal(props: Props) {
-  let modal = <ImageFullScreenModalWithoutPortal {...props} />;
-  const portal = document.querySelector("#editor-portal");
-  if (portal) {
-    modal = ReactDOM.createPortal(modal, portal);
-  } else {
-    console.warn("Portal element #editor-portal not found. Rendering in document.body");
-    if (typeof document !== "undefined" && document.body) {
-      modal = ReactDOM.createPortal(modal, document.body);
-    }
-  }
-  return modal;
 }

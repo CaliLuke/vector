@@ -48,7 +48,7 @@ export function CustomThemeImportConfigButton({ onImport, disabled }: Props) {
         type="file"
         disabled={disabled}
         accept=".json"
-        onChange={handleUploadConfig}
+        onChange={(event) => void handleUploadConfig(event)}
         className="hidden"
       />
       <Button

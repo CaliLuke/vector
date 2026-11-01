@@ -42,28 +42,11 @@ const EDITOR_BACKGROUND_COLORS_LIGHT = {
 // Use light theme colors by default for PDF exports
 export const EDITOR_BACKGROUND_COLORS = EDITOR_BACKGROUND_COLORS_LIGHT;
 
-// Color key type
-type EditorColorKey = keyof typeof EDITOR_TEXT_COLORS;
+const textColors = new Map<string, string>(Object.entries(EDITOR_TEXT_COLORS));
+const backgroundColors = new Map<string, string>(Object.entries(EDITOR_BACKGROUND_COLORS));
 
-/**
- * Maps a color key to its text color hex value
- */
-const getTextColorHex = (colorKey: string): string | null => {
-  if (Object.hasOwn(EDITOR_TEXT_COLORS, colorKey)) {
-    return EDITOR_TEXT_COLORS[colorKey as EditorColorKey];
-  }
-  return null;
-};
-
-/**
- * Maps a color key to its background color hex value
- */
-const getBackgroundColorHex = (colorKey: string): string | null => {
-  if (Object.hasOwn(EDITOR_BACKGROUND_COLORS, colorKey)) {
-    return EDITOR_BACKGROUND_COLORS[colorKey as EditorColorKey];
-  }
-  return null;
-};
+const getTextColorHex = (colorKey: string): string | null => textColors.get(colorKey) ?? null;
+const getBackgroundColorHex = (colorKey: string): string | null => backgroundColors.get(colorKey) ?? null;
 
 /**
  * Checks if a value is a CSS variable reference (e.g., "var(--editor-colors-gray-text)")

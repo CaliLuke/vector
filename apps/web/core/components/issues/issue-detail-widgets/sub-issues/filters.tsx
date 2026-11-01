@@ -37,7 +37,7 @@ export const SubIssueFilters = function SubIssueFilters(props: TSubIssueFiltersP
   // states
   const [filtersSearchQuery, setFiltersSearchQuery] = useState("");
 
-  const isFilterEnabled = (filter: keyof IIssueFilterOptions) => !!availableFilters.includes(filter);
+  const isFilterEnabled = (filter: keyof IIssueFilterOptions) => availableFilters.includes(filter);
 
   const isFilterApplied = useMemo(() => isFiltersApplied(filters), [filters]);
 
@@ -76,49 +76,25 @@ export const SubIssueFilters = function SubIssueFilters(props: TSubIssueFiltersP
             </div>
           </div>
           <div className="vertical-scrollbar scrollbar-sm h-full w-full divide-y divide-subtle-1 overflow-y-auto px-2.5 text-left">
-            {/* Priority */}
-            {isFilterEnabled("priority") && (
-              <div className="py-2">
-                <FilterPriority
-                  appliedFilters={filters.priority ?? null}
-                  handleUpdate={(val) => handleFiltersUpdate("priority", val)}
-                  searchQuery={filtersSearchQuery}
-                />
-              </div>
-            )}
-
-            {/* state group */}
-            {isFilterEnabled("state_group") && (
-              <div className="py-2">
-                <FilterStateGroup
-                  appliedFilters={filters.state_group ?? null}
-                  handleUpdate={(val) => handleFiltersUpdate("state_group", val)}
-                  searchQuery={filtersSearchQuery}
-                />
-              </div>
-            )}
-
-            {/* State */}
-            {isFilterEnabled("state") && (
-              <div className="py-2">
-                <FilterState
-                  appliedFilters={filters.state ?? null}
-                  handleUpdate={(val) => handleFiltersUpdate("state", val)}
-                  searchQuery={filtersSearchQuery}
-                  states={states}
-                />
-              </div>
-            )}
-
-            {/* Projects */}
-            {isFilterEnabled("project") && (
-              <div className="py-2">
-                <FilterProjects
-                  appliedFilters={filters.project ?? null}
-                  handleUpdate={(val) => handleFiltersUpdate("project", val)}
-                  searchQuery={filtersSearchQuery}
-                />
-              </div>
+            {(
+              [
+                { key: "priority", Component: FilterPriority },
+                { key: "state_group", Component: FilterStateGroup },
+                { key: "state", Component: FilterState },
+                { key: "project", Component: FilterProjects },
+              ] as const
+            ).map(
+              ({ key, Component }) =>
+                isFilterEnabled(key) && (
+                  <div key={key} className="py-2">
+                    <Component
+                      states={states}
+                      appliedFilters={filters[key] ?? null}
+                      handleUpdate={(value) => handleFiltersUpdate(key, value)}
+                      searchQuery={filtersSearchQuery}
+                    />
+                  </div>
+                )
             )}
 
             {/* Assignees */}

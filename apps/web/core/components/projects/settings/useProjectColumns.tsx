@@ -9,7 +9,7 @@ import { useState } from "react";
 import { EUserPermissions } from "@plane/constants";
 import { renderFormattedDate } from "@plane/utils/datetime";
 // components
-import { MemberHeaderColumn } from "@/components/project/member-header-column";
+import { createMemberColumns } from "@/components/project/member-header-column";
 import { AccountTypeColumn, NameColumn } from "@/components/project/settings/member-columns";
 import type { RowData } from "@/components/project/settings/member-columns";
 // hooks
@@ -34,79 +34,47 @@ export const useProjectColumns = (props: TUseProjectColumnsProps) => {
   // derived values
   const isAdmin = canProject([EUserPermissions.ADMIN]);
 
-  const columns = [
+  const columns = createMemberColumns<RowData>(
     {
       key: "Full Name",
       content: "Full name",
-      thClassName: "text-left",
-      thRender: () => (
-        <MemberHeaderColumn
-          property="full_name"
-          displayFilters={displayFilters}
-          handleDisplayFilterUpdate={handleDisplayFilterUpdate}
-        />
-      ),
-      tdRender: (rowData: RowData) => (
-        <NameColumn
-          rowData={rowData}
-          workspaceSlug={workspaceSlug}
-          isAdmin={isAdmin}
-          currentUser={currentUser ?? undefined}
-          setRemoveMemberModal={setRemoveMemberModal}
-        />
-      ),
+      component: NameColumn,
+      workspaceSlug,
+      isAdmin,
+      currentUser: currentUser ?? undefined,
+      setRemoveMemberModal,
     },
-    {
-      key: "Display Name",
-      content: "Display name",
-      thRender: () => (
-        <MemberHeaderColumn
-          property="display_name"
-          displayFilters={displayFilters}
-          handleDisplayFilterUpdate={handleDisplayFilterUpdate}
-        />
-      ),
-      tdRender: (rowData: RowData) => <div className="w-32">{rowData.member.display_name}</div>,
-    },
-    {
-      key: "Email",
-      content: "Email",
-      thRender: () => (
-        <MemberHeaderColumn
-          property="email"
-          displayFilters={displayFilters}
-          handleDisplayFilterUpdate={handleDisplayFilterUpdate}
-        />
-      ),
-      tdRender: (rowData: RowData) => <div className="w-48 text-secondary">{rowData.member.email}</div>,
-    },
-    {
-      key: "Account Type",
-      content: "Account type",
-      thRender: () => (
-        <MemberHeaderColumn
-          property="role"
-          displayFilters={displayFilters}
-          handleDisplayFilterUpdate={handleDisplayFilterUpdate}
-        />
-      ),
-      tdRender: (rowData: RowData) => (
-        <AccountTypeColumn rowData={rowData} projectId={projectId} workspaceSlug={workspaceSlug} />
-      ),
-    },
-    {
-      key: "Joining Date",
-      content: "Joining date",
-      thRender: () => (
-        <MemberHeaderColumn
-          property="joining_date"
-          displayFilters={displayFilters}
-          handleDisplayFilterUpdate={handleDisplayFilterUpdate}
-        />
-      ),
-      tdRender: (rowData: RowData) => <div>{renderFormattedDate(rowData?.member?.joining_date)}</div>,
-    },
-  ];
+    [
+      {
+        key: "Display Name",
+        content: "Display name",
+        property: "display_name",
+        tdRender: (rowData: RowData) => <div className="w-32">{rowData.member.display_name}</div>,
+      },
+      {
+        key: "Email",
+        content: "Email",
+        property: "email",
+        tdRender: (rowData: RowData) => <div className="w-48 text-secondary">{rowData.member.email}</div>,
+      },
+      {
+        key: "Account Type",
+        content: "Account type",
+        property: "role",
+        tdRender: (rowData: RowData) => (
+          <AccountTypeColumn rowData={rowData} projectId={projectId} workspaceSlug={workspaceSlug} />
+        ),
+      },
+      {
+        key: "Joining Date",
+        content: "Joining date",
+        property: "joining_date",
+        tdRender: (rowData: RowData) => <div>{renderFormattedDate(rowData?.member?.joining_date)}</div>,
+      },
+    ],
+    displayFilters,
+    handleDisplayFilterUpdate
+  );
   return {
     columns,
     removeMemberModal,

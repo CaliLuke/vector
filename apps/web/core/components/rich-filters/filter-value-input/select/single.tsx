@@ -33,8 +33,10 @@ export const SingleSelectFilterValueInput = function SingleSelectFilterValueInpu
   const { options, loading, error } = useFilterSelectOptions(config);
   const formattedOptions = useMemo(() => getFormattedOptions(options), [options]);
 
+  const selectedValue = Array.isArray(condition.value) ? (condition.value[0] ?? null) : (condition.value ?? null);
+
   const handleSelectChange = (value: TFilterValue) => {
-    if (value === condition.value) {
+    if (value === selectedValue) {
       onChange(null);
     } else {
       onChange(value);
@@ -42,14 +44,14 @@ export const SingleSelectFilterValueInput = function SingleSelectFilterValueInpu
   };
 
   return (
-    <CustomSearchSelect
+    <CustomSearchSelect<TFilterValue>
       {...getCommonCustomSearchSelectProps(isDisabled)}
-      value={condition.value ?? null}
+      value={selectedValue}
       onChange={handleSelectChange}
       options={formattedOptions}
       multiple={false}
       disabled={loading || error || isDisabled}
-      customButton={<SelectedOptionsDisplay selectedValue={condition.value} options={options} displayCount={1} />}
+      customButton={<SelectedOptionsDisplay selectedValue={selectedValue} options={options} displayCount={1} />}
       defaultOpen={condition.value === null || condition.value === undefined}
     />
   );

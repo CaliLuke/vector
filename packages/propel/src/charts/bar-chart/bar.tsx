@@ -4,10 +4,9 @@
  * See the LICENSE file for details.
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 // plane imports
-import type { TBarChartShapeVariant, TBarItem, TChartData } from "@plane/types";
+import type { TBarChartShapeVariant, TBarItem } from "@plane/types";
 import { cn } from "@plane/utils/common";
 
 // Constants
@@ -25,7 +24,7 @@ interface TShapeProps {
   width: number;
   height: number;
   dataKey: string;
-  payload: any;
+  payload: Record<string, unknown>;
   opacity?: number;
 }
 
@@ -40,13 +39,10 @@ interface TBarProps extends TShapeProps {
 }
 
 // Helper Functions
-const calculatePercentage = <K extends string, T extends string>(
-  data: TChartData<K, T>,
-  stackKeys: T[],
-  currentKey: T
-): number => {
-  const total = stackKeys.reduce((sum, key) => sum + data[key], 0);
-  return total === 0 ? 0 : Math.round((data[currentKey] / total) * 100);
+const calculatePercentage = (data: Record<string, unknown>, stackKeys: string[], currentKey: string): number => {
+  const total = stackKeys.reduce((sum, key) => sum + (typeof data[key] === "number" ? data[key] : 0), 0);
+  const current = data[currentKey];
+  return total === 0 || typeof current !== "number" ? 0 : Math.round((current / total) * 100);
 };
 
 const getBarPath = (x: number, y: number, width: number, height: number, topRadius: number, bottomRadius: number) => `

@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
@@ -15,8 +16,8 @@ const { permissionKeys } = await import("../../apps/web/core/queries/permissions
 const ACCOUNT = "analytics-account";
 const WORKSPACE = "analytics-workspace";
 const REVISION = "membership-revision";
-const MEMBER = 15;
-const GUEST = 5;
+const MEMBER = ContractEnums.EUserPermissions.MEMBER;
+const GUEST = ContractEnums.EUserPermissions.GUEST;
 
 function scope({ role = MEMBER, projectId, projectRole, projectRoles: passedProjectRoles, generation = 0 } = {}) {
   const projectRoles = passedProjectRoles ?? (projectId ? { [projectId]: projectRole } : {});
@@ -172,4 +173,21 @@ void test("workspace aggregates are keyed and guarded by the canonical project m
   const changedScope = scope({ projectRoles: { "project-a": GUEST, "project-b": GUEST } });
   const changedOptions = analyticsInsightsOptions(changedScope, "work-items", {}, false);
   assert.notDeepEqual(changedOptions.queryKey, options.queryKey);
+});
+
+void test("project analytics rejects absent and empty project identities before making an HTTP request", async (t) => {
+  const { APIService } = await import("../../apps/web/core/services/api.service.ts");
+  const request = t.mock.method(APIService.prototype, "get", async () => {
+    throw new Error("Unexpected HTTP request");
+  });
+  const service = new AnalyticsService();
+  await assert.rejects(
+    service.getAdvanceAnalyticsCharts("workspace", "work-items", undefined, true),
+    /project_ids parameter is required/
+  );
+  await assert.rejects(
+    service.getAdvanceAnalyticsCharts("workspace", "work-items", { project_ids: ",other" }, true),
+    /no project ID found/
+  );
+  assert.equal(request.mock.callCount(), 0);
 });

@@ -7,7 +7,7 @@
 import type { TIssueActivity } from "@plane/types";
 
 export const getRelationActivityContent = (activity: TIssueActivity | undefined): string | undefined => {
-  if (!activity) return;
+  if (!activity) return undefined;
 
   switch (activity.field) {
     case "blocking":
@@ -26,5 +26,5 @@ export const getRelationActivityContent = (activity: TIssueActivity | undefined)
       return activity.old_value === "" ? `marked that this work item relates to ` : `removed the relation from `;
   }
 
-  return;
+  return undefined;
 };

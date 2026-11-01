@@ -39,4 +39,9 @@ export * from "./utils";
 export * from "./oauth";
 export { AuthPasswordInput, AuthConfirmPasswordInput } from "./auth-form";
 export { EmailEntryForm } from "./auth-form/email-entry-form";
+export { AuthCodeResend } from "./auth-form/code-resend";
 export { AuthInput, AuthEmailInput } from "./auth-form/auth-input";
+
+export { AuthMessageBanner } from "./auth-form/auth-banner";
+
+export { BrandHeader } from "./auth-form/brand-header";

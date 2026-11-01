@@ -4,13 +4,14 @@
  * See the LICENSE file for details.
  */
 
+import { generateChartSegment } from "./chart-segment";
 import cloneDeep from "lodash-es/cloneDeep.js";
 import uniqBy from "lodash-es/uniqBy.js";
 // plane imports
 import type { ChartDataType } from "@plane/types";
 // local imports
 import { months } from "../data";
-import { getNumberOfDaysBetweenTwoDates, getNumberOfDaysInMonth } from "./helpers";
+import { getNumberOfDaysInMonth } from "./helpers";
 import type { IWeekBlock } from "./week-view";
 import { getWeeksBetweenTwoDates } from "./week-view";
 
@@ -38,77 +39,15 @@ export interface IMonthView {
  * @param side
  * @returns
  */
-const generateMonthChart = (monthPayload: ChartDataType, side: null | "left" | "right", targetDate?: Date) => {
-  let renderState = cloneDeep(monthPayload);
-
-  const range: number = renderState.data.approxFilterRange || 6;
-  let filteredDates: IMonthView = { months: [], weeks: [] };
-  let minusDate: Date = new Date();
-  let plusDate: Date = new Date();
-
-  let startDate = new Date();
-  let endDate = new Date();
-
-  // if side is null generate months on both side of current date
-  if (side === null) {
-    const currentDate = renderState.data.currentDate;
-
-    minusDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - range, currentDate.getDate());
-    plusDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + range, currentDate.getDate());
-
-    if (minusDate && plusDate) filteredDates = getMonthsViewBetweenTwoDates(minusDate, plusDate);
-
-    startDate = filteredDates.weeks[0]?.startDate;
-    endDate = filteredDates.weeks[filteredDates.weeks.length - 1]?.endDate;
-    renderState = {
-      ...renderState,
-      data: {
-        ...renderState.data,
-        startDate,
-        endDate,
-      },
+const generateMonthChart = (chart: ChartDataType, side: null | "left" | "right", targetDate?: Date) =>
+  generateChartSegment(cloneDeep(chart), side, targetDate, (start, end) => {
+    const payload = getMonthsViewBetweenTwoDates(start, end);
+    return {
+      payload,
+      startDate: payload.weeks[0]?.startDate,
+      endDate: payload.weeks[payload.weeks.length - 1]?.endDate,
     };
-  }
-  // When side is left, generate more months on the left side of the start date
-  else if (side === "left") {
-    const chartStartDate = renderState.data.startDate;
-    const currentDate = targetDate ? targetDate : chartStartDate;
-
-    minusDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - range, 1);
-    plusDate = new Date(chartStartDate.getFullYear(), chartStartDate.getMonth(), chartStartDate.getDate() - 1);
-
-    if (minusDate && plusDate) filteredDates = getMonthsViewBetweenTwoDates(minusDate, plusDate);
-
-    startDate = filteredDates.weeks[0]?.startDate;
-    endDate = new Date(chartStartDate.getFullYear(), chartStartDate.getMonth(), chartStartDate.getDate() - 1);
-    renderState = {
-      ...renderState,
-      data: { ...renderState.data, startDate },
-    };
-  }
-  // When side is right, generate more months on the right side of the end date
-  else if (side === "right") {
-    const chartEndDate = renderState.data.endDate;
-    const currentDate = targetDate ? targetDate : chartEndDate;
-
-    minusDate = new Date(chartEndDate.getFullYear(), chartEndDate.getMonth(), chartEndDate.getDate() + 1);
-    plusDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + range, 1);
-
-    if (minusDate && plusDate) filteredDates = getMonthsViewBetweenTwoDates(minusDate, plusDate);
-
-    startDate = new Date(chartEndDate.getFullYear(), chartEndDate.getMonth(), chartEndDate.getDate() + 1);
-    endDate = filteredDates.weeks[filteredDates.weeks.length - 1]?.endDate;
-    renderState = {
-      ...renderState,
-      data: { ...renderState.data, endDate: filteredDates.weeks[filteredDates.weeks.length - 1]?.endDate },
-    };
-  }
-
-  const days = Math.abs(getNumberOfDaysBetweenTwoDates(startDate, endDate)) + 1;
-  const scrollWidth = days * monthPayload.data.dayWidth;
-
-  return { state: renderState, payload: filteredDates, scrollWidth: scrollWidth };
-};
+  });
 
 /**
  * Get Month View data between two dates, i.e., Months and Weeks between two dates
@@ -137,7 +76,7 @@ export const getMonthsBetweenTwoDates = (startDate: Date, endDate: Date): IMonth
   const todayMonth = today.getMonth();
   const todayYear = today.getFullYear();
 
-  const currentDate = new Date(startYear, startMonth);
+  let currentDate = new Date(startYear, startMonth);
 
   while (currentDate <= endDate) {
     const currentYear = currentDate.getFullYear();
@@ -152,7 +91,7 @@ export const getMonthsBetweenTwoDates = (startDate: Date, endDate: Date): IMonth
       today: todayMonth === currentMonth && todayYear === currentYear,
     });
 
-    currentDate.setMonth(currentDate.getMonth() + 1);
+    currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1);
   }
 
   return monthBlocks;

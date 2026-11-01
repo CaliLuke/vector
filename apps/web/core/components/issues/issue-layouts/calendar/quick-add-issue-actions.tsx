@@ -1,3 +1,4 @@
+import type { IssueQuickAddCallback } from "../quick-add/types";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -25,7 +26,7 @@ import { QuickAddIssueRoot } from "../quick-add";
 
 type TCalendarQuickAddIssueActions = {
   prePopulatedData?: Partial<TIssue>;
-  quickAddCallback?: (projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>;
+  quickAddCallback?: IssueQuickAddCallback;
   addIssuesToView?: (issueIds: string[]) => Promise<unknown>;
   onOpen?: () => void;
   isEpic?: boolean;

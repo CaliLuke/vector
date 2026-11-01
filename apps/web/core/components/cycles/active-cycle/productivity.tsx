@@ -34,7 +34,7 @@ type ProductivityContentProps = {
   cycle: ICycle;
   estimateType: TCycleEstimateType;
   distribution: NonNullable<ReturnType<typeof progressDistribution>>["completion_chart"];
-  onChange: (value: TCycleEstimateType) => Promise<void>;
+  onChange: (value: TCycleEstimateType) => void;
   assetPath: string;
   translate: ReturnType<typeof useTranslation>["t"];
   projectId: string;
@@ -101,7 +101,7 @@ export const ActiveCycleProductivity = function ActiveCycleProductivity(props: A
   const estimateType: TCycleEstimateType = estimatesEnabled && cycle ? chart.measure : "issues";
   const resolvedPath = resolvedTheme === "light" ? lightChartAsset : darkChartAsset;
 
-  const onChange = async (value: TCycleEstimateType) => {
+  const onChange = (value: TCycleEstimateType) => {
     if (!cycle?.id) return;
     chart.update({ measure: value });
   };

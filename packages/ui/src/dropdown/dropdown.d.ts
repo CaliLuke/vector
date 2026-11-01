@@ -41,7 +41,7 @@ export interface IDropdown {
 }
 
 export interface TDropdownOption {
-  data: any;
+  data: unknown;
   value: string;
   className?: ({ active, selected }: { active: boolean; selected?: boolean }) => string;
   disabled?: boolean;
@@ -65,7 +65,7 @@ export interface IDropdownButton {
   buttonContent?: (isOpen: boolean, value: string | string[] | undefined) => React.ReactNode;
   buttonClassName?: string;
   buttonContainerClassName?: string;
-  handleOnClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  handleOnClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   setReferenceElement: (element: HTMLButtonElement | null) => void;
   disabled?: boolean;
 }

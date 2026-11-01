@@ -1,3 +1,4 @@
+import { isIssuePropertyEditable } from "../utils";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -60,18 +61,6 @@ async function updateCalendarIssueDate(
       message: error instanceof Error ? error.message : "Failed to perform this action",
     });
   }
-}
-
-function isCalendarIssuePropertyEditable(
-  targetProjectId: string | undefined,
-  canEditForProject: ((projectId: string) => boolean) | undefined,
-  inlineEditingEnabled: boolean | undefined,
-  isEditingAllowed: boolean
-) {
-  const isEditingAllowedForIssue =
-    canEditForProject && targetProjectId ? canEditForProject(targetProjectId) : isEditingAllowed;
-
-  return !!inlineEditingEnabled && isEditingAllowedForIssue;
 }
 
 export function BaseCalendarRoot(props: IBaseCalendarRoot) {
@@ -164,12 +153,7 @@ export function BaseCalendarRoot(props: IBaseCalendarRoot) {
 
   const canEditProperties = useCallback(
     (targetProjectId: string | undefined) =>
-      isCalendarIssuePropertyEditable(
-        targetProjectId,
-        canEditPropertiesBasedOnProject,
-        enableInlineEditing,
-        isEditingAllowed
-      ),
+      isIssuePropertyEditable(targetProjectId, canEditPropertiesBasedOnProject, enableInlineEditing, isEditingAllowed),
     [canEditPropertiesBasedOnProject, enableInlineEditing, isEditingAllowed]
   );
 

@@ -5,7 +5,7 @@ import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { React, act } from "./helpers/react.mjs";
 
-globalThis.__appliedNotificationFiltersTest = {
+globalThis.appliedNotificationFiltersTest = {
   filters: { type: { assigned: true, created: false, subscribed: false } },
   calls: [],
 };
@@ -17,8 +17,8 @@ registerHooks({
   resolve(specifier, context, nextResolve) {
     const substitutes = {
       "@/components/workspace-notifications/provider": `export const useNotifications = () => ({
-        filters: globalThis.__appliedNotificationFiltersTest.filters,
-        updateFilters: (...args) => globalThis.__appliedNotificationFiltersTest.calls.push(args),
+        filters: globalThis.appliedNotificationFiltersTest.filters,
+        updateFilters: (...args) => globalThis.appliedNotificationFiltersTest.calls.push(args),
       });`,
       "@plane/i18n": `export const useTranslation = () => ({ t: key => key });`,
       "@plane/ui": `export { Header, EHeaderVariant } from ${JSON.stringify(headerUrl)}; export { Tag } from ${JSON.stringify(tagUrl)};`,
@@ -30,11 +30,12 @@ registerHooks({
   },
 });
 
-test("applied notification filters render without key warnings and can be cleared", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("applied notification filters render without key warnings and can be cleared", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(async () => {
     await environment.unmount();
-    delete globalThis.__appliedNotificationFiltersTest;
+    delete globalThis.appliedNotificationFiltersTest;
   });
 
   const errors = [];
@@ -53,7 +54,7 @@ test("applied notification filters render without key warnings and can be cleare
   );
 
   await act(() => environment.container.querySelector("button").click());
-  assert.deepEqual(globalThis.__appliedNotificationFiltersTest.calls, [
+  assert.deepEqual(globalThis.appliedNotificationFiltersTest.calls, [
     ["type", { assigned: false, created: false, subscribed: false }],
   ]);
 });

@@ -9,7 +9,6 @@ import { INBOX_ISSUE_ORDER_BY_OPTIONS, INBOX_ISSUE_SORT_BY_OPTIONS } from "@plan
 import { useTranslation } from "@plane/i18n";
 import { getButtonStyling } from "@plane/propel/button";
 import { CheckIcon, ChevronDownIcon } from "@plane/propel/icons";
-import type { TInboxIssueSortingOrderByKeys, TInboxIssueSortingSortByKeys } from "@plane/types";
 import { CustomMenu } from "@plane/ui";
 // constants
 // helpers
@@ -49,7 +48,7 @@ export const InboxIssueOrderByDropdown = function InboxIssueOrderByDropdown() {
         <CustomMenu.MenuItem
           key={option.key}
           className="flex items-center justify-between gap-2"
-          onClick={() => setSorting("order_by", option.key as TInboxIssueSortingOrderByKeys)}
+          onClick={() => setSorting("order_by", option.key)}
         >
           {t(option.i18n_label)}
           {sorting?.order_by?.includes(option.key) && <CheckIcon className="size-3" />}
@@ -60,7 +59,7 @@ export const InboxIssueOrderByDropdown = function InboxIssueOrderByDropdown() {
         <CustomMenu.MenuItem
           key={option.key}
           className="flex items-center justify-between gap-2"
-          onClick={() => setSorting("sort_by", option.key as TInboxIssueSortingSortByKeys)}
+          onClick={() => setSorting("sort_by", option.key)}
         >
           {t(option.i18n_label)}
           {sorting?.sort_by?.includes(option.key) && <CheckIcon className="size-3" />}

@@ -16,6 +16,12 @@ import { SettingsControlItem } from "@/components/settings/control-item";
 import { useCurrentUser, useUpdateCurrentUser } from "@/hooks/use-current-user";
 import { useCurrentUserProfile, useUpdateUserProfile } from "@/hooks/use-current-user-profile";
 
+const getLanguageLabel = (value: string) => {
+  const selectedLanguage = SUPPORTED_LANGUAGES.find((l) => l.value === value);
+  if (!selectedLanguage) return value;
+  return selectedLanguage.label;
+};
+
 export const ProfileSettingsLanguageAndTimezonePreferencesList =
   function ProfileSettingsLanguageAndTimezonePreferencesList() {
     // store hooks
@@ -60,18 +66,17 @@ export const ProfileSettingsLanguageAndTimezonePreferencesList =
       }
     };
 
-    const getLanguageLabel = (value: string) => {
-      const selectedLanguage = SUPPORTED_LANGUAGES.find((l) => l.value === value);
-      if (!selectedLanguage) return value;
-      return selectedLanguage.label;
-    };
-
     return (
       <div className="flex flex-col gap-y-1">
         <SettingsControlItem
           title={t("timezone")}
           description={t("timezone_setting")}
-          control={<TimezoneSelect value={user?.user_timezone || "Asia/Kolkata"} onChange={handleTimezoneChange} />}
+          control={
+            <TimezoneSelect
+              value={user?.user_timezone || "Asia/Kolkata"}
+              onChange={(value) => void handleTimezoneChange(value)}
+            />
+          }
         />
         <SettingsControlItem
           title={t("language")}
@@ -80,7 +85,9 @@ export const ProfileSettingsLanguageAndTimezonePreferencesList =
             <CustomSelect
               value={profile?.language}
               label={profile?.language ? getLanguageLabel(profile?.language) : "Select a language"}
-              onChange={handleLanguageChange}
+              onChange={(selection) => {
+                if (selection !== null) void handleLanguageChange(selection);
+              }}
               buttonClassName="border border-subtle-1"
               className="rounded-md"
               input

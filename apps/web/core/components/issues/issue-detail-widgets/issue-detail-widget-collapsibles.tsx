@@ -61,8 +61,8 @@ function hasResourceError(denied: boolean, queryError: boolean, accessError = fa
   return !denied && (queryError || accessError);
 }
 
-export function IssueDetailWidgetCollapsibles(props: Props) {
-  const { workspaceSlug, projectId, issueId, disabled, issueServiceType, hideWidgets } = props;
+function useWidgetData(props: Props) {
+  const { workspaceSlug, projectId, issueId, issueServiceType, hideWidgets } = props;
   const { issue } = useWorkItemDetail(workspaceSlug, projectId, issueId, issueServiceType);
   const subItems = useWorkItemSubItems(workspaceSlug, projectId, issueId, issueServiceType);
   const subIssues = subItems.subItems;
@@ -104,6 +104,13 @@ export function IssueDetailWidgetCollapsibles(props: Props) {
     attachmentError: hasResourceError(attachmentHelpers.snapshot.isDenied, attachmentHelpers.snapshot.isError),
     hiddenWidgets: hideWidgets,
   });
+
+  return { visibleWidgets, attachmentHelpers };
+}
+
+export function IssueDetailWidgetCollapsibles(props: Props) {
+  const { workspaceSlug, projectId, issueId, disabled, issueServiceType } = props;
+  const { visibleWidgets, attachmentHelpers } = useWidgetData(props);
 
   return (
     <div className="flex flex-col">

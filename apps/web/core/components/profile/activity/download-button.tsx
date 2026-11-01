@@ -6,61 +6,85 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 // services
 // ui
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
+import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 // helpers
 import { renderFormattedPayloadDate } from "@plane/utils/datetime";
 import { UserService } from "@/services/user.service";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
+import { useCurrentUserId } from "@/hooks/use-current-user";
+import { useIdentityGeneration } from "@/hooks/use-identity-generation";
 
 const userService = new UserService();
 
 export function DownloadActivityButton() {
+  const { workspaceSlug, userId } = useParams({ strict: false });
+  const accountId = useCurrentUserId();
+  const client = useQueryClient();
+  const generation = useIdentityGeneration(client);
+  const scope = JSON.stringify([accountId, generation, workspaceSlug, userId]);
+  return <ActivityDownload key={scope} scope={scope} workspaceSlug={workspaceSlug} userId={userId} />;
+}
+
+function ActivityDownload({
+  scope,
+  workspaceSlug,
+  userId,
+}: {
+  scope: string;
+  workspaceSlug?: string;
+  userId?: string;
+}) {
   // states
   const [isDownloading, setIsDownloading] = useState(false);
-  // router
-  const { workspaceSlug, userId } = useParams({ strict: false });
+  const current = useCommittedScope(scope);
   //hooks
   const { t } = useTranslation();
 
   const handleDownload = async () => {
     const today = renderFormattedPayloadDate(new Date());
 
-    if (!workspaceSlug || !userId || !today) return;
+    if (isDownloading || !workspaceSlug || !userId || !today) return;
 
     setIsDownloading(true);
 
-    const csv = await userService
-      .downloadProfileActivity(workspaceSlug, userId, {
-        date: today,
-      })
-      .finally(() => setIsDownloading(false));
-
-    // create a Blob object
-    const blob = new Blob([csv], { type: "text/csv" });
-
-    // create URL for the Blob object
-    const url = window.URL.createObjectURL(blob);
-
-    // create a link element
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `profile-activity-${Date.now()}.csv`;
-    document.body.appendChild(a);
-
-    // simulate click on the link element to trigger download
-    a.click();
-
-    // cleanup
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    try {
+      const csv = await userService.downloadProfileActivity(workspaceSlug, userId, { date: today });
+      if (current()) downloadActivityCSV(csv);
+    } catch {
+      if (current())
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "Could not download activity",
+          message: "Please try again.",
+        });
+    } finally {
+      if (current()) setIsDownloading(false);
+    }
   };
 
   return (
-    <Button onClick={handleDownload} loading={isDownloading}>
+    <Button onClick={() => void handleDownload()} loading={isDownloading}>
       {isDownloading ? t("profile.stats.recent_activity.button_loading") : t("profile.stats.recent_activity.button")}
     </Button>
   );
+}
+
+function downloadActivityCSV(csv: string) {
+  const url = window.URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  const link = document.createElement("a");
+  try {
+    link.href = url;
+    link.download = `profile-activity-${Date.now()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+  } finally {
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  }
 }

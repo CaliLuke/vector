@@ -22,18 +22,16 @@ import { useSearchableDropdown } from "../searchable-options";
 // plane web imports
 import type { TProject } from "@plane/types";
 // local imports
-import { DropdownButton } from "../buttons";
+import { DropdownTrigger } from "../buttons";
 import { BUTTON_VARIANTS_WITH_TEXT } from "../constants";
 import type { TDropdownProps } from "../types";
 
-type Props = TDropdownProps & {
+export type ProjectDropdownProps = TDropdownProps & {
   button?: ReactNode;
   currentProjectId?: string;
   dropdownArrow?: boolean;
   dropdownArrowClassName?: string;
-  getProjectById: (projectId: string | null | undefined) => Partial<TProject> | undefined;
   onClose?: () => void;
-  projectIds: string[];
   renderByDefault?: boolean;
   renderCondition?: (projectId: string) => boolean;
 } & (
@@ -49,19 +47,24 @@ type Props = TDropdownProps & {
       }
   );
 
+type Props = ProjectDropdownProps & {
+  getProjectById: (projectId: string | null | undefined) => Partial<TProject> | undefined;
+  projectIds: string[];
+};
+
+const renderIcon = (logoProps: TProject["logo_props"], key?: string) => (
+  <span key={key} className="grid h-4 w-4 flex-shrink-0 place-items-center">
+    <Logo logo={logoProps} size={14} />
+  </span>
+);
+
 export const ProjectDropdownBase = function ProjectDropdownBase(props: Props) {
   const {
-    button,
-    buttonClassName,
-    buttonContainerClassName,
     buttonVariant,
     className = "",
     currentProjectId,
     disabled = false,
-    dropdownArrow = false,
-    dropdownArrowClassName = "",
     getProjectById,
-    hideIcon = false,
     multiple,
     onChange,
     onClose,
@@ -70,7 +73,6 @@ export const ProjectDropdownBase = function ProjectDropdownBase(props: Props) {
     projectIds,
     renderByDefault = true,
     renderCondition,
-    showTooltip = false,
     tabIndex,
     value,
   } = props;
@@ -82,7 +84,7 @@ export const ProjectDropdownBase = function ProjectDropdownBase(props: Props) {
   // store hooks
   const options = projectIds?.map((projectId) => {
     const projectDetails = getProjectById(projectId);
-    if (renderCondition && !renderCondition(projectId)) return;
+    if (renderCondition && !renderCondition(projectId)) return undefined;
     return {
       value: projectId,
       query: `${projectDetails?.name}`,
@@ -107,29 +109,27 @@ export const ProjectDropdownBase = function ProjectDropdownBase(props: Props) {
     value
   );
 
-  const getDisplayName = (value: string | string[] | null, placeholder: string = "") => {
-    if (Array.isArray(value)) {
-      const firstProject = getProjectById(value[0]);
-      return value.length ? (value.length === 1 ? firstProject?.name : `${value.length} projects`) : placeholder;
+  const getDisplayName = (selectedValue: string | string[] | null, fallbackLabel: string = "") => {
+    if (Array.isArray(selectedValue)) {
+      const firstProject = getProjectById(selectedValue[0]);
+      return selectedValue.length
+        ? selectedValue.length === 1
+          ? firstProject?.name
+          : `${selectedValue.length} projects`
+        : fallbackLabel;
     } else {
-      return value ? (getProjectById(value)?.name ?? placeholder) : placeholder;
+      return selectedValue ? (getProjectById(selectedValue)?.name ?? fallbackLabel) : fallbackLabel;
     }
   };
 
-  const getProjectIcon = (value: string | string[] | null) => {
-    const renderIcon = (logoProps: TProject["logo_props"]) => (
-      <span className="grid h-4 w-4 flex-shrink-0 place-items-center">
-        <Logo logo={logoProps} size={14} />
-      </span>
-    );
-
-    if (Array.isArray(value)) {
+  const getProjectIcon = (selectedValue: string | string[] | null) => {
+    if (Array.isArray(selectedValue)) {
       return (
         <div className="flex items-center gap-0.5">
-          {value.length > 0 ? (
-            value.map((projectId) => {
+          {selectedValue.length > 0 ? (
+            selectedValue.map((projectId) => {
               const projectDetails = getProjectById(projectId);
-              return projectDetails?.logo_props ? renderIcon(projectDetails.logo_props) : null;
+              return projectDetails?.logo_props ? renderIcon(projectDetails.logo_props, projectId) : null;
             })
           ) : (
             <ProjectIcon className="size-3 text-tertiary" />
@@ -137,54 +137,28 @@ export const ProjectDropdownBase = function ProjectDropdownBase(props: Props) {
         </div>
       );
     } else {
-      const projectDetails = getProjectById(value);
+      const projectDetails = getProjectById(selectedValue);
       return projectDetails?.logo_props ? renderIcon(projectDetails.logo_props) : null;
     }
   };
 
-  const comboButton = ({ open }: { open: boolean }) =>
-    button ? (
-      <button
-        ref={setReferenceElement}
-        type="button"
-        className={cn("clickable block h-full w-full outline-none", buttonContainerClassName)}
-        disabled={disabled}
-      >
-        {button}
-      </button>
-    ) : (
-      <button
-        ref={setReferenceElement}
-        type="button"
-        className={cn(
-          "clickable block h-full max-w-full outline-none",
-          {
-            "cursor-not-allowed text-secondary": disabled,
-            "cursor-pointer": !disabled,
-          },
-          buttonContainerClassName
-        )}
-        disabled={disabled}
-      >
-        <DropdownButton
-          className={buttonClassName}
-          isActive={open}
-          tooltipHeading="Project"
-          tooltipContent={value?.length ? `${value.length} project${value.length !== 1 ? "s" : ""}` : placeholder}
-          showTooltip={showTooltip}
-          variant={buttonVariant}
-          renderToolTipByDefault={renderByDefault}
-        >
-          {!hideIcon && getProjectIcon(value)}
-          {BUTTON_VARIANTS_WITH_TEXT.includes(buttonVariant) && (
-            <span className="max-w-40 truncate">{getDisplayName(value, placeholder)}</span>
-          )}
-          {dropdownArrow && (
-            <ChevronDownIcon className={cn("h-2.5 w-2.5 flex-shrink-0", dropdownArrowClassName)} aria-hidden="true" />
-          )}
-        </DropdownButton>
-      </button>
-    );
+  const comboButton = ({ open }: { open: boolean }) => (
+    <DropdownTrigger
+      appearance={props}
+      ref={setReferenceElement}
+      isActive={open}
+      tooltipHeading="Project"
+      tooltipContent={value?.length ? `${value.length} project${value.length !== 1 ? "s" : ""}` : placeholder}
+    >
+      {!props.hideIcon && getProjectIcon(value)}
+      {BUTTON_VARIANTS_WITH_TEXT.includes(buttonVariant) && (
+        <span className="max-w-40 truncate">{getDisplayName(value, placeholder)}</span>
+      )}
+      {props.dropdownArrow && (
+        <ChevronDownIcon className={cn("h-2.5 w-2.5 flex-shrink-0", props.dropdownArrowClassName)} aria-hidden="true" />
+      )}
+    </DropdownTrigger>
+  );
 
   const children = dropdown.renderOptions(<ProjectOptions options={filteredOptions} />, t("search"));
 

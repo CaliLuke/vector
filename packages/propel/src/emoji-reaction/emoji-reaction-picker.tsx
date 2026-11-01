@@ -4,12 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import React, { useMemo, useCallback } from "react";
+import React, { useCallback } from "react";
 import { EmojiRoot } from "../emoji-icon-picker/emoji/emoji";
 import { emojiToString } from "../emoji-icon-picker/helper";
 import { Popover } from "../popover";
 import { cn } from "@plane/utils/common";
-import { convertPlacementToSideAndAlign } from "../utils/placement";
 import type { TPlacement, TSide, TAlign } from "../utils/placement";
 import { EmojiReactionButton, EmojiReactionGroup } from "./emoji-reaction";
 import type { EmojiReactionButtonProps, EmojiReactionGroupProps } from "./emoji-reaction";
@@ -40,21 +39,12 @@ export function EmojiReactionPicker(props: EmojiReactionPickerProps) {
     dropdownClassName,
     label,
     onChange,
-    placement = "bottom-start",
+    placement,
     searchDisabled = false,
     searchPlaceholder = "Search",
     side = "bottom",
     align = "start",
   } = props;
-
-  // side and align calculations
-  const { finalSide, finalAlign } = useMemo(() => {
-    if (placement) {
-      const converted = convertPlacementToSideAndAlign(placement);
-      return { finalSide: converted.side, finalAlign: converted.align };
-    }
-    return { finalSide: side, finalAlign: align };
-  }, [placement, side, align]);
 
   const handleEmojiChange = useCallback(
     (value: string) => {
@@ -72,23 +62,17 @@ export function EmojiReactionPicker(props: EmojiReactionPickerProps) {
     (label.type === "button" || label.type === EmojiReactionButton);
 
   const trigger = isReactionGroup ? (
-    React.cloneElement(label as React.ReactElement<EmojiReactionGroupProps>, {
+    React.cloneElement(label, {
       renderAddButton: (button: React.ReactElement<EmojiReactionButtonProps>) => (
         <Popover.Button
           className={triggerClassName}
           disabled={disabled}
-          render={
-            React.cloneElement(button, { onAddReaction: undefined }) as React.ReactElement<Record<string, unknown>>
-          }
+          render={(triggerProps) => React.cloneElement(button, { ...triggerProps, onAddReaction: undefined })}
         />
       ),
     })
   ) : isButtonLabel ? (
-    <Popover.Button
-      className={triggerClassName}
-      disabled={disabled}
-      render={label as React.ReactElement<Record<string, unknown>>}
-    />
+    <Popover.Button className={triggerClassName} disabled={disabled} render={label} />
   ) : (
     <Popover.Button className={triggerClassName} disabled={disabled}>
       {label}
@@ -101,8 +85,9 @@ export function EmojiReactionPicker(props: EmojiReactionPickerProps) {
       <Popover.Panel
         positionerClassName="z-50"
         className={cn("w-80 overflow-hidden rounded-md border-[0.5px] border-strong bg-surface-1", dropdownClassName)}
-        side={finalSide}
-        align={finalAlign}
+        placement={placement}
+        side={side}
+        align={align}
         sideOffset={8}
         data-prevent-outside-click="true"
       >

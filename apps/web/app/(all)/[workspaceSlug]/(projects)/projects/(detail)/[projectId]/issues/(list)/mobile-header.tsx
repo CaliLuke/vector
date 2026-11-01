@@ -10,15 +10,11 @@ import { useState } from "react";
 // plane imports
 import { ISSUE_DISPLAY_FILTERS_BY_PAGE } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import { ChevronDownIcon } from "@plane/propel/icons";
 import { EIssueLayoutTypes } from "@plane/types";
 // components
+import { MobileDisplayOptions } from "@/components/issues/issue-layouts/filters/header/mobile-display-options";
 import { WorkItemsModal } from "@/components/analytics/work-items/modal";
-import {
-  DisplayFiltersSelection,
-  FiltersDropdown,
-  MobileLayoutSelection,
-} from "@/components/issues/issue-layouts/filters";
+import { DisplayFiltersSelection, MobileLayoutSelection } from "@/components/issues/issue-layouts/filters";
 // hooks
 import { useProjectIssueDisplayPreferences } from "@/hooks/use-project-issue-display-preferences";
 import { useRouteProject } from "@/hooks/use-projects";
@@ -50,30 +46,19 @@ export const ProjectIssuesMobileHeader = function ProjectIssuesMobileHeader() {
           layouts={[EIssueLayoutTypes.LIST, EIssueLayoutTypes.KANBAN, EIssueLayoutTypes.CALENDAR]}
           onChange={handleLayoutChange}
         />
-        <div className="flex flex-grow items-center justify-center border-l border-subtle text-13 text-secondary">
-          <FiltersDropdown
-            title={t("common.display")}
-            placement="bottom-end"
-            menuButton={
-              <span className="flex items-center text-13 text-secondary">
-                {t("common.display")}
-                <ChevronDownIcon className="ml-2 h-4 w-4 text-secondary" />
-              </span>
+        <MobileDisplayOptions>
+          <DisplayFiltersSelection
+            layoutDisplayFiltersOptions={
+              activeLayout ? ISSUE_DISPLAY_FILTERS_BY_PAGE.issues.layoutOptions[activeLayout] : undefined
             }
-          >
-            <DisplayFiltersSelection
-              layoutDisplayFiltersOptions={
-                activeLayout ? ISSUE_DISPLAY_FILTERS_BY_PAGE.issues.layoutOptions[activeLayout] : undefined
-              }
-              displayFilters={issueFilters?.displayFilters ?? {}}
-              handleDisplayFiltersUpdate={handleDisplayFilters}
-              displayProperties={issueFilters?.displayProperties ?? {}}
-              handleDisplayPropertiesUpdate={handleDisplayProperties}
-              cycleViewDisabled={!currentProjectDetails?.cycle_view}
-              moduleViewDisabled={!currentProjectDetails?.module_view}
-            />
-          </FiltersDropdown>
-        </div>
+            displayFilters={issueFilters?.displayFilters ?? {}}
+            handleDisplayFiltersUpdate={handleDisplayFilters}
+            displayProperties={issueFilters?.displayProperties ?? {}}
+            handleDisplayPropertiesUpdate={handleDisplayProperties}
+            cycleViewDisabled={!currentProjectDetails?.cycle_view}
+            moduleViewDisabled={!currentProjectDetails?.module_view}
+          />
+        </MobileDisplayOptions>
 
         <button
           onClick={() => setAnalyticsModal(true)}

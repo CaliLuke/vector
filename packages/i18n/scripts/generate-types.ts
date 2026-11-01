@@ -10,6 +10,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { readJsonFile } from "./lib/locale-io.js";
 
 const COPYRIGHT_HEADER = `/**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
@@ -17,22 +18,21 @@ const COPYRIGHT_HEADER = `/**
  * See the LICENSE file for details.
  */`;
 
-type NestedObject = { [key: string]: string | NestedObject };
-
 /**
  * Recursively flatten a nested object into dot-notated keys.
  * Returns an array of flattened key strings.
  */
-function flattenKeys(obj: NestedObject, prefix = ""): string[] {
+function flattenKeys(obj: object, prefix = ""): string[] {
   const keys: string[] = [];
 
-  for (const [key, value] of Object.entries(obj)) {
+  const entries: [string, unknown][] = Object.entries(obj);
+  for (const [key, value] of entries) {
     const fullKey = prefix ? `${prefix}.${key}` : key;
 
     if (typeof value === "string") {
       keys.push(fullKey);
     } else if (typeof value === "object" && value !== null) {
-      keys.push(...flattenKeys(value as NestedObject, fullKey));
+      keys.push(...flattenKeys(value, fullKey));
     }
   }
 
@@ -83,7 +83,7 @@ function main(): void {
   const jsonFiles = fs
     .readdirSync(localesDir)
     .filter((file) => file.endsWith(".json"))
-    .sort();
+    .toSorted();
 
   if (jsonFiles.length === 0) {
     console.error(`Error: No JSON files found in ${localesDir}`);
@@ -97,13 +97,12 @@ function main(): void {
 
   for (const file of jsonFiles) {
     const filePath = path.join(localesDir, file);
-    const content = fs.readFileSync(filePath, "utf-8");
     const parsed = (() => {
       try {
-        return JSON.parse(content) as NestedObject;
+        return readJsonFile(filePath);
       } catch {
         console.error(`Error: Failed to parse JSON in ${file}`);
-        process.exit(1);
+        return process.exit(1);
       }
     })();
 
@@ -133,7 +132,7 @@ function main(): void {
   }
 
   // Detect path conflicts
-  const sortedKeys = [...allKeys].sort();
+  const sortedKeys = [...allKeys].toSorted();
   const pathConflicts = detectPathConflicts(sortedKeys);
 
   if (pathConflicts.length > 0) {
@@ -164,7 +163,7 @@ ${keyLines}
 
   fs.writeFileSync(outputFile, output, "utf-8");
 
-  console.log(`Generated ${sortedKeys.length} keys from ${jsonFiles.length} namespace files`);
+  process.stdout.write(`Generated ${sortedKeys.length} keys from ${jsonFiles.length} namespace files\n`);
 }
 
 main();

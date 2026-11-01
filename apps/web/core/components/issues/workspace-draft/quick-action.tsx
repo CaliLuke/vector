@@ -9,7 +9,6 @@ import { useTranslation } from "@plane/i18n";
 import type { TContextMenuItem } from "@plane/ui";
 import { ContextMenu, CustomMenu } from "@plane/ui";
 // helpers
-import { cn } from "@plane/utils/common";
 
 export interface Props {
   parentRef: React.RefObject<HTMLElement | null>;
@@ -33,34 +32,7 @@ export function WorkspaceDraftIssueQuickActions(props: Props) {
         closeOnSelect
       >
         {MENU_ITEMS.map((item) => (
-          <CustomMenu.MenuItem
-            key={item.key}
-            onClick={() => {
-              item.action();
-            }}
-            className={cn(
-              "flex items-center gap-2",
-              {
-                "text-placeholder": item.disabled,
-              },
-              item.className
-            )}
-            disabled={item.disabled}
-          >
-            {item.icon && <item.icon className={cn("h-3 w-3", item.iconClassName)} />}
-            <div>
-              <h5>{t(item.title || "")}</h5>
-              {item.description && (
-                <p
-                  className={cn("whitespace-pre-line text-tertiary", {
-                    "text-placeholder": item.disabled,
-                  })}
-                >
-                  {item.description}
-                </p>
-              )}
-            </div>
-          </CustomMenu.MenuItem>
+          <CustomMenu.ActionItem key={item.key} item={{ ...item, title: t(item.title || "") }} />
         ))}
       </CustomMenu>
     </>

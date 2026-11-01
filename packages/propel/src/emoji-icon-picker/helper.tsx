@@ -53,6 +53,12 @@ export type TIconsListProps = {
   searchDisabled?: boolean;
 };
 
+// Convert RGB back to hex
+const toHex = (value: number): string => {
+  const encodedHex = value.toString(16);
+  return encodedHex.length === 1 ? "0" + encodedHex : encodedHex;
+};
+
 /**
  * Adjusts the given hex color to ensure it has enough contrast.
  * @param {string} hex - The hex color code input by the user.
@@ -87,12 +93,6 @@ export const adjustColorForContrast = (hex: string): string => {
     g = Math.max(0, g - 50);
     b = Math.max(0, b - 50);
   }
-
-  // Convert RGB back to hex
-  const toHex = (value: number): string => {
-    const hex = value.toString(16);
-    return hex.length === 1 ? "0" + hex : hex;
-  };
 
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };

@@ -34,11 +34,9 @@ import { TableRowDragHandlePlugin } from "../plugins/drag-handles/row/plugin";
 import { TableInsertPlugin } from "../plugins/insert-handlers/plugin";
 import { TableView } from "./table-view";
 import { createTable } from "./utilities/create-table";
-import { deleteColumnOrTable } from "./utilities/delete-column";
+import { deleteColumnOrTable, deleteRowOrTable } from "./utilities/delete-axis";
 import { handleDeleteKeyOnTable } from "./utilities/delete-key-shortcut";
-import { deleteRowOrTable } from "./utilities/delete-row";
-import { insertLineAboveTableAction } from "./utilities/insert-line-above-table-action";
-import { insertLineBelowTableAction } from "./utilities/insert-line-below-table-action";
+import { insertLineAboveTableAction, insertLineBelowTableAction } from "./utilities/insert-line-around-table-action";
 import { DEFAULT_COLUMN_WIDTH } from ".";
 
 type TableOptions = {
@@ -68,7 +66,7 @@ declare module "@tiptap/core" {
       toggleHeaderCell: () => ReturnType;
       clearSelectedCells: () => ReturnType;
       mergeOrSplit: () => ReturnType;
-      setCellAttribute: (name: string, value: any) => ReturnType;
+      setCellAttribute: (name: string, value: unknown) => ReturnType;
       goToNextCell: () => ReturnType;
       goToPreviousCell: () => ReturnType;
       fixTables: () => ReturnType;

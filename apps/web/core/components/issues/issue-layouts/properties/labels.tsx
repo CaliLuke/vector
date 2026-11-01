@@ -25,7 +25,7 @@ import { LabelDropdown } from "./label-dropdown";
 export interface IIssuePropertyLabels {
   projectId: string | null;
   value: string[];
-  defaultOptions?: unknown;
+  defaultOptions?: IIssueLabel[];
   onChange: (data: string[]) => void;
   disabled?: boolean;
   hideDropdownArrow?: boolean;
@@ -197,8 +197,19 @@ export function IssuePropertyLabels(props: IIssuePropertyLabels) {
     }
   }, [isOpen, isMobile]);
 
-  let projectLabels: IIssueLabel[] = defaultOptions as IIssueLabel[];
+  let projectLabels: IIssueLabel[] = defaultOptions;
   if (storeLabels && storeLabels.length > 0) projectLabels = storeLabels;
+
+  const dropdownProps = {
+    projectId,
+    value,
+    onChange,
+    hideDropdownArrow,
+    buttonClassName,
+    placement,
+    fullWidth,
+    fullHeight,
+  };
 
   return (
     <>
@@ -208,15 +219,8 @@ export function IssuePropertyLabels(props: IIssuePropertyLabels) {
             ?.filter((l) => value.includes(l?.id))
             .map((label) => (
               <LabelDropdown
+                {...dropdownProps}
                 key={label.id}
-                projectId={projectId}
-                value={value}
-                onChange={onChange}
-                buttonClassName={buttonClassName}
-                placement={placement}
-                hideDropdownArrow={hideDropdownArrow}
-                fullWidth={fullWidth}
-                fullHeight={fullHeight}
                 label={
                   <LabelItem
                     label={label}
@@ -231,14 +235,7 @@ export function IssuePropertyLabels(props: IIssuePropertyLabels) {
             ))
         ) : (
           <LabelDropdown
-            projectId={projectId}
-            value={value}
-            onChange={onChange}
-            hideDropdownArrow={hideDropdownArrow}
-            buttonClassName={buttonClassName}
-            placement={placement}
-            fullWidth={fullWidth}
-            fullHeight={fullHeight}
+            {...dropdownProps}
             label={
               <LabelSummary
                 isMobile={isMobile}
@@ -253,14 +250,7 @@ export function IssuePropertyLabels(props: IIssuePropertyLabels) {
         )
       ) : (
         <LabelDropdown
-          projectId={projectId}
-          value={value}
-          onChange={onChange}
-          hideDropdownArrow={hideDropdownArrow}
-          buttonClassName={buttonClassName}
-          placement={placement}
-          fullWidth={fullWidth}
-          fullHeight={fullHeight}
+          {...dropdownProps}
           label={
             <NoLabel
               isMobile={isMobile}

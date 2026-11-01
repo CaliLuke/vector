@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
@@ -52,9 +53,9 @@ function setup(t, suppliedClient) {
     membershipRole: EUserWorkspaceRoles.ADMIN,
     membershipRevision: "v1",
     projectId: "project",
-    projectMembershipRole: 5,
-    projectRole: 20,
-    serviceType: "issues",
+    projectMembershipRole: ContractEnums.EUserPermissions.GUEST,
+    projectRole: ContractEnums.EUserPermissions.ADMIN,
+    serviceType: ContractEnums.EIssueServiceType.ISSUES,
   };
   seedIssueQueryScope(client, scope);
   return { client, scope };

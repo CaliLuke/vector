@@ -34,7 +34,8 @@ async function flushAnimationFrames() {
 
 registerDropdownSourceModules("custom-menu.tsx", substitutes);
 
-test("member role filter uses one focusable trigger and Escape returns focus", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("member role filter uses one focusable trigger and Escape returns focus", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   const errors = [];

@@ -5,17 +5,19 @@
  */
 
 import React from "react";
-import type { NameType, Payload, ValueType } from "recharts/types/component/DefaultTooltipContent";
+import type { TPieChartProps } from "@plane/types";
+import { isRecord } from "@plane/utils/common";
+import type { Payload } from "recharts/types/component/DefaultTooltipContent";
 // plane imports
 import { Card, ECardSpacing } from "../../card";
 
 type Props = {
   dotColor?: string;
   label: string;
-  payload: readonly Payload<ValueType, NameType>[];
+  payload: readonly Payload[];
 };
 
-export const CustomPieChartTooltip = React.memo(function CustomPieChartTooltip(props: Props) {
+const CustomPieChartTooltip = React.memo(function CustomPieChartTooltip(props: Props) {
   const { dotColor, label, payload } = props;
 
   return (
@@ -42,3 +44,26 @@ export const CustomPieChartTooltip = React.memo(function CustomPieChartTooltip(p
   );
 });
 CustomPieChartTooltip.displayName = "CustomPieChartTooltip";
+
+export function PieChartTooltip({
+  active,
+  payload,
+  cells,
+  showTooltip,
+  dataKey,
+  tooltipLabel,
+}: Pick<TPieChartProps<string, string>, "cells" | "showTooltip" | "dataKey" | "tooltipLabel"> & {
+  active?: boolean;
+  payload?: readonly Payload[];
+}) {
+  if (!showTooltip || !active || !payload?.length) return null;
+  const entry: unknown = payload[0].payload;
+  if (!isRecord(entry)) return null;
+  const cell = cells.find((candidate) => candidate.key === entry.key);
+  if (!cell) return null;
+  const label =
+    typeof tooltipLabel === "function"
+      ? tooltipLabel(isRecord(entry.payload) ? entry.payload : {})
+      : tooltipLabel || dataKey;
+  return <CustomPieChartTooltip dotColor={cell.fill} label={label} payload={payload} />;
+}

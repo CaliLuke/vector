@@ -11,7 +11,7 @@ import { expect, it, vi } from "vitest";
 import { createEditorHookProps } from "../../../tests/helpers/editor-hook-props";
 import { useEditor } from "./use-editor";
 
-vi.mock("@/props", () => ({ CoreEditorProps: () => ({ attributes: { class: "base-editor" } }) }));
+vi.mock("@/props", () => ({ createCoreEditorProps: () => ({ attributes: { class: "base-editor" } }) }));
 vi.mock("@/helpers/editor-ref", () => ({ getEditorRefHelpers: () => ({}) }));
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });

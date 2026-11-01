@@ -6,3 +6,4 @@
 
 export * from "./menu";
 export * from "./types";
+export { useSubmenuRegistry } from "./use-submenu-registry";

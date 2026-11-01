@@ -73,6 +73,7 @@ export const ColorDropdown = memo(function ColorDropdown(props: Props) {
                 {COLORS_LIST.map((color) => (
                   <button
                     key={color.key}
+                    aria-label={color.label}
                     type="button"
                     className="size-6 flex-shrink-0 rounded-sm border-[0.5px] border-strong-1 transition-opacity hover:opacity-60"
                     style={{
@@ -96,6 +97,7 @@ export const ColorDropdown = memo(function ColorDropdown(props: Props) {
                 {COLORS_LIST.map((color) => (
                   <button
                     key={color.key}
+                    aria-label={color.label}
                     type="button"
                     className="size-6 flex-shrink-0 rounded-sm border-[0.5px] border-strong-1 transition-opacity hover:opacity-60"
                     style={{

@@ -31,7 +31,7 @@ const CreatedVsResolved = function CreatedVsResolved() {
     return createdVsResolvedData.data.map((datum) => ({
       ...datum,
       [datum.key]: datum.count,
-      name: renderFormattedDate(datum.key) ?? datum.key,
+      name: typeof datum.key === "string" ? (renderFormattedDate(datum.key) ?? datum.key) : String(datum.key),
     }));
   }, [createdVsResolvedData]);
 

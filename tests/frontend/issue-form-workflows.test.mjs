@@ -506,8 +506,6 @@ await test("invitation selection validates and retries unfinished setup without 
   assert.deepEqual(finished, [["invite"]]);
 });
 
-formObserver.restore();
-
 await test("a projectless draft permits an empty title and keeps description content", async (t) => {
   const env = await setup(t);
   const { IssueFormRoot } = await import("../../apps/web/core/components/issues/issue-modal/form.tsx");
@@ -597,3 +595,39 @@ await test("publication errors appear beside the selection and focus it without 
   assert.equal(document.activeElement, field.querySelector("input"));
   assert.equal(field.querySelector("input").value, "old-module");
 });
+
+await test("new work items without preloaded data start blank and retain their selected project on submission", async (t) => {
+  const env = await setup(t);
+  const { IssueFormRoot } = await import("../../apps/web/core/components/issues/issue-modal/form.tsx");
+  const saved = [];
+  await env.render(
+    React.createElement(IssueFormRoot, issueProps({ data: undefined, onSubmit: async (value) => saved.push(value) }))
+  );
+  const title = env.container.querySelector('[name="name"]');
+  assert.equal(title.value, "");
+  await change(title, "Fresh item");
+  await submit(env.container);
+  const form = formObserver.getForms(formSources.issue).at(-1);
+  await waitForSubmitCompletion(form);
+  assert.equal(saved.length, 1, JSON.stringify({ values: form.state.values, errors: form.state.errors }));
+  assert.equal(saved[0].name, "Fresh item");
+  assert.equal(saved[0].project_id, "first");
+  assert.equal(saved[0].description_html, "<p></p>");
+  await env.render(null);
+  await env.render(
+    React.createElement(
+      IssueFormRoot,
+      issueProps({ data: { id: "existing", name: "Waiting for source" }, onSubmit: async (value) => saved.push(value) })
+    )
+  );
+  assert.equal(
+    Boolean(env.container.querySelector('[name="description_html"]')),
+    false,
+    "an existing item still waits for its saved description"
+  );
+  await submit(env.container);
+  await waitForSubmitCompletion(formObserver.getForms(formSources.issue).at(-1));
+  assert.equal(saved.length, 1, "unloaded saved content must never be submitted as an empty description");
+});
+
+formObserver.restore();

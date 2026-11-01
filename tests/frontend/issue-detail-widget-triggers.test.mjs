@@ -15,9 +15,9 @@ const packageStubs = {
     "export const ChevronDownIcon = () => null; export const ChevronRightIcon = () => null; export const MoreHorizontal = () => null; export const PlusIcon = () => null;",
   "@plane/propel/toast": "export const TOAST_TYPE = { ERROR: 'error' }; export const setToast = () => {};",
   "@plane/types": "export const EIssueServiceType = { ISSUES: 'issues' };",
-  "@/providers/issue-detail-ui-state": `export const useIssueDetailUiState = () => ({ toggleIssueLinkModal: value => globalThis.__widgetCalls.push(['link', value]), setLastWidgetAction: value => globalThis.__widgetCalls.push(['last', value]) });`,
+  "@/providers/issue-detail-ui-state": `export const useIssueDetailUiState = () => ({ toggleIssueLinkModal: value => globalThis.widgetCalls.push(['link', value]), setLastWidgetAction: value => globalThis.widgetCalls.push(['last', value]) });`,
   "@/hooks/use-file-size": "export const useFileSize = () => ({ maxFileSize: 1024 });",
-  "react-dropzone": `export const useDropzone = ({ disabled }) => ({ getRootProps: (props = {}) => ({ ...props, onClick: () => { if (!disabled) globalThis.__widgetCalls.push(['dropzone-click']); }, onKeyDown: () => {}, role: props.role ?? 'presentation', tabIndex: disabled ? undefined : props.tabIndex ?? 0 }), getInputProps: () => ({ type: 'file', disabled }) });`,
+  "react-dropzone": `export const useDropzone = ({ disabled }) => ({ getRootProps: (props = {}) => ({ ...props, onClick: () => { if (!disabled) globalThis.widgetCalls.push(['dropzone-click']); }, onKeyDown: () => {}, role: props.role ?? 'presentation', tabIndex: disabled ? undefined : props.tabIndex ?? 0 }), getInputProps: () => ({ type: 'file', disabled }) });`,
   "@plane/propel/tooltip": "export const Tooltip = ({ children }) => children;",
 };
 
@@ -48,7 +48,7 @@ registerHooks({
   },
 });
 
-globalThis.__widgetCalls = observed;
+globalThis.widgetCalls = observed;
 
 let components;
 async function loadComponents() {
@@ -66,7 +66,8 @@ async function loadComponents() {
   return components;
 }
 
-test("issue detail widget button is a ref-forwarding single CustomMenu trigger", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("issue detail widget button is a ref-forwarding single CustomMenu trigger", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   const consoleErrors = [];
@@ -100,7 +101,7 @@ test("issue detail widget button is a ref-forwarding single CustomMenu trigger",
   assert.ok(document.body.textContent.includes("Create new"));
 });
 
-test("link and attachment actions use their supplied buttons as the only interactive trigger", async (t) => {
+void test("link and attachment actions use their supplied buttons as the only interactive trigger", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   const { IssueDetailWidgetButton, IssueLinksActionButton, IssueAttachmentActionButton } = await loadComponents();

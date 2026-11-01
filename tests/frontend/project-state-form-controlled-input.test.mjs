@@ -23,7 +23,8 @@ registerHooks({
   },
 });
 
-test("StateForm keeps its name input controlled on the first render", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("StateForm keeps its name input controlled on the first render", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
 

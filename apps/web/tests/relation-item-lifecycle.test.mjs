@@ -1,3 +1,4 @@
+import * as ContractEnums from "./../../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -37,7 +38,8 @@ registerWebTestModules({
   "@/components/issues/issue-detail/issue-identifier": "export const IssueIdentifier=()=>null;",
   "@/providers/issue-detail-ui-state":
     "export const useIssueDetailUiState=()=>({toggleCreateIssueModal:()=>{},toggleDeleteIssueModal:()=>{}});",
-  "@/components/relations": "export const useTimeLineRelationOptions=()=>({relates_to:{i18n_label:'Related'}});",
+  "@/components/relations":
+    "export const useTimeLineRelationOptions=()=>({relates_to:{key:'relates_to',i18n_label:'Related'}});",
   "@/components/dropdowns/state/dropdown": dropdown("StateDropdown", "state"),
   "@/components/dropdowns/priority": dropdown("PriorityDropdown", "priority"),
   "@/components/dropdowns/member/dropdown": dropdown("MemberDropdown", "assignee"),
@@ -47,7 +49,7 @@ registerWebTestModules({
 });
 const ui = `const React=globalThis.React;
 export const Collapsible=({children})=>React.createElement('section',null,children);
-export const ControlLink=({children,...props})=>React.createElement('a',props,children);
+export {ControlLink} from ${JSON.stringify(new URL("../../../packages/ui/src/control-link/control-link.tsx", import.meta.url).href)};
 export const CustomMenu=({children})=>React.createElement('div',null,children);
 CustomMenu.MenuItem=({children,...props})=>React.createElement('button',{type:'button',...props},children);
 export const AlertModalCore=props=>React.createElement('button',{type:'button','data-delete-confirm':true,disabled:props.isSubmitting,onClick:props.handleSubmit},'Confirm delete');`;
@@ -66,7 +68,14 @@ const { IssueRelationService } = await import("../core/services/issue/issue_rela
 const identity = await import("../core/queries/identity.ts");
 async function setup(
   t,
-  { epic = false, operationsOnly = false, patchStatus = 200, readOnly = false, parentEpic = false } = {}
+  {
+    epic = false,
+    operationsOnly = false,
+    patchStatus = 200,
+    readOnly = false,
+    parentEpic = false,
+    relationReadFailures = 0,
+  } = {}
 ) {
   const fixture = await createPermissionUiFixture(t, {
     path: "/acme/projects/p1/issues/P1-1",
@@ -98,7 +107,11 @@ async function setup(
   globalThis.relationModal = undefined;
   t.mock.method(IssueService.prototype, "get", async (path) => {
     reads.push(path);
-    if (path === paths.source)
+    if (path === paths.source) {
+      if (relationReadFailures > 0) {
+        relationReadFailures--;
+        throw new Error("relation source temporarily unavailable");
+      }
       return {
         status: 200,
         data: {
@@ -107,6 +120,7 @@ async function setup(
           issue_related: [],
         },
       };
+    }
     if (path === paths.related && row) return { status: 200, data: row };
     throw { response: { data: { status: 404 } } };
   });
@@ -131,8 +145,20 @@ async function setup(
     return { status: 200, data: {} };
   });
   function Probe({ onOperations }) {
-    onOperations(useRelationOperations("acme", "p2", "related", epic ? "epics" : "issues"));
-    const detail = useWorkItemDetail("acme", "p2", "related", epic ? "epics" : "issues");
+    onOperations(
+      useRelationOperations(
+        "acme",
+        "p2",
+        "related",
+        epic ? ContractEnums.EIssueServiceType.EPICS : ContractEnums.EIssueServiceType.ISSUES
+      )
+    );
+    const detail = useWorkItemDetail(
+      "acme",
+      "p2",
+      "related",
+      epic ? ContractEnums.EIssueServiceType.EPICS : ContractEnums.EIssueServiceType.ISSUES
+    );
     return React.createElement(
       React.Fragment,
       null,
@@ -176,6 +202,32 @@ async function setup(
     },
   };
 }
+void test("a related epic opens its canonical page in a new tab without mutating the relationship", async (t) => {
+  const view = await setup(t, { epic: true });
+  const opened = [];
+  t.mock.method(window, "open", (...args) => {
+    opened.push(args);
+    return null;
+  });
+  const link = view.environment.container.querySelector("a");
+  assert.ok(link);
+  await view.click(link);
+  assert.deepEqual(opened, [[link.getAttribute("href"), "_blank"]]);
+  assert.deepEqual(view.writes, []);
+  assert.equal(globalThis.relationModal, undefined);
+});
+
+void test("a failed relationship read exposes retry and recovers its original source scope", async (t) => {
+  const view = await setup(t, { relationReadFailures: 1 });
+  assert.equal(Boolean(view.property()), false);
+  assert.ok(view.action("common.retry"));
+  await view.click(view.action("common.retry"));
+  assert.ok(view.property(), "retry restores the related item controls");
+  assert.equal(Boolean(view.action("common.retry")), false);
+  assert.equal(view.reads.filter((path) => path === view.paths.source).length, 2);
+  assert.deepEqual(view.writes, []);
+});
+
 void test("related-item operations preserve rejected writes for their caller", async (t) => {
   const v = await setup(t, { operationsOnly: true });
   const expected = new Error("rejected");

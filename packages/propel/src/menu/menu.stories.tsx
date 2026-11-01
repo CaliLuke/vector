@@ -179,15 +179,19 @@ export const WithSubmenu: Story = {
   },
 };
 
+function NumberedMenuItems({ count }: { count: number }) {
+  return Array.from({ length: count }, (_, i) => (
+    <Menu.MenuItem key={i} onClick={() => alert(`Item ${i + 1}`)}>
+      Item {i + 1}
+    </Menu.MenuItem>
+  ));
+}
+
 export const MaxHeightSmall: Story = {
   render() {
     return (
       <Menu label="Small Height" maxHeight="sm">
-        {Array.from({ length: 10 }, (_, i) => (
-          <Menu.MenuItem key={i} onClick={() => alert(`Item ${i + 1}`)}>
-            Item {i + 1}
-          </Menu.MenuItem>
-        ))}
+        <NumberedMenuItems count={10} />
       </Menu>
     );
   },
@@ -197,11 +201,7 @@ export const MaxHeightLarge: Story = {
   render() {
     return (
       <Menu label="Large Height" maxHeight="lg">
-        {Array.from({ length: 15 }, (_, i) => (
-          <Menu.MenuItem key={i} onClick={() => alert(`Item ${i + 1}`)}>
-            Item {i + 1}
-          </Menu.MenuItem>
-        ))}
+        <NumberedMenuItems count={15} />
       </Menu>
     );
   },

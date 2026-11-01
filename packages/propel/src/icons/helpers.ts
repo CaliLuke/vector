@@ -19,13 +19,13 @@ export const getIconComponent = (name: IconName) => ICON_REGISTRY[name] || ICON_
  * @param name - The icon name to check
  * @returns True if the icon exists in the registry
  */
-export const isValidIconName = (name: string): name is IconName => name in ICON_REGISTRY;
+export const isValidIconName = (name: string): name is IconName => Object.hasOwn(ICON_REGISTRY, name);
 
 /**
  * Get all available icon names
  * @returns Array of all icon names in the registry
  */
-export const getIconNames = (): IconName[] => Object.keys(ICON_REGISTRY) as IconName[];
+export const getIconNames = (): IconName[] => Object.keys(ICON_REGISTRY).filter(isValidIconName);
 
 /**
  * Get icons by category

@@ -5,7 +5,7 @@
  */
 
 import type { Dispatch, ReactElement, SetStateAction } from "react";
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useEffectEvent, useState, useRef } from "react";
 // helpers
 import { usePlatformOS } from "@plane/hooks";
 import { cn } from "@plane/utils/common";
@@ -51,7 +51,6 @@ export function ResizableSidebar({
 }: ResizableSidebarProps) {
   // states
   const [isResizing, setIsResizing] = useState(false);
-  const [isHoveringTrigger, setIsHoveringTrigger] = useState(false);
   // refs
   const peekTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const initialWidthRef = useRef<number>(0);
@@ -93,42 +92,32 @@ export function ResizableSidebar({
   const toggleCollapsed = useCallback(() => {
     toggleCollapsedProp();
     setShowPeek(false);
-    setIsHoveringTrigger(false);
     if (peekTimeoutRef.current) {
       clearTimeout(peekTimeoutRef.current);
     }
   }, [toggleCollapsedProp, setShowPeek]);
 
-  const handlePeekEnter = useCallback(() => {
-    if (isCollapsed && showPeek) {
-      if (peekTimeoutRef.current) {
-        clearTimeout(peekTimeoutRef.current);
-      }
-    }
-  }, [isCollapsed, showPeek]);
+  const closePeek = useEffectEvent(() => {
+    if (isCollapsed && !isAnyExtendedSidebarExpanded && !isAnySidebarDropdownOpen) setShowPeek(false);
+  });
+  const handlePeekEnter = () => clearTimeout(peekTimeoutRef.current);
+  const handlePeekLeave = () => {
+    clearTimeout(peekTimeoutRef.current);
+    peekTimeoutRef.current = setTimeout(closePeek, peekDuration);
+  };
 
-  const handlePeekLeave = useCallback(() => {
-    if (isCollapsed && !isAnyExtendedSidebarExpanded && !isAnySidebarDropdownOpen) {
-      peekTimeoutRef.current = setTimeout(() => {
-        setShowPeek(false);
-      }, peekDuration);
-    }
-  }, [isCollapsed, peekDuration, setShowPeek, isAnyExtendedSidebarExpanded, isAnySidebarDropdownOpen]);
-
-  // Set up event listeners for resizing
   useEffect(() => {
-    if (isResizing) {
-      document.addEventListener("mousemove", handleResize);
-      document.addEventListener("mouseup", stopResizing);
-      document.body.style.cursor = "col-resize";
-      document.body.style.userSelect = "none";
-    }
-
+    if (!isResizing) return undefined;
+    const { cursor, userSelect } = document.body.style;
+    document.addEventListener("mousemove", handleResize);
+    document.addEventListener("mouseup", stopResizing);
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
     return () => {
       document.removeEventListener("mousemove", handleResize);
       document.removeEventListener("mouseup", stopResizing);
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
+      document.body.style.cursor = cursor;
+      document.body.style.userSelect = userSelect;
     };
   }, [isResizing, handleResize, stopResizing]);
 
@@ -142,28 +131,13 @@ export function ResizableSidebar({
     []
   );
 
+  const resetExpandedPeek = useEffectEvent(() => {
+    setShowPeek(false);
+    clearTimeout(peekTimeoutRef.current);
+  });
   useEffect(() => {
-    if (!isAnySidebarDropdownOpen && isCollapsed && isHoveringTrigger) {
-      handlePeekLeave();
-    }
-  }, [isAnySidebarDropdownOpen]);
-
-  useEffect(() => {
-    if (!isAnyExtendedSidebarExpanded && isCollapsed && isHoveringTrigger) {
-      handlePeekLeave();
-    }
-  }, [isAnyExtendedSidebarExpanded]);
-
-  // Reset peek when sidebar is expanded
-  useEffect(() => {
-    if (!isCollapsed) {
-      setShowPeek(false);
-      setIsHoveringTrigger(false);
-      if (peekTimeoutRef.current) {
-        clearTimeout(peekTimeoutRef.current);
-      }
-    }
-  }, [isCollapsed, setShowPeek]);
+    if (!isCollapsed) resetExpandedPeek();
+  }, [isCollapsed]);
 
   // Call external handlers when state changes
   useEffect(() => {
@@ -174,10 +148,68 @@ export function ResizableSidebar({
     onCollapsedChange?.(isCollapsed);
   }, [isCollapsed, onCollapsedChange]);
 
+  const resizeHandle = (
+    <SidebarResizeHandle
+      isResizing={isResizing}
+      onStart={startResizing}
+      onToggle={toggleCollapsed}
+      width={width}
+      setWidth={setWidth}
+      minWidth={minWidth}
+      maxWidth={maxWidth}
+    />
+  );
+  return (
+    <SidebarPanels
+      width={width}
+      isResizing={isResizing}
+      isCollapsed={isCollapsed}
+      isMobile={isMobile}
+      showPeek={showPeek}
+      className={className}
+      isAnyExtendedSidebarExpanded={isAnyExtendedSidebarExpanded}
+      onPeekEnter={handlePeekEnter}
+      onPeekLeave={handlePeekLeave}
+      resizeHandle={resizeHandle}
+      extendedSidebar={extendedSidebar}
+    >
+      {children}
+    </SidebarPanels>
+  );
+}
+
+type SidebarPanelsProps = Pick<ResizableSidebarProps, "children" | "extendedSidebar" | "width"> & {
+  isResizing: boolean;
+  isCollapsed: boolean;
+  isMobile: boolean;
+  showPeek: boolean;
+  className: string;
+  isAnyExtendedSidebarExpanded: boolean;
+  onPeekEnter: () => void;
+  onPeekLeave: () => void;
+  resizeHandle: ReactElement;
+};
+
+function SidebarPanels({
+  width,
+  isResizing,
+  isCollapsed,
+  isMobile,
+  showPeek,
+  className,
+  isAnyExtendedSidebarExpanded,
+  onPeekEnter,
+  onPeekLeave,
+  resizeHandle,
+  children,
+  extendedSidebar,
+}: SidebarPanelsProps) {
+  const mainWidth = isCollapsed ? 0 : width;
+  const peekVisible = isCollapsed && showPeek;
   return (
     <>
       {/* Main Sidebar */}
-      <div
+      <aside
         id="main-sidebar"
         className={cn(
           "z-20 h-full border-r border-subtle bg-surface-1",
@@ -187,15 +219,14 @@ export function ResizableSidebar({
           className
         )}
         style={{
-          width: `${isCollapsed ? 0 : width}px`,
-          minWidth: `${isCollapsed ? 0 : width}px`,
-          maxWidth: `${isCollapsed ? 0 : width}px`,
+          width: `${mainWidth}px`,
+          minWidth: `${mainWidth}px`,
+          maxWidth: `${mainWidth}px`,
         }}
-        role="complementary"
         aria-label="Main sidebar"
         data-prevent-outside-click={isMobile}
       >
-        <aside
+        <div
           className={cn(
             "group/sidebar relative flex h-full w-full flex-col overflow-hidden bg-surface-1 pt-3",
             isAnyExtendedSidebarExpanded && "rounded-none"
@@ -203,41 +234,29 @@ export function ResizableSidebar({
         >
           {children}
 
-          {/* Resize Handle */}
-          <div
-            className={cn(
-              "absolute z-[20] h-full w-1 cursor-ew-resize transition-all duration-200",
-              !isResizing && "hover:bg-surface-2",
-              isResizing && "w-1.5 bg-layer-1",
-              "top-0 right-0"
-            )}
-            // onDoubleClick toggle sidebar
-            onDoubleClick={() => toggleCollapsed()}
-            onMouseDown={(e) => startResizing(e)}
-            role="separator"
-            aria-label="Resize sidebar"
-          />
-        </aside>
-      </div>
+          {resizeHandle}
+        </div>
+      </aside>
       {/* Peek View */}
-      <div
+      <aside
         className={cn(
           "shadow-sm absolute left-0 z-20 h-full bg-surface-1",
           !isResizing && "transition-all duration-300 ease-in-out",
-          isCollapsed && showPeek ? "translate-x-0 opacity-100" : "translate-x-[-100%] opacity-0",
+          peekVisible ? "translate-x-0 opacity-100" : "translate-x-[-100%] opacity-0",
           "pointer-events-none",
-          isCollapsed && showPeek && "pointer-events-auto",
+          peekVisible && "pointer-events-auto",
           !showPeek ? "w-0" : "w-full"
         )}
         style={{
           width: `${width}px`,
         }}
-        onMouseEnter={handlePeekEnter}
-        onMouseLeave={handlePeekLeave}
-        role="complementary"
         aria-label="Sidebar peek view"
       >
-        <aside
+        <div
+          onPointerEnter={onPeekEnter}
+          onPointerLeave={onPeekLeave}
+          onFocus={onPeekEnter}
+          onBlur={onPeekLeave}
           className={cn(
             "group/sidebar relative z-20 flex h-full w-full flex-col overflow-hidden bg-surface-1 pt-4",
             "self-center rounded-md rounded-tl-none rounded-bl-none border-r border-subtle",
@@ -245,25 +264,53 @@ export function ResizableSidebar({
           )}
         >
           {children}
-          {/* Resize Handle */}
-          <div
-            className={cn(
-              "absolute z-[20] h-full w-1 cursor-ew-resize transition-all duration-200",
-              !isResizing && "hover:bg-surface-2",
-              isResizing && "bg-layer-1",
-              "top-0 right-0"
-            )}
-            // onDoubleClick toggle sidebar
-            onDoubleClick={() => toggleCollapsed()}
-            onMouseDown={(e) => startResizing(e)}
-            role="separator"
-            aria-label="Resize sidebar"
-          />
-        </aside>
-      </div>
+          {resizeHandle}
+        </div>
+      </aside>
 
       {/* Extended Sidebar */}
-      {extendedSidebar && extendedSidebar}
+      {extendedSidebar}
     </>
+  );
+}
+
+function SidebarResizeHandle({
+  isResizing,
+  onStart,
+  onToggle,
+  width,
+  setWidth,
+  minWidth,
+  maxWidth,
+}: {
+  isResizing: boolean;
+  onStart: (event: React.MouseEvent) => void;
+  onToggle: () => void;
+  width: number;
+  setWidth: Dispatch<SetStateAction<number>>;
+  minWidth: number;
+  maxWidth: number;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label="Resize sidebar"
+      title="Drag or use arrow keys to resize; Enter to collapse"
+      className={cn(
+        "absolute top-0 right-0 z-[20] h-full w-1 cursor-ew-resize transition-all duration-200",
+        isResizing ? "bg-layer-1" : "hover:bg-surface-2"
+      )}
+      onDoubleClick={onToggle}
+      onMouseDown={onStart}
+      onKeyDown={(event) => {
+        if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+          event.preventDefault();
+          setWidth(Math.min(maxWidth, Math.max(minWidth, width + (event.key === "ArrowRight" ? 10 : -10))));
+        } else if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onToggle();
+        }
+      }}
+    />
   );
 }

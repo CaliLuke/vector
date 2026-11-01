@@ -56,7 +56,7 @@ export type TAnalyticsFilterParams = {
 // service types
 
 export interface IAnalyticsResponse {
-  [key: string]: any;
+  [key: string]: IAnalyticsResponseFields;
 }
 
 export interface IAnalyticsResponseFields {

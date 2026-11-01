@@ -152,7 +152,6 @@ function DetailLabelPicker(props: IIssueLabelSelect & { catalogue: ReturnType<ty
                 readOnly={submitting}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t("common.search.label")}
-                displayValue={(assigned: any) => assigned?.name}
                 onKeyDown={searchInputKeyDown}
                 tabIndex={baseTabIndex}
               />

@@ -34,7 +34,7 @@ export const WorkspaceHomeView = function WorkspaceHomeView() {
     <>
       {currentUserProfile && !currentUserProfile.is_tour_completed && (
         <div className="fixed top-0 left-0 z-20 grid h-full w-full place-items-center overflow-y-auto bg-backdrop transition-opacity">
-          <TourRoot onComplete={handleTourCompleted} />
+          <TourRoot onComplete={() => void handleTourCompleted()} />
         </div>
       )}
       <>

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { isRecord } from "@plane/utils/common";
 import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -14,13 +15,13 @@ import { LinkIcon, TrashIcon, ChevronDownIcon } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TContextMenuItem } from "@plane/ui";
 import { CustomSelect, CustomMenu } from "@plane/ui";
-import { cn } from "@plane/utils/common";
 import { copyTextToClipboard } from "@plane/utils/string";
 // components
 import { ConfirmWorkspaceMemberRemove } from "@/components/workspace/confirm-workspace-member-remove";
 // hooks
 import { useWorkspacePermissions } from "@/hooks/use-permissions";
 import { useDeleteWorkspaceInvitation, useUpdateWorkspaceInvitation } from "@/hooks/use-member-roster-mutations";
+import { EUserWorkspaceRoles } from "@plane/types";
 import type { IWorkspaceMemberInvitation } from "@plane/types";
 
 type Props = {
@@ -102,7 +103,7 @@ export function WorkspaceInvitationsListItem(props: Props) {
         onClose={() => setRemoveMemberModal(false)}
         userDetails={{
           id: invitation.id,
-          display_name: `${invitation.email}`,
+          display_name: invitation.email,
         }}
         onSubmit={handleRemoveInvitation}
       />
@@ -137,18 +138,19 @@ export function WorkspaceInvitationsListItem(props: Props) {
               </div>
             }
             value={invitation.role}
-            onChange={(value: EUserPermissions) => {
+            onChange={(value) => {
+              if (value === null) return;
               if (!workspaceSlug || !value) return;
 
               updateInvitation.mutate(
                 { role: value },
                 {
                   onError: (err: unknown) => {
-                    const error = err as { error?: string };
+                    const message = isRecord(err) && typeof err.error === "string" ? err.error : undefined;
                     setToast({
                       type: TOAST_TYPE.ERROR,
                       title: "Error!",
-                      message: error?.error || "An error occurred while updating member role. Please try again.",
+                      message: message || "An error occurred while updating member role. Please try again.",
                     });
                   },
                 }
@@ -157,56 +159,26 @@ export function WorkspaceInvitationsListItem(props: Props) {
             disabled={!hasRoleChangeAccess || updateInvitation.isPending}
             placement="bottom-end"
           >
-            {Object.keys(ROLE).map((key) => {
+            {[EUserWorkspaceRoles.GUEST, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.ADMIN].map((key) => {
               if (
                 currentWorkspaceRole &&
-                Number(currentWorkspaceRole) !== 20 &&
-                Number(currentWorkspaceRole) < parseInt(key)
+                currentWorkspaceRole !== EUserWorkspaceRoles.ADMIN &&
+                currentWorkspaceRole < key
               )
                 return null;
 
               return (
-                <CustomSelect.Option key={key} value={parseInt(key, 10)}>
-                  <>{ROLE[parseInt(key) as keyof typeof ROLE]}</>
+                <CustomSelect.Option key={key} value={key}>
+                  <>{ROLE[key]}</>
                 </CustomSelect.Option>
               );
             })}
           </CustomSelect>
           {isAdmin && (
             <CustomMenu ellipsis placement="bottom-end" closeOnSelect>
-              {MENU_ITEMS.map((item) => {
-                if (item.shouldRender === false) return null;
-                return (
-                  <CustomMenu.MenuItem
-                    key={item.key}
-                    onClick={() => {
-                      item.action();
-                    }}
-                    className={cn(
-                      "flex items-center gap-2",
-                      {
-                        "text-placeholder": item.disabled,
-                      },
-                      item.className
-                    )}
-                    disabled={item.disabled}
-                  >
-                    {item.icon && <item.icon className={cn("h-3 w-3", item.iconClassName)} />}
-                    <div>
-                      <h5>{item.title}</h5>
-                      {item.description && (
-                        <p
-                          className={cn("whitespace-pre-line text-tertiary", {
-                            "text-placeholder": item.disabled,
-                          })}
-                        >
-                          {item.description}
-                        </p>
-                      )}
-                    </div>
-                  </CustomMenu.MenuItem>
-                );
-              })}
+              {MENU_ITEMS.map((item) => (
+                <CustomMenu.ActionItem key={item.key} item={item} />
+              ))}
             </CustomMenu>
           )}
         </div>

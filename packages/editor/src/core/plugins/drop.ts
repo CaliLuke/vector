@@ -100,7 +100,7 @@ type InsertFilesSafelyArgs = {
   type?: Extract<TEditorCommands, "attachment" | "image">;
 };
 
-export const insertFilesSafely = async (args: InsertFilesSafelyArgs) => {
+export const insertFilesSafely = (args: InsertFilesSafelyArgs) => {
   const { disabledExtensions, editor, event, files, initialPos, type } = args;
   let pos = initialPos;
 

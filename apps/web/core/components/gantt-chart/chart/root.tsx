@@ -1,3 +1,5 @@
+import type { TGanttSidebarProps } from "@/components/gantt-chart/sidebar/types";
+import type { TGanttBlock } from "@/components/gantt-chart/state";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -15,7 +17,6 @@ import type {
   IBlockUpdateDependencyData,
   TGanttViews,
 } from "@plane/types";
-import type { IGanttBlock } from "@plane/types";
 import { cn } from "@plane/utils/common";
 import { GanttChartHeader, GanttChartMainContent } from "@/components/gantt-chart";
 // helpers
@@ -38,7 +39,9 @@ type ChartViewRootProps<TItem extends TGanttItemData> = {
   blockItems: readonly TItem[];
   blockUpdateHandler: (block: TItem, payload: IBlockUpdateData) => void;
   blockToRender: (data: TItem) => React.ReactNode;
-  sidebarToRender: (props: any) => React.ReactNode;
+  sidebarToRender: (
+    props: TGanttSidebarProps & { blocksById: Readonly<Record<string, TGanttBlock<TItem>>> }
+  ) => React.ReactNode;
   enableBlockLeftResize: boolean | ((blockId: string) => boolean);
   enableBlockRightResize: boolean | ((blockId: string) => boolean);
   enableBlockMove: boolean | ((blockId: string) => boolean);
@@ -121,7 +124,7 @@ function ChartCanvas<TItem extends TGanttItemData>(
   const [renderView, setRenderView] = useState<TGanttRenderData>(initialView.payload);
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
   const [isDraggingState, setIsDraggingState] = useState(false);
-  const [dragSnapshot, setDragSnapshot] = useState<Record<string, IGanttBlock>>();
+  const [dragSnapshot, setDragSnapshot] = useState<Record<string, TGanttBlock<TItem>>>();
   const [positionOverrides, setPositionOverrides] = useState<Record<string, TGanttBlockPosition>>({});
   const ganttContainerRef = useRef<HTMLDivElement>(null);
   const scrollTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -196,7 +199,7 @@ function ChartCanvas<TItem extends TGanttItemData>(
 
   const updateCurrentViewRenderPayload = (side: null | "left" | "right", view: TGanttViews, targetDate?: Date) => {
     const state = view === currentViewData.key ? currentViewData : currentViewDataWithView(view);
-    if (!state) return;
+    if (!state) return undefined;
     const next = generateGanttView(state, side, targetDate, startOfWeek);
     setCurrentViewData(next.state);
     if (side === "left") {
@@ -245,8 +248,14 @@ function ChartCanvas<TItem extends TGanttItemData>(
         blockIds={blockIds}
         loadMoreBlocks={loadMoreBlocks}
         canLoadMoreBlocks={canLoadMoreBlocks}
-        blockToRender={blockToRender}
-        blockUpdateHandler={blockUpdateHandler}
+        blockToRender={(blockId) => {
+          const block = blocksById[blockId];
+          return block ? blockToRender({ ...block.data, meta: block.meta }) : null;
+        }}
+        blockUpdateHandler={(blockId, payload) => {
+          const block = blocksById[blockId];
+          if (block) blockUpdateHandler(block.data, payload);
+        }}
         bottomSpacing={bottomSpacing}
         enableBlockLeftResize={enableBlockLeftResize}
         enableBlockMove={enableBlockMove}
@@ -257,7 +266,7 @@ function ChartCanvas<TItem extends TGanttItemData>(
         enableDependency={enableDependency}
         itemsContainerWidth={itemsContainerWidth}
         showAllBlocks={showAllBlocks}
-        sidebarToRender={sidebarToRender}
+        sidebarToRender={(sidebarProps) => sidebarToRender({ ...sidebarProps, blocksById })}
         title={title}
         updateCurrentViewRenderPayload={updateCurrentViewRenderPayload}
         currentView={currentView}

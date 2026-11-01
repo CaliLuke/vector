@@ -12,8 +12,24 @@ import { cn } from "@plane/utils/common";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
+const CALENDAR_COMPONENTS: NonNullable<CalendarProps["components"]> = {
+  Chevron: ({ className: chevronClassName, ...componentProps }) => (
+    <ChevronLeftIcon
+      className={cn(
+        "size-4",
+        {
+          "rotate-180": componentProps.orientation === "right",
+          "-rotate-90": componentProps.orientation === "down",
+        },
+        chevronClassName
+      )}
+      {...componentProps}
+    />
+  ),
+};
+
 export function Calendar({ className, showOutsideDays = true, ...props }: CalendarProps) {
-  const currentYear = new Date().getFullYear();
+  const [currentYear] = React.useState(() => new Date().getFullYear());
   const thirtyYearsAgoFirstDay = new Date(currentYear - 30, 0, 1);
   const thirtyYearsFromNowFirstDay = new Date(currentYear + 30, 11, 31);
 
@@ -22,18 +38,7 @@ export function Calendar({ className, showOutsideDays = true, ...props }: Calend
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
       weekStartsOn={props.weekStartsOn}
-      components={{
-        Chevron: ({ className, ...props }) => (
-          <ChevronLeftIcon
-            className={cn(
-              "size-4",
-              { "rotate-180": props.orientation === "right", "-rotate-90": props.orientation === "down" },
-              className
-            )}
-            {...props}
-          />
-        ),
-      }}
+      components={CALENDAR_COMPONENTS}
       startMonth={thirtyYearsAgoFirstDay}
       endMonth={thirtyYearsFromNowFirstDay}
       {...props}

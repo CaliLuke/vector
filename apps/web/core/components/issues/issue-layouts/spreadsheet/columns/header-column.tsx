@@ -76,59 +76,49 @@ export function HeaderColumn(props: Props) {
       placement="bottom-start"
       closeOnSelect
     >
-      <CustomMenu.MenuItem onClick={() => handleOrderBy(propertyDetails.ascendingOrderKey, property)}>
-        <div
-          className={`flex items-center justify-between gap-1.5 px-1 ${
-            selectedMenuItem === `${propertyDetails.ascendingOrderKey}_${property}`
-              ? "text-primary"
-              : "text-secondary hover:text-primary"
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            <ArrowDownWideNarrow className="h-3 w-3 stroke-[1.5]" />
-            <span>{propertyDetails.ascendingOrderTitle}</span>
-            <MoveRight className="h-3 w-3" />
-            <span>{propertyDetails.descendingOrderTitle}</span>
-          </div>
-
-          {selectedMenuItem === `${propertyDetails.ascendingOrderKey}_${property}` && <CheckIcon className="h-3 w-3" />}
-        </div>
-      </CustomMenu.MenuItem>
-      <CustomMenu.MenuItem onClick={() => handleOrderBy(propertyDetails.descendingOrderKey, property)}>
-        <div
-          className={`flex items-center justify-between gap-1.5 px-1 ${
-            selectedMenuItem === `${propertyDetails.descendingOrderKey}_${property}`
-              ? "text-primary"
-              : "text-secondary hover:text-primary"
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            <ArrowUpNarrowWide className="h-3 w-3 stroke-[1.5]" />
-            <span>{propertyDetails.descendingOrderTitle}</span>
-            <MoveRight className="h-3 w-3" />
-            <span>{propertyDetails.ascendingOrderTitle}</span>
-          </div>
-
-          {selectedMenuItem === `${propertyDetails.descendingOrderKey}_${property}` && (
-            <CheckIcon className="h-3 w-3" />
-          )}
-        </div>
-      </CustomMenu.MenuItem>
-      {selectedMenuItem &&
-        selectedMenuItem !== "" &&
-        displayFilters?.order_by !== "-created_at" &&
-        selectedMenuItem.includes(property) && (
-          <CustomMenu.MenuItem
-            className={`mt-0.5 ${selectedMenuItem === `-created_at_${property}` ? "bg-layer-1" : ""}`}
-            key={property}
-            onClick={() => handleOrderBy("-created_at", property)}
-          >
-            <div className="flex items-center gap-2 px-1">
-              <Eraser className="h-3 w-3" />
-              <span>{t("common.actions.clear_sorting")}</span>
+      {[
+        {
+          order: propertyDetails.ascendingOrderKey,
+          from: propertyDetails.ascendingOrderTitle,
+          to: propertyDetails.descendingOrderTitle,
+          Icon: ArrowDownWideNarrow,
+        },
+        {
+          order: propertyDetails.descendingOrderKey,
+          from: propertyDetails.descendingOrderTitle,
+          to: propertyDetails.ascendingOrderTitle,
+          Icon: ArrowUpNarrowWide,
+        },
+      ].map(({ order, from, to, Icon }) => {
+        const selected = selectedMenuItem === `${order}_${property}`;
+        return (
+          <CustomMenu.MenuItem key={order} onClick={() => handleOrderBy(order, property)}>
+            <div
+              className={`flex items-center justify-between gap-1.5 px-1 ${selected ? "text-primary" : "text-secondary hover:text-primary"}`}
+            >
+              <div className="flex items-center gap-2">
+                <Icon className="h-3 w-3 stroke-[1.5]" />
+                <span>{from}</span>
+                <MoveRight className="h-3 w-3" />
+                <span>{to}</span>
+              </div>
+              {selected && <CheckIcon className="h-3 w-3" />}
             </div>
           </CustomMenu.MenuItem>
-        )}
+        );
+      })}
+      {selectedMenuItem && displayFilters.order_by !== "-created_at" && selectedMenuItem.includes(property) && (
+        <CustomMenu.MenuItem
+          className={`mt-0.5 ${selectedMenuItem === `-created_at_${property}` ? "bg-layer-1" : ""}`}
+          key={property}
+          onClick={() => handleOrderBy("-created_at", property)}
+        >
+          <div className="flex items-center gap-2 px-1">
+            <Eraser className="h-3 w-3" />
+            <span>{t("common.actions.clear_sorting")}</span>
+          </div>
+        </CustomMenu.MenuItem>
+      )}
     </CustomMenu>
   );
 }

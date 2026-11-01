@@ -16,7 +16,7 @@ const reactModules = Object.fromEntries(
   ])
 );
 const dataModules = {
-  "@/components/workspace-notifications/provider": `export const useNotifications = () => globalThis.__notificationPopoverTest.notifications;`,
+  "@/components/workspace-notifications/provider": `export const useNotifications = () => globalThis.notificationPopoverTest.notifications;`,
   "@plane/constants": `export const FILTER_TYPE_OPTIONS = [{ value: "assigned", i18n_label: "assigned" }, { value: "created", i18n_label: "created" }];`,
   "@plane/i18n": `export const useTranslation = () => ({ t: key => key });`,
   "@plane/propel/icons": `export const ArchiveIcon = () => null; export const CheckIcon = () => null;`,
@@ -53,7 +53,7 @@ registerHooks({
   },
 });
 
-globalThis.__notificationPopoverTest = {
+globalThis.notificationPopoverTest = {
   React,
   notifications: {
     filters: { read: false, archived: false, snoozed: false, type: {} },
@@ -62,7 +62,8 @@ globalThis.__notificationPopoverTest = {
   },
 };
 
-test("activity filter options expose keyboard-focusable toggle buttons", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("activity filter options expose keyboard-focusable toggle buttons", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   const { ActivityFilter } =
@@ -117,7 +118,7 @@ for (const [name, modulePath, exportName, visibleOption] of [
     "filter.status",
   ],
 ]) {
-  test(`${name} uses one trigger and opens/closes with focus restoration`, async (t) => {
+  void test(`${name} uses one trigger and opens/closes with focus restoration`, async (t) => {
     const environment = await createReactDomTestEnvironment();
     t.after(() => environment.unmount());
     const errors = [];

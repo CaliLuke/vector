@@ -8,7 +8,6 @@ import { useMemo, useCallback } from "react";
 import { Tabs } from "@base-ui/react/tabs";
 import { Popover } from "../popover";
 import { cn } from "@plane/utils/common";
-import { convertPlacementToSideAndAlign } from "../utils/placement";
 import { EmojiRoot } from "./emoji/emoji";
 import type { TCustomEmojiPicker } from "./helper";
 import { emojiToString, EmojiIconPickerTypes } from "./helper";
@@ -26,22 +25,13 @@ export function EmojiPicker(props: TCustomEmojiPicker) {
     dropdownClassName,
     label,
     onChange,
-    placement = "bottom-start",
+    placement,
     searchDisabled = false,
     searchPlaceholder = "Search",
     iconType = "lucide",
     side = "bottom",
     align = "start",
   } = props;
-
-  // side and align calculations
-  const { finalSide, finalAlign } = useMemo(() => {
-    if (placement) {
-      const converted = convertPlacementToSideAndAlign(placement);
-      return { finalSide: converted.side, finalAlign: converted.align };
-    }
-    return { finalSide: side, finalAlign: align };
-  }, [placement, side, align]);
 
   const handleEmojiChange = useCallback(
     (value: string) => {
@@ -107,8 +97,9 @@ export function EmojiPicker(props: TCustomEmojiPicker) {
       <Popover.Panel
         positionerClassName="z-50"
         className={cn("w-80 overflow-hidden rounded-md border-[0.5px] border-strong bg-surface-1", dropdownClassName)}
-        side={finalSide}
-        align={finalAlign}
+        placement={placement}
+        side={side}
+        align={align}
         sideOffset={8}
         data-prevent-outside-click="true"
         onMouseDown={(e) => e.stopPropagation()}

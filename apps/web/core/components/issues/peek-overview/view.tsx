@@ -5,7 +5,7 @@
  */
 
 import { workItemServiceType } from "@/helpers/work-item-service-type";
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 
 import { createPortal } from "react-dom";
 // plane imports
@@ -137,7 +137,7 @@ export const IssueView = function IssueView(props: IIssueView) {
 
   const shouldUsePortal = !embedIssue;
 
-  const portalContainer = document.getElementById("full-screen-portal") as HTMLElement;
+  const portalContainer = document.getElementById("full-screen-portal");
 
   const itemDetails = (
     <PeekOverviewIssueDetails
@@ -165,13 +165,7 @@ export const IssueView = function IssueView(props: IIssueView) {
               "0px 4px 8px 0px rgba(0, 0, 0, 0.12), 0px 6px 12px 0px rgba(16, 24, 40, 0.12), 0px 1px 16px 0px rgba(16, 24, 40, 0.12)",
           }}
         >
-          {isError ? (
-            <div className="relative h-screen w-full overflow-hidden">
-              <IssuePeekOverviewError removeRoutePeekId={removeRoutePeekId} />
-            </div>
-          ) : (
-            isLoading && <IssuePeekOverviewLoader removeRoutePeekId={removeRoutePeekId} />
-          )}
+          <PeekLoadingState isError={isError} isLoading={isLoading} onClose={removeRoutePeekId} />
           {!isLoading && !isError && issue && (
             <>
               {/* header */}
@@ -194,74 +188,37 @@ export const IssueView = function IssueView(props: IIssueView) {
                 embedIssue={embedIssue}
               />
               {/* content */}
-              <div className="vertical-scrollbar relative scrollbar-md h-full w-full overflow-hidden overflow-y-auto">
-                {["side-peek", "modal"].includes(peekMode) ? (
-                  <div className="relative flex flex-col gap-3 space-y-3 px-8 py-5">
-                    {itemDetails}
-
-                    <div className="py-2">
-                      <IssueDetailWidgets
-                        workspaceSlug={workspaceSlug}
-                        projectId={projectId}
-                        issueId={issueId}
-                        disabled={disabled || is_archived}
-                        issueServiceType={EIssueServiceType.ISSUES}
-                      />
-                    </div>
-
-                    <PeekOverviewProperties
-                      workspaceSlug={workspaceSlug}
-                      projectId={projectId}
-                      issueId={issueId}
-                      issueOperations={issueOperations}
-                      disabled={disabled || is_archived}
-                    />
-
-                    <IssueActivity
-                      serviceType={workItemServiceType(issue)}
-                      workspaceSlug={workspaceSlug}
-                      projectId={projectId}
-                      issueId={issueId}
-                      disabled={is_archived}
-                    />
-                  </div>
-                ) : (
-                  <div className="vertical-scrollbar flex h-full w-full overflow-auto">
-                    <div className="relative h-full w-full space-y-6 overflow-auto p-4 py-5">
-                      <div className="space-y-3">
-                        {itemDetails}
-
-                        <div className="py-2">
-                          <IssueDetailWidgets
-                            workspaceSlug={workspaceSlug}
-                            projectId={projectId}
-                            issueId={issueId}
-                            disabled={disabled || is_archived}
-                            issueServiceType={EIssueServiceType.ISSUES}
-                          />
-                        </div>
-
-                        <IssueActivity
-                          serviceType={workItemServiceType(issue)}
-                          workspaceSlug={workspaceSlug}
-                          projectId={projectId}
-                          issueId={issueId}
-                          disabled={is_archived}
-                        />
-                      </div>
-                    </div>
-                    <div className="vertical-scrollbar scrollbar-sm h-full !w-[400px] flex-shrink-0 overflow-hidden border-l border-subtle p-4 py-5">
-                      <PeekOverviewProperties
-                        workspaceSlug={workspaceSlug}
-                        projectId={projectId}
-                        issueId={issueId}
-                        issueOperations={issueOperations}
-                        disabled={disabled || is_archived}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
+              <PeekOverviewLayout
+                mode={peekMode}
+                details={itemDetails}
+                widgets={
+                  <IssueDetailWidgets
+                    workspaceSlug={workspaceSlug}
+                    projectId={projectId}
+                    issueId={issueId}
+                    disabled={disabled || is_archived}
+                    issueServiceType={EIssueServiceType.ISSUES}
+                  />
+                }
+                properties={
+                  <PeekOverviewProperties
+                    workspaceSlug={workspaceSlug}
+                    projectId={projectId}
+                    issueId={issueId}
+                    issueOperations={issueOperations}
+                    disabled={disabled || is_archived}
+                  />
+                }
+                activity={
+                  <IssueActivity
+                    serviceType={workItemServiceType(issue)}
+                    workspaceSlug={workspaceSlug}
+                    projectId={projectId}
+                    issueId={issueId}
+                    disabled={is_archived}
+                  />
+                }
+              />
             </>
           )}
         </div>
@@ -281,4 +238,62 @@ function createModalToggle(
       if (isOpen) return modal;
       return current === modal ? undefined : current;
     });
+}
+
+function PeekLoadingState({
+  isError,
+  isLoading,
+  onClose,
+}: {
+  isError: boolean | undefined;
+  isLoading: boolean | undefined;
+  onClose: () => void;
+}) {
+  if (isError)
+    return (
+      <div className="relative h-screen w-full overflow-hidden">
+        <IssuePeekOverviewError removeRoutePeekId={onClose} />
+      </div>
+    );
+  return isLoading ? <IssuePeekOverviewLoader removeRoutePeekId={onClose} /> : null;
+}
+
+function PeekOverviewLayout({
+  mode,
+  details,
+  widgets,
+  properties,
+  activity,
+}: {
+  mode: TPeekModes;
+  details: ReactNode;
+  widgets: ReactNode;
+  properties: ReactNode;
+  activity: ReactNode;
+}) {
+  return (
+    <div className="vertical-scrollbar relative scrollbar-md h-full w-full overflow-hidden overflow-y-auto">
+      {["side-peek", "modal"].includes(mode) ? (
+        <div className="relative flex flex-col gap-3 space-y-3 px-8 py-5">
+          {details}
+          <div className="py-2">{widgets}</div>
+          {properties}
+          {activity}
+        </div>
+      ) : (
+        <div className="vertical-scrollbar flex h-full w-full overflow-auto">
+          <div className="relative h-full w-full space-y-6 overflow-auto p-4 py-5">
+            <div className="space-y-3">
+              {details}
+              <div className="py-2">{widgets}</div>
+              {activity}
+            </div>
+          </div>
+          <div className="vertical-scrollbar scrollbar-sm h-full !w-[400px] flex-shrink-0 overflow-hidden border-l border-subtle p-4 py-5">
+            {properties}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }

@@ -21,14 +21,14 @@ case "$MODE" in
   --fast)
     run_gate "Oxlint syntax diagnostic ratchet" node scripts/quality/check-oxlint-baseline.mjs fast
     run_gate "Oxfmt check" pnpm exec oxfmt --check .
-    run_gate "Test runner regression tests" node --test --test-concurrency=1 scripts/quality/run-bounded.test.mjs scripts/quality/frontend-tests.test.mjs
+    run_gate "Test runner regression tests" node --test --test-concurrency=1 scripts/quality/run-bounded.test.mjs scripts/quality/frontend-tests.test.mjs scripts/quality/frontend-coverage.test.mjs
     run_gate "Quality-ratchet fixture tests" node scripts/quality/test-ratchets.mjs
     ;;
   --full)
     run_gate "Generated route types" bash scripts/quality/route-types.sh
     run_gate "Oxlint type-aware rules and TypeScript diagnostics" env GOMEMLIMIT=1GiB GOMAXPROCS=2 node scripts/quality/check-oxlint-baseline.mjs full
     run_gate "Oxfmt check" pnpm exec oxfmt --check .
-    run_gate "Test runner regression tests" node --test --test-concurrency=1 scripts/quality/run-bounded.test.mjs scripts/quality/frontend-tests.test.mjs
+    run_gate "Test runner regression tests" node --test --test-concurrency=1 scripts/quality/run-bounded.test.mjs scripts/quality/frontend-tests.test.mjs scripts/quality/frontend-coverage.test.mjs
     run_gate "Quality-ratchet fixture tests" node scripts/quality/test-ratchets.mjs
     run_gate "Knip unused-code/dependency ratchet" node scripts/quality/check-knip-ratchet.mjs
     run_gate "jscpd duplicate baseline" pnpm check:duplicates
@@ -46,7 +46,8 @@ case "$MODE" in
     run_gate "UI tests with coverage" pnpm --filter @plane/ui test:coverage
     run_gate "UI coverage ratchet" node scripts/quality/check-coverage-ratchet.mjs --root packages/ui --summary coverage/coverage-summary.json --baseline ../../.quality/coverage-ui-baseline.json --scope-file .quality/coverage-scope.json --scope-key packages/ui --new-file-min 80
     # test:frontend has its own tighter process guard; avoid nested process groups.
-    pnpm test:frontend || FAILED+=("Frontend behavior tests")
+    pnpm test:frontend:coverage || FAILED+=("Frontend behavior tests with source coverage")
+    run_gate "Frontend source coverage ratchets" node scripts/quality/check-frontend-coverage.mjs
     ;;
   --fix)
     run_gate "Oxlint safe fixes" pnpm exec oxlint --fix .

@@ -243,3 +243,33 @@ await test("native view layout settings preserve calendar fields, collapsed sibl
   await act(async () => current.collapse.toggle("group_by", "first"));
   assert.deepEqual(current.collapse.filters.group_by, ["second"]);
 });
+
+await test("view kanban grouping removes duplicate subgroups and restores a required state column", async (t) => {
+  const fixture = await fixtureFor(t);
+  let current;
+  await fixture.render(React.createElement(createHarness((value) => (current = value))));
+  await act(async () =>
+    current.updateFilters("acme", "p1", EIssueFilterType.DISPLAY_FILTERS, {
+      layout: "kanban",
+      group_by: "priority",
+      sub_group_by: "priority",
+    })
+  );
+  assert.equal(current.issueFilters.displayFilters.group_by, "priority");
+  assert.equal(current.issueFilters.displayFilters.sub_group_by, null);
+  await act(async () =>
+    current.updateFilters("acme", "p1", EIssueFilterType.DISPLAY_FILTERS, {
+      layout: "kanban",
+      group_by: null,
+      sub_group_by: "assignees",
+    })
+  );
+  assert.equal(current.issueFilters.displayFilters.group_by, "state");
+  assert.equal(current.issueFilters.displayFilters.sub_group_by, null);
+  await assert.rejects(
+    current.updateFilters("acme", "p1", EIssueFilterType.DISPLAY_FILTERS, {
+      group_by: ["collapsed-column"],
+    }),
+    /Display grouping requires a column/
+  );
+});

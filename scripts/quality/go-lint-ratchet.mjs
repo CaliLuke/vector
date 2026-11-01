@@ -41,15 +41,15 @@ function diagnosticMap(report) {
 const current = diagnosticMap(readJSON(inputPath));
 if (mode === "write") {
   const issues = [...current.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
+    .toSorted(([a], [b]) => a.localeCompare(b))
     .map(([key, count]) => ({
       fingerprint: JSON.parse(key),
       count,
     }));
   fs.mkdirSync(path.dirname(baselinePath), { recursive: true });
   fs.writeFileSync(baselinePath, `${JSON.stringify({ version: 1, issues }, null, 2)}\n`);
-  console.log(
-    `wrote ${issues.length} diagnostic fingerprints (${[...current.values()].reduce((sum, n) => sum + n, 0)} occurrences) to ${baselinePath}`
+  process.stdout.write(
+    `wrote ${issues.length} diagnostic fingerprints (${[...current.values()].reduce((sum, n) => sum + n, 0)} occurrences) to ${baselinePath}\n`
   );
   process.exit(0);
 }
@@ -91,6 +91,6 @@ if (newIssues.length || staleIssues.length) {
   console.error("Review changes, then refresh the explicit baseline with scripts/quality/go.sh --write-lint-baseline.");
   process.exit(1);
 }
-console.log(
-  `golangci-lint ratchet passed (${[...current.values()].reduce((sum, n) => sum + n, 0)} existing diagnostics)`
+process.stdout.write(
+  `golangci-lint ratchet passed (${[...current.values()].reduce((sum, n) => sum + n, 0)} existing diagnostics)\n`
 );

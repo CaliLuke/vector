@@ -8,8 +8,7 @@ import sortBy from "lodash-es/sortBy.js";
 // plane imports
 import type { IModule, TModuleDisplayFilters, TModuleFilters, TModuleOrderByOptions } from "@plane/types";
 // local imports
-import { getDate } from "./datetime";
-import { satisfiesDateFilter } from "./filter";
+import { matchesFilterValue, matchesAnyFilterValue, matchesDateFilters } from "./filter";
 
 const collator = new Intl.Collator("en-US", { numeric: true, sensitivity: "base" });
 
@@ -59,35 +58,16 @@ export const orderModules = (modules: IModule[], orderByKey: TModuleOrderByOptio
  * @returns {boolean}
  */
 export const shouldFilterModule = (
-  module: IModule,
+  module: Partial<IModule>,
   displayFilters: TModuleDisplayFilters,
   filters: TModuleFilters
 ): boolean => {
-  let fallsInFilters = true;
-  Object.keys(filters).forEach((key) => {
-    const filterKey = key as keyof TModuleFilters;
-    if (filterKey === "status" && filters.status && filters.status.length > 0)
-      fallsInFilters = fallsInFilters && filters.status.includes(module.status?.toLowerCase() ?? "");
-    if (filterKey === "lead" && filters.lead && filters.lead.length > 0)
-      fallsInFilters = fallsInFilters && filters.lead.includes(`${module.lead_id}`);
-    if (filterKey === "members" && filters.members && filters.members.length > 0) {
-      const memberIds = module.member_ids ?? [];
-      fallsInFilters = fallsInFilters && filters.members.some((memberId) => memberIds.includes(memberId));
-    }
-    if (filterKey === "start_date" && filters.start_date && filters.start_date.length > 0) {
-      const startDate = getDate(module.start_date);
-      filters.start_date.forEach((dateFilter) => {
-        fallsInFilters = fallsInFilters && !!startDate && satisfiesDateFilter(startDate, dateFilter);
-      });
-    }
-    if (filterKey === "target_date" && filters.target_date && filters.target_date.length > 0) {
-      const endDate = getDate(module.target_date);
-      filters.target_date.forEach((dateFilter) => {
-        fallsInFilters = fallsInFilters && !!endDate && satisfiesDateFilter(endDate, dateFilter);
-      });
-    }
-  });
-  if (displayFilters.favorites && !module.is_favorite) fallsInFilters = false;
-
-  return fallsInFilters;
+  return (
+    matchesFilterValue(module.status?.toLowerCase() ?? "", filters.status) &&
+    matchesFilterValue(String(module.lead_id), filters.lead) &&
+    matchesAnyFilterValue(module.member_ids, filters.members) &&
+    matchesDateFilters(module.start_date, filters.start_date) &&
+    matchesDateFilters(module.target_date, filters.target_date) &&
+    (!displayFilters.favorites || module.is_favorite === true)
+  );
 };

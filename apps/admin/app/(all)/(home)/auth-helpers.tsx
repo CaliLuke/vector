@@ -9,15 +9,7 @@ import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Link } from "react-router";
 // plane packages
 import type { TAdminAuthErrorInfo } from "@plane/constants";
-import { SUPPORT_EMAIL, EAdminAuthErrorCodes } from "@plane/constants";
-
-enum EErrorAlertType {
-  BANNER_ALERT = "BANNER_ALERT",
-  INLINE_FIRST_NAME = "INLINE_FIRST_NAME",
-  INLINE_EMAIL = "INLINE_EMAIL",
-  INLINE_PASSWORD = "INLINE_PASSWORD",
-  INLINE_EMAIL_CODE = "INLINE_EMAIL_CODE",
-}
+import { SUPPORT_EMAIL, EAdminAuthErrorCodes, EErrorAlertType } from "@plane/constants";
 
 const errorCodeMessages: {
   [key in EAdminAuthErrorCodes]: { title: string; message: (email?: string) => React.ReactNode };
@@ -77,7 +69,13 @@ const errorCodeMessages: {
   },
 };
 
-export const authErrorHandler = (errorCode: EAdminAuthErrorCodes, email?: string): TAdminAuthErrorInfo | undefined => {
+const knownAdminErrorCodes: ReadonlySet<string> = new Set(Object.values(EAdminAuthErrorCodes));
+function isAdminErrorCode(value: unknown): value is EAdminAuthErrorCodes {
+  return typeof value === "string" && knownAdminErrorCodes.has(value);
+}
+
+export const authErrorHandler = (errorCode: unknown, email?: string): TAdminAuthErrorInfo | undefined => {
+  if (!isAdminErrorCode(errorCode)) return undefined;
   const bannerAlertErrorCodes = [
     EAdminAuthErrorCodes.ADMIN_ALREADY_EXIST,
     EAdminAuthErrorCodes.REQUIRED_ADMIN_EMAIL_PASSWORD_FIRST_NAME,
@@ -108,4 +106,15 @@ export async function submitInstanceAuthForm(form: HTMLFormElement | null) {
   } catch {
     setToast({ type: TOAST_TYPE.ERROR, title: "Could not continue", message: "Please try again." });
   }
+}
+
+/** Legacy form redirects carry symbolic codes and a message in the query string. */
+export function getInstanceFormError<Code extends string>(
+  codes: readonly Code[],
+  code: unknown,
+  message: string | undefined
+) {
+  if (!message) return { type: undefined, message: undefined };
+  const type = codes.find((candidate) => candidate === code);
+  return { type, message: type ? message : undefined };
 }

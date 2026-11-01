@@ -70,3 +70,46 @@ await test("real inline form retries an unfinished parent assignment without cre
   assert.equal(input.value, "");
   assert.equal(input.disabled, false);
 });
+
+for (const layout of ["list", "kanban"]) {
+  void test(`${layout} group creation honors restrictions and submits its group defaults through the real form`, async (t) => {
+    const view = await createPermissionUiFixture(t, {
+      path: "/acme/projects/p1/cycles/c1",
+      workspaceRole: 15,
+      projectRoles: { p1: 20 },
+    });
+    t.mock.method(IssueService.prototype, "addIssueToCycle", async () => {});
+    const { GroupQuickAdd } = await import("../../apps/web/core/components/issues/issue-layouts/quick-add/root.tsx");
+    const writes = [];
+    const props = {
+      layout,
+      enabled: true,
+      creationDisabled: false,
+      groupBy: "state",
+      isEpic: false,
+      prePopulate: () => ({ state_id: "active", priority: "high" }),
+      quickAddCallback: async (projectId, data) => {
+        writes.push({ projectId, data });
+        return { ...data, id: "group-item", project_id: projectId };
+      },
+    };
+    await view.render(React.createElement(GroupQuickAdd, { ...props, creationDisabled: true }));
+    assert.equal(view.environment.container.querySelector("button"), null);
+    await view.render(React.createElement(GroupQuickAdd, { ...props, enabled: false }));
+    assert.equal(view.environment.container.querySelector("button"), null);
+    await view.render(React.createElement(GroupQuickAdd, { ...props, subGroupBy: "type_id" }));
+    assert.equal(view.environment.container.querySelector("button"), null);
+    await view.render(React.createElement(GroupQuickAdd, props));
+    const trigger = view.environment.container.querySelector("button");
+    assert.ok(trigger, "permitted groups expose their native creation control");
+    await act(async () => trigger.click());
+    await changeFormControl(view.environment.container.querySelector("input[name=name]"), "Grouped work");
+    await submitForm(view.environment.container);
+    await settleQuery();
+    assert.equal(writes.length, 1);
+    assert.equal(writes[0].projectId, "p1");
+    assert.equal(writes[0].data.state_id, "active");
+    assert.equal(writes[0].data.priority, "high");
+    assert.equal(writes[0].data.name, "Grouped work");
+  });
+}

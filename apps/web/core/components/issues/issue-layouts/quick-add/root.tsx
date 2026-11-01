@@ -1,3 +1,4 @@
+import type { IssueQuickAddCallback } from "./types";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -8,7 +9,10 @@ import type { FC } from "react";
 import { useParams } from "@tanstack/react-router";
 import { useTranslation } from "@plane/i18n";
 import { PlusIcon } from "@plane/propel/icons";
-import type { TIssue, EIssueLayoutTypes } from "@plane/types";
+import type { TIssue, TIssueGroupByOptions } from "@plane/types";
+import { EIssueLayoutTypes } from "@plane/types";
+import { canQuickAddToGroup } from "./grouping";
+import { ListQuickAddIssueButton, KanbanQuickAddIssueButton } from "./button";
 import { QuickAddIssueForm } from "./form/root";
 
 export type TQuickAddIssueButton = { isEpic?: boolean; onClick: () => void };
@@ -20,7 +24,7 @@ type Props = {
   customQuickAddButton?: React.ReactNode;
   containerClassName?: string;
   setIsQuickAddOpen?: (open: boolean) => void;
-  quickAddCallback?: (projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>;
+  quickAddCallback?: IssueQuickAddCallback;
   isEpic?: boolean;
 };
 export function QuickAddIssueRoot({
@@ -71,6 +75,43 @@ export function QuickAddIssueRoot({
           )}
         </>
       )}
+    </div>
+  );
+}
+
+export function GroupQuickAdd({
+  layout,
+  enabled,
+  creationDisabled,
+  groupBy,
+  subGroupBy,
+  prePopulate,
+  quickAddCallback,
+  isEpic,
+}: {
+  layout: EIssueLayoutTypes.LIST | EIssueLayoutTypes.KANBAN;
+  enabled: boolean | undefined;
+  creationDisabled: boolean;
+  groupBy: TIssueGroupByOptions | undefined;
+  subGroupBy?: TIssueGroupByOptions;
+  prePopulate: () => Partial<TIssue>;
+  quickAddCallback?: IssueQuickAddCallback;
+  isEpic: boolean;
+}) {
+  if (creationDisabled || !canQuickAddToGroup(enabled, groupBy, subGroupBy)) return null;
+  const isList = layout === EIssueLayoutTypes.LIST;
+  return (
+    <div
+      className={isList ? "sticky bottom-0 z-[1] w-full flex-shrink-0" : "sticky bottom-0 w-full bg-surface-2 py-0.5"}
+    >
+      <QuickAddIssueRoot
+        layout={layout}
+        QuickAddButton={isList ? ListQuickAddIssueButton : KanbanQuickAddIssueButton}
+        prePopulatedData={prePopulate()}
+        containerClassName={isList ? "border-b border-t border-subtle bg-surface-1 " : undefined}
+        quickAddCallback={quickAddCallback}
+        isEpic={isEpic}
+      />
     </div>
   );
 }

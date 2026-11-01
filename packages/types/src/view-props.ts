@@ -7,7 +7,7 @@
 import type * as React from "react";
 
 import type { IProjectMemberNavigationPreferences } from "./project";
-import type { TIssue } from "./issues/issue";
+import type { EIssueLayoutTypes, TIssue } from "./issues/issue";
 import type { LOGICAL_OPERATOR, TSupportedOperators } from "./rich-filters";
 import type { CompleteOrEmpty } from "./utils";
 
@@ -180,7 +180,7 @@ export interface IIssueDisplayFilterOptions {
   };
   group_by?: TIssueGroupByOptions;
   sub_group_by?: TIssueGroupByOptions;
-  layout?: any; // TODO: Need to fix this and set it to enum EIssueLayoutTypes
+  layout?: EIssueLayoutTypes;
   order_by?: TIssueOrderByOptions;
   show_empty_groups?: boolean;
   sub_issue?: boolean;
@@ -297,9 +297,11 @@ export interface IssuePaginationOptions {
   orderBy?: TIssueOrderByOptions;
 }
 
-export type TSpreadsheetColumn = React.FC<{
+export type TSpreadsheetColumnProps = {
   issue: TIssue;
   onClose: () => void;
-  onChange: (issue: TIssue, data: Partial<TIssue>, updates: any) => void;
+  onChange: (issue: TIssue, data: Partial<TIssue>, updates: unknown) => void;
   disabled: boolean;
-}>;
+};
+
+export type TSpreadsheetColumn = React.FC<TSpreadsheetColumnProps>;

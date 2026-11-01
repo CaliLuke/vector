@@ -1,0 +1,563 @@
+{
+  "version": 1,
+  "files": {
+    "src/array.ts": {
+      "lines": 87.8,
+      "statements": 85,
+      "functions": 80,
+      "branches": 80.7
+    },
+    "src/attachment.ts": {
+      "lines": 30.76,
+      "statements": 28.57,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/auth.ts": {
+      "lines": 24.67,
+      "statements": 24.35,
+      "functions": 3.5,
+      "branches": 47.61
+    },
+    "src/calendar.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 83.33
+    },
+    "src/color.ts": {
+      "lines": 9.19,
+      "statements": 8.42,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/common.ts": {
+      "lines": 56,
+      "statements": 48.57,
+      "functions": 35.71,
+      "branches": 27.27
+    },
+    "src/cycle.ts": {
+      "lines": 10.12,
+      "statements": 8.69,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/datetime.ts": {
+      "lines": 52.15,
+      "statements": 52.5,
+      "functions": 46.42,
+      "branches": 30.27
+    },
+    "src/distribution-update.ts": {
+      "lines": 16,
+      "statements": 16.45,
+      "functions": 11.11,
+      "branches": 3.7
+    },
+    "src/editor/common.ts": {
+      "lines": 26.08,
+      "statements": 25,
+      "functions": 20,
+      "branches": 0
+    },
+    "src/editor/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/editor/markdown-parser/common.ts": {
+      "lines": 100,
+      "statements": 50,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/editor/markdown-parser/custom-components-handler.ts": {
+      "lines": 16,
+      "statements": 12.9,
+      "functions": 14.28,
+      "branches": 0
+    },
+    "src/editor/markdown-parser/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/editor/markdown-parser/marks-handler.ts": {
+      "lines": 10.52,
+      "statements": 10,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/editor/markdown-parser/root.ts": {
+      "lines": 45.45,
+      "statements": 43.24,
+      "functions": 55.55,
+      "branches": 37.5
+    },
+    "src/editor/markdown-parser/types.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/emoji.ts": {
+      "lines": 90,
+      "statements": 89.28,
+      "functions": 87.5,
+      "branches": 90.9
+    },
+    "src/estimates.ts": {
+      "lines": 68.75,
+      "statements": 66.66,
+      "functions": 80,
+      "branches": 44.44
+    },
+    "src/file.ts": {
+      "lines": 27.77,
+      "statements": 30,
+      "functions": 25,
+      "branches": 25
+    },
+    "src/filter.ts": {
+      "lines": 6.45,
+      "statements": 4.25,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/get-icon-for-link.ts": {
+      "lines": 62.5,
+      "statements": 62.5,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/intake.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/loader.ts": {
+      "lines": 100,
+      "statements": 50,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/local-logging.ts": {
+      "lines": 95.23,
+      "statements": 89.93,
+      "functions": 85.71,
+      "branches": 76.63
+    },
+    "src/math.ts": {
+      "lines": 50,
+      "statements": 50,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/module.ts": {
+      "lines": 48.78,
+      "statements": 36.06,
+      "functions": 18.75,
+      "branches": 19.17
+    },
+    "src/notification.ts": {
+      "lines": 50,
+      "statements": 50,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/page.ts": {
+      "lines": 62.85,
+      "statements": 52.08,
+      "functions": 60,
+      "branches": 35.84
+    },
+    "src/permission/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/permission/role.ts": {
+      "lines": 25,
+      "statements": 20,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/project-views.ts": {
+      "lines": 22.85,
+      "statements": 18.18,
+      "functions": 10,
+      "branches": 9.43
+    },
+    "src/project.ts": {
+      "lines": 11.9,
+      "statements": 8.06,
+      "functions": 7.14,
+      "branches": 0
+    },
+    "src/rich-filters/factories/configs/core.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/rich-filters/factories/configs/properties/date.ts": {
+      "lines": 33.33,
+      "statements": 33.33,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/rich-filters/factories/configs/properties/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/rich-filters/factories/configs/properties/member-picker.ts": {
+      "lines": 25,
+      "statements": 25,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/rich-filters/factories/configs/properties/shared.ts": {
+      "lines": 37.5,
+      "statements": 37.5,
+      "functions": 23.07,
+      "branches": 100
+    },
+    "src/rich-filters/factories/configs/shared.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/rich-filters/factories/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/rich-filters/factories/nodes/core.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/rich-filters/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/rich-filters/operations/comparison.ts": {
+      "lines": 51.35,
+      "statements": 50,
+      "functions": 41.66,
+      "branches": 44
+    },
+    "src/rich-filters/operations/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/rich-filters/operations/manipulation/core.ts": {
+      "lines": 78.12,
+      "statements": 78.78,
+      "functions": 100,
+      "branches": 80
+    },
+    "src/rich-filters/operations/transformation/core.ts": {
+      "lines": 92.3,
+      "statements": 92.3,
+      "functions": 87.5,
+      "branches": 86.2
+    },
+    "src/rich-filters/operations/transformation/shared.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 50
+    },
+    "src/rich-filters/operations/traversal/conjunctive.ts": {
+      "lines": 100,
+      "statements": 87.5,
+      "functions": 100,
+      "branches": 68.75
+    },
+    "src/rich-filters/operations/traversal/core.ts": {
+      "lines": 90.9,
+      "statements": 85.71,
+      "functions": 75,
+      "branches": 63.15
+    },
+    "src/rich-filters/operations/traversal/shared.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/rich-filters/operators/core.ts": {
+      "lines": 100,
+      "statements": 80,
+      "functions": 100,
+      "branches": 50
+    },
+    "src/rich-filters/operators/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/rich-filters/operators/shared.ts": {
+      "lines": 66.66,
+      "statements": 66.66,
+      "functions": 100,
+      "branches": 60
+    },
+    "src/rich-filters/types/core.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/rich-filters/types/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/rich-filters/types/shared.ts": {
+      "lines": 90.9,
+      "statements": 92.3,
+      "functions": 100,
+      "branches": 83.33
+    },
+    "src/rich-filters/validators/core.ts": {
+      "lines": 56.25,
+      "statements": 55.55,
+      "functions": 50,
+      "branches": 62.5
+    },
+    "src/rich-filters/validators/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/rich-filters/validators/shared.ts": {
+      "lines": 100,
+      "statements": 83.33,
+      "functions": 100,
+      "branches": 85.71
+    },
+    "src/rich-filters/values/core.ts": {
+      "lines": 87.5,
+      "statements": 87.5,
+      "functions": 100,
+      "branches": 91.66
+    },
+    "src/rich-filters/values/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/router.ts": {
+      "lines": 20,
+      "statements": 20,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/string.ts": {
+      "lines": 58.26,
+      "statements": 53.84,
+      "functions": 37.03,
+      "branches": 20.9
+    },
+    "src/subscription.ts": {
+      "lines": 14.28,
+      "statements": 14.28,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/tab-indices.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 71.42
+    },
+    "src/theme-legacy.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 50
+    },
+    "src/theme/color-conversion.ts": {
+      "lines": 25.71,
+      "statements": 25.71,
+      "functions": 33.33,
+      "branches": 50
+    },
+    "src/theme/color-validation.ts": {
+      "lines": 77.77,
+      "statements": 73.68,
+      "functions": 75,
+      "branches": 60
+    },
+    "src/theme/constants.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/theme/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/theme/palette-generator.ts": {
+      "lines": 70,
+      "statements": 70.73,
+      "functions": 83.33,
+      "branches": 70.83
+    },
+    "src/theme/theme-application.ts": {
+      "lines": 56.52,
+      "statements": 55.31,
+      "functions": 58.33,
+      "branches": 50
+    },
+    "src/theme/theme-inversion.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/tlds.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/url.ts": {
+      "lines": 9.87,
+      "statements": 8.69,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/validation.ts": {
+      "lines": 45.9,
+      "statements": 45.9,
+      "functions": 66.66,
+      "branches": 33.33
+    },
+    "src/work-item-filters/configs/filters/cycle.ts": {
+      "lines": 20,
+      "statements": 20,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/work-item-filters/configs/filters/date.ts": {
+      "lines": 50,
+      "statements": 50,
+      "functions": 25,
+      "branches": 100
+    },
+    "src/work-item-filters/configs/filters/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/work-item-filters/configs/filters/label.ts": {
+      "lines": 20,
+      "statements": 20,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/work-item-filters/configs/filters/module.ts": {
+      "lines": 20,
+      "statements": 20,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/work-item-filters/configs/filters/priority.ts": {
+      "lines": 90,
+      "statements": 90,
+      "functions": 87.5,
+      "branches": 100
+    },
+    "src/work-item-filters/configs/filters/project.ts": {
+      "lines": 25,
+      "statements": 25,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/work-item-filters/configs/filters/state.ts": {
+      "lines": 40,
+      "statements": 40,
+      "functions": 25,
+      "branches": 100
+    },
+    "src/work-item-filters/configs/filters/user.ts": {
+      "lines": 25,
+      "statements": 25,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/work-item-filters/configs/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/work-item-filters/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/work-item/base.ts": {
+      "lines": 42.52,
+      "statements": 38.77,
+      "functions": 46.15,
+      "branches": 45.39
+    },
+    "src/work-item/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/work-item/modal.ts": {
+      "lines": 87.5,
+      "statements": 87.5,
+      "functions": 50,
+      "branches": 12.5
+    },
+    "src/work-item/state.ts": {
+      "lines": 34.61,
+      "statements": 36.84,
+      "functions": 40,
+      "branches": 23.52
+    },
+    "src/workspace.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    }
+  }
+}

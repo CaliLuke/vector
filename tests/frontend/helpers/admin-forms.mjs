@@ -13,6 +13,8 @@ const stubs = {
     export const Button = ({children, loading, disabled, variant, size, ...props}) => React.createElement("button", {...props, disabled: disabled || loading}, children);`,
   "@plane/propel/toast": `export const TOAST_TYPE = {SUCCESS: "success", ERROR: "error"}; export const setToast = value => globalThis.adminFormToasts.push(value);`,
   "@plane/ui": `import React from "react";
+    export { BrandHeader } from ${JSON.stringify(new URL("../../../packages/ui/src/auth-form/brand-header.tsx", import.meta.url).href)};
+    export { AuthMessageBanner } from ${JSON.stringify(new URL("../../../packages/ui/src/auth-form/auth-banner.tsx", import.meta.url).href)};
     export const Spinner = () => React.createElement("span");
     export const PasswordStrengthIndicator = () => null;
     export { AuthInput, AuthEmailInput } from ${JSON.stringify(new URL("../../../packages/ui/src/auth-form/auth-input.tsx", import.meta.url).href)};

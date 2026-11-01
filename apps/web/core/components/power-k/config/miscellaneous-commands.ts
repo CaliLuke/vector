@@ -9,8 +9,7 @@ import { PanelLeft } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 import { LinkIcon, SearchIcon } from "@plane/propel/icons";
 // plane imports
-import { setToast, TOAST_TYPE } from "@plane/propel/toast";
-import { copyTextToClipboard } from "@plane/utils/string";
+import { copyPowerKCurrentUrl } from "@/components/power-k/core/execute-action";
 // components
 import type { TPowerKCommandConfig } from "@/components/power-k/core/types";
 // hooks
@@ -24,23 +23,11 @@ export const usePowerKMiscellaneousCommands = (): TPowerKCommandConfig[] => {
   // translation
   const { t } = useTranslation();
 
-  const copyCurrentPageUrlToClipboard = useCallback(() => {
-    const url = new URL(window.location.href);
-    copyTextToClipboard(url.href)
-      .then(() => {
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: t("power_k.miscellaneous_actions.copy_current_page_url_toast_success"),
-        });
-      })
-      .catch(() => {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: t("power_k.miscellaneous_actions.copy_current_page_url_toast_error"),
-        });
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const copyCurrentPageUrlToClipboard = () =>
+    copyPowerKCurrentUrl(
+      t("power_k.miscellaneous_actions.copy_current_page_url_toast_success"),
+      t("power_k.miscellaneous_actions.copy_current_page_url_toast_error")
+    );
 
   const focusTopNavSearch = useCallback(() => {
     // Focus PowerK input if available, otherwise focus regular search input

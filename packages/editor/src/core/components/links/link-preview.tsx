@@ -49,6 +49,8 @@ export function LinkPreview({
         <p>{url?.length > 40 ? url.slice(0, 40) + "..." : url}</p>
         <div className="flex gap-2">
           <button
+            type="button"
+            aria-label="Copy link"
             onClick={() => void copyLinkToClipboard()}
             className="cursor-pointer transition-colors hover:text-primary"
           >
@@ -57,12 +59,19 @@ export function LinkPreview({
           {editor.isEditable && (
             <>
               <button
+                type="button"
+                aria-label="Edit link"
                 onClick={() => switchView("LinkEditView")}
                 className="cursor-pointer transition-colors hover:text-primary"
               >
                 <EditIcon width={14} height={14} className="inline-block" />
               </button>
-              <button onClick={removeLink} className="cursor-pointer transition-colors hover:text-primary">
+              <button
+                type="button"
+                aria-label="Remove link"
+                onClick={removeLink}
+                className="cursor-pointer transition-colors hover:text-primary"
+              >
                 <Link2Off size={14} className="inline-block" />
               </button>
             </>

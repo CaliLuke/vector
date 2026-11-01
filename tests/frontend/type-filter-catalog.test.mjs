@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import { filterEditorFixture } from "./helpers/filter-editor-fixture.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -83,8 +84,8 @@ async function fixture(t, raw = { type_id__in: "paused,missing" }) {
   f.permissions = {
     isPending: false,
     isError: false,
-    projectRole: 15,
-    workspaceRole: 15,
+    projectRole: ContractEnums.EUserPermissions.MEMBER,
+    workspaceRole: ContractEnums.EUserPermissions.MEMBER,
     membershipQuery: { isSuccess: true, data: { updated_at: "v1" } },
     rolesQuery: { isError: false },
   };
@@ -164,9 +165,9 @@ await test("failed refresh scrubs names, retains the predicate, and retry restor
     generation: 0,
     workspaceSlug: "acme",
     projectId: "p",
-    membershipRole: 15,
+    membershipRole: ContractEnums.EUserPermissions.MEMBER,
     membershipRevision: "v1",
-    projectRole: 15,
+    projectRole: ContractEnums.EUserPermissions.MEMBER,
   }).queryKey;
   t.mock.method(service, "identities", async () => {
     throw new Error("Access denied");
@@ -206,7 +207,7 @@ for (const change of ["membership", "session", "query"]) {
       accountId: "alice",
       generation: 0,
       workspaceSlug: "acme",
-      membershipRole: 15,
+      membershipRole: ContractEnums.EUserPermissions.MEMBER,
       membershipRevision: "v1",
     });
     const request = f.client.fetchQuery(options).catch((error) => error);
@@ -214,7 +215,7 @@ for (const change of ["membership", "session", "query"]) {
     if (change === "membership")
       f.client.setQueryData(permissionKeys.workspaceMembership("alice", "acme"), {
         is_active: false,
-        role: 15,
+        role: ContractEnums.EUserPermissions.MEMBER,
         updated_at: "v2",
       });
     if (change === "session") advanceIdentitySession(f.client);

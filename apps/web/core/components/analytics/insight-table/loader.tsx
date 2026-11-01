@@ -5,6 +5,9 @@
  */
 
 import * as React from "react";
+import range from "lodash-es/range.js";
+import { useTable } from "@tanstack/react-table";
+import { analyticsTableFeatures } from "./table-features";
 import type { RowData } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@plane/propel/table";
 import { Loader } from "@plane/ui";
@@ -16,22 +19,28 @@ interface TableSkeletonProps<TData extends RowData> {
 }
 
 export function TableLoader<TData extends RowData>({ columns, rows }: TableSkeletonProps<TData>) {
+  const table = useTable({ features: analyticsTableFeatures, columns, data: [] });
+  const leafColumns = table.getAllLeafColumns();
   return (
     <Table>
       <TableHeader>
-        <TableRow>
-          {columns.map((column, index) => (
-            <TableHead key={column.header?.toString() ?? index}>
-              {typeof column.header === "string" ? column.header : ""}
-            </TableHead>
-          ))}
-        </TableRow>
+        {table.getHeaderGroups().map((group) => (
+          <TableRow key={group.id}>
+            {group.headers.map((header) => (
+              <TableHead key={header.id} colSpan={header.colSpan}>
+                {!header.isPlaceholder && typeof header.column.columnDef.header === "string"
+                  ? header.column.columnDef.header
+                  : ""}
+              </TableHead>
+            ))}
+          </TableRow>
+        ))}
       </TableHeader>
       <TableBody>
-        {Array.from({ length: rows }).map((_, rowIndex) => (
-          <TableRow key={rowIndex}>
-            {columns.map((_, colIndex) => (
-              <TableCell key={colIndex}>
+        {range(rows).map((rowSlot) => (
+          <TableRow key={rowSlot}>
+            {leafColumns.map((column) => (
+              <TableCell key={column.id}>
                 <Loader.Item height="20px" width="100%" />
               </TableCell>
             ))}

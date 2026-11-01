@@ -1,34 +1,24 @@
+import type { TGanttSidebarProps } from "../types";
+import type { TGanttBlock } from "../../state";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
 
-import type { RefObject } from "react";
 // ui
-import type { IBlockUpdateData } from "@plane/types";
+import type { TIssue } from "@plane/types";
 // components
 import RenderIfVisible from "@/components/core/render-if-visible-HOC";
 import { GanttLayoutListItemLoader } from "@/components/ui/loader/layouts/gantt-layout-loader";
 //hooks
-import type { TSelectionHelper } from "@/hooks/use-multiple-select";
 // local imports
-import { useGanttChartState } from "../../contexts/chart-state";
 import { GanttDnDHOC } from "../gantt-dnd-HOC";
 import { IssuesSidebarBlock } from "./block";
 import { createGanttSidebarOrderChangeHandler, GanttSidebarRows } from "../common";
 
-type Props = {
-  blockUpdateHandler: (block: any, payload: IBlockUpdateData) => void;
-  canLoadMoreBlocks?: boolean;
-  loadMoreBlocks?: () => void;
-  ganttContainerRef: RefObject<HTMLDivElement | null>;
-  blockIds: string[];
-  enableReorder: boolean;
-  enableSelection: boolean;
-  showAllBlocks?: boolean;
-  selectionHelpers?: TSelectionHelper;
-  isEpic?: boolean;
+type Props = TGanttSidebarProps & {
+  blocksById: Readonly<Record<string, TGanttBlock<TIssue>>>;
   isPaginating?: boolean;
 };
 
@@ -47,7 +37,7 @@ export function IssueGanttSidebar(props: Props) {
     isPaginating = false,
   } = props;
 
-  const { blocksById } = useGanttChartState();
+  const { blocksById } = props;
 
   const handleOnDrop = createGanttSidebarOrderChangeHandler(blockIds, blocksById, blockUpdateHandler);
 
@@ -78,13 +68,13 @@ export function IssueGanttSidebar(props: Props) {
               <GanttDnDHOC
                 id={block.id}
                 isLastChild={index === blockIds.length - 1}
-                isDragEnabled={enableReorder}
+                isDragEnabled={typeof enableReorder === "function" ? enableReorder(blockId) : enableReorder}
                 onDrop={handleOnDrop}
               >
                 {(isDragging: boolean) => (
                   <IssuesSidebarBlock
                     block={block}
-                    enableSelection={enableSelection}
+                    enableSelection={typeof enableSelection === "function" ? enableSelection(blockId) : enableSelection}
                     isDragging={isDragging}
                     selectionHelpers={selectionHelpers}
                     isEpic={isEpic}

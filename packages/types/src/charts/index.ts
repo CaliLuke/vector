@@ -27,7 +27,7 @@ export type TChartMargin = {
 export type TChartData<K extends string, T extends string> = {
   // required key
   [key in K]: string | number;
-} & Record<T, any>;
+} & Record<T, string | number>;
 
 export type TBaseChartProps<K extends string, T extends string> = {
   data: TChartData<K, T>[];
@@ -35,7 +35,11 @@ export type TBaseChartProps<K extends string, T extends string> = {
   legend?: TChartLegend;
   margin?: TChartMargin;
   showTooltip?: boolean;
-  customTooltipContent?: (props: { active?: boolean; label: string; payload: any }) => React.ReactNode;
+  customTooltipContent?: (props: {
+    active?: boolean;
+    label: string;
+    payload: readonly { dataKey?: unknown; value?: unknown; payload?: unknown }[] | undefined;
+  }) => React.ReactNode;
 };
 
 // Props specific to charts with X and Y axes
@@ -74,12 +78,12 @@ export type TBarChartShapeVariant = "bar" | "lollipop" | "lollipop-dotted";
 export type TBarItem<T extends string> = {
   key: T;
   label: string;
-  fill: string | ((payload: any) => string);
+  fill: string | ((payload: Record<string, unknown>) => string);
   textClassName: string;
   showPercentage?: boolean;
   stackId: string;
-  showTopBorderRadius?: (barKey: string, payload: any) => boolean;
-  showBottomBorderRadius?: (barKey: string, payload: any) => boolean;
+  showTopBorderRadius?: (barKey: string, payload: Record<string, unknown>) => boolean;
+  showBottomBorderRadius?: (barKey: string, payload: Record<string, unknown>) => boolean;
   shapeVariant?: TBarChartShapeVariant;
 };
 
@@ -167,15 +171,15 @@ export type TPieChartProps<K extends string, T extends string> = Pick<
   cornerRadius?: number;
   paddingAngle?: number;
   showLabel: boolean;
-  customLabel?: (value: any) => string;
+  customLabel?: (value: string | number) => string;
   centerLabel?: {
     className?: string;
     fill: string;
     style?: React.CSSProperties;
     text?: string | number;
   };
-  tooltipLabel?: string | ((payload: any) => string);
-  customLegend?: (props: any) => React.ReactNode;
+  tooltipLabel?: string | ((payload: Record<string, unknown>) => string);
+  customLegend?: (props: unknown) => React.ReactNode;
 };
 
 // ============================================================
@@ -187,7 +191,7 @@ export type TreeMapItem = {
   value: number;
   label?: string;
   textClassName?: string;
-  icon?: React.ReactElement;
+  icon?: React.ReactElement<{ className?: string; "aria-hidden"?: boolean }>;
 } & (
   | {
       fillColor: string;

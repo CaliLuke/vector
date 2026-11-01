@@ -17,7 +17,10 @@ import type { ISlashCommandItem } from "@/types";
 import type { TSlashCommandSection } from "./command-items-list";
 import { CommandMenuItem } from "./command-menu-item";
 
-export type SlashCommandsMenuProps = SuggestionProps<TSlashCommandSection, ISlashCommandItem> & {
+export type SlashCommandsMenuProps = Pick<
+  SuggestionProps<TSlashCommandSection, ISlashCommandItem>,
+  "items" | "command" | "query"
+> & {
   onClose: () => void;
 };
 
@@ -28,6 +31,11 @@ export const SlashCommandsMenu = forwardRef(function SlashCommandsMenu(props: Sl
     section: 0,
     item: 0,
   });
+  const [previousSections, setPreviousSections] = useState(sections);
+  if (previousSections !== sections) {
+    setPreviousSections(sections);
+    setSelectedIndex({ section: 0, item: 0 });
+  }
   // refs
   const commandListContainer = useRef<HTMLDivElement>(null);
 
@@ -38,53 +46,31 @@ export const SlashCommandsMenu = forwardRef(function SlashCommandsMenu(props: Sl
     },
     [command, sections]
   );
-  // handle arrow key navigation
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (DROPDOWN_NAVIGATION_KEYS.includes(e.key)) {
-        e.preventDefault();
-        const currentSection = selectedIndex.section;
-        const currentItem = selectedIndex.item;
-        let nextSection = currentSection;
-        let nextItem = currentItem;
-
-        if (e.key === "ArrowUp") {
-          nextItem = currentItem - 1;
-          if (nextItem < 0) {
-            nextSection = currentSection - 1;
-            if (nextSection < 0) nextSection = sections.length - 1;
-            nextItem = sections[nextSection]?.items?.length - 1;
-          }
-        }
-        if (e.key === "ArrowDown") {
-          nextItem = currentItem + 1;
-          if (nextItem >= sections[currentSection]?.items?.length) {
-            nextSection = currentSection + 1;
-            if (nextSection >= sections.length) nextSection = 0;
-            nextItem = 0;
-          }
-        }
-        if (e.key === "Enter") {
-          selectItem(currentSection, currentItem);
-        }
-        setSelectedIndex({
-          section: nextSection,
-          item: nextItem,
-        });
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (!DROPDOWN_NAVIGATION_KEYS.includes(event.key)) return false;
+      event.preventDefault();
+      if (event.key === "Enter") {
+        selectItem(selectedIndex.section, selectedIndex.item);
+      } else {
+        const next = getNextValidIndex({ event, sections, selectedIndex });
+        if (next) setSelectedIndex(next);
       }
+      return true;
+    },
+    [sections, selectedIndex, selectItem]
+  );
+
+  // The editor's suggestion handler consumes its own events. Document fallback
+  // handles keyboard navigation when focus is in the dropdown itself.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!event.defaultPrevented) handleKeyDown(event);
     };
     document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [sections, selectedIndex, setSelectedIndex, selectItem]);
-  // initialize the select index to 0 by default
-  useEffect(() => {
-    setSelectedIndex({
-      section: 0,
-      item: 0,
-    });
-  }, [sections]);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [handleKeyDown]);
+
   // scroll to the dropdown item when navigating via keyboard
   useLayoutEffect(() => {
     const container = commandListContainer?.current;
@@ -94,30 +80,15 @@ export const SlashCommandsMenu = forwardRef(function SlashCommandsMenu(props: Sl
 
     // use scroll into view to bring the item in view if it is not in view
     item?.scrollIntoView({ block: "nearest" });
-  }, [sections, selectedIndex]);
+  }, [selectedIndex]);
 
-  useImperativeHandle(ref, () => ({
-    onKeyDown: ({ event }: { event: KeyboardEvent }) => {
-      if (!DROPDOWN_NAVIGATION_KEYS.includes(event.key)) return false;
-
-      if (event.key === "Enter") {
-        selectItem(selectedIndex.section, selectedIndex.item);
-        return true;
-      }
-
-      const newIndex = getNextValidIndex({
-        event,
-        sections,
-        selectedIndex,
-      });
-
-      if (newIndex) {
-        setSelectedIndex(newIndex);
-      }
-
-      return true;
-    },
-  }));
+  useImperativeHandle(
+    ref,
+    () => ({
+      onKeyDown: ({ event }: { event: KeyboardEvent }) => handleKeyDown(event),
+    }),
+    [handleKeyDown]
+  );
 
   useOutsideClickDetector(commandListContainer, onClose);
 
@@ -135,6 +106,7 @@ export const SlashCommandsMenu = forwardRef(function SlashCommandsMenu(props: Sl
         lockScroll
       />
       <div
+        role="presentation"
         id="slash-command"
         ref={commandListContainer}
         className="relative max-h-80 min-w-[12rem] space-y-2 overflow-y-auto rounded-md border-[0.5px] border-strong bg-surface-1 px-2 py-2.5 shadow-raised-200"

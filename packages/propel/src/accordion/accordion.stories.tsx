@@ -5,6 +5,7 @@
  */
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { ChevronDown } from "lucide-react";
 import { Accordion } from "./accordion";
 
 const meta = {
@@ -128,19 +129,7 @@ export const CustomIcon: Story = {
         <Accordion.Item value="item-1">
           <Accordion.Trigger
             icon={
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="transition-transform group-data-[panel-open]:rotate-180"
-              >
-                <path d="m6 9 6 6 6-6" />
-              </svg>
+              <ChevronDown width={16} height={16} className="transition-transform group-data-[panel-open]:rotate-180" />
             }
           >
             Custom Chevron Icon
@@ -152,19 +141,7 @@ export const CustomIcon: Story = {
         <Accordion.Item value="item-2">
           <Accordion.Trigger
             icon={
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="transition-transform group-data-[panel-open]:rotate-180"
-              >
-                <path d="m6 9 6 6 6-6" />
-              </svg>
+              <ChevronDown width={16} height={16} className="transition-transform group-data-[panel-open]:rotate-180" />
             }
           >
             Another Section

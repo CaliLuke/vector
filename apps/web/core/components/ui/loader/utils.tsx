@@ -8,5 +8,5 @@ export const getRandomInt = (min: number, max: number) => Math.floor(Math.random
 
 export const getRandomLength = (lengthArray: string[]) => {
   const randomIndex = Math.floor(Math.random() * lengthArray.length);
-  return `${lengthArray[randomIndex]}`;
+  return lengthArray[randomIndex];
 };

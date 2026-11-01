@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "files": {
+    "src/controller.ts": {
+      "lines": 100,
+      "statements": 93.75,
+      "functions": 100,
+      "branches": 83.33
+    },
+    "src/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/metadata.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/rest.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/websocket.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    }
+  }
+}

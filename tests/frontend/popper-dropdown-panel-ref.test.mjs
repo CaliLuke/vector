@@ -11,7 +11,6 @@ registerWebTestModules(
     "@plane/hooks": "export const useOutsideClickDetector = () => {};",
     "@plane/propel/icons":
       "export const CheckIcon = () => null; export const ChevronDownIcon = () => null; export const SearchIcon = () => null;",
-    "@plane/utils/common": `export const cn = (...values) => values.flatMap((value) => typeof value === "string" ? [value] : Object.entries(value || {}).filter(([, enabled]) => enabled).map(([key]) => key)).join(" ");`,
   },
   (specifier, context, resolveStub) => {
     if (specifier.endsWith("utils") && context.parentURL?.includes("/packages/ui/src/")) {

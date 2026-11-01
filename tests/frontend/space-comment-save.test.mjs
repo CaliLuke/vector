@@ -17,12 +17,14 @@ globalThis.spaceCommentReact = React;
 const toasts = [];
 globalThis.spaceCommentToasts = toasts;
 const stubs = {
+  "@/components/issues/peek-overview/comment/comment-reactions": "export const CommentReactions = () => null;",
   "@plane/propel/toast": `export const TOAST_TYPE = { ERROR: "error" }; export const setToast = value => globalThis.spaceCommentToasts.push(value);`,
   "@/components/editor/lite-text-editor": `const React = globalThis.spaceCommentReact;
-    export const LiteTextEditor = React.forwardRef(function Editor({initialValue, onChange, onEnterKeyPress, uploadFile, isSubmitting}, ref) {
-      React.useImperativeHandle(ref, () => ({clearEditor() {}}));
+    export const LiteTextEditor = React.forwardRef(function Editor({initialValue, onChange, onEnterKeyPress, uploadFile, isSubmitting, editable}, ref) {
+      React.useImperativeHandle(ref, () => ({clearEditor() {}, setEditorValue() {}}));
+      if (!editable) return React.createElement("p", null, initialValue);
       return React.createElement(React.Fragment, null,
-        React.createElement("input", {value: initialValue ?? "", onChange: event => onChange(null, event.target.value)}),
+        React.createElement("input", {value: initialValue ?? "", onChange: event => onChange(null, event.target.value), onKeyDown: event => { if (event.key === "Enter") onEnterKeyPress?.(); }}),
         React.createElement("button", {onClick: () => uploadFile("block", new File(["asset"], "test.txt"))}, "Upload"),
         React.createElement("button", {onClick: onEnterKeyPress, disabled: isSubmitting}, "Submit"));
     });`,
@@ -71,7 +73,7 @@ await test("comment failures retain the draft; failed attachment finalization re
   const button = (label) =>
     [...environment.container.querySelectorAll("button")].find((item) => item.textContent === label);
   await act(async () => button("Upload").click());
-  await act(async () => button("Submit").click());
+  await act(async () => input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
   await settle();
   assert.equal(formObserver.getForms(addCommentSource).at(-1)?.state.isSubmitSuccessful, false);
   assert.equal(input.value, "draft");
@@ -94,4 +96,45 @@ await test("comment failures retain the draft; failed attachment finalization re
   ]);
   assert.equal(button("Submit").disabled, false);
   assert.equal(environment.container.querySelector('[role="alert"]'), null);
+});
+
+await test("editing a public comment submits from the editor shortcut without a React form event", async (t) => {
+  const environment = await createReactDomTestEnvironment();
+  const { CommentCard } =
+    await import("../../apps/space/components/issues/peek-overview/comment/comment-detail-card.tsx");
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  t.after(() => environment.unmount(() => client.clear()));
+  client.setQueryData(currentUserOptions.queryKey, { id: "reader" });
+  client.setQueryData(publishSettingsOptions("A").queryKey, { workspace: "workspace" });
+  const comment = {
+    id: "comment",
+    comment_html: "Original",
+    created_at: "2026-01-01T00:00:00Z",
+    actor_detail: { id: "reader", display_name: "Reader", avatar_url: null },
+  };
+  const updates = [];
+  t.mock.method(SitesIssueService.prototype, "updateComment", async (anchor, issue, id, data) => {
+    updates.push({ anchor, issue, id, data });
+    return { ...comment, ...data };
+  });
+  await environment.render(
+    React.createElement(
+      QueryClientProvider,
+      { client },
+      React.createElement(CommentCard, { anchor: "A", issueId: "issue", comment })
+    )
+  );
+  await act(async () => environment.container.querySelector('button[aria-haspopup="menu"]').click());
+  const edit = [...document.querySelectorAll("button")].find((button) => button.textContent === "Edit");
+  assert.ok(edit);
+  await act(async () => edit.click());
+  const input = environment.container.querySelector("input");
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(input, "Updated");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  await act(async () => input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
+  await settle();
+  assert.deepEqual(updates, [{ anchor: "A", issue: "issue", id: "comment", data: { comment_html: "Updated" } }]);
+  assert.ok(environment.container.querySelector("form").classList.contains("hidden"));
 });

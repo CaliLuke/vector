@@ -71,8 +71,8 @@ export default function transform(file: FileInfo, api: API, options: Options) {
 
     // Also handle the case where they might be in body as ExpressionStatements
     if (path.node.body) {
-      const newBody: any[] = [];
-      let capturedComments: any[] = [];
+      const newBody: typeof path.node.body = [];
+      let capturedComments: CommentKind[] = [];
 
       path.node.body.forEach((node) => {
         let shouldRemove = false;

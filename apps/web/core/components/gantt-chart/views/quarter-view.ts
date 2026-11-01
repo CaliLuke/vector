@@ -5,9 +5,9 @@
  */
 
 //
+import { generateChartSegment } from "./chart-segment";
 import type { ChartDataType } from "@plane/types";
 import { quarters } from "../data";
-import { getNumberOfDaysBetweenTwoDates } from "./helpers";
 import type { IMonthBlock } from "./month-view";
 import { getMonthsBetweenTwoDates } from "./month-view";
 
@@ -26,82 +26,23 @@ export interface IQuarterMonthBlock {
  * @param side
  * @returns
  */
-const generateQuarterChart = (quarterPayload: ChartDataType, side: null | "left" | "right", targetDate?: Date) => {
-  let renderState = quarterPayload;
-
-  const range: number = renderState.data.approxFilterRange || 12;
-  let filteredDates: IMonthBlock[] = [];
-  let minusDate: Date = new Date();
-  let plusDate: Date = new Date();
-
-  let startDate = new Date();
-  let endDate = new Date();
-
-  // if side is null generate months on both side of current date
-  if (side === null) {
-    const currentDate = renderState.data.currentDate;
-
-    minusDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - range, 1);
-    plusDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + range, 0);
-
-    if (minusDate && plusDate) filteredDates = getMonthsBetweenTwoDates(minusDate, plusDate);
-
-    const startMonthBlock = filteredDates[0];
-    const endMonthBlock = filteredDates[filteredDates.length - 1];
-    startDate = new Date(startMonthBlock.year, startMonthBlock.month, 1);
-    endDate = new Date(endMonthBlock.year, endMonthBlock.month + 1, 0);
-
-    renderState = {
-      ...renderState,
-      data: {
-        ...renderState.data,
-        startDate,
-        endDate,
-      },
-    };
-  }
-  // When side is left, generate more months on the left side of the start date
-  else if (side === "left") {
-    const chartStartDate = renderState.data.startDate;
-    const currentDate = targetDate ? targetDate : chartStartDate;
-
-    minusDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - range / 2, 1);
-    plusDate = new Date(chartStartDate.getFullYear(), chartStartDate.getMonth() - 1, 1);
-
-    if (minusDate && plusDate) filteredDates = getMonthsBetweenTwoDates(minusDate, plusDate);
-
-    const startMonthBlock = filteredDates[0];
-    startDate = new Date(startMonthBlock.year, startMonthBlock.month, 1);
-    endDate = new Date(chartStartDate.getFullYear(), chartStartDate.getMonth(), chartStartDate.getDate() - 1);
-    renderState = {
-      ...renderState,
-      data: { ...renderState.data, startDate },
-    };
-  }
-  // When side is right, generate more months on the right side of the end date
-  else if (side === "right") {
-    const chartEndDate = renderState.data.endDate;
-    const currentDate = targetDate ? targetDate : chartEndDate;
-
-    minusDate = new Date(chartEndDate.getFullYear(), chartEndDate.getMonth() + 1, 1);
-    plusDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + range / 2, 1);
-
-    if (minusDate && plusDate) filteredDates = getMonthsBetweenTwoDates(minusDate, plusDate);
-
-    const endMonthBlock = filteredDates[filteredDates.length - 1];
-    startDate = new Date(chartEndDate.getFullYear(), chartEndDate.getMonth(), chartEndDate.getDate() + 1);
-    endDate = new Date(endMonthBlock.year, endMonthBlock.month + 1, 0);
-    renderState = {
-      ...renderState,
-      data: { ...renderState.data, endDate },
-    };
-  }
-
-  const days = Math.abs(getNumberOfDaysBetweenTwoDates(startDate, endDate)) + 1;
-  const scrollWidth = days * quarterPayload.data.dayWidth;
-
-  return { state: renderState, payload: filteredDates, scrollWidth: scrollWidth };
-};
+const generateQuarterChart = (chart: ChartDataType, side: null | "left" | "right", targetDate?: Date) =>
+  generateChartSegment(
+    chart,
+    side,
+    targetDate,
+    (start, end) => {
+      const payload = getMonthsBetweenTwoDates(start, end);
+      const first = payload[0];
+      const last = payload[payload.length - 1];
+      return {
+        payload,
+        startDate: new Date(first.year, first.month, 1),
+        endDate: new Date(last.year, last.month + 1, 0),
+      };
+    },
+    true
+  );
 
 /**
  * Merge two Quarter data payloads

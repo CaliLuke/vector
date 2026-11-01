@@ -6,6 +6,7 @@
 
 import type { IPowerKCommandRegistry } from "./registry";
 import type { TPowerKCommandConfig, TPowerKContext } from "./types";
+import { executePowerKAction } from "./execute-action";
 
 /**
  * Formats a keyboard event into a modifier shortcut string
@@ -33,7 +34,8 @@ function isTypingInInput(target: EventTarget | null): boolean {
   if (target instanceof HTMLInputElement) return true;
   if (target instanceof HTMLTextAreaElement) return true;
 
-  const element = target as Element;
+  if (!(target instanceof Element)) return false;
+  const element = target;
   if (element.classList?.contains("ProseMirror")) return true;
   if (element.getAttribute?.("contenteditable") === "true") return true;
 
@@ -198,7 +200,7 @@ export class ShortcutHandler {
 
     if (command.type === "action") {
       // Direct action
-      command.action(ctx);
+      executePowerKAction(() => command.action(ctx));
     } else if (command.type === "change-page") {
       // Opens a selection page - open palette and set active page
       this.openPalette();

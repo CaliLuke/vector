@@ -75,7 +75,7 @@ export const LabelDndHOC = function LabelDndHOC(props: Props) {
     const element = labelRef.current;
     const dragHandleElement = dragHandleRef.current;
 
-    if (!element || !isEditable) return;
+    if (!element || !isEditable) return undefined;
 
     return combine(
       draggable({

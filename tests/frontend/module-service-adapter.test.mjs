@@ -4,6 +4,7 @@ import { registerHooks } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import test from "node:test";
+import { transformFrontendSource } from "./helpers/source-transform.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 registerWebModuleHooks();
@@ -11,9 +12,9 @@ registerWebModuleHooks();
 const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
 const servicesRoot = path.join(repositoryRoot, "packages/services");
 const webRequire = (await import("node:module")).createRequire(path.join(repositoryRoot, "apps/web/package.json"));
-const typescript = webRequire("typescript");
 const constantsUrl = pathToFileURL(webRequire.resolve("@plane/constants")).href;
 const axiosStub = `
+  export const isAxiosError = error => typeof error === "object" && error !== null && error.isAxiosError === true;
   const axios = {
     CancelToken: { source: () => ({ token: {}, cancel: () => {} }) },
     isCancel: () => false,
@@ -72,9 +73,13 @@ registerHooks({
   },
   load(url, context, nextLoad) {
     if (url.startsWith(pathToFileURL(servicesRoot).href) && /\.tsx?$/.test(url)) {
-      const output = typescript.transpileModule(readFileSync(fileURLToPath(url), "utf8"), {
-        compilerOptions: { module: typescript.ModuleKind.ESNext, target: typescript.ScriptTarget.ES2022 },
-      }).outputText;
+      const output = transformFrontendSource(readFileSync(fileURLToPath(url), "utf8"), {
+        format: "esm",
+        target: "es2022",
+        tsconfigRaw: { compilerOptions: { useDefineForClassFields: true } },
+        loader: "ts",
+        sourcefile: fileURLToPath(url),
+      });
       return { format: "module", shortCircuit: true, source: output };
     }
     return nextLoad(url, context);
@@ -98,6 +103,42 @@ function createServiceTransport(t) {
     delete globalThis.window;
   });
   return { requests, responses, redirects };
+}
+
+for (const variant of ["module", "link"]) {
+  void test(`${variant} service preserves module-link routes, payloads and error bodies`, async (t) => {
+    const { requests, responses } = createServiceTransport(t);
+    const { ModuleService, ModuleLinkService } = await import("@plane/services");
+    const service =
+      variant === "module"
+        ? new ModuleService("http://localhost:8000")
+        : new ModuleLinkService("http://localhost:8000");
+    const names =
+      variant === "module"
+        ? { create: "createModuleLink", update: "updateModuleLink", destroy: "deleteModuleLink" }
+        : { create: "create", update: "update", destroy: "destroy" };
+    const scope = ["acme", "project-1", "module-1"];
+    const link = { id: "link-1", title: "Reference", url: "https://example.com" };
+    responses.push({ data: link }, { data: link }, { data: undefined });
+    assert.deepEqual(await service[names.create](...scope, link), link);
+    assert.deepEqual(await service[names.update](...scope, link.id, { title: "Renamed" }), link);
+    assert.equal(await service[names.destroy](...scope, link.id), undefined);
+    const base = "/api/workspaces/acme/projects/project-1/modules/module-1/module-links/";
+    assert.deepEqual(
+      requests.map(({ method, url, data }) => ({ method, url, data })),
+      [
+        { method: "post", url: base, data: link },
+        { method: "patch", url: `${base}link-1/`, data: { title: "Renamed" } },
+        { method: "delete", url: `${base}link-1/`, data: undefined },
+      ]
+    );
+    const response = { status: 400, data: { detail: "Invalid link" } };
+    const error = Object.assign(new Error("invalid"), { response });
+    responses.push(error, error, error);
+    await assert.rejects(service[names.create](...scope, link), (failure) => failure === response);
+    await assert.rejects(service[names.update](...scope, link.id, {}), (failure) => failure === response);
+    await assert.rejects(service[names.destroy](...scope, link.id), (failure) => failure === response.data);
+  });
 }
 
 await test("web ModuleService keeps its compatibility methods over the shared service", async (t) => {
@@ -276,3 +317,40 @@ await test("expired sessions preserve the full deep link before sign-in", async 
   const destination = new URL(redirects[0], "http://localhost:8000").searchParams.get("next_path");
   assert.equal(destination, "/acme/projects?view=board#selected");
 });
+
+const { APIService } = await import("../../packages/services/src/api.service.ts");
+class ResponseContractService extends APIService {
+  unwrap(request, policy) {
+    return this.responseData(request, policy);
+  }
+}
+for (const policy of ["data", "response", "data-or-error", "response-or-error"]) {
+  void test(`shared response handling preserves the ${policy} error contract`, async () => {
+    const service = new ResponseContractService("https://example.test");
+    const payload = { id: "accepted" };
+    assert.equal(await service.unwrap(Promise.resolve({ data: payload }), policy), payload);
+    const response = { status: 409, data: { error: "conflict" } };
+    const failure = Object.assign(new Error("request failed"), { response });
+    await assert.rejects(
+      service.unwrap(Promise.reject(failure), policy),
+      (reason) => reason === (policy.startsWith("response") ? response : response.data)
+    );
+    const transportFailure = new Error("network unavailable");
+    await assert.rejects(
+      service.unwrap(Promise.reject(transportFailure), policy),
+      (reason) => reason === (policy.endsWith("or-error") ? transportFailure : undefined)
+    );
+    const emptyFailure = { response: { data: null } };
+    await assert.rejects(
+      service.unwrap(Promise.reject(emptyFailure), policy),
+      (reason) =>
+        reason ===
+        (policy.startsWith("response") ? emptyFailure.response : policy.endsWith("or-error") ? emptyFailure : null)
+    );
+    const falsyFailure = { response: { data: false } };
+    await assert.rejects(
+      service.unwrap(Promise.reject(falsyFailure), policy),
+      (reason) => reason === (policy.startsWith("response") ? falsyFailure.response : false)
+    );
+  });
+}

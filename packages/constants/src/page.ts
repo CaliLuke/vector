@@ -4,10 +4,9 @@
  * See the LICENSE file for details.
  */
 
-export enum EPageAccess {
-  PUBLIC = 0,
-  PRIVATE = 1,
-}
+import { EPageAccess } from "@plane/types";
+
+export { EPageAccess };
 
 export type TCreatePageModal = {
   isOpen: boolean;

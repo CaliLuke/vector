@@ -10,7 +10,6 @@ import { useParams } from "@tanstack/react-router";
 import { Popover } from "@plane/propel/popover";
 import { Tooltip } from "@plane/propel/tooltip";
 import { ControlLink } from "@plane/ui";
-import { findTotalDaysInRange } from "@plane/utils/datetime";
 import { generateWorkItemLink } from "@plane/utils/work-item";
 // components
 import { SIDEBAR_WIDTH } from "@/components/gantt-chart/constants";
@@ -26,7 +25,6 @@ import type { TIssue } from "@plane/types";
 // local imports
 import { IssuePreviewPopoverPanel } from "../preview-popover-panel";
 import { getBlockViewDetails } from "../utils";
-import type { GanttStoreType } from "./base-gantt-root";
 
 type Props = {
   issue: TIssue;
@@ -49,8 +47,6 @@ export function IssueGanttBlock(props: Props) {
   const { blockStyle } = getBlockViewDetails(issue, stateDetails?.color ?? "");
 
   const handleIssuePeekOverview = () => handleRedirection(workspaceSlug, issue, isMobile);
-
-  const duration = findTotalDaysInRange(issue.start_date, issue.target_date) || 0;
 
   return (
     <Popover>
@@ -88,7 +84,7 @@ export function IssueGanttSidebarBlock(props: Props) {
   const { workspaceSlug: routerWorkspaceSlug } = useParams({ strict: false });
   const workspaceSlug = routerWorkspaceSlug?.toString();
   const { isMobile } = usePlatformOS();
-  const storeType = useIssueListType() as GanttStoreType;
+  const storeType = useIssueListType();
   const { issueFilters } = useIssueFilterPreferences(storeType);
   const displayProperties = issueFilters?.displayProperties;
   const projectCatalogue = useWorkspaceProjectDetails();
@@ -100,8 +96,8 @@ export function IssueGanttSidebarBlock(props: Props) {
   // derived values
   const projectIdentifier = projectRows?.find((project) => project.id === issue.project_id)?.identifier ?? "";
 
-  const handleIssuePeekOverview = (e: any) => {
-    e.stopPropagation(true);
+  const handleIssuePeekOverview = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.stopPropagation();
     e.preventDefault();
     handleRedirection(workspaceSlug, issue, isMobile);
   };

@@ -35,9 +35,8 @@ export function EstimateCreateStageOne(props: TEstimateCreateStageOne) {
     <div className="space-y-6">
       <div className="mb-2 gap-2 sm:flex sm:items-center sm:space-y-0 sm:space-x-10">
         <RadioInput
-          options={Object.keys(ESTIMATE_SYSTEMS)
-            .map((system) => {
-              const currentSystem = system as TEstimateSystemKeys;
+          options={Object.values(EEstimateSystem)
+            .map((currentSystem) => {
               const isEnabled = isEstimateSystemEnabled(currentSystem);
               if (!isEnabled) return null;
               return {
@@ -51,7 +50,7 @@ export function EstimateCreateStageOne(props: TEstimateCreateStageOne) {
                 ) : (
                   <div>{t(ESTIMATE_SYSTEMS[currentSystem]?.i18n_name)}</div>
                 ),
-                value: system,
+                value: currentSystem,
                 disabled: !isEnabled,
               };
             })
@@ -63,7 +62,7 @@ export function EstimateCreateStageOne(props: TEstimateCreateStageOne) {
           fieldClassName="relative flex items-center gap-1.5"
           buttonClassName="size-4"
           selected={estimateSystem}
-          onChange={(value) => handleEstimateSystem(value as TEstimateSystemKeys)}
+          onChange={handleEstimateSystem}
         />
       </div>
       {isEstimateSystemEnabled(estimateSystem) && ESTIMATE_SYSTEMS[estimateSystem]?.is_available && (

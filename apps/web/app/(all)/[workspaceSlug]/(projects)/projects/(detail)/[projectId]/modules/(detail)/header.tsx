@@ -14,7 +14,7 @@ import { ChartNoAxesColumn, PanelRight, SlidersHorizontal } from "lucide-react";
 import { EUserPermissions, WORK_ITEM_TRACKER_ELEMENTS } from "@plane/constants";
 import { Button } from "@plane/propel/button";
 import { ModuleIcon } from "@plane/propel/icons";
-import { Tooltip } from "@plane/propel/tooltip";
+import { WorkItemCountBadge } from "@/components/common/work-item-count-badge";
 import { EIssuesStoreType, EIssueLayoutTypes } from "@plane/types";
 import { Breadcrumbs, Header, BreadcrumbNavigationSearchDropdown } from "@plane/ui";
 import { cn } from "@plane/utils/common";
@@ -127,19 +127,7 @@ export function ModuleIssuesHeader() {
                 }
               />
             </ProjectSectionBreadcrumbs>
-            {workItemsCount && workItemsCount > 0 ? (
-              <Tooltip
-                isMobile={isMobile}
-                tooltipContent={`There are ${workItemsCount} ${
-                  workItemsCount > 1 ? "work items" : "work item"
-                } in this module`}
-                position="bottom"
-              >
-                <span className="flex flex-shrink-0 cursor-default items-center justify-center rounded-xl bg-accent-primary/20 px-2 text-center text-11 font-semibold text-accent-primary">
-                  {workItemsCount}
-                </span>
-              </Tooltip>
-            ) : null}
+            <WorkItemCountBadge count={workItemsCount} parent="module" isMobile={isMobile} />
           </div>
         </Header.LeftItem>
         <Header.RightItem className="items-center">

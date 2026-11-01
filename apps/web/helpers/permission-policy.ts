@@ -6,9 +6,9 @@
 
 import { EUserPermissions } from "@plane/constants";
 import { EUserWorkspaceRoles } from "@plane/types";
-import type { EUserProjectRoles, IUserProjectsRole, TUserPermissions } from "@plane/types";
+import type { IUserProjectsRole, TUserPermissions } from "@plane/types";
 
-export type PermissionRole = EUserPermissions | EUserWorkspaceRoles | EUserProjectRoles | TUserPermissions;
+export type PermissionRole = EUserPermissions;
 
 const VALID_ROLES = new Set<number>([EUserPermissions.ADMIN, EUserPermissions.MEMBER, EUserPermissions.GUEST]);
 
@@ -20,7 +20,7 @@ export function isWorkspaceRole(value: unknown): value is EUserWorkspaceRoles {
 
 export function evaluateWorkspacePermission(
   isActive: boolean | undefined,
-  workspaceRole: EUserWorkspaceRoles | null | undefined,
+  workspaceRole: unknown,
   allowedRoles: readonly PermissionRole[]
 ) {
   return isActive === true && isWorkspaceRole(workspaceRole) && allowedRoles.includes(workspaceRole);
@@ -28,7 +28,7 @@ export function evaluateWorkspacePermission(
 
 /** Project membership must exist before workspace-admin elevation is applied. */
 export function effectiveProjectRole(
-  workspaceRole: EUserWorkspaceRoles | null | undefined,
+  workspaceRole: unknown,
   projectRoles: IUserProjectsRole | undefined,
   projectId: string | undefined
 ): TUserPermissions | undefined {
@@ -42,7 +42,7 @@ export function effectiveProjectRole(
 
 export function evaluateProjectPermission(
   isWorkspaceActive: boolean | undefined,
-  workspaceRole: EUserWorkspaceRoles | null | undefined,
+  workspaceRole: unknown,
   projectRoles: IUserProjectsRole | undefined,
   projectId: string | undefined,
   allowedRoles: readonly PermissionRole[]

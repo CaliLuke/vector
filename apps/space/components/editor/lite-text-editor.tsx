@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { executeToolbarCommand, useEditorRef } from "@plane/editor";
 import React from "react";
 // plane imports
 import { LiteTextEditorWithRef } from "@plane/editor";
@@ -51,12 +52,9 @@ export const LiteTextEditor = React.forwardRef(function LiteTextEditor(
     workspaceId,
     ...rest
   } = props;
-  function isMutableRefObject<T>(ref: React.ForwardedRef<T>): ref is React.MutableRefObject<T | null> {
-    return !!ref && typeof ref === "object" && "current" in ref;
-  }
   // derived values
   const isEmpty = isCommentEmpty(props.initialValue);
-  const editorRef = isMutableRefObject<EditorRefApi>(ref) ? ref.current : null;
+  const { editorRef, ref: mergedRef } = useEditorRef(ref);
   // parse content
   const { getEditorMetaData } = useParseEditorContent({
     anchor,
@@ -65,7 +63,7 @@ export const LiteTextEditor = React.forwardRef(function LiteTextEditor(
   return (
     <div className="space-y-3 rounded-sm border border-subtle p-3">
       <LiteTextEditorWithRef
-        ref={ref}
+        ref={mergedRef}
         disabledExtensions={additionalDisabledExtensions}
         flaggedExtensions={[]}
         editable={editable}
@@ -76,7 +74,7 @@ export const LiteTextEditor = React.forwardRef(function LiteTextEditor(
         })}
         getEditorMetaData={getEditorMetaData}
         mentionHandler={{
-          renderComponent: (props) => <EditorMentionsRoot {...props} />,
+          renderComponent: (componentProps) => <EditorMentionsRoot {...componentProps} />,
         }}
         extendedEditorProps={{}}
         {...rest}
@@ -86,12 +84,7 @@ export const LiteTextEditor = React.forwardRef(function LiteTextEditor(
       {editable && (
         <IssueCommentToolbar
           executeCommand={(item) => {
-            // TODO: update this while toolbar homogenization
-            // @ts-expect-error type mismatch here
-            editorRef?.executeMenuItemCommand({
-              itemKey: item.itemKey,
-              ...item.extraProps,
-            });
+            if (editorRef) executeToolbarCommand(editorRef.executeMenuItemCommand, item);
           }}
           isSubmitting={isSubmitting}
           showSubmitButton={showSubmitButton}

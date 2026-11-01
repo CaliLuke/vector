@@ -3,6 +3,7 @@ import test from "node:test";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { act, React } from "./helpers/react.mjs";
 import { registerPermissionUiStubs } from "./helpers/permission-ui-fixture.mjs";
+import { observeNativeForms } from "./helpers/native-form-observer.mjs";
 
 const rosterState = { query: { isSuccess: false, isError: false }, membersById: undefined };
 globalThis.pageEditorRosterState = rosterState;
@@ -25,13 +26,19 @@ registerPermissionUiStubs("/use-parse-editor-content.ts", {
 registerPermissionUiStubs("/export-page-modal.tsx", {
   "@tanstack/react-router": `export const useParams=()=>({workspaceSlug:"acme",projectId:"p1"});`,
   "@react-pdf/renderer": `export const pdf=()=>({toBlob:async()=>new Blob()});`,
-  "@tanstack/react-form": `const state=globalThis.pageEditorExportState;export function useForm(options){state.form??={isSubmitting:false,isSubmitSuccessful:false,errors:[],values:options.defaultValues};state.options=options;const Field=({name,children})=>children({state:{value:state.form.values[name]},handleChange:value=>{state.form.values[name]=value;}});return{store:state.form,Field,handleSubmit:async()=>{state.form.isSubmitting=true;state.form.isSubmitSuccessful=false;try{const error=state.options.validators?.onSubmit?.({value:state.form.values});if(error){state.form.errors=[error];return;}state.form.errors=[];await state.options.onSubmit({value:state.form.values});state.form.isSubmitSuccessful=true;}catch(error){state.form.errors=[error];throw error;}finally{state.form.isSubmitting=false;}}};}export const useStore=(store,selector)=>selector(store);`,
   "@plane/propel/button": `const React=globalThis.pageEditorExportState.react;export const Button=({children,variant,size,loading,...props})=>React.createElement("button",props,children);`,
   "@plane/propel/toast": `const state=globalThis.pageEditorExportState;export const TOAST_TYPE={SUCCESS:"success",ERROR:"error"};export const setToast=toast=>state.toasts.push(toast);`,
-  "@plane/ui": `const React=globalThis.pageEditorExportState.react;export const CustomSelect=Object.assign(({children,label})=>React.createElement("div",null,label,children),{Option:({children})=>React.createElement("span",null,children)});export const EModalPosition={CENTER:"center"};export const EModalWidth={SM:"sm"};export const ModalCore=({children})=>React.createElement(React.Fragment,null,children);`,
+  "@plane/ui": `const React=globalThis.pageEditorExportState.react;
+    const Selection=React.createContext(null);
+    export const CustomSelect=Object.assign(({children,onChange,value,disabled})=>React.createElement(Selection.Provider,{value:{onChange,value,disabled}},React.createElement('div',null,children)),{Option:({children,value})=>{const select=React.useContext(Selection);return React.createElement('button',{type:'button',disabled:select.disabled,'aria-pressed':select.value===value,onClick:()=>select.onChange(value)},children);}});
+    export const EModalPosition={CENTER:'center'};export const EModalWidth={SM:'sm'};
+    export const ModalCore=({children,handleClose})=>React.createElement('div',{role:'dialog'},React.createElement('button',{type:'button','aria-label':'Dismiss export',onClick:handleClose},'Dismiss'),children);`,
   "@/components/editor/pdf": `export const PDFDocument=()=>null;`,
-  "@/hooks/use-parse-editor-content": `const state=globalThis.pageEditorExportState;export const useParseEditorContent=()=>({memberRosterQuery:state.query,memberRosterIsLoading:state.query.isLoading??false,memberRosterIsError:state.query.isError??false,retryMemberRoster:()=>state.query.refetch(),replaceCustomComponentsFromHTMLContent:async({htmlContent})=>{if(state.conversionError)throw new Error("conversion failed");return htmlContent;},replaceCustomComponentsFromMarkdownContent:({markdownContent})=>{if(state.conversionError)throw new Error("conversion failed");return markdownContent;}});`,
+  "@/hooks/use-parse-editor-content": `const state=globalThis.pageEditorExportState;export const useParseEditorContent=()=>({memberRosterQuery:state.query,memberRosterIsLoading:state.query.isLoading??false,memberRosterIsError:state.query.isError??false,retryMemberRoster:()=>state.query.refetch(),replaceCustomComponentsFromHTMLContent:async({htmlContent})=>{if(state.conversionError)throw new Error("conversion failed");return htmlContent;},replaceCustomComponentsFromMarkdownContent:({markdownContent,noAssets})=>{state.markdown={markdownContent,noAssets};if(state.conversionError)throw new Error("conversion failed");return markdownContent;}});`,
 });
+const nativeForms = observeNativeForms(["apps/web/core/components/pages/modals/export-page-modal.tsx"]);
+const formState = () =>
+  nativeForms.getForms("apps/web/core/components/pages/modals/export-page-modal.tsx").at(-1)?.state;
 const { useParseEditorContent } = await import(hookUrl);
 const modalUrl = new URL("../../apps/web/core/components/pages/modals/export-page-modal.tsx", import.meta.url).href;
 const { ExportPageModal } = await import(modalUrl);
@@ -110,6 +117,10 @@ await test("page export parsing waits for roster success and preserves unknown m
     /\[Ada\]\(http:\/\/localhost\/acme\/profile\/ada\)/
   );
 
+  const unknownMention = '<mention-component entity_identifier="ada" entity_name="unknown"></mention-component>';
+  assert.match(await getParsed().replaceCustomComponentsFromHTMLContent({ htmlContent: unknownMention }), /@user/);
+  assert.equal(getParsed().replaceCustomComponentsFromMarkdownContent({ markdownContent: unknownMention }), "");
+
   rosterState.membersById = new Map();
   await environment.render(React.createElement(PageEditorRosterProbe));
   assert.match(
@@ -132,18 +143,19 @@ await test("page export parsing waits for roster success and preserves unknown m
   );
 });
 
-await test("page export validates roster readiness and preserves failed submit state for retry", async (t) => {
-  const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
+function captureDownloads(t, environment) {
   const documentWindow = environment.container.ownerDocument.defaultView;
   const originalDOMParser = globalThis.DOMParser;
   globalThis.DOMParser = documentWindow.DOMParser;
   const originalCreateObjectURL = URL.createObjectURL?.bind(URL);
   const originalRevokeObjectURL = URL.revokeObjectURL?.bind(URL);
-  const anchorClick = documentWindow.HTMLAnchorElement.prototype.click.bind(documentWindow.HTMLAnchorElement.prototype);
+  const anchorClick = documentWindow.HTMLAnchorElement.prototype.click;
+  const downloads = [];
   URL.createObjectURL = () => "blob:page-export";
   URL.revokeObjectURL = () => {};
-  environment.container.ownerDocument.defaultView.HTMLAnchorElement.prototype.click = () => {};
+  documentWindow.HTMLAnchorElement.prototype.click = function () {
+    downloads.push({ name: this.download, href: this.href });
+  };
   t.after(() => {
     if (originalCreateObjectURL) URL.createObjectURL = originalCreateObjectURL;
     else delete URL.createObjectURL;
@@ -153,6 +165,13 @@ await test("page export validates roster readiness and preserves failed submit s
     if (originalDOMParser) globalThis.DOMParser = originalDOMParser;
     else delete globalThis.DOMParser;
   });
+  return downloads;
+}
+
+await test("page export validates roster readiness and preserves failed submit state for retry", async (t) => {
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  const downloads = captureDownloads(t, environment);
   exportState.query = {
     isSuccess: false,
     isError: false,
@@ -165,7 +184,7 @@ await test("page export validates roster readiness and preserves failed submit s
   exportState.conversionError = false;
   exportState.closes = 0;
   exportState.toasts = [];
-  exportState.form = undefined;
+  nativeForms.clear();
   const submit = async () => {
     await act(async () => {
       environment.container
@@ -193,7 +212,7 @@ await test("page export validates roster readiness and preserves failed submit s
   assert.equal(exportButton?.disabled, true);
   assert.match(environment.container.textContent, /Loading workspace members/);
   await submit();
-  assert.equal(exportState.form.isSubmitSuccessful, false);
+  assert.equal(formState().isSubmitSuccessful, false);
   assert.equal(exportState.closes, 0);
   assert.equal(
     exportState.toasts.some((toast) => toast.type === "success"),
@@ -215,7 +234,7 @@ await test("page export validates roster readiness and preserves failed submit s
   await act(async () => retry.click());
   assert.equal(exportState.retries, 1);
   await submit();
-  assert.equal(exportState.form.isSubmitSuccessful, false);
+  assert.equal(formState().isSubmitSuccessful, false);
   assert.equal(exportState.closes, 0);
 
   exportState.query = { isSuccess: true, isError: false, isFetching: false, refetch: async () => {} };
@@ -230,7 +249,7 @@ await test("page export validates roster readiness and preserves failed submit s
   console.error = () => {};
   await submit();
   console.error = originalConsoleError;
-  assert.equal(exportState.form.isSubmitSuccessful, false);
+  assert.equal(formState().isSubmitSuccessful, false);
   assert.equal(exportState.closes, 0);
   assert.ok(exportState.toasts.some((toast) => toast.type === "error"));
   assert.equal(
@@ -241,7 +260,49 @@ await test("page export validates roster readiness and preserves failed submit s
   exportState.conversionError = false;
   await render();
   await submit();
-  assert.equal(exportState.form.isSubmitSuccessful, true);
+  assert.equal(formState().isSubmitSuccessful, true);
   assert.equal(exportState.closes, 1);
+  assert.deepEqual(downloads, [{ name: "roster-export-a4.pdf", href: "blob:page-export" }]);
   assert.ok(exportState.toasts.some((toast) => toast.type === "success"));
 });
+
+await test("markdown export preserves selected content on failure and downloads the editor document on retry", async (t) => {
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  const downloads = captureDownloads(t, environment);
+  nativeForms.clear();
+  exportState.query = { isSuccess: true, isError: false, isFetching: false };
+  exportState.closes = 0;
+  exportState.toasts = [];
+  exportState.conversionError = false;
+  const props = {
+    editorRef: { getMarkDown: () => "# Project notes" },
+    isOpen: true,
+    onClose: () => exportState.closes++,
+    pageTitle: "Project / Notes",
+  };
+  await environment.render(React.createElement(ExportPageModal, props));
+  const button = (label) =>
+    [...environment.container.querySelectorAll("button")].find((item) => item.textContent === label);
+  await act(async () => button("Markdown").click());
+  await act(async () => button("No images").click());
+  assert.equal(button("A4"), undefined);
+  assert.equal(button("Markdown").getAttribute("aria-pressed"), "true");
+  exportState.conversionError = true;
+  t.mock.method(console, "error", () => {});
+  await act(async () => button("Export").click());
+  assert.equal(formState().isSubmitSuccessful, false);
+  assert.equal(exportState.closes, 0);
+  assert.deepEqual(downloads, []);
+  assert.equal(button("No images").getAttribute("aria-pressed"), "true");
+  exportState.conversionError = false;
+  await act(async () => button("Export").click());
+  assert.equal(formState().isSubmitSuccessful, true);
+  assert.deepEqual(exportState.markdown, { markdownContent: "# Project notes", noAssets: true });
+  assert.deepEqual(downloads, [{ name: "project-notes.md", href: "blob:page-export" }]);
+  assert.equal(exportState.closes, 1);
+  await act(async () => button("Cancel").click());
+  assert.equal(exportState.closes, 2);
+});
+
+nativeForms.restore();

@@ -60,8 +60,9 @@ export function SelectRepository(props: Props) {
     <CustomSearchSelect
       value={value}
       options={options}
-      onChange={(val: string) => {
-        const repo = userRepositories.find((repo) => repo.id === val);
+      onChange={(val) => {
+        if (val === null) return;
+        const repo = userRepositories.find((candidateRepo) => candidateRepo.id === val);
 
         onChange(repo);
       }}

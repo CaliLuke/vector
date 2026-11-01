@@ -8,8 +8,8 @@ export const generateFileName = (fileName: string) => {
   const date = new Date();
   const timestamp = date.getTime();
 
-  const _fileName = getFileName(fileName);
-  const nameWithoutExtension = _fileName.length > 80 ? _fileName.substring(0, 80) : _fileName;
+  const baseName = getFileName(fileName);
+  const nameWithoutExtension = baseName.length > 80 ? baseName.substring(0, 80) : baseName;
   const extension = getFileExtension(fileName);
 
   return `${nameWithoutExtension}-${timestamp}.${extension}`;

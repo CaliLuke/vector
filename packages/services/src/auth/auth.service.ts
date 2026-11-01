@@ -58,44 +58,34 @@ export class AuthService extends APIService {
    * @throws {Error} Throws response data if the request fails
    */
   async emailCheck(data: IEmailCheckData): Promise<IEmailCheckResponse> {
-    return this.post("/auth/email-check/", data, { headers: {} })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.post("/auth/email-check/", data, { headers: {} }));
   }
 
   /**
    * Sends a password reset link to the specified email address
    * @param {{ email: string }} data - Object containing the email address
-   * @returns {Promise<any>} Response from the password reset request
+   * @returns {Promise<unknown>} Response from the password reset request
    * @throws {Error} Throws response object if the request fails
    */
-  async sendResetPasswordLink(data: { email: string }): Promise<any> {
-    return this.post(`/auth/forgot-password/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+  async sendResetPasswordLink(data: { email: string }): Promise<unknown> {
+    return this.responseData(this.post(`/auth/forgot-password/`, data), "response");
   }
 
   /**
    * Sets a new password using a reset token
    * @param {string} token - CSRF token for form submission security
    * @param {{ password: string }} data - Object containing the new password
-   * @returns {Promise<any>} Response from the password update request
+   * @returns {Promise<unknown>} Response from the password update request
    * @throws {Error} Throws response data if the request fails
    */
-  async setPassword(token: string, data: { password: string }): Promise<any> {
-    return this.post(`/auth/set-password/`, data, {
-      headers: {
-        "X-CSRFTOKEN": token,
-      },
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async setPassword(token: string, data: { password: string }): Promise<unknown> {
+    return this.responseData(
+      this.post(`/auth/set-password/`, data, {
+        headers: {
+          "X-CSRFTOKEN": token,
+        },
+      })
+    );
   }
 
   /** Request an email code without exposing authentication response data to callers. */
@@ -109,29 +99,28 @@ export class AuthService extends APIService {
    * Performs user sign out by submitting a form with CSRF token
    * Creates and submits a form dynamically to handle the sign-out process
    * @param {string} baseUrl - Base URL for the sign-out endpoint
-   * @returns {Promise<any>} Resolves when sign-out is complete
+   * @returns {Promise<void>} Resolves when sign-out is complete
    * @throws {Error} Throws error if CSRF token is not found
    */
-  async signOut(baseUrl: string): Promise<any> {
-    await this.requestCSRFToken().then((data) => {
-      const csrfToken = data?.csrf_token;
+  async signOut(baseUrl: string): Promise<void> {
+    const data = await this.requestCSRFToken();
+    const csrfToken = data?.csrf_token;
 
-      if (!csrfToken) throw Error("CSRF token not found");
+    if (!csrfToken) throw Error("CSRF token not found");
 
-      const form = document.createElement("form");
-      const element1 = document.createElement("input");
+    const form = document.createElement("form");
+    const element1 = document.createElement("input");
 
-      form.method = "POST";
-      form.action = `${baseUrl}/auth/sign-out/`;
+    form.method = "POST";
+    form.action = `${baseUrl}/auth/sign-out/`;
 
-      element1.value = csrfToken;
-      element1.name = "csrfmiddlewaretoken";
-      element1.type = "hidden";
-      form.appendChild(element1);
+    element1.value = csrfToken;
+    element1.name = "csrfmiddlewaretoken";
+    element1.type = "hidden";
+    form.appendChild(element1);
 
-      document.body.appendChild(form);
+    document.body.appendChild(form);
 
-      form.submit();
-    });
+    form.submit();
   }
 }

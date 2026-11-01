@@ -140,8 +140,8 @@ export const usePowerKCreationCommandsRecord = (): Record<TPowerKCreationCommand
       icon: FolderPlus,
       keySequence: "np",
       action: () => toggleCreateProjectModal(true),
-      isEnabled: () => Boolean(canCreateProject),
-      isVisible: () => Boolean(canCreateProject),
+      isEnabled: () => canCreateProject,
+      isVisible: () => canCreateProject,
       closeOnSelect: true,
     },
     create_workspace: {
@@ -151,8 +151,8 @@ export const usePowerKCreationCommandsRecord = (): Record<TPowerKCreationCommand
       i18n_title: "power_k.creation_actions.create_workspace",
       icon: SquarePlus,
       action: (ctx) => void ctx.router.navigate({ to: "/create-workspace" }),
-      isEnabled: () => Boolean(!isWorkspaceCreationDisabled),
-      isVisible: () => Boolean(!isWorkspaceCreationDisabled),
+      isEnabled: () => !isWorkspaceCreationDisabled,
+      isVisible: () => !isWorkspaceCreationDisabled,
       closeOnSelect: true,
     },
   };

@@ -20,7 +20,7 @@ async function fixture(t) {
       { value: { item: result } },
       React.createElement(
         "table",
-        { onKeyDown: useTableKeyboardNavigation() },
+        useTableKeyboardNavigation(),
         React.createElement(
           "tbody",
           null,
@@ -83,7 +83,7 @@ function cells(tag, prefix) {
 function Grid() {
   return React.createElement(
     "table",
-    { onKeyDown: useTableKeyboardNavigation() },
+    useTableKeyboardNavigation(),
     React.createElement("thead", null, React.createElement("tr", null, ...cells("th", "h"))),
     React.createElement("tbody", null, React.createElement("tr", null, ...cells("td", "r")))
   );
@@ -155,4 +155,84 @@ await test("read-only URL cells retain the link without an edit action", async (
   );
   assert.equal(f.env.container.querySelector("button"), null);
   assert.equal(f.env.container.querySelector("a").getAttribute("href"), "https://example.test/design");
+});
+
+await test("grid uses one Tab entry and supports row/document boundaries", async (t) => {
+  const env = await createReactDomTestEnvironment();
+  t.after(() => env.unmount());
+  await env.render(React.createElement(Grid));
+  const all = [...env.container.querySelectorAll("th,td")];
+  all.forEach((cell) => {
+    cell.scrollIntoView = () => {};
+  });
+  assert.equal(env.container.querySelector("table").getAttribute("role"), "grid");
+  assert.deepEqual(
+    all.map((cell) => cell.tabIndex),
+    [0, -1, -1, -1]
+  );
+  await act(async () => {
+    all[0].focus();
+    all[0].dispatchEvent(new KeyboardEvent("keydown", { key: "End", ctrlKey: true, bubbles: true }));
+  });
+  assert.equal(document.activeElement, all[3]);
+  assert.deepEqual(
+    all.map((cell) => cell.tabIndex),
+    [-1, -1, -1, 0]
+  );
+  await act(async () => all[3].dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true })));
+  assert.equal(document.activeElement, all[2]);
+  await act(async () =>
+    all[2].dispatchEvent(new KeyboardEvent("keydown", { key: "Home", ctrlKey: true, bubbles: true }))
+  );
+  assert.equal(document.activeElement, all[0]);
+});
+
+function EditableGrid({ extra }) {
+  return React.createElement(
+    "table",
+    useTableKeyboardNavigation(),
+    React.createElement(
+      "tbody",
+      null,
+      React.createElement(
+        "tr",
+        null,
+        React.createElement(
+          "td",
+          { tabIndex: 0 },
+          React.createElement("input", { "aria-label": "Value", defaultValue: "Draft" })
+        ),
+        extra && React.createElement("td", { tabIndex: 0 }, React.createElement("button", null, "Action"))
+      )
+    )
+  );
+}
+
+await test("F2 enters cell controls, their arrow keys stay local, and Escape restores grid navigation", async (t) => {
+  const env = await createReactDomTestEnvironment();
+  t.after(() => env.unmount());
+
+  await env.render(React.createElement(EditableGrid));
+  const cell = env.container.querySelector("td");
+  const input = env.container.querySelector("input");
+  assert.equal(input.tabIndex, -1);
+  await act(async () => {
+    cell.focus();
+    cell.dispatchEvent(new KeyboardEvent("keydown", { key: "F2", bubbles: true }));
+  });
+  assert.equal(document.activeElement, input);
+  assert.equal(input.tabIndex, 0);
+  const arrow = new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true, cancelable: true });
+  await act(async () => input.dispatchEvent(arrow));
+  assert.equal(arrow.defaultPrevented, false);
+  assert.equal(document.activeElement, input);
+  await act(async () => input.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+  assert.equal(document.activeElement, cell);
+  assert.equal(input.tabIndex, -1);
+  await env.render(React.createElement(EditableGrid, { extra: true }));
+  assert.deepEqual(
+    [...env.container.querySelectorAll("td")].map((item) => item.tabIndex),
+    [0, -1]
+  );
+  assert.equal(env.container.querySelector("button").tabIndex, -1);
 });

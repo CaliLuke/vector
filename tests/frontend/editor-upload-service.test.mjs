@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
@@ -6,7 +7,7 @@ const { APIService } = await import("../../apps/web/core/services/api.service.ts
 const { FileService } = await import("../../apps/web/core/services/file.service.ts");
 const { FileUploadService } = await import("../../apps/web/core/services/file-upload.service.ts");
 const file = new File(["upload"], "asset.txt", { type: "text/plain" });
-const data = { entity_identifier: "issue", entity_type: "ISSUE_DESCRIPTION" };
+const data = { entity_identifier: "issue", entity_type: ContractEnums.EFileAssetType.ISSUE_DESCRIPTION };
 const signedAsset = {
   asset_id: "asset",
   asset_url: "url",
@@ -94,7 +95,7 @@ await test("user uploads use the same cancellable signing, storage and finalizat
     return { data: {} };
   });
   const result = await new FileService().uploadUserAsset(
-    { entity_identifier: "", entity_type: "USER_AVATAR" },
+    { entity_identifier: "", entity_type: ContractEnums.EFileAssetType.USER_AVATAR },
     file,
     controller.signal
   );

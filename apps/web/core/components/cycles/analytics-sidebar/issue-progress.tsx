@@ -13,7 +13,7 @@ import { Disclosure, Transition } from "@headlessui/react";
 import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { ChevronUpIcon, ChevronDownIcon } from "@plane/propel/icons";
-import type { ICycle, TCyclePlotType } from "@plane/types";
+import type { ICycle } from "@plane/types";
 import { getDate } from "@plane/utils/datetime";
 import type { TWorkItemFilterCondition } from "@plane/shared-state";
 import { updateWorkItemFilterFromSidebar } from "@plane/shared-state";
@@ -27,7 +27,7 @@ import { useParentChartPreferences } from "@/providers/cycle-module-preferences"
 import { useParentIssuePreferences } from "@/providers/parent-issue-preferences";
 import { readProgressFilterSelection } from "@/components/core/sidebar/progress-filter-selection";
 // local imports
-import { CycleProgressStats } from "./progress-stats";
+import { ProgressStats } from "@/components/core/sidebar/progress-stats/progress-stats";
 import { SidebarChart } from "./sidebar-chart";
 
 type TCycleAnalyticsProgress = {
@@ -104,7 +104,6 @@ export function CycleAnalyticsProgress(props: TCycleAnalyticsProgress) {
     [setRich, richFilters, t]
   );
   const cycleDetails = validateCycleSnapshot(cycle);
-  const plotType: TCyclePlotType = "burndown";
   const estimateType = estimatesEnabled ? chart.measure : "issues";
   const totalIssues = cycleDetails?.total_issues || 0;
   const totalEstimatePoints = cycleDetails?.total_estimate_points || 0;
@@ -161,14 +160,14 @@ export function CycleAnalyticsProgress(props: TCycleAnalyticsProgress) {
                         {/* progress detailed view */}
                         {chartDistributionData && (
                           <div className="w-full py-4">
-                            <CycleProgressStats
-                              cycleId={cycleId}
+                            <ProgressStats
+                              storageKey={`cycle-analytics-tab-${cycleId}`}
                               distribution={chartDistributionData}
                               groupedIssues={groupedIssues}
                               handleFiltersUpdate={handleFiltersUpdate}
-                              isEditable={Boolean(!peekCycle) && Boolean(filters)}
+                              isEditable={!peekCycle && Boolean(filters)}
                               noBackground={false}
-                              plotType={plotType}
+
                               roundedTab={false}
                               selectedFilters={{
                                 assignees: selectedFilters.assignees,

@@ -1,3 +1,4 @@
+import * as ContractEnums from "@plane/types";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -110,7 +111,13 @@ function useSourcePermissions(source: Source, userId: string | undefined, initia
   const workspaceAccess = useWorkspacePermissions(workspaceSlug);
   const access = source.isDraft ? workspaceAccess : projectAccess;
   const membership = access.membershipQuery.isSuccess ? access.membershipQuery.data : undefined;
-  const permitted = source.isDraft ? workspaceAccess.can([5, 15, 20]) : projectAccess.can([15, 20]);
+  const permitted = source.isDraft
+    ? workspaceAccess.can([
+        ContractEnums.EUserPermissions.GUEST,
+        ContractEnums.EUserPermissions.MEMBER,
+        ContractEnums.EUserPermissions.ADMIN,
+      ])
+    : projectAccess.can([ContractEnums.EUserPermissions.MEMBER, ContractEnums.EUserPermissions.ADMIN]);
   const accessState = access.isError ? "error" : access.isPending ? "pending" : permitted ? "ready" : "denied";
   const scope = {
     accountId: userId,

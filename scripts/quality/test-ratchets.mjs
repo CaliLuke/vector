@@ -36,6 +36,27 @@ function assertFails(result, description) {
 
 const coverageMetrics = (pct) => ({ lines: { pct }, statements: { pct }, functions: { pct }, branches: { pct } });
 
+const knipReport = (dependencies = []) => ({
+  issues: [
+    {
+      file: "apps/web/package.json",
+      binaries: [],
+      catalog: [],
+      catalogReferences: [],
+      dependencies,
+      devDependencies: [],
+      enumMembers: [],
+      exports: [],
+      files: [],
+      namespaceMembers: [],
+      optionalPeerDependencies: [],
+      types: [],
+      unlisted: [],
+      unresolved: [],
+    },
+  ],
+});
+
 try {
   mkdirSync(qualityDirectory, { recursive: true });
   mkdirSync(scriptDirectory, { recursive: true });
@@ -257,26 +278,6 @@ esac
   assert.match(malformedRest.stderr, /report could not be read/);
 
   const knipBaseline = path.join(qualityDirectory, "knip-baseline.json");
-  const knipReport = (dependencies = []) => ({
-    issues: [
-      {
-        file: "apps/web/package.json",
-        binaries: [],
-        catalog: [],
-        catalogReferences: [],
-        dependencies,
-        devDependencies: [],
-        enumMembers: [],
-        exports: [],
-        files: [],
-        namespaceMembers: [],
-        optionalPeerDependencies: [],
-        types: [],
-        unlisted: [],
-        unresolved: [],
-      },
-    ],
-  });
   writeJson(knipBaseline, {
     version: 1,
     findings: [{ finding: { category: "dependencies", file: "apps/web/package.json", name: "old-dep" }, count: 1 }],

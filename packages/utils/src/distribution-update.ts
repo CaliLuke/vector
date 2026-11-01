@@ -206,64 +206,38 @@ const getChartUpdates = (
  */
 export const updateDistribution = (distributionObject: ICycle | IModule, distributionUpdates: DistributionUpdates) => {
   const { pathUpdates, assigneeUpdates, labelUpdates } = distributionUpdates;
-
-  // iterate over path updates and directly apply changes on the distribution object
-  for (const update of pathUpdates) {
-    const { path, value } = update;
-    const currentValue: number = get(distributionObject, path);
+  for (const { path, value } of pathUpdates) {
+    const currentValue: number | null | undefined = get(distributionObject, path);
     if (currentValue !== undefined) set(distributionObject, path, (currentValue ?? 0) + value);
   }
-
-  // for assignee update iterate through the assignee update and apply at the respective position
-  for (const assigneeUpdate of assigneeUpdates) {
-    const { id } = assigneeUpdate;
-
-    // find and update the assignee issue counts
-    if (Array.isArray(distributionObject.distribution?.assignees)) {
-      const issuesAssignee = distributionObject.distribution?.assignees?.find(
-        (assignee) => assignee.assignee_id === id
-      );
-      if (issuesAssignee) {
-        issuesAssignee.completed_issues += assigneeUpdate.completed_issues ?? 0;
-        issuesAssignee.pending_issues += assigneeUpdate.pending_issues ?? 0;
-        issuesAssignee.total_issues += assigneeUpdate.total_issues;
-      }
-    }
-
-    // find and update the assignee points
-    if (Array.isArray(distributionObject.estimate_distribution?.assignees)) {
-      const pointsAssignee = distributionObject.estimate_distribution?.assignees?.find(
-        (assignee) => assignee.assignee_id === id
-      );
-      if (pointsAssignee) {
-        pointsAssignee.completed_estimates += assigneeUpdate.completed_estimates ?? 0;
-        pointsAssignee.pending_estimates += assigneeUpdate.pending_estimates ?? 0;
-        pointsAssignee.total_estimates += assigneeUpdate.total_estimates;
-      }
-    }
-  }
-
-  for (const labelUpdate of labelUpdates) {
-    const { id } = labelUpdate;
-
-    // find and update the label issue counts
-    if (Array.isArray(distributionObject.distribution?.labels)) {
-      const issuesLabel = distributionObject.distribution?.labels?.find((label) => label.label_id === id);
-      if (issuesLabel) {
-        issuesLabel.completed_issues += labelUpdate.completed_issues ?? 0;
-        issuesLabel.pending_issues += labelUpdate.pending_issues ?? 0;
-        issuesLabel.total_issues += labelUpdate.total_issues;
-      }
-    }
-
-    // find and update the label points
-    if (Array.isArray(distributionObject.estimate_distribution?.labels)) {
-      const pointsLabel = distributionObject.estimate_distribution?.labels?.find((label) => label.label_id === id);
-      if (pointsLabel) {
-        pointsLabel.completed_estimates += labelUpdate.completed_estimates ?? 0;
-        pointsLabel.pending_estimates += labelUpdate.pending_estimates ?? 0;
-        pointsLabel.total_estimates += labelUpdate.total_estimates;
-      }
-    }
-  }
+  applyDistributionRows(distributionObject.distribution?.assignees, assigneeUpdates, "assignee_id", ISSUE_COUNTERS);
+  applyDistributionRows(
+    distributionObject.estimate_distribution?.assignees,
+    assigneeUpdates,
+    "assignee_id",
+    ESTIMATE_COUNTERS
+  );
+  applyDistributionRows(distributionObject.distribution?.labels, labelUpdates, "label_id", ISSUE_COUNTERS);
+  applyDistributionRows(distributionObject.estimate_distribution?.labels, labelUpdates, "label_id", ESTIMATE_COUNTERS);
 };
+
+const ISSUE_COUNTERS = ["completed_issues", "pending_issues", "total_issues"] as const;
+const ESTIMATE_COUNTERS = ["completed_estimates", "pending_estimates", "total_estimates"] as const;
+
+function applyDistributionRows<
+  Counter extends Exclude<keyof DistributionObjectUpdate, "id">,
+  Identity extends "assignee_id" | "label_id",
+>(
+  rows: (Record<Counter, number> & Record<Identity, string | null>)[] | undefined,
+  updates: DistributionObjectUpdate[],
+  identity: Identity,
+  counters: readonly Counter[]
+) {
+  if (!Array.isArray(rows)) return;
+  for (const update of updates) {
+    const row = rows.find((candidate) => candidate[identity] === update.id);
+    if (!row) continue;
+    const counts: Record<Counter, number> = row;
+    for (const counter of counters) counts[counter] += update[counter] ?? 0;
+  }
+}

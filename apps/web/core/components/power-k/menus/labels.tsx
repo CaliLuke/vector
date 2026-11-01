@@ -17,15 +17,19 @@ type Props = {
   value?: string[];
 };
 
+function getLabelIcon(label: Props["labels"][number]) {
+  return (
+    <span className="grid size-3.5 shrink-0 place-items-center">
+      <span className="size-2.5 rounded-full" style={{ backgroundColor: label.color }} />
+    </span>
+  );
+}
+
 export const PowerKLabelsMenu = function PowerKLabelsMenu({ labels, onSelect, value }: Props) {
   return (
     <PowerKMenuBuilder
       items={labels}
-      getIconNode={(label) => (
-        <span className="grid size-3.5 shrink-0 place-items-center">
-          <span className="size-2.5 rounded-full" style={{ backgroundColor: label.color }} />
-        </span>
-      )}
+      getIconNode={getLabelIcon}
       getKey={(label) => label.id}
       getValue={(label) => label.name}
       getLabel={(label) => label.name}

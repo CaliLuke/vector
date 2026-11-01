@@ -22,8 +22,8 @@ source scripts/dev-env.sh
 go -C apps/go-api generate ./mcp/design
 ```
 
-The integration pins `loom-mcp/v2 v2.1.0-alpha.48` with Vector's existing
-`loom v1.10.0-alpha.17`. Generated files are not edited by hand. The dependency
+Vector uses `loom-mcp/v2 v2.1.0-alpha.50` with
+`loom v1.10.0-alpha.22`. Generated files are not edited by hand. The dependency
 adds its SDK and schema/runtime dependencies; no local module replacement is used.
 
 ## Transport configuration

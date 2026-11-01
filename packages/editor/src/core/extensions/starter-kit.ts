@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import StarterKit from "@tiptap/starter-kit";
+import { StarterKit } from "@tiptap/starter-kit";
 
 type TArgs = {
   enableHistory: boolean;

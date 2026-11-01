@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { getCycleGroup } from "@plane/utils/cycle";
 import { useLocation, useRouter } from "@tanstack/react-router";
 import type { MouseEvent } from "react";
 import React, { useState } from "react";
@@ -16,7 +17,7 @@ import { useTranslation } from "@plane/i18n";
 import { TransferIcon, WorkItemsIcon, MembersPropertyIcon } from "@plane/propel/icons";
 import { setPromiseToast } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
-import type { ICycle, TCycleGroups, IUserLite } from "@plane/types";
+import type { ICycle, IUserLite } from "@plane/types";
 import { Avatar, AvatarGroup } from "@plane/ui";
 import { getDate } from "@plane/utils/datetime";
 import { getFileURL } from "@plane/utils/file";
@@ -180,7 +181,7 @@ export const CycleListItemAction = function CycleListItemAction(props: Props) {
   const getUserDetails = (userId: string) => membersById?.get(userId)?.member;
 
   // derived values
-  const cycleStatus = cycleDetails.status ? (cycleDetails.status.toLocaleLowerCase() as TCycleGroups) : "draft";
+  const cycleStatus = getCycleGroup(cycleDetails.status);
 
   const showIssueCount = cycleStatus === "draft" || cycleStatus === "upcoming";
 

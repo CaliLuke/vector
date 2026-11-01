@@ -21,7 +21,7 @@ const workspaceDetailsSource = "apps/web/core/components/workspace/settings/work
 const confirmationSource = "apps/web/core/components/common/confirm-action-modal.tsx";
 const formObserver = observeNativeForms([workspaceDetailsSource, confirmationSource]);
 const stubs = {
-  "@/components/core/modals/workspace-image-upload-modal": `export const WorkspaceImageUploadModal = () => null;`,
+  "@/components/core/modals/workspace-image-upload-modal": `const React=globalThis.workspaceCatalogueCrudReact;export const WorkspaceImageUploadModal=({isOpen,onSuccess,onClose,handleRemove})=>isOpen?React.createElement('section',{role:'dialog','aria-label':'Workspace logo'},React.createElement('button',{type:'button',onClick:()=>void onSuccess()},'Logo saved'),React.createElement('button',{type:'button',onClick:()=>void handleRemove()},'Logo removed'),React.createElement('button',{type:'button',onClick:onClose},'Close logo')):null;`,
   "@/components/global/timezone-select": `const React=globalThis.workspaceCatalogueCrudReact;export const TimezoneSelect=({value,onChange,disabled})=>React.createElement("select",{value,disabled,onChange:event=>onChange(event.target.value)},React.createElement("option",{value:"UTC"},"UTC"),React.createElement("option",{value:"PST"},"PST"));`,
   "@/components/workspace/delete-workspace-section": `export const DeleteWorkspaceSection = () => null;`,
   "@/components/ui/loader/layouts/members-layout-loader": `export const MembersLayoutLoader = () => null;`,
@@ -141,6 +141,10 @@ await test("workspace details retain failed edits and reset to the canonical res
   });
   const form = formObserver.getForms(workspaceDetailsSource).at(-1);
   const nameInput = environment.container.querySelector('[name="name"]');
+  await changeFormControl(nameInput, "");
+  assert.match(environment.container.textContent, /required/i);
+  await changeFormControl(environment.container.querySelectorAll("select")[0], "11-50");
+  await changeFormControl(environment.container.querySelectorAll("select")[1], "PST");
   await changeFormControl(nameInput, "Edited draft");
   assert.equal(nameInput.value, "Edited draft");
   assert.equal(form.state.values.name, "Edited draft");
@@ -155,6 +159,7 @@ await test("workspace details retain failed edits and reset to the canonical res
   fail = false;
   await submitAndWait(environment, form);
   assert.equal(form.state.isSubmitSuccessful, true);
+  assert.deepEqual(updates[1], { name: "Edited draft", organization_size: "11-50", timezone: "PST" });
   assert.equal(environment.container.querySelector('[name="name"]').value, "Canonical workspace name");
   assert.equal(client.getQueryData(workspaceKeys.list(user.id))[0].name, "Canonical workspace name");
 });
@@ -296,6 +301,43 @@ await test("leaving refreshes the workspace list and never routes back to the de
   assert.deepEqual(leaveCalls, [removed.slug]);
   assert.equal(refreshedLists.length, 1);
   assert.deepEqual(client.getQueryData(workspaceKeys.list(user.id)), [fallback]);
+});
+
+await test("workspace logo completion reports a failed catalogue refresh and recovers canonical details", async (t) => {
+  state.toasts = [];
+  const { environment, client } = await renderWorkspaceCatalogueRoute(t, {
+    path: "/removed/settings/general",
+    loadComponent: async () =>
+      (await import("../../apps/web/core/components/workspace/settings/workspace-details.tsx")).WorkspaceDetails,
+  });
+  const { WorkspaceService } = await import("../../apps/web/core/services/workspace.service.ts");
+  const { workspaceKeys } = await import("../../apps/web/core/queries/workspaces.ts");
+  let fail = true,
+    reads = 0;
+  t.mock.method(WorkspaceService.prototype, "userWorkspaces", async () => {
+    reads++;
+    if (fail) throw new Error("offline");
+    return [{ ...removed, logo_url: "https://example.test/logo.png" }, fallback];
+  });
+  const clickLabel = async (label) =>
+    act(async () => {
+      [...environment.container.querySelectorAll("button")].find((item) => item.textContent === label).click();
+      await new Promise((resolve) => setImmediate(resolve));
+    });
+  await act(async () => environment.container.querySelector('[aria-label$="edit_logo"]').click());
+  assert.ok(environment.container.querySelector('[role="dialog"]'));
+  await clickLabel("Logo saved");
+  assert.equal(reads, 1);
+  assert.ok(
+    state.toasts.some((toast) => toast.title === "Workspace logo saved" && /could not refresh/.test(toast.message))
+  );
+  fail = false;
+  await clickLabel("Logo removed");
+  assert.equal(reads, 2);
+  assert.equal(client.getQueryData(workspaceKeys.list(user.id))[0].logo_url, "https://example.test/logo.png");
+  assert.ok(environment.container.querySelector('img[alt="Workspace logo"]'));
+  await clickLabel("Close logo");
+  assert.equal(environment.container.querySelector('[role="dialog"]'), null);
 });
 
 formObserver.restore();

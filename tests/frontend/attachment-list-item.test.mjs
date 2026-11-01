@@ -1,11 +1,8 @@
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
 import test from "node:test";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { React } from "./helpers/react.mjs";
-import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
-
-registerWebModuleHooks();
+import { registerDropdownSourceModules } from "./helpers/dropdown-source-modules.mjs";
 
 const customMenuUrl = new URL("../../packages/ui/src/dropdowns/custom-menu.tsx", import.meta.url).href;
 const packageStubs = {
@@ -28,20 +25,7 @@ const packageStubs = {
   "react-popper": "export const usePopper = () => ({ styles: { popper: {} }, attributes: { popper: {} } });",
 };
 
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    if (specifier === "../utils" && context.parentURL?.includes("/packages/ui/src/dropdowns/")) {
-      return {
-        shortCircuit: true,
-        url: `data:text/javascript,${encodeURIComponent("export const cn = (...values) => values.filter(value => typeof value === 'string').join(' ');")}`,
-      };
-    }
-    if (Object.hasOwn(packageStubs, specifier)) {
-      return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent(packageStubs[specifier])}` };
-    }
-    return nextResolve(specifier, context);
-  },
-});
+registerDropdownSourceModules(undefined, packageStubs);
 
 globalThis.attachmentCalls = [];
 async function renderAttachment(environment, props) {
@@ -74,7 +58,8 @@ async function waitFor(condition, message) {
   assert.ok(condition(), message);
 }
 
-test("attachment row keeps file opening and its real menu in separate buttons", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("attachment row keeps file opening and its real menu in separate buttons", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   const errors = [];
@@ -131,7 +116,7 @@ test("attachment row keeps file opening and its real menu in separate buttons", 
   await waitFor(() => document.activeElement === menuButton, "Escape should return focus to the menu trigger");
 });
 
-test("attachment menu keeps its delete action when opened by pointer", async (t) => {
+void test("attachment menu keeps its delete action when opened by pointer", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
 
@@ -148,7 +133,7 @@ test("attachment menu keeps its delete action when opened by pointer", async (t)
   assert.deepEqual(globalThis.attachmentCalls, [["delete", "attachment-1"]]);
 });
 
-test("disabled attachment menu does not open", async (t) => {
+void test("disabled attachment menu does not open", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
 

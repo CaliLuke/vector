@@ -114,7 +114,7 @@ function WorkspaceMembersSettingsContent(props: {
       setToast({
         type: TOAST_TYPE.ERROR,
         title: "Error!",
-        message: `${message ?? t("something_went_wrong_please_try_again")}`,
+        message: message ?? t("something_went_wrong_please_try_again"),
       });
 
       throw error;

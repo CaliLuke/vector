@@ -1,37 +1,23 @@
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
 import test from "node:test";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { React } from "./helpers/react.mjs";
-import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
+import { registerDropdownSourceModules } from "./helpers/dropdown-source-modules.mjs";
 
-registerWebModuleHooks();
 const toastCalls = [];
 const packageStubs = {
   "@plane/hooks": "export const useOutsideClickDetector = () => {};",
   "@plane/propel/icons": `export const ChevronDownIcon = () => null; export const ChevronRightIcon = () => null;`,
-  "@plane/propel/toast": `export const TOAST_TYPE = { SUCCESS: "success" }; export const setToast = (...args) => globalThis.__identifierToastCalls.push(args);`,
+  "@plane/propel/toast": `export const TOAST_TYPE = { SUCCESS: "success" }; export const setToast = (...args) => globalThis.identifierToastCalls.push(args);`,
   "@plane/utils/common":
     'export const cn = (...values) => values.filter(value => typeof value === "string").join(" ");',
   "react-popper": "export const usePopper = () => ({ styles: { popper: {} }, attributes: { popper: {} } });",
 };
-globalThis.__identifierToastCalls = toastCalls;
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    if (specifier === "../utils" && context.parentURL?.includes("/packages/ui/src/dropdowns/")) {
-      return {
-        shortCircuit: true,
-        url: `data:text/javascript,${encodeURIComponent("export const cn = (...values) => values.filter(value => typeof value === 'string').join(' ');")}`,
-      };
-    }
-    if (Object.hasOwn(packageStubs, specifier)) {
-      return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent(packageStubs[specifier])}` };
-    }
-    return nextResolve(specifier, context);
-  },
-});
+globalThis.identifierToastCalls = toastCalls;
+registerDropdownSourceModules(undefined, packageStubs);
 
-test("passive identifier composes with a real CustomMenu button without nesting interactive elements", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("passive identifier composes with a real CustomMenu button without nesting interactive elements", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   const { CustomMenu } = await import("../../packages/ui/src/dropdowns/custom-menu.tsx");
@@ -69,7 +55,7 @@ test("passive identifier composes with a real CustomMenu button without nesting 
   await environment.unmount();
 });
 
-test("enabled identifier keeps its real copy tooltip and copies the identifier", async () => {
+void test("enabled identifier keeps its real copy tooltip and copies the identifier", async () => {
   const environment = await createReactDomTestEnvironment();
   const { IdentifierText } = await import("../../apps/web/core/components/issues/issue-detail/identifier-text.tsx");
   const writes = [];

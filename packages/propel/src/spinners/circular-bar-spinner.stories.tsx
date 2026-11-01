@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { SpinnerColorExamples } from "./spinner-examples";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { CircularBarSpinner } from "./circular-bar-spinner";
 
@@ -91,28 +92,9 @@ export const AllSizes: Story = {
 export const ColorVariations: Story = {
   render() {
     return (
-      <div className="flex items-center gap-6">
-        <div className="text-center">
-          <CircularBarSpinner className="text-blue-500" height="24px" width="24px" />
-          <p className="text-gray-600 mt-2 text-11">Blue</p>
-        </div>
-        <div className="text-center">
-          <CircularBarSpinner className="text-success-primary" height="24px" width="24px" />
-          <p className="text-gray-600 mt-2 text-11">Green</p>
-        </div>
-        <div className="text-center">
-          <CircularBarSpinner className="text-danger-primary" height="24px" width="24px" />
-          <p className="text-gray-600 mt-2 text-11">Red</p>
-        </div>
-        <div className="text-center">
-          <CircularBarSpinner className="text-purple-500" height="24px" width="24px" />
-          <p className="text-gray-600 mt-2 text-11">Purple</p>
-        </div>
-        <div className="text-center">
-          <CircularBarSpinner className="text-orange-500" height="24px" width="24px" />
-          <p className="text-gray-600 mt-2 text-11">Orange</p>
-        </div>
-      </div>
+      <SpinnerColorExamples
+        renderSpinner={(className) => <CircularBarSpinner className={className} height="24px" width="24px" />}
+      />
     );
   },
 };

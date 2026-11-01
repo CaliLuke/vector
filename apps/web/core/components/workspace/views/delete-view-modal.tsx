@@ -50,7 +50,7 @@ export function DeleteGlobalViewModal(props: Props) {
   return (
     <AlertModalCore
       handleClose={handleClose}
-      handleSubmit={handleDeletion}
+      handleSubmit={() => void handleDeletion()}
       isSubmitting={remove.isPending}
       isOpen={isOpen}
       title={t("workspace_views.delete_view.title")}

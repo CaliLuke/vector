@@ -5,16 +5,19 @@
  */
 
 import React, { useMemo, useState } from "react";
-import { Cell, PieChart as CorePieChart, Label, Legend, Pie, ResponsiveContainer, Tooltip } from "recharts";
+import type { PieLabelRenderProps } from "recharts";
+import { isRecord } from "@plane/utils/common";
+import { Cell, PieChart as CorePieChart, Label, Pie, ResponsiveContainer, Tooltip } from "recharts";
 // plane imports
 import type { TPieChartProps } from "@plane/types";
+import { chartMargin } from "../components/layout";
 // local components
-import { getLegendProps } from "../components/legend";
+import { KeyedChartLegend } from "../components/legend";
 import { CustomActiveShape } from "./active-shape";
-import { CustomPieChartTooltip } from "./tooltip";
+import { PieChartTooltip } from "./tooltip";
 
-const renderActiveShape = (shapeProps: React.ComponentProps<typeof CustomActiveShape>) => (
-  <CustomActiveShape {...shapeProps} />
+const renderActiveShape = ({ key, ...shapeProps }: React.ComponentProps<typeof CustomActiveShape>) => (
+  <CustomActiveShape key={key} {...shapeProps} />
 );
 
 export const PieChart = React.memo(function PieChart<K extends string, T extends string>(props: TPieChartProps<K, T>) {
@@ -57,15 +60,7 @@ export const PieChart = React.memo(function PieChart<K extends string, T extends
   return (
     <div className={className}>
       <ResponsiveContainer width="100%" height="100%">
-        <CorePieChart
-          data={data}
-          margin={{
-            top: margin?.top === undefined ? 5 : margin.top,
-            right: margin?.right === undefined ? 30 : margin.right,
-            bottom: margin?.bottom === undefined ? 5 : margin.bottom,
-            left: margin?.left === undefined ? 20 : margin.left,
-          }}
-        >
+        <CorePieChart data={data} margin={chartMargin(margin)}>
           <Pie
             data={data}
             dataKey={dataKey}
@@ -78,25 +73,7 @@ export const PieChart = React.memo(function PieChart<K extends string, T extends
             cornerRadius={cornerRadius}
             paddingAngle={paddingAngle}
             labelLine={false}
-            label={
-              showLabel
-                ? ({ payload, ...props }) => (
-                    <text
-                      className="text-sm font-medium transition-opacity duration-200"
-                      cx={props.cx}
-                      cy={props.cy}
-                      x={props.x}
-                      y={props.y}
-                      textAnchor={props.textAnchor}
-                      dominantBaseline={props.dominantBaseline}
-                      fill="var(--text-color-secondary)"
-                      opacity={!!activeLegend && activeLegend !== payload.key ? 0.1 : 1}
-                    >
-                      {customLabel?.(payload.count) ?? payload.count}
-                    </text>
-                  )
-                : undefined
-            }
+            label={showLabel ? <PieValueLabel activeLegend={activeLegend} customLabel={customLabel} /> : undefined}
           >
             {renderCells}
             {centerLabel && (
@@ -110,20 +87,7 @@ export const PieChart = React.memo(function PieChart<K extends string, T extends
               />
             )}
           </Pie>
-          {legend && (
-            <Legend
-              onMouseEnter={(payload) => {
-                const key =
-                  typeof payload.payload === "object" && payload.payload !== null && "key" in payload.payload
-                    ? String(payload.payload.key)
-                    : undefined;
-                if (!key) return;
-                setActiveLegend(key);
-              }}
-              onMouseLeave={() => setActiveLegend(null)}
-              {...getLegendProps(legend)}
-            />
-          )}
+          {legend && <KeyedChartLegend options={legend} onActiveChange={setActiveLegend} />}
           <Tooltip
             cursor={
               showTooltip
@@ -136,17 +100,9 @@ export const PieChart = React.memo(function PieChart<K extends string, T extends
             wrapperStyle={{
               pointerEvents: "none",
             }}
-            content={({ active, payload }) => {
-              if (!showTooltip || !active || !payload || !payload.length) return null;
-              const cellData = cells.find((c) => c.key === payload[0].payload.key);
-              if (!cellData) return null;
-              const label = tooltipLabel
-                ? typeof tooltipLabel === "function"
-                  ? tooltipLabel(payload[0]?.payload?.payload)
-                  : tooltipLabel
-                : dataKey;
-              return <CustomPieChartTooltip dotColor={cellData.fill} label={String(label)} payload={payload} />;
-            }}
+            content={
+              <PieChartTooltip cells={cells} showTooltip={showTooltip} dataKey={dataKey} tooltipLabel={tooltipLabel} />
+            }
           />
         </CorePieChart>
       </ResponsiveContainer>
@@ -154,3 +110,31 @@ export const PieChart = React.memo(function PieChart<K extends string, T extends
   );
 });
 PieChart.displayName = "PieChart";
+
+function PieValueLabel({
+  payload,
+  activeLegend,
+  customLabel,
+  ...position
+}: Omit<Partial<PieLabelRenderProps>, "payload"> & {
+  payload?: unknown;
+  activeLegend: string | null;
+  customLabel?: (value: string | number) => string;
+}) {
+  if (!isRecord(payload) || (typeof payload.count !== "number" && typeof payload.count !== "string")) return null;
+  return (
+    <text
+      className="text-sm font-medium transition-opacity duration-200"
+      cx={position.cx}
+      cy={position.cy}
+      x={position.x}
+      y={position.y}
+      textAnchor={position.textAnchor}
+      dominantBaseline={position.dominantBaseline}
+      fill="var(--text-color-secondary)"
+      opacity={activeLegend && activeLegend !== payload.key ? 0.1 : 1}
+    >
+      {customLabel?.(payload.count) ?? payload.count}
+    </text>
+  );
+}

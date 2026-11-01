@@ -26,7 +26,6 @@ type OnboardingHeaderProps = {
 export function OnboardingHeader(props: OnboardingHeaderProps) {
   const { currentStep, updateCurrentStep, hasInvitations } = props;
   // store hooks
-  const { data: user } = useCurrentUser();
   const { data: instanceConfig } = useQuery(instanceConfigOptions);
   const isSelfManaged = instanceConfig?.is_self_managed;
 
@@ -60,11 +59,6 @@ export function OnboardingHeader(props: OnboardingHeaderProps) {
   // derived values
   const currentStepNumber = stepOrder.indexOf(currentStep) + 1;
   const totalSteps = stepOrder.length;
-  const userName = user?.display_name
-    ? user?.display_name
-    : user?.first_name
-      ? `${user?.first_name} ${user?.last_name ?? ""}`
-      : user?.email;
 
   return (
     <div className="sticky top-0 z-10 flex flex-col gap-4">
@@ -85,8 +79,19 @@ export function OnboardingHeader(props: OnboardingHeaderProps) {
           )}
           <PlaneLockup height={20} width={95} className="text-primary" />
         </div>
-        <SwitchAccountDropdown fullName={userName} />
+        <OnboardingAccount />
       </div>
     </div>
   );
+}
+
+function OnboardingAccount() {
+  const { data: user } = useCurrentUser();
+  const userName = user?.display_name
+    ? user?.display_name
+    : user?.first_name
+      ? `${user?.first_name} ${user?.last_name ?? ""}`
+      : user?.email;
+
+  return <SwitchAccountDropdown fullName={userName} />;
 }

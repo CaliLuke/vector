@@ -14,10 +14,10 @@ export const orderStateGroups = (unorderedStateGroups: IStateResponse | undefine
   return Object.assign({ backlog: [], unstarted: [], started: [], completed: [], cancelled: [] }, unorderedStateGroups);
 };
 
-export const sortStates = (states: IState[]) => {
-  if (!states || states.length === 0) return;
+export const sortStates = (states: readonly IState[]) => {
+  if (!states || states.length === 0) return undefined;
 
-  return states.sort((stateA, stateB) => {
+  return states.toSorted((stateA, stateB) => {
     if (stateA.group === stateB.group) {
       return stateA.sequence - stateB.sequence;
     }
@@ -53,4 +53,6 @@ export const getCurrentStateSequence = (
     }
     return (currentStateSequence + nextStateSequence) / 2;
   }
+
+  return undefined;
 };

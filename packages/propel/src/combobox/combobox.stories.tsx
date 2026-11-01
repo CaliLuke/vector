@@ -4,12 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ChevronsUpDown } from "lucide-react";
 import { useArgs } from "storybook/preview-api";
 import { CheckIcon } from "../icons";
 import { Combobox } from "./combobox";
+import type { ComboboxProps, ComboboxOptionsProps } from "./combobox";
 
 const frameworks = [
   { value: "react", label: "React" },
@@ -22,6 +22,65 @@ const frameworks = [
   { value: "remix", label: "Remix" },
 ];
 
+type DemoProps = ComboboxProps &
+  Pick<ComboboxOptionsProps, "showSearch" | "maxHeight" | "emptyMessage"> & {
+    disabledOptions?: string[];
+  };
+
+function selectionLabel(value: string | string[], limit?: number) {
+  if (Array.isArray(value)) {
+    if (value.length) return limit ? `${value.length}/${limit} selected` : `${value.length} selected`;
+    return limit ? `Select up to ${limit} frameworks...` : "Select frameworks...";
+  }
+  return value ? frameworks.find((framework) => framework.value === value)?.label : "Select framework...";
+}
+
+function FrameworkCombobox({ showSearch, maxHeight, emptyMessage, disabledOptions, ...props }: DemoProps) {
+  const value = props.value ?? "";
+  return (
+    <div className="space-y-2">
+      <Combobox {...props}>
+        <Combobox.Button
+          className={
+            props.disabled
+              ? "border-gray-300 bg-gray-100 flex w-72 items-center justify-between rounded-md border px-4 py-2 opacity-50"
+              : "border-gray-300 hover:bg-gray-50 flex w-72 items-center justify-between rounded-md border bg-white px-4 py-2"
+          }
+        >
+          <span className={props.multiSelect ? "truncate" : undefined}>
+            {selectionLabel(value, props.maxSelections)}
+          </span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Combobox.Button>
+        <Combobox.Options
+          showSearch={showSearch}
+          searchPlaceholder="Search framework..."
+          maxHeight={maxHeight}
+          emptyMessage={emptyMessage}
+          className="w-72"
+        >
+          {frameworks.map((framework) => (
+            <Combobox.Option
+              key={framework.value}
+              value={framework.value}
+              disabled={disabledOptions?.includes(framework.value)}
+              className="flex items-center gap-2 px-4 py-2"
+            >
+              {(Array.isArray(value) ? value.includes(framework.value) : value === framework.value) && (
+                <CheckIcon className="h-4 w-4" />
+              )}
+              <span>{framework.label}</span>
+            </Combobox.Option>
+          ))}
+        </Combobox.Options>
+      </Combobox>
+      {props.maxSelections !== undefined && (
+        <p className="text-gray-500 text-11">Maximum {props.maxSelections} selections allowed</p>
+      )}
+    </div>
+  );
+}
+
 const meta = {
   title: "Components/Combobox",
   component: Combobox,
@@ -30,238 +89,22 @@ const meta = {
     ComboboxOptions: Combobox.Options,
     ComboboxOption: Combobox.Option,
   },
-  parameters: {
-    layout: "centered",
-  },
+  parameters: { layout: "centered" },
   tags: ["autodocs"],
-  args: {
-    children: null,
-    value: "",
-    onValueChange: () => {},
-  },
+  args: { children: null, value: "", onValueChange: () => {}, showSearch: true },
   render(args) {
-    const [{ value }, updateArgs] = useArgs();
-    const setValue = (newValue: string | string[]) => updateArgs({ value: newValue });
-    return (
-      <Combobox {...args} value={value} onValueChange={(v) => setValue(v as string)}>
-        <Combobox.Button className="border-gray-300 hover:bg-gray-50 flex w-72 items-center justify-between rounded-md border bg-white px-4 py-2">
-          <span>{value ? frameworks.find((f) => f.value === value)?.label : "Select framework..."}</span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Combobox.Button>
-        <Combobox.Options showSearch searchPlaceholder="Search framework..." className="w-72">
-          {frameworks.map((framework) => (
-            <Combobox.Option
-              key={framework.value}
-              value={framework.value}
-              className="flex items-center gap-2 px-4 py-2"
-            >
-              {value === framework.value && <CheckIcon className="h-4 w-4" />}
-              <span>{framework.label}</span>
-            </Combobox.Option>
-          ))}
-        </Combobox.Options>
-      </Combobox>
-    );
+    const [{ value }, updateArgs] = useArgs<DemoProps>();
+    return <FrameworkCombobox {...args} value={value} onValueChange={(next) => updateArgs({ value: next })} />;
   },
-} satisfies Meta<typeof Combobox>;
-
+} satisfies Meta<DemoProps>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
-
-export const WithoutSearch: Story = {
-  render() {
-    const [value, setValue] = useState("");
-    return (
-      <Combobox value={value} onValueChange={(v) => setValue(v as string)}>
-        <Combobox.Button className="border-gray-300 hover:bg-gray-50 flex w-72 items-center justify-between rounded-md border bg-white px-4 py-2">
-          <span>{value ? frameworks.find((f) => f.value === value)?.label : "Select framework..."}</span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Combobox.Button>
-        <Combobox.Options className="w-72">
-          {frameworks.map((framework) => (
-            <Combobox.Option
-              key={framework.value}
-              value={framework.value}
-              className="flex items-center gap-2 px-4 py-2"
-            >
-              {value === framework.value && <CheckIcon className="h-4 w-4" />}
-              <span>{framework.label}</span>
-            </Combobox.Option>
-          ))}
-        </Combobox.Options>
-      </Combobox>
-    );
-  },
-};
-
-export const MultiSelect: Story = {
-  render() {
-    const [value, setValue] = useState<string[]>([]);
-
-    return (
-      <Combobox multiSelect value={value} onValueChange={(v) => setValue(v as string[])}>
-        <Combobox.Button className="border-gray-300 hover:bg-gray-50 flex w-72 items-center justify-between rounded-md border bg-white px-4 py-2">
-          <span className="truncate">{value.length > 0 ? `${value.length} selected` : "Select frameworks..."}</span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Combobox.Button>
-        <Combobox.Options showSearch searchPlaceholder="Search framework..." className="w-72">
-          {frameworks.map((framework) => (
-            <Combobox.Option
-              key={framework.value}
-              value={framework.value}
-              className="flex items-center gap-2 px-4 py-2"
-            >
-              {value.includes(framework.value) && <CheckIcon className="h-4 w-4" />}
-              <span>{framework.label}</span>
-            </Combobox.Option>
-          ))}
-        </Combobox.Options>
-      </Combobox>
-    );
-  },
-};
-
-export const MultiSelectWithLimit: Story = {
-  render() {
-    const [value, setValue] = useState<string[]>([]);
-
-    return (
-      <div className="space-y-2">
-        <Combobox multiSelect maxSelections={3} value={value} onValueChange={(v) => setValue(v as string[])}>
-          <Combobox.Button className="border-gray-300 hover:bg-gray-50 flex w-72 items-center justify-between rounded-md border bg-white px-4 py-2">
-            <span className="truncate">
-              {value.length > 0 ? `${value.length}/3 selected` : "Select up to 3 frameworks..."}
-            </span>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Combobox.Button>
-          <Combobox.Options showSearch searchPlaceholder="Search framework..." className="w-72">
-            {frameworks.map((framework) => (
-              <Combobox.Option
-                key={framework.value}
-                value={framework.value}
-                className="flex items-center gap-2 px-4 py-2"
-              >
-                {value.includes(framework.value) && <CheckIcon className="h-4 w-4" />}
-                <span>{framework.label}</span>
-              </Combobox.Option>
-            ))}
-          </Combobox.Options>
-        </Combobox>
-        <p className="text-gray-500 text-11">Maximum 3 selections allowed</p>
-      </div>
-    );
-  },
-};
-
-export const Disabled: Story = {
-  args: { disabled: true },
-  render() {
-    const [value, setValue] = useState("");
-    return (
-      <Combobox disabled value={value} onValueChange={(v) => setValue(v as string)}>
-        <Combobox.Button className="border-gray-300 bg-gray-100 flex w-72 items-center justify-between rounded-md border px-4 py-2 opacity-50">
-          <span>{value ? frameworks.find((f) => f.value === value)?.label : "Select framework..."}</span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Combobox.Button>
-        <Combobox.Options showSearch searchPlaceholder="Search framework..." className="w-72">
-          {frameworks.map((framework) => (
-            <Combobox.Option
-              key={framework.value}
-              value={framework.value}
-              className="flex items-center gap-2 px-4 py-2"
-            >
-              {value === framework.value && <CheckIcon className="h-4 w-4" />}
-              <span>{framework.label}</span>
-            </Combobox.Option>
-          ))}
-        </Combobox.Options>
-      </Combobox>
-    );
-  },
-};
-
-export const DisabledOptions: Story = {
-  render() {
-    const [value, setValue] = useState("");
-    return (
-      <Combobox value={value} onValueChange={(v) => setValue(v as string)}>
-        <Combobox.Button className="border-gray-300 hover:bg-gray-50 flex w-72 items-center justify-between rounded-md border bg-white px-4 py-2">
-          <span>{value ? frameworks.find((f) => f.value === value)?.label : "Select framework..."}</span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Combobox.Button>
-        <Combobox.Options showSearch searchPlaceholder="Search framework..." className="w-72">
-          {frameworks.map((framework) => (
-            <Combobox.Option
-              key={framework.value}
-              value={framework.value}
-              disabled={framework.value === "angular" || framework.value === "svelte"}
-              className="flex items-center gap-2 px-4 py-2"
-            >
-              {value === framework.value && <CheckIcon className="h-4 w-4" />}
-              <span>{framework.label}</span>
-            </Combobox.Option>
-          ))}
-        </Combobox.Options>
-      </Combobox>
-    );
-  },
-};
-
-export const CustomMaxHeight: Story = {
-  render() {
-    const [value, setValue] = useState("");
-    return (
-      <Combobox value={value} onValueChange={(v) => setValue(v as string)}>
-        <Combobox.Button className="border-gray-300 hover:bg-gray-50 flex w-72 items-center justify-between rounded-md border bg-white px-4 py-2">
-          <span>{value ? frameworks.find((f) => f.value === value)?.label : "Select framework..."}</span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Combobox.Button>
-        <Combobox.Options showSearch searchPlaceholder="Search framework..." maxHeight="sm" className="w-72">
-          {frameworks.map((framework) => (
-            <Combobox.Option
-              key={framework.value}
-              value={framework.value}
-              className="flex items-center gap-2 px-4 py-2"
-            >
-              {value === framework.value && <CheckIcon className="h-4 w-4" />}
-              <span>{framework.label}</span>
-            </Combobox.Option>
-          ))}
-        </Combobox.Options>
-      </Combobox>
-    );
-  },
-};
-
-export const CustomEmptyMessage: Story = {
-  render() {
-    const [value, setValue] = useState("");
-    return (
-      <Combobox value={value} onValueChange={(v) => setValue(v as string)}>
-        <Combobox.Button className="border-gray-300 hover:bg-gray-50 flex w-72 items-center justify-between rounded-md border bg-white px-4 py-2">
-          <span>{value ? frameworks.find((f) => f.value === value)?.label : "Select framework..."}</span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Combobox.Button>
-        <Combobox.Options
-          showSearch
-          searchPlaceholder="Search framework..."
-          emptyMessage="No frameworks found. Try a different search."
-          className="w-72"
-        >
-          {frameworks.map((framework) => (
-            <Combobox.Option
-              key={framework.value}
-              value={framework.value}
-              className="flex items-center gap-2 px-4 py-2"
-            >
-              {value === framework.value && <CheckIcon className="h-4 w-4" />}
-              <span>{framework.label}</span>
-            </Combobox.Option>
-          ))}
-        </Combobox.Options>
-      </Combobox>
-    );
-  },
-};
+export const WithoutSearch: Story = { args: { showSearch: false } };
+export const MultiSelect: Story = { args: { multiSelect: true, value: [] } };
+export const MultiSelectWithLimit: Story = { args: { multiSelect: true, value: [], maxSelections: 3 } };
+export const Disabled: Story = { args: { disabled: true } };
+export const DisabledOptions: Story = { args: { disabledOptions: ["angular", "svelte"] } };
+export const CustomMaxHeight: Story = { args: { maxHeight: "sm" } };
+export const CustomEmptyMessage: Story = { args: { emptyMessage: "No frameworks found. Try a different search." } };

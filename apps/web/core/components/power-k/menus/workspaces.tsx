@@ -17,14 +17,16 @@ type Props = {
   onSelect: (workspace: IWorkspace) => void;
 };
 
+function getWorkspaceIcon(workspace: Props["workspaces"][number]) {
+  return <WorkspaceLogo logo={workspace.logo_url} name={workspace.name} classNames="shrink-0" />;
+}
+
 export function PowerKWorkspacesMenu({ workspaces, onSelect }: Props) {
   return (
     <PowerKMenuBuilder
       items={workspaces}
       getKey={(workspace) => workspace.id}
-      getIconNode={(workspace) => (
-        <WorkspaceLogo logo={workspace.logo_url} name={workspace.name} classNames="shrink-0" />
-      )}
+      getIconNode={getWorkspaceIcon}
       getValue={(workspace) => workspace.name}
       getLabel={(workspace) => workspace.name}
       onSelect={onSelect}

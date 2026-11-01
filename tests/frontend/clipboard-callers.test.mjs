@@ -10,11 +10,12 @@ const state = { React, toasts: [], copy: async () => {} };
 globalThis.clipboardCallerFixture = state;
 const react = "const React=globalThis.clipboardCallerFixture.React;";
 const empty = "()=>null";
-const menu = `${react} export const CustomMenu=({children})=>children;CustomMenu.MenuItem=({children,onClick,disabled})=>React.createElement('button',{onClick,disabled},children);export const ContextMenu=()=>null;export const LinkItemBlock=({menuItems})=>React.createElement('button',{onClick:menuItems.find(x=>x.key==='copy-link').action},'Copy');`;
+const menu = `${react} export const CustomMenu=({children})=>children;CustomMenu.MenuItem=({children,onClick,disabled})=>React.createElement('button',{onClick,disabled},children);CustomMenu.ActionItem=({item})=>item.shouldRender===false?null:React.createElement(CustomMenu.MenuItem,{onClick:item.action,disabled:item.disabled},item.title);export const ContextMenu=()=>null;export const LinkItemBlock=({menuItems})=>React.createElement('button',{onClick:menuItems.find(x=>x.key==='copy-link').action},'Copy');`;
 const nullModals =
   "export const ArchiveModuleModal=()=>null,CreateUpdateModuleModal=()=>null,DeleteModuleModal=()=>null;";
 const stubs = {
-  "@/components/views/publish": "export const useViewPublish=()=>({});",
+  "@/components/views/publish":
+    "export const useViewPublish=()=>({publishContextMenu:globalThis.clipboardCallerFixture.publishMenu});",
   "@/components/workspace/confirm-workspace-member-remove": "export const ConfirmWorkspaceMemberRemove=()=>null;",
   "@/hooks/use-member-roster-mutations":
     "export const useDeleteWorkspaceInvitation=()=>({});export const useUpdateWorkspaceInvitation=()=>({});",
@@ -36,8 +37,8 @@ const stubs = {
     react +
     'export const SidebarProjectsListItem=({handleCopyText})=>React.createElement("button",{onClick:handleCopyText},"Copy");',
 
-  "@plane/i18n": "export const useTranslation=()=>({t:key=>key});",
-  "@plane/propel/icons": `const Icon=${empty};export const CopyIcon=Icon,LinkIcon=Icon,NewTabIcon=Icon,EditIcon=Icon,TrashIcon=Icon,ChevronDownIcon=Icon,PlusIcon=Icon,ChevronRightIcon=Icon;`,
+  "@plane/i18n": "export const useTranslation=()=>({t:key=>globalThis.clipboardCallerFixture.translate?.(key)??key});",
+  "@plane/propel/icons": `const Icon=${empty};export const CopyIcon=Icon,LinkIcon=Icon,NewTabIcon=Icon,EditIcon=Icon,TrashIcon=Icon,ChevronDownIcon=Icon,PlusIcon=Icon,ChevronRightIcon=Icon,ArchiveIcon=Icon;`,
   "@plane/propel/button":
     react + `export const Button=({children,onClick})=>React.createElement('button',{onClick},children);`,
   "@plane/propel/icon-button": "export const IconButton=()=>null;",
@@ -47,7 +48,8 @@ const stubs = {
   "@plane/ui":
     menu +
     "export const CustomSelect=()=>null;CustomSelect.Option=()=>null;export const Loader=()=>null;Loader.Item=()=>null;",
-  "lucide-react": "export const MoreHorizontal=()=>null,Ellipsis=()=>null;",
+  "lucide-react":
+    "export const MoreHorizontal=()=>null,Ellipsis=()=>null,Pencil=()=>null,ExternalLink=()=>null,Link=()=>null,Trash2=()=>null,ArchiveRestoreIcon=()=>null;",
   "@plane/utils/string":
     "export const copyTextToClipboard=value=>globalThis.clipboardCallerFixture.copy(value);export const copyUrlToClipboard=value=>globalThis.clipboardCallerFixture.copy(value);",
   "@plane/utils/datetime":
@@ -62,7 +64,7 @@ const stubs = {
   "@/hooks/use-member-rosters": "export const useWorkspaceMemberRoster=()=>({memberById:()=>undefined});",
   "@/hooks/use-cycles": 'export const useProjectCycles=()=>({mutation:{},scope:"project"});',
   "@/hooks/use-modules": 'export const useProjectModules=()=>({mutation:{},scope:"project"});',
-  "@/components/common/quick-actions-helper": `const menu=({handleCopyLink})=>({items:[{key:'copy',title:'Copy',action:handleCopyLink}]});export const useViewMenuItems=menu,useCycleMenuItems=menu,useModuleMenuItems=menu;`,
+  "@/components/common/quick-actions-helper": `export {normalizeQuickActions, useQuickActionDialogs, useViewMenuItems} from ${JSON.stringify(new URL("../../apps/web/core/components/common/quick-actions-helper.tsx", import.meta.url).href)};const menu=({handleCopyLink})=>({items:[{key:'copy',title:'Copy',action:handleCopyLink}]});export const useCycleMenuItems=menu,useModuleMenuItems=menu;`,
   "@/components/common/quick-action-menu":
     react +
     `export const renderQuickActionMenuItems=items=>items.map(item=>React.createElement('button',{key:item.key,onClick:item.action},item.title));`,
@@ -70,8 +72,11 @@ const stubs = {
   "./archived-cycles/modal": "export const ArchiveCycleModal=()=>null;",
   "./delete-modal": "export const CycleDeleteModal=()=>null;",
   "./modal":
-    "export const CycleCreateUpdateModal=()=>null;export const CreateUpdateWorkspaceViewModal=()=>null;export const CreateUpdateProjectViewModal=()=>null;",
-  "./delete-view-modal": "export const DeleteGlobalViewModal=()=>null;export const DeleteProjectViewModal=()=>null;",
+    react +
+    "export const CycleCreateUpdateModal=()=>null;export const CreateUpdateWorkspaceViewModal=()=>null;export const CreateUpdateProjectViewModal=({isOpen,onClose})=>isOpen?React.createElement('section',{role:'dialog','aria-label':'View editor'},React.createElement('button',{type:'button',onClick:onClose},'Close view editor')):null;",
+  "./delete-view-modal":
+    react +
+    "export const DeleteGlobalViewModal=()=>null;export const DeleteProjectViewModal=({isOpen,onClose})=>isOpen?React.createElement('section',{role:'dialog','aria-label':'Delete view'},React.createElement('button',{type:'button',onClick:onClose},'Cancel view deletion')):null;",
 };
 registerHooks({ resolve: (specifier, context, next) => resolvePackageStub(specifier, stubs, context, next) });
 const { DefaultWorkspaceViewQuickActions } =
@@ -94,7 +99,7 @@ const cases = [
     Component: ViewQuickActions,
     props: { ...scope, view: { id: "view", owned_by: "actor" } },
     value: "acme/projects/project/views/view",
-    label: "Copy",
+    label: "copy_link",
   },
   {
     name: "invitation",
@@ -122,7 +127,7 @@ const cases = [
     Component: WorkspaceViewQuickActions,
     props: { workspaceSlug: "acme", view: { id: "view", owned_by: "actor" } },
     value: "acme/workspace-views/view",
-    label: "Copy",
+    label: "copy_link",
   },
   {
     name: "API token",
@@ -216,3 +221,66 @@ for (const { name, Component, props, label } of cases.filter((c) =>
       await act(async () => pending[outcome](new Error("denied")));
       assert.deepEqual(state.toasts, []);
     });
+
+for (const entry of cases.filter((item) => ["project view", "default workspace view"].includes(item.name))) {
+  void test(`${entry.name} opens the current scoped view in a new tab`, async (t) => {
+    const env = await createReactDomTestEnvironment();
+    t.after(() => env.unmount());
+    const opened = [];
+    t.mock.method(window, "open", (...args) => {
+      opened.push(args);
+      return null;
+    });
+    await env.render(React.createElement(entry.Component, entry.props));
+    const open = [...env.container.querySelectorAll("button")].find(
+      (button) => button.textContent === "open_in_new_tab"
+    );
+    assert.ok(open);
+    await act(async () => open.click());
+    assert.deepEqual(opened, [[`/${entry.value}`, "_blank"]]);
+  });
+}
+
+void test("project view actions compose publishing and retain independent editor/deletion dismissal", async (t) => {
+  const env = await createReactDomTestEnvironment();
+  t.after(() => env.unmount());
+  const published = [];
+  state.publishMenu = { key: "publish", title: "Publish", action: () => published.push("publish") };
+  t.after(() => {
+    delete state.publishMenu;
+  });
+  const entry = cases.find((item) => item.name === "project view");
+  await env.render(React.createElement(ViewQuickActions, entry.props));
+  const control = (label) =>
+    [...env.container.querySelectorAll("button")].find((button) => button.textContent === label);
+  await act(async () => control("edit").click());
+  assert.ok(env.container.querySelector('[role="dialog"][aria-label="View editor"]'));
+  await act(async () => control("Close view editor").click());
+  assert.equal(env.container.querySelector('[role="dialog"]'), null);
+  await act(async () => control("delete").click());
+  assert.ok(env.container.querySelector('[role="dialog"][aria-label="Delete view"]'));
+  await act(async () => control("Cancel view deletion").click());
+  assert.equal(env.container.querySelector('[role="dialog"]'), null);
+  await act(async () => control("Publish").click());
+  assert.deepEqual(published, ["publish"]);
+});
+
+void test("default workspace menus render translated values without translating them again", async (t) => {
+  const env = await createReactDomTestEnvironment();
+  t.after(() => env.unmount());
+  const translations = { open_in_new_tab: "Open", copy_link: "Copy", Open: "Open drawer", Copy: "Duplicate" };
+  state.translate = (key) => translations[key] ?? key;
+  t.after(() => {
+    delete state.translate;
+  });
+  await env.render(
+    React.createElement(DefaultWorkspaceViewQuickActions, {
+      workspaceSlug: "acme",
+      view: { key: "assigned", i18n_label: "Assigned" },
+    })
+  );
+  assert.deepEqual(
+    [...env.container.querySelectorAll("button")].map((button) => button.textContent),
+    ["Open", "Copy"]
+  );
+});

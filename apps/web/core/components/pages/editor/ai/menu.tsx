@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { CornerDownRight, RefreshCcw, Sparkles, TriangleAlert } from "lucide-react";
 // plane editor
@@ -18,10 +18,12 @@ import { RichTextEditor } from "@/components/editor/rich-text";
 // plane web constants
 import { AI_EDITOR_TASKS, LOADING_TEXTS } from "@plane/constants";
 // plane web services
-import type { TTaskPayload } from "@/services/ai.service";
-import { AIService } from "@/services/ai.service";
+import { useQueryClient } from "@tanstack/react-query";
+import { useParams } from "@tanstack/react-router";
+import { useCurrentUserId } from "@/hooks/use-current-user";
+import { useIdentityGeneration } from "@/hooks/use-identity-generation";
+import { useEditorAIResponse } from "./use-editor-ai-response";
 import { AskPiMenu } from "./ask-pi-menu";
-const aiService = new AIService();
 
 type Props = {
   editorRef: EditorRefApi | null;
@@ -65,66 +67,48 @@ const TONES_LIST = [
 ];
 
 export function EditorAIMenu(props: Props) {
-  const { editorRef, isOpen, onClose, workspaceId, workspaceSlug } = props;
-  // states
+  const accountId = useCurrentUserId();
+  const client = useQueryClient();
+  const generation = useIdentityGeneration(client);
+  const { projectId, pageId } = useParams({ strict: false });
+  const scope = JSON.stringify([accountId, generation, props.workspaceSlug, projectId, pageId, props.isOpen]);
+  return <EditorAIContent key={scope} {...props} scope={scope} />;
+}
+
+function EditorAIContent({ editorRef, onClose, workspaceId, workspaceSlug, scope }: Props & { scope: string }) {
   const [activeTask, setActiveTask] = useState<AI_EDITOR_TASKS | null>(null);
-  const [response, setResponse] = useState<string | undefined>(undefined);
-  const [isRegenerating, setIsRegenerating] = useState(false);
-  // refs
+  const { response, isRegenerating, generateResponse } = useEditorAIResponse(workspaceSlug, scope);
   const responseContainerRef = useRef<HTMLDivElement>(null);
-  // params
-  const handleGenerateResponse = async (payload: TTaskPayload) => {
-    if (!workspaceSlug) return;
-    await aiService.performEditorTask(workspaceSlug, payload).then((res) => setResponse(res.response));
-  };
   // handle task click
   const handleClick = async (key: AI_EDITOR_TASKS) => {
     const selection = editorRef?.getSelectedText();
     if (!selection || activeTask === key) return;
     setActiveTask(key);
     if (key === AI_EDITOR_TASKS.ASK_ANYTHING) return;
-    setResponse(undefined);
-    setIsRegenerating(false);
-    await handleGenerateResponse({
-      task: key,
-      text_input: selection,
-    });
+    await generateResponse({ task: key, text_input: selection }, true);
   };
-  // handle re-generate response
+  const scrollToResponse = () => responseContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   const handleRegenerate = async () => {
     const selection = editorRef?.getSelectedText();
     if (!selection || !activeTask) return;
-    setIsRegenerating(true);
-    await handleGenerateResponse({
-      task: activeTask,
-      text_input: selection,
-    })
-      .then(() =>
-        responseContainerRef.current?.scrollTo({
-          top: 0,
-          behavior: "smooth",
-        })
-      )
-      .finally(() => setIsRegenerating(false));
+    if (await generateResponse({ task: activeTask, text_input: selection }, false)) scrollToResponse();
   };
-  // handle re-generate response
   const handleToneChange = async (key: string) => {
-    const selectedTone = TONES_LIST.find((t) => t.key === key);
+    const selectedTone = TONES_LIST.find((tone) => tone.key === key);
     const selection = editorRef?.getSelectedText();
     if (!selectedTone || !selection || !activeTask) return;
-    setResponse(undefined);
-    setIsRegenerating(false);
-    await handleGenerateResponse({
-      casual_score: selectedTone.casual_score,
-      formal_score: selectedTone.formal_score,
-      task: activeTask,
-      text_input: selection,
-    }).then(() =>
-      responseContainerRef.current?.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      })
-    );
+    if (
+      await generateResponse(
+        {
+          casual_score: selectedTone.casual_score,
+          formal_score: selectedTone.formal_score,
+          task: activeTask,
+          text_input: selection,
+        },
+        true
+      )
+    )
+      scrollToResponse();
   };
   // handle replace selected text with the response
   const handleInsertText = (insertOnNextLine: boolean) => {
@@ -132,14 +116,6 @@ export function EditorAIMenu(props: Props) {
     editorRef?.insertText(response, insertOnNextLine);
     onClose();
   };
-
-  // reset on close
-  useEffect(() => {
-    if (!isOpen) {
-      setActiveTask(null);
-      setResponse(undefined);
-    }
-  }, [isOpen]);
 
   return (
     <div
@@ -172,7 +148,7 @@ export function EditorAIMenu(props: Props) {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  handleClick(item.key);
+                  void handleClick(item.key);
                 }}
               >
                 <span className="flex flex-shrink-0 items-center gap-2 truncate">
@@ -250,7 +226,7 @@ export function EditorAIMenu(props: Props) {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            handleRegenerate();
+                            void handleRegenerate();
                           }}
                           disabled={isRegenerating}
                         >
@@ -283,7 +259,7 @@ export function EditorAIMenu(props: Props) {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      handleToneChange(tone.key);
+                      void handleToneChange(tone.key);
                     }}
                   >
                     {tone.label}

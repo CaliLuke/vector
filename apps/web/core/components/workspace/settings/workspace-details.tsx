@@ -186,7 +186,10 @@ function WorkspaceDetailsForm({ workspace }: { workspace: IWorkspace }) {
             <h4 className="text-body-sm-medium text-tertiary">{label("company_size")}</h4>
             <CustomSelect
               value={values.organization_size}
-              onChange={(value: string) => form.setFieldValue("organization_size", value)}
+              onChange={(value) => {
+                if (value === null) return;
+                return form.setFieldValue("organization_size", value);
+              }}
               label={values.organization_size}
               disabled={!isAdmin || busy}
               input

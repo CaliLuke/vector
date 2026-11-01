@@ -46,7 +46,8 @@ function fixture() {
   return client;
 }
 
-test("changing profile views aborts the superseded read and preserves the active result", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("changing profile views aborts the superseded read and preserves the active result", async (t) => {
   const client = fixture();
   const created = deferredIssueListRequest();
   const subscribed = deferredIssueListRequest();
@@ -76,7 +77,7 @@ test("changing profile views aborts the superseded read and preserves the active
   assert.equal(client.getQueryData(issueListKeys.list(createdQuery)), undefined);
 });
 
-test("a late prior profile response cannot replace the selected view query", async (t) => {
+void test("a late prior profile response cannot replace the selected view query", async (t) => {
   const client = fixture();
   const created = deferredIssueListRequest();
   const subscribed = deferredIssueListRequest();
@@ -104,7 +105,7 @@ test("a late prior profile response cannot replace the selected view query", asy
   assert.ok(activeRequest.signal instanceof AbortSignal);
 });
 
-test("an active profile failure remains visible as a native Query error", async (t) => {
+void test("an active profile failure remains visible as a native Query error", async (t) => {
   const client = fixture();
   const request = deferredIssueListRequest();
   t.mock.method(UserService.prototype, "getUserProfileIssues", request.call);

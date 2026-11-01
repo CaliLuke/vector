@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useOutsideClickDetector } from "@plane/hooks";
 import { useParams } from "@tanstack/react-router";
 import type { MutableRefObject } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -12,7 +13,6 @@ import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-d
 
 // plane helpers
 import { MoreHorizontal } from "lucide-react";
-import { useOutsideClickDetector } from "@plane/hooks";
 // types
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
@@ -67,23 +67,14 @@ const KanbanIssueDetailsBlock = function KanbanIssueDetailsBlock(props: IssueDet
   const { cardRef, issue, updateIssue, quickActions, isReadOnly, displayProperties, isEpic = false } = props;
   const { workspaceSlug } = useParams({ strict: false });
   // refs
-  const menuActionRef = useRef<HTMLDivElement | null>(null);
   // states
-  const [isMenuActive, setIsMenuActive] = useState(false);
   // hooks
   const { isMobile } = usePlatformOS();
 
   const customActionButton = (
-    // oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions
-    <div
-      ref={menuActionRef}
-      className={`flex h-full w-full cursor-pointer items-center rounded-sm p-1 text-placeholder hover:bg-layer-1 ${
-        isMenuActive ? "bg-layer-1 text-primary" : "text-secondary"
-      }`}
-      onClick={() => setIsMenuActive(!isMenuActive)}
-    >
+    <span className="flex h-full w-full items-center rounded-sm p-1 text-secondary hover:bg-layer-1 [[aria-expanded=true]_&]:bg-layer-1 [[aria-expanded=true]_&]:text-primary">
       <MoreHorizontal className="h-3.5 w-3.5" />
-    </div>
+    </span>
   );
 
   // oxlint-disable-next-line unicorn/consistent-function-scoping
@@ -91,8 +82,6 @@ const KanbanIssueDetailsBlock = function KanbanIssueDetailsBlock(props: IssueDet
     e.stopPropagation();
     e.preventDefault();
   };
-
-  useOutsideClickDetector(menuActionRef, () => setIsMenuActive(false));
 
   return (
     <>
@@ -107,11 +96,11 @@ const KanbanIssueDetailsBlock = function KanbanIssueDetailsBlock(props: IssueDet
             displayProperties={displayProperties}
           />
         )}
-        {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions */}
         <div
+          role="presentation"
           className={cn("absolute -top-1 right-0", {
-            "hidden group-hover/kanban-block:block": !isMobile,
-            "!block": isMenuActive,
+            "invisible group-focus-within/kanban-block:visible group-hover/kanban-block:visible has-[[aria-expanded=true]]:visible":
+              !isMobile,
           })}
           onClick={handleEventPropagation}
         >
@@ -152,7 +141,7 @@ export const KanbanIssueBlock = function KanbanIssueBlock(props: IssueBlockProps
     isEpic = false,
   } = props;
 
-  const cardRef = useRef<HTMLAnchorElement | null>(null);
+  const cardRef = useRef<HTMLElement | null>(null);
   // router
   const { workspaceSlug } = useParams({ strict: false });
   // hooks
@@ -213,7 +202,7 @@ export const KanbanIssueBlock = function KanbanIssueBlock(props: IssueBlockProps
 
 type KanbanIssueCardProps = IssueBlockProps & {
   issue: TIssue;
-  cardRef: React.RefObject<HTMLAnchorElement | null>;
+  cardRef: React.RefObject<HTMLElement | null>;
   workItemLink: string;
   isDragAllowed: boolean;
   canEditIssueProperties: boolean;
@@ -347,7 +336,7 @@ function useKanbanBlockDrag({
   setIsCurrentBlockDragging,
   setIsDraggingOverBlock,
 }: {
-  cardRef: React.RefObject<HTMLAnchorElement | null>;
+  cardRef: React.RefObject<HTMLElement | null>;
   issueId: string | undefined;
   isDragAllowed: boolean;
   canDropOverIssue: boolean;

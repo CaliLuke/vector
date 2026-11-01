@@ -29,6 +29,13 @@ export type KeyGenerator = () => string;
 export type PDFRenderContext = {
   getKey: KeyGenerator;
   metadata?: PDFExportMetadata;
+  layout?: {
+    parentType?: string;
+    nestingLevel: number;
+    listItemIndex: number;
+    textAlign?: string | null;
+    isHeader: boolean;
+  };
 };
 
 type PDFNodeRenderer = (

@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useId, useRef, useState } from "react";
 import { InfoIcon } from "lucide-react";
 import { SearchIcon } from "../../icons";
 import { cn } from "@plane/utils/common";
@@ -21,20 +21,29 @@ type IconRootProps = {
 
 export function IconRoot(props: IconRootProps) {
   const { defaultColor, onChange, searchDisabled = false, iconType } = props;
+  const hexInputId = useId();
+  const hexToggle = useRef<HTMLButtonElement>(null);
+  const focusHexOnOpen = useRef(false);
+  const setHexInput = useCallback((input: HTMLInputElement | null) => {
+    if (input && focusHexOnOpen.current) {
+      focusHexOnOpen.current = false;
+      input.focus();
+    }
+  }, []);
   // states
   const [activeColor, setActiveColor] = useState(defaultColor);
-  const [showHexInput, setShowHexInput] = useState(false);
-  const [hexValue, setHexValue] = useState("");
+  const [showHexInput, setShowHexInput] = useState(() => !DEFAULT_COLORS.includes(defaultColor.toLowerCase()));
+  const [hexValue, setHexValue] = useState(() => defaultColor.slice(1, 7));
+  const [previousDefaultColor, setPreviousDefaultColor] = useState(defaultColor);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [query, setQuery] = useState("");
 
-  useEffect(() => {
-    if (DEFAULT_COLORS.includes(defaultColor.toLowerCase() ?? "")) setShowHexInput(false);
-    else {
-      setHexValue(defaultColor?.slice(1, 7) ?? "");
-      setShowHexInput(true);
-    }
-  }, [defaultColor]);
+  if (previousDefaultColor !== defaultColor) {
+    setPreviousDefaultColor(defaultColor);
+    setActiveColor(defaultColor);
+    setHexValue(defaultColor.slice(1, 7));
+    setShowHexInput(!DEFAULT_COLORS.includes(defaultColor.toLowerCase()));
+  }
 
   return (
     <>
@@ -80,13 +89,24 @@ export function IconRoot(props: IconRootProps) {
                   if (/^[0-9A-Fa-f]{6}$/.test(value)) setActiveColor(adjustColorForContrast(`#${value}`));
                 }}
                 className="block flex-grow rounded-sm border-[0.5px] border-none border-subtle bg-transparent px-3 py-2 pl-0 text-11 text-secondary placeholder-(--text-color-placeholder) ring-0 focus:outline-none"
-                autoFocus
+                id={hexInputId}
+                aria-label="Custom icon color"
+                ref={setHexInput}
+                onKeyDown={(event) => {
+                  if (event.key !== "Escape") return;
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setShowHexInput(false);
+                  hexToggle.current?.focus();
+                }}
               />
             </div>
           ) : (
             DEFAULT_COLORS.map((curCol) => (
               <button
                 key={curCol}
+                aria-label={`Icon color ${curCol}`}
+                aria-pressed={activeColor === curCol}
                 type="button"
                 className="grid size-5 place-items-center"
                 onClick={() => {
@@ -99,12 +119,17 @@ export function IconRoot(props: IconRootProps) {
             ))
           )}
           <button
+            ref={hexToggle}
+            aria-label="Custom icon color"
+            aria-expanded={showHexInput}
+            aria-controls={showHexInput ? hexInputId : undefined}
             type="button"
             className={cn("grid h-4 w-4 place-items-center rounded-full border border-transparent", {
               "border-strong-1": !showHexInput,
             })}
             onClick={() => {
-              setShowHexInput((prevData) => !prevData);
+              focusHexOnOpen.current = !showHexInput;
+              setShowHexInput(!showHexInput);
               setHexValue(activeColor.slice(1, 7));
             }}
           >

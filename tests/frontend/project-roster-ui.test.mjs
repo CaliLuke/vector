@@ -22,6 +22,10 @@ registerPermissionUiStubs("/member-columns.tsx", {
   `,
   "@headlessui/react": `export const Disclosure=({children})=>children({});`,
   "@plane/utils/file": "export const getFileURL=value=>value;",
+  "@plane/propel/toast": `
+    export const TOAST_TYPE={SUCCESS:"success",ERROR:"error"};
+    export const setToast=value=>globalThis.projectRosterTestToasts.push(value);
+  `,
 });
 registerPermissionUiStubs("/send-project-invitation-modal.tsx", {
   "@plane/ui": `
@@ -69,7 +73,7 @@ registerPermissionUiStubs("/member-select.tsx", {
   "@plane/ui": `
     const h=globalThis.React.createElement;
     export const Avatar=()=>null;
-    export const CustomSearchSelect=({options})=>h("div",null,(options??[]).map(option=>h("button",{key:option.value,"data-testid":"member-option","data-value":option.value},option.query)));
+    export const CustomSearchSelect=({options,onChange,disabled,label})=>h("div",null,h("div",{"data-testid":"member-label"},label),(options??[]).map(option=>h("button",{key:option.value,disabled,"data-testid":"member-option","data-value":option.value,onClick:()=>onChange(option.value)},option.query)));
   `,
   "@plane/utils/file": "export const getFileURL=value=>value;",
 });
@@ -83,6 +87,11 @@ const { SendProjectInvitationModal } =
 const { ProjectMemberList } = await import("../../apps/web/core/components/project/member-list.tsx");
 const { MemberSelect } = await import("../../apps/web/core/components/project/member-select.tsx");
 
+/** Build raw server roster rows, including unsupported roles for rejection tests.
+ * @param {string} id
+ * @param {number} [role]
+ * @param {boolean} [isActive]
+ */
 const workspaceRow = (id, role = EUserWorkspaceRoles.MEMBER, isActive = true) => ({
   member: {
     id,
@@ -186,10 +195,61 @@ await test("project member role picker caps requested roles below a project-admi
   assert.deepEqual(roleOptions, ["5", "15"]);
 });
 
+async function verifyRoleWriteFailure(label, failure, expectedMessage) {
+  await test(`project role write preserves the displayed role after ${label}`, async (t) => {
+    const fixture = await createProjectAdminFixture(t);
+    const pending = Promise.withResolvers();
+    const requests = [];
+    t.mock.method(ProjectMemberService.prototype, "updateProjectMember", async (...args) => {
+      requests.push(args);
+      return pending.promise;
+    });
+    globalThis.projectRosterTestToasts = [];
+    await fixture.render(
+      React.createElement(AccountTypeColumn, {
+        rowData: {
+          member: workspaceRow("bob").member,
+          workspaceRole: EUserWorkspaceRoles.MEMBER,
+          original_role: EUserProjectRoles.MEMBER,
+        },
+        workspaceSlug: "acme",
+        projectId: "project-1",
+      })
+    );
+    await act(async () => select("role-selector", EUserProjectRoles.GUEST));
+    await settleQuery();
+    assert.equal(document.querySelector('[data-testid="role-selector"]').disabled, true);
+    assert.deepEqual(requests, [["acme", "project-1", "membership-bob", { role: EUserProjectRoles.GUEST }]]);
+    await act(async () => pending.reject(failure));
+    await settleQuery();
+    const selector = document.querySelector('[data-testid="role-selector"]');
+    assert.equal(selector.disabled, false);
+    assert.equal(selector.value, String(EUserProjectRoles.MEMBER));
+    assert.equal(globalThis.projectRosterTestToasts.at(-1)?.message, expectedMessage);
+  });
+}
+
+await verifyRoleWriteFailure(
+  "a server validation list",
+  { error: ["The member changed. Review their role."] },
+  "The member changed. Review their role."
+);
+await verifyRoleWriteFailure(
+  "a server validation message",
+  { error: "The role is no longer available." },
+  "The role is no longer available."
+);
+await verifyRoleWriteFailure(
+  "a connection failure",
+  new Error("offline"),
+  "An error occurred while updating member role. Please try again."
+);
+
 await test("project invitation retains selections after failure and retries the scoped bulk write", async (t) => {
   const fixture = await createProjectAdminFixture(t, {
     roster: [
       workspaceRow("bob"),
+      workspaceRow("unknown-role", 99),
       { ...workspaceRow("service-bot"), member: { ...workspaceRow("service-bot").member, is_bot: true } },
     ],
     memberships: [],
@@ -221,6 +281,7 @@ await test("project invitation retains selections after failure and retries the 
     })
   );
   assert.equal(document.querySelector('[data-testid="member-selector"] option[value="service-bot"]'), null);
+  assert.equal(document.querySelector('[data-testid="member-selector"] option[value="unknown-role"]'), null);
   await act(async () => select("member-selector", "bob"));
   await settleQuery();
   await act(async () => select("role-selector", EUserProjectRoles.MEMBER));
@@ -237,6 +298,51 @@ await test("project invitation retains selections after failure and retries the 
   assert.equal(closed, 1);
   assert.deepEqual(attempts[0], attempts[1]);
   assert.deepEqual(attempts[1], { members: [{ member_id: "bob", role: EUserProjectRoles.MEMBER }] });
+});
+
+await test("project invitations preserve the workspace guest role in the native bulk write", async (t) => {
+  const fixture = await createProjectAdminFixture(t, {
+    roster: [workspaceRow("guest", EUserWorkspaceRoles.GUEST)],
+    memberships: [],
+  });
+  const accepted = [
+    {
+      id: "membership-guest",
+      member: "guest",
+      role: EUserProjectRoles.GUEST,
+      original_role: EUserProjectRoles.GUEST,
+      created_at: "2026-10-31T00:00:00Z",
+    },
+  ];
+  const requests = [];
+  t.mock.method(ProjectMemberService.prototype, "bulkAddMembersToProject", async (...args) => {
+    requests.push(args);
+    return accepted;
+  });
+  t.mock.method(ProjectMemberService.prototype, "fetchProjectMembers", async () => accepted);
+  let closed = 0;
+  await fixture.render(
+    React.createElement(SendProjectInvitationModal, {
+      isOpen: true,
+      workspaceSlug: "acme",
+      projectId: "project-1",
+      onClose: () => {
+        closed++;
+      },
+    })
+  );
+  await act(async () => select("member-selector", "guest"));
+  await settleQuery();
+  assert.deepEqual(
+    [...document.querySelectorAll('[data-testid="role-selector"] option')].map((option) => option.value),
+    ["5"]
+  );
+  await act(async () => button("add_members").click());
+  await settleQuery();
+  assert.deepEqual(requests, [
+    ["acme", "project-1", { members: [{ member_id: "guest", role: EUserProjectRoles.GUEST }] }],
+  ]);
+  assert.equal(closed, 1);
 });
 
 await test("project member sorting keeps the project membership date when native workspace rows lack joining_date", async (t) => {
@@ -295,10 +401,11 @@ await test("project default member selector exposes roster read failures and ret
     ];
   });
 
+  const selectedMembers = [];
   await fixture.render(
     React.createElement(MemberSelect, {
       value: undefined,
-      onChange: () => {},
+      onChange: (value) => selectedMembers.push(value),
       workspaceSlug: "acme",
       projectId: "project-1",
     })
@@ -310,4 +417,39 @@ await test("project default member selector exposes roster read failures and ret
   assert.equal(attempts, 2);
   assert.equal(document.querySelector('[role="alert"]'), null);
   assert.equal(document.querySelector('[data-testid="member-option"][data-value="bob"]')?.textContent, "Bob Member");
+  await act(async () => document.querySelector('[data-testid="member-option"][data-value="bob"]').click());
+  assert.deepEqual(selectedMembers, ["bob"]);
+  await fixture.render(
+    React.createElement(MemberSelect, {
+      value: "bob",
+      workspaceSlug: "acme",
+      projectId: "project-1",
+      onChange: (value) => selectedMembers.push(value),
+    })
+  );
+  assert.equal(document.querySelector('[data-testid="member-label"]').textContent, "Bob Member");
+  await act(async () => document.querySelector('[data-testid="member-option"][data-value="none"]').click());
+  assert.deepEqual(selectedMembers, ["bob", "none"]);
+  fixture.client.setQueryData(workspaceMemberRosterOptions(scope).queryKey, [
+    workspaceRow("alice", EUserWorkspaceRoles.MEMBER),
+  ]);
+  await settleQuery();
+  await fixture.render(
+    React.createElement(MemberSelect, {
+      value: "bob",
+      workspaceSlug: "acme",
+      projectId: "project-1",
+      isDisabled: true,
+      onChange: (value) => selectedMembers.push(value),
+    })
+  );
+  assert.equal(
+    document.querySelector('[data-testid="member-option"][data-value="bob"]'),
+    null,
+    "a missing workspace profile cannot remain selectable"
+  );
+  const empty = document.querySelector('[data-testid="member-option"][data-value="none"]');
+  assert.equal(empty.disabled, true);
+  await act(async () => empty.click());
+  assert.deepEqual(selectedMembers, ["bob", "none"]);
 });

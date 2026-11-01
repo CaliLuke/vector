@@ -1,3 +1,4 @@
+import type { TGanttSidebarProps } from "@/components/gantt-chart/sidebar/types";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -39,8 +40,8 @@ type Props = {
   canLoadMoreBlocks?: boolean;
   loadMoreBlocks?: () => void;
   updateBlockDates?: (updates: IBlockUpdateDependencyData[]) => Promise<void>;
-  blockToRender: (data: any) => React.ReactNode;
-  blockUpdateHandler: (block: any, payload: IBlockUpdateData) => void;
+  blockToRender: (blockId: string) => React.ReactNode;
+  blockUpdateHandler: (blockId: string, payload: IBlockUpdateData) => void;
   bottomSpacing: boolean;
   enableBlockLeftResize: boolean | ((blockId: string) => boolean);
   enableBlockMove: boolean | ((blockId: string) => boolean);
@@ -51,7 +52,7 @@ type Props = {
   enableDependency: boolean | ((blockId: string) => boolean);
   itemsContainerWidth: number;
   showAllBlocks: boolean;
-  sidebarToRender: (props: any) => React.ReactNode;
+  sidebarToRender: (props: TGanttSidebarProps) => React.ReactNode;
   title: string;
   updateCurrentViewRenderPayload: (
     direction: "left" | "right",
@@ -97,7 +98,7 @@ export function GanttChartMainContent(props: Props) {
   useEffect(() => {
     const element = ganttContainerRef.current;
 
-    if (!element) return;
+    if (!element) return undefined;
 
     return combine(
       autoScrollForElements({
@@ -109,7 +110,7 @@ export function GanttChartMainContent(props: Props) {
   }, [ganttContainerRef]);
 
   // handling scroll functionality
-  const onScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
+  const onScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { clientWidth, scrollLeft, scrollWidth } = e.currentTarget;
 
     const approxRangeLeft = scrollLeft;

@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
@@ -15,7 +16,7 @@ function setup(t) {
   const scope = {
     accountId: "alice",
     workspaceSlug: "acme",
-    membershipRole: 20,
+    membershipRole: ContractEnums.EUserPermissions.ADMIN,
     membershipRevision: "v1",
     sessionGeneration: 0,
   };
@@ -51,8 +52,8 @@ await test("raw project membership changes expire ownership even when the effect
   const owner = captureProjectAccessScope(client, {
     ...scope,
     projectId: "project",
-    projectRole: 20,
-    projectMembershipRole: 5,
+    projectRole: ContractEnums.EUserPermissions.ADMIN,
+    projectMembershipRole: ContractEnums.EUserPermissions.GUEST,
   });
   assert.equal(owner.isVerified(), true);
   client.setQueryData(rolesKey, { project: 15 });

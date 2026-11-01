@@ -7,7 +7,7 @@
 import { findParentNode } from "@tiptap/core";
 import type { Editor } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
-import type { EditorState, Selection, Transaction } from "@tiptap/pm/state";
+import type { Selection, Transaction } from "@tiptap/pm/state";
 import { CellSelection, TableMap } from "@tiptap/pm/tables";
 import type { Rect } from "@tiptap/pm/tables";
 // constants
@@ -30,19 +30,11 @@ export const isCellEmpty = (cell: ProseMirrorNode | null): boolean => {
     return true;
   }
 
-  // Check if cell has any non-empty content
-  let hasContent = false;
+  let empty = true;
   cell.content.forEach((node) => {
-    if (node.type.name === CORE_EXTENSIONS.PARAGRAPH) {
-      if (node.content.size > 0) {
-        hasContent = true;
-      }
-    } else if (node.content.size > 0 || node.isText) {
-      hasContent = true;
-    }
+    if (node.type.name !== CORE_EXTENSIONS.PARAGRAPH || node.content.size > 0) empty = false;
   });
-
-  return !hasContent;
+  return empty;
 };
 
 export type TableNodeLocation = {
@@ -58,24 +50,6 @@ export type TableNodeLocation = {
  */
 export const findTable = (selection: Selection): TableNodeLocation | undefined =>
   findParentNode((node) => node.type.spec.tableRole === "table")(selection);
-
-/**
- * @description Check if the selection has table related changes.
- * @param {Editor} editor - The editor instance.
- * @param {TableNodeLocation | undefined} table - The table node location.
- * @param {EditorState} oldState - The old editor state.
- * @param {EditorState} newState - The new editor state.
- * @param {Transaction} tr - The transaction.
- * @returns {boolean} True if the selection has table related changes, false otherwise.
- */
-export const haveTableRelatedChanges = (
-  editor: Editor,
-  table: TableNodeLocation | undefined,
-  oldState: EditorState,
-  newState: EditorState,
-  tr: Transaction
-): table is TableNodeLocation =>
-  editor.isEditable && table !== undefined && (tr.docChanged || !newState.selection.eq(oldState.selection));
 
 /**
  * @description Get the selected rect from the cell selection.

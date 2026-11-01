@@ -9,7 +9,7 @@ import { useEffect } from "react";
 import { useTheme } from "next-themes";
 // plane imports
 import { useTranslation } from "@plane/i18n";
-import { EIssueServiceType } from "@plane/types";
+import { EIssueServiceType, type TIssue, type IProject } from "@plane/types";
 import { Loader } from "@plane/ui";
 // assets
 import emptyIssueDark from "@/app/assets/empty-state/search/issues-dark.webp?url";
@@ -37,30 +37,22 @@ function IssueDetailsPage(): React.JSX.Element | null {
   // store hooks
   const { t } = useTranslation();
   const projectCatalogue = useWorkspaceProjectDetails();
-  const projectRows = projectCatalogue.projects;
+  const projectRows = projectCatalogue.projects ?? [];
   const issueDetailSidebarCollapsed = useIssueDetailSidebarCollapsed();
   const { toggleIssueDetailSidebar } = useSidebarActions();
 
   const [projectIdentifier, sequence_id] = workItem.split("-");
 
-  const projectDetails = projectRows?.find((project) => project.identifier === projectIdentifier);
+  const projectDetails = projectRows.find((project) => project.identifier === projectIdentifier);
   const detail = useWorkItemByIdentifier(workspaceSlug, projectIdentifier, sequence_id, projectDetails?.id);
   const { issue, isPending: isLoading, isError: error } = detail;
 
   // derived values
-  const issueId = issue?.id;
-  const projectId = issue?.project_id ?? projectDetails?.id ?? "";
-  const project =
-    (issue?.project_id && projectRows?.find((projectRow) => projectRow.id === issue?.project_id)) || undefined;
-  const issueLoader = !issue || isLoading;
-  const pageTitle = project && issue ? `${project.identifier}-${issue.sequence_id} ${issue.name}` : undefined;
+  const { id: issueId, project_id: issueProjectId, is_epic: isEpic } = issue ?? {};
+  const projectId = issueProjectId ?? projectDetails?.id ?? "";
+  const project = projectRows.find((projectRow) => projectRow.id === issueProjectId);
 
-  useWorkItemProperties(
-    projectId,
-    workspaceSlug,
-    issueId,
-    issue?.is_epic ? EIssueServiceType.EPICS : EIssueServiceType.ISSUES
-  );
+  useWorkItemProperties(projectId, workspaceSlug, issueId, isEpic ? EIssueServiceType.EPICS : EIssueServiceType.ISSUES);
 
   useEffect(() => {
     const handleToggleIssueDetailSidebar = () => {
@@ -98,7 +90,7 @@ function IssueDetailsPage(): React.JSX.Element | null {
     );
   }
 
-  if (issueLoader) {
+  if (!issue || isLoading) {
     return (
       <Loader className="flex h-full gap-5 p-5">
         <div className="basis-2/3 space-y-2">
@@ -117,6 +109,22 @@ function IssueDetailsPage(): React.JSX.Element | null {
     );
   }
 
+  return <IssueDetailDocument workspaceSlug={workspaceSlug} projectId={projectId} issue={issue} project={project} />;
+}
+
+function IssueDetailDocument({
+  workspaceSlug,
+  projectId,
+  issue,
+  project,
+}: {
+  workspaceSlug: string;
+  projectId: string;
+  issue: TIssue;
+  project: IProject | undefined;
+}) {
+  const issueId = issue.id;
+  const pageTitle = project ? `${project.identifier}-${issue.sequence_id} ${issue.name}` : undefined;
   return (
     <>
       <PageHead title={pageTitle} />

@@ -27,4 +27,8 @@ export { ADDITIONAL_EXTENSIONS } from "@/plane-editor/constants/extensions";
 export * from "@/types";
 
 // additional exports
+export { useEditorRef } from "./core/hooks/use-editor-ref";
+export { useEditorToolbar } from "./core/hooks/use-editor-toolbar";
+export { executeToolbarCommand } from "./core/helpers/toolbar-command";
+export { EditorToolbarButtons } from "./core/components/menus/toolbar-buttons";
 export { TrailingNode } from "./core/extensions/trailing-node";

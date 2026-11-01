@@ -18,12 +18,16 @@ type Props = {
   value?: string[];
 };
 
+function getModuleIcon(module: Props["modules"][number]) {
+  return <ModuleStatusIcon status={module.status ?? "backlog"} className="size-3.5 shrink-0" />;
+}
+
 export const PowerKModulesMenu = function PowerKModulesMenu({ modules, onSelect, value }: Props) {
   return (
     <PowerKMenuBuilder
       items={modules}
       getKey={(module) => module.id}
-      getIconNode={(module) => <ModuleStatusIcon status={module.status ?? "backlog"} className="size-3.5 shrink-0" />}
+      getIconNode={getModuleIcon}
       getValue={(module) => module.name}
       getLabel={(module) => module.name}
       isSelected={(module) => !!value?.includes(module.id)}

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useState } from "react";
 import { FormErrors } from "@plane/ui";
 import { useForm, useStore } from "@tanstack/react-form";
 import { useTranslation } from "@plane/i18n";
@@ -24,8 +25,11 @@ export function InboxIssueSnoozeModal(props: InboxIssueSnoozeModalProps) {
 
 function SnoozeForm({ handleClose, value: initialDate, onConfirm }: InboxIssueSnoozeModalProps) {
   const { t } = useTranslation();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const [today] = useState(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+  });
   const form = useForm({
     defaultValues: { date: initialDate ? new Date(initialDate) : today },
     onSubmit: async ({ value: draft }) => {

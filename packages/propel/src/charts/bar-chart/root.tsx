@@ -1,28 +1,19 @@
+import { isRecord } from "@plane/utils/common";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useCallback, useMemo, useState } from "react";
-import {
-  BarChart as CoreBarChart,
-  Bar,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-  Legend,
-  CartesianGrid,
-} from "recharts";
+import { BarChart as CoreBarChart, Bar, ResponsiveContainer, CartesianGrid } from "recharts";
 // plane imports
-import { AXIS_LABEL_CLASSNAME } from "@plane/constants";
-import type { TBarChartProps } from "@plane/types";
+import type { TBarChartProps, TBarItem } from "@plane/types";
+import { chartMargin } from "../components/layout";
 // local components
-import { getLegendProps } from "../components/legend";
-import { CustomXAxisTick, CustomYAxisTick } from "../components/tick";
-import { CustomTooltip } from "../components/tooltip";
+import { ChartLegend } from "../components/legend";
+import { ChartXAxis, ChartYAxis } from "../components/cartesian-axes";
+import { ChartTooltip, type ChartTooltipPayload } from "../components/tooltip";
 import { barShapeVariants, DEFAULT_BAR_FILL_COLOR } from "./bar";
 
 export const BarChart = React.memo(function BarChart<K extends string, T extends string>(props: TBarChartProps<K, T>) {
@@ -62,13 +53,20 @@ export const BarChart = React.memo(function BarChart<K extends string, T extends
 
   // get bar color dynamically based on payload
   const getBarColor = useCallback(
-    (payload: readonly Record<string, string>[], barKey: string) => {
+    (payload: readonly unknown[], barKey: string) => {
       const bar = bars.find((b) => b.key === barKey);
       if (!bar) return DEFAULT_BAR_FILL_COLOR;
 
       if (typeof bar.fill === "function") {
-        const payloadItem = payload?.find((item) => item.dataKey === barKey);
-        if (payloadItem?.payload) {
+        const payloadItem = payload.find(
+          (item) => typeof item === "object" && item !== null && "dataKey" in item && item.dataKey === barKey
+        );
+        if (
+          typeof payloadItem === "object" &&
+          payloadItem !== null &&
+          "payload" in payloadItem &&
+          isRecord(payloadItem.payload)
+        ) {
           try {
             return bar.fill(payloadItem.payload);
           } catch (error) {
@@ -87,7 +85,7 @@ export const BarChart = React.memo(function BarChart<K extends string, T extends
 
   // get all bar colors
   const getAllBarColors = useCallback(
-    (payload: readonly any[]) => {
+    (payload: ChartTooltipPayload) => {
       const colors: Record<string, string> = {};
       for (const bar of bars) {
         colors[bar.key] = getBarColor(payload, bar.key);
@@ -105,11 +103,7 @@ export const BarChart = React.memo(function BarChart<K extends string, T extends
           dataKey={bar.key}
           stackId={bar.stackId}
           opacity={!!activeLegend && activeLegend !== bar.key ? 0.1 : 1}
-          shape={(shapeProps: any) => {
-            const shapeVariant = barShapeVariants[bar.shapeVariant ?? "bar"];
-            const node = shapeVariant(shapeProps, bar, stackKeys);
-            return React.isValidElement(node) ? node : <>{node}</>;
-          }}
+          shape={<BarShape bar={bar} stackKeys={stackKeys} />}
           className="[&_path]:transition-opacity [&_path]:duration-200"
           onMouseEnter={() => setActiveBar(bar.key)}
           onMouseLeave={() => setActiveBar(null)}
@@ -122,83 +116,19 @@ export const BarChart = React.memo(function BarChart<K extends string, T extends
   return (
     <div className={className}>
       <ResponsiveContainer width="100%" height="100%">
-        <CoreBarChart
-          data={data}
-          margin={{
-            top: margin?.top === undefined ? 5 : margin.top,
-            right: margin?.right === undefined ? 30 : margin.right,
-            bottom: margin?.bottom === undefined ? 5 : margin.bottom,
-            left: margin?.left === undefined ? 20 : margin.left,
-          }}
-          barSize={barSize}
-          className="recharts-wrapper"
-        >
+        <CoreBarChart data={data} margin={chartMargin(margin)} barSize={barSize} className="recharts-wrapper">
           <CartesianGrid stroke="var(--border-color-subtle)" vertical={false} />
-          <XAxis
-            dataKey={xAxis.key}
-            tick={(props) => {
-              const TickComponent = customTicks?.x || CustomXAxisTick;
-              return <TickComponent {...props} />;
-            }}
-            tickLine={false}
-            axisLine={false}
-            label={{
-              value: xAxis.label,
-              dy: xAxis.dy ?? 28,
-              className: AXIS_LABEL_CLASSNAME,
-            }}
-            tickCount={tickCount.x}
-          />
-          <YAxis
-            domain={yAxis.domain}
-            tickLine={false}
-            axisLine={false}
-            label={{
-              value: yAxis.label,
-              angle: -90,
-              position: "bottom",
-              offset: yAxis.offset ?? -24,
-              dx: yAxis.dx ?? -16,
-              className: AXIS_LABEL_CLASSNAME,
-            }}
-            tick={(props) => {
-              const TickComponent = customTicks?.y || CustomYAxisTick;
-              return <TickComponent {...props} />;
-            }}
-            tickCount={tickCount.y}
-            allowDecimals={!!yAxis.allowDecimals}
-          />
-          {legend && (
-            <Legend
-              onMouseEnter={(payload) => setActiveLegend(payload.value ?? null)}
-              onMouseLeave={() => setActiveLegend(null)}
-              formatter={(value) => stackLabels[value]}
-              {...getLegendProps(legend)}
-            />
-          )}
+          <ChartXAxis axis={xAxis} tick={customTicks?.x} tickCount={tickCount.x} showEmptyLabel />
+          <ChartYAxis axis={yAxis} tick={customTicks?.y} tickCount={tickCount.y} showEmptyLabel />
+          {legend && <ChartLegend options={legend} labels={stackLabels} onActiveChange={setActiveLegend} />}
           {showTooltip && (
-            <Tooltip
-              cursor={{
-                fill: "var(--alpha-black-300)",
-                className: "bg-layer-1 cursor-pointer",
-              }}
-              wrapperStyle={{
-                pointerEvents: "auto",
-              }}
-              content={({ active, label, payload }) => {
-                if (customTooltipContent) return customTooltipContent({ active, label: String(label ?? ""), payload });
-                return (
-                  <CustomTooltip
-                    active={active}
-                    label={label}
-                    payload={payload}
-                    activeKey={activeBar}
-                    itemKeys={stackKeys}
-                    itemLabels={stackLabels}
-                    itemDotColors={getAllBarColors(payload || [])}
-                  />
-                );
-              }}
+            <ChartTooltip
+              cursor={{ fill: "var(--alpha-black-300)", className: "bg-layer-1 cursor-pointer" }}
+              activeKey={activeBar}
+              itemKeys={stackKeys}
+              itemLabels={stackLabels}
+              itemDotColors={getAllBarColors}
+              renderContent={customTooltipContent}
             />
           )}
           {renderBars}
@@ -208,3 +138,36 @@ export const BarChart = React.memo(function BarChart<K extends string, T extends
   );
 });
 BarChart.displayName = "BarChart";
+
+function BarShape({
+  bar,
+  stackKeys,
+  ...shape
+}: {
+  bar: TBarItem<string>;
+  stackKeys: string[];
+  payload?: unknown;
+  x?: unknown;
+  y?: unknown;
+  width?: unknown;
+  height?: unknown;
+  opacity?: unknown;
+}) {
+  if (!isRecord(shape) || !isRecord(shape.payload)) return null;
+  const { x, y, width, height, opacity } = shape;
+  if (typeof x !== "number" || typeof y !== "number" || typeof width !== "number" || typeof height !== "number")
+    return null;
+  return barShapeVariants[bar.shapeVariant ?? "bar"](
+    {
+      x,
+      y,
+      width,
+      height,
+      dataKey: bar.key,
+      payload: shape.payload,
+      opacity: typeof opacity === "number" ? opacity : undefined,
+    },
+    bar,
+    stackKeys
+  );
+}

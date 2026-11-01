@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, afterEach, test } from "node:test";
-import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment, waitForReactCondition as waitForCondition } from "./helpers/react-dom.mjs";
 import { act, React } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
@@ -39,18 +39,8 @@ function assertNoNestedButtons(container) {
   }
 }
 
-async function waitForCondition(condition, message, timeoutMs = 2_000) {
-  const deadline = performance.now() + timeoutMs;
-  await act(async () => {
-    await new Promise((resolve) => {
-      const check = () => (condition() || performance.now() >= deadline ? resolve() : setTimeout(check, 10));
-      check();
-    });
-  });
-  assert.ok(condition(), message);
-}
-
-test("search breadcrumb keeps navigation and menu actions on separate buttons", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("search breadcrumb keeps navigation and menu actions on separate buttons", async (t) => {
   assertNoConsoleErrors(t);
   let navigated = 0;
   let changedTo = "";
@@ -85,7 +75,7 @@ test("search breadcrumb keeps navigation and menu actions on separate buttons", 
   assert.equal(changedTo, "beta");
 });
 
-test("last search breadcrumb opens its menu when the title is clicked", async () => {
+void test("last search breadcrumb opens its menu when the title is clicked", async () => {
   await environment.render(
     React.createElement(BreadcrumbNavigationSearchDropdown, {
       title: "Project alpha",
@@ -127,7 +117,7 @@ for (const isLast of [false, true]) {
   }
 }
 
-test("navigation breadcrumb separates label navigation from menu selection", async () => {
+void test("navigation breadcrumb separates label navigation from menu selection", async () => {
   let navigated = 0;
   let selected = 0;
   const navigationItems = [

@@ -123,7 +123,7 @@ export const SidebarProjectsList = function SidebarProjectsList() {
   useEffect(() => {
     const element = findSidebarScrollViewport(containerRef.current);
 
-    if (!element) return;
+    if (!element) return undefined;
 
     return autoScrollForElements({
       element,

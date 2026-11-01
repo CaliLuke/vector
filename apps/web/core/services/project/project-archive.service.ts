@@ -20,18 +20,10 @@ export class ProjectArchiveService extends APIService {
   ): Promise<{
     archived_at: string;
   }> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/archive/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/archive/`));
   }
 
   async restoreProject(workspaceSlug: string, projectId: string): Promise<void> {
-    return this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/archive/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/archive/`));
   }
 }

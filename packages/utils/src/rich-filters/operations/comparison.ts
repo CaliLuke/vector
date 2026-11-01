@@ -21,6 +21,17 @@ import { isConditionNode, isGroupNode } from "../types/core";
 import { processGroupNode } from "../types/shared";
 import { sanitizeAndStabilizeExpression } from "./transformation/core";
 
+type ComparableCondition = Omit<TFilterConditionNode<TFilterProperty, TFilterValue>, "id" | "value"> & {
+  value: TFilterValue[];
+};
+type ComparableGroup = {
+  type: typeof FILTER_NODE_TYPE.GROUP;
+  logicalOperator: TFilterGroupNode<TFilterProperty>["logicalOperator"];
+  children?: ComparableExpression[];
+  child?: ComparableExpression | null;
+};
+type ComparableExpression = ComparableCondition | ComparableGroup;
+
 /**
  * Creates a comparable representation of a condition for deep comparison.
  * This uses property, operator, and value instead of ID for comparison.
@@ -43,8 +54,8 @@ const createConditionComparable = <P extends TFilterProperty>(condition: TFilter
  */
 const createComparableChildren = <P extends TFilterProperty>(
   children: TFilterExpression<P>[],
-  baseComparable: Record<string, unknown>
-): Record<string, unknown> => {
+  baseComparable: Pick<ComparableGroup, "type" | "logicalOperator">
+): ComparableGroup => {
   const childrenComparable = compact(children.map((child) => createExpressionComparable(child)));
 
   // Sort children by a consistent key for comparison to ensure order doesn't affect equality
@@ -74,9 +85,7 @@ const createComparableChildren = <P extends TFilterProperty>(
  * @param group - The group to create a comparable representation for
  * @returns A comparable object without ID
  */
-export const createGroupComparable = <P extends TFilterProperty>(
-  group: TFilterGroupNode<P>
-): Record<string, unknown> => {
+export const createGroupComparable = <P extends TFilterProperty>(group: TFilterGroupNode<P>): ComparableGroup => {
   const baseComparable = {
     // Explicitly exclude: id (random UUID should not be compared)
     type: group.type,
@@ -99,7 +108,7 @@ export const createGroupComparable = <P extends TFilterProperty>(
  */
 export const createExpressionComparable = <P extends TFilterProperty>(
   expression: TFilterExpression<P> | null
-): Record<string, unknown> | null => {
+): ComparableExpression | null => {
   if (!expression) return null;
 
   // Handle condition nodes - exclude ID completely

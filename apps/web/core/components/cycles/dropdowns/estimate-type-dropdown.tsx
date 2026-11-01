@@ -19,7 +19,7 @@ import { cycleEstimateOptions } from "../analytics-sidebar/issue-progress";
 type TProps = {
   isArchived?: boolean;
   value: TCycleEstimateType;
-  onChange: (value: TCycleEstimateType) => Promise<void>;
+  onChange: (value: TCycleEstimateType) => void;
   showDefault?: boolean;
   projectId: string;
   cycleId: string;
@@ -37,7 +37,9 @@ export const EstimateTypeDropdown = function EstimateTypeDropdown(props: TProps)
       <CustomSelect
         value={value}
         label={<span>{cycleEstimateOptions.find((v) => v.value === value)?.label ?? "None"}</span>}
-        onChange={onChange}
+        onChange={(selection) => {
+          if (selection !== null) onChange(selection);
+        }}
         maxHeight="lg"
         buttonClassName="bg-surface-2 border-none rounded-sm text-13 font-medium "
       >

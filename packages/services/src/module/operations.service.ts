@@ -4,12 +4,10 @@
  * See the LICENSE file for details.
  */
 
-// types
-// import type { IModule, ILinkDetails, ModuleLink, TIssuesResponse } from "@plane/types";
 // services
-import { APIService } from "../api.service";
+import { ModuleLinkOperations } from "./link-operations";
 
-export class ModuleOperationService extends APIService {
+export class ModuleOperationService extends ModuleLinkOperations {
   /**
    * Add issues to a module
    * @param {string} workspaceSlug - The slug of the workspace
@@ -25,11 +23,9 @@ export class ModuleOperationService extends APIService {
     moduleId: string,
     data: { issues: string[] }
   ): Promise<void> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/modules/${moduleId}/issues/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/modules/${moduleId}/issues/`, data)
+    );
   }
 
   /**
@@ -48,11 +44,9 @@ export class ModuleOperationService extends APIService {
     issueId: string,
     data: { modules: string[]; removed_modules?: string[] }
   ): Promise<void> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/modules/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/modules/`, data)
+    );
   }
 
   /**
@@ -69,17 +63,12 @@ export class ModuleOperationService extends APIService {
     moduleId: string,
     issueIds: string[]
   ): Promise<void> {
-    const promiseDataUrls: any = [];
-    issueIds.forEach((issueId) => {
-      promiseDataUrls.push(
-        this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/modules/${moduleId}/issues/${issueId}/`)
-      );
+    const requests = issueIds.map((issueId) =>
+      this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/modules/${moduleId}/issues/${issueId}/`)
+    );
+    await Promise.all(requests).catch((error) => {
+      throw error?.response?.data;
     });
-    await Promise.all(promiseDataUrls)
-      .then((response) => response)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
   }
 
   /**
@@ -96,17 +85,12 @@ export class ModuleOperationService extends APIService {
     issueId: string,
     moduleIds: string[]
   ): Promise<void> {
-    const promiseDataUrls: any = [];
-    moduleIds.forEach((moduleId) => {
-      promiseDataUrls.push(
-        this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/modules/${moduleId}/issues/${issueId}/`)
-      );
+    const requests = moduleIds.map((moduleId) =>
+      this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/modules/${moduleId}/issues/${issueId}/`)
+    );
+    await Promise.all(requests).catch((error) => {
+      throw error?.response?.data;
     });
-    await Promise.all(promiseDataUrls)
-      .then((response) => response)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
   }
 
   /**
@@ -115,7 +99,7 @@ export class ModuleOperationService extends APIService {
    * @param {string} projectId - The ID of the project
    * @param {object} data - The data to be sent in the request body
    * @param {string} data.module - The ID of the module to be added
-   * @returns {Promise<any>}
+   * @returns {Promise<unknown>}
    */
   async addModuleToFavorites(
     workspaceSlug: string,
@@ -123,12 +107,10 @@ export class ModuleOperationService extends APIService {
     data: {
       module: string;
     }
-  ): Promise<any> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/user-favorite-modules/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  ): Promise<unknown> {
+    return this.responseData(
+      this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/user-favorite-modules/`, data)
+    );
   }
 
   /**
@@ -136,13 +118,11 @@ export class ModuleOperationService extends APIService {
    * @param {string} workspaceSlug - The slug of the workspace
    * @param {string} projectId - The ID of the project
    * @param {string} moduleId - The ID of the module to be removed
-   * @returns {Promise<any>}
+   * @returns {Promise<unknown>}
    */
-  async removeModuleFromFavorites(workspaceSlug: string, projectId: string, moduleId: string): Promise<any> {
-    return this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/user-favorite-modules/${moduleId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async removeModuleFromFavorites(workspaceSlug: string, projectId: string, moduleId: string): Promise<unknown> {
+    return this.responseData(
+      this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/user-favorite-modules/${moduleId}/`)
+    );
   }
 }

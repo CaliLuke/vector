@@ -10,7 +10,8 @@ import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IBlockUpdateDependencyData, IGanttBlock } from "@plane/types";
 // hooks
 import { useGanttChartState } from "../../contexts/chart-state";
-import { blockDateUpdatesAfterDrag } from "../../state";
+import { blockDateUpdatesAfterDrag, resizedGanttPosition } from "../../state";
+import { getItemPositionWidth } from "../../views/helpers";
 //
 import { DEFAULT_BLOCK_WIDTH, SIDEBAR_WIDTH } from "../../constants";
 
@@ -44,6 +45,40 @@ export const useGanttResizable = (
   }, [viewData, blocksById]);
   const [isMoving, setIsMoving] = useState<"left" | "right" | "move" | undefined>();
 
+  const savingRef = useRef(false);
+  const mounted = useRef(false);
+  const [isSaving, setIsSaving] = useState(false);
+  useLayoutEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  const handleResizeToDay = async (direction: "left" | "right", day: number) => {
+    if (!viewData || !updateBlockDates || savingRef.current || removeListeners.current) return;
+    const position = resizedGanttPosition(block, viewData, direction, day);
+    if (!position) return;
+    savingRef.current = true;
+    setIsSaving(true);
+    const fillMissingDate =
+      (direction === "left" && !block.start_date) || (direction === "right" && !block.target_date);
+    try {
+      const updates = blockDateUpdatesAfterDrag({ ...block, position }, viewData, fillMissingDate);
+      await updateBlockDates(updates);
+      const current = latestChartState.current;
+      if (mounted.current && current.viewData) {
+        const nextPosition = getItemPositionWidth(current.viewData, { ...block, ...updates[0] });
+        if (nextPosition) setBlockPosition(block.id, nextPosition);
+      }
+    } catch {
+      if (mounted.current) showUpdateError();
+    } finally {
+      savingRef.current = false;
+      if (mounted.current) setIsSaving(false);
+    }
+  };
+
   const releaseDrag = useEffectEvent(() => {
     removeListeners.current?.();
     setIsDragging(false);
@@ -51,14 +86,11 @@ export const useGanttResizable = (
   useEffect(() => () => releaseDrag(), []);
 
   // handle block resize from the left end
-  const handleBlockDrag = (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    dragDirection: "left" | "right" | "move"
-  ) => {
+  const handleBlockDrag = (e: React.MouseEvent<HTMLElement>, dragDirection: "left" | "right" | "move") => {
     const ganttContainerElement = ganttContainerRef.current;
     if (!viewData || !resizableRef.current || !block.position || !ganttContainerElement) return;
 
-    if (e.button !== 0) return;
+    if (e.button !== 0 || savingRef.current) return;
 
     const resizableDiv = resizableRef.current;
 
@@ -86,8 +118,8 @@ export const useGanttResizable = (
       removeListeners.current = undefined;
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
-      currMouseEvent.current = e;
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      currMouseEvent.current = moveEvent;
       setIsMoving(dragDirection);
       setIsDragging(true);
 
@@ -95,14 +127,14 @@ export const useGanttResizable = (
 
       const { left: containerLeft } = ganttContainerDimensions.current;
 
-      const mouseX = e.clientX - containerLeft - SIDEBAR_WIDTH + ganttContainerElement.scrollLeft;
+      const currentMouseX = moveEvent.clientX - containerLeft - SIDEBAR_WIDTH + ganttContainerElement.scrollLeft;
 
       let width = initialPositionRef.current.width;
       let marginLeft = initialPositionRef.current.marginLeft;
 
       if (dragDirection === "left") {
         // calculate new marginLeft and update the initial marginLeft to the newly calculated one
-        marginLeft = Math.round(mouseX / dayWidth) * dayWidth;
+        marginLeft = Math.round(currentMouseX / dayWidth) * dayWidth;
         // get Dimensions from dom's style
         const prevMarginLeft = parseFloat(resizableDiv.style.marginLeft.slice(0, -2));
         const prevWidth = parseFloat(resizableDiv.style.width.slice(0, -2));
@@ -112,18 +144,18 @@ export const useGanttResizable = (
         width = block.target_date ? prevWidth + marginDelta : DEFAULT_BLOCK_WIDTH;
       } else if (dragDirection === "right") {
         // calculate new width and update the initialMarginLeft using +=
-        width = Math.round(mouseX / dayWidth) * dayWidth - marginLeft;
+        width = Math.round(currentMouseX / dayWidth) * dayWidth - marginLeft;
 
         // If start date does not exist while dragging with right handle the revert to default width and adjust marginLeft accordingly
         if (!block.start_date) {
           // calculate new right and update the marginLeft to the newly calculated one
-          const marginRight = Math.round(mouseX / dayWidth) * dayWidth;
+          const marginRight = Math.round(currentMouseX / dayWidth) * dayWidth;
           marginLeft = marginRight - DEFAULT_BLOCK_WIDTH;
           width = DEFAULT_BLOCK_WIDTH;
         }
       } else if (dragDirection === "move") {
         // calculate new marginLeft and update the initial marginLeft using -=
-        marginLeft = Math.round((mouseX - initialPositionRef.current.offsetX) / dayWidth) * dayWidth;
+        marginLeft = Math.round((currentMouseX - initialPositionRef.current.offsetX) / dayWidth) * dayWidth;
       }
 
       // block needs to be at least 1 dayWidth Wide
@@ -174,5 +206,7 @@ export const useGanttResizable = (
   return {
     isMoving,
     handleBlockDrag,
+    handleResizeToDay,
+    isSaving,
   };
 };

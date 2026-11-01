@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
@@ -26,7 +27,13 @@ async function verifyDomain(domain) {
     t.mock.method(service, method, async () => {
       writes++;
     });
-    const owner = currentIssueListMutationOwner(client, "acme", "p1", "issues", () => true);
+    const owner = currentIssueListMutationOwner(
+      client,
+      "acme",
+      "p1",
+      ContractEnums.EIssueServiceType.ISSUES,
+      () => true
+    );
     const mutation =
       domain === "cycle"
         ? { kind: "cycle-add", cycleId: "c1", issueIds: ["issue"] }
@@ -45,13 +52,20 @@ async function verifyDomain(domain) {
     t.mock.method(service, method, async (...args) => {
       calls.push(args);
     });
-    const owner = currentIssueListMutationOwner(client, "acme", "p1", "issues", () => true, {
-      isCurrent: () => true,
-      refreshAssignments: async (kind, ids) => {
-        calls.push(["refresh", kind, [...ids]]);
-        throw new Error("parent metadata offline");
-      },
-    });
+    const owner = currentIssueListMutationOwner(
+      client,
+      "acme",
+      "p1",
+      ContractEnums.EIssueServiceType.ISSUES,
+      () => true,
+      {
+        isCurrent: () => true,
+        refreshAssignments: async (kind, ids) => {
+          calls.push(["refresh", kind, [...ids]]);
+          throw new Error("parent metadata offline");
+        },
+      }
+    );
     const mutation =
       domain === "cycle"
         ? { kind: "cycle-add", cycleId: "c1", issueIds: ["issue"] }

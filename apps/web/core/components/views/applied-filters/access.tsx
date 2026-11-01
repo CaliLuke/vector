@@ -18,14 +18,14 @@ type Props = {
   values: EViewAccess[];
 };
 
+const getAccessLabel = (val: EViewAccess) => {
+  const value = VIEW_ACCESS_SPECIFIERS.find((option) => option.key === val);
+  return value?.i18n_label;
+};
+
 export const AppliedAccessFilters = function AppliedAccessFilters(props: Props) {
   const { editable, handleRemove, values } = props;
   const { t } = useTranslation();
-
-  const getAccessLabel = (val: EViewAccess) => {
-    const value = VIEW_ACCESS_SPECIFIERS.find((option) => option.key === val);
-    return value?.i18n_label;
-  };
 
   return (
     <>

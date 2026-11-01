@@ -1,3 +1,4 @@
+import { isRecord } from "@plane/utils/common";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -95,7 +96,12 @@ export function DropdownControl(props: Props) {
 
     const filteredOptions = queryArray
       ? options.filter((option) => {
-          const queryString = queryArray.map((key) => option.data[key]).join(" ");
+          const queryString = queryArray
+            .map((key) => {
+              const field = isRecord(option.data) ? option.data[key] : undefined;
+              return typeof field === "string" || typeof field === "number" ? String(field) : "";
+            })
+            .join(" ");
           return queryString.toLowerCase().includes(query.toLowerCase());
         })
       : options;
@@ -107,7 +113,7 @@ export function DropdownControl(props: Props) {
       (option) => (props.multiple ? !props.value.includes(keyExtractor(option)) : props.value !== keyExtractor(option)),
       (option) => {
         if (!sortByKey) return undefined;
-        const sortValue: unknown = option.data[sortByKey];
+        const sortValue = isRecord(option.data) ? option.data[sortByKey] : undefined;
         return typeof sortValue === "string" ? sortValue.toLowerCase() : sortValue;
       },
     ]);

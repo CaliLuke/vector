@@ -19,7 +19,6 @@ export function replaceCodeWithText(editor: Editor): void {
   try {
     const { from, to } = editor.state.selection;
     const cursorPosInsideCodeblock = from;
-    let replaced = false;
 
     editor.state.doc.nodesBetween(from, to, (node, pos) => {
       if (node.type === editor.state.schema.nodes.codeBlock) {
@@ -39,14 +38,11 @@ export function replaceCodeWithText(editor: Editor): void {
           });
         }
 
-        replaced = true;
         return false;
       }
-    });
 
-    if (!replaced) {
-      console.log("No code block to replace.");
-    }
+      return undefined;
+    });
   } catch (error) {
     console.error("An error occurred while replacing code block content:", error);
   }

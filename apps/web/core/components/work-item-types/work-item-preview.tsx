@@ -421,7 +421,8 @@ function WorkItemEditor({
           </select>
           <CustomSearchSelect
             value={value.type}
-            onChange={(id: string) => {
+            onChange={(id) => {
+              if (id === null) return;
               form.setFieldValue("type", id);
               form.setFieldValue("values", { ...defaultPropertyValues(content, value.project, id), ...value.values });
             }}

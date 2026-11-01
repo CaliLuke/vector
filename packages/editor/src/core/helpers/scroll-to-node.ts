@@ -19,6 +19,8 @@ function findNthH1(editor: Editor, n: number, level: number): number {
         return false;
       }
     }
+
+    return undefined;
   });
   return pos;
 }

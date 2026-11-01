@@ -165,7 +165,7 @@ function extractArrowFunction(
     }
   }
 
-  return;
+  return undefined;
 }
 
 function extractPropsTypeFromWrapper(
@@ -175,22 +175,22 @@ function extractPropsTypeFromWrapper(
   // If it's a CallExpression like observer<React.FC<Props>>((props) => {})
   // Extract the Props type from React.FC<Props>
   if (!j.CallExpression.check(init)) {
-    return;
+    return undefined;
   }
 
   if (!("typeParameters" in init)) {
-    return;
+    return undefined;
   }
 
   const typeParameters = init.typeParameters;
   if (!j.TSTypeParameterInstantiation.check(typeParameters)) {
-    return;
+    return undefined;
   }
 
-  const typeParam = typeParameters.params?.[0];
+  const typeParam = typeParameters.params[0];
 
   if (!typeParam) {
-    return;
+    return undefined;
   }
 
   if (
@@ -198,7 +198,7 @@ function extractPropsTypeFromWrapper(
     isReactComponentType(typeParam, j)
   ) {
     // Extract the generic type from React.FC<PropsType>
-    return typeParam.typeParameters?.params?.[0];
+    return typeParam.typeParameters?.params[0];
   }
 
   // Check for memo<Props>
@@ -219,7 +219,7 @@ function extractPropsTypeFromWrapper(
     return typeParam;
   }
 
-  return;
+  return undefined;
 }
 
 function isReactForwardRef(
@@ -256,11 +256,11 @@ function extractForwardRefTypes(
   j: JSCodeshift
 ) {
   if (!isReactForwardRef(init, j)) {
-    return;
+    return undefined;
   }
 
   if (!j.CallExpression.check(init) || !("typeParameters" in init)) {
-    return;
+    return undefined;
   }
 
   const typeParameters = init.typeParameters;
@@ -270,7 +270,7 @@ function extractForwardRefTypes(
     !j.TSTypeParameterInstantiation.check(typeParameters) ||
     typeParameters.params.length === 0
   ) {
-    return; // Let the default props type handling take care of it
+    return undefined; // Let the default props type handling take care of it
   }
 
   const typeParams = typeParameters.params;
@@ -280,7 +280,7 @@ function extractForwardRefTypes(
   const [elementType] = typeParams;
 
   if (!elementType) {
-    return;
+    return undefined;
   }
 
   const propsType =

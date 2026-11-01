@@ -9,6 +9,8 @@ import { useState } from "react";
 // plane imports
 import type { TStateOperationsCallbacks } from "@plane/types";
 import { cn } from "@plane/utils/common";
+import { setToast, TOAST_TYPE } from "@plane/propel/toast";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
 
 type TStateMarksAsDefault = {
   stateId: string;
@@ -16,21 +18,27 @@ type TStateMarksAsDefault = {
   markStateAsDefaultCallback: TStateOperationsCallbacks["markStateAsDefault"];
 };
 
-export const StateMarksAsDefault = function StateMarksAsDefault(props: TStateMarksAsDefault) {
+export function StateMarksAsDefault(props: TStateMarksAsDefault) {
+  return <DefaultStateAction key={props.stateId} {...props} />;
+}
+
+const DefaultStateAction = function DefaultStateAction(props: TStateMarksAsDefault) {
   const { stateId, isDefault, markStateAsDefaultCallback } = props;
   // states
   const [isLoading, setIsLoading] = useState(false);
+  const isCurrent = useCommittedScope(stateId);
 
   const handleMarkAsDefault = async () => {
-    if (!stateId || isDefault) return;
+    if (!stateId || isDefault || isLoading) return;
     setIsLoading(true);
 
     try {
-      setIsLoading(false);
       await markStateAsDefaultCallback(stateId);
-      setIsLoading(false);
     } catch {
-      setIsLoading(false);
+      if (isCurrent())
+        setToast({ type: TOAST_TYPE.ERROR, title: "Could not change the default state", message: "Please try again." });
+    } finally {
+      if (isCurrent()) setIsLoading(false);
     }
   };
 
@@ -41,7 +49,7 @@ export const StateMarksAsDefault = function StateMarksAsDefault(props: TStateMar
         isDefault ? "text-tertiary" : "text-secondary hover:text-primary"
       )}
       disabled={isDefault || isLoading}
-      onClick={handleMarkAsDefault}
+      onClick={() => void handleMarkAsDefault()}
     >
       {isLoading ? "Marking as default" : isDefault ? `Default` : `Mark as default`}
     </button>

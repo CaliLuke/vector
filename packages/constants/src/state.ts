@@ -109,6 +109,6 @@ export const PROGRESS_STATE_GROUPS_DETAILS = [
     title: "Backlog",
     color: "#A3A3A3",
   },
-];
+] as const;
 
 export const DISPLAY_WORKFLOW_PRO_CTA = false;

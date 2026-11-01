@@ -6,22 +6,16 @@
 
 import React, { useState } from "react";
 import { CalendarDays } from "lucide-react";
-// ui
-import type { Matcher } from "@plane/propel/calendar";
 import { Calendar } from "@plane/propel/calendar";
 import { Popover } from "@plane/propel/popover";
 import { CloseIcon } from "@plane/propel/icons";
 import { cn } from "@plane/utils/common";
 import { renderFormattedDate, getDate } from "@plane/utils/datetime";
-// helpers
-// hooks
 import { useCurrentUserProfile } from "@/hooks/use-current-user-profile";
-// components
 import { DropdownButton } from "./buttons";
-// constants
 import { BUTTON_VARIANTS_WITH_TEXT } from "./constants";
-// types
 import type { TDropdownProps } from "./types";
+import { dateDisabledDays, dateTriggerClassName } from "./date-control";
 
 type Props = TDropdownProps & {
   clearIconClassName?: string;
@@ -42,101 +36,42 @@ type Props = TDropdownProps & {
 
 export function DateDropdown(props: Props) {
   const {
-    buttonClassName = "",
-    buttonContainerClassName,
-    buttonVariant,
-    className = "",
-    clearIconClassName = "",
     defaultOpen = false,
-    optionsClassName = "",
     closeOnSelect = true,
-    disabled = false,
-    hideIcon = false,
-    icon = <CalendarDays className="h-3 w-3 flex-shrink-0" />,
-    isClearable = true,
+    onClose,
+    onChange,
     minDate,
     maxDate,
-    onChange,
-    onClose,
-    placeholder = "Date",
-    placement,
-    showTooltip = false,
+    className,
+    buttonContainerClassName,
+    disabled = false,
     tabIndex,
+    placement,
     value,
-    formatToken,
-    renderByDefault = true,
-    labelClassName = "",
+    optionsClassName,
   } = props;
-  // states
   const [isOpen, setIsOpen] = useState(defaultOpen);
-  // hooks
   const { data } = useCurrentUserProfile();
-  const startOfWeek = data?.start_of_the_week;
-  const isDateSelected = value && value.toString().trim() !== "";
-
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (!open) onClose?.();
   };
-
-  const dropdownOnChange = (val: Date | null) => {
-    onChange(val);
-    if (closeOnSelect) {
-      handleOpenChange(false);
-    }
-  };
-
-  const disabledDays: Matcher[] = [];
-  if (minDate) disabledDays.push({ before: minDate });
-  if (maxDate) disabledDays.push({ after: maxDate });
-
-  const comboButton = (
-    <button
-      type="button"
-      className={cn(
-        "clickable block h-full max-w-full outline-none",
-        {
-          "cursor-not-allowed text-secondary": disabled,
-          "cursor-pointer": !disabled,
-        },
-        buttonContainerClassName
-      )}
-      tabIndex={tabIndex}
-      disabled={disabled}
-    >
-      <DropdownButton
-        className={buttonClassName}
-        isActive={isOpen}
-        tooltipHeading={placeholder}
-        tooltipContent={value ? renderFormattedDate(value, formatToken) : "None"}
-        showTooltip={showTooltip}
-        variant={buttonVariant}
-        renderToolTipByDefault={renderByDefault}
-      >
-        {!hideIcon && icon}
-        {BUTTON_VARIANTS_WITH_TEXT.includes(buttonVariant) && (
-          <span className={cn("flex-grow truncate text-left text-body-xs-medium", labelClassName)}>
-            {value ? renderFormattedDate(value, formatToken) : placeholder}
-          </span>
-        )}
-        {isClearable && !disabled && isDateSelected && (
-          <CloseIcon
-            className={cn("h-2.5 w-2.5 flex-shrink-0", clearIconClassName)}
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              onChange(null);
-            }}
-          />
-        )}
-      </DropdownButton>
-    </button>
-  );
-
   return (
     <div className={cn("h-full", className)}>
       <Popover open={isOpen} onOpenChange={handleOpenChange}>
-        <Popover.Button render={comboButton} disabled={disabled} />
+        <Popover.Button
+          disabled={disabled}
+          render={
+            <button
+              type="button"
+              className={dateTriggerClassName(disabled, buttonContainerClassName)}
+              tabIndex={tabIndex}
+              disabled={disabled}
+            >
+              <DateButtonContent options={props} isOpen={isOpen} />
+            </button>
+          }
+        />
         <Popover.Panel
           placement={placement ?? "bottom-start"}
           sideOffset={4}
@@ -153,18 +88,80 @@ export function DateDropdown(props: Props) {
             selected={getDate(value)}
             defaultMonth={getDate(value)}
             onSelect={(date: Date | undefined) => {
-              dropdownOnChange(date ?? null);
+              onChange(date ?? null);
+              if (closeOnSelect) handleOpenChange(false);
             }}
             showOutsideDays
             // oxlint-disable-next-line jsx_a11y/no-autofocus -- DayPicker v10 uses autoFocus to preserve the previous initialFocus behavior in the opened calendar.
             autoFocus
-            disabled={disabledDays}
+            disabled={dateDisabledDays(minDate, maxDate)}
             mode="single"
             fixedWeeks
-            weekStartsOn={startOfWeek}
+            weekStartsOn={data?.start_of_the_week}
           />
         </Popover.Panel>
       </Popover>
     </div>
+  );
+}
+
+function DateButtonContent({ options, isOpen }: { options: Props; isOpen: boolean }) {
+  const {
+    buttonClassName,
+    buttonVariant,
+    placeholder = "Date",
+    value,
+    formatToken,
+    showTooltip = false,
+    renderByDefault = true,
+    isClearable = true,
+    disabled,
+    clearIconClassName,
+    onChange,
+  } = options;
+  return (
+    <DropdownButton
+      className={buttonClassName}
+      isActive={isOpen}
+      tooltipHeading={placeholder}
+      tooltipContent={value ? renderFormattedDate(value, formatToken) : "None"}
+      showTooltip={showTooltip}
+      variant={buttonVariant}
+      renderToolTipByDefault={renderByDefault}
+    >
+      <DateValueLabel options={options} />
+      {isClearable && !disabled && value && value.toString().trim() !== "" && (
+        <CloseIcon
+          className={cn("h-2.5 w-2.5 flex-shrink-0", clearIconClassName)}
+          onClick={(event) => {
+            event.stopPropagation();
+            event.preventDefault();
+            onChange(null);
+          }}
+        />
+      )}
+    </DropdownButton>
+  );
+}
+
+function DateValueLabel({ options }: { options: Props }) {
+  const {
+    hideIcon = false,
+    icon = <CalendarDays className="h-3 w-3 flex-shrink-0" />,
+    buttonVariant,
+    labelClassName,
+    value,
+    formatToken,
+    placeholder = "Date",
+  } = options;
+  return (
+    <>
+      {!hideIcon && icon}
+      {BUTTON_VARIANTS_WITH_TEXT.includes(buttonVariant) && (
+        <span className={cn("flex-grow truncate text-left text-body-xs-medium", labelClassName)}>
+          {value ? renderFormattedDate(value, formatToken) : placeholder}
+        </span>
+      )}
+    </>
   );
 }

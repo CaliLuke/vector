@@ -39,11 +39,7 @@ export class UserService extends APIService {
    * @throws {Error} If the API request fails
    */
   async update(data: Partial<IUser>): Promise<IUser> {
-    return this.patch("/api/users/me/", data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.patch("/api/users/me/", data));
   }
 
   /**
@@ -52,11 +48,7 @@ export class UserService extends APIService {
    * @throws {Error} If the API request fails
    */
   async profile(): Promise<TUserProfile> {
-    return this.get("/api/users/me/profile/")
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+    return this.responseData(this.get("/api/users/me/profile/"), "response");
   }
 
   /**
@@ -66,11 +58,7 @@ export class UserService extends APIService {
    * @throws {Error} If the API request fails
    */
   async updateProfile(data: Partial<TUserProfile>): Promise<TUserProfile> {
-    return this.patch("/api/users/me/profile/", data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+    return this.responseData(this.patch("/api/users/me/profile/", data), "response");
   }
 
   /**
@@ -79,10 +67,6 @@ export class UserService extends APIService {
    * @throws {Error} If the API request fails
    */
   async adminDetails(signal?: AbortSignal): Promise<IUser> {
-    return this.get("/api/instances/admins/me/", { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.get("/api/instances/admins/me/", { signal }), "data-or-error");
   }
 }

@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import { createProjectQueryDomFixture } from "./helpers/query-dom.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -47,9 +48,9 @@ async function fixture(t) {
     generation: 0,
     workspaceSlug: "acme",
     projectId: "p",
-    membershipRole: 15,
+    membershipRole: ContractEnums.EUserPermissions.MEMBER,
     membershipRevision: "v1",
-    projectRole: 20,
+    projectRole: ContractEnums.EUserPermissions.ADMIN,
   };
   const f = { env, client, scope, api: [], read: async () => structuredClone(catalog) };
   t.mock.method(service, "catalog", (...args) => f.read(...args));

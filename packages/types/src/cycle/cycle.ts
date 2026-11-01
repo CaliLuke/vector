@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import type { TWorkItemProgress } from "../common";
 import type { TIssue } from "../issues/issue";
 import type { IIssueFilterOptions } from "../view-props";
 
@@ -63,19 +64,7 @@ export type TCycleProgress = {
   cancelled: number;
 };
 
-export type TProgressSnapshot = {
-  total_issues: number;
-  completed_issues: number;
-  backlog_issues: number;
-  started_issues: number;
-  unstarted_issues: number;
-  cancelled_issues: number;
-  total_estimate_points?: number;
-  completed_estimate_points?: number;
-  backlog_estimate_points: number;
-  started_estimate_points: number;
-  unstarted_estimate_points: number;
-  cancelled_estimate_points: number;
+export type TProgressSnapshot = TWorkItemProgress & {
   distribution?: TCycleDistribution;
   estimate_distribution?: TCycleEstimateDistribution;
 };
@@ -109,7 +98,7 @@ export interface ICycle extends TProgressSnapshot {
   };
   workspace_id: string;
   project_detail: IProjectDetails;
-  progress: any[];
+  progress: (TProgressSnapshot & { date: string; progress_date?: string })[];
   version: number;
 }
 

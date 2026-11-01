@@ -19,7 +19,7 @@ import { useGanttChartState } from "../contexts/chart-state";
 
 type Props = {
   block: IGanttBlock;
-  blockUpdateHandler: (block: any, payload: IBlockUpdateData) => void;
+  blockUpdateHandler: (blockId: string, payload: IBlockUpdateData) => void;
 };
 
 export function ChartAddBlock(props: Props) {
@@ -48,7 +48,7 @@ export function ChartAddBlock(props: Props) {
     const startDate = addDays(chartStartDate, columnNumber);
     const endDate = addDays(startDate, numberOfDays);
 
-    blockUpdateHandler(block.data, {
+    blockUpdateHandler(block.id, {
       start_date: renderFormattedPayloadDate(startDate) ?? undefined,
       target_date: renderFormattedPayloadDate(endDate) ?? undefined,
       meta: block.meta,
@@ -58,7 +58,7 @@ export function ChartAddBlock(props: Props) {
   useEffect(() => {
     const container = containerRef.current;
 
-    if (!container) return;
+    if (!container) return undefined;
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!currentViewData) return;

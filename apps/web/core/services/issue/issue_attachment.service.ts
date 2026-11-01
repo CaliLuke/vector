@@ -31,13 +31,11 @@ export class IssueAttachmentService extends APIService {
     issueId: string,
     attachmentId: string
   ): Promise<void> {
-    return this.patch(
-      `/api/assets/v2/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/attachments/${attachmentId}/`
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.patch(
+        `/api/assets/v2/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/attachments/${attachmentId}/`
+      )
+    );
   }
 
   async uploadIssueAttachment(
@@ -86,12 +84,10 @@ export class IssueAttachmentService extends APIService {
     issueId: string,
     assetId: string
   ): Promise<TIssueAttachment> {
-    return this.delete(
-      `/api/assets/v2/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/attachments/${assetId}/`
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.delete(
+        `/api/assets/v2/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/attachments/${assetId}/`
+      )
+    );
   }
 }

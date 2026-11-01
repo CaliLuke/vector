@@ -6,14 +6,9 @@
 
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 // plane imports
-import { Header, Row } from "@plane/ui";
-import { cn } from "@plane/utils/common";
+import { ProjectTabHeader } from "@/components/navigation/project-tab-header";
 // components
-import { TabNavigationRoot } from "@/components/navigation/tab-navigation-root";
-import { AppSidebarToggleButton } from "@/components/sidebar/sidebar-toggle-button";
 // hooks
-import { useSidebarCollapsed } from "@/providers/sidebar-state";
-import { useProjectNavigationPreferences } from "@/hooks/use-navigation-preferences";
 // layouts
 import { ProjectAuthWrapper } from "@/layouts/auth-layout/project-wrapper";
 // local imports
@@ -21,33 +16,13 @@ import { ProjectAuthWrapper } from "@/layouts/auth-layout/project-wrapper";
 function ProjectLayout(): React.JSX.Element | null {
   // router
   const { workspaceSlug, projectId } = Route.useParams();
-  // store hooks
-  const sidebarCollapsed = useSidebarCollapsed();
-  // preferences
-  const { preferences: projectPreferences } = useProjectNavigationPreferences();
-
   return (
     <>
-      {projectPreferences.navigationMode === "TABBED" && (
-        <div className="z-20">
-          <Row className="flex h-header w-full items-center gap-2 border-b border-subtle bg-surface-1">
-            <div className="flex h-full w-full items-center gap-2 divide-x divide-subtle">
-              <div className="flex size-full flex-1 items-center gap-2">
-                {sidebarCollapsed && (
-                  <div className="shrink-0">
-                    <AppSidebarToggleButton />
-                  </div>
-                )}
-                <Header className={cn("h-full", { "pl-1.5": !sidebarCollapsed })}>
-                  <Header.LeftItem className="flex h-full max-w-full items-center gap-2">
-                    <TabNavigationRoot workspaceSlug={workspaceSlug} projectId={projectId} />
-                  </Header.LeftItem>
-                </Header>
-              </div>
-            </div>
-          </Row>
-        </div>
-      )}
+      <ProjectTabHeader
+        workspaceSlug={workspaceSlug}
+        projectId={projectId}
+        leftItemClassName="flex h-full max-w-full items-center gap-2"
+      />
       <ProjectAuthWrapper workspaceSlug={workspaceSlug} projectId={projectId}>
         <Outlet />
       </ProjectAuthWrapper>

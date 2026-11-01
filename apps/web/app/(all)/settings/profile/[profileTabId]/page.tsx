@@ -9,7 +9,6 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 // plane imports
 import { PROFILE_SETTINGS_TABS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import type { TProfileSettingsTabs } from "@plane/types";
 // components
 import { LogoSpinner } from "@/components/common/logo-spinner";
 import { PageHead } from "@/components/core/page-title";
@@ -29,9 +28,9 @@ function ProfileSettingsPage(): React.JSX.Element | null {
   // translation
   const { t } = useTranslation();
   // derived values
-  const isAValidTab = PROFILE_SETTINGS_TABS.includes(profileTabId as TProfileSettingsTabs);
+  const activeTab = PROFILE_SETTINGS_TABS.find((tab) => tab === profileTabId);
 
-  if (!currentUser || !isAValidTab)
+  if (!currentUser || !activeTab)
     return (
       <div className="grid size-full place-items-center px-4">
         <LogoSpinner />
@@ -44,14 +43,11 @@ function ProfileSettingsPage(): React.JSX.Element | null {
       <div className="relative size-full">
         <div className="flex size-full">
           <ProfileSettingsSidebarRoot
-            activeTab={profileTabId as TProfileSettingsTabs}
+            activeTab={activeTab}
             className="w-[250px]"
             updateActiveTab={(tab) => void router.navigate({ href: `/settings/profile/${tab}` })}
           />
-          <ProfileSettingsContent
-            activeTab={profileTabId as TProfileSettingsTabs}
-            className="mx-auto w-fit max-w-225 grow px-page-x py-20"
-          />
+          <ProfileSettingsContent activeTab={activeTab} className="mx-auto w-fit max-w-225 grow px-page-x py-20" />
         </div>
       </div>
     </>

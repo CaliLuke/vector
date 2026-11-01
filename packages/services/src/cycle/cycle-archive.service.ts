@@ -26,11 +26,7 @@ export class CycleArchiveService extends APIService {
    * @throws {Error} Throws response data if the request fails
    */
   async list(workspaceSlug: string, projectId: string): Promise<ICycle[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/archived-cycles/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/archived-cycles/`));
   }
 
   /**
@@ -42,11 +38,9 @@ export class CycleArchiveService extends APIService {
    * @throws {Error} Throws response data if the request fails
    */
   async retrieve(workspaceSlug: string, projectId: string, cycleId: string): Promise<ICycle> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/archived-cycles/${cycleId}/`)
-      .then((res) => res?.data)
-      .catch((err) => {
-        throw err?.response?.data;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/archived-cycles/${cycleId}/`)
+    );
   }
 
   /**
@@ -64,11 +58,9 @@ export class CycleArchiveService extends APIService {
   ): Promise<{
     archived_at: string;
   }> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/archive/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/archive/`)
+    );
   }
 
   /**
@@ -80,10 +72,8 @@ export class CycleArchiveService extends APIService {
    * @throws {Error} Throws response data if the request fails
    */
   async restore(workspaceSlug: string, projectId: string, cycleId: string): Promise<void> {
-    return this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/archive/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/archive/`)
+    );
   }
 }

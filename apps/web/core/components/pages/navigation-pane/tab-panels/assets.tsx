@@ -67,10 +67,11 @@ function AssetItem(props: AssetItemProps) {
     }
   }, [asset.src, projectId, workspaceSlug]);
 
-  if ([CORE_EXTENSIONS.IMAGE, CORE_EXTENSIONS.CUSTOM_IMAGE].includes(asset.type as CORE_EXTENSIONS))
+  if ([CORE_EXTENSIONS.IMAGE, CORE_EXTENSIONS.CUSTOM_IMAGE].includes(asset.type))
     return (
       <a
         href={asset.href}
+        aria-label={asset.name}
         className="group/asset-item relative flex h-12 items-center gap-2 rounded-sm border border-subtle pr-2 transition-colors hover:bg-layer-1"
       >
         <div

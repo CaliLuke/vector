@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { React, act } from "./helpers/react.mjs";
 import { changeFormControl as change, submitForm as submit } from "./helpers/native-forms.mjs";
-import { setup, issueProps } from "./helpers/issue-form-harness.mjs";
+import { setup, issueProps, state } from "./helpers/issue-form-harness.mjs";
 import { enableTypeFields, propertyDefinition, customControl } from "./helpers/issue-custom-fields.mjs";
 
 await test("saved source refresh cannot upgrade the version underneath local edits", async (t) => {
@@ -45,7 +45,8 @@ await test("source conflict retains edits until an explicit successful reload", 
   enableTypeFields([propertyDefinition("effort", "Number")]);
   const { IssueFormRoot } = await import("../../apps/web/core/components/issues/issue-modal/form.tsx");
   const calls = [];
-  let failures = true;
+  let failures = true,
+    reloads = 0;
   function Harness() {
     const [version, setVersion] = React.useState("v1");
     return React.createElement(
@@ -67,6 +68,7 @@ await test("source conflict retains edits until an explicit successful reload", 
             throw { response: { status: 409, data: { fields: { source_changed: true, error: "Reload required." } } } };
         },
         onReloadSource: async () => {
+          reloads++;
           if (failures) throw new Error("Offline");
           setVersion("v2");
         },
@@ -80,6 +82,11 @@ await test("source conflict retains edits until an explicit successful reload", 
   const reload = () =>
     [...env.container.querySelectorAll("button")].find((b) => b.textContent.includes("Discard changes and reload"));
   assert.ok(reload());
+  state.editorReady = false;
+  await act(async () => reload().click());
+  assert.equal(reloads, 0, "an editor with unfinished work cannot discard its draft for a reload");
+  assert.equal(env.container.querySelector('[name="name"]').value, "Local");
+  state.editorReady = true;
   await act(async () => reload().click());
   assert.equal(env.container.querySelector('[name="name"]').value, "Local");
   assert.equal(customControl(env.container, "effort").value, "2");

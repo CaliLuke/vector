@@ -3,11 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
-import { useRef, useState } from "react";
+import { forwardRef, useRef, useState } from "react";
 import { usePopper } from "react-popper";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 import type { TDropdownProps } from "./types";
-import type { CSSProperties, ReactNode, Ref } from "react";
+import type { ComponentProps, CSSProperties, ReactNode, Ref } from "react";
+import { cn } from "@plane/utils/common";
 import { Combobox } from "@headlessui/react";
 import { SearchIcon } from "@plane/propel/icons";
 import { ComboDropDown, ComboSearchInput } from "@plane/ui";
@@ -124,3 +125,26 @@ export function useSearchableDropdown(
     ),
   };
 }
+
+/** Native trigger shared by property controls, including their custom-button slot. */
+export const SearchableDropdownTrigger = forwardRef<
+  HTMLButtonElement,
+  ComponentProps<"button"> & { customButton?: ReactNode }
+>(function SearchableDropdownTrigger({ customButton, children, disabled, className, ...props }, ref) {
+  return (
+    <button
+      {...props}
+      ref={ref}
+      type="button"
+      disabled={disabled}
+      className={cn(
+        "clickable block h-full outline-none",
+        customButton ? "w-full" : "max-w-full",
+        !customButton && (disabled ? "cursor-not-allowed text-secondary" : "cursor-pointer"),
+        className
+      )}
+    >
+      {customButton || children}
+    </button>
+  );
+});

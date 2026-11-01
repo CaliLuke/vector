@@ -104,7 +104,7 @@ export function ArchiveRestoreProjectModal(props: Props) {
           <Button
             variant="primary"
             size="lg"
-            onClick={archive ? handleArchiveProject : handleRestoreProject}
+            onClick={() => void (archive ? handleArchiveProject() : handleRestoreProject())}
             loading={isLoading}
           >
             {archive ? (isLoading ? "Archiving" : "Archive") : isLoading ? "Restoring" : "Restore"}

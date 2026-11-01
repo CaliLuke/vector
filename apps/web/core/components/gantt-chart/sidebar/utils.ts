@@ -6,13 +6,20 @@
 
 import type { IBlockUpdateData, IGanttBlock } from "@plane/types";
 
+function sortOrderAt(index: number, blockIds: string[], blocks: Readonly<Record<string, IGanttBlock>>) {
+  const order = (position: number) => blocks[blockIds[position]]?.sort_order ?? 0;
+  if (index === 0) return order(0) - 1000;
+  if (index === blockIds.length) return order(blockIds.length - 1) + 1000;
+  return (order(index) + order(index - 1)) / 2;
+}
+
 export const handleOrderChange = (
   draggingBlockId: string | undefined,
   droppedBlockId: string | undefined,
   dropAtEndOfList: boolean,
   blockIds: string[] | null,
   blocksById: Readonly<Record<string, IGanttBlock>>,
-  blockUpdateHandler: (block: any, payload: IBlockUpdateData) => void
+  blockUpdateHandler: (blockId: string, payload: IBlockUpdateData) => void
 ) => {
   if (!blockIds || !draggingBlockId || !droppedBlockId) return;
 
@@ -22,26 +29,14 @@ export const handleOrderChange = (
   // return if dropped outside the list
   if (sourceBlockIndex === -1 || destinationBlockIndex === -1 || sourceBlockIndex === destinationBlockIndex) return;
 
-  let updatedSortOrder = blocksById[blockIds[sourceBlockIndex]]?.sort_order ?? 0;
-
-  // update the sort order to the lowest if dropped at the top
-  if (destinationBlockIndex === 0) updatedSortOrder = (blocksById[blockIds[0]]?.sort_order ?? 0) - 1000;
-  // update the sort order to the highest if dropped at the bottom
-  else if (destinationBlockIndex === blockIds.length)
-    updatedSortOrder = (blocksById[blockIds[blockIds.length - 1]]?.sort_order ?? 0) + 1000;
-  // update the sort order to the average of the two adjacent blocks if dropped in between
-  else {
-    const destinationSortingOrder = blocksById[blockIds[destinationBlockIndex]]?.sort_order ?? 0;
-    const relativeDestinationSortingOrder = blocksById[blockIds[destinationBlockIndex - 1]]?.sort_order ?? 0;
-
-    updatedSortOrder = (destinationSortingOrder + relativeDestinationSortingOrder) / 2;
-  }
+  const sourceBlock = blocksById[draggingBlockId];
+  if (!sourceBlock) return;
 
   // call the block update handler with the updated sort order, new and old index
-  blockUpdateHandler(blocksById[blockIds[sourceBlockIndex]]?.data, {
+  blockUpdateHandler(sourceBlock.id, {
     sort_order: {
       destinationIndex: destinationBlockIndex,
-      newSortOrder: updatedSortOrder,
+      newSortOrder: sortOrderAt(destinationBlockIndex, blockIds, blocksById),
       sourceIndex: sourceBlockIndex,
     },
   });

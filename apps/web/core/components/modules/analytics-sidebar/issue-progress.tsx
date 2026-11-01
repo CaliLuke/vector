@@ -23,7 +23,7 @@ import { updateWorkItemFilterFromSidebar } from "@plane/shared-state";
 // helpers
 import { getDate, isValidDate } from "@plane/utils/datetime";
 import ProgressChart from "@/components/core/sidebar/progress-chart";
-import { ModuleProgressStats } from "@/components/modules";
+import { ProgressStats } from "@/components/core/sidebar/progress-stats/progress-stats";
 import type { TSelectedFilterProgressStats } from "@/components/core/sidebar/progress-stats/shared";
 // hooks
 import { progressCount, progressDistribution } from "@/components/estimates/progress-distribution";
@@ -166,7 +166,7 @@ function ModuleProgressHeader(props: ModuleProgressHeaderProps) {
               {translate(moduleBurnDownChartOptions.find((option) => option.value === plotType)?.i18n_label || "none")}
             </span>
           }
-          onChange={onChange}
+          onChange={(selection) => (selection !== null ? onChange(selection) : undefined)}
           maxHeight="lg"
         >
           {moduleBurnDownChartOptions.map((item) => (
@@ -238,14 +238,14 @@ function ModuleProgressDetails(props: ModuleProgressDetailsProps) {
 
   return (
     <div className="w-full border-t border-subtle pt-5">
-      <ModuleProgressStats
+      <ProgressStats
         distribution={distribution}
         groupedIssues={groupedIssues}
         handleFiltersUpdate={handleFiltersUpdate}
         isEditable={isEditable}
-        moduleId={moduleId}
+        storageKey={`module-analytics-tab-${moduleId}`}
         noBackground={false}
-        plotType={plotType}
+
         roundedTab={false}
         selectedFilters={selectedFilters}
         size="xs"

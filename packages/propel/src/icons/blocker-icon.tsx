@@ -6,19 +6,12 @@
 
 import * as React from "react";
 
+import { IconWrapper } from "./icon-wrapper";
 import type { ISvgIcons } from "./type";
 
 export function BlockerIcon({ height = "24", width = "24", className = "", ...rest }: ISvgIcons) {
   return (
-    <svg
-      height={height}
-      width={width}
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-      {...rest}
-    >
+    <IconWrapper height={height} width={width} className={className} viewBox="0 0 24 24" {...rest}>
       <path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -29,6 +22,6 @@ export function BlockerIcon({ height = "24", width = "24", className = "", ...re
         d="M18.5391 20.8797H6.04688C5.87083 20.8797 5.72526 20.8221 5.61016 20.707C5.49505 20.5919 5.4375 20.4464 5.4375 20.2703C5.4375 20.0943 5.49505 19.9487 5.61016 19.8336C5.72526 19.7185 5.87083 19.6609 6.04688 19.6609H18.5594L16.8125 17.9141C16.7042 17.8057 16.65 17.6703 16.65 17.5078C16.65 17.3453 16.7109 17.2031 16.8328 17.0813C16.9547 16.9594 17.0969 16.8984 17.2594 16.8984C17.4219 16.8984 17.5641 16.9594 17.6859 17.0813L20.4484 19.8438C20.5161 19.9115 20.5635 19.9792 20.5906 20.0469C20.6177 20.1146 20.6313 20.1891 20.6313 20.2703C20.6313 20.3516 20.6177 20.426 20.5906 20.4938C20.5635 20.5615 20.5161 20.6292 20.4484 20.6969L17.6859 23.4594C17.5505 23.5948 17.4049 23.6591 17.2492 23.6523C17.0935 23.6456 16.9547 23.5812 16.8328 23.4594C16.7109 23.3375 16.65 23.1919 16.65 23.0227C16.65 22.8534 16.7042 22.7146 16.8125 22.6062L18.5391 20.8797Z"
         fill="#F7AE59"
       />
-    </svg>
+    </IconWrapper>
   );
 }

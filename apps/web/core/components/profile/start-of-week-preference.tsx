@@ -24,7 +24,7 @@ export const StartOfWeekPreference = function StartOfWeekPreference(props: {
   const { data: userProfile } = useCurrentUserProfile();
   const { mutateAsync: updateUserProfile } = useUpdateUserProfile();
 
-  const handleStartOfWeekChange = async (val: number) => {
+  const handleStartOfWeekChange = async (val: EStartOfTheWeek) => {
     try {
       await updateUserProfile({ start_of_the_week: val });
       setToast({ type: TOAST_TYPE.SUCCESS, title: "Success", message: "First day of the week updated successfully" });
@@ -43,7 +43,9 @@ export const StartOfWeekPreference = function StartOfWeekPreference(props: {
         <CustomSelect
           value={userProfile.start_of_the_week}
           label={getStartOfWeekLabel(userProfile.start_of_the_week)}
-          onChange={handleStartOfWeekChange}
+          onChange={(selection) => {
+            if (selection !== null) void handleStartOfWeekChange(selection);
+          }}
           buttonClassName="border border-subtle-1"
           input
           maxHeight="lg"

@@ -11,7 +11,6 @@ import type { TProjectDisplayFilters, TProjectFilters } from "@plane/types";
 import { FilterOption } from "@/components/issues/issue-layouts/filters";
 import { FilterSelectionSearch } from "@/components/common/filters/filter-selection-search";
 // hooks
-import { usePlatformOS } from "@/hooks/use-platform-os";
 // local imports
 import { FilterAccess } from "./access";
 import { DatePresetFilter } from "@/components/core/filters/date-preset-filter";
@@ -33,11 +32,10 @@ export const ProjectFiltersSelection = function ProjectFiltersSelection(props: P
   // states
   const [filtersSearchQuery, setFiltersSearchQuery] = useState("");
   // store
-  const { isMobile } = usePlatformOS();
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
-      <FilterSelectionSearch value={filtersSearchQuery} onChange={setFiltersSearchQuery} autoFocus={!isMobile} />
+      <FilterSelectionSearch value={filtersSearchQuery} onChange={setFiltersSearchQuery} />
       <div className="vertical-scrollbar scrollbar-sm h-full w-full divide-y divide-subtle-1 overflow-y-auto px-2.5">
         <div className="py-2">
           <FilterOption

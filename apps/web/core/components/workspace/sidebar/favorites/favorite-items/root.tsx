@@ -5,14 +5,11 @@
  */
 
 import { treeDropHandlers } from "@/lib/tree-drop-instruction";
-import { renderNativeDragPreview } from "@/lib/native-drag-preview";
+import { useDraggablePreview } from "@/hooks/use-draggable-preview";
 import { useEffect, useRef, useState } from "react";
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import type { DropTargetRecord, DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/types";
 import type { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
-import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
-import { pointerOutsideOfPreview } from "@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview";
-import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { attachInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 
 // plane imports
@@ -50,63 +47,43 @@ export const FavoriteRoot = function FavoriteRoot(props: Props) {
 
   const handleQuickAction = (value: boolean) => setIsMenuActive(value);
 
+  useDraggablePreview({
+    elementRef,
+    getInitialData: () => ({ id: favorite.id, isGroup: false, isChild: !!parentId, parentId: parentId ?? null }),
+    preview: <FavoriteItemTitle href={itemLink} icon={itemIcon} title={itemTitle} />,
+    onDraggingChange: setIsDragging,
+  });
+
   // drag and drop
   useEffect(() => {
     const rootElement = elementRef.current;
 
-    if (!rootElement) return;
+    if (!rootElement) return undefined;
     const initialData = { id: favorite.id, isGroup: false, isChild: !!parentId, parentId: parentId ?? null };
-    return combine(
-      draggable({
-        element: rootElement,
-        dragHandle: rootElement,
-        getInitialData: () => initialData,
-        onDragStart: () => {
-          setIsDragging(true);
-        },
-        onDrop: () => {
-          setIsDragging(false);
-        },
-        onGenerateDragPreview: ({ nativeSetDragImage }) => {
-          setCustomNativeDragPreview({
-            getOffset: pointerOutsideOfPreview({ x: "0px", y: "0px" }),
-            nativeSetDragImage,
-            render: ({ container }) =>
-              renderNativeDragPreview(
-                container,
-                <div className="rounded-sm bg-surface-1 p-1 pr-2 text-13">
-                  <FavoriteItemTitle href={itemLink} icon={itemIcon} title={itemTitle} />
-                </div>
-              ),
-          });
-        },
-      }),
-      dropTargetForElements({
-        element: rootElement,
-        canDrop: ({ source }) => getCanDrop(source, favorite, !!parentId),
-        onDragStart: () => {
-          setIsDragging(true);
-        },
-        getData: ({ input, element }) => {
-          const blockedStates: InstructionType[] = ["make-child"];
-          if (!isLastChild) {
-            blockedStates.push("reorder-below");
-          }
+    return dropTargetForElements({
+      element: rootElement,
+      canDrop: ({ source }) => getCanDrop(source, favorite, !!parentId),
+      onDragStart: () => {
+        setIsDragging(true);
+      },
+      getData: ({ input, element }) => {
+        const blockedStates: InstructionType[] = ["make-child"];
+        if (!isLastChild) {
+          blockedStates.push("reorder-below");
+        }
 
-          return attachInstruction(initialData, {
-            input,
-            element,
-            currentLevel: 1,
-            indentPerLevel: 0,
-            mode: isLastChild ? "last-in-group" : "standard",
-            block: blockedStates,
-          });
-        },
-        ...treeDropHandlers(setInstruction, handleDrop),
-      })
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elementRef?.current, isDragging, isLastChild, favorite.id]);
+        return attachInstruction(initialData, {
+          input,
+          element,
+          currentLevel: 1,
+          indentPerLevel: 0,
+          mode: isLastChild ? "last-in-group" : "standard",
+          block: blockedStates,
+        });
+      },
+      ...treeDropHandlers(setInstruction, handleDrop),
+    });
+  }, [handleDrop, parentId, isLastChild, favorite]);
 
   useOutsideClickDetector(actionSectionRef, () => setIsMenuActive(false));
 

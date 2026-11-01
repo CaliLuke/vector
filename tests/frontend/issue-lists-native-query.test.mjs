@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import { projectIssueScope } from "./helpers/issue-query-fixtures.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -40,7 +41,7 @@ function read(overrides = {}) {
     workspaceSlug: "acme",
     projectId: "p1",
     richFilters: {},
-    displayFilters: { layout: "list", group_by: "state", sub_group_by: null },
+    displayFilters: { layout: ContractEnums.EIssueLayoutTypes.LIST, group_by: "state", sub_group_by: null },
   };
   return {
     scope,
@@ -156,7 +157,7 @@ await test("a saved PATCH returns its canonical row and refreshes only the captu
     requestCount += 1;
     return saved;
   });
-  const owner = currentIssueListMutationOwner(client, "acme", "p1", "issues", () => true);
+  const owner = currentIssueListMutationOwner(client, "acme", "p1", ContractEnums.EIssueServiceType.ISSUES, () => true);
 
   const result = await patchIssueMutation(client, owner, "i1", { type_id: "bug" });
 
@@ -181,7 +182,7 @@ await test("a replaced permission Query cannot receive an accepted PATCH list re
     started.resolve();
     return finish.promise;
   });
-  const owner = currentIssueListMutationOwner(client, "acme", "p1", "issues", () => true);
+  const owner = currentIssueListMutationOwner(client, "acme", "p1", ContractEnums.EIssueServiceType.ISSUES, () => true);
   const pending = patchIssueMutation(client, owner, "i1", { name: "Updated" });
   await started.promise;
   client.removeQueries({ queryKey: rolesKey, exact: true });
@@ -204,7 +205,7 @@ await test("bulk module assignment uses the canonical service and refreshes its 
   t.mock.method(ModuleService.prototype, "addIssuesToModule", async (...args) => {
     call = args;
   });
-  const owner = currentIssueListMutationOwner(client, "acme", "p1", "issues", () => true);
+  const owner = currentIssueListMutationOwner(client, "acme", "p1", ContractEnums.EIssueServiceType.ISSUES, () => true);
 
   await issueListMutation(client, owner, { kind: "module-add", moduleId: "m1", issueIds: ["i1", "i2"] });
 
@@ -226,7 +227,7 @@ await test("archive and restore writes invalidate the captured native issue list
   t.mock.method(IssueArchiveService.prototype, "restoreIssue", async (...args) => {
     archives.push(["restore", ...args]);
   });
-  const owner = currentIssueListMutationOwner(client, "acme", "p1", "issues", () => true);
+  const owner = currentIssueListMutationOwner(client, "acme", "p1", ContractEnums.EIssueServiceType.ISSUES, () => true);
 
   await issueListMutation(client, owner, { kind: "archive", issueId: "i1" });
   assert.equal(listQuery.state.isInvalidated, true);
@@ -359,7 +360,7 @@ await test("a failed native PATCH leaves its captured Query response unchanged f
   t.mock.method(IssueService.prototype, "patchIssue", async () => {
     throw new Error("write failed");
   });
-  const owner = currentIssueListMutationOwner(client, "acme", "p1", "issues", () => true);
+  const owner = currentIssueListMutationOwner(client, "acme", "p1", ContractEnums.EIssueServiceType.ISSUES, () => true);
 
   await assert.rejects(
     issueListMutation(client, owner, { kind: "patch", issueId: "i1", data: { priority: "high" } }),
@@ -383,7 +384,7 @@ await test("an accepted native create invalidates its exact captured list owner"
     args = input;
     return created;
   });
-  const owner = currentIssueListMutationOwner(client, "acme", "p1", "issues", () => true);
+  const owner = currentIssueListMutationOwner(client, "acme", "p1", ContractEnums.EIssueServiceType.ISSUES, () => true);
 
   assert.equal(await issueListMutation(client, owner, { kind: "create", data: { name: "Created" } }), created);
 
@@ -406,7 +407,7 @@ await test("an accepted create cancels a captured in-flight list read before its
   });
   const pendingRead = client.fetchQuery(issueListOptions(listRead)).catch(() => undefined);
   await started.promise;
-  const owner = currentIssueListMutationOwner(client, "acme", "p1", "issues", () => true);
+  const owner = currentIssueListMutationOwner(client, "acme", "p1", ContractEnums.EIssueServiceType.ISSUES, () => true);
   t.mock.method(IssueService.prototype, "createIssue", async () => ({ ...issue("created"), name: "Created" }));
 
   await issueListMutation(client, owner, { kind: "create", data: { name: "Created" } });
@@ -453,7 +454,7 @@ await test("an accepted project create invalidates its captured workspace all-is
     viewId: "all-issues",
     accountId: scope.accountId,
     richFilters: {},
-    displayFilters: { layout: "list", group_by: "state" },
+    displayFilters: { layout: ContractEnums.EIssueLayoutTypes.LIST, group_by: "state" },
     isScopeCurrent: () => true,
     isReadScopeCurrent: () => true,
   };
@@ -466,7 +467,7 @@ await test("an accepted project create invalidates its captured workspace all-is
   const listQuery = client.getQueryCache().build(client, { queryKey: listQueryKey });
   client.setQueryData(listQueryKey, { generation: "g1", response: response([], 0) });
   t.mock.method(IssueService.prototype, "createIssue", async () => ({ ...issue("created"), name: "Created" }));
-  const owner = currentIssueListMutationOwner(client, "acme", "p1", "issues", () => true);
+  const owner = currentIssueListMutationOwner(client, "acme", "p1", ContractEnums.EIssueServiceType.ISSUES, () => true);
 
   await issueListMutation(client, owner, { kind: "create", data: { name: "Created" } });
 
@@ -486,7 +487,12 @@ async function testParentPagination(kind) {
       viewId: parentId,
       accountId: scope.accountId,
       richFilters: {},
-      displayFilters: { layout: "list", group_by: "state", order_by: "-created_at", sub_issue: true },
+      displayFilters: {
+        layout: ContractEnums.EIssueLayoutTypes.LIST,
+        group_by: "state",
+        order_by: "-created_at",
+        sub_issue: true,
+      },
       isScopeCurrent: () => true,
       isReadScopeCurrent: () => true,
     };
@@ -531,7 +537,7 @@ await test("archive and profile lists use scoped native Query transport with fam
     projectId: "p1",
     accountId: "alice",
     richFilters: {},
-    displayFilters: { layout: "list", order_by: "-created_at" },
+    displayFilters: { layout: ContractEnums.EIssueLayoutTypes.LIST, order_by: "-created_at" },
     isCurrent: () => true,
     isReadScopeCurrent: () => true,
   };
@@ -554,7 +560,7 @@ await test("archive and profile lists use scoped native Query transport with fam
     accountId: "alice",
     view: "assigned",
     richFilters: {},
-    displayFilters: { layout: "list" },
+    displayFilters: { layout: ContractEnums.EIssueLayoutTypes.LIST },
     isCurrent: () => true,
     isReadScopeCurrent: () => true,
   };
@@ -613,7 +619,7 @@ await test("a pending accepted write cannot invalidate a replacement Query owner
     started.resolve();
     return finish.promise;
   });
-  const owner = currentIssueListMutationOwner(client, "acme", "p1", "issues", () => true);
+  const owner = currentIssueListMutationOwner(client, "acme", "p1", ContractEnums.EIssueServiceType.ISSUES, () => true);
   const pending = issueListMutation(client, owner, { kind: "patch", issueId: "i1", data: { priority: "high" } });
   await started.promise;
   client.removeQueries({ queryKey: listQueryKey, exact: true });
@@ -636,7 +642,13 @@ await test("a native write refuses missing or stale access before calling the se
   const client = queryClient();
   t.after(() => client.clear());
   const patch = t.mock.method(IssueService.prototype, "patchIssue", async () => issue("i1"));
-  const owner = currentIssueListMutationOwner(client, "acme", "p1", "issues", () => false);
+  const owner = currentIssueListMutationOwner(
+    client,
+    "acme",
+    "p1",
+    ContractEnums.EIssueServiceType.ISSUES,
+    () => false
+  );
 
   await assert.rejects(
     issueListMutation(client, owner, { kind: "patch", issueId: "i1", data: { priority: "high" } }),
@@ -652,7 +664,7 @@ await test("HTTP 204 PATCH is accepted and invalidates the list without inventin
   const before = { generation: "g1", response: response([issue("i1")], 1) };
   client.setQueryData(key, before);
   const transport = t.mock.method(IssueService.prototype, "patch", async () => ({ status: 204, data: "" }));
-  const owner = currentIssueListMutationOwner(client, "acme", "p1", "issues", () => true);
+  const owner = currentIssueListMutationOwner(client, "acme", "p1", ContractEnums.EIssueServiceType.ISSUES, () => true);
 
   assert.equal(await patchIssueMutation(client, owner, "i1", { name: "Saved title" }), undefined);
   assert.equal(

@@ -66,8 +66,6 @@ export const getDateFromPositionOnGantt = (position: number, chartData: ChartDat
 
   const newDate = addDaysToDate(chartData.data.startDate, numberOfDaysSinceStart);
 
-  if (!newDate) undefined;
-
   return newDate;
 };
 
@@ -91,7 +89,7 @@ export const getItemPositionWidth = (chartData: ChartDataType, itemData: IGanttB
   itemStartDate?.setHours(0, 0, 0, 0);
   itemTargetDate?.setHours(0, 0, 0, 0);
 
-  if (!itemStartDate && !itemTargetDate) return;
+  if (!itemStartDate && !itemTargetDate) return undefined;
 
   // get scroll position from the number of days and width of each day
   scrollPosition = itemStartDate

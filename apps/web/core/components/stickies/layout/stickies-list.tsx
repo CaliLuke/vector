@@ -74,17 +74,18 @@ export const StickiesList = function StickiesList(props: TProps) {
   const shouldRenderMasonry = !list.isPending && workspaceStickyIds.length > 0;
 
   useEffect(() => {
-    if (!shouldRenderMasonry) return;
+    if (!shouldRenderMasonry) return undefined;
 
     const container = masonryContainerRef.current;
-    if (!container) return;
+    if (!container) return undefined;
 
     let cancelled = false;
     let masonry: MasonryInstance | null = null;
     let resizeObserver: ResizeObserver | null = null;
     let childObserver: MutationObserver | null = null;
 
-    void import("masonry-layout").then(({ default: Masonry }) => {
+    const initializeMasonry = async () => {
+      const { default: Masonry } = await import("masonry-layout");
       if (cancelled) return;
 
       const masonryInstance = new Masonry(container, {
@@ -93,7 +94,11 @@ export const StickiesList = function StickiesList(props: TProps) {
       if (!masonryInstance.layout || !masonryInstance.reloadItems || !masonryInstance.destroy) {
         throw new Error("The installed masonry-layout package is missing required lifecycle methods.");
       }
-      masonry = masonryInstance as MasonryInstance;
+      masonry = {
+        layout: masonryInstance.layout.bind(masonryInstance),
+        reloadItems: masonryInstance.reloadItems.bind(masonryInstance),
+        destroy: masonryInstance.destroy.bind(masonryInstance),
+      };
       masonryRef.current = masonry;
 
       resizeObserver = new ResizeObserver(() => masonry?.layout());
@@ -110,7 +115,8 @@ export const StickiesList = function StickiesList(props: TProps) {
       });
       childObserver.observe(container, { childList: true });
       masonry.layout();
-    });
+    };
+    void initializeMasonry().catch((error) => console.error("Failed to initialize sticky layout", error));
 
     return () => {
       cancelled = true;
@@ -146,12 +152,9 @@ export const StickiesList = function StickiesList(props: TProps) {
     const droppedId = dropTarget.data.id;
     const sourceId = source.data.id;
 
-    try {
-      if (!instruction || !droppedId || !sourceId) return;
-      stickyOperations.updatePosition(workspaceSlug, sourceId as string, droppedId as string, instruction);
-    } catch (error) {
-      console.error("Error reordering sticky:", error);
-    }
+    if (!instruction || typeof droppedId !== "string" || typeof sourceId !== "string") return;
+    // The operation owns reorder failure feedback.
+    void stickyOperations.updatePosition(workspaceSlug, sourceId, droppedId, instruction);
   };
 
   if (list.isPending) {
@@ -193,7 +196,8 @@ export const StickiesList = function StickiesList(props: TProps) {
                   prependIcon: <PlusIcon className="size-4" />,
                   text: t("stickies.empty_state.general.primary_button.text"),
                   onClick: () => {
-                    stickyOperations.create();
+                    // The operation owns creation failure feedback.
+                    void stickyOperations.create();
                   },
                   disabled: !hasGuestLevelPermissions,
                 }}
@@ -239,6 +243,16 @@ export const StickiesList = function StickiesList(props: TProps) {
 
 type MasonryInstance = Required<Pick<Masonry, "layout" | "reloadItems" | "destroy">>;
 
+const getColumnCount = (width: number | null): number => {
+  if (width === null) return 4;
+
+  if (width < 640) return 2; // sm
+  if (width < 850) return 3; // md
+  if (width < 1024) return 4; // lg
+  if (width < 1280) return 5; // xl
+  return 6; // 2xl and above
+};
+
 export function StickiesLayout(props: TStickiesLayout) {
   // states
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
@@ -246,7 +260,7 @@ export function StickiesLayout(props: TStickiesLayout) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!ref?.current) return;
+    if (!ref?.current) return undefined;
 
     setContainerWidth(ref?.current.offsetWidth);
 
@@ -259,16 +273,6 @@ export function StickiesLayout(props: TStickiesLayout) {
     resizeObserver.observe(ref?.current);
     return () => resizeObserver.disconnect();
   }, []);
-
-  const getColumnCount = (width: number | null): number => {
-    if (width === null) return 4;
-
-    if (width < 640) return 2; // sm
-    if (width < 850) return 3; // md
-    if (width < 1024) return 4; // lg
-    if (width < 1280) return 5; // xl
-    return 6; // 2xl and above
-  };
   const columnCount = getColumnCount(containerWidth);
 
   return (

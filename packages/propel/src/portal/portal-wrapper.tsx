@@ -4,79 +4,58 @@
  * See the LICENSE file for details.
  */
 
-import React, { useLayoutEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { DEFAULT_PORTAL_ID } from "./constants";
 import type { PortalWrapperProps } from "./types";
 
-/**
- * PortalWrapper - A reusable portal component that renders children into a specific DOM element
- * Optimized for SSR compatibility and performance
- *
- * @param children - The content to render inside the portal
- * @param portalId - The ID of the DOM element to render into
- * @param fallbackToDocument - Whether to render directly if portal container is not found
- * @param className - Optional className to apply to the portal container div
- * @param onMount - Callback fired when portal is mounted
- * @param onUnmount - Callback fired when portal is unmounted
- */
+const owners = new WeakMap<HTMLElement, { count: number; created: boolean }>();
+const serverSnapshot = () => null;
+
+function createPortalStore(portalId: string) {
+  let container: HTMLElement | null = null;
+  return {
+    getSnapshot: () => container,
+    subscribe: (notify: () => void) => {
+      const existing = document.getElementById(portalId);
+      const target = existing ?? document.createElement("div");
+      if (!existing) {
+        target.id = portalId;
+        target.setAttribute("data-portal", "true");
+        document.body.append(target);
+      }
+      const ownership = owners.get(target) ?? { count: 0, created: !existing };
+      owners.set(target, ownership);
+      ownership.count++;
+      container = target;
+      notify();
+      return () => {
+        ownership.count--;
+        // React removes portal children later in the unmount commit. Wait for
+        // that removal, and allow a StrictMode remount to reacquire ownership.
+        queueMicrotask(() => {
+          if (ownership.created && ownership.count === 0 && !target.hasChildNodes()) target.remove();
+        });
+      };
+    },
+  };
+}
+
+/** Render into a shared container, creating and retiring it only while owned. */
 export function PortalWrapper({
   children,
   portalId = DEFAULT_PORTAL_ID,
-  fallbackToDocument = true,
   className,
   onMount,
   onUnmount,
 }: PortalWrapperProps) {
-  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useLayoutEffect(() => {
-    // Ensure we're in browser environment
-    if (typeof window === "undefined") return;
-
-    let container = document.getElementById(portalId);
-
-    // Create portal container if it doesn't exist
-    if (!container) {
-      container = document.createElement("div");
-      container.id = portalId;
-      container.setAttribute("data-portal", "true");
-      document.body.appendChild(container);
-    }
-
-    setPortalContainer(container);
-    setIsMounted(true);
+  const store = useMemo(() => createPortalStore(portalId), [portalId]);
+  const container = useSyncExternalStore(store.subscribe, store.getSnapshot, serverSnapshot);
+  useEffect(() => {
+    if (!container) return undefined;
     onMount?.();
-
-    return () => {
-      onUnmount?.();
-      // Only remove if we created it and it's empty
-      if (container && container.children.length === 0 && container.hasAttribute("data-portal")) {
-        document.body.removeChild(container);
-      }
-    };
-  }, [portalId, onMount, onUnmount]);
-
-  const content = useMemo(() => {
-    if (!children) return null;
-    return className ? <div className={className}>{children}</div> : children;
-  }, [children, className]);
-
-  // SSR: render nothing on server
-  if (!isMounted) {
-    return null;
-  }
-
-  // If portal container exists, render into it
-  if (portalContainer) {
-    return createPortal(content, portalContainer);
-  }
-
-  // Fallback behavior for client-side rendering
-  if (fallbackToDocument) {
-    return content ? (content as React.ReactElement) : null;
-  }
-
-  return null;
+    return () => onUnmount?.();
+  }, [container, onMount, onUnmount]);
+  if (!container || !children) return null;
+  return createPortal(className ? <div className={className}>{children}</div> : children, container);
 }

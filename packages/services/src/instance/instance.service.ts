@@ -42,11 +42,7 @@ export class InstanceService extends APIService {
    * @throws {Error} If the API request fails
    */
   async info(signal?: AbortSignal): Promise<IInstanceInfo> {
-    return this.get("/api/instances/", { signal })
-      .then((response) => response.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.get("/api/instances/", { signal }), "data-or-error");
   }
 
   /**
@@ -55,11 +51,7 @@ export class InstanceService extends APIService {
    * @throws {Error} If the API request fails
    */
   async changelog(): Promise<TPage> {
-    return this.get("/api/instances/changelog/")
-      .then((response) => response.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.get("/api/instances/changelog/"), "data-or-error");
   }
 
   /**
@@ -68,11 +60,7 @@ export class InstanceService extends APIService {
    * @throws {Error} If the API request fails
    */
   async admins(signal?: AbortSignal): Promise<IInstanceAdmin[]> {
-    return this.get("/api/instances/admins/", { signal })
-      .then((response) => response.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.get("/api/instances/admins/", { signal }), "data-or-error");
   }
 
   /**
@@ -82,11 +70,7 @@ export class InstanceService extends APIService {
    * @throws {Error} If the API request fails
    */
   async update(data: Partial<IInstance>): Promise<IInstance> {
-    return this.patch("/api/instances/", data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.patch("/api/instances/", data), "data-or-error");
   }
 
   /**
@@ -95,11 +79,7 @@ export class InstanceService extends APIService {
    * @throws {Error} If the API request fails
    */
   async configurations(signal?: AbortSignal): Promise<IInstanceConfiguration[]> {
-    return this.get("/api/instances/configurations/", { signal })
-      .then((response) => response.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.get("/api/instances/configurations/", { signal }), "data-or-error");
   }
 
   /**
@@ -109,11 +89,7 @@ export class InstanceService extends APIService {
    * @throws {Error} If the API request fails
    */
   async updateConfigurations(data: Partial<IFormattedInstanceConfiguration>): Promise<IInstanceConfiguration[]> {
-    return this.patch("/api/instances/configurations/", data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.patch("/api/instances/configurations/", data), "data-or-error");
   }
 
   /**
@@ -123,13 +99,12 @@ export class InstanceService extends APIService {
    * @throws {Error} If the API request fails
    */
   async sendTestEmail(receiverEmail: string): Promise<void> {
-    return this.post("/api/instances/email-credentials-check/", {
-      receiver_email: receiverEmail,
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(
+      this.post("/api/instances/email-credentials-check/", {
+        receiver_email: receiverEmail,
+      }),
+      "data-or-error"
+    );
   }
 
   /**
@@ -138,10 +113,6 @@ export class InstanceService extends APIService {
    * @throws {Error} If the API request fails
    */
   async disableEmail(): Promise<void> {
-    return this.delete("/api/instances/configurations/disable-email-feature/")
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.delete("/api/instances/configurations/disable-email-feature/"), "data-or-error");
   }
 }

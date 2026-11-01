@@ -6,85 +6,49 @@
 
 import type { Editor } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
-import type { EditorState, Transaction } from "@tiptap/pm/state";
-// constants
 import { ECustomImageStatus } from "@/extensions/custom-image/types";
 import { CORE_EDITOR_META } from "@/constants/meta";
-// plane editor imports
-import { NODE_FILE_MAP } from "@/plane-editor/constants/utility";
-// types
 import type { TFileHandler } from "@/types";
-// local imports
-import type { NodeFileMapType } from "../../../ce/constants/utility";
-import type { ExtensionFileSetStorageKey } from "@/plane-editor/types/storage";
-import type { TFileNode } from "./types";
-
-type FileSetStorage = Partial<Record<ExtensionFileSetStorageKey, Map<string, boolean>>>;
+import { addFileSource, collectFileSources, readFileNode } from "./nodes";
+import type { FileNode } from "./nodes";
 
 const DELETE_PLUGIN_KEY = new PluginKey("delete-utility");
+
+async function deleteFile(
+  editor: Editor,
+  file: FileNode,
+  deleteHandler: TFileHandler["delete"],
+  deleteSource: boolean
+) {
+  try {
+    editor.storage[file.name]?.[file.fileSetName]?.set(file.src, true);
+    if (file.id) editor.commands.updateAssetsList?.({ idToRemove: file.id });
+    if (deleteSource) await deleteHandler(file.src);
+  } catch (error) {
+    console.error("Error deleting file via delete utility plugin:", error);
+  }
+}
 
 export const TrackFileDeletionPlugin = (editor: Editor, deleteHandler: TFileHandler["delete"]): Plugin =>
   new Plugin({
     key: DELETE_PLUGIN_KEY,
-    appendTransaction: (transactions: readonly Transaction[], oldState: EditorState, newState: EditorState) => {
-      const newFileSources: {
-        [nodeType: string]: Set<string> | undefined;
-      } = {};
+    appendTransaction: (transactions, oldState, newState) => {
       if (!transactions.some((tr) => tr.docChanged)) return null;
       if (transactions.some((tr) => tr.getMeta(CORE_EDITOR_META.SKIP_FILE_DELETION))) return null;
-
-      newState.doc.descendants((node) => {
-        const nodeType = node.type.name as keyof NodeFileMapType;
-        const nodeFileSetDetails = NODE_FILE_MAP[nodeType];
-        if (nodeFileSetDetails) {
-          if (newFileSources[nodeType]) {
-            newFileSources[nodeType].add(node.attrs.src);
-          } else {
-            newFileSources[nodeType] = new Set([node.attrs.src]);
-          }
-        }
-      });
-
-      const removedFiles: TFileNode[] = [];
-
-      // iterate through all the nodes in the old state
+      const newFileSources = collectFileSources(newState.doc);
+      const deleting = new Map<string, Set<string>>();
       oldState.doc.descendants((node) => {
-        const nodeType = node.type.name as keyof NodeFileMapType;
-        const isAValidNode = NODE_FILE_MAP[nodeType];
-        // if the node doesn't match, then return as no point in checking
-        if (!isAValidNode) return;
-        // A copied image still points at its source until duplication completes.
-        // Replacing/removing that provisional reference must not delete the source.
+        const file = readFileNode(node);
+        if (!file) return;
+        // A provisional copy still belongs to its source until duplication succeeds.
         if (
           node.attrs.status === ECustomImageStatus.DUPLICATING ||
           node.attrs.status === ECustomImageStatus.DUPLICATION_FAILED
         )
           return;
-        // Check if the node has been deleted or replaced
-        if (!newFileSources[nodeType]?.has(node.attrs.src)) {
-          removedFiles.push(node as TFileNode);
-        }
+        if (!newFileSources.get(file.name)?.has(file.src))
+          void deleteFile(editor, file, deleteHandler, addFileSource(deleting, file));
       });
-
-      removedFiles.forEach(async (node) => {
-        const nodeType = node.type.name as keyof NodeFileMapType;
-        const src = node.attrs.src;
-        const nodeFileSetDetails = NODE_FILE_MAP[nodeType];
-        if (!nodeFileSetDetails || !src) return;
-        try {
-          (editor.storage as unknown as Record<string, FileSetStorage>)[nodeType]?.[
-            nodeFileSetDetails.fileSetName
-          ]?.set(src, true);
-          // update assets list storage value
-          editor.commands.updateAssetsList?.({
-            idToRemove: node.attrs.id,
-          });
-          await deleteHandler(src);
-        } catch (error) {
-          console.error("Error deleting file via delete utility plugin:", error);
-        }
-      });
-
       return null;
     },
   });

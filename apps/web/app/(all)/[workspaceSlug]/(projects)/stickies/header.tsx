@@ -47,7 +47,8 @@ export const WorkspaceStickyHeader = function WorkspaceStickyHeader() {
             variant="primary"
             size="lg"
             onClick={() => {
-              stickyOperations.create();
+              // The operation owns creation failure feedback.
+              void stickyOperations.create();
             }}
             loading={creatingSticky}
           >

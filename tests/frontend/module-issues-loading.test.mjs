@@ -62,7 +62,8 @@ async function switchModules(t) {
   return { client, first, second, oldRead, observer, oldRequest, currentRequest };
 }
 
-test("switching modules cancels the old Query and keeps the current read active", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("switching modules cancels the old Query and keeps the current read active", async (t) => {
   const { client, first, second, oldRead, observer, oldRequest, currentRequest } = await switchModules(t);
 
   assert.equal(oldRequest.params.module, "module-a");
@@ -80,7 +81,7 @@ test("switching modules cancels the old Query and keeps the current read active"
   assert.equal(client.getQueryData(issueListKeys.list(oldRead)), undefined);
 });
 
-test("a late module response cannot overwrite its replacement module query", async (t) => {
+void test("a late module response cannot overwrite its replacement module query", async (t) => {
   const { client, first, second, oldRead, observer, oldRequest, currentRequest } = await switchModules(t);
   second.result.resolve(response(issue("replacement-ticket")));
   await new Promise((resolve) => setTimeout(resolve, 20));
@@ -96,7 +97,7 @@ test("a late module response cannot overwrite its replacement module query", asy
   assert.ok(currentRequest.signal instanceof AbortSignal);
 });
 
-test("an active module failure remains visible as a native Query error", async (t) => {
+void test("an active module failure remains visible as a native Query error", async (t) => {
   const client = fixture();
   const request = deferredIssueListRequest();
   t.mock.method(IssueService.prototype, "getIssues", request.call);

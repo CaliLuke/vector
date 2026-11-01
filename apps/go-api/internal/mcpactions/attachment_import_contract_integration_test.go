@@ -11,10 +11,22 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/assets"
 	"github.com/CaliLuke/go-plane/internal/mcpactions"
+	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+type attachmentImportProbe struct {
+	*assets.AttachmentApplication
+	failure error
+}
+
+func (probe *attachmentImportProbe) MutateResource(ctx context.Context, cmd projectmutations.Command) (projectmutations.Result, error) {
+	result, err := probe.AttachmentApplication.MutateResource(ctx, cmd)
+	probe.failure = err
+	return result, err
+}
 
 func TestMCPAttachmentImportNamesTypesAndLimits(t *testing.T) {
 	cases := []struct {
@@ -59,7 +71,8 @@ func TestMCPAttachmentImportNamesTypesAndLimits(t *testing.T) {
 	application, err := assets.NewAttachmentApplication(repository, h.storage, fetch, "https://vector.example", assets.AttachmentUploadLimit)
 	require.NoError(t, err)
 	apps := databaseApplications(t, h.pool)
-	apps.Attachments = application
+	probe := &attachmentImportProbe{AttachmentApplication: application}
+	apps.Attachments = probe
 	h.service, err = mcpactions.New(apps, mcpactions.WithOrigin("https://vector.example"))
 	require.NoError(t, err)
 	runCatalogueFixtureMatrix(t, h.milestoneFixture, func(t *testing.T, f milestoneFixture, root catalogueCall) {
@@ -74,6 +87,7 @@ func TestMCPAttachmentImportNamesTypesAndLimits(t *testing.T) {
 					require.Equal(t, before, attachmentStorageSnapshot(t, f))
 					return
 				}
+				require.False(t, result.IsError, "attachment import response: %v; native mutation error: %v", result.Content, probe.failure)
 				created := milestoneObject(t, result)
 				assert.Equal(t, tc.wantName, created["name"])
 				require.Equal(t, tc.wantType, created["content_type"])

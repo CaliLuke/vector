@@ -1,3 +1,4 @@
+import * as ContractEnums from "@plane/types";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -75,7 +76,9 @@ function IssueTypeIdentity({
     <TypeEntry
       type={type}
       item={item}
-      editable={!disabled && permissions.can([15, 20])}
+      editable={
+        !disabled && permissions.can([ContractEnums.EUserPermissions.MEMBER, ContractEnums.EUserPermissions.ADMIN])
+      }
       onEditorOpenChange={onEditorOpenChange}
     />
   );

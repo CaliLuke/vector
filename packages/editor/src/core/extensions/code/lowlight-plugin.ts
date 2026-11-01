@@ -4,38 +4,25 @@
  * See the LICENSE file for details.
  */
 
-// TODO: check all the type errors and fix them
-
 import { findChildren } from "@tiptap/core";
 import type { Node as ProsemirrorNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
-import highlight from "highlight.js/lib/core";
+import type { createLowlight } from "lowlight";
 
-function parseNodes(nodes: any[], className: string[] = []): { text: string; classes: string[] }[] {
-  return nodes
-    .map((node) => {
-      const classes = [...className, ...(node.properties ? node.properties.className : [])];
+export type Lowlight = ReturnType<typeof createLowlight>;
+type HighlightNode = ReturnType<Lowlight["highlight"]>["children"][number];
 
-      if (node.children) {
-        return parseNodes(node.children, classes);
-      }
-
-      return {
-        text: node.value,
-        classes,
-      };
-    })
-    .flat();
-}
-
-function getHighlightNodes(result: any) {
-  // `.value` for lowlight v1, `.children` for lowlight v2
-  return result.value || result.children || [];
-}
-
-function registered(aliasOrLanguage: string) {
-  return Boolean(highlight.getLanguage(aliasOrLanguage));
+function parseNodes(nodes: HighlightNode[], classNames: string[] = []): { text: string; classes: string[] }[] {
+  return nodes.flatMap((node) => {
+    if (node.type === "element") {
+      const classes = Array.isArray(node.properties.className)
+        ? node.properties.className.filter((name): name is string => typeof name === "string")
+        : [];
+      return parseNodes(node.children, [...classNames, ...classes]);
+    }
+    return node.type === "text" ? [{ text: node.value, classes: classNames }] : [];
+  });
 }
 
 function getDecorations({
@@ -46,20 +33,20 @@ function getDecorations({
 }: {
   doc: ProsemirrorNode;
   name: string;
-  lowlight: any;
+  lowlight: Lowlight;
   defaultLanguage: string | null | undefined;
 }) {
   const decorations: Decoration[] = [];
 
   findChildren(doc, (node) => node.type.name === name).forEach((block) => {
     let from = block.pos + 1;
-    const language = block.node.attrs.language || defaultLanguage;
-    const languages = lowlight.listLanguages();
+    const selectedLanguage: unknown = block.node.attrs.language;
+    const language = typeof selectedLanguage === "string" && selectedLanguage ? selectedLanguage : defaultLanguage;
 
     const nodes =
-      language && (languages.includes(language) || registered(language))
-        ? getHighlightNodes(lowlight.highlight(language, block.node.textContent))
-        : getHighlightNodes(lowlight.highlightAuto(block.node.textContent));
+      language && lowlight.registered(language)
+        ? lowlight.highlight(language, block.node.textContent).children
+        : lowlight.highlightAuto(block.node.textContent).children;
 
     parseNodes(nodes).forEach((node) => {
       const to = from + node.text.length;
@@ -79,24 +66,20 @@ function getDecorations({
   return DecorationSet.create(doc, decorations);
 }
 
-function isFunction(param: () => any) {
-  return typeof param === "function";
-}
-
 export function LowlightPlugin({
   name,
   lowlight,
   defaultLanguage,
 }: {
   name: string;
-  lowlight: any;
+  lowlight: Lowlight | null;
   defaultLanguage: string | null | undefined;
 }) {
-  if (!["highlight", "highlightAuto", "listLanguages"].every((api) => isFunction(lowlight[api]))) {
+  if (!lowlight) {
     throw Error("You should provide an instance of lowlight to use the code-block-lowlight extension");
   }
 
-  const lowlightPlugin: Plugin = new Plugin({
+  const lowlightPlugin: Plugin<DecorationSet> = new Plugin<DecorationSet>({
     key: new PluginKey("lowlight"),
 
     state: {
@@ -123,20 +106,15 @@ export function LowlightPlugin({
             // OR transaction has changes that completely encapsulate a node
             // (for example, a transaction that affects the entire document).
             // Such transactions can happen during collab syncing via y-prosemirror, for example.
-            transaction.steps.some(
-              (step) =>
-                // @ts-expect-error type error
-                step.from !== undefined &&
-                // @ts-expect-error type error
-                step.to !== undefined &&
-                oldNodes.some(
-                  (node) =>
-                    // @ts-expect-error type error
-                    node.pos >= step.from &&
-                    // @ts-expect-error type error
-                    node.pos + node.node.nodeSize <= step.to
-                )
-            ))
+            transaction.steps.some((step) => {
+              if (!("from" in step) || !("to" in step)) return false;
+              const { from, to } = step;
+              return (
+                typeof from === "number" &&
+                typeof to === "number" &&
+                oldNodes.some((node) => node.pos >= from && node.pos + node.node.nodeSize <= to)
+              );
+            }))
         ) {
           return getDecorations({
             doc: transaction.doc,

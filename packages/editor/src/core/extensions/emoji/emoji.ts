@@ -16,13 +16,13 @@ import {
   PasteRule,
   removeDuplicates,
 } from "@tiptap/core";
+import type { Command } from "@tiptap/core";
 import type { EmojiStorage } from "@tiptap/extension-emoji";
 import { emojis, emojiToShortcode, shortcodeToEmoji } from "@tiptap/extension-emoji";
 import { Fragment } from "@tiptap/pm/model";
-import type { Transaction } from "@tiptap/pm/state";
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import type { SuggestionOptions } from "@tiptap/suggestion";
-import Suggestion from "@tiptap/suggestion";
+import { Suggestion } from "@tiptap/suggestion";
 import emojiRegex from "emoji-regex";
 import { isEmojiSupported } from "is-emoji-supported";
 // helpers
@@ -86,7 +86,24 @@ const inputRegex = /:([a-zA-Z0-9_+-]+):$/;
 
 const pasteRegex = /:([a-zA-Z0-9_+-]+):/g;
 
-export const Emoji = Node.create<EmojiOptions, EmojiStorage>({
+const restoreEmojiMarks: Command = ({ tr, state }) => {
+  tr.setStoredMarks(state.doc.resolve(state.selection.to - 1).marks());
+  return true;
+};
+
+function shortcodeRuleHandler(
+  type: string,
+  configuredEmojis: EmojiItem[],
+  updateSelection: boolean
+): InputRule["handler"] {
+  return ({ range, match, chain }) => {
+    const name = match[1];
+    if (!shortcodeToEmoji(name, configuredEmojis)) return;
+    chain().insertContentAt(range, { type, attrs: { name } }, { updateSelection }).command(restoreEmojiMarks).run();
+  };
+}
+
+export const Emoji = Node.create<EmojiOptions, ExtendedEmojiStorage>({
   name: "emoji",
 
   inline: true,
@@ -150,16 +167,14 @@ export const Emoji = Node.create<EmojiOptions, EmojiStorage>({
   },
 
   addStorage() {
-    const { emojis } = this.options;
-    const supportMap: Record<number, boolean> = removeDuplicates(emojis.map((item) => item.version))
+    const { emojis: configuredEmojis } = this.options;
+    const supportMap: Record<number, boolean> = removeDuplicates(configuredEmojis.map((item) => item.version))
       .filter((version) => typeof version === "number")
-      .reduce((versions, version) => {
-        const emoji = emojis.find((item) => item.version === version && item.emoji);
+      .reduce<Record<number, boolean>>((versions, version) => {
+        const emoji = configuredEmojis.find((item) => item.version === version && item.emoji);
 
-        return {
-          ...versions,
-          [version]: emoji ? isEmojiSupported(emoji.emoji as string) : false,
-        };
+        versions[version] = emoji?.emoji ? isEmojiSupported(emoji.emoji) : false;
+        return versions;
       }, {});
 
     return {
@@ -240,10 +255,7 @@ export const Emoji = Node.create<EmojiOptions, EmojiStorage>({
                 name: emojiItem.name,
               },
             })
-            .command(({ tr, state }) => {
-              tr.setStoredMarks(state.doc.resolve(state.selection.to - 1).marks());
-              return true;
-            })
+            .command(restoreEmojiMarks)
             .run();
 
           return true;
@@ -257,35 +269,13 @@ export const Emoji = Node.create<EmojiOptions, EmojiStorage>({
     inputRules.push(
       new InputRule({
         find: inputRegex,
-        handler: ({ range, match, chain }) => {
-          const name = match[1];
-
-          if (!shortcodeToEmoji(name, this.options.emojis)) {
-            return;
-          }
-
-          chain()
-            .insertContentAt(range, {
-              type: this.name,
-              attrs: {
-                name,
-              },
-            })
-            .command(({ tr, state }) => {
-              tr.setStoredMarks(state.doc.resolve(state.selection.to - 1).marks());
-              return true;
-            })
-            .run();
-        },
+        handler: shortcodeRuleHandler(this.name, this.options.emojis, true),
       })
     );
 
     if (this.options.enableEmoticons) {
       // get the list of supported emoticons
-      const emoticons = this.options.emojis
-        .map((item) => item.emoticons)
-        .flat()
-        .filter((item) => item) as string[];
+      const emoticons = this.options.emojis.flatMap((item) => item.emoticons ?? []).filter(Boolean);
 
       const emoticonRegex = new RegExp(`(?:^|\\s)(${emoticons.map((item) => escapeForRegEx(item)).join("|")}) $`);
 
@@ -297,7 +287,7 @@ export const Emoji = Node.create<EmojiOptions, EmojiStorage>({
             const emoji = this.options.emojis.find((item) => item.emoticons?.includes(match[1]));
 
             if (!emoji) {
-              return;
+              return undefined;
             }
 
             return {
@@ -315,38 +305,13 @@ export const Emoji = Node.create<EmojiOptions, EmojiStorage>({
     return [
       new PasteRule({
         find: pasteRegex,
-        handler: ({ range, match, chain }) => {
-          const name = match[1];
-
-          if (!shortcodeToEmoji(name, this.options.emojis)) {
-            return;
-          }
-
-          chain()
-            .insertContentAt(
-              range,
-              {
-                type: this.name,
-                attrs: {
-                  name,
-                },
-              },
-              {
-                updateSelection: false,
-              }
-            )
-            .command(({ tr, state }) => {
-              tr.setStoredMarks(state.doc.resolve(state.selection.to - 1).marks());
-              return true;
-            })
-            .run();
-        },
+        handler: shortcodeRuleHandler(this.name, this.options.emojis, false),
       }),
     ];
   },
 
   addProseMirrorPlugins() {
-    const isTouchDevice = !!this.editor.storage.utility.isTouchDevice;
+    const isTouchDevice = this.editor.storage.utility.isTouchDevice;
     if (isTouchDevice) {
       return [];
     }
@@ -385,11 +350,11 @@ export const Emoji = Node.create<EmojiOptions, EmojiStorage>({
             transactions.some((transaction) => transaction.docChanged) && !oldState.doc.eq(newState.doc);
 
           if (!docChanges) {
-            return;
+            return undefined;
           }
 
           const { tr } = newState;
-          const transform = combineTransactionSteps(oldState.doc, transactions as Transaction[]);
+          const transform = combineTransactionSteps(oldState.doc, [...transactions]);
           const changes = getChangedRanges(transform);
 
           changes.forEach(({ newRange }) => {
@@ -444,7 +409,7 @@ export const Emoji = Node.create<EmojiOptions, EmojiStorage>({
           });
 
           if (!tr.steps.length) {
-            return;
+            return undefined;
           }
 
           return tr;

@@ -15,7 +15,7 @@ import { createFilterConfig, getMultiSelectConfig, createOperatorConfigEntry } f
  * Module filter specific params
  */
 export type TCreateModuleFilterParams = TCreateFilterConfigParams &
-  IFilterIconConfig<undefined> & {
+  IFilterIconConfig & {
     modules: IModule[];
   };
 
@@ -25,7 +25,7 @@ export type TCreateModuleFilterParams = TCreateFilterConfigParams &
  * @returns The module multi select config
  */
 export const getModuleMultiSelectConfig = (params: TCreateModuleFilterParams) =>
-  getMultiSelectConfig<IModule, string, undefined>(
+  getMultiSelectConfig<IModule>(
     {
       items: params.modules,
       getId: (module) => module.id,

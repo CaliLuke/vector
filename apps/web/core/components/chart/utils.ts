@@ -84,10 +84,7 @@ export const parseChartData = (
       }
     }
 
-    return {
-      ...datum,
-      ...missingValues,
-    };
+    return Object.assign(datum, missingValues);
   });
 
   // capitalize first letter if groupByProperty is in TO_CAPITALIZE_PROPERTIES
@@ -128,7 +125,7 @@ export const generateExtendedColors = (baseColorSet: string[], targetCount: numb
   const avgLight = baseHSL.reduce((sum, hsl) => sum + hsl.l, 0) / baseHSL.length;
 
   // Sort base colors by hue for better distribution
-  const sortedBaseHSL = [...baseHSL].sort((a, b) => a.h - b.h);
+  const sortedBaseHSL = baseHSL.toSorted((a, b) => a.h - b.h);
 
   // Generate additional colors for each base color
   const colorsNeeded = targetCount - baseCount;

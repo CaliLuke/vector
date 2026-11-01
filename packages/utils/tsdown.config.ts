@@ -1,6 +1,7 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
+  sourcemap: true,
   entry: {
     index: "src/index.ts",
     array: "src/array.ts",
@@ -22,6 +23,7 @@ export default defineConfig({
     loader: "src/loader.ts",
     "local-logging": "src/local-logging.ts",
     math: "src/math.ts",
+    metadata: "src/metadata.ts",
     module: "src/module.ts",
     notification: "src/notification.ts",
     page: "src/page.ts",

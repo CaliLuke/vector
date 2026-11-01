@@ -168,8 +168,8 @@ function BulkDeleteIssuesDialog({
         </Combobox>
 
         {errors.map((error) => (
-          <p key={String(error)} role="alert" className="px-3 text-danger-primary">
-            {String(error)}
+          <p key={error} role="alert" className="px-3 text-danger-primary">
+            {error}
           </p>
         ))}
         {(issues.length > 0 || selectedIssues.length > 0) && (

@@ -52,7 +52,7 @@ export function PageOptionsDropdown(props: Props) {
   const { updateQueryParams } = useQueryParams();
   // menu items list
   const EXTRA_MENU_OPTIONS = useMemo(
-    function EXTRA_MENU_OPTIONS(): React.ComponentProps<typeof PageActions>["extraOptions"] {
+    function createExtraMenuOptions(): React.ComponentProps<typeof PageActions>["extraOptions"] {
       return [
         {
           key: "full-screen",

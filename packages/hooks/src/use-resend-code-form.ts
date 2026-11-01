@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 import { useEffect, useState } from "react";
-import { useForm } from "@tanstack/react-form";
+import { useForm, useStore } from "@tanstack/react-form";
 
 type Props = { send: () => Promise<void>; onSent: () => void; onError: () => void };
 
@@ -29,5 +29,11 @@ export function useResendCodeForm({ send, onSent, onError }: Props) {
       }
     },
   });
-  return { form, cooldown };
+  const resend = () => {
+    void form.handleSubmit().catch(() => {
+      // onSubmit reports delivery failures through onError.
+    });
+  };
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  return { isSubmitting, cooldown, resend };
 }

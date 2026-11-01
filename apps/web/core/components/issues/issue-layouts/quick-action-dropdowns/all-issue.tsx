@@ -9,29 +9,18 @@ import { useParams } from "@tanstack/react-router";
 // plane imports
 import { ARCHIVABLE_STATE_GROUPS } from "@plane/constants";
 import { EIssuesStoreType } from "@plane/types";
-import { QuickActionMenu } from "@/components/common/quick-action-menu";
 // hooks
 import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 import { useRouteProjectStates } from "@/hooks/use-project-states";
 // helper
-import { IssueQuickActionModals } from "./issue-quick-action-modals";
+import { IssueQuickActionControls } from "./issue-quick-action-modals";
 import type { IQuickActionProps } from "../list/list-view-types";
 import type { MenuItemFactoryProps } from "./helper";
 import { useIssueMenuItems } from "./helper";
 import { useIssueQuickActionModals } from "./use-issue-quick-action-modals";
 
 export const AllIssueQuickActions = function AllIssueQuickActions(props: IQuickActionProps) {
-  const {
-    issue,
-    handleDelete,
-    handleUpdate,
-    handleArchive,
-    customActionButton,
-    portalElement,
-    readOnly = false,
-    placements = "bottom-start",
-    parentRef,
-  } = props;
+  const { issue, handleDelete, handleUpdate, handleArchive, readOnly = false, placements = "bottom-start" } = props;
   // states
   const modals = useIssueQuickActionModals(issue);
   // router
@@ -69,30 +58,12 @@ export const AllIssueQuickActions = function AllIssueQuickActions(props: IQuickA
   const MENU_ITEMS = useIssueMenuItems(menuItemProps);
 
   return (
-    <>
-      <IssueQuickActionModals
-        issue={issue}
-        handleDelete={handleDelete}
-        handleUpdate={handleUpdate}
-        handleArchive={handleArchive}
-        modals={modals}
-        storeType={EIssuesStoreType.GLOBAL}
-      />
-
-      <QuickActionMenu
-        items={MENU_ITEMS}
-        parentRef={parentRef}
-        customMenuProps={{
-          ellipsis: true,
-          customButton: customActionButton,
-          portalElement,
-          placement: placements,
-          menuItemsClassName: "z-[14]",
-          maxHeight: "lg",
-          useCaptureForOutsideClick: true,
-          closeOnSelect: true,
-        }}
-      />
-    </>
+    <IssueQuickActionControls
+      {...props}
+      placements={placements}
+      items={MENU_ITEMS}
+      modals={modals}
+      storeType={EIssuesStoreType.GLOBAL}
+    />
   );
 };

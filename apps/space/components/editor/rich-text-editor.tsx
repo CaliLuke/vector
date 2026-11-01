@@ -55,7 +55,7 @@ export const RichTextEditor = forwardRef(function RichTextEditor(
   return (
     <RichTextEditorWithRef
       mentionHandler={{
-        renderComponent: (props) => <EditorMentionsRoot {...props} />,
+        renderComponent: (componentProps) => <EditorMentionsRoot {...componentProps} />,
         getMentionedEntityDetails: (id: string) => ({
           display_name: members.find((item) => item.member === id)?.member__display_name ?? "",
         }),

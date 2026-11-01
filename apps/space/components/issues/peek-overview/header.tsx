@@ -26,7 +26,7 @@ type Props = {
 
 const PEEK_MODES: {
   key: IPeekMode;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
 }[] = [
   { key: "side", icon: SidePanelIcon, label: "Side Peek" },
@@ -42,24 +42,24 @@ const PEEK_MODES: {
   },
 ];
 
+const handleCopyLink = () => {
+  const urlToCopy = window.location.href;
+
+  copyTextToClipboard(urlToCopy)
+    .then(() =>
+      setToast({
+        type: TOAST_TYPE.SUCCESS,
+        title: "Link copied!",
+        message: "Work item link copied to clipboard.",
+      })
+    )
+    .catch(() => {
+      setToast({ type: TOAST_TYPE.ERROR, title: "Could not copy to clipboard", message: "Please try again." });
+    });
+};
+
 export const PeekOverviewHeader = function PeekOverviewHeader(props: Props) {
   const { handleClose, peekMode, setPeekMode } = props;
-
-  const handleCopyLink = () => {
-    const urlToCopy = window.location.href;
-
-    copyTextToClipboard(urlToCopy)
-      .then(() => {
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: "Link copied!",
-          message: "Work item link copied to clipboard.",
-        });
-      })
-      .catch(() => {
-        setToast({ type: TOAST_TYPE.ERROR, title: "Could not copy to clipboard", message: "Please try again." });
-      });
-  };
 
   const Icon = PEEK_MODES.find((m) => m.key === peekMode)?.icon ?? SidePanelIcon;
 
@@ -121,7 +121,6 @@ export const PeekOverviewHeader = function PeekOverviewHeader(props: Props) {
             type="button"
             onClick={handleCopyLink}
             className="shrink-0 text-tertiary hover:text-secondary focus:outline-none"
-            tabIndex={1}
           >
             <LinkIcon className="h-4 w-4 -rotate-45" />
           </button>

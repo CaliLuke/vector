@@ -7,7 +7,7 @@
 import { Extension } from "@tiptap/core";
 import type { Editor } from "@tiptap/core";
 import { ReactRenderer } from "@tiptap/react";
-import Suggestion from "@tiptap/suggestion";
+import { Suggestion } from "@tiptap/suggestion";
 import type { SuggestionOptions } from "@tiptap/suggestion";
 // constants
 import { CORE_EXTENSIONS } from "@/constants/extension";
@@ -60,14 +60,14 @@ const Command = Extension.create<SlashCommandOptions>({
         editor: this.editor,
         render: () => {
           let component: ReactRenderer<CommandListInstance, SlashCommandsMenuProps> | null = null;
-          let cleanup: () => void = () => {};
+          let cleanup: (() => void) | undefined;
           let editorRef: Editor | null = null;
 
           const handleClose = (editor?: Editor) => {
             component?.destroy();
             component = null;
             (editor || editorRef)?.commands.removeActiveDropbarExtension(CORE_EXTENSIONS.SLASH_COMMANDS);
-            cleanup();
+            cleanup?.();
           };
 
           return {
@@ -84,7 +84,7 @@ const Command = Extension.create<SlashCommandOptions>({
               });
               if (!props.clientRect) return;
               props.editor.commands.addActiveDropbarExtension(CORE_EXTENSIONS.SLASH_COMMANDS);
-              const element = component.element as HTMLElement;
+              const element = component.element;
               cleanup = updateFloatingUIFloaterPosition(props.editor, element).cleanup;
             },
 
@@ -92,8 +92,8 @@ const Command = Extension.create<SlashCommandOptions>({
               if (!component || !component.element) return;
               component.updateProps(props);
               if (!props.clientRect) return;
-              const element = component.element as HTMLElement;
-              cleanup();
+              const element = component.element;
+              cleanup?.();
               cleanup = updateFloatingUIFloaterPosition(props.editor, element).cleanup;
             },
 

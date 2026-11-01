@@ -57,19 +57,18 @@ export function TourSidebar({ step, setStep }: Props) {
       </h3>
       <div className="mt-8 space-y-5">
         {sidebarOptions.map((option) => (
-          // oxlint-disable-next-line jsx_a11y/click-events-have-key-events
-          <h5
+          <button
+            type="button"
+            aria-current={step === option.key ? "step" : undefined}
             key={option.key}
             className={`flex cursor-pointer items-center gap-2 border-l-[3px] py-0.5 pr-2 pl-3 text-13 font-medium capitalize ${
               step === option.key ? "border-accent-strong text-accent-primary" : "border-transparent text-secondary"
             }`}
             onClick={() => setStep(option.key)}
-            // oxlint-disable-next-line jsx_a11y/prefer-tag-over-role
-            role="button"
           >
             <option.Icon className="h-4 w-4" aria-hidden="true" />
             {option.label}
-          </h5>
+          </button>
         ))}
       </div>
     </div>

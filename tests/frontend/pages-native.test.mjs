@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
@@ -22,11 +23,11 @@ const { pageRedirectLink } = await import("../../apps/web/helpers/page-permissio
 const scope = {
   accountId: "alice",
   workspaceSlug: "acme",
-  membershipRole: 15,
+  membershipRole: ContractEnums.EUserPermissions.MEMBER,
   membershipRevision: "membership-1",
   projectId: "project-1",
-  projectMembershipRole: 15,
-  projectRole: 15,
+  projectMembershipRole: ContractEnums.EUserPermissions.MEMBER,
+  projectRole: ContractEnums.EUserPermissions.MEMBER,
   rolesRevision: JSON.stringify([["project-1", 15]]),
   sessionGeneration: 0,
 };

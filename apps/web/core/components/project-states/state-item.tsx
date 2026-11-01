@@ -79,6 +79,17 @@ export function StateItem(props: TStateItem) {
     const elementRef = draggableElementRef.current;
     const initialData: TDraggableData = { groupKey: groupKey, id: state.id };
 
+    const getSourceState = (data: Record<string | symbol, unknown>) => {
+      if (typeof data.id !== "string" || typeof data.groupKey !== "string") return undefined;
+      if (!Object.hasOwn(groupedStates, data.groupKey)) return undefined;
+      return groupedStates[data.groupKey].find((candidate) => candidate.id === data.id);
+    };
+    const canAcceptSource = (data: Record<string | symbol, unknown>) => {
+      const sourceState = getSourceState(data);
+      if (disabled || !sourceState || sourceState.id === state.id) return false;
+      return sourceState.group === groupKey || groupedStates[sourceState.group].length > 1;
+    };
+
     if (elementRef && state) {
       return combine(
         draggable({
@@ -90,6 +101,7 @@ export function StateItem(props: TStateItem) {
         }),
         dropTargetForElements({
           element: elementRef,
+          canDrop: ({ source }) => canAcceptSource(source.data),
           getData: ({ input, element }) =>
             attachClosestEdge(initialData, {
               input,
@@ -107,23 +119,21 @@ export function StateItem(props: TStateItem) {
           onDrop: (data) => {
             setIsDraggedOver(false);
             const { self, source } = data;
-            const sourceData = source.data as TDraggableData;
-            const destinationData = self.data as TDraggableData;
-
-            if (sourceData && destinationData && sourceData.id) {
-              const destinationGroupKey = destinationData.groupKey;
-              const edge = extractClosestEdge(destinationData) || undefined;
-              const payload: Partial<IState> = {
-                id: sourceData.id,
-                group: destinationGroupKey,
-                sequence: getCurrentStateSequence(groupedStates[destinationGroupKey], destinationData, edge),
-              };
-              handleStateSequence(payload);
-            }
+            if (!canAcceptSource(source.data)) return;
+            const sourceState = getSourceState(source.data);
+            if (!sourceState) return;
+            const edge = extractClosestEdge(self.data) || undefined;
+            void handleStateSequence({
+              id: sourceState.id,
+              group: groupKey,
+              sequence: getCurrentStateSequence(groupedStates[groupKey], initialData, edge),
+            });
           },
         })
       );
     }
+
+    return undefined;
   }, [draggableElementRef, state, groupKey, isDraggable, groupedStates, handleStateSequence, disabled]);
   // DND ends
 

@@ -13,7 +13,7 @@ import { CustomMenu } from "@plane/ui";
 import { cn } from "@plane/utils/common";
 // constants
 import type { ToolbarMenuItem } from "@plane/editor";
-import { TOOLBAR_ITEMS, TYPOGRAPHY_ITEMS } from "@plane/editor";
+import { TOOLBAR_ITEMS, TYPOGRAPHY_ITEMS, executeToolbarCommand } from "@plane/editor";
 // local imports
 import { ColorDropdown } from "./color-dropdown";
 
@@ -41,14 +41,9 @@ const ToolbarButton = React.memo(function ToolbarButton(props: ToolbarButtonProp
     >
       <button
         type="button"
-        onClick={() =>
-          // TODO: update this while toolbar homogenization
-          // @ts-expect-error type mismatch here
-          executeCommand({
-            itemKey: item.itemKey,
-            ...item.extraProps,
-          })
-        }
+        aria-label={item.name}
+        aria-pressed={isActive}
+        onClick={() => executeToolbarCommand(executeCommand, item)}
         className={cn("grid size-7 shrink-0 place-items-center rounded-sm text-tertiary", {
           "bg-layer-transparent-selected text-primary hover:bg-layer-transparent-selected": isActive,
           "hover:bg-layer-transparent-hover": !isActive,
@@ -76,8 +71,6 @@ export function PageToolbar(props: Props) {
     Object.values(toolbarItems)
       .flat()
       .forEach((item) => {
-        // TODO: update this while toolbar homogenization
-        // @ts-expect-error type mismatch here
         initialStates[item.renderKey] = editorRef.isMenuItemActive({
           itemKey: item.itemKey,
           ...item.extraProps,
@@ -93,8 +86,6 @@ export function PageToolbar(props: Props) {
     Object.values(toolbarItems)
       .flat()
       .forEach((item) => {
-        // TODO: update this while toolbar homogenization
-        // @ts-expect-error type mismatch here
         newActiveStates[item.renderKey] = editorRef.isMenuItemActive({
           itemKey: item.itemKey,
           ...item.extraProps,
@@ -108,12 +99,7 @@ export function PageToolbar(props: Props) {
     return () => unsubscribe();
   }, [editorRef, updateActiveStates]);
 
-  const activeTypography = TYPOGRAPHY_ITEMS.find((item) =>
-    editorRef.isMenuItemActive({
-      itemKey: item.itemKey,
-      ...item.extraProps,
-    })
-  );
+  const activeTypography = TYPOGRAPHY_ITEMS.find((item) => editorRef.isMenuItemActive({ itemKey: item.itemKey }));
 
   return (
     <div className="animate-in fade-in flex items-center divide-x divide-subtle-1 overflow-x-scroll duration-200">
@@ -148,10 +134,7 @@ export function PageToolbar(props: Props) {
             })}
             onClick={() => {
               if (activeTypography?.itemKey !== item.itemKey) {
-                editorRef.executeMenuItemCommand({
-                  itemKey: item.itemKey,
-                  ...item.extraProps,
-                });
+                executeToolbarCommand(editorRef.executeMenuItemCommand, item);
               }
             }}
           >

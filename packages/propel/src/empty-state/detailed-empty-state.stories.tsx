@@ -5,6 +5,8 @@
  */
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { emptyStateCommonArgTypes } from "./story-controls";
+import { fn } from "storybook/test";
 import { EmptyStateDetailed } from "./detailed-empty-state";
 import type { BaseEmptyStateCommonProps } from "./types";
 
@@ -54,26 +56,7 @@ const meta: Meta<BaseEmptyStateCommonProps> = {
       ],
       description: "Predefined asset key (vertical-stack or illustration)",
     },
-    className: {
-      control: "text",
-      description: "Additional CSS classes to apply to the content wrapper",
-    },
-    rootClassName: {
-      control: "text",
-      description: "Additional CSS classes to apply to the root container",
-    },
-    assetClassName: {
-      control: "text",
-      description: "Additional CSS classes to apply to the asset",
-    },
-    asset: {
-      control: false,
-      description: "Custom React node to display as the visual asset (use this for full control instead of assetKey)",
-    },
-    actions: {
-      control: false,
-      description: "Array of action buttons to display",
-    },
+    ...emptyStateCommonArgTypes,
   },
 };
 
@@ -90,7 +73,7 @@ export const Default: Story = {
     actions: [
       {
         label: "Create an Epic",
-        onClick: () => console.log("primary-action-clicked"),
+        onClick: fn().mockName("primary-action-clicked"),
         variant: "primary",
       },
     ],
@@ -106,7 +89,7 @@ export const WithSingleAction: Story = {
     actions: [
       {
         label: "Create Project",
-        onClick: () => console.log("create-clicked"),
+        onClick: fn().mockName("create-clicked"),
         variant: "primary",
       },
     ],
@@ -122,12 +105,12 @@ export const WithMultipleActions: Story = {
     actions: [
       {
         label: "Create Module",
-        onClick: () => console.log("create-clicked"),
+        onClick: fn().mockName("create-clicked"),
         variant: "primary",
       },
       {
         label: "Import Modules",
-        onClick: () => console.log("import-clicked"),
+        onClick: fn().mockName("import-clicked"),
         variant: "secondary",
       },
     ],
@@ -152,7 +135,7 @@ export const ErrorState: Story = {
     actions: [
       {
         label: "Go to Home",
-        onClick: () => console.log("home-clicked"),
+        onClick: fn().mockName("home-clicked"),
         variant: "primary",
       },
     ],
@@ -169,12 +152,12 @@ export const ServerErrorState: Story = {
     actions: [
       {
         label: "Retry",
-        onClick: () => console.log("retry-clicked"),
+        onClick: fn().mockName("retry-clicked"),
         variant: "primary",
       },
       {
         label: "Contact Support",
-        onClick: () => console.log("support-clicked"),
+        onClick: fn().mockName("support-clicked"),
         variant: "secondary",
       },
     ],
@@ -211,7 +194,7 @@ export const CycleState: Story = {
     actions: [
       {
         label: "Create Cycle",
-        onClick: () => console.log("create-cycle-clicked"),
+        onClick: fn().mockName("create-cycle-clicked"),
         variant: "primary",
       },
     ],
@@ -228,7 +211,7 @@ export const ModuleState: Story = {
     actions: [
       {
         label: "Create Module",
-        onClick: () => console.log("create-module-clicked"),
+        onClick: fn().mockName("create-module-clicked"),
         variant: "primary",
       },
     ],
@@ -245,7 +228,7 @@ export const ViewState: Story = {
     actions: [
       {
         label: "Create View",
-        onClick: () => console.log("create-view-clicked"),
+        onClick: fn().mockName("create-view-clicked"),
         variant: "primary",
       },
     ],
@@ -262,7 +245,7 @@ export const PageState: Story = {
     actions: [
       {
         label: "Create Page",
-        onClick: () => console.log("create-page-clicked"),
+        onClick: fn().mockName("create-page-clicked"),
         variant: "primary",
       },
     ],
@@ -284,7 +267,7 @@ export const WithCustomAsset: Story = {
     actions: [
       {
         label: "Get Started",
-        onClick: () => console.log("action-clicked"),
+        onClick: fn().mockName("action-clicked"),
         variant: "primary",
       },
     ],

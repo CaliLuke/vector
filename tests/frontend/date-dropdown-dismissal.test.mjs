@@ -30,11 +30,13 @@ async function setup(t, props = {}) {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   const { DateDropdown } = await import("../../apps/web/core/components/dropdowns/date.tsx");
+  let formClicks = 0;
   let dismissals = 0;
   await environment.render(
     React.createElement(
       "form",
       {
+        onClick: () => formClicks++,
         onKeyDown: (event) => {
           if (event.key === "Escape" && !event.defaultPrevented) dismissals++;
         },
@@ -48,7 +50,12 @@ async function setup(t, props = {}) {
       React.createElement("button", { type: "button" }, "Other field")
     )
   );
-  return { environment, trigger: environment.container.querySelector("button"), dismissals: () => dismissals };
+  return {
+    environment,
+    trigger: environment.container.querySelector("button"),
+    dismissals: () => dismissals,
+    formClicks: () => formClicks,
+  };
 }
 
 async function pressEscape() {
@@ -133,4 +140,83 @@ await test("date range Escape consumes one dismissal and retains the controlled 
   assert.equal(dismissals, 0);
   await clickWithPointer(trigger);
   assert.ok(document.querySelector('[data-selected="true"]'), "opening again retains the selected dates");
+});
+
+await test("date constraints disable out-of-range days while an open picker retains its selection contract", async (t) => {
+  const changes = [];
+  const { trigger } = await setup(t, {
+    defaultOpen: true,
+    closeOnSelect: false,
+    minDate: new Date(2026, 9, 10),
+    maxDate: new Date(2026, 9, 20),
+    onChange: (date) => changes.push(date),
+  });
+  const before = document.querySelector('[data-day="2026-10-09"] button');
+  const after = document.querySelector('[data-day="2026-10-21"] button');
+  assert.equal(before.disabled, true);
+  assert.equal(after.disabled, true);
+  await React.act(async () => {
+    before.click();
+    after.click();
+  });
+  assert.deepEqual(changes, []);
+  await React.act(async () => document.querySelector('[data-day="2026-10-20"] button').click());
+  assert.equal(changes[0].getDate(), 20);
+  assert.equal(trigger.getAttribute("aria-expanded"), "true");
+});
+
+for (const mergeDates of [false, true])
+  void test(`date range ${mergeDates ? "merged" : "separate"} labels preserve placeholders, clearing and disabled state`, async (t) => {
+    const environment = await createReactDomTestEnvironment();
+    t.after(() => environment.unmount());
+    const { DateRangeDropdown } = await import("../../apps/web/core/components/dropdowns/date-range.tsx");
+    const changes = [];
+    const props = {
+      value: { from: undefined, to: undefined },
+      buttonVariant: "border-with-text",
+      mergeDates,
+      isClearable: true,
+      placeholder: { from: "Start", to: "Finish" },
+      clearIconClassName: "clear-date",
+      onSelect: (value) => changes.push(value),
+    };
+    await environment.render(React.createElement(DateRangeDropdown, props));
+    assert.match(environment.container.textContent, /Start/);
+    assert.match(environment.container.textContent, /Finish/);
+    await environment.render(React.createElement(DateRangeDropdown, { ...props, renderPlaceholder: false }));
+    assert.doesNotMatch(environment.container.textContent, /Start|Finish/);
+    const dates = { from: new Date(2026, 9, 10), to: new Date(2026, 9, 15) };
+    await environment.render(React.createElement(DateRangeDropdown, { ...props, value: dates }));
+    await React.act(async () =>
+      environment.container
+        .querySelector(".clear-date")
+        .dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }))
+    );
+    assert.deepEqual(changes, [{ from: undefined, to: undefined }]);
+    assert.equal(
+      environment.container.querySelector("button").getAttribute("aria-expanded"),
+      "false",
+      "clearing does not open the picker"
+    );
+    await environment.render(React.createElement(DateRangeDropdown, { ...props, value: dates, disabled: true }));
+    assert.equal(environment.container.querySelector(".clear-date"), null);
+    assert.equal(environment.container.querySelector("button").disabled, true);
+  });
+
+await test("clearing a date changes only its value and does not activate the enclosing picker", async (t) => {
+  const changes = [];
+  const { trigger, formClicks } = await setup(t, {
+    isClearable: true,
+    clearIconClassName: "clear-date",
+    onChange: (value) => changes.push(value),
+  });
+  const clear = trigger.querySelector(".clear-date");
+  assert.ok(clear);
+  const event = new MouseEvent("click", { bubbles: true, cancelable: true });
+  await React.act(async () => clear.dispatchEvent(event));
+  assert.equal(event.defaultPrevented, true);
+  assert.deepEqual(changes, [null]);
+  assert.equal(formClicks(), 0);
+  assert.equal(trigger.getAttribute("aria-expanded"), "false");
+  assert.equal(document.querySelector('[role="grid"]'), null);
 });

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { nodeDOMAtCoords, nodePosAtDOM } from "./block-hit-testing";
 import type { Node, Schema } from "@tiptap/pm/model";
 import { Fragment, Slice } from "@tiptap/pm/model";
 import { NodeSelection } from "@tiptap/pm/state";
@@ -15,22 +16,6 @@ import type { SideMenuHandleOptions, SideMenuPluginProps } from "@/extensions";
 
 const verticalEllipsisIcon =
   '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ellipsis-vertical"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>';
-
-const generalSelectors = [
-  "li",
-  "p.editor-paragraph-block:not(:first-child)",
-  ".code-block",
-  "blockquote",
-  "h1.editor-heading-block, h2.editor-heading-block, h3.editor-heading-block, h4.editor-heading-block, h5.editor-heading-block, h6.editor-heading-block",
-  "[data-type=horizontalRule]",
-  "table:not(.table-drag-preview)",
-  ".issue-embed",
-  ".image-component",
-  ".image-upload-component",
-  ".editor-callout-component",
-  ".editor-embed-component",
-  ".editor-drawio-component",
-].join(", ");
 
 const maxScrollSpeed = 20;
 const acceleration = 0.5;
@@ -94,55 +79,6 @@ const getScrollParent = (node: HTMLElement | SVGElement) => {
   return result;
 };
 
-export const nodeDOMAtCoords = (coords: { x: number; y: number }) => {
-  const elements = document.elementsFromPoint(coords.x, coords.y);
-
-  for (const elem of elements) {
-    // Check for table wrapper first
-    if (elem.matches("table:not(.table-drag-preview)")) {
-      return elem;
-    }
-
-    if (elem.matches("p:first-child") && elem.parentElement?.matches(".ProseMirror")) {
-      return elem;
-    }
-
-    // Skip table cells
-    if (elem.closest("table")) {
-      continue;
-    }
-
-    // Skip elements inside .editor-embed-component
-    if (elem.closest(".editor-embed-component") && !elem.matches(".editor-embed-component")) {
-      continue;
-    }
-
-    // apply general selector
-    if (elem.matches(generalSelectors)) {
-      return elem;
-    }
-  }
-  return null;
-};
-
-const nodePosAtDOM = (node: Element, view: EditorView, options: SideMenuPluginProps) => {
-  const boundingRect = node.getBoundingClientRect();
-
-  return view.posAtCoords({
-    left: boundingRect.left + 50 + options.dragHandleWidth,
-    top: boundingRect.top + 1,
-  })?.inside;
-};
-
-const nodePosAtDOMForBlockQuotes = (node: Element, view: EditorView) => {
-  const boundingRect = node.getBoundingClientRect();
-
-  return view.posAtCoords({
-    left: boundingRect.left + 1,
-    top: boundingRect.top + 1,
-  })?.inside;
-};
-
 export const DragHandlePlugin = (options: SideMenuPluginProps): SideMenuHandleOptions => {
   let listType = "";
   let isDragging = false;
@@ -185,7 +121,7 @@ export const DragHandlePlugin = (options: SideMenuPluginProps): SideMenuHandleOp
       scrollableParent.scrollBy({ top: currentScrollSpeed });
     }
 
-    scrollAnimationFrame = requestAnimationFrame(scroll) as unknown as null;
+    scrollAnimationFrame = requestAnimationFrame(scroll);
   }
 
   const handleClick = (event: MouseEvent, view: EditorView) => {
@@ -202,7 +138,7 @@ export const DragHandlePlugin = (options: SideMenuPluginProps): SideMenuHandleOp
     scroll();
   };
 
-  const handleDragEnd = <TEvent extends DragEvent | FocusEvent>(event: TEvent, view?: EditorView) => {
+  const handleDragEnd = (event: DragEvent | FocusEvent, view?: EditorView) => {
     event.preventDefault();
     isDragging = false;
     isMouseInsideWhileDragging = false;
@@ -221,42 +157,42 @@ export const DragHandlePlugin = (options: SideMenuPluginProps): SideMenuHandleOp
       dragHandleElement?.classList.add("drag-handle-hidden");
   };
 
-  const view = (view: EditorView, sideMenu: HTMLDivElement | null) => {
-    dragHandleElement = createDragHandleElement();
-    dragHandleElement.addEventListener("dragstart", (e) => handleDragStart(e, view));
-    dragHandleElement.addEventListener("dragend", (e) => handleDragEnd(e, view));
-    dragHandleElement.addEventListener("click", (e) => handleClick(e, view));
-    dragHandleElement.addEventListener("contextmenu", (e) => handleClick(e, view));
+  const dragEnterHandler = () => {
+    isDraggedOutsideWindow = false;
+  };
 
-    const dragOverHandler = (e: DragEvent) => {
-      e.preventDefault();
-      if (isDragging) {
-        lastClientY = e.clientY;
+  const dragLeaveHandler = (e: DragEvent) => {
+    if (e.clientY <= 0 || e.clientX <= 0 || e.clientX >= window.innerWidth || e.clientY >= window.innerHeight) {
+      isMouseInsideWhileDragging = true;
+
+      const windowMiddleY = window.innerHeight / 2;
+
+      if (lastClientY < windowMiddleY) {
+        isDraggedOutsideWindow = "top";
+      } else {
+        isDraggedOutsideWindow = "bottom";
       }
-    };
+    }
+  };
+
+  const dragOverHandler = (e: DragEvent) => {
+    e.preventDefault();
+    if (isDragging) {
+      lastClientY = e.clientY;
+    }
+  };
+
+  const view = (editorView: EditorView, sideMenu: HTMLDivElement | null) => {
+    dragHandleElement = createDragHandleElement();
+    dragHandleElement.addEventListener("dragstart", (e) => handleDragStart(e, editorView));
+    dragHandleElement.addEventListener("dragend", (e) => handleDragEnd(e, editorView));
+    dragHandleElement.addEventListener("click", (e) => handleClick(e, editorView));
+    dragHandleElement.addEventListener("contextmenu", (e) => handleClick(e, editorView));
 
     const mouseMoveHandler = (e: MouseEvent) => {
       if (isMouseInsideWhileDragging) {
-        handleDragEnd(e, view);
+        handleDragEnd(e, editorView);
       }
-    };
-
-    const dragLeaveHandler = (e: DragEvent) => {
-      if (e.clientY <= 0 || e.clientX <= 0 || e.clientX >= window.innerWidth || e.clientY >= window.innerHeight) {
-        isMouseInsideWhileDragging = true;
-
-        const windowMiddleY = window.innerHeight / 2;
-
-        if (lastClientY < windowMiddleY) {
-          isDraggedOutsideWindow = "top";
-        } else {
-          isDraggedOutsideWindow = "bottom";
-        }
-      }
-    };
-
-    const dragEnterHandler = () => {
-      isDraggedOutsideWindow = false;
     };
 
     window.addEventListener("dragleave", dragLeaveHandler);
@@ -287,28 +223,28 @@ export const DragHandlePlugin = (options: SideMenuPluginProps): SideMenuHandleOp
   };
   const domEvents = {
     mousemove: () => showDragHandle(),
-    dragenter: (view: EditorView) => {
-      view.dom.classList.add("dragging");
+    dragenter: (editorView: EditorView) => {
+      editorView.dom.classList.add("dragging");
       hideDragHandle();
     },
-    drop: (view: EditorView, event: DragEvent) => {
-      view.dom.classList.remove("dragging");
+    drop: (editorView: EditorView, event: DragEvent) => {
+      editorView.dom.classList.remove("dragging");
       hideDragHandle();
       let droppedNode: Node | null = null;
-      const dropPos = view.posAtCoords({
+      const dropPos = editorView.posAtCoords({
         left: event.clientX,
         top: event.clientY,
       });
 
       if (!dropPos) return;
 
-      if (view.state.selection instanceof NodeSelection) {
-        droppedNode = view.state.selection.node;
+      if (editorView.state.selection instanceof NodeSelection) {
+        droppedNode = editorView.state.selection.node;
       }
 
       if (!droppedNode) return;
 
-      const resolvedPos = view.state.doc.resolve(dropPos.pos);
+      const resolvedPos = editorView.state.doc.resolve(dropPos.pos);
       let isDroppedInsideList = false;
       let dropDepth = 0;
 
@@ -323,28 +259,28 @@ export const DragHandlePlugin = (options: SideMenuPluginProps): SideMenuHandleOp
 
       // Handle nested list items and task items
       if (droppedNode.type.name === CORE_EXTENSIONS.LIST_ITEM) {
-        let slice = view.state.selection.content();
+        let slice = editorView.state.selection.content();
         let newFragment = slice.content;
 
         // If dropping outside a list or at a different depth, adjust the structure
         if (!isDroppedInsideList || dropDepth !== resolvedPos.depth) {
           // Flatten the structure if needed
-          newFragment = flattenListStructure(newFragment, view.state.schema);
+          newFragment = flattenListStructure(newFragment, editorView.state.schema);
         }
 
         // Wrap in appropriate list type if dropped outside a list
         if (!isDroppedInsideList) {
           const listNodeType =
-            listType === "OL" ? view.state.schema.nodes.orderedList : view.state.schema.nodes.bulletList;
+            listType === "OL" ? editorView.state.schema.nodes.orderedList : editorView.state.schema.nodes.bulletList;
           newFragment = Fragment.from(listNodeType.create(null, newFragment));
         }
 
         slice = new Slice(newFragment, slice.openStart, slice.openEnd);
-        view.dragging = { slice, move: event.ctrlKey };
+        editorView.dragging = { slice, move: event.ctrlKey };
       }
     },
-    dragend: (view: EditorView) => {
-      view.dom.classList.remove("dragging");
+    dragend: (editorView: EditorView) => {
+      editorView.dom.classList.remove("dragging");
     },
   };
 
@@ -380,7 +316,6 @@ const handleNodeSelection = (
   isDragStart: boolean,
   options: SideMenuPluginProps
 ) => {
-  let listType = "";
   view.focus();
 
   const node = nodeDOMAtCoords({
@@ -388,23 +323,23 @@ const handleNodeSelection = (
     y: event.clientY,
   });
 
-  if (!(node instanceof Element)) return;
+  if (!(node instanceof Element)) return undefined;
 
-  let draggedNodePos = nodePosAtDOM(node, view, options);
-  if (draggedNodePos == null || draggedNodePos < 0) return;
+  let draggedNodePos = nodePosAtDOM(node, view, 50 + options.dragHandleWidth);
+  if (draggedNodePos == null || draggedNodePos < 0) return undefined;
 
   if (node.matches("table")) {
     draggedNodePos = draggedNodePos - 2;
   } else if (node.matches("blockquote")) {
-    draggedNodePos = nodePosAtDOMForBlockQuotes(node, view);
-    if (draggedNodePos === null || draggedNodePos === undefined) return;
+    draggedNodePos = nodePosAtDOM(node, view, 1);
+    if (draggedNodePos === null || draggedNodePos === undefined) return undefined;
   } else {
     // Resolve the position to get the parent node
     const $pos = view.state.doc.resolve(draggedNodePos);
 
     // If it's a nested list item or task item, move up to the item level
     if (
-      [CORE_EXTENSIONS.LIST_ITEM, CORE_EXTENSIONS.TASK_ITEM].includes($pos.parent.type.name as CORE_EXTENSIONS) &&
+      [CORE_EXTENSIONS.LIST_ITEM, CORE_EXTENSIONS.TASK_ITEM].some((type) => type === $pos.parent.type.name) &&
       $pos.depth > 1
     ) {
       draggedNodePos = $pos.before($pos.depth);
@@ -420,29 +355,32 @@ const handleNodeSelection = (
   // Dispatch the transaction to update the selection
   view.dispatch(view.state.tr.setSelection(nodeSelection));
 
-  if (isDragStart) {
-    // Additional logic for drag start
-    if (event instanceof DragEvent && !event.dataTransfer) return;
+  if (isDragStart) return startNodeDrag(event, view, node, nodeSelection.node);
 
-    if (
-      [CORE_EXTENSIONS.LIST_ITEM, CORE_EXTENSIONS.TASK_ITEM].includes(nodeSelection.node.type.name as CORE_EXTENSIONS)
-    ) {
-      listType = node.closest("ol, ul")?.tagName || "";
-    }
+  return { listType: "" };
+};
 
-    const slice = view.state.selection.content();
-    const { dom, text } = view.serializeForClipboard(slice);
+function startNodeDrag(event: MouseEvent | DragEvent, view: EditorView, node: Element, selectedNode: Node) {
+  let listType = "";
 
-    if (event instanceof DragEvent && event.dataTransfer) {
-      event.dataTransfer.clearData();
-      event.dataTransfer.setData("text/html", dom.innerHTML);
-      event.dataTransfer.setData("text/plain", text);
-      event.dataTransfer.effectAllowed = "copyMove";
-      event.dataTransfer.setDragImage(node, 0, 0);
-    }
+  // Additional logic for drag start
+  if (event instanceof DragEvent && !event.dataTransfer) return undefined;
 
-    view.dragging = { slice, move: event.ctrlKey };
+  if ([CORE_EXTENSIONS.LIST_ITEM, CORE_EXTENSIONS.TASK_ITEM].some((type) => type === selectedNode.type.name)) {
+    listType = node.closest("ol, ul")?.tagName || "";
   }
 
+  const slice = view.state.selection.content();
+  const { dom, text } = view.serializeForClipboard(slice);
+
+  if (event instanceof DragEvent && event.dataTransfer) {
+    event.dataTransfer.clearData();
+    event.dataTransfer.setData("text/html", dom.innerHTML);
+    event.dataTransfer.setData("text/plain", text);
+    event.dataTransfer.effectAllowed = "copyMove";
+    event.dataTransfer.setDragImage(node, 0, 0);
+  }
+
+  view.dragging = { slice, move: event.ctrlKey };
   return { listType };
-};
+}

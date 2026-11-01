@@ -16,6 +16,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/tracelog"
 	"github.com/stretchr/testify/require"
 )
 
@@ -37,7 +38,15 @@ func newMilestoneFixture(t *testing.T) milestoneFixture {
 		defer cancel()
 		require.NoError(t, database.Close(cleanup))
 	})
-	pool, err := pgxpool.New(ctx, database.URL)
+	config, err := pgxpool.ParseConfig(database.URL)
+	require.NoError(t, err)
+	config.ConnConfig.Tracer = &tracelog.TraceLog{
+		LogLevel: tracelog.LogLevelError,
+		Logger: tracelog.LoggerFunc(func(_ context.Context, _ tracelog.LogLevel, message string, data map[string]any) {
+			t.Logf("Postgres %s failed: %v", message, data["err"])
+		}),
+	}
+	pool, err := pgxpool.NewWithConfig(ctx, config)
 	require.NoError(t, err)
 	t.Cleanup(pool.Close)
 	_, err = pool.Exec(ctx, testsupport.MilestoneWriteSeed)

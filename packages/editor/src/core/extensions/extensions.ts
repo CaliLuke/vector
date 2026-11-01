@@ -61,7 +61,7 @@ type TArguments = Pick<
   provider: HocuspocusProvider | undefined;
 };
 
-export const CoreEditorExtensions = (args: TArguments): Extensions => {
+export const createCoreEditorExtensions = (args: TArguments): Extensions => {
   const {
     disabledExtensions,
     enableHistory,

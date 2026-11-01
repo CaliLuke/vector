@@ -1,3 +1,4 @@
+import { EIssueLayoutTypes } from "@plane/types";
 import type { IIssueDisplayFilterOptions, TIssueGroupByOptions } from "@plane/types";
 import { useWorkItemTableCatalog } from "@/hooks/use-work-item-table-catalog";
 import { isCustomGrouping } from "@/helpers/issue-list/grouping-axis";
@@ -14,7 +15,9 @@ export function CustomPropertyGrouping({
   isEpic?: boolean;
   onChange: (value: TIssueGroupByOptions) => void;
 }) {
-  const enabled = !isEpic && (displayFilters?.layout === "list" || displayFilters?.layout === "kanban");
+  const enabled =
+    !isEpic &&
+    (displayFilters?.layout === EIssueLayoutTypes.LIST || displayFilters?.layout === EIssueLayoutTypes.KANBAN);
   const catalog = useWorkItemTableCatalog(enabled);
   if (!enabled || !catalog.supported) return null;
   if (catalog.isError)
@@ -28,7 +31,9 @@ export function CustomPropertyGrouping({
     );
   const selected = displayFilters?.[axis];
   const other =
-    displayFilters?.layout === "kanban" ? displayFilters[axis === "group_by" ? "sub_group_by" : "group_by"] : undefined;
+    displayFilters?.layout === EIssueLayoutTypes.KANBAN
+      ? displayFilters[axis === "group_by" ? "sub_group_by" : "group_by"]
+      : undefined;
   const fields = catalog.fields.filter((field) => field.groupable && field.key !== other);
   return (
     <>

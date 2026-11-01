@@ -150,9 +150,7 @@ export function generateColorPalette(
   ];
 
   // Generate palette by interpolating lightness for each stop
-  const palette: Partial<ColorPalette> = {};
-
-  SHADE_STOPS.forEach((stop) => {
+  const shadeForStop = (stop: ShadeStop): string => {
     let targetLightness: number;
 
     // Check if this is an anchor point
@@ -186,11 +184,25 @@ export function generateColorPalette(
     };
 
     // Convert to CSS string
-    const key = stop as keyof ColorPalette;
-    palette[key] = oklchToCSS(shadeOKLCH);
-  });
+    return oklchToCSS(shadeOKLCH);
+  };
 
-  return palette as ColorPalette;
+  return {
+    50: shadeForStop(50),
+    100: shadeForStop(100),
+    200: shadeForStop(200),
+    300: shadeForStop(300),
+    400: shadeForStop(400),
+    500: shadeForStop(500),
+    600: shadeForStop(600),
+    700: shadeForStop(700),
+    750: shadeForStop(750),
+    800: shadeForStop(800),
+    850: shadeForStop(850),
+    900: shadeForStop(900),
+    950: shadeForStop(950),
+    1000: shadeForStop(1000),
+  };
 }
 
 /**

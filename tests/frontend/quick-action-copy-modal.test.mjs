@@ -17,7 +17,7 @@ const stubs = {
   "lucide-react": `const Icon=()=>null;export const XCircle=Icon,ArchiveRestoreIcon=Icon,Ellipsis=Icon;`,
   "@/hooks/use-projects": `export const useWorkspaceProjectDetails=()=>({projects:[{id:"project-1",identifier:"PRJ"}]});`,
   "@/hooks/use-project-states":
-    "export const useProjectStates=()=>({states:[],projectStates:[],getStateById:()=>undefined,getProjectStateIds:()=>[],getProjectDefaultStateId:()=>undefined,getProjectIntakeStateIds:()=>[],getIntakeStateById:()=>undefined,accessPending:false,accessError:false,accessDenied:false,retryAccess:async()=>{},refetch:async()=>({})});",
+    "export const useProjectStates=()=>({states:[],projectStates:[],getStateById:()=>globalThis.quickActionCopyState.issueState,getProjectStateIds:()=>[],getProjectDefaultStateId:()=>undefined,getProjectIntakeStateIds:()=>[],getIntakeStateById:()=>undefined,accessPending:false,accessError:false,accessDenied:false,retryAccess:async()=>{},refetch:async()=>({})});",
   "@/hooks/use-permissions": `export const useProjectPermissions=()=>({can:()=>true});`,
 };
 
@@ -84,7 +84,7 @@ async function renderQuickActions(environment, props = {}) {
   );
 }
 
-async function renderCycleQuickActions(environment) {
+async function renderCycleQuickActions(environment, props = {}) {
   const { CycleIssueQuickActions } =
     await import("../../apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/cycle-issue.tsx");
   await environment.render(
@@ -92,6 +92,7 @@ async function renderCycleQuickActions(environment) {
       issue,
       readOnly: false,
       handleUpdate: async (data) => globalThis.quickActionCopyState.updates.push(data),
+      ...props,
     })
   );
 }
@@ -157,4 +158,17 @@ await test("copy after closing edit clears the edit selection before submit", as
   assert.equal(copyData.sourceIssueId, issue.id);
   await React.act(async () => globalThis.quickActionCopyState.modal.onSubmit(copyData));
   assert.deepEqual(globalThis.quickActionCopyState.updates, []);
+});
+
+const archive = () => globalThis.quickActionCopyState.items.find((item) => item.key === "archive");
+
+await test("cycle menus offer archive only when the operation and editing permission are both available", async (t) => {
+  globalThis.quickActionCopyState = {};
+  const environment = await createCopyFixture(t);
+  await renderCycleQuickActions(environment);
+  assert.equal(archive()?.shouldRender, false);
+  await renderCycleQuickActions(environment, { handleArchive: async () => {} });
+  assert.equal(archive()?.shouldRender, true);
+  await renderCycleQuickActions(environment, { handleArchive: async () => {}, readOnly: true });
+  assert.equal(archive()?.shouldRender, false);
 });

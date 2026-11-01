@@ -159,81 +159,70 @@ function main() {
 
   let hasFailure = false;
 
-  console.log("\n=== Sync Check Results ===\n");
-  console.log(`  en:    ${fmt(enData.allKeys.size)} keys (source)\n`);
+  process.stdout.write("\n=== Sync Check Results ===\n\n");
+  process.stdout.write(`  en:    ${fmt(enData.allKeys.size)} keys (source)\n\n`);
 
-  for (const comp of comparisons) {
-    const status = comp.missingKeys.length === 0 ? "✓" : "✗";
-    const missingStr = comp.missingKeys.length > 0 ? ` — ${fmt(comp.missingKeys.length)} missing` : "";
-    const staleStr = comp.staleKeys.length > 0 ? `, ${fmt(comp.staleKeys.length)} stale` : "";
-    console.log(
-      `  ${status} ${comp.locale.padEnd(10)} ${fmt(comp.totalKeys)} keys (${comp.coverage.toFixed(1)}%)${missingStr}${staleStr}`
-    );
-    if (comp.missingKeys.length > 0) {
-      hasFailure = true;
-    }
-  }
+  printLocaleSummary(comparisons);
+  hasFailure = comparisons.some((comparison) => comparison.missingKeys.length > 0);
 
   // Cross-namespace collisions
   if (collisions.length > 0) {
     hasFailure = true;
-    console.log("\nCROSS-NAMESPACE COLLISIONS:");
+    process.stdout.write("\nCROSS-NAMESPACE COLLISIONS:\n");
     for (const c of collisions) {
-      console.log(`  ✗ "${c.key}" exists in: ${c.files.join(", ")}`);
+      process.stdout.write(`  ✗ "${c.key}" exists in: ${c.files.join(", ")}\n`);
     }
   }
 
   // Path conflicts
   if (pathConflicts.length > 0) {
     hasFailure = true;
-    console.log("\nPATH CONFLICTS:");
+    process.stdout.write("\nPATH CONFLICTS:\n");
     for (const pc of pathConflicts) {
-      console.log(`  ✗ "${pc.leaf}" is a leaf but "${pc.branch}" extends it`);
+      process.stdout.write(`  ✗ "${pc.leaf}" is a leaf but "${pc.branch}" extends it\n`);
     }
   }
 
-  // Missing keys detail
-  const withMissing = comparisons.filter((c) => c.missingKeys.length > 0);
-  if (withMissing.length > 0) {
-    console.log("\n--- Missing Keys Detail ---\n");
-    for (const comp of withMissing) {
-      console.log(`${comp.locale} (${fmt(comp.missingKeys.length)} missing):`);
-      const show = comp.missingKeys.slice(0, 20);
-      for (const key of show) {
-        console.log(`  - ${key}`);
-      }
-      if (comp.missingKeys.length > 20) {
-        console.log(`  ... and ${fmt(comp.missingKeys.length - 20)} more`);
-      }
-      console.log();
-    }
-  }
-
-  // Stale keys detail
-  const withStale = comparisons.filter((c) => c.staleKeys.length > 0);
-  if (withStale.length > 0) {
-    console.log("--- Stale Keys Detail ---\n");
-    for (const comp of withStale) {
-      console.log(`${comp.locale} (${fmt(comp.staleKeys.length)} stale):`);
-      const show = comp.staleKeys.slice(0, 20);
-      for (const key of show) {
-        console.log(`  - ${key}`);
-      }
-      if (comp.staleKeys.length > 20) {
-        console.log(`  ... and ${fmt(comp.staleKeys.length - 20)} more`);
-      }
-      console.log();
-    }
-  }
+  printKeyDetails(comparisons, "missingKeys", "missing", "\n--- Missing Keys Detail ---\n\n");
+  printKeyDetails(comparisons, "staleKeys", "stale", "--- Stale Keys Detail ---\n\n");
 
   // CI exit code
   if (ciMode && hasFailure) {
-    console.log("CI mode: exiting with code 1 due to missing keys, collisions, or path conflicts.");
+    process.stdout.write("CI mode: exiting with code 1 due to missing keys, collisions, or path conflicts.\n");
     process.exit(1);
   }
 
   if (!hasFailure) {
-    console.log("\nAll locales are in sync with English. No issues found.");
+    process.stdout.write("\nAll locales are in sync with English. No issues found.\n");
+  }
+}
+
+function printLocaleSummary(comparisons: LocaleComparison[]) {
+  for (const comp of comparisons) {
+    const status = comp.missingKeys.length === 0 ? "✓" : "✗";
+    const missingStr = comp.missingKeys.length > 0 ? ` — ${fmt(comp.missingKeys.length)} missing` : "";
+    const staleStr = comp.staleKeys.length > 0 ? `, ${fmt(comp.staleKeys.length)} stale` : "";
+    process.stdout.write(
+      `  ${status} ${comp.locale.padEnd(10)} ${fmt(comp.totalKeys)} keys (${comp.coverage.toFixed(1)}%)${missingStr}${staleStr}\n`
+    );
+  }
+}
+
+function printKeyDetails(
+  comparisons: LocaleComparison[],
+  field: "missingKeys" | "staleKeys",
+  label: string,
+  heading: string
+) {
+  const affected = comparisons.filter((comparison) => comparison[field].length > 0);
+  if (!affected.length) return;
+  process.stdout.write(heading);
+  for (const comparison of affected) {
+    const keys = comparison[field];
+    process.stdout.write(`${comparison.locale} (${fmt(keys.length)} ${label}):\n`);
+    for (const key of keys.slice(0, 20)) process.stdout.write(`  - ${key}\n`);
+    if (keys.length > 20) process.stdout.write(`  ... and ${fmt(keys.length - 20)} more\n`);
+    process.stdout.write("\n");
   }
 }
 

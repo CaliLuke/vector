@@ -12,7 +12,7 @@ export type TIssueLinkEditableFields = {
 export type TIssueLink = TIssueLinkEditableFields & {
   created_by_id: string;
   id: string;
-  metadata: any;
+  metadata: { title?: string | null; favicon?: string; url?: string; favicon_url?: string | null } | null;
   issue_id: string;
 
   //need

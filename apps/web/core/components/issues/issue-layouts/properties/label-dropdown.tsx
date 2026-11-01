@@ -190,7 +190,7 @@ function ProjectLabelDropdown(props: ILabelDropdownProps & { catalogue: ReturnTy
   );
 
   return (
-    <div className={`${fullHeight ? "h-full" : "h-5"}`} onClick={preventLabelDropdownPropagation}>
+    <div role="presentation" className={fullHeight ? "h-full" : "h-5"} onClick={preventLabelDropdownPropagation}>
       <ComboDropDown
         as="div"
         ref={dropdownRef}

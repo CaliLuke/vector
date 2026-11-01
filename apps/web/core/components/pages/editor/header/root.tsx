@@ -4,17 +4,13 @@
  * See the LICENSE file for details.
  */
 
-import { logoPropsFromSelection } from "@/helpers/emoji.helper";
 import type { TPage } from "@plane/types";
 
-import { useState } from "react";
 import { SmilePlus } from "lucide-react";
 // plane imports
-import { EmojiPicker, EmojiIconPickerTypes } from "@plane/propel/emoji-icon-picker";
-import type { TChangeHandlerProps } from "@plane/propel/emoji-icon-picker";
+import { EmojiPicker } from "@plane/propel/emoji-icon-picker";
 import { cn } from "@plane/utils/common";
-import { usePagePermissions } from "@/hooks/use-page-permissions";
-import { useUpdateProjectPage } from "@/hooks/use-project-pages";
+import { usePageLogoPicker } from "./use-page-logo-picker";
 // store
 // local imports
 import { PageEditorHeaderLogoPicker } from "./logo-picker";
@@ -27,15 +23,8 @@ type Props = {
 
 export function PageEditorHeaderRoot(props: Props) {
   const { page, projectId, workspaceSlug } = props;
-  // states
-  const [isLogoPickerOpen, setIsLogoPickerOpen] = useState(false);
-  const { isContentEditable } = usePagePermissions(page, workspaceSlug);
-  // derived values
-  const { logo_props, name } = page;
-  const update = useUpdateProjectPage(workspaceSlug, projectId ?? page.project_ids?.[0], page.id);
-  const updatePageLogo = (value: TChangeHandlerProps) =>
-    update.mutateAsync({ logo_props: logoPropsFromSelection(value) });
-  const isLogoSelected = !!logo_props?.in_use;
+  const { pickerProps, isLogoSelected } = usePageLogoPicker(page, workspaceSlug, projectId);
+  const { name } = page;
   const isTitleEmpty = !name || name.trim() === "";
 
   return (
@@ -48,8 +37,7 @@ export function PageEditorHeaderRoot(props: Props) {
             })}
           >
             <EmojiPicker
-              isOpen={isLogoPickerOpen}
-              handleToggle={(val) => setIsLogoPickerOpen(val)}
+              {...pickerProps}
               className="flex items-center justify-center"
               buttonClassName="flex items-center justify-center"
               label={
@@ -57,7 +45,7 @@ export function PageEditorHeaderRoot(props: Props) {
                   className={cn(
                     "flex items-center gap-1 rounded-sm p-1 text-13 font-medium text-tertiary transition-colors outline-none hover:bg-layer-1",
                     {
-                      "bg-layer-1": isLogoPickerOpen,
+                      "bg-layer-1": pickerProps.isOpen,
                     }
                   )}
                 >
@@ -65,16 +53,6 @@ export function PageEditorHeaderRoot(props: Props) {
                   Icon
                 </span>
               }
-              onChange={updatePageLogo}
-              defaultIconColor={
-                logo_props?.in_use && logo_props.in_use === "icon" ? logo_props?.icon?.color : undefined
-              }
-              defaultOpen={
-                logo_props?.in_use && logo_props?.in_use === "emoji"
-                  ? EmojiIconPickerTypes.EMOJI
-                  : EmojiIconPickerTypes.ICON
-              }
-              disabled={!isContentEditable}
             />
           </div>
         )}

@@ -72,7 +72,7 @@ export function CalloutBlockLogoSelector(props: Props) {
               },
             };
           } else if (val.type === "icon") {
-            const iconValue = val.value as { name: string; color: string };
+            const iconValue = val.value;
             newLogoValue = {
               "data-icon-name": iconValue.name,
               "data-icon-color": iconValue.color,

@@ -4,16 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { logoPropsFromSelection } from "@/helpers/emoji.helper";
 import type { TPage } from "@plane/types";
 
-import { useState } from "react";
 // plane imports
-import { EmojiPicker, EmojiIconPickerTypes, Logo } from "@plane/propel/emoji-icon-picker";
-import type { TChangeHandlerProps } from "@plane/propel/emoji-icon-picker";
+import { EmojiPicker, Logo } from "@plane/propel/emoji-icon-picker";
 import { cn } from "@plane/utils/common";
-import { usePagePermissions } from "@/hooks/use-page-permissions";
-import { useUpdateProjectPage } from "@/hooks/use-project-pages";
+import { usePageLogoPicker } from "./use-page-logo-picker";
 // store
 
 type Props = {
@@ -25,15 +21,8 @@ type Props = {
 
 export function PageEditorHeaderLogoPicker(props: Props) {
   const { className, page, projectId, workspaceSlug } = props;
-  // states
-  const [isLogoPickerOpen, setIsLogoPickerOpen] = useState(false);
-  const { isContentEditable } = usePagePermissions(page, workspaceSlug);
-  // derived values
+  const { pickerProps, isContentEditable, isLogoSelected } = usePageLogoPicker(page, workspaceSlug, projectId);
   const { logo_props } = page;
-  const update = useUpdateProjectPage(workspaceSlug, projectId ?? page.project_ids?.[0], page.id);
-  const updatePageLogo = (value: TChangeHandlerProps) =>
-    update.mutateAsync({ logo_props: logoPropsFromSelection(value) });
-  const isLogoSelected = !!logo_props?.in_use;
 
   return (
     <div
@@ -42,8 +31,7 @@ export function PageEditorHeaderLogoPicker(props: Props) {
       })}
     >
       <EmojiPicker
-        isOpen={isLogoPickerOpen}
-        handleToggle={(val) => setIsLogoPickerOpen(val)}
+        {...pickerProps}
         className="flex items-center justify-center"
         buttonClassName="flex items-center justify-center"
         label={
@@ -55,12 +43,6 @@ export function PageEditorHeaderLogoPicker(props: Props) {
             {isLogoSelected && <Logo logo={logo_props} size={48} type="lucide" />}
           </div>
         }
-        onChange={updatePageLogo}
-        defaultIconColor={logo_props?.in_use && logo_props.in_use === "icon" ? logo_props?.icon?.color : undefined}
-        defaultOpen={
-          logo_props?.in_use && logo_props?.in_use === "emoji" ? EmojiIconPickerTypes.EMOJI : EmojiIconPickerTypes.ICON
-        }
-        disabled={!isContentEditable}
       />
     </div>
   );

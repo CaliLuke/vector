@@ -5,37 +5,15 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import type { ReactNode } from "react";
 
 // hooks
 import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 import { useJoinedProjectIds } from "@/hooks/use-joined-project-ids";
 // local imports
-import type { TDropdownProps } from "../types";
+import type { ProjectDropdownProps } from "./base";
 import { ProjectDropdownBase } from "./base";
 
-type Props = TDropdownProps & {
-  button?: ReactNode;
-  dropdownArrow?: boolean;
-  dropdownArrowClassName?: string;
-  onClose?: () => void;
-  renderCondition?: (projectId: string) => boolean;
-  renderByDefault?: boolean;
-  currentProjectId?: string;
-} & (
-    | {
-        multiple: false;
-        onChange: (val: string) => void;
-        value: string | null;
-      }
-    | {
-        multiple: true;
-        onChange: (val: string[]) => void;
-        value: string[];
-      }
-  );
-
-export const ProjectDropdown = function ProjectDropdown(props: Props) {
+export const ProjectDropdown = function ProjectDropdown(props: ProjectDropdownProps) {
   // store hooks
   const { workspaceSlug } = useParams({ strict: false });
   const projectCatalogue = useWorkspaceProjectDetails();

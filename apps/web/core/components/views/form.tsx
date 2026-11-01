@@ -145,7 +145,7 @@ export const ViewForm = function ViewForm(props: Props) {
           <div className="flex gap-2">
             {projectId && (
               <LayoutDropDown
-                value={values.display_filters.layout}
+                value={values.display_filters.layout ?? EIssueLayoutTypes.LIST}
                 onChange={(layout) => form.setFieldValue("display_filters", (current) => ({ ...current, layout }))}
               />
             )}
@@ -153,7 +153,9 @@ export const ViewForm = function ViewForm(props: Props) {
               <DisplayFiltersSelection
                 layoutDisplayFiltersOptions={
                   projectId
-                    ? ISSUE_DISPLAY_FILTERS_BY_PAGE.issues.layoutOptions[values.display_filters.layout]
+                    ? ISSUE_DISPLAY_FILTERS_BY_PAGE.issues.layoutOptions[
+                        values.display_filters.layout ?? EIssueLayoutTypes.LIST
+                      ]
                     : ISSUE_DISPLAY_FILTERS_BY_PAGE.my_issues.layoutOptions.spreadsheet
                 }
                 displayFilters={values.display_filters}

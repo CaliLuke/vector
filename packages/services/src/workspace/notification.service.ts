@@ -25,11 +25,7 @@ export class WorkspaceNotificationService extends APIService {
    * @returns {Promise<TUnreadNotificationsCount | undefined>} The count of unread notifications
    */
   async getUnreadCount(workspaceSlug: string): Promise<TUnreadNotificationsCount | undefined> {
-    return this.get(`/api/workspaces/${workspaceSlug}/users/notifications/unread/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/users/notifications/unread/`));
   }
 
   /**
@@ -42,11 +38,7 @@ export class WorkspaceNotificationService extends APIService {
     workspaceSlug: string,
     params: TNotificationPaginatedInfoQueryParams
   ): Promise<TNotificationPaginatedInfo | undefined> {
-    return this.get(`/api/workspaces/${workspaceSlug}/users/notifications/`, { params })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/users/notifications/`, { params }));
   }
 
   /**
@@ -61,11 +53,9 @@ export class WorkspaceNotificationService extends APIService {
     notificationId: string,
     data: Partial<TNotification>
   ): Promise<TNotification | undefined> {
-    return this.patch(`/api/workspaces/${workspaceSlug}/users/notifications/${notificationId}/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.patch(`/api/workspaces/${workspaceSlug}/users/notifications/${notificationId}/`, data)
+    );
   }
 
   /**
@@ -75,11 +65,7 @@ export class WorkspaceNotificationService extends APIService {
    * @returns {Promise<TNotification | undefined>} The updated notification
    */
   async markAsRead(workspaceSlug: string, notificationId: string): Promise<TNotification | undefined> {
-    return this.post(`/api/workspaces/${workspaceSlug}/users/notifications/${notificationId}/read/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/users/notifications/${notificationId}/read/`));
   }
 
   /**
@@ -89,11 +75,9 @@ export class WorkspaceNotificationService extends APIService {
    * @returns {Promise<TNotification | undefined>} The updated notification
    */
   async markAsUnread(workspaceSlug: string, notificationId: string): Promise<TNotification | undefined> {
-    return this.delete(`/api/workspaces/${workspaceSlug}/users/notifications/${notificationId}/read/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.delete(`/api/workspaces/${workspaceSlug}/users/notifications/${notificationId}/read/`)
+    );
   }
 
   /**
@@ -103,11 +87,9 @@ export class WorkspaceNotificationService extends APIService {
    * @returns {Promise<TNotification | undefined>} The updated notification
    */
   async archive(workspaceSlug: string, notificationId: string): Promise<TNotification | undefined> {
-    return this.post(`/api/workspaces/${workspaceSlug}/users/notifications/${notificationId}/archive/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.post(`/api/workspaces/${workspaceSlug}/users/notifications/${notificationId}/archive/`)
+    );
   }
 
   /**
@@ -117,11 +99,9 @@ export class WorkspaceNotificationService extends APIService {
    * @returns {Promise<TNotification | undefined>} The updated notification
    */
   async unarchive(workspaceSlug: string, notificationId: string): Promise<TNotification | undefined> {
-    return this.delete(`/api/workspaces/${workspaceSlug}/users/notifications/${notificationId}/archive/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.delete(`/api/workspaces/${workspaceSlug}/users/notifications/${notificationId}/archive/`)
+    );
   }
 
   /**
@@ -134,10 +114,6 @@ export class WorkspaceNotificationService extends APIService {
     workspaceSlug: string,
     data: TNotificationPaginatedInfoQueryParams
   ): Promise<TNotification | undefined> {
-    return this.post(`/api/workspaces/${workspaceSlug}/users/notifications/mark-all-read/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/users/notifications/mark-all-read/`, data));
   }
 }

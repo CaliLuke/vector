@@ -1,12 +1,12 @@
-import { useParams } from "@tanstack/react-router";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
 
-import { useTranslation } from "@plane/i18n";
-import { CloseIcon } from "@plane/propel/icons";
+import { ClearAppliedFilters, RemoveAppliedFilter } from "@/components/common/applied-filters/tag";
+import { orderedFilterKeys } from "@/components/common/applied-filters/keys";
+import { useParams } from "@tanstack/react-router";
 // plane imports
 import type { TPageFilterProps } from "@plane/types";
 import { Tag } from "@plane/ui";
@@ -15,6 +15,13 @@ import { replaceUnderscoreIfSnakeCase } from "@plane/utils/string";
 import { AppliedDateFilters } from "@/components/common/applied-filters/date";
 import { AppliedMembersFilters } from "@/components/common/applied-filters/members";
 
+const FILTER_KEYS = [
+  "created_at",
+  "created_by",
+  "favorites",
+  "labels",
+] as const satisfies readonly (keyof TPageFilterProps)[];
+
 type Props = {
   appliedFilters: TPageFilterProps;
   handleClearAllFilters: () => void;
@@ -22,13 +29,12 @@ type Props = {
   alwaysAllowEditing?: boolean;
 };
 
-const MEMBERS_FILTERS = ["created_by"];
-const DATE_FILTERS = ["created_at"];
+const MEMBERS_FILTERS = new Set(["created_by"]);
+const DATE_FILTERS = new Set(["created_at"]);
 
 export function PageAppliedFiltersList(props: Props) {
   const { workspaceSlug } = useParams({ strict: false });
   const { appliedFilters, handleClearAllFilters, handleRemoveFilter, alwaysAllowEditing } = props;
-  const { t } = useTranslation();
 
   if (!appliedFilters) return null;
   if (Object.keys(appliedFilters).length === 0) return null;
@@ -37,24 +43,24 @@ export function PageAppliedFiltersList(props: Props) {
 
   return (
     <div className="flex flex-wrap items-stretch gap-2">
-      {Object.entries(appliedFilters).map(([key, value]) => {
-        const filterKey = key as keyof TPageFilterProps;
+      {orderedFilterKeys(appliedFilters, FILTER_KEYS).map((filterKey) => {
+        const value = appliedFilters[filterKey];
 
-        if (!value) return;
-        if (Array.isArray(value) && value.length === 0) return;
+        if (!value) return undefined;
+        if (Array.isArray(value) && value.length === 0) return undefined;
 
         return (
           <Tag key={filterKey}>
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="text-11 text-tertiary">{replaceUnderscoreIfSnakeCase(filterKey)}</span>
-              {DATE_FILTERS.includes(filterKey) && (
+              {DATE_FILTERS.has(filterKey) && (
                 <AppliedDateFilters
                   editable={isEditingAllowed}
                   handleRemove={(val) => handleRemoveFilter(filterKey, val)}
                   values={Array.isArray(value) ? value : []}
                 />
               )}
-              {MEMBERS_FILTERS.includes(filterKey) && (
+              {MEMBERS_FILTERS.has(filterKey) && (
                 <AppliedMembersFilters
                   workspaceSlug={workspaceSlug}
                   editable={isEditingAllowed}
@@ -63,26 +69,13 @@ export function PageAppliedFiltersList(props: Props) {
                 />
               )}
               {isEditingAllowed && (
-                <button
-                  type="button"
-                  className="grid place-items-center text-tertiary hover:text-secondary"
-                  onClick={() => handleRemoveFilter(filterKey, null)}
-                >
-                  <CloseIcon height={12} width={12} strokeWidth={2} />
-                </button>
+                <RemoveAppliedFilter filterKey={filterKey} onRemove={() => handleRemoveFilter(filterKey, null)} />
               )}
             </div>
           </Tag>
         );
       })}
-      {isEditingAllowed && (
-        <button type="button" onClick={handleClearAllFilters}>
-          <Tag>
-            {t("common.clear_all")}
-            <CloseIcon height={12} strokeWidth={2} />
-          </Tag>
-        </button>
-      )}
+      {isEditingAllowed && <ClearAppliedFilters onClear={handleClearAllFilters} />}
     </div>
   );
 }

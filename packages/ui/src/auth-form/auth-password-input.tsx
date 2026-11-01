@@ -9,7 +9,8 @@ import { cn } from "@plane/utils/common";
 import { PasswordStrengthIndicator } from "../form-fields/password/indicator";
 import { AuthInput } from "./auth-input";
 
-type TAuthPasswordInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
+type TAuthPasswordInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "value"> & {
+  value?: string;
   label?: string;
   error?: string;
   showPasswordStrength?: boolean;
@@ -43,9 +44,7 @@ export function AuthPasswordInput({
         showPasswordToggle={showPasswordToggle}
         value={value}
       />
-      {showPasswordStrength && value && isFocused && (
-        <PasswordStrengthIndicator password={value as string} showCriteria />
-      )}
+      {showPasswordStrength && value && isFocused && <PasswordStrengthIndicator password={value} showCriteria />}
     </div>
   );
 }

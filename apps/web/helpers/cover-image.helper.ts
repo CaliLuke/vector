@@ -265,7 +265,7 @@ export const handleCoverImageChange = async (
   }
 ): Promise<TCoverImagePayload | undefined> => {
   const analysis = analyzeCoverImageChange(currentImage, newImage);
-  if (!analysis.shouldUpdate) return;
+  if (!analysis.shouldUpdate) return undefined;
 
   if (!newImage) {
     return { cover_image: null, cover_image_url: null, cover_image_asset: null };

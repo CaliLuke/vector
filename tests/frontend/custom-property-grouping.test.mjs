@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createRequire, registerHooks } from "node:module";
@@ -47,7 +48,11 @@ await test("custom grouping menu selects eligible fields, excludes the other axi
   let selected;
   const props = {
     axis: "group_by",
-    displayFilters: { layout: "kanban", group_by: "priority", sub_group_by: "customproperty_owner" },
+    displayFilters: {
+      layout: ContractEnums.EIssueLayoutTypes.KANBAN,
+      group_by: "priority",
+      sub_group_by: "customproperty_owner",
+    },
     onChange: (value) => {
       selected = value;
     },
@@ -69,7 +74,7 @@ await test("custom grouping menu selects eligible fields, excludes the other axi
   await env.render(
     React.createElement(CustomPropertyGrouping, {
       ...props,
-      displayFilters: { ...props.displayFilters, layout: "list" },
+      displayFilters: { ...props.displayFilters, layout: ContractEnums.EIssueLayoutTypes.LIST },
     })
   );
   assert.deepEqual(
@@ -83,7 +88,7 @@ await test("custom grouping menu selects eligible fields, excludes the other axi
 await test("custom group and subgroup pagination preserves exact saved expressions and stable field keys", () => {
   const expression = { or: [{ type_id__exact: "task" }, { not: { customproperty_flag__exact: true } }] };
   const display = getComputedDisplayFilters({
-    layout: "kanban",
+    layout: ContractEnums.EIssueLayoutTypes.KANBAN,
     group_by: "customproperty_flag",
     sub_group_by: "customproperty_location_level_country_catalog_base",
   });
@@ -122,7 +127,11 @@ await test("parent grouping round-trips its type and includes children without n
   const { getIssueListProjection } = await import("../../apps/web/helpers/issue-list/request.ts");
   const { parentGroupColumns } =
     await import("../../apps/web/core/components/issues/issue-layouts/parent-group-columns.ts");
-  const display = getComputedDisplayFilters({ layout: "list", group_by: "parent_type_epic", sub_issue: true });
+  const display = getComputedDisplayFilters({
+    layout: ContractEnums.EIssueLayoutTypes.LIST,
+    group_by: "parent_type_epic",
+    sub_issue: true,
+  });
   assert.equal(display.group_by, "parent_type_epic");
   assert.equal(display.sub_issue, false);
   assert.equal(getIssueListProjection(display).includeSubIssues, false);
@@ -162,7 +171,10 @@ await test("inactive parent grouping preserves Table and Calendar sub-item prefe
     assert.equal(getComputedDisplayFilters({ ...display, sub_issue: true }).sub_issue, true);
   }
   assert.deepEqual(
-    availableExtraOptions(["sub_issue", "show_empty_groups"], { layout: "list", group_by: "parent_type_epic" }),
+    availableExtraOptions(["sub_issue", "show_empty_groups"], {
+      layout: ContractEnums.EIssueLayoutTypes.LIST,
+      group_by: "parent_type_epic",
+    }),
     ["show_empty_groups"]
   );
 });

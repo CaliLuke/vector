@@ -1,11 +1,11 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { QueryClient } from "@tanstack/react-query";
+import { createPermissionQueryClient } from "./helpers/permission-query-fixture.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 registerWebModuleHooks();
-const { identityKeys, advanceIdentitySession, getIdentitySessionGeneration } =
+const { advanceIdentitySession, getIdentitySessionGeneration } =
   await import("../../apps/web/core/queries/identity.ts");
-const { permissionKeys } = await import("../../apps/web/core/queries/permissions.ts");
 const {
   propertyHistoryCatalogOptions,
   propertyVersionPageOptions,
@@ -14,28 +14,32 @@ const {
 } = await import("../../apps/web/core/queries/work-item-property-history.ts");
 const { workItemPropertyHistoryService: service } =
   await import("../../apps/web/core/services/work-item-property-history.service.ts");
-function fixture(t) {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
-  client.setQueryData(identityKeys.currentUser(), { id: "alice" });
+async function fixture(t) {
+  const {
+    client,
+    membershipKey: memberKey,
+    rolesKey,
+  } = await createPermissionQueryClient(t, {
+    accountId: "alice",
+    workspaceSlug: "acme",
+    workspaceRole: ContractEnums.EUserPermissions.MEMBER,
+    membershipRevision: "v1",
+    projectRoles: { project: 5 },
+  });
   const scope = {
     accountId: "alice",
     workspaceSlug: "acme",
     projectId: "project",
     issueId: "item",
-    membershipRole: 15,
+    membershipRole: ContractEnums.EUserPermissions.MEMBER,
     membershipRevision: "v1",
-    projectRole: 5,
+    projectRole: ContractEnums.EUserPermissions.GUEST,
     generation: getIdentitySessionGeneration(client),
   };
-  const memberKey = permissionKeys.workspaceMembership("alice", "acme");
-  const rolesKey = permissionKeys.workspaceProjectRoles("alice", "acme", 15, "v1");
-  client.setQueryData(memberKey, { is_active: true, role: 15, updated_at: "v1" });
-  client.setQueryData(rolesKey, { project: 5 });
-  t.after(() => client.clear());
   return { client, scope, memberKey, rolesKey };
 }
 await test("read-only history forwards exact item/field/revision scope and cursor with cancellation", async (t) => {
-  const { client, scope } = fixture(t);
+  const { client, scope } = await fixture(t);
   const calls = [];
   t.mock.method(service, "catalog", async (...args) => {
     calls.push(args);
@@ -65,7 +69,7 @@ await test("read-only history forwards exact item/field/revision scope and curso
 for (const method of ["catalog", "versions", "detail"]) {
   for (const change of ["membership", "role", "session", "query"]) {
     void test(`${method} rejects late content after ${change} replacement`, async (t) => {
-      const { client, scope, memberKey, rolesKey } = fixture(t),
+      const { client, scope, memberKey, rolesKey } = await fixture(t),
         started = Promise.withResolvers(),
         response = Promise.withResolvers();
       t.mock.method(service, method, () => {
@@ -80,7 +84,12 @@ for (const method of ["catalog", "versions", "detail"]) {
       const reading = client.fetchQuery(options),
         rejected = assert.rejects(reading);
       await started.promise;
-      if (change === "membership") client.setQueryData(memberKey, { is_active: false, role: 15, updated_at: "v2" });
+      if (change === "membership")
+        client.setQueryData(memberKey, {
+          is_active: false,
+          role: ContractEnums.EUserPermissions.MEMBER,
+          updated_at: "v2",
+        });
       if (change === "role") client.setQueryData(rolesKey, {});
       if (change === "session") advanceIdentitySession(client);
       if (change === "query") client.removeQueries({ queryKey: options.queryKey, exact: true });
@@ -91,7 +100,7 @@ for (const method of ["catalog", "versions", "detail"]) {
   }
 }
 await test("revision cache identity and refresh are scoped to item, field, cursor and account generation", async (t) => {
-  const { client, scope } = fixture(t);
+  const { client, scope } = await fixture(t);
   const current = propertyVersionDetailOptions(scope, "field", "v1");
   const other = propertyVersionDetailOptions({ ...scope, issueId: "other" }, "field", "v1");
   assert.notDeepEqual(current.queryKey, propertyVersionDetailOptions(scope, "field", "v2").queryKey);

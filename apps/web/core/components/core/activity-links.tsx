@@ -65,3 +65,20 @@ export function UserLink({ activity }: { activity: IIssueActivity }) {
     </a>
   );
 }
+
+export function ActivityIssueContext({
+  activity,
+  showIssue,
+  preposition,
+}: {
+  activity: IIssueActivity;
+  showIssue: boolean;
+  preposition: string;
+}) {
+  return showIssue ? (
+    <>
+      {" "}
+      {preposition} <IssueLink activity={activity} />
+    </>
+  ) : null;
+}

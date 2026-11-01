@@ -51,10 +51,13 @@ function useKeyedRecordCollection<T extends object, TKey extends QueryKey>(
   useQuery(options);
   const { query, source, collection } = getRecordCollection(client, options, getKey);
   const subscribe = useCallback(
-    (notify: () => void) =>
-      client.getQueryCache().subscribe((event) => {
-        if (event.query === query) notify();
-      }),
+    (notify: () => void) => {
+      return client.getQueryCache().subscribe((event) => {
+        // New QueryObservers emit result events while their component renders.
+        // Only canonical state changes affect this snapshot.
+        if (event.query === query && (event.type === "updated" || event.type === "removed")) notify();
+      });
+    },
     [client, query]
   );
   const snapshot = useCallback(

@@ -238,7 +238,7 @@ export const convertHTMLDocumentToAllFormats = (args: TConvertHTMLDocumentToAllF
       description_binary: contentBinaryEncoded,
     };
   } else {
-    throw new Error(`Invalid variant provided: ${variant}`);
+    throw new Error(`Invalid variant provided: ${String(variant)}`);
   }
 
   return allFormats;

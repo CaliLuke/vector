@@ -24,6 +24,10 @@ interface EmptyStateProps {
   isSearching: boolean;
 }
 
+function EmptyStateContainer({ children }: { children: React.ReactNode }) {
+  return <div className="flex flex-col items-center justify-center px-3 py-8 text-center">{children}</div>;
+}
+
 export function IssueSearchModalEmptyState({ issues, searchTerm, debouncedSearchTerm, isSearching }: EmptyStateProps) {
   // theme hook
   const { resolvedTheme } = useTheme();
@@ -32,10 +36,6 @@ export function IssueSearchModalEmptyState({ issues, searchTerm, debouncedSearch
   // derived values
   const searchResolvedPath = resolvedTheme === "light" ? lightSearchAsset : darkSearchAsset;
   const issuesResolvedPath = resolvedTheme === "light" ? lightIssuesAsset : darkIssuesAsset;
-
-  function EmptyStateContainer({ children }: { children: React.ReactNode }) {
-    return <div className="flex flex-col items-center justify-center px-3 py-8 text-center">{children}</div>;
-  }
 
   if (issues.length === 0 && searchTerm !== "" && debouncedSearchTerm !== "" && !isSearching) {
     return (

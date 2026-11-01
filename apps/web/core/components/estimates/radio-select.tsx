@@ -8,7 +8,7 @@ import React from "react";
 // helpers
 import { cn } from "@plane/utils/common";
 
-type RadioInputProps = {
+type RadioInputProps<T extends string> = {
   name?: string;
   label?: string | React.ReactNode;
   wrapperClassName?: string;
@@ -16,14 +16,14 @@ type RadioInputProps = {
   buttonClassName?: string;
   labelClassName?: string;
   ariaLabel?: string;
-  options: { label: string | React.ReactNode; value: string; disabled?: boolean }[];
+  options: { label: string | React.ReactNode; value: T; disabled?: boolean }[];
   vertical?: boolean;
-  selected: string;
-  onChange: (value: string) => void;
+  selected: T;
+  onChange: (value: T) => void;
   className?: string;
 };
 
-export function RadioInput({
+export function RadioInput<T extends string>({
   name = "radio-input",
   label: inputLabel,
   labelClassName: inputLabelClassName = "",
@@ -36,7 +36,7 @@ export function RadioInput({
   ariaLabel,
   onChange,
   className,
-}: RadioInputProps) {
+}: RadioInputProps<T>) {
   const wrapperClass = vertical ? "flex flex-col gap-1" : "flex gap-2";
 
   const groupLabel = ariaLabel ?? (typeof inputLabel === "string" ? inputLabel : undefined);
@@ -44,7 +44,7 @@ export function RadioInput({
   return (
     <div className={className}>
       {inputLabel && <div className={cn(`mb-2`, inputLabelClassName)}>{inputLabel}</div>}
-      <div role="radiogroup" aria-label={groupLabel} className={cn(`${wrapperClass}`, inputWrapperClassName)}>
+      <div role="radiogroup" aria-label={groupLabel} className={cn(wrapperClass, inputWrapperClassName)}>
         {options.map(({ value, label, disabled }, index) => (
           <div
             key={value}

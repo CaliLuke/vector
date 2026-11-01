@@ -10,12 +10,13 @@ import path from "node:path";
 export const LOCALES_DIR = path.resolve(import.meta.dirname, "../../src/locales");
 
 /** Recursively flatten an object into dot-notation keys. */
-function flattenKeys(obj: Record<string, unknown>, prefix = ""): string[] {
+function flattenKeys(obj: object, prefix = ""): string[] {
   const keys: string[] = [];
-  for (const [k, v] of Object.entries(obj)) {
+  const entries: [string, unknown][] = Object.entries(obj);
+  for (const [k, v] of entries) {
     const full = prefix ? `${prefix}.${k}` : k;
     if (v !== null && typeof v === "object" && !Array.isArray(v)) {
-      keys.push(...flattenKeys(v as Record<string, unknown>, full));
+      keys.push(...flattenKeys(v, full));
     } else {
       keys.push(full);
     }
@@ -24,10 +25,12 @@ function flattenKeys(obj: Record<string, unknown>, prefix = ""): string[] {
 }
 
 /** Parse JSON from a file, including the file path in any error message. */
-function readJsonFile(filePath: string): Record<string, unknown> {
+export function readJsonFile(filePath: string): Record<string, unknown> {
   const raw = fs.readFileSync(filePath, "utf-8");
   try {
-    return JSON.parse(raw) as Record<string, unknown>;
+    const parsed: unknown = JSON.parse(raw);
+    if (!isJsonObject(parsed)) throw new TypeError("Expected a JSON object");
+    return parsed;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     throw new Error(`Failed to parse JSON at ${filePath}: ${message}`, { cause: err });
@@ -74,4 +77,8 @@ export function loadLocale(locale: string): LocaleData {
   }
 
   return { locale, namespaces, allKeys };
+}
+
+function isJsonObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }

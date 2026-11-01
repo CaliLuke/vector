@@ -1,36 +1,22 @@
+import type { TGanttSidebarProps } from "@/components/gantt-chart/sidebar/types";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
 
-import type { RefObject } from "react";
-
 import { useTranslation } from "@plane/i18n";
 // components
-import type { IBlockUpdateData } from "@plane/types";
 import { Row, ERowVariant } from "@plane/ui";
 import { cn } from "@plane/utils/common";
 import { MultipleSelectGroupAction } from "@/components/core/multiple-select";
 // helpers
 // hooks
-import type { TSelectionHelper } from "@/hooks/use-multiple-select";
 // constants
 import { GANTT_SELECT_GROUP, HEADER_HEIGHT, SIDEBAR_WIDTH } from "../constants";
 
-type Props = {
-  blockIds: string[];
-  blockUpdateHandler: (block: any, payload: IBlockUpdateData) => void;
-  canLoadMoreBlocks?: boolean;
-  loadMoreBlocks?: () => void;
-  ganttContainerRef: RefObject<HTMLDivElement | null>;
-  enableReorder: boolean | ((blockId: string) => boolean);
-  enableSelection: boolean | ((blockId: string) => boolean);
-  sidebarToRender: (props: any) => React.ReactNode;
-  title: string;
-  selectionHelpers: TSelectionHelper;
-  showAllBlocks?: boolean;
-  isEpic?: boolean;
+type Props = TGanttSidebarProps & {
+  sidebarToRender: (props: TGanttSidebarProps) => React.ReactNode;
 };
 
 export const GanttChartSidebar = function GanttChartSidebar(props: Props) {

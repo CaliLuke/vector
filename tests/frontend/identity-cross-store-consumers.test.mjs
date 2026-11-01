@@ -1,3 +1,5 @@
+import { EStartOfTheWeek } from "../../packages/types/dist/index.mjs";
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -20,7 +22,7 @@ function createIdentityClient() {
   });
   client.setQueryData(identity.currentUserOptions().queryKey, { id: "alice" });
   for (const userId of ["alice", "bob"]) {
-    const membership = { is_active: true, role: 15, updated_at: "revision-1" };
+    const membership = { is_active: true, role: ContractEnums.EUserPermissions.MEMBER, updated_at: "revision-1" };
     client.setQueryData(permissions.permissionKeys.workspaceMembership(userId, "acme"), membership);
     client.setQueryData(
       permissions.permissionKeys.workspaceProjectRoles(userId, "acme", membership.role, membership.updated_at),
@@ -64,7 +66,12 @@ async function mountPagePermissionProbe(t, { id, access }) {
     client,
     page,
     render,
-    rolesKey: permissions.permissionKeys.workspaceProjectRoles("alice", "acme", 15, "revision-1"),
+    rolesKey: permissions.permissionKeys.workspaceProjectRoles(
+      "alice",
+      "acme",
+      ContractEnums.EUserPermissions.MEMBER,
+      "revision-1"
+    ),
     get result() {
       return environment.container.querySelector("output")?.textContent;
     },
@@ -102,12 +109,12 @@ await test("page controls react to the observed workspace project-role query", a
 await test("calendar week bounds derive from the profile start-of-week preference", () => {
   const activeMonthDate = new Date(2026, 9, 1);
   const activeWeekDate = new Date(2026, 9, 24);
-  assert.deepEqual(getCalendarState(activeMonthDate, activeWeekDate, 0).weekDateRange, {
+  assert.deepEqual(getCalendarState(activeMonthDate, activeWeekDate, EStartOfTheWeek.SUNDAY).weekDateRange, {
     startDate: "2026-10-18",
     endDate: "2026-10-24",
   });
 
-  assert.deepEqual(getCalendarState(activeMonthDate, activeWeekDate, 1).weekDateRange, {
+  assert.deepEqual(getCalendarState(activeMonthDate, activeWeekDate, EStartOfTheWeek.MONDAY).weekDateRange, {
     startDate: "2026-10-19",
     endDate: "2026-10-25",
   });
@@ -115,8 +122,8 @@ await test("calendar week bounds derive from the profile start-of-week preferenc
 
 await test("workspace and project member order use the explicit current-user input", () => {
   const members = [
-    { id: "wa", member: { id: "alice", display_name: "Alice" }, role: 15 },
-    { id: "wb", member: { id: "bob", display_name: "Bob" }, role: 15 },
+    { id: "wa", member: { id: "alice", display_name: "Alice" }, role: ContractEnums.EUserPermissions.MEMBER },
+    { id: "wb", member: { id: "bob", display_name: "Bob" }, role: ContractEnums.EUserPermissions.MEMBER },
   ];
   const summaries = new Map(members.map((row) => [row.member.id, row]));
   const memberships = members.map((row) => ({ member: row.member.id, role: row.role }));

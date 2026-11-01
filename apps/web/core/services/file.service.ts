@@ -28,7 +28,7 @@ export interface UnSplashImage {
   description: null;
   alt_description: string;
   urls: UnSplashImageUrls;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface UnSplashImageUrls {
@@ -83,11 +83,7 @@ export class FileService extends APIService {
   }
 
   async deleteWorkspaceAsset(workspaceSlug: string, assetId: string): Promise<void> {
-    return this.delete(`/api/assets/v2/workspaces/${workspaceSlug}/${assetId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.delete(`/api/assets/v2/workspaces/${workspaceSlug}/${assetId}/`), "data-or-error");
   }
 
   async updateBulkWorkspaceAssetsUploadStatus(
@@ -99,13 +95,12 @@ export class FileService extends APIService {
   ): Promise<void> {
     const { csrf_token } = await authService.requestCSRFToken();
     if (!csrf_token) throw new Error("Could not verify this session. Reload and try again.");
-    return this.post(`/api/assets/v2/workspaces/${workspaceSlug}/${entityId}/bulk/`, data, {
-      headers: { "X-CSRFTOKEN": csrf_token },
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(
+      this.post(`/api/assets/v2/workspaces/${workspaceSlug}/${entityId}/bulk/`, data, {
+        headers: { "X-CSRFTOKEN": csrf_token },
+      }),
+      "data-or-error"
+    );
   }
 
   async updateBulkProjectAssetsUploadStatus(
@@ -116,11 +111,10 @@ export class FileService extends APIService {
       asset_ids: string[];
     }
   ): Promise<void> {
-    return this.post(`/api/assets/v2/workspaces/${workspaceSlug}/projects/${projectId}/${entityId}/bulk/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(
+      this.post(`/api/assets/v2/workspaces/${workspaceSlug}/projects/${projectId}/${entityId}/bulk/`, data),
+      "data-or-error"
+    );
   }
 
   async uploadProjectAsset(
@@ -145,22 +139,14 @@ export class FileService extends APIService {
   }
 
   async deleteUserAsset(assetId: string): Promise<void> {
-    return this.delete(`/api/assets/v2/user-assets/${assetId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.delete(`/api/assets/v2/user-assets/${assetId}/`), "data-or-error");
   }
 
   async deleteNewAsset(assetPath: string): Promise<void> {
-    return this.delete(assetPath)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.delete(assetPath), "data-or-error");
   }
 
-  async deleteOldWorkspaceAsset(workspaceId: string, src: string): Promise<any> {
+  async deleteOldWorkspaceAsset(workspaceId: string, src: string): Promise<number> {
     const assetKey = getAssetIdFromUrl(src);
     return this.delete(`/api/workspaces/file-assets/${workspaceId}/${assetKey}/`)
       .then((response) => response?.status)
@@ -169,7 +155,7 @@ export class FileService extends APIService {
       });
   }
 
-  async deleteOldUserAsset(src: string): Promise<any> {
+  async deleteOldUserAsset(src: string): Promise<number> {
     const assetKey = getAssetIdFromUrl(src);
     return this.delete(`/api/users/file-assets/${assetKey}/`)
       .then((response) => response?.status)
@@ -181,11 +167,10 @@ export class FileService extends APIService {
   async restoreNewAsset(workspaceSlug: string, src: string): Promise<void> {
     // remove the last slash and get the asset id
     const assetId = getAssetIdFromUrl(src);
-    return this.post(`/api/assets/v2/workspaces/${workspaceSlug}/restore/${assetId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(
+      this.post(`/api/assets/v2/workspaces/${workspaceSlug}/restore/${assetId}/`),
+      "data-or-error"
+    );
   }
 
   async checkIfAssetExists(
@@ -194,20 +179,15 @@ export class FileService extends APIService {
   ): Promise<{
     exists: boolean;
   }> {
-    return this.get(`/api/assets/v2/workspaces/${workspaceSlug}/check/${assetId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.get(`/api/assets/v2/workspaces/${workspaceSlug}/check/${assetId}/`), "data-or-error");
   }
 
   async restoreOldEditorAsset(workspaceId: string, src: string): Promise<void> {
     const assetKey = getAssetIdFromUrl(src);
-    return this.post(`/api/workspaces/file-assets/${workspaceId}/${assetKey}/restore/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(
+      this.post(`/api/workspaces/file-assets/${workspaceId}/${assetKey}/restore/`),
+      "data-or-error"
+    );
   }
 
   async getUnsplashImages(query?: string, signal?: AbortSignal): Promise<UnSplashImage[]> {
@@ -233,10 +213,9 @@ export class FileService extends APIService {
     },
     signal?: AbortSignal
   ): Promise<{ asset_id: string }> {
-    return this.post(`/api/assets/v2/workspaces/${workspaceSlug}/duplicate-assets/${assetId}/`, data, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(
+      this.post(`/api/assets/v2/workspaces/${workspaceSlug}/duplicate-assets/${assetId}/`, data, { signal }),
+      "data-or-error"
+    );
   }
 }

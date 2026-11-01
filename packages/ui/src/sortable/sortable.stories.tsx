@@ -5,6 +5,7 @@
  */
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { fn } from "storybook/test";
 import React from "react";
 import { Sortable } from "./sortable";
 
@@ -26,7 +27,7 @@ const meta: Meta<typeof Sortable<StoryItem>> = {
       <div className="border">{item.name}</div>
       // </Draggable>
     ),
-    onChange: (data) => console.log(data.map(({ id }) => id)),
+    onChange: fn().mockName("reorder"),
     keyExtractor: (item) => item.id,
   },
 };

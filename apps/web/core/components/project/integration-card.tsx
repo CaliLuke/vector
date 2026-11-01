@@ -8,7 +8,7 @@ import { useRecordCollection } from "@plane/hooks";
 import { useParams } from "@tanstack/react-router";
 import { skipToken, useQueryClient } from "@tanstack/react-query";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { IGithubRepository, IWorkspaceIntegration } from "@plane/types";
+import type { IGithubRepository, IWorkspaceIntegration, TSyncedGithubRepository } from "@plane/types";
 // assets
 import GithubLogo from "@/app/assets/logos/github-square.png?url";
 import SlackLogo from "@/app/assets/services/slack.png?url";
@@ -37,7 +37,6 @@ const integrationDetails: Record<string, { logo: string; description: string }> 
 
 // services
 const projectService = new ProjectService();
-type SyncedGithubRepository = { repo_detail: { owner: string; name: string } };
 
 export function IntegrationCard({ integration }: Props) {
   const queryClient = useQueryClient();
@@ -48,7 +47,7 @@ export function IntegrationCard({ integration }: Props) {
       queryKey: PROJECT_GITHUB_REPOSITORY(workspaceSlug, projectId, integration.id),
       queryFn:
         workspaceSlug && projectId
-          ? (): Promise<SyncedGithubRepository[]> =>
+          ? (): Promise<TSyncedGithubRepository[]> =>
               projectService.getProjectGithubRepository(workspaceSlug, projectId, integration.id)
           : skipToken,
     },

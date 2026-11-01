@@ -37,7 +37,17 @@ export interface AccordionContentProps {
   children: React.ReactNode;
 }
 
-function AccordionRoot({ defaultValue = [], allowMultiple = false, className = "", children }: AccordionRootProps) {
+const EMPTY_ITEMS: string[] = [];
+const DEFAULT_ICON = (
+  <PlusIcon aria-hidden="true" className="transition-all ease-out group-data-[panel-open]:rotate-45" />
+);
+
+function AccordionRoot({
+  defaultValue = EMPTY_ITEMS,
+  allowMultiple = false,
+  className = "",
+  children,
+}: AccordionRootProps) {
   return (
     <BaseAccordion.Root defaultValue={defaultValue} multiple={allowMultiple} className={`text-14 ${className}`}>
       {children}
@@ -55,7 +65,7 @@ function AccordionItem({ value, disabled, className = "", children }: AccordionI
 
 function AccordionTrigger({
   className = "",
-  icon = <PlusIcon aria-hidden="true" className="transition-all ease-out group-data-[panel-open]:rotate-45" />,
+  icon = DEFAULT_ICON,
   iconClassName = "",
   children,
   asChild = false,

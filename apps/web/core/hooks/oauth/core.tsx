@@ -20,7 +20,7 @@ import googleLogo from "@/app/assets/logos/google-logo.svg?url";
 import { useQuery } from "@tanstack/react-query";
 import { instanceConfigOptions } from "@/queries/instance";
 
-export const useCoreOAuthConfig = (oauthActionText: string): TOAuthConfigs => {
+export const useCoreOAuthConfig = (oauthActionText: string = "Continue"): TOAuthConfigs => {
   //router
   const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   // query params
@@ -30,13 +30,6 @@ export const useCoreOAuthConfig = (oauthActionText: string): TOAuthConfigs => {
   // store hooks
   const { data: config } = useQuery(instanceConfigOptions);
   // derived values
-  const isOAuthEnabled =
-    (config &&
-      (config?.is_google_enabled ||
-        config?.is_github_enabled ||
-        config?.is_gitlab_enabled ||
-        config?.is_gitea_enabled)) ||
-    false;
   const oAuthOptions: TOAuthOption[] = [
     {
       id: "google",
@@ -84,7 +77,7 @@ export const useCoreOAuthConfig = (oauthActionText: string): TOAuthConfigs => {
   ];
 
   return {
-    isOAuthEnabled,
+    isOAuthEnabled: oAuthOptions.some((option) => option.enabled),
     oAuthOptions,
   };
 };

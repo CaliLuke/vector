@@ -14,7 +14,7 @@ import { LinkIcon, ModuleStatusIcon } from "@plane/propel/icons";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import type { IModule } from "@plane/types";
 import { EUserProjectRoles } from "@plane/types";
-import { copyTextToClipboard } from "@plane/utils/string";
+import { copyPowerKCurrentUrl } from "@/components/power-k/core/execute-action";
 // components
 import type { TPowerKCommandConfig } from "@/components/power-k/core/types";
 // hooks
@@ -57,13 +57,13 @@ export const usePowerKModuleContextBasedActions = (): TPowerKCommandConfig[] => 
 
   const handleUpdateMember = useCallback(
     (memberId: string) => {
-      if (!moduleDetails) return;
+      if (!moduleDetails) return undefined;
 
       const updatedMembers = [...(moduleDetails.member_ids ?? [])];
       if (updatedMembers.includes(memberId)) updatedMembers.splice(updatedMembers.indexOf(memberId), 1);
       else updatedMembers.push(memberId);
 
-      handleUpdateModule({ member_ids: updatedMembers });
+      return handleUpdateModule({ member_ids: updatedMembers });
     },
     [handleUpdateModule, moduleDetails]
   );
@@ -78,23 +78,11 @@ export const usePowerKModuleContextBasedActions = (): TPowerKCommandConfig[] => 
     });
   }, [toggleFavorite, workspaceSlug, moduleDetails]);
 
-  const copyModuleUrlToClipboard = useCallback(() => {
-    const url = new URL(window.location.href);
-    copyTextToClipboard(url.href)
-      .then(() => {
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: t("power_k.contextual_actions.module.copy_url_toast_success"),
-        });
-      })
-      .catch(() => {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: t("power_k.contextual_actions.module.copy_url_toast_error"),
-        });
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const copyModuleUrlToClipboard = () =>
+    copyPowerKCurrentUrl(
+      t("power_k.contextual_actions.module.copy_url_toast_success"),
+      t("power_k.contextual_actions.module.copy_url_toast_error")
+    );
 
   return [
     {
@@ -105,9 +93,7 @@ export const usePowerKModuleContextBasedActions = (): TPowerKCommandConfig[] => 
       contextType: "module",
       type: "change-page",
       page: "update-module-member",
-      onSelect: (data) => {
-        if (typeof data === "string") handleUpdateMember(data);
-      },
+      onSelect: (data) => (typeof data === "string" ? handleUpdateMember(data) : undefined),
       shortcut: "m",
       isEnabled: () => isEditingAllowed,
       isVisible: () => isEditingAllowed,
@@ -123,7 +109,7 @@ export const usePowerKModuleContextBasedActions = (): TPowerKCommandConfig[] => 
       page: "update-module-status",
       onSelect: (data) => {
         const status = MODULE_STATUS.find((row) => row.value === data)?.value;
-        if (status) void handleUpdateModule({ status });
+        return status ? handleUpdateModule({ status }) : undefined;
       },
       shortcut: "s",
       isEnabled: () => isEditingAllowed,

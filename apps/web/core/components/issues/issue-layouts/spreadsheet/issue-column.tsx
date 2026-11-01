@@ -14,6 +14,8 @@ import { SPREADSHEET_COLUMNS } from "../utils";
 import { shouldRenderColumn } from "@/helpers/issue-filter.helper";
 import { WithDisplayPropertiesHOC } from "../properties/with-display-properties-HOC";
 
+import { useSpreadsheetMutationFeedback } from "./use-mutation-feedback";
+
 type Props = {
   displayProperties: IIssueDisplayProperties;
   issueDetail: TIssue;
@@ -28,6 +30,7 @@ export const IssueColumn = function IssueColumn(props: Props) {
   // router
   const tableCellRef = useRef<HTMLTableCellElement | null>(null);
 
+  const reportFailure = useSpreadsheetMutationFeedback(issueDetail);
   const shouldRenderProperty = shouldRenderColumn(property, isEstimateEnabled);
 
   const Column = SPREADSHEET_COLUMNS[property];
@@ -51,7 +54,7 @@ export const IssueColumn = function IssueColumn(props: Props) {
       >
         <Column
           issue={issueDetail}
-          onChange={handleUpdateIssue}
+          onChange={(issue, data) => void handleUpdateIssue(issue, data).catch(reportFailure)}
           disabled={disableUserActions}
           onClose={() => tableCellRef?.current?.focus()}
         />

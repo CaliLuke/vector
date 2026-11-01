@@ -10,13 +10,7 @@ import { Image as BaseImageExtension } from "@tiptap/extension-image";
 // constants
 import { CORE_EXTENSIONS } from "@/constants/extension";
 // local imports
-import { ECustomImageAttributeNames } from "./types";
-import type {
-  TCustomImageAttributes,
-  CustomImageExtensionType,
-  CustomImageExtensionStorage,
-  InsertImageComponentProps,
-} from "./types";
+import type { CustomImageExtensionType, CustomImageExtensionStorage, InsertImageComponentProps } from "./types";
 import { DEFAULT_CUSTOM_IMAGE_ATTRIBUTES } from "./utils";
 
 declare module "@tiptap/core" {
@@ -41,14 +35,8 @@ export const CustomImageExtensionConfig: CustomImageExtensionType = BaseImageExt
   addAttributes() {
     const attributes = {
       ...this.parent?.(),
-      ...Object.values(ECustomImageAttributeNames).reduce(
-        (acc, value) => {
-          acc[value] = {
-            default: DEFAULT_CUSTOM_IMAGE_ATTRIBUTES[value],
-          };
-          return acc;
-        },
-        {} as Record<ECustomImageAttributeNames, { default: TCustomImageAttributes[ECustomImageAttributeNames] }>
+      ...Object.fromEntries(
+        Object.entries(DEFAULT_CUSTOM_IMAGE_ATTRIBUTES).map(([name, value]) => [name, { default: value }])
       ),
     };
 

@@ -17,43 +17,33 @@ export class ProjectStateService extends APIService {
   }
 
   async createState(workspaceSlug: string, projectId: string, data: Partial<IState>): Promise<IState> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/states/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+    return this.responseData(
+      this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/states/`, data),
+      "response"
+    );
   }
 
   async markDefault(workspaceSlug: string, projectId: string, stateId: string): Promise<void> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/states/${stateId}/mark-default/`, {})
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+    return this.responseData(
+      this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/states/${stateId}/mark-default/`, {}),
+      "response"
+    );
   }
 
   async getStates(workspaceSlug: string, projectId: string, signal?: AbortSignal): Promise<IState[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/states/`, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/states/`, { signal }));
   }
 
   async getIntakeState(workspaceSlug: string, projectId: string, signal?: AbortSignal): Promise<IIntakeState> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/intake-state/`, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/intake-state/`, { signal })
+    );
   }
 
   async patchState(workspaceSlug: string, projectId: string, stateId: string, data: Partial<IState>): Promise<IState> {
-    return this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/states/${stateId}/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/states/${stateId}/`, data)
+    );
   }
 
   async deleteState(workspaceSlug: string, projectId: string, stateId: string): Promise<void> {
@@ -65,10 +55,6 @@ export class ProjectStateService extends APIService {
   }
 
   async getWorkspaceStates(workspaceSlug: string, signal?: AbortSignal): Promise<IState[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/states/`, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/states/`, { signal }));
   }
 }

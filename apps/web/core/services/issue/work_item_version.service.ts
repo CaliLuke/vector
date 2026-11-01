@@ -25,13 +25,11 @@ export class WorkItemVersionService extends APIService {
     projectId: string,
     workItemId: string
   ): Promise<TDescriptionVersionsListResponse> {
-    return this.get(
-      `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${workItemId}/description-versions/`
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(
+        `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${workItemId}/description-versions/`
+      )
+    );
   }
 
   async retrieveDescriptionVersion(
@@ -40,12 +38,10 @@ export class WorkItemVersionService extends APIService {
     workItemId: string,
     versionId: string
   ): Promise<TDescriptionVersionDetails> {
-    return this.get(
-      `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${workItemId}/description-versions/${versionId}/`
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(
+        `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${workItemId}/description-versions/${versionId}/`
+      )
+    );
   }
 }

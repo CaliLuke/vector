@@ -68,6 +68,7 @@ export function SelectChannel({ integration }: Props) {
           type="button"
           className={`bg-gray-700 relative inline-flex h-4 w-6 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
           role="switch"
+          aria-label="Connect Slack channel"
           aria-checked={!!slackChannel}
           disabled={isRemoving}
           onClick={() => {

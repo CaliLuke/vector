@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { MutationObserver, QueryClient, QueryObserver } from "@tanstack/react-query";
@@ -15,8 +16,17 @@ function fixture(t) {
   t.after(() => client.clear());
   client.setQueryData(identityKeys.currentUser(), { id: "user" });
   const workspaceKey = permissionKeys.workspaceMembership("user", "acme");
-  const rolesKey = permissionKeys.workspaceProjectRoles("user", "acme", 20, "revision-1");
-  client.setQueryData(workspaceKey, { is_active: true, role: 20, updated_at: "revision-1" });
+  const rolesKey = permissionKeys.workspaceProjectRoles(
+    "user",
+    "acme",
+    ContractEnums.EUserPermissions.ADMIN,
+    "revision-1"
+  );
+  client.setQueryData(workspaceKey, {
+    is_active: true,
+    role: ContractEnums.EUserPermissions.ADMIN,
+    updated_at: "revision-1",
+  });
   client.setQueryData(rolesKey, { first: 15, second: 5 });
   return { client, workspaceKey, rolesKey };
 }

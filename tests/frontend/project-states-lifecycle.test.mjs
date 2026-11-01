@@ -8,8 +8,58 @@ import { React } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 registerWebModuleHooks();
+const stateToasts = [];
+globalThis.vectorStateLifecycleToasts = stateToasts;
+
+void test("marking a default state stays disabled until the save settles and can retry failure", async (t) => {
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  const { StateMarksAsDefault } =
+    await import("../../apps/web/core/components/project-states/options/mark-as-default.tsx");
+  stateToasts.length = 0;
+  const pending = Promise.withResolvers();
+  const save = t.mock.fn(() => pending.promise);
+  await environment.render(
+    React.createElement(StateMarksAsDefault, {
+      stateId: "state",
+      isDefault: false,
+      markStateAsDefaultCallback: save,
+    })
+  );
+  const button = environment.container.querySelector("button");
+  await React.act(async () => button.click());
+  assert.equal(button.disabled, true);
+  assert.equal(button.textContent, "Marking as default");
+  await React.act(async () => button.click());
+  assert.equal(save.mock.callCount(), 1);
+  await React.act(async () => pending.reject(new Error("offline")));
+  assert.equal(stateToasts.at(-1)?.title, "Could not change the default state");
+  assert.equal(button.disabled, false);
+  assert.equal(button.textContent, "Mark as default");
+  save.mock.mockImplementation(async () => {});
+  await React.act(async () => button.click());
+  assert.equal(save.mock.callCount(), 2);
+});
 
 const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
+
+void test("a replaced default-state action cannot publish a stale failure or lock its replacement", async (t) => {
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  const { StateMarksAsDefault } =
+    await import("../../apps/web/core/components/project-states/options/mark-as-default.tsx");
+  stateToasts.length = 0;
+  const pending = Promise.withResolvers();
+  const props = { isDefault: false, markStateAsDefaultCallback: () => pending.promise };
+  await environment.render(React.createElement(StateMarksAsDefault, { ...props, stateId: "old" }));
+  await React.act(async () => environment.container.querySelector("button").click());
+  await environment.render(React.createElement(StateMarksAsDefault, { ...props, stateId: "new" }));
+  assert.equal(environment.container.querySelector("button").disabled, false);
+  await React.act(async () => pending.reject(new Error("old request failed")));
+  assert.deepEqual(stateToasts, []);
+  await environment.render(React.createElement(StateMarksAsDefault, { ...props, stateId: "old" }));
+  assert.equal(environment.container.querySelector("button").disabled, false);
+});
 const sourceModules = {
   "@plane/propel/icons": "packages/propel/src/icons/actions/close-icon.tsx",
   "@plane/propel/tooltip": "packages/propel/src/tooltip/root.tsx",
@@ -40,7 +90,7 @@ registerHooks({
     if (specifier === "@plane/propel/toast") {
       return {
         shortCircuit: true,
-        url: `data:text/javascript,${encodeURIComponent("export const TOAST_TYPE = { ERROR: 'error' }; export const setToast = () => {};")}`,
+        url: `data:text/javascript,${encodeURIComponent("export const TOAST_TYPE = { ERROR: 'error' }; export const setToast = value => globalThis.vectorStateLifecycleToasts.push(value);")}`,
       };
     }
 
@@ -65,16 +115,13 @@ registerHooks({
   },
 });
 
-test("StateDelete explains disabled states on focus and only opens deletion for enabled states", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("StateDelete explains disabled states on focus and only opens deletion for enabled states", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
 
   const errors = [];
-  const originalError = console.error;
-  console.error = (...args) => errors.push(args.join(" "));
-  t.after(() => {
-    console.error = originalError;
-  });
+  t.mock.method(console, "error", (...args) => errors.push(args.join(" ")));
 
   const { StateDelete } = await import("../../apps/web/core/components/project-states/options/delete.tsx");
   const renderStateDelete = async (state, totalStates) =>
@@ -137,7 +184,7 @@ test("StateDelete explains disabled states on focus and only opens deletion for 
   assert.equal(button.querySelector("svg")?.nodeName.toLowerCase(), "svg");
 });
 
-test("StateItem cleans up drag and drop registrations during StrictMode effect replay", async (t) => {
+void test("StateItem cleans up drag and drop registrations during StrictMode effect replay", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
 

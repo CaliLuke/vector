@@ -53,7 +53,7 @@ export function ViewOrderByDropdown(props: Props) {
           className="flex items-center justify-between gap-2"
           onClick={() =>
             onChange({
-              key: option.key as TViewFiltersSortKey,
+              key: option.key,
             })
           }
         >
@@ -71,7 +71,7 @@ export function ViewOrderByDropdown(props: Props) {
             onClick={() => {
               if (!isSelected)
                 onChange({
-                  order: option.key as TViewFiltersSortBy,
+                  order: option.key,
                 });
             }}
           >

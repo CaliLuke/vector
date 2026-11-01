@@ -5,9 +5,9 @@
  * See the LICENSE file for details.
  */
 
+import { getCycleGroup } from "@plane/utils/cycle";
 import type { CSSProperties } from "react";
 import { isParentTypeGrouping, isCustomGrouping } from "@/helpers/issue-list/grouping-axis";
-import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 import clone from "lodash-es/clone.js";
 import isNil from "lodash-es/isNil.js";
 import scrollIntoView from "smooth-scroll-into-view-if-needed";
@@ -35,15 +35,12 @@ import {
 import type {
   GroupByColumnTypes,
   IGroupByColumn,
-  TCycleGroups,
   IIssueDisplayProperties,
   TIssueStandardDisplayProperty,
-  IPragmaticDropPayload,
   TIssue,
   TIssueGroupByOptions,
   IIssueFilterOptions,
   IIssueFilters,
-  IIssueDisplayFilterOptions,
   TGetColumns,
   IWorkspaceMember,
   IIssueLabel,
@@ -84,13 +81,9 @@ import {
 export const HIGHLIGHT_CLASS = "highlight";
 export const HIGHLIGHT_WITH_LINE = "highlight-with-line";
 
-export type GroupDropLocation = {
-  columnId: string;
-  groupId: string;
-  subGroupId?: string;
-  id: string | undefined;
-  canAddIssueBelow?: boolean;
-};
+import type { GroupDropLocation } from "@/helpers/issue-list/drop-payload";
+export type { GroupDropLocation } from "@/helpers/issue-list/drop-payload";
+export { getSourceFromDropPayload, getDestinationFromDropPayload } from "@/helpers/issue-list/drop-payload";
 
 export type IssueUpdates = {
   [groupKey: string]: {
@@ -100,32 +93,26 @@ export type IssueUpdates = {
 };
 
 export const isWorkspaceLevel = (type: EIssuesStoreType) =>
-  // oxlint-disable-next-line no-unneeded-ternary
   [
     EIssuesStoreType.PROFILE,
     EIssuesStoreType.GLOBAL,
     EIssuesStoreType.TEAM,
     EIssuesStoreType.TEAM_VIEW,
     EIssuesStoreType.TEAM_PROJECT_WORK_ITEMS,
-  ].includes(type)
-    ? true
-    : false;
+  ].includes(type);
 
-export function isSubscribedProfileRequest(requestInput: unknown) {
+function isSubscribedProfileRequest(requestInput: unknown) {
   if (typeof requestInput !== "object" || requestInput === null || !("kind" in requestInput)) return false;
   return requestInput.kind === "profile" && "view" in requestInput && requestInput.view === "subscribed";
 }
 
 type TGetGroupByColumns = {
-  groupBy: GroupByColumnTypes | null;
+  groupBy: TIssueGroupByOptions | undefined;
   includeNone: boolean;
   isEpic?: boolean;
   projectId?: string;
 };
 
-// NOTE: Type of groupBy is different compared to what's being passed from the components.
-// We are using `as` to typecast it to the expected type.
-// It can break the includeNone logic if not handled properly.
 type TGetGroupByColumnsWithIdentity = TGetGroupByColumns & {
   assigneeIds: readonly string[];
   creatorIds: readonly string[];
@@ -168,7 +155,8 @@ export const getGroupByColumns = ({
   }
 
   // Return undefined if no valid groupBy
-  if (!groupBy || isCustomGrouping(groupBy) || isParentTypeGrouping(groupBy)) return undefined;
+  if (!groupBy || groupBy === "target_date" || isCustomGrouping(groupBy) || isParentTypeGrouping(groupBy))
+    return undefined;
 
   // Map of group by options to their corresponding column getter functions
   const groupByColumnMap: Record<
@@ -213,7 +201,7 @@ const getCycleColumns = (cycleDetails: readonly ICycle[] | undefined): IGroupByC
   if (!cycleDetails) return undefined;
   const cycles: IGroupByColumn[] = [];
   cycleDetails?.map((cycle) => {
-    const cycleStatus = cycle.status ? (cycle.status.toLocaleLowerCase() as TCycleGroups) : "draft";
+    const cycleStatus = getCycleGroup(cycle.status);
     const isDropDisabled = cycleStatus === "completed" || Boolean(cycle.archived_at);
     cycles.push({
       id: cycle.id,
@@ -259,10 +247,10 @@ const getStateColumns = ({
   projectId,
   states,
 }: TGetColumns & { states?: readonly IState[] }): IGroupByColumn[] | undefined => {
-  const _states = projectId ? states?.filter((state) => state.project_id === projectId) : states;
-  if (!_states) return;
+  const projectStates = projectId ? states?.filter((state) => state.project_id === projectId) : states;
+  if (!projectStates) return undefined;
   // map project states to group by columns
-  return _states.map((state) => ({
+  return projectStates.map((state) => ({
     id: state.id,
     name: state.name,
     icon: (
@@ -343,85 +331,13 @@ export const highlightIssueOnDrop = (
   shouldScrollIntoView = true,
   shouldHighLightWithLine = false
 ) => {
-  setTimeout(async () => {
+  setTimeout(() => {
     const sourceElementId = elementId ?? "";
     const sourceElement = document.getElementById(sourceElementId);
     sourceElement?.classList?.add(shouldHighLightWithLine ? HIGHLIGHT_WITH_LINE : HIGHLIGHT_CLASS);
     if (shouldScrollIntoView && sourceElement)
-      await scrollIntoView(sourceElement, { behavior: "smooth", block: "center", duration: 1500 });
+      void scrollIntoView(sourceElement, { behavior: "smooth", block: "center", duration: 1500 });
   }, 200);
-};
-
-/**
- * get Kanban Source data from Pragmatic Payload
- * @param payload
- * @returns
- */
-export const getSourceFromDropPayload = (payload: IPragmaticDropPayload): GroupDropLocation | undefined => {
-  const { location, source: sourceIssue } = payload;
-
-  const sourceIssueData = sourceIssue.data;
-  let sourceColumData;
-
-  const sourceDropTargets = location?.initial?.dropTargets ?? [];
-  for (const dropTarget of sourceDropTargets) {
-    const dropTargetData = dropTarget?.data;
-
-    if (!dropTargetData) continue;
-
-    if (dropTargetData.type === "COLUMN") {
-      sourceColumData = dropTargetData;
-    }
-  }
-
-  if (sourceIssueData?.id === undefined || !sourceColumData?.groupId) return;
-
-  return {
-    groupId: sourceColumData.groupId as string,
-    subGroupId: sourceColumData.subGroupId as string,
-    columnId: sourceColumData.columnId as string,
-    id: sourceIssueData.id as string,
-  };
-};
-
-/**
- * get Destination Source data from Pragmatic Payload
- * @param payload
- * @returns
- */
-export const getDestinationFromDropPayload = (payload: IPragmaticDropPayload): GroupDropLocation | undefined => {
-  const { location } = payload;
-
-  let destinationIssueData, destinationColumnData;
-
-  const destDropTargets = location?.current?.dropTargets ?? [];
-
-  for (const dropTarget of destDropTargets) {
-    const dropTargetData = dropTarget?.data;
-
-    if (!dropTargetData) continue;
-
-    if (dropTargetData.type === "COLUMN" || dropTargetData.type === "DELETE") {
-      destinationColumnData = dropTargetData;
-    }
-
-    if (dropTargetData.type === "ISSUE") {
-      destinationIssueData = dropTargetData;
-    }
-  }
-
-  if (!destinationColumnData?.groupId) return;
-
-  // extract instruction from destination issue
-  const extractedInstruction = destinationIssueData ? extractInstruction(destinationIssueData)?.type : "";
-
-  return {
-    groupId: destinationColumnData.groupId as string,
-    subGroupId: destinationColumnData.subGroupId as string,
-    columnId: destinationColumnData.columnId as string,
-    id: destinationIssueData?.id as string | undefined,
-    canAddIssueBelow: extractedInstruction === "reorder-below",
-  };
 };
 
 /**
@@ -517,34 +433,48 @@ function moveGroupValue(value: TIssue[keyof TIssue], sourceId: string, destinati
   return nextValues;
 }
 
+function groupMove(
+  issue: TIssue,
+  groupBy: TIssueGroupByOptions | undefined,
+  sourceId: string | undefined,
+  destinationId: string | undefined
+): { patch: Partial<TIssue>; updates: IssueUpdates } {
+  if (!groupBy || !sourceId || !destinationId || sourceId === destinationId) {
+    return { patch: {}, updates: {} };
+  }
+  const key = ISSUE_FILTER_DEFAULT_DATA[groupBy];
+  return {
+    patch: { [key]: moveGroupValue(issue[key], sourceId, destinationId) },
+    updates: { [key]: { ADD: getGroupId(destinationId), REMOVE: getGroupId(sourceId) } },
+  };
+}
+
 export const handleGroupDragDrop = async (
   source: GroupDropLocation,
   destination: GroupDropLocation,
   getIssueById: (issueId: string) => TIssue | undefined,
   getIssueIds: (groupId?: string, subGroupId?: string) => string[] | undefined,
-  updateIssueOnDrop: (projectId: string, issueId: string, data: Partial<TIssue>, issueUpdates: IssueUpdates) => void,
+  updateIssueOnDrop: (
+    projectId: string,
+    issueId: string,
+    data: Partial<TIssue>,
+    issueUpdates: IssueUpdates
+  ) => Promise<void>,
   groupBy: TIssueGroupByOptions | undefined,
   subGroupBy: TIssueGroupByOptions | undefined,
   shouldAddIssueAtTop = false
 ) => {
   if (!source.id || (subGroupBy && (!source.subGroupId || !destination.subGroupId))) return;
 
-  let updatedIssue: Partial<TIssue> = {};
-  const issueUpdates: IssueUpdates = {};
-  const destinationIssues = getIssueIds(destination.groupId, destination.subGroupId) ?? [];
-
   const sourceIssue = getIssueById(source.id);
+  if (!sourceIssue?.project_id) return;
 
-  if (!sourceIssue) return;
-
-  updatedIssue = {
+  const destinationIssues = getIssueIds(destination.groupId, destination.subGroupId) ?? [];
+  const group = groupMove(sourceIssue, groupBy, source.groupId, destination.groupId);
+  const subgroup = groupMove(sourceIssue, subGroupBy, source.subGroupId, destination.subGroupId);
+  const updatedIssue: Partial<TIssue> = {
     id: sourceIssue.id,
     project_id: sourceIssue.project_id,
-  };
-
-  // for both horizontal and vertical dnd
-  updatedIssue = {
-    ...updatedIssue,
     ...handleSortOrder(
       destinationIssues,
       destination.id,
@@ -552,32 +482,13 @@ export const handleGroupDragDrop = async (
       shouldAddIssueAtTop,
       !!destination.canAddIssueBelow
     ),
+    ...group.patch,
+    ...subgroup.patch,
   };
-
-  // update updatedIssue values based on the source and destination groupIds
-  if (source.groupId && destination.groupId && source.groupId !== destination.groupId && groupBy) {
-    const groupKey = ISSUE_FILTER_DEFAULT_DATA[groupBy];
-    const groupValue = moveGroupValue(sourceIssue[groupKey], source.groupId, destination.groupId);
-
-    // keep track of updates on what was added and what was removed
-    issueUpdates[groupKey] = { ADD: getGroupId(destination.groupId), REMOVE: getGroupId(source.groupId) };
-    updatedIssue = { ...updatedIssue, [groupKey]: groupValue };
-  }
-
-  // do the same for subgroup
-  // update updatedIssue values based on the source and destination subGroupIds
-  if (subGroupBy && source.subGroupId && destination.subGroupId && source.subGroupId !== destination.subGroupId) {
-    const subGroupKey = ISSUE_FILTER_DEFAULT_DATA[subGroupBy];
-    const subGroupValue = moveGroupValue(sourceIssue[subGroupKey], source.subGroupId, destination.subGroupId);
-
-    // keep track of updates on what was added and what was removed
-    issueUpdates[subGroupKey] = { ADD: getGroupId(destination.subGroupId), REMOVE: getGroupId(source.subGroupId) };
-    updatedIssue = { ...updatedIssue, [subGroupKey]: subGroupValue };
-  }
-
-  if (updatedIssue && sourceIssue?.project_id) {
-    return await updateIssueOnDrop(sourceIssue?.project_id, sourceIssue.id, updatedIssue, issueUpdates);
-  }
+  return await updateIssueOnDrop(sourceIssue.project_id, sourceIssue.id, updatedIssue, {
+    ...group.updates,
+    ...subgroup.updates,
+  });
 };
 
 /**
@@ -585,7 +496,7 @@ export const handleGroupDragDrop = async (
  * @param obj
  * @returns
  */
-export const removeNillKeys = <T,>(obj: T) =>
+export const removeNillKeys = (obj: object | null | undefined): Record<string, unknown> =>
   Object.fromEntries(Object.entries(obj ?? {}).filter(([key, value]) => key && !isNil(value)));
 
 /**
@@ -633,14 +544,9 @@ export function getApproximateCardHeight(displayProperties: IIssueDisplayPropert
     delete clonedProperties[key];
   });
 
-  let propertyCount = 0;
-
-  // count the remaining properties
-  (Object.keys(clonedProperties) as (keyof IIssueDisplayProperties)[]).forEach((key: keyof IIssueDisplayProperties) => {
-    if (!key.startsWith("customproperty_") && clonedProperties[key]) {
-      propertyCount++;
-    }
-  });
+  const propertyCount = Object.entries(clonedProperties).filter(
+    ([key, enabled]) => !key.startsWith("customproperty_") && enabled
+  ).length;
 
   // based on property count, approximate the height of each card
   if (propertyCount > 3) {
@@ -662,24 +568,18 @@ export const getBlockViewDetails = (
   block: { start_date: string | undefined | null; target_date: string | undefined | null } | undefined | null,
   backgroundColor: string
 ) => {
-  const isBlockVisibleOnChart = block?.start_date || block?.target_date;
-  const isBlockComplete = block?.start_date && block?.target_date;
-
+  const { start_date: startDate, target_date: targetDate } = block ?? {};
   let message;
-  const blockStyle: CSSProperties = {
-    backgroundColor,
-  };
+  const blockStyle: CSSProperties = { backgroundColor };
 
-  if (isBlockVisibleOnChart && !isBlockComplete) {
-    if (block?.start_date) {
-      message = `From ${renderFormattedDate(block.start_date)}`;
-      blockStyle.maskImage = `linear-gradient(to right, ${backgroundColor} 50%, transparent 95%)`;
-    } else if (block?.target_date) {
-      message = `Till ${renderFormattedDate(block.target_date)}`;
-      blockStyle.maskImage = `linear-gradient(to left, ${backgroundColor} 50%, transparent 95%)`;
-    }
-  } else if (isBlockComplete) {
-    message = `${renderFormattedDate(block?.start_date)} to ${renderFormattedDate(block?.target_date)}`;
+  if (startDate && targetDate) {
+    message = `${renderFormattedDate(startDate)} to ${renderFormattedDate(targetDate)}`;
+  } else if (startDate) {
+    message = `From ${renderFormattedDate(startDate)}`;
+    blockStyle.maskImage = `linear-gradient(to right, ${backgroundColor} 50%, transparent 95%)`;
+  } else if (targetDate) {
+    message = `Till ${renderFormattedDate(targetDate)}`;
+    blockStyle.maskImage = `linear-gradient(to left, ${backgroundColor} 50%, transparent 95%)`;
   }
 
   return {
@@ -705,12 +605,12 @@ export function SpreadSheetPropertyIcon(props: ISvgIcons & { iconKey: string }) 
  * @returns
  */
 export const isDisplayFiltersApplied = (filters: Partial<IIssueFilters>): boolean => {
+  const displayProperties = new Map(Object.entries(filters.displayProperties ?? {}));
   const isDisplayPropertiesApplied = Object.keys(DEFAULT_SUB_WORK_ITEM_DISPLAY_PROPERTIES).some(
-    (key) => !filters.displayProperties?.[key as keyof IIssueDisplayProperties]
+    (key) => !displayProperties.get(key)
   );
 
-  const isDisplayFiltersApplied = Object.keys(filters.displayFilters ?? {}).some((key) => {
-    const value = filters.displayFilters?.[key as keyof IIssueDisplayFilterOptions];
+  const isDisplayFiltersApplied = Object.entries(filters.displayFilters ?? {}).some(([key, value]) => {
     if (!value) return false;
     // -create_at is the default order
     if (key === "order_by") {
@@ -792,3 +692,23 @@ export const useGroupByOptions = (
   const groupByOptions = ISSUE_GROUP_BY_OPTIONS.filter((option) => options.includes(option.key));
   return groupByOptions;
 };
+
+/** Capabilities of the view itself; project permissions are applied separately. */
+export function issueLayoutCapabilities(layout: "list" | "kanban", storeType: EIssuesStoreType, requestInput: unknown) {
+  const archivedList = layout === "list" && storeType === EIssuesStoreType.ARCHIVED;
+  return {
+    enableQuickAdd: !archivedList && storeType !== EIssuesStoreType.PROFILE,
+    enableIssueCreation: !archivedList && !isSubscribedProfileRequest(requestInput),
+    enableInlineEditing: !archivedList,
+  };
+}
+
+export function isIssuePropertyEditable(
+  projectId: string | undefined,
+  canEditForProject: ((projectId: string) => boolean) | undefined,
+  inlineEditingEnabled: boolean | undefined,
+  isEditingAllowed: boolean
+) {
+  const projectAllowed = canEditForProject && projectId ? canEditForProject(projectId) : isEditingAllowed;
+  return Boolean(inlineEditingEnabled) && projectAllowed;
+}

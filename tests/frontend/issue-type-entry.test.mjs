@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { registerHooks } from "node:module";
@@ -94,20 +95,33 @@ await test("read-only and archived presentations retain the type without a switc
   assert.match(f.container.textContent, /Retired incident/);
   assert.equal(f.trigger(), null);
   await act(async () =>
-    f.client.setQueryData(permissionKeys.workspaceProjectRoles("workspace-query-test-user", "workspace", 20, "v1"), {
-      first: 5,
-      second: 20,
-    })
+    f.client.setQueryData(
+      permissionKeys.workspaceProjectRoles(
+        "workspace-query-test-user",
+        "workspace",
+        ContractEnums.EUserPermissions.ADMIN,
+        "v1"
+      ),
+      {
+        first: 5,
+        second: 20,
+      }
+    )
   );
   // A workspace admin still has effective admin rights; use a member role to check the viewer project boundary.
   await act(async () => {
     f.client.setQueryData(permissionKeys.workspaceMembership("workspace-query-test-user", "workspace"), {
       is_active: true,
-      role: 15,
+      role: ContractEnums.EUserPermissions.MEMBER,
       updated_at: "viewer",
     });
     f.client.setQueryData(
-      permissionKeys.workspaceProjectRoles("workspace-query-test-user", "workspace", 15, "viewer"),
+      permissionKeys.workspaceProjectRoles(
+        "workspace-query-test-user",
+        "workspace",
+        ContractEnums.EUserPermissions.MEMBER,
+        "viewer"
+      ),
       { first: 5 }
     );
   });
@@ -125,7 +139,7 @@ await test("navigation and permission loss unmount the old type editor", async (
   await act(async () =>
     f.client.setQueryData(permissionKeys.workspaceMembership("workspace-query-test-user", "workspace"), {
       is_active: false,
-      role: 20,
+      role: ContractEnums.EUserPermissions.ADMIN,
       updated_at: "revoked",
     })
   );

@@ -4,13 +4,15 @@
  * See the LICENSE file for details.
  */
 
-import React, { useState, useEffect, useCallback } from "react";
+import { ModalBackdrop } from "@plane/ui/modals";
+import React, { useState, useEffect, useCallback, useRef, useEffectEvent } from "react";
 import { Command } from "cmdk";
 import { Dialog, Transition } from "@headlessui/react";
 // hooks
 import { usePowerK } from "@/hooks/use-power-k";
 // local imports
 import type { TPowerKCommandConfig, TPowerKContext } from "../../core/types";
+import { selectPowerKCommand, selectPowerKPageData } from "../../core/execute-action";
 import type { TPowerKCommandsListProps } from "./commands-list";
 import { PowerKModalFooter } from "./footer";
 import { PowerKModalHeader } from "./header";
@@ -26,43 +28,17 @@ type Props = {
 export function ProjectsAppPowerKModalWrapper(props: Props) {
   const { commandsListComponent: CommandsListComponent, context, hideFooter = false, isOpen, onClose } = props;
   // states
+  const searchRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isWorkspaceLevel, setIsWorkspaceLevel] = useState(false);
   // store hooks
   const { activePage, setActivePage } = usePowerK();
 
-  // Handle command selection
   const handleCommandSelect = useCallback(
-    (command: TPowerKCommandConfig) => {
-      if (command.type === "action") {
-        // Direct action - execute and potentially close
-        command.action(context);
-        if (command.closeOnSelect === true) {
-          context.closePalette();
-        }
-      } else if (command.type === "change-page") {
-        // Opens a selection page
-        context.setActiveCommand(command);
-        setActivePage(command.page);
-        setSearchTerm("");
-      }
-    },
-    [context, setActivePage]
-  );
-
-  // Handle selection page item selection
-  const handlePageDataSelection = useCallback(
-    (data: unknown) => {
-      if (context.activeCommand?.type === "change-page") {
-        context.activeCommand.onSelect(data, context);
-      }
-      // Go back to main page
-      if (context.activeCommand?.closeOnSelect === true) {
-        context.closePalette();
-      }
-    },
+    (command: TPowerKCommandConfig) => selectPowerKCommand(command, context, () => setSearchTerm("")),
     [context]
   );
+  const handlePageDataSelection = useCallback((data: unknown) => selectPowerKPageData(data, context), [context]);
 
   // Handle keyboard navigation
   const handleKeyDown = useCallback(
@@ -102,34 +78,23 @@ export function ProjectsAppPowerKModalWrapper(props: Props) {
     [searchTerm, activePage, onClose, setActivePage, context]
   );
 
-  // Reset state when modal closes
+  const resetClosedPalette = useEffectEvent(() => {
+    setSearchTerm("");
+    setActivePage(null);
+    context.setActiveCommand(null);
+    context.setShouldShowContextBasedActions(true);
+  });
   useEffect(() => {
-    if (!isOpen) {
-      setTimeout(() => {
-        setSearchTerm("");
-        setActivePage(null);
-        context.setActiveCommand(null);
-        context.setShouldShowContextBasedActions(true);
-      }, 200);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (isOpen) return undefined;
+    const timeout = setTimeout(resetClosedPalette, 200);
+    return () => clearTimeout(timeout);
   }, [isOpen]);
 
   return (
     <Transition.Root show={isOpen} as={React.Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
+      <Dialog initialFocus={searchRef} as="div" className="relative z-50" onClose={onClose}>
         {/* Backdrop */}
-        <Transition.Child
-          as={React.Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-backdrop transition-opacity" />
-        </Transition.Child>
+        <ModalBackdrop />
         {/* Modal Container */}
         <div className="fixed inset-0 z-30 overflow-y-auto">
           <div className="flex items-center justify-center p-4 sm:p-6 md:p-20">
@@ -154,6 +119,7 @@ export function ProjectsAppPowerKModalWrapper(props: Props) {
                   className="w-full"
                 >
                   <PowerKModalHeader
+                    inputRef={searchRef}
                     activePage={activePage}
                     context={context}
                     onSearchChange={setSearchTerm}

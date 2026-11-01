@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { QueryClient } from "@tanstack/react-query";
@@ -14,10 +15,10 @@ const scope = {
   workspaceSlug: "acme",
   projectId: "p1",
   generation: 0,
-  membershipRole: 15,
+  membershipRole: ContractEnums.EUserPermissions.MEMBER,
   membershipRevision: "read-scope-1",
-  projectRole: 20,
-  membershipProjectRole: 20,
+  projectRole: ContractEnums.EUserPermissions.ADMIN,
+  membershipProjectRole: ContractEnums.EUserPermissions.ADMIN,
 };
 const item = {
   id: "one",
@@ -59,7 +60,16 @@ await test("late table responses cannot survive account or permission changes", 
         const options = tablePropertyValuesOptions(scope, 7, [item]);
         const read = client.fetchQuery(options);
         if (scenario === "account") client.setQueryData(identityKeys.currentUser(), { id: "bob" });
-        else client.setQueryData(permissionKeys.workspaceProjectRoles("alice", "acme", 15, "read-scope-1"), { p1: 5 });
+        else
+          client.setQueryData(
+            permissionKeys.workspaceProjectRoles(
+              "alice",
+              "acme",
+              ContractEnums.EUserPermissions.MEMBER,
+              "read-scope-1"
+            ),
+            { p1: 5 }
+          );
         pending.resolve([item]);
         await assert.rejects(read, /access changed/);
         assert.equal(client.getQueryData(options.queryKey), undefined);
@@ -107,12 +117,22 @@ await test("workspace admin table reads retain raw project role in their key and
   const client = fixture(t);
   client.setQueryData(permissionKeys.workspaceMembership("alice", "acme"), {
     is_active: true,
-    role: 20,
+    role: ContractEnums.EUserPermissions.ADMIN,
     updated_at: "admin-rev",
   });
-  const roles = permissionKeys.workspaceProjectRoles("alice", "acme", 20, "admin-rev");
+  const roles = permissionKeys.workspaceProjectRoles(
+    "alice",
+    "acme",
+    ContractEnums.EUserPermissions.ADMIN,
+    "admin-rev"
+  );
   client.setQueryData(roles, { p1: 15 });
-  const admin = { ...scope, membershipRole: 20, membershipRevision: "admin-rev", membershipProjectRole: 15 };
+  const admin = {
+    ...scope,
+    membershipRole: ContractEnums.EUserPermissions.ADMIN,
+    membershipRevision: "admin-rev",
+    membershipProjectRole: ContractEnums.EUserPermissions.MEMBER,
+  };
   const pending = Promise.withResolvers();
   t.mock.method(IssueService.prototype, "retrieveIssues", () => pending.promise);
   const options = tablePropertyValuesOptions(admin, 7, [item]);
@@ -123,6 +143,7 @@ await test("workspace admin table reads retain raw project role in their key and
   assert.equal(client.getQueryData(options.queryKey), undefined);
   assert.notDeepEqual(
     options.queryKey,
-    tablePropertyValuesOptions({ ...admin, membershipProjectRole: 5 }, 7, [item]).queryKey
+    tablePropertyValuesOptions({ ...admin, membershipProjectRole: ContractEnums.EUserPermissions.GUEST }, 7, [item])
+      .queryKey
   );
 });

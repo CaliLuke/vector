@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
@@ -90,7 +91,7 @@ function makeProps(page, { fetchPageDescription, updatePageDescription, document
 
 async function seedPermissionQueries(client, roles = { "project-1": 15 }) {
   const { permissionKeys } = permissionQueries;
-  const membership = { is_active: true, role: 15, updated_at: "workspace-revision" };
+  const membership = { is_active: true, role: ContractEnums.EUserPermissions.MEMBER, updated_at: "workspace-revision" };
   client.setQueryData(permissionKeys.workspaceMembership("owner", "acme"), membership);
   client.setQueryData(
     permissionKeys.workspaceProjectRoles("owner", "acme", membership.role, membership.updated_at),
@@ -270,7 +271,12 @@ void test("fallback uses latest project roles after its description fetch", asyn
   const { permissionKeys } = permissionQueries;
   await React.act(async () => {
     fixture.identityFixture.client.setQueryData(
-      permissionKeys.workspaceProjectRoles("owner", "acme", 15, "workspace-revision"),
+      permissionKeys.workspaceProjectRoles(
+        "owner",
+        "acme",
+        ContractEnums.EUserPermissions.MEMBER,
+        "workspace-revision"
+      ),
       {}
     );
     await new Promise((resolve) => setTimeout(resolve, 0));

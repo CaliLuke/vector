@@ -28,10 +28,6 @@ export class SitesLabelService extends APIService {
    * @throws {Error} If the API request fails
    */
   async list(anchor: string, signal?: AbortSignal): Promise<IIssueLabel[]> {
-    return this.get(`/api/public/anchor/${anchor}/labels/`, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.get(`/api/public/anchor/${anchor}/labels/`, { signal }), "data-or-error");
   }
 }

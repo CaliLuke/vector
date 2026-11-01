@@ -31,19 +31,19 @@ const Titles: TAuthHeaderDetails = {
   },
 };
 
+const getHeaderSubHeader = (mode: EAuthModes | null): TAuthHeaderContent => {
+  if (mode) {
+    return Titles[mode];
+  }
+
+  return {
+    header: "Comment or react to work items",
+    subHeader: "Use plane to add your valuable inputs to features.",
+  };
+};
+
 export function AuthHeader(props: TAuthHeader) {
   const { authMode } = props;
-
-  const getHeaderSubHeader = (mode: EAuthModes | null): TAuthHeaderContent => {
-    if (mode) {
-      return Titles[mode];
-    }
-
-    return {
-      header: "Comment or react to work items",
-      subHeader: "Use plane to add your valuable inputs to features.",
-    };
-  };
 
   const { header, subHeader } = getHeaderSubHeader(authMode);
 

@@ -14,7 +14,7 @@ type TArgs = {
   editorClassName: string;
 };
 
-export const CoreEditorProps = (props: TArgs): EditorProps => {
+export const createCoreEditorProps = (props: TArgs): EditorProps => {
   const { editorClassName } = props;
 
   return {
@@ -33,6 +33,8 @@ export const CoreEditorProps = (props: TArgs): EditorProps => {
             return true;
           }
         }
+
+        return undefined;
       },
     },
     handlePaste: (view, event) => {

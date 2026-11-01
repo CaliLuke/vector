@@ -12,12 +12,12 @@ import { ChevronRightIcon } from "@plane/propel/icons";
 import { IconButton } from "@plane/propel/icon-button";
 
 type Props = {
-  hamburgerContent: React.ComponentType<{ className?: string; isMobile?: boolean }>;
+  children: React.ReactNode;
   activePath: string;
 };
 
 export function SettingsMobileNav(props: Props) {
-  const { hamburgerContent: HamburgerContent, activePath } = props;
+  const { children, activePath } = props;
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const { t } = useTranslation();
@@ -29,12 +29,10 @@ export function SettingsMobileNav(props: Props) {
   return (
     <div className="flex items-center gap-4 border-b border-subtle px-page-x py-3 md:hidden">
       <div ref={sidebarRef} className="relative z-50 w-fit">
-        {!sidebarCollapsed && (
-          <div className="absolute top-10.5 left-0 z-50">
-            <HamburgerContent className="max-h-100 rounded-lg border border-subtle pb-3" />
-          </div>
-        )}
+        {!sidebarCollapsed && <div className="absolute top-10.5 left-0 z-50">{children}</div>}
         <IconButton
+          aria-label="Settings navigation"
+          aria-expanded={!sidebarCollapsed}
           variant="secondary"
           className="group z-50 shrink-0"
           icon={Menu}

@@ -5,8 +5,9 @@
  */
 
 import type { Editor } from "@tiptap/react";
-import type { CSSProperties } from "react";
-import { useEffect, useState } from "react";
+import { FloatingFocusManager } from "@floating-ui/react";
+import type { FloatingContext } from "@floating-ui/react";
+import { useMemo, useState } from "react";
 // components
 import { LinkEditView, LinkPreview } from "@/components/links";
 
@@ -22,7 +23,8 @@ export type LinkViewProps = {
   closeLinkView: () => void;
 };
 
-export function LinkView(props: LinkViewProps & { style: CSSProperties }) {
+export function LinkView(props: LinkViewProps & { focusContext: FloatingContext }) {
+  const editorFocusTarget = useMemo(() => ({ current: props.editor.view.dom }), [props.editor]);
   const [currentView, setCurrentView] = useState<LinkViews>(props.view ?? "LinkPreview");
   const [prevFrom, setPrevFrom] = useState(props.from);
 
@@ -30,17 +32,19 @@ export function LinkView(props: LinkViewProps & { style: CSSProperties }) {
     setCurrentView(view);
   };
 
-  useEffect(() => {
-    if (props.from !== prevFrom) {
-      setCurrentView("LinkPreview");
-      setPrevFrom(props.from);
-    }
-  }, [prevFrom, props.from]);
+  if (props.from !== prevFrom) {
+    setCurrentView("LinkPreview");
+    setPrevFrom(props.from);
+  }
 
   return (
     <>
       {currentView === "LinkPreview" && <LinkPreview viewProps={props} switchView={switchView} />}
-      {currentView === "LinkEditView" && <LinkEditView viewProps={props} />}
+      {currentView === "LinkEditView" && (
+        <FloatingFocusManager context={props.focusContext} modal={false} returnFocus={editorFocusTarget} restoreFocus>
+          <LinkEditView viewProps={props} />
+        </FloatingFocusManager>
+      )}
     </>
   );
 }

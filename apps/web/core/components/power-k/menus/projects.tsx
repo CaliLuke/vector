@@ -17,16 +17,20 @@ type Props = {
   onSelect: (project: TPartialProject) => void;
 };
 
+function getProjectIcon(project: Props["projects"][number]) {
+  return (
+    <span className="shrink-0">
+      <Logo logo={project.logo_props} size={14} />
+    </span>
+  );
+}
+
 export function PowerKProjectsMenu({ projects, onSelect }: Props) {
   return (
     <PowerKMenuBuilder
       items={projects}
       getKey={(project) => project.id}
-      getIconNode={(project) => (
-        <span className="shrink-0">
-          <Logo logo={project.logo_props} size={14} />
-        </span>
-      )}
+      getIconNode={getProjectIcon}
       getValue={(project) => project.name}
       getLabel={(project) => project.name}
       onSelect={onSelect}

@@ -7,7 +7,7 @@
 // hocuspocus
 import type { Extension, Hocuspocus, Document } from "@hocuspocus/server";
 import { TiptapTransformer } from "@hocuspocus/transformer";
-import type { AnyExtension, JSONContent } from "@tiptap/core";
+import type { AnyExtension } from "@tiptap/core";
 import type * as Y from "yjs";
 // editor extensions
 import {
@@ -29,7 +29,7 @@ import { TitleUpdateManager } from "./title-update/title-update-manager";
  */
 export class TitleSyncExtension implements Extension {
   // Maps document names to their observers and update managers
-  private titleObservers: Map<string, (events: Y.YEvent<any>[]) => void> = new Map();
+  private titleObservers: Map<string, Parameters<Y.XmlFragment["observeDeep"]>[0]> = new Map();
   private titleUpdateManagers: Map<string, TitleUpdateManager> = new Map();
   // Store minimal data needed for each document's title observer (prevents closure memory leaks)
   private titleObserverData: Map<
@@ -54,7 +54,7 @@ export class TitleSyncExtension implements Extension {
         const pageDetails = await service.fetchDetails(documentName);
         const title = pageDetails.name;
         if (title == null) return;
-        const titleJson = (generateTitleProsemirrorJson as (text: string) => JSONContent)(title);
+        const titleJson = generateTitleProsemirrorJson(title);
         const titleField = TiptapTransformer.toYdoc(titleJson, "title", TITLE_EDITOR_EXTENSIONS as AnyExtension[]);
         document.merge(titleField);
       }
@@ -106,10 +106,11 @@ export class TitleSyncExtension implements Extension {
    * Handle title changes for a document
    * This is a separate method to avoid closure memory leaks
    */
-  private handleTitleChange(documentName: string, events: Y.YEvent<any>[]) {
+  private handleTitleChange(documentName: string, events: Parameters<Parameters<Y.XmlFragment["observeDeep"]>[0]>[0]) {
     let title = "";
     events.forEach((event) => {
-      title = extractTextFromHTML(event.currentTarget.toJSON() as string);
+      const serialized: unknown = event.currentTarget.toJSON();
+      if (typeof serialized === "string") title = extractTextFromHTML(serialized);
     });
 
     // Get the manager for this document
@@ -130,7 +131,7 @@ export class TitleSyncExtension implements Extension {
       });
 
       // Use the instance from stored data (guaranteed to be set)
-      broadcastMessageToPage(data.instance, data.parentId, event);
+      void broadcastMessageToPage(data.instance, data.parentId, event);
     }
 
     // Schedule the title update

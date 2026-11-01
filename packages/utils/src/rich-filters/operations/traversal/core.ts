@@ -188,10 +188,15 @@ export const extractConditionsWithDisplayOperators = <P extends TFilterProperty>
   // Transform operators using the extended helper
   return rawConditions.map((condition) => {
     const displayOperator = getDisplayOperator(condition.operator, expression, condition.id);
-    return {
-      ...condition,
+    const display: TFilterConditionNodeForDisplay<P, TFilterValue> = {
+      id: condition.id,
+      type: condition.type,
+      property: condition.property,
+      value: condition.value,
       operator: displayOperator,
     };
+    if (Object.hasOwn(condition, "valueFormat")) display.valueFormat = condition.valueFormat;
+    return display;
   });
 };
 

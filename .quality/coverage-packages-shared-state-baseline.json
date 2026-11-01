@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "files": {
+    "src/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/store/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/store/rich-filters/config-manager.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/store/rich-filters/config.ts": {
+      "lines": 100,
+      "statements": 88.46,
+      "functions": 100,
+      "branches": 88.46
+    },
+    "src/store/rich-filters/conversion.ts": {
+      "lines": 87.5,
+      "statements": 78.94,
+      "functions": 70,
+      "branches": 76.47
+    },
+    "src/store/rich-filters/filter-helpers.ts": {
+      "lines": 63.82,
+      "statements": 60.71,
+      "functions": 53.84,
+      "branches": 56.6
+    },
+    "src/store/rich-filters/filter.ts": {
+      "lines": 70,
+      "statements": 72.72,
+      "functions": 66.66,
+      "branches": 69.23
+    },
+    "src/store/rich-filters/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/store/work-item-filters/adapter.ts": {
+      "lines": 96.42,
+      "statements": 91.3,
+      "functions": 100,
+      "branches": 93.1
+    },
+    "src/store/work-item-filters/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/utils/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/utils/rich-filter.helper.ts": {
+      "lines": 8.33,
+      "statements": 7.69,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/utils/work-item-filters.helper.ts": {
+      "lines": 12.5,
+      "statements": 10,
+      "functions": 0,
+      "branches": 0
+    }
+  }
+}

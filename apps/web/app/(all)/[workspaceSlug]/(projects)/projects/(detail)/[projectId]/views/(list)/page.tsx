@@ -51,17 +51,22 @@ function ProjectViewsPage(): React.JSX.Element | null {
 
   const handleRemoveFilter = useCallback(
     (key: keyof TViewFilterProps, value: string | EViewAccess | null) => {
-      let newValues = filters.filters?.[key];
-
+      const currentFilters = filters.filters;
       if (key === "favorites") {
-        newValues = !!value;
+        updateFilters("filters", { ...currentFilters, favorites: !!value });
+      } else if (key === "view_type") {
+        const selected = currentFilters?.view_type;
+        updateFilters("filters", {
+          ...currentFilters,
+          view_type: selected?.filter((entry) => !!value && entry !== value),
+        });
+      } else {
+        const selected = currentFilters?.[key];
+        updateFilters("filters", {
+          ...currentFilters,
+          [key]: selected?.filter((entry) => !!value && entry !== value) ?? selected,
+        });
       }
-      if (Array.isArray(newValues)) {
-        if (!value) newValues = [];
-        else newValues = newValues.filter((val) => val !== value) as string[];
-      }
-
-      updateFilters("filters", { ...filters.filters, [key]: newValues });
     },
     [filters.filters, updateFilters]
   );

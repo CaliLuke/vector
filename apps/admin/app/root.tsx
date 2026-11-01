@@ -4,8 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import { createAppMetadata } from "@plane/utils/metadata";
 import { Links, Meta, Outlet, Scripts } from "react-router";
 import type { LinksFunction } from "react-router";
 import appleTouchIcon from "@/app/assets/vector.svg?url";
@@ -62,19 +62,12 @@ export function Layout({ children }: { children: ReactNode }) {
   );
 }
 
-export const meta: Route.MetaFunction = () => [
-  { title: APP_TITLE },
-  { name: "description", content: APP_DESCRIPTION },
-  { property: "og:title", content: APP_TITLE },
-  { property: "og:description", content: APP_DESCRIPTION },
-  { property: "og:url", content: "https://github.com/CaliLuke/vector" },
-  {
-    name: "keywords",
-    content:
-      "software development, customer feedback, software, accelerate, code management, release management, project management, work items tracking, agile, scrum, kanban, collaboration",
-  },
-  { name: "twitter:site", content: "Vector" },
-];
+export const meta: Route.MetaFunction = () =>
+  createAppMetadata(
+    APP_TITLE,
+    APP_DESCRIPTION,
+    "software development, customer feedback, software, accelerate, code management, release management, project management, work items tracking, agile, scrum, kanban, collaboration"
+  );
 
 export default function Root() {
   return (
@@ -85,12 +78,6 @@ export default function Root() {
 }
 
 export function HydrateFallback() {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => setIsMounted(true), []);
-
-  if (!isMounted) return <div />;
-
   return (
     <div className="relative flex h-screen w-full items-center justify-center">
       <LogoSpinner />

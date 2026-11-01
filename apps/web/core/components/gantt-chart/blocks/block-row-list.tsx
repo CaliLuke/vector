@@ -15,7 +15,7 @@ import type { TSelectionHelper } from "@/hooks/use-multiple-select";
 
 export type GanttChartBlocksProps = {
   blockIds: string[];
-  blockUpdateHandler: (block: any, payload: IBlockUpdateData) => void;
+  blockUpdateHandler: (blockId: string, payload: IBlockUpdateData) => void;
   handleScrollToBlock: (block: IGanttBlock) => void;
   enableAddBlock: boolean | ((blockId: string) => boolean);
   showAllBlocks: boolean;
@@ -37,27 +37,25 @@ export function GanttChartRowList(props: GanttChartBlocksProps) {
   return (
     <div className="absolute top-0 left-0 w-max min-w-full">
       {blockIds?.map((blockId) => (
-        <>
-          <RenderIfVisible
-            root={ganttContainerRef}
-            horizontalOffset={100}
-            verticalOffset={200}
-            classNames="relative min-w-full w-max"
-            placeholderChildren={<div className="pointer-events-none w-full" style={{ height: `${BLOCK_HEIGHT}px` }} />}
-            shouldRecordHeights={false}
-          >
-            <BlockRow
-              key={blockId}
-              blockId={blockId}
-              showAllBlocks={showAllBlocks}
-              blockUpdateHandler={blockUpdateHandler}
-              handleScrollToBlock={handleScrollToBlock}
-              enableAddBlock={typeof enableAddBlock === "function" ? enableAddBlock(blockId) : enableAddBlock}
-              selectionHelpers={selectionHelpers}
-              ganttContainerRef={ganttContainerRef}
-            />
-          </RenderIfVisible>
-        </>
+        <RenderIfVisible
+          key={blockId}
+          root={ganttContainerRef}
+          horizontalOffset={100}
+          verticalOffset={200}
+          classNames="relative min-w-full w-max"
+          placeholderChildren={<div className="pointer-events-none w-full" style={{ height: `${BLOCK_HEIGHT}px` }} />}
+          shouldRecordHeights={false}
+        >
+          <BlockRow
+            blockId={blockId}
+            showAllBlocks={showAllBlocks}
+            blockUpdateHandler={blockUpdateHandler}
+            handleScrollToBlock={handleScrollToBlock}
+            enableAddBlock={typeof enableAddBlock === "function" ? enableAddBlock(blockId) : enableAddBlock}
+            selectionHelpers={selectionHelpers}
+            ganttContainerRef={ganttContainerRef}
+          />
+        </RenderIfVisible>
       ))}
     </div>
   );

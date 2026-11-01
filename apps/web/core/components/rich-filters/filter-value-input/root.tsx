@@ -7,15 +7,7 @@
 import React from "react";
 
 // plane imports
-import type {
-  TFilterConditionNode,
-  TFilterValue,
-  TFilterProperty,
-  TMultiSelectFilterFieldConfig,
-  TDateFilterFieldConfig,
-  TDateRangeFilterFieldConfig,
-  TFilterConditionNodeForDisplay,
-} from "@plane/types";
+import type { TFilterValue, TFilterProperty } from "@plane/types";
 import { FILTER_FIELD_TYPE } from "@plane/types";
 import type { TFilterValueInputProps } from "../shared";
 import { DateRangeFilterValueInput } from "./date/range";
@@ -45,8 +37,8 @@ export const FilterValueInput = function FilterValueInput<P extends TFilterPrope
   if (filterFieldConfig?.type === FILTER_FIELD_TYPE.MULTI_SELECT) {
     return (
       <MultiSelectFilterValueInput<P>
-        config={filterFieldConfig as TMultiSelectFilterFieldConfig<string>}
-        condition={condition as TFilterConditionNode<P, string>}
+        config={filterFieldConfig}
+        condition={condition}
         isDisabled={isDisabled}
         onChange={onChange}
       />
@@ -57,8 +49,8 @@ export const FilterValueInput = function FilterValueInput<P extends TFilterPrope
   if (filterFieldConfig?.type === FILTER_FIELD_TYPE.DATE) {
     return (
       <SingleDateFilterValueInput<P>
-        config={filterFieldConfig as TDateFilterFieldConfig<string>}
-        condition={condition as TFilterConditionNodeForDisplay<P, string>}
+        config={filterFieldConfig}
+        condition={condition}
         isDisabled={isDisabled}
         onChange={onChange}
       />
@@ -69,8 +61,8 @@ export const FilterValueInput = function FilterValueInput<P extends TFilterPrope
   if (filterFieldConfig?.type === FILTER_FIELD_TYPE.DATE_RANGE) {
     return (
       <DateRangeFilterValueInput<P>
-        config={filterFieldConfig as TDateRangeFilterFieldConfig<string>}
-        condition={condition as TFilterConditionNodeForDisplay<P, string>}
+        config={filterFieldConfig}
+        condition={condition}
         isDisabled={isDisabled}
         onChange={onChange}
       />

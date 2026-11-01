@@ -24,6 +24,7 @@ import { useAnalyticsState } from "@/providers/analytics-state-provider";
 import { useWorkspaceStates } from "@/hooks/use-project-states";
 import { analyticsChartOptions } from "@/queries/analytics";
 import { exportCSV } from "../export";
+import { AnalyticsColumnHeader, AnalyticsValueCell } from "../insight-table/column-renderers";
 import { DataTable } from "../insight-table/data-table";
 import { ChartLoader } from "../loaders";
 import { AnalyticsAccessDenied, AnalyticsQueryError } from "../query-error";
@@ -70,7 +71,13 @@ function PriorityChart(props: Props) {
           key: "count",
           label: "Count",
           stackId: "bar-one",
-          fill: (payload) => generateBarColor(payload.key, { x_axis, y_axis, group_by }, baseColors, workspaceStates),
+          fill: (payload) =>
+            generateBarColor(
+              typeof payload.key === "string" ? payload.key : undefined,
+              { x_axis, y_axis, group_by },
+              baseColors,
+              workspaceStates
+            ),
           textClassName: "",
           showPercentage: false,
           showTopBorderRadius: () => true,
@@ -103,8 +110,10 @@ function PriorityChart(props: Props) {
         fill: extendedColors[index],
         textClassName: "",
         showPercentage: false,
-        showTopBorderRadius: (value, payload: TChartDatum) => parsedExtremes[payload.key].top === value,
-        showBottomBorderRadius: (value, payload: TChartDatum) => parsedExtremes[payload.key].bottom === value,
+        showTopBorderRadius: (value, payload) =>
+          typeof payload.key === "string" && parsedExtremes[payload.key]?.top === value,
+        showBottomBorderRadius: (value, payload) =>
+          typeof payload.key === "string" && parsedExtremes[payload.key]?.bottom === value,
       }));
     } else {
       parsedBars = [];
@@ -136,9 +145,10 @@ function PriorityChart(props: Props) {
       },
       {
         accessorKey: "count",
-        header: () => <div className="text-right">Count</div>,
-        cell: ({ row }) => <div className="text-right">{row.original.count}</div>,
+        header: AnalyticsColumnHeader,
+        cell: AnalyticsValueCell,
         meta: {
+          align: "right",
           export: {
             key: "Count",
             value: (row) => row.original.count,
@@ -155,9 +165,10 @@ function PriorityChart(props: Props) {
       parsedData
         ? Object.keys(parsedData?.schema ?? {}).map((key) => ({
             accessorKey: key,
-            header: () => <div className="text-right">{parsedData.schema[key]}</div>,
-            cell: ({ row }) => <div className="text-right">{row.original[key]}</div>,
+            header: AnalyticsColumnHeader,
+            cell: AnalyticsValueCell,
             meta: {
+              align: "right",
               export: {
                 key,
                 value: (row) => row.original[key],
@@ -202,7 +213,7 @@ function PriorityChart(props: Props) {
             data={parsedData.data}
             columns={[...defaultColumns, ...columns]}
             searchPlaceholder={`${parsedData.data.length} ${xAxisLabel}`}
-            actions={(table: AnalyticsTable<TChartDatum>) => (
+            renderActions={(table: AnalyticsTable<TChartDatum>) => (
               <Button
                 variant="secondary"
                 prependIcon={<Download className="h-3.5 w-3.5" />}

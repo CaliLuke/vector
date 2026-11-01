@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import { projectIssueScope } from "./helpers/issue-query-fixtures.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -35,7 +36,7 @@ await test("an accepted work item PATCH reconciles its canonical receipt into th
         workspaceSlug: "acme",
         projectId: "p1",
         richFilters: {},
-        displayFilters: { layout: "list", order_by: "sort_order" },
+        displayFilters: { layout: ContractEnums.EIssueLayoutTypes.LIST, order_by: "sort_order" },
       },
       isReadCurrent: () => true,
     },
@@ -45,7 +46,7 @@ await test("an accepted work item PATCH reconciles its canonical receipt into th
   client.setQueryData(key, { generation: "g1", response: { results: [issue()], total_count: 1 } });
   const saved = issue({ name: "After", type_id: "bug" });
   t.mock.method(IssueService.prototype, "patchIssue", async () => saved);
-  const owner = currentIssueListMutationOwner(client, "acme", "p1", "issues", () => true);
+  const owner = currentIssueListMutationOwner(client, "acme", "p1", ContractEnums.EIssueServiceType.ISSUES, () => true);
 
   const receipt = await patchIssueMutation(client, owner, "item-1", { name: "After" });
 

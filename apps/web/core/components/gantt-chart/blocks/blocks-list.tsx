@@ -10,7 +10,7 @@ import { GanttChartBlock } from "@/components/gantt-chart/blocks/block";
 
 export type GanttChartBlocksProps = {
   blockIds: string[];
-  blockToRender: (data: any) => React.ReactNode;
+  blockToRender: (blockId: string) => React.ReactNode;
   enableBlockLeftResize: boolean | ((blockId: string) => boolean);
   enableBlockRightResize: boolean | ((blockId: string) => boolean);
   enableBlockMove: boolean | ((blockId: string) => boolean);

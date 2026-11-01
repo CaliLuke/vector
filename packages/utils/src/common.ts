@@ -17,7 +17,7 @@ const isCustomTypography = (value: string) =>
 const isCustomFontSize = (value: string) => /^(9|10|11|12|13|14|16|18|20|24|28|32|40)$/.test(value);
 
 // Matches custom text color classes: text-primary, text-on-color, text-secondary, etc.
-const CUSTOM_TEXT_COLORS = [
+const CUSTOM_TEXT_COLORS = new Set([
   "primary",
   "secondary",
   "tertiary",
@@ -37,8 +37,8 @@ const CUSTOM_TEXT_COLORS = [
   "danger",
   "danger-primary",
   "danger-secondary",
-];
-const isCustomTextColor = (value: string) => CUSTOM_TEXT_COLORS.includes(value);
+]);
+const isCustomTextColor = (value: string) => CUSTOM_TEXT_COLORS.has(value);
 
 const twMerge = extendTailwindMerge<"custom-typography" | "custom-text-color">({
   override: {
@@ -68,7 +68,7 @@ export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
 /**
  * Extracts IDs from an array of objects with ID property
  */
-export const extractIds = <T extends { id: string }>(items: T[]): string[] => items.map((item) => item.id);
+export const extractIds = (items: readonly { id: string }[]): string[] => items.map((item) => item.id);
 
 /**
  * Checks if an ID exists and is valid within the provided list
@@ -118,3 +118,8 @@ export const isComplete = <T>(obj: CompleteOrEmpty<T>): obj is T => {
 };
 
 export const convertRemToPixel = (rem: number): number => rem * 0.9 * 16;
+
+/** Narrow external values before reading named fields. */
+export function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}

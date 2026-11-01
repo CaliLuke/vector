@@ -28,11 +28,7 @@ export class SitesProjectPublishService extends APIService {
    * @throws {Error} If the API request fails
    */
   async retrieveSettingsByAnchor(anchor: string, signal?: AbortSignal): Promise<TProjectPublishSettings> {
-    return this.get(`/api/public/anchor/${anchor}/settings/`, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response ?? error;
-      });
+    return this.responseData(this.get(`/api/public/anchor/${anchor}/settings/`, { signal }), "response-or-error");
   }
 
   /**
@@ -43,10 +39,9 @@ export class SitesProjectPublishService extends APIService {
    * @throws {Error} If the API request fails
    */
   async retrieveSettingsByProjectId(workspaceSlug: string, projectID: string): Promise<TProjectPublishSettings> {
-    return this.get(`/api/public/workspaces/${workspaceSlug}/projects/${projectID}/anchor/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response ?? error;
-      });
+    return this.responseData(
+      this.get(`/api/public/workspaces/${workspaceSlug}/projects/${projectID}/anchor/`),
+      "response-or-error"
+    );
   }
 }

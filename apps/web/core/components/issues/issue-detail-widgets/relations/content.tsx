@@ -51,10 +51,12 @@ function getVisibleRelationRows(
   options: ReturnType<typeof useTimeLineRelationOptions>
 ): TVisibleRelationRow[] {
   if (!relations) return [];
-  return (Object.keys(relations) as TIssueRelationTypes[]).flatMap((relationKey) => {
-    const option = options[relationKey];
+  return Object.keys(relations).flatMap((key) => {
+    const option = Object.values(options).find((item) => item.key === key);
+    if (!option) return [];
+    const relationKey = option.key;
     const issues = relations[relationKey];
-    if (!option || issues.length === 0) return [];
+    if (issues.length === 0) return [];
     return [{ relationKey, issues, icon: option.icon, labelKey: option.i18n_label, className: option.className }];
   });
 }
@@ -92,7 +94,7 @@ function RelationRetryButton({
 }
 
 export const RelationsCollapsibleContent = function RelationsCollapsibleContent(props: Props) {
-  const { workspaceSlug, projectId, issueId, disabled = false, issueServiceType = EIssueServiceType.ISSUES } = props;
+  const { workspaceSlug, projectId, issueId, disabled, issueServiceType = EIssueServiceType.ISSUES } = props;
   // plane hooks
   const { t } = useTranslation();
   const [action, setAction] = useState<RelationAction>();

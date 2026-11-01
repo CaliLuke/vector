@@ -5,18 +5,13 @@
  */
 
 import { useParams, useLocation, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
-
-import { MoreHorizontal } from "lucide-react";
 
 // plane imports
 import { EUserPermissions } from "@plane/constants";
-import { IconButton } from "@plane/propel/icon-button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { TContextMenuItem } from "@plane/ui";
-import { ContextMenu, CustomMenu } from "@plane/ui";
+import { QuickActionsMenu } from "@/components/common/quick-actions-menu";
+import { normalizeQuickActions, useQuickActionDialogs } from "@/components/common/quick-actions-helper";
 import { copyUrlToClipboard } from "@plane/utils/string";
-import { cn } from "@plane/utils/common";
 // components
 import { useModuleMenuItems } from "@/components/common/quick-actions-helper";
 import { ArchiveModuleModal, CreateUpdateModuleModal, DeleteModuleModal } from "@/components/modules";
@@ -41,10 +36,7 @@ export const ModuleQuickActions = function ModuleQuickActions(props: Props) {
   const router = useRouter();
   const { moduleId: routeModuleId } = useParams({ strict: false });
   const peekModule = new URLSearchParams(useLocation({ select: (location) => location.searchStr })).get("peekModule");
-  // states
-  const [editModal, setEditModal] = useState(false);
-  const [archiveModuleModal, setArchiveModuleModal] = useState(false);
-  const [deleteModal, setDeleteModal] = useState(false);
+  const dialogs = useQuickActionDialogs();
   // store hooks
   const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
 
@@ -101,35 +93,21 @@ export const ModuleQuickActions = function ModuleQuickActions(props: Props) {
     projectId,
     moduleId,
     isEditingAllowed,
-    handleEdit: () => setEditModal(true),
-    handleArchive: () => setArchiveModuleModal(true),
-    handleRestore: handleRestoreModule,
-    handleDelete: () => setDeleteModal(true),
-    handleCopyLink: handleCopyText,
+    ...dialogs.handlers,
+    handleRestore: () => void handleRestoreModule(),
+    handleCopyLink: () => void handleCopyText(),
     handleOpenInNewTab,
   });
 
-  // Handle both CE (array) and EE (object) return types
-  const MENU_ITEMS: TContextMenuItem[] = Array.isArray(menuResult) ? menuResult : menuResult.items;
-  const additionalModals = Array.isArray(menuResult) ? null : menuResult.modals;
-
-  const CONTEXT_MENU_ITEMS = MENU_ITEMS.map(function CONTEXT_MENU_ITEMS(item) {
-    return {
-      ...item,
-
-      onClick: () => {
-        item.action();
-      },
-    };
-  });
+  const { items: MENU_ITEMS, modals: additionalModals } = normalizeQuickActions(menuResult);
 
   return (
     <>
       {moduleDetails && (
         <div className="fixed">
           <CreateUpdateModuleModal
-            isOpen={editModal}
-            onClose={() => setEditModal(false)}
+            isOpen={dialogs.edit.isOpen}
+            onClose={dialogs.edit.close}
             data={moduleDetails}
             projectId={projectId}
             workspaceSlug={workspaceSlug}
@@ -138,13 +116,13 @@ export const ModuleQuickActions = function ModuleQuickActions(props: Props) {
             workspaceSlug={workspaceSlug}
             projectId={projectId}
             moduleId={moduleId}
-            isOpen={archiveModuleModal}
-            handleClose={() => setArchiveModuleModal(false)}
+            isOpen={dialogs.archive.isOpen}
+            handleClose={dialogs.archive.close}
           />
           <DeleteModuleModal
             data={moduleDetails}
-            isOpen={deleteModal}
-            onClose={() => setDeleteModal(false)}
+            isOpen={dialogs.delete.isOpen}
+            onClose={dialogs.delete.close}
             onDeleteSuccess={(deletedModule) => {
               if (routeModuleId === deletedModule.id || peekModule === deletedModule.id) {
                 void router.navigate({ href: `/${workspaceSlug}/projects/${deletedModule.project_id}/modules` });
@@ -154,48 +132,7 @@ export const ModuleQuickActions = function ModuleQuickActions(props: Props) {
           {additionalModals}
         </div>
       )}
-      <ContextMenu parentRef={parentRef} items={CONTEXT_MENU_ITEMS} />
-      <CustomMenu
-        customButtonAsChild
-        customButton={<IconButton variant="tertiary" size="lg" icon={MoreHorizontal} />}
-        placement="bottom-end"
-        closeOnSelect
-        buttonClassName={customClassName}
-      >
-        {MENU_ITEMS.map((item) => {
-          if (item.shouldRender === false) return null;
-          return (
-            <CustomMenu.MenuItem
-              key={item.key}
-              onClick={() => {
-                item.action();
-              }}
-              className={cn(
-                "flex items-center gap-2",
-                {
-                  "text-placeholder": item.disabled,
-                },
-                item.className
-              )}
-              disabled={item.disabled}
-            >
-              {item.icon && <item.icon className={cn("h-3 w-3 flex-shrink-0", item.iconClassName)} />}
-              <div>
-                <h5>{item.title}</h5>
-                {item.description && (
-                  <p
-                    className={cn("whitespace-pre-line text-tertiary", {
-                      "text-placeholder": item.disabled,
-                    })}
-                  >
-                    {item.description}
-                  </p>
-                )}
-              </div>
-            </CustomMenu.MenuItem>
-          );
-        })}
-      </CustomMenu>
+      <QuickActionsMenu parentRef={parentRef} items={MENU_ITEMS} className={customClassName} />
     </>
   );
 };

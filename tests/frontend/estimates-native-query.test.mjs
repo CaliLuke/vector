@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
@@ -14,11 +15,11 @@ const scope = {
   accountId: "alice",
   sessionGeneration: 0,
   workspaceSlug: "acme",
-  membershipRole: 15,
+  membershipRole: ContractEnums.EUserPermissions.MEMBER,
   membershipRevision: "m1",
   projectId: "p1",
-  projectMembershipRole: 20,
-  projectRole: 20,
+  projectMembershipRole: ContractEnums.EUserPermissions.ADMIN,
+  projectRole: ContractEnums.EUserPermissions.ADMIN,
 };
 const estimate = {
   id: "e1",
@@ -159,7 +160,12 @@ await Promise.all(
 );
 
 await test("workspace admin effective project access is verified independently of a guest membership identity", async (t) => {
-  const admin = { ...scope, membershipRole: 20, projectMembershipRole: 5, projectRole: 20 };
+  const admin = {
+    ...scope,
+    membershipRole: ContractEnums.EUserPermissions.ADMIN,
+    projectMembershipRole: ContractEnums.EUserPermissions.GUEST,
+    projectRole: ContractEnums.EUserPermissions.ADMIN,
+  };
   const { client } = clientFixture(t, admin);
   client.setQueryData(estimateKeys.list(admin), []);
   t.mock.method(EstimateService.prototype, "createEstimate", async () => estimate);

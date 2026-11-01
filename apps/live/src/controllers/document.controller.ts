@@ -11,7 +11,6 @@ import { Controller, Post } from "@plane/decorators";
 import { convertHTMLDocumentToAllFormats } from "@plane/editor/lib";
 // logger
 import { logger } from "@plane/logger";
-import type { TConvertDocumentRequestBody } from "@/types";
 
 // Define the schema with more robust validation
 const convertDocumentSchema = z.object({
@@ -29,7 +28,7 @@ export class DocumentController {
   async convertDocument(req: Request, res: Response) {
     try {
       // Validate request body
-      const validatedData = convertDocumentSchema.parse(req.body as TConvertDocumentRequestBody);
+      const validatedData = convertDocumentSchema.parse(req.body);
       const { description_html, variant } = validatedData;
 
       // Process document conversion
@@ -65,5 +64,7 @@ export class DocumentController {
         });
       }
     }
+
+    return undefined;
   }
 }

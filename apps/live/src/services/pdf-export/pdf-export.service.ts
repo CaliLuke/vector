@@ -7,7 +7,8 @@
 import { Context, Effect, Layer } from "effect";
 import sharp from "sharp";
 import { getAllDocumentFormatsFromDocumentEditorBinaryData } from "@plane/editor/lib";
-import type { PDFExportMetadata, TipTapDocument } from "@/lib/pdf";
+import type { PDFExportMetadata, TipTapDocument, TipTapNode } from "@/lib/pdf/types";
+import { parsePdfDocument } from "@/lib/pdf/document";
 import { renderPlaneDocToPdfBuffer } from "@/lib/pdf";
 import { getPageService } from "@/services/page/handler";
 import type { TDocumentTypes } from "@/types";
@@ -25,12 +26,6 @@ const IMAGE_TIMEOUT_MS = 8000;
 const CONTENT_FETCH_TIMEOUT_MS = 7000;
 const PDF_RENDER_TIMEOUT_MS = 15000;
 const IMAGE_MAX_DIMENSION = 1200;
-
-type TipTapNode = {
-  type: string;
-  attrs?: Record<string, unknown>;
-  content?: TipTapNode[];
-};
 
 /**
  * PDF Export Service
@@ -52,8 +47,8 @@ export class PdfExportService extends Context.Service<PdfExportService>()("PdfEx
 
       const traverse = (node: TipTapNode) => {
         if ((node.type === "imageComponent" || node.type === "image") && node.attrs?.src) {
-          const src = node.attrs.src as string;
-          if (src && !src.startsWith("http") && !src.startsWith("data:")) {
+          const src = node.attrs.src;
+          if (typeof src === "string" && src && !src.startsWith("http") && !src.startsWith("data:")) {
             assetIds.push(src);
           }
         }
@@ -101,14 +96,18 @@ export class PdfExportService extends Context.Service<PdfExportService>()("PdfEx
           );
         }
 
-        const binaryData = new Uint8Array(descriptionBinary);
-        const { contentJSON, titleHTML } = getAllDocumentFormatsFromDocumentEditorBinaryData(binaryData, true);
-
-        return {
-          contentJSON: contentJSON as TipTapDocument,
-          titleHTML: titleHTML || null,
-          descriptionBinary,
-        };
+        return yield* Effect.try({
+          try: () => {
+            const binaryData = new Uint8Array(descriptionBinary);
+            const { contentJSON, titleHTML } = getAllDocumentFormatsFromDocumentEditorBinaryData(binaryData, true);
+            return {
+              contentJSON: parsePdfDocument(contentJSON),
+              titleHTML: titleHTML || null,
+              descriptionBinary,
+            };
+          },
+          catch: (cause) => new PdfContentFetchError({ message: "Invalid page content", cause }),
+        });
       }),
 
     /**
@@ -162,17 +161,25 @@ export class PdfExportService extends Context.Service<PdfExportService>()("PdfEx
         });
 
         // Resolve URLs first
-        const resolvedUrlMap = yield* tryAsync(
-          async () => {
-            const urlMap = new Map<string, string>();
-            for (const assetId of assetIds) {
-              const url = await pageService.resolveImageAssetUrl?.(workspaceSlug, assetId, projectId);
-              if (url) urlMap.set(assetId, url);
-            }
-            return urlMap;
-          },
-          () => new Map<string, string>()
-        ).pipe(recoverWithDefault(new Map<string, string>()));
+        const resolvedUrlMap = yield* Effect.forEach(
+          assetIds,
+          (assetId) =>
+            tryAsync(
+              async () => ({
+                assetId,
+                url: await pageService.resolveImageAssetUrl?.(workspaceSlug, assetId, projectId),
+              }),
+              () => new Map<string, string>()
+            ),
+          { concurrency: 1 }
+        ).pipe(
+          Effect.map((results) => {
+            const urls = new Map<string, string>();
+            for (const { assetId, url } of results) if (url) urls.set(assetId, url);
+            return urls;
+          }),
+          recoverWithDefault(new Map<string, string>())
+        );
 
         if (resolvedUrlMap.size === 0) {
           return {};
@@ -328,7 +335,7 @@ export const exportToPdf = (
     const content = yield* service.fetchPageContent(pageService, pageId, requestId);
 
     // Extract image asset IDs
-    const imageAssetIds = service.extractImageAssetIds(content.contentJSON as TipTapNode);
+    const imageAssetIds = service.extractImageAssetIds(content.contentJSON);
 
     // Fetch user mentions
     let metadata = yield* service.fetchUserMentions(pageService, pageId, requestId);

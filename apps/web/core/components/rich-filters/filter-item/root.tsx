@@ -85,7 +85,7 @@ export const FilterItem = function FilterItem<P extends TFilterProperty>(props: 
       {/* Operator section */}
       <CustomSearchSelect
         value={condition.operator}
-        onChange={handleOperatorChange}
+        onChange={(selection) => (selection !== null ? handleOperatorChange(selection) : undefined)}
         options={operatorOptions}
         className={COMMON_FILTER_ITEM_BORDER_CLASSNAME}
         customButtonClassName={cn(

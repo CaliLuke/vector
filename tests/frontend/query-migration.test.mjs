@@ -24,13 +24,17 @@ const stubs = {
   "@plane/propel/toast": "export const TOAST_TYPE = {ERROR: 'error'}; export const setToast = () => {};",
   "@plane/ui": `const React = globalThis.vectorQueryReact;
     export const AlertModalCore = ({handleSubmit}) => React.createElement('button', {onClick: handleSubmit}, 'Delete');
-    export const CustomSearchSelect = ({options, footerOption}) => React.createElement('div', null,
-      React.createElement('output', null, options.map(option => option.query).join(',')), footerOption);
+    export const CustomSearchSelect = ({options, footerOption, value, onChange}) => React.createElement('div', null,
+      React.createElement('output', null, options.map(option => option.query).join(',')), footerOption,
+      React.createElement('select', {'aria-label':'Repository', value:value??'', onChange:event=>onChange(event.target.value||null)},
+        React.createElement('option',{value:''},'No selection'),
+        ...options.map(option=>React.createElement('option',{key:option.value,value:option.value},option.query))));
     export const Loader = Object.assign(({children}) => children, {Item: () => null});`,
   "@/services/project": `export class ProjectService { async getGithubRepositories(url) {
     globalThis.vectorQueryTest.repositories.push(url);
     const page = Number(new URL(url, 'http://localhost').searchParams.get('page'));
     const other = url.includes('/second/');
+    if(url.includes('/empty/'))return {total_count:0,repositories:[]};
     return { total_count: other ? 1 : 3, repositories: other ? [{id: 'other', full_name: 'other/repo'}] :
       page === 1 ? [{id: 'one', full_name: 'acme/one'}, {id: 'two', full_name: 'acme/two'}] :
       [{id: 'three', full_name: 'acme/three'}] };
@@ -62,7 +66,13 @@ await test("GitHub pagination appends pages, stops at the total, and resets for 
   seedInstanceInfo(fixture.client);
   const { SelectRepository } = await import("../../apps/web/core/components/integration/github/select-repository.tsx");
   state.repositories = [];
-  const props = { integration: { id: "first" }, value: null, label: "Repository", onChange() {} };
+  const selections = [];
+  const props = {
+    integration: { id: "first" },
+    value: null,
+    label: "Repository",
+    onChange: (repo) => selections.push(repo),
+  };
   await fixture.render(React.createElement(SelectRepository, props));
   assert.equal(fixture.environment.container.querySelector("output").textContent, "acme/one,acme/two");
   await act(async () => fixture.environment.container.querySelector("button").click());
@@ -70,9 +80,23 @@ await test("GitHub pagination appends pages, stops at the total, and resets for 
   assert.equal(fixture.environment.container.querySelector("output").textContent, "acme/one,acme/two,acme/three");
   assert.equal(fixture.environment.container.querySelector("button"), null);
   assert.ok(state.repositories[1].endsWith("?page=2"));
+  const picker = fixture.environment.container.querySelector('[aria-label="Repository"]');
+  await act(async () => {
+    picker.value = "three";
+    picker.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  assert.deepEqual(selections, [{ id: "three", full_name: "acme/three" }]);
+  await act(async () => {
+    picker.value = "";
+    picker.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  assert.equal(selections.length, 1, "a cancelled selection does not replace the repository");
   await fixture.render(React.createElement(SelectRepository, { ...props, integration: { id: "second" } }));
   assert.equal(fixture.environment.container.querySelector("output").textContent, "other/repo");
   assert.ok(state.repositories[2].endsWith("?page=1"));
+  await fixture.render(React.createElement(SelectRepository, { ...props, integration: { id: "empty" } }));
+  assert.equal(fixture.environment.container.querySelector('[aria-label="Repository"]'), null);
+  assert.equal(fixture.environment.container.textContent, "");
 });
 
 await test("disconnecting a Slack channel waits for deletion before refreshing the typed cache", async (t) => {

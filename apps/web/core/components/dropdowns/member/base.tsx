@@ -15,6 +15,7 @@ import type { TComboDropDownRenderProps } from "@plane/ui";
 // helpers
 import { cn } from "@plane/utils/common";
 // local imports
+import { SearchableDropdownTrigger } from "../searchable-options";
 import { DropdownButton } from "../buttons";
 import { BUTTON_VARIANTS_WITH_TEXT } from "../constants";
 import { ButtonAvatars } from "./avatar";
@@ -95,57 +96,39 @@ export function MemberDropdownBase(props: TMemberDropdownBaseProps) {
     }
   };
 
-  const comboButton = ({ open }: { open: boolean }) =>
-    button ? (
-      <button
-        ref={setReferenceElement}
-        type="button"
-        className={cn("clickable block h-full w-full outline-none", buttonContainerClassName)}
-        disabled={disabled}
-        tabIndex={tabIndex}
+  const comboButton = ({ open }: { open: boolean }) => (
+    <SearchableDropdownTrigger
+      ref={setReferenceElement}
+      customButton={button}
+      className={buttonContainerClassName}
+      disabled={disabled}
+      tabIndex={tabIndex}
+    >
+      <DropdownButton
+        className={cn("text-11", buttonClassName)}
+        isActive={open}
+        tooltipHeading={placeholder}
+        tooltipContent={
+          tooltipContent ?? `${value?.length ?? 0} ${value?.length !== 1 ? t("assignees") : t("assignee")}`
+        }
+        showTooltip={showTooltip}
+        variant={buttonVariant}
+        renderToolTipByDefault={renderByDefault}
       >
-        {button}
-      </button>
-    ) : (
-      <button
-        ref={setReferenceElement}
-        type="button"
-        className={cn(
-          "clickable block h-full max-w-full outline-none",
-          {
-            "cursor-not-allowed text-secondary": disabled,
-            "cursor-pointer": !disabled,
-          },
-          buttonContainerClassName
+        {!hideIcon && (
+          <ButtonAvatars showTooltip={showTooltip} userIds={value} icon={icon} workspaceSlug={workspaceSlug} />
         )}
-        disabled={disabled}
-        tabIndex={tabIndex}
-      >
-        <DropdownButton
-          className={cn("text-11", buttonClassName)}
-          isActive={open}
-          tooltipHeading={placeholder}
-          tooltipContent={
-            tooltipContent ?? `${value?.length ?? 0} ${value?.length !== 1 ? t("assignees") : t("assignee")}`
-          }
-          showTooltip={showTooltip}
-          variant={buttonVariant}
-          renderToolTipByDefault={renderByDefault}
-        >
-          {!hideIcon && (
-            <ButtonAvatars showTooltip={showTooltip} userIds={value} icon={icon} workspaceSlug={workspaceSlug} />
-          )}
-          {BUTTON_VARIANTS_WITH_TEXT.includes(buttonVariant) && (
-            <span className="flex-grow truncate text-left text-body-xs-medium leading-5">
-              {getDisplayName(value, showUserDetails, placeholder)}
-            </span>
-          )}
-          {dropdownArrow && (
-            <ChevronDownIcon className={cn("h-2.5 w-2.5 flex-shrink-0", dropdownArrowClassName)} aria-hidden="true" />
-          )}
-        </DropdownButton>
-      </button>
-    );
+        {BUTTON_VARIANTS_WITH_TEXT.includes(buttonVariant) && (
+          <span className="flex-grow truncate text-left text-body-xs-medium leading-5">
+            {getDisplayName(value, showUserDetails, placeholder)}
+          </span>
+        )}
+        {dropdownArrow && (
+          <ChevronDownIcon className={cn("h-2.5 w-2.5 flex-shrink-0", dropdownArrowClassName)} aria-hidden="true" />
+        )}
+      </DropdownButton>
+    </SearchableDropdownTrigger>
+  );
 
   const comboProps = {
     as: "div" as const,

@@ -1,3 +1,4 @@
+import * as ContractEnums from "./../../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { mockClipboard } from "./helpers/work-item-copy-contract.mjs";
@@ -38,7 +39,10 @@ const { LinkList } = await import("../core/components/issues/issue-detail/links/
 const { useLinkOperations } = await import("../core/hooks/use-issue-link-operations.ts");
 const { IssueService } = await import("../core/services/issue/issue.service.ts");
 const identity = await import("../core/queries/identity.ts");
-async function setup(t, { readOnly = false, modal = false, serviceType = "issues" } = {}) {
+async function setup(
+  t,
+  { readOnly = false, modal = false, serviceType = ContractEnums.EIssueServiceType.ISSUES } = {}
+) {
   const fixture = await createPermissionUiFixture(t, {
     path: "/acme/projects/p1/issues/P1-1",
     workspaceRole: 15,
@@ -63,7 +67,7 @@ async function setup(t, { readOnly = false, modal = false, serviceType = "issues
     assert.equal(path, `/api/workspaces/acme/projects/p1/${serviceType}/item/`);
     return { data: { id: "item", project_id: "p1", issue_link: links } };
   });
-  const collectionPath = `/api/workspaces/acme/projects/p1/${serviceType}/item/${serviceType === "epics" ? "links" : "issue-links"}/`;
+  const collectionPath = `/api/workspaces/acme/projects/p1/${serviceType}/item/${serviceType === ContractEnums.EIssueServiceType.EPICS ? "links" : "issue-links"}/`;
   t.mock.method(IssueService.prototype, "post", async (path, data) => {
     writes.push(["create", path, data]);
     assert.equal(path, collectionPath);
@@ -322,7 +326,7 @@ void test("clipboard failure reports one error and allows retry", async (t) => {
   );
 });
 
-for (const serviceType of ["issues", "epics"])
+for (const serviceType of [ContractEnums.EIssueServiceType.ISSUES, ContractEnums.EIssueServiceType.EPICS])
   for (const kind of ["create", "update", "remove"])
     void test(`link ${kind} uses the ${serviceType} endpoint and updates its visible collection`, async (t) => {
       const v = await setup(t, { serviceType });
@@ -355,7 +359,7 @@ void test("a link modal reports an unavailable save after access is revoked", as
       workspaceSlug: "acme",
       projectId: "p1",
       issueId: "item",
-      serviceType: "issues",
+      serviceType: ContractEnums.EIssueServiceType.ISSUES,
     })
   );
   await settleQuery();

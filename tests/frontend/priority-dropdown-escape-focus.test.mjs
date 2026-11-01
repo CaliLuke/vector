@@ -6,18 +6,26 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import test from "node:test";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
-import { React, webRequire } from "./helpers/react.mjs";
+import { React } from "./helpers/react.mjs";
 import { clickWithPointer } from "./helpers/pointer.mjs";
 import { openSearchCombobox } from "./helpers/combobox.mjs";
 import { resolvePackageStub } from "./helpers/module-stubs.mjs";
+import { transformFrontendSource } from "./helpers/source-transform.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 registerWebModuleHooks();
 globalThis.propertyDropdownReact = React;
+globalThis.propertyDropdownEstimates = {
+  activeEstimate: { id: "effort", type: "points" },
+  points: [{ id: "point-3", value: "3", key: 1 }],
+  isPending: false,
+  isError: false,
+  isAccessDenied: false,
+  retry: async () => {},
+};
 
 const repositoryRoot = fileURLToPath(new URL("../../../", import.meta.resolve("./helpers/web-module-hooks.mjs")));
 const hooksRoot = path.join(repositoryRoot, "packages/hooks");
-const typescript = webRequire("typescript");
 const packageStubs = {
   "@tanstack/react-router": "export const useParams=()=>({workspaceSlug:'acme'});",
   "@plane/constants":
@@ -26,26 +34,34 @@ const packageStubs = {
   "@plane/propel/icons":
     "export const CheckIcon = () => null; export const PriorityIcon = () => null; export const ChevronDownIcon = () => null; export const SearchIcon = () => null; export const EstimatePropertyIcon=()=>null; export const IntakeStateGroupIcon=()=>null; export const StateGroupIcon=()=>null; export const ProjectIcon=()=>null;",
   "@plane/propel/emoji-icon-picker": "export const Logo=()=>null;",
-  "@plane/utils/datetime": "export const convertMinutesToHoursMinutesString=value=>String(value);",
-  "@plane/utils/common":
-    "export const cn = (...values) => values.filter(value => typeof value === 'string').join(' ');",
 };
 
 registerHooks({
   resolve(specifier, context, nextResolve) {
     const sourceModules = {
-      "@plane/hooks": "packages/hooks/src/use-outside-click-detector.tsx",
       "@plane/propel/tooltip": "packages/propel/src/tooltip/index.ts",
       "@plane/ui": "packages/ui/src/dropdowns/combo-box.tsx",
     };
-    if (specifier === "@/hooks/use-estimates")
+    if (specifier === "@plane/hooks")
       return {
         shortCircuit: true,
         url:
           "data:text/javascript," +
           encodeURIComponent(
-            `export const useProjectEstimates=()=>({activeEstimate:{id:'effort',type:'points'},points:[{id:'point-3',value:'3',key:1}],isPending:false,isError:false,isAccessDenied:false,retry:async()=>{}});`
+            ["use-outside-click-detector", "use-platform-os"]
+              .map(
+                (name) =>
+                  `export * from ${JSON.stringify(pathToFileURL(path.join(hooksRoot, "src", `${name}.tsx`)).href)};`
+              )
+              .join("\n")
           ),
+      };
+    if (specifier === "@/hooks/use-estimates")
+      return {
+        shortCircuit: true,
+        url:
+          "data:text/javascript," +
+          encodeURIComponent(`export const useProjectEstimates=()=>globalThis.propertyDropdownEstimates;`),
       };
     if (specifier === "@plane/ui")
       return {
@@ -71,13 +87,14 @@ registerHooks({
       return {
         format: "module",
         shortCircuit: true,
-        source: typescript.transpileModule(source, {
-          compilerOptions: {
-            module: typescript.ModuleKind.ESNext,
-            target: typescript.ScriptTarget.ES2022,
-            jsx: typescript.JsxEmit.ReactJSX,
-          },
-        }).outputText,
+        source: transformFrontendSource(source, {
+          format: "esm",
+          target: "es2022",
+          tsconfigRaw: { compilerOptions: { useDefineForClassFields: true } },
+          loader: url.endsWith(".tsx") ? "tsx" : "ts",
+          jsx: "automatic",
+          sourcefile: fileURLToPath(url),
+        }),
       };
     }
     return nextLoad(url, context);
@@ -159,6 +176,109 @@ void test("estimate dropdown shares focus, Escape, clear and reopen search lifec
     "3",
     1
   );
+});
+
+void test("time estimates format minutes and clearing the native selection emits an omitted estimate", async (t) => {
+  const errors = [];
+  t.mock.method(console, "error", (...args) => errors.push(args.map(String).join(" ")));
+  const previous = globalThis.propertyDropdownEstimates;
+  globalThis.propertyDropdownEstimates = {
+    ...previous,
+    activeEstimate: { id: "time", type: "time" },
+    points: [
+      { id: "time-90", value: "90", key: 1 },
+      { id: "", value: "invalid summary", key: 2 },
+    ],
+  };
+  t.after(() => {
+    globalThis.propertyDropdownEstimates = previous;
+  });
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  const { EstimateDropdown } = await import("../../apps/web/core/components/dropdowns/estimate.tsx");
+  const changes = [];
+  function Subject() {
+    const [value, setValue] = React.useState("time-90");
+    return React.createElement(EstimateDropdown, {
+      projectId: "project",
+      buttonVariant: "transparent-with-text",
+      placeholder: "Choose estimate",
+      value,
+      onChange: (next) => {
+        changes.push(next);
+        setValue(next);
+      },
+    });
+  }
+  await environment.render(React.createElement(Subject));
+  const trigger = environment.container.querySelector("button");
+  assert.equal(trigger.textContent.trim(), "1h 30m");
+  await openSearchCombobox(trigger);
+  const options = [...document.querySelectorAll('[role="option"]')];
+  assert.deepEqual(
+    options.map((option) => option.textContent.trim()),
+    ["project_settings.estimates.no_estimate", "1h 30m"]
+  );
+  await React.act(async () => options[0].dispatchEvent(new MouseEvent("mousedown", { bubbles: true, button: 0 })));
+  assert.deepEqual(changes, [undefined]);
+  assert.equal(trigger.textContent.trim(), "Choose estimate");
+  assert.deepEqual(errors, []);
+});
+
+void test("multi-project selection excludes the source and hidden projects and can be emptied through native options", async (t) => {
+  const errors = [];
+  t.mock.method(console, "error", (...args) => errors.push(args.map(String).join(" ")));
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  const { ProjectDropdownBase } = await import("../../apps/web/core/components/dropdowns/project/base.tsx");
+  const projects = {
+    current: { id: "current", name: "Current" },
+    first: { id: "first", name: "First", logo_props: { type: "emoji", value: "128640" } },
+    second: { id: "second", name: "Second" },
+    hidden: { id: "hidden", name: "Hidden" },
+  };
+  const changes = [];
+  function Subject() {
+    const [value, setValue] = React.useState(["first"]);
+    return React.createElement(ProjectDropdownBase, {
+      multiple: true,
+      buttonVariant: "transparent-with-text",
+      value,
+      placeholder: "Pick projects",
+      currentProjectId: "current",
+      projectIds: Object.keys(projects),
+      getProjectById: (id) => projects[id],
+      renderCondition: (id) => id !== "hidden",
+      onChange: (next) => {
+        changes.push(next);
+        setValue(next);
+      },
+    });
+  }
+  await environment.render(React.createElement(Subject));
+  const trigger = environment.container.querySelector("button");
+  assert.equal(trigger.textContent, "First");
+  await openSearchCombobox(trigger);
+  const options = () => [...environment.container.ownerDocument.querySelectorAll('[role="option"]')];
+  assert.deepEqual(
+    options().map((option) => option.textContent),
+    ["First", "Second"]
+  );
+  async function choose(label) {
+    if (trigger.getAttribute("aria-expanded") !== "true") await openSearchCombobox(trigger);
+    const option = options().find((item) => item.textContent === label);
+    assert.ok(option);
+    await React.act(async () => option.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, button: 0 })));
+  }
+  await choose("Second");
+  assert.deepEqual(changes.at(-1), ["first", "second"]);
+  assert.equal(trigger.textContent, "2 projects");
+  await choose("First");
+  assert.equal(trigger.textContent, "Second");
+  await choose("Second");
+  assert.deepEqual(changes.at(-1), []);
+  assert.equal(trigger.textContent, "Pick projects");
+  assert.deepEqual(errors, []);
 });
 void test("intake dropdown shares focus, Escape and search reset", async (t) => {
   let closed = 0;
@@ -269,3 +389,32 @@ void test("priority options stay interactive and selecting one updates the value
   });
   assert.equal(selectedPriority, "high");
 });
+
+for (const variant of ["border", "background", "transparent"]) {
+  void test(`priority ${variant} controls retain text, compact and urgent states`, async (t) => {
+    const environment = await createReactDomTestEnvironment();
+    t.after(() => environment.unmount());
+    const PriorityDropdown = await loadPriorityDropdown();
+    const render = (suffix, value, extra = {}) =>
+      environment.render(
+        React.createElement(PriorityDropdown, {
+          buttonVariant: `${variant}-${suffix}`,
+          value,
+          onChange() {},
+          ...extra,
+        })
+      );
+    await render("with-text", "urgent");
+    const trigger = environment.container.querySelector("button");
+    assert.equal(trigger.textContent, "Urgent");
+    assert.ok(trigger.querySelector(".border-priority-urgent"));
+    await render("without-text", "urgent");
+    assert.equal(trigger.textContent, "");
+    assert.ok(trigger.querySelector(".border-priority-urgent"));
+    await render("with-text", null, { placeholder: "Choose priority" });
+    assert.equal(trigger.textContent, variant === "border" ? "Choose priority" : "Priority");
+    await render("with-text", "low", { disabled: true });
+    assert.equal(trigger.disabled, true);
+    assert.equal(trigger.textContent, "Low");
+  });
+}

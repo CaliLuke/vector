@@ -4,23 +4,12 @@
  * See the LICENSE file for details.
  */
 
+import { Plus } from "lucide-react";
+import { ExampleGroup, ExampleSizes } from "../storybook/example-gallery";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { IconButton } from "./icon-button";
 
-const icon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M12 5v14m-7-7h14" />
-  </svg>
-);
+const icon = () => <Plus size={16} />;
 
 const meta = {
   title: "Components/IconButton",
@@ -130,19 +119,14 @@ export const Disabled: Story = {
 export const AllVariants: Story = {
   render() {
     return (
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <h3 className="text-16 font-semibold">Primary Variants</h3>
-          <div className="flex flex-wrap gap-2">
-            <IconButton variant="primary" icon={icon} />
-            <IconButton variant="error-fill" icon={icon} />
-            <IconButton variant="error-outline" icon={icon} />
-            <IconButton variant="secondary" icon={icon} />
-            <IconButton variant="tertiary" icon={icon} />
-            <IconButton variant="ghost" icon={icon} />
-          </div>
-        </div>
-      </div>
+      <ExampleGroup title="Primary Variants">
+        <IconButton variant="primary" icon={icon} />
+        <IconButton variant="error-fill" icon={icon} />
+        <IconButton variant="error-outline" icon={icon} />
+        <IconButton variant="secondary" icon={icon} />
+        <IconButton variant="tertiary" icon={icon} />
+        <IconButton variant="ghost" icon={icon} />
+      </ExampleGroup>
     );
   },
 };
@@ -150,14 +134,12 @@ export const AllVariants: Story = {
 export const AllSizes: Story = {
   render() {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <IconButton size="sm" icon={icon} />
-          <IconButton size="base" icon={icon} />
-          <IconButton size="lg" icon={icon} />
-          <IconButton size="xl" icon={icon} />
-        </div>
-      </div>
+      <ExampleSizes>
+        <IconButton size="sm" icon={icon} />
+        <IconButton size="base" icon={icon} />
+        <IconButton size="lg" icon={icon} />
+        <IconButton size="xl" icon={icon} />
+      </ExampleSizes>
     );
   },
 };
@@ -165,16 +147,11 @@ export const AllSizes: Story = {
 export const AllStates: Story = {
   render() {
     return (
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <h3 className="text-16 font-semibold">Button States</h3>
-          <div className="flex flex-wrap gap-2">
-            <IconButton icon={icon} />
-            <IconButton loading icon={icon} />
-            <IconButton disabled icon={icon} />
-          </div>
-        </div>
-      </div>
+      <ExampleGroup title="Button States">
+        <IconButton icon={icon} />
+        <IconButton loading icon={icon} />
+        <IconButton disabled icon={icon} />
+      </ExampleGroup>
     );
   },
 };

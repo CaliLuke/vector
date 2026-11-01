@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import React, { useState, useEffect } from "react";
+const circumference = 2 * Math.PI * 40;
 
 interface IRadialProgressBar {
   progress: number;
@@ -12,14 +12,6 @@ interface IRadialProgressBar {
 
 export function RadialProgressBar(props: IRadialProgressBar) {
   const { progress } = props;
-  const [circumference, setCircumference] = useState(0);
-
-  useEffect(() => {
-    const radius = 40;
-    const circumference = 2 * Math.PI * radius;
-    setCircumference(circumference);
-  }, []);
-
   const progressOffset = ((100 - progress) / 100) * circumference;
 
   return (

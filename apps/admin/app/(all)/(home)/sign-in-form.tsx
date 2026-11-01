@@ -9,7 +9,6 @@ import { useForm, useStore } from "@tanstack/react-form";
 import { useSearchParams } from "react-router";
 import { Eye, EyeOff } from "lucide-react";
 // plane internal packages
-import type { EAdminAuthErrorCodes } from "@plane/constants";
 import { API_BASE_URL } from "@plane/constants";
 import { Button } from "@plane/propel/button";
 import { Input, AuthEmailInput, Spinner } from "@plane/ui";
@@ -19,7 +18,7 @@ import { Banner } from "@/components/common/banner";
 import { FormHeader } from "@/components/instance/form-header";
 import { AuthBanner } from "./auth-banner";
 import { AuthHeader } from "./auth-header";
-import { authErrorHandler, submitInstanceAuthForm } from "./auth-helpers";
+import { authErrorHandler, submitInstanceAuthForm, getInstanceFormError } from "./auth-helpers";
 
 // service initialization
 
@@ -31,11 +30,6 @@ enum EErrorCodes {
   USER_DOES_NOT_EXIST = "USER_DOES_NOT_EXIST",
   AUTHENTICATION_FAILED = "AUTHENTICATION_FAILED",
 }
-
-type TError = {
-  type: EErrorCodes | undefined;
-  message: string | undefined;
-};
 
 // form data
 type TFormData = {
@@ -67,28 +61,10 @@ export function InstanceSignInForm() {
   const formData = useStore(form.store, (state) => state.values);
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
   const [dismissedErrorCode, setDismissedErrorCode] = useState<string>();
-  const errorInfo =
-    errorCode && errorCode !== dismissedErrorCode ? authErrorHandler(errorCode as EAdminAuthErrorCodes) : undefined;
+  const errorInfo = errorCode && errorCode !== dismissedErrorCode ? authErrorHandler(errorCode) : undefined;
 
   // derived values
-  const errorData: TError = useMemo(() => {
-    if (errorCode && errorMessage) {
-      switch (errorCode) {
-        case EErrorCodes.INSTANCE_NOT_CONFIGURED:
-          return { type: EErrorCodes.INSTANCE_NOT_CONFIGURED, message: errorMessage };
-        case EErrorCodes.REQUIRED_EMAIL_PASSWORD:
-          return { type: EErrorCodes.REQUIRED_EMAIL_PASSWORD, message: errorMessage };
-        case EErrorCodes.INVALID_EMAIL:
-          return { type: EErrorCodes.INVALID_EMAIL, message: errorMessage };
-        case EErrorCodes.USER_DOES_NOT_EXIST:
-          return { type: EErrorCodes.USER_DOES_NOT_EXIST, message: errorMessage };
-        case EErrorCodes.AUTHENTICATION_FAILED:
-          return { type: EErrorCodes.AUTHENTICATION_FAILED, message: errorMessage };
-        default:
-          return { type: undefined, message: undefined };
-      }
-    } else return { type: undefined, message: undefined };
-  }, [errorCode, errorMessage]);
+  const errorData = getInstanceFormError(Object.values(EErrorCodes), errorCode, errorMessage);
 
   const isButtonDisabled = useMemo(
     () => isSubmitting || !formData.email || !formData.password,

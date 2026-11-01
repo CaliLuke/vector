@@ -30,7 +30,7 @@ export type TIssueComment = {
   updated_at: string;
   created_by: string | undefined;
   updated_by: string | undefined;
-  attachments: any[];
+  attachments: unknown[];
   comment_reactions: TIssueCommentReaction[];
   parent?: string | null;
   comment_stripped: string;
@@ -96,7 +96,7 @@ export type TIssuePublicComment = {
   actor_detail: ActorDetail;
   access: string;
   actor: string;
-  attachments: any[];
+  attachments: unknown[];
   comment_html: string;
   comment_reactions: {
     actor_detail: ActorDetail;

@@ -39,7 +39,7 @@ function LabelsSettingsPage(): React.JSX.Element | null {
   useEffect(() => {
     const element = scrollableContainerRef.current;
 
-    if (!element) return;
+    if (!element) return undefined;
 
     return combine(
       autoScrollForElements({

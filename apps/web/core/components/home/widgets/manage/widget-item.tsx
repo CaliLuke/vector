@@ -5,14 +5,11 @@
  */
 
 import { treeDropHandlers } from "@/lib/tree-drop-instruction";
-import { renderNativeDragPreview } from "@/lib/native-drag-preview";
+import { useDraggablePreview } from "@/hooks/use-draggable-preview";
 import React, { useEffect, useRef, useState } from "react";
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import type { DropTargetRecord, DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/types";
 import type { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
-import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
-import { pointerOutsideOfPreview } from "@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview";
-import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { attachReorderInstruction } from "@/lib/tree-drop-instruction";
 
 // plane types
@@ -48,45 +45,28 @@ export const WidgetItem = function WidgetItem(props: Props) {
   // derived values
   const widgetTitle = HOME_WIDGETS_LIST[widget.key]?.title;
 
+  useDraggablePreview({
+    elementRef,
+    getInitialData: () => ({ id: widget.key, parentId: null, isGroup: false, isChild: false }),
+    preview: widget.key,
+    onDraggingChange: setIsDragging,
+  });
+
   // drag and drop
   useEffect(() => {
     const element = elementRef.current;
 
-    if (!element) return;
+    if (!element) return undefined;
     const initialData = { id: widget.key, parentId: null, isGroup: false, isChild: false };
-    return combine(
-      draggable({
-        element,
-        dragHandle: element,
-        getInitialData: () => initialData,
-        onDragStart: () => {
-          setIsDragging(true);
-        },
-        onDrop: () => {
-          setIsDragging(false);
-        },
-        onGenerateDragPreview: ({ nativeSetDragImage }) => {
-          setCustomNativeDragPreview({
-            getOffset: pointerOutsideOfPreview({ x: "0px", y: "0px" }),
-            nativeSetDragImage,
-            render: ({ container }) =>
-              renderNativeDragPreview(
-                container,
-                <div className="rounded-sm bg-surface-1 p-1 pr-2 text-13">{widget.key}</div>
-              ),
-          });
-        },
-      }),
-      dropTargetForElements({
-        element,
-        canDrop: ({ source }) => getCanDrop(source, widget),
-        onDragStart: () => {
-          setIsDragging(true);
-        },
-        getData: (target) => attachReorderInstruction(initialData, target, isLastChild),
-        ...treeDropHandlers(setInstruction, handleDrop),
-      })
-    );
+    return dropTargetForElements({
+      element,
+      canDrop: ({ source }) => getCanDrop(source, widget),
+      onDragStart: () => {
+        setIsDragging(true);
+      },
+      getData: (target) => attachReorderInstruction(initialData, target, isLastChild),
+      ...treeDropHandlers(setInstruction, handleDrop),
+    });
   }, [handleDrop, isLastChild, widget]);
 
   return (

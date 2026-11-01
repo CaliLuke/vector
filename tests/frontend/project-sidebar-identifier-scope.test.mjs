@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
@@ -70,8 +71,8 @@ async function renderSidebar(t, isEpic) {
     membershipRole: EUserWorkspaceRoles.ADMIN,
     membershipRevision,
     projectId: "p1",
-    projectMembershipRole: 20,
-    projectRole: 20,
+    projectMembershipRole: ContractEnums.EUserPermissions.ADMIN,
+    projectRole: ContractEnums.EUserPermissions.ADMIN,
     serviceType: EIssueServiceType.ISSUES,
   };
   const detailRead = waitForQueryState(

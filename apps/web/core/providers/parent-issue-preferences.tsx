@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
+import { EIssueLayoutTypes } from "@plane/types";
 import { createContext, useCallback, useContext, useMemo, useState, useRef } from "react";
 import type { ReactNode } from "react";
 import { hashKey, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -177,8 +178,9 @@ function useNativeParentPreferences(domain: ParentDomain, workspaceSlug: string,
   const setDisplay = (patch: Partial<IIssueDisplayFilterOptions>) => {
     const display = { ...query.data?.display_filters, ...draftRef.current.display, ...patch };
     if (display.group_by === null) display.sub_group_by = null;
-    if (display.layout === "kanban" && display.group_by === display.sub_group_by) display.sub_group_by = null;
-    if (display.layout === "kanban" && display.group_by === null) display.group_by = "state";
+    if (display.layout === EIssueLayoutTypes.KANBAN && display.group_by === display.sub_group_by)
+      display.sub_group_by = null;
+    if (display.layout === EIssueLayoutTypes.KANBAN && display.group_by === null) display.group_by = "state";
     return save({ display_filters: display }, { display }, "display");
   };
   const setProperties = (patch: Partial<IIssueDisplayProperties>) => {

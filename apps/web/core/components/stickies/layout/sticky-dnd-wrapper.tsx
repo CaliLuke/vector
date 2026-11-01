@@ -38,7 +38,7 @@ export const StickyDNDWrapper = function StickyDNDWrapper(props: Props) {
 
   useEffect(() => {
     const stickyElement = elementRef.current;
-    if (!stickyElement) return;
+    if (!stickyElement) return undefined;
 
     const initialData = { id: stickyId, type: "sticky", parentId: null, isGroup: false, isChild: false };
 
@@ -58,6 +58,7 @@ export const StickyDNDWrapper = function StickyDNDWrapper(props: Props) {
           },
         })
       );
+    return undefined;
   }, [handleDrop, isLastChild, pathname, stickyId]);
 
   return (

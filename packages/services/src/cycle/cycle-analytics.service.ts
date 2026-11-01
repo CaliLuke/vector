@@ -34,13 +34,11 @@ export class CycleAnalyticsService extends APIService {
     cycleId: string,
     analytic_type: string = "points"
   ): Promise<TCycleDistribution | TCycleEstimateDistribution> {
-    return this.get(
-      `/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/analytics/?type=${analytic_type}`
-    )
-      .then((res) => res?.data)
-      .catch((err) => {
-        throw err?.response?.data;
-      });
+    return this.responseData(
+      this.get(
+        `/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/analytics/?type=${analytic_type}`
+      )
+    );
   }
 
   /**
@@ -56,11 +54,9 @@ export class CycleAnalyticsService extends APIService {
     projectId: string,
     cycleId: string
   ): Promise<TProgressSnapshot> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/progress/`)
-      .then((res) => res?.data)
-      .catch((err) => {
-        throw err?.response?.data;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/progress/`)
+    );
   }
 
   /**
@@ -76,10 +72,8 @@ export class CycleAnalyticsService extends APIService {
     projectId: string,
     cycleId: string
   ): Promise<TProgressSnapshot> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/cycle-progress/`)
-      .then((res) => res?.data)
-      .catch((err) => {
-        throw err?.response?.data;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/cycle-progress/`)
+    );
   }
 }

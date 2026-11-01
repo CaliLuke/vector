@@ -22,7 +22,7 @@ import { useGanttResizable } from "../helpers/blockResizables/use-gantt-resizabl
 type Props = {
   blockId: string;
   showAllBlocks: boolean;
-  blockToRender: (data: any) => React.ReactNode;
+  blockToRender: (blockId: string) => React.ReactNode;
   enableBlockLeftResize: boolean;
   enableBlockRightResize: boolean;
   enableBlockMove: boolean;
@@ -50,10 +50,16 @@ export function GanttChartBlock(props: Props) {
 
   const block = blocksById[blockId];
 
-  const { isMoving, handleBlockDrag } = useGanttResizable(block, resizableRef, ganttContainerRef, updateBlockDates);
+  const { isMoving, handleBlockDrag, handleResizeToDay, isSaving } = useGanttResizable(
+    block,
+    resizableRef,
+    ganttContainerRef,
+    updateBlockDates
+  );
 
-  const isBlockVisibleOnChart = block?.start_date || block?.target_date;
-  const isBlockComplete = block?.start_date && block?.target_date;
+  const { start_date: startDate, target_date: targetDate } = block ?? {};
+  const isBlockVisibleOnChart = startDate || targetDate;
+  const isBlockComplete = startDate && targetDate;
 
   // hide the block if it doesn't have start and target dates and showAllBlocks is false
   if (!block || (!showAllBlocks && !isBlockVisibleOnChart)) return null;
@@ -92,6 +98,8 @@ export function GanttChartBlock(props: Props) {
               block={block}
               blockToRender={blockToRender}
               handleBlockDrag={handleBlockDrag}
+              handleResizeToDay={handleResizeToDay}
+              isSaving={isSaving}
               enableBlockLeftResize={enableBlockLeftResize}
               enableBlockRightResize={enableBlockRightResize}
               enableBlockMove={enableBlockMove && !!isBlockComplete}

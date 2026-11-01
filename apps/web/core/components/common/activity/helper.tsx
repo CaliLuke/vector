@@ -78,23 +78,29 @@ export const iconsMap: ActivityIconMap = {
   intake_view: IntakeIcon,
 };
 
-export const messages = (
-  activity: TProjectActivity,
-  workspaceDetail: IWorkspace | undefined
-): { message: string | ReactNode; customUserName?: string } => {
-  const activityType = activity.field;
-  const newValue = activity.new_value;
-  const oldValue = activity.old_value;
-  const verb = activity.verb;
-
-  const getBooleanActionText = (value: string | undefined) => {
-    if (value === "true") return "enabled";
-    if (value === "false") return "disabled";
-    return verb;
+type ActivityMessage = { message: ReactNode; customUserName?: string };
+type ActivityMessageRenderer = (activity: TProjectActivity, workspaceDetail: IWorkspace | undefined) => ActivityMessage;
+function getBooleanActionText(value: string | undefined, verb: string) {
+  if (value === "true") return "enabled";
+  if (value === "false") return "disabled";
+  return verb;
+}
+const renderProjectViewMessage: ActivityMessageRenderer = (activity) => {
+  const { field: activityType, new_value: newValue, verb } = activity;
+  return {
+    message: (
+      <>
+        {getBooleanActionText(newValue, verb)} {(activityType ?? "").replace(/_view$/, "").replace(/_/g, " ")} view
+      </>
+    ),
   };
+};
 
-  switch (activityType) {
-    case "priority":
+const messageRenderers = new Map<string, ActivityMessageRenderer>([
+  [
+    "priority",
+    (activity) => {
+      const { new_value: newValue } = activity;
       return {
         message: (
           <>
@@ -102,12 +108,22 @@ export const messages = (
           </>
         ),
       };
-    case "archived_at":
+    },
+  ],
+  [
+    "archived_at",
+    (activity) => {
+      const { new_value: newValue } = activity;
       return {
         message: newValue === "restore" ? "restored the project" : "archived the project",
         customUserName: newValue === "archive" ? "Vector" : undefined,
       };
-    case "name":
+    },
+  ],
+  [
+    "name",
+    (activity) => {
+      const { new_value: newValue } = activity;
       return {
         message: (
           <>
@@ -115,11 +131,21 @@ export const messages = (
           </>
         ),
       };
-    case "description":
+    },
+  ],
+  [
+    "description",
+    (activity) => {
+      const { new_value: newValue } = activity;
       return {
         message: newValue ? "updated the project description" : "removed the project description",
       };
-    case "start_date":
+    },
+  ],
+  [
+    "start_date",
+    (activity) => {
+      const { new_value: newValue } = activity;
       return {
         message: (
           <>
@@ -133,7 +159,12 @@ export const messages = (
           </>
         ),
       };
-    case "target_date":
+    },
+  ],
+  [
+    "target_date",
+    (activity) => {
+      const { new_value: newValue } = activity;
       return {
         message: (
           <>
@@ -147,7 +178,12 @@ export const messages = (
           </>
         ),
       };
-    case "state":
+    },
+  ],
+  [
+    "state",
+    (activity) => {
+      const { new_value: newValue } = activity;
       return {
         message: (
           <>
@@ -155,7 +191,12 @@ export const messages = (
           </>
         ),
       };
-    case "estimate":
+    },
+  ],
+  [
+    "estimate",
+    (activity) => {
+      const { new_value: newValue, old_value: oldValue } = activity;
       return {
         message: (
           <>
@@ -177,7 +218,12 @@ export const messages = (
           </>
         ),
       };
-    case "cycles":
+    },
+  ],
+  [
+    "cycles",
+    (activity, workspaceDetail) => {
+      const { verb } = activity;
       return {
         message: (
           <>
@@ -199,7 +245,12 @@ export const messages = (
           </>
         ),
       };
-    case "modules":
+    },
+  ],
+  [
+    "modules",
+    (activity) => {
+      const { new_value: newValue, old_value: oldValue, verb } = activity;
       return {
         message: (
           <>
@@ -212,7 +263,12 @@ export const messages = (
           </>
         ),
       };
-    case "labels":
+    },
+  ],
+  [
+    "labels",
+    (activity) => {
+      const { new_value: newValue, old_value: oldValue, verb } = activity;
       return {
         message: (
           <>
@@ -221,11 +277,21 @@ export const messages = (
           </>
         ),
       };
-    case "inbox":
+    },
+  ],
+  [
+    "inbox",
+    (activity) => {
+      const { new_value: newValue } = activity;
       return {
         message: <>{newValue ? "enabled" : "disabled"} inbox</>,
       };
-    case "page":
+    },
+  ],
+  [
+    "page",
+    (activity) => {
+      const { new_value: newValue, old_value: oldValue } = activity;
       return {
         message: (
           <>
@@ -234,11 +300,21 @@ export const messages = (
           </>
         ),
       };
-    case "network":
+    },
+  ],
+  [
+    "network",
+    (activity) => {
+      const { new_value: newValue } = activity;
       return {
         message: <>{newValue ? "enabled" : "disabled"} network access</>,
       };
-    case "identifier":
+    },
+  ],
+  [
+    "identifier",
+    (activity) => {
+      const { new_value: newValue } = activity;
       return {
         message: (
           <>
@@ -246,7 +322,12 @@ export const messages = (
           </>
         ),
       };
-    case "timezone":
+    },
+  ],
+  [
+    "timezone",
+    (activity) => {
+      const { new_value: newValue } = activity;
       return {
         message: (
           <>
@@ -254,41 +335,60 @@ export const messages = (
           </>
         ),
       };
-    case "module_view":
-    case "cycle_view":
-    case "issue_views_view":
-    case "page_view":
-    case "intake_view":
+    },
+  ],
+  ...["module_view", "cycle_view", "issue_views_view", "page_view", "intake_view"].map(
+    (key): [string, ActivityMessageRenderer] => [key, renderProjectViewMessage]
+  ),
+  [
+    "is_project_updates_enabled",
+    (activity) => {
+      const { new_value: newValue, verb } = activity;
       return {
-        message: (
-          <>
-            {getBooleanActionText(newValue)} {activityType.replace(/_view$/, "").replace(/_/g, " ")} view
-          </>
-        ),
+        message: <>{getBooleanActionText(newValue, verb)} project updates</>,
       };
-    case "is_project_updates_enabled":
+    },
+  ],
+  [
+    "is_epic_enabled",
+    (activity) => {
+      const { new_value: newValue, verb } = activity;
       return {
-        message: <>{getBooleanActionText(newValue)} project updates</>,
+        message: <>{getBooleanActionText(newValue, verb)} epics</>,
       };
-    case "is_epic_enabled":
+    },
+  ],
+  [
+    "is_workflow_enabled",
+    (activity) => {
+      const { new_value: newValue, verb } = activity;
       return {
-        message: <>{getBooleanActionText(newValue)} epics</>,
+        message: <>{getBooleanActionText(newValue, verb)} custom workflow</>,
       };
-    case "is_workflow_enabled":
+    },
+  ],
+  [
+    "is_time_tracking_enabled",
+    (activity) => {
+      const { new_value: newValue, verb } = activity;
       return {
-        message: <>{getBooleanActionText(newValue)} custom workflow</>,
+        message: <>{getBooleanActionText(newValue, verb)} time tracking</>,
       };
-    case "is_time_tracking_enabled":
+    },
+  ],
+  [
+    "is_issue_type_enabled",
+    (activity) => {
+      const { new_value: newValue, verb } = activity;
       return {
-        message: <>{getBooleanActionText(newValue)} time tracking</>,
+        message: <>{getBooleanActionText(newValue, verb)} work item types</>,
       };
-    case "is_issue_type_enabled":
-      return {
-        message: <>{getBooleanActionText(newValue)} work item types</>,
-      };
-    default:
-      return {
-        message: `${verb} ${activityType?.replace(/_/g, " ")} `,
-      };
-  }
+    },
+  ],
+]);
+export const messages = (activity: TProjectActivity, workspaceDetail: IWorkspace | undefined): ActivityMessage => {
+  const render = messageRenderers.get(activity.field ?? "");
+  return render
+    ? render(activity, workspaceDetail)
+    : { message: `${activity.verb} ${activity.field?.replace(/_/g, " ")} ` };
 };

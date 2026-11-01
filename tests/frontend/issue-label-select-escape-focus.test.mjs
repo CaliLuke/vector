@@ -358,3 +358,52 @@ await test("a label creation from an earlier picker scope cannot select into a r
   assert.equal(replacement.value, "");
   assert.equal(replacement.readOnly, false);
 });
+
+const labelOptionElements = () => [...document.querySelectorAll('[role="option"]')];
+
+await test("detail label choices filter by name and preserve controlled selection on deselection", async (t) => {
+  const { env: environment, client, IssueLabelService } = await labelFixture(t);
+  const { IssueLabelSelect } =
+    await import("../../apps/web/core/components/issues/issue-detail/label/select/label-select.tsx");
+  t.mock.method(IssueLabelService.prototype, "getProjectLabels", async () => [
+    { id: "review", name: "Review", color: "#ff0000", project_id: "project" },
+    { id: "delivery", name: "Delivery", color: "#00ff00", project_id: "project" },
+  ]);
+  const selections = [];
+  function Picker() {
+    const [values, setValues] = React.useState([]);
+    return React.createElement(IssueLabelSelect, {
+      workspaceSlug: "workspace",
+      projectId: "project",
+      issueId: "issue",
+      values,
+      onSelect: (ids) => {
+        selections.push(ids);
+        setValues(ids);
+      },
+      onAddLabel: async () => {
+        throw new Error("creation is not requested");
+      },
+    });
+  }
+  await environment.render(React.createElement(QueryClientProvider, { client }, React.createElement(Picker)));
+  await clickWithPointer(positionedLabelTrigger(environment));
+  assert.equal(labelOptionElements().length, 2);
+  const review = labelOptionElements().find((option) => option.textContent.includes("Review"));
+  assert.ok(review);
+  await clickWithPointer(review);
+  assert.deepEqual(selections, [["review"]]);
+  assert.equal(review.getAttribute("aria-selected"), "true");
+  const search = document.querySelector('[role="combobox"]');
+  await React.act(async () => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(search, "rev");
+    search.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  assert.deepEqual(
+    labelOptionElements().map((option) => option.textContent.trim()),
+    ["Review"]
+  );
+  await clickWithPointer(labelOptionElements()[0]);
+  assert.deepEqual(selections, [["review"], []]);
+  assert.equal(labelOptionElements()[0].getAttribute("aria-selected"), "false");
+});

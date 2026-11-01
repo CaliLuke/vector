@@ -8,7 +8,7 @@ import React from "react";
 
 import { DueDatePropertyIcon } from "@plane/propel/icons";
 // types
-import type { TIssue } from "@plane/types";
+import type { TSpreadsheetColumnProps } from "@plane/types";
 import { cn } from "@plane/utils/common";
 import { getDate, renderFormattedPayloadDate } from "@plane/utils/datetime";
 import { shouldHighlightIssueDueDate } from "@plane/utils/work-item";
@@ -18,14 +18,7 @@ import { DateDropdown } from "@/components/dropdowns/date";
 // hooks
 import { useRouteProjectStates } from "@/hooks/use-project-states";
 
-type Props = {
-  issue: TIssue;
-  onClose: () => void;
-  onChange: (issue: TIssue, data: Partial<TIssue>, updates: any) => void;
-  disabled: boolean;
-};
-
-export const SpreadsheetDueDateColumn = function SpreadsheetDueDateColumn(props: Props) {
+export const SpreadsheetDueDateColumn = function SpreadsheetDueDateColumn(props: TSpreadsheetColumnProps) {
   const { issue, onChange, disabled, onClose } = props;
   // store hooks
   const { getStateById } = useRouteProjectStates(issue.project_id);

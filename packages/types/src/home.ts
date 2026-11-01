@@ -46,11 +46,13 @@ export type TIssueEntityData = {
 
 export type TActivityEntityData = {
   id: string;
-  entity_name: "page" | "project" | "issue" | "workspace_page";
   entity_identifier: string;
   visited_at: string;
-  entity_data: TPageEntityData | TProjectEntityData | TIssueEntityData;
-};
+} & (
+  | { entity_name: "page" | "workspace_page"; entity_data: TPageEntityData }
+  | { entity_name: "project"; entity_data: TProjectEntityData }
+  | { entity_name: "issue"; entity_data: TIssueEntityData }
+);
 
 export type TLinkEditableFields = {
   title: string;
@@ -60,7 +62,7 @@ export type TLinkEditableFields = {
 export type TLink = TLinkEditableFields & {
   created_by_id: string;
   id: string;
-  metadata: any;
+  metadata: unknown;
   workspace_slug: string;
 
   //need

@@ -6,17 +6,21 @@
 
 import { useParams } from "@tanstack/react-router";
 
-import { useTranslation } from "@plane/i18n";
-import { CloseIcon } from "@plane/propel/icons";
 // plane imports
 import type { EViewAccess, TViewFilterProps } from "@plane/types";
-import { Tag } from "@plane/ui";
-import { replaceUnderscoreIfSnakeCase } from "@plane/utils/string";
+import { AppliedFiltersRow } from "@/components/common/applied-filters/tag";
 // components
 import { AppliedDateFilters } from "@/components/common/applied-filters/date";
 import { AppliedMembersFilters } from "@/components/common/applied-filters/members";
 // local imports
 import { AppliedAccessFilters } from "./access";
+
+const FILTER_KEYS = [
+  "created_at",
+  "owned_by",
+  "favorites",
+  "view_type",
+] as const satisfies readonly (keyof TViewFilterProps)[];
 
 type Props = {
   appliedFilters: TViewFilterProps;
@@ -25,73 +29,45 @@ type Props = {
   alwaysAllowEditing?: boolean;
 };
 
-const MEMBERS_FILTERS = new Set(["owned_by"]);
-const DATE_FILTERS = new Set(["created_at"]);
-const VIEW_ACCESS_FILTERS = new Set(["view_type"]);
-
 export function ViewAppliedFiltersList(props: Props) {
   const { workspaceSlug } = useParams({ strict: false });
   const { appliedFilters, handleClearAllFilters, handleRemoveFilter, alwaysAllowEditing } = props;
-  const { t } = useTranslation();
-
-  if (!appliedFilters) return null;
-  if (Object.keys(appliedFilters).length === 0) return null;
 
   const isEditingAllowed = alwaysAllowEditing;
 
   return (
-    <div className="flex flex-wrap items-stretch gap-2 bg-surface-1">
-      {Object.entries(appliedFilters).map(([key, value]) => {
-        const filterKey = key as keyof TViewFilterProps;
-
-        if (!value) return;
-        if (Array.isArray(value) && value.length === 0) return;
-
-        return (
-          <Tag key={filterKey}>
-            <span className="text-11 text-tertiary">{replaceUnderscoreIfSnakeCase(filterKey)}</span>
-            {VIEW_ACCESS_FILTERS.has(filterKey) && (
-              <AppliedAccessFilters
-                editable={isEditingAllowed}
-                handleRemove={(val) => handleRemoveFilter(filterKey, val)}
-                values={Array.isArray(value) ? (value as EViewAccess[]) : []}
-              />
-            )}
-            {DATE_FILTERS.has(filterKey) && (
-              <AppliedDateFilters
-                editable={isEditingAllowed}
-                handleRemove={(val) => handleRemoveFilter(filterKey, val)}
-                values={Array.isArray(value) ? (value as string[]) : []}
-              />
-            )}
-            {MEMBERS_FILTERS.has(filterKey) && (
-              <AppliedMembersFilters
-                workspaceSlug={workspaceSlug}
-                editable={isEditingAllowed}
-                handleRemove={(val) => handleRemoveFilter(filterKey, val)}
-                values={Array.isArray(value) ? (value as string[]) : []}
-              />
-            )}
-            {isEditingAllowed && (
-              <button
-                type="button"
-                className="grid place-items-center text-tertiary hover:text-secondary"
-                onClick={() => handleRemoveFilter(filterKey, null)}
-              >
-                <CloseIcon height={12} width={12} strokeWidth={2} />
-              </button>
-            )}
-          </Tag>
-        );
-      })}
-      {isEditingAllowed && (
-        <button type="button" onClick={handleClearAllFilters}>
-          <Tag>
-            {t("common.clear_all")}
-            <CloseIcon height={12} width={12} strokeWidth={2} />
-          </Tag>
-        </button>
+    <AppliedFiltersRow
+      filters={appliedFilters}
+      keys={FILTER_KEYS}
+      onRemove={isEditingAllowed ? (key) => handleRemoveFilter(key, null) : undefined}
+      onClearAll={isEditingAllowed ? handleClearAllFilters : undefined}
+    >
+      {(filterKey) => (
+        <>
+          {filterKey === "view_type" && (
+            <AppliedAccessFilters
+              editable={isEditingAllowed}
+              handleRemove={(val) => handleRemoveFilter(filterKey, val)}
+              values={appliedFilters.view_type ?? []}
+            />
+          )}
+          {filterKey === "created_at" && (
+            <AppliedDateFilters
+              editable={isEditingAllowed}
+              handleRemove={(val) => handleRemoveFilter(filterKey, val)}
+              values={appliedFilters.created_at ?? []}
+            />
+          )}
+          {filterKey === "owned_by" && (
+            <AppliedMembersFilters
+              workspaceSlug={workspaceSlug}
+              editable={isEditingAllowed}
+              handleRemove={(val) => handleRemoveFilter(filterKey, val)}
+              values={appliedFilters.owned_by ?? []}
+            />
+          )}
+        </>
       )}
-    </div>
+    </AppliedFiltersRow>
   );
 }

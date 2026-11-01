@@ -22,9 +22,10 @@ import {
 import { useTranslation } from "@plane/i18n";
 import { LinkIcon, TrashIcon, ContrastIcon, DiceIcon, DoubleCircleIcon } from "@plane/propel/icons";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
-import type { ICycle, IIssueLabel, IModule, TIssue, TIssuePriorities } from "@plane/types";
+import type { TIssue } from "@plane/types";
 import { EIssueServiceType, EIssuesStoreType, EUserProjectRoles } from "@plane/types";
 import { copyTextToClipboard } from "@plane/utils/string";
+import { selectionText, selectionEntityId, selectionPriority } from "@/components/power-k/core/selection";
 // components
 import type { TPowerKCommandConfig } from "@/components/power-k/core/types";
 // hooks
@@ -109,7 +110,7 @@ function buildBasicCommands(
       type: "change-page",
       page: "update-work-item-state",
       onSelect: (data) => {
-        const stateId = data as string;
+        const stateId = selectionText(data);
         if (entityDetails?.state_id === stateId) return;
         handleUpdateEntity({
           state_id: stateId,
@@ -129,7 +130,7 @@ function buildBasicCommands(
       type: "change-page",
       page: "update-work-item-priority",
       onSelect: (data) => {
-        const priority = data as TIssuePriorities;
+        const priority = selectionPriority(data);
         if (entityDetails?.priority === priority) return;
         handleUpdateEntity({
           priority,
@@ -149,7 +150,7 @@ function buildBasicCommands(
       type: "change-page",
       page: "update-work-item-assignee",
       onSelect: (data) => {
-        const assigneeId = data as string;
+        const assigneeId = selectionText(data);
         handleUpdateAssignee(assigneeId);
       },
       shortcut: "a",
@@ -184,7 +185,7 @@ function buildBasicCommands(
       type: "change-page",
       page: "update-work-item-estimate",
       onSelect: (data) => {
-        const estimatePointId = data as string | null;
+        const estimatePointId = data === null ? null : selectionText(data);
         if (entityDetails?.estimate_point === estimatePointId) return;
         handleUpdateEntity({
           estimate_point: estimatePointId,
@@ -235,7 +236,7 @@ function buildRelationshipCommands(
       type: "change-page",
       page: "update-work-item-cycle",
       onSelect: async (data) => {
-        const cycleId = (data as ICycle)?.id;
+        const cycleId = selectionEntityId(data);
         if (!workspaceSlug || !entityDetails || !entityDetails.project_id) return;
         if (entityDetails.cycle_id === cycleId) return;
         // handlers
@@ -275,7 +276,7 @@ function buildRelationshipCommands(
       type: "change-page",
       page: "update-work-item-module",
       onSelect: async (data) => {
-        const moduleId = (data as IModule)?.id;
+        const moduleId = selectionEntityId(data);
         if (!workspaceSlug || !entityDetails || !entityDetails.project_id) return;
         // handlers
         const changeModulesInEntity = entityDetails.is_epic ? changeModulesInEpic : changeModulesInIssue;
@@ -327,7 +328,7 @@ function buildLabelCommands(
       type: "change-page",
       page: "update-work-item-labels",
       onSelect: (data) => {
-        const labelId = (data as IIssueLabel)?.id;
+        const labelId = selectionEntityId(data);
         if (!workspaceSlug || !entityDetails || !entityDetails.project_id) return;
         const updatedLabels = [...(entityDetails.label_ids ?? [])];
         if (updatedLabels.includes(labelId)) updatedLabels.splice(updatedLabels.indexOf(labelId), 1);

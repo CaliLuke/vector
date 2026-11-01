@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import type { AxiosInstance } from "axios";
+import type { AxiosInstance, AxiosRequestConfig } from "axios";
 import { create } from "axios";
 import { env } from "@/env";
 import { AppError } from "@/lib/errors";
@@ -41,30 +41,30 @@ export abstract class APIService {
     return this.header;
   }
 
-  get(url: string, params = {}, config = {}) {
-    return this.axiosInstance.get(url, {
+  get<T = unknown>(url: string, params: AxiosRequestConfig = {}, config: AxiosRequestConfig = {}) {
+    return this.axiosInstance.get<T>(url, {
       ...params,
       ...config,
     });
   }
 
-  post(url: string, data = {}, config = {}) {
-    return this.axiosInstance.post(url, data, config);
+  post<T = unknown>(url: string, data: unknown = {}, config: AxiosRequestConfig = {}) {
+    return this.axiosInstance.post<T>(url, data, config);
   }
 
-  put(url: string, data = {}, config = {}) {
-    return this.axiosInstance.put(url, data, config);
+  put<T = unknown>(url: string, data: unknown = {}, config: AxiosRequestConfig = {}) {
+    return this.axiosInstance.put<T>(url, data, config);
   }
 
-  patch(url: string, data = {}, config = {}) {
-    return this.axiosInstance.patch(url, data, config);
+  patch<T = unknown>(url: string, data: unknown = {}, config: AxiosRequestConfig = {}) {
+    return this.axiosInstance.patch<T>(url, data, config);
   }
 
-  delete(url: string, data?: Record<string, unknown> | null | string, config = {}) {
-    return this.axiosInstance.delete(url, { data, ...config });
+  delete<T = unknown>(url: string, data?: Record<string, unknown> | null | string, config: AxiosRequestConfig = {}) {
+    return this.axiosInstance.delete<T>(url, { data, ...config });
   }
 
-  request(config = {}) {
-    return this.axiosInstance(config);
+  request<T = unknown>(config: AxiosRequestConfig = {}) {
+    return this.axiosInstance.request<T>(config);
   }
 }

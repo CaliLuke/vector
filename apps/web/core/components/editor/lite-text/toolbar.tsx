@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import React, { useEffect, useState, useCallback } from "react";
+import type React from "react";
 import type { LucideIcon } from "lucide-react";
 
 import { EIssueCommentAccessSpecifier } from "@plane/constants";
@@ -20,14 +20,14 @@ import { Tooltip } from "@plane/propel/tooltip";
 // constants
 import { cn } from "@plane/utils/common";
 import type { ToolbarMenuItem } from "@plane/editor";
-import { TOOLBAR_ITEMS } from "@plane/editor";
+import { TOOLBAR_ITEMS, EditorToolbarButtons, useEditorToolbar } from "@plane/editor";
 // helpers
 
 type Props = {
   accessSpecifier?: EIssueCommentAccessSpecifier;
   executeCommand: (item: ToolbarMenuItem) => void;
   handleAccessChange?: (accessKey: EIssueCommentAccessSpecifier) => void;
-  handleSubmit: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  handleSubmit: (event: React.MouseEvent<HTMLButtonElement>) => void;
   isCommentEmpty: boolean;
   isSubmitting: boolean;
   showAccessSpecifier: boolean;
@@ -71,36 +71,9 @@ export function IssueCommentToolbar(props: Props) {
     editorRef,
     submitButtonText = "common.comment",
   } = props;
-  // State to manage active states of toolbar items
-  const [activeStates, setActiveStates] = useState<Record<string, boolean>>({});
+  const { activeStates, isReadyToDiscard } = useEditorToolbar(editorRef, toolbarItems);
 
-  // Function to update active states
-  const updateActiveStates = useCallback(() => {
-    if (!editorRef) return;
-    const newActiveStates: Record<string, boolean> = {};
-    Object.values(toolbarItems)
-      .flat()
-      .forEach((item) => {
-        // TODO: update this while toolbar homogenization
-        // @ts-expect-error type mismatch here
-        newActiveStates[item.renderKey] = editorRef.isMenuItemActive({
-          itemKey: item.itemKey,
-          ...item.extraProps,
-        });
-      });
-    setActiveStates(newActiveStates);
-  }, [editorRef]);
-
-  // useEffect to call updateActiveStates when isActive prop changes
-  useEffect(() => {
-    if (!editorRef) return;
-    const unsubscribe = editorRef.onStateChange(updateActiveStates);
-    updateActiveStates();
-    return () => unsubscribe();
-  }, [editorRef, updateActiveStates]);
-
-  const isEditorReadyToDiscard = editorRef?.isEditorReadyToDiscard();
-  const isSubmitButtonDisabled = isCommentEmpty || !isEditorReadyToDiscard;
+  const isSubmitButtonDisabled = isCommentEmpty || !isReadyToDiscard;
 
   return (
     <div className="flex h-9 w-full items-stretch gap-1.5 overflow-x-scroll bg-surface-2">
@@ -113,6 +86,7 @@ export function IssueCommentToolbar(props: Props) {
               <Tooltip key={access.key} tooltipContent={access.label}>
                 <button
                   type="button"
+                  aria-label={access.label}
                   onClick={() => handleAccessChange?.(access.key)}
                   className={cn("grid aspect-square place-items-center rounded-xs p-1 hover:bg-layer-1", {
                     "bg-layer-1": isAccessActive,
@@ -132,48 +106,12 @@ export function IssueCommentToolbar(props: Props) {
       )}
       <div className="flex w-full items-stretch justify-between gap-2 rounded-sm border-[0.5px] border-subtle p-1">
         <div className="flex items-stretch">
-          {Object.keys(toolbarItems).map((key, index) => (
-            <div
-              key={key}
-              className={cn("flex items-stretch gap-0.5 border-r border-subtle px-2.5", {
-                "pl-0": index === 0,
-              })}
-            >
-              {toolbarItems[key].map((item) => {
-                const isItemActive = activeStates[item.renderKey];
-
-                return (
-                  <Tooltip
-                    key={item.renderKey}
-                    tooltipContent={
-                      <p className="flex flex-col gap-1 text-center text-11">
-                        <span className="font-medium">{item.name}</span>
-                        {item.shortcut && <kbd className="text-placeholder">{item.shortcut.join(" + ")}</kbd>}
-                      </p>
-                    }
-                  >
-                    <button
-                      type="button"
-                      onClick={() => executeCommand(item)}
-                      className={cn(
-                        "grid aspect-square place-items-center rounded-xs p-0.5 text-placeholder hover:bg-layer-1",
-                        {
-                          "bg-layer-1 text-primary": isItemActive,
-                        }
-                      )}
-                    >
-                      <item.icon
-                        className={cn("h-3.5 w-3.5", {
-                          "text-primary": isItemActive,
-                        })}
-                        strokeWidth={2.5}
-                      />
-                    </button>
-                  </Tooltip>
-                );
-              })}
-            </div>
-          ))}
+          <EditorToolbarButtons
+            groups={toolbarItems}
+            activeStates={activeStates}
+            executeCommand={executeCommand}
+            variant="comment"
+          />
         </div>
         {showSubmitButton && (
           <div className="sticky right-1">

@@ -5,7 +5,7 @@
  */
 
 // plane imports
-import type { TUserDetails } from "@plane/editor";
+import { z } from "zod";
 import { logger } from "@plane/logger";
 import { AppError } from "@/lib/errors";
 // services
@@ -13,7 +13,12 @@ import { parsePageDocumentName } from "@/lib/page-document";
 import { getPageService } from "@/services/page/handler";
 import { UserService } from "@/services/user.service";
 // types
-import type { HocusPocusServerContext, TDocumentTypes } from "@/types";
+import type { HocusPocusServerContext } from "@/types";
+
+const authenticationTokenSchema = z.object({
+  id: z.string().min(1),
+  cookie: z.string().nullish(),
+});
 
 /**
  * Authenticate the user
@@ -41,9 +46,9 @@ export const onAuthenticate = async ({
   // Extract cookie (fallback to request headers) and userId from token (for scenarios where
   // the cookies are not passed in the request headers)
   try {
-    const parsedToken = JSON.parse(token) as TUserDetails;
+    const parsedToken = authenticationTokenSchema.parse(JSON.parse(token));
     userId = parsedToken.id;
-    cookie = parsedToken.cookie;
+    cookie = parsedToken.cookie ?? undefined;
   } catch (error) {
     const appError = new AppError(error, {
       context: { operation: "onAuthenticate" },
@@ -62,9 +67,12 @@ export const onAuthenticate = async ({
     throw appError;
   }
 
+  const documentType = requestParameters.get("documentType");
+  if (documentType !== "project_page") throw new AppError(`Invalid document type ${documentType} provided.`);
+
   // set cookie in context, so it can be used throughout the ws connection
-  context.cookie = cookie ?? requestParameters.get("cookie") ?? "";
-  context.documentType = requestParameters.get("documentType")?.toString() as TDocumentTypes;
+  context.cookie = cookie;
+  context.documentType = documentType;
   context.projectId = requestParameters.get("projectId");
   context.userId = userId;
   context.workspaceSlug = requestParameters.get("workspaceSlug");

@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import TextAlign from "@tiptap/extension-text-align";
+import { TextAlign } from "@tiptap/extension-text-align";
 
 export type TTextAlign = "left" | "center" | "right";
 

@@ -57,6 +57,9 @@ type LinkOptions = {
 };
 
 declare module "@tiptap/core" {
+  interface EditorEvents {
+    linkBubbleMenuChange: { isOpen: boolean };
+  }
   interface Commands<ReturnType> {
     [CORE_EXTENSIONS.CUSTOM_LINK]: {
       /**
@@ -83,6 +86,10 @@ declare module "@tiptap/core" {
        * Unset a link mark
        */
       unsetLink: () => ReturnType;
+    };
+    linkBubbleMenu: {
+      setLinkBubbleMenuOpen: (isOpen: boolean) => ReturnType;
+      setLinkPreviewOpen: (isOpen: boolean) => ReturnType;
     };
   }
   interface Storage {
@@ -212,8 +219,8 @@ export const CustomLinkExtension = Mark.create<LinkOptions, CustomLinkStorage>({
   },
 
   renderHTML({ HTMLAttributes }) {
-    const href = (HTMLAttributes.href as string) || "";
-    if (isDangerousHref(href)) {
+    const href: unknown = HTMLAttributes.href;
+    if (typeof href !== "string" || isDangerousHref(href)) {
       return ["a", mergeAttributes(this.options.HTMLAttributes, { ...HTMLAttributes, href: "" }), 0];
     }
     return ["a", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
@@ -221,6 +228,27 @@ export const CustomLinkExtension = Mark.create<LinkOptions, CustomLinkStorage>({
 
   addCommands() {
     return {
+      setLinkPreviewOpen:
+        (isOpen) =>
+        ({ dispatch, tr }) => {
+          if (dispatch) {
+            this.storage.isPreviewOpen = isOpen;
+            tr.setMeta("preventDispatch", true);
+          }
+          return true;
+        },
+      setLinkBubbleMenuOpen:
+        (isOpen) =>
+        ({ dispatch, tr }) => {
+          if (dispatch) {
+            tr.setMeta("preventDispatch", true);
+            if (this.storage.isBubbleMenuOpen !== isOpen) {
+              this.storage.isBubbleMenuOpen = isOpen;
+              this.editor.emit("linkBubbleMenuChange", { isOpen });
+            }
+          }
+          return true;
+        },
       setLink:
         (attributes) =>
         ({ chain }) =>
@@ -286,11 +314,7 @@ export const CustomLinkExtension = Mark.create<LinkOptions, CustomLinkStorage>({
     }
 
     if (this.options.openOnClick) {
-      plugins.push(
-        clickHandler({
-          type: this.type,
-        })
-      );
+      plugins.push(clickHandler());
     }
 
     if (this.options.linkOnPaste) {

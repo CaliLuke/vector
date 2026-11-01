@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { isAxiosError } from "axios";
 import { logger } from "@plane/logger";
 import type { TDocumentPayload, TPage } from "@plane/types";
 // services
@@ -21,16 +22,12 @@ export abstract class PageCoreService extends APIService {
   protected abstract basePath: string;
   protected collaborationRevision = 0;
 
-  constructor() {
-    super();
-  }
-
   async fetchDetails(pageId: string): Promise<TPage> {
     try {
-      const response = await this.get(`${this.basePath}/pages/${parsePageDocumentName(pageId).pageId}/`, {
+      const response = await this.get<TPage>(`${this.basePath}/pages/${parsePageDocumentName(pageId).pageId}/`, {
         headers: this.getHeader(),
       });
-      const page = response?.data as TPage;
+      const page = response.data;
       if ((page.collaboration_revision ?? 0) !== this.collaborationRevision) {
         throw new AppError("The page was replaced. Reload it before editing.", { statusCode: 409 });
       }
@@ -83,7 +80,7 @@ export abstract class PageCoreService extends APIService {
 
     // Create an abort listener that will reject the pending promise
     let abortListener: (() => void) | undefined;
-    const abortPromise = new Promise((_, reject) => {
+    const abortPromise = new Promise<never>((_, reject) => {
       if (abortSignal) {
         abortListener = () => {
           reject(new AppError(new DOMException("Aborted", "AbortError")));
@@ -94,7 +91,7 @@ export abstract class PageCoreService extends APIService {
 
     try {
       return await Promise.race([
-        this.patch(
+        this.patch<TPage>(
           `${this.basePath}/pages/${parsePageDocumentName(pageId).pageId}/`,
           { ...data, collaboration_revision: this.collaborationRevision },
           {
@@ -125,7 +122,7 @@ export abstract class PageCoreService extends APIService {
     }
   }
 
-  async updateDescriptionBinary(pageId: string, data: TDocumentPayload): Promise<any> {
+  async updateDescriptionBinary(pageId: string, data: TDocumentPayload): Promise<unknown> {
     try {
       const response = await this.patch(
         `${this.basePath}/pages/${parsePageDocumentName(pageId).pageId}/description/`,
@@ -134,7 +131,7 @@ export abstract class PageCoreService extends APIService {
           headers: this.getHeader(),
         }
       );
-      return response?.data as unknown;
+      return response.data;
     } catch (error) {
       const appError = new AppError(error, {
         context: { operation: "updateDescriptionBinary", pageId },
@@ -151,13 +148,16 @@ export abstract class PageCoreService extends APIService {
    */
   async fetchUserMentions(pageId: string): Promise<TUserMention[]> {
     try {
-      const response = await this.get(`${this.basePath}/pages/${parsePageDocumentName(pageId).pageId}/mentions/`, {
-        headers: this.getHeader(),
-        params: {
-          mention_type: "user_mention",
-        },
-      });
-      return (response?.data as TUserMention[]) ?? [];
+      const response = await this.get<TUserMention[]>(
+        `${this.basePath}/pages/${parsePageDocumentName(pageId).pageId}/mentions/`,
+        {
+          headers: this.getHeader(),
+          params: {
+            mention_type: "user_mention",
+          },
+        }
+      );
+      return response.data ?? [];
     } catch (error) {
       const appError = new AppError(error, {
         context: { operation: "fetchUserMentions", pageId },
@@ -191,18 +191,20 @@ export abstract class PageCoreService extends APIService {
       });
       // If we get a 302, the Location header contains the presigned URL
       if (response.status === 302 || response.status === 301) {
-        return response.headers?.location || null;
+        const location: unknown = response.headers.location;
+        return typeof location === "string" ? location : null;
       }
       return null;
     } catch (error) {
       // Axios throws on 3xx when maxRedirects is 0, so we need to handle the redirect from the error
-      if ((error as any).response?.status === 302 || (error as any).response?.status === 301) {
-        return (error as any).response.headers?.location || null;
+      if (isAxiosError<unknown>(error) && (error.response?.status === 302 || error.response?.status === 301)) {
+        const location: unknown = error.response.headers.location;
+        return typeof location === "string" ? location : null;
       }
       logger.error("Failed to resolve image asset URL", {
         assetId,
         workspaceSlug,
-        error: (error as any).message,
+        error: new AppError(error).message,
       });
       return null;
     }

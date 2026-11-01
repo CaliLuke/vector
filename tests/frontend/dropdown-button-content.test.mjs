@@ -23,7 +23,8 @@ for (const variant of [
   "transparent-with-text",
   "transparent-without-text",
 ]) {
-  test(`${variant} dropdown content leaves one focusable trigger and respects its disabled state`, async (t) => {
+  // Register eagerly; node:test owns completion and reports failures before suite cleanup.
+  void test(`${variant} dropdown content leaves one focusable trigger and respects its disabled state`, async (t) => {
     const environment = await createReactDomTestEnvironment();
     t.after(() => environment.unmount());
     const errors = [];
@@ -60,3 +61,46 @@ for (const variant of [
     assert.deepEqual(errors, []);
   });
 }
+
+void test("custom dropdown content retains one native, forwarded trigger and respects disabled state", async (t) => {
+  const env = await createReactDomTestEnvironment();
+  t.after(() => env.unmount());
+  const { DropdownTrigger } = await import("../../apps/web/core/components/dropdowns/buttons.tsx");
+  const ref = React.createRef();
+  let clicks = 0;
+  const render = (disabled, custom = true) =>
+    env.render(
+      React.createElement(
+        DropdownTrigger,
+        {
+          appearance: {
+            button: custom ? React.createElement("span", null, "Custom label") : undefined,
+            disabled,
+            buttonVariant: "border-with-text",
+          },
+          ref,
+          isActive: false,
+          tooltipHeading: "State",
+          onClick: () => clicks++,
+        },
+        "Fallback label"
+      )
+    );
+  await render(false);
+  assert.equal(env.container.querySelectorAll("button").length, 1);
+  assert.equal(ref.current, env.container.querySelector("button"));
+  assert.equal(ref.current.type, "button");
+  assert.equal(ref.current.textContent, "Custom label");
+  await act(async () => ref.current.click());
+  assert.equal(clicks, 1);
+  await render(true);
+  await act(async () => ref.current.click());
+  assert.equal(clicks, 1);
+  assert.equal(ref.current.disabled, true);
+  const nativeTrigger = ref.current;
+  await render(true, false);
+  assert.equal(ref.current, nativeTrigger);
+  assert.equal(ref.current.textContent, "Fallback label");
+  await act(async () => ref.current.firstElementChild.click());
+  assert.equal(clicks, 1, "fallback content retains the disabled native trigger");
+});

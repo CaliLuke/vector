@@ -1,9 +1,13 @@
+import { createProjectAccessScope } from "./helpers/permission-query-fixture.mjs";
+import * as ContractConstants from "./../../packages/constants/dist/index.mjs";
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 import { createPermissionQueryClient } from "./helpers/permission-query-fixture.mjs";
 
 registerWebModuleHooks();
+const { getCustomDates } = await import("../../packages/utils/dist/intake.js");
 const { webRequire } = await import("./helpers/react.mjs");
 const { MutationObserver, QueryObserver } = webRequire("@tanstack/react-query");
 const { intakeKeys, intakeListOptions, intakeDetailOptions, intakeMutationOptions } =
@@ -13,24 +17,30 @@ const { defaultIntakePreferences, intakeQueryParams, selectIntakeRows } =
 const { InboxIssueService } = await import("../../apps/web/core/services/inbox/inbox-issue.service.ts");
 const { advanceIdentitySession } = await import("../../apps/web/core/queries/identity.ts");
 
-const scope = {
-  accountId: "alice",
-  sessionGeneration: 0,
-  workspaceSlug: "workspace",
-  membershipRole: 15,
-  membershipRevision: "v1",
-  projectId: "project",
-  projectMembershipRole: 20,
-  projectRole: 20,
-};
+const scope = createProjectAccessScope({ workspaceSlug: "workspace", projectId: "project", membershipRevision: "v1" });
 const row = {
   id: "inbox",
   issue: { id: "item", project_id: "project", name: "Original" },
-  status: -2,
+  status: ContractEnums.EInboxIssueStatus.PENDING,
   snoozed_till: null,
 };
 const page = { results: [row], total_results: 1, next_page_results: false, next_cursor: "" };
 const preferences = defaultIntakePreferences();
+
+await test("intake date presets produce bounded ranges and reject unsupported durations", (t) => {
+  t.mock.timers.enable({ apis: ["Date"], now: new Date(2026, 9, 31, 12) });
+  assert.equal(getCustomDates(ContractConstants.EPastDurationFilters.TODAY), "2026-10-31;after,2026-10-31;before");
+  assert.equal(getCustomDates(ContractConstants.EPastDurationFilters.YESTERDAY), "2026-10-30;after,2026-10-30;before");
+  assert.equal(
+    getCustomDates(ContractConstants.EPastDurationFilters.LAST_7_DAYS),
+    "2026-10-24;after,2026-10-31;before"
+  );
+  assert.equal(
+    getCustomDates(ContractConstants.EPastDurationFilters.LAST_30_DAYS),
+    "2026-10-01;after,2026-10-31;before"
+  );
+  assert.throws(() => getCustomDates("unknown"), RangeError);
+});
 const fixture = (t) => createPermissionQueryClient(t, { ...scope, workspaceRole: scope.membershipRole });
 
 await test("identical native intake list reads deduplicate and propagate cancellation", async (t) => {
@@ -147,11 +157,11 @@ await test("an accepted response from an earlier session cannot update new intak
 await test("intake filter projections preserve explicit dates, closed tabs, and expired snoozes", () => {
   const dated = { ...preferences, filters: { status: [-2], created_at: ["2026-10-01;after"] } };
   assert.equal(intakeQueryParams(dated).created_at, "2026-10-01;after");
-  const snoozed = { ...row, status: 0, snoozed_till: "2026-10-01T00:00:00Z" };
+  const snoozed = { ...row, status: ContractEnums.EInboxIssueStatus.SNOOZED, snoozed_till: "2026-10-01T00:00:00Z" };
   const future = { ...snoozed, issue: { ...row.issue, id: "future" }, snoozed_till: "2030-01-01T00:00:00Z" };
   assert.deepEqual(selectIntakeRows([snoozed, future], preferences, Date.parse("2026-10-25")), [snoozed]);
   assert.deepEqual(selectIntakeRows([row], { ...preferences, filters: { status: [] } }, Date.now()), []);
-  assert.deepEqual(defaultIntakePreferences("closed").filters.status, [1, -1, 2]);
+  assert.deepEqual(defaultIntakePreferences(ContractEnums.EInboxIssueCurrentTab.CLOSED).filters.status, [1, -1, 2]);
 });
 
 await test("accepted intake status keeps an active detail canonical without a follow-up read", async (t) => {

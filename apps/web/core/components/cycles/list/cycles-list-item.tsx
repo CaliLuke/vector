@@ -4,13 +4,14 @@
  * See the LICENSE file for details.
  */
 
+import { getCycleGroup } from "@plane/utils/cycle";
 import { useLocation, useRouter } from "@tanstack/react-router";
 import type { MouseEvent } from "react";
 import { useRef } from "react";
 
 import { CheckIcon } from "@plane/propel/icons";
 // plane imports
-import type { TCycleGroups, ICycle } from "@plane/types";
+import type { ICycle } from "@plane/types";
 import { CircularProgressIndicator } from "@plane/ui";
 // components
 import { calculateCycleProgress } from "@plane/utils/cycle";
@@ -53,7 +54,7 @@ export const CyclesListItem = function CyclesListItem(props: TCyclesListItem) {
 
   // computed
   // TODO: change this logic once backend fix the response
-  const cycleStatus = cycleDetails.status ? (cycleDetails.status.toLocaleLowerCase() as TCycleGroups) : "draft";
+  const cycleStatus = getCycleGroup(cycleDetails.status);
   const isActive = cycleStatus === "current";
 
   // handlers

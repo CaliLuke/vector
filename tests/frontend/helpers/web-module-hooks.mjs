@@ -12,8 +12,9 @@ const uiRoot = path.join(repositoryRoot, "packages/ui");
 const propelRoot = path.join(repositoryRoot, "packages/propel");
 const i18nRoot = path.join(repositoryRoot, "packages/i18n");
 const hooksRoot = path.join(repositoryRoot, "packages/hooks");
+const utilsRoot = path.join(repositoryRoot, "packages/utils");
 const requireFromWeb = createRequire(path.join(webRoot, "package.json"));
-const appSourceRoots = [webRoot, adminRoot, spaceRoot, uiRoot, propelRoot, hooksRoot, i18nRoot].map(
+const appSourceRoots = [webRoot, adminRoot, spaceRoot, uiRoot, propelRoot, hooksRoot, i18nRoot, utilsRoot].map(
   (root) => pathToFileURL(root).href
 );
 const relativeSpecifiers = new Set([".", ".."]);
@@ -58,7 +59,7 @@ function registerAppModuleHooks(appRoot, aliasRoot, { stubEmojiRoot = false } = 
       let target;
       if (
         stubEmojiRoot &&
-        specifier === "../emoji-icon-picker/emoji/emoji" &&
+        (specifier === "../emoji-icon-picker/emoji/emoji" || specifier === "./emoji/emoji") &&
         context.parentURL?.startsWith(pathToFileURL(propelRoot).href)
       ) {
         target = path.join(repositoryRoot, "tests/frontend/helpers/emoji-root-stub.mjs");
@@ -79,16 +80,7 @@ function registerAppModuleHooks(appRoot, aliasRoot, { stubEmojiRoot = false } = 
       return nextResolve(specifier, context);
     },
     load(url, context, nextLoad) {
-      if (
-        (url.startsWith(pathToFileURL(adminRoot).href) ||
-          url.startsWith(pathToFileURL(webRoot).href) ||
-          url.startsWith(pathToFileURL(spaceRoot).href) ||
-          url.startsWith(pathToFileURL(uiRoot).href) ||
-          url.startsWith(pathToFileURL(propelRoot).href) ||
-          url.startsWith(pathToFileURL(hooksRoot).href) ||
-          url.startsWith(pathToFileURL(i18nRoot).href)) &&
-        /\.tsx?$/.test(url)
-      ) {
+      if (isAppSourceUrl(url) && /\.tsx?$/.test(url)) {
         const source = readFileSync(fileURLToPath(url), "utf8");
         const output = transformFrontendSource(source, {
           format: "esm",

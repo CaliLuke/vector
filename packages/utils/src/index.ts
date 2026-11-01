@@ -23,6 +23,7 @@ export * from "./intake";
 export * from "./loader";
 export * from "./local-logging";
 export * from "./math";
+export * from "./metadata";
 export * from "./module";
 export * from "./notification";
 export * from "./page";

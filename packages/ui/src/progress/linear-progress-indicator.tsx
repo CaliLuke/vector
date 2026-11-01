@@ -9,7 +9,7 @@ import { Tooltip } from "@plane/propel/tooltip";
 import { cn } from "../utils";
 
 type Props = {
-  data: any;
+  data: { id: string | number; name: string; value: number; color: string }[];
   noTooltip?: boolean;
   inPercentage?: boolean;
   size?: "sm" | "md" | "lg" | "xl";
@@ -25,18 +25,15 @@ export function LinearProgressIndicator({
   className = "",
   barClassName = "",
 }: Props) {
-  const total = data.reduce((acc: any, cur: any) => acc + cur.value, 0);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  let progress = 0;
+  const total = data.reduce((acc, cur) => acc + cur.value, 0);
 
-  const bars = data.map((item: any) => {
+  const bars = data.map((item) => {
+    if (total <= 0 || item.value <= 0) return null;
     const width = `${(item.value / total) * 100}%`;
-    if (width === "0%") return <></>;
     const style = {
       width,
       backgroundColor: item.color,
     };
-    progress += item.value;
     if (noTooltip) return <div style={style} key={item.id} />;
     else
       return (

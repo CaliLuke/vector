@@ -29,6 +29,7 @@
     "./loader": "./dist/loader.js",
     "./local-logging": "./dist/local-logging.js",
     "./math": "./dist/math.js",
+    "./metadata": "./dist/metadata.js",
     "./module": "./dist/module.js",
     "./notification": "./dist/notification.js",
     "./page": "./dist/page.js",

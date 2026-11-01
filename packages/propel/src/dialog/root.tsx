@@ -104,8 +104,6 @@ const DialogPanel = forwardRef(function DialogPanel(
         ref={ref}
         data-slot="dialog-content"
         className={cn(BASE_CLASSNAME, positionClassNames, width, className)}
-        role="dialog"
-        aria-modal="true"
         {...props}
       >
         {children}

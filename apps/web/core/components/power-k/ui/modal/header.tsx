@@ -20,10 +20,11 @@ type Props = {
   context: TPowerKContext;
   onSearchChange: (value: string) => void;
   searchTerm: string;
+  inputRef?: React.Ref<HTMLInputElement>;
 };
 
 export function PowerKModalHeader(props: Props) {
-  const { context, searchTerm, onSearchChange, activePage } = props;
+  const { context, searchTerm, onSearchChange, activePage, inputRef } = props;
   // translation
   const { t } = useTranslation();
   // derived values
@@ -49,7 +50,7 @@ export function PowerKModalHeader(props: Props) {
           onValueChange={onSearchChange}
           placeholder={placeholder}
           className="flex-1 bg-transparent text-13 text-primary placeholder-(--text-color-placeholder) outline-none"
-          autoFocus
+          ref={inputRef}
         />
         {searchTerm && (
           <button

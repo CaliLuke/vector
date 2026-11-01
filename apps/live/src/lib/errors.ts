@@ -4,7 +4,14 @@
  * See the LICENSE file for details.
  */
 
-import type { AxiosError } from "axios";
+import { isAxiosError } from "axios";
+
+function responseErrorMessage(data: unknown): string | undefined {
+  if (!data || typeof data !== "object" || !("message" in data) || typeof data.message !== "string") {
+    return undefined;
+  }
+  return data.message;
+}
 
 /**
  * Application error class that sanitizes and standardizes errors across the app.
@@ -22,9 +29,9 @@ export class AppError extends Error {
   method?: string;
   url?: string;
   code?: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 
-  constructor(messageOrError: string | unknown, data?: Partial<Omit<AppError, "name" | "message">>) {
+  constructor(messageOrError: unknown, data?: Partial<Omit<AppError, "name" | "message">>) {
     // Handle error objects - extract essential info
     const error = messageOrError;
 
@@ -40,20 +47,19 @@ export class AppError extends Error {
       if (data) {
         Object.assign(this, data);
       }
-      return;
+      return this;
     }
 
     // AxiosError - extract ONLY essential info (no config, no headers, no cookies)
-    if (error && typeof error === "object" && "isAxiosError" in error) {
-      const axiosError = error as AxiosError;
-      const responseData = axiosError.response?.data as any;
-      super(responseData?.message || axiosError.message);
+    if (isAxiosError<unknown>(error)) {
+      const axiosError = error;
+      super(responseErrorMessage(axiosError.response?.data) || axiosError.message);
       this.name = "AppError";
       this.statusCode = axiosError.response?.status;
       this.method = axiosError.config?.method?.toUpperCase();
       this.url = axiosError.config?.url;
       this.code = axiosError.code;
-      return;
+      return this;
     }
 
     // DOMException (AbortError from cancelled requests)
@@ -61,7 +67,7 @@ export class AppError extends Error {
       super(error.message);
       this.name = "AppError";
       this.code = "ABORT_ERROR";
-      return;
+      return this;
     }
 
     // Standard Error objects
@@ -69,11 +75,12 @@ export class AppError extends Error {
       super(error.message);
       this.name = "AppError";
       this.code = error.name;
-      return;
+      return this;
     }
 
     // Unknown error types - safe fallback
     super("Unknown error occurred");
     this.name = "AppError";
+    return this;
   }
 }

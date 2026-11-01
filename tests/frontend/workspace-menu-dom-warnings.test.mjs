@@ -61,7 +61,8 @@ function WorkspaceMenuStateHarness() {
   );
 }
 
-test("workspace selector keeps its action links outside the workspace navigation link", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("workspace selector keeps its action links outside the workspace navigation link", async (t) => {
   const routerFixture = await createQueryRouterFixture(t, "/workspace/");
   routerFixture.client.setQueryData(identityQueries.currentUserOptions().queryKey, { id: "alice" });
   await seedPermissionQueries(routerFixture.client, { userId: "alice", workspaceSlug: "default" });
@@ -83,7 +84,7 @@ test("workspace selector keeps its action links outside the workspace navigation
   assert.ok(routerFixture.environment.container.querySelector('a[href="/default/settings/members"]'));
 });
 
-test("workspace menu open state syncs after commit instead of during Headless UI render", async () => {
+void test("workspace menu open state syncs after commit instead of during Headless UI render", async () => {
   const environment = await createReactDomTestEnvironment();
   const routerFixture = createRouterFixture("/workspace/");
   const errors = [];
@@ -104,7 +105,7 @@ test("workspace menu open state syncs after commit instead of during Headless UI
   }
 });
 
-test("display property buttons keep stable keys on the mapped elements", async () => {
+void test("display property buttons keep stable keys on the mapped elements", async () => {
   const environment = await createReactDomTestEnvironment();
   const routerFixture = createRouterFixture("/workspace/");
   const errors = [];

@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useEffect, useRef } from "react";
+import { useCallback } from "react";
 // plane imports
 import type { IWorkspaceMemberInvitation } from "@plane/types";
 import { EOnboardingSteps } from "@plane/types";
@@ -40,22 +40,13 @@ function OnboardingStepContent({ currentStep, invitations, handleStepChange }: P
 
 export function OnboardingStepRoot(props: Props) {
   const { currentStep } = props;
-  // ref for the scrollable container
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // scroll to top when step changes
-  useEffect(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }
-  }, [currentStep]);
+  const scrollStepIntoView = useCallback((panel: HTMLDivElement | null) => {
+    panel?.parentElement?.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
   return (
-    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
-      <div className="flex min-h-full items-center justify-center p-8">
+    <div className="flex-1 overflow-y-auto">
+      <div key={currentStep} ref={scrollStepIntoView} className="flex min-h-full items-center justify-center p-8">
         <div className="w-full max-w-[24rem]">
           <OnboardingStepContent {...props} />
         </div>

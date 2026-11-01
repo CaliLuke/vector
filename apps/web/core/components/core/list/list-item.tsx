@@ -94,7 +94,7 @@ export function ListItem(props: IListItemProps) {
               <span className={cn("flex flex-shrink-0 items-center", rightElementClassName)}>{appendTitleElement}</span>
             )}
           </ControlLink>
-          {quickActionElement && quickActionElement}
+          {quickActionElement}
         </div>
         {actionableItems && (
           <div

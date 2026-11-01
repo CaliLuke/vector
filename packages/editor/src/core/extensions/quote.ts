@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import Blockquote from "@tiptap/extension-blockquote";
+import { Blockquote } from "@tiptap/extension-blockquote";
 // constants
 import { CORE_EXTENSIONS } from "@/constants/extension";
 

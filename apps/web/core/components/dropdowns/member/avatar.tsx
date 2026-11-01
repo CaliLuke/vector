@@ -35,7 +35,7 @@ export function ButtonAvatars(props: AvatarProps) {
           {userIds.map((userId) => {
             const userDetails = getUserDetails(userId);
 
-            if (!userDetails) return;
+            if (!userDetails) return undefined;
             return <Avatar key={userId} src={getFileURL(userDetails.avatar_url)} name={userDetails.display_name} />;
           })}
         </AvatarGroup>

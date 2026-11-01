@@ -8,7 +8,6 @@ import { combineTransactionSteps, findChildrenInRange, findDuplicates, getChange
 import { Fragment, Slice } from "@tiptap/pm/model";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
-import type { Transaction } from "@tiptap/pm/state";
 // types
 import type { UniqueIDOptions } from "./extension";
 // utils
@@ -30,17 +29,17 @@ export const createUniqueIDPlugin = (options: UniqueIDOptions) => {
       const isCollabTransaction = transactions.find((tr) => tr.getMeta("y-sync$"));
 
       if (isCollabTransaction) {
-        return;
+        return undefined;
       }
 
       if (!hasDocChanges || filterTransactions) {
-        return;
+        return undefined;
       }
 
       const { tr } = newState;
 
       const { types, attributeName, generateUniqueID } = options;
-      const transform = combineTransactionSteps(oldState.doc, transactions as Transaction[]);
+      const transform = combineTransactionSteps(oldState.doc, [...transactions]);
 
       const { mapping } = transform;
 
@@ -92,7 +91,7 @@ export const createUniqueIDPlugin = (options: UniqueIDOptions) => {
       });
 
       if (!tr.steps.length) {
-        return;
+        return undefined;
       }
 
       // `tr.setNodeMarkup` resets the stored marks
@@ -109,7 +108,10 @@ export const createUniqueIDPlugin = (options: UniqueIDOptions) => {
     // we register a global drag handler to track the current drag source element
     view(view) {
       const handleDragstart = (event: DragEvent) => {
-        dragSourceElement = view.dom.parentElement?.contains(event.target as Element) ? view.dom.parentElement : null;
+        dragSourceElement =
+          event.target instanceof Node && view.dom.parentElement?.contains(event.target)
+            ? view.dom.parentElement
+            : null;
       };
 
       window.addEventListener("dragstart", handleDragstart);

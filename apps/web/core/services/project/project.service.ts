@@ -7,6 +7,7 @@
 import { API_BASE_URL } from "@plane/constants";
 import type {
   GithubRepositoriesResponse,
+  TSyncedGithubRepository,
   IProjectUserPropertiesResponse,
   ISearchIssueResponse,
   TProjectAnalyticsCount,
@@ -25,47 +26,32 @@ export class ProjectService extends APIService {
   }
 
   async createProject(workspaceSlug: string, data: Partial<TProject>): Promise<TProject> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/projects/`, data), "response");
   }
 
-  async checkProjectIdentifierAvailability(workspaceSlug: string, data: string): Promise<any> {
-    return this.get(`/api/workspaces/${workspaceSlug}/project-identifiers`, {
-      params: {
-        name: data,
-      },
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async checkProjectIdentifierAvailability(workspaceSlug: string, data: string): Promise<{ exists: boolean }> {
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/project-identifiers`, {
+        params: {
+          name: data,
+        },
+      })
+    );
   }
 
   async getProjectsLite(workspaceSlug: string, signal?: AbortSignal): Promise<TPartialProject[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/`, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/projects/`, { signal }));
   }
 
   async getProjects(workspaceSlug: string, signal?: AbortSignal): Promise<TProject[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/details/`, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/projects/details/`, { signal }));
   }
 
   async getProject(workspaceSlug: string, projectId: string, signal?: AbortSignal): Promise<TProject> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/`, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/`, { signal }),
+      "response"
+    );
   }
 
   async getProjectAnalyticsCount(
@@ -73,30 +59,20 @@ export class ProjectService extends APIService {
     params?: TProjectAnalyticsCountParams,
     signal?: AbortSignal
   ): Promise<TProjectAnalyticsCount[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/project-stats/`, {
-      params,
-      signal,
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/project-stats/`, {
+        params,
+        signal,
+      })
+    );
   }
 
   async updateProject(workspaceSlug: string, projectId: string, data: Partial<TProject>): Promise<TProject> {
-    return this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/`, data));
   }
 
-  async deleteProject(workspaceSlug: string, projectId: string): Promise<any> {
-    return this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async deleteProject(workspaceSlug: string, projectId: string): Promise<unknown> {
+    return this.responseData(this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/`));
   }
 
   // User Properties
@@ -105,11 +81,10 @@ export class ProjectService extends APIService {
     projectId: string,
     signal?: AbortSignal
   ): Promise<IProjectUserPropertiesResponse> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/user-properties/`, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/user-properties/`, { signal }),
+      "data-or-error"
+    );
   }
 
   async updateProjectUserProperties(
@@ -117,22 +92,18 @@ export class ProjectService extends APIService {
     projectId: string,
     data: Partial<IProjectUserPropertiesResponse>
   ): Promise<IProjectUserPropertiesResponse> {
-    return this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/user-properties/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/user-properties/`, data)
+    );
   }
 
   async getGithubRepositories(url: string): Promise<GithubRepositoriesResponse> {
-    return this.request({
-      method: "get",
-      url,
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.request({
+        method: "get",
+        url,
+      })
+    );
   }
 
   async syncGithubRepository(
@@ -145,49 +116,37 @@ export class ProjectService extends APIService {
       repository_id: string;
       url: string;
     }
-  ): Promise<any> {
-    return this.post(
-      `/api/workspaces/${workspaceSlug}/projects/${projectId}/workspace-integrations/${workspaceIntegrationId}/github-repository-sync/`,
-      data
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  ): Promise<unknown> {
+    return this.responseData(
+      this.post(
+        `/api/workspaces/${workspaceSlug}/projects/${projectId}/workspace-integrations/${workspaceIntegrationId}/github-repository-sync/`,
+        data
+      )
+    );
   }
 
-  async getProjectGithubRepository(workspaceSlug: string, projectId: string, integrationId: string): Promise<any> {
-    return this.get(
-      `/api/workspaces/${workspaceSlug}/projects/${projectId}/workspace-integrations/${integrationId}/github-repository-sync/`
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async getProjectGithubRepository(
+    workspaceSlug: string,
+    projectId: string,
+    integrationId: string
+  ): Promise<TSyncedGithubRepository[]> {
+    return this.responseData(
+      this.get(
+        `/api/workspaces/${workspaceSlug}/projects/${projectId}/workspace-integrations/${integrationId}/github-repository-sync/`
+      )
+    );
   }
 
-  async getUserProjectFavorites(workspaceSlug: string): Promise<any[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/user-favorite-projects/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async getUserProjectFavorites(workspaceSlug: string): Promise<unknown[]> {
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/user-favorite-projects/`));
   }
 
-  async addProjectToFavorites(workspaceSlug: string, project: string): Promise<any> {
-    return this.post(`/api/workspaces/${workspaceSlug}/user-favorite-projects/`, { project })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async addProjectToFavorites(workspaceSlug: string, project: string): Promise<unknown> {
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/user-favorite-projects/`, { project }));
   }
 
-  async removeProjectFromFavorites(workspaceSlug: string, projectId: string): Promise<any> {
-    return this.delete(`/api/workspaces/${workspaceSlug}/user-favorite-projects/${projectId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async removeProjectFromFavorites(workspaceSlug: string, projectId: string): Promise<unknown> {
+    return this.responseData(this.delete(`/api/workspaces/${workspaceSlug}/user-favorite-projects/${projectId}/`));
   }
 
   async projectIssuesSearch(
@@ -196,13 +155,12 @@ export class ProjectService extends APIService {
     params: TProjectIssuesSearchParams,
     signal?: AbortSignal
   ): Promise<ISearchIssueResponse[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/search-issues/`, {
-      params,
-      signal,
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/search-issues/`, {
+        params,
+        signal,
+      }),
+      "data-or-error"
+    );
   }
 }

@@ -14,12 +14,12 @@ registerWebTestModules(
     "@/components/issues/issue-layouts/filters": `
         import React from "${reactUrl}";
         export const FilterOption = () => null;
-        export const FilterDisplayProperties = () => null;
-        export const FilterExtraOptions = () => null;
-        export const FilterOrderBy = () => null;
-        export const FilterSubGroupBy = () => null;
-        export const FilterGroupBy = ({ ignoreGroupedFilters }) =>
-          React.createElement("output", { "data-ignored-groups": JSON.stringify(ignoreGroupedFilters) });
+        export const FilterDisplayProperties = ({handleUpdate}) => React.createElement('button',{onClick:()=>handleUpdate({priority:false})},'Hide priority');
+        export const FilterExtraOptions = ({handleUpdate}) => React.createElement('button',{onClick:()=>handleUpdate('show_empty_groups',false)},'Hide empty groups');
+        export const FilterOrderBy = ({handleUpdate}) => React.createElement('button',{onClick:()=>handleUpdate('-created_at')},'Order newest');
+        export const FilterSubGroupBy = ({handleUpdate}) => React.createElement('button',{onClick:()=>handleUpdate('priority')},'Subgroup priority');
+        export const FilterGroupBy = ({ ignoreGroupedFilters,handleUpdate }) =>
+          React.createElement("button", { "data-ignored-groups": JSON.stringify(ignoreGroupedFilters),onClick:()=>handleUpdate('state') },'Group by state');
       `,
   },
   (specifier, context, nextResolve) => {
@@ -58,7 +58,7 @@ await test("display filter selection does not mutate grouped options across disa
 
   await render(true);
   assert.deepEqual(ignoreGroupedFilters, ["priority"], "rendering must not mutate caller-owned options");
-  assert.deepEqual(JSON.parse(environment.container.querySelector("output").dataset.ignoredGroups), [
+  assert.deepEqual(JSON.parse(environment.container.querySelector("[data-ignored-groups]").dataset.ignoredGroups), [
     "priority",
     "cycle",
     "module",
@@ -66,5 +66,45 @@ await test("display filter selection does not mutate grouped options across disa
 
   await render(false);
   assert.deepEqual(ignoreGroupedFilters, ["priority"], "re-enabling must not retain injected exclusions");
-  assert.deepEqual(JSON.parse(environment.container.querySelector("output").dataset.ignoredGroups), ["priority"]);
+  assert.deepEqual(JSON.parse(environment.container.querySelector("[data-ignored-groups]").dataset.ignoredGroups), [
+    "priority",
+  ]);
+});
+
+await test("display controls emit only their changed field while retaining kanban subgroup availability", async (t) => {
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  const { DisplayFiltersSelection } =
+    await import("../../apps/web/core/components/issues/issue-layouts/filters/header/display-filters/display-filters-selection.tsx");
+  const updates = [],
+    properties = [];
+  await environment.render(
+    React.createElement(DisplayFiltersSelection, {
+      displayFilters: { layout: "kanban", group_by: "state" },
+      displayProperties: { priority: true },
+      handleDisplayFiltersUpdate: (update) => updates.push(update),
+      handleDisplayPropertiesUpdate: (update) => properties.push(update),
+      layoutDisplayFiltersOptions: {
+        display_properties: ["priority"],
+        display_filters: { group_by: ["state"], sub_group_by: ["priority"], order_by: ["-created_at"] },
+        extra_options: { access: true, values: ["show_empty_groups"] },
+      },
+    })
+  );
+  const click = async (label) =>
+    React.act(async () =>
+      [...environment.container.querySelectorAll("button")].find((item) => item.textContent === label).click()
+    );
+  await click("Group by state");
+  await click("Subgroup priority");
+  await click("Order newest");
+  await click("Hide empty groups");
+  await click("Hide priority");
+  assert.deepEqual(updates, [
+    { group_by: "state" },
+    { sub_group_by: "priority" },
+    { order_by: "-created_at" },
+    { show_empty_groups: false },
+  ]);
+  assert.deepEqual(properties, [{ priority: false }]);
 });

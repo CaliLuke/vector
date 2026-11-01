@@ -4,14 +4,14 @@
  * See the LICENSE file for details.
  */
 
+import { EIssueLayoutTypes } from "@plane/types";
 import isNil from "lodash-es/isNil.js";
 import orderBy from "lodash-es/orderBy.js";
 // plane imports
 import { SPACE_BASE_PATH, SPACE_BASE_URL } from "@plane/constants";
 import type { IProjectView, TViewFilterProps, TViewFiltersSortBy, TViewFiltersSortKey } from "@plane/types";
 // local imports
-import { getDate } from "./datetime";
-import { satisfiesDateFilter } from "./filter";
+import { matchesFilterValue, matchesDateFilters } from "./filter";
 
 /**
  * order views base on TViewFiltersSortKey
@@ -49,29 +49,13 @@ export const orderViews = (
  * @param filters
  * @returns
  */
-export const shouldFilterView = (view: IProjectView, filters: TViewFilterProps | undefined): boolean => {
-  let fallsInFilters = true;
-  Object.keys(filters ?? {}).forEach((key) => {
-    const filterKey = key as keyof TViewFilterProps;
-    if (filterKey === "owned_by" && filters?.owned_by && filters.owned_by.length > 0) {
-      fallsInFilters = fallsInFilters && filters.owned_by.includes(`${view.created_by}`);
-    }
-
-    if (filterKey === "created_at" && filters?.created_at && filters.created_at.length > 0) {
-      const createdDate = getDate(view.created_at);
-      filters?.created_at.forEach((dateFilter) => {
-        fallsInFilters = fallsInFilters && !!createdDate && satisfiesDateFilter(createdDate, dateFilter);
-      });
-    }
-
-    if (filterKey === "view_type" && filters?.view_type && filters?.view_type?.length > 0) {
-      fallsInFilters = filters.view_type.includes(view.access);
-    }
-  });
-
-  if (filters?.favorites && !view.is_favorite) fallsInFilters = false;
-
-  return fallsInFilters;
+export const shouldFilterView = (view: Partial<IProjectView>, filters: TViewFilterProps | undefined): boolean => {
+  return (
+    matchesFilterValue(view.created_by, filters?.owned_by) &&
+    matchesDateFilters(view.created_at, filters?.created_at) &&
+    matchesFilterValue(view.access, filters?.view_type) &&
+    (!filters?.favorites || view.is_favorite === true)
+  );
 };
 
 /**
@@ -91,7 +75,11 @@ export const getViewName = (name: string | undefined) => {
  * @returns
  */
 export const getValidatedViewFilters = (data: Partial<IProjectView>) => {
-  if (data?.display_filters && data?.display_filters?.layout === "kanban" && isNil(data.display_filters.group_by)) {
+  if (
+    data?.display_filters &&
+    data?.display_filters?.layout === EIssueLayoutTypes.KANBAN &&
+    isNil(data.display_filters.group_by)
+  ) {
     data.display_filters.group_by = "state";
   }
 
@@ -104,7 +92,7 @@ export const getValidatedViewFilters = (data: Partial<IProjectView>) => {
  * @returns
  */
 export const getPublishViewLink = (anchor: string | undefined) => {
-  if (!anchor) return;
+  if (!anchor) return undefined;
 
   const SPACE_APP_URL = (SPACE_BASE_URL.trim() === "" ? window.location.origin : SPACE_BASE_URL) + SPACE_BASE_PATH;
   return `${SPACE_APP_URL}/views/${anchor}`;

@@ -8,8 +8,6 @@ import { useRouterState } from "@tanstack/react-router";
 import { useNavigationProgress } from "@plane/hooks";
 import { BProgress } from "@bprogress/core";
 
-import "@bprogress/core/css";
-
 export default function AppProgressBar(): null {
   const isLoading = useRouterState({ select: (state) => state.isLoading });
   useNavigationProgress(isLoading ? "loading" : "idle", BProgress);

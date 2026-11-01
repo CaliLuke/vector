@@ -11,6 +11,19 @@ import { FILTER_FIELD_TYPE } from "@plane/types";
 import type { IFilterIconConfig } from "./shared";
 import { createFilterFieldConfig } from "./shared";
 
+function getSelectionOptions<
+  TItem,
+  TValue extends TFilterValue,
+  TIconData extends string | number | boolean | object | undefined,
+>(transforms: TOptionTransforms<TItem, TValue, TIconData>, iconConfig: IFilterIconConfig<TIconData> | undefined) {
+  return transforms.items.map((item) => ({
+    id: transforms.getId(item),
+    label: transforms.getLabel(item),
+    value: transforms.getValue(item),
+    icon: transforms.getIconData ? iconConfig?.getOptionIcon?.(transforms.getIconData(item)) : undefined,
+  }));
+}
+
 // ------------ Selection filters ------------
 
 /**
@@ -50,13 +63,7 @@ export const getSingleSelectConfig = <
   createFilterFieldConfig<typeof FILTER_FIELD_TYPE.SINGLE_SELECT, TValue>({
     type: FILTER_FIELD_TYPE.SINGLE_SELECT,
     ...config,
-    getOptions: () =>
-      transforms.items.map((item) => ({
-        id: transforms.getId(item),
-        label: transforms.getLabel(item),
-        value: transforms.getValue(item),
-        icon: iconConfig?.getOptionIcon?.(transforms.getIconData?.(item) as TIconData),
-      })),
+    getOptions: () => getSelectionOptions(transforms, iconConfig),
   });
 
 /**
@@ -87,13 +94,7 @@ export const getMultiSelectConfig = <
     type: FILTER_FIELD_TYPE.MULTI_SELECT,
     ...config,
     operatorLabel: config?.operatorLabel,
-    getOptions: () =>
-      transforms.items.map((item) => ({
-        id: transforms.getId(item),
-        label: transforms.getLabel(item),
-        value: transforms.getValue(item),
-        icon: iconConfig?.getOptionIcon?.(transforms.getIconData?.(item) as TIconData),
-      })),
+    getOptions: () => getSelectionOptions(transforms, iconConfig),
   });
 
 // ------------ Date filters ------------

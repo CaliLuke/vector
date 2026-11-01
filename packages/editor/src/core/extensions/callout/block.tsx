@@ -16,34 +16,32 @@ import { CalloutBlockLogoSelector } from "./logo-selector";
 import type { TCalloutBlockAttributes } from "./types";
 import { ECalloutAttributeNames } from "./types";
 // utils
-import { updateStoredBackgroundColor } from "./utils";
+import { getCalloutAttributes, updateStoredBackgroundColor } from "./utils";
 
 export type CustomCalloutNodeViewProps = NodeViewProps & {
-  node: NodeViewProps["node"] & {
-    attrs: TCalloutBlockAttributes;
-  };
   updateAttributes: (attrs: Partial<TCalloutBlockAttributes>) => void;
 };
 
 export function CustomCalloutBlock(props: CustomCalloutNodeViewProps) {
   const { editor, node, updateAttributes } = props;
+  const attrs = getCalloutAttributes(node.attrs);
   // states
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   // derived values
-  const activeBackgroundColor = COLORS_LIST.find((c) => node.attrs["data-background"] === c.key)?.backgroundColor;
+  const activeBackgroundColor = COLORS_LIST.find((c) => attrs["data-background"] === c.key)?.backgroundColor;
 
   return (
     <NodeViewWrapper
-      key={node.attrs[ECalloutAttributeNames.ID]}
+      key={attrs[ECalloutAttributeNames.ID]}
       className="editor-callout-component group/callout-node relative my-2 flex items-start gap-4 rounded-lg bg-layer-3 p-4 break-words text-primary transition-colors duration-500"
       style={{
         backgroundColor: activeBackgroundColor,
       }}
     >
       <CalloutBlockLogoSelector
-        key={node.attrs[ECalloutAttributeNames.ID]}
-        blockAttributes={node.attrs}
+        key={attrs[ECalloutAttributeNames.ID]}
+        blockAttributes={attrs}
         disabled={!editor.isEditable}
         isOpen={isEmojiPickerOpen}
         handleOpen={(val) => setIsEmojiPickerOpen(val)}

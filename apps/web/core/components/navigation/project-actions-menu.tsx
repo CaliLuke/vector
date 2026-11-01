@@ -5,7 +5,6 @@
  */
 
 import { useNavigate } from "@tanstack/react-router";
-import { useState, useRef } from "react";
 
 import { MoreHorizontal, Settings, Share2, ArchiveIcon } from "lucide-react";
 // plane imports
@@ -36,22 +35,16 @@ export function ProjectActionsMenu({
   onPublishModal,
 }: Props) {
   // states
-  const [isMenuActive, setIsMenuActive] = useState(false);
   // translation
   const { t } = useTranslation();
   // refs
-  const actionSectionRef = useRef<HTMLDivElement | null>(null);
   // router
   const navigate = useNavigate();
 
   return (
     <CustomMenu
       customButton={
-        <span
-          ref={actionSectionRef}
-          className="grid place-items-center rounded-sm p-0.5 text-placeholder hover:bg-layer-1"
-          onClick={() => setIsMenuActive(!isMenuActive)}
-        >
+        <span className="grid place-items-center rounded-sm p-0.5 text-placeholder hover:bg-layer-1">
           <MoreHorizontal className="size-4" />
         </span>
       }
@@ -61,7 +54,6 @@ export function ProjectActionsMenu({
       ariaLabel={t("aria_labels.projects_sidebar.toggle_quick_actions_menu")}
       useCaptureForOutsideClick
       closeOnSelect
-      onMenuClose={() => setIsMenuActive(false)}
     >
       {/* Publish project settings */}
       {isAdmin && (

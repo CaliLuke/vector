@@ -9,7 +9,7 @@ import React from "react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { PlusIcon, WorkItemsIcon } from "@plane/propel/icons";
-import type { TIssue, TIssueServiceType } from "@plane/types";
+import type { TIssueServiceType } from "@plane/types";
 import { CustomMenu } from "@plane/ui";
 // hooks
 import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
@@ -37,28 +37,24 @@ export const SubIssuesActionButton = function SubIssuesActionButton(props: Props
   if (!issue) return <></>;
 
   // handlers
-  const handleIssueCrudState = (
-    key: "create" | "existing",
-    _parentIssueId: string | null,
-    targetIssue: TIssue | null = null
-  ) => {
+  const handleIssueCrudState = (key: "create" | "existing") => {
     setIssueCrudOperationState({
       ...issueCrudOperationState,
       [key]: {
         toggle: !issueCrudOperationState[key].toggle,
-        parentIssueId: _parentIssueId,
-        issue: targetIssue,
+        parentIssueId: issueId,
+        projectId: issue.project_id,
       },
     });
   };
 
   const handleCreateNew = () => {
-    handleIssueCrudState("create", issueId, null);
+    handleIssueCrudState("create");
     toggleCreateIssueModal(true);
   };
 
   const handleAddExisting = () => {
-    handleIssueCrudState("existing", issueId, null);
+    handleIssueCrudState("existing");
     toggleSubIssuesModal(issue.id);
   };
 

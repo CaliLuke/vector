@@ -57,7 +57,7 @@ import {
 // types
 import type { TCommandWithProps, TEditorCommands } from "@/types";
 import type { ISvgIcons } from "@plane/propel/icons";
-type isActiveFunction<T extends TEditorCommands> = (params?: TCommandWithProps<T>) => boolean;
+type isActiveFunction<T extends TEditorCommands> = (params?: Partial<TCommandWithProps<T>>) => boolean;
 type commandFunction<T extends TEditorCommands> = (params?: TCommandWithProps<T>) => void;
 
 export type EditorMenuItem<T extends TEditorCommands> = {
@@ -68,7 +68,7 @@ export type EditorMenuItem<T extends TEditorCommands> = {
   isActive: isActiveFunction<T>;
 };
 
-export const TextItem = (editor: Editor): EditorMenuItem<"text"> => ({
+export const createTextItem = (editor: Editor): EditorMenuItem<"text"> => ({
   key: "text",
   name: "Text",
   isActive: () => editor.isActive(CORE_EXTENSIONS.PARAGRAPH),
@@ -78,7 +78,7 @@ export const TextItem = (editor: Editor): EditorMenuItem<"text"> => ({
 
 type SupportedHeadingLevels = Extract<TEditorCommands, "h1" | "h2" | "h3" | "h4" | "h5" | "h6">;
 
-const HeadingItem = <T extends SupportedHeadingLevels>(
+const createHeadingItem = <T extends SupportedHeadingLevels>(
   editor: Editor,
   level: 1 | 2 | 3 | 4 | 5 | 6,
   key: T,
@@ -92,25 +92,25 @@ const HeadingItem = <T extends SupportedHeadingLevels>(
   icon,
 });
 
-export const HeadingOneItem = (editor: Editor): EditorMenuItem<"h1"> =>
-  HeadingItem(editor, 1, "h1", "Heading 1", Heading1);
+export const createHeadingOneItem = (editor: Editor): EditorMenuItem<"h1"> =>
+  createHeadingItem(editor, 1, "h1", "Heading 1", Heading1);
 
-export const HeadingTwoItem = (editor: Editor): EditorMenuItem<"h2"> =>
-  HeadingItem(editor, 2, "h2", "Heading 2", Heading2);
+export const createHeadingTwoItem = (editor: Editor): EditorMenuItem<"h2"> =>
+  createHeadingItem(editor, 2, "h2", "Heading 2", Heading2);
 
-export const HeadingThreeItem = (editor: Editor): EditorMenuItem<"h3"> =>
-  HeadingItem(editor, 3, "h3", "Heading 3", Heading3);
+export const createHeadingThreeItem = (editor: Editor): EditorMenuItem<"h3"> =>
+  createHeadingItem(editor, 3, "h3", "Heading 3", Heading3);
 
-export const HeadingFourItem = (editor: Editor): EditorMenuItem<"h4"> =>
-  HeadingItem(editor, 4, "h4", "Heading 4", Heading4);
+export const createHeadingFourItem = (editor: Editor): EditorMenuItem<"h4"> =>
+  createHeadingItem(editor, 4, "h4", "Heading 4", Heading4);
 
-export const HeadingFiveItem = (editor: Editor): EditorMenuItem<"h5"> =>
-  HeadingItem(editor, 5, "h5", "Heading 5", Heading5);
+export const createHeadingFiveItem = (editor: Editor): EditorMenuItem<"h5"> =>
+  createHeadingItem(editor, 5, "h5", "Heading 5", Heading5);
 
-export const HeadingSixItem = (editor: Editor): EditorMenuItem<"h6"> =>
-  HeadingItem(editor, 6, "h6", "Heading 6", Heading6);
+export const createHeadingSixItem = (editor: Editor): EditorMenuItem<"h6"> =>
+  createHeadingItem(editor, 6, "h6", "Heading 6", Heading6);
 
-export const BoldItem = (editor: Editor): EditorMenuItem<"bold"> => ({
+export const createBoldItem = (editor: Editor): EditorMenuItem<"bold"> => ({
   key: "bold",
   name: "Bold",
   isActive: () => editor?.isActive(CORE_EXTENSIONS.BOLD),
@@ -118,7 +118,7 @@ export const BoldItem = (editor: Editor): EditorMenuItem<"bold"> => ({
   icon: BoldIcon,
 });
 
-export const ItalicItem = (editor: Editor): EditorMenuItem<"italic"> => ({
+export const createItalicItem = (editor: Editor): EditorMenuItem<"italic"> => ({
   key: "italic",
   name: "Italic",
   isActive: () => editor?.isActive(CORE_EXTENSIONS.ITALIC),
@@ -126,7 +126,7 @@ export const ItalicItem = (editor: Editor): EditorMenuItem<"italic"> => ({
   icon: ItalicIcon,
 });
 
-export const UnderLineItem = (editor: Editor): EditorMenuItem<"underline"> => ({
+export const createUnderLineItem = (editor: Editor): EditorMenuItem<"underline"> => ({
   key: "underline",
   name: "Underline",
   isActive: () => editor?.isActive(CORE_EXTENSIONS.UNDERLINE),
@@ -134,7 +134,7 @@ export const UnderLineItem = (editor: Editor): EditorMenuItem<"underline"> => ({
   icon: UnderlineIcon,
 });
 
-export const StrikeThroughItem = (editor: Editor): EditorMenuItem<"strikethrough"> => ({
+export const createStrikeThroughItem = (editor: Editor): EditorMenuItem<"strikethrough"> => ({
   key: "strikethrough",
   name: "Strikethrough",
   isActive: () => editor?.isActive(CORE_EXTENSIONS.STRIKETHROUGH),
@@ -142,7 +142,7 @@ export const StrikeThroughItem = (editor: Editor): EditorMenuItem<"strikethrough
   icon: StrikethroughIcon,
 });
 
-export const BulletListItem = (editor: Editor): EditorMenuItem<"bulleted-list"> => ({
+export const createBulletListItem = (editor: Editor): EditorMenuItem<"bulleted-list"> => ({
   key: "bulleted-list",
   name: "Bulleted list",
   isActive: () => editor?.isActive(CORE_EXTENSIONS.BULLET_LIST),
@@ -150,7 +150,7 @@ export const BulletListItem = (editor: Editor): EditorMenuItem<"bulleted-list"> 
   icon: ListIcon,
 });
 
-export const NumberedListItem = (editor: Editor): EditorMenuItem<"numbered-list"> => ({
+export const createNumberedListItem = (editor: Editor): EditorMenuItem<"numbered-list"> => ({
   key: "numbered-list",
   name: "Numbered list",
   isActive: () => editor?.isActive(CORE_EXTENSIONS.ORDERED_LIST),
@@ -158,7 +158,7 @@ export const NumberedListItem = (editor: Editor): EditorMenuItem<"numbered-list"
   icon: ListOrderedIcon,
 });
 
-export const TodoListItem = (editor: Editor): EditorMenuItem<"to-do-list"> => ({
+export const createTodoListItem = (editor: Editor): EditorMenuItem<"to-do-list"> => ({
   key: "to-do-list",
   name: "To-do list",
   isActive: () => editor.isActive(CORE_EXTENSIONS.TASK_ITEM),
@@ -166,7 +166,7 @@ export const TodoListItem = (editor: Editor): EditorMenuItem<"to-do-list"> => ({
   icon: CheckSquare,
 });
 
-export const QuoteItem = (editor: Editor): EditorMenuItem<"quote"> => ({
+export const createQuoteItem = (editor: Editor): EditorMenuItem<"quote"> => ({
   key: "quote",
   name: "Quote",
   isActive: () => editor?.isActive(CORE_EXTENSIONS.BLOCKQUOTE),
@@ -174,7 +174,7 @@ export const QuoteItem = (editor: Editor): EditorMenuItem<"quote"> => ({
   icon: TextQuote,
 });
 
-export const CodeItem = (editor: Editor): EditorMenuItem<"code"> => ({
+export const createCodeItem = (editor: Editor): EditorMenuItem<"code"> => ({
   key: "code",
   name: "Code",
   isActive: () => editor?.isActive(CORE_EXTENSIONS.CODE_INLINE) || editor?.isActive(CORE_EXTENSIONS.CODE_BLOCK),
@@ -182,7 +182,7 @@ export const CodeItem = (editor: Editor): EditorMenuItem<"code"> => ({
   icon: CodeIcon,
 });
 
-const TableItem = (editor: Editor): EditorMenuItem<"table"> => ({
+const createTableItem = (editor: Editor): EditorMenuItem<"table"> => ({
   key: "table",
   name: "Table",
   isActive: () => editor?.isActive(CORE_EXTENSIONS.TABLE),
@@ -190,7 +190,7 @@ const TableItem = (editor: Editor): EditorMenuItem<"table"> => ({
   icon: TableIcon,
 });
 
-const ImageItem = (editor: Editor): EditorMenuItem<"image"> => ({
+const createImageItem = (editor: Editor): EditorMenuItem<"image"> => ({
   key: "image",
   name: "Image",
   isActive: () => editor?.isActive(CORE_EXTENSIONS.IMAGE) || editor?.isActive(CORE_EXTENSIONS.CUSTOM_IMAGE),
@@ -198,7 +198,7 @@ const ImageItem = (editor: Editor): EditorMenuItem<"image"> => ({
   icon: ImageIcon,
 });
 
-const HorizontalRuleItem = (editor: Editor): EditorMenuItem<"divider"> =>
+const createHorizontalRuleItem = (editor: Editor): EditorMenuItem<"divider"> =>
   ({
     key: "divider",
     name: "Divider",
@@ -207,7 +207,7 @@ const HorizontalRuleItem = (editor: Editor): EditorMenuItem<"divider"> =>
     icon: MinusSquare,
   }) as const;
 
-const LinkItem = (editor: Editor): EditorMenuItem<"link"> =>
+const createLinkItem = (editor: Editor): EditorMenuItem<"link"> =>
   ({
     key: "link",
     name: "Link",
@@ -222,7 +222,7 @@ const LinkItem = (editor: Editor): EditorMenuItem<"link"> =>
     icon: LinkIcon,
   }) as const;
 
-export const TextColorItem = (editor: Editor): EditorMenuItem<"text-color"> => ({
+export const createTextColorItem = (editor: Editor): EditorMenuItem<"text-color"> => ({
   key: "text-color",
   name: "Color",
   isActive: (props) => editor.isActive(CORE_EXTENSIONS.CUSTOM_COLOR, { color: props?.color }),
@@ -233,7 +233,7 @@ export const TextColorItem = (editor: Editor): EditorMenuItem<"text-color"> => (
   icon: Palette,
 });
 
-export const BackgroundColorItem = (editor: Editor): EditorMenuItem<"background-color"> => ({
+export const createBackgroundColorItem = (editor: Editor): EditorMenuItem<"background-color"> => ({
   key: "background-color",
   name: "Background color",
   isActive: (props) => editor.isActive(CORE_EXTENSIONS.CUSTOM_COLOR, { backgroundColor: props?.color }),
@@ -244,7 +244,7 @@ export const BackgroundColorItem = (editor: Editor): EditorMenuItem<"background-
   icon: Palette,
 });
 
-export const TextAlignItem = (editor: Editor): EditorMenuItem<"text-align"> => ({
+export const createTextAlignItem = (editor: Editor): EditorMenuItem<"text-align"> => ({
   key: "text-align",
   name: "Text align",
   isActive: (props) => editor.isActive({ textAlign: props?.alignment }),
@@ -255,32 +255,35 @@ export const TextAlignItem = (editor: Editor): EditorMenuItem<"text-align"> => (
   icon: AlignCenter,
 });
 
-export const getEditorMenuItems = (editor: Editor | null): EditorMenuItem<TEditorCommands>[] => {
-  if (!editor) return [];
-
-  return [
-    TextItem(editor),
-    HeadingOneItem(editor),
-    HeadingTwoItem(editor),
-    HeadingThreeItem(editor),
-    HeadingFourItem(editor),
-    HeadingFiveItem(editor),
-    HeadingSixItem(editor),
-    BoldItem(editor),
-    ItalicItem(editor),
-    UnderLineItem(editor),
-    StrikeThroughItem(editor),
-    BulletListItem(editor),
-    TodoListItem(editor),
-    CodeItem(editor),
-    NumberedListItem(editor),
-    QuoteItem(editor),
-    TableItem(editor),
-    ImageItem(editor),
-    HorizontalRuleItem(editor),
-    LinkItem(editor),
-    TextColorItem(editor),
-    BackgroundColorItem(editor),
-    TextAlignItem(editor),
-  ] as EditorMenuItem<TEditorCommands>[];
-};
+export function getEditorMenuItem<T extends TEditorCommands>(
+  editor: Editor | null,
+  key: T
+): EditorMenuItem<T> | undefined {
+  if (!editor) return undefined;
+  const items: { [K in TEditorCommands]?: EditorMenuItem<K> } = {
+    text: createTextItem(editor),
+    h1: createHeadingOneItem(editor),
+    h2: createHeadingTwoItem(editor),
+    h3: createHeadingThreeItem(editor),
+    h4: createHeadingFourItem(editor),
+    h5: createHeadingFiveItem(editor),
+    h6: createHeadingSixItem(editor),
+    bold: createBoldItem(editor),
+    italic: createItalicItem(editor),
+    underline: createUnderLineItem(editor),
+    strikethrough: createStrikeThroughItem(editor),
+    "bulleted-list": createBulletListItem(editor),
+    "to-do-list": createTodoListItem(editor),
+    code: createCodeItem(editor),
+    "numbered-list": createNumberedListItem(editor),
+    quote: createQuoteItem(editor),
+    table: createTableItem(editor),
+    image: createImageItem(editor),
+    divider: createHorizontalRuleItem(editor),
+    link: createLinkItem(editor),
+    "text-color": createTextColorItem(editor),
+    "background-color": createBackgroundColorItem(editor),
+    "text-align": createTextAlignItem(editor),
+  };
+  return items[key];
+}

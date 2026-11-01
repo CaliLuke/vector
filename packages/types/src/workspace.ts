@@ -12,11 +12,8 @@ import type { IUser, IUserLite } from "./users";
 import type { TLoginMediums } from "./instance";
 import type { IWorkspaceViewProps } from "./view-props";
 
-export enum EUserWorkspaceRoles {
-  ADMIN = 20,
-  MEMBER = 15,
-  GUEST = 5,
-}
+import { EUserPermissions as EUserWorkspaceRoles } from "./enums";
+export { EUserWorkspaceRoles };
 
 export interface IWorkspace {
   readonly id: string;
@@ -59,6 +56,9 @@ export interface IWorkspaceMemberInvitation {
   };
 }
 
+export type TWorkspaceInvitationDecision = { accepted: boolean; token: string | null };
+export type TWorkspaceInvitationsAccept = { invitations: string[] };
+
 export interface IWorkspaceBulkInviteFormData {
   emails: { email: string; role: TUserPermissions }[];
 }
@@ -82,7 +82,7 @@ export type Properties = {
 export interface IWorkspaceMember {
   id: string;
   member: IUserLite;
-  role: TUserPermissions | EUserWorkspaceRoles;
+  role: EUserWorkspaceRoles;
   created_at?: string;
   avatar_url?: string;
   email?: string;

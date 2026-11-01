@@ -54,7 +54,7 @@ export function ThemeSwitch(props: Props) {
           t("select_your_theme")
         )
       }
-      onChange={onChange}
+      onChange={(selection) => (selection !== null ? onChange(selection) : undefined)}
       buttonClassName="border border-subtle-1"
       placement="bottom-end"
       input

@@ -1,3 +1,4 @@
+import { CdpSession } from "./helpers/cdp-session.mjs";
 import { access, mkdtemp, readFile, rm } from "node:fs/promises";
 import { constants as fsConstants } from "node:fs";
 import os from "node:os";
@@ -52,66 +53,6 @@ function runClassifierSelfTest() {
 
   if (!positiveMessages.every(isHydrationMessage) || negativeMessages.some(isHydrationMessage)) {
     throw new Error("hydration console classifier self-test failed");
-  }
-}
-
-class CdpSession {
-  constructor(webSocketUrl) {
-    this.webSocketUrl = webSocketUrl;
-    this.nextId = 1;
-    this.pending = new Map();
-    this.listeners = new Map();
-  }
-
-  async connect() {
-    this.socket = new WebSocket(this.webSocketUrl);
-    await new Promise((resolve, reject) => {
-      this.socket.addEventListener("open", resolve, { once: true });
-      this.socket.addEventListener("error", reject, { once: true });
-    });
-    this.socket.addEventListener("message", (event) => this.onMessage(event));
-  }
-
-  on(method, listener) {
-    const listeners = this.listeners.get(method) ?? [];
-    listeners.push(listener);
-    this.listeners.set(method, listeners);
-  }
-
-  async onMessage(event) {
-    const data = typeof event.data === "string" ? event.data : await event.data.text();
-    const message = JSON.parse(data);
-    if (message.id !== undefined) {
-      const pending = this.pending.get(message.id);
-      if (!pending) return;
-      this.pending.delete(message.id);
-      if (message.error) pending.reject(new Error(`${message.error.message} (${message.error.code})`));
-      else pending.resolve(message.result);
-      return;
-    }
-    for (const listener of this.listeners.get(message.method) ?? []) listener(message.params);
-  }
-
-  send(method, params = {}) {
-    const id = this.nextId++;
-    return new Promise((resolve, reject) => {
-      this.pending.set(id, { resolve, reject });
-      this.socket.send(JSON.stringify({ id, method, params }));
-    });
-  }
-
-  waitFor(method, timeoutMilliseconds) {
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error(`timed out waiting for ${method}`)), timeoutMilliseconds);
-      this.on(method, (params) => {
-        clearTimeout(timeout);
-        resolve(params);
-      });
-    });
-  }
-
-  close() {
-    this.socket?.close();
   }
 }
 
@@ -279,19 +220,24 @@ async function main() {
       colorScheme,
       url: process.env[`PLANE_${app.toUpperCase()}_URL`] ?? url,
     }));
-    const results = await testCases.reduce(async (resultsPromise, testCase) => {
-      const completedResults = await resultsPromise;
-      completedResults.push(await inspectFreshLoad(debugPort, testCase));
-      return completedResults;
-    }, Promise.resolve([]));
+    const results = await testCases.reduce(
+      /** @param {Promise<Awaited<ReturnType<typeof inspectFreshLoad>>[]>} resultsPromise */
+      async (resultsPromise, testCase) => {
+        const completedResults = await resultsPromise;
+        completedResults.push(await inspectFreshLoad(debugPort, testCase));
+        return completedResults;
+      },
+      Promise.resolve([])
+    );
 
     for (const result of results) {
       const hydrationResult = result.hydrationMessages.length === 0 ? "clean hydration console" : "hydration failure";
-      console.log(
-        `${result.name}: ${hydrationResult}; status=200 routeModules=${result.state.routeModuleCount} consoleMessages=${result.messageCount} consoleErrors=${result.errorMessages.length} finalUrl=${result.state.href}`
+      process.stdout.write(
+        `${result.name}: ${hydrationResult}; status=200 routeModules=${result.state.routeModuleCount} consoleMessages=${result.messageCount} consoleErrors=${result.errorMessages.length} finalUrl=${result.state.href}\n`
       );
       if (process.env.PLANE_HYDRATION_VERBOSE_ERRORS === "1") {
-        for (const error of result.errorMessages) console.log(`${result.name}: console error: ${error.text}`);
+        for (const error of result.errorMessages)
+          process.stdout.write(`${result.name}: console error: ${error.text}\n`);
       }
     }
 

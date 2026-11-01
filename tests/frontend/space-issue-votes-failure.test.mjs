@@ -13,11 +13,11 @@ const { SitesIssueService } = require("@plane/services");
 registerSpaceModuleHooks();
 
 const toastCalls = [];
-globalThis.__spaceIssueVoteToastCalls = toastCalls;
+globalThis.spaceIssueVoteToastCalls = toastCalls;
 const packageStubs = {
   "@/helpers/query-param-generator": `export const queryParamGenerator = () => ({ queryParam: "" });`,
   "@/hooks/use-is-in-iframe": `export default () => false;`,
-  "@plane/propel/toast": `export const TOAST_TYPE = { ERROR: "error" }; export const setToast = value => globalThis.__spaceIssueVoteToastCalls.push(value);`,
+  "@plane/propel/toast": `export const TOAST_TYPE = { ERROR: "error" }; export const setToast = value => globalThis.spaceIssueVoteToastCalls.push(value);`,
 };
 
 registerHooks({
@@ -31,7 +31,8 @@ registerHooks({
 
 const { IssueVotes } = await import("../../apps/space/components/issues/reactions/issue-vote-reactions.tsx");
 
-test("vote buttons recover from a failed request and show an error toast", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("vote buttons recover from a failed request and show an error toast", async (t) => {
   const environment = await createReactDomTestEnvironment();
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   t.after(() => environment.unmount(() => client.clear()));

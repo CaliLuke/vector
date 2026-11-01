@@ -27,26 +27,19 @@ export function CommandRenderer(props: Props) {
   // translation
   const { t } = useTranslation();
 
-  const commandsByGroup = commands.reduce(
-    (acc, command) => {
-      const group = command.group || "general";
-      if (!acc[group]) acc[group] = [];
-      acc[group].push(command);
-      return acc;
-    },
-    {} as Record<TPowerKCommandGroup, TPowerKCommandConfig[]>
+  const commandsByGroup = new Map<TPowerKCommandGroup, TPowerKCommandConfig[]>();
+  for (const command of commands) {
+    const group = commandsByGroup.get(command.group);
+    if (group) group.push(command);
+    else commandsByGroup.set(command.group, [command]);
+  }
+  const sortedGroups = [...commandsByGroup].toSorted(
+    ([a], [b]) => POWER_K_GROUP_PRIORITY[a] - POWER_K_GROUP_PRIORITY[b]
   );
-
-  const sortedGroups = Object.keys(commandsByGroup).sort((a, b) => {
-    const aPriority = POWER_K_GROUP_PRIORITY[a as TPowerKCommandGroup];
-    const bPriority = POWER_K_GROUP_PRIORITY[b as TPowerKCommandGroup];
-    return aPriority - bPriority;
-  }) as TPowerKCommandGroup[];
 
   return (
     <>
-      {sortedGroups.map((groupKey) => {
-        const groupCommands = commandsByGroup[groupKey];
+      {sortedGroups.map(([groupKey, groupCommands]) => {
         if (!groupCommands || groupCommands.length === 0) return null;
 
         const title =

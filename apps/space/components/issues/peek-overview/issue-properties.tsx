@@ -30,16 +30,39 @@ import { copyTextToClipboard, addSpaceIfCamelCase } from "@/helpers/string.helpe
 import { statesOptions } from "@/queries/lookups";
 // types
 import type { IPeekMode } from "@/types/issue";
-import type { IPublicIssue } from "@plane/types";
+import type { IPublicIssue, TIssuePriorities } from "@plane/types";
 
 type Props = {
   issueDetails: IPublicIssue;
   mode?: IPeekMode;
 };
 
+const priorityColors = {
+  urgent: "border-priority-urgent text-priority-urgent",
+  high: "border-priority-high text-priority-high",
+  medium: "border-priority-medium text-priority-medium",
+  low: "border-priority-low text-priority-low",
+  none: "border-priority-none text-priority-none",
+};
+
+const handleCopyLink = () => {
+  const urlToCopy = window.location.href;
+
+  copyTextToClipboard(urlToCopy)
+    .then(() =>
+      setToast({
+        type: TOAST_TYPE.INFO,
+        title: "Link copied!",
+        message: "Work item link copied to clipboard",
+      })
+    )
+    .catch(() => {
+      setToast({ type: TOAST_TYPE.ERROR, title: "Could not copy to clipboard", message: "Please try again." });
+    });
+};
+
 export const PeekOverviewIssueProperties = function PeekOverviewIssueProperties({ issueDetails, mode }: Props) {
   // hooks
-  const { t } = useTranslation();
   const { data: states = [] } = useRecordCollection(statesOptions(useParams().anchor));
   const state = states.find((item) => item.id === issueDetails.state_id);
 
@@ -47,24 +70,6 @@ export const PeekOverviewIssueProperties = function PeekOverviewIssueProperties(
 
   const { data: publishSettings } = useQuery(publishSettingsOptions(anchor));
   const { project_details } = publishSettings ?? {};
-
-  const priority = issueDetails.priority ? getIssuePriorityFilters(issueDetails.priority) : null;
-
-  const handleCopyLink = () => {
-    const urlToCopy = window.location.href;
-
-    copyTextToClipboard(urlToCopy)
-      .then(() => {
-        setToast({
-          type: TOAST_TYPE.INFO,
-          title: "Link copied!",
-          message: "Work item link copied to clipboard",
-        });
-      })
-      .catch(() => {
-        setToast({ type: TOAST_TYPE.ERROR, title: "Could not copy to clipboard", message: "Please try again." });
-      });
-  };
 
   return (
     <div className={mode === "full" ? "divide-y divide-subtle-1" : ""}>
@@ -98,22 +103,7 @@ export const PeekOverviewIssueProperties = function PeekOverviewIssueProperties(
             <span>Priority</span>
           </div>
           <div className="w-3/4">
-            <div
-              className={`inline-flex items-center gap-1.5 rounded-sm bg-layer-2 px-2.5 py-0.5 text-left text-13 capitalize ${
-                priority?.key === "urgent"
-                  ? "border-priority-urgent text-priority-urgent"
-                  : priority?.key === "high"
-                    ? "border-priority-high text-priority-high"
-                    : priority?.key === "medium"
-                      ? "border-priority-medium text-priority-medium"
-                      : priority?.key === "low"
-                        ? "border-priority-low text-priority-low"
-                        : "border-priority-none text-priority-none"
-              }`}
-            >
-              {priority && <PriorityIcon priority={priority?.key} size={12} className="flex-shrink-0" />}
-              <span>{t(priority?.titleTranslationKey || "common.none")}</span>
-            </div>
+            <PublicPriorityBadge value={issueDetails.priority} />
           </div>
         </div>
 
@@ -141,3 +131,18 @@ export const PeekOverviewIssueProperties = function PeekOverviewIssueProperties(
     </div>
   );
 };
+
+function PublicPriorityBadge({ value }: { value: TIssuePriorities | null }) {
+  const { t } = useTranslation();
+  const priority = value ? getIssuePriorityFilters(value) : null;
+  return (
+    <div
+      className={`inline-flex items-center gap-1.5 rounded-sm bg-layer-2 px-2.5 py-0.5 text-left text-13 capitalize ${
+        priorityColors[priority?.key ?? "none"]
+      }`}
+    >
+      {priority && <PriorityIcon priority={priority.key} size={12} className="flex-shrink-0" />}
+      <span>{t(priority?.titleTranslationKey || "common.none")}</span>
+    </div>
+  );
+}

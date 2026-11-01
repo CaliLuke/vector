@@ -121,7 +121,7 @@ function pressKey(element, key) {
 }
 
 function setInputValue(input, value) {
-  Reflect.apply(Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set, input, [value]);
+  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(input, value);
   input.dispatchEvent(new Event("input", { bubbles: true }));
 }
 

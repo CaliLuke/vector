@@ -29,31 +29,26 @@ export class InstanceWorkspaceService extends APIService {
    * @throws {Error} If the API request fails
    */
   async list(nextPageCursor?: string, signal?: AbortSignal): Promise<TWorkspacePaginationInfo> {
-    return this.get(`/api/instances/workspaces/`, {
-      signal,
-      params: {
-        cursor: nextPageCursor,
-      },
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(
+      this.get(`/api/instances/workspaces/`, {
+        signal,
+        params: {
+          cursor: nextPageCursor,
+        },
+      }),
+      "data-or-error"
+    );
   }
 
   /**
    * Checks if a workspace slug is available
    * @param {string} slug - The workspace slug to check
-   * @returns {Promise<any>} Promise resolving to slug availability status
+   * @returns {Promise<unknown>} Promise resolving to slug availability status
    * @throws {Error} If the API request fails
    */
-  async slugCheck(slug: string): Promise<any> {
+  async slugCheck(slug: string): Promise<{ status: boolean }> {
     const params = new URLSearchParams({ slug });
-    return this.get(`/api/instances/workspace-slug-check/?${params.toString()}`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.get(`/api/instances/workspace-slug-check/?${params.toString()}`), "data-or-error");
   }
 
   /**
@@ -63,10 +58,6 @@ export class InstanceWorkspaceService extends APIService {
    * @throws {Error} If the API request fails
    */
   async create(data: Partial<IWorkspace>): Promise<IWorkspace> {
-    return this.post("/api/instances/workspaces/", data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.post("/api/instances/workspaces/", data), "data-or-error");
   }
 }

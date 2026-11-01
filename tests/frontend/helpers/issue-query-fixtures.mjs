@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../../packages/types/dist/index.mjs";
 import { registerWebModuleHooks } from "./web-module-hooks.mjs";
 registerWebModuleHooks();
 const { identityKeys } = await import("../../../apps/web/core/queries/identity.ts");
@@ -8,11 +9,11 @@ export function projectIssueScope(overrides = {}) {
     accountId: "alice",
     sessionGeneration: 0,
     workspaceSlug: "acme",
-    workspaceRole: 15,
+    workspaceRole: ContractEnums.EUserPermissions.MEMBER,
     membershipRevision: "membership-1",
     projectId: "p1",
-    projectRole: 20,
-    projectMembershipRole: 20,
+    projectRole: ContractEnums.EUserPermissions.ADMIN,
+    projectMembershipRole: ContractEnums.EUserPermissions.ADMIN,
     ...overrides,
   };
 }
@@ -57,7 +58,7 @@ export function seedIssueReadAccess(
   seedIssueQueryScope(client, {
     accountId,
     workspaceSlug,
-    membershipRole: 15,
+    membershipRole: ContractEnums.EUserPermissions.MEMBER,
     projectRoles,
     membershipRevision: revision,
   });

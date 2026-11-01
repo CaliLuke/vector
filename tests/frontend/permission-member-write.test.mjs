@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { MutationObserver, QueryClient } from "@tanstack/react-query";
@@ -21,20 +22,29 @@ async function fixture(t) {
   const rosterScope = {
     accountId: "alice",
     workspaceSlug: "acme",
-    membershipRole: 20,
+    membershipRole: ContractEnums.EUserPermissions.ADMIN,
     membershipRevision,
   };
   const workspaceRosterKey = memberRosterKeys.workspace(rosterScope);
-  const projectRosterKey = memberRosterKeys.project({ ...rosterScope, projectId: "p1", projectRole: 20 });
+  const projectRosterKey = memberRosterKeys.project({
+    ...rosterScope,
+    projectId: "p1",
+    projectRole: ContractEnums.EUserPermissions.ADMIN,
+  });
   client.setQueryData(workspaceRosterKey, [
-    { id: "membership-a", member: { id: "alice" }, role: 20, is_active: true },
-    { id: "membership-b", member: { id: "bob" }, role: 15, is_active: true },
+    { id: "membership-a", member: { id: "alice" }, role: ContractEnums.EUserPermissions.ADMIN, is_active: true },
+    { id: "membership-b", member: { id: "bob" }, role: ContractEnums.EUserPermissions.MEMBER, is_active: true },
   ]);
   client.setQueryData(projectRosterKey, [
-    { id: "membership-a", member: "alice", role: 20, original_role: 20 },
-    { id: "membership-b", member: "bob", role: 15, original_role: 15 },
+    { id: "membership-a", member: "alice", role: ContractEnums.EUserPermissions.ADMIN, original_role: 20 },
+    { id: "membership-b", member: "bob", role: ContractEnums.EUserPermissions.MEMBER, original_role: 15 },
   ]);
-  const rolesKey = permissionKeys.workspaceProjectRoles("alice", "acme", 20, membershipRevision);
+  const rolesKey = permissionKeys.workspaceProjectRoles(
+    "alice",
+    "acme",
+    ContractEnums.EUserPermissions.ADMIN,
+    membershipRevision
+  );
   return { client, projectRosterKey, rolesKey };
 }
 
@@ -55,17 +65,17 @@ await test("failed member role write preserves canonical permissions and another
   });
   const aliceMutation = new MutationObserver(
     client,
-    updateProjectMemberRoleOptions(client, "alice", "acme", "p1", "alice", 20)
+    updateProjectMemberRoleOptions(client, "alice", "acme", "p1", "alice", ContractEnums.EUserPermissions.ADMIN)
   );
   const bobMutation = new MutationObserver(
     client,
-    updateProjectMemberRoleOptions(client, "alice", "acme", "p1", "bob", 20)
+    updateProjectMemberRoleOptions(client, "alice", "acme", "p1", "bob", ContractEnums.EUserPermissions.ADMIN)
   );
 
-  const rejectedWrite = aliceMutation.mutate(5);
+  const rejectedWrite = aliceMutation.mutate(ContractEnums.EUserPermissions.GUEST);
   const rejected = assert.rejects(rejectedWrite, /not accepted/);
   await aliceStarted;
-  const acceptedWrite = bobMutation.mutate(5);
+  const acceptedWrite = bobMutation.mutate(ContractEnums.EUserPermissions.GUEST);
   rejectAlice(new Error("not accepted"));
   await rejected;
   await bobStarted;
@@ -87,10 +97,10 @@ await test("accepted self-role change resets the stale project permission projec
   }));
   const mutation = new MutationObserver(
     client,
-    updateProjectMemberRoleOptions(client, "alice", "acme", "p1", "alice", 20)
+    updateProjectMemberRoleOptions(client, "alice", "acme", "p1", "alice", ContractEnums.EUserPermissions.ADMIN)
   );
 
-  await mutation.mutate(5);
+  await mutation.mutate(ContractEnums.EUserPermissions.GUEST);
 
   assert.equal(client.getQueryData(projectRosterKey)[0].role, 5);
   assert.equal(client.getQueryData(rolesKey), undefined);
@@ -112,13 +122,13 @@ await test("late accepted role response cannot reset a new same-account permissi
   );
   const pending = new MutationObserver(
     client,
-    updateProjectMemberRoleOptions(client, "alice", "acme", "p1", "alice", 20)
-  ).mutate(5);
+    updateProjectMemberRoleOptions(client, "alice", "acme", "p1", "alice", ContractEnums.EUserPermissions.ADMIN)
+  ).mutate(ContractEnums.EUserPermissions.GUEST);
 
   await started;
   advanceIdentitySession(client);
   client.setQueryData(rolesKey, { p1: 15 });
-  accept({ id: "membership-a", member: "alice", role: 5, original_role: 5 });
+  accept({ id: "membership-a", member: "alice", role: ContractEnums.EUserPermissions.GUEST, original_role: 5 });
   await pending;
 
   assert.deepEqual(client.getQueryData(rolesKey), { p1: 15 });

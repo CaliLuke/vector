@@ -13,7 +13,7 @@ import type { IWorkspaceSearchResults } from "@plane/types";
 
 // helpers
 import { PowerKModalCommandItem } from "./command-item";
-import { POWER_K_SEARCH_RESULTS_GROUPS_MAP } from "./search-results-map";
+import { getPowerKSearchSection, isPowerKSearchResultKey } from "./search-results-map";
 
 type Props = {
   closePalette: () => void;
@@ -29,43 +29,31 @@ export function PowerKModalSearchResults(props: Props) {
 
   return (
     <>
-      {Object.keys(results.results).map((key) => {
-        const section = results.results[key as keyof typeof results.results];
-        const currentSection = POWER_K_SEARCH_RESULTS_GROUPS_MAP[key as keyof typeof POWER_K_SEARCH_RESULTS_GROUPS_MAP];
-
-        if (!currentSection) return null;
-        if (section.length <= 0) return null;
-
-        return (
-          <Command.Group key={key} heading={currentSection.title} forceMount>
-            {section.map((item) => {
-              let value = `${key}-${item?.id}-${item.name}`;
-
-              if ("project__identifier" in item) {
-                value = `${value}-${item.project__identifier}`;
-              }
-
-              if ("sequence_id" in item) {
-                value = `${value}-${item.sequence_id}`;
-              }
-
-              return (
-                <PowerKModalCommandItem
-                  key={item.id}
-                  forceMount
-                  label={currentSection.itemName(item)}
-                  icon={currentSection.icon}
-                  onSelect={() => {
-                    closePalette();
-                    void router.navigate({ href: currentSection.path(item, projectId) });
-                  }}
-                  value={value}
-                />
-              );
-            })}
-          </Command.Group>
-        );
-      })}
+      {Object.keys(results.results)
+        .filter(isPowerKSearchResultKey)
+        .map((key) => {
+          const section = getPowerKSearchSection(key, results.results, projectId);
+          if (!section.items.length) return null;
+          return (
+            <Command.Group key={section.key} heading={section.title} forceMount>
+              {section.items.map((item) => {
+                return (
+                  <PowerKModalCommandItem
+                    key={item.id}
+                    forceMount
+                    label={item.label}
+                    icon={section.icon}
+                    onSelect={() => {
+                      closePalette();
+                      void router.navigate({ href: item.path });
+                    }}
+                    value={item.value}
+                  />
+                );
+              })}
+            </Command.Group>
+          );
+        })}
     </>
   );
 }

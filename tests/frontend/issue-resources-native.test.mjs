@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
@@ -29,12 +30,12 @@ const scope = {
   accountId: "alice",
   sessionGeneration: 0,
   workspaceSlug: "acme",
-  membershipRole: 15,
+  membershipRole: ContractEnums.EUserPermissions.MEMBER,
   membershipRevision: "membership-1",
   projectId: "project-1",
-  projectMembershipRole: 20,
-  projectRole: 20,
-  serviceType: "issues",
+  projectMembershipRole: ContractEnums.EUserPermissions.ADMIN,
+  projectRole: ContractEnums.EUserPermissions.ADMIN,
+  serviceType: ContractEnums.EIssueServiceType.ISSUES,
   issueId: "issue-1",
 };
 const itemAccessScope = (value = scope) => ({
@@ -111,7 +112,11 @@ await test("a cancelled stale attachment 403 cannot deny a succeeding collection
 });
 
 await test("guest project scope can read issue links through the issue endpoint", async (t) => {
-  const guestScope = { ...scope, projectMembershipRole: 5, projectRole: 5 };
+  const guestScope = {
+    ...scope,
+    projectMembershipRole: ContractEnums.EUserPermissions.GUEST,
+    projectRole: ContractEnums.EUserPermissions.GUEST,
+  };
   const { client } = fixture(t, guestScope);
   let request;
   t.mock.method(IssueService.prototype, "get", async (path, options) => {
@@ -141,7 +146,7 @@ await test("a visible-parent denial is shared only with its matching service-typ
     throw denial;
   });
   const issueKey = issueResourceKeys.collection(scope, "links");
-  const epicScope = { ...scope, serviceType: "epics" };
+  const epicScope = { ...scope, serviceType: ContractEnums.EIssueServiceType.EPICS };
 
   await assert.rejects(client.fetchQuery(issueLinksOptions(client, scope)), (error) => error === denial);
 
@@ -276,7 +281,7 @@ await test("attachment progress keys cannot cross account, session, or item repl
     { ...scope, sessionGeneration: scope.sessionGeneration + 1 },
     { ...scope, projectId: "project-2" },
     { ...scope, issueId: "issue-2" },
-    { ...scope, serviceType: "epics" },
+    { ...scope, serviceType: ContractEnums.EIssueServiceType.EPICS },
   ]) {
     assert.notEqual(issueAttachmentUploadScopeKey(replacement), original);
   }
@@ -288,7 +293,10 @@ await test("accepted relation writes invalidate inverse relations within the sam
   const sourceKey = issueResourceKeys.collection(scope, "relations");
   const peerKey = issueResourceKeys.collection(peerScope, "relations");
   const otherActorKey = issueResourceKeys.collection({ ...scope, accountId: "bob" }, "relations");
-  const epicKey = issueResourceKeys.collection({ ...peerScope, serviceType: "epics" }, "relations");
+  const epicKey = issueResourceKeys.collection(
+    { ...peerScope, serviceType: ContractEnums.EIssueServiceType.EPICS },
+    "relations"
+  );
   for (const key of [sourceKey, peerKey, otherActorKey, epicKey]) client.setQueryData(key, {});
   t.mock.method(IssueRelationService.prototype, "createIssueRelations", async () => [
     { id: "issue-2", project_id: "project-1" },
@@ -304,7 +312,7 @@ await test("accepted relation writes invalidate inverse relations within the sam
 });
 
 await test("epic relation reads use the epic endpoint and keep the epic service scope", async (t) => {
-  const epicScope = { ...scope, serviceType: "epics" };
+  const epicScope = { ...scope, serviceType: ContractEnums.EIssueServiceType.EPICS };
   const { client } = fixture(t, epicScope);
   let request;
   t.mock.method(IssueService.prototype, "get", async (path, options) => {

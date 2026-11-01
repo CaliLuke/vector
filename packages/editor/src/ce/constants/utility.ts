@@ -19,11 +19,11 @@ export type NodeFileMapType = Partial<
   >
 >;
 
-export const NODE_FILE_MAP: NodeFileMapType = {
+export const NODE_FILE_MAP = {
   [CORE_EXTENSIONS.IMAGE]: {
     fileSetName: "deletedImageSet",
   },
   [CORE_EXTENSIONS.CUSTOM_IMAGE]: {
     fileSetName: "deletedImageSet",
   },
-};
+} as const satisfies NodeFileMapType;

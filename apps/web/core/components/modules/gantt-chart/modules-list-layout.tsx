@@ -90,7 +90,7 @@ export const ModulesListGanttChartView = function ModulesListGanttChartView() {
         blockIds={filteredModuleIds}
         blockItems={rows ?? []}
         sidebarToRender={renderModuleSidebar}
-        blockUpdateHandler={(block, payload) => handleModuleUpdate(block, payload)}
+        blockUpdateHandler={handleModuleUpdate}
         blockToRender={renderModuleBlock}
         enableBlockLeftResize={isAllowed}
         enableBlockRightResize={isAllowed}

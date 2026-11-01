@@ -21,6 +21,8 @@ type DatePresetFilterProps = {
   multiple?: boolean;
 };
 
+const isCustomDate = (value: string) => isInDateFormat(value.split(";")[0]);
+
 export const DatePresetFilter = function DatePresetFilter(props: DatePresetFilterProps) {
   const {
     appliedFilters,
@@ -36,14 +38,11 @@ export const DatePresetFilter = function DatePresetFilter(props: DatePresetFilte
   const appliedFiltersCount = appliedFilters?.length ?? 0;
   const filteredOptions = options.filter((option) => option.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  const isCustomDateSelected = () => {
-    const isValidDateSelected = appliedFilters?.filter((filter) => isInDateFormat(filter.split(";")[0])) || [];
-    return isValidDateSelected.length > 0;
-  };
+  const isCustomDateSelected = appliedFilters?.some(isCustomDate) ?? false;
 
   const handleCustomDate = () => {
-    if (isCustomDateSelected()) {
-      const updateAppliedFilters = appliedFilters?.filter((filter) => filter.includes("-")) || [];
+    if (isCustomDateSelected) {
+      const updateAppliedFilters = appliedFilters?.filter((filter) => !isCustomDate(filter)) || [];
       handleUpdate(updateAppliedFilters);
     } else {
       setIsDateFilterModalOpen(true);
@@ -79,7 +78,7 @@ export const DatePresetFilter = function DatePresetFilter(props: DatePresetFilte
                 />
               ))}
               <FilterOption
-                isChecked={isCustomDateSelected()}
+                isChecked={isCustomDateSelected}
                 onClick={handleCustomDate}
                 title="Custom"
                 multiple={multiple}

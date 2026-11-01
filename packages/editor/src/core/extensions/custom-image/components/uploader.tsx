@@ -23,14 +23,14 @@ import {
 } from "@/hooks/use-file-upload";
 // local imports
 import { ECustomImageStatus } from "../types";
-import { getImageComponentImageFileMap } from "../utils";
+import { getImageAttributes, getImageComponentImageFileMap } from "../utils";
 import type { CustomImageNodeViewProps } from "./node-view";
 
 type CustomImageUploaderProps = Pick<
   CustomImageNodeViewProps,
   "editor" | "getPos" | "selected" | "updateAttributes"
 > & {
-  node: Pick<CustomImageNodeViewProps["node"], "type"> & { attrs: { id: string | null; src: string | null } };
+  node: Pick<CustomImageNodeViewProps["node"], "type" | "attrs">;
   failedToLoadImage: boolean;
   hasDuplicationFailed: boolean;
   loadImageFromFileSystem: (file: string) => void;
@@ -137,10 +137,10 @@ export function CustomImageUploader(props: CustomImageUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasTriggeredFilePickerRef = useRef(false);
   const hasTriedUploadingOnMountRef = useRef(false);
-  const { id: imageEntityId } = node.attrs;
+  const { id: imageEntityId } = getImageAttributes(node.attrs);
   // derived values
   const imageComponentImageFileMap = useMemo(() => getImageComponentImageFileMap(editor), [editor]);
-  const isTouchDevice = !!editor.storage.utility.isTouchDevice;
+  const isTouchDevice = editor.storage.utility.isTouchDevice;
 
   const onUpload = useCallback(
     (url: string) => {
@@ -243,7 +243,7 @@ export function CustomImageUploader(props: CustomImageUploaderProps) {
     if (meta) {
       if (meta.event === "drop" && "file" in meta) {
         hasTriedUploadingOnMountRef.current = true;
-        uploadFile(meta.file);
+        void uploadFile(meta.file);
       } else if (meta.event === "insert" && fileInputRef.current && !hasTriggeredFilePickerRef.current) {
         if (meta.hasOpenedFileInputOnce) return;
         if (!isTouchDevice) {
@@ -302,26 +302,26 @@ export function CustomImageUploader(props: CustomImageUploaderProps) {
         draggedInside,
       })}
       style={borderColor ? { borderColor } : undefined}
-      onDrop={onDrop}
+      onDrop={(event) => void onDrop(event)}
       onDragOver={onDragEnter}
       onDragLeave={onDragLeave}
       contentEditable={false}
-      onClick={() => {
-        if (!failedToLoadImage && editor.isEditable && !hasDuplicationFailed) {
-          fileInputRef.current?.click();
-        }
-      }}
     >
       <ImageIcon className="size-4" />
       <div className="flex-1 text-14 font-medium">
-        <div>
+        <button
+          type="button"
+          className="w-full text-left"
+          disabled={isErrorState || !editor.isEditable}
+          onClick={() => fileInputRef.current?.click()}
+        >
           {getUploaderMessage({
             isErrorState,
             isUploading: isImageBeingUploaded,
             draggedInside,
             isEditable: editor.isEditable,
           })}
-        </div>
+        </button>
         {attempts.map((attempt) => (
           <UploadAttemptFeedback key={attempt.id} attempt={attempt} retryUpload={retryUpload} />
         ))}
@@ -348,7 +348,7 @@ export function CustomImageUploader(props: CustomImageUploaderProps) {
         hidden
         type="file"
         accept={ACCEPTED_IMAGE_MIME_TYPES.join(",")}
-        onChange={onFileChange}
+        onChange={(event) => void onFileChange(event)}
         multiple
       />
     </div>

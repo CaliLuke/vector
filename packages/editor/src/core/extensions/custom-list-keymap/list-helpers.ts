@@ -82,8 +82,8 @@ const getPrevListDepth = (typeOrName: string, state: EditorState) => {
   for (let d = resolvedPos.depth; d > 0; d--) {
     const node = resolvedPos.node(d);
     if (
-      [CORE_EXTENSIONS.BULLET_LIST, CORE_EXTENSIONS.ORDERED_LIST, CORE_EXTENSIONS.TASK_LIST].includes(
-        node.type.name as CORE_EXTENSIONS
+      [CORE_EXTENSIONS.BULLET_LIST, CORE_EXTENSIONS.ORDERED_LIST, CORE_EXTENSIONS.TASK_LIST].some(
+        (type) => type === node.type.name
       )
     ) {
       // Increment depth for each list ancestor found
@@ -118,34 +118,7 @@ export const handleBackspace = (editor: Editor, name: string, parentListTypes: s
   // the previous item is a list (orderedList or bulletList)
   // move the cursor into the list and delete the current item
   if (!isNodeActive(editor.state, name) && hasListBefore(editor.state, name, parentListTypes)) {
-    const { $anchor } = editor.state.selection;
-
-    const $listPos = editor.state.doc.resolve($anchor.before() - 1);
-
-    const listDescendants: Array<{ node: Node; pos: number }> = [];
-
-    $listPos.node().descendants((node, pos) => {
-      if (node.type.name === name) {
-        listDescendants.push({ node, pos });
-      }
-    });
-
-    const lastItem = listDescendants.at(-1);
-
-    if (!lastItem) {
-      return false;
-    }
-
-    const $lastItemPos = editor.state.doc.resolve($listPos.start() + lastItem.pos + 1);
-
-    // Check if positions are within the valid range
-    const startPos = $anchor.start() - 1;
-    const endPos = $anchor.end() + 1;
-    if (startPos < 0 || endPos > editor.state.doc.content.size) {
-      return false; // Invalid position, abort operation
-    }
-
-    return editor.chain().cut({ from: startPos, to: endPos }, $lastItemPos.end()).joinForward().run();
+    return joinParagraphToPreviousList(editor, name);
   }
 
   // if the cursor is not inside the current node type
@@ -164,7 +137,6 @@ export const handleBackspace = (editor: Editor, name: string, parentListTypes: s
   const isParaSibling = isCurrentParagraphASibling(editor.state);
   const isCurrentListItemSublist = prevListIsHigher(name, editor.state);
   const listItemPos = findListItemPos(name, editor.state);
-  const nextListItemIsSibling = nextListIsSibling(name, editor.state);
 
   if (!listItemPos) {
     return false;
@@ -173,17 +145,10 @@ export const handleBackspace = (editor: Editor, name: string, parentListTypes: s
   const currentNode = listItemPos.$pos.node(listItemPos.depth);
   const currentListItemHasSubList = listItemHasSubList(name, editor.state, currentNode);
 
-  if (currentListItemHasSubList && isCurrentListItemSublist && isParaSibling) {
-    return false;
-  }
-
   if (currentListItemHasSubList && isCurrentListItemSublist) {
+    if (isParaSibling) return false;
     editor.chain().liftListItem(name).run();
     return editor.commands.joinItemBackward();
-  }
-
-  if (isCurrentListItemSublist && nextListItemIsSibling) {
-    return false;
   }
 
   if (isCurrentListItemSublist) {
@@ -198,14 +163,7 @@ export const handleBackspace = (editor: Editor, name: string, parentListTypes: s
     return editor.chain().liftListItem(name).run();
   }
 
-  if (!currentListItemHasSubList) {
-    return false;
-  }
-
-  // otherwise in the end, a backspace should
-  // always just lift the list item if
-  // joining / merging is not possible
-  return editor.chain().liftListItem(name).run();
+  return false;
 };
 
 export const handleDelete = (editor: Editor, name: string) => {
@@ -267,21 +225,6 @@ const prevListIsHigher = (typeOrName: string, state: EditorState) => {
   return false;
 };
 
-const nextListIsSibling = (typeOrName: string, state: EditorState) => {
-  const listDepth = getNextListDepth(typeOrName, state);
-  const listItemPos = findListItemPos(typeOrName, state);
-
-  if (!listItemPos || !listDepth) {
-    return false;
-  }
-
-  if (listDepth === listItemPos.depth) {
-    return true;
-  }
-
-  return false;
-};
-
 const nextListIsHigher = (typeOrName: string, state: EditorState) => {
   const listDepth = getNextListDepth(typeOrName, state);
   const listItemPos = findListItemPos(typeOrName, state);
@@ -323,7 +266,7 @@ const isCurrentParagraphASibling = (state: EditorState): boolean => {
   // Ensure we're in a paragraph and the parent is a list item.
   if (
     currentParagraphNode.type.name === CORE_EXTENSIONS.PARAGRAPH &&
-    [CORE_EXTENSIONS.LIST_ITEM, CORE_EXTENSIONS.TASK_ITEM].includes(listItemNode.type.name as CORE_EXTENSIONS)
+    [CORE_EXTENSIONS.LIST_ITEM, CORE_EXTENSIONS.TASK_ITEM].some((type) => type === listItemNode.type.name)
   ) {
     let paragraphNodesCount = 0;
     listItemNode.forEach((child) => {
@@ -354,3 +297,34 @@ const hasListItemBefore = (typeOrName: string, state: EditorState): boolean => {
 
   return true;
 };
+
+function joinParagraphToPreviousList(editor: Editor, name: string) {
+  const { $anchor } = editor.state.selection;
+
+  const $listPos = editor.state.doc.resolve($anchor.before() - 1);
+
+  const listDescendants: Array<{ node: Node; pos: number }> = [];
+
+  $listPos.node().descendants((node, pos) => {
+    if (node.type.name === name) {
+      listDescendants.push({ node, pos });
+    }
+  });
+
+  const lastItem = listDescendants.at(-1);
+
+  if (!lastItem) {
+    return false;
+  }
+
+  const $lastItemPos = editor.state.doc.resolve($listPos.start() + lastItem.pos + 1);
+
+  // Check if positions are within the valid range
+  const startPos = $anchor.start() - 1;
+  const endPos = $anchor.end() + 1;
+  if (startPos < 0 || endPos > editor.state.doc.content.size) {
+    return false; // Invalid position, abort operation
+  }
+
+  return editor.chain().cut({ from: startPos, to: endPos }, $lastItemPos.end()).joinForward().run();
+}

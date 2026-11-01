@@ -14,7 +14,6 @@ export interface BasePortalProps {
 
 export interface PortalWrapperProps extends BasePortalProps {
   portalId?: string;
-  fallbackToDocument?: boolean;
   onMount?: () => void;
   onUnmount?: () => void;
 }
@@ -31,6 +30,8 @@ export interface ModalPortalProps extends BasePortalProps {
   showOverlay?: boolean;
   closeOnOverlayClick?: boolean;
   closeOnEscape?: boolean;
+  ariaLabel?: string;
+  zIndex?: number;
 }
 
 export type PortalEventHandler = () => void;

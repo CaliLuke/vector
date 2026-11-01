@@ -10,7 +10,6 @@ import codemark from "prosemirror-codemark";
 import { CORE_EXTENSIONS } from "@/constants/extension";
 import { restorePublicImages } from "@/helpers/image-helpers";
 // plugins
-import type { TAdditionalActiveDropbarExtensions } from "@/plane-editor/types/utils";
 import { DropHandlerPlugin } from "@/plugins/drop";
 import { NodeHighlightPlugin } from "@/plugins/highlight";
 import { FilePlugins } from "@/plugins/file/root";
@@ -23,13 +22,12 @@ type TEditorIdentityHandlers = {
 };
 
 type TActiveDropbarExtensions =
-  | CORE_EXTENSIONS.MENTION
-  | CORE_EXTENSIONS.EMOJI
-  | CORE_EXTENSIONS.SLASH_COMMANDS
-  | CORE_EXTENSIONS.TABLE
+  | typeof CORE_EXTENSIONS.MENTION
+  | typeof CORE_EXTENSIONS.EMOJI
+  | typeof CORE_EXTENSIONS.SLASH_COMMANDS
+  | typeof CORE_EXTENSIONS.TABLE
   | "bubble-menu"
-  | CORE_EXTENSIONS.SIDE_MENU
-  | TAdditionalActiveDropbarExtensions;
+  | typeof CORE_EXTENSIONS.SIDE_MENU;
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -157,7 +155,7 @@ export const UtilityExtension = (props: Props) => {
               uniqueAssets.add(args.asset);
             }
           } else if ("idToRemove" in args) {
-            const asset = this.storage.assetsList.find((asset) => asset.id === args.idToRemove);
+            const asset = this.storage.assetsList.find((candidateAsset) => candidateAsset.id === args.idToRemove);
             if (asset) {
               uniqueAssets.delete(asset);
             }

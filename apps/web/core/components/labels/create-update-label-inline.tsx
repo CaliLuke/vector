@@ -8,7 +8,7 @@ import { forwardRef, useEffect, useRef, useState } from "react";
 import type { Dispatch, SetStateAction, ForwardedRef } from "react";
 import { TwitterPicker } from "react-color";
 import { useForm, useStore } from "@tanstack/react-form";
-import { Popover } from "@headlessui/react";
+import { FocusTrap, FocusTrapFeatures, Popover } from "@headlessui/react";
 import { getRandomLabelColor, LABEL_COLOR_OPTIONS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
@@ -45,6 +45,7 @@ function LabelForm({
   containerRef,
 }: Props & { containerRef: ForwardedRef<HTMLDivElement> }) {
   const { t } = useTranslation();
+  const nameInputRef = useRef<HTMLInputElement>(null);
   const lifecycleRef = useRef(false);
   useEffect(() => {
     lifecycleRef.current = true;
@@ -99,7 +100,12 @@ function LabelForm({
   });
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
   return (
-    <div ref={containerRef} className="w-full scroll-m-8 bg-surface-1">
+    <FocusTrap
+      ref={containerRef}
+      className="w-full scroll-m-8 bg-surface-1"
+      initialFocus={nameInputRef}
+      features={FocusTrapFeatures.InitialFocus | FocusTrapFeatures.RestoreFocus}
+    >
       <form
         className="flex w-full items-start gap-2"
         onSubmit={(event) => {
@@ -147,7 +153,8 @@ function LabelForm({
             <div className="flex flex-1 flex-col">
               <Input
                 name={field.name}
-                autoFocus
+                ref={nameInputRef}
+                aria-label={t("project_settings.labels.label_title")}
                 disabled={isSubmitting}
                 value={field.state.value}
                 onChange={(event) => field.handleChange(event.target.value)}
@@ -171,6 +178,6 @@ function LabelForm({
           {isUpdating ? (isSubmitting ? t("updating") : t("update")) : isSubmitting ? t("adding") : t("add")}
         </Button>
       </form>
-    </div>
+    </FocusTrap>
   );
 }

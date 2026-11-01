@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { createRequire, registerHooks } from "node:module";
-import { transformSync } from "esbuild";
+import { transformFrontendSource } from "./source-transform.mjs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { createModuleStub } from "./module-stubs.mjs";
 
@@ -22,10 +22,10 @@ export function registerIssueRealEditor() {
       }
       if (!context.parentURL?.startsWith(editorRoot.href)) return nextResolve(specifier, context);
       if (specifier === "@/extensions") {
-        return createModuleStub(`export { CoreEditorExtensions } from ${JSON.stringify(helperUrl)};`);
+        return createModuleStub(`export { createCoreEditorExtensions } from ${JSON.stringify(helperUrl)};`);
       }
-      if (specifier === "@/components/menus") return createModuleStub("export const getEditorMenuItems=()=>[];");
-      if (specifier === "@/props") return createModuleStub("export const CoreEditorProps=()=>({});");
+      if (specifier === "@/components/menus") return createModuleStub("export const getEditorMenuItem=()=>undefined;");
+      if (specifier === "@/props") return createModuleStub("export const createCoreEditorProps=()=>({});");
       if (specifier.startsWith("@/") || specifier.startsWith(".")) {
         const target = specifier.startsWith("@/")
           ? new URL(specifier.slice(2), editorRoot)
@@ -49,7 +49,7 @@ export function registerIssueRealEditor() {
           import { Extension } from ${JSON.stringify(moduleUrl("@tiptap/core"))};
           import StarterKit from ${JSON.stringify(moduleUrl("@tiptap/starter-kit"))};
           import { useEditor } from ${JSON.stringify(new URL("hooks/use-editor.ts", editorRoot).href)};
-          export const CoreEditorExtensions=()=>[StarterKit.default ?? StarterKit, Extension.create({
+          export const createCoreEditorExtensions=()=>[StarterKit.default ?? StarterKit, Extension.create({
             name:"utility", addStorage:()=>({assetsList:[],uploadInProgress:false}),
             addCommands:()=>({
               updateFileHandler:()=>()=>true,
@@ -83,14 +83,14 @@ export function registerIssueRealEditor() {
         return {
           format: "module",
           shortCircuit: true,
-          source: transformSync(source, {
+          source: transformFrontendSource(source, {
             format: "esm",
             loader: url.endsWith(".tsx") ? "tsx" : "ts",
             sourcefile: fileURLToPath(url),
             target: "es2022",
             tsconfigRaw: { compilerOptions: { useDefineForClassFields: true } },
             ...(url.endsWith(".tsx") ? { jsx: "automatic", jsxImportSource: "react" } : {}),
-          }).code,
+          }),
         };
       }
       return nextLoad(url, context);

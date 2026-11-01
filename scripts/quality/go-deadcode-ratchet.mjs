@@ -40,4 +40,4 @@ if (failures.length) {
   );
   process.exit(1);
 }
-console.log(`deadcode ratchet passed (${countTotal(counts)} existing findings)`);
+process.stdout.write(`deadcode ratchet passed (${countTotal(counts)} existing findings)\n`);

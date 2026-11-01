@@ -82,7 +82,7 @@ export const AddComment = function AddComment(props: Props) {
             <LiteTextEditor
               editable
               onEnterKeyPress={(e) => {
-                e.preventDefault();
+                e?.preventDefault();
                 if (currentUser)
                   void form.handleSubmit().catch(() => {
                     // The mutation already reported the failed comment save.

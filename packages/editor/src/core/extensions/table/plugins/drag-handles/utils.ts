@@ -43,7 +43,8 @@ export const cloneTableCell = (
 ): {
   clonedCellElement: HTMLElement;
 } => {
-  const clonedCellElement = cellElement.cloneNode(true) as HTMLElement;
+  const clonedCellElement = cellElement.cloneNode(true);
+  if (!(clonedCellElement instanceof HTMLElement)) throw new TypeError("Expected an HTML table cell clone");
   clonedCellElement.style.setProperty("visibility", "visible", "important");
 
   const widgetElement = clonedCellElement.querySelectorAll(".ProseMirror-widget");

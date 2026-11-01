@@ -43,21 +43,15 @@ export function PageVersionsMainContent(props: Props) {
   const handleRestoreVersion = async () => {
     if (!restoreEnabled || !versionDetails) return;
     setIsRestoring(true);
-    await handleRestore(versionDetails?.description_html ?? "<p></p>")
-      .then(() => {
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: "Page version restored.",
-        });
-        handleClose();
-      })
-      .catch(() =>
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: "Failed to restore page version.",
-        })
-      )
-      .finally(() => setIsRestoring(false));
+    try {
+      await handleRestore(versionDetails.description_html ?? "<p></p>");
+      setToast({ type: TOAST_TYPE.SUCCESS, title: "Page version restored." });
+      handleClose();
+    } catch {
+      setToast({ type: TOAST_TYPE.ERROR, title: "Failed to restore page version." });
+    } finally {
+      setIsRestoring(false);
+    }
   };
 
   const VersionEditor = editorComponent;
@@ -97,7 +91,7 @@ export function PageVersionsMainContent(props: Props) {
               <Button
                 variant="primary"
                 className="flex-shrink-0"
-                onClick={handleRestoreVersion}
+                onClick={() => void handleRestoreVersion()}
                 loading={isRestoring}
                 disabled={!versionDetails}
               >

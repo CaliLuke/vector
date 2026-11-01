@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { EPageAccess } from "@plane/types";
 import sortBy from "lodash-es/sortBy.js";
 // plane imports
 import type {
@@ -14,8 +15,7 @@ import type {
   TPageNavigationTabs,
 } from "@plane/types";
 // local imports
-import { getDate } from "./datetime";
-import { satisfiesDateFilter } from "./filter";
+import { matchesFilterValue, matchesDateFilters } from "./filter";
 
 /**
  * @description filters pages based on the page type
@@ -25,8 +25,8 @@ import { satisfiesDateFilter } from "./filter";
  */
 export const filterPagesByPageType = (pageType: TPageNavigationTabs, pages: TPage[]): TPage[] =>
   pages.filter((page) => {
-    if (pageType === "public") return page.access === 0 && !page.archived_at;
-    if (pageType === "private") return page.access === 1 && !page.archived_at;
+    if (pageType === "public") return page.access === EPageAccess.PUBLIC && !page.archived_at;
+    if (pageType === "private") return page.access === EPageAccess.PRIVATE && !page.archived_at;
     if (pageType === "archived") return page.archived_at;
     return true;
   });
@@ -48,15 +48,15 @@ export const orderPages = (
 
   if (sortByKey === "name") {
     orderedPages = sortBy(pages, [(m) => m.name?.toLowerCase()]);
-    if (sortByOrder === "desc") orderedPages = orderedPages.reverse();
+    if (sortByOrder === "desc") orderedPages = orderedPages.toReversed();
   }
   if (sortByKey === "created_at") {
     orderedPages = sortBy(pages, [(m) => m.created_at]);
-    if (sortByOrder === "desc") orderedPages = orderedPages.reverse();
+    if (sortByOrder === "desc") orderedPages = orderedPages.toReversed();
   }
   if (sortByKey === "updated_at") {
     orderedPages = sortBy(pages, [(m) => m.updated_at]);
-    if (sortByOrder === "desc") orderedPages = orderedPages.reverse();
+    if (sortByOrder === "desc") orderedPages = orderedPages.toReversed();
   }
 
   return orderedPages;
@@ -68,22 +68,12 @@ export const orderPages = (
  * @param {TPageFilterProps | undefined} filters
  * @returns {boolean}
  */
-export const shouldFilterPage = (page: TPage, filters: TPageFilterProps | undefined): boolean => {
-  let fallsInFilters = true;
-  Object.keys(filters ?? {}).forEach((key) => {
-    const filterKey = key as keyof TPageFilterProps;
-    if (filterKey === "created_by" && filters?.created_by && filters.created_by.length > 0)
-      fallsInFilters = fallsInFilters && filters.created_by.includes(`${page.owned_by}`);
-    if (filterKey === "created_at" && filters?.created_at && filters.created_at.length > 0) {
-      const createdDate = getDate(page.created_at);
-      filters?.created_at.forEach((dateFilter) => {
-        fallsInFilters = fallsInFilters && !!createdDate && satisfiesDateFilter(createdDate, dateFilter);
-      });
-    }
-  });
-  if (filters?.favorites && !page.is_favorite) fallsInFilters = false;
-
-  return fallsInFilters;
+export const shouldFilterPage = (page: Partial<TPage>, filters: TPageFilterProps | undefined): boolean => {
+  return (
+    matchesFilterValue(page.owned_by, filters?.created_by) &&
+    matchesDateFilters(page.created_at, filters?.created_at) &&
+    (!filters?.favorites || page.is_favorite === true)
+  );
 };
 
 /**

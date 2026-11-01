@@ -11,18 +11,6 @@ import { ChevronDownIcon, ChevronRightIcon } from "../icons";
 import { cn } from "@plane/utils/common";
 import type { TMenuProps, TSubMenuProps, TMenuItemProps } from "./types";
 
-// Context for main menu to communicate with submenus
-const MenuContext = React.createContext<{
-  closeAllSubmenus: () => void;
-  registerSubmenu: (closeSubmenu: () => void) => () => void;
-} | null>(null);
-
-// SubMenu context for closing submenu from nested items
-const SubMenuContext = React.createContext<{ closeSubmenu: () => void } | null>(null);
-
-// Hook to use submenu context
-const useSubMenu = () => React.useContext(SubMenuContext);
-
 // SubMenu implementation
 function SubMenu(props: TSubMenuProps) {
   const { children, trigger, disabled = false, className = "" } = props;
@@ -44,7 +32,6 @@ function SubMenu(props: TSubMenuProps) {
 
 function MenuItem(props: TMenuItemProps) {
   const { children, disabled = false, onClick, className } = props;
-  const submenuContext = useSubMenu();
 
   return (
     <BaseMenu.Item
@@ -57,9 +44,7 @@ function MenuItem(props: TMenuItemProps) {
         className
       )}
       onClick={(e) => {
-        close();
         onClick?.(e);
-        submenuContext?.closeSubmenu();
       }}
     >
       {children}
@@ -68,143 +53,94 @@ function MenuItem(props: TMenuItemProps) {
 }
 
 function Menu(props: TMenuProps) {
-  const {
-    ariaLabel,
-    buttonClassName = "",
-    customButtonClassName = "",
-    customButtonTabIndex = 0,
-    children,
-    customButton,
-    disabled = false,
-    ellipsis = false,
-    label,
-    maxHeight = "md",
-    noBorder = false,
-    noChevron = false,
-    optionsClassName = "",
-    menuItemsClassName = "",
-    verticalEllipsis = false,
-    menuButtonOnClick,
-    onMenuClose,
-    tabIndex,
-    openOnHover = false,
-    handleOpenChange = () => {},
-  } = props;
-
   const [isOpen, setIsOpen] = React.useState(false);
-  // refs
-  const submenuClosersRef = React.useRef<Set<() => void>>(new Set());
-
-  const closeAllSubmenus = React.useCallback(() => {
-    submenuClosersRef.current.forEach((closeSubmenu) => closeSubmenu());
-  }, []);
-
-  const registerSubmenu = React.useCallback((closeSubmenu: () => void) => {
-    submenuClosersRef.current.add(closeSubmenu);
-    return () => {
-      submenuClosersRef.current.delete(closeSubmenu);
-    };
-  }, []);
-  const openDropdown = () => {
-    setIsOpen(true);
-  };
-
-  const closeDropdown = React.useCallback(() => {
-    if (isOpen) {
-      closeAllSubmenus();
-      onMenuClose?.();
-    }
-    setIsOpen(false);
-  }, [isOpen, closeAllSubmenus, onMenuClose]);
-
-  const handleMenuButtonClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if (isOpen) {
-      closeDropdown();
-    } else {
-      openDropdown();
-    }
-    if (menuButtonOnClick) menuButtonOnClick();
-  };
-
   return (
-    <BaseMenu.Root onOpenChange={handleOpenChange}>
-      {customButton ? (
-        <BaseMenu.Trigger
-          type="button"
-          onClick={handleMenuButtonClick}
-          className={cn(customButtonClassName, "outline-none")}
-          tabIndex={customButtonTabIndex}
-          disabled={disabled}
-          aria-label={ariaLabel}
-          openOnHover={openOnHover}
-        >
-          {customButton}
-        </BaseMenu.Trigger>
-      ) : (
-        <>
-          {ellipsis || verticalEllipsis ? (
-            <BaseMenu.Trigger
-              type="button"
-              onClick={handleMenuButtonClick}
-              disabled={disabled}
-              className={`relative grid place-items-center rounded-sm p-1 text-secondary outline-none hover:text-primary ${
-                disabled ? "cursor-not-allowed" : "cursor-pointer hover:bg-layer-1"
-              } ${buttonClassName}`}
-              tabIndex={customButtonTabIndex}
-              aria-label={ariaLabel}
-              openOnHover={openOnHover}
-            >
-              <MoreHorizontal className={`h-3.5 w-3.5 ${verticalEllipsis ? "rotate-90" : ""}`} />
-            </BaseMenu.Trigger>
-          ) : (
-            <BaseMenu.Trigger
-              type="button"
-              className={`flex items-center justify-between gap-1 rounded-md px-2.5 py-1 text-11 whitespace-nowrap duration-300 outline-none ${
-                isOpen ? "bg-surface-2 text-primary" : "text-secondary"
-              } ${noBorder ? "" : "shadow-sm border border-strong focus:outline-none"} ${
-                disabled ? "cursor-not-allowed text-secondary" : "cursor-pointer hover:bg-layer-1"
-              } ${buttonClassName}`}
-              onClick={handleMenuButtonClick}
-              tabIndex={customButtonTabIndex}
-              disabled={disabled}
-              aria-label={ariaLabel}
-              openOnHover={openOnHover}
-            >
-              {label}
-              {!noChevron && <ChevronDownIcon className="h-3.5 w-3.5" />}
-            </BaseMenu.Trigger>
-          )}
-        </>
-      )}
+    <BaseMenu.Root
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        if (!open && isOpen) props.onMenuClose?.();
+        props.handleOpenChange?.(open);
+      }}
+    >
+      <MenuTrigger appearance={props} isOpen={isOpen} />
       <BaseMenu.Portal>
-        <BaseMenu.Positioner
-          align={"start"}
-          className={cn(
-            "fixed z-30 translate-y-0",
-            menuItemsClassName
-          )} /** translate-y-0 is a hack to create new stacking context. Required for safari  */
-        >
-          <BaseMenu.Popup
-            tabIndex={tabIndex}
-            className={cn(
-              "my-1 min-w-[12rem] overflow-y-scroll rounded-md border-[0.5px] border-strong bg-surface-1 px-2 py-2.5 text-11 whitespace-nowrap shadow-raised-200 focus:outline-none",
-              {
-                "max-h-60": maxHeight === "lg",
-                "max-h-48": maxHeight === "md",
-                "max-h-36": maxHeight === "rg",
-                "max-h-28": maxHeight === "sm",
-              },
-              optionsClassName
-            )}
-            data-main-menu="true"
-          >
-            <MenuContext.Provider value={{ closeAllSubmenus, registerSubmenu }}>{children}</MenuContext.Provider>
-          </BaseMenu.Popup>
+        <BaseMenu.Positioner align="start" className={cn("fixed z-30 translate-y-0", props.menuItemsClassName)}>
+          <MenuPopup appearance={props}>{props.children}</MenuPopup>
         </BaseMenu.Positioner>
       </BaseMenu.Portal>
     </BaseMenu.Root>
+  );
+}
+
+function MenuTrigger({ appearance, isOpen }: { appearance: TMenuProps; isOpen: boolean }) {
+  return (
+    <BaseMenu.Trigger
+      type="button"
+      onClick={(event) => {
+        event.stopPropagation();
+        appearance.menuButtonOnClick?.();
+      }}
+      className={menuTriggerClassName(appearance, isOpen)}
+      tabIndex={appearance.customButtonTabIndex ?? 0}
+      disabled={appearance.disabled}
+      aria-label={appearance.ariaLabel}
+      openOnHover={appearance.openOnHover}
+    >
+      <MenuTriggerContent appearance={appearance} />
+    </BaseMenu.Trigger>
+  );
+}
+
+function MenuTriggerContent({ appearance }: { appearance: TMenuProps }) {
+  if (appearance.customButton) return <>{appearance.customButton}</>;
+  if (appearance.ellipsis || appearance.verticalEllipsis)
+    return <MoreHorizontal className={cn("h-3.5 w-3.5", { "rotate-90": appearance.verticalEllipsis })} />;
+  return (
+    <>
+      {appearance.label}
+      {!appearance.noChevron && <ChevronDownIcon className="h-3.5 w-3.5" />}
+    </>
+  );
+}
+
+function menuTriggerClassName(appearance: TMenuProps, isOpen: boolean) {
+  const { disabled, buttonClassName, noBorder } = appearance;
+  if (appearance.customButton) return cn(appearance.customButtonClassName, "outline-none");
+  if (appearance.ellipsis || appearance.verticalEllipsis)
+    return cn(
+      "relative grid place-items-center rounded-sm p-1 text-secondary outline-none hover:text-primary",
+      disabled ? "cursor-not-allowed" : "cursor-pointer hover:bg-layer-1",
+      buttonClassName
+    );
+  return cn(
+    "flex items-center justify-between gap-1 rounded-md px-2.5 py-1 text-11 whitespace-nowrap duration-300 outline-none",
+    isOpen ? "bg-surface-2 text-primary" : "text-secondary",
+    !noBorder && "shadow-sm border border-strong focus:outline-none",
+    disabled ? "cursor-not-allowed text-secondary" : "cursor-pointer hover:bg-layer-1",
+    buttonClassName
+  );
+}
+
+function MenuPopup({ appearance, children }: { appearance: TMenuProps; children: React.ReactNode }) {
+  const { maxHeight = "md", tabIndex, optionsClassName } = appearance;
+  return (
+    <BaseMenu.Popup
+      tabIndex={tabIndex}
+      data-main-menu="true"
+      className={cn(
+        "my-1 min-w-[12rem] overflow-y-scroll rounded-md border-[0.5px] border-strong bg-surface-1 px-2 py-2.5 text-11 whitespace-nowrap shadow-raised-200 focus:outline-none",
+        {
+          "max-h-60": maxHeight === "lg",
+          "max-h-48": maxHeight === "md",
+          "max-h-36": maxHeight === "rg",
+          "max-h-28": maxHeight === "sm",
+        },
+        optionsClassName
+      )}
+    >
+      {children}
+    </BaseMenu.Popup>
   );
 }
 

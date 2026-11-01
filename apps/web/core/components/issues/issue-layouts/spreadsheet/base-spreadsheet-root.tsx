@@ -1,3 +1,4 @@
+import { isIssuePropertyEditable } from "../utils";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -86,14 +87,8 @@ export function BaseSpreadsheetRoot(props: IBaseSpreadsheetRoot) {
   const { labelsById, estimateProjection, stateProjection, parentProjection } = readState;
 
   const canEditProperties = useCallback(
-    (targetProjectId: string | undefined) => {
-      const isEditingAllowedBasedOnProject =
-        canEditPropertiesBasedOnProject && targetProjectId
-          ? canEditPropertiesBasedOnProject(targetProjectId)
-          : isEditingAllowed;
-
-      return enableInlineEditing && isEditingAllowedBasedOnProject;
-    },
+    (targetProjectId: string | undefined) =>
+      isIssuePropertyEditable(targetProjectId, canEditPropertiesBasedOnProject, enableInlineEditing, isEditingAllowed),
     [canEditPropertiesBasedOnProject, enableInlineEditing, isEditingAllowed]
   );
 

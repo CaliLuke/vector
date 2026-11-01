@@ -32,7 +32,7 @@ export const LabelStatComponent = function LabelStatComponent(props: TLabelStatC
   return (
     <div>
       {distribution && distribution.length > 0 ? (
-        distribution.map((label, index) => {
+        distribution.map((label) => {
           if (label.id) {
             return (
               <SingleProgressStats
@@ -59,7 +59,7 @@ export const LabelStatComponent = function LabelStatComponent(props: TLabelStatC
           } else {
             return (
               <SingleProgressStats
-                key={`no-label-${index}`}
+                key="no-label"
                 title={
                   <div className="flex items-center gap-2">
                     <span

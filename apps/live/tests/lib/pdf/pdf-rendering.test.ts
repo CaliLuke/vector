@@ -8,8 +8,28 @@ import { describe, it, expect } from "vitest";
 import { PDFParse } from "pdf-parse";
 import { renderPlaneDocToPdfBuffer } from "@/lib/pdf";
 import type { TipTapDocument, PDFExportMetadata } from "@/lib/pdf";
+import type { TipTapNode } from "@/lib/pdf/types";
 
 const PDF_HEADER = "%PDF-";
+
+function textDocument(text: string): TipTapDocument {
+  return { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text }] }] };
+}
+
+type ListFixtureItem = { text: string; children?: ListFixtureItem[] };
+
+function bulletList(items: ListFixtureItem[]): TipTapNode {
+  return {
+    type: "bulletList",
+    content: items.map(({ text, children }) => ({
+      type: "listItem",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text }] },
+        ...(children?.length ? [bulletList(children)] : []),
+      ],
+    })),
+  };
+}
 
 /**
  * Helper to extract text content from a PDF buffer
@@ -23,6 +43,53 @@ async function extractPdfText(buffer: Buffer): Promise<string> {
 
 describe("PDF Rendering Integration", () => {
   describe("renderPlaneDocToPdfBuffer", () => {
+    it("renders surrounding content when saved node attributes have invalid types", async () => {
+      const doc: TipTapDocument = {
+        type: "doc",
+        content: [
+          {
+            type: "heading",
+            attrs: { level: { invalid: true }, textAlign: [] },
+            content: [{ type: "text", text: "Recovered heading" }],
+          },
+          {
+            type: "paragraph",
+            attrs: { backgroundColor: {}, textAlign: "unsupported" },
+            content: [{ type: "text", text: "Retained paragraph" }],
+          },
+          { type: "imageComponent", attrs: { src: {}, width: [], alignment: {} } },
+          { type: "image", attrs: { src: {}, width: Infinity } },
+          {
+            type: "calloutComponent",
+            attrs: { "data-background": "__proto__", "data-icon-name": {}, "data-icon-color": [] },
+            content: [{ type: "text", text: "Retained callout" }],
+          },
+          { type: "mention", attrs: { id: {}, entity_identifier: [], entity_name: {} } },
+          {
+            type: "table",
+            content: [
+              {
+                type: "tableRow",
+                content: [
+                  {
+                    type: "tableCell",
+                    attrs: { colwidth: [{}], background: {} },
+                    content: [{ type: "text", text: "Retained cell" }],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+      const text = await extractPdfText(await renderPlaneDocToPdfBuffer(doc));
+      expect(text).toContain("Recovered heading");
+      expect(text).toContain("Retained paragraph");
+      expect(text).toContain("Retained callout");
+      expect(text).toContain("Retained cell");
+      expect(text).not.toContain("[object Object]");
+    });
+
     it("should render empty document to valid PDF", async () => {
       const doc: TipTapDocument = {
         type: "doc",
@@ -104,40 +171,7 @@ describe("PDF Rendering Integration", () => {
     it("should render bullet list with all items", async () => {
       const doc: TipTapDocument = {
         type: "doc",
-        content: [
-          {
-            type: "bulletList",
-            content: [
-              {
-                type: "listItem",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "First item" }],
-                  },
-                ],
-              },
-              {
-                type: "listItem",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Second item" }],
-                  },
-                ],
-              },
-              {
-                type: "listItem",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Third item" }],
-                  },
-                ],
-              },
-            ],
-          },
-        ],
+        content: [bulletList([{ text: "First item" }, { text: "Second item" }, { text: "Third item" }])],
       };
 
       const buffer = await renderPlaneDocToPdfBuffer(doc);
@@ -471,15 +505,7 @@ describe("PDF Rendering Integration", () => {
     });
 
     it("should include author metadata in PDF", async () => {
-      const doc: TipTapDocument = {
-        type: "doc",
-        content: [
-          {
-            type: "paragraph",
-            content: [{ type: "text", text: "Document content" }],
-          },
-        ],
-      };
+      const doc: TipTapDocument = textDocument("Document content");
 
       const buffer = await renderPlaneDocToPdfBuffer(doc, {
         author: "Test Author",
@@ -494,15 +520,7 @@ describe("PDF Rendering Integration", () => {
     });
 
     it("should include subject metadata in PDF", async () => {
-      const doc: TipTapDocument = {
-        type: "doc",
-        content: [
-          {
-            type: "paragraph",
-            content: [{ type: "text", text: "Document content" }],
-          },
-        ],
-      };
+      const doc: TipTapDocument = textDocument("Document content");
 
       const buffer = await renderPlaneDocToPdfBuffer(doc, {
         subject: "Technical Documentation",
@@ -652,50 +670,7 @@ describe("PDF Rendering Integration", () => {
     it("should render deeply nested lists with all levels", async () => {
       const doc: TipTapDocument = {
         type: "doc",
-        content: [
-          {
-            type: "bulletList",
-            content: [
-              {
-                type: "listItem",
-                content: [
-                  {
-                    type: "paragraph",
-                    content: [{ type: "text", text: "Level 1" }],
-                  },
-                  {
-                    type: "bulletList",
-                    content: [
-                      {
-                        type: "listItem",
-                        content: [
-                          {
-                            type: "paragraph",
-                            content: [{ type: "text", text: "Level 2" }],
-                          },
-                          {
-                            type: "bulletList",
-                            content: [
-                              {
-                                type: "listItem",
-                                content: [
-                                  {
-                                    type: "paragraph",
-                                    content: [{ type: "text", text: "Level 3" }],
-                                  },
-                                ],
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        ],
+        content: [bulletList([{ text: "Level 1", children: [{ text: "Level 2", children: [{ text: "Level 3" }] }] }])],
       };
 
       const buffer = await renderPlaneDocToPdfBuffer(doc);

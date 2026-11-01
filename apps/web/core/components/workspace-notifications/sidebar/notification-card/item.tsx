@@ -44,7 +44,8 @@ export const NotificationItem = function NotificationItem(props: TNotificationIt
 
   // derived values
   const projectId = notification.project;
-  const issueId = notification.data?.issue?.id;
+  const issue = notification.data?.issue;
+  const issueId = issue?.id;
   const workspace = workspaceDetails;
 
   const notificationField = notification.data?.issue_activity.field;
@@ -89,7 +90,7 @@ export const NotificationItem = function NotificationItem(props: TNotificationIt
           "bg-accent-primary/5": !notification.read_at,
         }
       )}
-      onClick={handleNotificationIssuePeekOverview}
+      onClick={(event) => void handleNotificationIssuePeekOverview(event)}
     >
       {!notification.read_at && (
         <div className="absolute top-[50%] left-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-accent-primary" />
@@ -99,7 +100,7 @@ export const NotificationItem = function NotificationItem(props: TNotificationIt
         <div className="relative flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-layer-1">
           {notificationTriggeredBy && (
             <Avatar
-              name={notificationTriggeredBy.display_name || notificationTriggeredBy?.first_name}
+              name={notificationTriggeredBy.display_name || notificationTriggeredBy.first_name}
               src={getFileURL(notificationTriggeredBy.avatar_url)}
               size={42}
               shape="circle"
@@ -128,23 +129,11 @@ export const NotificationItem = function NotificationItem(props: TNotificationIt
 
           <div className="relative flex items-center gap-3 text-caption-sm-regular text-secondary">
             <div className="line-clamp-1 w-full truncate overflow-hidden break-words whitespace-normal">
-              {notification.data?.issue?.identifier}-{notification.data?.issue?.sequence_id}&nbsp;
-              {notification.data?.issue?.name}
+              {issue?.identifier}-{issue?.sequence_id}&nbsp;
+              {issue?.name}
             </div>
             <div className="flex-shrink-0">
-              {notification.snoozed_till ? (
-                <p className="flex flex-shrink-0 items-center justify-end gap-x-1 text-tertiary">
-                  <Clock className="h-4 w-4" />
-                  <span>
-                    Till {renderFormattedDate(notification.snoozed_till)},&nbsp;
-                    {renderFormattedTime(notification.snoozed_till, "12-hour")}
-                  </span>
-                </p>
-              ) : (
-                <p className="mt-auto flex-shrink-0 text-tertiary">
-                  {notification.created_at && calculateTimeAgo(notification.created_at)}
-                </p>
-              )}
+              <NotificationTimestamp snoozedUntil={notification.snoozed_till} createdAt={notification.created_at} />
             </div>
           </div>
         </div>
@@ -152,3 +141,23 @@ export const NotificationItem = function NotificationItem(props: TNotificationIt
     </Row>
   );
 };
+
+function NotificationTimestamp({
+  snoozedUntil,
+  createdAt,
+}: {
+  snoozedUntil: string | null | undefined;
+  createdAt: string | undefined;
+}) {
+  return snoozedUntil ? (
+    <p className="flex flex-shrink-0 items-center justify-end gap-x-1 text-tertiary">
+      <Clock className="h-4 w-4" />
+      <span>
+        Till {renderFormattedDate(snoozedUntil)},&nbsp;
+        {renderFormattedTime(snoozedUntil, "12-hour")}
+      </span>
+    </p>
+  ) : (
+    <p className="mt-auto flex-shrink-0 text-tertiary">{createdAt && calculateTimeAgo(createdAt)}</p>
+  );
+}

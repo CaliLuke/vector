@@ -24,7 +24,8 @@ export function IssueTypeSelect({
     <div className="min-w-0">
       <CustomSearchSelect
         value={value}
-        onChange={(id: string) => {
+        onChange={(id) => {
+          if (id === null) return;
           if (beforeChange()) onChange(id);
         }}
         customButtonAsChild

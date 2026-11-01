@@ -12,7 +12,6 @@ import { useViewLinkCopy } from "@/components/views/use-view-link-copy";
 import type { TStaticViewTypes } from "@plane/types";
 import type { TContextMenuItem } from "@plane/ui";
 import { CustomMenu } from "@plane/ui";
-import { cn } from "@plane/utils/common";
 // helpers
 type Props = {
   workspaceSlug: string;
@@ -40,7 +39,7 @@ export const DefaultWorkspaceViewQuickActions = function DefaultWorkspaceViewQui
     },
     {
       key: "copy-link",
-      action: handleCopyText,
+      action: () => void handleCopyText(),
       title: t("copy_link"),
       icon: LinkIcon,
     },
@@ -54,39 +53,9 @@ export const DefaultWorkspaceViewQuickActions = function DefaultWorkspaceViewQui
         closeOnSelect
         buttonClassName="flex-shrink-0 flex items-center justify-center size-[26px] bg-layer-1/70 rounded-sm"
       >
-        {MENU_ITEMS.map((item) => {
-          if (item.shouldRender === false) return null;
-          return (
-            <CustomMenu.MenuItem
-              key={item.key}
-              onClick={() => {
-                item.action();
-              }}
-              className={cn(
-                "flex items-center gap-2",
-                {
-                  "text-placeholder": item.disabled,
-                },
-                item.className
-              )}
-              disabled={item.disabled}
-            >
-              {item.icon && <item.icon className={cn("h-3 w-3", item.iconClassName)} />}
-              <div>
-                <h5>{t(item.title || "")}</h5>
-                {item.description && (
-                  <p
-                    className={cn("whitespace-pre-line text-tertiary", {
-                      "text-placeholder": item.disabled,
-                    })}
-                  >
-                    {item.description}
-                  </p>
-                )}
-              </div>
-            </CustomMenu.MenuItem>
-          );
-        })}
+        {MENU_ITEMS.map((item) => (
+          <CustomMenu.ActionItem key={item.key} item={item} iconClassName="h-3 w-3" />
+        ))}
       </CustomMenu>
     </>
   );

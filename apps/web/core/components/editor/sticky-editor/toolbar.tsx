@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState } from "react";
 import { Palette } from "lucide-react";
 // editor
 import type { EditorRefApi } from "@plane/editor";
@@ -14,9 +14,8 @@ import { TrashIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { TSticky } from "@plane/types";
 // constants
-import { cn } from "@plane/utils/common";
 import type { ToolbarMenuItem } from "@plane/editor";
-import { TOOLBAR_ITEMS } from "@plane/editor";
+import { TOOLBAR_ITEMS, EditorToolbarButtons, useEditorToolbar } from "@plane/editor";
 // helpers
 import { ColorPalette } from "./color-palette";
 
@@ -32,34 +31,9 @@ const toolbarItems = TOOLBAR_ITEMS.sticky;
 export function StickyEditorToolbar(props: Props) {
   const { executeCommand, editorRef, handleColorChange, handleDelete } = props;
 
-  // State to manage active states of toolbar items
-  const [activeStates, setActiveStates] = useState<Record<string, boolean>>({});
+  const { activeStates } = useEditorToolbar(editorRef, toolbarItems);
   const [showColorPalette, setShowColorPalette] = useState(false);
   const colorPaletteRef = React.useRef<HTMLDivElement>(null);
-  // Function to update active states
-  const updateActiveStates = useCallback(() => {
-    if (!editorRef) return;
-    const newActiveStates: Record<string, boolean> = {};
-    Object.values(toolbarItems)
-      .flat()
-      .forEach((item) => {
-        // TODO: update this while toolbar homogenization
-        // @ts-expect-error type mismatch here
-        newActiveStates[item.renderKey] = editorRef.isMenuItemActive({
-          itemKey: item.itemKey,
-          ...item.extraProps,
-        });
-      });
-    setActiveStates(newActiveStates);
-  }, [editorRef]);
-
-  // useEffect to call updateActiveStates when isActive prop changes
-  useEffect(() => {
-    if (!editorRef) return;
-    const unsubscribe = editorRef.onStateChange(updateActiveStates);
-    updateActiveStates();
-    return () => unsubscribe();
-  }, [editorRef, updateActiveStates]);
 
   useOutsideClickDetector(colorPaletteRef, () => setShowColorPalette(false));
 
@@ -75,45 +49,25 @@ export function StickyEditorToolbar(props: Props) {
             </p>
           }
         >
-          <button type="button" onClick={() => setShowColorPalette(!showColorPalette)} className="flex text-primary/50">
+          <button
+            type="button"
+            aria-label="Background color"
+            aria-expanded={showColorPalette}
+            onClick={() => setShowColorPalette(!showColorPalette)}
+            className="flex text-primary/50"
+          >
             <Palette className="my-auto size-4" />
           </button>
         </Tooltip>
 
         <div className="my-auto flex w-fit items-stretch justify-between gap-4 rounded-sm p-1">
           <div className="my-auto flex items-stretch gap-4">
-            {Object.keys(toolbarItems).map((key) => (
-              <div key={key} className={cn("flex items-stretch gap-4", {})}>
-                {toolbarItems[key].map((item) => {
-                  const isItemActive = activeStates[item.renderKey];
-
-                  return (
-                    <Tooltip
-                      key={item.renderKey}
-                      tooltipContent={
-                        <p className="flex flex-col gap-1 text-center text-11">
-                          <span className="font-medium">{item.name}</span>
-                          {item.shortcut && <kbd className="text-placeholder">{item.shortcut.join(" + ")}</kbd>}
-                        </p>
-                      }
-                    >
-                      <button
-                        type="button"
-                        onClick={() => executeCommand(item)}
-                        className={cn("grid aspect-square place-items-center rounded-xs p-0.5 text-primary/50", {})}
-                      >
-                        <item.icon
-                          className={cn("h-3.5 w-3.5", {
-                            "font-heavy": isItemActive,
-                          })}
-                          strokeWidth={2.5}
-                        />
-                      </button>
-                    </Tooltip>
-                  );
-                })}
-              </div>
-            ))}
+            <EditorToolbarButtons
+              groups={toolbarItems}
+              activeStates={activeStates}
+              executeCommand={executeCommand}
+              variant="sticky"
+            />
           </div>
         </div>
       </div>
@@ -125,7 +79,7 @@ export function StickyEditorToolbar(props: Props) {
           </p>
         }
       >
-        <button type="button" onClick={handleDelete} className="my-auto text-primary/50">
+        <button type="button" aria-label="Delete sticky" onClick={handleDelete} className="my-auto text-primary/50">
           <TrashIcon className="size-4" />
         </button>
       </Tooltip>

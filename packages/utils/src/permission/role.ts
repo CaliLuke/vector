@@ -6,9 +6,8 @@
 
 // plane imports
 import { EUserPermissions } from "@plane/constants";
-import type { EUserProjectRoles, EUserWorkspaceRoles } from "@plane/types";
 
-export const getUserRole = (role: EUserPermissions | EUserWorkspaceRoles | EUserProjectRoles) => {
+export const getUserRole = (role: unknown) => {
   switch (role) {
     case EUserPermissions.GUEST:
       return "GUEST";
@@ -17,9 +16,11 @@ export const getUserRole = (role: EUserPermissions | EUserWorkspaceRoles | EUser
     case EUserPermissions.ADMIN:
       return "ADMIN";
   }
+
+  return undefined;
 };
 
-type TSupportedRole = EUserPermissions | EUserProjectRoles | EUserWorkspaceRoles;
+type TSupportedRole = EUserPermissions;
 
 /**
  * @description Returns the highest role from an array of supported roles

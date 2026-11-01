@@ -41,6 +41,11 @@ await test("admin sign-in retains credentials after a failed CSRF request and su
     submissions.push(Object.fromEntries(new window.FormData(this)));
   });
   await changeInput(container.querySelector('[name="password"]'), "test-password");
+  await act(async () => container.querySelector('[aria-label="Show password"]').click());
+  assert.equal(container.querySelector('[name="password"]').type, "text");
+  await act(async () => container.querySelector('[aria-label="Hide password"]').click());
+  assert.equal(container.querySelector('[name="password"]').type, "password");
+  assert.equal(container.querySelector('[name="password"]').value, "test-password");
   await submit(container);
   assert.deepEqual(submissions, []);
   assert.equal(formToasts.at(-1).type, "error");
@@ -94,3 +99,33 @@ await test("workspace loading settles into success with an empty result", async 
   assert.equal(result.isFetching, false);
   assert.deepEqual(result.data.pages[0].results, []);
 });
+
+for (const name of ["sign-in", "setup"]) {
+  const codes =
+    name === "sign-in"
+      ? [
+          "INSTANCE_NOT_CONFIGURED",
+          "REQUIRED_EMAIL_PASSWORD",
+          "INVALID_EMAIL",
+          "USER_DOES_NOT_EXIST",
+          "AUTHENTICATION_FAILED",
+        ]
+      : [
+          "INSTANCE_NOT_CONFIGURED",
+          "ADMIN_ALREADY_EXIST",
+          "REQUIRED_EMAIL_PASSWORD_FIRST_NAME",
+          "INVALID_EMAIL",
+          "INVALID_PASSWORD",
+          "USER_ALREADY_EXISTS",
+        ];
+  for (const code of [...codes, "UNSUPPORTED"])
+    void test(`${name} redirects display only supported error code ${code}`, async (t) => {
+      const message = "A redirect failure requiring attention";
+      const { container } = await mountAuthForm(
+        t,
+        name,
+        `/?error_code=${code}&error_message=${encodeURIComponent(message)}`
+      );
+      assert.equal(container.textContent.includes(message), code !== "UNSUPPORTED");
+    });
+}

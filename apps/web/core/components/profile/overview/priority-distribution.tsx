@@ -16,13 +16,13 @@ type Props = {
   userProfile: IUserProfileData | undefined;
 };
 
-const priorityColors = {
-  urgent: "#991b1b",
-  high: "#ef4444",
-  medium: "#f59e0b",
-  low: "#16a34a",
-  none: "#e5e5e5",
-};
+const priorityColors = new Map<string, string>([
+  ["urgent", "#991b1b"],
+  ["high", "#ef4444"],
+  ["medium", "#f59e0b"],
+  ["low", "#16a34a"],
+  ["none", "#e5e5e5"],
+]);
 
 export function ProfilePriorityDistribution({ userProfile }: Props) {
   const { t } = useTranslation();
@@ -36,8 +36,8 @@ export function ProfilePriorityDistribution({ userProfile }: Props) {
               className="h-[300px] w-full"
               margin={{ top: 20, right: 30, bottom: 5, left: 0 }}
               data={userProfile.priority_distribution.map((priority) => ({
-                key: priority.priority ?? "None",
-                name: capitalizeFirstLetter(priority.priority ?? "None"),
+                key: priority.priority ?? "none",
+                name: capitalizeFirstLetter(priority.priority ?? "none"),
                 count: priority.priority_count,
               }))}
               bars={[
@@ -45,7 +45,8 @@ export function ProfilePriorityDistribution({ userProfile }: Props) {
                   key: "count",
                   label: "Count",
                   stackId: "bar-one",
-                  fill: (payload: any) => priorityColors[payload.key as keyof typeof priorityColors], // TODO: fix types
+                  fill: (payload) =>
+                    priorityColors.get(typeof payload.key === "string" ? payload.key : "none") ?? "#e5e5e5",
                   textClassName: "",
                   showPercentage: false,
                   showTopBorderRadius: () => true,

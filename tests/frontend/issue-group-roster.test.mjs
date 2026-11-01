@@ -161,3 +161,11 @@ await test("an unavailable mention summary does not label the user as suspended"
   assert.equal(f.client.getQueryState(memberRosterKeys.workspace(scope("acme")))?.status, "error");
   assert.equal(f.environment.container.textContent, "@user");
 });
+
+await test("ungrouped lists retain All work items while calendar date grouping has no list columns", async (t) => {
+  const f = await fixture(t);
+  await render(f, { workspaceSlug: "acme", isWorkspaceLevel: true, groupBy: null });
+  assert.deepEqual(names(f), ["All work items"]);
+  await render(f, { workspaceSlug: "acme", isWorkspaceLevel: true, groupBy: "target_date" });
+  assert.deepEqual(names(f), []);
+});

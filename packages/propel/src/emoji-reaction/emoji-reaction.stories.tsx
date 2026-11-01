@@ -5,8 +5,9 @@
  */
 
 import { useState } from "react";
+import { useExampleReactions } from "./reaction-examples";
+import { ReactionMessageExample } from "./message-example";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { EmojiReactionType } from "./emoji-reaction";
 import { EmojiReaction, EmojiReactionGroup, EmojiReactionButton } from "./emoji-reaction";
 
 const meta = {
@@ -86,32 +87,19 @@ export const WithoutCount: Story = {
   },
 };
 
+const initialReactions = [
+  { emoji: "👍", count: 5, reacted: false, users: ["Alice", "Bob", "Charlie"] },
+  { emoji: "❤️", count: 12, reacted: true, users: ["David", "Emma", "Frank"] },
+  { emoji: "🎉", count: 3, reacted: false, users: ["Grace"] },
+];
+
 export const MultipleReactions: Story = {
   args: {
     emoji: "👍",
     count: 0,
   },
   render() {
-    const [reactions, setReactions] = useState<EmojiReactionType[]>([
-      { emoji: "👍", count: 5, reacted: false, users: ["Alice", "Bob", "Charlie"] },
-      { emoji: "❤️", count: 12, reacted: true, users: ["David", "Emma", "Frank"] },
-      { emoji: "🎉", count: 3, reacted: false, users: ["Grace"] },
-    ]);
-
-    const handleReactionClick = (emoji: string) => {
-      setReactions((prev) =>
-        prev.map((r) => {
-          if (r.emoji === emoji) {
-            return {
-              ...r,
-              reacted: !r.reacted,
-              count: r.reacted ? r.count - 1 : r.count + 1,
-            };
-          }
-          return r;
-        })
-      );
-    };
+    const { reactions, toggleReaction: handleReactionClick } = useExampleReactions(initialReactions);
 
     return (
       <div className="flex gap-2">
@@ -130,16 +118,16 @@ export const MultipleReactions: Story = {
   },
 };
 
+const handleAdd = () => {
+  alert("Add reaction clicked");
+};
+
 export const AddButton: Story = {
   args: {
     emoji: "➕",
     count: 0,
   },
   render() {
-    const handleAdd = () => {
-      alert("Add reaction clicked");
-    };
-
     return <EmojiReactionButton onAddReaction={handleAdd} />;
   },
 };
@@ -150,39 +138,12 @@ export const ReactionGroup: Story = {
     count: 0,
   },
   render() {
-    const [reactions, setReactions] = useState<EmojiReactionType[]>([
-      { emoji: "👍", count: 5, reacted: false, users: ["Alice", "Bob", "Charlie"] },
-      { emoji: "❤️", count: 12, reacted: true, users: ["David", "Emma", "Frank"] },
-      { emoji: "🎉", count: 3, reacted: false, users: ["Grace"] },
+    const { reactions, toggleReaction: handleReactionClick } = useExampleReactions([
+      ...initialReactions,
       { emoji: "🔥", count: 8, reacted: false, users: ["Henry", "Ivy"] },
     ]);
 
-    const handleReactionClick = (emoji: string) => {
-      setReactions((prev) =>
-        prev.map((r) => {
-          if (r.emoji === emoji) {
-            return {
-              ...r,
-              reacted: !r.reacted,
-              count: r.reacted ? r.count - 1 : r.count + 1,
-            };
-          }
-          return r;
-        })
-      );
-    };
-
-    const handleAddReaction = () => {
-      alert("Add reaction clicked");
-    };
-
-    return (
-      <EmojiReactionGroup
-        reactions={reactions}
-        onReactionClick={handleReactionClick}
-        onAddReaction={handleAddReaction}
-      />
-    );
+    return <EmojiReactionGroup reactions={reactions} onReactionClick={handleReactionClick} onAddReaction={handleAdd} />;
   },
 };
 
@@ -192,41 +153,15 @@ export const InMessageContext: Story = {
     count: 0,
   },
   render() {
-    const [reactions, setReactions] = useState<EmojiReactionType[]>([
+    const { reactions, toggleReaction: handleReactionClick } = useExampleReactions([
       { emoji: "👍", count: 5, reacted: false, users: ["Alice", "Bob", "Charlie"] },
       { emoji: "❤️", count: 2, reacted: true, users: ["You", "David"] },
     ]);
 
-    const handleReactionClick = (emoji: string) => {
-      setReactions((prev) =>
-        prev.map((r) => {
-          if (r.emoji === emoji) {
-            return {
-              ...r,
-              reacted: !r.reacted,
-              count: r.reacted ? r.count - 1 : r.count + 1,
-            };
-          }
-          return r;
-        })
-      );
-    };
-
     return (
-      <div className="max-w-md space-y-3 rounded-lg border border-subtle p-4">
-        <div className="flex items-start gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-primary text-13 text-on-color">
-            AB
-          </div>
-          <div className="flex-1">
-            <div className="text-13 font-medium">Alice Brown</div>
-            <div className="mt-1 text-13 text-tertiary">
-              Hey everyone! Just wanted to share some exciting news about our project launch next week!
-            </div>
-          </div>
-        </div>
+      <ReactionMessageExample message="Hey everyone! Just wanted to share some exciting news about our project launch next week!">
         <EmojiReactionGroup reactions={reactions} onReactionClick={handleReactionClick} />
-      </div>
+      </ReactionMessageExample>
     );
   },
 };

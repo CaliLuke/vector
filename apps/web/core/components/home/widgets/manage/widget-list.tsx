@@ -50,13 +50,13 @@ export const WidgetList = function WidgetList({ workspaceSlug }: { workspaceSlug
       );
       update
         .mutateAsync({ key: sourceData.id, patch: { sort_order } })
-        .then(() => {
+        .then(() =>
           setToast({
             type: TOAST_TYPE.SUCCESS,
             title: t("toast.success"),
             message: t("home.widget.reordered_successfully"),
-          });
-        })
+          })
+        )
         .catch(() => {
           setToast({
             type: TOAST_TYPE.ERROR,

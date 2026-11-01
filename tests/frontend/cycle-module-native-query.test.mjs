@@ -150,3 +150,32 @@ await test("queued writes reverify session and never touch a replacement actor",
   assert.equal(calls, 1);
   assert.deepEqual(client.getQueryData(key), []);
 });
+
+await test("cycle progress accepts current and legacy snapshots without treating zero or invalid totals as points", async () => {
+  const { cycleHasPoints, favoriteModuleIds } = await import("../../apps/web/core/queries/cycle-module-selectors.ts");
+  assert.equal(cycleHasPoints(undefined), false);
+  assert.equal(cycleHasPoints({ version: 2, progress: [{ total_estimate_points: 5 }] }), true);
+  assert.equal(
+    cycleHasPoints({ version: 2, progress: [{ total_estimate_points: null }, { total_estimate_points: 0 }] }),
+    false
+  );
+  assert.equal(cycleHasPoints({ version: 2 }), false);
+  assert.equal(cycleHasPoints({ version: 1, estimate_distribution: { completion_chart: { today: 3 } } }), true);
+  assert.equal(
+    cycleHasPoints({ version: 1, estimate_distribution: { completion_chart: { today: "3", tomorrow: 0 } } }),
+    false
+  );
+  assert.equal(cycleHasPoints({ version: 1 }), false);
+  assert.deepEqual([...favoriteModuleIds(undefined)], []);
+  assert.deepEqual(
+    [
+      ...favoriteModuleIds([
+        { entity_type: "project", entity_identifier: "other" },
+        { entity_type: "module", entity_identifier: "module" },
+        { entity_type: "module", entity_identifier: "" },
+        { entity_type: "module", entity_identifier: "module" },
+      ]),
+    ],
+    ["module"]
+  );
+});

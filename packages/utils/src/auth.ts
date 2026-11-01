@@ -36,7 +36,7 @@ export const getPasswordStrength = (password: string): E_PASSWORD_STRENGTH => {
   const hasUpperCase = /[A-Z]/.test(password);
   const hasLowerCase = /[a-z]/.test(password);
   const hasDigit = /[0-9]/.test(password);
-  const hasSpecialChar = /[!@#$%^&*()\-_+=\[\]{}|;:'",.<>?/]/.test(password);
+  const hasSpecialChar = /[!@#$%^&*()\-_+=[\]{}|;:'",.<>?/]/.test(password);
 
   if (hasUpperCase && hasLowerCase && hasDigit && hasSpecialChar) {
     return E_PASSWORD_STRENGTH.STRENGTH_VALID;
@@ -81,7 +81,7 @@ export const getPasswordCriteria = (password: string): PasswordCriteria[] => [
   {
     key: "special",
     label: "Min 1 special character",
-    isValid: /[!@#$%^&*()\-_+=\[\]{}|;:'",.<>?/]/.test(password),
+    isValid: /[!@#$%^&*()\-_+=[\]{}|;:'",.<>?/]/.test(password),
   },
 ];
 
@@ -309,64 +309,74 @@ const errorCodeMessages: {
   },
 };
 
-// Error handler
-export const authErrorHandler = (errorCode: EAuthErrorCodes, email?: string): TAuthErrorInfo | undefined => {
-  const bannerAlertErrorCodes = [
-    EAuthErrorCodes.INSTANCE_NOT_CONFIGURED,
-    EAuthErrorCodes.INVALID_EMAIL,
-    EAuthErrorCodes.EMAIL_REQUIRED,
-    EAuthErrorCodes.SIGNUP_DISABLED,
-    EAuthErrorCodes.INVALID_PASSWORD,
-    EAuthErrorCodes.SMTP_NOT_CONFIGURED,
-    EAuthErrorCodes.USER_ALREADY_EXIST,
-    EAuthErrorCodes.AUTHENTICATION_FAILED_SIGN_UP,
-    EAuthErrorCodes.REQUIRED_EMAIL_PASSWORD_SIGN_UP,
-    EAuthErrorCodes.INVALID_EMAIL_SIGN_UP,
-    EAuthErrorCodes.INVALID_EMAIL_MAGIC_SIGN_UP,
-    EAuthErrorCodes.MAGIC_SIGN_UP_EMAIL_CODE_REQUIRED,
-    EAuthErrorCodes.USER_DOES_NOT_EXIST,
-    EAuthErrorCodes.AUTHENTICATION_FAILED_SIGN_IN,
-    EAuthErrorCodes.REQUIRED_EMAIL_PASSWORD_SIGN_IN,
-    EAuthErrorCodes.INVALID_EMAIL_SIGN_IN,
-    EAuthErrorCodes.INVALID_EMAIL_MAGIC_SIGN_IN,
-    EAuthErrorCodes.MAGIC_SIGN_IN_EMAIL_CODE_REQUIRED,
-    EAuthErrorCodes.INVALID_MAGIC_CODE_SIGN_IN,
-    EAuthErrorCodes.INVALID_MAGIC_CODE_SIGN_UP,
-    EAuthErrorCodes.EXPIRED_MAGIC_CODE_SIGN_IN,
-    EAuthErrorCodes.EXPIRED_MAGIC_CODE_SIGN_UP,
-    EAuthErrorCodes.EMAIL_CODE_ATTEMPT_EXHAUSTED_SIGN_IN,
-    EAuthErrorCodes.EMAIL_CODE_ATTEMPT_EXHAUSTED_SIGN_UP,
-    EAuthErrorCodes.OAUTH_NOT_CONFIGURED,
-    EAuthErrorCodes.GOOGLE_NOT_CONFIGURED,
-    EAuthErrorCodes.GITHUB_NOT_CONFIGURED,
-    EAuthErrorCodes.GITLAB_NOT_CONFIGURED,
-    EAuthErrorCodes.GOOGLE_OAUTH_PROVIDER_ERROR,
-    EAuthErrorCodes.GITHUB_OAUTH_PROVIDER_ERROR,
-    EAuthErrorCodes.GITLAB_OAUTH_PROVIDER_ERROR,
-    EAuthErrorCodes.INVALID_PASSWORD_TOKEN,
-    EAuthErrorCodes.EXPIRED_PASSWORD_TOKEN,
-    EAuthErrorCodes.INCORRECT_OLD_PASSWORD,
-    EAuthErrorCodes.INVALID_NEW_PASSWORD,
-    EAuthErrorCodes.PASSWORD_ALREADY_SET,
-    EAuthErrorCodes.ADMIN_ALREADY_EXIST,
-    EAuthErrorCodes.REQUIRED_ADMIN_EMAIL_PASSWORD_FIRST_NAME,
-    EAuthErrorCodes.INVALID_ADMIN_EMAIL,
-    EAuthErrorCodes.INVALID_ADMIN_PASSWORD,
-    EAuthErrorCodes.REQUIRED_ADMIN_EMAIL_PASSWORD,
-    EAuthErrorCodes.ADMIN_AUTHENTICATION_FAILED,
-    EAuthErrorCodes.ADMIN_USER_ALREADY_EXIST,
-    EAuthErrorCodes.ADMIN_USER_DOES_NOT_EXIST,
-    EAuthErrorCodes.BOT_USER_LOGIN_FORBIDDEN,
-    EAuthErrorCodes.USER_ACCOUNT_DEACTIVATED,
-  ];
+// Resolve protocol codes once; applications supply their own navigation and copy.
+const bannerAlertErrorCodes: ReadonlySet<EAuthErrorCodes> = new Set([
+  EAuthErrorCodes.INSTANCE_NOT_CONFIGURED,
+  EAuthErrorCodes.INVALID_EMAIL,
+  EAuthErrorCodes.EMAIL_REQUIRED,
+  EAuthErrorCodes.SIGNUP_DISABLED,
+  EAuthErrorCodes.INVALID_PASSWORD,
+  EAuthErrorCodes.SMTP_NOT_CONFIGURED,
+  EAuthErrorCodes.USER_ALREADY_EXIST,
+  EAuthErrorCodes.AUTHENTICATION_FAILED_SIGN_UP,
+  EAuthErrorCodes.REQUIRED_EMAIL_PASSWORD_SIGN_UP,
+  EAuthErrorCodes.INVALID_EMAIL_SIGN_UP,
+  EAuthErrorCodes.INVALID_EMAIL_MAGIC_SIGN_UP,
+  EAuthErrorCodes.MAGIC_SIGN_UP_EMAIL_CODE_REQUIRED,
+  EAuthErrorCodes.USER_DOES_NOT_EXIST,
+  EAuthErrorCodes.AUTHENTICATION_FAILED_SIGN_IN,
+  EAuthErrorCodes.REQUIRED_EMAIL_PASSWORD_SIGN_IN,
+  EAuthErrorCodes.INVALID_EMAIL_SIGN_IN,
+  EAuthErrorCodes.INVALID_EMAIL_MAGIC_SIGN_IN,
+  EAuthErrorCodes.MAGIC_SIGN_IN_EMAIL_CODE_REQUIRED,
+  EAuthErrorCodes.INVALID_MAGIC_CODE_SIGN_IN,
+  EAuthErrorCodes.INVALID_MAGIC_CODE_SIGN_UP,
+  EAuthErrorCodes.EXPIRED_MAGIC_CODE_SIGN_IN,
+  EAuthErrorCodes.EXPIRED_MAGIC_CODE_SIGN_UP,
+  EAuthErrorCodes.EMAIL_CODE_ATTEMPT_EXHAUSTED_SIGN_IN,
+  EAuthErrorCodes.EMAIL_CODE_ATTEMPT_EXHAUSTED_SIGN_UP,
+  EAuthErrorCodes.OAUTH_NOT_CONFIGURED,
+  EAuthErrorCodes.GOOGLE_NOT_CONFIGURED,
+  EAuthErrorCodes.GITHUB_NOT_CONFIGURED,
+  EAuthErrorCodes.GITLAB_NOT_CONFIGURED,
+  EAuthErrorCodes.GOOGLE_OAUTH_PROVIDER_ERROR,
+  EAuthErrorCodes.GITHUB_OAUTH_PROVIDER_ERROR,
+  EAuthErrorCodes.GITLAB_OAUTH_PROVIDER_ERROR,
+  EAuthErrorCodes.INVALID_PASSWORD_TOKEN,
+  EAuthErrorCodes.EXPIRED_PASSWORD_TOKEN,
+  EAuthErrorCodes.INCORRECT_OLD_PASSWORD,
+  EAuthErrorCodes.INVALID_NEW_PASSWORD,
+  EAuthErrorCodes.PASSWORD_ALREADY_SET,
+  EAuthErrorCodes.ADMIN_ALREADY_EXIST,
+  EAuthErrorCodes.REQUIRED_ADMIN_EMAIL_PASSWORD_FIRST_NAME,
+  EAuthErrorCodes.INVALID_ADMIN_EMAIL,
+  EAuthErrorCodes.INVALID_ADMIN_PASSWORD,
+  EAuthErrorCodes.REQUIRED_ADMIN_EMAIL_PASSWORD,
+  EAuthErrorCodes.ADMIN_AUTHENTICATION_FAILED,
+  EAuthErrorCodes.ADMIN_USER_ALREADY_EXIST,
+  EAuthErrorCodes.ADMIN_USER_DOES_NOT_EXIST,
+  EAuthErrorCodes.BOT_USER_LOGIN_FORBIDDEN,
+  EAuthErrorCodes.USER_ACCOUNT_DEACTIVATED,
+]);
+const knownErrorCodes: ReadonlySet<string> = new Set(Object.values(EAuthErrorCodes));
+function isAuthErrorCode(value: unknown): value is EAuthErrorCodes {
+  return typeof value === "string" && knownErrorCodes.has(value);
+}
 
-  if (bannerAlertErrorCodes.includes(errorCode))
+export function createAuthErrorHandler(
+  overrides: Partial<typeof errorCodeMessages> = {},
+  allowedCodes: ReadonlySet<EAuthErrorCodes> = bannerAlertErrorCodes
+) {
+  return (errorCode: unknown, email?: string): TAuthErrorInfo | undefined => {
+    if (!isAuthErrorCode(errorCode) || !allowedCodes.has(errorCode)) return undefined;
+    const error = overrides[errorCode] ?? errorCodeMessages[errorCode];
     return {
       type: EErrorAlertType.BANNER_ALERT,
       code: errorCode,
-      title: errorCodeMessages[errorCode]?.title || "Error",
-      message: errorCodeMessages[errorCode]?.message(email) || "Something went wrong. Please try again.",
+      title: error.title || "Error",
+      message: error.message(email) || "Something went wrong. Please try again.",
     };
+  };
+}
 
-  return undefined;
-};
+export const authErrorHandler = createAuthErrorHandler();

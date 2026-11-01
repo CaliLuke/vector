@@ -98,8 +98,8 @@ export const insertTableCommand = (editor: Editor, range?: Range) => {
     const selection = window.getSelection();
     if (selection) {
       if (selection.rangeCount !== 0) {
-        const range = selection.getRangeAt(0);
-        if (findTableAncestor(range.startContainer)) {
+        const selectionRange = selection.getRangeAt(0);
+        if (findTableAncestor(selectionRange.startContainer)) {
           return;
         }
       }
@@ -194,7 +194,7 @@ export const insertCallout = (editor: Editor, range?: Range) => {
 
 export const openEmojiPicker = (editor: Editor, range?: Range) => {
   if (range) editor.chain().focus().deleteRange(range).run();
-  const emojiStorage = editor.storage.emoji as ExtendedEmojiStorage;
+  const emojiStorage: Partial<ExtendedEmojiStorage> = editor.storage.emoji;
   emojiStorage.forceOpen = true;
   editor.chain().focus().insertContent(":").run();
 };

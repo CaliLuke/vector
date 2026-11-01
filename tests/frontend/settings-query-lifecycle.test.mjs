@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { QueryClient, MutationObserver } from "@tanstack/react-query";
@@ -27,11 +28,11 @@ function publishingScope(workspaceSlug) {
     accountId: "settings-user",
     sessionGeneration: 0,
     workspaceSlug,
-    workspaceRole: 20,
+    workspaceRole: ContractEnums.EUserPermissions.ADMIN,
     membershipRevision: "2026-10-24T00:00:00Z",
     projectRoles: [["project", 20]],
     projectId: "project",
-    projectRole: 20,
+    projectRole: ContractEnums.EUserPermissions.ADMIN,
   };
 }
 async function seedPublishingAccess(client, workspaceSlug) {
@@ -39,7 +40,7 @@ async function seedPublishingAccess(client, workspaceSlug) {
   await seedPermissionQueries(client, {
     userId: "settings-user",
     workspaceSlug,
-    workspaceRole: 20,
+    workspaceRole: ContractEnums.EUserPermissions.ADMIN,
     projectRoles: { project: 20 },
   });
 }

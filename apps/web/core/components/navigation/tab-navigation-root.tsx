@@ -10,7 +10,6 @@ import React, { useEffect } from "react";
 import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { TabNavigationList, TabNavigationItem } from "@plane/propel/tab-navigation";
-import type { EUserProjectRoles } from "@plane/types";
 // hooks
 import { useWorkspaceProjects } from "@/hooks/use-projects";
 import { useWorkItemByIdentifier } from "@/hooks/use-work-item-detail";
@@ -34,7 +33,7 @@ export type TNavigationItem = {
   name: string;
   href: string;
   icon: React.ElementType;
-  access: EUserPermissions[] | EUserProjectRoles[];
+  access: EUserPermissions[];
   shouldRender: boolean;
   sortOrder: number;
   i18n_key: string;
@@ -171,7 +170,7 @@ export const TabNavigationRoot = function TabNavigationRoot(props: TTabNavigatio
               project={project}
               isAdmin={isAdmin}
               isAuthorized={isAuthorized}
-              onCopyText={handleCopyText}
+              onCopyText={() => void handleCopyText()}
               onLeaveProject={handleLeaveProject}
               onPublishModal={() => handlePublishModal(true)}
             />

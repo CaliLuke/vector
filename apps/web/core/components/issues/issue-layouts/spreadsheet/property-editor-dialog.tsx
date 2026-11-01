@@ -1,3 +1,4 @@
+import * as ContractEnums from "@plane/types";
 import { useState } from "react";
 import { captureProjectAccessScope } from "@/queries/project-access-scope";
 import { useQueryClient } from "@tanstack/react-query";
@@ -25,7 +26,11 @@ export function PropertyEditorDialog({
     scope: PublishedItemEditScope;
     access: ReturnType<typeof captureProjectAccessScope>;
   }>();
-  if (!opened && access.allowed && access.permissions.can([15, 20])) {
+  if (
+    !opened &&
+    access.allowed &&
+    access.permissions.can([ContractEnums.EUserPermissions.MEMBER, ContractEnums.EUserPermissions.ADMIN])
+  ) {
     const scope = { ...access.scope, workspaceSlug, projectId, issueId };
     setOpened({ scope, access: captureProjectAccessScope(client, scope) });
   }

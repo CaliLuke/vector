@@ -67,7 +67,7 @@ export function DeletePageModal(props: TConfirmPageDeletionProps) {
   return (
     <AlertModalCore
       handleClose={handleClose}
-      handleSubmit={handleDelete}
+      handleSubmit={() => void handleDelete()}
       isSubmitting={remove.isPending}
       isOpen={isOpen}
       title="Delete page"

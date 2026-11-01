@@ -33,20 +33,20 @@ import type { TCommandExtraProps, TEditorCommands, TEditorFontStyle } from "@/ty
 
 export type TEditorTypes = "lite" | "document" | "sticky";
 
-// Utility type to enforce the necessary extra props or make extraProps optional
 export type ExtraPropsForCommand<T extends TEditorCommands> = T extends keyof TCommandExtraProps
   ? TCommandExtraProps[T]
-  : object; // Default to empty object for commands without extra props
+  : object;
 
-export type ToolbarMenuItem<T extends TEditorCommands = TEditorCommands> = {
-  itemKey: T;
-  renderKey: string;
-  name: string;
-  icon: LucideIcon;
-  shortcut?: string[];
-  editors: TEditorTypes[];
-  extraProps?: ExtraPropsForCommand<T>;
-};
+export type ToolbarMenuItem<T extends TEditorCommands = TEditorCommands> = T extends TEditorCommands
+  ? {
+      itemKey: T;
+      renderKey: string;
+      name: string;
+      icon: LucideIcon;
+      shortcut?: string[];
+      editors: TEditorTypes[];
+    } & (T extends keyof TCommandExtraProps ? { extraProps: ExtraPropsForCommand<T> } : { extraProps?: never })
+  : never;
 
 export const TYPOGRAPHY_ITEMS: ToolbarMenuItem<"text" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6">[] = [
   { itemKey: "text", renderKey: "text", name: "Text", icon: CaseSensitive, editors: ["document"] },
@@ -163,7 +163,14 @@ export const USER_ACTION_ITEMS: ToolbarMenuItem<"quote" | "code">[] = [
 
 export const COMPLEX_ITEMS: ToolbarMenuItem<"table" | "image">[] = [
   { itemKey: "table", renderKey: "table", name: "Table", icon: Table, editors: ["document"] },
-  { itemKey: "image", renderKey: "image", name: "Image", icon: Image, editors: ["lite", "document"] },
+  {
+    itemKey: "image",
+    renderKey: "image",
+    name: "Image",
+    icon: Image,
+    editors: ["lite", "document"],
+    extraProps: { savedSelection: null },
+  },
 ];
 
 export const IMAGE_ITEM = COMPLEX_ITEMS.find((item): item is ToolbarMenuItem<"image"> => item.itemKey === "image")!;

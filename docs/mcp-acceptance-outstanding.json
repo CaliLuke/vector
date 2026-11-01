@@ -1,0 +1,522 @@
+{
+  "version": 1,
+  "source": "docs/mcp-parity.md",
+  "scope": "Rows that still name remaining proof. This is a projection of the tracker, not a fresh acceptance audit. Rows marked Contract verified or with no remaining proof are omitted.",
+  "actionCount": 83,
+  "toolGroupCount": 11,
+  "readCount": 29,
+  "mutationCount": 54,
+  "groups": {
+    "collection": 13,
+    "initiative": 10,
+    "intake": 5,
+    "page": 10,
+    "release": 9,
+    "release_label": 6,
+    "release_tag": 5,
+    "workitem": 12,
+    "workitem_comment": 3,
+    "workitem_link": 3,
+    "workitem_relation": 7
+  },
+  "actions": [
+    {
+      "operation": "initiative.list",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined scope, feature/governance, SDK, receipt, revision and effect checks"
+    },
+    {
+      "operation": "initiative.retrieve",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined scope, feature/governance, SDK, receipt, revision and effect checks"
+    },
+    {
+      "operation": "initiative.create",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined scope, feature/governance, SDK, receipt, revision and effect checks"
+    },
+    {
+      "operation": "initiative.update",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined scope, feature/governance, SDK, receipt, revision and effect checks"
+    },
+    {
+      "operation": "initiative.delete",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined scope, feature/governance, SDK, receipt, revision and effect checks"
+    },
+    {
+      "operation": "initiative.list_projects",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined scope, feature/governance, SDK, receipt, revision and effect checks"
+    },
+    {
+      "operation": "initiative.add_projects",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined scope, feature/governance, SDK, receipt, revision and effect checks"
+    },
+    {
+      "operation": "initiative.remove_projects",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined scope, feature/governance, SDK, receipt, revision and effect checks"
+    },
+    {
+      "operation": "initiative.list_workitems",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined scope, feature/governance, SDK, receipt, revision and effect checks"
+    },
+    {
+      "operation": "initiative.manage_workitems",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined scope, feature/governance, SDK, receipt, revision and effect checks"
+    },
+    {
+      "operation": "intake.list",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined queue, triage, visibility, revision and effects checks"
+    },
+    {
+      "operation": "intake.retrieve",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined queue, triage, visibility, revision and effects checks"
+    },
+    {
+      "operation": "intake.create",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined queue, triage, visibility, revision and effects checks"
+    },
+    {
+      "operation": "intake.update",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined queue, triage, visibility, revision and effects checks"
+    },
+    {
+      "operation": "intake.delete",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined queue, triage, visibility, revision and effects checks"
+    },
+    {
+      "operation": "page.list",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "page.retrieve",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "page.create",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "page.update",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "page.archive",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "page.delete",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "page.set_collection",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "page.list_workitem_pages",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "page.attach_to_workitem",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "page.detach_from_workitem",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "release.list",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release.retrieve",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release.create",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release.update",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release.delete",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release.get_changelog",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release.update_changelog",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release.list_workitems",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release.manage_workitems",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release_label.list",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release_label.create",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release_label.update",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release_label.delete",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release_label.attach",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release_label.detach",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release_tag.list",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release_tag.retrieve",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release_tag.create",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release_tag.update",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "release_tag.delete",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "workitem.list",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined query, projection, scope and protocol checks"
+    },
+    {
+      "operation": "workitem.list_archived",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined query, projection, scope and protocol checks"
+    },
+    {
+      "operation": "workitem.retrieve",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined query, projection, scope and protocol checks"
+    },
+    {
+      "operation": "workitem.retrieve_by_identifier",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined query, projection, scope and protocol checks"
+    },
+    {
+      "operation": "workitem.search",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined query, projection, scope and protocol checks"
+    },
+    {
+      "operation": "workitem.count",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined catalogue, ownership, association, counts, revision and effects checks"
+    },
+    {
+      "operation": "workitem.create",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined regression, authorization, receipt and native effect checks"
+    },
+    {
+      "operation": "workitem.update",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined regression, authorization, receipt and native effect checks"
+    },
+    {
+      "operation": "workitem.delete",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined regression, authorization, receipt and native effect checks"
+    },
+    {
+      "operation": "workitem.archive",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined regression, authorization, receipt and native effect checks"
+    },
+    {
+      "operation": "workitem.manage_assignee",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined regression, authorization, receipt and native effect checks"
+    },
+    {
+      "operation": "workitem.manage_label",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined regression, authorization, receipt and native effect checks"
+    },
+    {
+      "operation": "workitem_comment.create",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined mention, authorization, receipt and delivery checks"
+    },
+    {
+      "operation": "workitem_comment.update",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined mention, authorization, receipt and delivery checks"
+    },
+    {
+      "operation": "workitem_comment.delete",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined mention, authorization, receipt and delivery checks"
+    },
+    {
+      "operation": "workitem_link.create",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined regression, authorization, receipt and effect checks"
+    },
+    {
+      "operation": "workitem_link.update",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined regression, authorization, receipt and effect checks"
+    },
+    {
+      "operation": "workitem_link.delete",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined regression, authorization, receipt and effect checks"
+    },
+    {
+      "operation": "workitem_relation.list",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined direction, endpoint scope, definition, receipt and activity checks"
+    },
+    {
+      "operation": "workitem_relation.create",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined direction, endpoint scope, definition, receipt and activity checks"
+    },
+    {
+      "operation": "workitem_relation.delete",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined direction, endpoint scope, definition, receipt and activity checks"
+    },
+    {
+      "operation": "workitem_relation.list_definitions",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined direction, endpoint scope, definition, receipt and activity checks"
+    },
+    {
+      "operation": "workitem_relation.create_definition",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined direction, endpoint scope, definition, receipt and activity checks"
+    },
+    {
+      "operation": "workitem_relation.update_definition",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined direction, endpoint scope, definition, receipt and activity checks"
+    },
+    {
+      "operation": "workitem_relation.delete_definition",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined direction, endpoint scope, definition, receipt and activity checks"
+    },
+    {
+      "operation": "collection.list",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "collection.retrieve",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "collection.create",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "collection.update",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "collection.delete",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "collection.list_pages",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "collection.search_pages",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "collection.add_pages",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "collection.remove_page",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "collection.list_members",
+      "kind": "Read",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "collection.add_member",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "collection.update_member",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    },
+    {
+      "operation": "collection.remove_member",
+      "kind": "Mutation",
+      "recordedStatus": "Workflow verified",
+      "remainingProof": "Combined privacy, hierarchy, membership, receipt, revision and durable history checks"
+    }
+  ]
+}

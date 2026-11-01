@@ -31,6 +31,14 @@ describe("PDF editor color resolution", () => {
 });
 
 describe("PDF custom color marks", () => {
+  it("preserves a valid highlight color", () => {
+    expect(applyMarks([{ type: "highlight", attrs: { color: "#123abc" } }])).toEqual({ backgroundColor: "#123abc" });
+  });
+
+  it.each([undefined, "", 42, { invalid: true }])("uses the default highlight for invalid color %j", (color) => {
+    expect(applyMarks([{ type: "highlight", attrs: { color } }])).toEqual({ backgroundColor: "#e3d8fd" });
+  });
+
   it("combines text and background colors without changing the supplied style", () => {
     const base = { fontSize: 14, color: "#000000" };
     expect(

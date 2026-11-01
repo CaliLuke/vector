@@ -23,7 +23,7 @@ export function ProjectTypeDefault({
       <CustomSearchSelect
         value={value}
         disabled={disabled}
-        onChange={onChange}
+        onChange={(selection) => (selection !== null ? onChange(selection) : undefined)}
         customButtonAsChild
         customButton={
           <button

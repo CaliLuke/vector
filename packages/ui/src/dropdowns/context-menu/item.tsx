@@ -6,6 +6,7 @@
 
 import React, { useState, useRef, useContext } from "react";
 import { usePopper } from "react-popper";
+import { NESTED_MENU_POSITIONING } from "../nested-menu-position";
 import { ChevronRightIcon } from "@plane/propel/icons";
 // helpers
 import { cn } from "../../utils";
@@ -31,32 +32,15 @@ export function ContextMenuItem(props: ContextMenuItemProps) {
   const nestedMenuRef = useRef<HTMLDivElement | null>(null);
 
   const contextMenuContext = useContext(ContextMenuContext);
-  const hasNestedItems = item.nestedMenuItems && item.nestedMenuItems.length > 0;
-  const renderedNestedItems = item.nestedMenuItems?.filter((nestedItem) => nestedItem.shouldRender !== false) || [];
+  const renderedNestedItems = React.useMemo(
+    () => item.nestedMenuItems?.filter((nestedItem) => nestedItem.shouldRender !== false) ?? [],
+    [item.nestedMenuItems]
+  );
+  const hasNestedItems = renderedNestedItems.length > 0;
 
   const { styles, attributes } = usePopper(referenceElement, popperElement, {
+    ...NESTED_MENU_POSITIONING,
     placement: "right-start",
-    strategy: "fixed",
-    modifiers: [
-      {
-        name: "offset",
-        options: {
-          offset: [0, 4],
-        },
-      },
-      {
-        name: "flip",
-        options: {
-          fallbackPlacements: ["left-start", "right-end", "left-end", "top-start", "bottom-start"],
-        },
-      },
-      {
-        name: "preventOverflow",
-        options: {
-          padding: 8,
-        },
-      },
-    ],
   });
 
   const closeNestedMenu = React.useCallback(() => {
@@ -69,6 +53,8 @@ export function ContextMenuItem(props: ContextMenuItemProps) {
     if (contextMenuContext && hasNestedItems) {
       return contextMenuContext.registerSubmenu(closeNestedMenu);
     }
+
+    return undefined;
   }, [contextMenuContext, hasNestedItems, closeNestedMenu]);
 
   const handleItemClick = (e: React.MouseEvent) => {
@@ -100,17 +86,21 @@ export function ContextMenuItem(props: ContextMenuItemProps) {
     }
   };
 
-  const handleNestedItemClick = (nestedItem: TContextMenuItem, e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+  const handleNestedItemClick = React.useCallback(
+    (nestedItem: TContextMenuItem, e?: React.MouseEvent) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
 
-    nestedItem.action();
-    if (nestedItem.closeOnClick !== false) {
-      handleClose(); // Close the entire context menu
-    }
-  };
+      if (nestedItem.disabled) return;
+      nestedItem.action();
+      if (nestedItem.closeOnClick !== false) {
+        handleClose(); // Close the entire context menu
+      }
+    },
+    [handleClose]
+  );
 
   // Handle keyboard navigation for nested items
   React.useEffect(() => {
@@ -128,7 +118,7 @@ export function ContextMenuItem(props: ContextMenuItemProps) {
       if (e.key === "Enter") {
         e.preventDefault();
         const nestedItem = renderedNestedItems[activeNestedIndex];
-        if (!nestedItem.disabled) {
+        if (nestedItem && !nestedItem.disabled) {
           handleNestedItemClick(nestedItem);
         }
       }
@@ -148,7 +138,9 @@ export function ContextMenuItem(props: ContextMenuItemProps) {
         menuElement.removeEventListener("keydown", handleKeyDown);
       };
     }
-  }, [isNestedOpen, activeNestedIndex, renderedNestedItems, hasNestedItems, closeNestedMenu]);
+
+    return undefined;
+  }, [isNestedOpen, activeNestedIndex, renderedNestedItems, hasNestedItems, closeNestedMenu, handleNestedItemClick]);
 
   if (item.shouldRender === false) return null;
 

@@ -1,3 +1,5 @@
+import type { TGanttSidebarProps } from "../types";
+import type { TGanttBlock } from "../../state";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -5,27 +7,23 @@
  */
 
 // ui
-import type { IBlockUpdateData } from "@plane/types";
+import type { IModule } from "@plane/types";
 // components
 // hooks
-import { useGanttChartState } from "../../contexts/chart-state";
 import { GanttDnDHOC } from "../gantt-dnd-HOC";
 import { handleOrderChange } from "../utils";
 import { ModulesSidebarBlock } from "./block";
 import { GanttSidebarLoading } from "../common";
 // types
 
-type Props = {
-  title: string;
-  blockUpdateHandler: (block: any, payload: IBlockUpdateData) => void;
-  blockIds: string[];
-  enableReorder: boolean;
+type Props = TGanttSidebarProps & {
+  blocksById: Readonly<Record<string, TGanttBlock<IModule>>>;
 };
 
 export function ModuleGanttSidebar(props: Props) {
   const { blockUpdateHandler, blockIds, enableReorder } = props;
 
-  const { blocksById } = useGanttChartState();
+  const { blocksById } = props;
 
   const handleOnDrop = (
     draggingBlockId: string | undefined,
@@ -43,10 +41,10 @@ export function ModuleGanttSidebar(props: Props) {
             key={blockId}
             id={blockId}
             isLastChild={index === blockIds.length - 1}
-            isDragEnabled={enableReorder}
+            isDragEnabled={typeof enableReorder === "function" ? enableReorder(blockId) : enableReorder}
             onDrop={handleOnDrop}
           >
-            {(isDragging: boolean) => <ModulesSidebarBlock blockId={blockId} isDragging={isDragging} />}
+            {(isDragging: boolean) => <ModulesSidebarBlock block={blocksById[blockId]} isDragging={isDragging} />}
           </GanttDnDHOC>
         ))
       ) : (

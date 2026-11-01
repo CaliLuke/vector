@@ -9,7 +9,7 @@ import { useCurrentUserId } from "@/hooks/use-current-user";
 import { useIdentityGeneration } from "@/hooks/use-identity-generation";
 import { useQueryClient } from "@tanstack/react-query";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { EIssuesStoreType, TIssue, TIssueGroupByOptions, TIssueOrderByOptions } from "@plane/types";
+import type { TIssue, TIssueGroupByOptions, TIssueOrderByOptions } from "@plane/types";
 import type { IssueListGroupedIds } from "@/queries/issue-lists";
 import type { GroupDropLocation } from "@/components/issues/issue-layouts/utils";
 import { handleGroupDragDrop } from "@/components/issues/issue-layouts/utils";
@@ -22,20 +22,10 @@ import {
   isNativeDisplayOrder,
 } from "@/components/issues/issue-layouts/issue-display-ordering";
 
-type DNDStoreType =
-  | EIssuesStoreType.PROJECT
-  | EIssuesStoreType.MODULE
-  | EIssuesStoreType.CYCLE
-  | EIssuesStoreType.PROJECT_VIEW
-  | EIssuesStoreType.PROFILE
-  | EIssuesStoreType.ARCHIVED
-  | EIssuesStoreType.TEAM
-  | EIssuesStoreType.TEAM_VIEW
-  | EIssuesStoreType.EPIC
-  | EIssuesStoreType.TEAM_PROJECT_WORK_ITEMS;
+import type { NativeIssueStoreType } from "./use-issue-filter-preferences";
 
 export const useGroupIssuesDragNDrop = (
-  storeType: DNDStoreType,
+  storeType: NativeIssueStoreType,
   orderBy: TIssueOrderByOptions | undefined,
   groupBy: TIssueGroupByOptions | undefined,
   subGroupBy?: TIssueGroupByOptions,
@@ -109,8 +99,8 @@ export const useGroupIssuesDragNDrop = (
     const isCycleChanged = Object.keys(data).includes(cycleKey);
 
     if (isCycleChanged && workspaceSlug) {
-      if (data[cycleKey]) {
-        await addCycleToIssue(projectId, data[cycleKey]?.toString() ?? "", issueId).catch(showError);
+      if (data.cycle_id) {
+        await addCycleToIssue(projectId, data.cycle_id, issueId).catch(showError);
       } else {
         const cycleId = getIssueById(issueId)?.cycle_id;
         if (cycleId) await removeCycleFromIssue(projectId, cycleId, issueId).catch(showError);

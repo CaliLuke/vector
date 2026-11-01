@@ -48,7 +48,7 @@ export class RedisManager {
       return redisUrl;
     }
 
-    if (redisHost && redisPort && !Number.isNaN(Number(redisPort))) {
+    if (redisHost && redisPort && !Number.isNaN(redisPort)) {
       return `redis://${redisHost}:${redisPort}`;
     }
 

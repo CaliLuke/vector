@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { FloatingOverlay, FloatingPortal } from "@floating-ui/react";
+import { FloatingFocusManager, FloatingOverlay, FloatingPortal } from "@floating-ui/react";
 import type { UseInteractionsReturn, UseFloatingReturn } from "@floating-ui/react";
 
 type Props = {
@@ -29,7 +29,7 @@ export function FloatingMenuRoot(props: Props) {
     <>
       <div className={classNames?.buttonContainer}>
         <button
-          ref={refs.setReference}
+          ref={(node) => refs.setReference(node)}
           {...getReferenceProps()}
           type="button"
           className={classNames?.button}
@@ -50,16 +50,18 @@ export function FloatingMenuRoot(props: Props) {
             }}
             lockScroll
           />
-          <div
-            ref={refs.setFloating}
-            {...getFloatingProps()}
-            style={{
-              ...floatingStyles,
-              zIndex: 100,
-            }}
-          >
-            {children}
-          </div>
+          <FloatingFocusManager context={context} restoreFocus>
+            <div
+              ref={(node) => refs.setFloating(node)}
+              {...getFloatingProps()}
+              style={{
+                ...floatingStyles,
+                zIndex: 100,
+              }}
+            >
+              {children}
+            </div>
+          </FloatingFocusManager>
         </FloatingPortal>
       )}
     </>

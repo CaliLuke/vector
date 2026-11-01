@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
@@ -152,7 +153,14 @@ async function testParentStatistics(domain) {
     const observer = new QueryObserver(client, { ...options, staleTime: Infinity });
     const unsubscribe = observer.subscribe(() => {});
     t.after(unsubscribe);
-    const owner = currentIssueListMutationOwner(client, "acme", "p1", "issues", () => true, effects);
+    const owner = currentIssueListMutationOwner(
+      client,
+      "acme",
+      "p1",
+      ContractEnums.EIssueServiceType.ISSUES,
+      () => true,
+      effects
+    );
     assert.equal(owner.scope.projectId, access.projectId);
     const saving = new MutationObserver(client, issueListMutationOptions(client)).mutate({
       owner,

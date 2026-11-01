@@ -225,8 +225,14 @@ Optional file floors protect established contracts independently of the package 
 The baseline refresh command preserves those file floors.
 
 Frontend coverage checks each measured file and requires 80% coverage for new files in measured suites.
-`.quality/coverage-scope.json` records unmeasured workspaces and the limits of the Node frontend harness.
+`.quality/coverage-scope.json` records the source boundaries and test command for each measured workspace.
+The Node behavior suite enforces file floors across web, admin, space, and the shared packages.
 The shared UI icon registry has a 100% floor for lines, statements, functions, and branches.
+
+Live's Redis integration fixture binds its disposable container to `127.0.0.1` by default.
+For a Docker VM reached over its private network address, set `LIVE_TEST_REDIS_BIND_HOST`
+to that address alongside `DOCKER_HOST`. The fixture uses the published address for
+readiness checks and connections, and removes the container after the suite.
 
 The work-item type tests, full-schema MCP workflows, and MCP identity tests migrate
 disposable templates per package and clone a separate database for each test. Test data and
@@ -291,8 +297,27 @@ Workers publish cache entries atomically under ignored `node_modules/.cache` dir
 These caches preserve worker isolation and do not cache test results.
 Node's compilation cache is scoped to behavior tests, because it can reduce V8 coverage precision.
 Coverage suites use separate commands without that cache setting.
+`pnpm test:frontend:coverage` runs the same two behavior shards with exact transform
+capture and build source maps. It merges worker coverage by executed code, maps
+statements and branches back to source, and includes unloaded source files at zero.
+It rejects missing captures and stale build maps. Rebuild shared packages before
+running it after a source change. Generated reports live in `coverage/frontend/`.
+
+Node's native source-mapped test coverage can mark an unexecuted return as covered
+([nodejs/node#67099](https://github.com/nodejs/node/issues/67099)). The frontend
+coverage command uses AST-based attribution instead. Remove this adapter only when
+native coverage passes the source-attribution fixtures, including skipped returns,
+type-only declarations, unloaded files, and merged worker/build output.
 
 ### Dependency limitations
+
+`@headlessui/react@2.2.10` drops React 19 callback-ref cleanup functions when
+forwarding `Combobox.Button` refs. `CustomSelect` uses Floating UI's `useMergeRefs`
+to run those cleanups when Headless UI clears the ref. A standalone reproduction
+is recorded in [Headless UI #3911](https://github.com/tailwindlabs/headlessui/issues/3911).
+Remove this compatibility requirement when an upstream release forwards cleanup
+functions and the callback-ref unmount regression passes without the adapter;
+the component still needs to merge its own trigger ref with the caller's ref.
 
 Router CLI 1.167.46 loads the CommonJS build of `@tanstack/router-core@1.171.39`,
 which emits a circular-access warning for `replaceRouteChunk`. Route generation

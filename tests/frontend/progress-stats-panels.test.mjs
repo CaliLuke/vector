@@ -26,13 +26,15 @@ registerHooks({
 await test("cycle and module progress tabs display matching projections and metric counts", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
-  const [{ CycleProgressStats }, { ModuleProgressStats }] = await Promise.all([
-    import("../../apps/web/core/components/cycles/analytics-sidebar/progress-stats.tsx"),
-    import("../../apps/web/core/components/modules/analytics-sidebar/progress-stats.tsx"),
-  ]);
+  const { ProgressStats } =
+    await import("../../apps/web/core/components/core/sidebar/progress-stats/progress-stats.tsx");
   const filters = { assignees: { value: [] }, labels: { value: [] }, stateGroups: { value: [] } };
   const commonProps = {
     groupedIssues: { Started: 1 },
+    isEditable: false,
+    noBackground: false,
+    roundedTab: false,
+    size: "sm",
     handleFiltersUpdate: () => {},
     selectedFilters: filters,
     totalIssuesCount: 4,
@@ -68,11 +70,10 @@ await test("cycle and module progress tabs display matching projections and metr
   };
   const cycleProps = () => ({
     ...commonProps,
-    cycleId: "cycle-1",
+    storageKey: "cycle-analytics-tab-cycle-1",
     distribution: cycleDistribution,
-    plotType: "burnup",
   });
-  await environment.render(React.createElement(CycleProgressStats, cycleProps()));
+  await environment.render(React.createElement(ProgressStats, cycleProps()));
   assert.match(activePanelText(), /Cycle Assignee/, "selected assignee tab should show assignee data");
   assert.match(activePanelText(), /60%/);
   assert.doesNotMatch(activePanelText(), /Cycle Label/);
@@ -81,7 +82,7 @@ await test("cycle and module progress tabs display matching projections and metr
     ...cycleDistribution,
     assignees: [{ ...cycleDistribution.assignees[0], display_name: "Updated Cycle Assignee" }],
   };
-  await environment.render(React.createElement(CycleProgressStats, cycleProps()));
+  await environment.render(React.createElement(ProgressStats, cycleProps()));
   assert.match(activePanelText(), /Updated Cycle Assignee/);
 
   await act(async () => environment.container.querySelectorAll('[role="tab"]')[0].click());
@@ -93,9 +94,9 @@ await test("cycle and module progress tabs display matching projections and metr
 
   await environment.render(null);
   await environment.render(
-    React.createElement(ModuleProgressStats, {
+    React.createElement(ProgressStats, {
       ...commonProps,
-      moduleId: "module-1",
+      storageKey: "module-analytics-tab-module-1",
       distribution: {
         assignees: [
           {
@@ -116,7 +117,6 @@ await test("cycle and module progress tabs display matching projections and metr
           },
         ],
       },
-      plotType: "points",
     })
   );
   assert.match(activePanelText(), /Module Assignee/);

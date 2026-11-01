@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import groupBy from "lodash-es/groupBy.js";
+
 // plane imports
 import { RANDOM_EMOJI_CODES } from "@plane/constants";
 
@@ -20,7 +22,6 @@ export const convertHexEmojiToDecimal = (emojiUnified: string): string => {
   if (!emojiUnified) return "";
 
   return emojiUnified
-    .toString()
     .split("-")
     .map((e) => parseInt(e, 16))
     .join("-");
@@ -40,9 +41,8 @@ export const emojiCodeToUnicode = (emoji: string): string => {
 
   // convert emoji code to unicode
   const uniCodeEmoji = emoji
-    .toString()
     .split("-")
-    .map((emoji) => parseInt(emoji, 10).toString(16))
+    .map((codePoint) => parseInt(codePoint, 10).toString(16))
     .join("-");
 
   return uniCodeEmoji;
@@ -50,36 +50,24 @@ export const emojiCodeToUnicode = (emoji: string): string => {
 
 /**
  * Groups reactions by a specified key
- * @param {any[]} reactions - Array of reaction objects
+ * @param reactions - Array of reaction objects
  * @param {string} key - Key to group reactions by
  * @returns {Object} Object with reactions grouped by the specified key
  */
-export const groupReactions: (reactions: any[], key: string) => { [key: string]: any[] } = (
-  reactions: any,
-  key: string
-) => {
+export const groupReactions = <T extends object>(reactions: T[], key: keyof T): Record<string, T[]> => {
   if (!Array.isArray(reactions)) {
     console.error("Expected an array of reactions, but got:", reactions);
     return {};
   }
 
-  const groupedReactions = reactions.reduce(
-    (acc: any, reaction: any) => {
-      if (!reaction || typeof reaction !== "object" || !Object.prototype.hasOwnProperty.call(reaction, key)) {
-        console.warn("Skipping undefined reaction or missing key:", reaction);
-        return acc; // Skip undefined reactions or those without the specified key
-      }
-
-      if (!acc[reaction[key]]) {
-        acc[reaction[key]] = [];
-      }
-      acc[reaction[key]].push(reaction);
-      return acc;
-    },
-    {} as { [key: string]: any[] }
-  );
-
-  return groupedReactions;
+  const validReactions = reactions.filter((reaction) => {
+    if (!reaction || typeof reaction !== "object" || !Object.hasOwn(reaction, key)) {
+      console.warn("Skipping undefined reaction or missing key:", reaction);
+      return false;
+    }
+    return true;
+  });
+  return groupBy(validReactions, (reaction) => reaction[key]);
 };
 
 /**

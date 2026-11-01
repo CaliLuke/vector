@@ -266,3 +266,125 @@ await test("archive confirmation cannot close a replacement item after the old w
   assert.equal(globalThis.deleteIssueModalPermissionTest.toasts.length, 0);
   assert.ok(fixture.environment.container.querySelector('[role="dialog"]'));
 });
+
+registerPermissionUiStubs("/kanban/drag-delete.tsx", {
+  "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter": `export const dropTargetForElements = config => {
+    globalThis.deleteIssueModalPermissionTest.dropTarget = config;
+    return () => { globalThis.deleteIssueModalPermissionTest.dropTarget = undefined; };
+  };`,
+});
+
+async function trashFixture(t, removeIssue, issues = [issue]) {
+  const fixture = await renderModal(t, { projectRoles: { "project-1": EUserProjectRoles.MEMBER } });
+  const { KanbanDragDelete } =
+    await import("../../apps/web/core/components/issues/issue-layouts/kanban/drag-delete.tsx");
+  const { KanbanDragStateProvider, useKanbanDragOwner } =
+    await import("../../apps/web/core/providers/issue-layout-ui-state.tsx");
+  function DragSession() {
+    const { beginDrag, endDrag } = useKanbanDragOwner();
+    return React.createElement(
+      "button",
+      { id: "drag-session", onMouseDown: beginDrag, onMouseUp: endDrag },
+      "Drag item"
+    );
+  }
+  await fixture.render(
+    React.createElement(
+      KanbanDragStateProvider,
+      null,
+      React.createElement(DragSession),
+      React.createElement(KanbanDragDelete, {
+        issuesById: Object.fromEntries(issues.map((row) => [row.id, row])),
+        removeIssue,
+        isEpic: false,
+      })
+    )
+  );
+  t.after(() =>
+    assert.equal(
+      globalThis.deleteIssueModalPermissionTest.dropTarget,
+      undefined,
+      "unmount releases the trash drop target"
+    )
+  );
+  return fixture;
+}
+async function dropInTrash(id) {
+  await act(async () =>
+    globalThis.deleteIssueModalPermissionTest.dropTarget.onDrop({
+      source: { data: { id } },
+      location: { initial: { dropTargets: [{ data: { type: "COLUMN", groupId: "group" } }] } },
+    })
+  );
+}
+
+await test("Kanban drag-delete keeps rejected work open for retry and never reports false success", async (t) => {
+  const writes = [];
+  let rejected = true;
+  const fixture = await trashFixture(t, async (...args) => {
+    writes.push(args);
+    if (rejected) throw new Error("delete offline");
+  });
+  await dropInTrash(42);
+  assert.equal(fixture.environment.container.querySelector('[role="dialog"]'), null);
+  await dropInTrash(issue.id);
+  await confirmDelete(fixture);
+  assert.deepEqual(writes, [["project-1", issue.id]]);
+  assert.ok(fixture.environment.container.querySelector('[role="dialog"]'));
+  assert.equal(fixture.environment.container.querySelector("#confirm-delete").disabled, false);
+  assert.deepEqual(
+    globalThis.deleteIssueModalPermissionTest.toasts.map((toast) => toast.type),
+    ["error"]
+  );
+  rejected = false;
+  await confirmDelete(fixture);
+  assert.equal(writes.length, 2);
+  assert.equal(fixture.environment.container.querySelector('[role="dialog"]'), null);
+  assert.deepEqual(
+    globalThis.deleteIssueModalPermissionTest.toasts.map((toast) => toast.type),
+    ["error", "success"]
+  );
+});
+
+await test("an accepted Kanban drag-delete cannot close a different item's confirmation", async (t) => {
+  const replacement = { ...issue, id: "issue-2", sequence_id: 13 };
+  const pending = Promise.withResolvers();
+  const writes = [];
+  const fixture = await trashFixture(
+    t,
+    async (_project, id) => {
+      writes.push(id);
+      if (id === issue.id) await pending.promise;
+    },
+    [issue, replacement]
+  );
+  await dropInTrash(issue.id);
+  await confirmDelete(fixture);
+  await dropInTrash(replacement.id);
+  await act(async () => pending.resolve());
+  assert.match(fixture.environment.container.querySelector('[role="dialog"]').textContent, /PRJ-13/);
+  assert.deepEqual(globalThis.deleteIssueModalPermissionTest.toasts, []);
+  await confirmDelete(fixture);
+  assert.deepEqual(writes, [issue.id, replacement.id]);
+  assert.equal(fixture.environment.container.querySelector('[role="dialog"]'), null);
+});
+
+await test("Kanban trash follows drag ownership, gives hover feedback and allows cancellation without deleting", async (t) => {
+  const fixture = await trashFixture(t, async () => assert.fail("cancelling must never delete"));
+  const target = globalThis.deleteIssueModalPermissionTest.dropTarget;
+  const surface = target.element.firstElementChild;
+  assert.deepEqual(target.getData(), { columnId: "issue-trash-box", groupId: "issue-trash-box", type: "DELETE" });
+  assert.ok(surface.classList.contains("opacity-0"));
+  const drag = fixture.environment.container.querySelector("#drag-session");
+  await act(async () => drag.dispatchEvent(new MouseEvent("mousedown", { bubbles: true })));
+  assert.ok(surface.classList.contains("opacity-100"));
+  await act(async () => target.onDragEnter());
+  assert.ok(surface.classList.contains("bg-danger-primary"));
+  await act(async () => target.onDragLeave());
+  assert.equal(surface.classList.contains("bg-danger-primary"), false);
+  await dropInTrash(issue.id);
+  await act(async () => fixture.environment.container.querySelector("#cancel-delete").click());
+  assert.equal(fixture.environment.container.querySelector('[role="dialog"]'), null);
+  await act(async () => drag.dispatchEvent(new MouseEvent("mouseup", { bubbles: true })));
+  assert.ok(surface.classList.contains("opacity-0"));
+});

@@ -13,7 +13,6 @@ import type {
   TInstanceWorkspaceConfigurationKeys,
   TCoreLoginMediums,
 } from "./";
-import type { TExtendedLoginMediums } from "./auth-ee";
 
 export interface IInstanceInfo {
   instance: IInstance;
@@ -101,7 +100,7 @@ export type IFormattedInstanceConfiguration = {
   [key in TInstanceConfigurationKeys]: string;
 };
 
-export type TLoginMediums = TCoreLoginMediums | TExtendedLoginMediums;
+export type TLoginMediums = TCoreLoginMediums;
 
 export interface IInstanceTelemetryExporter {
   status: "enabled" | "disabled" | "not_configured" | "invalid_configuration";

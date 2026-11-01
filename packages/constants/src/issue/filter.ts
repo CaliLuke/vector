@@ -311,17 +311,18 @@ export const SUB_WORK_ITEM_AVAILABLE_FILTERS_FOR_WORK_ITEM_PAGE: (keyof IIssueFi
   "target_date",
 ];
 
-export enum EActivityFilterType {
-  ACTIVITY = "ACTIVITY",
-  COMMENT = "COMMENT",
-  STATE = "STATE",
-  ASSIGNEE = "ASSIGNEE",
-  DEFAULT = "DEFAULT",
-}
+export const EActivityFilterType = {
+  ACTIVITY: "ACTIVITY",
+  COMMENT: "COMMENT",
+  STATE: "STATE",
+  ASSIGNEE: "ASSIGNEE",
+  DEFAULT: "DEFAULT",
+} as const;
+export type EActivityFilterType = (typeof EActivityFilterType)[keyof typeof EActivityFilterType];
 
 export type TActivityFilters = EActivityFilterType;
 
-export type TActivityFilterOptionsKey = Exclude<TActivityFilters, EActivityFilterType.DEFAULT>;
+export type TActivityFilterOptionsKey = Exclude<TActivityFilters, typeof EActivityFilterType.DEFAULT>;
 
 export const ACTIVITY_FILTER_TYPE_OPTIONS: Record<TActivityFilterOptionsKey, { labelTranslationKey: string }> = {
   [EActivityFilterType.ACTIVITY]: {
@@ -355,11 +356,12 @@ export const defaultActivityFilters: TActivityFilters[] = [
 export const filterActivityOnSelectedFilters = (
   activity: TIssueActivityComment[],
   filters: TActivityFilters[]
-): TIssueActivityComment[] =>
-  activity.filter((activity) => {
-    if (activity.activity_type === EActivityFilterType.DEFAULT) return true;
-    return filters.includes(activity.activity_type as TActivityFilters);
-  });
+): TIssueActivityComment[] => {
+  const selected = new Set<string>(filters);
+  return activity.filter(
+    (event) => event.activity_type === EActivityFilterType.DEFAULT || selected.has(event.activity_type)
+  );
+};
 
 export const ENABLE_ISSUE_DEPENDENCIES = false;
 

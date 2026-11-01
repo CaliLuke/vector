@@ -16,8 +16,8 @@ import { useCallback } from "react";
 // plane constants
 import { EUserPermissions } from "@plane/constants";
 // types
-import type { GroupByColumnTypes, TIssue } from "@plane/types";
-import { EIssueLayoutTypes, EIssuesStoreType } from "@plane/types";
+import type { TIssue } from "@plane/types";
+import { EIssueLayoutTypes } from "@plane/types";
 // hooks
 import { useProjectPermissions } from "@/hooks/use-permissions";
 import { useIssueLayoutActions } from "@/hooks/use-issue-layout-actions";
@@ -28,23 +28,12 @@ import { useGroupIssuesDragNDrop } from "@/hooks/use-group-dragndrop";
 import { useIssueListType } from "@/hooks/use-issue-list-type";
 
 import { projectGroupedIssueIdsByDisplayOrder } from "../issue-display-ordering";
-import { isSubscribedProfileRequest } from "../utils";
+import { issueLayoutCapabilities, isIssuePropertyEditable } from "../utils";
 // components
 import { IssueLayoutHOC } from "../issue-layout-HOC";
 import { List } from "./default";
 // types
 import type { IQuickActionProps } from "./list-view-types";
-
-type ListStoreType =
-  | EIssuesStoreType.PROJECT
-  | EIssuesStoreType.MODULE
-  | EIssuesStoreType.CYCLE
-  | EIssuesStoreType.PROJECT_VIEW
-  | EIssuesStoreType.PROFILE
-  | EIssuesStoreType.ARCHIVED
-  | EIssuesStoreType.TEAM
-  | EIssuesStoreType.TEAM_VIEW
-  | EIssuesStoreType.EPIC;
 
 interface IBaseListRoot {
   QuickActions: FC<IQuickActionProps>;
@@ -63,14 +52,14 @@ export function BaseListRoot(props: IBaseListRoot) {
     isEpic = false,
   } = props;
   // router
-  const storeType = useIssueListType() as ListStoreType;
+  const storeType = useIssueListType();
   const { issueFilters: displayPreferences, requestInput, actions } = useIssueLayoutActions(storeType);
   const { quickAddIssue, updateIssue, updateFilters } = actions;
   const displayFilters = displayPreferences?.displayFilters;
   const displayProperties = displayPreferences?.displayProperties;
   const orderBy = displayFilters?.order_by || undefined;
 
-  const group_by = (displayFilters?.group_by || null) as GroupByColumnTypes | null;
+  const group_by = displayFilters?.group_by || null;
   const showEmptyGroup = displayFilters?.show_empty_groups ?? false;
 
   const { workspaceSlug, projectId } = useParams({ strict: false });
@@ -103,20 +92,15 @@ export function BaseListRoot(props: IBaseListRoot) {
   );
   // auth
   const isEditingAllowed = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
-  const enableQuickAdd = storeType !== EIssuesStoreType.PROFILE && storeType !== EIssuesStoreType.ARCHIVED;
-  const isSubscribedProfile = isSubscribedProfileRequest(requestInput);
-  const enableIssueCreation = storeType !== EIssuesStoreType.ARCHIVED && !isSubscribedProfile;
-  const enableInlineEditing = storeType !== EIssuesStoreType.ARCHIVED;
+  const { enableQuickAdd, enableIssueCreation, enableInlineEditing } = issueLayoutCapabilities(
+    "list",
+    storeType,
+    requestInput
+  );
 
   const canEditProperties = useCallback(
-    (issueProjectId: string | undefined) => {
-      const isEditingAllowedBasedOnProject =
-        canEditPropertiesBasedOnProject && issueProjectId
-          ? canEditPropertiesBasedOnProject(issueProjectId)
-          : isEditingAllowed;
-
-      return !!enableInlineEditing && isEditingAllowedBasedOnProject;
-    },
+    (targetProjectId: string | undefined) =>
+      isIssuePropertyEditable(targetProjectId, canEditPropertiesBasedOnProject, enableInlineEditing, isEditingAllowed),
     [canEditPropertiesBasedOnProject, enableInlineEditing, isEditingAllowed]
   );
 
@@ -163,7 +147,7 @@ export function BaseListRoot(props: IBaseListRoot) {
             loadMoreIssues={loadMoreIssues}
             showEmptyGroup={showEmptyGroup}
             quickAddCallback={quickAddIssue}
-            enableIssueQuickAdd={!!enableQuickAdd}
+            enableIssueQuickAdd={enableQuickAdd}
             canEditProperties={canEditProperties}
             disableIssueCreation={!enableIssueCreation || !isEditingAllowed}
             addIssuesToView={addIssuesToView}

@@ -22,7 +22,7 @@ export function PageLoader() {
       <div>
         {range(10).map((i) => (
           <Loader key={i} className="relative flex items-center gap-2 border-b border-subtle p-3 py-4">
-            <Loader.Item width={`${250 + 10 * Math.floor(Math.random() * 10)}px`} height="22px" />
+            <Loader.Item width={`${250 + 10 * ((i * 7) % 10)}px`} height="22px" />
             <div className="relative ml-auto flex items-center gap-2">
               <Loader.Item width="60px" height="22px" />
               <Loader.Item width="22px" height="22px" />

@@ -13,7 +13,6 @@ import { cn } from "@plane/utils/common";
 // components
 import { WithDisplayPropertiesHOC } from "@/components/issues/issue-layouts/with-display-properties-HOC";
 // helpers
-import { getDate } from "@/helpers/date-time.helper";
 //// hooks
 
 import type { IPublicIssue } from "@plane/types";
@@ -35,12 +34,6 @@ export const IssueProperties = function IssueProperties(props: IIssueProperties)
   const { issue, displayProperties, className } = props;
 
   if (!displayProperties || !issue.project_id) return null;
-
-  const minDate = getDate(issue.start_date);
-  minDate?.setDate(minDate.getDate());
-
-  const maxDate = getDate(issue.target_date);
-  maxDate?.setDate(maxDate.getDate());
 
   return (
     <div className={className}>
@@ -69,23 +62,19 @@ export const IssueProperties = function IssueProperties(props: IIssueProperties)
       </WithDisplayPropertiesHOC>
 
       {/* start date */}
-      {issue?.start_date && (
+      {issue.start_date && (
         <WithDisplayPropertiesHOC displayProperties={displayProperties} displayPropertyKey="start_date">
           <div className="h-5">
-            <IssueBlockDate
-              due_date={issue?.start_date}
-              stateId={issue?.state_id ?? undefined}
-              shouldHighLight={false}
-            />
+            <IssueBlockDate due_date={issue.start_date} stateId={issue.state_id ?? undefined} shouldHighLight={false} />
           </div>
         </WithDisplayPropertiesHOC>
       )}
 
       {/* target/due date */}
-      {issue?.target_date && (
+      {issue.target_date && (
         <WithDisplayPropertiesHOC displayProperties={displayProperties} displayPropertyKey="due_date">
           <div className="h-5">
-            <IssueBlockDate due_date={issue?.target_date} stateId={issue?.state_id ?? undefined} />
+            <IssueBlockDate due_date={issue.target_date} stateId={issue.state_id ?? undefined} />
           </div>
         </WithDisplayPropertiesHOC>
       )}
@@ -114,22 +103,6 @@ export const IssueProperties = function IssueProperties(props: IIssueProperties)
           </div>
         </WithDisplayPropertiesHOC>
       )}
-
-      {/* estimates */}
-      {/* {projectId && areEstimateEnabledByProjectId(projectId?.toString()) && (
-        <WithDisplayPropertiesHOC displayProperties={displayProperties} displayPropertyKey="estimate">
-          <div className="h-5">
-            <EstimateDropdown
-              value={issue.estimate_point ?? undefined}
-              onChange={handleEstimate}
-              projectId={issue.project_id}
-              disabled={isReadOnly}
-              buttonVariant="border-with-text"
-              showTooltip
-            />
-          </div>
-        </WithDisplayPropertiesHOC>
-      )} */}
 
       {/* extra render properties */}
       {/* sub-issues */}

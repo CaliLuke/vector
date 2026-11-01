@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "files": {
+    "src/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/query-client.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/record-collection.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 90
+    },
+    "src/use-clipboard-copy.ts": {
+      "lines": 100,
+      "statements": 96.77,
+      "functions": 100,
+      "branches": 88.88
+    },
+    "src/use-hash-scroll.ts": {
+      "lines": 60.97,
+      "statements": 64.58,
+      "functions": 60,
+      "branches": 43.75
+    },
+    "src/use-local-storage.tsx": {
+      "lines": 100,
+      "statements": 94.64,
+      "functions": 100,
+      "branches": 83.33
+    },
+    "src/use-navigation-progress.ts": {
+      "lines": 92.3,
+      "statements": 93.1,
+      "functions": 100,
+      "branches": 75
+    },
+    "src/use-outside-click-detector.tsx": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/use-platform-os.tsx": {
+      "lines": 83.33,
+      "statements": 86.95,
+      "functions": 100,
+      "branches": 50
+    },
+    "src/use-record-collection.ts": {
+      "lines": 95.12,
+      "statements": 96,
+      "functions": 94.73,
+      "branches": 93.22
+    },
+    "src/use-resend-code-form.ts": {
+      "lines": 100,
+      "statements": 84.21,
+      "functions": 66.66,
+      "branches": 75
+    }
+  }
+}

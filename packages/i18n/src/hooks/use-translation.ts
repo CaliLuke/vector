@@ -6,7 +6,7 @@
 
 import { useCallback } from "react";
 import { useTranslation as useI18nextTranslation } from "react-i18next";
-import { SUPPORTED_LANGUAGES, LANGUAGE_STORAGE_KEY } from "../constants/language";
+import { SUPPORTED_LANGUAGES, FALLBACK_LANGUAGE, LANGUAGE_STORAGE_KEY } from "../constants/language";
 import type { TLanguage, ILanguageOption } from "../types";
 
 export type TTranslationStore = {
@@ -61,7 +61,10 @@ export function useTranslation(): TTranslationStore {
   return {
     t: (key: string, params?: Record<string, unknown>) =>
       coerceToString(key, params === undefined ? t(key) : t(key, params)),
-    currentLocale: i18n.language as TLanguage,
+    currentLocale:
+      SUPPORTED_LANGUAGES.find((language) => language.value === i18n.language)?.value ??
+      SUPPORTED_LANGUAGES.find((language) => language.value === i18n.resolvedLanguage)?.value ??
+      FALLBACK_LANGUAGE,
     changeLanguage,
     languages: SUPPORTED_LANGUAGES,
   };

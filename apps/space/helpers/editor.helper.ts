@@ -56,7 +56,7 @@ export const getEditorFileHandlers = (args: TArgs): TFileHandler => {
         await sitesFileService.deleteNewAsset(getEditorAssetSrc(anchor, src) ?? "");
       }
     },
-    cancel: sitesFileService.cancelUpload,
+    cancel: () => sitesFileService.cancelUpload(),
     restore: async (src: string) => {
       if (src?.startsWith("http")) {
         await sitesFileService.restoreOldEditorAsset(workspaceId, src);

@@ -5,6 +5,7 @@
  */
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { fn } from "storybook/test";
 import { Home, Settings, Briefcase, GridIcon, Layers2, FileIcon } from "lucide-react";
 import * as React from "react";
 import { ContrastIcon, EpicIcon, LayersIcon } from "@plane/propel/icons";
@@ -101,19 +102,19 @@ export const WithNavigationDropdown: Story = {
                 key: "project-1",
                 title: "Project Alpha",
 
-                action: () => console.log("Project Alpha selected"),
+                action: fn().mockName("Project Alpha selected"),
               },
               {
                 key: "project-2",
                 title: "Project Beta",
 
-                action: () => console.log("Project Beta selected"),
+                action: fn().mockName("Project Beta selected"),
               },
               {
                 key: "project-3",
                 title: "Project Gamma",
 
-                action: () => console.log("Project Gamma selected"),
+                action: fn().mockName("Project Gamma selected"),
               },
             ]}
           />
@@ -143,7 +144,7 @@ export const WithNavigationDropdownAndIcons: Story = {
                 title: "Project Alpha",
                 icon: Briefcase,
 
-                action: () => console.log("Project Alpha selected"),
+                action: fn().mockName("Project Alpha selected"),
               },
               {
                 key: "project-2",
@@ -151,14 +152,14 @@ export const WithNavigationDropdownAndIcons: Story = {
                 icon: Briefcase,
 
                 // disabled: true,
-                action: () => console.log("Project Beta selected"),
+                action: fn().mockName("Project Beta selected"),
               },
               {
                 key: "project-3",
                 title: "Project Gamma",
                 icon: Briefcase,
 
-                action: () => console.log("Project Gamma selected"),
+                action: fn().mockName("Project Gamma selected"),
               },
             ]}
           />
@@ -176,7 +177,7 @@ export const WithNavigationDropdownAndIcons: Story = {
                 title: "Epics",
                 icon: EpicIcon,
 
-                action: () => console.log("Feature Alpha selected"),
+                action: fn().mockName("Feature Alpha selected"),
               },
               {
                 key: "feature-2",
@@ -184,35 +185,35 @@ export const WithNavigationDropdownAndIcons: Story = {
                 icon: LayersIcon,
 
                 // disabled: true,
-                action: () => console.log("Feature Beta selected"),
+                action: fn().mockName("Feature Beta selected"),
               },
               {
                 key: "feature-3",
                 title: "Cycles",
                 icon: ContrastIcon,
 
-                action: () => console.log("Feature Gamma selected"),
+                action: fn().mockName("Feature Gamma selected"),
               },
               {
                 key: "feature-3",
                 title: "Modules",
                 icon: GridIcon,
 
-                action: () => console.log("Feature Gamma selected"),
+                action: fn().mockName("Feature Gamma selected"),
               },
               {
                 key: "feature-3",
                 title: "Views",
                 icon: Layers2,
 
-                action: () => console.log("Feature Gamma selected"),
+                action: fn().mockName("Feature Gamma selected"),
               },
               {
                 key: "feature-3",
                 title: "Pages",
                 icon: FileIcon,
 
-                action: () => console.log("Feature Gamma selected"),
+                action: fn().mockName("Feature Gamma selected"),
               },
             ]}
           />

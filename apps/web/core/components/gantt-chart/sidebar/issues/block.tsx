@@ -5,7 +5,7 @@
  */
 
 // plane imports
-import type { IGanttBlock } from "@plane/types";
+import type { IGanttBlock, TIssue } from "@plane/types";
 import { Row } from "@plane/ui";
 import { cn } from "@plane/utils/common";
 // components
@@ -21,7 +21,7 @@ import { BLOCK_HEIGHT, GANTT_SELECT_GROUP } from "../../constants";
 import { GanttSidebarDuration } from "../common";
 
 type Props = {
-  block: IGanttBlock;
+  block: IGanttBlock<TIssue>;
   enableSelection: boolean;
   isDragging: boolean;
   selectionHelpers?: TSelectionHelper;
@@ -34,10 +34,10 @@ export const IssuesSidebarBlock = function IssuesSidebarBlock(props: Props) {
   const { activeBlockId, setActiveBlockId, viewData } = useGanttChartState();
   const { getIsIssuePeeked } = useIssueDetailUiState();
 
-  const isBlockComplete = !!block?.start_date && !!block?.target_date;
-  const duration = isBlockComplete ? daysFromGanttWidth(viewData, block?.position?.width) : undefined;
+  const isBlockComplete = !!block.start_date && !!block.target_date;
+  const duration = isBlockComplete ? daysFromGanttWidth(viewData, block.position?.width) : undefined;
 
-  if (!block?.data) return null;
+  if (!block.data) return null;
 
   const isIssueSelected = selectionHelpers?.getIsEntitySelected(block.id);
   const isIssueFocused = selectionHelpers?.getIsEntityActive(block.id);

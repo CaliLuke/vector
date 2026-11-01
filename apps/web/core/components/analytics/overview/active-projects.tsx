@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import range from "lodash-es/range.js";
 import { useQuery } from "@tanstack/react-query";
 // plane package imports
 import { useTranslation } from "@plane/i18n";
@@ -26,7 +27,7 @@ const ActiveProjects = function ActiveProjects() {
   const canRead = Boolean(scope.workspaceRole && scope.membershipRevision);
   return (
     <AnalyticsSectionWrapper
-      title={`${t("workspace_analytics.active_projects")}`}
+      title={t("workspace_analytics.active_projects")}
       subtitle={selectedDurationLabel}
       className="md:col-span-2"
     >
@@ -38,7 +39,7 @@ const ActiveProjects = function ActiveProjects() {
         ) : null}
         {canRead &&
           isProjectAnalyticsCountLoading &&
-          Array.from({ length: 5 }).map((_, index) => <Loader.Item key={index} height="40px" width="100%" />)}
+          range(5).map((slot) => <Loader.Item key={slot} height="40px" width="100%" />)}
         {canRead &&
           !isProjectAnalyticsCountLoading &&
           !projectAnalyticsCountQuery.isError &&

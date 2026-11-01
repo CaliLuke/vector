@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { ENotificationFilterType } from "@plane/types";
 import type { TUnreadNotificationsCount } from "@plane/types";
 
 export enum ENotificationTab {
@@ -11,11 +12,7 @@ export enum ENotificationTab {
   MENTIONS = "mentions",
 }
 
-export enum ENotificationFilterType {
-  CREATED = "created",
-  ASSIGNED = "assigned",
-  SUBSCRIBED = "subscribed",
-}
+export { ENotificationFilterType };
 
 export type TNotificationTab = ENotificationTab.ALL | ENotificationTab.MENTIONS;
 

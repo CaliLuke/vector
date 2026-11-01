@@ -29,6 +29,12 @@ import { AuthUniqueCodeForm } from "./unique-code";
 
 const authService = new SitesAuthService();
 
+// generating the unique code
+const generateEmailUniqueCode = async (recipient: string): Promise<void> => {
+  const payload = { email: recipient };
+  await authService.generateUniqueCode(payload);
+};
+
 const errorFlow: Partial<Record<EAuthenticationErrorCodes, { mode: EAuthModes; step: EAuthSteps }>> = {
   [EAuthenticationErrorCodes.AUTHENTICATION_FAILED_SIGN_IN]: { mode: EAuthModes.SIGN_IN, step: EAuthSteps.PASSWORD },
   [EAuthenticationErrorCodes.AUTHENTICATION_FAILED_SIGN_UP]: { mode: EAuthModes.SIGN_UP, step: EAuthSteps.PASSWORD },
@@ -46,7 +52,7 @@ const errorFlow: Partial<Record<EAuthenticationErrorCodes, { mode: EAuthModes; s
   },
 };
 function initialAuthState(errorCode: string) {
-  const error = authErrorHandler(errorCode as EAuthenticationErrorCodes);
+  const error = authErrorHandler(errorCode);
   const flow = error && errorFlow[error.code];
   return { error, mode: flow?.mode ?? EAuthModes.SIGN_UP, step: flow?.step ?? EAuthSteps.EMAIL };
 }
@@ -88,6 +94,19 @@ function AuthFlow({
   const oAuthActionText = authMode === EAuthModes.SIGN_UP ? "Sign up" : "Sign in";
   const { isOAuthEnabled, oAuthOptions } = useOAuthConfig(oAuthActionText);
 
+  const reportAuthenticationError = (error: unknown, recipient = email) => {
+    const code = error && typeof error === "object" && "error_code" in error ? error.error_code : undefined;
+    const failureInfo = authErrorHandler(typeof code === "number" ? String(code) : code, recipient);
+    setErrorInfo(
+      failureInfo ?? {
+        type: EErrorAlertType.BANNER_ALERT,
+        code: EAuthenticationErrorCodes.AUTHENTICATION_FAILED_SIGN_IN,
+        title: "Unable to continue",
+        message: "Please try again.",
+      }
+    );
+  };
+
   // submit handler- email verification
   const handleEmailVerification = async (data: IEmailCheckData) => {
     setEmail(data.email);
@@ -112,20 +131,7 @@ function AuthFlow({
         }
         return;
       })
-      .catch((error) => {
-        const errorhandler = authErrorHandler(error?.error_code?.toString(), data?.email || undefined);
-        if (errorhandler?.type) setErrorInfo(errorhandler);
-      });
-  };
-
-  // generating the unique code
-  const generateEmailUniqueCode = async (recipient: string): Promise<void> => {
-    const payload = { email: recipient };
-    return await authService.generateUniqueCode(payload).catch((error) => {
-      const errorhandler = authErrorHandler(error?.error_code.toString());
-      if (errorhandler?.type) setErrorInfo(errorhandler);
-      throw error;
-    });
+      .catch((error: unknown) => reportAuthenticationError(error, data.email));
   };
 
   return (
@@ -163,7 +169,7 @@ function AuthFlow({
               setAuthStep(EAuthSteps.EMAIL);
             }}
             handleAuthStep={(step: EAuthSteps) => {
-              if (step === EAuthSteps.UNIQUE_CODE) generateEmailUniqueCode(email);
+              if (step === EAuthSteps.UNIQUE_CODE) void generateEmailUniqueCode(email).catch(reportAuthenticationError);
               setAuthStep(step);
             }}
           />

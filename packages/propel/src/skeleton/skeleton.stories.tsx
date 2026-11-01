@@ -7,6 +7,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Skeleton } from "./index";
 
+const placeholderSlots = [0, 1, 2, 3, 4];
+
 const meta = {
   title: "Components/Skeleton",
   component: Skeleton,
@@ -49,8 +51,8 @@ export const List: Story = {
   render() {
     return (
       <Skeleton className="flex w-96 flex-col gap-3">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="flex gap-3">
+        {placeholderSlots.map((slot) => (
+          <div key={slot} className="flex gap-3">
             <Skeleton.Item height="40px" width="40px" className="rounded-full" />
             <div className="flex flex-1 flex-col gap-2">
               <Skeleton.Item height="16px" width="70%" />
@@ -72,8 +74,8 @@ export const Table: Story = {
           <Skeleton.Item height="20px" width="200px" />
           <Skeleton.Item height="20px" width="120px" />
         </div>
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="flex gap-4">
+        {placeholderSlots.map((slot) => (
+          <div key={slot} className="flex gap-4">
             <Skeleton.Item height="40px" width="150px" />
             <Skeleton.Item height="40px" width="200px" />
             <Skeleton.Item height="40px" width="120px" />
@@ -119,8 +121,8 @@ export const AvatarGroup: Story = {
   render() {
     return (
       <Skeleton className="flex -space-x-2">
-        {[...Array(4)].map((_, i) => (
-          <Skeleton.Item key={i} height="40px" width="40px" className="rounded-full border-2 border-white" />
+        {placeholderSlots.slice(0, 4).map((slot) => (
+          <Skeleton.Item key={slot} height="40px" width="40px" className="rounded-full border-2 border-white" />
         ))}
       </Skeleton>
     );

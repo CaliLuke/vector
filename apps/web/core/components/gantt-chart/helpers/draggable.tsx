@@ -12,13 +12,14 @@ import type { IGanttBlock } from "@plane/types";
 // helpers
 import { cn } from "@plane/utils/common";
 // components
-import { LeftResizable } from "./blockResizables/left-resizable";
-import { RightResizable } from "./blockResizables/right-resizable";
+import { GanttResizeHandle } from "./blockResizables/resize-handle";
 
 type Props = {
   block: IGanttBlock;
-  blockToRender: (data: any) => React.ReactNode;
-  handleBlockDrag: (e: React.MouseEvent<HTMLDivElement, MouseEvent>, dragDirection: "left" | "right" | "move") => void;
+  blockToRender: (blockId: string) => React.ReactNode;
+  handleBlockDrag: (e: React.MouseEvent<HTMLElement>, dragDirection: "left" | "right" | "move") => void;
+  handleResizeToDay: (direction: "left" | "right", day: number) => Promise<void>;
+  isSaving: boolean;
   isMoving: "left" | "right" | "move" | undefined;
   enableBlockLeftResize: boolean;
   enableBlockRightResize: boolean;
@@ -32,6 +33,8 @@ export const ChartDraggable = function ChartDraggable(props: Props) {
     block,
     blockToRender,
     handleBlockDrag,
+    handleResizeToDay,
+    isSaving,
     enableBlockLeftResize,
     enableBlockRightResize,
     enableBlockMove,
@@ -40,12 +43,16 @@ export const ChartDraggable = function ChartDraggable(props: Props) {
 
   return (
     <div className="group relative z-[5] inline-flex h-full w-full cursor-pointer items-center font-medium transition-all">
-      <LeftResizable
-        enableBlockLeftResize={enableBlockLeftResize}
-        handleBlockDrag={handleBlockDrag}
-        isMoving={isMoving}
-        position={block.position}
-      />
+      {enableBlockLeftResize && (
+        <GanttResizeHandle
+          block={block}
+          direction="left"
+          handleBlockDrag={handleBlockDrag}
+          handleResizeToDay={handleResizeToDay}
+          isMoving={isMoving}
+          isSaving={isSaving}
+        />
+      )}
       {/* oxlint-disable-next-line jsx_a11y/no-static-element-interactions */}
       <div
         className={cn("relative z-[6] flex h-8 w-full items-center rounded-sm", {
@@ -53,15 +60,19 @@ export const ChartDraggable = function ChartDraggable(props: Props) {
         })}
         onMouseDown={(e) => enableBlockMove && handleBlockDrag(e, "move")}
       >
-        {blockToRender({ ...block.data, meta: block.meta })}
+        {blockToRender(block.id)}
       </div>
       {/* right resize drag handle */}
-      <RightResizable
-        enableBlockRightResize={enableBlockRightResize}
-        handleBlockDrag={handleBlockDrag}
-        isMoving={isMoving}
-        position={block.position}
-      />
+      {enableBlockRightResize && (
+        <GanttResizeHandle
+          block={block}
+          direction="right"
+          handleBlockDrag={handleBlockDrag}
+          handleResizeToDay={handleResizeToDay}
+          isMoving={isMoving}
+          isSaving={isSaving}
+        />
+      )}
     </div>
   );
 };

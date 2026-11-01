@@ -69,7 +69,6 @@
     "is-emoji-supported": "catalog:",
     "jsx-dom-cjs": "catalog:",
     "linkifyjs": "catalog:",
-    "lodash-es": "catalog:",
     "lowlight": "catalog:",
     "lucide-react": "catalog:",
     "prosemirror-codemark": "catalog:",
@@ -84,7 +83,6 @@
   "devDependencies": {
     "@plane/tailwind-config": "workspace:*",
     "@plane/typescript-config": "workspace:*",
-    "@types/lodash-es": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",

@@ -28,10 +28,16 @@ const stubs = {
       React.useEffect(()=>{if(block?.position&&element.current){element.current.style.marginLeft=block.position.marginLeft+"px";element.current.style.width=block.position.width+"px";}},[block]);
       return h("button",{ref:element,"data-testid":"move-block",onClick:()=>handleBlockDrag({button:0,clientX:250},"move")},"start move");
     }
-    export const GanttChartMainContent=({blockIds,title,ganttContainerRef,updateCurrentViewRenderPayload,updateBlockDates})=>{
+    export const GanttChartMainContent=({blockIds,title,ganttContainerRef,updateCurrentViewRenderPayload,updateBlockDates,blockToRender,blockUpdateHandler,sidebarToRender})=>{
       const state=useGanttChartState();
       const block=state.blocksById[blockIds[0]];
-      return h("section",{"data-chart":title},h("div",{"data-testid":"scroll-container",ref:ganttContainerRef}),
+      return h("section",{"data-chart":title},
+        blockToRender(blockIds[0]),
+        blockToRender("missing-block"),
+        sidebarToRender({blockIds}),
+        h("button",{"data-testid":"update-item",onClick:()=>blockUpdateHandler(blockIds[0],{target_date:"2026-01-10"})},"update"),
+        h("button",{"data-testid":"update-missing",onClick:()=>blockUpdateHandler("missing-block",{target_date:"2026-01-10"})},"missing"),
+        h("div",{"data-testid":"scroll-container",ref:ganttContainerRef}),
         h("output",{"data-testid":"view-data"},state.viewData?.key ?? "uninitialized"),
         h("output",{"data-testid":"start-day"},String(state.viewData?.data.startDate.getDay() ?? "none")),
         h("output",{"data-testid":"active"},state.activeBlockId ?? "none"),
@@ -90,14 +96,14 @@ function Chart(props) {
     loaderTitle: "items",
     blockIds: [props.item.id],
     blockItems: [props.item],
-    blockUpdateHandler: () => {},
+    blockUpdateHandler: props.onUpdate ?? (() => {}),
     updateBlockDates: (updates) => {
       globalThis.timelineNativeUpdates = updates;
       if (globalThis.timelineNativeRejectUpdates) return Promise.reject(new Error("update failed"));
       return Promise.resolve();
     },
-    blockToRender: () => null,
-    sidebarToRender: () => null,
+    blockToRender: props.renderBlock ?? (() => null),
+    sidebarToRender: props.renderSidebar ?? (() => null),
     enableBlockLeftResize: false,
     enableBlockRightResize: false,
     enableBlockMove: false,
@@ -202,9 +208,8 @@ await test("concurrent Gantt charts keep active and drag state separate", async 
   await click(environment, "toggle-b");
   const charts = environment.container.querySelectorAll("section");
   assert.equal(charts.length, 2);
-  const buttons = charts[0].querySelectorAll("button");
-  await React.act(async () => buttons[0].click());
-  await React.act(async () => buttons[1].click());
+  await React.act(async () => charts[0].querySelector('[data-testid="start-drag"]').click());
+  await React.act(async () => charts[0].querySelector('[data-testid="activate"]').click());
   assert.equal(charts[0].querySelector('[data-testid="dragging"]').textContent, "true");
   assert.equal(charts[1].querySelector('[data-testid="dragging"]').textContent, "false");
   assert.equal(charts[0].querySelector('[data-testid="active"]').textContent, "issue-a");
@@ -310,4 +315,51 @@ await test("pure block projection and drag conversion preserve inclusive dates a
   assert.deepEqual(shiftBlockPositions({ x: { marginLeft: 4, width: 8 } }, 20), {
     x: { marginLeft: 24, width: 8 },
   });
+});
+
+await test("chart renderers and writes retain complete item data while missing rows cannot mutate", async (t) => {
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  const item = { ...items[0], customField: "retained" };
+  const updates = [];
+  await environment.render(
+    React.createElement(
+      GanttViewPreferenceProvider,
+      null,
+      React.createElement(
+        TimeLineTypeContext.Provider,
+        { value: GANTT_TIMELINE_TYPE.ISSUE },
+        React.createElement(Chart, {
+          title: "Typed",
+          item,
+          onUpdate: (updatedItem, payload) => updates.push([updatedItem, payload]),
+          renderBlock: (data) =>
+            React.createElement(
+              "output",
+              { "data-testid": "rendered-item" },
+              data.customField + ":" + data.meta.project_id
+            ),
+          renderSidebar: ({ blocksById }) =>
+            React.createElement("output", { "data-testid": "sidebar-item" }, blocksById[item.id].data.customField),
+        })
+      )
+    )
+  );
+  assert.equal(environment.container.querySelector("[data-testid='rendered-item']").textContent, "retained:project-a");
+  assert.equal(environment.container.querySelector("[data-testid='sidebar-item']").textContent, "retained");
+  await click(environment, "update-item");
+  await click(environment, "update-missing");
+  assert.deepEqual(updates, [[item, { target_date: "2026-01-10" }]]);
+  assert.equal(updates[0][0], item);
+});
+
+await test("sidebar reorder updates the identified row and ignores a missing source", async () => {
+  const { handleOrderChange } = await import("../../apps/web/core/components/gantt-chart/sidebar/utils.ts");
+  const blocks = projectGanttBlocks(["issue-a", "issue-b"], items, chartData, {});
+  const updates = [];
+  const update = (id, payload) => updates.push([id, payload]);
+  handleOrderChange("issue-a", "issue-b", true, ["issue-a", "issue-b"], blocks, update);
+  assert.deepEqual(updates, [["issue-a", { sort_order: { destinationIndex: 2, newSortOrder: 1002, sourceIndex: 0 } }]]);
+  handleOrderChange("missing", "issue-b", true, ["missing", "issue-b"], blocks, update);
+  assert.equal(updates.length, 1);
 });

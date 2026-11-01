@@ -35,10 +35,25 @@ export type TNameDescriptionLoader = "submitting" | "submitted" | "saved" | "err
 
 export type TFetchStatus = "partial" | "complete" | undefined;
 
-export type ICustomSearchSelectOption = {
-  value: any;
+export type ICustomSearchSelectOption<T = string> = {
+  value: T;
   query: string;
   content: React.ReactNode;
   disabled?: boolean;
   tooltip?: string | React.ReactNode;
+};
+
+export type TWorkItemProgress = {
+  total_issues: number;
+  completed_issues: number;
+  backlog_issues: number;
+  started_issues: number;
+  unstarted_issues: number;
+  cancelled_issues: number;
+  total_estimate_points?: number;
+  completed_estimate_points?: number;
+  backlog_estimate_points: number;
+  started_estimate_points: number;
+  unstarted_estimate_points: number;
+  cancelled_estimate_points: number;
 };

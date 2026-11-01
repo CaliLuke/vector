@@ -50,7 +50,7 @@ export const SubIssuesListItem = function SubIssuesListItem(props: Props) {
     parentIssueId,
     rootIssueId,
     issue,
-    spacingLeft = 10,
+    spacingLeft,
     canEdit,
     onAction,
     subIssueOperations,

@@ -5,29 +5,25 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { useState } from "react";
+import type { ReactNode } from "react";
 
 import { CircleDashed } from "lucide-react";
 import { PlusIcon } from "@plane/propel/icons";
 // types
-import type { TIssue, ISearchIssueResponse, TIssueGroupByOptions } from "@plane/types";
+import type { TIssue, TIssueGroupByOptions } from "@plane/types";
 // ui
 import { CustomMenu } from "@plane/ui";
 // components
-import { addSelectedIssuesToView } from "../../add-selected-issues";
+import { useGroupWorkItemModals } from "../../group-work-item-modals";
 import { cn } from "@plane/utils/common";
-import { ExistingIssuesListModal } from "@/components/core/modals/existing-issues-list-modal";
 import { MultipleSelectGroupAction } from "@/components/core/multiple-select";
-import { CreateUpdateIssueModal } from "@/components/issues/issue-modal/modal";
-import { CreateUpdateEpicModal } from "@/components/epic-modal";
 // constants
-import { useIssueListType } from "@/hooks/use-issue-list-type";
 import type { TSelectionHelper } from "@/hooks/use-multiple-select";
 
 interface IHeaderGroupByCard {
   groupID: string;
   groupBy: TIssueGroupByOptions;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   title: string;
   count: number;
   issuePayload: Partial<TIssue>;
@@ -53,24 +49,14 @@ export const HeaderGroupByCard = function HeaderGroupByCard(props: IHeaderGroupB
     handleCollapsedGroups,
     isEpic = false,
   } = props;
-  // states
-  const [isOpen, setIsOpen] = useState(false);
-  const [openExistingIssueListModal, setOpenExistingIssueListModal] = useState(false);
-  // router
-  const { workspaceSlug, projectId, moduleId, cycleId } = useParams({ strict: false });
-  const storeType = useIssueListType();
-  // derived values
-  const renderExistingIssueModal = moduleId || cycleId;
-  const existingIssuesListModalPayload = moduleId ? { module: moduleId } : { cycle: true };
+  const { projectId } = useParams({ strict: false });
+  const { canAddExisting, openCreate, openExisting, modals } = useGroupWorkItemModals({
+    issuePayload,
+    isEpic,
+    addIssuesToView,
+  });
   const isGroupSelectionEmpty = selectionHelpers.isGroupSelected(groupID) === "empty";
-  // auth
   const canSelectIssues = canEditProperties(projectId?.toString()) && !selectionHelpers.isSelectionDisabled;
-
-  const handleAddIssuesToView = async (data: ISearchIssueResponse[]) => {
-    if (!workspaceSlug || !projectId) return;
-
-    await addSelectedIssuesToView(data, addIssuesToView);
-  };
 
   return (
     <>
@@ -94,18 +80,18 @@ export const HeaderGroupByCard = function HeaderGroupByCard(props: IHeaderGroupB
           {icon ?? <CircleDashed className="size-3.5" strokeWidth={2} />}
         </div>
 
-        {/* eslint-disable-next-line jsx_a11y/click-events-have-key-events eslint-disable-next-line jsx_a11y/no-static-element-interactions */}
-        <div
-          className="relative flex w-full cursor-pointer flex-row items-center gap-1 overflow-hidden"
+        <button
+          type="button"
+          className="relative flex w-full cursor-pointer flex-row items-center gap-1 overflow-hidden text-left"
           onClick={() => handleCollapsedGroups(groupID)}
         >
-          <div className="line-clamp-1 inline-block truncate font-medium text-primary">{title}</div>
-          <div className="pl-2 text-13 font-medium text-tertiary">{count || 0}</div>
-          <div className="px-2.5"></div>
-        </div>
+          <span className="line-clamp-1 inline-block truncate font-medium text-primary">{title}</span>
+          <span className="pl-2 text-13 font-medium text-tertiary">{count || 0}</span>
+          <span className="px-2.5"></span>
+        </button>
 
         {!disableIssueCreation &&
-          (renderExistingIssueModal ? (
+          (canAddExisting ? (
             <CustomMenu
               customButton={
                 <span className="flex h-5 w-5 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xs transition-all hover:bg-layer-1">
@@ -113,54 +99,25 @@ export const HeaderGroupByCard = function HeaderGroupByCard(props: IHeaderGroupB
                 </span>
               }
             >
-              <CustomMenu.MenuItem
-                onClick={() => {
-                  setIsOpen(true);
-                }}
-              >
+              <CustomMenu.MenuItem onClick={openCreate}>
                 <span className="flex items-center justify-start gap-2">Create work item</span>
               </CustomMenu.MenuItem>
-              <CustomMenu.MenuItem
-                onClick={() => {
-                  setOpenExistingIssueListModal(true);
-                }}
-              >
+              <CustomMenu.MenuItem onClick={openExisting}>
                 <span className="flex items-center justify-start gap-2">Add an existing work item</span>
               </CustomMenu.MenuItem>
             </CustomMenu>
           ) : (
-            // oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions
-            <div
+            <button
+              type="button"
+              aria-label="Create work item"
               className="flex h-5 w-5 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xs transition-all hover:bg-layer-1"
-              onClick={() => {
-                setIsOpen(true);
-              }}
+              onClick={openCreate}
             >
               <PlusIcon width={14} strokeWidth={2} />
-            </div>
+            </button>
           ))}
 
-        {isEpic ? (
-          <CreateUpdateEpicModal isOpen={isOpen} onClose={() => setIsOpen(false)} data={issuePayload} />
-        ) : (
-          <CreateUpdateIssueModal
-            isOpen={isOpen}
-            onClose={() => setIsOpen(false)}
-            data={issuePayload}
-            storeType={storeType}
-          />
-        )}
-
-        {renderExistingIssueModal && (
-          <ExistingIssuesListModal
-            workspaceSlug={workspaceSlug?.toString()}
-            projectId={projectId?.toString()}
-            isOpen={openExistingIssueListModal}
-            handleClose={() => setOpenExistingIssueListModal(false)}
-            searchParams={existingIssuesListModalPayload}
-            handleOnSubmit={handleAddIssuesToView}
-          />
-        )}
+        {modals}
       </div>
     </>
   );

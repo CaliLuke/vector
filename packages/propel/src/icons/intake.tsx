@@ -12,7 +12,7 @@ export function Intake({ className = "text-current", ...rest }: ISvgIcons) {
   return (
     <svg
       viewBox="0 0 16 16"
-      className={`${className}`}
+      className={className}
       stroke="currentColor"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

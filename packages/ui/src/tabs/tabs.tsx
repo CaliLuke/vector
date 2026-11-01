@@ -59,7 +59,7 @@ export function Tabs(props: TTabsProps) {
     if (storeInLocalStorage) {
       setValue(selectedTab);
     }
-  }, [selectedTab, setValue, storeInLocalStorage, storageKey]);
+  }, [selectedTab, setValue, storeInLocalStorage]);
 
   const currentTabIndex = (tabKey: string): number => tabs.findIndex((tab) => tab.key === tabKey);
 

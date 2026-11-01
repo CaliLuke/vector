@@ -1,3 +1,4 @@
+import type { IssueQuickAddCallback } from "../quick-add/types";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -34,7 +35,7 @@ type Props = {
   quickActions: TRenderQuickActions;
   updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<unknown>) | undefined;
   openIssuesListModal?: (() => void) | null;
-  quickAddCallback?: (projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>;
+  quickAddCallback?: IssueQuickAddCallback;
   canEditProperties: (projectId: string | undefined) => boolean;
   canLoadMoreIssues: boolean;
   loadMoreIssues: () => void;

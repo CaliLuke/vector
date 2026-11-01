@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import axios from "axios";
+import { isAxiosError } from "axios";
 // api service
 import { APIService } from "../api.service";
 
@@ -14,7 +14,7 @@ import { APIService } from "../api.service";
  * @extends {APIService}
  */
 export class FileUploadService extends APIService {
-  private cancelSource: any;
+  private uploads = new Set<AbortController>();
 
   constructor() {
     super("");
@@ -27,29 +27,29 @@ export class FileUploadService extends APIService {
    * @returns {Promise<void>} Promise resolving to void
    * @throws {Error} If the request fails
    */
-  async uploadFile(url: string, data: FormData): Promise<void> {
-    this.cancelSource = axios.CancelToken.source();
-    return this.post(url, data, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      cancelToken: this.cancelSource.token,
-      withCredentials: false,
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        if (axios.isCancel(error)) {
-          console.log(error.message);
-        } else {
-          throw error?.response?.data;
-        }
+  async uploadFile(url: string, data: FormData, signal?: AbortSignal): Promise<void> {
+    const controller = new AbortController();
+    const uploadSignal = signal ? AbortSignal.any([signal, controller.signal]) : controller.signal;
+    uploadSignal.throwIfAborted();
+    this.uploads.add(controller);
+    try {
+      await this.post(url, data, {
+        headers: { "Content-Type": "multipart/form-data" },
+        signal: uploadSignal,
+        withCredentials: false,
       });
+      uploadSignal.throwIfAborted();
+    } catch (error) {
+      throw isAxiosError(error) ? (error.response?.data ?? error) : error;
+    } finally {
+      this.uploads.delete(controller);
+    }
   }
 
   /**
    * Cancels the upload
    */
   cancelUpload() {
-    this.cancelSource.cancel("Upload canceled");
+    for (const controller of this.uploads) controller.abort();
   }
 }

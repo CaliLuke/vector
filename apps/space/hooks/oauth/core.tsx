@@ -19,7 +19,7 @@ import gitlabLogo from "@/app/assets/logos/gitlab-logo.svg?url";
 import googleLogo from "@/app/assets/logos/google-logo.svg?url";
 // hooks
 
-export const useCoreOAuthConfig = (oauthActionText: string): TOAuthConfigs => {
+export const useCoreOAuthConfig = (oauthActionText: string = "Continue"): TOAuthConfigs => {
   //router
   const [searchParams] = useSearchParams();
   // query params

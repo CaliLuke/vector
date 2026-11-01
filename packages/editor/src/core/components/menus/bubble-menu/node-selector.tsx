@@ -10,23 +10,21 @@ import { CheckIcon, ChevronDownIcon } from "@plane/propel/icons";
 // plane utils
 import { cn } from "@plane/utils/common";
 // components
-import type { EditorMenuItem } from "@/components/menus";
 import {
-  BulletListItem,
-  HeadingOneItem,
-  HeadingThreeItem,
-  HeadingTwoItem,
-  NumberedListItem,
-  QuoteItem,
-  CodeItem,
-  TodoListItem,
-  TextItem,
-  HeadingFourItem,
-  HeadingFiveItem,
-  HeadingSixItem,
+  createBulletListItem,
+  createHeadingOneItem,
+  createHeadingThreeItem,
+  createHeadingTwoItem,
+  createNumberedListItem,
+  createQuoteItem,
+  createCodeItem,
+  createTodoListItem,
+  createTextItem,
+  createHeadingFourItem,
+  createHeadingFiveItem,
+  createHeadingSixItem,
 } from "@/components/menus";
 // types
-import type { TEditorCommands } from "@/types";
 // local imports
 import { FloatingMenuRoot } from "../floating-menu/root";
 import { useFloatingMenu } from "../floating-menu/use-floating-menu";
@@ -40,22 +38,22 @@ export function BubbleMenuNodeSelector(props: Props) {
   // floating ui
   const { options, getReferenceProps, getFloatingProps } = useFloatingMenu({});
   const { context } = options;
-  const items: EditorMenuItem<TEditorCommands>[] = [
-    TextItem(editor),
-    HeadingOneItem(editor),
-    HeadingTwoItem(editor),
-    HeadingThreeItem(editor),
-    HeadingFourItem(editor),
-    HeadingFiveItem(editor),
-    HeadingSixItem(editor),
-    BulletListItem(editor),
-    NumberedListItem(editor),
-    TodoListItem(editor),
-    QuoteItem(editor),
-    CodeItem(editor),
-  ] as EditorMenuItem<TEditorCommands>[];
+  const items = [
+    createTextItem(editor),
+    createHeadingOneItem(editor),
+    createHeadingTwoItem(editor),
+    createHeadingThreeItem(editor),
+    createHeadingFourItem(editor),
+    createHeadingFiveItem(editor),
+    createHeadingSixItem(editor),
+    createBulletListItem(editor),
+    createNumberedListItem(editor),
+    createTodoListItem(editor),
+    createQuoteItem(editor),
+    createCodeItem(editor),
+  ];
 
-  const activeItem = items.filter((item) => item.isActive()).pop() ?? {
+  const activeItem = items.findLast((item) => item.isActive()) ?? {
     name: "Multiple",
   };
 

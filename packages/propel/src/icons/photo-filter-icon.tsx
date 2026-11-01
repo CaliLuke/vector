@@ -4,25 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import * as React from "react";
-
 import type { ISvgIcons } from "./type";
+import { SquareIconFrame } from "./square-icon-frame";
 
-export function PhotoFilterIcon({ className = "text-current", ...rest }: ISvgIcons) {
+export function PhotoFilterIcon(props: ISvgIcons) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      className={`${className} stroke-2`}
-      stroke="currentColor"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      {...rest}
-    >
-      <path
-        d="M21 12V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H12"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <SquareIconFrame openCorner {...props}>
       <path
         d="M19 3L18.5778 4.28889C18.5562 4.35583 18.519 4.41668 18.4692 4.46643C18.4195 4.51619 18.3587 4.55344 18.2918 4.57511L17 5L18.2889 5.42222C18.3558 5.44384 18.4167 5.48104 18.4664 5.53076C18.5162 5.58048 18.5534 5.6413 18.5751 5.70822L19 7L19.4222 5.71111C19.4438 5.64417 19.481 5.58332 19.5308 5.53357C19.5805 5.48381 19.6413 5.44656 19.7082 5.42489L21 5L19.7111 4.57778C19.6442 4.55616 19.5833 4.51896 19.5336 4.46924C19.4838 4.41952 19.4466 4.3587 19.4249 4.29178L19 3Z"
         fill="currentColor"
@@ -35,6 +22,6 @@ export function PhotoFilterIcon({ className = "text-current", ...rest }: ISvgIco
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-    </svg>
+    </SquareIconFrame>
   );
 }

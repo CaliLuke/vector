@@ -29,7 +29,7 @@ type TUserProfileHeader = {
 };
 
 export function UserProfileHeader(props: TUserProfileHeader) {
-  const { userProjectsData, type = undefined, showProfileIssuesFilter } = props;
+  const { userProjectsData, type, showProfileIssuesFilter } = props;
   // router
   const { workspaceSlug, userId } = useParams({ from: "/_authenticated/$workspaceSlug/_projects/profile/$userId" });
   const router = useRouter();

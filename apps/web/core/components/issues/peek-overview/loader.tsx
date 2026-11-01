@@ -79,30 +79,12 @@ export function IssuePeekOverviewLoader(props: TIssuePeekOverviewLoader) {
       <div className="space-y-3">
         <Loader.Item width="80px" height="20px" />
         <div className="space-y-2">
-          <div className="flex items-center gap-8">
-            <Loader.Item width="150px" height="25px" />
-            <Loader.Item width="150px" height="25px" />
-          </div>
-          <div className="flex items-center gap-8">
-            <Loader.Item width="150px" height="25px" />
-            <Loader.Item width="150px" height="25px" />
-          </div>
-          <div className="flex items-center gap-8">
-            <Loader.Item width="150px" height="25px" />
-            <Loader.Item width="150px" height="25px" />
-          </div>
-          <div className="flex items-center gap-8">
-            <Loader.Item width="150px" height="25px" />
-            <Loader.Item width="150px" height="25px" />
-          </div>
-          <div className="flex items-center gap-8">
-            <Loader.Item width="150px" height="25px" />
-            <Loader.Item width="150px" height="25px" />
-          </div>
-          <div className="flex items-center gap-8">
-            <Loader.Item width="150px" height="25px" />
-            <Loader.Item width="150px" height="25px" />
-          </div>
+          {Array.from({ length: 6 }, (_, index) => (
+            <div key={index} className="flex items-center gap-8">
+              <Loader.Item width="150px" height="25px" />
+              <Loader.Item width="150px" height="25px" />
+            </div>
+          ))}
         </div>
       </div>
     </Loader>

@@ -25,6 +25,7 @@ import { PageNavigationPaneTabsList } from "./tabs-list";
 import type { INavigationPaneExtension } from "./types/extensions";
 
 import {
+  PAGE_NAVIGATION_PANE_TAB_KEYS,
   PAGE_NAVIGATION_PANE_TABS_QUERY_PARAM,
   PAGE_NAVIGATION_PANE_VERSION_QUERY_PARAM,
   PAGE_NAVIGATION_PANE_WIDTH,
@@ -47,10 +48,9 @@ export function PageNavigationPaneRoot(props: Props) {
   // query params
   const { updateQueryParams } = useQueryParams();
   // derived values
-  const navigationPaneQueryParam = searchParams.get(
-    PAGE_NAVIGATION_PANE_TABS_QUERY_PARAM
-  ) as TPageNavigationPaneTab | null;
-  const activeTab: TPageNavigationPaneTab = navigationPaneQueryParam || "outline";
+  const navigationPaneQueryParam = searchParams.get(PAGE_NAVIGATION_PANE_TABS_QUERY_PARAM);
+  const activeTab: TPageNavigationPaneTab =
+    PAGE_NAVIGATION_PANE_TAB_KEYS.find((key) => key === navigationPaneQueryParam) ?? "outline";
 
   // Check if any extension is currently active based on query parameters
   const ActiveExtension = extensions.find((extension) => {
@@ -71,7 +71,8 @@ export function PageNavigationPaneRoot(props: Props) {
 
   const handleTabChange = useCallback(
     (value: string) => {
-      const updatedTab = value as TPageNavigationPaneTab;
+      const updatedTab = PAGE_NAVIGATION_PANE_TAB_KEYS.find((key) => key === value);
+      if (!updatedTab) return;
       const isUpdatedTabInfo = updatedTab === "info";
       const updatedRoute = updateQueryParams({
         paramsToAdd: { [PAGE_NAVIGATION_PANE_TABS_QUERY_PARAM]: updatedTab },

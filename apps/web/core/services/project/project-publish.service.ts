@@ -21,11 +21,10 @@ export class ProjectPublishService extends APIService {
     projectID: string,
     signal?: AbortSignal
   ): Promise<TProjectPublishSettings> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectID}/project-deploy-boards/`, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/projects/${projectID}/project-deploy-boards/`, { signal }),
+      "response"
+    );
   }
 
   async publishProject(
@@ -33,11 +32,10 @@ export class ProjectPublishService extends APIService {
     projectID: string,
     data: Partial<TProjectPublishSettings>
   ): Promise<TProjectPublishSettings> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectID}/project-deploy-boards/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+    return this.responseData(
+      this.post(`/api/workspaces/${workspaceSlug}/projects/${projectID}/project-deploy-boards/`, data),
+      "response"
+    );
   }
 
   async updatePublishSettings(
@@ -46,23 +44,21 @@ export class ProjectPublishService extends APIService {
     project_publish_id: string,
     data: Partial<TProjectPublishSettings>
   ): Promise<TProjectPublishSettings> {
-    return this.patch(
-      `/api/workspaces/${workspaceSlug}/projects/${projectID}/project-deploy-boards/${project_publish_id}/`,
-      data
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+    return this.responseData(
+      this.patch(
+        `/api/workspaces/${workspaceSlug}/projects/${projectID}/project-deploy-boards/${project_publish_id}/`,
+        data
+      ),
+      "response"
+    );
   }
 
-  async unpublishProject(workspaceSlug: string, projectID: string, project_publish_id: string): Promise<any> {
-    return this.delete(
-      `/api/workspaces/${workspaceSlug}/projects/${projectID}/project-deploy-boards/${project_publish_id}/`
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+  async unpublishProject(workspaceSlug: string, projectID: string, project_publish_id: string): Promise<unknown> {
+    return this.responseData(
+      this.delete(
+        `/api/workspaces/${workspaceSlug}/projects/${projectID}/project-deploy-boards/${project_publish_id}/`
+      ),
+      "response"
+    );
   }
 }

@@ -20,6 +20,9 @@ import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 import { useProjectStates } from "@/hooks/use-project-states";
 import { useProjectPermissions } from "@/hooks/use-permissions";
 
+import type { IQuickActionProps } from "../list/list-view-types";
+import type { useIssueQuickActionModals } from "./use-issue-quick-action-modals";
+
 export function useIssueQuickActionContext(issue: TIssue, readOnly: boolean) {
   const { workspaceSlug } = useParams({ strict: false });
   const { can: canProject } = useProjectPermissions(workspaceSlug, issue.project_id ?? undefined);
@@ -33,6 +36,31 @@ export function useIssueQuickActionContext(issue: TIssue, readOnly: boolean) {
     projectIdentifier: projectRows?.find((project) => project.id === issue.project_id)?.identifier ?? "",
     isEditingAllowed: canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]) && !readOnly,
     isInArchivableGroup: !!stateDetails && ARCHIVABLE_STATE_GROUPS.includes(stateDetails.group),
+  };
+}
+
+export function useIssueMenuContext(
+  props: IQuickActionProps,
+  modals: ReturnType<typeof useIssueQuickActionModals>,
+  storeType: EIssuesStoreType
+): MenuItemFactoryProps {
+  const { issue, handleDelete, handleUpdate, handleArchive, handleRemoveFromView, readOnly = false } = props;
+  const context = useIssueQuickActionContext(issue, readOnly);
+  return {
+    ...context,
+    issue,
+    workspaceSlug: context.workspaceSlug?.toString(),
+    isArchivingAllowed: !!handleArchive && context.isEditingAllowed,
+    isDeletingAllowed: context.isEditingAllowed,
+    setIssueToEdit: modals.setIssueToEdit,
+    setCreateUpdateIssueModal: modals.setCreateUpdateIssueModal,
+    setDeleteIssueModal: modals.setDeleteIssueModal,
+    setArchiveIssueModal: modals.setArchiveIssueModal,
+    handleRemoveFromView,
+    handleDelete,
+    handleUpdate,
+    handleArchive,
+    storeType,
   };
 }
 

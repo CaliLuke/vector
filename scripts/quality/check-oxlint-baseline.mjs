@@ -122,14 +122,15 @@ for (const diagnostic of normalized) {
 if (writeBaseline) {
   mkdirSync(path.dirname(baselinePath), { recursive: true });
   const baseline = [...counts.entries()]
-    .sort(([left], [right]) => left.localeCompare(right))
+    .toSorted(([left], [right]) => left.localeCompare(right))
     .map(([key, count]) => ({ diagnostic: JSON.parse(key), count }));
   writeFileSync(
     baselinePath,
     `${JSON.stringify({ version: 1, mode, fileCount: report.number_of_files, diagnostics: baseline }, null, 2)}\n`
   );
-  console.log(
-    `Oxlint ${mode} baseline written with ${normalized.length} diagnostics across ${report.number_of_files} files.`
+  process.stdout.write(
+    `Oxlint ${mode} baseline written with ${normalized.length} diagnostics across ${report.number_of_files} files.` +
+      "\n"
   );
   process.exit(0);
 }
@@ -176,6 +177,7 @@ if (failures.length > 0) {
 
 const errorCount = normalized.filter(({ severity }) => severity === "error").length;
 const warningCount = normalized.filter(({ severity }) => severity === "warning").length;
-console.log(
-  `Oxlint ${mode} ratchet passed: ${report.number_of_files} files, ${errorCount} errors and ${warningCount} warnings; no diagnostic increased.`
+process.stdout.write(
+  `Oxlint ${mode} ratchet passed: ${report.number_of_files} files, ${errorCount} errors and ${warningCount} warnings; no diagnostic increased.` +
+    "\n"
 );

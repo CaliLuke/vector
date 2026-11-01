@@ -31,7 +31,7 @@ export function generateGanttView(
       return { ...result, payload: { kind: "quarter", data: result.payload } };
     }
     default:
-      throw new Error(`Unknown timeline view: ${state.key}`);
+      throw new Error("Unknown timeline view");
   }
 }
 

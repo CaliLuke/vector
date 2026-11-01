@@ -41,13 +41,12 @@ export const GlobalIssuesHeader = function GlobalIssuesHeader() {
   const { globalViewId } = useParams({ strict: false });
   // store hooks
   const preferences = useWorkspaceIssuePreferences();
-  const { views: currentWorkspaceViews } = useWorkspaceViews(workspaceSlug);
-  const viewDetails = currentWorkspaceViews?.find((view) => view.id === globalViewId);
+  const { views: currentWorkspaceViews = [] } = useWorkspaceViews(workspaceSlug);
+  const viewDetails = currentWorkspaceViews.find((view) => view.id === globalViewId);
   const { t } = useTranslation();
 
-  const issueFilters = preferences?.issueFilters;
-
-  const activeLayout = issueFilters?.displayFilters?.layout;
+  const { displayFilters = {}, displayProperties = {} } = preferences?.issueFilters ?? {};
+  const activeLayout = displayFilters.layout;
   const handleDisplayFilters = useCallback(
     (updatedDisplayFilter: Partial<IIssueDisplayFilterOptions>) => {
       if (!globalViewId) return;
@@ -64,7 +63,7 @@ export const GlobalIssuesHeader = function GlobalIssuesHeader() {
     [preferences, globalViewId]
   );
 
-  const isLocked = viewDetails?.is_locked;
+  const { is_locked: isLocked, name: viewName } = viewDetails ?? {};
 
   const defaultViewDetails = DEFAULT_GLOBAL_VIEWS_LIST.find((view) => view.key === globalViewId);
 
@@ -74,7 +73,7 @@ export const GlobalIssuesHeader = function GlobalIssuesHeader() {
     content: <SwitcherLabel name={t(view.i18n_label)} LabelIcon={ViewsIcon} />,
   }));
 
-  const workspaceOptions = (currentWorkspaceViews ?? []).map((view) => ({
+  const workspaceOptions = currentWorkspaceViews.map((view) => ({
     value: view.id,
     query: view.name,
     content: <SwitcherLabel name={view.name} LabelIcon={ViewsIcon} />,
@@ -103,7 +102,7 @@ export const GlobalIssuesHeader = function GlobalIssuesHeader() {
                   onChange={(value: string) => {
                     void router.navigate({ href: `/${workspaceSlug}/workspace-views/${value}` });
                   }}
-                  title={viewDetails?.name ?? t(defaultViewDetails?.i18n_label ?? "")}
+                  title={viewName ?? t(defaultViewDetails?.i18n_label ?? "")}
                   icon={
                     <Breadcrumbs.Icon>
                       <ViewsIcon className="size-4 flex-shrink-0 text-tertiary" />
@@ -123,9 +122,9 @@ export const GlobalIssuesHeader = function GlobalIssuesHeader() {
             <FiltersDropdown title={t("common.display")} placement="bottom-end">
               <DisplayFiltersSelection
                 layoutDisplayFiltersOptions={currentLayoutFilters}
-                displayFilters={issueFilters?.displayFilters ?? {}}
+                displayFilters={displayFilters}
                 handleDisplayFiltersUpdate={handleDisplayFilters}
-                displayProperties={issueFilters?.displayProperties ?? {}}
+                displayProperties={displayProperties}
                 handleDisplayPropertiesUpdate={handleDisplayProperties}
               />
             </FiltersDropdown>

@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
 import { useSearchParams } from "react-router";
 // icons
@@ -16,7 +16,7 @@ import { Checkbox, Input, AuthEmailInput, PasswordStrengthIndicator, Spinner } f
 import { getPasswordStrength } from "@plane/utils/auth";
 import { validatePersonName, validateCompanyName } from "@plane/utils/validation";
 // components
-import { submitInstanceAuthForm } from "@/app/(all)/(home)/auth-helpers";
+import { submitInstanceAuthForm, getInstanceFormError } from "@/app/(all)/(home)/auth-helpers";
 import { AuthHeader } from "@/app/(all)/(home)/auth-header";
 import { Banner } from "../common/banner";
 import { FormHeader } from "./form-header";
@@ -32,11 +32,6 @@ enum EErrorCodes {
   INVALID_PASSWORD = "INVALID_PASSWORD",
   USER_ALREADY_EXISTS = "USER_ALREADY_EXISTS",
 }
-
-type TError = {
-  type: EErrorCodes | undefined;
-  message: string | undefined;
-};
 
 // form data
 type TFormData = {
@@ -59,89 +54,160 @@ const defaultFromData: TFormData = {
   is_telemetry_enabled: true,
 };
 
+function setupDefaults(searchParams: URLSearchParams): TFormData {
+  return {
+    ...defaultFromData,
+    first_name: searchParams.get("first_name") ?? "",
+    last_name: searchParams.get("last_name") ?? "",
+    company_name: searchParams.get("company") ?? "",
+    email: searchParams.get("email") ?? "",
+    is_telemetry_enabled: searchParams.get("is_telemetry_enabled") !== "False",
+  };
+}
+
+function setupIsValid(value: TFormData): boolean {
+  return Boolean(
+    value.first_name &&
+    value.email &&
+    value.password &&
+    getPasswordStrength(value.password) === E_PASSWORD_STRENGTH.STRENGTH_VALID &&
+    value.password === value.confirm_password
+  );
+}
+
+function SetupPasswordFields({
+  password,
+  confirmPassword,
+  isSubmitting,
+  error,
+  onPasswordChange,
+  onConfirmPasswordChange,
+}: {
+  password: string;
+  confirmPassword: string;
+  isSubmitting: boolean;
+  error: string | undefined;
+  onPasswordChange: (value: string) => void;
+  onConfirmPasswordChange: (value: string) => void;
+}) {
+  const [showPassword, setShowPassword] = useState({ password: false, retypePassword: false });
+  const [isPasswordInputFocused, setIsPasswordInputFocused] = useState(false);
+  const [isRetryPasswordInputFocused, setIsRetryPasswordInputFocused] = useState(false);
+  const handleShowPassword = (key: keyof typeof showPassword) =>
+    setShowPassword((previous) => ({ ...previous, [key]: !previous[key] }));
+  const renderPasswordMatchError = !isRetryPasswordInputFocused || confirmPassword.length >= password.length;
+  return (
+    <>
+      <div className="w-full space-y-1">
+        <label className="text-13 font-medium text-tertiary" htmlFor="password">
+          Set a password <span className="text-danger-primary">*</span>
+        </label>
+        <div className="relative">
+          <Input
+            readOnly={isSubmitting}
+            className="w-full border border-subtle !bg-surface-1 placeholder:text-placeholder"
+            id="password"
+            name="password"
+            type={showPassword.password ? "text" : "password"}
+            inputSize="md"
+            placeholder="New password"
+            value={password}
+            onChange={(e) => onPasswordChange(e.target.value)}
+            hasError={Boolean(error)}
+            onFocus={() => setIsPasswordInputFocused(true)}
+            onBlur={() => setIsPasswordInputFocused(false)}
+            autoComplete="new-password"
+          />
+          {showPassword.password ? (
+            <button
+              type="button"
+              aria-label="Hide password"
+              className="absolute top-3.5 right-3 flex items-center justify-center text-placeholder"
+              onClick={() => handleShowPassword("password")}
+            >
+              <EyeOff className="h-4 w-4" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              aria-label="Show password"
+              className="absolute top-3.5 right-3 flex items-center justify-center text-placeholder"
+              onClick={() => handleShowPassword("password")}
+            >
+              <Eye className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        {error && <p className="px-1 text-11 text-danger-primary">{error}</p>}
+        <PasswordStrengthIndicator password={password} isFocused={isPasswordInputFocused} />
+      </div>
+
+      <div className="w-full space-y-1">
+        <label className="text-13 font-medium text-tertiary" htmlFor="confirm_password">
+          Confirm password <span className="text-danger-primary">*</span>
+        </label>
+        <div className="relative">
+          <Input
+            readOnly={isSubmitting}
+            type={showPassword.retypePassword ? "text" : "password"}
+            id="confirm_password"
+            name="confirm_password"
+            inputSize="md"
+            value={confirmPassword}
+            onChange={(e) => onConfirmPasswordChange(e.target.value)}
+            placeholder="Confirm password"
+            className="w-full border border-subtle !bg-surface-1 pr-12 placeholder:text-placeholder"
+            onFocus={() => setIsRetryPasswordInputFocused(true)}
+            onBlur={() => setIsRetryPasswordInputFocused(false)}
+            autoComplete="new-password"
+          />
+          {showPassword.retypePassword ? (
+            <button
+              type="button"
+              aria-label="Hide password"
+              className="absolute top-3.5 right-3 flex items-center justify-center text-placeholder"
+              onClick={() => handleShowPassword("retypePassword")}
+            >
+              <EyeOff className="h-4 w-4" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              aria-label="Show password"
+              className="absolute top-3.5 right-3 flex items-center justify-center text-placeholder"
+              onClick={() => handleShowPassword("retypePassword")}
+            >
+              <Eye className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        {!!confirmPassword && password !== confirmPassword && renderPasswordMatchError && (
+          <span className="text-13 text-danger-primary">Passwords don{"'"}t match</span>
+        )}
+      </div>
+    </>
+  );
+}
+
 export function InstanceSetupForm() {
   // search params
   const [searchParams] = useSearchParams();
-  const firstNameParam = searchParams.get("first_name") || undefined;
-  const lastNameParam = searchParams.get("last_name") || undefined;
-  const companyParam = searchParams.get("company") || undefined;
-  const emailParam = searchParams.get("email") || undefined;
-  const isTelemetryEnabledParam = searchParams.get("is_telemetry_enabled") !== "False";
-  const errorCode = searchParams.get("error_code") || undefined;
+  const errorCode = searchParams.get("error_code");
   const errorMessage = searchParams.get("error_message") || undefined;
-  // state
-  const [showPassword, setShowPassword] = useState({
-    password: false,
-    retypePassword: false,
-  });
   const formRef = useRef<HTMLFormElement>(null);
   const form = useForm({
-    defaultValues: {
-      ...defaultFromData,
-      first_name: firstNameParam ?? "",
-      last_name: lastNameParam ?? "",
-      company_name: companyParam ?? "",
-      email: emailParam ?? "",
-      is_telemetry_enabled: isTelemetryEnabledParam,
-    },
+    defaultValues: setupDefaults(searchParams),
     validators: {
-      onSubmit: ({ value }) =>
-        !value.first_name ||
-        !value.email ||
-        !value.password ||
-        getPasswordStrength(value.password) !== E_PASSWORD_STRENGTH.STRENGTH_VALID ||
-        value.password !== value.confirm_password
-          ? "Complete the required fields."
-          : undefined,
+      onSubmit: ({ value }) => (setupIsValid(value) ? undefined : "Complete the required fields."),
     },
     onSubmit: () => submitInstanceAuthForm(formRef.current),
   });
   const formData = useStore(form.store, (state) => state.values);
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
-  const [isPasswordInputFocused, setIsPasswordInputFocused] = useState(false);
-  const [isRetryPasswordInputFocused, setIsRetryPasswordInputFocused] = useState(false);
-
-  const handleShowPassword = (key: keyof typeof showPassword) =>
-    setShowPassword((prev) => ({ ...prev, [key]: !prev[key] }));
-
   // derived values
-  const errorData: TError = useMemo(() => {
-    if (errorCode && errorMessage) {
-      switch (errorCode) {
-        case EErrorCodes.INSTANCE_NOT_CONFIGURED:
-          return { type: EErrorCodes.INSTANCE_NOT_CONFIGURED, message: errorMessage };
-        case EErrorCodes.ADMIN_ALREADY_EXIST:
-          return { type: EErrorCodes.ADMIN_ALREADY_EXIST, message: errorMessage };
-        case EErrorCodes.REQUIRED_EMAIL_PASSWORD_FIRST_NAME:
-          return { type: EErrorCodes.REQUIRED_EMAIL_PASSWORD_FIRST_NAME, message: errorMessage };
-        case EErrorCodes.INVALID_EMAIL:
-          return { type: EErrorCodes.INVALID_EMAIL, message: errorMessage };
-        case EErrorCodes.INVALID_PASSWORD:
-          return { type: EErrorCodes.INVALID_PASSWORD, message: errorMessage };
-        case EErrorCodes.USER_ALREADY_EXISTS:
-          return { type: EErrorCodes.USER_ALREADY_EXISTS, message: errorMessage };
-        default:
-          return { type: undefined, message: undefined };
-      }
-    } else return { type: undefined, message: undefined };
-  }, [errorCode, errorMessage]);
+  const errorData = getInstanceFormError(Object.values(EErrorCodes), errorCode, errorMessage);
 
-  const isButtonDisabled = useMemo(
-    () =>
-      !isSubmitting &&
-      formData.first_name &&
-      formData.email &&
-      formData.password &&
-      getPasswordStrength(formData.password) === E_PASSWORD_STRENGTH.STRENGTH_VALID &&
-      formData.password === formData.confirm_password
-        ? false
-        : true,
-    [formData.confirm_password, formData.email, formData.first_name, formData.password, isSubmitting]
-  );
-
-  const password = formData.password;
-  const confirmPassword = formData.confirm_password;
-  const renderPasswordMatchError = !isRetryPasswordInputFocused || confirmPassword.length >= password.length;
+  const isButtonDisabled = isSubmitting || !setupIsValid(formData);
 
   return (
     <>
@@ -191,7 +257,6 @@ export function InstanceSetupForm() {
                     }
                   }}
                   autoComplete="off"
-                  autoFocus
                   maxLength={50}
                 />
               </div>
@@ -251,97 +316,14 @@ export function InstanceSetupForm() {
               />
             </div>
 
-            <div className="w-full space-y-1">
-              <label className="text-13 font-medium text-tertiary" htmlFor="password">
-                Set a password <span className="text-danger-primary">*</span>
-              </label>
-              <div className="relative">
-                <Input
-                  readOnly={isSubmitting}
-                  className="w-full border border-subtle !bg-surface-1 placeholder:text-placeholder"
-                  id="password"
-                  name="password"
-                  type={showPassword.password ? "text" : "password"}
-                  inputSize="md"
-                  placeholder="New password"
-                  value={formData.password}
-                  onChange={(e) => form.setFieldValue("password", e.target.value)}
-                  hasError={errorData.type && errorData.type === EErrorCodes.INVALID_PASSWORD ? true : false}
-                  onFocus={() => setIsPasswordInputFocused(true)}
-                  onBlur={() => setIsPasswordInputFocused(false)}
-                  autoComplete="new-password"
-                />
-                {showPassword.password ? (
-                  <button
-                    type="button"
-                    aria-label="Hide password"
-                    className="absolute top-3.5 right-3 flex items-center justify-center text-placeholder"
-                    onClick={() => handleShowPassword("password")}
-                  >
-                    <EyeOff className="h-4 w-4" />
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    aria-label="Show password"
-                    className="absolute top-3.5 right-3 flex items-center justify-center text-placeholder"
-                    onClick={() => handleShowPassword("password")}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-              {errorData.type && errorData.type === EErrorCodes.INVALID_PASSWORD && errorData.message && (
-                <p className="px-1 text-11 text-danger-primary">{errorData.message}</p>
-              )}
-              <PasswordStrengthIndicator password={formData.password} isFocused={isPasswordInputFocused} />
-            </div>
-
-            <div className="w-full space-y-1">
-              <label className="text-13 font-medium text-tertiary" htmlFor="confirm_password">
-                Confirm password <span className="text-danger-primary">*</span>
-              </label>
-              <div className="relative">
-                <Input
-                  readOnly={isSubmitting}
-                  type={showPassword.retypePassword ? "text" : "password"}
-                  id="confirm_password"
-                  name="confirm_password"
-                  inputSize="md"
-                  value={formData.confirm_password}
-                  onChange={(e) => form.setFieldValue("confirm_password", e.target.value)}
-                  placeholder="Confirm password"
-                  className="w-full border border-subtle !bg-surface-1 pr-12 placeholder:text-placeholder"
-                  onFocus={() => setIsRetryPasswordInputFocused(true)}
-                  onBlur={() => setIsRetryPasswordInputFocused(false)}
-                  autoComplete="new-password"
-                />
-                {showPassword.retypePassword ? (
-                  <button
-                    type="button"
-                    aria-label="Hide password"
-                    className="absolute top-3.5 right-3 flex items-center justify-center text-placeholder"
-                    onClick={() => handleShowPassword("retypePassword")}
-                  >
-                    <EyeOff className="h-4 w-4" />
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    aria-label="Show password"
-                    className="absolute top-3.5 right-3 flex items-center justify-center text-placeholder"
-                    onClick={() => handleShowPassword("retypePassword")}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-              {!!formData.confirm_password &&
-                formData.password !== formData.confirm_password &&
-                renderPasswordMatchError && (
-                  <span className="text-13 text-danger-primary">Passwords don{"'"}t match</span>
-                )}
-            </div>
+            <SetupPasswordFields
+              password={formData.password}
+              confirmPassword={formData.confirm_password}
+              isSubmitting={isSubmitting}
+              error={errorData.type === EErrorCodes.INVALID_PASSWORD ? errorData.message : undefined}
+              onPasswordChange={(value) => form.setFieldValue("password", value)}
+              onConfirmPasswordChange={(value) => form.setFieldValue("confirm_password", value)}
+            />
 
             <div className="relative flex gap-2">
               <div>

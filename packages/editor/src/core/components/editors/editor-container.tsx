@@ -32,8 +32,16 @@ type Props = {
   state?: TCollabValue["state"];
 };
 
+const handleContainerMouseLeave = () => {
+  const dragHandleElement = document.querySelector("#editor-side-menu");
+  if (!dragHandleElement?.classList.contains("side-menu-hidden")) {
+    dragHandleElement?.classList.add("side-menu-hidden");
+  }
+};
+
 export function EditorContainer(props: Props) {
   const { children, displayConfig, editor, editorContainerClassName, id, isTouchDevice, provider, state } = props;
+  const supportsLinkPreview = !editor.isDestroyed && typeof editor.commands.setLinkPreviewOpen === "function";
   // refs
   const containerRef = useRef<HTMLDivElement>(null);
   const hasScrolledOnce = useRef(false);
@@ -49,6 +57,8 @@ export function EditorContainer(props: Props) {
           pos = position;
           return false;
         }
+
+        return undefined;
       });
 
       if (pos === null) {
@@ -106,57 +116,36 @@ export function EditorContainer(props: Props) {
         }
       };
     }
+
+    return undefined;
   }, [scrollToNode, provider, state]);
 
-  const handleContainerClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (event.target !== event.currentTarget) return;
+  const continueWriting = () => {
     if (!editor) return;
     if (!editor.isEditable) return;
     try {
-      if (editor.isFocused) return; // If editor is already focused, do nothing
-
-      const { selection } = editor.state;
-      const currentNode = selection.$from.node();
-
-      editor?.chain().focus("end", { scrollIntoView: false }).run(); // Focus the editor at the end
-
-      if (
-        currentNode.content.size === 0 && // Check if the current node is empty
-        !(
-          editor.isActive(CORE_EXTENSIONS.ORDERED_LIST) ||
-          editor.isActive(CORE_EXTENSIONS.BULLET_LIST) ||
-          editor.isActive(CORE_EXTENSIONS.TASK_ITEM) ||
-          editor.isActive(CORE_EXTENSIONS.TABLE) ||
-          editor.isActive(CORE_EXTENSIONS.BLOCKQUOTE) ||
-          editor.isActive(CORE_EXTENSIONS.CODE_BLOCK)
-        ) // Check if it's an empty node within an orderedList, bulletList, taskItem, table, quote or code block
-      ) {
-        return;
-      }
-
-      // Get the last child node in the document
-      const doc = editor.state.doc;
+      const { doc } = editor.state;
       const lastNode = doc.lastChild;
-
-      // Check if its last node and add new node
-      if (lastNode) {
-        const isLastNodeParagraph = lastNode.type.name === CORE_EXTENSIONS.PARAGRAPH;
-        // Insert a new paragraph if the last node is not a paragraph and not a doc node
-        if (!isLastNodeParagraph && lastNode.type.name !== CORE_EXTENSIONS.DOCUMENT) {
-          // Only insert a new paragraph if the last node is not an empty paragraph and not a doc node
-          const endPosition = editor?.state.doc.content.size;
-          editor?.chain().insertContentAt(endPosition, { type: "paragraph" }).focus("end").run();
+      if (
+        lastNode &&
+        lastNode.type.name !== CORE_EXTENSIONS.PARAGRAPH &&
+        lastNode.type.name !== CORE_EXTENSIONS.DOCUMENT
+      ) {
+        const isStructuredBlock = [
+          CORE_EXTENSIONS.ORDERED_LIST,
+          CORE_EXTENSIONS.BULLET_LIST,
+          CORE_EXTENSIONS.TASK_ITEM,
+          CORE_EXTENSIONS.TABLE,
+          CORE_EXTENSIONS.BLOCKQUOTE,
+          CORE_EXTENSIONS.CODE_BLOCK,
+        ].some((type) => type === lastNode.type.name);
+        if (lastNode.content.size > 0 || !lastNode.isTextblock || isStructuredBlock) {
+          editor.commands.insertContentAt(doc.content.size, { type: "paragraph" });
         }
       }
+      editor.commands.focus("end", { scrollIntoView: false });
     } catch (error) {
       console.error("An error occurred while handling container click to insert new empty node at bottom:", error);
-    }
-  };
-
-  const handleContainerMouseLeave = () => {
-    const dragHandleElement = document.querySelector("#editor-side-menu");
-    if (!dragHandleElement?.classList.contains("side-menu-hidden")) {
-      dragHandleElement?.classList.add("side-menu-hidden");
     }
   };
 
@@ -165,10 +154,9 @@ export function EditorContainer(props: Props) {
       <div
         ref={containerRef}
         id={`editor-container-${id}`}
-        onClick={handleContainerClick}
         onMouseLeave={handleContainerMouseLeave}
         className={cn(
-          `editor-container relative cursor-text line-spacing-${displayConfig.lineSpacing ?? DEFAULT_DISPLAY_CONFIG.lineSpacing}`,
+          `editor-container relative isolate cursor-text line-spacing-${displayConfig.lineSpacing ?? DEFAULT_DISPLAY_CONFIG.lineSpacing}`,
           {
             "active-editor": editor?.isFocused && editor?.isEditable,
           },
@@ -177,8 +165,16 @@ export function EditorContainer(props: Props) {
           editorContainerClassName
         )}
       >
+        {editor.isEditable && (
+          <button
+            type="button"
+            aria-label="Continue writing at end of document"
+            onClick={continueWriting}
+            className="absolute inset-0 -z-10 cursor-text rounded-[inherit] focus-visible:outline-2 focus-visible:outline-accent-strong"
+          />
+        )}
         {children}
-        {!isTouchDevice && <LinkContainer editor={editor} containerRef={containerRef} />}
+        {!isTouchDevice && supportsLinkPreview && <LinkContainer editor={editor} containerRef={containerRef} />}
       </div>
     </>
   );

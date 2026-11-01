@@ -22,7 +22,8 @@ const { renderToString } = webRequire("react-dom/server");
 const { hydrateRoot } = webRequire("react-dom/client");
 
 for (const browserReady of [false, true]) {
-  test(`translation provider hydrates a warm server with ${browserReady ? "warm" : "cold"} browser resources`, async () => {
+  // Register eagerly; node:test owns completion and reports failures before suite cleanup.
+  void test(`translation provider hydrates a warm server with ${browserReady ? "warm" : "cold"} browser resources`, async () => {
     startTranslations();
     await finishTranslations();
     const content = React.createElement(

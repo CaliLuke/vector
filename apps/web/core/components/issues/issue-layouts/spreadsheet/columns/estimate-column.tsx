@@ -5,18 +5,11 @@
  */
 
 // types
-import type { TIssue } from "@plane/types";
+import type { TSpreadsheetColumnProps } from "@plane/types";
 // components
 import { EstimateDropdown } from "@/components/dropdowns/estimate";
 
-type Props = {
-  issue: TIssue;
-  onClose: () => void;
-  onChange: (issue: TIssue, data: Partial<TIssue>, updates: any) => void;
-  disabled: boolean;
-};
-
-export const SpreadsheetEstimateColumn = function SpreadsheetEstimateColumn(props: Props) {
+export const SpreadsheetEstimateColumn = function SpreadsheetEstimateColumn(props: TSpreadsheetColumnProps) {
   const { issue, onChange, disabled, onClose } = props;
 
   return (

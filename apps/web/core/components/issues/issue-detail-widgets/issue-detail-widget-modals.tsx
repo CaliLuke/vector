@@ -28,160 +28,124 @@ type Props = {
   hideWidgets?: TWorkItemWidgets[];
 };
 
-export const IssueDetailWidgetModals = function IssueDetailWidgetModals(props: Props) {
-  const { workspaceSlug, projectId, issueId, issueServiceType, hideWidgets } = props;
-  // store hooks
+function SubIssueModals({ workspaceSlug, projectId, issueId, issueServiceType }: Props) {
   const {
-    isIssueLinkModalOpen,
-    toggleIssueLinkModal: toggleIssueLinkModalStore,
-    setIssueLinkData,
     isCreateIssueModalOpen,
     toggleCreateIssueModal,
     isSubIssuesModalOpen,
     toggleSubIssuesModal,
-    relationKey,
-    isRelationModalOpen,
-    setRelationKey,
     setLastWidgetAction,
-    toggleRelationModal,
     issueCrudOperationState,
     setIssueCrudOperationState,
   } = useIssueDetailUiState(issueServiceType);
-
-  // helper hooks
-  const subIssueOperations = useSubIssueOperations(workspaceSlug, projectId, issueId, issueServiceType);
-  const handleLinkOperations = useLinkOperations(workspaceSlug, projectId, issueId, issueServiceType);
-  const { create: createRelation } = useIssueRelations({
+  const { create, existing } = issueCrudOperationState;
+  const existingParentIssueId = existing.parentIssueId;
+  const createProjectId = create.projectId ?? projectId;
+  const existingProjectId = existing.projectId ?? projectId;
+  const createOperations = useSubIssueOperations(
     workspaceSlug,
-    projectId,
-    issueId,
-    serviceType: issueServiceType,
-  });
-
-  // handlers
-  const handleIssueCrudState = (
-    key: "create" | "existing",
-    _parentIssueId: string | null,
-    issue: TIssue | null = null
-  ) => {
+    createProjectId,
+    create.parentIssueId ?? issueId,
+    issueServiceType
+  );
+  const existingOperations = useSubIssueOperations(
+    workspaceSlug,
+    existingProjectId,
+    existingParentIssueId ?? issueId,
+    issueServiceType
+  );
+  const close = (kind: "create" | "existing") => {
     setIssueCrudOperationState({
       ...issueCrudOperationState,
-      [key]: {
-        toggle: !issueCrudOperationState[key].toggle,
-        parentIssueId: _parentIssueId,
-        issue: issue,
-      },
+      [kind]: { toggle: !issueCrudOperationState[kind].toggle, parentIssueId: null, projectId: null },
     });
-  };
-
-  const handleExistingIssuesModalClose = () => {
-    handleIssueCrudState("existing", null, null);
-    setLastWidgetAction("sub-work-items");
-    toggleSubIssuesModal(null);
-  };
-
-  const handleExistingIssuesModalOnSubmit = (issues: ISearchIssueResponse[]) =>
-    subIssueOperations.addSubIssue(workspaceSlug, projectId, issueId, issues);
-
-  const handleCreateUpdateModalClose = () => {
-    handleIssueCrudState("create", null, null);
-    toggleCreateIssueModal(false);
-    setLastWidgetAction("sub-work-items");
-  };
-
-  const handleCreateUpdateModalOnSubmit = async (_issue: TIssue) => {
-    if (_issue.parent_id) {
-      subIssueOperations.refreshSubIssues(_issue.parent_id);
+    if (kind === "create") {
+      toggleCreateIssueModal(false);
+      setLastWidgetAction("sub-work-items");
+    } else {
+      setLastWidgetAction("sub-work-items");
+      toggleSubIssuesModal(null);
     }
   };
-
-  const handleIssueLinkModalOnClose = () => {
-    toggleIssueLinkModalStore(false);
-    setLastWidgetAction("links");
-    setIssueLinkData(null);
-  };
-
-  const handleRelationOnClose = () => {
-    setRelationKey(null);
-    toggleRelationModal(null, null);
-    setLastWidgetAction("relations");
-  };
-
-  const handleExistingIssueModalOnSubmit = async (data: ISearchIssueResponse[]) => {
-    if (!relationKey) return;
-    if (await submitRelationSelection(data, relationKey, createRelation)) {
-      toggleRelationModal(null, null);
-    }
-  };
-
-  // helpers
-  const createUpdateModalData: Partial<TIssue> = {
-    parent_id: issueCrudOperationState?.create?.parentIssueId,
-    project_id: projectId,
-  };
-
-  const existingIssuesModalSearchParams = {
-    sub_issue: true,
-    issue_id: issueCrudOperationState?.existing?.parentIssueId,
-  };
-
-  // render conditions
-  const shouldRenderExistingIssuesModal =
-    !hideWidgets?.includes("sub-work-items") &&
-    issueCrudOperationState?.existing?.toggle &&
-    issueCrudOperationState?.existing?.parentIssueId &&
-    isSubIssuesModalOpen;
-
-  const shouldRenderCreateUpdateModal =
-    !hideWidgets?.includes("sub-work-items") &&
-    issueCrudOperationState?.create?.toggle &&
-    issueCrudOperationState?.create?.parentIssueId &&
-    isCreateIssueModalOpen;
-
   return (
     <>
-      {!hideWidgets?.includes("links") && (
-        <IssueLinkCreateUpdateModal
-          isModalOpen={isIssueLinkModalOpen}
-          handleOnClose={handleIssueLinkModalOnClose}
-          linkOperations={handleLinkOperations}
-          issueServiceType={issueServiceType}
-        />
-      )}
-
-      {shouldRenderCreateUpdateModal && (
+      {create.toggle && create.parentIssueId && isCreateIssueModalOpen && (
         <CreateUpdateIssueModal
-          isOpen={issueCrudOperationState?.create?.toggle}
-          data={createUpdateModalData}
-          onClose={handleCreateUpdateModalClose}
-          onSubmit={handleCreateUpdateModalOnSubmit}
+          isOpen={create.toggle}
+          data={{ parent_id: create.parentIssueId, project_id: createProjectId }}
+          onClose={() => close("create")}
+          onSubmit={async (issue: TIssue) => {
+            if (issue.parent_id) createOperations.refreshSubIssues(issue.parent_id);
+          }}
           isProjectSelectionDisabled
         />
       )}
-
-      {shouldRenderExistingIssuesModal && (
+      {existing.toggle && existingParentIssueId && isSubIssuesModalOpen && (
         <ExistingIssuesListModal
           workspaceSlug={workspaceSlug}
-          projectId={projectId}
-          isOpen={issueCrudOperationState?.existing?.toggle}
-          handleClose={handleExistingIssuesModalClose}
-          searchParams={existingIssuesModalSearchParams}
+          projectId={existingProjectId}
+          isOpen={existing.toggle}
+          handleClose={() => close("existing")}
+          searchParams={{ sub_issue: true, issue_id: existingParentIssueId }}
           workspaceLevelToggle
-          handleOnSubmit={handleExistingIssuesModalOnSubmit}
-        />
-      )}
-
-      {!hideWidgets?.includes("relations") && (
-        <ExistingIssuesListModal
-          workspaceSlug={workspaceSlug}
-          projectId={projectId}
-          isOpen={isRelationModalOpen?.issueId === issueId && isRelationModalOpen?.relationType === relationKey}
-          handleClose={handleRelationOnClose}
-          searchParams={{ issue_relation: true, issue_id: issueId }}
-          handleOnSubmit={handleExistingIssueModalOnSubmit}
-          workspaceLevelToggle
+          handleOnSubmit={(issues) =>
+            existingOperations.addSubIssue(workspaceSlug, existingProjectId, existingParentIssueId, issues)
+          }
         />
       )}
     </>
   );
-};
+}
+
+function IssueLinkModal({ workspaceSlug, projectId, issueId, issueServiceType }: Props) {
+  const { isIssueLinkModalOpen, toggleIssueLinkModal, setIssueLinkData, setLastWidgetAction } =
+    useIssueDetailUiState(issueServiceType);
+  const operations = useLinkOperations(workspaceSlug, projectId, issueId, issueServiceType);
+  return (
+    <IssueLinkCreateUpdateModal
+      isModalOpen={isIssueLinkModalOpen}
+      handleOnClose={() => {
+        toggleIssueLinkModal(false);
+        setLastWidgetAction("links");
+        setIssueLinkData(null);
+      }}
+      linkOperations={operations}
+      issueServiceType={issueServiceType}
+    />
+  );
+}
+
+function IssueRelationModal({ workspaceSlug, projectId, issueId, issueServiceType }: Props) {
+  const { relationKey, isRelationModalOpen, setRelationKey, setLastWidgetAction, toggleRelationModal } =
+    useIssueDetailUiState(issueServiceType);
+  const { create } = useIssueRelations({ workspaceSlug, projectId, issueId, serviceType: issueServiceType });
+  const submit = async (data: ISearchIssueResponse[]) => {
+    if (relationKey && (await submitRelationSelection(data, relationKey, create))) toggleRelationModal(null, null);
+  };
+  return (
+    <ExistingIssuesListModal
+      workspaceSlug={workspaceSlug}
+      projectId={projectId}
+      isOpen={isRelationModalOpen?.issueId === issueId && isRelationModalOpen?.relationType === relationKey}
+      handleClose={() => {
+        setRelationKey(null);
+        toggleRelationModal(null, null);
+        setLastWidgetAction("relations");
+      }}
+      searchParams={{ issue_relation: true, issue_id: issueId }}
+      handleOnSubmit={submit}
+      workspaceLevelToggle
+    />
+  );
+}
+
+export function IssueDetailWidgetModals(props: Props) {
+  const hidden = props.hideWidgets ?? [];
+  return (
+    <>
+      {!hidden.includes("links") && <IssueLinkModal {...props} />}
+      {!hidden.includes("sub-work-items") && <SubIssueModals {...props} />}
+      {!hidden.includes("relations") && <IssueRelationModal {...props} />}
+    </>
+  );
+}

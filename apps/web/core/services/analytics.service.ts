@@ -21,11 +21,7 @@ export class AnalyticsService extends APIService {
   }
 
   private getAnalyticsData<T>(url: string, params: object, signal?: AbortSignal): Promise<T> {
-    return this.get(url, { params, signal })
-      .then((res) => res?.data)
-      .catch((err) => {
-        throw err?.response?.data;
-      });
+    return this.responseData(this.get(url, { params, signal }));
   }
 
   async getAdvanceAnalytics<T extends IAnalyticsResponse>(

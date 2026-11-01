@@ -203,7 +203,10 @@ export function CreateWorkspaceForm({ onSubmit, secondaryButton, primaryButtonTe
               <span>{t("workspace_creation.form.organization_size.label")}</span>
               <CustomSelect
                 value={field.state.value}
-                onChange={(value: string) => field.handleChange(value)}
+                onChange={(value) => {
+                  if (value === null) return;
+                  return field.handleChange(value);
+                }}
                 disabled={isSubmitting || create.isSuccess}
                 label={field.state.value || t("workspace_creation.form.organization_size.placeholder")}
                 buttonClassName="border border-subtle bg-layer-2 !shadow-none !rounded-md"

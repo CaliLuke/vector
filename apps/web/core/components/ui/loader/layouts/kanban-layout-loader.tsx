@@ -54,11 +54,13 @@ export function KanbanColumnLoader({
 
 KanbanIssueBlockLoader.displayName = "KanbanIssueBlockLoader";
 
-export function KanbanLayoutLoader({ cardsInEachColumn = [2, 3, 2, 4, 3] }: { cardsInEachColumn?: number[] }) {
+const DEFAULT_COLUMN_COUNTS = [2, 3, 2, 4, 3];
+
+export function KanbanLayoutLoader({ cardsInEachColumn = DEFAULT_COLUMN_COUNTS }: { cardsInEachColumn?: number[] }) {
   return (
     <ContentWrapper className="flex-row gap-5 overflow-x-auto py-1.5">
-      {cardsInEachColumn.map((cardsInColumn, columnIndex) => (
-        <KanbanColumnLoader key={columnIndex} cardsInColumn={cardsInColumn} />
+      {range(cardsInEachColumn.length).map((columnSlot) => (
+        <KanbanColumnLoader key={columnSlot} cardsInColumn={cardsInEachColumn[columnSlot]} />
       ))}
     </ContentWrapper>
   );

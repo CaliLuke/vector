@@ -1,10 +1,11 @@
+import type { IssueQuickAddCallback } from "../quick-add/types";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
 
-import type { IIssueDisplayFilterOptions, TIssue, TIssueMap, TPaginationData } from "@plane/types";
+import type { IIssueDisplayFilterOptions, TIssueMap, TPaginationData } from "@plane/types";
 import type { IssueListGroupedIds } from "@/queries/issue-lists";
 import type { TRenderQuickActions } from "../list/list-view-types";
 
@@ -23,7 +24,7 @@ export type CalendarDayContentProps = {
   getGroupIssueCount: (groupId: string | undefined) => number | undefined;
   enableQuickIssueCreate?: boolean;
   disableIssueCreation?: boolean;
-  quickAddCallback?: (projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>;
+  quickAddCallback?: IssueQuickAddCallback;
   quickActions: TRenderQuickActions;
   addIssuesToView?: (issueIds: string[]) => Promise<unknown>;
   readOnly?: boolean;

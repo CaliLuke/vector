@@ -6,7 +6,7 @@
 
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import type { TIssue, TIssueLink, TIssueRelationTypes, TIssueServiceType, TWorkItemWidgets } from "@plane/types";
+import type { TIssueLink, TIssueRelationTypes, TIssueServiceType, TWorkItemWidgets } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
 
 export type TPeekIssue = {
@@ -22,7 +22,7 @@ type TIssueRelationModal = {
   relationType: TIssueRelationTypes | null;
 };
 
-type TIssueCrudState = { toggle: boolean; parentIssueId: string | undefined; issue: TIssue | undefined };
+type TIssueCrudState = { toggle: boolean; parentIssueId: string | undefined; projectId: string | undefined };
 
 type TIssueCrudOperationState = {
   create: TIssueCrudState;
@@ -65,8 +65,8 @@ const IssueUiContext = createContext<IssueDetailUiState | undefined>(undefined);
 const EpicUiContext = createContext<IssueDetailUiState | undefined>(undefined);
 
 const initialCrudState = (): TIssueCrudOperationState => ({
-  create: { toggle: false, parentIssueId: undefined, issue: undefined },
-  existing: { toggle: false, parentIssueId: undefined, issue: undefined },
+  create: { toggle: false, parentIssueId: undefined, projectId: undefined },
+  existing: { toggle: false, parentIssueId: undefined, projectId: undefined },
 });
 
 function useInitialUiState(): IssueDetailUiState {

@@ -15,7 +15,8 @@ const substitutes = {
 
 registerDropdownSourceModules("custom-select.tsx", substitutes);
 
-test("CustomSelect forwards the TanStack Form field ref to its trigger", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("CustomSelect forwards the TanStack Form field ref to its trigger", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   const errors = [];

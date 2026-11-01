@@ -155,8 +155,8 @@ export const useStickyOperations = (props: TProps) => {
   };
   const updatePosition: TOperations["updatePosition"] = async (_workspace, sourceId, targetId, edge) => {
     if (sourceId === targetId || (edge !== "reorder-above" && edge !== "reorder-below")) return;
-    const sort_order = reorderedSortOrder([...stickies.values()], sourceId, targetId, edge);
     try {
+      const sort_order = reorderedSortOrder([...stickies.values()], sourceId, targetId, edge);
       await update(sourceId, { sort_order });
     } catch {
       // The update operation already reports failures to the user.

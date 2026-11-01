@@ -45,7 +45,7 @@ export const SubIssueDisplayFilters = function SubIssueDisplayFilters(props: TSu
 
   return (
     <>
-      {layoutDisplayFiltersOptions?.display_filters && layoutDisplayFiltersOptions?.display_properties.length > 0 && (
+      {layoutDisplayFiltersOptions?.display_filters && layoutDisplayFiltersOptions.display_properties.length > 0 && (
         <FiltersDropdown
           placement="bottom-end"
           menuButton={
@@ -75,7 +75,7 @@ export const SubIssueDisplayFilters = function SubIssueDisplayFilters(props: TSu
             <div className="py-2">
               <FilterGroupBy
                 displayFilters={displayFilters}
-                groupByOptions={layoutDisplayFiltersOptions?.display_filters.group_by ?? []}
+                groupByOptions={layoutDisplayFiltersOptions.display_filters.group_by ?? []}
                 handleUpdate={(val) =>
                   handleDisplayFiltersUpdate({
                     group_by: val,
@@ -86,16 +86,16 @@ export const SubIssueDisplayFilters = function SubIssueDisplayFilters(props: TSu
             </div>
 
             {/* order by */}
-            {!isEmpty(layoutDisplayFiltersOptions?.display_filters?.order_by) && (
+            {!isEmpty(layoutDisplayFiltersOptions.display_filters.order_by) && (
               <div className="py-2">
                 <FilterOrderBy
-                  selectedOrderBy={displayFilters?.order_by}
+                  selectedOrderBy={displayFilters.order_by}
                   handleUpdate={(val) =>
                     handleDisplayFiltersUpdate({
                       order_by: val,
                     })
                   }
-                  orderByOptions={layoutDisplayFiltersOptions?.display_filters.order_by ?? []}
+                  orderByOptions={layoutDisplayFiltersOptions.display_filters.order_by ?? []}
                 />
               </div>
             )}

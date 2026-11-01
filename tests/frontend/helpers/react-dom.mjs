@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { setTimeout as settleCleanup } from "node:timers/promises";
 import { JSDOM } from "jsdom";
 
@@ -118,4 +119,18 @@ export async function createReactDomTestEnvironment() {
       }
     },
   };
+}
+
+export async function waitForReactCondition(condition, message, timeoutMs = 2_000) {
+  const deadline = performance.now() + timeoutMs;
+  const poll = async () => {
+    if (condition() || performance.now() >= deadline) return;
+    // Finish each act scope so React can commit before the next condition check.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+    return poll();
+  };
+  await poll();
+  assert.ok(condition(), message);
 }

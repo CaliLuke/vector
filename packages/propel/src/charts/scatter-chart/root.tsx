@@ -5,23 +5,14 @@
  */
 
 import React, { useMemo, useState } from "react";
-import {
-  CartesianGrid,
-  ScatterChart as CoreScatterChart,
-  Legend,
-  Scatter,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { CartesianGrid, ScatterChart as CoreScatterChart, Scatter, ResponsiveContainer } from "recharts";
 // plane imports
-import { AXIS_LABEL_CLASSNAME } from "@plane/constants";
 import type { TScatterChartProps } from "@plane/types";
+import { chartMargin } from "../components/layout";
 // local components
-import { getLegendProps } from "../components/legend";
-import { CustomXAxisTick, CustomYAxisTick } from "../components/tick";
-import { CustomTooltip } from "../components/tooltip";
+import { ChartLegend } from "../components/legend";
+import { ChartXAxis, ChartYAxis } from "../components/cartesian-axes";
+import { ChartTooltip } from "../components/tooltip";
 
 export const ScatterChart = React.memo(function ScatterChart<K extends string, T extends string>(
   props: TScatterChartProps<K, T>
@@ -79,86 +70,18 @@ export const ScatterChart = React.memo(function ScatterChart<K extends string, T
   return (
     <div className={className}>
       <ResponsiveContainer width="100%" height="100%">
-        <CoreScatterChart
-          data={data}
-          margin={{
-            top: margin?.top === undefined ? 5 : margin.top,
-            right: margin?.right === undefined ? 30 : margin.right,
-            bottom: margin?.bottom === undefined ? 5 : margin.bottom,
-            left: margin?.left === undefined ? 20 : margin.left,
-          }}
-        >
+        <CoreScatterChart data={data} margin={chartMargin(margin)}>
           <CartesianGrid stroke="var(--border-color-subtle)" vertical={false} />
-          <XAxis
-            dataKey={xAxis.key}
-            tick={(props) => {
-              const TickComponent = customTicks?.x || CustomXAxisTick;
-              return <TickComponent {...props} />;
-            }}
-            tickLine={false}
-            axisLine={false}
-            label={
-              xAxis.label && {
-                value: xAxis.label,
-                dy: 28,
-                className: AXIS_LABEL_CLASSNAME,
-              }
-            }
-            tickCount={tickCount.x}
-          />
-          <YAxis
-            domain={yAxis.domain}
-            tickLine={false}
-            axisLine={false}
-            label={
-              yAxis.label && {
-                value: yAxis.label,
-                angle: -90,
-                position: "bottom",
-                offset: -24,
-                dx: yAxis.dx ?? -16,
-                className: AXIS_LABEL_CLASSNAME,
-              }
-            }
-            tick={(props) => {
-              const TickComponent = customTicks?.y || CustomYAxisTick;
-              return <TickComponent {...props} />;
-            }}
-            tickCount={tickCount.y}
-            allowDecimals={!!yAxis.allowDecimals}
-          />
-          {legend && (
-            <Legend
-              onMouseEnter={(payload) => setActiveLegend(payload.value ?? null)}
-              onMouseLeave={() => setActiveLegend(null)}
-              formatter={(value) => itemLabels[value]}
-              {...getLegendProps(legend)}
-            />
-          )}
+          <ChartXAxis axis={{ ...xAxis, dy: 28 }} tick={customTicks?.x} tickCount={tickCount.x} />
+          <ChartYAxis axis={yAxis} tick={customTicks?.y} tickCount={tickCount.y} labelOffset={-24} />
+          {legend && <ChartLegend options={legend} labels={itemLabels} onActiveChange={setActiveLegend} />}
           {showTooltip && (
-            <Tooltip
-              cursor={{
-                stroke: "var(--text-color-tertiary)",
-                strokeDasharray: "4 4",
-              }}
-              wrapperStyle={{
-                pointerEvents: "auto",
-              }}
-              content={({ active, label, payload }) =>
-                customTooltipContent ? (
-                  customTooltipContent({ active, label: String(label ?? ""), payload })
-                ) : (
-                  <CustomTooltip
-                    active={active}
-                    activeKey={activePoint}
-                    label={label}
-                    payload={payload}
-                    itemKeys={itemKeys}
-                    itemLabels={itemLabels}
-                    itemDotColors={itemDotColors}
-                  />
-                )
-              }
+            <ChartTooltip
+              activeKey={activePoint}
+              itemKeys={itemKeys}
+              itemLabels={itemLabels}
+              itemDotColors={itemDotColors}
+              renderContent={customTooltipContent}
             />
           )}
           {renderPoints}

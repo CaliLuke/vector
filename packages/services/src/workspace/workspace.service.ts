@@ -27,11 +27,7 @@ export class WorkspaceService extends APIService {
    * @throws {Error} If the API request fails
    */
   async list(): Promise<IWorkspace[]> {
-    return this.get("/api/users/me/workspaces/")
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get("/api/users/me/workspaces/"));
   }
 
   /**
@@ -41,11 +37,7 @@ export class WorkspaceService extends APIService {
    * @throws {Error} If the API request fails
    */
   async retrieve(workspaceSlug: string): Promise<IWorkspace> {
-    return this.get(`/api/workspaces/${workspaceSlug}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/`), "response");
   }
 
   /**
@@ -55,11 +47,7 @@ export class WorkspaceService extends APIService {
    * @throws {Error} If the API request fails
    */
   async create(data: Partial<IWorkspace>): Promise<IWorkspace> {
-    return this.post("/api/workspaces/", data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.post("/api/workspaces/", data));
   }
 
   /**
@@ -70,25 +58,17 @@ export class WorkspaceService extends APIService {
    * @throws {Error} If the API request fails
    */
   async update(workspaceSlug: string, data: Partial<IWorkspace>): Promise<IWorkspace> {
-    return this.patch(`/api/workspaces/${workspaceSlug}/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.patch(`/api/workspaces/${workspaceSlug}/`, data));
   }
 
   /**
    * Deletes a workspace
    * @param {string} workspaceSlug - The unique slug identifier for the workspace
-   * @returns {Promise<any>} Promise resolving to the deletion response
+   * @returns {Promise<unknown>} Promise resolving to the deletion response
    * @throws {Error} If the API request fails
    */
-  async destroy(workspaceSlug: string): Promise<any> {
-    return this.delete(`/api/workspaces/${workspaceSlug}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async destroy(workspaceSlug: string): Promise<unknown> {
+    return this.responseData(this.delete(`/api/workspaces/${workspaceSlug}/`));
   }
 
   /**
@@ -97,25 +77,17 @@ export class WorkspaceService extends APIService {
    * @throws {Error} If the API request fails
    */
   async lastVisited(): Promise<ILastActiveWorkspaceDetails> {
-    return this.get("/api/users/last-visited-workspace/")
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get("/api/users/last-visited-workspace/"));
   }
 
   /**
    * Checks if a workspace slug is available
    * @param {string} slug - The workspace slug to check
-   * @returns {Promise<any>} Promise resolving to slug availability status
+   * @returns {Promise<unknown>} Promise resolving to slug availability status
    * @throws {Error} If the API request fails
    */
-  async slugCheck(slug: string): Promise<any> {
-    return this.get(`/api/workspace-slug-check/?slug=${slug}`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async slugCheck(slug: string): Promise<{ status: boolean }> {
+    return this.responseData(this.get(`/api/workspace-slug-check/?slug=${slug}`));
   }
 
   /**
@@ -136,12 +108,10 @@ export class WorkspaceService extends APIService {
       workspace_search: boolean;
     }
   ): Promise<IWorkspaceSearchResults> {
-    return this.get(`/api/workspaces/${workspaceSlug}/search/`, {
-      params,
-    })
-      .then((res) => res?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/search/`, {
+        params,
+      })
+    );
   }
 }

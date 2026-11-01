@@ -52,7 +52,7 @@ export const AddFilterDropdown = function AddFilterDropdown<P extends TFilterPro
   const displayOptions = allFiltersApplied
     ? [
         {
-          value: "all_filters_applied",
+          value: null,
           content: <div className="text-placeholder italic">All filters applied</div>,
           query: "all filters applied",
           disabled: true,
@@ -79,8 +79,8 @@ export const AddFilterDropdown = function AddFilterDropdown<P extends TFilterPro
     <div className="relative transition-all duration-200 ease-in-out">
       <CustomSearchSelect
         defaultOpen={defaultOpen}
-        value={""}
-        onChange={handleFilterSelect}
+        value={null}
+        onChange={(selection) => (selection !== null ? handleFilterSelect(selection) : undefined)}
         options={displayOptions}
         optionsClassName="w-56"
         maxHeight="2xl"

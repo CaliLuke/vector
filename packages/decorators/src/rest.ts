@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import "reflect-metadata";
+import { defineMetadata } from "reflect-metadata/no-conflict";
 import type { RequestHandler } from "express";
+import { controllerMiddlewares } from "./metadata";
 
 // Define valid HTTP methods
 type RestMethod = "get" | "post" | "put" | "patch" | "delete";
@@ -16,9 +17,8 @@ type RestMethod = "get" | "post" | "put" | "patch" | "delete";
  * @returns
  */
 export function Controller(baseRoute: string = ""): ClassDecorator {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  return function (target: Function) {
-    Reflect.defineMetadata("baseRoute", baseRoute, target);
+  return function (target) {
+    defineMetadata("baseRoute", baseRoute, target);
   };
 }
 
@@ -30,8 +30,8 @@ export function Controller(baseRoute: string = ""): ClassDecorator {
 function createHttpMethodDecorator(method: RestMethod): (route: string) => MethodDecorator {
   return function (route: string): MethodDecorator {
     return function (target: object, propertyKey: string | symbol) {
-      Reflect.defineMetadata("method", method, target, propertyKey);
-      Reflect.defineMetadata("route", route, target, propertyKey);
+      defineMetadata("method", method, target, propertyKey);
+      defineMetadata("route", route, target, propertyKey);
     };
   };
 }
@@ -50,8 +50,6 @@ export const Delete = createHttpMethodDecorator("delete");
  */
 export function Middleware(middleware: RequestHandler): MethodDecorator {
   return function (target: object, propertyKey: string | symbol) {
-    const middlewares = Reflect.getMetadata("middlewares", target, propertyKey) || [];
-    middlewares.push(middleware);
-    Reflect.defineMetadata("middlewares", middlewares, target, propertyKey);
+    defineMetadata("middlewares", [...controllerMiddlewares(target, propertyKey), middleware], target, propertyKey);
   };
 }

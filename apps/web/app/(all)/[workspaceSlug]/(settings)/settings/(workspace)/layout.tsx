@@ -38,10 +38,9 @@ function WorkspaceSettingLayout(): React.JSX.Element | null {
 
   return (
     <>
-      <SettingsMobileNav
-        hamburgerContent={WorkspaceSettingsSidebarRoot}
-        activePath={getWorkspaceActivePath(pathname) || ""}
-      />
+      <SettingsMobileNav activePath={getWorkspaceActivePath(pathname) || ""}>
+        <WorkspaceSettingsSidebarRoot className="max-h-100 rounded-lg border border-subtle pb-3" />
+      </SettingsMobileNav>
       <div className="inset-y-0 flex h-full w-full flex-row">
         {!isAuthorized ? (
           <NotAuthorizedView section="settings" className="h-auto" />

@@ -23,7 +23,7 @@ export function autolink(options: AutolinkOptions): Plugin {
       const preventAutolink = transactions.some((transaction) => transaction.getMeta("preventAutolink"));
 
       if (!docChanges || preventAutolink) {
-        return;
+        return undefined;
       }
 
       const { tr } = newState;
@@ -73,7 +73,8 @@ export function autolink(options: AutolinkOptions): Plugin {
             .filter((link) => link.isLink)
             // Calculate link position.
             .map((link) => ({
-              ...link,
+              href: link.href,
+              value: link.value,
               from: lastWordAndBlockOffset + link.start + 1,
               to: lastWordAndBlockOffset + link.end + 1,
             }))
@@ -107,10 +108,12 @@ export function autolink(options: AutolinkOptions): Plugin {
               );
             });
         }
+
+        return undefined;
       });
 
       if (!tr.steps.length) {
-        return;
+        return undefined;
       }
 
       return tr;

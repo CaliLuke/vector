@@ -26,7 +26,7 @@ export const IssueLinksActionButton = function IssueLinksActionButton(props: Pro
   const { toggleIssueLinkModal } = useIssueDetailUiState(issueServiceType);
 
   // handlers
-  const handleOnClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleOnClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     toggleIssueLinkModal(true);

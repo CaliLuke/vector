@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { Link } from "@tanstack/react-router";
+import { isRecord } from "@plane/utils/common";
 
 import { Disclosure } from "@headlessui/react";
 // plane imports
@@ -16,7 +16,7 @@ import type { IUser, IWorkspaceMember } from "@plane/types";
 // plane ui
 import { CustomSelect, PopoverMenu } from "@plane/ui";
 // helpers
-import { getFileURL } from "@plane/utils/file";
+import { MemberProfileAvatar } from "@/components/common/member-profile-avatar";
 // hooks
 import { useWorkspacePermissions } from "@/hooks/use-permissions";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -40,7 +40,7 @@ type AccountTypeProps = {
 export function NameColumn(props: NameProps) {
   const { rowData, workspaceSlug, isAdmin, currentUser, setRemoveMemberModal } = props;
   // derived values
-  const { avatar_url, display_name, email, first_name, id, last_name } = rowData.member;
+  const { first_name, id, last_name } = rowData.member;
   const isSuspended = rowData.is_active === false;
 
   return (
@@ -53,22 +53,12 @@ export function NameColumn(props: NameProps) {
                 <div className="rounded-full bg-layer-1">
                   <SuspendedUserIcon className="size-6 text-placeholder" />
                 </div>
-              ) : avatar_url && avatar_url.trim() !== "" ? (
-                <Link to="/$workspaceSlug/profile/$userId/" params={{ workspaceSlug: workspaceSlug, userId: id }}>
-                  <span className="relative flex size-6 items-center justify-center rounded-full text-on-color capitalize">
-                    <img
-                      src={getFileURL(avatar_url)}
-                      className="absolute top-0 left-0 h-full w-full rounded-full object-cover"
-                      alt={display_name || email}
-                    />
-                  </span>
-                </Link>
               ) : (
-                <Link to="/$workspaceSlug/profile/$userId/" params={{ workspaceSlug: workspaceSlug, userId: id }}>
-                  <span className="relative flex size-6 items-center justify-center rounded-full bg-layer-3 text-11 text-tertiary capitalize">
-                    {(email ?? display_name ?? "?")[0]}
-                  </span>
-                </Link>
+                <MemberProfileAvatar
+                  member={rowData.member}
+                  workspaceSlug={workspaceSlug}
+                  fallbackTextClassName="text-tertiary"
+                />
               )}
               <span className={isSuspended ? "text-placeholder" : ""}>
                 {first_name} {last_name}
@@ -82,21 +72,14 @@ export function NameColumn(props: NameProps) {
                 popoverClassName="justify-end"
                 buttonClassName="outline-none	origin-center rotate-90 size-8 aspect-square flex-shrink-0 grid place-items-center opacity-0 group-hover:opacity-100 transition-opacity"
                 render={() => (
-                  <div
-                    role="button"
-                    tabIndex={0}
+                  <button
+                    type="button"
                     className="flex cursor-pointer items-center gap-x-3"
                     onClick={() => setRemoveMemberModal(rowData)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        setRemoveMemberModal(rowData);
-                      }
-                    }}
                     data-ph-element={MEMBER_TRACKER_ELEMENTS.WORKSPACE_MEMBER_TABLE_CONTEXT_MENU}
                   >
                     <TrashIcon className="size-3.5 align-middle" /> {id === currentUser?.id ? "Leave " : "Remove "}
-                  </div>
+                  </button>
                 )}
               />
             )}
@@ -136,19 +119,21 @@ export function AccountTypeColumn(props: AccountTypeProps) {
       ) : (
         <CustomSelect
           value={rowData.role}
-          onChange={(value: EUserPermissions) =>
-            roleMutation.mutate(value, {
+          onChange={(value) => {
+            if (value === null) return;
+            return roleMutation.mutate(value, {
               onError: (error: unknown) => {
-                const response = error as { error?: string | string[] };
-                const message = Array.isArray(response?.error) ? response.error[0] : response?.error;
+                const detail = isRecord(error) ? error.error : undefined;
+                const first = Array.isArray(detail) ? detail[0] : detail;
+                const message = typeof first === "string" ? first : undefined;
                 setToast({
                   type: TOAST_TYPE.ERROR,
                   title: "Error!",
                   message: message ?? "An error occurred while updating member role. Please try again.",
                 });
               },
-            })
-          }
+            });
+          }}
           disabled={roleMutation.isPending}
           label={
             <div className="flex">
@@ -159,9 +144,9 @@ export function AccountTypeColumn(props: AccountTypeProps) {
           className="w-32 rounded-md p-0"
           input
         >
-          {Object.entries(ROLE).map(([role, label]) => (
-            <CustomSelect.Option key={role} value={Number(role)}>
-              {label}
+          {[EUserPermissions.GUEST, EUserPermissions.MEMBER, EUserPermissions.ADMIN].map((role) => (
+            <CustomSelect.Option key={role} value={role}>
+              {ROLE[role]}
             </CustomSelect.Option>
           ))}
         </CustomSelect>

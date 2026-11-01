@@ -1,3 +1,4 @@
+import type { IssueQuickAddCallback } from "../quick-add/types";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -9,7 +10,7 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { autoScrollForElements } from "@atlaskit/pragmatic-drag-and-drop-auto-scroll/element";
 // plane constants
 // types
-import type { IIssueDisplayFilterOptions, TIssue, TIssueMap, TPaginationData, ICalendarPayload } from "@plane/types";
+import type { IIssueDisplayFilterOptions, TIssueMap, TPaginationData, ICalendarPayload } from "@plane/types";
 import { EIssueLayoutTypes } from "@plane/types";
 // ui
 import { Spinner } from "@plane/ui";
@@ -46,7 +47,7 @@ type Props = {
   loadMoreIssues: (dateString: string) => void;
   getPaginationData: (groupId: string | undefined) => TPaginationData | undefined;
   getGroupIssueCount: (groupId: string | undefined) => number | undefined;
-  quickAddCallback?: (projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>;
+  quickAddCallback?: IssueQuickAddCallback;
   quickActions: TRenderQuickActions;
   handleDragAndDrop: (
     issueId: string | undefined,

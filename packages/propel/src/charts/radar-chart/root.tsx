@@ -5,25 +5,16 @@
  */
 
 import { useMemo, useState } from "react";
-import {
-  PolarGrid,
-  Radar,
-  RadarChart as CoreRadarChart,
-  ResponsiveContainer,
-  PolarAngleAxis,
-  Tooltip,
-  Legend,
-} from "recharts";
+import { PolarGrid, Radar, RadarChart as CoreRadarChart, ResponsiveContainer, PolarAngleAxis } from "recharts";
 import type { TRadarChartProps } from "@plane/types";
-import { getLegendProps } from "../components/legend";
+import { KeyedChartLegend } from "../components/legend";
 import { CustomRadarAxisTick } from "../components/tick";
-import { CustomTooltip } from "../components/tooltip";
+import { ChartTooltip } from "../components/tooltip";
 
 function RadarChart<T extends string, K extends string>(props: TRadarChartProps<T, K>) {
   const { data, radars, margin, showTooltip, legend, className, angleAxis } = props;
 
   // states
-  const [, setActiveIndex] = useState<number | null>(null);
   const [activeLegend, setActiveLegend] = useState<string | null>(null);
 
   const { itemKeys, itemLabels, itemDotColors } = useMemo(() => {
@@ -44,41 +35,16 @@ function RadarChart<T extends string, K extends string>(props: TRadarChartProps<
       <ResponsiveContainer width="100%" height="100%">
         <CoreRadarChart cx="50%" cy="50%" outerRadius="80%" data={data} margin={margin}>
           <PolarGrid stroke="var(--border-color-subtle)" />
-          <PolarAngleAxis dataKey={angleAxis.key} tick={(props) => <CustomRadarAxisTick {...props} />} />
+          <PolarAngleAxis dataKey={angleAxis.key} tick={<CustomRadarAxisTick />} />
           {showTooltip && (
-            <Tooltip
-              cursor={{
-                stroke: "var(--text-color-tertiary)",
-                strokeDasharray: "4 4",
-              }}
-              wrapperStyle={{
-                pointerEvents: "auto",
-              }}
-              content={({ active, label, payload }) => (
-                <CustomTooltip
-                  active={active}
-                  activeKey={activeLegend}
-                  label={label}
-                  payload={payload}
-                  itemKeys={itemKeys}
-                  itemLabels={itemLabels}
-                  itemDotColors={itemDotColors}
-                />
-              )}
+            <ChartTooltip
+              activeKey={activeLegend}
+              itemKeys={itemKeys}
+              itemLabels={itemLabels}
+              itemDotColors={itemDotColors}
             />
           )}
-          {legend && (
-            <Legend
-              onMouseEnter={(payload) => {
-                const key = payload.payload && "key" in payload.payload ? String(payload.payload.key) : undefined;
-                if (!key) return;
-                setActiveLegend(key);
-                setActiveIndex(null);
-              }}
-              onMouseLeave={() => setActiveLegend(null)}
-              {...getLegendProps(legend)}
-            />
-          )}
+          {legend && <KeyedChartLegend options={legend} onActiveChange={setActiveLegend} />}
           {radars.map((radar) => (
             <Radar
               key={radar.key}

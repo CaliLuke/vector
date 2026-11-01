@@ -12,11 +12,11 @@ import { Tooltip } from "@plane/propel/tooltip";
 // plane utils
 import { cn } from "@plane/utils/common";
 
-type Props = {
-  onChange: (value: number) => void;
-  value: number;
+type Props<T extends number> = {
+  onChange: (value: T) => void;
+  value: T;
   accessSpecifiers: {
-    key: number;
+    key: T;
     i18n_label?: string;
     label?: string;
     icon: LucideIcon | React.FC<ISvgIcons>;
@@ -25,24 +25,25 @@ type Props = {
 };
 
 // TODO: Remove label once i18n is done
-export function AccessField(props: Props) {
+export function AccessField<T extends number>(props: Props<T>) {
   const { onChange, value, accessSpecifiers, isMobile = false } = props;
   const { t } = useTranslation();
 
   return (
     <div className="flex flex-shrink-0 items-stretch gap-0.5 rounded-sm border-[1px] border-subtle p-1">
-      {accessSpecifiers.map((access, index) => {
+      {accessSpecifiers.map((access) => {
         const label = access.i18n_label ? t(access.i18n_label) : access.label;
         return (
           <Tooltip key={access.key} tooltipContent={label} isMobile={isMobile}>
             <button
               type="button"
+              aria-label={label}
+              aria-pressed={value === access.key}
               onClick={() => onChange(access.key)}
               className={cn(
                 "relative flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-xs p-1 transition-all",
                 value === access.key ? "bg-layer-1" : "hover:bg-layer-1"
               )}
-              tabIndex={2 + index}
             >
               <access.icon
                 className={cn("h-3.5 w-3.5 transition-all", value === access.key ? "text-primary" : "text-placeholder")}

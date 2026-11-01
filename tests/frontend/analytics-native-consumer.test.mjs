@@ -3,7 +3,8 @@ import test from "node:test";
 import { registerHooks } from "node:module";
 import { createModuleStub } from "./helpers/module-stubs.mjs";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
-import { React } from "./helpers/react.mjs";
+import { React, webRequire } from "./helpers/react.mjs";
+import { pathToFileURL } from "node:url";
 import { createRouterFixture } from "./helpers/router.mjs";
 import { waitForDom } from "./helpers/wait-for-dom.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
@@ -11,7 +12,9 @@ import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 registerWebModuleHooks();
 
 globalThis.analyticsNativeConsumerReact = React;
+globalThis.analyticsNativeConsumerDownloads = [];
 const sources = {
+  "export-to-csv": `export {generateCsv,mkConfig} from ${JSON.stringify(pathToFileURL(webRequire.resolve("export-to-csv")).href)};export const download=config=>csv=>globalThis.analyticsNativeConsumerDownloads.push({config,csv});`,
   "@plane/i18n": `export const useTranslation=()=>({t:(key)=>key});`,
   "@plane/propel/button": `const React=globalThis.analyticsNativeConsumerReact;export const Button=({children,onClick,type="button"})=>React.createElement("button",{type,onClick},children);`,
   "@plane/propel/emoji-icon-picker": `const React=globalThis.analyticsNativeConsumerReact;export const Logo=()=>React.createElement("span");`,
@@ -65,7 +68,7 @@ function mockAnalyticsTransport(t) {
       if (transport.failAnalyticsReads) throw { response: { data: new Error("analytics transport failed") } };
       if (path.includes("advance-analytics-stats"))
         return {
-          data: [
+          data: transport.stats ?? [
             {
               project_id: PROJECT,
               project__name: "Analytics Project",
@@ -88,7 +91,7 @@ test.after(() => {
   delete globalThis.analyticsNativeConsumerReact;
 });
 
-function App({ client, projectId, isPeekView = false, showChart = false }) {
+function App({ client, projectId, isPeekView = false, showChart = false, showPeekTable = false }) {
   const [route] = React.useState(() => createRouterFixture(`/${WORKSPACE}/analytics/`));
   return React.createElement(
     QueryClientProvider,
@@ -104,7 +107,7 @@ function App({ client, projectId, isPeekView = false, showChart = false }) {
           null,
           React.createElement(TotalInsights, { analyticsType: "work-items", peekView: isPeekView }),
           showChart ? React.createElement(CreatedVsResolved) : null,
-          isPeekView ? null : React.createElement(WorkItemsInsightTable)
+          !isPeekView || showPeekTable ? React.createElement(WorkItemsInsightTable) : null
         )
       )
     )
@@ -149,6 +152,16 @@ void test("real permission hooks load totals and export, then a failed refresh h
   assert.ok(transport.requests.some((path) => path.endsWith("/workspace-members/me/")));
   assert.ok(transport.requests.some((path) => path.endsWith("/project-roles/")));
   assert.ok(environment.container.querySelector("table tbody tr"));
+  globalThis.analyticsNativeConsumerDownloads.length = 0;
+  await React.act(async () =>
+    [...environment.container.querySelectorAll("button")]
+      .find((button) => button.textContent.includes("exporter.csv.short_description"))
+      .click()
+  );
+  const [download] = globalThis.analyticsNativeConsumerDownloads;
+  assert.equal(download.config.filename, `${WORKSPACE}-analytics`);
+  assert.match(String(download.csv), /Analytics Project/);
+  assert.match(String(download.csv), /"1","2","3","42","0"/);
 
   transport.failAnalyticsReads = true;
   await React.act(async () => {
@@ -208,4 +221,75 @@ void test("real project guest scope allows charts but denies member-only insight
     false
   );
   client.clear();
+});
+
+void test("project analytics renders assignee identities and exports their displayed numeric rows", async (t) => {
+  mockAnalyticsTransport(t);
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  const client = newClient();
+  t.after(() => client.clear());
+  transport.projectRoles = { [PROJECT]: 15 };
+  transport.failAnalyticsReads = false;
+  const counts = {
+    backlog_work_items: 1,
+    started_work_items: 2,
+    un_started_work_items: 3,
+    completed_work_items: 4,
+    cancelled_work_items: 0,
+  };
+  transport.stats = [
+    { ...counts, assignee_id: "alice", display_name: "Alice" },
+    { ...counts, assignee_id: "bob", display_name: "Bob", avatar_url: "https://example.test/avatar.png" },
+    { ...counts, assignee_id: null },
+  ];
+  t.after(() => {
+    transport.stats = undefined;
+  });
+  await environment.render(
+    React.createElement(App, { client, projectId: PROJECT, isPeekView: true, showPeekTable: true })
+  );
+  await React.act(async () =>
+    waitForDom(
+      environment.container,
+      () => environment.container.textContent.includes("Alice"),
+      "Assignee analytics loads"
+    )
+  );
+  assert.match(environment.container.textContent, /Bob/);
+  assert.match(environment.container.textContent, /Unassigned/);
+  globalThis.analyticsNativeConsumerDownloads.length = 0;
+  await React.act(async () =>
+    [...environment.container.querySelectorAll("button")]
+      .find((button) => button.textContent.includes("exporter.csv.short_description"))
+      .click()
+  );
+  const [download] = globalThis.analyticsNativeConsumerDownloads;
+  assert.match(String(download.csv), /Alice/);
+  assert.match(String(download.csv), /Bob/);
+  assert.match(String(download.csv), /"1","2","3","4","0"/);
+});
+
+void test("a missing project membership denies charts without sending an analytics request", async (t) => {
+  mockAnalyticsTransport(t);
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  const client = newClient();
+  t.after(() => client.clear());
+  transport.projectRoles = {};
+  transport.requests = [];
+  transport.failAnalyticsReads = false;
+  await environment.render(React.createElement(App, { client, projectId: PROJECT, isPeekView: true, showChart: true }));
+  await React.act(async () =>
+    waitForDom(
+      environment.container,
+      () => (environment.container.textContent.match(/You do not have access to these analytics/g) ?? []).length === 2,
+      "Both analytics surfaces deny the missing project membership"
+    )
+  );
+  assert.equal(environment.container.querySelector('[data-testid="guest-chart"]'), null);
+  assert.equal(
+    transport.requests.some((path) => path.includes("advance-analytics")),
+    false
+  );
 });

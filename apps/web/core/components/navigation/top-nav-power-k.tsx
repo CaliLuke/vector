@@ -13,6 +13,7 @@ import { CloseIcon, SearchIcon } from "@plane/propel/icons";
 import { cn } from "@plane/utils/common";
 // power-k
 import type { TPowerKCommandConfig, TPowerKContext } from "@/components/power-k/core/types";
+import { selectPowerKCommand, selectPowerKPageData } from "@/components/power-k/core/execute-action";
 import { ProjectsAppPowerKCommandsList } from "@/components/power-k/ui/modal/commands-list";
 import { PowerKModalFooter } from "@/components/power-k/ui/modal/footer";
 import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
@@ -115,33 +116,11 @@ export const TopNavPowerK = () => {
     inputRef.current?.focus();
   };
 
-  // Handle command selection
   const handleCommandSelect = useCallback(
-    (command: TPowerKCommandConfig) => {
-      if (command.type === "action") {
-        command.action(context);
-        // Always close on command selection
-        context.closePalette();
-      } else if (command.type === "change-page") {
-        context.setActiveCommand(command);
-        setActivePage(command.page);
-        setSearchTerm("");
-      }
-    },
-    [context, setActivePage]
-  );
-
-  // Handle selection page item selection
-  const handlePageDataSelection = useCallback(
-    (data: unknown) => {
-      if (context.activeCommand?.type === "change-page") {
-        context.activeCommand.onSelect(data, context);
-      }
-      // Always close on page data selection
-      context.closePalette();
-    },
+    (command: TPowerKCommandConfig) => selectPowerKCommand(command, context, () => setSearchTerm(""), true),
     [context]
   );
+  const handlePageDataSelection = useCallback((data: unknown) => selectPowerKPageData(data, context, true), [context]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -173,41 +152,9 @@ export const TopNavPowerK = () => {
         return;
       }
 
-      // Arrow down/up keys to navigate command items
-      if ((e.key === "ArrowDown" || e.key === "ArrowUp") && isOpen) {
+      if (isOpen && ["ArrowDown", "ArrowUp", "Enter"].includes(e.key)) {
         e.preventDefault();
-        // Get the Command.List element
-        const commandList = containerRef.current?.querySelector("[cmdk-list]");
-        if (commandList) {
-          // Create and dispatch a keyboard event on the list to trigger cmdk navigation
-          const syntheticEvent = new KeyboardEvent("keydown", {
-            key: e.key,
-            bubbles: true,
-            cancelable: true,
-          });
-          commandList.dispatchEvent(syntheticEvent);
-
-          // Also try to focus the first/selected item
-          if (e.key === "ArrowDown") {
-            const firstItem = commandList.querySelector('[cmdk-item]:not([aria-disabled="true"])');
-            if (firstItem instanceof HTMLElement) {
-              firstItem.focus();
-            }
-          }
-        }
-        return;
-      }
-
-      // Enter key to execute selected command
-      if (e.key === "Enter" && isOpen) {
-        e.preventDefault();
-        // Find the currently selected/focused item
-        const selectedItem = containerRef.current?.querySelector('[cmdk-item][aria-selected="true"]');
-        if (selectedItem instanceof HTMLElement) {
-          // Trigger click on the selected item
-          selectedItem.click();
-        }
-        return;
+        handleCommandListKey(containerRef.current, e.key);
       }
     },
     [searchTerm, activePage, context, shouldShowContextBasedActions, setActivePage, closePanel, isOpen, containerRef]
@@ -227,24 +174,25 @@ export const TopNavPowerK = () => {
               "bg-layer-1": isOpen,
             }
           )}
-          onClick={() => inputRef.current?.focus()}
-          role="button"
         >
-          <SearchIcon className="mr-2 size-3.5 shrink-0 text-placeholder" />
-          <input
-            ref={inputRef}
-            type="text"
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              if (!isOpen) openPanel();
-            }}
-            onMouseDown={handleMouseDown}
-            onFocus={handleFocus}
-            onKeyDown={handleKeyDown}
-            placeholder="Search commands..."
-            className="placeholder-text-placeholder min-w-0 flex-1 bg-transparent text-13 text-primary outline-none"
-          />
+          <label className="flex min-w-0 flex-1 items-center">
+            <SearchIcon className="mr-2 size-3.5 shrink-0 text-placeholder" />
+            <input
+              ref={inputRef}
+              type="text"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (!isOpen) openPanel();
+              }}
+              onMouseDown={handleMouseDown}
+              onFocus={handleFocus}
+              onKeyDown={handleKeyDown}
+              aria-label="Search commands"
+              placeholder="Search commands..."
+              className="placeholder-text-placeholder min-w-0 flex-1 bg-transparent text-13 text-primary outline-none"
+            />
+          </label>
           {searchTerm && (
             <button type="button" onClick={handleClear} className="ml-2 shrink-0">
               <CloseIcon className="size-3.5 text-placeholder hover:text-primary" />
@@ -299,3 +247,18 @@ export const TopNavPowerK = () => {
     </div>
   );
 };
+
+function handleCommandListKey(container: HTMLDivElement | null, key: string) {
+  if (key === "Enter") {
+    const selected = container?.querySelector('[cmdk-item][aria-selected="true"]');
+    if (selected instanceof HTMLElement) selected.click();
+    return;
+  }
+  const list = container?.querySelector("[cmdk-list]");
+  if (!list) return;
+  list.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
+  if (key === "ArrowDown") {
+    const first = list.querySelector('[cmdk-item]:not([aria-disabled="true"])');
+    if (first instanceof HTMLElement) first.focus();
+  }
+}

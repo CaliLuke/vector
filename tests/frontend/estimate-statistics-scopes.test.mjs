@@ -1,3 +1,5 @@
+import { createProjectAccessScope } from "./helpers/permission-query-fixture.mjs";
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { React, act, createPermissionUiFixture, settleQuery } from "./helpers/permission-ui-fixture.mjs";
@@ -9,18 +11,13 @@ const { projectKeys } = await import("../../apps/web/core/queries/projects.ts");
 const { cycleDetailOptions } = await import("../../apps/web/core/queries/cycle-modules.ts");
 const { estimateStatisticsRevision } = await import("../../apps/web/core/queries/parent-statistics.ts");
 const { permissionKeys } = await import("../../apps/web/core/queries/permissions.ts");
-const scope = {
+const scope = createProjectAccessScope({
   kind: "project",
-  accountId: "alice",
-  sessionGeneration: 0,
   workspaceSlug: "acme",
-  membershipRole: 15,
-  membershipRevision: "2026-10-24T00:00:00Z",
   projectId: "p1",
-  projectMembershipRole: 20,
-  projectRole: 20,
-};
-const parentScope = { ...scope, workspaceRole: 15 };
+  membershipRevision: "2026-10-24T00:00:00Z",
+});
+const parentScope = { ...scope, workspaceRole: ContractEnums.EUserPermissions.MEMBER };
 const projectScope = { ...parentScope, projectRoles: [["p1", 20]] };
 function catalogue(value, key = 1) {
   return [
@@ -59,7 +56,10 @@ function Probe({ id }) {
   );
 }
 async function fixture(t, rows = catalogue("3"), total = 3) {
-  const view = await createPermissionUiFixture(t, { workspaceRole: 15, projectRoles: { p1: 20 } });
+  const view = await createPermissionUiFixture(t, {
+    workspaceRole: ContractEnums.EUserPermissions.MEMBER,
+    projectRoles: { p1: 20 },
+  });
   view.client.setDefaultOptions({ queries: { retry: false, gcTime: Infinity, staleTime: Infinity } });
   view.client.setQueryData(projectKeys.detail(projectScope), { id: "p1", estimate: "effort" });
   view.client.setQueryData(estimateKeys.list(scope), rows);
@@ -89,10 +89,13 @@ await test("permission revision requires a native canonical parent read before c
   await act(async () => {
     view.client.setQueryData(permissionKeys.workspaceMembership("alice", "acme"), {
       is_active: true,
-      role: 15,
+      role: ContractEnums.EUserPermissions.MEMBER,
       updated_at: "revision-2",
     });
-    view.client.setQueryData(permissionKeys.workspaceProjectRoles("alice", "acme", 15, "revision-2"), { p1: 20 });
+    view.client.setQueryData(
+      permissionKeys.workspaceProjectRoles("alice", "acme", ContractEnums.EUserPermissions.MEMBER, "revision-2"),
+      { p1: 20 }
+    );
     view.client.setQueryData(projectKeys.detail({ ...projectScope, membershipRevision: "revision-2" }), {
       id: "p1",
       estimate: "effort",

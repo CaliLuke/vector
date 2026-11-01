@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { React, act } from "./helpers/react.mjs";
+import { changeFormControl } from "./helpers/native-forms.mjs";
 import { setup } from "./helpers/issue-form-harness.mjs";
 
 const task = { id: "task", name: "Task", icon: "task", color: "#ef4444", available: true };
@@ -61,4 +62,40 @@ await test("retained unavailable selection remains recognizable without becoming
   );
   assert.deepEqual(changes, [], "opening must not replace a retained selection");
   assert.match(env.container.textContent, /not available for new work items/);
+});
+
+await test("clearing a type search preserves the selected type and a rejected replacement keeps its label", async (t) => {
+  const env = await setup(t);
+  const { IssueTypeSelect } =
+    await import("../../apps/web/core/components/issues/issue-modal/components/type-fields.tsx");
+  let attempts = 0;
+  const changes = [];
+  await env.render(
+    React.createElement(IssueTypeSelect, {
+      fields: { ...fields, selected: bug, unavailable: true },
+      value: "bug",
+      onChange: (id) => changes.push(id),
+      beforeChange: () => {
+        attempts++;
+        return false;
+      },
+    })
+  );
+  const trigger = env.container.querySelector('[aria-label="Work item type"]');
+  await act(async () => trigger.click());
+  const search = document.querySelector('[role="combobox"]');
+  assert.ok(search);
+  await changeFormControl(search, "Ta");
+  await changeFormControl(search, "");
+  assert.deepEqual(changes, []);
+  assert.equal(attempts, 0, "search clearing must not request an editor replacement");
+  const option = [...document.querySelectorAll('[role="option"]')].find((item) => item.textContent.trim() === "Task");
+  assert.ok(option);
+  await act(async () => {
+    option.dispatchEvent(new MouseEvent("mousedown", { button: 0, bubbles: true, cancelable: true }));
+    option.click();
+  });
+  assert.equal(attempts, 1);
+  assert.deepEqual(changes, []);
+  assert.equal(trigger.textContent, "Bug");
 });

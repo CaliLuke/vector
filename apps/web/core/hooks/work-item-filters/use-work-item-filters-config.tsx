@@ -262,24 +262,26 @@ export const useWorkItemFiltersConfig = (props: TUseWorkItemFiltersConfigProps):
     [isFilterEnabled, project?.module_view, modules, operatorConfigs]
   );
 
+  const memberFilterOptions = useMemo(
+    () => ({
+      members: members ?? [],
+      getOptionIcon: (member: IUserLite) => (
+        <Avatar name={member.display_name} src={getFileURL(member.avatar_url)} showTooltip={false} size="sm" />
+      ),
+      ...operatorConfigs,
+    }),
+    [members, operatorConfigs]
+  );
+
   // assignee filter config
   const assigneeFilterConfig = useMemo(
     () =>
       getAssigneeFilterConfig<TWorkItemFilterProperty>("assignee_id")({
         isEnabled: isFilterEnabled("assignee_id") && members !== undefined,
         filterIcon: MembersPropertyIcon,
-        members: members ?? [],
-        getOptionIcon: (memberDetails) => (
-          <Avatar
-            name={memberDetails.display_name}
-            src={getFileURL(memberDetails.avatar_url)}
-            showTooltip={false}
-            size="sm"
-          />
-        ),
-        ...operatorConfigs,
+        ...memberFilterOptions,
       }),
-    [isFilterEnabled, members, operatorConfigs]
+    [isFilterEnabled, members, memberFilterOptions]
   );
 
   // mention filter config
@@ -288,18 +290,9 @@ export const useWorkItemFiltersConfig = (props: TUseWorkItemFiltersConfigProps):
       getMentionFilterConfig<TWorkItemFilterProperty>("mention_id")({
         isEnabled: isFilterEnabled("mention_id") && members !== undefined,
         filterIcon: AtSign,
-        members: members ?? [],
-        getOptionIcon: (memberDetails) => (
-          <Avatar
-            name={memberDetails.display_name}
-            src={getFileURL(memberDetails.avatar_url)}
-            showTooltip={false}
-            size="sm"
-          />
-        ),
-        ...operatorConfigs,
+        ...memberFilterOptions,
       }),
-    [isFilterEnabled, members, operatorConfigs]
+    [isFilterEnabled, members, memberFilterOptions]
   );
 
   // created by filter config
@@ -308,18 +301,9 @@ export const useWorkItemFiltersConfig = (props: TUseWorkItemFiltersConfigProps):
       getCreatedByFilterConfig<TWorkItemFilterProperty>("created_by_id")({
         isEnabled: isFilterEnabled("created_by_id") && members !== undefined,
         filterIcon: UserCirclePropertyIcon,
-        members: members ?? [],
-        getOptionIcon: (memberDetails) => (
-          <Avatar
-            name={memberDetails.display_name}
-            src={getFileURL(memberDetails.avatar_url)}
-            showTooltip={false}
-            size="sm"
-          />
-        ),
-        ...operatorConfigs,
+        ...memberFilterOptions,
       }),
-    [isFilterEnabled, members, operatorConfigs]
+    [isFilterEnabled, members, memberFilterOptions]
   );
 
   // subscriber filter config
@@ -328,18 +312,9 @@ export const useWorkItemFiltersConfig = (props: TUseWorkItemFiltersConfigProps):
       getSubscriberFilterConfig<TWorkItemFilterProperty>("subscriber_id")({
         isEnabled: isFilterEnabled("subscriber_id") && members !== undefined,
         filterIcon: MembersPropertyIcon,
-        members: members ?? [],
-        getOptionIcon: (memberDetails) => (
-          <Avatar
-            name={memberDetails.display_name}
-            src={getFileURL(memberDetails.avatar_url)}
-            showTooltip={false}
-            size="sm"
-          />
-        ),
-        ...operatorConfigs,
+        ...memberFilterOptions,
       }),
-    [isFilterEnabled, members, operatorConfigs]
+    [isFilterEnabled, members, memberFilterOptions]
   );
 
   // priority filter config

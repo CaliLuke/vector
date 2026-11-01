@@ -8,7 +8,7 @@
 import { useTranslation } from "@plane/i18n";
 import { substringMatch } from "@plane/utils/string";
 // components
-import type { TPowerKCommandConfig, TPowerKCommandGroup } from "@/components/power-k/core/types";
+import type { TPowerKCommandConfig } from "@/components/power-k/core/types";
 import { KeySequenceBadge, ShortcutBadge } from "@/components/power-k/ui/modal/command-item-shortcut-badge";
 // types
 import { CONTEXT_ENTITY_MAP } from "@/components/power-k/ui/pages/context-based";
@@ -62,8 +62,8 @@ export function ShortcutRenderer(props: Props) {
       if (!group) {
         group = {
           key: groupKey,
-          title: t(POWER_K_GROUP_I18N_TITLES[groupKey as TPowerKCommandGroup]),
-          priority: POWER_K_GROUP_PRIORITY[groupKey as TPowerKCommandGroup],
+          title: t(POWER_K_GROUP_I18N_TITLES[groupKey]),
+          priority: POWER_K_GROUP_PRIORITY[groupKey],
           commands: [],
         };
         groupedCommands.push(group);

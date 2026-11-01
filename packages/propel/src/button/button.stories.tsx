@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { prependIconExample, appendIconExample } from "../storybook/icon-example-args";
+import { ExampleGroup, ExampleSizes } from "../storybook/example-gallery";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Button } from "./button";
 
@@ -115,63 +117,22 @@ export const Disabled: Story = {
   },
 };
 
-export const WithPrependIcon: Story = {
-  args: {
-    prependIcon: (
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M12 5v14m-7-7h14" />
-      </svg>
-    ),
-    children: "With Prepend Icon",
-  },
-};
+export const WithPrependIcon: Story = prependIconExample;
 
-export const WithAppendIcon: Story = {
-  args: {
-    appendIcon: (
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M9 5l7 7-7 7" />
-      </svg>
-    ),
-    children: "With Append Icon",
-  },
-};
+export const WithAppendIcon: Story = appendIconExample;
 
 export const AllVariants: Story = {
   render() {
     return (
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <h3 className="text-16 font-semibold">Primary Variants</h3>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="primary">Primary</Button>
-            <Button variant="error-fill">Error Fill</Button>
-            <Button variant="error-outline">Error Outline</Button>
-            <Button variant="secondary">Secondary</Button>
-            <Button variant="tertiary">Tertiary</Button>
-            <Button variant="ghost">Ghost</Button>
-            <Button variant="link">Link</Button>
-          </div>
-        </div>
-      </div>
+      <ExampleGroup title="Primary Variants">
+        <Button variant="primary">Primary</Button>
+        <Button variant="error-fill">Error Fill</Button>
+        <Button variant="error-outline">Error Outline</Button>
+        <Button variant="secondary">Secondary</Button>
+        <Button variant="tertiary">Tertiary</Button>
+        <Button variant="ghost">Ghost</Button>
+        <Button variant="link">Link</Button>
+      </ExampleGroup>
     );
   },
 };
@@ -179,14 +140,12 @@ export const AllVariants: Story = {
 export const AllSizes: Story = {
   render() {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Button size="sm">Small</Button>
-          <Button size="base">Base</Button>
-          <Button size="lg">Large</Button>
-          <Button size="xl">Extra Large</Button>
-        </div>
-      </div>
+      <ExampleSizes>
+        <Button size="sm">Small</Button>
+        <Button size="base">Base</Button>
+        <Button size="lg">Large</Button>
+        <Button size="xl">Extra Large</Button>
+      </ExampleSizes>
     );
   },
 };
@@ -194,16 +153,11 @@ export const AllSizes: Story = {
 export const AllStates: Story = {
   render() {
     return (
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <h3 className="text-16 font-semibold">Button States</h3>
-          <div className="flex flex-wrap gap-2">
-            <Button>Default</Button>
-            <Button loading>Loading</Button>
-            <Button disabled>Disabled</Button>
-          </div>
-        </div>
-      </div>
+      <ExampleGroup title="Button States">
+        <Button>Default</Button>
+        <Button loading>Loading</Button>
+        <Button disabled>Disabled</Button>
+      </ExampleGroup>
     );
   },
 };

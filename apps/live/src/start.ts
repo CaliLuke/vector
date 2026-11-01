@@ -7,57 +7,41 @@
 import { logger } from "@plane/logger";
 import { AppError } from "@/lib/errors";
 import { Server } from "./server";
+import { ServerLifecycle } from "./server-lifecycle";
 
-let server: Server;
+const lifecycle = new ServerLifecycle(() => new Server());
 
-async function startServer() {
-  server = new Server();
-  try {
-    await server.initialize();
-    server.listen();
-  } catch (error) {
-    logger.error("Failed to start server:", error);
-    process.exit(1);
-  }
+void lifecycle.start().catch((error: unknown) => {
+  logger.error("Failed to start server:", new AppError(error));
+  return process.exit(1);
+});
+
+let shutdownRequested = false;
+function shutdown(signal: "SIGTERM" | "SIGINT") {
+  if (shutdownRequested) return;
+  shutdownRequested = true;
+  logger.info(`Received ${signal} signal. Initiating graceful shutdown...`);
+  void lifecycle.stop().then(
+    () => {
+      logger.info("Server shut down gracefully");
+      return process.exit(signal === "SIGTERM" ? 0 : 1);
+    },
+    (error: unknown) => {
+      logger.error("Error during graceful shutdown:", new AppError(error));
+      return process.exit(1);
+    }
+  );
 }
 
-startServer();
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
 
-// Handle process signals
-process.on("SIGTERM", async () => {
-  logger.info("Received SIGTERM signal. Initiating graceful shutdown...");
-  try {
-    if (server) {
-      await server.destroy();
-    }
-    logger.info("Server shut down gracefully");
-  } catch (error) {
-    logger.error("Error during graceful shutdown:", error);
-    process.exit(1);
-  }
-  process.exit(0);
-});
-
-process.on("SIGINT", async () => {
-  logger.info("Received SIGINT signal. Killing node process...");
-  try {
-    if (server) {
-      await server.destroy();
-    }
-    logger.info("Server shut down gracefully");
-  } catch (error) {
-    logger.error("Error during graceful shutdown:", error);
-    process.exit(1);
-  }
-  process.exit(1);
-});
-
-process.on("unhandledRejection", (err: Error) => {
+process.on("unhandledRejection", (err: unknown) => {
   const error = new AppError(err);
   logger.error(`[UNHANDLED_REJECTION]`, error);
 });
 
-process.on("uncaughtException", (err: Error) => {
+process.on("uncaughtException", (err: unknown) => {
   const error = new AppError(err);
   logger.error(`[UNCAUGHT_EXCEPTION]`, error);
 });

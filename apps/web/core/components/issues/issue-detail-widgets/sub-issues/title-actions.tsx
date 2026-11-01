@@ -91,6 +91,7 @@ export function SubWorkItemTitleActions(props: TSubWorkItemTitleActionsProps) {
   return (
     // prevent click everywhere
     <div
+      role="presentation"
       className="flex items-center gap-2"
       onClick={(e) => {
         e.stopPropagation();

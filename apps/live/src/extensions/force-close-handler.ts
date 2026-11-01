@@ -26,7 +26,7 @@ export class ForceCloseHandler implements Extension {
     }
 
     // Register handler for force_close admin command
-    redisExt.onAdminCommand<ForceCloseCommandData>(AdminCommand.FORCE_CLOSE, async (data) => {
+    redisExt.onAdminCommand(AdminCommand.FORCE_CLOSE, async (data) => {
       // Type guard for safety
       if (!isForceCloseCommand(data)) {
         logger.error("[FORCE_CLOSE_HANDLER] Received invalid force close command");

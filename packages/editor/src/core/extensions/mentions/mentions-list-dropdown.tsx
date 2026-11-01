@@ -6,9 +6,17 @@
 
 import { FloatingOverlay } from "@floating-ui/react";
 import type { SuggestionProps } from "@tiptap/suggestion";
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { v4 as uuidv4 } from "uuid";
-import debounce from "lodash-es/debounce.js";
 // plane utils
 import { useOutsideClickDetector } from "@plane/hooks";
 import { cn } from "@plane/utils/common";
@@ -17,7 +25,10 @@ import { DROPDOWN_NAVIGATION_KEYS, getNextValidIndex } from "@/helpers/tippy";
 // types
 import type { TMentionHandler, TMentionSection, TMentionSuggestion } from "@/types";
 
-export type MentionsListDropdownProps = SuggestionProps<TMentionSection, TMentionSuggestion> &
+export type MentionsListDropdownProps = Pick<
+  SuggestionProps<TMentionSection, TMentionSuggestion>,
+  "command" | "query"
+> &
   Pick<TMentionHandler, "searchCallback"> & {
     onClose: () => void;
   };
@@ -25,12 +36,14 @@ export type MentionsListDropdownProps = SuggestionProps<TMentionSection, TMentio
 export const MentionsListDropdown = forwardRef(function MentionsListDropdown(props: MentionsListDropdownProps, ref) {
   const { command, query, searchCallback, onClose } = props;
   // states
-  const [sections, setSections] = useState<TMentionSection[]>([]);
+  const request = useMemo(() => ({ query, searchCallback }), [query, searchCallback]);
+  const [result, setResult] = useState<{ request: typeof request; sections: TMentionSection[] } | null>(null);
+  const isLoading = result?.request !== request;
+  const sections = useMemo(() => (result?.request === request ? result.sections : []), [request, result]);
   const [selectedIndex, setSelectedIndex] = useState({
     section: 0,
     item: 0,
   });
-  const [isLoading, setIsLoading] = useState(false);
   // refs
   const dropdownContainer = useRef<HTMLDivElement>(null);
 
@@ -74,46 +87,27 @@ export const MentionsListDropdown = forwardRef(function MentionsListDropdown(pro
     },
   }));
 
-  // initialize the select index to 0 by default
+  // Each query owns both its debounce timer and its in-flight response.
   useEffect(() => {
-    setSelectedIndex({
-      section: 0,
-      item: 0,
-    });
-  }, [sections]);
-
-  // debounced search callback
-  const debouncedSearchCallback = useCallback(
-    debounce(async (searchQuery: string) => {
+    let active = true;
+    const publish = (nextSections: TMentionSection[]) => {
+      if (!active) return;
+      setResult({ request, sections: nextSections });
+      setSelectedIndex({ section: 0, item: 0 });
+    };
+    const timeout = setTimeout(async () => {
       try {
-        const sectionsResponse = await searchCallback?.(searchQuery);
-        if (sectionsResponse) {
-          setSections(sectionsResponse);
-        }
+        publish((await request.searchCallback?.(request.query)) ?? []);
       } catch (error) {
-        console.error("Failed to fetch suggestions:", error);
-      } finally {
-        setIsLoading(false);
+        if (active) console.error("Failed to fetch suggestions:", error);
+        publish([]);
       }
-    }, 300),
-    [searchCallback]
-  );
-
-  // trigger debounced search when query changes
-  useEffect(() => {
-    if (query !== undefined && query !== null) {
-      setIsLoading(true);
-      void debouncedSearchCallback(query);
-    }
-  }, [query, debouncedSearchCallback]);
-
-  // cancel pending debounced calls on unmount
-  useEffect(
-    () => () => {
-      debouncedSearchCallback.cancel();
-    },
-    [debouncedSearchCallback]
-  );
+    }, 300);
+    return () => {
+      active = false;
+      clearTimeout(timeout);
+    };
+  }, [request]);
 
   // scroll to the dropdown item when navigating via keyboard
   useLayoutEffect(() => {
@@ -145,6 +139,7 @@ export const MentionsListDropdown = forwardRef(function MentionsListDropdown(pro
         lockScroll
       />
       <div
+        role="presentation"
         ref={dropdownContainer}
         className="relative max-h-80 w-[14rem] space-y-2 overflow-y-auto rounded-md border-[0.5px] border-strong bg-surface-1 px-2 py-2.5 shadow-raised-200"
         style={{

@@ -14,7 +14,7 @@ export type EmptyStateProps = {
   description?: React.ReactNode;
   image?: string;
   primaryButton?: {
-    icon?: React.ReactElement;
+    icon?: React.ComponentProps<typeof Button>["prependIcon"];
     text: string;
     onClick: () => void;
   };

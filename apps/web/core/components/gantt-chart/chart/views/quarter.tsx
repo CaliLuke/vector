@@ -23,7 +23,7 @@ export function QuarterChartView() {
   return (
     <div className={`absolute top-0 left-0 flex h-max min-h-full w-max`}>
       {currentViewData &&
-        quarterBlocks?.map((quarterBlock, rootIndex) => (
+        quarterBlocks?.map((quarterBlock) => (
           <div
             key={`month-${quarterBlock.quarterNumber}-${quarterBlock.year}`}
             className="relative flex flex-col outline-[0.25px] outline-subtle-1"
@@ -56,9 +56,9 @@ export function QuarterChartView() {
               </div>
               {/** Months Sub title */}
               <div className="flex h-5 w-full">
-                {quarterBlock?.children?.map((monthBlock, index) => (
+                {quarterBlock?.children?.map((monthBlock) => (
                   <div
-                    key={`sub-title-${rootIndex}-${index}`}
+                    key={`${monthBlock.year}-${monthBlock.month}`}
                     className={cn(
                       "flex flex-shrink-0 justify-center text-center capitalize outline-[0.25px] outline-subtle-1",
                       {
@@ -82,9 +82,9 @@ export function QuarterChartView() {
             </div>
             {/** Month Columns */}
             <div className="flex h-full w-full flex-grow">
-              {quarterBlock?.children?.map((monthBlock, index) => (
+              {quarterBlock?.children?.map((monthBlock) => (
                 <div
-                  key={`column-${rootIndex}-${index}`}
+                  key={`${monthBlock.year}-${monthBlock.month}`}
                   className={cn("h-full overflow-hidden outline-[0.25px] outline-subtle", {
                     "bg-accent-primary/20": monthBlock.today,
                   })}

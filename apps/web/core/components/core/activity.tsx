@@ -35,7 +35,7 @@ import type { IIssueActivity } from "@plane/types";
 import { renderFormattedDate } from "@plane/utils/datetime";
 import { capitalizeFirstLetter } from "@plane/utils/string";
 // helpers
-import { IssueLink, UserLink } from "./activity-links";
+import { ActivityIssueContext, IssueLink, UserLink } from "./activity-links";
 export { IssueLink } from "./activity-links";
 import { ActivityLabelPill } from "./activity-label-pill";
 import { milestoneActivityDetails } from "./activity-milestone";
@@ -75,6 +75,58 @@ const getInboxUserActivityMessage = (activity: IIssueActivity, showIssue: boolea
   }
 };
 
+function PlanningActivityLink({
+  activity,
+  workspaceSlug,
+  resource,
+  previous,
+}: {
+  activity: IIssueActivity;
+  workspaceSlug: string;
+  resource: "cycles" | "modules";
+  previous: boolean;
+}) {
+  const identifier = previous ? activity.old_identifier : activity.new_identifier;
+  const value = previous ? activity.old_value : activity.new_value;
+  return (
+    <a
+      href={`/${workspaceSlug}/projects/${activity.project}/${resource}/${identifier}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline items-center gap-1 font-medium text-primary hover:underline"
+    >
+      <span className="break-all">{value}</span>
+    </a>
+  );
+}
+
+function ExternalActivityLink({ value }: { value: IIssueActivity["new_value"] }) {
+  return (
+    <a
+      href={`${value}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+    >
+      link
+    </a>
+  );
+}
+
+function workItemLifecycleMessage(activity: IIssueActivity, convertedType: string) {
+  if (activity.verb === "converted")
+    return (
+      <>
+        converted <IssueLink activity={activity} /> to {convertedType}
+      </>
+    );
+  return (
+    <>
+      {activity.verb === "created" ? "created" : "deleted"} <IssueLink activity={activity} />
+    </>
+  );
+}
+
 const activityDetails: {
   [key: string]: {
     message: (activity: IIssueActivity, showIssue: boolean, workspaceSlug: string) => React.ReactNode;
@@ -89,24 +141,14 @@ const activityDetails: {
         return (
           <>
             added a new assignee <UserLink activity={activity} />
-            {showIssue && (
-              <>
-                {" "}
-                to <IssueLink activity={activity} />
-              </>
-            )}
+            <ActivityIssueContext activity={activity} showIssue={showIssue} preposition="to" />
           </>
         );
       else
         return (
           <>
             removed the assignee <UserLink activity={activity} />
-            {showIssue && (
-              <>
-                {" "}
-                from <IssueLink activity={activity} />
-              </>
-            )}
+            <ActivityIssueContext activity={activity} showIssue={showIssue} preposition="from" />
           </>
         );
     },
@@ -135,24 +177,14 @@ const activityDetails: {
         return (
           <>
             uploaded a new attachment
-            {showIssue && (
-              <>
-                {" "}
-                to <IssueLink activity={activity} />
-              </>
-            )}
+            <ActivityIssueContext activity={activity} showIssue={showIssue} preposition="to" />
           </>
         );
       else
         return (
           <>
             removed an attachment
-            {showIssue && (
-              <>
-                {" "}
-                from <IssueLink activity={activity} />
-              </>
-            )}
+            <ActivityIssueContext activity={activity} showIssue={showIssue} preposition="from" />
           </>
         );
     },
@@ -162,12 +194,7 @@ const activityDetails: {
     message: (activity, showIssue) => (
       <>
         updated the description
-        {showIssue && (
-          <>
-            {" "}
-            of <IssueLink activity={activity} />
-          </>
-        )}
+        <ActivityIssueContext activity={activity} showIssue={showIssue} preposition="of" />
       </>
     ),
     icon: <MessageSquareIcon size={12} className="text-secondary" aria-hidden="true" />,
@@ -178,73 +205,25 @@ const activityDetails: {
         return (
           <>
             removed the estimate point
-            {showIssue && (
-              <>
-                {" "}
-                from <IssueLink activity={activity} />
-              </>
-            )}
+            <ActivityIssueContext activity={activity} showIssue={showIssue} preposition="from" />
           </>
         );
       else
         return (
           <>
             set the estimate point to {activity.new_value}
-            {showIssue && (
-              <>
-                {" "}
-                for <IssueLink activity={activity} />
-              </>
-            )}
+            <ActivityIssueContext activity={activity} showIssue={showIssue} preposition="for" />
           </>
         );
     },
     icon: <TriangleIcon size={12} className="text-secondary" aria-hidden="true" />,
   },
   issue: {
-    message: (activity) => {
-      if (activity.verb === "created")
-        return (
-          <>
-            created <IssueLink activity={activity} />
-          </>
-        );
-      else if (activity.verb === "converted")
-        return (
-          <>
-            converted <IssueLink activity={activity} /> to an epic
-          </>
-        );
-      else
-        return (
-          <>
-            deleted <IssueLink activity={activity} />
-          </>
-        );
-    },
+    message: (activity) => workItemLifecycleMessage(activity, "an epic"),
     icon: <WorkItemsIcon width={12} height={12} className="text-secondary" aria-hidden="true" />,
   },
   epic: {
-    message: (activity) => {
-      if (activity.verb === "created")
-        return (
-          <>
-            created <IssueLink activity={activity} />
-          </>
-        );
-      else if (activity.verb === "converted")
-        return (
-          <>
-            converted <IssueLink activity={activity} /> to a work item
-          </>
-        );
-      else
-        return (
-          <>
-            deleted <IssueLink activity={activity} />
-          </>
-        );
-    },
+    message: (activity) => workItemLifecycleMessage(activity, "a work item"),
     icon: <EpicIcon width={12} height={12} className="text-secondary" aria-hidden="true" />,
   },
   labels: {
@@ -289,61 +268,22 @@ const activityDetails: {
       if (activity.verb === "created")
         return (
           <>
-            added this{" "}
-            <a
-              href={`${activity.new_value}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
-            >
-              link
-            </a>
-            {showIssue && (
-              <>
-                {" "}
-                to <IssueLink activity={activity} />
-              </>
-            )}
+            added this <ExternalActivityLink value={activity.new_value} />
+            <ActivityIssueContext activity={activity} showIssue={showIssue} preposition="to" />
           </>
         );
       else if (activity.verb === "updated")
         return (
           <>
-            updated the{" "}
-            <a
-              href={`${activity.old_value}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
-            >
-              link
-            </a>
-            {showIssue && (
-              <>
-                {" "}
-                from <IssueLink activity={activity} />
-              </>
-            )}
+            updated the <ExternalActivityLink value={activity.old_value} />
+            <ActivityIssueContext activity={activity} showIssue={showIssue} preposition="from" />
           </>
         );
       else
         return (
           <>
-            removed this{" "}
-            <a
-              href={`${activity.old_value}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
-            >
-              link
-            </a>
-            {showIssue && (
-              <>
-                {" "}
-                from <IssueLink activity={activity} />
-              </>
-            )}
+            removed this <ExternalActivityLink value={activity.old_value} />
+            <ActivityIssueContext activity={activity} showIssue={showIssue} preposition="from" />
           </>
         );
     },
@@ -358,42 +298,31 @@ const activityDetails: {
               added {showIssue ? <IssueLink activity={activity} /> : "this work item"}{" "}
               <span className="whitespace-nowrap">to the cycle</span>{" "}
             </span>
-            <a
-              href={`/${workspaceSlug}/projects/${activity.project}/cycles/${activity.new_identifier}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline items-center gap-1 font-medium text-primary hover:underline"
-            >
-              <span className="break-all">{activity.new_value}</span>
-            </a>
+            <PlanningActivityLink
+              activity={activity}
+              workspaceSlug={workspaceSlug}
+              resource="cycles"
+              previous={false}
+            />
           </>
         );
       else if (activity.verb === "updated")
         return (
           <>
             <span className="flex-shrink-0 whitespace-nowrap">set the cycle to </span>
-            <a
-              href={`/${workspaceSlug}/projects/${activity.project}/cycles/${activity.new_identifier}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline items-center gap-1 font-medium text-primary hover:underline"
-            >
-              <span className="break-all">{activity.new_value}</span>
-            </a>
+            <PlanningActivityLink
+              activity={activity}
+              workspaceSlug={workspaceSlug}
+              resource="cycles"
+              previous={false}
+            />
           </>
         );
       else
         return (
           <>
             removed <IssueLink activity={activity} /> from the cycle{" "}
-            <a
-              href={`/${workspaceSlug}/projects/${activity.project}/cycles/${activity.old_identifier}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline items-center gap-1 font-medium text-primary hover:underline"
-            >
-              <span className="break-all">{activity.old_value}</span>
-            </a>
+            <PlanningActivityLink activity={activity} workspaceSlug={workspaceSlug} resource="cycles" previous={true} />
           </>
         );
     },
@@ -405,42 +334,36 @@ const activityDetails: {
         return (
           <>
             added {showIssue ? <IssueLink activity={activity} /> : "this work item"} to the module{" "}
-            <a
-              href={`/${workspaceSlug}/projects/${activity.project}/modules/${activity.new_identifier}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline items-center gap-1 font-medium text-primary hover:underline"
-            >
-              <span className="break-all">{activity.new_value}</span>
-            </a>
+            <PlanningActivityLink
+              activity={activity}
+              workspaceSlug={workspaceSlug}
+              resource="modules"
+              previous={false}
+            />
           </>
         );
       else if (activity.verb === "updated")
         return (
           <>
             set the module to{" "}
-            <a
-              href={`/${workspaceSlug}/projects/${activity.project}/modules/${activity.new_identifier}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline items-center gap-1 font-medium text-primary hover:underline"
-            >
-              <span className="break-all">{activity.new_value}</span>
-            </a>
+            <PlanningActivityLink
+              activity={activity}
+              workspaceSlug={workspaceSlug}
+              resource="modules"
+              previous={false}
+            />
           </>
         );
       else
         return (
           <>
             removed <IssueLink activity={activity} /> from the module{" "}
-            <a
-              href={`/${workspaceSlug}/projects/${activity.project}/modules/${activity.old_identifier}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline items-center gap-1 font-medium text-primary hover:underline"
-            >
-              <span className="break-all">{activity.old_value}</span>
-            </a>
+            <PlanningActivityLink
+              activity={activity}
+              workspaceSlug={workspaceSlug}
+              resource="modules"
+              previous={true}
+            />
           </>
         );
     },
@@ -450,12 +373,7 @@ const activityDetails: {
     message: (activity, showIssue) => (
       <>
         set the title to <span className="break-all">{activity.new_value}</span>
-        {showIssue && (
-          <>
-            {" "}
-            of <IssueLink activity={activity} />
-          </>
-        )}
+        <ActivityIssueContext activity={activity} showIssue={showIssue} preposition="of" />
       </>
     ),
     icon: <MessageSquareIcon size={12} className="text-secondary" aria-hidden="true" />,
@@ -466,24 +384,14 @@ const activityDetails: {
         return (
           <>
             removed the parent <span className="font-medium whitespace-nowrap text-primary">{activity.old_value}</span>
-            {showIssue && (
-              <>
-                {" "}
-                from <IssueLink activity={activity} />
-              </>
-            )}
+            <ActivityIssueContext activity={activity} showIssue={showIssue} preposition="from" />
           </>
         );
       else
         return (
           <>
             set the parent to <span className="font-medium whitespace-nowrap text-primary">{activity.new_value}</span>
-            {showIssue && (
-              <>
-                {" "}
-                for <IssueLink activity={activity} />
-              </>
-            )}
+            <ActivityIssueContext activity={activity} showIssue={showIssue} preposition="for" />
           </>
         );
     },
@@ -496,12 +404,7 @@ const activityDetails: {
         <span className="font-medium text-primary">
           {activity.new_value ? capitalizeFirstLetter(activity.new_value) : "None"}
         </span>
-        {showIssue && (
-          <>
-            {" "}
-            for <IssueLink activity={activity} />
-          </>
-        )}
+        <ActivityIssueContext activity={activity} showIssue={showIssue} preposition="for" />
       </>
     ),
     icon: <SignalMediumIcon size={12} className="text-secondary" aria-hidden="true" />,
@@ -586,12 +489,7 @@ const activityDetails: {
     message: (activity, showIssue) => (
       <>
         set the state to <span className="font-medium break-all text-primary">{activity.new_value}</span>
-        {showIssue && (
-          <>
-            {" "}
-            for <IssueLink activity={activity} />
-          </>
-        )}
+        <ActivityIssueContext activity={activity} showIssue={showIssue} preposition="for" />
       </>
     ),
     icon: <LayoutGridIcon size={12} className="text-secondary" aria-hidden="true" />,
@@ -602,12 +500,7 @@ const activityDetails: {
         return (
           <>
             removed the start date
-            {showIssue && (
-              <>
-                {" "}
-                from <IssueLink activity={activity} />
-              </>
-            )}
+            <ActivityIssueContext activity={activity} showIssue={showIssue} preposition="from" />
           </>
         );
       else
@@ -617,12 +510,7 @@ const activityDetails: {
             <span className="font-medium whitespace-nowrap text-primary">
               {renderFormattedDate(activity.new_value)}
             </span>
-            {showIssue && (
-              <>
-                {" "}
-                for <IssueLink activity={activity} />
-              </>
-            )}
+            <ActivityIssueContext activity={activity} showIssue={showIssue} preposition="for" />
           </>
         );
     },
@@ -634,12 +522,7 @@ const activityDetails: {
         return (
           <>
             removed the due date
-            {showIssue && (
-              <>
-                {" "}
-                from <IssueLink activity={activity} />
-              </>
-            )}
+            <ActivityIssueContext activity={activity} showIssue={showIssue} preposition="from" />
           </>
         );
       else
@@ -676,8 +559,12 @@ const activityDetails: {
   },
 };
 
+function getActivityDetails(field: IIssueActivity["field"]) {
+  return field && Object.hasOwn(activityDetails, field) ? activityDetails[field] : undefined;
+}
+
 export function ActivityIcon({ activity }: { activity: IIssueActivity }) {
-  return <>{activityDetails[activity.field as keyof typeof activityDetails]?.icon}</>;
+  return <>{getActivityDetails(activity.field)?.icon}</>;
 }
 
 type ActivityMessageProps = {
@@ -692,7 +579,7 @@ export function ActivityMessage({ activity, showIssue = false }: ActivityMessage
 
   return (
     <>
-      {activityDetails[activityField as keyof typeof activityDetails]?.message(
+      {getActivityDetails(activityField)?.message(
         activity,
         showIssue,
         workspaceSlug ? workspaceSlug : (activity.workspace_detail?.slug ?? "")

@@ -94,8 +94,8 @@ function ListSection({ itemCount }: { itemCount: number }) {
 export function ListLayoutLoader() {
   return (
     <div className="flex flex-shrink-0 flex-col">
-      {[6, 5, 2].map((itemCount, index) => (
-        <ListSection key={index} itemCount={itemCount} />
+      {[6, 5, 2].map((itemCount) => (
+        <ListSection key={itemCount} itemCount={itemCount} />
       ))}
     </div>
   );

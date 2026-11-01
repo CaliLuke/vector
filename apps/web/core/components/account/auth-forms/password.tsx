@@ -181,38 +181,61 @@ export const AuthPasswordForm = function AuthPasswordForm(props: Props) {
             autoComplete="new-password"
           />
         )}
-        <div className="space-y-2.5">
-          {mode === EAuthModes.SIGN_IN ? (
-            <>
-              <Button type="submit" variant="primary" className="w-full" size="xl" disabled={isButtonDisabled}>
-                {isSubmitting ? (
-                  <Spinner height="20px" width="20px" />
-                ) : isSMTPConfigured ? (
-                  t("common.continue")
-                ) : (
-                  t("common.go_to_workspace")
-                )}
-              </Button>
-              {isSMTPConfigured && (
-                <Button
-                  type="button"
-                  data-ph-element={AUTH_TRACKER_ELEMENTS.SIGN_IN_WITH_UNIQUE_CODE}
-                  onClick={redirectToUniqueCodeSignIn}
-                  variant="secondary"
-                  className="w-full"
-                  size="xl"
-                >
-                  {t("auth.common.sign_in_with_unique_code")}
-                </Button>
-              )}
-            </>
-          ) : (
-            <Button type="submit" variant="primary" className="w-full" size="xl" disabled={isButtonDisabled}>
-              {isSubmitting ? <Spinner height="20px" width="20px" /> : "Create account"}
-            </Button>
-          )}
-        </div>
+        <PasswordSubmitActions
+          mode={mode}
+          isSMTPConfigured={isSMTPConfigured}
+          isSubmitting={isSubmitting}
+          isButtonDisabled={isButtonDisabled}
+          onUniqueCode={redirectToUniqueCodeSignIn}
+        />
       </form>
     </>
   );
 };
+
+function PasswordSubmitActions({
+  mode,
+  isSMTPConfigured,
+  isSubmitting,
+  isButtonDisabled,
+  onUniqueCode,
+}: Pick<Props, "mode" | "isSMTPConfigured"> & {
+  isSubmitting: boolean;
+  isButtonDisabled: boolean;
+  onUniqueCode: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="space-y-2.5">
+      {mode === EAuthModes.SIGN_IN ? (
+        <>
+          <Button type="submit" variant="primary" className="w-full" size="xl" disabled={isButtonDisabled}>
+            {isSubmitting ? (
+              <Spinner height="20px" width="20px" />
+            ) : isSMTPConfigured ? (
+              t("common.continue")
+            ) : (
+              t("common.go_to_workspace")
+            )}
+          </Button>
+          {isSMTPConfigured && (
+            <Button
+              type="button"
+              data-ph-element={AUTH_TRACKER_ELEMENTS.SIGN_IN_WITH_UNIQUE_CODE}
+              onClick={onUniqueCode}
+              variant="secondary"
+              className="w-full"
+              size="xl"
+            >
+              {t("auth.common.sign_in_with_unique_code")}
+            </Button>
+          )}
+        </>
+      ) : (
+        <Button type="submit" variant="primary" className="w-full" size="xl" disabled={isButtonDisabled}>
+          {isSubmitting ? <Spinner height="20px" width="20px" /> : "Create account"}
+        </Button>
+      )}
+    </div>
+  );
+}

@@ -34,7 +34,7 @@ describe("effect-utils", () => {
 
       assert(Result.isFailure(result), "Expected failure but got success");
       expect(result.failure).toBeInstanceOf(PdfTimeoutError);
-      expect((result.failure as PdfTimeoutError).operation).toBe("test-operation");
+      expect(result.failure.operation).toBe("test-operation");
     });
 
     it("should retry on failure up to maxRetries times", async () => {
@@ -126,7 +126,7 @@ describe("effect-utils", () => {
     it("should wrap successful promise", async () => {
       const effect = tryAsync(
         () => Promise.resolve("success"),
-        (err) => new Error(`wrapped: ${err}`)
+        (err) => new Error(`wrapped: ${String(err)}`)
       );
 
       const result = await Effect.runPromise(effect);
@@ -136,7 +136,7 @@ describe("effect-utils", () => {
     it("should wrap rejected promise with custom error", async () => {
       const effect = tryAsync(
         () => Promise.reject(new Error("original")),
-        (err) => new Error(`wrapped: ${(err as Error).message}`)
+        (err) => new Error(`wrapped: ${err instanceof Error ? err.message : String(err)}`)
       );
 
       const result = await Effect.runPromise(Effect.result(effect));
@@ -150,7 +150,7 @@ describe("effect-utils", () => {
         () => {
           throw new Error("sync error");
         },
-        (err) => new Error(`caught: ${(err as Error).message}`)
+        (err) => new Error(`caught: ${err instanceof Error ? err.message : String(err)}`)
       );
 
       const result = await Effect.runPromise(Effect.result(effect));

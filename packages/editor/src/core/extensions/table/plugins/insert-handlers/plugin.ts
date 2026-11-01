@@ -9,7 +9,7 @@ import { Plugin, PluginKey } from "@tiptap/pm/state";
 // local imports
 import { COL_DRAG_MARKER_CLASS, DROP_MARKER_CLASS, ROW_DRAG_MARKER_CLASS } from "../drag-handles/marker-utils";
 import type { TableInfo } from "./utils";
-import { createColumnInsertButton, createRowInsertButton, findAllTables } from "./utils";
+import { createTableInsertButton, findAllTables } from "./utils";
 
 const TABLE_INSERT_PLUGIN_KEY = new PluginKey("table-insert");
 
@@ -20,17 +20,17 @@ export const TableInsertPlugin = (editor: Editor): Plugin => {
     const { tableElement } = tableInfo;
 
     // Create and add column button if it doesn't exist
-    if (!tableInfo.columnButtonElement) {
-      const columnButton = createColumnInsertButton(editor, tableInfo);
-      tableElement.appendChild(columnButton);
-      tableInfo.columnButtonElement = columnButton;
+    if (!tableInfo.columnButton) {
+      const columnButton = createTableInsertButton(editor, tableInfo, "column");
+      tableElement.appendChild(columnButton.element);
+      tableInfo.columnButton = columnButton;
     }
 
     // Create and add row button if it doesn't exist
-    if (!tableInfo.rowButtonElement) {
-      const rowButton = createRowInsertButton(editor, tableInfo);
-      tableElement.appendChild(rowButton);
-      tableInfo.rowButtonElement = rowButton;
+    if (!tableInfo.rowButton) {
+      const rowButton = createTableInsertButton(editor, tableInfo, "row");
+      tableElement.appendChild(rowButton.element);
+      tableInfo.rowButton = rowButton;
     }
 
     // Create and add drag marker if it doesn't exist
@@ -45,8 +45,8 @@ export const TableInsertPlugin = (editor: Editor): Plugin => {
 
   const cleanupTable = (tableElement: HTMLElement) => {
     const tableInfo = tableMap.get(tableElement);
-    tableInfo?.columnButtonElement?.remove();
-    tableInfo?.rowButtonElement?.remove();
+    tableInfo?.columnButton?.destroy();
+    tableInfo?.rowButton?.destroy();
     tableInfo?.dragMarkerContainerElement?.remove();
     tableMap.delete(tableElement);
   };
@@ -82,16 +82,19 @@ export const TableInsertPlugin = (editor: Editor): Plugin => {
     key: TABLE_INSERT_PLUGIN_KEY,
 
     view() {
-      setTimeout(updateAllTables, 0);
+      const initialUpdate = setTimeout(updateAllTables, 0);
+      let wasEditable = editor.isEditable;
 
       return {
         update(view, prevState) {
           // Update when document changes
-          if (!prevState.doc.eq(view.state.doc)) {
+          if (!prevState.doc.eq(view.state.doc) || wasEditable !== editor.isEditable) {
+            wasEditable = editor.isEditable;
             updateAllTables();
           }
         },
         destroy() {
+          clearTimeout(initialUpdate);
           // Clean up all tables
           tableMap.forEach((_, tableElement) => {
             cleanupTable(tableElement);

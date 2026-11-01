@@ -68,6 +68,7 @@ export const PROJECT_AUTOMATION_MONTHS = [
 
 export const PROJECT_ORDER_BY_OPTIONS: {
   key: TProjectOrderByOptions;
+  descendingKey?: TProjectOrderByOptions;
   i18n_label: string;
 }[] = [
   {
@@ -76,14 +77,17 @@ export const PROJECT_ORDER_BY_OPTIONS: {
   },
   {
     key: "name",
+    descendingKey: "-name",
     i18n_label: "workspace_projects.sort.name",
   },
   {
     key: "created_at",
+    descendingKey: "-created_at",
     i18n_label: "workspace_projects.sort.created_at",
   },
   {
     key: "members_length",
+    descendingKey: "-members_length",
     i18n_label: "workspace_projects.sort.members_length",
   },
 ];

@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
@@ -14,7 +15,7 @@ await test("project request parameters use the supplied preference snapshot and 
       projectId: "project-a",
       richFilters: { and: [{ priority: { in: ["urgent"] } }] },
       displayFilters: {
-        layout: "kanban",
+        layout: ContractEnums.EIssueLayoutTypes.KANBAN,
         group_by: "state",
         sub_group_by: "priority",
         order_by: "-created_at",
@@ -31,7 +32,7 @@ await test("project request parameters use the supplied preference snapshot and 
     filters: JSON.stringify({ and: [{ priority: { in: ["urgent"] } }] }),
     order_by: "-created_at",
     sub_issue: true,
-    layout: "kanban",
+    layout: ContractEnums.EIssueLayoutTypes.KANBAN,
     cursor: "next-cursor",
     per_page: "25",
     target_date: "2026-01-01;after,2026-01-31;before",
@@ -64,7 +65,7 @@ await test("empty rich-filter values normalize to the same empty expression as t
       workspaceSlug: "acme",
       projectId: "project-a",
       richFilters: null,
-      displayFilters: { layout: "list" },
+      displayFilters: { layout: ContractEnums.EIssueLayoutTypes.LIST },
     },
     { canGroup: false, perPageCount: 25 },
     undefined
@@ -79,7 +80,7 @@ await test("a requested calendar grouping overrides the saved grouping in pagina
       workspaceSlug: "acme",
       projectId: "project-a",
       richFilters: {},
-      displayFilters: { layout: "calendar", group_by: "state" },
+      displayFilters: { layout: ContractEnums.EIssueLayoutTypes.CALENDAR, group_by: "state" },
     },
     { canGroup: true, perPageCount: 100, groupedBy: "target_date" },
     undefined
@@ -104,7 +105,12 @@ await test("project request inputs cannot be reused across workspace or project 
 
 await test("explicit list projection derives calendar grouping and keeps the requested sort", () => {
   assert.deepEqual(
-    getIssueListProjection({ layout: "calendar", group_by: "state", order_by: "-created_at", sub_issue: true }),
+    getIssueListProjection({
+      layout: ContractEnums.EIssueLayoutTypes.CALENDAR,
+      group_by: "state",
+      order_by: "-created_at",
+      sub_issue: true,
+    }),
     {
       orderBy: "-created_at",
       groupBy: "target_date",
@@ -116,7 +122,12 @@ await test("explicit list projection derives calendar grouping and keeps the req
 
 await test("explicit list projection uses subgrouping only for distinct Kanban columns", () => {
   assert.deepEqual(
-    getIssueListProjection({ layout: "kanban", group_by: "state", sub_group_by: "priority", sub_issue: false }),
+    getIssueListProjection({
+      layout: ContractEnums.EIssueLayoutTypes.KANBAN,
+      group_by: "state",
+      sub_group_by: "priority",
+      sub_issue: false,
+    }),
     {
       orderBy: "sort_order",
       groupBy: "state",
@@ -125,32 +136,47 @@ await test("explicit list projection uses subgrouping only for distinct Kanban c
     }
   );
   assert.equal(
-    getIssueListProjection({ layout: "kanban", group_by: "state", sub_group_by: "state" }).subGroupBy,
+    getIssueListProjection({ layout: ContractEnums.EIssueLayoutTypes.KANBAN, group_by: "state", sub_group_by: "state" })
+      .subGroupBy,
     undefined
   );
 });
 
 await test("explicit list projection leaves other layouts ungrouped", () => {
-  assert.deepEqual(getIssueListProjection({ layout: "gantt", group_by: "state", order_by: "priority" }), {
-    orderBy: "priority",
-    groupBy: undefined,
-    subGroupBy: undefined,
-    includeSubIssues: false,
-  });
+  assert.deepEqual(
+    getIssueListProjection({ layout: ContractEnums.EIssueLayoutTypes.GANTT, group_by: "state", order_by: "priority" }),
+    {
+      orderBy: "priority",
+      groupBy: undefined,
+      subGroupBy: undefined,
+      includeSubIssues: false,
+    }
+  );
 });
 
 await test("property projections are explicit, spreadsheet-only, and survive pagination", async () => {
   const { computedFilteredParams, getPaginationParams } = await import("../../apps/web/helpers/issue-list/request.ts");
-  for (const layout of ["list", "kanban", "calendar", "gantt_chart", "spreadsheet"]) {
+  for (const layout of [
+    ContractEnums.EIssueLayoutTypes.LIST,
+    ContractEnums.EIssueLayoutTypes.KANBAN,
+    ContractEnums.EIssueLayoutTypes.CALENDAR,
+    ContractEnums.EIssueLayoutTypes.GANTT,
+    ContractEnums.EIssueLayoutTypes.SPREADSHEET,
+  ]) {
     assert.equal(computedFilteredParams({}, { layout }, []).include_properties, undefined);
     const enabled = computedFilteredParams({}, { layout }, [], { includePropertyProjection: true });
-    assert.equal(enabled.include_properties, layout === "spreadsheet" ? true : undefined);
+    assert.equal(enabled.include_properties, layout === ContractEnums.EIssueLayoutTypes.SPREADSHEET ? true : undefined);
     assert.equal(
       getPaginationParams(enabled, { perPageCount: 20 }, "next").include_properties,
       enabled.include_properties
     );
   }
-  const input = { workspaceSlug: "acme", projectId: "a", richFilters: {}, displayFilters: { layout: "spreadsheet" } };
+  const input = {
+    workspaceSlug: "acme",
+    projectId: "a",
+    richFilters: {},
+    displayFilters: { layout: ContractEnums.EIssueLayoutTypes.SPREADSHEET },
+  };
   assert.equal(getProjectIssueRequestParams(input, { perPageCount: 20 }, undefined).include_properties, true);
 });
 
@@ -177,7 +203,7 @@ await test("type bucket pagination retains the original expression and intersect
     workspaceSlug: "acme",
     projectId: "project-a",
     richFilters,
-    displayFilters: { layout: "kanban", group_by: "type_id", sub_group_by: "priority" },
+    displayFilters: { layout: ContractEnums.EIssueLayoutTypes.KANBAN, group_by: "type_id", sub_group_by: "priority" },
   };
   const first = getProjectIssueRequestParams(input, { canGroup: true, perPageCount: 25 });
   assert.equal(first.group_by, "type_id");
@@ -188,7 +214,11 @@ await test("type bucket pagination retains the original expression and intersect
   assert.equal(next.priority, "urgent");
   assert.equal(next.group_by, undefined);
   assert.equal(next.cursor, "25:1:0");
-  input.displayFilters = { layout: "kanban", group_by: "priority", sub_group_by: "type_id" };
+  input.displayFilters = {
+    layout: ContractEnums.EIssueLayoutTypes.KANBAN,
+    group_by: "priority",
+    sub_group_by: "type_id",
+  };
   const sub = getProjectIssueRequestParams(input, { canGroup: true, perPageCount: 25 }, undefined, "urgent", "None");
   assert.equal(sub.sub_group_filter_by, "type_id");
   assert.equal(sub.sub_group_filter_value, "None");

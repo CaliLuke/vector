@@ -78,3 +78,17 @@ await test("sidebar button preserves item actions and consumer cancellation", as
   await act(async () => environment.container.querySelector("button").click());
   assert.equal(actions, 1);
 });
+
+void test("app rail keeps workspace navigation and respects label visibility", async (t) => {
+  const env = await createReactDomTestEnvironment();
+  t.after(() => env.unmount());
+  const { createRouterFixture } = await import("./helpers/router.mjs");
+  const { AppSidebarItemsRoot } = await import("../../apps/web/core/components/navigation/items-root.tsx");
+  const router = createRouterFixture("/acme/");
+  await router.render(env, React.createElement(AppSidebarItemsRoot));
+  assert.equal(env.container.querySelector("a").getAttribute("href"), "/acme/");
+  assert.equal(env.container.textContent, "Projects");
+  await router.render(env, React.createElement(AppSidebarItemsRoot, { showLabel: false }));
+  assert.equal(env.container.textContent, "");
+  assert.equal(env.container.querySelector("a").getAttribute("href"), "/acme/");
+});

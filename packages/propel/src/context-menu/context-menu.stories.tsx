@@ -5,6 +5,7 @@
  */
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { ComponentType, ReactNode } from "react";
 import { Download, Edit, Share, Star, Archive } from "lucide-react";
 import { CopyIcon, TrashIcon } from "../icons";
 import { ChevronRightIcon } from "../icons/arrows/chevron-right";
@@ -35,25 +36,69 @@ const meta: Meta<typeof ContextMenu> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  render() {
-    return (
-      <ContextMenu>
-        <ContextMenu.Trigger>
+function MenuExample({ trigger, children }: { trigger?: ReactNode; children: ReactNode }) {
+  return (
+    <ContextMenu>
+      <ContextMenu.Trigger>
+        {trigger ?? (
           <div className="flex h-[150px] w-[300px] items-center justify-center rounded-md border border-dashed border-strong text-13">
             Right click here
           </div>
-        </ContextMenu.Trigger>
-        <ContextMenu.Portal>
-          <ContextMenu.Content>
-            <ContextMenu.Item>Back</ContextMenu.Item>
-            <ContextMenu.Item>Forward</ContextMenu.Item>
-            <ContextMenu.Item>Reload</ContextMenu.Item>
-            <ContextMenu.Separator />
-            <ContextMenu.Item>More Tools</ContextMenu.Item>
-          </ContextMenu.Content>
-        </ContextMenu.Portal>
-      </ContextMenu>
+        )}
+      </ContextMenu.Trigger>
+      <ContextMenu.Portal>
+        <ContextMenu.Content>{children}</ContextMenu.Content>
+      </ContextMenu.Portal>
+    </ContextMenu>
+  );
+}
+
+function MenuAction({
+  icon: Icon,
+  children,
+  disabled,
+  destructive,
+  shortcut,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  children: ReactNode;
+  disabled?: boolean;
+  destructive?: boolean;
+  shortcut?: string;
+}) {
+  return (
+    <ContextMenu.Item disabled={disabled}>
+      <Icon className={destructive ? "mr-2 h-4 w-4 text-danger-primary" : "mr-2 h-4 w-4"} />
+      {destructive ? <span className="text-danger-primary">{children}</span> : children}
+      {shortcut && <span className="ml-auto text-11 text-placeholder">{shortcut}</span>}
+    </ContextMenu.Item>
+  );
+}
+
+function MenuSubmenu({ label, children }: { label: ReactNode; children: ReactNode }) {
+  return (
+    <ContextMenu.Submenu>
+      <ContextMenu.SubmenuTrigger>
+        {label}
+        <ChevronRightIcon className="ml-auto h-4 w-4" />
+      </ContextMenu.SubmenuTrigger>
+      <ContextMenu.Portal>
+        <ContextMenu.Content>{children}</ContextMenu.Content>
+      </ContextMenu.Portal>
+    </ContextMenu.Submenu>
+  );
+}
+
+export const Default: Story = {
+  render() {
+    return (
+      <MenuExample>
+        <ContextMenu.Item>Back</ContextMenu.Item>
+        <ContextMenu.Item>Forward</ContextMenu.Item>
+        <ContextMenu.Item>Reload</ContextMenu.Item>
+        <ContextMenu.Separator />
+        <ContextMenu.Item>More Tools</ContextMenu.Item>
+      </MenuExample>
     );
   },
 };
@@ -61,38 +106,16 @@ export const Default: Story = {
 export const WithIcons: Story = {
   render() {
     return (
-      <ContextMenu>
-        <ContextMenu.Trigger>
-          <div className="flex h-[150px] w-[300px] items-center justify-center rounded-md border border-dashed border-strong text-13">
-            Right click here
-          </div>
-        </ContextMenu.Trigger>
-        <ContextMenu.Portal>
-          <ContextMenu.Content>
-            <ContextMenu.Item>
-              <CopyIcon className="mr-2 h-4 w-4" />
-              Copy
-            </ContextMenu.Item>
-            <ContextMenu.Item>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
-            </ContextMenu.Item>
-            <ContextMenu.Item>
-              <Download className="mr-2 h-4 w-4" />
-              Download
-            </ContextMenu.Item>
-            <ContextMenu.Separator />
-            <ContextMenu.Item>
-              <Share className="mr-2 h-4 w-4" />
-              Share
-            </ContextMenu.Item>
-            <ContextMenu.Item>
-              <TrashIcon className="mr-2 h-4 w-4 text-danger-primary" />
-              <span className="text-danger-primary">Delete</span>
-            </ContextMenu.Item>
-          </ContextMenu.Content>
-        </ContextMenu.Portal>
-      </ContextMenu>
+      <MenuExample>
+        <MenuAction icon={CopyIcon}>Copy</MenuAction>
+        <MenuAction icon={Edit}>Edit</MenuAction>
+        <MenuAction icon={Download}>Download</MenuAction>
+        <ContextMenu.Separator />
+        <MenuAction icon={Share}>Share</MenuAction>
+        <MenuAction icon={TrashIcon} destructive>
+          Delete
+        </MenuAction>
+      </MenuExample>
     );
   },
 };
@@ -100,45 +123,27 @@ export const WithIcons: Story = {
 export const WithSubmenus: Story = {
   render() {
     return (
-      <ContextMenu>
-        <ContextMenu.Trigger>
-          <div className="flex h-[150px] w-[300px] items-center justify-center rounded-md border border-dashed border-strong text-13">
-            Right click here
-          </div>
-        </ContextMenu.Trigger>
-        <ContextMenu.Portal>
-          <ContextMenu.Content>
-            <ContextMenu.Item>
-              <CopyIcon className="mr-2 h-4 w-4" />
-              Copy
-            </ContextMenu.Item>
-            <ContextMenu.Item>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
-            </ContextMenu.Item>
-            <ContextMenu.Separator />
-            <ContextMenu.Submenu>
-              <ContextMenu.SubmenuTrigger>
-                <Share className="mr-2 h-4 w-4" />
-                Share
-                <ChevronRightIcon className="ml-auto h-4 w-4" />
-              </ContextMenu.SubmenuTrigger>
-              <ContextMenu.Portal>
-                <ContextMenu.Content>
-                  <ContextMenu.Item>Email</ContextMenu.Item>
-                  <ContextMenu.Item>Message</ContextMenu.Item>
-                  <ContextMenu.Item>Copy Link</ContextMenu.Item>
-                </ContextMenu.Content>
-              </ContextMenu.Portal>
-            </ContextMenu.Submenu>
-            <ContextMenu.Separator />
-            <ContextMenu.Item>
-              <TrashIcon className="mr-2 h-4 w-4 text-danger-primary" />
-              <span className="text-danger-primary">Delete</span>
-            </ContextMenu.Item>
-          </ContextMenu.Content>
-        </ContextMenu.Portal>
-      </ContextMenu>
+      <MenuExample>
+        <MenuAction icon={CopyIcon}>Copy</MenuAction>
+        <MenuAction icon={Edit}>Edit</MenuAction>
+        <ContextMenu.Separator />
+        <MenuSubmenu
+          label={
+            <>
+              <Share className="mr-2 h-4 w-4" />
+              Share
+            </>
+          }
+        >
+          <ContextMenu.Item>Email</ContextMenu.Item>
+          <ContextMenu.Item>Message</ContextMenu.Item>
+          <ContextMenu.Item>Copy Link</ContextMenu.Item>
+        </MenuSubmenu>
+        <ContextMenu.Separator />
+        <MenuAction icon={TrashIcon} destructive>
+          Delete
+        </MenuAction>
+      </MenuExample>
     );
   },
 };
@@ -146,38 +151,20 @@ export const WithSubmenus: Story = {
 export const DisabledItems: Story = {
   render() {
     return (
-      <ContextMenu>
-        <ContextMenu.Trigger>
-          <div className="flex h-[150px] w-[300px] items-center justify-center rounded-md border border-dashed border-strong text-13">
-            Right click here
-          </div>
-        </ContextMenu.Trigger>
-        <ContextMenu.Portal>
-          <ContextMenu.Content>
-            <ContextMenu.Item>
-              <CopyIcon className="mr-2 h-4 w-4" />
-              Copy
-            </ContextMenu.Item>
-            <ContextMenu.Item disabled>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit (Disabled)
-            </ContextMenu.Item>
-            <ContextMenu.Item>
-              <Download className="mr-2 h-4 w-4" />
-              Download
-            </ContextMenu.Item>
-            <ContextMenu.Separator />
-            <ContextMenu.Item disabled>
-              <Share className="mr-2 h-4 w-4" />
-              Share (Disabled)
-            </ContextMenu.Item>
-            <ContextMenu.Item>
-              <TrashIcon className="mr-2 h-4 w-4 text-danger-primary" />
-              <span className="text-danger-primary">Delete</span>
-            </ContextMenu.Item>
-          </ContextMenu.Content>
-        </ContextMenu.Portal>
-      </ContextMenu>
+      <MenuExample>
+        <MenuAction icon={CopyIcon}>Copy</MenuAction>
+        <MenuAction icon={Edit} disabled>
+          Edit (Disabled)
+        </MenuAction>
+        <MenuAction icon={Download}>Download</MenuAction>
+        <ContextMenu.Separator />
+        <MenuAction icon={Share} disabled>
+          Share (Disabled)
+        </MenuAction>
+        <MenuAction icon={TrashIcon} destructive>
+          Delete
+        </MenuAction>
+      </MenuExample>
     );
   },
 };
@@ -185,8 +172,8 @@ export const DisabledItems: Story = {
 export const OnFileCard: Story = {
   render() {
     return (
-      <ContextMenu>
-        <ContextMenu.Trigger>
+      <MenuExample
+        trigger={
           <div className="w-64 cursor-pointer rounded-lg border border-subtle p-4 hover:bg-layer-1">
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-accent-primary text-16 text-on-color">
@@ -198,33 +185,17 @@ export const OnFileCard: Story = {
               </div>
             </div>
           </div>
-        </ContextMenu.Trigger>
-        <ContextMenu.Portal>
-          <ContextMenu.Content>
-            <ContextMenu.Item>
-              <Download className="mr-2 h-4 w-4" />
-              Download
-            </ContextMenu.Item>
-            <ContextMenu.Item>
-              <CopyIcon className="mr-2 h-4 w-4" />
-              Copy Link
-            </ContextMenu.Item>
-            <ContextMenu.Item>
-              <Star className="mr-2 h-4 w-4" />
-              Add to Favorites
-            </ContextMenu.Item>
-            <ContextMenu.Separator />
-            <ContextMenu.Item>
-              <Archive className="mr-2 h-4 w-4" />
-              Archive
-            </ContextMenu.Item>
-            <ContextMenu.Item>
-              <TrashIcon className="mr-2 h-4 w-4 text-danger-primary" />
-              <span className="text-danger-primary">Delete</span>
-            </ContextMenu.Item>
-          </ContextMenu.Content>
-        </ContextMenu.Portal>
-      </ContextMenu>
+        }
+      >
+        <MenuAction icon={Download}>Download</MenuAction>
+        <MenuAction icon={CopyIcon}>Copy Link</MenuAction>
+        <MenuAction icon={Star}>Add to Favorites</MenuAction>
+        <ContextMenu.Separator />
+        <MenuAction icon={Archive}>Archive</MenuAction>
+        <MenuAction icon={TrashIcon} destructive>
+          Delete
+        </MenuAction>
+      </MenuExample>
     );
   },
 };
@@ -232,31 +203,19 @@ export const OnFileCard: Story = {
 export const OnImage: Story = {
   render() {
     return (
-      <ContextMenu>
-        <ContextMenu.Trigger>
+      <MenuExample
+        trigger={
           <div className="relative h-56 w-80 cursor-pointer overflow-hidden rounded-lg bg-layer-1">
             <div className="absolute inset-0 flex items-center justify-center text-placeholder">Image Placeholder</div>
           </div>
-        </ContextMenu.Trigger>
-        <ContextMenu.Portal>
-          <ContextMenu.Content>
-            <ContextMenu.Item>
-              <Download className="mr-2 h-4 w-4" />
-              Save Image
-            </ContextMenu.Item>
-            <ContextMenu.Item>
-              <CopyIcon className="mr-2 h-4 w-4" />
-              Copy Image
-            </ContextMenu.Item>
-            <ContextMenu.Item>
-              <CopyIcon className="mr-2 h-4 w-4" />
-              Copy Image URL
-            </ContextMenu.Item>
-            <ContextMenu.Separator />
-            <ContextMenu.Item>Open Image in New Tab</ContextMenu.Item>
-          </ContextMenu.Content>
-        </ContextMenu.Portal>
-      </ContextMenu>
+        }
+      >
+        <MenuAction icon={Download}>Save Image</MenuAction>
+        <MenuAction icon={CopyIcon}>Copy Image</MenuAction>
+        <MenuAction icon={CopyIcon}>Copy Image URL</MenuAction>
+        <ContextMenu.Separator />
+        <ContextMenu.Item>Open Image in New Tab</ContextMenu.Item>
+      </MenuExample>
     );
   },
 };
@@ -264,8 +223,8 @@ export const OnImage: Story = {
 export const OnText: Story = {
   render() {
     return (
-      <ContextMenu>
-        <ContextMenu.Trigger>
+      <MenuExample
+        trigger={
           <div className="w-96 rounded-lg border border-subtle p-6">
             <h3 className="mb-2 text-16 font-semibold">Context Menu on Text</h3>
             <p className="text-tertiary">
@@ -273,22 +232,13 @@ export const OnText: Story = {
               applied to text content areas.
             </p>
           </div>
-        </ContextMenu.Trigger>
-        <ContextMenu.Portal>
-          <ContextMenu.Content>
-            <ContextMenu.Item>
-              <CopyIcon className="mr-2 h-4 w-4" />
-              Copy
-            </ContextMenu.Item>
-            <ContextMenu.Item>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
-            </ContextMenu.Item>
-            <ContextMenu.Separator />
-            <ContextMenu.Item>Select All</ContextMenu.Item>
-          </ContextMenu.Content>
-        </ContextMenu.Portal>
-      </ContextMenu>
+        }
+      >
+        <MenuAction icon={CopyIcon}>Copy</MenuAction>
+        <MenuAction icon={Edit}>Edit</MenuAction>
+        <ContextMenu.Separator />
+        <ContextMenu.Item>Select All</ContextMenu.Item>
+      </MenuExample>
     );
   },
 };
@@ -296,50 +246,24 @@ export const OnText: Story = {
 export const NestedSubmenus: Story = {
   render() {
     return (
-      <ContextMenu>
-        <ContextMenu.Trigger>
-          <div className="flex h-[150px] w-[300px] items-center justify-center rounded-md border border-dashed border-strong text-13">
-            Right click here
-          </div>
-        </ContextMenu.Trigger>
-        <ContextMenu.Portal>
-          <ContextMenu.Content>
-            <ContextMenu.Item>New File</ContextMenu.Item>
-            <ContextMenu.Item>New Folder</ContextMenu.Item>
-            <ContextMenu.Separator />
-            <ContextMenu.Submenu>
-              <ContextMenu.SubmenuTrigger>
-                Import
-                <ChevronRightIcon className="ml-auto h-4 w-4" />
-              </ContextMenu.SubmenuTrigger>
-              <ContextMenu.Portal>
-                <ContextMenu.Content>
-                  <ContextMenu.Item>From File</ContextMenu.Item>
-                  <ContextMenu.Item>From URL</ContextMenu.Item>
-                  <ContextMenu.Submenu>
-                    <ContextMenu.SubmenuTrigger>
-                      From Cloud
-                      <ChevronRightIcon className="ml-auto h-4 w-4" />
-                    </ContextMenu.SubmenuTrigger>
-                    <ContextMenu.Portal>
-                      <ContextMenu.Content>
-                        <ContextMenu.Item>Google Drive</ContextMenu.Item>
-                        <ContextMenu.Item>Dropbox</ContextMenu.Item>
-                        <ContextMenu.Item>OneDrive</ContextMenu.Item>
-                      </ContextMenu.Content>
-                    </ContextMenu.Portal>
-                  </ContextMenu.Submenu>
-                </ContextMenu.Content>
-              </ContextMenu.Portal>
-            </ContextMenu.Submenu>
-            <ContextMenu.Separator />
-            <ContextMenu.Item>
-              <TrashIcon className="mr-2 h-4 w-4 text-danger-primary" />
-              <span className="text-danger-primary">Delete</span>
-            </ContextMenu.Item>
-          </ContextMenu.Content>
-        </ContextMenu.Portal>
-      </ContextMenu>
+      <MenuExample>
+        <ContextMenu.Item>New File</ContextMenu.Item>
+        <ContextMenu.Item>New Folder</ContextMenu.Item>
+        <ContextMenu.Separator />
+        <MenuSubmenu label="Import">
+          <ContextMenu.Item>From File</ContextMenu.Item>
+          <ContextMenu.Item>From URL</ContextMenu.Item>
+          <MenuSubmenu label="From Cloud">
+            <ContextMenu.Item>Google Drive</ContextMenu.Item>
+            <ContextMenu.Item>Dropbox</ContextMenu.Item>
+            <ContextMenu.Item>OneDrive</ContextMenu.Item>
+          </MenuSubmenu>
+        </MenuSubmenu>
+        <ContextMenu.Separator />
+        <MenuAction icon={TrashIcon} destructive>
+          Delete
+        </MenuAction>
+      </MenuExample>
     );
   },
 };
@@ -347,38 +271,21 @@ export const NestedSubmenus: Story = {
 export const WithKeyboardShortcuts: Story = {
   render() {
     return (
-      <ContextMenu>
-        <ContextMenu.Trigger>
-          <div className="flex h-[150px] w-[300px] items-center justify-center rounded-md border border-dashed border-strong text-13">
-            Right click here
-          </div>
-        </ContextMenu.Trigger>
-        <ContextMenu.Portal>
-          <ContextMenu.Content>
-            <ContextMenu.Item>
-              <CopyIcon className="mr-2 h-4 w-4" />
-              Copy
-              <span className="ml-auto text-11 text-placeholder">⌘C</span>
-            </ContextMenu.Item>
-            <ContextMenu.Item>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
-              <span className="ml-auto text-11 text-placeholder">⌘E</span>
-            </ContextMenu.Item>
-            <ContextMenu.Item>
-              <Download className="mr-2 h-4 w-4" />
-              Download
-              <span className="ml-auto text-11 text-placeholder">⌘D</span>
-            </ContextMenu.Item>
-            <ContextMenu.Separator />
-            <ContextMenu.Item>
-              <TrashIcon className="mr-2 h-4 w-4 text-danger-primary" />
-              <span className="text-danger-primary">Delete</span>
-              <span className="ml-auto text-11 text-placeholder">⌘⌫</span>
-            </ContextMenu.Item>
-          </ContextMenu.Content>
-        </ContextMenu.Portal>
-      </ContextMenu>
+      <MenuExample>
+        <MenuAction icon={CopyIcon} shortcut="⌘C">
+          Copy
+        </MenuAction>
+        <MenuAction icon={Edit} shortcut="⌘E">
+          Edit
+        </MenuAction>
+        <MenuAction icon={Download} shortcut="⌘D">
+          Download
+        </MenuAction>
+        <ContextMenu.Separator />
+        <MenuAction icon={TrashIcon} destructive shortcut="⌘⌫">
+          Delete
+        </MenuAction>
+      </MenuExample>
     );
   },
 };

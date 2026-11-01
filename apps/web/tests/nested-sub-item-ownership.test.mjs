@@ -112,7 +112,10 @@ async function click(button) {
   await settleQuery();
 }
 
-async function setup(t, { parentPicker = false, parentService = "issues", relation = false } = {}) {
+async function setup(
+  t,
+  { parentPicker = false, parentService = "issues", relation = false, nestedSummary = { sub_issues_count: 1 } } = {}
+) {
   const fixture = await createPermissionUiFixture(t, {
     path: "/acme/projects/p1/issues/P1-1",
     workspaceRole: 15,
@@ -142,7 +145,7 @@ async function setup(t, { parentPicker = false, parentService = "issues", relati
         parent_id: "root",
         name: "Nested",
         sequence_id: 2,
-        sub_issues_count: 1,
+        ...nestedSummary,
       },
     ],
     [
@@ -247,6 +250,16 @@ await test("expanding a cross-project child reads only that child's own parent s
     ["p1", "root"],
     ["p2", "nested"],
   ]);
+});
+
+await test("a child summary without a nested count remains removable in its own project", async (t) => {
+  const view = await setup(t, { nestedSummary: {} });
+  assert.ok(view.row("nested"));
+  assert.equal(Boolean(view.row("nested").querySelector('[aria-label="Expand sub-items"]')), false);
+  await view.click(view.action("nested", "issue.remove.parent.label"));
+  assert.deepEqual(view.writes, [["patch", "acme", "p2", "nested", { parent_id: null }]]);
+  assert.equal(Boolean(view.row("nested")), false);
+  assert.equal(view.rows.get("leaf").parent_id, "nested", "unlinking a parent preserves its children");
 });
 await test("inline edits in a nested project refresh the visible parent list", async (t) => {
   const view = await setup(t);

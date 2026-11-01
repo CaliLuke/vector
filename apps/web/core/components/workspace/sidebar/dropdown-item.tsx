@@ -33,11 +33,13 @@ function SidebarDropdownItem(props: TProps) {
   const { t } = useTranslation();
   const { can } = useWorkspacePermissions(activeWorkspace?.slug);
 
+  const isActiveWorkspace = workspace.id === activeWorkspace?.id;
+
   return (
     <div
       className={cn("px-4 py-2", {
-        "bg-layer-transparent-active": workspace.id === activeWorkspace?.id,
-        "hover:bg-layer-transparent-hover": workspace.id !== activeWorkspace?.id,
+        "bg-layer-transparent-active": isActiveWorkspace,
+        "hover:bg-layer-transparent-hover": !isActiveWorkspace,
       })}
     >
       <Menu.Item>
@@ -55,17 +57,17 @@ function SidebarDropdownItem(props: TProps) {
             <div className="relative flex w-[80%] items-center justify-start gap-2.5">
               <span
                 className={`relative flex h-8 w-8 flex-shrink-0 items-center justify-center border-subtle p-2 text-14 font-medium uppercase ${
-                  !workspace?.logo_url && "rounded-md bg-[#026292] text-on-color"
+                  !workspace.logo_url && "rounded-md bg-[#026292] text-on-color"
                 }`}
               >
-                {workspace?.logo_url && workspace.logo_url !== "" ? (
+                {workspace.logo_url ? (
                   <img
                     src={getFileURL(workspace.logo_url)}
                     className="absolute top-0 left-0 h-full w-full rounded-sm object-cover"
                     alt={t("workspace_logo")}
                   />
                 ) : (
-                  (workspace?.name?.[0] ?? "...")
+                  (workspace.name[0] ?? "...")
                 )}
               </span>
               <div className="w-[inherit]">
@@ -81,7 +83,7 @@ function SidebarDropdownItem(props: TProps) {
                 </div>
               </div>
             </div>
-            {workspace.id === activeWorkspace?.id ? (
+            {isActiveWorkspace ? (
               <span className="flex-shrink-0 p-1">
                 <CheckIcon className="h-5 w-5 text-primary" />
               </span>
@@ -89,7 +91,7 @@ function SidebarDropdownItem(props: TProps) {
           </div>
         </Link>
       </Menu.Item>
-      {workspace.id === activeWorkspace?.id && (
+      {isActiveWorkspace && (
         <div className="mt-2 mb-1 flex gap-2">
           {can([EUserPermissions.ADMIN, EUserPermissions.MEMBER]) && (
             <Menu.Item>

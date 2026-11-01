@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useSearchableDropdown } from "@/components/dropdowns/searchable-options";
+import { SearchableDropdownTrigger, useSearchableDropdown } from "@/components/dropdowns/searchable-options";
 import type { ReactNode } from "react";
 import { SignalHigh } from "lucide-react";
 import { Combobox } from "@headlessui/react";
@@ -35,277 +35,123 @@ type Props = TDropdownProps & {
   renderByDefault?: boolean;
 };
 
+type PriorityPresentation = "border" | "background" | "transparent";
+type PriorityDetails = (typeof ISSUE_PRIORITIES)[number];
 type ButtonProps = {
+  variant: PriorityPresentation;
   className?: string;
   dropdownArrow: boolean;
   dropdownArrowClassName: string;
-  hideIcon?: boolean;
-  hideText?: boolean;
-  isActive?: boolean;
+  hideIcon: boolean;
+  hideText: boolean;
+  isActive: boolean;
   highlightUrgent: boolean;
   placeholder: string;
   priority: TIssuePriorities | undefined;
   showTooltip: boolean;
-  renderToolTipByDefault?: boolean;
+  renderToolTipByDefault: boolean;
 };
 
-function BorderButton(props: ButtonProps) {
-  const {
-    className,
-    dropdownArrow,
-    dropdownArrowClassName,
-    hideIcon = false,
-    hideText = false,
-    highlightUrgent,
-    placeholder,
-    priority,
-    showTooltip,
-    renderToolTipByDefault = true,
-  } = props;
+const BUTTON_CLASSES: Record<PriorityPresentation, string> = {
+  border: "flex h-full items-center gap-1.5 rounded-sm border-[0.5px] px-2 py-0.5",
+  background: "flex h-full items-center gap-1.5 rounded-sm bg-layer-2 px-2 py-0.5",
+  transparent: "flex h-full w-full items-center gap-1.5 rounded-sm px-2 hover:bg-layer-transparent-hover",
+};
+const BORDER_PRIORITY_CLASSES: Record<TIssuePriorities, string> = {
+  urgent: "bg-layer-2 border-priority-urgent px-1",
+  high: "bg-layer-2 border-priority-high",
+  medium: "bg-layer-2 border-priority-medium",
+  low: "bg-layer-2 border-priority-low",
+  none: "bg-layer-2 border-strong",
+};
 
-  const priorityDetails = ISSUE_PRIORITIES.find((p) => p.key === priority);
-
-  const priorityClasses = {
-    urgent: "bg-layer-2 border-priority-urgent px-1",
-    high: "bg-layer-2 border-priority-high",
-    medium: "bg-layer-2 border-priority-medium",
-    low: "bg-layer-2 border-priority-low",
-    none: "bg-layer-2 border-strong",
-  };
-
-  const { isMobile } = usePlatformOS();
-  const { t } = useTranslation();
-
+function PriorityGlyph({
+  priority,
+  hideText,
+  highlightUrgent,
+}: Pick<ButtonProps, "priority" | "hideText" | "highlightUrgent">) {
+  if (!priority) return <SignalHigh className="size-3" />;
   return (
-    <Tooltip
-      tooltipHeading={t("priority")}
-      tooltipContent={priorityDetails?.title ?? t("common.none")}
-      disabled={!showTooltip}
-      isMobile={isMobile}
-      renderByDefault={renderToolTipByDefault}
+    <div
+      className={cn({
+        "rounded-sm border border-priority-urgent p-0.5": priority === "urgent" && !hideText && highlightUrgent,
+      })}
     >
-      <div
-        className={cn(
-          "flex h-full items-center gap-1.5 rounded-sm border-[0.5px] px-2 py-0.5",
-          priorityClasses[priority ?? "none"],
-          {
-            // compact the icons if text is hidden
-            "px-0.5": hideText,
-            // highlight the whole button if text is hidden and priority is urgent
-            "border-priority-urgent": priority === "urgent" && hideText && highlightUrgent,
-          },
-          className
-        )}
-      >
-        {!hideIcon &&
-          (priority ? (
-            <div
-              className={cn({
-                // highlight just the icon if text is visible and priority is urgent
-                "rounded-sm border border-priority-urgent p-0.5": priority === "urgent" && !hideText && highlightUrgent,
-              })}
-            >
-              <PriorityIcon
-                priority={priority}
-                size={12}
-                className={cn("flex-shrink-0", {
-                  // increase the icon size if text is hidden
-                  "h-3.5 w-3.5": hideText,
-                  // centre align the icons if text is hidden
-                  "translate-x-[0.0625rem]": hideText && priority === "high",
-                  "translate-x-0.5": hideText && priority === "medium",
-                  "translate-x-1": hideText && priority === "low",
-                  // highlight the icon if priority is urgent
-                })}
-              />
-            </div>
-          ) : (
-            <SignalHigh className="size-3" />
-          ))}
-        {!hideText && (
-          <span
-            className={cn("flex-grow truncate text-body-xs-medium", {
-              "text-secondary": priority && priority !== "none",
-              "text-placeholder": !priority || priority === "none",
-            })}
-          >
-            {priorityDetails?.title ?? placeholder}
-          </span>
-        )}
-        {dropdownArrow && (
-          <ChevronDownIcon className={cn("h-2.5 w-2.5 flex-shrink-0", dropdownArrowClassName)} aria-hidden="true" />
-        )}
-      </div>
-    </Tooltip>
+      <PriorityIcon
+        priority={priority}
+        size={12}
+        className={cn("flex-shrink-0", {
+          "h-3.5 w-3.5": hideText,
+          "translate-x-[0.0625rem]": hideText && priority === "high",
+          "translate-x-0.5": hideText && priority === "medium",
+          "translate-x-1": hideText && priority === "low",
+        })}
+      />
+    </div>
   );
 }
 
-function BackgroundButton(props: ButtonProps) {
-  const {
-    className,
-    dropdownArrow,
-    dropdownArrowClassName,
-    hideIcon = false,
-    hideText = false,
-    highlightUrgent,
-    placeholder,
-    priority,
-    showTooltip,
-    renderToolTipByDefault = true,
-  } = props;
-
-  const priorityDetails = ISSUE_PRIORITIES.find((p) => p.key === priority);
-
-  const priorityClasses = {
-    urgent: "bg-layer-2",
-    high: "bg-layer-2",
-    medium: "bg-layer-2",
-    low: "bg-layer-2",
-    none: "bg-layer-2",
-  };
-
-  const { isMobile } = usePlatformOS();
+function PriorityButtonLabel({
+  priority,
+  details,
+  variant,
+  placeholder,
+}: Pick<ButtonProps, "priority" | "variant" | "placeholder"> & { details: PriorityDetails | undefined }) {
   const { t } = useTranslation();
-
   return (
-    <Tooltip
-      tooltipHeading={t("priority")}
-      tooltipContent={t(priorityDetails?.key ?? "none")}
-      disabled={!showTooltip}
-      isMobile={isMobile}
-      renderByDefault={renderToolTipByDefault}
+    <span
+      className={cn("flex-grow truncate text-body-xs-medium", {
+        "text-secondary": priority && priority !== "none",
+        "text-placeholder": !priority || priority === "none",
+      })}
     >
-      <div
-        className={cn(
-          "flex h-full items-center gap-1.5 rounded-sm px-2 py-0.5",
-          priorityClasses[priority ?? "none"],
-          {
-            // compact the icons if text is hidden
-            "px-0.5": hideText,
-            // highlight the whole button if text is hidden and priority is urgent
-            "border-priority-urgent": priority === "urgent" && hideText && highlightUrgent,
-          },
-          className
-        )}
-      >
-        {!hideIcon &&
-          (priority ? (
-            <div
-              className={cn({
-                // highlight just the icon if text is visible and priority is urgent
-                "rounded-sm border border-priority-urgent p-0.5": priority === "urgent" && !hideText && highlightUrgent,
-              })}
-            >
-              <PriorityIcon
-                priority={priority}
-                size={12}
-                className={cn("flex-shrink-0", {
-                  // increase the icon size if text is hidden
-                  "h-3.5 w-3.5": hideText,
-                  // centre align the icons if text is hidden
-                  "translate-x-[0.0625rem]": hideText && priority === "high",
-                  "translate-x-0.5": hideText && priority === "medium",
-                  "translate-x-1": hideText && priority === "low",
-                  // highlight the icon if priority is urgent
-                })}
-              />
-            </div>
-          ) : (
-            <SignalHigh className="size-3" />
-          ))}
-        {!hideText && (
-          <span
-            className={cn("flex-grow truncate text-body-xs-medium", {
-              "text-secondary": priority && priority !== "none",
-              "text-placeholder": !priority || priority === "none",
-            })}
-          >
-            {priorityDetails?.title ?? t("common.priority") ?? placeholder}
-          </span>
-        )}
-        {dropdownArrow && (
-          <ChevronDownIcon className={cn("h-2.5 w-2.5 flex-shrink-0", dropdownArrowClassName)} aria-hidden="true" />
-        )}
-      </div>
-    </Tooltip>
+      {details?.title ?? (variant === "border" ? placeholder : (t("common.priority") ?? placeholder))}
+    </span>
   );
 }
 
-function TransparentButton(props: ButtonProps) {
+function PriorityButton(props: ButtonProps) {
   const {
+    variant,
     className,
     dropdownArrow,
     dropdownArrowClassName,
-    hideIcon = false,
-    hideText = false,
-    isActive = false,
+    hideIcon,
+    hideText,
+    isActive,
     highlightUrgent,
     placeholder,
     priority,
     showTooltip,
-    renderToolTipByDefault = true,
+    renderToolTipByDefault,
   } = props;
-
-  const priorityDetails = ISSUE_PRIORITIES.find((p) => p.key === priority);
-
+  const details = ISSUE_PRIORITIES.find((item) => item.key === priority);
   const { isMobile } = usePlatformOS();
   const { t } = useTranslation();
-
+  const tooltip = variant === "background" ? t(details?.key ?? "none") : (details?.title ?? t("common.none"));
   return (
     <Tooltip
       tooltipHeading={t("priority")}
-      tooltipContent={priorityDetails?.title ?? t("common.none")}
+      tooltipContent={tooltip}
       disabled={!showTooltip}
       isMobile={isMobile}
       renderByDefault={renderToolTipByDefault}
     >
       <div
         className={cn(
-          "flex h-full w-full items-center gap-1.5 rounded-sm px-2 hover:bg-layer-transparent-hover",
+          BUTTON_CLASSES[variant],
+          variant === "border" && BORDER_PRIORITY_CLASSES[priority ?? "none"],
           {
-            // compact the icons if text is hidden
             "px-0.5": hideText,
-            // highlight the whole button if text is hidden and priority is urgent
             "border-priority-urgent": priority === "urgent" && hideText && highlightUrgent,
-            "bg-layer-1": isActive,
+            "bg-layer-1": variant === "transparent" && isActive,
           },
           className
         )}
       >
-        {!hideIcon &&
-          (priority ? (
-            <div
-              className={cn({
-                // highlight just the icon if text is visible and priority is urgent
-                "rounded-sm border border-priority-urgent p-0.5": priority === "urgent" && !hideText && highlightUrgent,
-              })}
-            >
-              <PriorityIcon
-                priority={priority}
-                size={12}
-                className={cn("flex-shrink-0", {
-                  // increase the icon size if text is hidden
-                  "h-3.5 w-3.5": hideText,
-                  // centre align the icons if text is hidden
-                  "translate-x-[0.0625rem]": hideText && priority === "high",
-                  "translate-x-0.5": hideText && priority === "medium",
-                  "translate-x-1": hideText && priority === "low",
-                  // highlight the icon if priority is urgent
-                })}
-              />
-            </div>
-          ) : (
-            <SignalHigh className="size-3" />
-          ))}
+        {!hideIcon && <PriorityGlyph priority={priority} hideText={hideText} highlightUrgent={highlightUrgent} />}
         {!hideText && (
-          <span
-            className={cn("flex-grow truncate text-body-xs-medium", {
-              "text-secondary": priority && priority !== "none",
-              "text-placeholder": !priority || priority === "none",
-            })}
-          >
-            {priorityDetails?.title ?? t("common.priority") ?? placeholder}
-          </span>
+          <PriorityButtonLabel priority={priority} details={details} variant={variant} placeholder={placeholder} />
         )}
         {dropdownArrow && (
           <ChevronDownIcon className={cn("h-2.5 w-2.5 flex-shrink-0", dropdownArrowClassName)} aria-hidden="true" />
@@ -360,53 +206,36 @@ export function PriorityDropdown(props: Props) {
     if (priority) onChange(priority.key);
   };
 
-  const ButtonToRender = BORDER_BUTTON_VARIANTS.includes(buttonVariant)
-    ? BorderButton
+  const presentation: PriorityPresentation = BORDER_BUTTON_VARIANTS.includes(buttonVariant)
+    ? "border"
     : BACKGROUND_BUTTON_VARIANTS.includes(buttonVariant)
-      ? BackgroundButton
-      : TransparentButton;
+      ? "background"
+      : "transparent";
 
-  const comboButton = ({ open }: { open: boolean }) =>
-    button ? (
-      <button
-        ref={setReferenceElement}
-        type="button"
-        className={cn("clickable block h-full w-full outline-none", buttonContainerClassName)}
-        disabled={disabled}
-        tabIndex={tabIndex}
-      >
-        {button}
-      </button>
-    ) : (
-      <button
-        ref={setReferenceElement}
-        type="button"
-        className={cn(
-          "clickable block h-full max-w-full outline-none",
-          {
-            "cursor-not-allowed text-secondary": disabled,
-            "cursor-pointer": !disabled,
-          },
-          buttonContainerClassName
-        )}
-        disabled={disabled}
-        tabIndex={tabIndex}
-      >
-        <ButtonToRender
-          priority={value ?? undefined}
-          isActive={open}
-          className={buttonClassName}
-          highlightUrgent={highlightUrgent}
-          dropdownArrow={dropdownArrow && !disabled}
-          dropdownArrowClassName={dropdownArrowClassName}
-          hideIcon={hideIcon}
-          placeholder={placeholder}
-          showTooltip={showTooltip}
-          hideText={BUTTON_VARIANTS_WITHOUT_TEXT.includes(buttonVariant)}
-          renderToolTipByDefault={renderByDefault}
-        />
-      </button>
-    );
+  const comboButton = ({ open }: { open: boolean }) => (
+    <SearchableDropdownTrigger
+      ref={setReferenceElement}
+      customButton={button}
+      className={buttonContainerClassName}
+      disabled={disabled}
+      tabIndex={tabIndex}
+    >
+      <PriorityButton
+        variant={presentation}
+        priority={value ?? undefined}
+        isActive={open}
+        className={buttonClassName}
+        highlightUrgent={highlightUrgent}
+        dropdownArrow={dropdownArrow && !disabled}
+        dropdownArrowClassName={dropdownArrowClassName}
+        hideIcon={hideIcon}
+        placeholder={placeholder}
+        showTooltip={showTooltip}
+        hideText={BUTTON_VARIANTS_WITHOUT_TEXT.includes(buttonVariant)}
+        renderToolTipByDefault={renderByDefault}
+      />
+    </SearchableDropdownTrigger>
+  );
 
   return dropdown.render(
     {

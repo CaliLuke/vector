@@ -107,7 +107,7 @@ export const IssueDescriptionEditor = function IssueDescriptionEditor(props: TIs
 
   return (
     <div data-issue-field="description_html" className="relative rounded-lg border-[0.5px] border-subtle-1 bg-layer-2">
-      {descriptionHtmlData === undefined ? (
+      {issueId && descriptionHtmlData === undefined ? (
         <Loader className="max-h-64 min-h-[120px] space-y-2 overflow-hidden rounded-md border border-subtle p-3 py-2 pt-3">
           <Loader.Item width="100%" height="26px" />
           <div className="flex items-center gap-2">

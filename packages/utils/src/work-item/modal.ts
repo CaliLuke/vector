@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import set from "lodash-es/set.js";
 // plane imports
 import type { IPartialProject, ISearchIssueResponse, IState, TIssue } from "@plane/types";
 
@@ -29,14 +28,11 @@ export const convertWorkItemDataToSearchResponse = (
 });
 
 export function getChangedIssuefields(formData: Partial<TIssue>, dirtyFields: { [key: string]: boolean | undefined }) {
-  const changedFields = {};
-
-  const dirtyFieldKeys = Object.keys(dirtyFields) as (keyof TIssue)[];
-  for (const dirtyField of dirtyFieldKeys) {
-    if (dirtyFields[dirtyField]) {
-      set(changedFields, [dirtyField], formData[dirtyField]);
+  const changedFields: Partial<TIssue> = {};
+  for (const [key, value] of Object.entries(formData)) {
+    if (Object.hasOwn(dirtyFields, key) && dirtyFields[key]) {
+      Object.defineProperty(changedFields, key, { value, enumerable: true, configurable: true, writable: true });
     }
   }
-
-  return changedFields as Partial<TIssue>;
+  return changedFields;
 }

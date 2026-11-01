@@ -21,15 +21,6 @@ type Props = {
 };
 
 export function Logo({ logo, size = 16, type = "material" }: Props) {
-  const isMaterialSymbolsFontLoaded = useFontFaceObserver([
-    {
-      family: "Material Symbols Rounded",
-      style: "normal",
-      weight: "normal",
-      stretch: "condensed",
-    },
-  ]);
-
   // Reusable loading skeleton
   const loadingSkeleton = <span style={{ height: size, width: size }} className="rounded-sm bg-layer-1" />;
 
@@ -53,7 +44,7 @@ export function Logo({ logo, size = 16, type = "material" }: Props) {
           width: size,
         }}
       >
-        {stringToEmoji(emoji?.value || "")}
+        {stringToEmoji(value)}
       </span>
     );
   }
@@ -71,22 +62,27 @@ export function Logo({ logo, size = 16, type = "material" }: Props) {
       return <LucideIconElement style={{ color, height: size, width: size }} />;
     }
 
-    if (!isMaterialSymbolsFontLoaded) return loadingSkeleton;
-
-    // Material icon
-    return (
-      <span
-        className="material-symbols-rounded"
-        style={{
-          fontSize: size,
-          color,
-          scale: "115%",
-        }}
-      >
-        {value}
-      </span>
-    );
+    return <MaterialLogo value={value} color={color} size={size} />;
   }
 
   return null;
+}
+
+function MaterialLogo({ value, color, size }: { value: string; color?: string; size: number }) {
+  const isMaterialSymbolsFontLoaded = useFontFaceObserver([
+    {
+      family: "Material Symbols Rounded",
+      style: "normal",
+      weight: "normal",
+      stretch: "condensed",
+    },
+  ]);
+
+  if (!isMaterialSymbolsFontLoaded)
+    return <span style={{ height: size, width: size }} className="rounded-sm bg-layer-1" />;
+  return (
+    <span className="material-symbols-rounded" style={{ fontSize: size, color, scale: "115%" }}>
+      {value}
+    </span>
+  );
 }

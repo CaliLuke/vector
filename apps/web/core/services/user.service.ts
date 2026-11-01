@@ -8,6 +8,7 @@
 import { API_BASE_URL } from "@plane/constants";
 import type {
   TIssue,
+  TIssueParams,
   IUser,
   IUserActivityResponse,
   IUserProfileData,
@@ -35,20 +36,18 @@ export class UserService extends APIService {
 
   async userIssues(
     workspaceSlug: string,
-    params: any
+    params: Partial<Record<TIssueParams, string | boolean>>
   ): Promise<
     | {
         [key: string]: TIssue[];
       }
     | TIssue[]
   > {
-    return this.get(`/api/workspaces/${workspaceSlug}/my-issues/`, {
-      params,
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/my-issues/`, {
+        params,
+      })
+    );
   }
 
   async currentUser(signal?: AbortSignal): Promise<IUser | null> {
@@ -61,112 +60,77 @@ export class UserService extends APIService {
   }
 
   async getCurrentUserProfile(signal?: AbortSignal): Promise<TUserProfile> {
-    return this.get("/api/users/me/profile/", { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response ?? error;
-      });
+    return this.responseData(this.get("/api/users/me/profile/", { signal }), "response-or-error");
   }
   async updateCurrentUserProfile(data: Partial<TUserProfile>, signal?: AbortSignal): Promise<TUserProfile> {
-    return this.patch("/api/users/me/profile/", data, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response ?? error;
-      });
+    return this.responseData(this.patch("/api/users/me/profile/", data, { signal }), "response-or-error");
   }
 
   async currentUserSettings(bustCache: boolean = false, signal?: AbortSignal): Promise<IUserSettings> {
     const url = bustCache ? `/api/users/me/settings/?t=${Date.now()}` : "/api/users/me/settings/";
-    return this.get(url, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response ?? error;
-      });
+    return this.responseData(this.get(url, { signal }), "response-or-error");
   }
 
   async currentUserEmailNotificationSettings(signal?: AbortSignal): Promise<IUserEmailNotificationSettings> {
-    return this.get("/api/users/me/notification-preferences/", { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response ?? error;
-      });
+    return this.responseData(this.get("/api/users/me/notification-preferences/", { signal }), "response-or-error");
   }
 
   async updateUser(data: Partial<IUser>): Promise<IUser> {
-    return this.patch("/api/users/me/", data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.patch("/api/users/me/", data), "data-or-error");
   }
 
   async updateUserOnBoard(signal?: AbortSignal): Promise<{ message: string }> {
-    return this.patch(
-      "/api/users/me/onboard/",
-      {
-        is_onboarded: true,
-      },
-      { signal }
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(
+      this.patch(
+        "/api/users/me/onboard/",
+        {
+          is_onboarded: true,
+        },
+        { signal }
+      ),
+      "data-or-error"
+    );
   }
 
   async updateUserTourCompleted(signal?: AbortSignal): Promise<{ message: string }> {
-    return this.patch(
-      "/api/users/me/tour-completed/",
-      {
-        is_tour_completed: true,
-      },
-      { signal }
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(
+      this.patch(
+        "/api/users/me/tour-completed/",
+        {
+          is_tour_completed: true,
+        },
+        { signal }
+      ),
+      "data-or-error"
+    );
   }
 
   async updateCurrentUserEmailNotificationSettings(
     data: Partial<IUserEmailNotificationSettings>
   ): Promise<IUserEmailNotificationSettings> {
-    return this.patch("/api/users/me/notification-preferences/", data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+    return this.responseData(this.patch("/api/users/me/notification-preferences/", data), "data-or-error");
   }
 
-  async changePassword(token: string, data: { old_password?: string; new_password: string }): Promise<any> {
-    return this.post(`/auth/change-password/`, data, {
-      headers: {
-        "X-CSRFTOKEN": token,
-      },
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data ?? error;
-      });
+  async changePassword(token: string, data: { old_password?: string; new_password: string }): Promise<unknown> {
+    return this.responseData(
+      this.post(`/auth/change-password/`, data, {
+        headers: {
+          "X-CSRFTOKEN": token,
+        },
+      }),
+      "data-or-error"
+    );
   }
 
   async getUserProfileData(workspaceSlug: string, userId: string): Promise<IUserProfileData> {
-    return this.get(`/api/workspaces/${workspaceSlug}/user-stats/${userId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/user-stats/${userId}/`));
   }
 
   async getUserProfileProjectsSegregation(
     workspaceSlug: string,
     userId: string
   ): Promise<IUserProfileProjectSegregation> {
-    return this.get(`/api/workspaces/${workspaceSlug}/user-profile/${userId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/user-profile/${userId}/`));
   }
 
   async getUserProfileActivity(
@@ -177,13 +141,11 @@ export class UserService extends APIService {
       cursor?: string;
     }
   ): Promise<IUserActivityResponse> {
-    return this.get(`/api/workspaces/${workspaceSlug}/user-activity/${userId}/`, {
-      params,
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/user-activity/${userId}/`, {
+        params,
+      })
+    );
   }
 
   async downloadProfileActivity(
@@ -192,95 +154,69 @@ export class UserService extends APIService {
     data: {
       date: string;
     }
-  ): Promise<any> {
-    return this.post(`/api/workspaces/${workspaceSlug}/user-activity/${userId}/export/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  ): Promise<string> {
+    const response = await this.post(`/api/workspaces/${workspaceSlug}/user-activity/${userId}/export/`, data, {
+      responseType: "text",
+    });
+    if (typeof response.data !== "string") throw new Error("Invalid activity export response");
+    return response.data;
   }
 
   async getUserProfileIssues(
     workspaceSlug: string,
     userId: string,
-    params: any,
+    params: Partial<Record<TIssueParams, string | boolean>>,
     config = {}
   ): Promise<TIssuesResponse> {
-    return this.get(
-      `/api/workspaces/${workspaceSlug}/user-issues/${userId}/`,
-      {
-        params,
-      },
-      config
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(
+        `/api/workspaces/${workspaceSlug}/user-issues/${userId}/`,
+        {
+          params,
+        },
+        config
+      )
+    );
   }
 
   async deactivateAccount() {
-    return this.delete(`/api/users/me/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.delete(`/api/users/me/`));
   }
 
   async leaveWorkspace(workspaceSlug: string): Promise<void> {
-    return this.post(`/api/workspaces/${workspaceSlug}/members/leave/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/members/leave/`));
   }
 
   async joinProject(workspaceSlug: string, project_ids: string[]): Promise<{ message: string }> {
-    return this.post(`/api/users/me/workspaces/${workspaceSlug}/projects/invitations/`, { project_ids })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.post(`/api/users/me/workspaces/${workspaceSlug}/projects/invitations/`, { project_ids })
+    );
   }
 
   async leaveProject(workspaceSlug: string, projectId: string): Promise<void> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/members/leave/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/members/leave/`));
   }
 
   async checkEmail(token: string, email: string): Promise<IEmailCheckResponse> {
-    return this.post(
-      "/auth/email-check/",
-      { email },
-      {
-        headers: {
-          "X-CSRFTOKEN": token,
-        },
-      }
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.post(
+        "/auth/email-check/",
+        { email },
+        {
+          headers: {
+            "X-CSRFTOKEN": token,
+          },
+        }
+      )
+    );
   }
 
-  async generateEmailCode(data: { email: string }): Promise<any> {
-    return this.post("/api/users/me/email/generate-code/", data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async generateEmailCode(data: { email: string }): Promise<unknown> {
+    return this.responseData(this.post("/api/users/me/email/generate-code/", data));
   }
 
-  async verifyEmailCode(data: { email: string; code: string }): Promise<any> {
-    return this.patch("/api/users/me/email/", data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async verifyEmailCode(data: { email: string; code: string }): Promise<unknown> {
+    return this.responseData(this.patch("/api/users/me/email/", data));
   }
 }
 

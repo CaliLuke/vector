@@ -5,7 +5,8 @@
  */
 
 import sanitizeHtml from "sanitize-html";
-import type { Content, JSONContent } from "@plane/types";
+import { isRecord } from "./common";
+import type { Content } from "@plane/types";
 
 /**
  * @description Adds space between camelCase words
@@ -18,7 +19,7 @@ import type { Content, JSONContent } from "@plane/types";
 export const addSpaceIfCamelCase = (str: string) => {
   if (str === undefined || str === null) return "";
 
-  if (typeof str !== "string") str = `${str}`;
+  if (typeof str !== "string") str = String(str);
 
   return str.replace(/([a-z])([A-Z])/g, "$1 $2");
 };
@@ -56,7 +57,7 @@ export const truncateText = (str: string, length: number) => {
 export const createSimilarString = (str: string) => {
   const shuffled = str
     .split("")
-    .sort(() => Math.random() - 0.5)
+    .toSorted(() => Math.random() - 0.5)
     .join("");
 
   return shuffled;
@@ -153,7 +154,7 @@ export const checkEmailValidity = (email: string): boolean => {
   if (!email) return false;
 
   const isEmailValid =
-    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
       email
     );
 
@@ -170,35 +171,27 @@ export const isEmptyHtmlString = (htmlString: string, allowedHTMLTags: string[] 
 /**
  * @description
  * Check if a JSONContent object is empty
- * @param {JSONContent} content
+ * @param {unknown} content
  * @returns {boolean}
  */
-export const isJSONContentEmpty = (content: JSONContent | undefined): boolean => {
-  // If it has text, check if text is meaningful
-  if (!content) {
-    return true;
-  }
+const meaningfulLeafNodes = new Set([
+  "hardBreak",
+  "image",
+  "imageComponent",
+  "image-component",
+  "mention",
+  "mention-component",
+]);
+
+export const isJSONContentEmpty = (content: unknown): boolean => {
+  if (!isRecord(content)) return true;
   if (content.text !== undefined) {
-    return !content.text || content.text.trim() === "";
+    return typeof content.text !== "string" || content.text.trim() === "";
   }
-
-  // If it has no content array, consider it empty
-  if (!content.content || content.content.length === 0) {
-    // Special case: empty paragraph nodes should be considered empty
-    if (content.type === "paragraph" || content.type === "doc") {
-      return true;
-    }
-    // For other node types without content (like hard breaks), check if they're meaningful
-    return (
-      content.type !== "hardBreak" &&
-      content.type !== "image" &&
-      content.type !== "mention-component" &&
-      content.type !== "image-component"
-    );
+  if (Array.isArray(content.content) && content.content.length > 0) {
+    return content.content.every(isJSONContentEmpty);
   }
-
-  // Check if all nested content is empty
-  return content.content.every(isJSONContentEmpty);
+  return typeof content.type !== "string" || !meaningfulLeafNodes.has(content.type);
 };
 
 /**
@@ -236,7 +229,7 @@ export const isCommentEmpty = (comment: Content | undefined): boolean => {
 
   // Handle JSONContent[] (array)
   if (Array.isArray(comment)) {
-    return comment.length === 0 || comment.every(isJSONContentEmpty);
+    return comment.every(isJSONContentEmpty);
   }
 
   // Handle JSONContent (object)

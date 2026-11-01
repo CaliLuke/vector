@@ -9,7 +9,6 @@ import { ReactNodeViewRenderer } from "@tiptap/react";
 // extension config
 import { CustomMentionExtensionConfig } from "./extension-config";
 // node view
-import type { MentionNodeViewProps } from "./mention-node-view";
 import { MentionNodeView } from "./mention-node-view";
 // utils
 import { renderMentionsDropdown } from "./utils";
@@ -17,9 +16,7 @@ import { renderMentionsDropdown } from "./utils";
 export function CustomMentionExtension() {
   return CustomMentionExtensionConfig.extend({
     addNodeView() {
-      return ReactNodeViewRenderer((props) => (
-        <MentionNodeView {...props} node={props.node as MentionNodeViewProps["node"]} />
-      ));
+      return ReactNodeViewRenderer(MentionNodeView);
     },
   }).configure({
     suggestion: {

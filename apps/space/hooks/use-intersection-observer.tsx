@@ -33,5 +33,7 @@ export const useIntersectionObserver = (
         observer.disconnect();
       };
     }
+
+    return undefined;
   }, [rootMargin, callback, elementRef, containerRef]);
 };

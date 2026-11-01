@@ -55,7 +55,7 @@ export const findTableAncestor = (node: Node | null): HTMLTableElement | null =>
   while (node !== null && node.nodeName !== "TABLE") {
     node = node.parentNode;
   }
-  return node as HTMLTableElement;
+  return node instanceof HTMLTableElement ? node : null;
 };
 
 export const getTrimmedHTML = (html: string) =>
@@ -92,19 +92,8 @@ export const isValidHttpUrl = (string: string): { isValid: boolean; url: string 
   }
 
   // Try again with https:// prefix
-  try {
-    const urlWithHttps = `https://${string}`;
-    new URL(urlWithHttps);
-    return {
-      isValid: true,
-      url: urlWithHttps,
-    };
-  } catch {
-    return {
-      isValid: false,
-      url: string,
-    };
-  }
+  const urlWithHttps = `https://${string}`;
+  return URL.canParse(urlWithHttps) ? { isValid: true, url: urlWithHttps } : { isValid: false, url: string };
 };
 
 export const getParagraphCount = (editorState: EditorState | undefined) => {

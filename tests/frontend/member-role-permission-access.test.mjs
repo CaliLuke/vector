@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -55,9 +56,10 @@ async function renderColumn(t, { workspaceRole, projectRoles, rolesRead, useReal
     fixture.client.setQueryData(memberRosterKeys.workspace(rosterScope), [
       { id: "workspace-membership-alice", member, role: canonicalWorkspaceRole, is_active: true },
     ]);
-    fixture.client.setQueryData(memberRosterKeys.project({ ...rosterScope, projectId: "p1", projectRole: 20 }), [
-      { id: "membership-alice", member: "alice", role: EUserPermissions.ADMIN, original_role: EUserPermissions.ADMIN },
-    ]);
+    fixture.client.setQueryData(
+      memberRosterKeys.project({ ...rosterScope, projectId: "p1", projectRole: ContractEnums.EUserPermissions.ADMIN }),
+      [{ id: "membership-alice", member: "alice", role: EUserPermissions.ADMIN, original_role: EUserPermissions.ADMIN }]
+    );
     t.mock.method(ProjectMemberService.prototype, "updateProjectMember", async (_slug, _projectId, id, change) => {
       updates.push({ id, role: change.role });
       return { id, member: "alice", role: change.role, original_role: change.role };

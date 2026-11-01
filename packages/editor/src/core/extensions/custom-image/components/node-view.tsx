@@ -10,21 +10,19 @@ import { useEffect, useRef, useState } from "react";
 // local imports
 import type { CustomImageExtensionType, TCustomImageAttributes } from "../types";
 import { ECustomImageAttributeNames, ECustomImageStatus } from "../types";
-import { hasImageDuplicationFailed } from "../utils";
+import { getImageAttributes, hasImageDuplicationFailed } from "../utils";
 import { CustomImageBlock } from "./block";
 import { CustomImageUploader } from "./uploader";
 
 export type CustomImageNodeViewProps = Omit<NodeViewProps, "extension" | "updateAttributes"> & {
   extension: CustomImageExtensionType;
-  node: NodeViewProps["node"] & {
-    attrs: TCustomImageAttributes;
-  };
   updateAttributes: (attrs: Partial<TCustomImageAttributes>) => void;
 };
 
 export function CustomImageNodeView(props: CustomImageNodeViewProps) {
   const { editor, node, updateAttributes, getPos } = props;
-  const { src: imgNodeSrc, status } = node.attrs;
+  const attrs = getImageAttributes(node.attrs);
+  const { src: imgNodeSrc, status } = attrs;
 
   const [isUploaded, setIsUploaded] = useState(!!imgNodeSrc);
   const [resolvedSrc, setResolvedSrc] = useState<string | undefined>(undefined);
@@ -38,8 +36,8 @@ export function CustomImageNodeView(props: CustomImageNodeViewProps) {
 
   useEffect(() => {
     const closestEditorContainer = imageComponentRef.current?.closest(".editor-container");
-    if (closestEditorContainer) {
-      setEditorContainer(closestEditorContainer as HTMLDivElement);
+    if (closestEditorContainer instanceof HTMLDivElement) {
+      setEditorContainer(closestEditorContainer);
     }
   }, []);
 
@@ -94,7 +92,7 @@ export function CustomImageNodeView(props: CustomImageNodeViewProps) {
       const position = getPos();
       const live = position === undefined ? undefined : editor.state.doc.nodeAt(position);
       return (
-        live?.attrs.id === node.attrs.id &&
+        live?.attrs.id === attrs.id &&
         live?.attrs.src === imgNodeSrc &&
         live?.attrs.status === ECustomImageStatus.DUPLICATING
       );
@@ -128,7 +126,7 @@ export function CustomImageNodeView(props: CustomImageNodeViewProps) {
       current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editor, status, imgNodeSrc, node.attrs.id, getPos, updateAttributes]);
+  }, [editor, status, imgNodeSrc, attrs.id, getPos, updateAttributes]);
 
   useEffect(() => {
     if (hasImageDuplicationFailed(status) && !hasRetriedOnMount.current && imgNodeSrc) {
@@ -150,7 +148,7 @@ export function CustomImageNodeView(props: CustomImageNodeViewProps) {
   const shouldShowBlock = hasValidImageSource && !failedToLoadImage && !hasDuplicationFailed;
 
   return (
-    <NodeViewWrapper key={node.attrs[ECustomImageAttributeNames.ID]}>
+    <NodeViewWrapper key={attrs[ECustomImageAttributeNames.ID]}>
       <div className="mx-0 my-2 p-0" data-drag-handle ref={imageComponentRef}>
         {shouldShowBlock && !hasDuplicationFailed ? (
           <CustomImageBlock

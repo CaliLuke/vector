@@ -43,7 +43,7 @@ export const ContentOverflowWrapper = function ContentOverflowWrapper(props: ICo
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (!contentRef?.current) return;
+    if (!contentRef?.current) return undefined;
 
     const updateHeight = () => {
       if (contentRef.current) {
@@ -87,7 +87,7 @@ export const ContentOverflowWrapper = function ContentOverflowWrapper(props: ICo
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container) return undefined;
 
     const handleTransitionEnd = () => {
       setIsTransitioning(false);

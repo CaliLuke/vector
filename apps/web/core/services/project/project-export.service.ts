@@ -23,11 +23,7 @@ export class ProjectExportService extends APIService {
       include_custom_properties?: boolean;
       rich_filters?: TWorkItemFilterExpression;
     }
-  ): Promise<any> {
-    return this.post(`/api/workspaces/${workspaceSlug}/export-issues/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  ): Promise<unknown> {
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/export-issues/`, data));
   }
 }

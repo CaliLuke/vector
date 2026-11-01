@@ -96,10 +96,10 @@ for (const finding of findings) counts.set(keyFor(finding), (counts.get(keyFor(f
 if (writeBaseline) {
   mkdirSync(path.dirname(baselinePath), { recursive: true });
   const entries = [...counts.entries()]
-    .sort(([left], [right]) => left.localeCompare(right))
+    .toSorted(([left], [right]) => left.localeCompare(right))
     .map(([key, count]) => ({ finding: JSON.parse(key), count }));
   writeFileSync(baselinePath, `${JSON.stringify({ version: 1, findings: entries }, null, 2)}\n`);
-  console.log(`Knip baseline written with ${findings.length} findings.`);
+  process.stdout.write(`Knip baseline written with ${findings.length} findings.\n`);
   process.exit(0);
 }
 
@@ -135,4 +135,4 @@ if (failures.length) {
   if (failures.length > 40) console.error(`  ... and ${failures.length - 40} more findings`);
   process.exit(1);
 }
-console.log(`Knip ratchet passed: ${findings.length} findings; no finding increased.`);
+process.stdout.write(`Knip ratchet passed: ${findings.length} findings; no finding increased.\n`);

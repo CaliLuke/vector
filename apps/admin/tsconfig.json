@@ -10,8 +10,15 @@
     "paths": {
       "package.json": ["./package.json"],
       "@/*": ["./*"]
-    }
+    },
+    "allowImportingTsExtensions": true
   },
-  "include": ["**/*", "**/.server/**/*", "**/.client/**/*", ".react-router/types/**/*"],
+  "include": [
+    "**/*",
+    "**/.server/**/*",
+    "**/.client/**/*",
+    ".react-router/types/**/*",
+    "../../scripts/vite-config.mts"
+  ],
   "exclude": ["node_modules"]
 }

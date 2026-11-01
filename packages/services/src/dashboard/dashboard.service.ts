@@ -20,15 +20,13 @@ export default class DashboardService extends APIService {
    * @throws {Error} If the API request fails
    */
   async getHomeWidgets(workspaceSlug: string): Promise<THomeDashboardResponse> {
-    return this.get(`/api/workspaces/${workspaceSlug}/dashboard/`, {
-      params: {
-        dashboard_type: "home",
-      },
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/dashboard/`, {
+        params: {
+          dashboard_type: "home",
+        },
+      })
+    );
   }
 
   /**
@@ -44,13 +42,11 @@ export default class DashboardService extends APIService {
     dashboardId: string,
     params: TWidgetStatsRequestParams
   ): Promise<TWidgetStatsResponse> {
-    return this.get(`/api/workspaces/${workspaceSlug}/dashboard/${dashboardId}/`, {
-      params,
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/dashboard/${dashboardId}/`, {
+        params,
+      })
+    );
   }
 
   /**
@@ -60,11 +56,7 @@ export default class DashboardService extends APIService {
    * @throws {Error} If the API request fails
    */
   async retrieve(dashboardId: string): Promise<TWidgetStatsResponse> {
-    return this.get(`/api/dashboard/${dashboardId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/dashboard/${dashboardId}/`));
   }
 
   /**
@@ -76,11 +68,7 @@ export default class DashboardService extends APIService {
    * @throws {Error} If the API request fails
    */
   async updateWidget(dashboardId: string, widgetId: string, data: Partial<TWidget>): Promise<TWidget> {
-    return this.patch(`/api/dashboard/${dashboardId}/widgets/${widgetId}/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.patch(`/api/dashboard/${dashboardId}/widgets/${widgetId}/`, data));
   }
 }
 

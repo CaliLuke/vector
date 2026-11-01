@@ -1,3 +1,4 @@
+import type { IssueQuickAddCallback } from "../types";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -29,7 +30,7 @@ type Props = {
   prePopulatedData?: Partial<TIssue>;
   onClose: () => void;
   isEpic: boolean;
-  onCreate?: (id: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>;
+  onCreate?: IssueQuickAddCallback;
 };
 const styles: Record<EIssueLayoutTypes, { container: string; row: string; input: string; hint?: string }> = {
   list: {
@@ -80,7 +81,7 @@ export function QuickAddIssueForm({
   const current = useCommittedScope(
     JSON.stringify([workspaceSlug, projectId, storeType, cycleId, moduleId, isEpic, layout])
   );
-  const creation = useIssueCreation<TIssue>(
+  const creation = useIssueCreation(
     {
       create: async ({ payload }) => {
         const issue = await onCreate?.(projectId, payload);

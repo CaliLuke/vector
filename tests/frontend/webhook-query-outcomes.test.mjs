@@ -89,7 +89,6 @@ registerHooks({
       "@plane/utils/file": "export const csvDownload=(data)=>globalThis.webhookQueryTest.downloads.push(data);",
       "@plane/utils/datetime": "export const renderFormattedPayloadDate=(value)=>value;",
       "@plane/ui": `const React=globalThis.webhookQueryReact; export const EModalPosition={TOP:'top'}; export const EModalWidth={XXL:'xxl'}; export const ModalCore=({children})=>children; export const AlertModalCore=props=>React.createElement('button',{id:'delete-webhook',disabled:props.isSubmitting,onClick:props.handleSubmit},'Delete webhook');`,
-      "@/hooks/use-keypress": "export default ()=>{};",
     };
     return resolvePackageStub(specifier, stubs, context, nextResolve);
   },
@@ -385,4 +384,43 @@ await test("late delete after modal unmount cleans captured cache without naviga
   assert.equal(router.state.location.pathname, startPath);
   assert.deepEqual(state.toasts, []);
   state.deletePending = null;
+});
+
+await test("Escape dismisses an idle webhook flow and remains blocked while creation is pending", async (t) => {
+  const fixture = await createQueryRouterFixture(t, "/acme/settings/webhooks/");
+  const { environment, client } = fixture;
+  const { CreateWebhookModal } = await import("../../apps/web/core/components/web-hooks/create-webhook-modal.tsx");
+  client.setQueryData(query.webhookKeys.list("acme"), []);
+  const pending = Promise.withResolvers();
+  state.createPending = pending;
+  state.createPromise = Promise.resolve();
+  let closes = 0;
+  await fixture.render(
+    React.createElement(CreateWebhookModal, { isOpen: true, currentWorkspace: null, onClose: () => closes++ })
+  );
+  const escape = () =>
+    act(async () =>
+      environment.container.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true })
+      )
+    );
+  await escape();
+  assert.equal(closes, 1);
+  await act(async () => environment.container.querySelector("button").click());
+  await settleQuery();
+  await escape();
+  assert.equal(closes, 1, "an in-flight creation keeps the one-time secret flow open");
+  await act(async () => {
+    pending.resolve({ ...record("new", "https://new.example.test"), secret_key: "one-time" });
+    await state.createPromise;
+  });
+  await escape();
+  assert.equal(closes, 1, "the generated secret requires explicit acknowledgement");
+  const close = [...environment.container.querySelectorAll("button")].find(
+    (item) => item.textContent === "Close generated webhook"
+  );
+  assert.ok(close);
+  await act(async () => close.click());
+  assert.equal(closes, 2);
+  state.createPending = null;
 });

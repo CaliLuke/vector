@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { QueryClient, QueryClientProvider, skipToken } from "@tanstack/react-query";
@@ -31,7 +32,7 @@ function response(overrides = {}) {
       navigation: { default_tab: "issues", hide_in_more_menu: ["cycles"] },
     },
     rich_filters: { and: [] },
-    display_filters: { layout: "list", order_by: "created_at", show_empty_groups: false },
+    display_filters: { layout: ContractEnums.EIssueLayoutTypes.LIST, order_by: "created_at", show_empty_groups: false },
     display_properties: { assignee: true, labels: true, key: true },
     sort_order: 25,
     ...overrides,
@@ -418,7 +419,7 @@ await test("project preference patches compose pending nested fields and failed 
 await test("a failed calendar layout intent is not carried into a queued accepted calendar patch", async (t) => {
   const initial = response({
     display_filters: {
-      layout: "calendar",
+      layout: ContractEnums.EIssueLayoutTypes.CALENDAR,
       calendar: { layout: "month", show_weekends: false },
     },
   });

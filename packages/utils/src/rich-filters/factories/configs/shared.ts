@@ -62,13 +62,10 @@ export type TCreateDateFilterParams = TCreateFilterConfigParams & IFilterIconCon
  * @param configFn - Function that creates the operator config using base configuration
  * @returns A tuple of operator and its config, typed to be compatible with operator configs map
  */
-export const createOperatorConfigEntry = <
-  T extends TOperatorSpecificConfigs[keyof TOperatorSpecificConfigs],
-  P extends TCreateFilterConfigParams,
->(
+export const createOperatorConfigEntry = <P extends TCreateFilterConfigParams>(
   operator: TSupportedOperators,
   createParams: P,
-  configFn: (updatedParams: P) => T
+  configFn: (updatedParams: P) => TOperatorSpecificConfigs[keyof TOperatorSpecificConfigs]
 ): [TSupportedOperators, TOperatorSpecificConfigs[keyof TOperatorSpecificConfigs]] => [
   operator,
   configFn({ isOperatorEnabled: createParams.allowedOperators.has(operator), ...createParams }),

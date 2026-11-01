@@ -68,7 +68,7 @@ function DeleteProjectViewModalContent(props: Props) {
   return (
     <AlertModalCore
       handleClose={handleClose}
-      handleSubmit={handleDeleteView}
+      handleSubmit={() => void handleDeleteView()}
       isSubmitting={remove.isPending}
       isOpen
       title={t("project_views.delete_view.title")}

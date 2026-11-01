@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-// FIXME: fix this!!!
 import React from "react";
 import type { ICustomSearchSelectOption } from "@plane/types";
 
@@ -44,12 +43,11 @@ interface IDropdownProps {
   defaultOpen?: boolean;
 }
 
-export type TAsChildButtonProps = React.PropsWithChildren<
-  Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "ref"> & {
-    as?: React.ElementType;
-    ref?: React.Ref<HTMLButtonElement>;
-  }
->;
+export function getDropdownEventTarget(event: Event): Element | null {
+  const target = event.target;
+  if (target instanceof Element) return target;
+  return target instanceof Node ? target.parentElement : null;
+}
 
 export function isCustomButtonDisabled(disabled: boolean, customButton: React.ReactNode): boolean {
   const childDisabled = React.isValidElement<{ disabled?: boolean }>(customButton)
@@ -81,7 +79,7 @@ export interface ICustomMenuDropdownProps extends IDropdownProps {
   ellipsis?: boolean;
   noBorder?: boolean;
   verticalEllipsis?: boolean;
-  menuButtonOnClick?: (...args: any) => void;
+  menuButtonOnClick?: () => void;
   menuItemsClassName?: string;
   onMenuClose?: () => void;
   closeOnSelect?: boolean;
@@ -90,44 +88,33 @@ export interface ICustomMenuDropdownProps extends IDropdownProps {
   ariaLabel?: string;
 }
 
-export interface ICustomSelectProps extends IDropdownProps {
+export interface ICustomSelectProps<T> extends IDropdownProps {
   children: React.ReactNode;
-  value: any;
-  onChange: any;
+  value: T | null | undefined;
+  onChange: (value: T | null) => void;
+  ref?: React.Ref<HTMLButtonElement>;
 }
 
-interface CustomSearchSelectProps {
+export type ICustomSearchSelectProps<T> = IDropdownProps & {
   footerOption?: React.ReactNode;
-  onChange: any;
   onClose?: () => void;
   noResultsMessage?: string;
-  options?: ICustomSearchSelectOption[];
-}
-
-interface SingleValueProps {
-  multiple?: false;
-  value: any;
-}
-
-interface MultipleValuesProps {
-  multiple?: true;
-  value: any[] | null;
-}
-
-export type ICustomSearchSelectProps = IDropdownProps &
-  CustomSearchSelectProps &
-  (SingleValueProps | MultipleValuesProps);
+  options?: ICustomSearchSelectOption<T>[];
+} & (
+    | { multiple?: false; value: T | null | undefined; onChange: (value: T | null) => void }
+    | { multiple: true; value: T[] | null; onChange: (value: T[]) => void }
+  );
 
 export interface ICustomMenuItemProps {
   children: React.ReactNode;
   disabled?: boolean;
-  onClick?: (args?: any) => void;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
   className?: string;
 }
 
 export interface ICustomSelectItemProps {
   children: React.ReactNode;
-  value: any;
+  value: unknown;
   className?: string;
 }
 
@@ -153,4 +140,8 @@ export interface ICustomSubMenuContentProps {
   placement?: Placement;
   sideOffset?: number;
   alignOffset?: number;
+}
+
+export function searchSelectOptionKey(value: unknown, query: string): React.Key {
+  return typeof value === "string" || typeof value === "number" || typeof value === "bigint" ? value : query;
 }

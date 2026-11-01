@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
-import { React, act, webRequire } from "./helpers/react.mjs";
+import { React, act } from "./helpers/react.mjs";
 import { observeNativeForms } from "./helpers/native-form-observer.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 registerWebModuleHooks();
@@ -10,14 +10,18 @@ const resendFormObserver = observeNativeForms(["packages/hooks/src/use-resend-co
 await test("code resend retains the current code after failure and starts its cooldown only after success", async (t) => {
   const env = await createReactDomTestEnvironment();
   t.after(() => env.unmount());
+  t.mock.timers.enable({ apis: ["setTimeout"] });
   const { useResendCodeForm } = await import("../../packages/hooks/src/use-resend-code-form.ts");
-  const { useStore } = webRequire("@tanstack/react-form");
   let finish;
   let fail;
   function Harness() {
     const [code, setCode] = React.useState("123456");
     const [error, setError] = React.useState("");
-    const { form, cooldown } = useResendCodeForm({
+    const {
+      isSubmitting: busy,
+      cooldown,
+      resend,
+    } = useResendCodeForm({
       send: () =>
         new Promise((resolve, reject) => {
           finish = resolve;
@@ -29,16 +33,11 @@ await test("code resend retains the current code after failure and starts its co
       },
       onError: () => setError("Could not resend"),
     });
-    const busy = useStore(form.store, (state) => state.isSubmitting);
     return React.createElement(
       "div",
       null,
       React.createElement("input", { readOnly: true, value: code }),
-      React.createElement(
-        "button",
-        { disabled: busy || cooldown > 0, onClick: () => void form.handleSubmit().catch(() => {}) },
-        busy ? "Sending" : "Resend"
-      ),
+      React.createElement("button", { disabled: busy || cooldown > 0, onClick: resend }, busy ? "Sending" : "Resend"),
       React.createElement("output", null, cooldown),
       React.createElement("p", { role: "alert" }, error)
     );
@@ -64,6 +63,16 @@ await test("code resend retains the current code after failure and starts its co
   assert.equal(env.container.querySelector("input").value, "");
   assert.equal(env.container.querySelector("output").textContent, "5");
   assert.equal(button.disabled, true);
+  const tick = () => act(async () => t.mock.timers.tick(1000));
+  await tick();
+  assert.equal(env.container.querySelector("output").textContent, "4");
+  assert.equal(button.disabled, true);
+  await tick();
+  await tick();
+  await tick();
+  await tick();
+  assert.equal(env.container.querySelector("output").textContent, "0");
+  assert.equal(button.disabled, false);
 });
 
 resendFormObserver.restore();

@@ -30,41 +30,12 @@ export const DraftIssueLayout = function DraftIssueLayout(props: DraftIssueProps
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // states
   const [issueDiscardModal, setIssueDiscardModal] = useState(false);
-  const sanitizeChanges = (): Partial<TIssue> => {
-    const sanitizedChanges = { ...changesMade };
-    Object.entries(sanitizedChanges).forEach(([key, value]) => {
-      const issueKey = key as keyof TIssue;
-      if (value === null || value === undefined || value === "") delete sanitizedChanges[issueKey];
-      if (typeof value === "object" && isEmpty(value)) delete sanitizedChanges[issueKey];
-      if (Array.isArray(value) && value.length === 0) delete sanitizedChanges[issueKey];
-      if (issueKey === "project_id") delete sanitizedChanges.project_id;
-      if (issueKey === "priority" && value && value === "none") delete sanitizedChanges.priority;
-      if (
-        issueKey === "description_html" &&
-        changesMade?.description_html &&
-        isEmptyHtmlString(changesMade.description_html, ["img"])
-      )
-        delete sanitizedChanges.description_html;
-    });
-    return sanitizedChanges;
-  };
-
   const handleClose = () => {
-    // If the user is updating an existing work item, we don't need to show the discard modal
-    if (data?.id) {
+    if (!data?.id && changesMade && hasMeaningfulChanges(changesMade)) {
+      setIssueDiscardModal(true);
+    } else {
       onClose();
       setIssueDiscardModal(false);
-    } else {
-      if (changesMade) {
-        const sanitizedChanges = sanitizeChanges();
-        if (isEmpty(sanitizedChanges)) {
-          onClose();
-          setIssueDiscardModal(false);
-        } else setIssueDiscardModal(true);
-      } else {
-        onClose();
-        setIssueDiscardModal(false);
-      }
     }
   };
 
@@ -107,3 +78,13 @@ export const DraftIssueLayout = function DraftIssueLayout(props: DraftIssueProps
     </>
   );
 };
+
+function hasMeaningfulChanges(changes: Partial<TIssue>): boolean {
+  return Object.entries(changes).some(([key, value]) => {
+    if (key === "project_id" || value === null || value === undefined || value === "") return false;
+    if (typeof value === "object" && isEmpty(value)) return false;
+    if (key === "priority" && value === "none") return false;
+    if (key === "description_html" && typeof value === "string" && isEmptyHtmlString(value, ["img"])) return false;
+    return true;
+  });
+}

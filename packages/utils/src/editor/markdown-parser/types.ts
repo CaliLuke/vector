@@ -17,6 +17,4 @@ export type TCoreCustomComponentsMetaData = {
   }[];
 };
 
-export type TExtendedCustomComponentsMetaData = unknown;
-
-export type TCustomComponentsMetaData = TCoreCustomComponentsMetaData & TExtendedCustomComponentsMetaData;
+export type TCustomComponentsMetaData = TCoreCustomComponentsMetaData;

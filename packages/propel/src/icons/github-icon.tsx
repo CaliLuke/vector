@@ -9,6 +9,7 @@ import * as React from "react";
 import type { ISvgIcons } from "./type";
 
 export function GithubIcon({ width = "24", height = "24", className, color }: ISvgIcons) {
+  const clipPathId = React.useId();
   return (
     <svg
       width={width}
@@ -18,7 +19,7 @@ export function GithubIcon({ width = "24", height = "24", className, color }: IS
       fill="currentColor"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <g clipPath="url(#clip0_282_232)">
+      <g clipPath={`url(#${clipPathId})`}>
         <path
           fillRule="evenodd"
           clipRule="evenodd"
@@ -27,7 +28,7 @@ export function GithubIcon({ width = "24", height = "24", className, color }: IS
         />
       </g>
       <defs>
-        <clipPath id="clip0_282_232">
+        <clipPath id={clipPathId}>
           <rect width={width} height={height} />
         </clipPath>
       </defs>

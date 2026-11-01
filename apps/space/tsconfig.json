@@ -11,8 +11,16 @@
     "noUnusedLocals": false,
     "noImplicitReturns": false,
     "exactOptionalPropertyTypes": false,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
+    "allowImportingTsExtensions": true
   },
-  "include": ["**/*", "**/.server/**/*", "**/.client/**/*", ".react-router/types/**/*", "additional.d.ts"],
+  "include": [
+    "**/*",
+    "**/.server/**/*",
+    "**/.client/**/*",
+    ".react-router/types/**/*",
+    "additional.d.ts",
+    "../../scripts/vite-config.mts"
+  ],
   "exclude": ["node_modules"]
 }

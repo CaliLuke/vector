@@ -8,16 +8,15 @@ import { useParams } from "@tanstack/react-router";
 
 // plane imports
 import { EUserPermissions, DATE_AFTER_FILTER_OPTIONS } from "@plane/constants";
-import { useTranslation } from "@plane/i18n";
-import { CloseIcon } from "@plane/propel/icons";
 import type { TCycleFilters } from "@plane/types";
-import { Tag } from "@plane/ui";
-import { replaceUnderscoreIfSnakeCase } from "@plane/utils/string";
+import { AppliedFiltersRow } from "@/components/common/applied-filters/tag";
 // hooks
 import { useProjectPermissions } from "@/hooks/use-permissions";
 // local imports
 import { AppliedDateFilters } from "@/components/common/applied-filters/date";
 import { AppliedStatusFilters } from "./status";
+
+const FILTER_KEYS = ["end_date", "start_date", "status"] as const satisfies readonly (keyof TCycleFilters)[];
 
 type Props = {
   appliedFilters: TCycleFilters;
@@ -33,63 +32,37 @@ export const CycleAppliedFiltersList = function CycleAppliedFiltersList(props: P
   // store hooks
   const { workspaceSlug, projectId } = useParams({ strict: false });
   const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
-  const { t } = useTranslation();
-
-  if (!appliedFilters) return null;
-
-  if (Object.keys(appliedFilters).length === 0) return null;
 
   const isEditingAllowed = alwaysAllowEditing || canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   return (
-    <div className="flex flex-wrap items-stretch gap-2 bg-surface-1">
-      {Object.entries(appliedFilters).map(([key, value]) => {
-        const filterKey = key as keyof TCycleFilters;
-
-        if (!value) return;
-        if (Array.isArray(value) && value.length === 0) return;
-
-        return (
-          <Tag key={filterKey}>
-            <span className="text-11 text-tertiary">{replaceUnderscoreIfSnakeCase(filterKey)}</span>
-            <div className="flex flex-wrap items-center gap-1">
-              {filterKey === "status" && (
-                <AppliedStatusFilters
-                  editable={isEditingAllowed}
-                  handleRemove={(val) => handleRemoveFilter("status", val)}
-                  values={value}
-                />
-              )}
-              {DATE_FILTERS.has(filterKey) && (
-                <AppliedDateFilters
-                  options={DATE_AFTER_FILTER_OPTIONS}
-                  className="bg-layer-3"
-                  editable={isEditingAllowed}
-                  handleRemove={(val) => handleRemoveFilter(filterKey, val)}
-                  values={value}
-                />
-              )}
-              {isEditingAllowed && (
-                <button
-                  type="button"
-                  className="grid place-items-center text-tertiary hover:text-secondary"
-                  onClick={() => handleRemoveFilter(filterKey, null)}
-                >
-                  <CloseIcon height={12} width={12} strokeWidth={2} />
-                </button>
-              )}
-            </div>
-          </Tag>
-        );
-      })}
-      {isEditingAllowed && (
-        <button type="button" onClick={handleClearAllFilters}>
-          <Tag>
-            {t("common.clear_all")}
-            <CloseIcon height={12} width={12} strokeWidth={2} />
-          </Tag>
-        </button>
+    <AppliedFiltersRow
+      filters={appliedFilters}
+      keys={FILTER_KEYS}
+      onRemove={isEditingAllowed ? (key) => handleRemoveFilter(key, null) : undefined}
+      onClearAll={isEditingAllowed ? handleClearAllFilters : undefined}
+      valuesClassName="flex flex-wrap items-center gap-1"
+    >
+      {(filterKey) => (
+        <>
+          {filterKey === "status" && (
+            <AppliedStatusFilters
+              editable={isEditingAllowed}
+              handleRemove={(val) => handleRemoveFilter("status", val)}
+              values={appliedFilters[filterKey] ?? []}
+            />
+          )}
+          {DATE_FILTERS.has(filterKey) && (
+            <AppliedDateFilters
+              options={DATE_AFTER_FILTER_OPTIONS}
+              className="bg-layer-3"
+              editable={isEditingAllowed}
+              handleRemove={(val) => handleRemoveFilter(filterKey, val)}
+              values={appliedFilters[filterKey] ?? []}
+            />
+          )}
+        </>
       )}
-    </div>
+    </AppliedFiltersRow>
   );
 };

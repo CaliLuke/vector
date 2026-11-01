@@ -76,7 +76,7 @@ export const ProjectHeader = function ProjectHeader(props: TProjectHeaderProps) 
     <CustomSearchSelect
       options={switcherOptions}
       value={currentProjectDetails.id}
-      onChange={handleProjectChange}
+      onChange={(selection) => (selection !== null ? handleProjectChange(selection) : undefined)}
       customButton={currentProjectDetails ? <ProjectHeaderButton project={currentProjectDetails} /> : null}
       className="h-full rounded"
       customButtonClassName="group flex items-center gap-0.5 rounded-sm hover:bg-surface-2 outline-none cursor-pointer h-full"

@@ -5,12 +5,23 @@
  */
 
 import type { RefObject } from "react";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 const SCROLL_BY = 3;
-
 const AUTO_SCROLL_THRESHOLD = 15;
 const MAX_SPEED_THRESHOLD = 5;
+
+function axisScrollSpeed(position: number, extent: number, movement: number): number {
+  const threshold = (extent * AUTO_SCROLL_THRESHOLD) / 100;
+  const maxSpeedThreshold = (extent * MAX_SPEED_THRESHOLD) / 100;
+  if (position < threshold && movement <= 0) {
+    return -SCROLL_BY * (position < maxSpeedThreshold ? 2 : 1);
+  }
+  if (position > extent - threshold && movement >= 0) {
+    return SCROLL_BY * (position > extent - maxSpeedThreshold ? 2 : 1);
+  }
+  return 0;
+}
 
 export const useAutoScroller = (
   containerRef: RefObject<HTMLDivElement | null>,
@@ -18,112 +29,40 @@ export const useAutoScroller = (
   leftOffset = 0,
   topOffset = 0
 ) => {
-  const containerDimensions = useRef<DOMRect | undefined>(undefined);
-  const intervalId = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
-  const mousePosition = useRef<{ clientX: number; clientY: number } | undefined>(undefined);
-
-  const clearRegisteredTimeout = () => {
-    clearInterval(intervalId.current);
-  };
-
-  const onDragEnd = () => clearRegisteredTimeout();
-
-  const handleAutoScroll = (e: MouseEvent) => {
-    const rect = containerDimensions.current;
-    clearInterval(intervalId.current);
-
-    if (!rect || !shouldScroll || (e.clientX === 0 && e.clientY === 0)) return;
-
-    let diffX = 0,
-      diffY = 0;
-
-    if (mousePosition.current) {
-      diffX = e.clientX - mousePosition.current.clientX;
-      diffY = e.clientY - mousePosition.current.clientY;
-    }
-
-    mousePosition.current = { clientX: e.clientX, clientY: e.clientY };
-    const { left, top, width, height } = rect;
-
-    const mouseX = e.clientX - left - leftOffset;
-    const mouseY = e.clientY - top - topOffset;
-
-    const currWidth = width - leftOffset;
-    const currHeight = height - topOffset;
-
-    // Get Threshold in percentages
-    const thresholdX = (currWidth / 100) * AUTO_SCROLL_THRESHOLD;
-    const thresholdY = (currHeight / 100) * AUTO_SCROLL_THRESHOLD;
-    const maxSpeedX = (currWidth / 100) * MAX_SPEED_THRESHOLD;
-    const maxSpeedY = (currHeight / 100) * MAX_SPEED_THRESHOLD;
-
-    let scrollByX = 0,
-      scrollByY = 0;
-
-    // Check mouse positions against thresholds
-    if (mouseX < thresholdX && diffX <= 0) {
-      scrollByX = -1 * SCROLL_BY;
-      if (mouseX < maxSpeedX) {
-        scrollByX *= 2;
-      }
-    }
-
-    if (mouseX > currWidth - thresholdX && diffX >= 0) {
-      scrollByX = SCROLL_BY;
-      if (mouseX > currWidth - maxSpeedX) {
-        scrollByX *= 2;
-      }
-    }
-
-    if (mouseY < thresholdY && diffY <= 0) {
-      scrollByY = -1 * SCROLL_BY;
-      if (mouseX < maxSpeedY) {
-        scrollByY *= 2;
-      }
-    }
-
-    if (mouseY > currHeight - thresholdY && diffY >= 0) {
-      scrollByY = SCROLL_BY;
-      if (mouseY > currHeight - maxSpeedY) {
-        scrollByY *= 2;
-      }
-    }
-
-    // if mouse position breaches threshold, then start to scroll
-    if (scrollByX || scrollByY) {
-      containerRef.current?.scrollBy(scrollByX, scrollByY);
-      intervalId.current = setInterval(() => {
-        containerRef.current?.scrollBy(scrollByX, scrollByY);
-      }, 16);
-    }
-  };
-
   useEffect(() => {
-    const containerElement = containerRef.current;
-
-    if (!containerElement || !shouldScroll) return;
-
-    containerElement.addEventListener("drag", handleAutoScroll);
-    containerElement.addEventListener("mousemove", handleAutoScroll);
-    document.addEventListener("mouseup", onDragEnd);
-    document.addEventListener("dragend", onDragEnd);
-
-    return () => {
-      containerElement?.removeEventListener("drag", handleAutoScroll);
-      containerElement?.removeEventListener("mousemove", handleAutoScroll);
-      document.removeEventListener("mouseup", onDragEnd);
-      document.removeEventListener("dragend", onDragEnd);
+    const container = containerRef.current;
+    if (!container || !shouldScroll) return undefined;
+    const { left, top, width, height } = container.getBoundingClientRect();
+    let interval: ReturnType<typeof setInterval> | undefined;
+    let previousPosition: { clientX: number; clientY: number } | undefined;
+    const stopScrolling = () => {
+      clearInterval(interval);
+      interval = undefined;
+      previousPosition = undefined;
     };
-  }, [shouldScroll, intervalId]);
+    const handleAutoScroll = (event: MouseEvent) => {
+      clearInterval(interval);
+      if (event.clientX === 0 && event.clientY === 0) return;
+      const dx = previousPosition ? event.clientX - previousPosition.clientX : 0;
+      const dy = previousPosition ? event.clientY - previousPosition.clientY : 0;
+      previousPosition = { clientX: event.clientX, clientY: event.clientY };
+      const x = axisScrollSpeed(event.clientX - left - leftOffset, width - leftOffset, dx);
+      const y = axisScrollSpeed(event.clientY - top - topOffset, height - topOffset, dy);
+      if (!x && !y) return;
+      container.scrollBy(x, y);
+      interval = setInterval(() => container.scrollBy(x, y), 16);
+    };
 
-  useEffect(() => {
-    const containerElement = containerRef.current;
-
-    if (!containerElement || !shouldScroll) {
-      clearRegisteredTimeout();
-      containerDimensions.current = undefined;
-    }
-
-    containerDimensions.current = containerElement?.getBoundingClientRect();
-  }, [shouldScroll]);
+    container.addEventListener("drag", handleAutoScroll);
+    container.addEventListener("mousemove", handleAutoScroll);
+    document.addEventListener("mouseup", stopScrolling);
+    document.addEventListener("dragend", stopScrolling);
+    return () => {
+      stopScrolling();
+      container.removeEventListener("drag", handleAutoScroll);
+      container.removeEventListener("mousemove", handleAutoScroll);
+      document.removeEventListener("mouseup", stopScrolling);
+      document.removeEventListener("dragend", stopScrolling);
+    };
+  }, [containerRef, shouldScroll, leftOffset, topOffset]);
 };

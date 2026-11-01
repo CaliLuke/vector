@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { z } from "zod";
+
 /**
  * Type-safe admin commands for server-to-server communication
  */
@@ -64,34 +66,31 @@ export enum CloseCode {
 export enum AdminCommand {
   FORCE_CLOSE = "force_close",
   HEALTH_CHECK = "health_check",
-  RESTART_DOCUMENT = "restart_document",
 }
 
 /**
  * Force close command data structure
  */
-export interface ForceCloseCommandData {
-  command: AdminCommand.FORCE_CLOSE;
-  docId: string;
-  reason: ForceCloseReason;
-  code: CloseCode;
-  originServer: string;
-  timestamp?: string;
-}
-
-/**
- * Health check command data structure
- */
-export interface HealthCheckCommandData {
-  command: AdminCommand.HEALTH_CHECK;
-  originServer: string;
-  timestamp: string;
-}
-
-/**
- * Union type for all admin commands
- */
-export type AdminCommandData = ForceCloseCommandData | HealthCheckCommandData;
+const forceCloseCommandSchema = z.object({
+  command: z.literal(AdminCommand.FORCE_CLOSE),
+  docId: z.string().min(1),
+  reason: z.enum(ForceCloseReason),
+  code: z.enum(CloseCode),
+  originServer: z.string().min(1),
+  timestamp: z.string().optional(),
+});
+const healthCheckCommandSchema = z.object({
+  command: z.literal(AdminCommand.HEALTH_CHECK),
+  originServer: z.string().min(1),
+  timestamp: z.string(),
+});
+export const adminCommandSchema = z.discriminatedUnion("command", [forceCloseCommandSchema, healthCheckCommandSchema]);
+export type ForceCloseCommandData = z.infer<typeof forceCloseCommandSchema>;
+export type HealthCheckCommandData = z.infer<typeof healthCheckCommandSchema>;
+export type AdminCommandData = z.infer<typeof adminCommandSchema>;
+export type AdminCommandHandlers = {
+  [Command in AdminCommandData["command"]]?: AdminCommandHandler<Extract<AdminCommandData, { command: Command }>>;
+};
 
 /**
  * Client force close message structure (sent to clients via sendStateless)
@@ -107,7 +106,7 @@ export interface ClientForceCloseMessage {
 /**
  * Admin command handler function type
  */
-export type AdminCommandHandler<T extends AdminCommandData = AdminCommandData> = (data: T) => Promise<void> | void;
+type AdminCommandHandler<T extends AdminCommandData = AdminCommandData> = (data: T) => Promise<void> | void;
 
 /**
  * Type guard to check if data is a ForceCloseCommandData

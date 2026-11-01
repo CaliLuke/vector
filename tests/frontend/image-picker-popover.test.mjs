@@ -56,7 +56,9 @@ async function loadImagePicker() {
   return imagePickerPopoverPromise;
 }
 
-function PickerHarness({ disabled = false, value = null, onChange = () => {} } = {}) {
+const ignoreChange = () => {};
+
+function PickerHarness({ disabled = false, value = null, onChange = ignoreChange } = {}) {
   const [queryClient] = React.useState(() => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
     seedInstanceInfo(client, { has_unsplash_configured: false });
@@ -87,7 +89,8 @@ function keyDown(element, key) {
   element.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
 }
 
-test("profile cover picker opens on the global settings route with mouse and keyboard activation", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("profile cover picker opens on the global settings route with mouse and keyboard activation", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   const trigger = await renderPicker(environment);
@@ -113,7 +116,7 @@ test("profile cover picker opens on the global settings route with mouse and key
   assert.ok(document.querySelector('[role="tablist"]'));
 });
 
-test("cover picker reports open state and closes with Escape while returning focus", async (t) => {
+void test("cover picker reports open state and closes with Escape while returning focus", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   const trigger = await renderPicker(environment);
@@ -135,7 +138,7 @@ test("cover picker reports open state and closes with Escape while returning foc
   assert.equal(document.activeElement, trigger);
 });
 
-test("Enter inside the Upload tab does not toggle the cover picker", async (t) => {
+void test("Enter inside the Upload tab does not toggle the cover picker", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   const trigger = await renderPicker(environment);
@@ -153,7 +156,7 @@ test("Enter inside the Upload tab does not toggle the cover picker", async (t) =
   assert.ok(document.querySelector('[role="tablist"]'));
 });
 
-test("cover picker keeps upload and save disabled without a file and honors a disabled trigger", async (t) => {
+void test("cover picker keeps upload and save disabled without a file and honors a disabled trigger", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   const trigger = await renderPicker(environment);
@@ -175,7 +178,7 @@ test("cover picker keeps upload and save disabled without a file and honors a di
   assert.equal(document.querySelector('[role="tablist"]'), null);
 });
 
-test("Cancel and static image selection close the popover, and selection updates the cover", async (t) => {
+void test("Cancel and static image selection close the popover, and selection updates the cover", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   const selected = [];

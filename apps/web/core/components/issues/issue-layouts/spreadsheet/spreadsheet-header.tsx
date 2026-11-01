@@ -64,7 +64,7 @@ export const SpreadsheetHeader = function SpreadsheetHeader(props: Props) {
                 <div className="mr-1 flex w-3.5 flex-shrink-0 items-center">
                   <MultipleSelectGroupAction
                     className={cn(
-                      "pointer-events-none size-3.5 opacity-0 !outline-none group-hover/list-header:pointer-events-auto group-hover/list-header:opacity-100",
+                      "pointer-events-none size-3.5 opacity-0 !outline-none group-focus-within/list-header:pointer-events-auto group-focus-within/list-header:opacity-100 group-hover/list-header:pointer-events-auto group-hover/list-header:opacity-100",
                       {
                         "pointer-events-auto opacity-100": !isGroupSelectionEmpty,
                       }
@@ -74,7 +74,7 @@ export const SpreadsheetHeader = function SpreadsheetHeader(props: Props) {
                   />
                 </div>
               )}
-              <span className="text-13 font-medium">{`${isEpic ? "Epics" : "Work items"}`}</span>
+              <span className="text-13 font-medium">{isEpic ? "Epics" : "Work items"}</span>
             </div>
           </div>
         </th>

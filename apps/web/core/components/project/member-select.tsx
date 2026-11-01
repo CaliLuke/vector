@@ -95,7 +95,7 @@ export function MemberSelect(props: Props) {
         ]
       }
       maxHeight="md"
-      onChange={onChange}
+      onChange={(selection) => (selection !== null ? onChange(selection) : undefined)}
       disabled={isDisabled}
     />
   );

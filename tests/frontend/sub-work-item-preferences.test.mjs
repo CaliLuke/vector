@@ -8,7 +8,7 @@ const { ALL_ISSUES } = webRequire("@plane/constants");
 
 registerPermissionUiStubs("/sub-issues/issues-list/root.tsx", {
   "../helper": "export const useSubIssueOperations=()=>({});",
-  "@/components/issues/issue-layouts/use-group-columns": `export const useGroupColumns = () => [{id:${JSON.stringify(ALL_ISSUES)}}, {id:"high"}, {id:"low"}];`,
+  "@/components/issues/issue-layouts/use-group-columns": `export const useGroupColumns = ({groupBy}) => groupBy ? [{id:${JSON.stringify(ALL_ISSUES)}}, {id:"high"}, {id:"low"}] : [{id:${JSON.stringify(ALL_ISSUES)}}];`,
   "@/components/issues/issue-layouts/utils": "export const isWorkspaceLevel = () => false;",
   "@/hooks/use-work-item-detail":
     "export const useWorkItemSubItems = (_workspace,_project,parentId) => ({subItems:parentId === globalThis.subWorkItemFixture.rootId ? Object.values(globalThis.subWorkItemFixture.rows) : []});",
@@ -16,7 +16,7 @@ registerPermissionUiStubs("/sub-issues/issues-list/root.tsx", {
   "./list-group": `import { React } from "${new URL("./helpers/react.mjs", import.meta.url).href}";
     export const SubIssuesListGroup = ({workItems,group}) => React.createElement("output", {"data-group":group.id}, workItems.map(item=>item.id).join(","));`,
   "@/components/empty-state/section-empty-state-root": `import { React } from "${new URL("./helpers/react.mjs", import.meta.url).href}";
-    export const SectionEmptyState = ({actionElement}) => React.createElement("section", {"data-empty":true}, actionElement);`,
+    export const SectionEmptyState = ({title,description,actionElement}) => React.createElement("section", {"data-empty":true},title,description,actionElement);`,
 });
 const { SubWorkItemPreferencesProvider, useSubWorkItemPreferences } =
   await import("../../apps/web/core/providers/sub-work-item-preferences.tsx");
@@ -157,4 +157,45 @@ await test("sub-item list reacts to native preferences and current unarchived it
   assert.ok(environment.container.querySelector("[data-empty]"), "a row update immediately changes the filtered list");
   await click(environment, "reset");
   assert.equal(environment.container.querySelector(`[data-group="${ALL_ISSUES}"]`).textContent, "low,high");
+});
+
+await test("nested sub-items ignore root grouping and epic empty results expose the matching reset action", async (t) => {
+  const environment = await setup(t);
+  const nested = { ...scope, parentId: "nested" };
+  globalThis.subWorkItemFixture = {
+    rootId: "nested",
+    rows: {
+      first: { id: "first", priority: "high" },
+      second: { id: "second", priority: "low" },
+      archived: { id: "archived", archived_at: "2026-10-30" },
+    },
+  };
+  t.after(() => delete globalThis.subWorkItemFixture);
+  const render = (parentIssueId, service = EIssueServiceType.ISSUES) =>
+    environment.render(
+      React.createElement(
+        SubWorkItemPreferencesProvider,
+        null,
+        React.createElement(Controls, { current: nested }),
+        React.createElement(SubIssuesListRoot, {
+          workspaceSlug: "acme",
+          projectId: "p1",
+          parentIssueId,
+          rootIssueId: "parent",
+          canEdit: false,
+          issueServiceType: service,
+          storeType: service === EIssueServiceType.EPICS ? EIssuesStoreType.EPIC : EIssuesStoreType.PROJECT,
+          onAction: () => {},
+        })
+      )
+    );
+  await render("nested");
+  await click(environment, "filter");
+  assert.equal(environment.container.querySelectorAll("[data-group]").length, 1);
+  assert.equal(environment.container.querySelector("[data-group]").textContent, "first,second");
+  await render("parent", EIssueServiceType.EPICS);
+  const empty = environment.container.querySelector("[data-empty]");
+  assert.match(empty.textContent, /sub_work_item.empty_state.list_filters.title/);
+  assert.doesNotMatch(empty.textContent, /sub_list_filters/);
+  await act(async () => empty.querySelector("button").click());
 });

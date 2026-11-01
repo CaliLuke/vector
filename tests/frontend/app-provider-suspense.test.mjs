@@ -27,7 +27,8 @@ registerHooks({
 
 const { AppProvider } = await import("../../apps/web/app/provider.tsx");
 
-test("app provider catches lazy wrapper suspension during a synchronous refresh", async () => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("app provider catches lazy wrapper suspension during a synchronous refresh", async () => {
   const environment = await createReactDomTestEnvironment();
   const errors = [];
   const originalConsoleError = console.error;

@@ -17,30 +17,19 @@ import type { TEditorAsset } from "@/types";
 
 export type TAssetMetaDataRecord = (attrs: ProseMirrorNode["attrs"]) => TEditorAsset | undefined;
 
+function imageAsset(
+  attrs: ProseMirrorNode["attrs"],
+  type: typeof CORE_EXTENSIONS.IMAGE | typeof CORE_EXTENSIONS.CUSTOM_IMAGE
+) {
+  const { src, id } = attrs;
+  if (typeof src !== "string" || !src || typeof id !== "string" || !id) return undefined;
+  return { href: `#${getImageBlockId(id)}`, id, name: `image-${id}`, size: 0, src, type };
+}
+
 export const CORE_ASSETS_META_DATA_RECORD: Partial<
   Record<CORE_EXTENSIONS | ADDITIONAL_EXTENSIONS, TAssetMetaDataRecord>
 > = {
-  [CORE_EXTENSIONS.IMAGE]: (attrs) => {
-    if (!attrs?.src) return;
-    return {
-      href: `#${getImageBlockId(attrs?.id ?? "")}`,
-      id: attrs?.id,
-      name: `image-${attrs?.id}`,
-      size: 0,
-      src: attrs?.src,
-      type: CORE_EXTENSIONS.IMAGE,
-    };
-  },
-  [CORE_EXTENSIONS.CUSTOM_IMAGE]: (attrs) => {
-    if (!attrs?.src) return;
-    return {
-      href: `#${getImageBlockId(attrs?.id ?? "")}`,
-      id: attrs?.id,
-      name: `image-${attrs?.id}`,
-      size: 0,
-      src: attrs?.src,
-      type: CORE_EXTENSIONS.CUSTOM_IMAGE,
-    };
-  },
+  [CORE_EXTENSIONS.IMAGE]: (attrs) => imageAsset(attrs, CORE_EXTENSIONS.IMAGE),
+  [CORE_EXTENSIONS.CUSTOM_IMAGE]: (attrs) => imageAsset(attrs, CORE_EXTENSIONS.CUSTOM_IMAGE),
   ...ADDITIONAL_ASSETS_META_DATA_RECORD,
 };

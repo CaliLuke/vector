@@ -8,6 +8,9 @@ import { useWorkItemTypeCatalog } from "@/hooks/use-work-item-type-catalog";
 import { useCurrentWorkspace } from "@/hooks/use-workspaces";
 import intersection from "lodash-es/intersection.js";
 
+import { useQueryClient } from "@tanstack/react-query";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
+import { useIdentityGeneration } from "@/hooks/use-identity-generation";
 import { useForm, useStore } from "@tanstack/react-form";
 import { EUserPermissions, EXPORTERS_LIST } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -25,7 +28,7 @@ import { SettingsBoxedControlItem } from "../settings/boxed-control-item";
 type Props = {
   workspaceSlug: string;
   provider: string | null;
-  mutateServices: () => void;
+  mutateServices: () => void | Promise<void>;
 };
 type FormData = {
   provider: (typeof EXPORTERS_LIST)[0];
@@ -45,6 +48,9 @@ export const ExportForm = function ExportForm(props: Props) {
   const { identities } = useWorkItemTypeCatalog(workspaceSlug, undefined, isMember);
   const customPropertiesEnabled = identities?.enabled === true;
   const { data: user } = useCurrentUser();
+  const client = useQueryClient();
+  const generation = useIdentityGeneration(client);
+  const current = useCommittedScope(JSON.stringify([workspaceSlug, user?.id, generation]));
   const { canPerformAnyCreateAction, projectsWithCreatePermissions } = useCreationPermissions();
   const { data: catalogueWorkspace } = useCurrentWorkspace();
   const projectCatalogue = useWorkspaceProjectDetails();
@@ -76,7 +82,7 @@ export const ExportForm = function ExportForm(props: Props) {
     const projectDetails = projectRows?.find((project) => project.id === projectId);
 
     return {
-      value: projectDetails?.id,
+      value: projectId,
       query: `${projectDetails?.name} ${projectDetails?.identifier}`,
       content: (
         <div className="flex items-center gap-2">
@@ -99,28 +105,40 @@ export const ExportForm = function ExportForm(props: Props) {
       };
       try {
         await projectExportService.csvExport(workspaceSlug, payload);
-        mutateServices();
-
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: t("workspace_settings.settings.exports.modal.toasts.success.title"),
-          message: t("workspace_settings.settings.exports.modal.toasts.success.message", {
-            entity:
-              formData.provider.provider === "csv"
-                ? "CSV"
-                : formData.provider.provider === "xlsx"
-                  ? "Excel"
-                  : formData.provider.provider === "json"
-                    ? "JSON"
-                    : "",
-          }),
-        });
-      } catch (_error) {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: t("error"),
-          message: t("workspace_settings.settings.exports.modal.toasts.error.message"),
-        });
+      } catch {
+        if (current())
+          setToast({
+            type: TOAST_TYPE.ERROR,
+            title: t("error"),
+            message: t("workspace_settings.settings.exports.modal.toasts.error.message"),
+          });
+        return;
+      }
+      if (!current()) return;
+      setToast({
+        type: TOAST_TYPE.SUCCESS,
+        title: t("workspace_settings.settings.exports.modal.toasts.success.title"),
+        message: t("workspace_settings.settings.exports.modal.toasts.success.message", {
+          entity:
+            formData.provider.provider === "csv"
+              ? "CSV"
+              : formData.provider.provider === "xlsx"
+                ? "Excel"
+                : formData.provider.provider === "json"
+                  ? "JSON"
+                  : "",
+        }),
+      });
+      try {
+        await mutateServices();
+      } catch {
+        if (current())
+          setToast({
+            type: TOAST_TYPE.WARNING,
+            title: "Export requested",
+            message:
+              "The export was accepted, but the export list could not refresh. Refresh the list to check its progress.",
+          });
       }
     }
   }
@@ -144,7 +162,7 @@ export const ExportForm = function ExportForm(props: Props) {
                 <CustomSearchSelect
                   disabled={exportLoading || (!isMember && (!hasProjects || !canPerformAnyCreateAction))}
                   value={field.state.value}
-                  onChange={field.handleChange}
+                  onChange={(selection) => (selection !== null ? field.handleChange(selection) : undefined)}
                   options={options}
                   input
                   label={
@@ -176,7 +194,10 @@ export const ExportForm = function ExportForm(props: Props) {
                 <CustomSelect
                   disabled={exportLoading || (!isMember && (!hasProjects || !canPerformAnyCreateAction))}
                   value={field.state.value}
-                  onChange={(value: FormData["provider"]) => field.handleChange(value)}
+                  onChange={(value) => {
+                    if (value === null) return;
+                    return field.handleChange(value);
+                  }}
                   label={t(field.state.value.i18n_title)}
                   optionsClassName="max-w-48 sm:max-w-[532px]"
                   placement="bottom-end"

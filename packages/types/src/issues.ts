@@ -51,7 +51,7 @@ export interface ILinkDetails {
   created_at: Date;
   created_by: string;
   id: string;
-  metadata: any;
+  metadata: unknown;
   title: string;
   url: string;
 }
@@ -79,7 +79,7 @@ export interface IIssueActivity {
   access?: "EXTERNAL" | "INTERNAL";
   actor: string;
   actor_detail: IUserLite;
-  attachments: any[];
+  attachments: unknown[];
   comment?: string;
   comment_html?: string;
   comment_stripped?: string;

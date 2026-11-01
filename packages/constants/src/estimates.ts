@@ -5,21 +5,14 @@
  */
 
 // plane imports
+import { EEstimateSystem, EEstimateUpdateStages } from "@plane/types";
 import type { TEstimateSystems } from "@plane/types";
 
 export const MAX_ESTIMATE_POINT_INPUT_LENGTH = 20;
 
-export enum EEstimateSystem {
-  POINTS = "points",
-  CATEGORIES = "categories",
-  TIME = "time",
-}
+export { EEstimateSystem };
 
-export enum EEstimateUpdateStages {
-  CREATE = "create",
-  EDIT = "edit",
-  SWITCH = "switch",
-}
+export { EEstimateUpdateStages };
 
 export const estimateCount = {
   min: 2,

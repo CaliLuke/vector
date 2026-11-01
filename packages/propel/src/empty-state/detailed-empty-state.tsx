@@ -5,10 +5,9 @@
  */
 
 // local imports
-import { Button } from "../button/button";
+import { EmptyStateActions } from "./actions";
 import { cn } from "@plane/utils/common";
 import { getDetailedAsset } from "./assets/asset-registry";
-import type { DetailedAssetType } from "./assets/asset-types";
 import type { BaseEmptyStateCommonProps } from "./types";
 
 export function EmptyStateDetailed({
@@ -24,7 +23,7 @@ export function EmptyStateDetailed({
   align = "start",
 }: BaseEmptyStateCommonProps) {
   // Determine which asset to use: assetKey takes precedence, fallback to custom asset
-  const resolvedAsset = assetKey ? getDetailedAsset(assetKey as DetailedAssetType, assetClassName) : asset;
+  const resolvedAsset = assetKey ? getDetailedAsset(assetKey, assetClassName) : asset;
 
   return (
     <div className={cn("flex size-full items-center justify-center", rootClassName)}>
@@ -51,21 +50,7 @@ export function EmptyStateDetailed({
             </div>
           )}
 
-          {customButton
-            ? customButton
-            : actions &&
-              actions.length > 0 && (
-                <div className="flex flex-col gap-4 sm:flex-row">
-                  {actions.map((action, index) => {
-                    const { label, variant, ...rest } = action;
-                    return (
-                      <Button key={index} variant={variant} size="xl" {...rest}>
-                        {label}
-                      </Button>
-                    );
-                  })}
-                </div>
-              )}
+          <EmptyStateActions actions={actions} customButton={customButton} size="xl" />
         </div>
       </div>
     </div>

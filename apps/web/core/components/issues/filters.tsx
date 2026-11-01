@@ -63,7 +63,7 @@ export const HeaderFilters = function HeaderFilters(props: Props) {
   const displayFilters = displayPreferences?.displayFilters;
   const displayProperties = displayPreferences?.displayProperties;
   // derived values
-  const activeLayout = displayFilters?.layout;
+  const activeLayout = displayFilters?.layout ?? EIssueLayoutTypes.LIST;
   const layoutDisplayFiltersOptions = ISSUE_STORE_TO_FILTERS_MAP[storeType]?.layoutOptions[activeLayout];
 
   return (

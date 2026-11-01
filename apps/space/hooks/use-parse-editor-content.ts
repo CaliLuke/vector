@@ -21,7 +21,7 @@ type TArgs = {
 export const useParseEditorContent = (args: TArgs) => {
   const { anchor } = args;
   // store hooks
-  const { data: members = [] } = useRecordCollection(membersOptions(anchor));
+  const { data: members } = useRecordCollection(membersOptions(anchor));
 
   const getEditorMetaData = useCallback(
     (htmlContent: string): TCustomComponentsMetaData => {
@@ -34,7 +34,7 @@ export const useParseEditorContent = (args: TArgs) => {
       });
       const user_mentions = Array.from(document.querySelectorAll("mention-component")).flatMap((element) => {
         const id = element.getAttribute("entity_identifier");
-        const member = members.find((item) => item.member === id);
+        const member = members?.find((item) => item.member === id);
         if (!id || !member) return [];
         return [{ id, display_name: member.member__display_name, url: `${window.location.origin}/profile/${id}` }];
       });

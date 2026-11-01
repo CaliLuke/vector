@@ -6,16 +6,16 @@
 
 import type { HocuspocusProvider } from "@hocuspocus/provider";
 import type { Extensions } from "@tiptap/core";
-import Collaboration from "@tiptap/extension-collaboration";
+import { Collaboration } from "@tiptap/extension-collaboration";
 // react
 import type React from "react";
 import { useEffect, useMemo } from "react";
 // extensions
-import { HeadingListExtension, SideMenuExtension } from "@/extensions";
+import { HeadingListExtension, createSideMenuExtension } from "@/extensions";
 // hooks
 import { useEditor } from "@/hooks/use-editor";
 // plane editor extensions
-import { DocumentEditorAdditionalExtensions } from "@/plane-editor/extensions";
+import { createDocumentEditorAdditionalExtensions } from "@/plane-editor/extensions";
 // types
 import type {
   TCollaborativeEditorHookProps,
@@ -72,7 +72,7 @@ export const useCollaborativeEditor = (props: UseCollaborativeEditorArgs) => {
   // Memoize extensions to avoid unnecessary editor recreations
   const editorExtensions = useMemo(
     () => [
-      SideMenuExtension({
+      createSideMenuExtension({
         aiEnabled: !disabledExtensions?.includes("ai"),
         dragDropEnabled,
       }),
@@ -82,7 +82,7 @@ export const useCollaborativeEditor = (props: UseCollaborativeEditorArgs) => {
         field: "default",
       }),
       ...extensions,
-      ...DocumentEditorAdditionalExtensions({
+      ...createDocumentEditorAdditionalExtensions({
         disabledExtensions,
         extendedEditorProps,
         fileHandler,
@@ -196,7 +196,7 @@ export const useCollaborativeEditor = (props: UseCollaborativeEditorArgs) => {
     [provider, id, editable, titleRef, updatePageProperties, titleExtensions, extendedEditorProps, getEditorMetaData]
   );
 
-  const titleEditor = useTitleEditor(titleEditorConfig as Parameters<typeof useTitleEditor>[0]);
+  const titleEditor = useTitleEditor(titleEditorConfig);
 
   useEffect(() => {
     if (editor && titleEditor) {

@@ -8,6 +8,7 @@ import { useState } from "react";
 // types
 import { INBOX_STATUS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
+import { EInboxIssueStatus, EInboxIssueCurrentTab } from "@plane/types";
 import type { TInboxIssueStatus } from "@plane/types";
 // components
 import { FilterHeader, FilterOption } from "@/components/issues/issue-layouts/filters";
@@ -32,7 +33,10 @@ export const FilterStatus = function FilterStatus(props: Props) {
   const appliedFiltersCount = filterValue?.length ?? 0;
   const filteredOptions = INBOX_STATUS.filter(
     (s) =>
-      ((tab === "open" && [-2, 0].includes(s.status)) || (tab === "closed" && [-1, 1, 2].includes(s.status))) &&
+      ((tab === EInboxIssueCurrentTab.OPEN &&
+        [EInboxIssueStatus.PENDING, EInboxIssueStatus.SNOOZED].includes(s.status)) ||
+        (tab === EInboxIssueCurrentTab.CLOSED &&
+          [EInboxIssueStatus.DECLINED, EInboxIssueStatus.ACCEPTED, EInboxIssueStatus.DUPLICATE].includes(s.status))) &&
       s.key.includes(searchQuery.toLowerCase())
   );
 
@@ -57,7 +61,7 @@ export const FilterStatus = function FilterStatus(props: Props) {
             filteredOptions.map((status) => (
               <FilterOption
                 key={status.key}
-                isChecked={filterValue?.includes(status.status) ? true : false}
+                isChecked={filterValue?.includes(status.status) ?? false}
                 onClick={() => handleStatusFilterSelect(status.status)}
                 icon={<InboxStatusIcon type={status.status} className={`h-3.5 w-3.5`} />}
                 title={t(status.i18n_title)}

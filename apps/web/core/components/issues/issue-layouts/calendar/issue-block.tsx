@@ -5,11 +5,10 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { useEffect, useState, useRef, forwardRef } from "react";
+import { useRef, forwardRef } from "react";
 
 import { MoreHorizontal } from "lucide-react";
 // plane imports
-import { useOutsideClickDetector } from "@plane/hooks";
 import { Popover } from "@plane/propel/popover";
 import type { TIssue } from "@plane/types";
 import { ControlLink } from "@plane/ui";
@@ -38,15 +37,12 @@ type Props = {
 
 export const CalendarIssueBlock = forwardRef(function CalendarIssueBlock(
   props: Props,
-  ref: React.ForwardedRef<HTMLAnchorElement>
+  ref: React.ForwardedRef<HTMLElement>
 ) {
   const { issue, quickActions, isDragging = false, isEpic = false } = props;
   // states
-  const [isMenuActive, setIsMenuActive] = useState(false);
-  const [menuPlacement, setMenuPlacement] = useState<"bottom-end" | "top-end">("top-end");
   // refs
   const blockRef = useRef(null);
-  const menuActionRef = useRef<HTMLDivElement | null>(null);
   // hooks
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
 
@@ -60,44 +56,26 @@ export const CalendarIssueBlock = forwardRef(function CalendarIssueBlock(
   const projectRows = projectCatalogue.projects;
 
   const { states } = useRouteProjectStates(issue.project_id);
-  const stateColor = states?.find((state) => state.id === issue?.state_id)?.color || "";
-  const projectIdentifier = projectRows?.find((project) => project.id === issue?.project_id)?.identifier ?? "";
-
-  useEffect(() => {
-    if (!isMenuActive) return;
-    const menuElement = menuActionRef.current;
-    if (typeof window === "undefined" || !menuElement) return;
-    setMenuPlacement(menuElement.getBoundingClientRect().bottom < window.innerHeight - 220 ? "bottom-end" : "top-end");
-  }, [isMenuActive]);
+  const stateColor = states?.find((state) => state.id === issue.state_id)?.color || "";
+  const projectIdentifier = projectRows?.find((project) => project.id === issue.project_id)?.identifier ?? "";
 
   // handlers
   const handleIssuePeekOverview = (peekIssue: TIssue) => handleRedirection(workspaceSlug, peekIssue, isMobile);
 
-  useOutsideClickDetector(menuActionRef, () => setIsMenuActive(false));
-
   const customActionButton = (
-    // CustomMenu renders this inside its own <button>, which already carries the
-    // interactive semantics and keyboard handling — this div is presentational.
-    <div
-      role="presentation"
-      ref={menuActionRef}
-      className={`w-full cursor-pointer rounded-sm p-1 text-placeholder hover:bg-layer-1 ${
-        isMenuActive ? "bg-layer-1-active text-primary" : "text-secondary"
-      }`}
-      onClick={() => setIsMenuActive(!isMenuActive)}
-    >
+    <span className="block w-full rounded-sm p-1 text-secondary hover:bg-layer-1 [button[aria-expanded=true]_&]:bg-layer-1-active [button[aria-expanded=true]_&]:text-primary">
       <MoreHorizontal className="h-3.5 w-3.5" />
-    </div>
+    </span>
   );
 
   const workItemLink = generateWorkItemLink({
     workspaceSlug,
-    projectId: issue?.project_id,
-    issueId: issue?.id,
+    projectId: issue.project_id,
+    issueId: issue.id,
     projectIdentifier,
-    sequenceId: issue?.sequence_id,
+    sequenceId: issue.sequence_id,
     isEpic,
-    isArchived: !!issue?.archived_at,
+    isArchived: !!issue.archived_at,
   });
 
   return (
@@ -112,11 +90,11 @@ export const CalendarIssueBlock = forwardRef(function CalendarIssueBlock(
             href={workItemLink}
             onClick={() => handleIssuePeekOverview(issue)}
             className="block w-full rounded-sm border-b border-subtle text-13 text-primary hover:border-subtle-1 md:border-[1px]"
-            disabled={!!issue?.tempId || isMobile}
+            disabled={!!issue.tempId || isMobile}
             ref={ref}
           >
             <>
-              {issue?.tempId !== undefined && (
+              {issue.tempId !== undefined && (
                 <div className="absolute top-0 left-0 z-[99999] h-full w-full animate-pulse bg-surface-1/20" />
               )}
 
@@ -155,8 +133,8 @@ export const CalendarIssueBlock = forwardRef(function CalendarIssueBlock(
                 <div
                   role="presentation"
                   className={cn("size-5 flex-shrink-0", {
-                    "hidden group-hover/calendar-block:block": !isMobile,
-                    block: isMenuActive,
+                    "opacity-0 group-hover/calendar-block:opacity-100 focus-within:opacity-100 has-[button[aria-expanded=true]]:opacity-100":
+                      !isMobile,
                   })}
                   onClick={(e) => {
                     e.preventDefault();
@@ -167,7 +145,7 @@ export const CalendarIssueBlock = forwardRef(function CalendarIssueBlock(
                     issue,
                     parentRef: blockRef,
                     customActionButton,
-                    placement: menuPlacement,
+                    placement: "bottom-end",
                   })}
                 </div>
               </div>

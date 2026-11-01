@@ -50,10 +50,27 @@ export function BlockMenu(props: Props) {
     getBoundingClientRect: () => new DOMRect(),
   });
 
+  const setBlockMenuOpen = useCallback(
+    (open: boolean) => {
+      if (open === isOpen) return;
+      setIsOpen(open);
+      setIsAnimatedIn(false);
+    },
+    [isOpen]
+  );
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    editor.commands.addActiveDropbarExtension(CORE_EXTENSIONS.SIDE_MENU);
+    return () => {
+      editor.commands.removeActiveDropbarExtension(CORE_EXTENSIONS.SIDE_MENU);
+    };
+  }, [editor, isOpen]);
+
   // Set up Floating UI with virtual reference element
   const { refs, floatingStyles, context } = useFloating({
     open: isOpen,
-    onOpenChange: setIsOpen,
+    onOpenChange: setBlockMenuOpen,
     middleware: [offset({ crossAxis: -10 }), flip(), shift()],
     whileElementsMounted: autoUpdate,
     placement: "left-start",
@@ -62,24 +79,14 @@ export function BlockMenu(props: Props) {
   const dismiss = useDismiss(context);
   const { getFloatingProps } = useInteractions([dismiss]);
 
-  const openBlockMenu = useCallback(() => {
-    if (!isOpen) {
-      setIsOpen(true);
-      editor.commands.addActiveDropbarExtension(CORE_EXTENSIONS.SIDE_MENU);
-    }
-  }, [editor, isOpen]);
-
-  const closeBlockMenu = useCallback(() => {
-    if (isOpen) {
-      setIsOpen(false);
-      editor.commands.removeActiveDropbarExtension(CORE_EXTENSIONS.SIDE_MENU);
-    }
-  }, [editor, isOpen]);
+  const openBlockMenu = useCallback(() => setBlockMenuOpen(true), [setBlockMenuOpen]);
+  const closeBlockMenu = useCallback(() => setBlockMenuOpen(false), [setBlockMenuOpen]);
 
   // Handle click on drag handle
   const handleClickDragHandle = useCallback(
     (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
+      const target = event.target;
+      if (!(target instanceof Element)) return;
       const dragHandle = target.closest("#drag-handle");
 
       if (dragHandle) {
@@ -129,23 +136,18 @@ export function BlockMenu(props: Props) {
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("scroll", handleScroll, true);
     };
-  }, [editor.commands, handleClickDragHandle, closeBlockMenu]);
+  }, [handleClickDragHandle, closeBlockMenu]);
 
-  // Animation effect
   useEffect(() => {
-    if (isOpen) {
-      setIsAnimatedIn(false);
-      // Add a small delay before starting the animation
-      const timeout = setTimeout(() => {
-        requestAnimationFrame(() => {
-          setIsAnimatedIn(true);
-        });
-      }, 50);
-
-      return () => clearTimeout(timeout);
-    } else {
-      setIsAnimatedIn(false);
-    }
+    if (!isOpen) return undefined;
+    let frame: number | undefined;
+    const timeout = setTimeout(() => {
+      frame = requestAnimationFrame(() => setIsAnimatedIn(true));
+    }, 50);
+    return () => {
+      clearTimeout(timeout);
+      if (frame !== undefined) cancelAnimationFrame(frame);
+    };
   }, [isOpen]);
 
   const MENU_ITEMS: BlockMenuOption[] = [

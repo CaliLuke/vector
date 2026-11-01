@@ -36,22 +36,16 @@ export class IssueFiltersService extends APIService {
 
   // epic issue filters
   async fetchProjectEpicFilters(workspaceSlug: string, projectId: string): Promise<IIssueFiltersResponse> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/epics-user-properties/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/epics-user-properties/`));
   }
   async patchProjectEpicFilters(
     workspaceSlug: string,
     projectId: string,
     data: Partial<IIssueFiltersResponse>
-  ): Promise<any> {
-    return this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/epics-user-properties/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  ): Promise<unknown> {
+    return this.responseData(
+      this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/epics-user-properties/`, data)
+    );
   }
 
   // cycle issue filters

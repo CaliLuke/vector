@@ -38,7 +38,7 @@ export function CalendarIssueBlockRoot(props: Props) {
   useEffect(() => {
     const element = issueRef.current;
 
-    if (!element) return;
+    if (!element) return undefined;
 
     return combine(
       draggable({

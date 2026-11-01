@@ -5,7 +5,7 @@
  */
 
 import type { Dispatch, SetStateAction } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import { EditIcon, CloseIcon } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
@@ -13,7 +13,7 @@ import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IIssueLabel } from "@plane/types";
 // components
 import type { TLabelOperationsCallbacks } from "./create-update-label-inline";
-import { CreateUpdateLabelInline } from "./create-update-label-inline";
+import { useLabelRowEditor } from "./use-label-row-editor";
 import type { ICustomMenuItem } from "./label-block/label-item-block";
 import { LabelItemBlock } from "./label-block/label-item-block";
 import { LabelDndHOC } from "./label-drag-n-drop-HOC";
@@ -48,7 +48,7 @@ export function ProjectSettingLabelItem(props: Props) {
     isEditable = false,
   } = props;
   // states
-  const [isEditLabelForm, setEditLabelForm] = useState(false);
+  const { editor, edit } = useLabelRowEditor({ label, setIsUpdating, labelOperationsCallbacks });
   const mounted = useRef(false);
   useEffect(() => {
     mounted.current = true;
@@ -58,8 +58,8 @@ export function ProjectSettingLabelItem(props: Props) {
   }, []);
   const { updateLabel } = labelOperationsCallbacks;
 
-  const removeFromGroup = (label: IIssueLabel) => {
-    void updateLabel(label.id, {
+  const removeFromGroup = (selectedLabel: IIssueLabel) => {
+    void updateLabel(selectedLabel.id, {
       parent: null,
     }).catch((error) => {
       if (!mounted.current) return;
@@ -81,10 +81,7 @@ export function ProjectSettingLabelItem(props: Props) {
     },
     {
       CustomIcon: EditIcon,
-      onClick: () => {
-        setEditLabelForm(true);
-        setIsUpdating(true);
-      },
+      onClick: edit,
       isVisible: true,
       text: "Edit label",
       key: "edit_label",
@@ -102,19 +99,7 @@ export function ProjectSettingLabelItem(props: Props) {
               isDroppingInLabel ? "" : "border-[0.5px] border-subtle"
             } ${isDragging || isParentDragging ? "bg-layer-1" : "bg-surface-1"}`}
           >
-            {isEditLabelForm ? (
-              <CreateUpdateLabelInline
-                labelForm={isEditLabelForm}
-                setLabelForm={setEditLabelForm}
-                isUpdating
-                labelToUpdate={label}
-                labelOperationsCallbacks={labelOperationsCallbacks}
-                onClose={() => {
-                  setEditLabelForm(false);
-                  setIsUpdating(false);
-                }}
-              />
-            ) : (
+            {editor ?? (
               <LabelItemBlock
                 label={label}
                 isDragging={isDragging}

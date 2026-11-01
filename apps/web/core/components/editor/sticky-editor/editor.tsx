@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { executeToolbarCommand, useEditorRef } from "@plane/editor";
 import React, { useState } from "react";
 // plane constants
 import type { EIssueCommentAccessSpecifier } from "@plane/constants";
@@ -69,11 +70,8 @@ export const StickyEditor = React.forwardRef(function StickyEditor(
     workspaceId,
     workspaceSlug,
   });
-  function isMutableRefObject<T>(ref: React.ForwardedRef<T>): ref is React.MutableRefObject<T | null> {
-    return !!ref && typeof ref === "object" && "current" in ref;
-  }
   // derived values
-  const editorRef = isMutableRefObject<EditorRefApi>(ref) ? ref.current : null;
+  const { editorRef, ref: mergedRef } = useEditorRef(ref);
 
   return (
     <div
@@ -82,7 +80,7 @@ export const StickyEditor = React.forwardRef(function StickyEditor(
       onBlur={() => !showToolbarInitially && setIsFocused(false)}
     >
       <LiteTextEditorWithRef
-        ref={ref}
+        ref={mergedRef}
         disabledExtensions={[...DISABLED_EDITOR_EXTENSIONS, "enter-key"]}
         flaggedExtensions={[]}
         editable
@@ -104,12 +102,7 @@ export const StickyEditor = React.forwardRef(function StickyEditor(
         >
           <StickyEditorToolbar
             executeCommand={(item) => {
-              // TODO: update this while toolbar homogenization
-              // @ts-expect-error type mismatch here
-              editorRef?.executeMenuItemCommand({
-                itemKey: item.itemKey,
-                ...item.extraProps,
-              });
+              if (editorRef) executeToolbarCommand(editorRef.executeMenuItemCommand, item);
             }}
             handleDelete={handleDelete}
             handleColorChange={handleColorChange}

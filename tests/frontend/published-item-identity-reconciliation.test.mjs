@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { registerHooks } from "node:module";
@@ -40,15 +41,15 @@ await test("accepted published edit receipts reconcile exact source and destinat
     workspaceSlug: "acme",
     projectId: "source",
     issueId: "item-1",
-    membershipRole: 15,
+    membershipRole: ContractEnums.EUserPermissions.MEMBER,
     membershipRevision: "revision-1",
-    projectRole: 20,
+    projectRole: ContractEnums.EUserPermissions.ADMIN,
     generation: 0,
   };
   client.setQueryData(identityKeys.currentUser(), { id: "alice" });
   client.setQueryData(permissionKeys.workspaceMembership("alice", "acme"), {
     is_active: true,
-    role: 15,
+    role: ContractEnums.EUserPermissions.MEMBER,
     updated_at: "revision-1",
   });
   client.setQueryData(permissionKeys.workspaceProjectRoles("alice", "acme", 15, "revision-1"), {
@@ -72,7 +73,7 @@ await test("accepted published edit receipts reconcile exact source and destinat
     listQueries.set(projectId, { key, query });
   }
   globalThis.nativeFixture.owner = (workspaceSlug, projectId) =>
-    currentIssueListMutationOwner(client, workspaceSlug, projectId, "issues", () => true);
+    currentIssueListMutationOwner(client, workspaceSlug, projectId, ContractEnums.EIssueServiceType.ISSUES, () => true);
   let reconciliation;
   function Probe() {
     const value = useItemEditReconciliation(sourceScope, sourceKey);

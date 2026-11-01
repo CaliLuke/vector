@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { EIssueLayoutTypes } from "@plane/types";
 import { ParentTypeGrouping } from "./parent-type-grouping";
 import { CustomPropertyGrouping } from "./custom-property-grouping";
 import React, { useState } from "react";
@@ -45,7 +46,7 @@ export const FilterGroupBy = function FilterGroupBy(props: Props) {
         <div>
           {options.map((groupBy) => {
             if (
-              displayFilters?.layout === "kanban" &&
+              displayFilters?.layout === EIssueLayoutTypes.KANBAN &&
               selectedSubGroupBy !== null &&
               groupBy.key === selectedSubGroupBy
             )

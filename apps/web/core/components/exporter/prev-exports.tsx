@@ -70,7 +70,7 @@ export const PrevExports = function PrevExports(props: Props) {
         Array.isArray(exporterServices?.results) &&
         exporterServices.results.some((service) => service.status === "processing")
       ) {
-        handleRefresh();
+        void handleRefresh();
       } else {
         clearInterval(interval);
       }
@@ -84,7 +84,7 @@ export const PrevExports = function PrevExports(props: Props) {
       <div className="flex items-center justify-between border-b border-subtle pb-3.5">
         <div className="flex items-center gap-2">
           <h3 className="text-h6-medium text-primary">{t("workspace_settings.settings.exports.previous_exports")}</h3>
-          <Button variant="tertiary" className="shrink-0" onClick={handleRefresh}>
+          <Button variant="tertiary" className="shrink-0" onClick={() => void handleRefresh()}>
             <RefreshCw className={`h-3 w-3 ${refreshing ? "animate-spin" : ""}`} />
             {refreshing ? t("refreshing") : t("refresh_status")}
           </Button>

@@ -8,19 +8,10 @@ import type { NodeViewProps } from "@tiptap/react";
 import { NodeViewWrapper } from "@tiptap/react";
 // extension config
 // extension types
-import type { TMentionComponentAttributes } from "./types";
-import { EMentionComponentAttributeNames } from "./types";
+import { EMentionComponentAttributeNames, getMentionAttributes } from "./types";
 
-export type MentionNodeViewProps = NodeViewProps & {
-  node: NodeViewProps["node"] & {
-    attrs: TMentionComponentAttributes;
-  };
-};
-
-export function MentionNodeView(props: MentionNodeViewProps) {
-  const {
-    node: { attrs },
-  } = props;
+export function MentionNodeView(props: NodeViewProps) {
+  const attrs = getMentionAttributes(props.node.attrs);
 
   return (
     <NodeViewWrapper key={attrs[EMentionComponentAttributeNames.ID]} className="mention-component inline w-fit">

@@ -29,6 +29,19 @@ export abstract class APIService {
     configureAxiosInstance?.(this.axiosInstance);
   }
 
+  /** Unwrap a response while retaining the calling service's public error contract. */
+  protected async responseData<T>(
+    request: Promise<{ data: T }>,
+    errorPolicy: "data" | "response" | "data-or-error" | "response-or-error" = "data"
+  ): Promise<T> {
+    try {
+      return (await request)?.data;
+    } catch (error: unknown) {
+      const reason = responseError(error, errorPolicy === "response" || errorPolicy === "response-or-error");
+      throw errorPolicy === "data-or-error" || errorPolicy === "response-or-error" ? (reason ?? error) : reason;
+    }
+  }
+
   /**
    * Makes a GET request to the specified URL
    * @param {string} url - The endpoint URL
@@ -79,11 +92,11 @@ export abstract class APIService {
   /**
    * Makes a DELETE request to the specified URL
    * @param {string} url - The endpoint URL
-   * @param {any} [data] - Request body data
+   * @param {unknown} [data] - Request body data
    * @param {AxiosRequestConfig} [config={}] - Additional axios configuration
    * @returns {Promise} Axios response promise
    */
-  delete(url: string, data?: any, config: AxiosRequestConfig = {}) {
+  delete(url: string, data?: unknown, config: AxiosRequestConfig = {}) {
     return this.axiosInstance.delete(url, { data, ...config });
   }
 
@@ -95,4 +108,15 @@ export abstract class APIService {
   request(config = {}) {
     return this.axiosInstance(config);
   }
+}
+
+function responseError(error: unknown, includeResponse: boolean): unknown {
+  const response =
+    error !== null && (typeof error === "object" || typeof error === "function") && "response" in error
+      ? error.response
+      : undefined;
+  if (includeResponse) return response;
+  return response !== null && (typeof response === "object" || typeof response === "function") && "data" in response
+    ? response.data
+    : undefined;
 }

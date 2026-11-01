@@ -5,16 +5,12 @@
  */
 
 import type { TLogoProps } from "../common";
-import type { TUserPermissions } from "../enums";
 import type { TStateGroups } from "../state";
 import type { IUser, IUserLite } from "../users";
 import type { IWorkspace } from "../workspace";
 
-export enum EUserProjectRoles {
-  ADMIN = 20,
-  MEMBER = 15,
-  GUEST = 5,
-}
+import { EUserPermissions as EUserProjectRoles } from "../enums";
+export { EUserProjectRoles };
 
 export interface IPartialProject {
   id: string;
@@ -22,7 +18,7 @@ export interface IPartialProject {
   identifier: string;
   sort_order: number | null;
   logo_props: TLogoProps;
-  member_role?: TUserPermissions | EUserProjectRoles | null;
+  member_role?: EUserProjectRoles | null;
   archived_at: string | null;
   workspace: IWorkspace | string;
   cycle_view: boolean;
@@ -94,7 +90,7 @@ export interface IProjectMemberLite {
 
 export type TProjectMembership = {
   member: string;
-  role: TUserPermissions | EUserProjectRoles;
+  role: EUserProjectRoles;
 } & (
   | {
       id: string;
@@ -109,7 +105,7 @@ export type TProjectMembership = {
 );
 
 export interface IProjectBulkAddFormData {
-  members: { role: TUserPermissions | EUserProjectRoles; member_id: string }[];
+  members: { role: EUserProjectRoles; member_id: string }[];
 }
 
 export type IProjectMemberNavigationPreferences = {
@@ -139,6 +135,8 @@ export interface IGithubRepository {
   html_url: string;
   url: string;
 }
+
+export type TSyncedGithubRepository = { repo_detail: { owner: string; name: string } };
 
 export interface GithubRepositoriesResponse {
   repositories: IGithubRepository[];

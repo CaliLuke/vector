@@ -11,7 +11,7 @@ import { ImageIcon } from "lucide-react";
 // plane imports
 import { Button } from "@plane/propel/button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import { EOnboardingSteps } from "@plane/types";
+import { EOnboardingSteps, type IUser } from "@plane/types";
 import { cn } from "@plane/utils/common";
 import { getFileURL } from "@plane/utils/file";
 import { isPasswordConfirmationValid } from "@plane/utils/auth";
@@ -43,14 +43,7 @@ export const ProfileSetupStep = function ProfileSetupStep({ handleStepChange }: 
   const { mutateAsync: updateUserProfile } = useUpdateUserProfile();
   const { data: instanceConfig } = useQuery(instanceConfigOptions);
   const form = useForm({
-    defaultValues: {
-      first_name: user?.first_name ?? "",
-      last_name: user?.last_name ?? "",
-      avatar_url: user?.avatar_url ?? "",
-      password: "",
-      confirm_password: "",
-      has_marketing_email_consent: true,
-    },
+    defaultValues: initialProfileValues(user),
     validators: {
       onChange: ({ value }) =>
         user?.is_password_autoset &&
@@ -127,7 +120,7 @@ export const ProfileSetupStep = function ProfileSetupStep({ handleStepChange }: 
         >
           {userAvatar ? (
             <img
-              src={getFileURL(userAvatar ?? "")}
+              src={getFileURL(userAvatar)}
               alt={user?.display_name}
               className="h-full w-full rounded-full object-cover"
             />
@@ -175,7 +168,6 @@ export const ProfileSetupStep = function ProfileSetupStep({ handleStepChange }: 
                   onChange={(event) => field.handleChange(event.target.value)}
                   onBlur={field.handleBlur}
                   disabled={isSubmitting}
-                  autoFocus
                   className={cn(
                     "w-full rounded-md border border-strong bg-surface-1 px-3 py-2 text-secondary placeholder:text-placeholder focus:ring-2 focus:ring-accent-strong focus:outline-none",
                     { "border-danger-strong": field.state.meta.errors.length > 0 }
@@ -234,3 +226,14 @@ export const ProfileSetupStep = function ProfileSetupStep({ handleStepChange }: 
     </form>
   );
 };
+
+function initialProfileValues(user: IUser | null | undefined) {
+  return {
+    first_name: user?.first_name ?? "",
+    last_name: user?.last_name ?? "",
+    avatar_url: user?.avatar_url ?? "",
+    password: "",
+    confirm_password: "",
+    has_marketing_email_consent: true,
+  };
+}

@@ -26,7 +26,7 @@ export function ProductUpdatesChangelog() {
 function ChangelogFrame({ url, fallback }: { url: string; fallback: ReactNode }) {
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   useEffect(() => {
-    if (status !== "loading") return;
+    if (status !== "loading") return undefined;
     const timeout = setTimeout(() => setStatus("error"), 15_000);
     return () => clearTimeout(timeout);
   }, [status]);

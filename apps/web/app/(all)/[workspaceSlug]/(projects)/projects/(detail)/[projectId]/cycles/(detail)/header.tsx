@@ -16,7 +16,7 @@ import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { IconButton } from "@plane/propel/icon-button";
 import { CycleIcon } from "@plane/propel/icons";
-import { Tooltip } from "@plane/propel/tooltip";
+import { WorkItemCountBadge } from "@/components/common/work-item-count-badge";
 import { EIssuesStoreType, EIssueLayoutTypes } from "@plane/types";
 import { Breadcrumbs, BreadcrumbNavigationSearchDropdown, Header } from "@plane/ui";
 import { cn } from "@plane/utils/common";
@@ -136,19 +136,7 @@ export function CycleIssuesHeader() {
                 isLast
               />
             </ProjectSectionBreadcrumbs>
-            {workItemsCount && workItemsCount > 0 ? (
-              <Tooltip
-                isMobile={isMobile}
-                tooltipContent={`There are ${workItemsCount} ${
-                  workItemsCount > 1 ? "work items" : "work item"
-                } in this cycle`}
-                position="bottom"
-              >
-                <span className="flex flex-shrink-0 cursor-default items-center justify-center rounded-xl bg-accent-primary/20 px-2 text-center text-11 font-semibold text-accent-primary">
-                  {workItemsCount}
-                </span>
-              </Tooltip>
-            ) : null}
+            <WorkItemCountBadge count={workItemsCount} parent="cycle" isMobile={isMobile} />
           </div>
         </Header.LeftItem>
         <Header.RightItem className="items-center">

@@ -58,7 +58,11 @@ export function CycleLayoutRoot() {
   const [transferIssuesModal, setTransferIssuesModal] = useState(false);
   // derived values
   const workItemFilters = preferences.filters;
-  const activeLayout = workItemFilters?.displayFilters?.layout;
+  if (preferences.isError || preferences.isAccessDenied)
+    return <CatalogueReadFailure label="cycle preferences" retry={preferences.retry} />;
+  if (preferences.isPending) return <output>Loading cycle preferences…</output>;
+  if (!workspaceSlug || !projectId || !cycleId || !workItemFilters) return <></>;
+  const activeLayout = workItemFilters.displayFilters.layout;
 
   const cycleStatus = cycleDetails?.status?.toLocaleLowerCase();
   const isCompletedCycle = cycleStatus === "completed";
@@ -68,10 +72,6 @@ export function CycleLayoutRoot() {
     : 0;
   const canTransferIssues = isProgressSnapshotEmpty && transferableIssuesCount > 0;
 
-  if (preferences.isError || preferences.isAccessDenied)
-    return <CatalogueReadFailure label="cycle preferences" retry={preferences.retry} />;
-  if (preferences.isPending) return <output>Loading cycle preferences…</output>;
-  if (!workspaceSlug || !projectId || !cycleId || !workItemFilters) return <></>;
   return (
     <>
       {preferences.isSaveError && (

@@ -22,7 +22,7 @@ export function ImageUploadStatus(props: Props) {
   // subscribe to image upload status
   const uploadStatus: number | undefined = useEditorState({
     editor,
-    selector: ({ editor }) => editor.storage.utility?.assetsUploadStatus?.[nodeId],
+    selector: ({ editor: currentEditor }) => currentEditor.storage.utility?.assetsUploadStatus?.[nodeId],
   });
 
   useEffect(() => {

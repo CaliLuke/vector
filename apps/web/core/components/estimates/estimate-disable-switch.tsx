@@ -73,7 +73,7 @@ export const EstimateDisableSwitch = function EstimateDisableSwitch(props: TEsti
   return (
     <ToggleSwitch
       value={Boolean(currentProjectActiveEstimate)}
-      onChange={disableEstimate}
+      onChange={() => void disableEstimate()}
       disabled={!isAdmin || mutation.isPending || isPending || isError || isAccessDenied || !activeEstimate}
       size="sm"
     />

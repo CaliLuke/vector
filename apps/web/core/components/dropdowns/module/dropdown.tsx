@@ -5,36 +5,13 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import type { ReactNode } from "react";
 
 // hooks
 import { useProjectModules } from "@/hooks/use-modules";
 // types
-import type { TDropdownProps } from "../types";
 // local imports
 import { ModuleDropdownBase } from "./base";
-
-type TModuleDropdownProps = TDropdownProps & {
-  button?: ReactNode;
-  dropdownArrow?: boolean;
-  dropdownArrowClassName?: string;
-  projectId: string | undefined;
-  showCount?: boolean;
-  onClose?: () => void;
-  renderByDefault?: boolean;
-  itemClassName?: string;
-} & (
-    | {
-        multiple: false;
-        onChange: (val: string | null) => void;
-        value: string | null;
-      }
-    | {
-        multiple: true;
-        onChange: (val: string[]) => void;
-        value: string[] | null;
-      }
-  );
+import type { TModuleDropdownProps } from "./base";
 
 export const ModuleDropdown = function ModuleDropdown(props: TModuleDropdownProps) {
   const { projectId } = props;

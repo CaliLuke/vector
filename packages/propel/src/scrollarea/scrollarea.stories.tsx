@@ -7,6 +7,23 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ScrollArea } from "./scrollarea";
 
+const demoLines = (count: number, text: string) =>
+  Array.from({ length: count }, (_, index) => `Line ${index + 1}: ${text}`);
+
+const demoUsers = Array.from({ length: 50 }, (_, index) => ({
+  number: index + 1,
+  name: `User ${index + 1}`,
+  email: `user${index + 1}@example.com`,
+  initial: String.fromCharCode(65 + (index % 26)),
+  active: index % 3 === 0,
+}));
+
+const demoMessages = demoUsers.slice(0, 20).map((user) => ({
+  content: `Message content for message number ${user.number}`,
+  sender: user.active ? "You" : user.name,
+  fromSelf: user.active,
+}));
+
 const meta = {
   title: "Components/ScrollArea",
   component: ScrollArea,
@@ -63,8 +80,8 @@ export const Sizes: Story = {
   render() {
     const content = (
       <div className="space-y-2 p-4">
-        {[...Array(10)].map((_, i) => (
-          <p key={i}>Line {i + 1}: This is some scrollable content to demonstrate different sizes.</p>
+        {demoLines(10, "This is some scrollable content to demonstrate different sizes.").map((line) => (
+          <p key={line}>{line}</p>
         ))}
       </div>
     );
@@ -100,8 +117,8 @@ export const ScrollTypeAlways: Story = {
       <ScrollArea className="h-64 w-80 rounded-lg border" scrollType="always">
         <div className="space-y-2 p-4">
           <h3 className="text-16 font-semibold">Always Visible Scrollbar</h3>
-          {[...Array(15)].map((_, i) => (
-            <p key={i}>Line {i + 1}: The scrollbar is always visible.</p>
+          {demoLines(15, "The scrollbar is always visible.").map((line) => (
+            <p key={line}>{line}</p>
           ))}
         </div>
       </ScrollArea>
@@ -116,8 +133,8 @@ export const ScrollTypeScroll: Story = {
         <div className="space-y-2 p-4">
           <h3 className="text-16 font-semibold">Scroll to Show</h3>
           <p className="text-13 text-placeholder">Scrollbar appears when scrolling</p>
-          {[...Array(15)].map((_, i) => (
-            <p key={i}>Line {i + 1}: Try scrolling to see the scrollbar appear.</p>
+          {demoLines(15, "Try scrolling to see the scrollbar appear.").map((line) => (
+            <p key={line}>{line}</p>
           ))}
         </div>
       </ScrollArea>
@@ -132,8 +149,8 @@ export const ScrollTypeHover: Story = {
         <div className="space-y-2 p-4">
           <h3 className="text-16 font-semibold">Hover to Show</h3>
           <p className="text-13 text-placeholder">Scrollbar appears on hover</p>
-          {[...Array(15)].map((_, i) => (
-            <p key={i}>Line {i + 1}: Hover over the area to see the scrollbar.</p>
+          {demoLines(15, "Hover over the area to see the scrollbar.").map((line) => (
+            <p key={line}>{line}</p>
           ))}
         </div>
       </ScrollArea>
@@ -146,9 +163,12 @@ export const HorizontalScroll: Story = {
     return (
       <ScrollArea className="h-32 w-96 rounded-lg border" orientation="horizontal">
         <div className="flex w-[1200px] gap-4 p-4">
-          {[...Array(12)].map((_, i) => (
-            <div key={i} className="flex h-20 w-32 flex-shrink-0 items-center justify-center rounded-sm bg-layer-1">
-              Item {i + 1}
+          {demoUsers.slice(0, 12).map((user) => (
+            <div
+              key={user.email}
+              className="flex h-20 w-32 flex-shrink-0 items-center justify-center rounded-sm bg-layer-1"
+            >
+              Item {user.number}
             </div>
           ))}
         </div>
@@ -164,11 +184,11 @@ export const BothDirections: Story = {
         <div className="w-[800px] space-y-2 p-4">
           <h3 className="text-16 font-semibold">Both Directions</h3>
           <p className="text-13 text-placeholder">Content scrolls both vertically and horizontally</p>
-          {[...Array(20)].map((_, i) => (
-            <p key={i}>
-              Line {i + 1}: This line is very long and extends beyond the container width to demonstrate horizontal
-              scrolling along with vertical scrolling.
-            </p>
+          {demoLines(
+            20,
+            "This line is very long and extends beyond the container width to demonstrate horizontal scrolling along with vertical scrolling."
+          ).map((line) => (
+            <p key={line}>{line}</p>
           ))}
         </div>
       </ScrollArea>
@@ -183,17 +203,17 @@ export const ListExample: Story = {
         <div className="p-4">
           <h3 className="mb-4 text-16 font-semibold">User List</h3>
           <div className="space-y-2">
-            {[...Array(25)].map((_, i) => (
+            {demoUsers.slice(0, 25).map((user) => (
               <div
-                key={i}
+                key={user.email}
                 className="flex cursor-pointer items-center gap-3 rounded-sm bg-layer-1 p-3 hover:bg-surface-2"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-primary font-medium text-on-color">
-                  {String.fromCharCode(65 + (i % 26))}
+                  {user.initial}
                 </div>
                 <div>
-                  <div className="font-medium">User {i + 1}</div>
-                  <div className="text-13 text-placeholder">user{i + 1}@example.com</div>
+                  <div className="font-medium">{user.name}</div>
+                  <div className="text-13 text-placeholder">{user.email}</div>
                 </div>
               </div>
             ))}
@@ -252,13 +272,13 @@ export const ChatMessages: Story = {
     return (
       <ScrollArea className="h-96 w-full max-w-md rounded-lg border">
         <div className="space-y-4 p-4">
-          {[...Array(20)].map((_, i) => (
-            <div key={i} className={`flex ${i % 3 === 0 ? "justify-end" : "justify-start"}`}>
+          {demoMessages.map((message) => (
+            <div key={message.content} className={`flex ${message.fromSelf ? "justify-end" : "justify-start"}`}>
               <div
-                className={`max-w-[70%] rounded-lg p-3 ${i % 3 === 0 ? "bg-accent-primary text-on-color" : "bg-layer-1"}`}
+                className={`max-w-[70%] rounded-lg p-3 ${message.fromSelf ? "bg-accent-primary text-on-color" : "bg-layer-1"}`}
               >
-                <div className="text-13">{i % 3 === 0 ? "You" : `User ${i + 1}`}</div>
-                <div className="mt-1">Message content for message number {i + 1}</div>
+                <div className="text-13">{message.sender}</div>
+                <div className="mt-1">{message.content}</div>
               </div>
             </div>
           ))}
@@ -282,16 +302,16 @@ export const DataTable: Story = {
             </tr>
           </thead>
           <tbody>
-            {[...Array(50)].map((_, i) => (
-              <tr key={i} className="border-t border-subtle hover:bg-layer-1">
-                <td className="px-4 py-2">#{i + 1}</td>
-                <td className="px-4 py-2">User {i + 1}</td>
-                <td className="px-4 py-2">user{i + 1}@example.com</td>
+            {demoUsers.map((user) => (
+              <tr key={user.email} className="border-t border-subtle hover:bg-layer-1">
+                <td className="px-4 py-2">#{user.number}</td>
+                <td className="px-4 py-2">{user.name}</td>
+                <td className="px-4 py-2">{user.email}</td>
                 <td className="px-4 py-2">
                   <span
-                    className={`rounded-sm px-2 py-1 text-11 ${i % 3 === 0 ? "bg-success-primary text-success-primary" : "bg-gray-500/20 text-gray-500"}`}
+                    className={`rounded-sm px-2 py-1 text-11 ${user.active ? "bg-success-primary text-success-primary" : "bg-gray-500/20 text-gray-500"}`}
                   >
-                    {i % 3 === 0 ? "Active" : "Inactive"}
+                    {user.active ? "Active" : "Inactive"}
                   </span>
                 </td>
               </tr>

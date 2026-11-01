@@ -14,7 +14,9 @@ async function loadComponents() {
     await import("../../apps/web/core/components/issues/issue-layouts/filters/header/helpers/dropdown.tsx"));
 }
 function pressKey(element, key) {
-  element.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
+  const event = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
+  element.dispatchEvent(event);
+  return event;
 }
 async function settledPanel(environment, text, expected) {
   const deadline = Date.now() + 1000;
@@ -35,12 +37,15 @@ async function settledButton(environment, text, expected) {
   assert.equal(Boolean(button(environment, text)), expected);
 }
 function button(environment, text) {
-  return [...environment.container.querySelectorAll("button")].find((element) => element.textContent === text);
+  return [...environment.container.ownerDocument.querySelectorAll("button")].find(
+    (element) => element.textContent === text
+  );
 }
 
 // Exercise the real Disclosure, Popover, Transition and filter trigger together.
 // No component, event handler, or popup is replaced by a fake.
-test("collapsible actions open a real filter popup without toggling the panel", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("collapsible actions open a real filter popup without toggling the panel", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   await loadComponents();
@@ -76,7 +81,9 @@ test("collapsible actions open a real filter popup without toggling the panel", 
 
   await React.act(async () => {
     filter.focus();
-    pressKey(filter, "Enter");
+    const enter = pressKey(filter, "Enter");
+    // jsdom does not synthesize the native button's default Enter activation.
+    if (!enter.defaultPrevented) filter.click();
   });
   const choice = button(environment, "High priority");
   assert.ok(choice, "Enter opens the real filter popover");
@@ -106,7 +113,7 @@ test("collapsible actions open a real filter popup without toggling the panel", 
   assert.deepEqual(errors, []);
 });
 
-test("controlled collapsible keeps accessible state and its ref aligned after external changes", async (t) => {
+void test("controlled collapsible keeps accessible state and its ref aligned after external changes", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   await loadComponents();
@@ -127,7 +134,7 @@ test("controlled collapsible keeps accessible state and its ref aligned after ex
   await settledPanel(environment, "Related work item", false);
 });
 
-test("collapsible preserves nested Disclosure.Panel consumers when controlled externally", async (t) => {
+void test("collapsible preserves nested Disclosure.Panel consumers when controlled externally", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   await loadComponents();

@@ -55,7 +55,7 @@ export function NoProjectsEmptyState() {
       flag: "projects",
       cta: {
         text: "home.empty.create_project.cta",
-        onClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
           if (!canCreateProject) return;
           e.preventDefault();
           e.stopPropagation();
@@ -129,6 +129,8 @@ export function NoProjectsEmptyState() {
       case "visited_profile":
         return storedValue?.visited_profile;
     }
+
+    return undefined;
   };
 
   if (storedValue?.hide || (joinedProjectIds?.length > 0 && (activeWorkspace?.total_members || 0) >= 2)) return null;

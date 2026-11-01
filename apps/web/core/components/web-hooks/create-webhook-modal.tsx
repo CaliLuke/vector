@@ -4,6 +4,7 @@
  * See the LICENSE file in the project root for details.
  */
 
+import { isRecord } from "@plane/utils/common";
 import { useParams } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
@@ -102,12 +103,12 @@ export function CreateWebhookModal({ isOpen, onClose, currentWorkspace }: Props)
       setGeneratedWebhook({ scope: submittedScope, webhook });
     } catch (error: unknown) {
       if (flowVersion.current === flowAtSubmit) {
-        const responseError = error as { error?: unknown };
+        const detail = isRecord(error) ? error.error : undefined;
         setToast({
           type: TOAST_TYPE.ERROR,
           title: t("workspace_settings.settings.webhooks.toasts.not_created.title"),
           message:
-            (typeof responseError?.error === "string" && responseError.error) ||
+            (typeof detail === "string" && detail) ||
             t("workspace_settings.settings.webhooks.toasts.not_created.message"),
         });
       }

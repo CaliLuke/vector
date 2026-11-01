@@ -1,3 +1,4 @@
+import { EIssueLayoutTypes } from "@plane/types";
 import type { IIssueDisplayFilterOptions, TIssueGroupByOptions } from "@plane/types";
 import { CustomSelect } from "@plane/ui";
 import { useWorkItemGroupingCatalog } from "@/hooks/use-work-item-grouping-catalog";
@@ -13,17 +14,22 @@ export function ParentTypeGrouping({
   isEpic?: boolean;
   onChange: (value: TIssueGroupByOptions) => void;
 }) {
-  const enabled = !isEpic && (displayFilters?.layout === "list" || displayFilters?.layout === "kanban");
+  const enabled =
+    !isEpic &&
+    (displayFilters?.layout === EIssueLayoutTypes.LIST || displayFilters?.layout === EIssueLayoutTypes.KANBAN);
   const catalog = useWorkItemGroupingCatalog(enabled);
   if (!enabled || !catalog.supported || !catalog.identities?.enabled) return null;
-  const selected = isParentTypeGrouping(displayFilters?.group_by) ? displayFilters.group_by : "";
+  const selected = isParentTypeGrouping(displayFilters?.group_by) ? displayFilters.group_by : null;
   const type = catalog.identities.types.find((item) => `parent_type_${item.id}` === selected);
   return (
     <div className="px-2 py-1">
       <CustomSelect
         value={selected}
         label={type ? `Parent type: ${type.name}` : "Parent type"}
-        onChange={(value: `parent_type_${string}`) => onChange(value)}
+        onChange={(value) => {
+          if (value === null) return;
+          return onChange(value);
+        }}
         placement="bottom-start"
         buttonClassName="w-full text-13"
         optionsClassName="max-h-64 overflow-y-auto"

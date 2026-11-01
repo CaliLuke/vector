@@ -32,11 +32,7 @@ export class SitesAuthService extends APIService {
    * @throws {Error} Throws response data if the request fails
    */
   async emailCheck(data: IEmailCheckData): Promise<IEmailCheckResponse> {
-    return this.post("/auth/spaces/email-check/", data, { headers: {} })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.post("/auth/spaces/email-check/", data, { headers: {} }));
   }
 
   /** Request an email code without exposing authentication response data to callers. */

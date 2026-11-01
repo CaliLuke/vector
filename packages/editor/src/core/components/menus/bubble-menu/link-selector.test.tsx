@@ -54,6 +54,7 @@ async function openMenu() {
   await act(async () => trigger.dispatchEvent(new MouseEvent("click", { bubbles: true })));
   const input = document.body.querySelector<HTMLInputElement>('input[placeholder="Enter or paste a link"]');
   if (!input) throw new Error("Link URL input is missing");
+  await vi.waitFor(() => expect(document.activeElement).toBe(input));
   return input;
 }
 
@@ -164,7 +165,7 @@ it("resets the open draft when its editor instance changes", async () => {
     await act(async () => root.render(<BubbleMenuLinkSelector editor={editor} />));
     const nextInput = document.body.querySelector<HTMLInputElement>('input[aria-label="Link URL"]');
     expect(nextInput?.value).toBe("https://replacement.example");
-    expect(document.activeElement).toBe(nextInput);
+    await vi.waitFor(() => expect(document.activeElement).toBe(nextInput));
     expect(previousEditor.getAttributes("link").href).toBeUndefined();
   } finally {
     previousEditor.destroy();

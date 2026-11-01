@@ -40,7 +40,7 @@ function getModuleProgressIndicatorData(module: IModule, total: number) {
   return PROGRESS_STATE_GROUPS_DETAILS.map((group, index) => ({
     id: index,
     name: group.title,
-    value: total > 0 ? (module[group.key as keyof IModule] as number) : 0,
+    value: total > 0 ? module[group.key] : 0,
     color: group.color,
   }));
 }

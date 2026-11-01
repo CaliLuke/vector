@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { React, act } from "./helpers/react.mjs";
@@ -20,7 +21,7 @@ async function setup(t, transferRequest, refreshIssues) {
   await seedPermissionQueries(fixture.client, {
     userId: "alice",
     workspaceSlug: "acme",
-    workspaceRole: 15,
+    workspaceRole: ContractEnums.EUserPermissions.MEMBER,
     projectRoles: { p1: 20 },
   });
   const source = { id: "source", project_id: "p1", name: "Source cycle", status: "CURRENT" };
@@ -33,7 +34,7 @@ async function setup(t, transferRequest, refreshIssues) {
   });
   await seedParentListPreferences(t, fixture.client, "cycle", source.id, {
     richFilters: {},
-    displayFilters: { layout: "list" },
+    displayFilters: { layout: ContractEnums.EIssueLayoutTypes.LIST },
     displayProperties: {},
   });
   t.mock.method(CycleService.prototype, "transferIssues", transferRequest);

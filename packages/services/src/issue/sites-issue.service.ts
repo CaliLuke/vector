@@ -24,19 +24,22 @@ export class SitesIssueService extends APIService {
   /**
    * Retrieves a paginated list of issues for a specific anchor
    * @param {string} anchor - The anchor identifier
-   * @param {any} params - Optional query parameters
+   * @param {object} params - Optional query parameters
    * @returns {Promise<TPublicIssuesResponse>} Promise resolving to a paginated list of issues
    * @throws {Error} If the API request fails
    */
-  async list(anchor: string, params: any, signal?: AbortSignal): Promise<TPublicIssuesResponse> {
-    return this.get(`/api/public/anchor/${anchor}/issues/`, {
-      params,
-      signal,
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response ?? error;
-      });
+  async list(
+    anchor: string,
+    params: Record<string, string | number | boolean | null | undefined>,
+    signal?: AbortSignal
+  ): Promise<TPublicIssuesResponse> {
+    return this.responseData(
+      this.get(`/api/public/anchor/${anchor}/issues/`, {
+        params,
+        signal,
+      }),
+      "response-or-error"
+    );
   }
 
   /**
@@ -47,54 +50,48 @@ export class SitesIssueService extends APIService {
    * @throws {Error} If the API request fails
    */
   async retrieve(anchor: string, issueID: string, signal?: AbortSignal): Promise<IPublicIssue> {
-    return this.get(`/api/public/anchor/${anchor}/issues/${issueID}/`, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response ?? error;
-      });
+    return this.responseData(
+      this.get(`/api/public/anchor/${anchor}/issues/${issueID}/`, { signal }),
+      "response-or-error"
+    );
   }
 
   /**
    * Retrieves the votes associated with a specific issue
    * @param {string} anchor - The anchor identifier
    * @param {string} issueID - The issue identifier
-   * @returns {Promise<any>} Promise resolving to the votes
+   * @returns {Promise<unknown>} Promise resolving to the votes
    * @throws {Error} If the API request fails
    */
-  async listVotes(anchor: string, issueID: string): Promise<any> {
-    return this.get(`/api/public/anchor/${anchor}/issues/${issueID}/votes/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response ?? error;
-      });
+  async listVotes(anchor: string, issueID: string): Promise<unknown> {
+    return this.responseData(this.get(`/api/public/anchor/${anchor}/issues/${issueID}/votes/`), "response-or-error");
   }
 
   /**
    * Creates a new vote for a specific issue
    * @param {string} anchor - The anchor identifier
    * @param {string} issueID - The issue identifier
-   * @param {any} data - The vote data
-   * @returns {Promise<any>} Promise resolving to the created vote
+   * @param {object} data - The vote data
+   * @returns {Promise<unknown>} Promise resolving to the created vote
    * @throws {Error} If the API request fails
    */
-  async addVote(anchor: string, issueID: string, data: any): Promise<any> {
-    return this.post(`/api/public/anchor/${anchor}/issues/${issueID}/votes/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response ?? error;
-      });
+  async addVote(anchor: string, issueID: string, data: { vote: -1 | 1 }): Promise<unknown> {
+    return this.responseData(
+      this.post(`/api/public/anchor/${anchor}/issues/${issueID}/votes/`, data),
+      "response-or-error"
+    );
   }
 
   /**
    * Deletes a vote for a specific issue
    * @param {string} anchor - The anchor identifier
    * @param {string} issueID - The issue identifier
-   * @returns {Promise<any>} Promise resolving to the deletion response
+   * @returns {Promise<unknown>} Promise resolving to the deletion response
    * @throws {Error} If the API request fails
    */
-  async removeVote(anchor: string, issueID: string): Promise<any> {
+  async removeVote(anchor: string, issueID: string): Promise<void> {
     return this.delete(`/api/public/anchor/${anchor}/issues/${issueID}/votes/`)
-      .then((response) => response?.data)
+      .then(() => undefined)
       .catch((error) => {
         throw error?.response ?? error;
       });
@@ -104,31 +101,29 @@ export class SitesIssueService extends APIService {
    * Retrieves the reactions associated with a specific issue
    * @param {string} anchor - The anchor identifier
    * @param {string} issueID - The issue identifier
-   * @returns {Promise<any>} Promise resolving to the reactions
+   * @returns {Promise<unknown>} Promise resolving to the reactions
    * @throws {Error} If the API request fails
    */
-  async listReactions(anchor: string, issueID: string): Promise<any> {
-    return this.get(`/api/public/anchor/${anchor}/issues/${issueID}/reactions/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response ?? error;
-      });
+  async listReactions(anchor: string, issueID: string): Promise<unknown> {
+    return this.responseData(
+      this.get(`/api/public/anchor/${anchor}/issues/${issueID}/reactions/`),
+      "response-or-error"
+    );
   }
 
   /**
    * Creates a new reaction for a specific issue
    * @param {string} anchor - The anchor identifier
    * @param {string} issueID - The issue identifier
-   * @param {any} data - The reaction data
-   * @returns {Promise<any>} Promise resolving to the created reaction
+   * @param {object} data - The reaction data
+   * @returns {Promise<unknown>} Promise resolving to the created reaction
    * @throws {Error} If the API request fails
    */
-  async addReaction(anchor: string, issueID: string, data: any): Promise<any> {
-    return this.post(`/api/public/anchor/${anchor}/issues/${issueID}/reactions/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response ?? error;
-      });
+  async addReaction(anchor: string, issueID: string, data: { reaction: string }): Promise<unknown> {
+    return this.responseData(
+      this.post(`/api/public/anchor/${anchor}/issues/${issueID}/reactions/`, data),
+      "response-or-error"
+    );
   }
 
   /**
@@ -136,12 +131,12 @@ export class SitesIssueService extends APIService {
    * @param {string} anchor - The anchor identifier
    * @param {string} issueID - The issue identifier
    * @param {string} reactionId - The reaction identifier
-   * @returns {Promise<any>} Promise resolving to the deletion response
+   * @returns {Promise<unknown>} Promise resolving to the deletion response
    * @throws {Error} If the API request fails
    */
-  async removeReaction(anchor: string, issueID: string, reactionId: string): Promise<any> {
+  async removeReaction(anchor: string, issueID: string, reactionId: string): Promise<void> {
     return this.delete(`/api/public/anchor/${anchor}/issues/${issueID}/reactions/${reactionId}/`)
-      .then((response) => response?.data)
+      .then(() => undefined)
       .catch((error) => {
         throw error?.response ?? error;
       });
@@ -151,31 +146,29 @@ export class SitesIssueService extends APIService {
    * Retrieves the comments associated with a specific issue
    * @param {string} anchor - The anchor identifier
    * @param {string} issueID - The issue identifier
-   * @returns {Promise<any>} Promise resolving to the comments
+   * @returns {Promise<unknown>} Promise resolving to the comments
    * @throws {Error} If the API request fails
    */
   async listComments(anchor: string, issueID: string, signal?: AbortSignal): Promise<TIssuePublicComment[]> {
-    return this.get(`/api/public/anchor/${anchor}/issues/${issueID}/comments/`, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response ?? error;
-      });
+    return this.responseData(
+      this.get(`/api/public/anchor/${anchor}/issues/${issueID}/comments/`, { signal }),
+      "response-or-error"
+    );
   }
 
   /**
    * Creates a new comment for a specific issue
    * @param {string} anchor - The anchor identifier
    * @param {string} issueID - The issue identifier
-   * @param {any} data - The comment data
+   * @param {object} data - The comment data
    * @returns {Promise<TIssuePublicComment>} Promise resolving to the created comment
    * @throws {Error} If the API request fails
    */
-  async addComment(anchor: string, issueID: string, data: any): Promise<TIssuePublicComment> {
-    return this.post(`/api/public/anchor/${anchor}/issues/${issueID}/comments/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response ?? error;
-      });
+  async addComment(anchor: string, issueID: string, data: Partial<TIssuePublicComment>): Promise<TIssuePublicComment> {
+    return this.responseData(
+      this.post(`/api/public/anchor/${anchor}/issues/${issueID}/comments/`, data),
+      "response-or-error"
+    );
   }
 
   /**
@@ -183,16 +176,20 @@ export class SitesIssueService extends APIService {
    * @param {string} anchor - The anchor identifier
    * @param {string} issueID - The issue identifier
    * @param {string} commentId - The comment identifier
-   * @param {any} data - The updated comment data
-   * @returns {Promise<any>} Promise resolving to the updated comment
+   * @param {object} data - The updated comment data
+   * @returns {Promise<unknown>} Promise resolving to the updated comment
    * @throws {Error} If the API request fails
    */
-  async updateComment(anchor: string, issueID: string, commentId: string, data: any): Promise<any> {
-    return this.patch(`/api/public/anchor/${anchor}/issues/${issueID}/comments/${commentId}/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response ?? error;
-      });
+  async updateComment(
+    anchor: string,
+    issueID: string,
+    commentId: string,
+    data: Partial<TIssuePublicComment>
+  ): Promise<TIssuePublicComment> {
+    return this.responseData(
+      this.patch(`/api/public/anchor/${anchor}/issues/${issueID}/comments/${commentId}/`, data),
+      "response-or-error"
+    );
   }
 
   /**
@@ -200,12 +197,12 @@ export class SitesIssueService extends APIService {
    * @param {string} anchor - The anchor identifier
    * @param {string} issueID - The issue identifier
    * @param {string} commentId - The comment identifier
-   * @returns {Promise<any>} Promise resolving to the deletion response
+   * @returns {Promise<unknown>} Promise resolving to the deletion response
    * @throws {Error} If the API request fails
    */
-  async removeComment(anchor: string, issueID: string, commentId: string): Promise<any> {
+  async removeComment(anchor: string, issueID: string, commentId: string): Promise<void> {
     return this.delete(`/api/public/anchor/${anchor}/issues/${issueID}/comments/${commentId}/`)
-      .then((response) => response?.data)
+      .then(() => undefined)
       .catch((error) => {
         throw error?.response ?? error;
       });
@@ -215,8 +212,8 @@ export class SitesIssueService extends APIService {
    * Creates a new reaction for a specific comment
    * @param {string} anchor - The anchor identifier
    * @param {string} commentId - The comment identifier
-   * @param {any} data - The reaction data
-   * @returns {Promise<any>} Promise resolving to the created reaction
+   * @param {object} data - The reaction data
+   * @returns {Promise<unknown>} Promise resolving to the created reaction
    * @throws {Error} If the API request fails
    */
   async addCommentReaction(
@@ -225,12 +222,11 @@ export class SitesIssueService extends APIService {
     data: {
       reaction: string;
     }
-  ): Promise<any> {
-    return this.post(`/api/public/anchor/${anchor}/comments/${commentId}/reactions/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response ?? error;
-      });
+  ): Promise<unknown> {
+    return this.responseData(
+      this.post(`/api/public/anchor/${anchor}/comments/${commentId}/reactions/`, data),
+      "response-or-error"
+    );
   }
 
   /**
@@ -238,12 +234,12 @@ export class SitesIssueService extends APIService {
    * @param {string} anchor - The anchor identifier
    * @param {string} commentId - The comment identifier
    * @param {string} reactionHex - The reaction identifier
-   * @returns {Promise<any>} Promise resolving to the deletion response
+   * @returns {Promise<unknown>} Promise resolving to the deletion response
    * @throws {Error} If the API request fails
    */
-  async removeCommentReaction(anchor: string, commentId: string, reactionHex: string): Promise<any> {
+  async removeCommentReaction(anchor: string, commentId: string, reactionHex: string): Promise<void> {
     return this.delete(`/api/public/anchor/${anchor}/comments/${commentId}/reactions/${reactionHex}/`)
-      .then((response) => response?.data)
+      .then(() => undefined)
       .catch((error) => {
         throw error?.response ?? error;
       });

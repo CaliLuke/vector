@@ -1,3 +1,4 @@
+import type { IssueQuickAddCallback } from "../quick-add/types";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -10,7 +11,6 @@ import { useParams } from "@tanstack/react-router";
 import type { MutableRefObject } from "react";
 
 import type {
-  GroupByColumnTypes,
   IGroupByColumn,
   TIssue,
   IIssueDisplayProperties,
@@ -61,7 +61,7 @@ export interface IKanBan {
   handleCollapsedGroups: (toggle: "group_by" | "sub_group_by", value: string) => void;
   loadMoreIssues: (groupId?: string, subGroupId?: string) => void;
   enableQuickIssueCreate?: boolean;
-  quickAddCallback?: (projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>;
+  quickAddCallback?: IssueQuickAddCallback;
   disableIssueCreation?: boolean;
   addIssuesToView?: (issueIds: string[]) => Promise<void | TIssue>;
   canEditProperties: (projectId: string | undefined) => boolean;
@@ -123,7 +123,7 @@ export const KanBan = function KanBan(props: IKanBan) {
   const list = useGroupColumns({
     workspaceSlug,
     projectId,
-    groupBy: group_by as GroupByColumnTypes,
+    groupBy: group_by,
     observedIds: propertyGroupingIds(groupedIssueIds),
     includeNone: true,
     isWorkspaceLevel: isWorkspaceLevel(storeType),
@@ -167,10 +167,10 @@ export const KanBan = function KanBan(props: IKanBan) {
         list.map((subList: IGroupByColumn, groupIndex) => {
           const groupByVisibilityToggle = visibilityGroupBy(subList);
 
-          if (groupByVisibilityToggle.showGroup === false) return <></>;
+          if (!groupByVisibilityToggle.showGroup) return <></>;
 
           const issueIds = getGroupedIssueIds(groupedIssueIds, subList.id, isSubGroup ? sub_group_id : undefined) ?? [];
-          const issueLength = issueIds?.length;
+          const issueLength = issueIds.length;
           const groupHeight = issueLength * approximateCardHeight;
 
           return (
@@ -214,7 +214,7 @@ export const KanBan = function KanBan(props: IKanBan) {
                     <KanbanColumnLoader
                       ignoreHeader
                       cardHeight={approximateCardHeight}
-                      cardsInColumn={issueLength !== undefined && issueLength < 3 ? issueLength : 3}
+                      cardsInColumn={Math.min(issueLength, 3)}
                       shouldAnimate={false}
                     />
                   }

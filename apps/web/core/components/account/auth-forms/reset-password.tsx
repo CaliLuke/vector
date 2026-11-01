@@ -19,7 +19,6 @@ import { NewPasswordFields, useNewPasswordForm } from "./common/new-password-fie
 // components
 import { isPasswordConfirmationValid } from "@plane/utils/auth";
 // helpers
-import type { EAuthenticationErrorCodes } from "@/helpers/authentication.helper";
 import { EErrorAlertType, authErrorHandler } from "@/helpers/authentication.helper";
 // services
 import { authService } from "@/services/auth.service";
@@ -37,10 +36,7 @@ export const ResetPasswordForm = function ResetPasswordForm() {
   const error_code = searchParams.get("error_code");
   // states
   const [dismissedErrorCode, setDismissedErrorCode] = useState<string | null>();
-  const errorInfo =
-    error_code && error_code !== dismissedErrorCode
-      ? authErrorHandler(error_code as EAuthenticationErrorCodes)
-      : undefined;
+  const errorInfo = error_code && error_code !== dismissedErrorCode ? authErrorHandler(error_code) : undefined;
   // plane hooks
   const { t } = useTranslation();
 

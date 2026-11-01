@@ -25,7 +25,7 @@ export const useTimeZoneConverter = (projectId: string) => {
   const renderFormattedDateInUserTimezone = useCallback(
     (date: string, formatToken: string = "MMM dd, yyyy") => {
       // return if undefined
-      if (!date || !userTimezone) return;
+      if (!date || !userTimezone) return undefined;
       // convert the date to the user's timezone
       const convertedDate = new Date(date).toLocaleString("en-US", { timeZone: userTimezone });
       // return the formatted date
@@ -39,7 +39,7 @@ export const useTimeZoneConverter = (projectId: string) => {
    * @returns The project's UTC offset
    */
   const getProjectUTCOffset = useCallback(() => {
-    if (!projectTimezone) return;
+    if (!projectTimezone) return undefined;
 
     // Get date in user's timezone
     const projectDate = new Date(new Date().toLocaleString("en-US", { timeZone: projectTimezone }));
@@ -49,7 +49,7 @@ export const useTimeZoneConverter = (projectId: string) => {
     const offsetInMinutes = (projectDate.getTime() - utcDate.getTime()) / 60000;
 
     // return if undefined
-    if (!offsetInMinutes) return;
+    if (!offsetInMinutes) return undefined;
 
     // Convert to hours and minutes
     const hours = Math.floor(Math.abs(offsetInMinutes) / 60);

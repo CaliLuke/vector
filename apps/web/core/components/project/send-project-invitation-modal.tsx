@@ -6,6 +6,9 @@
 
 import { useState } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
+import type { TUserPermissions } from "@plane/types";
+import { EUserWorkspaceRoles } from "@plane/types";
+import { isWorkspaceRole } from "@/helpers/permission-policy";
 import { EUserPermissions, ROLE } from "@plane/constants";
 import { EModalPosition, EModalWidth, ModalCore, Avatar, CustomSelect, CustomSearchSelect } from "@plane/ui";
 import { Button } from "@plane/propel/button";
@@ -35,13 +38,15 @@ const createMemberEntry = (): TMemberEntry => ({
   role: EUserPermissions.GUEST,
 });
 
-function allowedRoles(workspaceRole: number | undefined, projectRole: number | undefined) {
-  if (projectRole === undefined) return [];
-  return roleOptions.filter(
-    (role) =>
-      role <= projectRole &&
-      ((workspaceRole !== EUserPermissions.GUEST && workspaceRole !== EUserPermissions.ADMIN) || role === workspaceRole)
-  );
+function allowedRoles(workspaceRole: number | undefined, projectRole: TUserPermissions | undefined) {
+  if (projectRole === undefined || !isWorkspaceRole(workspaceRole)) return [];
+  const options =
+    workspaceRole === EUserWorkspaceRoles.GUEST
+      ? [EUserPermissions.GUEST]
+      : workspaceRole === EUserWorkspaceRoles.ADMIN
+        ? [EUserPermissions.ADMIN]
+        : roleOptions;
+  return options.filter((role) => role <= projectRole);
 }
 
 export function SendProjectInvitationModal(props: Props) {
@@ -159,7 +164,8 @@ function ProjectInvitationForm({ onClose, onSuccess, projectId, workspaceSlug }:
                     label={
                       workspaceRoster.membersById?.get(field.state.value)?.member.display_name ?? "Select co-worker"
                     }
-                    onChange={(id: string) => {
+                    onChange={(id) => {
+                      if (id === null) return;
                       field.handleChange(id);
                       const workspaceRole = workspaceRoster.membersById?.get(id)?.role;
                       const choices = allowedRoles(workspaceRole, projectRole);
@@ -185,7 +191,7 @@ function ProjectInvitationForm({ onClose, onSuccess, projectId, workspaceSlug }:
               {(field) => (
                 <CustomSelect
                   value={field.state.value}
-                  onChange={field.handleChange}
+                  onChange={(selection) => (selection !== null ? field.handleChange(selection) : undefined)}
                   disabled={busy || !rosterReady}
                   label={ROLE[field.state.value]}
                 >

@@ -24,7 +24,7 @@ import {
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { ILinkDetails, IModule, ModuleLink } from "@plane/types";
 // plane ui
-import { Loader, TextArea } from "@plane/ui";
+import { TextArea } from "@plane/ui";
 // components
 // helpers
 import { getDate, renderFormattedPayloadDate } from "@plane/utils/datetime";
@@ -38,6 +38,7 @@ import { moduleLinkMutationOptions } from "@/queries/module-links";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCommittedScope } from "@/hooks/use-committed-scope";
 import { captureParentAccess } from "@/queries/cycle-module-scope";
+import { AnalyticsSidebarLoader } from "@/components/common/analytics-sidebar-loader";
 import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
 import { useProjectPermissions } from "@/hooks/use-permissions";
 type Props = {
@@ -131,20 +132,7 @@ export const ModuleAnalyticsSidebar = function ModuleAnalyticsSidebar(props: Pro
   };
 
   if (detail.isError || detail.isAccessDenied) return <CatalogueReadFailure label="modules" retry={detail.retry} />;
-  if (!moduleDetails)
-    return (
-      <Loader>
-        <div className="space-y-2">
-          <Loader.Item height="15px" width="50%" />
-          <Loader.Item height="15px" width="30%" />
-        </div>
-        <div className="mt-8 space-y-3">
-          <Loader.Item height="30px" />
-          <Loader.Item height="30px" />
-          <Loader.Item height="30px" />
-        </div>
-      </Loader>
-    );
+  if (!moduleDetails) return <AnalyticsSidebarLoader />;
 
   const issueCount =
     moduleDetails.total_issues === 0
@@ -267,7 +255,7 @@ export const ModuleAnalyticsSidebar = function ModuleAnalyticsSidebar(props: Pro
                                 links={moduleDetails.link_module ?? []}
                                 workspaceSlug={workspaceSlug}
                                 handleEditLink={handleEditLink}
-                                handleDeleteLink={handleDeleteLink}
+                                handleDeleteLink={(id) => void handleDeleteLink(id)}
                                 disabled={controlsDisabled}
                               />
                             )}

@@ -5,182 +5,91 @@
  */
 
 import { useState } from "react";
+import type { ComponentProps } from "react";
+import { useArgs } from "storybook/preview-api";
 import { useForm } from "@tanstack/react-form";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { EmojiPicker } from "./emoji-picker";
 import type { TChangeHandlerProps } from "./helper";
 import { EmojiIconPickerTypes } from "./helper";
 
+type DemoProps = ComponentProps<typeof EmojiPicker> & {
+  selectionView?: "details" | "emoji" | "icon" | "icon-details" | "compact" | "color";
+};
+
+function SelectionResult({ value, view }: { value: TChangeHandlerProps; view: DemoProps["selectionView"] }) {
+  if (view === "emoji") return <div className="text-13">Selected: {value.type === "emoji" ? value.value : "Icon"}</div>;
+  if (view === "icon")
+    return (
+      <div className="text-13">
+        Selected: {value.type === "icon" && typeof value.value === "object" ? value.value.name : "Emoji"}
+      </div>
+    );
+  if (view === "compact") return <div className="text-13">Selected: {JSON.stringify(value)}</div>;
+  return (
+    <div className="rounded-sm border border-subtle bg-layer-1 p-4 text-13">
+      {view !== "color" && (
+        <div className="mb-2 font-medium">{view === "icon-details" ? "Selected Icon:" : "Selected:"}</div>
+      )}
+      <pre className="text-11">{JSON.stringify(value, null, 2)}</pre>
+    </div>
+  );
+}
+
 const meta = {
   title: "Components/Emoji/EmojiPicker",
   component: EmojiPicker,
-  parameters: {
-    layout: "centered",
-  },
+  parameters: { layout: "centered" },
   tags: ["autodocs"],
-} satisfies Meta<typeof EmojiPicker>;
-
+  args: {
+    isOpen: false,
+    handleToggle: () => {},
+    onChange: () => {},
+    label: "😊 Pick an emoji or icon",
+    defaultOpen: EmojiIconPickerTypes.EMOJI,
+    closeOnSelect: true,
+  },
+  render({ selectionView, ...args }) {
+    const [{ isOpen }, updateArgs] = useArgs<DemoProps>();
+    const [selectedValue, setSelectedValue] = useState<TChangeHandlerProps | null>(null);
+    return (
+      <div className="space-y-4 p-4">
+        <EmojiPicker
+          {...args}
+          isOpen={isOpen}
+          handleToggle={(open) => updateArgs({ isOpen: open })}
+          onChange={(value) => {
+            setSelectedValue(value);
+            args.onChange(value);
+          }}
+        />
+        {selectedValue && <SelectionResult value={selectedValue} view={selectionView} />}
+      </div>
+    );
+  },
+} satisfies Meta<DemoProps>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  args: {
-    isOpen: false,
-    handleToggle: () => {},
-    onChange: () => {},
-    label: "Default",
-  },
-  render() {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selectedValue, setSelectedValue] = useState<TChangeHandlerProps | null>(null);
-
-    return (
-      <div className="space-y-4 p-4">
-        <EmojiPicker
-          isOpen={isOpen}
-          handleToggle={setIsOpen}
-          onChange={setSelectedValue}
-          label="😊 Pick an emoji or icon"
-          defaultOpen={EmojiIconPickerTypes.EMOJI}
-          closeOnSelect
-        />
-        {selectedValue && (
-          <div className="rounded-sm border border-subtle bg-layer-1 p-4 text-13">
-            <div className="mb-2 font-medium">Selected:</div>
-            <pre className="text-11">{JSON.stringify(selectedValue, null, 2)}</pre>
-          </div>
-        )}
-      </div>
-    );
-  },
-};
-
-export const OpenToEmojiTab: Story = {
-  args: {
-    isOpen: false,
-    handleToggle: () => {},
-    onChange: () => {},
-    label: "Emoji Tab",
-  },
-  render() {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selectedValue, setSelectedValue] = useState<TChangeHandlerProps | null>(null);
-
-    return (
-      <div className="space-y-4 p-4">
-        <EmojiPicker
-          isOpen={isOpen}
-          handleToggle={setIsOpen}
-          onChange={setSelectedValue}
-          label="😊 Choose Emoji"
-          defaultOpen={EmojiIconPickerTypes.EMOJI}
-          closeOnSelect
-        />
-        {selectedValue && (
-          <div className="text-13">Selected: {selectedValue.type === "emoji" ? selectedValue.value : "Icon"}</div>
-        )}
-      </div>
-    );
-  },
-};
-
+export const Default: Story = {};
+export const OpenToEmojiTab: Story = { args: { label: "😊 Choose Emoji", selectionView: "emoji" } };
 export const OpenToIconTab: Story = {
-  args: {
-    isOpen: false,
-    handleToggle: () => {},
-    onChange: () => {},
-    label: "Icon Tab",
-  },
-  render() {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selectedValue, setSelectedValue] = useState<TChangeHandlerProps | null>(null);
-
-    return (
-      <div className="space-y-4 p-4">
-        <EmojiPicker
-          isOpen={isOpen}
-          handleToggle={setIsOpen}
-          onChange={setSelectedValue}
-          label="🎨 Choose Icon"
-          defaultOpen={EmojiIconPickerTypes.ICON}
-          closeOnSelect
-        />
-        {selectedValue && (
-          <div className="text-13">
-            Selected:{" "}
-            {selectedValue.type === "icon" && typeof selectedValue.value === "object"
-              ? selectedValue.value.name
-              : "Emoji"}
-          </div>
-        )}
-      </div>
-    );
-  },
+  args: { label: "🎨 Choose Icon", defaultOpen: EmojiIconPickerTypes.ICON, selectionView: "icon" },
 };
-
 export const LucideIcons: Story = {
   args: {
-    isOpen: false,
-    handleToggle: () => {},
-    onChange: () => {},
     label: "Lucide Icons",
-  },
-  render() {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selectedValue, setSelectedValue] = useState<TChangeHandlerProps | null>(null);
-
-    return (
-      <div className="space-y-4 p-4">
-        <EmojiPicker
-          isOpen={isOpen}
-          handleToggle={setIsOpen}
-          onChange={setSelectedValue}
-          label="Lucide Icons"
-          defaultOpen={EmojiIconPickerTypes.ICON}
-          closeOnSelect
-          iconType="lucide"
-        />
-        {selectedValue && (
-          <div className="rounded-sm border border-subtle bg-layer-1 p-4 text-13">
-            <div className="mb-2 font-medium">Selected Icon:</div>
-            <pre className="text-11">{JSON.stringify(selectedValue, null, 2)}</pre>
-          </div>
-        )}
-      </div>
-    );
+    defaultOpen: EmojiIconPickerTypes.ICON,
+    iconType: "lucide",
+    selectionView: "icon-details",
   },
 };
-
 export const MaterialIcons: Story = {
   args: {
-    isOpen: false,
-    handleToggle: () => {},
-    onChange: () => {},
     label: "Material Icons",
-  },
-  render() {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selectedValue, setSelectedValue] = useState<TChangeHandlerProps | null>(null);
-
-    return (
-      <div className="space-y-4 p-4">
-        <EmojiPicker
-          isOpen={isOpen}
-          handleToggle={setIsOpen}
-          onChange={setSelectedValue}
-          label="Material Icons"
-          defaultOpen={EmojiIconPickerTypes.ICON}
-          closeOnSelect
-          iconType="material"
-        />
-        {selectedValue && (
-          <div className="rounded-sm border border-subtle bg-layer-1 p-4 text-13">
-            <div className="mb-2 font-medium">Selected Icon:</div>
-            <pre className="text-11">{JSON.stringify(selectedValue, null, 2)}</pre>
-          </div>
-        )}
-      </div>
-    );
+    defaultOpen: EmojiIconPickerTypes.ICON,
+    iconType: "material",
+    selectionView: "icon-details",
   },
 };
 
@@ -235,151 +144,36 @@ export const CloseOnSelectDisabled: Story = {
 };
 
 export const CustomSearchPlaceholder: Story = {
-  args: {
-    isOpen: false,
-    handleToggle: () => {},
-    onChange: () => {},
-    label: "Custom Search",
-  },
-  render() {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selectedValue, setSelectedValue] = useState<TChangeHandlerProps | null>(null);
-
-    return (
-      <div className="space-y-4 p-4">
-        <EmojiPicker
-          isOpen={isOpen}
-          handleToggle={setIsOpen}
-          onChange={setSelectedValue}
-          label="Custom Search"
-          defaultOpen={EmojiIconPickerTypes.EMOJI}
-          closeOnSelect
-          searchPlaceholder="Type to find emojis..."
-        />
-        {selectedValue && <div className="text-13">Selected: {JSON.stringify(selectedValue)}</div>}
-      </div>
-    );
-  },
+  args: { label: "Custom Search", searchPlaceholder: "Type to find emojis...", selectionView: "compact" },
 };
-
-export const SearchDisabled: Story = {
-  args: {
-    isOpen: false,
-    handleToggle: () => {},
-    onChange: () => {},
-    label: "Search Disabled",
-  },
-  render() {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selectedValue, setSelectedValue] = useState<TChangeHandlerProps | null>(null);
-
-    return (
-      <div className="space-y-4 p-4">
-        <EmojiPicker
-          isOpen={isOpen}
-          handleToggle={setIsOpen}
-          onChange={setSelectedValue}
-          label="No Search"
-          defaultOpen={EmojiIconPickerTypes.EMOJI}
-          closeOnSelect
-          searchDisabled
-        />
-        {selectedValue && <div className="text-13">Selected: {JSON.stringify(selectedValue)}</div>}
-      </div>
-    );
-  },
-};
-
+export const SearchDisabled: Story = { args: { label: "No Search", searchDisabled: true, selectionView: "compact" } };
 export const CustomIconColor: Story = {
   args: {
-    isOpen: false,
-    handleToggle: () => {},
-    onChange: () => {},
     label: "Custom Icon Color",
-  },
-  render() {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selectedValue, setSelectedValue] = useState<TChangeHandlerProps | null>(null);
-
-    return (
-      <div className="space-y-4 p-4">
-        <EmojiPicker
-          isOpen={isOpen}
-          handleToggle={setIsOpen}
-          onChange={setSelectedValue}
-          label="Custom Icon Color"
-          defaultOpen={EmojiIconPickerTypes.ICON}
-          closeOnSelect
-          defaultIconColor="#FF5733"
-        />
-        {selectedValue && (
-          <div className="rounded-sm border border-subtle bg-layer-1 p-4 text-13">
-            <pre className="text-11">{JSON.stringify(selectedValue, null, 2)}</pre>
-          </div>
-        )}
-      </div>
-    );
+    defaultOpen: EmojiIconPickerTypes.ICON,
+    defaultIconColor: "#FF5733",
+    selectionView: "color",
   },
 };
 
+function PlacementExample({ label, placement }: Pick<ComponentProps<typeof EmojiPicker>, "label" | "placement">) {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="flex items-center gap-4">
+      <span className="w-32 text-13">{label}:</span>
+      <EmojiPicker isOpen={isOpen} handleToggle={setIsOpen} onChange={() => {}} label={label} placement={placement} />
+    </div>
+  );
+}
 export const DifferentPlacements: Story = {
-  args: {
-    isOpen: false,
-    handleToggle: () => {},
-    onChange: () => {},
-    label: "Different Placements",
-  },
-  render() {
-    const [isOpen1, setIsOpen1] = useState(false);
-    const [isOpen2, setIsOpen2] = useState(false);
-    const [isOpen3, setIsOpen3] = useState(false);
-    const [isOpen4, setIsOpen4] = useState(false);
-
-    return (
-      <div className="space-y-8 p-8">
-        <div className="flex items-center gap-4">
-          <span className="w-32 text-13">Bottom Start:</span>
-          <EmojiPicker
-            isOpen={isOpen1}
-            handleToggle={setIsOpen1}
-            onChange={() => {}}
-            label="Bottom Start"
-            placement="bottom-start"
-          />
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="w-32 text-13">Bottom End:</span>
-          <EmojiPicker
-            isOpen={isOpen2}
-            handleToggle={setIsOpen2}
-            onChange={() => {}}
-            label="Bottom End"
-            placement="bottom-end"
-          />
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="w-32 text-13">Top Start:</span>
-          <EmojiPicker
-            isOpen={isOpen3}
-            handleToggle={setIsOpen3}
-            onChange={() => {}}
-            label="Top Start"
-            placement="top-start"
-          />
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="w-32 text-13">Top End:</span>
-          <EmojiPicker
-            isOpen={isOpen4}
-            handleToggle={setIsOpen4}
-            onChange={() => {}}
-            label="Top End"
-            placement="top-end"
-          />
-        </div>
-      </div>
-    );
-  },
+  render: () => (
+    <div className="space-y-8 p-8">
+      <PlacementExample label="Bottom Start" placement="bottom-start" />
+      <PlacementExample label="Bottom End" placement="bottom-end" />
+      <PlacementExample label="Top Start" placement="top-start" />
+      <PlacementExample label="Top End" placement="top-end" />
+    </div>
+  ),
 };
 
 export const InFormContext: Story = {

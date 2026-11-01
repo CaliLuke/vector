@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import type { Editor } from "@tiptap/core";
+import type { NodeType } from "@tiptap/pm/model";
 import { Selection } from "@tiptap/pm/state";
 import ts from "highlight.js/lib/languages/typescript";
 import { common, createLowlight } from "lowlight";
@@ -13,21 +15,22 @@ import { CodeBlockLowlight } from "./code-block-lowlight";
 const lowlight = createLowlight(common);
 lowlight.register("ts", ts);
 
+function codeCursor(editor: Editor, type: NodeType) {
+  const { selection } = editor.state;
+  if (!selection.empty || selection.$from.parent.type !== type) return null;
+  return selection.$from;
+}
+
 export const CustomCodeBlockExtensionWithoutProps = CodeBlockLowlight.extend({
   addKeyboardShortcuts() {
     return {
       Tab: ({ editor }) => {
         try {
-          const { state } = editor;
-          const { selection } = state;
-          const { $from, empty } = selection;
-
-          if (!empty || $from.parent.type !== this.type) {
-            return false;
-          }
+          const $from = codeCursor(editor, this.type);
+          if (!$from) return false;
 
           // Use ProseMirror's insertText transaction to insert the tab character
-          const tr = state.tr.insertText("\t", $from.pos, $from.pos);
+          const tr = editor.state.tr.insertText("\t", $from.pos, $from.pos);
           editor.view.dispatch(tr);
 
           return true;
@@ -38,13 +41,8 @@ export const CustomCodeBlockExtensionWithoutProps = CodeBlockLowlight.extend({
       },
       ArrowUp: ({ editor }) => {
         try {
-          const { state } = editor;
-          const { selection } = state;
-          const { $from, empty } = selection;
-
-          if (!empty || $from.parent.type !== this.type) {
-            return false;
-          }
+          const $from = codeCursor(editor, this.type);
+          if (!$from) return false;
 
           const isAtStart = $from.parentOffset === 0;
 
@@ -77,13 +75,9 @@ export const CustomCodeBlockExtensionWithoutProps = CodeBlockLowlight.extend({
             return false;
           }
 
-          const { state } = editor;
-          const { selection, doc } = state;
-          const { $from, empty } = selection;
-
-          if (!empty || $from.parent.type !== this.type) {
-            return false;
-          }
+          const { doc } = editor.state;
+          const $from = codeCursor(editor, this.type);
+          if (!$from) return false;
 
           const isAtEnd = $from.parentOffset === $from.parent.nodeSize - 2;
 

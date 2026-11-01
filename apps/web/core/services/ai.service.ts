@@ -26,11 +26,7 @@ export class AIService extends APIService {
     workspaceSlug: string,
     data: { prompt: string; task: string }
   ): Promise<{ response: string; response_html: string }> {
-    return this.post(`/api/workspaces/${workspaceSlug}/ai-assistant/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/ai-assistant/`, data), "response");
   }
 
   async performEditorTask(
@@ -39,10 +35,6 @@ export class AIService extends APIService {
   ): Promise<{
     response: string;
   }> {
-    return this.post(`/api/workspaces/${workspaceSlug}/rephrase-grammar/`, data)
-      .then((res) => res?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/rephrase-grammar/`, data));
   }
 }

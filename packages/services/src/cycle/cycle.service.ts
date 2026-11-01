@@ -6,7 +6,13 @@
 
 import type { AxiosInstance } from "axios";
 import { API_BASE_URL } from "@plane/constants";
-import type { CycleDateCheckData, ICycle, TIssuesResponse, IWorkspaceActiveCyclesResponse } from "@plane/types";
+import type {
+  TIssueParams,
+  CycleDateCheckData,
+  ICycle,
+  TIssuesResponse,
+  IWorkspaceActiveCyclesResponse,
+} from "@plane/types";
 import { CycleOperationsService } from "./cycle-operations.service";
 
 /**
@@ -32,16 +38,14 @@ export class CycleService extends CycleOperationsService {
     cursor: string,
     per_page: number
   ): Promise<IWorkspaceActiveCyclesResponse> {
-    return this.get(`/api/workspaces/${workspaceSlug}/active-cycles/`, {
-      params: {
-        per_page,
-        cursor,
-      },
-    })
-      .then((res) => res?.data)
-      .catch((err) => {
-        throw err?.response?.data;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/active-cycles/`, {
+        params: {
+          per_page,
+          cursor,
+        },
+      })
+    );
   }
 
   /**
@@ -51,27 +55,19 @@ export class CycleService extends CycleOperationsService {
    * @throws {Error} If the request fails
    */
   async getWorkspaceCycles(workspaceSlug: string): Promise<ICycle[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/cycles/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/cycles/`));
   }
 
   /**
    * Creates a new cycle in a project.
    * @param {string} workspaceSlug - The workspace identifier
    * @param {string} projectId - The project identifier
-   * @param {any} data - The cycle creation data
+   * @param {object} data - The cycle creation data
    * @returns {Promise<ICycle>} The created cycle object
    * @throws {Error} If the request fails
    */
-  async create(workspaceSlug: string, projectId: string, data: any): Promise<ICycle> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async create(workspaceSlug: string, projectId: string, data: Partial<ICycle>): Promise<ICycle> {
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/`, data));
   }
 
   /**
@@ -83,15 +79,13 @@ export class CycleService extends CycleOperationsService {
    * @throws {Error} If the request fails
    */
   async getWithParams(workspaceSlug: string, projectId: string, cycleType?: "current"): Promise<ICycle[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/`, {
-      params: {
-        cycle_view: cycleType,
-      },
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/`, {
+        params: {
+          cycle_view: cycleType,
+        },
+      })
+    );
   }
 
   /**
@@ -103,11 +97,7 @@ export class CycleService extends CycleOperationsService {
    * @throws {Error} If the request fails
    */
   async retrieve(workspaceSlug: string, projectId: string, cycleId: string): Promise<ICycle> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/`)
-      .then((res) => res?.data)
-      .catch((err) => {
-        throw err?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/`));
   }
 
   /**
@@ -115,7 +105,7 @@ export class CycleService extends CycleOperationsService {
    * @param {string} workspaceSlug - The workspace identifier
    * @param {string} projectId - The project identifier
    * @param {string} cycleId - The cycle identifier
-   * @param {any} [queries] - Optional query parameters
+   * @param {object} [queries] - Optional query parameters
    * @param {object} [config={}] - Optional request configuration
    * @returns {Promise<TIssuesResponse>} The cycle issues data
    * @throws {Error} If the request fails
@@ -124,20 +114,18 @@ export class CycleService extends CycleOperationsService {
     workspaceSlug: string,
     projectId: string,
     cycleId: string,
-    queries?: any,
+    queries?: Partial<Record<TIssueParams, string | number | boolean>>,
     config = {}
   ): Promise<TIssuesResponse> {
-    return this.get(
-      `/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/cycle-issues/`,
-      {
-        params: queries,
-      },
-      config
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(
+        `/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/cycle-issues/`,
+        {
+          params: queries,
+        },
+        config
+      )
+    );
   }
 
   /**
@@ -146,15 +134,13 @@ export class CycleService extends CycleOperationsService {
    * @param {string} projectId - The project identifier
    * @param {string} cycleId - The cycle identifier
    * @param {Partial<ICycle>} data - The partial cycle data to update
-   * @returns {Promise<any>} The update response
+   * @returns {Promise<unknown>} The update response
    * @throws {Error} If the request fails
    */
-  async update(workspaceSlug: string, projectId: string, cycleId: string, data: Partial<ICycle>): Promise<any> {
-    return this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async update(workspaceSlug: string, projectId: string, cycleId: string, data: Partial<ICycle>): Promise<ICycle> {
+    return this.responseData(
+      this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/`, data)
+    );
   }
 
   /**
@@ -162,15 +148,11 @@ export class CycleService extends CycleOperationsService {
    * @param {string} workspaceSlug - The workspace identifier
    * @param {string} projectId - The project identifier
    * @param {string} cycleId - The cycle identifier
-   * @returns {Promise<any>} The deletion response
+   * @returns {Promise<unknown>} The deletion response
    * @throws {Error} If the request fails
    */
-  async destroy(workspaceSlug: string, projectId: string, cycleId: string): Promise<any> {
-    return this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async destroy(workspaceSlug: string, projectId: string, cycleId: string): Promise<unknown> {
+    return this.responseData(this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/`));
   }
 
   /**
@@ -178,14 +160,16 @@ export class CycleService extends CycleOperationsService {
    * @param {string} workspaceSlug - The workspace identifier
    * @param {string} projectId - The project identifier
    * @param {CycleDateCheckData} data - The date check data
-   * @returns {Promise<any>} The validation response
+   * @returns {Promise<unknown>} The validation response
    * @throws {Error} If the request fails
    */
-  async validateDates(workspaceSlug: string, projectId: string, data: CycleDateCheckData): Promise<any> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/date-check/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async validateDates(
+    workspaceSlug: string,
+    projectId: string,
+    data: CycleDateCheckData
+  ): Promise<{ status: boolean; error?: string }> {
+    return this.responseData(
+      this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/date-check/`, data)
+    );
   }
 }

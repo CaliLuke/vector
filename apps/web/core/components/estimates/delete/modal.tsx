@@ -101,7 +101,7 @@ function DeleteEstimateConfirmation({
           <Button
             variant="error-fill"
             size="lg"
-            onClick={remove}
+            onClick={() => void remove()}
             disabled={busy || isPending || isError || isAccessDenied || !estimate}
           >
             {busy ? "Deleting" : "Delete Estimate"}

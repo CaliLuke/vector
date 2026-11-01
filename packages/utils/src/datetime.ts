@@ -7,6 +7,7 @@
 import { differenceInDays } from "date-fns/differenceInDays";
 import { format } from "date-fns/format";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
+import { isDate } from "date-fns/isDate";
 import { isAfter } from "date-fns/isAfter";
 import { isEqual } from "date-fns/isEqual";
 import { isValid } from "date-fns/isValid";
@@ -29,9 +30,9 @@ export const renderFormattedDate = (
   // Parse the date to check if it is valid
   const parsedDate = getDate(date);
   // return if undefined
-  if (!parsedDate) return;
+  if (!parsedDate) return undefined;
   // Check if the parsed date is valid before formatting
-  if (!isValid(parsedDate)) return; // Return null for invalid dates
+  if (!isValid(parsedDate)) return undefined; // Return null for invalid dates
   let formattedDate;
   try {
     // Format the date in the format provided or default format (MMM dd, yyyy)
@@ -71,9 +72,9 @@ export const renderFormattedPayloadDate = (date: Date | string | undefined | nul
   // Parse the date to check if it is valid
   const parsedDate = getDate(date);
   // return if undefined
-  if (!parsedDate) return;
+  if (!parsedDate) return undefined;
   // Check if the parsed date is valid before formatting
-  if (!isValid(parsedDate)) return; // Return null for invalid dates
+  if (!isValid(parsedDate)) return undefined; // Return null for invalid dates
   // Format the date in payload format (yyyy-mm-dd)
   const formattedDate = format(parsedDate, "yyyy-MM-dd");
   return formattedDate;
@@ -123,7 +124,7 @@ export const findTotalDaysInRange = (
   const parsedStartDate = getDate(startDate);
   const parsedEndDate = getDate(endDate);
   // return if undefined
-  if (!parsedStartDate || !parsedEndDate) return;
+  if (!parsedStartDate || !parsedEndDate) return undefined;
   // Check if the parsed dates are valid before calculating the difference
   if (!isValid(parsedStartDate) || !isValid(parsedEndDate)) return 0; // Return 0 for invalid dates
   // Calculate the difference in days
@@ -143,7 +144,7 @@ export const addDaysToDate = (startDate: Date | string | undefined | null, numbe
   const parsedStartDate = getDate(startDate);
 
   // return if undefined
-  if (!parsedStartDate) return;
+  if (!parsedStartDate) return undefined;
 
   const newDate = new Date(parsedStartDate);
   newDate.setDate(newDate.getDate() + numberOfDays);
@@ -175,11 +176,9 @@ export const findHowManyDaysLeft = (
  * @example calculateTimeAgo("2023-01-01") // 1 year ago
  */
 export const calculateTimeAgo = (time: string | number | Date | null): string => {
-  if (!time) return "";
-  // Parse the time to check if it is valid
-  const parsedTime = typeof time === "string" || typeof time === "number" ? parseISO(String(time)) : time;
-  // return if undefined
-  if (!parsedTime) return ""; // Return empty string for invalid dates
+  if (time === null || time === "") return "";
+  const parsedTime = typeof time === "string" ? parseISO(time) : typeof time === "number" ? new Date(time) : time;
+  if (!isValid(parsedTime)) return "";
   // Format the time in the form of amount of time passed since the event happened
   const distance = formatDistanceToNow(parsedTime, { addSuffix: true });
   return distance;
@@ -288,15 +287,15 @@ export const checkIfDatesAreEqual = (
  */
 export const getDate = (date: string | Date | undefined | null): Date | undefined => {
   try {
-    if (!date || date === "") return;
+    if (!date || date === "") return undefined;
 
-    if (typeof date !== "string" && !(date instanceof String)) return date;
+    if (typeof date !== "string") return date;
 
     const [yearString, monthString, dayString] = date.substring(0, 10).split("-");
     const year = parseInt(yearString);
     const month = parseInt(monthString);
     const day = parseInt(dayString);
-    if (!isNumber(year) || !isNumber(month) || !isNumber(day)) return;
+    if (!isNumber(year) || !isNumber(month) || !isNumber(day)) return undefined;
 
     return new Date(year, month - 1, day);
   } catch (_e) {
@@ -397,8 +396,7 @@ export const getReadTimeFromWordsCount = (wordsCount: number): number => {
  */
 export const generateDateArray = (startDate: string | Date, endDate: string | Date) => {
   // Convert the start and end dates to Date objects if they aren't already
-  const start = new Date(startDate);
-  // start.setDate(start.getDate() + 1);
+  let start = new Date(startDate);
   const end = new Date(endDate);
   end.setDate(end.getDate() + 2);
 
@@ -412,7 +410,7 @@ export const generateDateArray = (startDate: string | Date, endDate: string | Da
       date: new Date(start).toISOString().split("T")[0],
     });
     // Increment the date by 1 day (86400000 milliseconds)
-    start.setDate(start.getDate() + 1);
+    start = new Date(start.setDate(start.getDate() + 1));
   }
 
   return dateArray;
@@ -453,21 +451,16 @@ export const processRelativeDate = (value: string): Date => {
  * @param filterValue The date filter string (e.g., "1_weeks;after;fromnow" or "2024-12-01;after")
  * @returns Object containing the comparison type and target date
  */
-export const parseDateFilter = (filterValue: string): { type: "after" | "before"; date: Date } => {
-  const parts = filterValue.split(";");
-  const dateStr = parts[0];
-  const type = parts[1] as "after" | "before";
-
-  let date: Date;
-  if (dateStr.includes("_")) {
-    // Handle relative dates (e.g., "1_weeks;after;fromnow")
-    date = processRelativeDate(dateStr);
-  } else {
-    // Handle absolute dates (e.g., "2024-12-01;after")
-    date = new Date(dateStr);
+export const parseDateFilter = (filterValue: string): { type: "after" | "before"; date: Date } | undefined => {
+  const [dateStr, type] = filterValue.split(";");
+  if (!dateStr || (type !== "after" && type !== "before")) return undefined;
+  try {
+    const date = dateStr.includes("_") ? processRelativeDate(dateStr) : new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return undefined;
+    return { type, date };
+  } catch {
+    return undefined;
   }
-
-  return { type, date };
 };
 
 /**
@@ -598,4 +591,4 @@ export const formatDuration = (seconds: number | undefined | null): string => {
  * @returns Whether the date is valid or not
  */
 export const isValidDate = (date: unknown): date is string | Date =>
-  (typeof date === "string" || typeof date === "object") && date !== null && !isNaN(Date.parse(date as string));
+  typeof date === "string" ? !Number.isNaN(Date.parse(date)) : isDate(date) && isValid(date);

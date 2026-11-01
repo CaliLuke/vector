@@ -41,6 +41,7 @@ function Breadcrumbs({ className, children, onBack, isLoading = false }: Breadcr
   }, []);
 
   const childrenArray = React.Children.toArray(children);
+  const lastChild = childrenArray.at(-1);
 
   return (
     <div className={cn("flex flex-grow items-center gap-0.5 overflow-hidden", className)}>
@@ -48,7 +49,7 @@ function Breadcrumbs({ className, children, onBack, isLoading = false }: Breadcr
         <>
           {childrenArray.map((child, index) => {
             if (isLoading) {
-              const key = React.isValidElement(child) ? child.key : String(child);
+              const key = typeof child === "object" ? ("key" in child ? child.key : null) : String(child);
               return <BreadcrumbItemLoader key={key} />;
             }
             if (React.isValidElement<BreadcrumbItemProps>(child)) {
@@ -79,12 +80,12 @@ function Breadcrumbs({ className, children, onBack, isLoading = false }: Breadcr
           <div className="flex items-center gap-2.5 p-1">
             {isLoading ? (
               <BreadcrumbItemLoader />
-            ) : React.isValidElement(childrenArray[childrenArray.length - 1]) ? (
-              React.cloneElement(childrenArray[childrenArray.length - 1] as React.ReactElement<BreadcrumbItemProps>, {
+            ) : React.isValidElement<BreadcrumbItemProps>(lastChild) ? (
+              React.cloneElement(lastChild, {
                 isLast: true,
               })
             ) : (
-              childrenArray[childrenArray.length - 1]
+              lastChild
             )}
           </div>
         </>

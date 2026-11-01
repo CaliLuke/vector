@@ -175,23 +175,23 @@ export const WithActionItems: Story = {
   },
 };
 
+const handleUpdate = () => {
+  const id = setToast({
+    type: TOAST_TYPE.LOADING,
+    title: "Processing...",
+  });
+
+  setTimeout(() => {
+    updateToast(id, {
+      type: TOAST_TYPE.SUCCESS,
+      title: "Complete!",
+      message: "The operation has finished successfully.",
+    });
+  }, 2000);
+};
+
 export const UpdateToast: Story = {
   render() {
-    const handleUpdate = () => {
-      const id = setToast({
-        type: TOAST_TYPE.LOADING,
-        title: "Processing...",
-      });
-
-      setTimeout(() => {
-        updateToast(id, {
-          type: TOAST_TYPE.SUCCESS,
-          title: "Complete!",
-          message: "The operation has finished successfully.",
-        });
-      }, 2000);
-    };
-
     return (
       <>
         <Toast theme="light" />
@@ -206,28 +206,29 @@ export const UpdateToast: Story = {
   },
 };
 
+const handlePromise = () => {
+  const promise = new Promise<{ name?: string; error?: string }>((resolve, reject) => {
+    setTimeout(() => {
+      if (Math.random() > 0.5) resolve({ name: "Success data" });
+      else reject({ error: "Failed" });
+    }, 2000);
+  });
+
+  setPromiseToast(promise, {
+    loading: "Processing request...",
+    success: {
+      title: "Request completed!",
+      message: (data) => `Successfully processed: ${data.name}`,
+    },
+    error: {
+      title: "Request failed",
+      message: (error) => `Error: ${error.error}`,
+    },
+  });
+};
+
 export const PromiseToast: Story = {
   render() {
-    const handlePromise = () => {
-      const promise = new Promise<{ name?: string; error?: string }>((resolve, reject) => {
-        setTimeout(() => {
-          Math.random() > 0.5 ? resolve({ name: "Success data" }) : reject({ error: "Failed" });
-        }, 2000);
-      });
-
-      setPromiseToast(promise, {
-        loading: "Processing request...",
-        success: {
-          title: "Request completed!",
-          message: (data) => `Successfully processed: ${data.name}`,
-        },
-        error: {
-          title: "Request failed",
-          message: (error) => `Error: ${error.error}`,
-        },
-      });
-    };
-
     return (
       <>
         <Toast theme="light" />
@@ -527,81 +528,25 @@ export const DesignTokens: Story = {
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-subtle">
-                  <td className="px-3 py-2 font-medium text-primary">Success</td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">text-primary</code>
-                  </td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">bg-success-primary</code>
-                  </td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">bg-surface-1</code>
-                  </td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">border-subtle</code>
-                  </td>
-                </tr>
-                <tr className="border-b border-subtle">
-                  <td className="px-3 py-2 font-medium text-primary">Error</td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">text-primary</code>
-                  </td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">bg-danger-primary</code>
-                  </td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">bg-surface-1</code>
-                  </td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">border-subtle</code>
-                  </td>
-                </tr>
-                <tr className="border-b border-subtle">
-                  <td className="px-3 py-2 font-medium text-primary">Warning</td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">text-primary</code>
-                  </td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">bg-warning-primary</code>
-                  </td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">bg-surface-1</code>
-                  </td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">border-subtle</code>
-                  </td>
-                </tr>
-                <tr className="border-b border-subtle">
-                  <td className="px-3 py-2 font-medium text-primary">Info</td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">text-primary</code>
-                  </td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">bg-accent-primary</code>
-                  </td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">bg-surface-1</code>
-                  </td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">border-subtle</code>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-3 py-2 font-medium text-primary">Loading</td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">text-primary</code>
-                  </td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">bg-layer-2</code>
-                  </td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">bg-surface-1</code>
-                  </td>
-                  <td className="px-3 py-2">
-                    <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">border-subtle</code>
-                  </td>
-                </tr>
+                {[
+                  { label: "Success", iconBackground: "bg-success-primary" },
+                  { label: "Error", iconBackground: "bg-danger-primary" },
+                  { label: "Warning", iconBackground: "bg-warning-primary" },
+                  { label: "Info", iconBackground: "bg-accent-primary" },
+                  { label: "Loading", iconBackground: "bg-layer-2" },
+                ].map((variant, index, variants) => (
+                  <tr
+                    key={variant.label}
+                    className={index < variants.length - 1 ? "border-b border-subtle" : undefined}
+                  >
+                    <td className="px-3 py-2 font-medium text-primary">{variant.label}</td>
+                    {["text-primary", variant.iconBackground, "bg-surface-1", "border-subtle"].map((token) => (
+                      <td key={token} className="px-3 py-2">
+                        <code className="rounded bg-layer-1 px-1.5 py-0.5 text-10">{token}</code>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

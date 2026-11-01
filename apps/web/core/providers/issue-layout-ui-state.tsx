@@ -84,9 +84,9 @@ export function useKanbanDragOwner() {
 
 export function canDragDropForGrouping(
   groupBy: TIssueGroupByOptions | undefined,
-  subGroupBy: TIssueGroupByOptions | undefined
+  subGroupBy: TIssueGroupByOptions | undefined,
+  { allowUngrouped = false }: { allowUngrouped?: boolean } = {}
 ) {
-  return (
-    !!groupBy && DRAG_ALLOWED_GROUPS.includes(groupBy) && (!subGroupBy || DRAG_ALLOWED_GROUPS.includes(subGroupBy))
-  );
+  if (!groupBy) return allowUngrouped;
+  return DRAG_ALLOWED_GROUPS.includes(groupBy) && (!subGroupBy || DRAG_ALLOWED_GROUPS.includes(subGroupBy));
 }

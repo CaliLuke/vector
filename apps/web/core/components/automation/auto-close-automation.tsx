@@ -13,8 +13,9 @@ import { PROJECT_AUTOMATION_MONTHS, EUserPermissions, EIconSize } from "@plane/c
 import { useTranslation } from "@plane/i18n";
 import { StateGroupIcon, StatePropertyIcon } from "@plane/propel/icons";
 import type { IProject } from "@plane/types";
-import { CustomSelect, CustomSearchSelect, ToggleSwitch, Loader } from "@plane/ui";
+import { CustomSelect, CustomSearchSelect, ToggleSwitch } from "@plane/ui";
 import { SelectMonthModal } from "@/components/automation";
+import { AutomationOptionsLoader } from "./automation-options-loader";
 import { SettingsControlItem } from "@/components/settings/control-item";
 // hooks
 import { useRouteProject } from "@/hooks/use-projects";
@@ -35,12 +36,12 @@ export const AutoCloseAutomation = function AutoCloseAutomation(props: Props) {
   const routeProjectQuery = useRouteProject();
   const currentProjectDetails = routeProjectQuery.project;
   const projectId = currentProjectDetails?.id;
-  const { projectStates } = useProjectStates(workspaceSlug, projectId);
+  const { projectStates = [] } = useProjectStates(workspaceSlug, projectId);
   const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
   const { t } = useTranslation();
 
   const options = projectStates
-    ?.filter((state) => state.group === "cancelled")
+    .filter((state) => state.group === "cancelled")
     .map((state) => ({
       value: state.id,
       query: state.name,
@@ -52,12 +53,13 @@ export const AutoCloseAutomation = function AutoCloseAutomation(props: Props) {
       ),
     }));
 
-  const multipleOptions = (options ?? []).length > 1;
+  const multipleOptions = options.length > 1;
 
-  const defaultState = projectStates?.find((s) => s.group === "cancelled")?.id || null;
+  const defaultState = projectStates.find((s) => s.group === "cancelled")?.id || null;
 
-  const selectedOption = projectStates?.find((s) => s.id === (currentProjectDetails?.default_state ?? defaultState));
-  const currentDefaultState = projectStates?.find((s) => s.id === defaultState);
+  const selectedOption = projectStates.find((s) => s.id === (currentProjectDetails?.default_state ?? defaultState));
+  const currentDefaultState = projectStates.find((s) => s.id === defaultState);
+  const displayedState = selectedOption ?? currentDefaultState;
 
   const initialValues: Partial<IProject> = {
     close_in: 1,
@@ -115,11 +117,14 @@ export const AutoCloseAutomation = function AutoCloseAutomation(props: Props) {
                   </div>
                   <div className="w-1/2">
                     <CustomSelect
-                      value={currentProjectDetails?.close_in}
-                      label={`${currentProjectDetails?.close_in} ${
-                        currentProjectDetails?.close_in === 1 ? "month" : "months"
+                      value={currentProjectDetails.close_in}
+                      label={`${currentProjectDetails.close_in} ${
+                        currentProjectDetails.close_in === 1 ? "month" : "months"
                       }`}
-                      onChange={(val: number) => void handleChange({ close_in: val })}
+                      onChange={(val) => {
+                        if (val === null) return;
+                        void handleChange({ close_in: val });
+                      }}
                       input
                       disabled={!isAdmin}
                     >
@@ -147,30 +152,26 @@ export const AutoCloseAutomation = function AutoCloseAutomation(props: Props) {
                   </div>
                   <div className="w-1/2">
                     <CustomSearchSelect
-                      value={currentProjectDetails?.default_state ?? defaultState}
+                      value={currentProjectDetails.default_state ?? defaultState}
                       label={
                         <div className="flex items-center gap-2">
-                          {selectedOption ? (
+                          {displayedState ? (
                             <StateGroupIcon
-                              stateGroup={selectedOption.group}
-                              color={selectedOption.color}
-                              size={EIconSize.LG}
-                            />
-                          ) : currentDefaultState ? (
-                            <StateGroupIcon
-                              stateGroup={currentDefaultState.group}
-                              color={currentDefaultState.color}
+                              stateGroup={displayedState.group}
+                              color={displayedState.color}
                               size={EIconSize.LG}
                             />
                           ) : (
                             <StatePropertyIcon className="h-3.5 w-3.5 text-secondary" />
                           )}
-                          {selectedOption?.name
-                            ? selectedOption.name
-                            : (currentDefaultState?.name ?? <span className="text-secondary">{t("state")}</span>)}
+                          {selectedOption?.name ||
+                            (currentDefaultState?.name ?? <span className="text-secondary">{t("state")}</span>)}
                         </div>
                       }
-                      onChange={(val: string) => void handleChange({ default_state: val })}
+                      onChange={(val) => {
+                        if (val === null) return;
+                        void handleChange({ default_state: val });
+                      }}
                       options={options}
                       disabled={!multipleOptions}
                       input
@@ -181,9 +182,7 @@ export const AutoCloseAutomation = function AutoCloseAutomation(props: Props) {
             </div>
           )
         ) : (
-          <Loader className="ml-13">
-            <Loader.Item height="50px" />
-          </Loader>
+          <AutomationOptionsLoader />
         )}
       </div>
     </>

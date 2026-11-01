@@ -8,6 +8,7 @@ import { Briefcase, FileText, Layers, LayoutGrid } from "lucide-react";
 // plane imports
 import { ContrastIcon, DiceIcon } from "@plane/propel/icons";
 import type {
+  IWorkspaceSearchResults,
   IWorkspaceDefaultSearchResult,
   IWorkspaceIssueSearchResult,
   IWorkspacePageSearchResult,
@@ -19,14 +20,19 @@ import { generateWorkItemLink } from "@plane/utils/work-item";
 import type { TPowerKSearchResultsKeys } from "@/components/power-k/core/types";
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
 
-export type TPowerKSearchResultGroupDetails = {
+type SearchResults = IWorkspaceSearchResults["results"];
+type SearchItem<K extends TPowerKSearchResultsKeys> = SearchResults[K][number];
+
+type TPowerKSearchResultGroupDetails<K extends TPowerKSearchResultsKeys> = {
   icon?: React.ComponentType<{ className?: string }>;
-  itemName: (item: any) => React.ReactNode;
-  path: (item: any, projectId: string | undefined) => string;
+  itemName: (item: SearchItem<K>) => React.ReactNode;
+  path: (item: SearchItem<K>, projectId: string | undefined) => string;
   title: string;
 };
 
-export const POWER_K_SEARCH_RESULTS_GROUPS_MAP: Record<TPowerKSearchResultsKeys, TPowerKSearchResultGroupDetails> = {
+const POWER_K_SEARCH_RESULTS_GROUPS_MAP: {
+  [K in TPowerKSearchResultsKeys]: TPowerKSearchResultGroupDetails<K>;
+} = {
   cycle: {
     icon: ContrastIcon,
     itemName: (cycle: IWorkspaceDefaultSearchResult) => (
@@ -120,3 +126,27 @@ export const POWER_K_SEARCH_RESULTS_GROUPS_MAP: Record<TPowerKSearchResultsKeys,
     title: "Workspaces",
   },
 };
+
+export function isPowerKSearchResultKey(key: string): key is TPowerKSearchResultsKeys {
+  return Object.hasOwn(POWER_K_SEARCH_RESULTS_GROUPS_MAP, key);
+}
+
+export function getPowerKSearchSection<K extends TPowerKSearchResultsKeys>(
+  key: K,
+  results: SearchResults,
+  projectId: string | undefined
+) {
+  const config: TPowerKSearchResultGroupDetails<K> = POWER_K_SEARCH_RESULTS_GROUPS_MAP[key];
+  const items: SearchItem<K>[] = results[key];
+  return {
+    key,
+    title: config.title,
+    icon: config.icon,
+    items: items.map((item) => {
+      let value = `${key}-${item.id}-${item.name}`;
+      if ("project__identifier" in item) value += `-${item.project__identifier}`;
+      if ("sequence_id" in item) value += `-${item.sequence_id}`;
+      return { id: item.id, label: config.itemName(item), path: config.path(item, projectId), value };
+    }),
+  };
+}

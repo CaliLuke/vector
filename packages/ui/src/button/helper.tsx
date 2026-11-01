@@ -28,19 +28,19 @@ export interface IButtonStyling {
   };
 }
 
-enum buttonSizeStyling {
-  sm = `px-3 py-1.5 font-medium text-11 rounded-sm flex items-center gap-1.5 whitespace-nowrap transition-all justify-center`,
-  md = `px-4 py-1.5 font-medium text-13 rounded-sm flex items-center gap-1.5 whitespace-nowrap transition-all justify-center`,
-  lg = `px-5 py-2 font-medium text-13 rounded-sm flex items-center gap-1.5 whitespace-nowrap transition-all justify-center`,
-  xl = `px-5 py-3.5 font-medium text-13 rounded-sm flex items-center gap-1.5 whitespace-nowrap transition-all justify-center`,
-}
+const buttonSizeStyling: Record<TButtonSizes, string> = {
+  sm: `px-3 py-1.5 font-medium text-11 rounded-sm flex items-center gap-1.5 whitespace-nowrap transition-all justify-center`,
+  md: `px-4 py-1.5 font-medium text-13 rounded-sm flex items-center gap-1.5 whitespace-nowrap transition-all justify-center`,
+  lg: `px-5 py-2 font-medium text-13 rounded-sm flex items-center gap-1.5 whitespace-nowrap transition-all justify-center`,
+  xl: `px-5 py-3.5 font-medium text-13 rounded-sm flex items-center gap-1.5 whitespace-nowrap transition-all justify-center`,
+};
 
-enum buttonIconStyling {
-  sm = "h-3 w-3 flex justify-center items-center overflow-hidden my-0.5 flex-shrink-0",
-  md = "h-3.5 w-3.5 flex justify-center items-center overflow-hidden my-0.5 flex-shrink-0",
-  lg = "h-4 w-4 flex justify-center items-center overflow-hidden my-0.5 flex-shrink-0",
-  xl = "h-4 w-4 flex justify-center items-center overflow-hidden my-0.5 flex-shrink-0 ",
-}
+const buttonIconStyling: Record<TButtonSizes, string> = {
+  sm: "h-3 w-3 flex justify-center items-center overflow-hidden my-0.5 flex-shrink-0",
+  md: "h-3.5 w-3.5 flex justify-center items-center overflow-hidden my-0.5 flex-shrink-0",
+  lg: "h-4 w-4 flex justify-center items-center overflow-hidden my-0.5 flex-shrink-0",
+  xl: "h-4 w-4 flex justify-center items-center overflow-hidden my-0.5 flex-shrink-0 ",
+};
 
 export const buttonStyling: IButtonStyling = {
   primary: {

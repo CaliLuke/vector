@@ -5,7 +5,7 @@
  */
 
 import { API_BASE_URL } from "@plane/constants";
-import type { TIssue, TIssueServiceType } from "@plane/types";
+import type { TIssue, TIssueParams, TIssuesResponse, TIssueServiceType } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
 import { APIService } from "@/services/api.service";
 // types
@@ -19,18 +19,21 @@ export class IssueArchiveService extends APIService {
     this.serviceType = serviceType;
   }
 
-  async getArchivedIssues(workspaceSlug: string, projectId: string, queries?: any, config = {}): Promise<any> {
-    return this.get(
-      `/api/workspaces/${workspaceSlug}/projects/${projectId}/archived-issues/`,
-      {
-        params: { ...queries },
-      },
-      config
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async getArchivedIssues(
+    workspaceSlug: string,
+    projectId: string,
+    queries?: Partial<Record<TIssueParams, string | boolean>>,
+    config = {}
+  ): Promise<TIssuesResponse> {
+    return this.responseData(
+      this.get(
+        `/api/workspaces/${workspaceSlug}/projects/${projectId}/archived-issues/`,
+        {
+          params: { ...queries },
+        },
+        config
+      )
+    );
   }
 
   async archiveIssue(
@@ -40,33 +43,27 @@ export class IssueArchiveService extends APIService {
   ): Promise<{
     archived_at: string;
   }> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/archive/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/archive/`)
+    );
   }
 
-  async restoreIssue(workspaceSlug: string, projectId: string, issueId: string): Promise<any> {
-    return this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/archive/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async restoreIssue(workspaceSlug: string, projectId: string, issueId: string): Promise<unknown> {
+    return this.responseData(
+      this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/archive/`)
+    );
   }
 
   async retrieveArchivedIssue(
     workspaceSlug: string,
     projectId: string,
     issueId: string,
-    queries?: any
+    queries?: Partial<Record<TIssueParams, string | boolean>>
   ): Promise<TIssue> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/archive/`, {
-      params: queries,
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/archive/`, {
+        params: queries,
+      })
+    );
   }
 }

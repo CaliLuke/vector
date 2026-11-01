@@ -9,7 +9,7 @@ registerWebModuleHooks();
 globalThis.typeTableReact = React;
 const stubs = {
   "@/hooks/use-intersection-observer": `export const useIntersectionObserver=()=>{};`,
-  "@/hooks/use-table-keyboard-navigation": `export const useTableKeyboardNavigation=()=>()=>{};`,
+  "@/hooks/use-table-keyboard-navigation": `export const useTableKeyboardNavigation=()=>({});`,
   "@/helpers/issue-filter.helper": `export const shouldRenderColumn=key=>key!=="estimate";`,
   "./issue-row": `export const SpreadsheetIssueRow=()=>null;`,
   "./spreadsheet-header": `const R=globalThis.typeTableReact;export const SpreadsheetHeader=()=>R.createElement("thead",null,R.createElement("tr",null,R.createElement("th",null,"Work items"),R.createElement("th",null,"State")));`,

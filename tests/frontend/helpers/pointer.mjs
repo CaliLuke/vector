@@ -5,14 +5,28 @@ import { React } from "./react.mjs";
 export async function clickWithPointer(element) {
   await React.act(async () => {
     element.dispatchEvent(
-      new window.PointerEvent("pointerdown", { button: 0, pointerType: "mouse", bubbles: true, cancelable: true })
+      new window.PointerEvent("pointerdown", {
+        button: 0,
+        pointerType: "mouse",
+        isPrimary: true,
+        pointerId: 1,
+        bubbles: true,
+        cancelable: true,
+      })
     );
     const allowFocus = element.dispatchEvent(
       new MouseEvent("mousedown", { button: 0, bubbles: true, cancelable: true })
     );
     if (allowFocus) element.focus();
     element.dispatchEvent(
-      new window.PointerEvent("pointerup", { button: 0, pointerType: "mouse", bubbles: true, cancelable: true })
+      new window.PointerEvent("pointerup", {
+        button: 0,
+        pointerType: "mouse",
+        isPrimary: true,
+        pointerId: 1,
+        bubbles: true,
+        cancelable: true,
+      })
     );
     element.dispatchEvent(new MouseEvent("mouseup", { button: 0, bubbles: true, cancelable: true }));
   });

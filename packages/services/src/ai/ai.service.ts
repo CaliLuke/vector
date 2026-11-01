@@ -41,15 +41,11 @@ export class AIService extends APIService {
    * @param {Object} data - The data payload for the GPT task
    * @param {string} data.prompt - The prompt text for the GPT model
    * @param {string} data.task - The type of task to be performed
-   * @returns {Promise<any>} The response data from the GPT task
+   * @returns {Promise<unknown>} The response data from the GPT task
    * @throws {Error} Throws the response error if the request fails
    */
-  async prompt(workspaceSlug: string, data: { prompt: string; task: string }): Promise<any> {
-    return this.post(`/api/workspaces/${workspaceSlug}/ai-assistant/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+  async prompt(workspaceSlug: string, data: { prompt: string; task: string }): Promise<unknown> {
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/ai-assistant/`, data), "response");
   }
 
   /**
@@ -65,10 +61,6 @@ export class AIService extends APIService {
   ): Promise<{
     response: string;
   }> {
-    return this.post(`/api/workspaces/${workspaceSlug}/rephrase-grammar/`, data)
-      .then((res) => res?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/rephrase-grammar/`, data));
   }
 }

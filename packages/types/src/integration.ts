@@ -10,9 +10,9 @@ export interface IAppIntegration {
   avatar_url: string | null;
   created_at: string;
   created_by: string | null;
-  description: any;
+  description: unknown;
   id: string;
-  metadata: any;
+  metadata: unknown;
   network: number;
   provider: string;
   redirect_url: string;
@@ -27,13 +27,13 @@ export interface IAppIntegration {
 export interface IWorkspaceIntegration {
   actor: string;
   api_token: string;
-  config: any;
+  config: unknown;
   created_at: string;
   created_by: string;
   id: string;
   integration: string;
   integration_detail: IAppIntegration;
-  metadata: any;
+  metadata: unknown;
   updated_at: string;
   updated_by: string;
   workspace: string;
@@ -66,7 +66,7 @@ export interface ISlackIntegrationData {
   };
   scope: string;
   app_id: string;
-  enterprise: any;
+  enterprise: unknown;
   token_type: string;
   authed_user: string;
   bot_user_id: string;

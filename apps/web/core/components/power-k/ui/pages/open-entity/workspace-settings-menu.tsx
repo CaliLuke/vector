@@ -31,7 +31,8 @@ export function PowerKOpenWorkspaceSettingsMenu(props: Props) {
     (setting) => context.params.workspaceSlug && can(setting.access)
   );
   const settingsListWithIcons = settingsList.map((setting) => ({
-    ...setting,
+    key: setting.key,
+    href: setting.href,
     label: t(setting.i18n_label),
     icon: WORKSPACE_SETTINGS_ICONS[setting.key],
   }));

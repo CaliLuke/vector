@@ -11,9 +11,9 @@ import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { CORE_EXTENSIONS } from "@/constants/extension";
 // types
 import { ECalloutAttributeNames } from "./types";
-import type { CustomCalloutExtensionType, TCalloutBlockAttributes } from "./types";
+import type { CustomCalloutExtensionType } from "./types";
 // utils
-import { DEFAULT_CALLOUT_BLOCK_ATTRIBUTES } from "./utils";
+import { DEFAULT_CALLOUT_BLOCK_ATTRIBUTES, getCalloutAttributes } from "./utils";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -29,27 +29,16 @@ export const CustomCalloutExtensionConfig: CustomCalloutExtensionType = Node.cre
   content: "block+",
 
   addAttributes() {
-    const attributes = {
-      // Reduce instead of map to accumulate the attributes directly into an object
-      ...Object.values(ECalloutAttributeNames).reduce(
-        (acc, value) => {
-          acc[value] = {
-            default: DEFAULT_CALLOUT_BLOCK_ATTRIBUTES[value],
-          };
-          return acc;
-        },
-        {} as Record<ECalloutAttributeNames, { default: TCalloutBlockAttributes[ECalloutAttributeNames] }>
-      ),
-    };
-
-    return attributes;
+    return Object.fromEntries(
+      Object.entries(DEFAULT_CALLOUT_BLOCK_ATTRIBUTES).map(([name, value]) => [name, { default: value }])
+    );
   },
 
   addStorage() {
     return {
       markdown: {
         serialize(state: MarkdownSerializerState, node: ProseMirrorNode) {
-          const attrs = node.attrs as TCalloutBlockAttributes;
+          const attrs = getCalloutAttributes(node.attrs);
           const logoInUse = attrs["data-logo-in-use"];
           // add callout logo
           if (logoInUse === "emoji") {

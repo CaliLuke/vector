@@ -1,3 +1,4 @@
+import type { IssueQuickAddCallback } from "../quick-add/types";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -14,7 +15,6 @@ import { autoScrollForElements } from "@atlaskit/pragmatic-drag-and-drop-auto-sc
 import { ALL_ISSUES } from "@plane/constants";
 // types
 import type {
-  GroupByColumnTypes,
   TIssue,
   IIssueDisplayProperties,
   TIssueMap,
@@ -52,7 +52,7 @@ export interface IList {
   enableIssueQuickAdd: boolean;
   showEmptyGroup?: boolean;
   canEditProperties: (projectId: string | undefined) => boolean;
-  quickAddCallback?: (projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>;
+  quickAddCallback?: IssueQuickAddCallback;
   disableIssueCreation?: boolean;
   handleOnDrop: (source: GroupDropLocation, destination: GroupDropLocation) => Promise<void>;
   addIssuesToView?: (issueIds: string[]) => Promise<void | TIssue>;
@@ -102,7 +102,7 @@ export function List(props: IList) {
   const groups = useGroupColumns({
     workspaceSlug,
     projectId,
-    groupBy: group_by as GroupByColumnTypes,
+    groupBy: group_by,
     observedIds: propertyGroupingIds(groupedIssueIds),
     includeNone: true,
     isWorkspaceLevel: isWorkspaceLevel(storeType),
@@ -113,7 +113,7 @@ export function List(props: IList) {
   useEffect(() => {
     const element = containerRef.current;
 
-    if (!element) return;
+    if (!element) return undefined;
 
     return combine(
       autoScrollForElements({

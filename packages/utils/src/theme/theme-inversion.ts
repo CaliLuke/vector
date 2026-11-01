@@ -57,18 +57,7 @@ export function invertPalette(palette: ColorPalette): ColorPalette {
 export function getNeutralMapping(palette: ColorPalette): Record<string, string> {
   return {
     white: palette["50"],
-    "100": palette["100"],
-    "200": palette["200"],
-    "300": palette["300"],
-    "400": palette["400"],
-    "500": palette["500"],
-    "600": palette["600"],
-    "700": palette["700"],
-    "800": palette["750"],
-    "900": palette["800"],
-    "1000": palette["850"],
-    "1100": palette["900"],
-    "1200": palette["950"],
+    ...getShadeMapping(palette),
     black: palette["1000"],
   };
 }
@@ -82,6 +71,13 @@ export function getNeutralMapping(palette: ColorPalette): Record<string, string>
  */
 export function getBrandMapping(palette: ColorPalette): Record<string, string> {
   return {
+    ...getShadeMapping(palette),
+    default: palette[DEFAULT_VALUE_STOP], // Default brand color (middle-ish)
+  };
+}
+
+function getShadeMapping(palette: ColorPalette) {
+  return {
     "100": palette["100"],
     "200": palette["200"],
     "300": palette["300"],
@@ -94,6 +90,5 @@ export function getBrandMapping(palette: ColorPalette): Record<string, string> {
     "1000": palette["850"],
     "1100": palette["900"],
     "1200": palette["950"],
-    default: palette[DEFAULT_VALUE_STOP], // Default brand color (middle-ish)
   };
 }

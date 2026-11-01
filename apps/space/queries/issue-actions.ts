@@ -54,14 +54,15 @@ type CommentChange =
 export function commentMutationOptions(client: QueryClient, anchor: string, issueId: string) {
   return mutationOptions({
     mutationKey: [...issueActionKey(anchor, issueId), "comment"],
-    mutationFn: (change: CommentChange): Promise<TIssuePublicComment | undefined> => {
+    mutationFn: async (change: CommentChange): Promise<TIssuePublicComment | undefined> => {
       switch (change.kind) {
         case "add":
           return service.addComment(anchor, issueId, change.data);
         case "update":
           return service.updateComment(anchor, issueId, change.id, change.data);
         case "delete":
-          return service.removeComment(anchor, issueId, change.id);
+          await service.removeComment(anchor, issueId, change.id);
+          return undefined;
       }
       throw new Error("Unknown comment operation");
     },

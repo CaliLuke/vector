@@ -67,7 +67,7 @@ const markRenderers: MarkRendererRegistry = {
     const attrs = mark.attrs || {};
     return {
       ...style,
-      backgroundColor: (attrs.color as string) || EDITOR_BACKGROUND_COLORS.purple,
+      backgroundColor: (typeof attrs.color === "string" && attrs.color) || EDITOR_BACKGROUND_COLORS.purple,
     };
   },
 

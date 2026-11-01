@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import { settleQuery as settle } from "./helpers/query-router.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -13,7 +14,7 @@ globalThis.historyReact = React;
 const stubs = {
   "./controls": `export const inputStyle="";export const PreviewDialog=props=>globalThis.historyReact.createElement("section",{role:"dialog"},props.title,props.children,props.footer);`,
   "@/hooks/use-work-item-detail": `export const useWorkItemDetail=()=>({issue:{id:"issue",project_id:"p"}});`,
-  "@/hooks/use-permissions": `export const useProjectPermissions=()=>({can:()=>true,isPending:false,isError:false,workspaceRole:15,projectRole:15,membershipQuery:{data:{updated_at:"v1"}}});`,
+  "@/hooks/use-permissions": `export const useProjectPermissions=()=>globalThis.historyPermissions??({can:()=>true,isPending:false,isError:false,workspaceRole:15,projectRole:15,membershipQuery:{data:{updated_at:"v1"}}});`,
   "./property-history-restore": `export const PropertyHistoryRestore=props=>globalThis.historyReact.createElement("div",null,globalThis.historyReact.createElement("article",null,props.version.value),globalThis.historyReact.createElement("button",{onClick:props.onAccessLost},"Deny access"));`,
   "@/hooks/use-workspaces": `export const useWorkspaceBySlug=()=>({data:{id:"workspace"}});`,
   "@/components/editor/rich-text": `export function RichTextEditor(props){globalThis.historyEditor=props;return globalThis.historyReact.createElement("article",null,props.initialValue);}`,
@@ -45,16 +46,19 @@ async function fixture(t, editable = false) {
   client.setQueryData(identityKeys.currentUser(), { id: "alice" });
   client.setQueryData(permissionKeys.workspaceMembership("alice", "acme"), {
     is_active: true,
-    role: 15,
+    role: ContractEnums.EUserPermissions.MEMBER,
     updated_at: "v1",
   });
-  client.setQueryData(permissionKeys.workspaceProjectRoles("alice", "acme", 15, "v1"), { p: editable ? 15 : 5 });
+  client.setQueryData(
+    permissionKeys.workspaceProjectRoles("alice", "acme", ContractEnums.EUserPermissions.MEMBER, "v1"),
+    { p: editable ? 15 : 5 }
+  );
   const scope = {
     accountId: "alice",
     workspaceSlug: "acme",
     projectId: "p",
     issueId: "item",
-    membershipRole: 15,
+    membershipRole: ContractEnums.EUserPermissions.MEMBER,
     membershipRevision: "v1",
     projectRole: editable ? 15 : 5,
     generation: getIdentitySessionGeneration(client),
@@ -255,3 +259,36 @@ await test("archived full-screen peek keeps history readable while editing stays
   assert.equal(button("Restore this revision"), undefined, "archived history cannot offer restoration");
   assert.equal(f.editSource.mock.callCount(), 0);
 });
+
+for (const [state, canRead, pending, failed] of [
+  ["denied", false, false, false],
+  ["pending", true, true, false],
+  ["failed", true, false, true],
+]) {
+  void test(`property history remains hidden while permissions are ${state}`, async (t) => {
+    const env = await createReactDomTestEnvironment();
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryData(identityKeys.currentUser(), { id: "alice" });
+    globalThis.historyPermissions = { can: () => canRead, isPending: pending, isError: failed };
+    t.after(async () => {
+      await env.unmount();
+      client.clear();
+      delete globalThis.historyPermissions;
+    });
+    const { ItemPropertyHistory } =
+      await import("../../apps/web/core/components/work-item-types/item-property-history.tsx");
+    await env.render(
+      React.createElement(
+        QueryClientProvider,
+        { client },
+        React.createElement(ItemPropertyHistory, {
+          workspaceSlug: "acme",
+          projectId: "p",
+          issueId: "item",
+        })
+      )
+    );
+    assert.equal(env.container.textContent, "");
+    assert.equal(env.container.querySelector("button"), null);
+  });
+}

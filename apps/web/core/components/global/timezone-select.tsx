@@ -42,7 +42,7 @@ export const TimezoneSelect = function TimezoneSelect(props: TTimezoneSelect) {
         value={value}
         label={value && selectedValue ? selectedValue(value) : label}
         options={isDisabled || disabled ? [] : timezones}
-        onChange={onChange}
+        onChange={(selection) => (selection !== null ? onChange(selection) : undefined)}
         buttonClassName={cn(buttonClassName, "border border-subtle-1", {
           "border-danger-strong": error,
         })}

@@ -26,6 +26,21 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+function UserCommandItems() {
+  return (
+    <>
+      <Command.Item className="hover:bg-gray-100 flex cursor-pointer items-center gap-2 rounded-sm px-3 py-2">
+        <User className="h-4 w-4" />
+        <span>Profile</span>
+      </Command.Item>
+      <Command.Item className="hover:bg-gray-100 flex cursor-pointer items-center gap-2 rounded-sm px-3 py-2">
+        <Settings className="h-4 w-4" />
+        <span>Settings</span>
+      </Command.Item>
+    </>
+  );
+}
+
 export const Default: Story = {
   render() {
     return (
@@ -84,14 +99,7 @@ export const WithCategories: Story = {
         />
         <Command.List className="max-h-80 overflow-auto py-2">
           <div className="text-gray-500 px-2 py-1.5 text-11 font-semibold">User</div>
-          <Command.Item className="hover:bg-gray-100 flex cursor-pointer items-center gap-2 rounded-sm px-3 py-2">
-            <User className="h-4 w-4" />
-            <span>Profile</span>
-          </Command.Item>
-          <Command.Item className="hover:bg-gray-100 flex cursor-pointer items-center gap-2 rounded-sm px-3 py-2">
-            <Settings className="h-4 w-4" />
-            <span>Settings</span>
-          </Command.Item>
+          <UserCommandItems />
 
           <div className="text-gray-500 mt-2 px-2 py-1.5 text-11 font-semibold">Files</div>
           <Command.Item className="hover:bg-gray-100 flex cursor-pointer items-center gap-2 rounded-sm px-3 py-2">
@@ -147,14 +155,7 @@ export const WithoutSearch: Story = {
     return (
       <Command className="border-gray-200 w-96 rounded-lg border p-2">
         <Command.List className="max-h-80 overflow-auto py-2">
-          <Command.Item className="hover:bg-gray-100 flex cursor-pointer items-center gap-2 rounded-sm px-3 py-2">
-            <User className="h-4 w-4" />
-            <span>Profile</span>
-          </Command.Item>
-          <Command.Item className="hover:bg-gray-100 flex cursor-pointer items-center gap-2 rounded-sm px-3 py-2">
-            <Settings className="h-4 w-4" />
-            <span>Settings</span>
-          </Command.Item>
+          <UserCommandItems />
           <Command.Item className="hover:bg-gray-100 flex cursor-pointer items-center gap-2 rounded-sm px-3 py-2">
             <Folder className="h-4 w-4" />
             <span>Files</span>

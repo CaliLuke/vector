@@ -21,18 +21,20 @@ import type { TFileHandler } from "@/types";
 export const restorePublicImages = (editor: Editor, restoreImageFn: TFileHandler["restore"]) => {
   const imageSources = new Set<string>();
   editor.state.doc.descendants((node) => {
-    if ([CORE_EXTENSIONS.IMAGE, CORE_EXTENSIONS.CUSTOM_IMAGE].includes(node.type.name as CORE_EXTENSIONS)) {
-      if (!node.attrs.src?.startsWith("http")) return;
+    if ([CORE_EXTENSIONS.IMAGE, CORE_EXTENSIONS.CUSTOM_IMAGE].some((type) => type === node.type.name)) {
+      if (typeof node.attrs.src !== "string" || !node.attrs.src.startsWith("http")) return;
 
       imageSources.add(node.attrs.src);
     }
   });
 
-  imageSources.forEach(async (src) => {
-    try {
-      await restoreImageFn(src);
-    } catch (error) {
-      console.error("Error restoring image: ", error);
-    }
-  });
+  for (const src of imageSources) void restorePublicImage(src, restoreImageFn);
 };
+
+async function restorePublicImage(src: string, restoreImageFn: TFileHandler["restore"]) {
+  try {
+    await restoreImageFn(src);
+  } catch (error) {
+    console.error("Error restoring image: ", error);
+  }
+}

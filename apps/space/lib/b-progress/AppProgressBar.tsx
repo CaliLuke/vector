@@ -7,7 +7,6 @@
 import { useNavigationProgress } from "@plane/hooks";
 import { BProgress } from "@bprogress/core";
 import { useNavigation } from "react-router";
-import "@bprogress/core/css";
 
 export function AppProgressBar(): null {
   const navigation = useNavigation();

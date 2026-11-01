@@ -5,7 +5,6 @@
  */
 
 import type { Extensions } from "@tiptap/core";
-import type { MutableRefObject } from "react";
 import { forwardRef, useMemo } from "react";
 // plane imports
 import { cn } from "@plane/utils/common";
@@ -14,13 +13,13 @@ import { PageRenderer } from "@/components/editors";
 // constants
 import { DEFAULT_DISPLAY_CONFIG } from "@/constants/config";
 // extensions
-import { HeadingListExtension, SideMenuExtension } from "@/extensions";
+import { HeadingListExtension, createSideMenuExtension } from "@/extensions";
 // helpers
 import { getEditorClassNames } from "@/helpers/common";
 // hooks
 import { useEditor } from "@/hooks/use-editor";
 // plane editor extensions
-import { DocumentEditorAdditionalExtensions } from "@/plane-editor/extensions";
+import { createDocumentEditorAdditionalExtensions } from "@/plane-editor/extensions";
 // types
 import type { EditorRefApi, IDocumentEditorProps } from "@/types";
 
@@ -48,12 +47,12 @@ function DocumentEditor(props: IDocumentEditorProps) {
   const extensions: Extensions = useMemo(() => {
     const additionalExtensions: Extensions = [];
     additionalExtensions.push(
-      SideMenuExtension({
+      createSideMenuExtension({
         aiEnabled: !disabledExtensions?.includes("ai"),
         dragDropEnabled: true,
       }),
       HeadingListExtension,
-      ...DocumentEditorAdditionalExtensions({
+      ...createDocumentEditorAdditionalExtensions({
         disabledExtensions,
         extendedEditorProps,
         flaggedExtensions,
@@ -112,7 +111,7 @@ const DocumentEditorWithRef = forwardRef(function DocumentEditorWithRef(
   props: IDocumentEditorProps,
   ref: React.ForwardedRef<EditorRefApi>
 ) {
-  return <DocumentEditor {...props} forwardedRef={ref as MutableRefObject<EditorRefApi | null>} />;
+  return <DocumentEditor {...props} forwardedRef={ref} />;
 });
 
 DocumentEditorWithRef.displayName = "DocumentEditorWithRef";

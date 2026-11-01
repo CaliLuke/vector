@@ -28,7 +28,7 @@ type Props = {
 };
 
 type TExportFormats = "pdf" | "markdown";
-type TPageFormats = Exclude<PageProps["size"], undefined>;
+type TPageFormats = Extract<PageProps["size"], string>;
 type TContentVariety = "everything" | "no-assets";
 
 type TFormValues = {
@@ -105,6 +105,17 @@ export function ExportPageModal(props: Props) {
   return props.isOpen ? <ExportPageDialog {...props} /> : null;
 }
 
+const initiateDownload = (blob: Blob, filename: string) => {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 1000);
+};
+
 function ExportPageDialog({ editorRef, onClose, pageTitle }: Props) {
   // params
   const { workspaceSlug, projectId } = useParams({ strict: false });
@@ -147,17 +158,6 @@ function ExportPageDialog({ editorRef, onClose, pageTitle }: Props) {
     if (!isExporting) onClose();
   };
 
-  const initiateDownload = (blob: Blob, filename: string) => {
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    link.click();
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-    }, 1000);
-  };
-
   // handle export as a PDF
   const handleExportAsPDF = async () => {
     try {
@@ -168,7 +168,7 @@ function ExportPageDialog({ editorRef, onClose, pageTitle }: Props) {
       });
 
       const blob = await pdf(<PDFDocument content={parsedPageContent} pageFormat={selectedPageFormat} />).toBlob();
-      initiateDownload(blob, `${fileName}-${selectedPageFormat.toString().toLowerCase()}.pdf`);
+      initiateDownload(blob, `${fileName}-${selectedPageFormat.toLowerCase()}.pdf`);
     } catch (error) {
       throw new Error("Error in exporting as a PDF.", { cause: error });
     }
@@ -232,21 +232,12 @@ function ExportPageDialog({ editorRef, onClose, pageTitle }: Props) {
               <h6 className="flex-shrink-0 text-13 text-secondary">Export format</h6>
               <form.Field name="export_format">
                 {(field) => (
-                  <CustomSelect
-                    label={EXPORT_FORMATS.find((format) => format.key === field.state.value)?.label}
-                    disabled={isExporting}
-                    buttonClassName="border-none"
+                  <ExportOptionSelect
+                    options={EXPORT_FORMATS}
                     value={field.state.value}
-                    onChange={(val: TExportFormats) => field.handleChange(val)}
-                    className="flex-shrink-0"
-                    placement="bottom-end"
-                  >
-                    {EXPORT_FORMATS.map((format) => (
-                      <CustomSelect.Option key={format.key} value={format.key}>
-                        {format.label}
-                      </CustomSelect.Option>
-                    ))}
-                  </CustomSelect>
+                    onChange={field.handleChange}
+                    disabled={isExporting}
+                  />
                 )}
               </form.Field>
             </div>
@@ -254,21 +245,12 @@ function ExportPageDialog({ editorRef, onClose, pageTitle }: Props) {
               <h6 className="flex-shrink-0 text-13 text-secondary">Include content</h6>
               <form.Field name="content_variety">
                 {(field) => (
-                  <CustomSelect
-                    label={CONTENT_VARIETY.find((variety) => variety.key === field.state.value)?.label}
-                    disabled={isExporting}
-                    buttonClassName="border-none"
+                  <ExportOptionSelect
+                    options={CONTENT_VARIETY}
                     value={field.state.value}
-                    onChange={(val: TContentVariety) => field.handleChange(val)}
-                    className="flex-shrink-0"
-                    placement="bottom-end"
-                  >
-                    {CONTENT_VARIETY.map((variety) => (
-                      <CustomSelect.Option key={variety.key} value={variety.key}>
-                        {variety.label}
-                      </CustomSelect.Option>
-                    ))}
-                  </CustomSelect>
+                    onChange={field.handleChange}
+                    disabled={isExporting}
+                  />
                 )}
               </form.Field>
             </div>
@@ -277,21 +259,12 @@ function ExportPageDialog({ editorRef, onClose, pageTitle }: Props) {
                 <h6 className="flex-shrink-0 text-13 text-secondary">Page format</h6>
                 <form.Field name="page_format">
                   {(field) => (
-                    <CustomSelect
-                      label={PAGE_FORMATS.find((format) => format.key === field.state.value)?.label}
-                      disabled={isExporting}
-                      buttonClassName="border-none"
+                    <ExportOptionSelect
+                      options={PAGE_FORMATS}
                       value={field.state.value}
-                      onChange={(val: TPageFormats) => field.handleChange(val)}
-                      className="flex-shrink-0"
-                      placement="bottom-end"
-                    >
-                      {PAGE_FORMATS.map((format) => (
-                        <CustomSelect.Option key={format.key.toString()} value={format.key}>
-                          {format.label}
-                        </CustomSelect.Option>
-                      ))}
-                    </CustomSelect>
+                      onChange={field.handleChange}
+                      disabled={isExporting}
+                    />
                   )}
                 </form.Field>
               </div>
@@ -332,5 +305,37 @@ function ExportPageDialog({ editorRef, onClose, pageTitle }: Props) {
         </div>
       </form>
     </ModalCore>
+  );
+}
+
+function ExportOptionSelect<T extends string>({
+  options,
+  value,
+  onChange,
+  disabled,
+}: {
+  options: readonly { key: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+  disabled: boolean;
+}) {
+  return (
+    <CustomSelect
+      label={options.find((option) => option.key === value)?.label}
+      disabled={disabled}
+      buttonClassName="border-none"
+      value={value}
+      onChange={(selected) => {
+        if (selected !== null) onChange(selected);
+      }}
+      className="flex-shrink-0"
+      placement="bottom-end"
+    >
+      {options.map((option) => (
+        <CustomSelect.Option key={option.key} value={option.key}>
+          {option.label}
+        </CustomSelect.Option>
+      ))}
+    </CustomSelect>
   );
 }

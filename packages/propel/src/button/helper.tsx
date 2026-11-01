@@ -42,9 +42,9 @@ export const buttonVariants = cva(
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
   VariantProps<typeof buttonVariants> & {
-    appendIcon?: React.ReactElement;
+    appendIcon?: React.ReactElement<{ className?: string; strokeWidth?: number }>;
     loading?: boolean;
-    prependIcon?: React.ReactElement;
+    prependIcon?: React.ReactElement<{ className?: string; strokeWidth?: number }>;
   };
 
 export type TButtonVariant = NonNullable<ButtonProps["variant"]>;

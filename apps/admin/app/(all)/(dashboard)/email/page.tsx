@@ -75,7 +75,7 @@ const InstanceEmailPage = function InstanceEmailPage(_props: Route.ComponentProp
         ) : (
           <ToggleSwitch
             value={isSMTPEnabled}
-            onChange={handleToggle}
+            onChange={() => void handleToggle()}
             size="sm"
             disabled={isSubmitting || isError}
             label="Enable SMTP"

@@ -184,6 +184,7 @@ export function DraftIssueBlock(props: Props) {
               }}
             />
             <div
+              role="presentation"
               className={cn("hidden", {
                 "md:flex": isSidebarCollapsed,
                 "lg:flex": !isSidebarCollapsed,

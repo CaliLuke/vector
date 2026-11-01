@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../../packages/types/dist/index.mjs";
 import { fileURLToPath } from "node:url";
 import { seedInstanceInfo } from "./instance-info.mjs";
 import { registerHooks } from "node:module";
@@ -110,20 +111,28 @@ export async function setup(t) {
   const { permissionKeys } = await import("../../../apps/web/core/queries/permissions.ts");
   client.setQueryData(permissionKeys.workspaceMembership("workspace-query-test-user", "workspace"), {
     is_active: true,
-    role: 20,
+    role: ContractEnums.EUserPermissions.ADMIN,
     updated_at: "v1",
   });
-  client.setQueryData(permissionKeys.workspaceProjectRoles("workspace-query-test-user", "workspace", 20, "v1"), {
-    first: 20,
-    second: 20,
-  });
+  client.setQueryData(
+    permissionKeys.workspaceProjectRoles(
+      "workspace-query-test-user",
+      "workspace",
+      ContractEnums.EUserPermissions.ADMIN,
+      "v1"
+    ),
+    {
+      first: 20,
+      second: 20,
+    }
+  );
   const { projectKeys } = await import("../../../apps/web/core/queries/projects.ts");
   const { ProjectService } = await import("../../../apps/web/core/services/project/project.service.ts");
   const projectScope = {
     accountId: "workspace-query-test-user",
     sessionGeneration: 0,
     workspaceSlug: "workspace",
-    workspaceRole: 20,
+    workspaceRole: ContractEnums.EUserPermissions.ADMIN,
     membershipRevision: "v1",
     projectRoles: [
       ["first", 20],
@@ -139,7 +148,12 @@ export async function setup(t) {
   client.setQueryData(projectKeys.workspace(projectScope, "full"), projects);
   for (const project of projects)
     client.setQueryData(
-      projectKeys.detail({ ...projectScope, projectId: project.id, projectRole: 20, projectMembershipRole: 20 }),
+      projectKeys.detail({
+        ...projectScope,
+        projectId: project.id,
+        projectRole: ContractEnums.EUserPermissions.ADMIN,
+        projectMembershipRole: ContractEnums.EUserPermissions.ADMIN,
+      }),
       project
     );
   t.mock.method(ProjectService.prototype, "getProjects", async () => projects);

@@ -57,7 +57,7 @@ export function IssueLinkItem(props: TIssueLinkItem) {
     }
   );
   const faviconUrl: string | undefined = linkDetail.metadata?.favicon;
-  const linkTitle: string | undefined = linkDetail.metadata?.title;
+  const linkTitle: string | undefined = linkDetail.metadata?.title ?? undefined;
 
   const toggleIssueLinkModal = (modalToggle: boolean) => {
     toggleIssueLinkModalStore(modalToggle);

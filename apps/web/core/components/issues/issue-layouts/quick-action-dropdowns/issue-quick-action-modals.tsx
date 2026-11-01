@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { QuickActionMenu } from "@/components/common/quick-action-menu";
+import type { TContextMenuItem } from "@plane/ui/dropdowns";
 import { EIssuesStoreType } from "@plane/types";
 import type { IQuickActionProps } from "../list/list-view-types";
 import type { useIssueQuickActionModals } from "./use-issue-quick-action-modals";
@@ -74,6 +76,51 @@ export function IssueQuickActionModals(props: TIssueQuickActionModalsProps) {
         }}
         storeType={storeType}
         fetchIssueDetails={fetchIssueDetails}
+      />
+    </>
+  );
+}
+
+export function IssueQuickActionControls({
+  issue,
+  handleDelete,
+  handleUpdate,
+  handleArchive,
+  modals,
+  storeType,
+  items,
+  parentRef,
+  customActionButton,
+  portalElement,
+  placements,
+}: IQuickActionProps & {
+  modals: ReturnType<typeof useIssueQuickActionModals>;
+  storeType: EIssuesStoreType;
+  items: TContextMenuItem[];
+}) {
+  return (
+    <>
+      <IssueQuickActionModals
+        issue={issue}
+        handleDelete={handleDelete}
+        handleUpdate={handleUpdate}
+        handleArchive={handleArchive}
+        modals={modals}
+        storeType={storeType}
+      />
+      <QuickActionMenu
+        items={items}
+        parentRef={parentRef}
+        customMenuProps={{
+          ellipsis: true,
+          customButton: customActionButton,
+          portalElement,
+          placement: placements,
+          menuItemsClassName: "z-[14]",
+          maxHeight: "lg",
+          useCaptureForOutsideClick: true,
+          closeOnSelect: true,
+        }}
       />
     </>
   );

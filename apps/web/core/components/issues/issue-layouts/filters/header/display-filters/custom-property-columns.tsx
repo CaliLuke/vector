@@ -1,3 +1,4 @@
+import { EIssueLayoutTypes } from "@plane/types";
 import type { IIssueDisplayProperties, IIssueDisplayFilterOptions } from "@plane/types";
 import { useWorkItemTableCatalog } from "@/hooks/use-work-item-table-catalog";
 import { PropertyIcon } from "@/components/work-item-types/property-icon";
@@ -13,7 +14,7 @@ export function CustomPropertyColumns({
   isEpic: boolean;
   onChange: (value: Partial<IIssueDisplayProperties>) => void;
 }) {
-  const enabled = displayFilters?.layout === "spreadsheet" && !isEpic;
+  const enabled = displayFilters?.layout === EIssueLayoutTypes.SPREADSHEET && !isEpic;
   const catalog = useWorkItemTableCatalog(enabled);
   if (!enabled || !catalog.supported) return null;
   if (catalog.isError)

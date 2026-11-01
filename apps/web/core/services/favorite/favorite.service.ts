@@ -17,42 +17,27 @@ export class FavoriteService extends APIService {
   }
 
   async addFavorite(workspaceSlug: string, data: Partial<IFavorite>): Promise<IFavorite> {
-    return this.post(`/api/workspaces/${workspaceSlug}/user-favorites/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/user-favorites/`, data), "response");
   }
 
   async updateFavorite(workspaceSlug: string, favoriteId: string, data: Partial<IFavorite>): Promise<IFavorite> {
-    return this.patch(`/api/workspaces/${workspaceSlug}/user-favorites/${favoriteId}/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+    return this.responseData(
+      this.patch(`/api/workspaces/${workspaceSlug}/user-favorites/${favoriteId}/`, data),
+      "response"
+    );
   }
 
   async deleteFavorite(workspaceSlug: string, favoriteId: string): Promise<void> {
-    return this.delete(`/api/workspaces/${workspaceSlug}/user-favorites/${favoriteId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+    return this.responseData(this.delete(`/api/workspaces/${workspaceSlug}/user-favorites/${favoriteId}/`), "response");
   }
 
   async getFavorites(workspaceSlug: string, signal?: AbortSignal): Promise<IFavorite[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/user-favorites/`, { params: { all: true } }, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/user-favorites/`, { params: { all: true } }, { signal })
+    );
   }
 
   async getGroupedFavorites(workspaceSlug: string, favoriteId: string): Promise<IFavorite[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/user-favorites/${favoriteId}/group/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/user-favorites/${favoriteId}/group/`));
   }
 }

@@ -36,7 +36,7 @@ globalThis.snoozeFormToasts = toasts;
 const stubs = {
   "@plane/ui": `const React = globalThis.snoozeFormReact;
     export const EModalPosition = {CENTER: "center"}; export const EModalWidth = {XXL: "xxl"};
-    export const ModalCore = ({children}) => React.createElement("div", {role:"dialog"}, children);
+    export const ModalCore = ({children,handleClose}) => React.createElement("div", {role:"dialog"},React.createElement('button',{type:'button','aria-label':'Dismiss snooze',onClick:handleClose},'Dismiss'), children);
     const SelectContext = React.createContext(null);
     export const CustomSelect = ({children, onChange, value, disabled}) => React.createElement(SelectContext.Provider, {value: {onChange, value, disabled}}, children);
     CustomSelect.Option = ({value}) => { const select = React.useContext(SelectContext); return React.createElement("button", {type: "button", disabled: select.disabled, "aria-pressed": select.value === value, onClick: () => select.onChange(value)}, value); };`,
@@ -74,6 +74,14 @@ await test("snooze validates the date, preserves the selection on failure, and r
   await act(async () => button("Future date").click());
   await act(async () => button("PM").click());
   await act(async () => button("12:00").click());
+  await act(async () => button("AM").click());
+  assert.equal(
+    nativeForms
+      .getForms("apps/web/core/components/workspace-notifications/sidebar/notification-card/options/snooze/modal.tsx")
+      .at(-1).state.values.time,
+    undefined
+  );
+  await act(async () => button("12:00").click());
   await act(async () => button("Submit").click());
   assert.equal(closed, 0);
   assert.equal(
@@ -93,12 +101,40 @@ await test("snooze validates the date, preserves the selection on failure, and r
       .at(-1).state.isSubmitSuccessful,
     true
   );
-  assert.equal(savedDates[1].getHours(), 12);
+  assert.equal(savedDates[1].getHours(), 0);
   await render(false);
   await render(true);
   await act(async () => button("Submit").click());
   assert.equal(savedDates.length, 2);
   assert.match(environment.container.querySelector('[role="alert"]').textContent, /future/);
+  await act(async () => button("Cancel").click());
+  assert.equal(closed, 2);
+});
+
+await test("snooze blocks modal dismissal while its request is pending", async (t) => {
+  const env = await createReactDomTestEnvironment();
+  t.after(() => env.unmount());
+  const { NotificationSnoozeModal } =
+    await import("../../apps/web/core/components/workspace-notifications/sidebar/notification-card/options/snooze/modal.tsx");
+  const pending = Promise.withResolvers();
+  let closed = 0;
+  await env.render(
+    React.createElement(NotificationSnoozeModal, {
+      isOpen: true,
+      onClose: () => closed++,
+      onSubmit: () => pending.promise,
+    })
+  );
+  const button = (text) => [...env.container.querySelectorAll("button")].find((item) => item.textContent === text);
+  await act(async () => button("Future date").click());
+  await act(async () => button("PM").click());
+  await act(async () => button("12:00").click());
+  await act(async () => button("Submit").click());
+  assert.equal(button("Cancel").disabled, true);
+  await act(async () => env.container.querySelector('[aria-label="Dismiss snooze"]').click());
+  assert.equal(closed, 0);
+  await act(async () => pending.resolve());
+  assert.equal(closed, 1);
 });
 
 nativeForms.restore();

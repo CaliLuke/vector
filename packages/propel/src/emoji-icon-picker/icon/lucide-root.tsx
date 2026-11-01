@@ -23,6 +23,7 @@ export function LucideIconsList(props: LucideIconsListProps) {
       {filteredArray.map((icon) => (
         <button
           key={icon.name}
+          aria-label={icon.name}
           type="button"
           className="grid h-9 w-9 place-items-center rounded-sm text-16 select-none hover:bg-layer-1"
           onClick={() => {

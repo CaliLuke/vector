@@ -6,6 +6,7 @@
 
 // types
 import type { ReactElement } from "react";
+import { useState } from "react";
 import type { ICycle, IModule, IProjectView, IWorkspaceView } from "@plane/types";
 import type { TContextMenuItem } from "@plane/ui";
 // hooks
@@ -56,6 +57,10 @@ type MenuResult = {
   items: TContextMenuItem[];
   modals: ReactElement | null;
 };
+
+export function normalizeQuickActions(result: MenuResult | TContextMenuItem[]): MenuResult {
+  return Array.isArray(result) ? { items: result, modals: null } : result;
+}
 
 export const useCycleMenuItems = (props: UseCycleMenuItemsProps): MenuResult => {
   const factory = useQuickActionsFactory();
@@ -122,3 +127,19 @@ export const useViewMenuItems = (props: UseViewMenuItemsProps): MenuResult => {
 
   return { items, modals: null };
 };
+
+/** A quick-action menu owns one active confirmation/editor at a time. */
+export function useQuickActionDialogs() {
+  const [active, setActive] = useState<"edit" | "archive" | "delete" | null>(null);
+  const close = () => setActive(null);
+  return {
+    edit: { isOpen: active === "edit", close },
+    archive: { isOpen: active === "archive", close },
+    delete: { isOpen: active === "delete", close },
+    handlers: {
+      handleEdit: () => setActive("edit"),
+      handleArchive: () => setActive("archive"),
+      handleDelete: () => setActive("delete"),
+    },
+  };
+}

@@ -52,7 +52,7 @@ export function IssueAttachmentDeleteModal(props: Props) {
   return (
     <AlertModalCore
       handleClose={handleClose}
-      handleSubmit={() => handleDeletion(attachment.id)}
+      handleSubmit={() => void handleDeletion(attachment.id)}
       isSubmitting={loader}
       isOpen={isOpen}
       title={t("attachment.delete")}

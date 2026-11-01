@@ -17,7 +17,7 @@ import { cn } from "@plane/utils/common";
 // hooks
 import { useProjectCycles } from "@/hooks/use-cycles";
 // local components and constants
-import { DropdownButton } from "../buttons";
+import { DropdownTrigger } from "../buttons";
 import { BUTTON_VARIANTS_WITH_TEXT } from "../constants";
 import type { TDropdownProps } from "../types";
 import { CycleOptions } from "./cycle-options";
@@ -37,21 +37,14 @@ type Props = TDropdownProps & {
 
 export const CycleDropdown = function CycleDropdown(props: Props) {
   const {
-    button,
-    buttonClassName,
-    buttonContainerClassName,
     buttonVariant,
     className = "",
     disabled = false,
-    dropdownArrow = false,
-    dropdownArrowClassName = "",
-    hideIcon = false,
     onChange,
     onClose,
     placeholder = "",
     placement,
     projectId,
-    showTooltip = false,
     tabIndex,
     value,
     canRemoveCycle = true,
@@ -73,51 +66,25 @@ export const CycleDropdown = function CycleDropdown(props: Props) {
     if (!Array.isArray(val)) onChange(val);
   };
 
-  const comboButton = ({ open }: { open: boolean }) =>
-    button ? (
-      <button
-        ref={setReferenceElement}
-        type="button"
-        className={cn("clickable block h-full w-full outline-none hover:bg-layer-1", buttonContainerClassName)}
-        disabled={disabled}
-        tabIndex={tabIndex}
-      >
-        {button}
-      </button>
-    ) : (
-      <button
-        ref={setReferenceElement}
-        type="button"
-        className={cn(
-          "clickable block h-full max-w-full outline-none hover:bg-layer-1",
-          {
-            "cursor-not-allowed text-secondary": disabled,
-            "cursor-pointer": !disabled,
-          },
-          buttonContainerClassName
-        )}
-        disabled={disabled}
-        tabIndex={tabIndex}
-      >
-        <DropdownButton
-          className={buttonClassName}
-          isActive={open}
-          tooltipHeading={t("common.cycle")}
-          tooltipContent={selectedName ?? placeholder}
-          showTooltip={showTooltip}
-          variant={buttonVariant}
-          renderToolTipByDefault={renderByDefault}
-        >
-          {!hideIcon && <CycleIcon className="h-3 w-3 flex-shrink-0" />}
-          {BUTTON_VARIANTS_WITH_TEXT.includes(buttonVariant) && (!!selectedName || !!placeholder) && (
-            <span className="max-w-40 truncate">{selectedName ?? placeholder}</span>
-          )}
-          {dropdownArrow && (
-            <ChevronDownIcon className={cn("h-2.5 w-2.5 flex-shrink-0", dropdownArrowClassName)} aria-hidden="true" />
-          )}
-        </DropdownButton>
-      </button>
-    );
+  const comboButton = ({ open }: { open: boolean }) => (
+    <DropdownTrigger
+      appearance={props}
+      ref={setReferenceElement}
+      isActive={open}
+      hoverBackground
+      tabIndex={tabIndex}
+      tooltipHeading={t("common.cycle")}
+      tooltipContent={selectedName ?? placeholder}
+    >
+      {!props.hideIcon && <CycleIcon className="h-3 w-3 flex-shrink-0" />}
+      {BUTTON_VARIANTS_WITH_TEXT.includes(buttonVariant) && (!!selectedName || !!placeholder) && (
+        <span className="max-w-40 truncate">{selectedName ?? placeholder}</span>
+      )}
+      {props.dropdownArrow && (
+        <ChevronDownIcon className={cn("h-2.5 w-2.5 flex-shrink-0", props.dropdownArrowClassName)} aria-hidden="true" />
+      )}
+    </DropdownTrigger>
+  );
 
   return (
     <ComboDropDown<string | null>

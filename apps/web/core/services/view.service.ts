@@ -14,11 +14,7 @@ export class ViewService extends APIService {
   }
 
   async createView(workspaceSlug: string, projectId: string, data: Partial<IProjectView>): Promise<IProjectView> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/views/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/views/`, data));
   }
 
   async patchView(
@@ -27,11 +23,9 @@ export class ViewService extends APIService {
     viewId: string,
     data: Partial<IProjectView>
   ): Promise<IProjectView> {
-    return this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/views/${viewId}/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/views/${viewId}/`, data)
+    );
   }
 
   async deleteView(workspaceSlug: string, projectId: string, viewId: string): Promise<void> {
@@ -43,11 +37,7 @@ export class ViewService extends APIService {
   }
 
   async getViews(workspaceSlug: string, projectId: string, signal?: AbortSignal): Promise<IProjectView[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/views/`, {}, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/views/`, {}, { signal }));
   }
 
   async getViewDetails(
@@ -56,10 +46,8 @@ export class ViewService extends APIService {
     viewId: string,
     signal?: AbortSignal
   ): Promise<IProjectView> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/views/${viewId}/`, {}, { signal })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/views/${viewId}/`, {}, { signal })
+    );
   }
 }

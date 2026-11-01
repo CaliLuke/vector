@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import type { TFilterValue } from "@plane/types";
 import React, { useMemo } from "react";
 
 // plane imports
@@ -21,10 +22,10 @@ import { SelectedOptionsDisplay } from "./selected-options-display";
 import { getCommonCustomSearchSelectProps, getFormattedOptions } from "./shared";
 
 type TMultiSelectFilterValueInputProps<P extends TFilterProperty> = {
-  config: TMultiSelectFilterFieldConfig<string>;
-  condition: TFilterConditionNodeForDisplay<P, string>;
+  config: TMultiSelectFilterFieldConfig<TFilterValue>;
+  condition: TFilterConditionNodeForDisplay<P, TFilterValue>;
   isDisabled?: boolean;
-  onChange: (values: SingleOrArray<string>) => void;
+  onChange: (values: SingleOrArray<TFilterValue>) => void;
 };
 
 export const MultiSelectFilterValueInput = function MultiSelectFilterValueInput<P extends TFilterProperty>(
@@ -32,21 +33,21 @@ export const MultiSelectFilterValueInput = function MultiSelectFilterValueInput<
 ) {
   const { config, condition, isDisabled, onChange } = props;
   const { options, loading, error } = useFilterSelectOptions(config);
-  const formattedOptions = useMemo(() => getFormattedOptions<string>(options), [options]);
+  const formattedOptions = useMemo(() => getFormattedOptions<TFilterValue>(options), [options]);
 
-  const handleSelectChange = (values: string[]) => {
-    onChange(values);
+  const handleSelectChange = (values: TFilterValue[]) => {
+    onChange(values.filter((value) => value !== null && value !== undefined));
   };
 
   return (
-    <CustomSearchSelect
+    <CustomSearchSelect<TFilterValue>
       {...getCommonCustomSearchSelectProps(isDisabled)}
-      value={toFilterArray(condition.value)}
+      value={toFilterArray<TFilterValue>(condition.value)}
       onChange={handleSelectChange}
       options={formattedOptions}
       multiple
       disabled={loading || error || isDisabled}
-      customButton={<SelectedOptionsDisplay<string> selectedValue={condition.value} options={options} />}
+      customButton={<SelectedOptionsDisplay<TFilterValue> selectedValue={condition.value} options={options} />}
       defaultOpen={getFilterValueLength(condition.value) === 0}
     />
   );

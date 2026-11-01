@@ -9,7 +9,12 @@ import isEmpty from "lodash-es/isEmpty.js";
 import { v4 as uuidv4 } from "uuid";
 // plane imports
 import type { TIssueFilterPriorityObject, TIssuePriorities } from "@plane/constants";
-import { ISSUE_DISPLAY_FILTERS_BY_PAGE, ISSUE_PRIORITY_FILTERS, STATE_GROUPS } from "@plane/constants";
+import {
+  ISSUE_DISPLAY_FILTERS_BY_PAGE,
+  ISSUE_DISPLAY_PROPERTIES_KEYS,
+  ISSUE_PRIORITY_FILTERS,
+  STATE_GROUPS,
+} from "@plane/constants";
 import type {
   IGanttBlock,
   IIssueDisplayFilterOptions,
@@ -66,39 +71,8 @@ export const handleIssuesMutation: THandleIssuesMutation = (
     prevData.splice(issueIndex, 1, updatedIssue);
 
     return [...prevData];
-  } else {
-    const oldGroup = prevData[oldGroupTitle ?? ""] ?? [];
-
-    let newGroup: TIssue[] = [];
-
-    if (selectedGroupBy === "priority") newGroup = prevData[formData.priority ?? ""] ?? [];
-    else if (selectedGroupBy === "state") newGroup = prevData[formData.state_id ?? ""] ?? [];
-
-    const updatedIssue = {
-      ...oldGroup[issueIndex],
-      ...formData,
-    };
-
-    if (selectedGroupBy !== Object.keys(formData)[0])
-      return {
-        ...prevData,
-        [oldGroupTitle ?? ""]: orderArrayBy(
-          oldGroup.map((i) => (i.id === updatedIssue.id ? updatedIssue : i)),
-          orderBy
-        ),
-      };
-
-    const groupThatIsUpdated = selectedGroupBy === "priority" ? formData.priority : formData.state_id;
-
-    return {
-      ...prevData,
-      [oldGroupTitle ?? ""]: orderArrayBy(
-        oldGroup.filter((i) => i.id !== updatedIssue.id),
-        orderBy
-      ),
-      [groupThatIsUpdated ?? ""]: orderArrayBy([...newGroup, updatedIssue], orderBy),
-    };
   }
+  return updateGroupedIssue(formData, oldGroupTitle, selectedGroupBy, issueIndex, orderBy, prevData);
 };
 
 export const handleIssueQueryParamsByLayout = (
@@ -120,7 +94,9 @@ export const handleIssueQueryParamsByLayout = (
 
   // add display filters query params
   Object.keys(currentViewLayoutOptions.display_filters).forEach((option) => {
-    queryParams.push(option as TIssueParams);
+    if (option === "group_by" || option === "sub_group_by" || option === "order_by" || option === "type") {
+      queryParams.push(option);
+    }
   });
 
   // add extra options query params
@@ -135,17 +111,14 @@ export const handleIssueQueryParamsByLayout = (
 
 /**
  *
- * @description create a full issue payload with some default values. This function also parse the form field
+ * @description create a partial issue creation payload with some default values. This function also parse the form field
  * like assignees, labels, etc. and add them to the payload
  * @param projectId project id to be added in the issue payload
  * @param formData partial issue data from the form. This will override the default values
- * @returns full issue payload with some default values
+ * @returns issue creation payload with client defaults
  */
-export const createIssuePayload: (projectId: string, formData: Partial<TIssue>) => TIssue = (
-  projectId: string,
-  formData: Partial<TIssue>
-) => {
-  const payload: TIssue = {
+export const createIssuePayload = (projectId: string, formData: Partial<TIssue>) => {
+  const payload = {
     id: uuidv4(),
     project_id: projectId,
     priority: "none",
@@ -158,7 +131,7 @@ export const createIssuePayload: (projectId: string, formData: Partial<TIssue>) 
     tempId: uuidv4(),
     // to be overridden by the form data
     ...formData,
-  } as TIssue;
+  } satisfies Partial<TIssue>;
 
   return payload;
 };
@@ -222,44 +195,34 @@ export const getDescriptionPlaceholderI18n = (isFocused: boolean, description: s
   else return "common.click_to_add_description";
 };
 
+type CountedIssueIds = TGroupedIssues | TUnGroupedIssues | TSubGroupedIssues | null | undefined;
+
+function countIssueGroups(issueIds: CountedIssueIds, depth: number): number {
+  if (!issueIds) return 0;
+  if (depth === 0) return Array.isArray(issueIds) ? issueIds.length : 0;
+  if (Array.isArray(issueIds)) return 0;
+  return Object.values(issueIds).reduce((count, group) => count + countIssueGroups(group, depth - 1), 0);
+}
+
 export const issueCountBasedOnFilters = (
-  issueIds: TGroupedIssues | TUnGroupedIssues | TSubGroupedIssues,
-  layout: EIssueLayoutTypes,
+  issueIds: CountedIssueIds,
+  layout: unknown,
   groupBy: string | undefined,
   subGroupBy: string | undefined
 ): number => {
-  let issuesCount = 0;
-  if (!layout) return issuesCount;
-
-  if (["spreadsheet", "gantt_chart"].includes(layout)) {
-    issuesCount = (issueIds as TUnGroupedIssues)?.length;
-  } else if (layout === "calendar") {
-    Object.keys(issueIds || {}).map((groupId) => {
-      issuesCount += (issueIds as TGroupedIssues)?.[groupId]?.length;
-    });
-  } else if (layout === "list") {
-    if (groupBy) {
-      Object.keys(issueIds || {}).map((groupId) => {
-        issuesCount += (issueIds as TGroupedIssues)?.[groupId]?.length;
-      });
-    } else {
-      issuesCount = (issueIds as TUnGroupedIssues)?.length;
-    }
-  } else if (layout === "kanban") {
-    if (groupBy && subGroupBy) {
-      Object.keys(issueIds || {}).map((groupId) => {
-        Object.keys((issueIds as TSubGroupedIssues)?.[groupId] || {}).map((subGroupId) => {
-          issuesCount += (issueIds as TSubGroupedIssues)?.[groupId]?.[subGroupId]?.length || 0;
-        });
-      });
-    } else if (groupBy) {
-      Object.keys(issueIds || {}).map((groupId) => {
-        issuesCount += (issueIds as TGroupedIssues)?.[groupId]?.length;
-      });
-    }
+  switch (layout) {
+    case EIssueLayoutTypes.SPREADSHEET:
+    case EIssueLayoutTypes.GANTT:
+      return countIssueGroups(issueIds, 0);
+    case EIssueLayoutTypes.CALENDAR:
+      return countIssueGroups(issueIds, 1);
+    case EIssueLayoutTypes.LIST:
+      return countIssueGroups(issueIds, groupBy ? 1 : 0);
+    case EIssueLayoutTypes.KANBAN:
+      return groupBy ? countIssueGroups(issueIds, subGroupBy ? 2 : 1) : 0;
+    default:
+      return 0;
   }
-
-  return issuesCount;
 };
 
 /**
@@ -270,7 +233,7 @@ export const issueCountBasedOnFilters = (
 export function isParentTypeGroupingActive(filters: IIssueDisplayFilterOptions | undefined) {
   return Boolean(
     filters?.group_by?.startsWith("parent_type_") &&
-    (!filters.layout || filters.layout === "list" || filters.layout === "kanban")
+    (!filters.layout || filters.layout === EIssueLayoutTypes.LIST || filters.layout === EIssueLayoutTypes.KANBAN)
   );
 }
 
@@ -278,18 +241,18 @@ export const getComputedDisplayFilters = (
   displayFilters: IIssueDisplayFilterOptions = {},
   defaultValues?: IIssueDisplayFilterOptions
 ): IIssueDisplayFilterOptions => {
-  const filters = !isEmpty(displayFilters) ? displayFilters : defaultValues;
+  const filters = (!isEmpty(displayFilters) ? displayFilters : defaultValues) ?? {};
   return {
     calendar: {
-      show_weekends: filters?.calendar?.show_weekends || false,
-      layout: filters?.calendar?.layout || "month",
+      show_weekends: filters.calendar?.show_weekends || false,
+      layout: filters.calendar?.layout || "month",
     },
-    layout: filters?.layout || EIssueLayoutTypes.LIST,
-    order_by: filters?.order_by || "sort_order",
-    group_by: filters?.group_by || null,
-    sub_group_by: filters?.sub_group_by || null,
+    layout: filters.layout || EIssueLayoutTypes.LIST,
+    order_by: filters.order_by || "sort_order",
+    group_by: filters.group_by || null,
+    sub_group_by: filters.sub_group_by || null,
     sub_issue: computedSubIssueExpansion(filters),
-    show_empty_groups: filters?.show_empty_groups || false,
+    show_empty_groups: filters.show_empty_groups || false,
   };
 };
 
@@ -310,22 +273,9 @@ export const getComputedDisplayProperties = (
   displayProperties: IIssueDisplayProperties = {}
 ): IIssueDisplayProperties => ({
   ...customDisplayProperties(displayProperties),
-  assignee: displayProperties?.assignee ?? true,
-  start_date: displayProperties?.start_date ?? true,
-  due_date: displayProperties?.due_date ?? true,
-  labels: displayProperties?.labels ?? true,
-  priority: displayProperties?.priority ?? true,
-  state: displayProperties?.state ?? true,
-  sub_issue_count: displayProperties?.sub_issue_count ?? true,
-  attachment_count: displayProperties?.attachment_count ?? true,
-  link: displayProperties?.link ?? true,
-  estimate: displayProperties?.estimate ?? true,
-  key: displayProperties?.key ?? true,
-  created_on: displayProperties?.created_on ?? true,
-  updated_on: displayProperties?.updated_on ?? true,
-  modules: displayProperties?.modules ?? true,
-  cycle: displayProperties?.cycle ?? true,
-  issue_type: displayProperties?.issue_type ?? true,
+  ...Object.fromEntries(
+    ISSUE_DISPLAY_PROPERTIES_KEYS.map((property) => [property, displayProperties?.[property] ?? true])
+  ),
 });
 
 export const generateWorkItemLink = ({
@@ -364,4 +314,45 @@ export const getIssuePriorityFilters = (priorityKey: TIssuePriorities): TIssueFi
 
 function computedSubIssueExpansion(filters: IIssueDisplayFilterOptions | undefined) {
   return !isParentTypeGroupingActive(filters) && (filters?.sub_issue || false);
+}
+
+function updateGroupedIssue(
+  formData: Partial<TIssue>,
+  oldGroupTitle: string,
+  selectedGroupBy: TIssueGroupByOptions,
+  issueIndex: number,
+  orderBy: TIssueOrderByOptions,
+  prevData: Record<string, TIssue[]>
+) {
+  const oldGroup = prevData[oldGroupTitle ?? ""] ?? [];
+
+  let newGroup: TIssue[] = [];
+
+  if (selectedGroupBy === "priority") newGroup = prevData[formData.priority ?? ""] ?? [];
+  else if (selectedGroupBy === "state") newGroup = prevData[formData.state_id ?? ""] ?? [];
+
+  const updatedIssue = {
+    ...oldGroup[issueIndex],
+    ...formData,
+  };
+
+  if (selectedGroupBy !== Object.keys(formData)[0])
+    return {
+      ...prevData,
+      [oldGroupTitle ?? ""]: orderArrayBy(
+        oldGroup.map((i) => (i.id === updatedIssue.id ? updatedIssue : i)),
+        orderBy
+      ),
+    };
+
+  const groupThatIsUpdated = selectedGroupBy === "priority" ? formData.priority : formData.state_id;
+
+  return {
+    ...prevData,
+    [oldGroupTitle ?? ""]: orderArrayBy(
+      oldGroup.filter((i) => i.id !== updatedIssue.id),
+      orderBy
+    ),
+    [groupThatIsUpdated ?? ""]: orderArrayBy([...newGroup, updatedIssue], orderBy),
+  };
 }

@@ -1,3 +1,5 @@
+import { createProjectAccessScope } from "./helpers/permission-query-fixture.mjs";
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { registerHooks } from "node:module";
@@ -76,21 +78,16 @@ const { CycleModulePreferencesProvider } = await import("../../apps/web/core/pro
 const { ParentIssuePreferencesProvider } = await import("../../apps/web/core/providers/parent-issue-preferences.tsx");
 const { seedParentListPreferences } = await import("./helpers/parent-catalogue-fixture.mjs");
 const { estimateKeys } = await import("../../apps/web/core/queries/estimates.ts");
-const initialScope = {
+const initialScope = createProjectAccessScope({
   kind: "project",
-  accountId: "alice",
-  sessionGeneration: 0,
   workspaceSlug: "acme",
-  membershipRole: 15,
-  membershipRevision: "2026-10-24T00:00:00Z",
   projectId: "p1",
-  projectMembershipRole: 20,
-  projectRole: 20,
-};
+  membershipRevision: "2026-10-24T00:00:00Z",
+});
 function nativeProjectScope(projectId = "p1") {
   return {
     ...initialScope,
-    workspaceRole: 15,
+    workspaceRole: ContractEnums.EUserPermissions.MEMBER,
     projectId,
     projectRoles: [
       ["p1", 20],
@@ -98,7 +95,7 @@ function nativeProjectScope(projectId = "p1") {
     ],
   };
 }
-const parentScope = { ...initialScope, workspaceRole: 15 };
+const parentScope = { ...initialScope, workspaceRole: ContractEnums.EUserPermissions.MEMBER };
 function cycleOptions(rows) {
   return cycleDetailOptions(parentScope, "c1", false, estimateStatisticsRevision(rows?.[0]?.id ?? null, "p1", rows));
 }
@@ -124,14 +121,7 @@ function row(id, project = "p1", value = "3") {
     points: [{ id: id + "-point", estimate: id, project, workspace: "w1", key: 1, value }],
   };
 }
-function deferred() {
-  let resolve, reject;
-  const promise = new Promise((yes, no) => {
-    resolve = yes;
-    reject = no;
-  });
-  return { promise, resolve, reject };
-}
+const deferred = () => Promise.withResolvers();
 function button(container, text) {
   return [...container.querySelectorAll("button")].find(
     (node) => node.textContent === text || node.textContent.startsWith(text)
@@ -147,7 +137,7 @@ async function fixture(t, rows) {
   globalThis.estimateUiToasts.length = 0;
   const view = await createPermissionUiFixture(t, {
     path: "/acme/settings/projects/p1/estimates",
-    workspaceRole: 15,
+    workspaceRole: ContractEnums.EUserPermissions.MEMBER,
     projectRoles: { p1: 20, p2: 20 },
   });
   // Load browser UI after the DOM exists so its subscriptions use client effects.
@@ -429,7 +419,7 @@ async function prepareNativeListRendering(t) {
   const { IssueLabelService } = await import("../../apps/web/core/services/issue/issue_label.service.ts");
   t.mock.method(WorkspaceService.prototype, "workspaceMemberMe", async () => ({
     is_active: true,
-    role: 15,
+    role: ContractEnums.EUserPermissions.MEMBER,
     updated_at: initialScope.membershipRevision,
   }));
   t.mock.method(WorkspaceService.prototype, "fetchWorkspaceMembers", async () => []);
@@ -492,7 +482,7 @@ await test("actual workspace spreadsheet hides unavailable estimate order, retri
     workspaceViewKeys.list({
       accountId: "alice",
       workspaceSlug: "acme",
-      workspaceRole: 15,
+      workspaceRole: ContractEnums.EUserPermissions.MEMBER,
       membershipRevision: initialScope.membershipRevision,
       sessionGeneration: 0,
     }),
@@ -500,7 +490,7 @@ await test("actual workspace spreadsheet hides unavailable estimate order, retri
       {
         id: "view-a",
         rich_filters: {},
-        display_filters: { layout: "spreadsheet", order_by: "estimate_point__key" },
+        display_filters: { layout: ContractEnums.EIssueLayoutTypes.SPREADSHEET, order_by: "estimate_point__key" },
         display_properties: {},
       },
     ]
@@ -668,7 +658,7 @@ await test("accepted native create cannot close or toast after its permission qu
     started = deferred();
   t.mock.method(EstimateService.prototype, "fetchProjectEstimates", async () => []);
   t.mock.method(EstimateService.prototype, "createEstimate", async (_workspace, project, data) => {
-    started.resolve();
+    started.resolve(data);
     await pending.promise;
     return {
       ...row("Created", project),
@@ -688,10 +678,22 @@ await test("accepted native create cannot close or toast after its permission qu
       handleClose: () => closed++,
     })
   );
-  await click(button(view.environment.container, "project_settings.estimates.create.custom"));
+  await click(
+    [...view.environment.container.querySelectorAll("button")].find(
+      (item) => item.querySelector("p")?.textContent === "Fibonacci"
+    )
+  );
   await submitForm(view.environment.container);
-  await started.promise;
-  const key = permissionKeys.workspaceProjectRoles("alice", "acme", 15, initialScope.membershipRevision);
+  assert.deepEqual(
+    (await started.promise).estimate_points.map((point) => String(point.value)),
+    ["1", "2", "3", "5", "8", "13"]
+  );
+  const key = permissionKeys.workspaceProjectRoles(
+    "alice",
+    "acme",
+    ContractEnums.EUserPermissions.MEMBER,
+    initialScope.membershipRevision
+  );
   await act(async () => {
     const query = view.client.getQueryCache().find({ queryKey: key, exact: true });
     view.client.getQueryCache().remove(query);

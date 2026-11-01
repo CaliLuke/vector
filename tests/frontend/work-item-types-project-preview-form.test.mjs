@@ -10,7 +10,7 @@ const workItemsSource = "apps/web/core/components/work-item-types/work-item-prev
 const stubs = {
   "@plane/propel/button": `const React=globalThis.projectTypesReact;export const Button=({variant,prependIcon,children,...props})=>React.createElement("button",{type:"button",...props},children);`,
   "./controls": `const React=globalThis.projectTypesReact;export const inputStyle="";export const TypeIcon=()=>null;export const PropertyIcon=()=>null;export const Field=()=>null;export const Confirmation=()=>null;export const EmptyState=({title,description})=>React.createElement("p",null,title,description);export const PreviewDialog=({title,description,children,footer,onClose})=>React.createElement("section",{"aria-label":title},React.createElement("button",{type:"button","aria-label":"Close import",onClick:onClose}),React.createElement("p",null,description),children,footer);`,
-  "./property-input": `const React=globalThis.projectTypesReact;export const PropertyInput=({property,value,disabled,onChange})=>React.createElement("input",{"aria-label":property.name,value:Array.isArray(value)?value.join(","):String(value??""),disabled,onChange:event=>onChange(event.target.value)});`,
+  "./property-input": `const React=globalThis.projectTypesReact;export const PropertyInput=({property,value,disabled,onChange})=>React.createElement("input",{"aria-label":property.name,value:Array.isArray(value)?value.join(","):String(value??""),disabled,onChange:event=>onChange(property.multiple?event.target.value.split(",").filter(Boolean):event.target.value)});`,
   "@plane/ui": `const React=globalThis.projectTypesReact;export const ToggleSwitch=({label,value,disabled,onChange})=>React.createElement("input",{type:"checkbox","aria-label":label,checked:value,disabled,onChange:event=>onChange(event.target.checked)});export const CustomSearchSelect=()=>null;export const Form=({onSubmit,...props})=>React.createElement("form",{...props,onSubmit:event=>{event.preventDefault();event.stopPropagation();void onSubmit();}});`,
 };
 const nativeForms = registerWorkItemTypesFormHarness({
@@ -35,8 +35,11 @@ function Screen() {
   );
 }
 
-function WorkItemsScreen() {
-  const { content, notice } = useTypePreview();
+function WorkItemsScreen({ onContent } = {}) {
+  const { content, notice, setContent } = useTypePreview();
+  React.useEffect(() => {
+    onContent?.(setContent);
+  }, [onContent, setContent]);
   return React.createElement(
     React.Fragment,
     null,
@@ -178,4 +181,47 @@ await test("required sample properties reject invalid drafts without losing thei
     ).values.severity,
     "critical"
   );
+});
+
+await test("a required multi-value sample property rejects an empty selection and saves its repaired draft", async (t) => {
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  let updateContent;
+  await environment.render(
+    React.createElement(
+      WorkItemTypesPreviewProvider,
+      null,
+      React.createElement(WorkItemsScreen, {
+        onContent: (value) => {
+          updateContent = value;
+        },
+      })
+    )
+  );
+  await act(async () =>
+    updateContent((current) => ({
+      ...current,
+      properties: current.properties.map((property) =>
+        property.id === "release" ? { ...property, required: true } : property
+      ),
+    }))
+  );
+  await clickText(environment.container, "tbody button", "Keep the session when switching devices");
+  const input = () => environment.container.querySelector('input[aria-label="Target release"]');
+  await changeFormControl(input(), "");
+  const form = nativeForms.getForms(workItemsSource).at(-1);
+  await submitForm(environment.container);
+  await waitForSubmitCompletion(form);
+  assert.match(environment.container.querySelector('[role="alert"]').textContent, /Target release/);
+  const savedItem = () =>
+    JSON.parse(environment.container.querySelector('[data-testid="work-items"]').textContent).find(
+      (item) => item.id === "WEB-142"
+    );
+  assert.deepEqual(savedItem().values.release, ["Atlas 2.5"]);
+  assert.equal(input().value, "");
+  await changeFormControl(input(), "Atlas 3");
+  await submitForm(environment.container);
+  await waitForSubmitCompletion(form);
+  assert.deepEqual(savedItem().values.release, ["Atlas 3"]);
+  assert.equal(savedItem().values.severity, "major");
 });

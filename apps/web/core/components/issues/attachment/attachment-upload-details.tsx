@@ -38,7 +38,7 @@ export function IssueAttachmentsUploadDetails(props: Props) {
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <Tooltip tooltipContent={fileName} isMobile={isMobile}>
-              <span className="text-13">{truncateText(`${fileName}`, 10)}</span>
+              <span className="text-13">{truncateText(fileName, 10)}</span>
             </Tooltip>
           </div>
 

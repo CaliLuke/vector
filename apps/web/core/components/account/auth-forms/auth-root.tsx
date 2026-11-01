@@ -66,7 +66,7 @@ const errorFlows = [
 ];
 
 function initialAuthentication(errorCode: string | null, mode: EAuthModes) {
-  const error = authErrorHandler(errorCode as EAuthenticationErrorCodes);
+  const error = authErrorHandler(errorCode);
   const flow = errorFlows.find((candidate) => error && candidate.codes.includes(error.code));
   return { error, mode: flow?.mode ?? mode, step: flow?.step ?? EAuthSteps.EMAIL };
 }
@@ -138,10 +138,10 @@ function AuthFlow({ authMode: currentAuthMode, searchParams }: TAuthRoot & { sea
           authStep={authStep}
           authMode={authMode}
           email={email}
-          setEmail={(email) => setEmail(email)}
-          setAuthMode={(authMode) => setAuthMode(authMode)}
-          setAuthStep={(authStep) => setAuthStep(authStep)}
-          setErrorInfo={(errorInfo) => setErrorInfo(errorInfo)}
+          setEmail={(recipient) => setEmail(recipient)}
+          setAuthMode={(nextAuthMode) => setAuthMode(nextAuthMode)}
+          setAuthStep={(nextAuthStep) => setAuthStep(nextAuthStep)}
+          setErrorInfo={(nextErrorInfo) => setErrorInfo(nextErrorInfo)}
           currentAuthMode={currentAuthMode}
         />
       )}

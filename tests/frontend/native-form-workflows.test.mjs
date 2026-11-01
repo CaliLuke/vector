@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
@@ -37,11 +38,11 @@ const stubs = {
     export const InputColorPicker=({hasError,...props})=>React.createElement("input",{...props,onChange:event=>props.onChange(event.target.value)});`,
   "@/components/dropdowns/project/dropdown": `const React=globalThis.nativeWorkflowReact;export const ProjectDropdown=({value,onChange})=>React.createElement("select",{value,"aria-label":"Project",onChange:event=>onChange(event.target.value)},["first","second"].map(value=>React.createElement("option",{key:value,value},value)));`,
   "@/components/dropdowns/date-range": `const React=globalThis.nativeWorkflowReact;export const DateRangeDropdown=({value,onSelect})=>React.createElement("div",null,["from","to"].map(key=>React.createElement("input",{key,name:"date-"+key,value:value[key]?.toISOString().slice(0,10)??"",onChange:event=>onSelect({...value,[key]:new Date(event.target.value)})})));`,
-  "@/components/issues/issue-layouts/filters": `export const DisplayFiltersSelection=()=>null;export const FiltersDropdown=({children})=>children;`,
+  "@/components/issues/issue-layouts/filters": `const React=globalThis.nativeWorkflowReact;export const DisplayFiltersSelection=({handleDisplayFiltersUpdate,handleDisplayPropertiesUpdate})=>React.createElement('div',null,React.createElement('button',{type:'button',onClick:()=>handleDisplayFiltersUpdate({group_by:'priority'})},'Group priority'),React.createElement('button',{type:'button',onClick:()=>handleDisplayPropertiesUpdate({key:false})},'Hide key'));export const FiltersDropdown=({children})=>children;`,
   "@/components/work-item-filters/filters-hoc/project-level": `export const ProjectLevelWorkItemFiltersHOC=()=>null;`,
   "@/components/work-item-filters/filters-hoc/workspace-level": `const React=globalThis.nativeWorkflowReact;export const WorkspaceLevelWorkItemFiltersHOC=({updateFilters})=>React.createElement("button",{type:"button","aria-label":"Edit filters",onClick:()=>updateFilters({and:[{priority__in:"high"},{not:{state_group__in:"completed"}}]})},"Edit filters");`,
   "@/components/work-item-filters/filters-row": `export const WorkItemFiltersRow=()=>null;`,
-  "../dropdowns/layout": `export const LayoutDropDown=()=>null;`,
+  "../dropdowns/layout": `const React=globalThis.nativeWorkflowReact;export const LayoutDropDown=({value,onChange})=>React.createElement('select',{'aria-label':'View layout',value,onChange:event=>onChange(event.target.value)},['list','kanban'].map(item=>React.createElement('option',{key:item,value:item},item)));`,
 };
 registerHooks({
   resolve: (specifier, context, nextResolve) => resolvePackageStub(specifier, stubs, context, nextResolve),
@@ -92,7 +93,7 @@ await test("cycle validation uses the selected project and failed creation retai
   await seedPermissionQueries(env.client, {
     userId: "alice",
     workspaceSlug: "workspace",
-    workspaceRole: 15,
+    workspaceRole: ContractEnums.EUserPermissions.MEMBER,
     projectRoles: { first: 20, second: 20 },
   });
   t.mock.method(CycleService.prototype, "create", async (...args) => {
@@ -269,6 +270,37 @@ await test("email changes retry sign-out without verifying the email twice", asy
   assert.equal(verifies, 1);
   assert.equal(signouts, 2);
   assert.equal(closed, 1);
+});
+
+await test("project view display edits preserve sibling preferences in the native form payload", async (t) => {
+  const env = await setup(t);
+  const { ViewForm } = await import("../../apps/web/core/components/views/form.tsx");
+  const saved = [];
+  await env.render(
+    React.createElement(ViewForm, {
+      workspaceSlug: "workspace",
+      projectId: "first",
+      data: {
+        id: "view",
+        name: "Project view",
+        display_filters: { layout: "list", order_by: "-created_at" },
+        display_properties: { priority: true },
+      },
+      handleClose: () => {},
+      handleFormSubmit: async (value) => saved.push(value),
+    })
+  );
+  await change(env.container.querySelector('[aria-label="View layout"]'), "kanban");
+  const button = (label) => [...env.container.querySelectorAll("button")].find((item) => item.textContent === label);
+  await act(async () => button("Group priority").click());
+  await act(async () => button("Hide key").click());
+  await submit(env.container);
+  assert.equal(saved.length, 1);
+  assert.equal(saved[0].display_filters.layout, "kanban");
+  assert.equal(saved[0].display_filters.group_by, "priority");
+  assert.equal(saved[0].display_filters.order_by, "-created_at");
+  assert.equal(saved[0].display_properties.key, false);
+  assert.equal(saved[0].display_properties.priority, true);
 });
 
 formObserver.restore();

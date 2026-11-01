@@ -10,7 +10,8 @@ import { Calendar, Earth, Languages, Palette } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
-import type { EStartOfTheWeek, TUserProfile } from "@plane/types";
+import type { TUserProfile } from "@plane/types";
+import { selectionText, selectionWeekStart } from "@/components/power-k/core/selection";
 // components
 import type { TPowerKCommandConfig } from "@/components/power-k/core/types";
 // hooks
@@ -113,7 +114,7 @@ export const usePowerKPreferencesCommands = (): TPowerKCommandConfig[] => {
       i18n_title: "power_k.preferences_actions.update_theme",
       icon: Palette,
       onSelect: (data) => {
-        const theme = data as string;
+        const theme = selectionText(data);
         void handleUpdateTheme(theme);
       },
       isEnabled: () => true,
@@ -128,7 +129,7 @@ export const usePowerKPreferencesCommands = (): TPowerKCommandConfig[] => {
       i18n_title: "power_k.preferences_actions.update_timezone",
       icon: Earth,
       onSelect: (data) => {
-        const timezone = data as string;
+        const timezone = selectionText(data);
         handleUpdateTimezone(timezone);
       },
       isEnabled: () => true,
@@ -143,7 +144,7 @@ export const usePowerKPreferencesCommands = (): TPowerKCommandConfig[] => {
       i18n_title: "power_k.preferences_actions.update_start_of_week",
       icon: Calendar,
       onSelect: (data) => {
-        const startOfWeek = data as EStartOfTheWeek;
+        const startOfWeek = selectionWeekStart(data);
         handleUpdateUserProfile({ start_of_the_week: startOfWeek });
       },
       isEnabled: () => true,
@@ -158,7 +159,7 @@ export const usePowerKPreferencesCommands = (): TPowerKCommandConfig[] => {
       i18n_title: "power_k.preferences_actions.update_language",
       icon: Languages,
       onSelect: (data) => {
-        const language = data as string;
+        const language = selectionText(data);
         handleUpdateUserProfile({ language });
       },
       isEnabled: () => true,

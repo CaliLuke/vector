@@ -103,7 +103,9 @@ export function QuickActionMenu(props: QuickActionMenuProps) {
   return (
     <>
       <ContextMenu parentRef={parentRef} items={items} />
-      <CustomMenu {...customMenuProps}>{renderQuickActionMenuItems(items)}</CustomMenu>
+      <CustomMenu ariaLabel="Actions" {...customMenuProps}>
+        {renderQuickActionMenuItems(items)}
+      </CustomMenu>
     </>
   );
 }

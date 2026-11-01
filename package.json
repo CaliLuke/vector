@@ -32,12 +32,17 @@
     "prepare": "husky",
     "doctor": "react-doctor",
     "dev:frontend": "node scripts/quality/run-bounded.mjs --seconds 86400 --memory-mib 6144 --heap-mib 1024 -- turbo watch dev --filter='./apps/*' --concurrency=5",
-    "check:duplicates": "jscpd --config jscpd.json --baseline .quality/jscpd-baseline.json --fail-on-new-clones"
+    "check:duplicates": "jscpd --config jscpd.json --baseline .quality/jscpd-baseline.json --fail-on-new-clones",
+    "test:frontend:coverage": "bash scripts/quality/frontend-tests.sh --coverage"
   },
   "devDependencies": {
+    "@bcoe/v8-coverage": "1.0.2",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-router": "catalog:",
     "@typescript/native": "catalog:",
+    "@vitest/istanbul-lib-coverage": "2.1.0",
+    "acorn": "8.19.0",
+    "ast-v8-to-istanbul": "1.0.7",
     "esbuild": "0.28.2",
     "husky": "catalog:",
     "jscpd": "catalog:",

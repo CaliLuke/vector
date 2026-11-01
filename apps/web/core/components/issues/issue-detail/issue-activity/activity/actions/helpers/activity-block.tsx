@@ -13,7 +13,6 @@ import type { TIssueActivity } from "@plane/types";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local imports
 import { IssueUser } from "../";
-import { IssueCreatorDisplay } from "./issue-creator";
 
 type TIssueActivityBlockComponent = {
   icon?: ReactNode;
@@ -41,11 +40,7 @@ export function IssueActivityBlockComponent(props: TIssueActivityBlockComponent)
         {icon ? icon : <Network className="h-3.5 w-3.5" />}
       </div>
       <div className={`w-full text-secondary ${wrap ? "min-w-0 break-words" : "truncate"}`}>
-        {!activity?.field && activity?.verb === "created" ? (
-          <IssueCreatorDisplay activity={activity} customUserName={customUserName} />
-        ) : (
-          <IssueUser activity={activity} customUserName={customUserName} />
-        )}
+        <IssueUser activity={activity} customUserName={customUserName} />
         <span> {children} </span>
         <span>
           <Tooltip

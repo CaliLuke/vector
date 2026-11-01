@@ -27,7 +27,7 @@ export type TIssueActivity = {
   updated_at: string;
   created_by: string | undefined;
   updated_by: string | undefined;
-  attachments: any[];
+  attachments: unknown[];
 
   verb: string;
   field: string | undefined;

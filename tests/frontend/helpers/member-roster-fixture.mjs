@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../../packages/types/dist/index.mjs";
 import { QueryClient, QueryObserver } from "@tanstack/react-query";
 import { registerWebModuleHooks } from "./web-module-hooks.mjs";
 
@@ -28,7 +29,11 @@ export function fixture(t) {
   t.after(() => client.clear());
   client.setQueryData(identityKeys.currentUser(), { id: "actor" });
   const membershipKey = permissionKeys.workspaceMembership("actor", "acme");
-  client.setQueryData(membershipKey, { is_active: true, role: 20, updated_at: "revision-2" });
+  client.setQueryData(membershipKey, {
+    is_active: true,
+    role: ContractEnums.EUserPermissions.ADMIN,
+    updated_at: "revision-2",
+  });
   return { client, membershipKey };
 }
 
@@ -98,36 +103,41 @@ export function workspaceCascadeQueries(client, projectId = "p1") {
   const workspaceKey = memberRosterKeys.workspace({
     accountId: "actor",
     workspaceSlug: "acme",
-    membershipRole: 20,
+    membershipRole: ContractEnums.EUserPermissions.ADMIN,
     membershipRevision: "revision-2",
   });
   client.setQueryData(workspaceKey, [
-    { id: "actor-membership", member: { id: "actor" }, role: 20, is_active: true },
-    { id: "target-membership", member: { id: "target" }, role: 15, is_active: true },
+    { id: "actor-membership", member: { id: "actor" }, role: ContractEnums.EUserPermissions.ADMIN, is_active: true },
+    { id: "target-membership", member: { id: "target" }, role: ContractEnums.EUserPermissions.MEMBER, is_active: true },
   ]);
   const projectRosterKey = memberRosterKeys.project({
     accountId: "actor",
     workspaceSlug: "acme",
-    membershipRole: 20,
+    membershipRole: ContractEnums.EUserPermissions.ADMIN,
     membershipRevision: "revision-2",
-    projectRole: 20,
+    projectRole: ContractEnums.EUserPermissions.ADMIN,
     projectId,
   });
   const projectScope = {
     accountId: "actor",
     sessionGeneration: 0,
     workspaceSlug: "acme",
-    workspaceRole: 20,
+    workspaceRole: ContractEnums.EUserPermissions.ADMIN,
     membershipRevision: "revision-2",
     projectRoles: [[projectId, 20]],
     projectId,
-    projectMembershipRole: 20,
-    projectRole: 20,
+    projectMembershipRole: ContractEnums.EUserPermissions.ADMIN,
+    projectRole: ContractEnums.EUserPermissions.ADMIN,
   };
-  client.setQueryData(permissionKeys.workspaceProjectRoles("actor", "acme", 20, "revision-2"), { [projectId]: 20 });
+  client.setQueryData(
+    permissionKeys.workspaceProjectRoles("actor", "acme", ContractEnums.EUserPermissions.ADMIN, "revision-2"),
+    { [projectId]: 20 }
+  );
   const detailKey = projectKeys.detail(projectScope);
   const catalogueKey = projectKeys.workspace(projectScope, "full");
-  client.setQueryData(projectRosterKey, [{ id: "project-target", member: "target", role: 15, is_active: true }]);
+  client.setQueryData(projectRosterKey, [
+    { id: "project-target", member: "target", role: ContractEnums.EUserPermissions.MEMBER, is_active: true },
+  ]);
   client.setQueryData(detailKey, { id: projectId, members: ["target"] });
   client.setQueryData(catalogueKey, [{ id: projectId, members: ["target"] }]);
   const queries = [projectRosterKey, detailKey, catalogueKey].map(

@@ -25,7 +25,8 @@ registerHooks({
 });
 const { SidebarDragHandle } = await import("../../apps/web/core/components/workspace/sidebar/drag-handle.tsx");
 
-test("project list auto-scroll resolves to its nearest scroll-area viewport", async () => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("project list auto-scroll resolves to its nearest scroll-area viewport", async () => {
   const environment = await createReactDomTestEnvironment();
 
   try {
@@ -47,7 +48,7 @@ test("project list auto-scroll resolves to its nearest scroll-area viewport", as
   }
 });
 
-test("sidebar drag handle tooltip keeps one button and forwards its ref to it", async () => {
+void test("sidebar drag handle tooltip keeps one button and forwards its ref to it", async () => {
   const environment = await createReactDomTestEnvironment();
   const dragHandleRef = React.createRef();
 

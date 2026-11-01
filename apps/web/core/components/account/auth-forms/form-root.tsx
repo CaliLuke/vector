@@ -8,10 +8,11 @@ import { useLocation, useRouter } from "@tanstack/react-router";
 import React, { useState } from "react";
 
 import { EAuthModes, EAuthSteps } from "@plane/constants";
+import { isRecord } from "@plane/utils/common";
 import type { IEmailCheckData } from "@plane/types";
 // helpers
 import type { TAuthErrorInfo } from "@/helpers/authentication.helper";
-import { authErrorHandler } from "@/helpers/authentication.helper";
+import { authErrorHandler, showAuthenticationError } from "@/helpers/authentication.helper";
 // hooks
 import { useQuery } from "@tanstack/react-query";
 import { instanceConfigOptions } from "@/queries/instance";
@@ -54,32 +55,29 @@ export function AuthFormRoot(props: TAuthFormRoot) {
   const handleEmailVerification = async (data: IEmailCheckData) => {
     setEmail(data.email);
     setErrorInfo(undefined);
-    await authService
-      .emailCheck(data)
-      .then(async (response) => {
-        if (response.existing) {
-          if (currentAuthMode === EAuthModes.SIGN_UP) setAuthMode(EAuthModes.SIGN_IN);
-          if (response.status === "MAGIC_CODE") {
-            setAuthStep(EAuthSteps.UNIQUE_CODE);
-            generateEmailUniqueCode(data.email);
-          } else if (response.status === "CREDENTIAL") {
-            setAuthStep(EAuthSteps.PASSWORD);
-          }
-        } else {
-          if (currentAuthMode === EAuthModes.SIGN_IN) setAuthMode(EAuthModes.SIGN_UP);
-          if (response.status === "MAGIC_CODE") {
-            setAuthStep(EAuthSteps.UNIQUE_CODE);
-            generateEmailUniqueCode(data.email);
-          } else if (response.status === "CREDENTIAL") {
-            setAuthStep(EAuthSteps.PASSWORD);
-          }
-        }
-        setIsExistingEmail(response.existing);
-      })
-      .catch((error) => {
-        const errorhandler = authErrorHandler(error?.error_code?.toString(), data?.email || undefined);
-        if (errorhandler?.type) setErrorInfo(errorhandler);
-      });
+    try {
+      const response = await authService.emailCheck(data);
+      if (response.existing) {
+        if (currentAuthMode === EAuthModes.SIGN_UP) setAuthMode(EAuthModes.SIGN_IN);
+      } else if (currentAuthMode === EAuthModes.SIGN_IN) {
+        setAuthMode(EAuthModes.SIGN_UP);
+      }
+      setIsExistingEmail(response.existing);
+      if (response.status === "MAGIC_CODE") {
+        setAuthStep(EAuthSteps.UNIQUE_CODE);
+        await generateEmailUniqueCode(data.email);
+      } else if (response.status === "CREDENTIAL") {
+        setAuthStep(EAuthSteps.PASSWORD);
+      }
+    } catch (error) {
+      const code = isRecord(error) ? error.error_code : undefined;
+      const errorhandler = authErrorHandler(
+        typeof code === "string" || typeof code === "number" ? String(code) : undefined,
+        data.email || undefined
+      );
+      if (errorhandler?.type) setErrorInfo(errorhandler);
+      else showAuthenticationError(t);
+    }
   };
 
   const handleEmailClear = () => {
@@ -91,9 +89,9 @@ export function AuthFormRoot(props: TAuthFormRoot) {
   };
 
   // generating the unique code
-  const generateEmailUniqueCode = async (email: string): Promise<void> => {
+  const generateEmailUniqueCode = async (recipient: string): Promise<void> => {
     if (!isSMTPConfigured) return;
-    const payload = { email: email };
+    const payload = { email: recipient };
     return await authService.generateUniqueCode(payload).catch((error) => {
       const errorhandler = authErrorHandler(error?.error_code?.toString());
       if (errorhandler?.type) setErrorInfo(errorhandler);
@@ -137,7 +135,9 @@ export function AuthFormRoot(props: TAuthFormRoot) {
         email={email}
         handleEmailClear={handleEmailClear}
         handleAuthStep={(step: EAuthSteps) => {
-          if (step === EAuthSteps.UNIQUE_CODE) generateEmailUniqueCode(email);
+          if (step === EAuthSteps.UNIQUE_CODE) {
+            void generateEmailUniqueCode(email).catch(() => showAuthenticationError(t));
+          }
           setAuthStep(step);
         }}
         nextPath={nextPath || undefined}

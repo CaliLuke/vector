@@ -5,16 +5,10 @@
  */
 
 // types
+import { EDurationFilters } from "@plane/types";
 import type { TIssuesListTypes } from "@plane/types";
 
-export enum EDurationFilters {
-  NONE = "none",
-  TODAY = "today",
-  THIS_WEEK = "this_week",
-  THIS_MONTH = "this_month",
-  THIS_YEAR = "this_year",
-  CUSTOM = "custom",
-}
+export { EDurationFilters };
 
 // filter duration options
 export const DURATION_FILTER_OPTIONS: {

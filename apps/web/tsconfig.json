@@ -13,9 +13,10 @@
     "noUnusedLocals": false,
     "noImplicitReturns": false,
     "noImplicitOverride": false,
-    "types": ["vite/client", "react", "react-dom"]
+    "types": ["vite/client", "react", "react-dom"],
+    "allowImportingTsExtensions": true
   },
   "extends": "@plane/typescript-config/vite.json",
-  "include": ["**/*"],
+  "include": ["**/*", "../../scripts/vite-config.mts"],
   "exclude": ["node_modules", "build"]
 }

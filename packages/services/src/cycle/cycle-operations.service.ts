@@ -18,7 +18,7 @@ export class CycleOperationsService extends CycleAnalyticsService {
    * @param {string} workspaceSlug - The workspace identifier
    * @param {string} projectId - The project identifier
    * @param {{cycle: string}} data - The favorite cycle data
-   * @returns {Promise<any>} The response data
+   * @returns {Promise<unknown>} The response data
    * @throws {Error} If the request fails
    */
   async addToFavorites(
@@ -27,12 +27,10 @@ export class CycleOperationsService extends CycleAnalyticsService {
     data: {
       cycle: string;
     }
-  ): Promise<any> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/user-favorite-cycles/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  ): Promise<unknown> {
+    return this.responseData(
+      this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/user-favorite-cycles/`, data)
+    );
   }
 
   /**
@@ -40,15 +38,13 @@ export class CycleOperationsService extends CycleAnalyticsService {
    * @param {string} workspaceSlug - The workspace identifier
    * @param {string} projectId - The project identifier
    * @param {string} cycleId - The cycle identifier
-   * @returns {Promise<any>} The removal response
+   * @returns {Promise<unknown>} The removal response
    * @throws {Error} If the request fails
    */
-  async removeFromFavorites(workspaceSlug: string, projectId: string, cycleId: string): Promise<any> {
-    return this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/user-favorite-cycles/${cycleId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async removeFromFavorites(workspaceSlug: string, projectId: string, cycleId: string): Promise<unknown> {
+    return this.responseData(
+      this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/user-favorite-cycles/${cycleId}/`)
+    );
   }
 
   /**
@@ -57,7 +53,7 @@ export class CycleOperationsService extends CycleAnalyticsService {
    * @param {string} projectId - The project identifier
    * @param {string} cycleId - The source cycle identifier
    * @param {{new_cycle_id: string}} data - The target cycle data
-   * @returns {Promise<any>} The transfer response
+   * @returns {Promise<unknown>} The transfer response
    * @throws {Error} If the request fails
    */
   async transferIssues(
@@ -67,11 +63,9 @@ export class CycleOperationsService extends CycleAnalyticsService {
     data: {
       new_cycle_id: string;
     }
-  ): Promise<any> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/transfer-issues/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  ): Promise<unknown> {
+    return this.responseData(
+      this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/transfer-issues/`, data)
+    );
   }
 }

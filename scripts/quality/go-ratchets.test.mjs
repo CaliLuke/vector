@@ -7,7 +7,6 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 const scripts = path.dirname(fileURLToPath(import.meta.url));
-const root = path.resolve(scripts, "../..");
 
 function fixture(run) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vector-go-ratchet-"));

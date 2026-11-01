@@ -8,7 +8,7 @@ import { useRouter } from "@tanstack/react-router";
 import { Logo } from "@plane/propel/emoji-icon-picker";
 import { PageIcon } from "@plane/propel/icons";
 // plane import
-import type { TActivityEntityData, TPageEntityData } from "@plane/types";
+import type { TActivityEntityData } from "@plane/types";
 import { Avatar } from "@plane/ui";
 import { calculateTimeAgo } from "@plane/utils/datetime";
 import { getFileURL } from "@plane/utils/file";
@@ -18,7 +18,7 @@ import { ListItem } from "@/components/core/list";
 import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 
 type BlockProps = {
-  activity: TActivityEntityData;
+  activity: Extract<TActivityEntityData, { entity_name: "page" | "workspace_page" }>;
   parentRef: React.RefObject<HTMLDivElement | null>;
   workspaceSlug: string;
 };
@@ -30,7 +30,7 @@ export function RecentPage(props: BlockProps) {
   // store hooks
   const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
   // derived values
-  const pageDetails = activity.entity_data as TPageEntityData;
+  const pageDetails = activity.entity_data;
 
   if (!pageDetails) return <></>;
 

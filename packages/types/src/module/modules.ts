@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import type { TWorkItemProgress } from "../common";
 import type { ILinkDetails } from "../issues";
 import type { TIssue } from "../issues/issue";
 import type { IIssueFilterOptions } from "../view-props";
@@ -52,27 +53,15 @@ export type TModuleEstimateDistribution = {
   labels: (TModuleLabelsDistribution & TModuleEstimateDistributionBase)[];
 };
 
-export interface IModule {
-  total_issues: number;
-  completed_issues: number;
-  backlog_issues: number;
-  started_issues: number;
-  unstarted_issues: number;
-  cancelled_issues: number;
-  total_estimate_points?: number;
-  completed_estimate_points?: number;
-  backlog_estimate_points: number;
-  started_estimate_points: number;
-  unstarted_estimate_points: number;
-  cancelled_estimate_points: number;
+export interface IModule extends TWorkItemProgress {
   distribution?: TModuleDistribution;
   estimate_distribution?: TModuleEstimateDistribution;
 
   id: string;
   name: string;
   description: string;
-  description_text: any;
-  description_html: any;
+  description_text: string | null;
+  description_html: string | null;
   workspace_id: string;
   project_id: string;
   lead_id: string | null;

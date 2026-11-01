@@ -12,13 +12,7 @@ export function customFindSuggestionMatch(config: Trigger): SuggestionMatch | nu
 
   const allowSpaces = allowSpacesOption && !allowToIncludeChar;
 
-  const escapedChar = escapeForRegEx(char);
-  const suffix = new RegExp(`\\s${escapedChar}$`);
-  const prefix = startOfLine ? "^" : "";
-  const finalEscapedChar = allowToIncludeChar ? "" : escapedChar;
-  const regexp = allowSpaces
-    ? new RegExp(`${prefix}${escapedChar}.*?(?=\\s${finalEscapedChar}|$)`, "gm")
-    : new RegExp(`${prefix}(?:^)?${escapedChar}[^\\s${finalEscapedChar}]*`, "gm");
+  const { regexp, suffix } = suggestionPattern(char, allowSpaces, allowToIncludeChar, startOfLine);
 
   // Instead of just looking at nodeBefore.text, we need to extract text from the current paragraph
   // to properly handle text with decorators like bold, italic, etc.
@@ -76,4 +70,16 @@ export function customFindSuggestionMatch(config: Trigger): SuggestionMatch | nu
   }
 
   return null;
+}
+
+function suggestionPattern(char: string, allowSpaces: boolean, allowToIncludeChar: boolean, startOfLine: boolean) {
+  const escapedChar = escapeForRegEx(char);
+  const suffix = new RegExp(`\\s${escapedChar}$`);
+  const prefix = startOfLine ? "^" : "";
+  const finalEscapedChar = allowToIncludeChar ? "" : escapedChar;
+  const regexp = allowSpaces
+    ? new RegExp(`${prefix}${escapedChar}.*?(?=\\s${finalEscapedChar}|$)`, "gm")
+    : new RegExp(`${prefix}(?:^)?${escapedChar}[^\\s${finalEscapedChar}]*`, "gm");
+
+  return { regexp, suffix };
 }

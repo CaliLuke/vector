@@ -54,7 +54,7 @@ export function DateFilterSelect({ title, value, onChange }: Props) {
           </span>
         </div>
       }
-      onChange={onChange}
+      onChange={(selection) => (selection !== null ? onChange(selection) : undefined)}
     >
       {dueDateRange.map((option) => (
         <CustomSelect.Option key={option.value} value={option.value}>

@@ -10,7 +10,7 @@ import { useState } from "react";
 import { EUserPermissions, LOGIN_MEDIUM_LABELS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { renderFormattedDate } from "@plane/utils/datetime";
-import { MemberHeaderColumn } from "@/components/project/member-header-column";
+import { createMemberColumns } from "@/components/project/member-header-column";
 import type { RowData } from "@/components/workspace/settings/member-columns";
 import { AccountTypeColumn, NameColumn } from "@/components/workspace/settings/member-columns";
 import { useWorkspacePermissions } from "@/hooks/use-permissions";
@@ -38,84 +38,65 @@ export const useMemberColumns = (props: {
   const isSuspended = (rowData: RowData) => rowData.is_active === false;
 
   // handlers
-  const columns = [
+  const columns = createMemberColumns<RowData>(
     {
       key: "Full name",
       content: t("workspace_settings.settings.members.details.full_name"),
-      thClassName: "text-left",
-      thRender: () => (
-        <MemberHeaderColumn property="full_name" displayFilters={filters} handleDisplayFilterUpdate={onFilterUpdate} />
-      ),
-      tdRender: (rowData: RowData) => (
-        <NameColumn
-          rowData={rowData}
-          workspaceSlug={workspaceSlug}
-          isAdmin={isAdmin}
-          currentUser={currentUser ?? undefined}
-          setRemoveMemberModal={setRemoveMemberModal}
-        />
-      ),
+      component: NameColumn,
+      workspaceSlug,
+      isAdmin,
+      currentUser: currentUser ?? undefined,
+      setRemoveMemberModal,
     },
-
-    {
-      key: "Display name",
-      content: t("workspace_settings.settings.members.details.display_name"),
-      tdRender: (rowData: RowData) => (
-        <div className={`w-32 ${isSuspended(rowData) ? "text-placeholder" : ""}`}>{rowData.member.display_name}</div>
-      ),
-      thRender: () => (
-        <MemberHeaderColumn
-          property="display_name"
-          displayFilters={filters}
-          handleDisplayFilterUpdate={onFilterUpdate}
-        />
-      ),
-    },
-
-    {
-      key: "Email address",
-      content: t("workspace_settings.settings.members.details.email_address"),
-      tdRender: (rowData: RowData) => (
-        <div className={`w-48 truncate ${isSuspended(rowData) ? "text-placeholder" : ""}`}>{rowData.member.email}</div>
-      ),
-      thRender: () => (
-        <MemberHeaderColumn property="email" displayFilters={filters} handleDisplayFilterUpdate={onFilterUpdate} />
-      ),
-    },
-
-    {
-      key: "Account type",
-      content: t("workspace_settings.settings.members.details.account_type"),
-      thRender: () => (
-        <MemberHeaderColumn property="role" displayFilters={filters} handleDisplayFilterUpdate={onFilterUpdate} />
-      ),
-      tdRender: (rowData: RowData) => <AccountTypeColumn rowData={rowData} workspaceSlug={workspaceSlug} />,
-    },
-
-    {
-      key: "Authentication",
-      content: t("workspace_settings.settings.members.details.authentication"),
-      tdRender: (rowData: RowData) => {
-        if (isSuspended(rowData)) return null;
-        const loginMedium = rowData.last_login_medium;
-        if (!loginMedium) return null;
-        return <div>{LOGIN_MEDIUM_LABELS[loginMedium]}</div>;
+    [
+      {
+        key: "Display name",
+        content: t("workspace_settings.settings.members.details.display_name"),
+        tdRender: (rowData: RowData) => (
+          <div className={`w-32 ${isSuspended(rowData) ? "text-placeholder" : ""}`}>{rowData.member.display_name}</div>
+        ),
+        property: "display_name",
       },
-    },
 
-    {
-      key: "Joining date",
-      content: t("workspace_settings.settings.members.details.joining_date"),
-      tdRender: (rowData: RowData) =>
-        isSuspended(rowData) ? null : <div>{renderFormattedDate(rowData?.member?.joining_date)}</div>,
-      thRender: () => (
-        <MemberHeaderColumn
-          property="joining_date"
-          displayFilters={filters}
-          handleDisplayFilterUpdate={onFilterUpdate}
-        />
-      ),
-    },
-  ];
+      {
+        key: "Email address",
+        content: t("workspace_settings.settings.members.details.email_address"),
+        tdRender: (rowData: RowData) => (
+          <div className={`w-48 truncate ${isSuspended(rowData) ? "text-placeholder" : ""}`}>
+            {rowData.member.email}
+          </div>
+        ),
+        property: "email",
+      },
+
+      {
+        key: "Account type",
+        content: t("workspace_settings.settings.members.details.account_type"),
+        property: "role",
+        tdRender: (rowData: RowData) => <AccountTypeColumn rowData={rowData} workspaceSlug={workspaceSlug} />,
+      },
+
+      {
+        key: "Authentication",
+        content: t("workspace_settings.settings.members.details.authentication"),
+        tdRender: (rowData: RowData) => {
+          if (isSuspended(rowData)) return null;
+          const loginMedium = rowData.last_login_medium;
+          if (!loginMedium) return null;
+          return <div>{LOGIN_MEDIUM_LABELS[loginMedium]}</div>;
+        },
+      },
+
+      {
+        key: "Joining date",
+        content: t("workspace_settings.settings.members.details.joining_date"),
+        tdRender: (rowData: RowData) =>
+          isSuspended(rowData) ? null : <div>{renderFormattedDate(rowData?.member?.joining_date)}</div>,
+        property: "joining_date",
+      },
+    ],
+    filters,
+    onFilterUpdate
+  );
   return { columns, workspaceSlug, removeMemberModal, setRemoveMemberModal };
 };

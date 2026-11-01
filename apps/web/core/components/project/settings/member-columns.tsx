@@ -4,8 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { Link } from "@tanstack/react-router";
-
 import { CircleMinus } from "lucide-react";
 import { Disclosure } from "@headlessui/react";
 // plane imports
@@ -14,7 +12,7 @@ import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { EUserProjectRoles, EUserWorkspaceRoles } from "@plane/types";
 import type { IWorkspaceMember, IUser, IUserLite, TProjectMembership, TUserPermissions } from "@plane/types";
 import { CustomMenu, CustomSelect } from "@plane/ui";
-import { getFileURL } from "@plane/utils/file";
+import { MemberProfileAvatar } from "@/components/common/member-profile-avatar";
 // hooks
 import { useProjectPermissions } from "@/hooks/use-permissions";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -48,7 +46,7 @@ const PROJECT_ROLE_PERMISSIONS: Record<EUserProjectRoles, TUserPermissions> = {
 export function NameColumn(props: NameProps) {
   const { rowData, workspaceSlug, isAdmin, currentUser, setRemoveMemberModal } = props;
   // derived values
-  const { avatar_url, display_name, email, first_name, id, last_name } = rowData.member;
+  const { first_name, id, last_name } = rowData.member;
 
   return (
     <Disclosure>
@@ -56,23 +54,11 @@ export function NameColumn(props: NameProps) {
         <div className="group relative">
           <div className="flex w-72 items-center gap-2">
             <div className="flex flex-1 items-center gap-x-2 gap-y-2">
-              {avatar_url && avatar_url.trim() !== "" ? (
-                <Link to="/$workspaceSlug/profile/$userId/" params={{ workspaceSlug: workspaceSlug, userId: id }}>
-                  <span className="relative flex size-6 items-center justify-center rounded-full text-on-color capitalize">
-                    <img
-                      src={getFileURL(avatar_url)}
-                      className="absolute top-0 left-0 h-full w-full rounded-full object-cover"
-                      alt={display_name || email}
-                    />
-                  </span>
-                </Link>
-              ) : (
-                <Link to="/$workspaceSlug/profile/$userId/" params={{ workspaceSlug: workspaceSlug, userId: id }}>
-                  <span className="relative flex size-6 items-center justify-center rounded-full bg-layer-3 text-11 text-on-color capitalize">
-                    {(email ?? display_name ?? "?")[0]}
-                  </span>
-                </Link>
-              )}
+              <MemberProfileAvatar
+                member={rowData.member}
+                workspaceSlug={workspaceSlug}
+                fallbackTextClassName="text-on-color"
+              />
               {first_name} {last_name}
             </div>
             {(isAdmin || id === currentUser?.id) && (
@@ -143,7 +129,8 @@ export function AccountTypeColumn(props: AccountTypeProps) {
       {isRoleEditable ? (
         <CustomSelect
           value={rowData.original_role}
-          onChange={(value: EUserProjectRoles) => {
+          onChange={(value) => {
+            if (value === null) return;
             void roleMutation
               .mutateAsync(PROJECT_ROLE_PERMISSIONS[value])
               .catch((error: { error?: string | string[] }) => {

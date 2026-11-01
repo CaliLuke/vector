@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import type { ComponentProps } from "react";
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import type { Meta, StoryObj } from "@storybook/react-vite";
@@ -117,76 +118,71 @@ export const TopPosition: Story = {
   },
 };
 
+function SizedDialogExample({
+  triggerLabel,
+  title,
+  panelWidth,
+  contentClassName = "mt-4",
+  children,
+  ...args
+}: ComponentProps<typeof Dialog> & {
+  triggerLabel: string;
+  title: string;
+  panelWidth: EDialogWidth;
+  contentClassName?: string;
+}) {
+  const [open, setOpen] = useState(args.open);
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="bg-blue-500 hover:bg-blue-600 rounded-sm px-4 py-2 text-on-color"
+      >
+        {triggerLabel}
+      </button>
+      {open && (
+        <Dialog {...args} open={open} onOpenChange={setOpen}>
+          <Dialog.Panel width={panelWidth}>
+            <div className="p-6">
+              <Dialog.Title>{title}</Dialog.Title>
+              <div className={contentClassName}>{children}</div>
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => setOpen(false)}
+                  className="bg-blue-500 hover:bg-blue-600 rounded-sm px-4 py-2 text-13 text-on-color"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </Dialog.Panel>
+        </Dialog>
+      )}
+    </>
+  );
+}
+
 export const SmallWidth: Story = {
   render(args) {
-    const [open, setOpen] = useState(args.open);
     return (
-      <>
-        <button
-          onClick={() => setOpen(true)}
-          className="bg-blue-500 hover:bg-blue-600 rounded-sm px-4 py-2 text-on-color"
-        >
-          Open Small Dialog
-        </button>
-        {open && (
-          <Dialog {...args} open={open} onOpenChange={setOpen}>
-            <Dialog.Panel width={EDialogWidth.SM}>
-              <div className="p-6">
-                <Dialog.Title>Small Dialog</Dialog.Title>
-                <div className="mt-4">
-                  <p className="text-gray-600 text-13">This is a small dialog.</p>
-                </div>
-                <div className="mt-6 flex justify-end">
-                  <button
-                    onClick={() => setOpen(false)}
-                    className="bg-blue-500 hover:bg-blue-600 rounded-sm px-4 py-2 text-13 text-on-color"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </Dialog.Panel>
-          </Dialog>
-        )}
-      </>
+      <SizedDialogExample {...args} triggerLabel="Open Small Dialog" title="Small Dialog" panelWidth={EDialogWidth.SM}>
+        <p className="text-gray-600 text-13">This is a small dialog.</p>
+      </SizedDialogExample>
     );
   },
 };
 
 export const LargeWidth: Story = {
   render(args) {
-    const [open, setOpen] = useState(args.open);
     return (
-      <>
-        <button
-          onClick={() => setOpen(true)}
-          className="bg-blue-500 hover:bg-blue-600 rounded-sm px-4 py-2 text-on-color"
-        >
-          Open Large Dialog
-        </button>
-        {open && (
-          <Dialog {...args} open={open} onOpenChange={setOpen}>
-            <Dialog.Panel width={EDialogWidth.XXXXL}>
-              <div className="p-6">
-                <Dialog.Title>Large Dialog</Dialog.Title>
-                <div className="mt-4">
-                  <p className="text-gray-600 text-13">
-                    This is a large dialog with more horizontal space for content.
-                  </p>
-                </div>
-                <div className="mt-6 flex justify-end">
-                  <button
-                    onClick={() => setOpen(false)}
-                    className="bg-blue-500 hover:bg-blue-600 rounded-sm px-4 py-2 text-13 text-on-color"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </Dialog.Panel>
-          </Dialog>
-        )}
-      </>
+      <SizedDialogExample
+        {...args}
+        triggerLabel="Open Large Dialog"
+        title="Large Dialog"
+        panelWidth={EDialogWidth.XXXXL}
+      >
+        <p className="text-gray-600 text-13">This is a large dialog with more horizontal space for content.</p>
+      </SizedDialogExample>
     );
   },
 };
@@ -368,41 +364,21 @@ export const FormDialog: Story = {
 
 export const ScrollableContent: Story = {
   render(args) {
-    const [open, setOpen] = useState(args.open);
     return (
-      <>
-        <button
-          onClick={() => setOpen(true)}
-          className="bg-blue-500 hover:bg-blue-600 rounded-sm px-4 py-2 text-on-color"
-        >
-          Open Scrollable Dialog
-        </button>
-        {open && (
-          <Dialog {...args} open={open} onOpenChange={setOpen}>
-            <Dialog.Panel width={EDialogWidth.MD}>
-              <div className="p-6">
-                <Dialog.Title>Scrollable Content</Dialog.Title>
-                <div className="mt-4 max-h-96 overflow-y-auto">
-                  {Array.from({ length: 20 }, (_, i) => (
-                    <p key={i} className="text-gray-600 mb-2 text-13">
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut
-                      labore et dolore magna aliqua.
-                    </p>
-                  ))}
-                </div>
-                <div className="mt-6 flex justify-end">
-                  <button
-                    onClick={() => setOpen(false)}
-                    className="bg-blue-500 hover:bg-blue-600 rounded-sm px-4 py-2 text-13 text-on-color"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </Dialog.Panel>
-          </Dialog>
-        )}
-      </>
+      <SizedDialogExample
+        {...args}
+        triggerLabel="Open Scrollable Dialog"
+        title="Scrollable Content"
+        panelWidth={EDialogWidth.MD}
+        contentClassName="mt-4 max-h-96 overflow-y-auto"
+      >
+        {Array.from({ length: 20 }, (_, i) => (
+          <p key={i} className="text-gray-600 mb-2 text-13">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et
+            dolore magna aliqua.
+          </p>
+        ))}
+      </SizedDialogExample>
     );
   },
 };

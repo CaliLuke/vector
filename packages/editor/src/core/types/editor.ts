@@ -16,7 +16,6 @@ import type { TTextAlign } from "@/extensions";
 // plane editor imports
 import type {
   IEditorPropsExtended,
-  TExtendedEditorCommands,
   ICollaborativeDocumentEditorPropsExtended,
 } from "@/plane-editor/types/editor-extended";
 // types
@@ -33,7 +32,6 @@ import type {
   TRealtimeConfig,
   TServerHandler,
   TUserDetails,
-  TExtendedEditorRefApi,
   EventToPayloadMap,
 } from "@/types";
 
@@ -65,8 +63,7 @@ export type TEditorCommands =
   | "callout"
   | "attachment"
   | "emoji"
-  | "external-embed"
-  | TExtendedEditorCommands;
+  | "external-embed";
 
 export type TCommandExtraProps = {
   image: {
@@ -115,7 +112,7 @@ export type CoreEditorRefApi = {
   getAttributesWithExtendedMark: (
     mark: string | MarkType,
     attribute: string | NodeType | MarkType
-  ) => Record<string, any> | undefined;
+  ) => Record<string, unknown> | undefined;
   getCoordsFromPos: (pos?: number) => ReturnType<EditorView["coordsAtPos"]> | undefined;
   getCurrentCursorPosition: () => number | undefined;
   getDocument: () => {
@@ -131,7 +128,7 @@ export type CoreEditorRefApi = {
   insertText: (contentHTML: string, insertOnNextLine?: boolean) => void;
   isAnyDropbarOpen: () => boolean;
   isEditorReadyToDiscard: () => boolean;
-  isMenuItemActive: <T extends TEditorCommands>(props: TCommandWithPropsWithItemKey<T>) => boolean;
+  isMenuItemActive: <T extends TEditorCommands>(props: { itemKey: T } & Partial<TCommandWithProps<T>>) => boolean;
   listenToRealTimeUpdate: () => TDocumentEventEmitter | undefined;
   onDocumentInfoChange: (callback: (documentInfo: TDocumentInfo) => void) => () => void;
   onHeadingChange: (callback: (headings: IMarking[]) => void) => () => void;
@@ -147,7 +144,7 @@ export type CoreEditorRefApi = {
   undo: () => void;
 };
 
-export type EditorRefApi = CoreEditorRefApi & TExtendedEditorRefApi;
+export type EditorRefApi = CoreEditorRefApi;
 
 export type EditorTitleRefApi = EditorRefApi;
 
@@ -164,7 +161,7 @@ export type IEditorProps = {
   extensions?: Extensions;
   flaggedExtensions: TExtensions[];
   fileHandler: TFileHandler;
-  forwardedRef?: React.MutableRefObject<EditorRefApi | null>;
+  forwardedRef?: React.ForwardedRef<EditorRefApi>;
   getEditorMetaData: (htmlContent: string) => TCustomComponentsMetaData;
   handleEditorReady?: (value: boolean) => void;
   id: string;
@@ -174,7 +171,7 @@ export type IEditorProps = {
   onAssetChange?: (assets: TEditorAsset[]) => void;
   onEditorFocus?: () => void;
   onChange?: (json: object, html: string, { isMigrationUpdate }?: { isMigrationUpdate?: boolean }) => void;
-  onEnterKeyPress?: (e?: any) => void;
+  onEnterKeyPress?: (event?: React.SyntheticEvent) => void;
   onTransaction?: () => void;
   placeholder?: string | ((isFocused: boolean, value: string) => string);
   showPlaceholderOnEmpty?: boolean;

@@ -10,7 +10,7 @@ import { cn } from "@plane/utils/common";
 
 export type THeadingComponentProps = {
   marking: IMarking;
-  onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
 };
 
 const COMMON_CLASSNAME =

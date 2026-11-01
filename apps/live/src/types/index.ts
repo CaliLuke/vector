@@ -6,11 +6,6 @@
 
 import type { fetchPayload, onLoadDocumentPayload, storePayload } from "@hocuspocus/server";
 
-export type TConvertDocumentRequestBody = {
-  description_html: string;
-  variant: "rich" | "document";
-};
-
 export interface OnLoadDocumentPayloadWithContext extends onLoadDocumentPayload {
   context: HocusPocusServerContext;
 }

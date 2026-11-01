@@ -7,7 +7,6 @@
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { notifyProjectFeatureUpdate } from "@/components/project/settings/feature-update-toast";
-import type { IProject } from "@plane/types";
 import { CycleIcon, IntakeIcon, ModuleIcon, PageIcon, ViewsIcon } from "@plane/propel/icons";
 import { Loader } from "@plane/ui";
 // components
@@ -17,6 +16,7 @@ import { SettingsHeading } from "@/components/settings/heading";
 import { useProjectDetail, useProjectMutations } from "@/hooks/use-projects";
 // plane web imports
 // local imports
+import type { TProjectFeatureProperty } from "./helper";
 import { ProjectFeatureToggle } from "./helper";
 
 type Props = {
@@ -66,7 +66,7 @@ const PROJECT_FEATURES_LIST = {
     icon: <IntakeIcon className="h-5 w-5 flex-shrink-0 text-tertiary" />,
     isEnabled: true,
   },
-};
+} as const;
 
 export function ProjectFeaturesList(props: Props) {
   const { workspaceSlug, projectId, isAdmin } = props;
@@ -96,12 +96,12 @@ export function ProjectFeaturesList(props: Props) {
   if (projectQuery.accessDenied) return <div role="alert">You do not have access to this project.</div>;
   if (!currentProjectDetails) return null;
 
-  const handleSubmit = (_featureKey: string, featureProperty: string) => {
+  const handleSubmit = (_featureKey: string, featureProperty: TProjectFeatureProperty) => {
     if (!workspaceSlug || !projectId || !currentProjectDetails) return;
 
     // making the request to update the project feature
     const settingsPayload = {
-      [featureProperty]: !currentProjectDetails?.[featureProperty as keyof IProject],
+      [featureProperty]: !currentProjectDetails?.[featureProperty],
     };
     const updateProjectPromise = projectMutation.mutateAsync({ type: "update", projectId, data: settingsPayload });
 
@@ -123,13 +123,13 @@ export function ProjectFeaturesList(props: Props) {
                     workspaceSlug={workspaceSlug}
                     projectId={projectId}
                     featureItem={featureItem}
-                    value={Boolean(currentProjectDetails?.[featureItem.property as keyof IProject])}
+                    value={currentProjectDetails[featureItem.property]}
                     handleSubmit={handleSubmit}
                     disabled={!isAdmin || !currentProjectDetails || projectMutation.isPending}
                   />
                 }
               />
-              {/* {currentProjectDetails?.[featureItem.property as keyof IProject] && (
+              {/* {currentProjectDetails?.[featureItem.property] && (
                 <div className="pl-14">{featureItem.renderChildren?.(currentProjectDetails, workspaceSlug)}</div>
               )} */}
             </div>

@@ -6,11 +6,10 @@
 
 import { useCallback, useState } from "react";
 import { useTranslation } from "@plane/i18n";
-import { ChevronDownIcon } from "@plane/propel/icons";
 import type { ICycle, EIssueLayoutTypes, IModule, IProject } from "@plane/types";
 import { WorkItemsModal } from "@/components/analytics/work-items/modal";
 import { ParentIssueDisplaySelection } from "./display-filters/parent-issue-display-selection";
-import { FiltersDropdown } from "./helpers/dropdown";
+import { MobileDisplayOptions } from "./mobile-display-options";
 import { MobileLayoutSelection } from "./mobile-layout-selection";
 import { PARENT_ISSUE_MOBILE_LAYOUTS, persistParentIssueLayout } from "./parent-issue-layout-selection";
 
@@ -63,20 +62,9 @@ export function ParentIssueMobileHeader({
             ) : undefined
           }
         />
-        <div className="flex flex-grow items-center justify-center border-l border-subtle text-13 text-secondary">
-          <FiltersDropdown
-            title={t("common.display")}
-            placement="bottom-end"
-            menuButton={
-              <span className="flex items-center text-13 text-secondary">
-                {t("common.display")}
-                <ChevronDownIcon className="ml-2 h-4 w-4 text-secondary" />
-              </span>
-            }
-          >
-            <ParentIssueDisplaySelection project={projectDetails} />
-          </FiltersDropdown>
-        </div>
+        <MobileDisplayOptions>
+          <ParentIssueDisplaySelection project={projectDetails} />
+        </MobileDisplayOptions>
         <button
           type="button"
           onClick={() => setAnalyticsModal(true)}

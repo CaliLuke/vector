@@ -8,18 +8,11 @@ import { useParams } from "@tanstack/react-router";
 import React from "react";
 
 // types
-import type { TIssue } from "@plane/types";
+import type { TSpreadsheetColumnProps } from "@plane/types";
 // components
 import { MemberDropdown } from "@/components/dropdowns/member/dropdown";
 
-type Props = {
-  issue: TIssue;
-  onClose: () => void;
-  onChange: (issue: TIssue, data: Partial<TIssue>, updates: any) => void;
-  disabled: boolean;
-};
-
-export const SpreadsheetAssigneeColumn = function SpreadsheetAssigneeColumn(props: Props) {
+export const SpreadsheetAssigneeColumn = function SpreadsheetAssigneeColumn(props: TSpreadsheetColumnProps) {
   const { issue, onChange, disabled, onClose } = props;
   const { workspaceSlug } = useParams({ strict: false });
 

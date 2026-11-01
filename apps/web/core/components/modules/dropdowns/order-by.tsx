@@ -1,3 +1,4 @@
+import { OrderByMenuItems } from "@/components/common/order-by-menu-items";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -8,7 +9,7 @@ import { ArrowDownWideNarrow, ArrowUpWideNarrow } from "lucide-react";
 import { MODULE_ORDER_BY_OPTIONS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { getButtonStyling } from "@plane/propel/button";
-import { CheckIcon, ChevronDownIcon } from "@plane/propel/icons";
+import { ChevronDownIcon } from "@plane/propel/icons";
 import type { TModuleOrderByOptions } from "@plane/types";
 // ui
 import { CustomMenu } from "@plane/ui";
@@ -27,10 +28,11 @@ export function ModuleOrderByDropdown(props: Props) {
   // hooks
   const { t } = useTranslation();
 
-  const orderByDetails = MODULE_ORDER_BY_OPTIONS.find((option) => value?.includes(option.key));
+  const orderByDetails = MODULE_ORDER_BY_OPTIONS.find(
+    (option) => option.key === value || (option.descendingKey !== undefined && option.descendingKey === value)
+  );
 
   const isDescending = value?.[0] === "-";
-  const isManual = value?.includes("sort_order");
 
   return (
     <CustomMenu
@@ -45,42 +47,7 @@ export function ModuleOrderByDropdown(props: Props) {
       maxHeight="lg"
       closeOnSelect
     >
-      {MODULE_ORDER_BY_OPTIONS.map((option) => (
-        <CustomMenu.MenuItem
-          key={option.key}
-          className="flex items-center justify-between gap-2"
-          onClick={() => {
-            if (isDescending && !isManual) onChange(`-${option.key}` as TModuleOrderByOptions);
-            else onChange(option.key);
-          }}
-        >
-          {t(option.i18n_label)}
-          {value?.includes(option.key) && <CheckIcon className="h-3 w-3" />}
-        </CustomMenu.MenuItem>
-      ))}
-      {!isManual && (
-        <>
-          <hr className="my-2 border-subtle" />
-          <CustomMenu.MenuItem
-            className="flex items-center justify-between gap-2"
-            onClick={() => {
-              if (isDescending) onChange(value.slice(1) as TModuleOrderByOptions);
-            }}
-          >
-            Ascending
-            {!isDescending && <CheckIcon className="h-3 w-3" />}
-          </CustomMenu.MenuItem>
-          <CustomMenu.MenuItem
-            className="flex items-center justify-between gap-2"
-            onClick={() => {
-              if (!isDescending) onChange(`-${value}` as TModuleOrderByOptions);
-            }}
-          >
-            Descending
-            {isDescending && <CheckIcon className="h-3 w-3" />}
-          </CustomMenu.MenuItem>
-        </>
-      )}
+      <OrderByMenuItems options={MODULE_ORDER_BY_OPTIONS} value={value} onChange={onChange} hideManualDirections />
     </CustomMenu>
   );
 }

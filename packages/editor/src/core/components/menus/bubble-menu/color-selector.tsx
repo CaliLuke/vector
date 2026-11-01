@@ -5,16 +5,15 @@
  */
 
 import type { Editor } from "@tiptap/react";
-import { ALargeSmall, Ban } from "lucide-react";
-import { useMemo } from "react";
+import { ALargeSmall } from "lucide-react";
 // plane utils
 import { cn } from "@plane/utils/common";
 // constants
-import { COLORS_LIST } from "@/constants/common";
+import { ColorSwatches } from "../color-swatches";
 // local imports
 import { FloatingMenuRoot } from "../floating-menu/root";
 import { useFloatingMenu } from "../floating-menu/use-floating-menu";
-import { BackgroundColorItem, TextColorItem } from "../menu-items";
+import { createBackgroundColorItem, createTextColorItem } from "../menu-items";
 import type { EditorStateType } from "./root";
 
 type Props = {
@@ -27,8 +26,8 @@ export function BubbleMenuColorSelector(props: Props) {
   // floating ui
   const { options, getReferenceProps, getFloatingProps } = useFloatingMenu({});
 
-  const activeTextColor = useMemo(() => editorState.color, [editorState.color]);
-  const activeBackgroundColor = useMemo(() => editorState.backgroundColor, [editorState.backgroundColor]);
+  const activeTextColor = editorState.color;
+  const activeBackgroundColor = editorState.backgroundColor;
 
   return (
     <FloatingMenuRoot
@@ -67,47 +66,19 @@ export function BubbleMenuColorSelector(props: Props) {
         <div className="space-y-1.5">
           <p className="text-11 font-semibold text-tertiary">Text colors</p>
           <div className="flex items-center gap-2">
-            {COLORS_LIST.map((color) => (
-              <button
-                key={color.key}
-                type="button"
-                className="size-6 flex-shrink-0 rounded-sm border-[0.5px] border-strong-1 transition-opacity hover:opacity-60"
-                style={{
-                  backgroundColor: color.textColor,
-                }}
-                onClick={() => TextColorItem(editor).command({ color: color.key })}
-              />
-            ))}
-            <button
-              type="button"
-              className="grid size-6 flex-shrink-0 place-items-center rounded-sm border-[0.5px] border-strong-1 text-tertiary transition-colors hover:bg-layer-1"
-              onClick={() => TextColorItem(editor).command({ color: undefined })}
-            >
-              <Ban className="size-4" />
-            </button>
+            <ColorSwatches
+              tone="text"
+              onSelect={(color) => createTextColorItem(editor).command({ color: color?.key })}
+            />
           </div>
         </div>
         <div className="space-y-1.5">
           <p className="text-11 font-semibold text-tertiary">Background colors</p>
           <div className="flex items-center gap-2">
-            {COLORS_LIST.map((color) => (
-              <button
-                key={color.key}
-                type="button"
-                className="size-6 flex-shrink-0 rounded-sm border-[0.5px] border-strong-1 transition-opacity hover:opacity-60"
-                style={{
-                  backgroundColor: color.backgroundColor,
-                }}
-                onClick={() => BackgroundColorItem(editor).command({ color: color.key })}
-              />
-            ))}
-            <button
-              type="button"
-              className="grid size-6 flex-shrink-0 place-items-center rounded-sm border-[0.5px] border-strong-1 text-tertiary transition-colors hover:bg-layer-1"
-              onClick={() => BackgroundColorItem(editor).command({ color: undefined })}
-            >
-              <Ban className="size-4" />
-            </button>
+            <ColorSwatches
+              tone="background"
+              onSelect={(color) => createBackgroundColorItem(editor).command({ color: color?.key })}
+            />
           </div>
         </div>
       </section>

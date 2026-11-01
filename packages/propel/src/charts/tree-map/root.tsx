@@ -32,7 +32,7 @@ export const TreeMapChart = React.memo(function TreeMapChart(props: TreeMapChart
         >
           {showTooltip && (
             <Tooltip
-              content={({ active, payload }) => <TreeMapTooltip active={active} payload={payload} />}
+              content={<TreeMapTooltip />}
               cursor={{
                 fill: "currentColor",
                 className: "bg-layer-1 cursor-pointer",

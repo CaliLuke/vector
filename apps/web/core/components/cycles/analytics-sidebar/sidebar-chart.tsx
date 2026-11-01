@@ -70,7 +70,7 @@ export const SidebarChart = function SidebarChart(props: ProgressChartProps) {
   if (!workspaceSlug || !projectId || !cycleId) return null;
 
   // handlers
-  const onChange = async (value: TCycleEstimateType) => {
+  const onChange = (value: TCycleEstimateType) => {
     chart.update({ measure: value });
   };
   return (

@@ -37,8 +37,10 @@ for (const line of records) {
     console.error(`dupl record points to an empty or missing source range: ${line}`);
     process.exit(2);
   }
-  const files = [fileA, fileB].sort();
-  const hashes = [bodyA, bodyB].map((body) => crypto.createHash("sha256").update(body).digest("hex")).sort();
+  const files = [fileA, fileB].toSorted();
+  const hashes = [bodyA, bodyB]
+    .map((cloneBody) => crypto.createHash("sha256").update(cloneBody).digest("hex"))
+    .toSorted();
   const key = JSON.stringify([...files, ...hashes]);
   counts.set(key, (counts.get(key) ?? 0) + 1);
 }
@@ -59,4 +61,4 @@ if (failures.length) {
   );
   process.exit(1);
 }
-console.log(`dupl ratchet passed (${countTotal(counts)} existing clone pairs)`);
+process.stdout.write(`dupl ratchet passed (${countTotal(counts)} existing clone pairs)\n`);

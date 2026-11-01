@@ -39,13 +39,13 @@ export const ProjectLinkDetail = function ProjectLinkDetail(props: TProjectLinkD
   const handleCopyText = useCallback(() => {
     if (!linkUrl) return;
     copyTextToClipboard(linkUrl)
-      .then(() => {
+      .then(() =>
         setToast({
           type: TOAST_TYPE.SUCCESS,
           title: t("link_copied"),
           message: t("view_link_copied_to_clipboard"),
-        });
-      })
+        })
+      )
       .catch(() => {
         setToast({ type: TOAST_TYPE.ERROR, title: "Could not copy to clipboard", message: "Please try again." });
       });

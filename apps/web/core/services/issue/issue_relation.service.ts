@@ -15,11 +15,9 @@ export class IssueRelationService extends APIService {
   }
 
   async listIssueRelations(workspaceSlug: string, projectId: string, issueId: string): Promise<TIssueRelation> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/issue-relation/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/issue-relation/`)
+    );
   }
 
   async createIssueRelations(
@@ -28,11 +26,9 @@ export class IssueRelationService extends APIService {
     issueId: string,
     data: { relation_type: TIssueRelationTypes; issues: string[] }
   ): Promise<TIssue[]> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/issue-relation/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/issue-relation/`, data)
+    );
   }
 
   async deleteIssueRelation(
@@ -40,11 +36,9 @@ export class IssueRelationService extends APIService {
     projectId: string,
     issueId: string,
     data: { relation_type: TIssueRelationTypes; related_issue: string }
-  ): Promise<any> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/remove-relation/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  ): Promise<unknown> {
+    return this.responseData(
+      this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/remove-relation/`, data)
+    );
   }
 }

@@ -138,6 +138,16 @@ async function setup(t, save = async () => {}) {
   return { ...fixture, writes, render, button, click };
 }
 
+await test("unavailable display preferences hide property controls until the current row can render them", async (t) => {
+  const view = await setup(t);
+  await view.render(row, { displayProperties: undefined });
+  assert.equal(Boolean(view.environment.container.querySelector("[data-property]")), false);
+  assert.deepEqual(view.writes, []);
+  await view.render(row);
+  await view.click("priority");
+  assert.deepEqual(view.writes, [["p1", "first", { priority: "urgent" }]]);
+});
+
 await test("date range selection writes both endpoints in one patch", async (t) => {
   const view = await setup(t);
   await view.click("range");

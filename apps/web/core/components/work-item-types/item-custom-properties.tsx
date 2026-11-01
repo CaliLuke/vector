@@ -1,3 +1,4 @@
+import * as ContractEnums from "@plane/types";
 import { PropertyIcon } from "./property-icon";
 import { forgetItemReads, itemAccessOptions, retryItemAccess } from "@/queries/work-item-access";
 import { isPropertyHistoryAccessDenied } from "@/queries/work-item-property-history";
@@ -58,7 +59,12 @@ export const ItemCustomProperties = function ItemCustomProperties({ disabled = f
       </p>
     );
   if (permissions.projectRole === undefined || (item && item.project_id !== target.projectId)) return null;
-  const editable = !disabled && permissions.can([15, 20]) && !!item && !item.archived_at && !item.is_draft;
+  const editable =
+    !disabled &&
+    permissions.can([ContractEnums.EUserPermissions.MEMBER, ContractEnums.EUserPermissions.ADMIN]) &&
+    !!item &&
+    !item.archived_at &&
+    !item.is_draft;
   const scope = {
     ...target,
     accountId,

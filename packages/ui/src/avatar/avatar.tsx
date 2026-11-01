@@ -82,27 +82,45 @@ export const Avatar = React.forwardRef<HTMLDivElement, Props>(function Avatar(pr
         style={{ ...style, ...(isAValidNumber(size) ? { height: `${size}px`, width: `${size}px` } : {}) }}
         tabIndex={tabIndex}
       >
-        {src ? (
-          <img src={src} className={cn("h-full w-full", getBorderRadius(shape), className)} alt={name} />
-        ) : (
-          <div
-            className={cn(
-              sizeInfo.fontSize,
-              "grid h-full w-full place-items-center",
-              getBorderRadius(shape),
-              className
-            )}
-            style={{
-              backgroundColor: fallbackBackgroundColor ?? "#028375",
-              color: fallbackTextColor ?? "#ffffff",
-            }}
-          >
-            {name?.[0]?.toUpperCase() ?? fallbackText ?? "?"}
-          </div>
-        )}
+        <AvatarContent
+          name={name}
+          src={src}
+          shape={shape}
+          size={size}
+          className={className}
+          fallbackBackgroundColor={fallbackBackgroundColor}
+          fallbackText={fallbackText}
+          fallbackTextColor={fallbackTextColor}
+        />
       </div>
     </Tooltip>
   );
 });
 
 Avatar.displayName = "Avatar";
+
+function AvatarContent({
+  name,
+  src,
+  shape = "circle",
+  size = "md",
+  className,
+  fallbackBackgroundColor,
+  fallbackText,
+  fallbackTextColor,
+}: Props) {
+  const sizeInfo = getSizeInfo(size);
+  return src ? (
+    <img src={src} className={cn("h-full w-full", getBorderRadius(shape), className)} alt={name} />
+  ) : (
+    <div
+      className={cn(sizeInfo.fontSize, "grid h-full w-full place-items-center", getBorderRadius(shape), className)}
+      style={{
+        backgroundColor: fallbackBackgroundColor ?? "#028375",
+        color: fallbackTextColor ?? "#ffffff",
+      }}
+    >
+      {name?.[0]?.toUpperCase() ?? fallbackText ?? "?"}
+    </div>
+  );
+}

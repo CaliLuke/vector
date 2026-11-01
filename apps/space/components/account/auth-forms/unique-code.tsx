@@ -8,11 +8,10 @@ import { AuthEmailFields } from "./auth-email-fields";
 import React, { useRef } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import { CircleCheck } from "lucide-react";
 // plane imports
 import { API_BASE_URL } from "@plane/constants";
 import { Button } from "@plane/propel/button";
-import { Input, Spinner } from "@plane/ui";
+import { Input, Spinner, AuthCodeResend } from "@plane/ui";
 import { handleNativeAuthSubmit, submitNativeAuthForm } from "./native-auth-submit";
 // hooks
 import { useResendCodeForm } from "@plane/hooks";
@@ -38,12 +37,15 @@ export function AuthUniqueCodeForm(props: TAuthUniqueCodeForm) {
   });
   const code = useStore(form.store, (state) => state.values.code);
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
-  const { form: resendForm, cooldown: resendTimerCode } = useResendCodeForm({
+  const {
+    isSubmitting: isRequestingNewCode,
+    cooldown: resendTimerCode,
+    resend,
+  } = useResendCodeForm({
     send: () => generateEmailUniqueCode(email),
     onSent: () => form.setFieldValue("code", ""),
     onError: () => setToast({ type: TOAST_TYPE.ERROR, title: "Could not resend code", message: "Please try again." }),
   });
-  const isRequestingNewCode = useStore(resendForm.store, (state) => state.isSubmitting);
 
   const isRequestNewCodeDisabled = isSubmitting || isRequestingNewCode || resendTimerCode > 0;
   const isButtonDisabled = isRequestingNewCode || !code || isSubmitting;
@@ -72,34 +74,14 @@ export function AuthUniqueCodeForm(props: TAuthUniqueCodeForm) {
           placeholder="123456"
           className="h-10 w-full border border-subtle !bg-surface-1 pr-12 disable-autofill-style placeholder:text-placeholder"
           autoComplete="off"
-          autoFocus
         />
-        <div className="flex w-full items-center justify-between px-1 pt-1 text-11">
-          <p className="flex items-center gap-1 font-medium text-success-primary">
-            <CircleCheck height={12} width={12} />
-            Paste the code sent to your email
-          </p>
-          <button
-            type="button"
-            onClick={() =>
-              void resendForm.handleSubmit().catch(() => {
-                // The failed resend is already reported by the onError callback.
-              })
-            }
-            className={`${
-              isRequestNewCodeDisabled
-                ? "text-placeholder"
-                : "font-medium text-accent-secondary hover:text-accent-secondary"
-            }`}
-            disabled={isRequestNewCodeDisabled}
-          >
-            {resendTimerCode > 0
-              ? `Resend in ${resendTimerCode}s`
-              : isRequestingNewCode
-                ? "Requesting new code"
-                : "Resend"}
-          </button>
-        </div>
+        <AuthCodeResend hint="Paste the code sent to your email" disabled={isRequestNewCodeDisabled} onResend={resend}>
+          {resendTimerCode > 0
+            ? `Resend in ${resendTimerCode}s`
+            : isRequestingNewCode
+              ? "Requesting new code"
+              : "Resend"}
+        </AuthCodeResend>
       </div>
 
       <div className="space-y-2.5">

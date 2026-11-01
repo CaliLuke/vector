@@ -17,22 +17,12 @@ type UseActiveTabProps = {
 };
 
 export const useActiveTab = ({ navigationItems, pathname, workItemId, workItem, projectId }: UseActiveTabProps) => {
-  // Check if a navigation item is active
+  const workItemKey =
+    workItemId && workItem?.project_id === projectId ? (workItem.is_epic ? "epics" : "work_items") : undefined;
   const isActive = useCallback(
-    (item: TNavigationItem) => {
-      // Work item condition
-      const workItemCondition = workItemId && workItem && !workItem?.is_epic && workItem?.project_id === projectId;
-      // Epic condition
-      const epicCondition = workItemId && workItem && workItem?.is_epic && workItem?.project_id === projectId;
-      // Is active
-      const isWorkItemActive = item.key === "work_items" && workItemCondition;
-      const isEpicActive = item.key === "epics" && epicCondition;
-      // Pathname condition - use exact match or startsWith for better accuracy
-      const isPathnameActive = pathname === item.href || pathname.startsWith(item.href + "/");
-      // Return
-      return isWorkItemActive || isEpicActive || isPathnameActive;
-    },
-    [pathname, workItem, workItemId, projectId]
+    (item: TNavigationItem) =>
+      item.key === workItemKey || pathname === item.href || pathname.startsWith(item.href + "/"),
+    [pathname, workItemKey]
   );
 
   // Find active item

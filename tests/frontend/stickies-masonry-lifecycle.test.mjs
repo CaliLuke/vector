@@ -48,7 +48,7 @@ const modules = {
   "../sticky/use-operations": "export const useStickyOperations = () => ({ stickyOperations: {} });",
   "./stickies-loader": "export const StickiesLoader = () => null;",
   "./sticky-dnd-wrapper": `import React from ${JSON.stringify(reactModuleUrl)};
-    export const StickyDNDWrapper = ({ stickyId, workspaceSlug, itemWidth, handleDrop, isLastChild, isInFirstRow, isInLastRow, handleLayout, ...props }) => React.createElement("article", { ...props, "data-sticky-id": stickyId, style: { width: itemWidth } });`,
+    export const StickyDNDWrapper = ({ stickyId, workspaceSlug, itemWidth, handleDrop, isLastChild, isInFirstRow, isInLastRow, handleLayout, ...props }) => React.createElement("article", { ...props, "data-sticky-id": stickyId, style: { width: itemWidth } },React.createElement('button',{type:'button',onClick:handleLayout},'Reflow note'));`,
   "./sticky.helpers": "export const getInstructionFromPayload = () => null;",
 };
 
@@ -83,7 +83,8 @@ async function settleEffects() {
   });
 }
 
-test("sticky masonry cancels pending imports and reloads changed cards until removed", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("sticky masonry cancels pending imports and reloads changed cards until removed", async (t) => {
   lifecycle.calls.length = 0;
   lifecycle.instances.length = 0;
   const { currentUserOptions } = await import("../../apps/web/core/queries/identity.ts");
@@ -142,6 +143,13 @@ test("sticky masonry cancels pending imports and reloads changed cards until rem
   assert.equal(environment.container.querySelectorAll(".sticky-masonry-item").length, 2);
 
   const firstItem = environment.container.querySelector(".sticky-masonry-item");
+  const layoutBeforeEdit = masonry.calls.layout;
+  await React.act(async () => firstItem.querySelector("button").click());
+  assert.equal(
+    masonry.calls.layout,
+    layoutBeforeEdit + 1,
+    "a card content change reflows the existing masonry instance"
+  );
   const layoutCallsBeforeResize = masonry.calls.layout;
   await environment.resize(firstItem);
   assert.equal(masonry.calls.layout, layoutCallsBeforeResize + 1);

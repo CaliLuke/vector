@@ -138,6 +138,8 @@ export const Countdown: Story = {
       if (count === 0) {
         setIsRunning(false);
       }
+
+      return undefined;
     }, [count, isRunning]);
 
     const handleStart = () => {
@@ -174,6 +176,8 @@ export const LiveCounter: Story = {
         const timer = setInterval(() => setCount((prev) => prev + 1), 500);
         return () => clearInterval(timer);
       }
+
+      return undefined;
     }, [isRunning]);
 
     return (

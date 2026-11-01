@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { prependIconExample, appendIconExample } from "../storybook/icon-example-args";
+import { ExampleGroup, ExampleSizes } from "../storybook/example-gallery";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Badge } from "./badge";
 
@@ -80,61 +82,20 @@ export const Large: Story = {
   },
 };
 
-export const WithPrependIcon: Story = {
-  args: {
-    prependIcon: (
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M12 5v14m-7-7h14" />
-      </svg>
-    ),
-    children: "With Prepend Icon",
-  },
-};
+export const WithPrependIcon: Story = prependIconExample;
 
-export const WithAppendIcon: Story = {
-  args: {
-    appendIcon: (
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M9 5l7 7-7 7" />
-      </svg>
-    ),
-    children: "With Append Icon",
-  },
-};
+export const WithAppendIcon: Story = appendIconExample;
 
 export const AllVariants: Story = {
   render() {
     return (
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <h3 className="text-16 font-semibold">Primary Variants</h3>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="neutral">Neutral</Badge>
-            <Badge variant="brand">Brand</Badge>
-            <Badge variant="warning">Warning</Badge>
-            <Badge variant="success">Success</Badge>
-            <Badge variant="danger">Danger</Badge>
-          </div>
-        </div>
-      </div>
+      <ExampleGroup title="Primary Variants">
+        <Badge variant="neutral">Neutral</Badge>
+        <Badge variant="brand">Brand</Badge>
+        <Badge variant="warning">Warning</Badge>
+        <Badge variant="success">Success</Badge>
+        <Badge variant="danger">Danger</Badge>
+      </ExampleGroup>
     );
   },
 };
@@ -142,13 +103,11 @@ export const AllVariants: Story = {
 export const AllSizes: Story = {
   render() {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Badge size="sm">Small</Badge>
-          <Badge size="base">Base</Badge>
-          <Badge size="lg">Large</Badge>
-        </div>
-      </div>
+      <ExampleSizes>
+        <Badge size="sm">Small</Badge>
+        <Badge size="base">Base</Badge>
+        <Badge size="lg">Large</Badge>
+      </ExampleSizes>
     );
   },
 };

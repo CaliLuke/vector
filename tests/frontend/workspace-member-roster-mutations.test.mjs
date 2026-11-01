@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { MutationObserver, QueryClient, QueryClientProvider, QueryObserver } from "@tanstack/react-query";
@@ -41,33 +42,44 @@ function InvitationCountWithStatus() {
   );
 }
 
+async function promoteTargetMember(t, client) {
+  const update = t.mock.method(WorkspaceService.prototype, "updateWorkspaceMember", async () => ({
+    id: "m-target",
+    member: { id: "target" },
+    role: ContractEnums.EUserPermissions.ADMIN,
+  }));
+
+  await new MutationObserver(client, updateWorkspaceMemberRoleOptions(client, "actor", "acme", "target")).mutate(
+    ContractEnums.EUserPermissions.ADMIN
+  );
+  return update;
+}
+
 await test("workspace role write updates only the exact current workspace projection", async (t) => {
   const { client } = fixture(t);
   const currentScope = {
     accountId: "actor",
     workspaceSlug: "acme",
-    membershipRole: 20,
+    membershipRole: ContractEnums.EUserPermissions.ADMIN,
     membershipRevision: "revision-2",
   };
   const currentKey = memberRosterKeys.workspace(currentScope);
   const priorKey = memberRosterKeys.workspace({ ...currentScope, membershipRevision: "revision-1" });
   const invitationKey = workspaceInvitationKeys.list(currentScope);
-  const projectKey = memberRosterKeys.project({ ...currentScope, projectId: "p1", projectRole: 20 });
-  const currentRows = [{ id: "m-target", member: { id: "target" }, role: 15 }];
-  const oldRows = [{ id: "m-target", member: { id: "target" }, role: 5 }];
-  const invitations = [{ id: "inv-1", role: 15, responded_at: null }];
-  const projectMemberships = [{ id: "pm-1", member: "target", role: 15 }];
+  const projectKey = memberRosterKeys.project({
+    ...currentScope,
+    projectId: "p1",
+    projectRole: ContractEnums.EUserPermissions.ADMIN,
+  });
+  const currentRows = [{ id: "m-target", member: { id: "target" }, role: ContractEnums.EUserPermissions.MEMBER }];
+  const oldRows = [{ id: "m-target", member: { id: "target" }, role: ContractEnums.EUserPermissions.GUEST }];
+  const invitations = [{ id: "inv-1", role: ContractEnums.EUserPermissions.MEMBER, responded_at: null }];
+  const projectMemberships = [{ id: "pm-1", member: "target", role: ContractEnums.EUserPermissions.MEMBER }];
   client.setQueryData(currentKey, currentRows);
   client.setQueryData(priorKey, oldRows);
   client.setQueryData(invitationKey, invitations);
   client.setQueryData(projectKey, projectMemberships);
-  const update = t.mock.method(WorkspaceService.prototype, "updateWorkspaceMember", async () => ({
-    id: "m-target",
-    member: { id: "target" },
-    role: 20,
-  }));
-
-  await new MutationObserver(client, updateWorkspaceMemberRoleOptions(client, "actor", "acme", "target")).mutate(20);
+  const update = await promoteTargetMember(t, client);
 
   assert.equal(client.getQueryData(currentKey)[0].role, 20);
   assert.equal(client.getQueryData(priorKey), oldRows);
@@ -81,7 +93,7 @@ await test("accepted bulk invitation stays successful when its captured list ref
   const scope = {
     accountId: "actor",
     workspaceSlug: "acme",
-    membershipRole: 20,
+    membershipRole: ContractEnums.EUserPermissions.ADMIN,
     membershipRevision: "revision-2",
   };
   const listKey = workspaceInvitationKeys.list(scope);
@@ -97,7 +109,7 @@ await test("accepted bulk invitation stays successful when its captured list ref
   const invite = t.mock.method(WorkspaceService.prototype, "inviteWorkspace", async () => ({ message: "sent" }));
   const mutation = new MutationObserver(client, inviteWorkspaceOptions(client, "actor", "acme"));
 
-  await mutation.mutate({ emails: [{ email: "new@example.test", role: 15 }] });
+  await mutation.mutate({ emails: [{ email: "new@example.test", role: ContractEnums.EUserPermissions.MEMBER }] });
 
   assert.equal(mutation.getCurrentResult().status, "success");
   assert.equal(invite.mock.callCount(), 1);
@@ -113,12 +125,16 @@ await test("invitation hook hides cached rows after active membership refetch fa
   });
   client.setQueryData(identityKeys.currentUser(), { id: "actor" });
   const membershipKey = permissionKeys.workspaceMembership("actor", "acme");
-  client.setQueryData(membershipKey, { is_active: true, role: 20, updated_at: "revision-2" });
+  client.setQueryData(membershipKey, {
+    is_active: true,
+    role: ContractEnums.EUserPermissions.ADMIN,
+    updated_at: "revision-2",
+  });
   client.setQueryData(
     workspaceInvitationKeys.list({
       accountId: "actor",
       workspaceSlug: "acme",
-      membershipRole: 20,
+      membershipRole: ContractEnums.EUserPermissions.ADMIN,
       membershipRevision: "revision-2",
     }),
     [{ id: "cached-invitation" }]
@@ -147,13 +163,13 @@ await test("invitation hook hides cached rows after invitation-list refetch fail
   client.setQueryData(identityKeys.currentUser(), { id: "actor" });
   client.setQueryData(permissionKeys.workspaceMembership("actor", "acme"), {
     is_active: true,
-    role: 20,
+    role: ContractEnums.EUserPermissions.ADMIN,
     updated_at: "revision-2",
   });
   const invitationKey = workspaceInvitationKeys.list({
     accountId: "actor",
     workspaceSlug: "acme",
-    membershipRole: 20,
+    membershipRole: ContractEnums.EUserPermissions.ADMIN,
     membershipRevision: "revision-2",
   });
   client.setQueryData(invitationKey, [{ id: "cached-invitation" }]);
@@ -178,12 +194,18 @@ await test("invitation hook hides cached rows after invitation-list refetch fail
 
 await test("inactive workspace membership cannot authorize a role write", async (t) => {
   const { client, membershipKey } = fixture(t);
-  client.setQueryData(membershipKey, { is_active: false, role: 20, updated_at: "revision-2" });
+  client.setQueryData(membershipKey, {
+    is_active: false,
+    role: ContractEnums.EUserPermissions.ADMIN,
+    updated_at: "revision-2",
+  });
   const update = t.mock.method(WorkspaceService.prototype, "updateWorkspaceMember", async () => {
     throw new Error("must not send");
   });
   await assert.rejects(
-    new MutationObserver(client, updateWorkspaceMemberRoleOptions(client, "actor", "acme", "target")).mutate(20),
+    new MutationObserver(client, updateWorkspaceMemberRoleOptions(client, "actor", "acme", "target")).mutate(
+      ContractEnums.EUserPermissions.ADMIN
+    ),
     /admin/
   );
   assert.equal(update.mock.callCount(), 0);
@@ -196,12 +218,12 @@ await test("accepted workspace guest role change refreshes captured project rost
   const update = t.mock.method(WorkspaceService.prototype, "updateWorkspaceMember", async () => ({
     id: "target-membership",
     member: { id: "target" },
-    role: 5,
+    role: ContractEnums.EUserPermissions.GUEST,
     is_active: true,
   }));
   const mutation = new MutationObserver(client, updateWorkspaceMemberRoleOptions(client, "actor", "acme", "target"));
 
-  await mutation.mutate(5);
+  await mutation.mutate(ContractEnums.EUserPermissions.GUEST);
 
   assert.equal(mutation.getCurrentResult().status, "success");
   assert.equal(update.mock.callCount(), 1);
@@ -240,10 +262,10 @@ await test("accepted member role cancels a deferred stale roster read before cac
   const rosterKey = memberRosterKeys.workspace({
     accountId: "actor",
     workspaceSlug: "acme",
-    membershipRole: 20,
+    membershipRole: ContractEnums.EUserPermissions.ADMIN,
     membershipRevision: "revision-2",
   });
-  const original = [{ id: "m-target", member: { id: "target" }, role: 15 }];
+  const original = [{ id: "m-target", member: { id: "target" }, role: ContractEnums.EUserPermissions.MEMBER }];
   client.setQueryData(rosterKey, original);
   let resolveOldRead;
   const observer = new QueryObserver(client, {
@@ -255,16 +277,10 @@ await test("accepted member role cancels a deferred stale roster read before cac
   const unsubscribe = observer.subscribe(() => {});
   t.after(unsubscribe);
   await waitForFetch(client, rosterKey);
-  const update = t.mock.method(WorkspaceService.prototype, "updateWorkspaceMember", async () => ({
-    id: "m-target",
-    member: { id: "target" },
-    role: 20,
-  }));
-
-  await new MutationObserver(client, updateWorkspaceMemberRoleOptions(client, "actor", "acme", "target")).mutate(20);
+  const update = await promoteTargetMember(t, client);
   assert.equal(client.getQueryData(rosterKey)[0].role, 20);
 
-  resolveOldRead([{ id: "m-target", member: { id: "target" }, role: 15 }]);
+  resolveOldRead([{ id: "m-target", member: { id: "target" }, role: ContractEnums.EUserPermissions.MEMBER }]);
   await new Promise(setImmediate);
   assert.equal(client.getQueryData(rosterKey)[0].role, 20);
   assert.equal(update.mock.callCount(), 1);
@@ -275,11 +291,13 @@ await test("accepted member role preserves a roster query replaced during cancel
   const rosterKey = memberRosterKeys.workspace({
     accountId: "actor",
     workspaceSlug: "acme",
-    membershipRole: 20,
+    membershipRole: ContractEnums.EUserPermissions.ADMIN,
     membershipRevision: "revision-2",
   });
-  client.setQueryData(rosterKey, [{ id: "m-target", member: { id: "target" }, role: 15 }]);
-  const replacement = [{ id: "replacement-row", member: { id: "target" }, role: 5 }];
+  client.setQueryData(rosterKey, [
+    { id: "m-target", member: { id: "target" }, role: ContractEnums.EUserPermissions.MEMBER },
+  ]);
+  const replacement = [{ id: "replacement-row", member: { id: "target" }, role: ContractEnums.EUserPermissions.GUEST }];
   let resolveReplacement;
   const replacementReady = new Promise((resolve) => (resolveReplacement = resolve));
   let sawFetch = false;
@@ -309,10 +327,12 @@ await test("accepted member role preserves a roster query replaced during cancel
   t.mock.method(WorkspaceService.prototype, "updateWorkspaceMember", async () => ({
     id: "m-target",
     member: { id: "target" },
-    role: 20,
+    role: ContractEnums.EUserPermissions.ADMIN,
   }));
 
-  await new MutationObserver(client, updateWorkspaceMemberRoleOptions(client, "actor", "acme", "target")).mutate(20);
+  await new MutationObserver(client, updateWorkspaceMemberRoleOptions(client, "actor", "acme", "target")).mutate(
+    ContractEnums.EUserPermissions.ADMIN
+  );
   await replacementReady;
 
   assert.equal(client.getQueryData(rosterKey), replacement);
@@ -323,12 +343,12 @@ await test("failed concurrent member role write cannot undo another accepted row
   const rosterKey = memberRosterKeys.workspace({
     accountId: "actor",
     workspaceSlug: "acme",
-    membershipRole: 20,
+    membershipRole: ContractEnums.EUserPermissions.ADMIN,
     membershipRevision: "revision-2",
   });
   client.setQueryData(rosterKey, [
-    { id: "m-a", member: { id: "member-a" }, role: 15 },
-    { id: "m-b", member: { id: "member-b" }, role: 15 },
+    { id: "m-a", member: { id: "member-a" }, role: ContractEnums.EUserPermissions.MEMBER },
+    { id: "m-b", member: { id: "member-b" }, role: ContractEnums.EUserPermissions.MEMBER },
   ]);
   let rejectA;
   let resolveB;
@@ -347,12 +367,12 @@ await test("failed concurrent member role write cannot undo another accepted row
   const mutationA = new MutationObserver(client, updateWorkspaceMemberRoleOptions(client, "actor", "acme", "member-a"));
   const mutationB = new MutationObserver(client, updateWorkspaceMemberRoleOptions(client, "actor", "acme", "member-b"));
 
-  const failedWrite = mutationA.mutate(20);
-  const acceptedWrite = mutationB.mutate(20);
+  const failedWrite = mutationA.mutate(ContractEnums.EUserPermissions.ADMIN);
+  const acceptedWrite = mutationB.mutate(ContractEnums.EUserPermissions.ADMIN);
   await Promise.all([startedA, startedB]);
   rejectA(new Error("member A rejected"));
   await assert.rejects(failedWrite, /member A rejected/);
-  resolveB({ id: "m-b", member: { id: "member-b" }, role: 20 });
+  resolveB({ id: "m-b", member: { id: "member-b" }, role: ContractEnums.EUserPermissions.ADMIN });
   await acceptedWrite;
 
   const rows = client.getQueryData(rosterKey);
@@ -365,10 +385,12 @@ await test("workspace role and removal mutations serialize per member before cac
   const rosterKey = memberRosterKeys.workspace({
     accountId: "actor",
     workspaceSlug: "acme",
-    membershipRole: 20,
+    membershipRole: ContractEnums.EUserPermissions.ADMIN,
     membershipRevision: "revision-2",
   });
-  client.setQueryData(rosterKey, [{ id: "membership-target", member: { id: "target" }, role: 15, is_active: true }]);
+  client.setQueryData(rosterKey, [
+    { id: "membership-target", member: { id: "target" }, role: ContractEnums.EUserPermissions.MEMBER, is_active: true },
+  ]);
   let resolveRole;
   const roleStarted = new Promise((resolve) => {
     t.mock.method(WorkspaceService.prototype, "updateWorkspaceMember", () => {
@@ -386,13 +408,18 @@ await test("workspace role and removal mutations serialize per member before cac
     removeWorkspaceMemberOptions(client, "actor", "acme", "membership-target", "target")
   );
 
-  const roleWrite = roleMutation.mutate(15);
+  const roleWrite = roleMutation.mutate(ContractEnums.EUserPermissions.MEMBER);
   await roleStarted;
   const removal = removeMutation.mutate();
   await new Promise(setImmediate);
   assert.equal(remove.mock.callCount(), 0);
 
-  resolveRole({ id: "membership-target", member: { id: "target" }, role: 15, is_active: true });
+  resolveRole({
+    id: "membership-target",
+    member: { id: "target" },
+    role: ContractEnums.EUserPermissions.MEMBER,
+    is_active: true,
+  });
   await roleWrite;
   await removal;
 
@@ -405,11 +432,11 @@ await test("failed invitation A update cannot roll back accepted invitation B", 
   const invitationKey = workspaceInvitationKeys.list({
     accountId: "actor",
     workspaceSlug: "acme",
-    membershipRole: 20,
+    membershipRole: ContractEnums.EUserPermissions.ADMIN,
     membershipRevision: "revision-2",
   });
-  const invitationA = { id: "inv-a", email: "a@example.test", role: 15 };
-  const invitationB = { id: "inv-b", email: "b@example.test", role: 15 };
+  const invitationA = { id: "inv-a", email: "a@example.test", role: ContractEnums.EUserPermissions.MEMBER };
+  const invitationB = { id: "inv-b", email: "b@example.test", role: ContractEnums.EUserPermissions.MEMBER };
   client.setQueryData(invitationKey, [invitationA, invitationB]);
   let rejectA;
   let resolveB;
@@ -428,10 +455,15 @@ await test("failed invitation A update cannot roll back accepted invitation B", 
   const mutationA = new MutationObserver(client, updateWorkspaceInvitationOptions(client, "actor", "acme", "inv-a"));
   const mutationB = new MutationObserver(client, updateWorkspaceInvitationOptions(client, "actor", "acme", "inv-b"));
 
-  const failedWrite = mutationA.mutate({ role: 20 });
-  const acceptedWrite = mutationB.mutate({ role: 5 });
+  const failedWrite = mutationA.mutate({ role: ContractEnums.EUserPermissions.ADMIN });
+  const acceptedWrite = mutationB.mutate({ role: ContractEnums.EUserPermissions.GUEST });
   await Promise.all([startedA, startedB]);
-  resolveB({ ...invitationB, role: 5, responded_at: null, workspace: { logo_url: null } });
+  resolveB({
+    ...invitationB,
+    role: ContractEnums.EUserPermissions.GUEST,
+    responded_at: null,
+    workspace: { logo_url: null },
+  });
   await acceptedWrite;
   rejectA(new Error("invitation A rejected"));
   await assert.rejects(failedWrite, /invitation A rejected/);

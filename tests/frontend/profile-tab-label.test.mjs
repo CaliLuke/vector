@@ -9,8 +9,8 @@ import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { React } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
-globalThis.__profileTabLabelReact = React;
-const react = "const React = globalThis.__profileTabLabelReact;";
+globalThis.profileTabLabelReact = React;
+const react = "const React = globalThis.profileTabLabelReact;";
 const modules = {
   "@plane/i18n": 'export const useTranslation = () => ({t: key => key === "profile.tabs.created" ? "Créés" : key});',
   "@/components/core/app-header": "export const AppHeader = ({header}) => header;",
@@ -38,7 +38,8 @@ registerHooks({
   },
 });
 
-test("narrow profile navigation receives the translated active-tab label", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("narrow profile navigation receives the translated active-tab label", async (t) => {
   const environment = await createReactDomTestEnvironment();
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   t.after(() => environment.unmount(() => queryClient.clear()));

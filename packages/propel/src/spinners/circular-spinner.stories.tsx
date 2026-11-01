@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { SpinnerColorExamples } from "./spinner-examples";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Spinner } from "./circular-spinner";
 
@@ -90,30 +91,7 @@ export const AllSizes: Story = {
 
 export const ColorVariations: Story = {
   render() {
-    return (
-      <div className="flex items-center gap-6">
-        <div className="text-center">
-          <Spinner className="text-blue-500" />
-          <p className="text-gray-600 mt-2 text-11">Blue</p>
-        </div>
-        <div className="text-center">
-          <Spinner className="text-success-primary" />
-          <p className="text-gray-600 mt-2 text-11">Green</p>
-        </div>
-        <div className="text-center">
-          <Spinner className="text-danger-primary" />
-          <p className="text-gray-600 mt-2 text-11">Red</p>
-        </div>
-        <div className="text-center">
-          <Spinner className="text-purple-500" />
-          <p className="text-gray-600 mt-2 text-11">Purple</p>
-        </div>
-        <div className="text-center">
-          <Spinner className="text-orange-500" />
-          <p className="text-gray-600 mt-2 text-11">Orange</p>
-        </div>
-      </div>
-    );
+    return <SpinnerColorExamples renderSpinner={(className) => <Spinner className={className} />} />;
   },
 };
 

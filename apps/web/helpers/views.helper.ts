@@ -21,6 +21,7 @@ export const VIEW_ACCESS_SPECIFIERS: {
   i18n_label: string;
   icon: LucideIcon | React.FC<ISvgIcons>;
 }[] = VIEW_ACCESS_SPECIFIERS_CONSTANTS.map((option) => ({
-  ...option,
-  icon: VIEW_ACCESS_ICONS[option.key as keyof typeof VIEW_ACCESS_ICONS],
+  key: option.key,
+  i18n_label: option.i18n_label,
+  icon: VIEW_ACCESS_ICONS[option.key],
 }));

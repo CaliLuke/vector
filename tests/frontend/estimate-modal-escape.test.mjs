@@ -15,7 +15,8 @@ registerWebTestModules({}, (specifier, context, nextResolve) => {
   return nextResolve(specifier, context);
 });
 
-test("estimate modal Escape closes from a radio and restores its trigger focus", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("estimate modal Escape closes from a radio and restores its trigger focus", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   const previousResizeObserver = globalThis.ResizeObserver;

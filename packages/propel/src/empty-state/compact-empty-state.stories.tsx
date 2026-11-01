@@ -5,6 +5,8 @@
  */
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { emptyStateCommonArgTypes } from "./story-controls";
+import { fn } from "storybook/test";
 import { EmptyStateCompact } from "./compact-empty-state";
 import type { BaseEmptyStateCommonProps } from "./types";
 
@@ -52,26 +54,7 @@ const meta: Meta<BaseEmptyStateCommonProps> = {
       ],
       description: "Predefined asset key (horizontal-stack or illustration)",
     },
-    className: {
-      control: "text",
-      description: "Additional CSS classes to apply to the content wrapper",
-    },
-    rootClassName: {
-      control: "text",
-      description: "Additional CSS classes to apply to the root container",
-    },
-    assetClassName: {
-      control: "text",
-      description: "Additional CSS classes to apply to the asset",
-    },
-    asset: {
-      control: false,
-      description: "Custom React node to display as the visual asset (use this for full control instead of assetKey)",
-    },
-    actions: {
-      control: false,
-      description: "Array of action buttons to display",
-    },
+    ...emptyStateCommonArgTypes,
   },
 };
 
@@ -95,7 +78,7 @@ export const WithAssetKeyAndAction: Story = {
     actions: [
       {
         label: "Create Project",
-        onClick: () => console.log("create-clicked"),
+        onClick: fn().mockName("create-clicked"),
         variant: "primary",
       },
     ],
@@ -110,12 +93,12 @@ export const WithAssetKeyAndMultipleActions: Story = {
     actions: [
       {
         label: "Create Project",
-        onClick: () => console.log("create-clicked"),
+        onClick: fn().mockName("create-clicked"),
         variant: "primary",
       },
       {
         label: "Import",
-        onClick: () => console.log("import-clicked"),
+        onClick: fn().mockName("import-clicked"),
         variant: "secondary",
       },
     ],
@@ -134,7 +117,7 @@ export const WithCustomAsset: Story = {
     actions: [
       {
         label: "Create Item",
-        onClick: () => console.log("create-clicked"),
+        onClick: fn().mockName("create-clicked"),
         variant: "primary",
       },
     ],

@@ -83,7 +83,7 @@ export const IssuePeekOverviewHeader = function IssuePeekOverviewHeader(props: P
     issueId,
     isArchived,
     disabled,
-    embedIssue = false,
+    embedIssue,
     removeRoutePeekId,
     toggleDeleteIssueModal,
     toggleArchiveIssueModal,
@@ -144,8 +144,11 @@ export const IssuePeekOverviewHeader = function IssuePeekOverviewHeader(props: P
         {visiblePeekMode && (
           <div className="flex flex-shrink-0 items-center gap-2">
             <CustomSelect
-              value={visiblePeekMode}
-              onChange={(val: TPeekModes) => setPeekMode(val)}
+              value={visiblePeekMode.key}
+              onChange={(val) => {
+                if (val === null) return;
+                return setPeekMode(val);
+              }}
               customButton={
                 <Tooltip tooltipContent={t("common.toggle_peek_view_layout")} isMobile={isMobile}>
                   <span className="">

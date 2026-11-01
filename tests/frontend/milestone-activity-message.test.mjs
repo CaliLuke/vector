@@ -113,3 +113,35 @@ await test("work-item property activity routes milestone history to its explicit
   );
   assert.equal(document.body.textContent, "removed the milestone Removed release.");
 });
+
+await test("notification history uses bot names and retained removed assignees, and omits deleted values", async (t) => {
+  const env = await createReactDomTestEnvironment();
+  t.after(() => env.unmount());
+  const { NotificationContent } =
+    await import("../../apps/web/core/components/workspace-notifications/sidebar/notification-card/content.tsx");
+  const props = { workspaceId: "w1", workspaceSlug: "acme", projectId: "p1" };
+  const notification = {
+    triggered_by_details: { is_bot: true, first_name: "Automation", display_name: "Other name" },
+    data: { issue_activity: { field: "assignees", verb: "updated", new_value: "", old_value: "Ada <member>" } },
+  };
+  await env.render(React.createElement(NotificationContent, { ...props, notification }));
+  assert.equal(env.container.textContent, "Automation removed assignee Ada <member>.");
+  assert.equal(env.container.querySelector("member"), null);
+  await env.render(
+    React.createElement(NotificationContent, {
+      ...props,
+      notification: { ...notification, data: { issue_activity: { field: "duplicate", verb: "created" } } },
+    })
+  );
+  assert.equal(env.container.textContent, "Automation marked that this work item is a duplicate of .");
+  await env.render(
+    React.createElement(NotificationContent, {
+      ...props,
+      notification: {
+        ...notification,
+        data: { issue_activity: { field: "assignees", verb: "deleted", new_value: "Sensitive removed value" } },
+      },
+    })
+  );
+  assert.equal(env.container.textContent, "Automation added assignee ");
+});

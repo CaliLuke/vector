@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { ISSUE_PRIORITIES } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { CloseIcon } from "@plane/propel/icons";
 // types
@@ -18,6 +19,8 @@ type Props = {
   handleRemoveFilter: (key: keyof TFilters, value: string | null) => void;
 };
 
+const filterKeys: (keyof TFilters)[] = ["state", "priority", "labels"];
+
 const replaceUnderscoreIfSnakeCase = (str: string) => str.replace(/_/g, " ");
 
 export const AppliedFiltersList = function AppliedFiltersList(props: Props) {
@@ -27,10 +30,8 @@ export const AppliedFiltersList = function AppliedFiltersList(props: Props) {
   return (
     <div className="flex flex-wrap items-stretch gap-2">
       {Object.entries(appliedFilters).map(([key, value]) => {
-        const filterKey = key as keyof TFilters;
-        const filterValue = value as TFilters[keyof TFilters];
-
-        if (!filterValue) return;
+        const filterKey = filterKeys.find((candidate) => candidate === key);
+        if (!filterKey || !value) return undefined;
 
         return (
           <div
@@ -42,15 +43,14 @@ export const AppliedFiltersList = function AppliedFiltersList(props: Props) {
               {filterKey === "priority" && (
                 <AppliedPriorityFilters
                   handleRemove={(val) => handleRemoveFilter("priority", val)}
-                  values={(filterValue ?? []) as TFilters["priority"]}
+                  values={value.filter((priority): priority is TFilters["priority"][number] =>
+                    ISSUE_PRIORITIES.some((option) => option.key === priority)
+                  )}
                 />
               )}
 
               {filterKey === "state" && (
-                <AppliedStateFilters
-                  handleRemove={(val) => handleRemoveFilter("state", val)}
-                  values={filterValue ?? []}
-                />
+                <AppliedStateFilters handleRemove={(val) => handleRemoveFilter("state", val)} values={value} />
               )}
 
               <button

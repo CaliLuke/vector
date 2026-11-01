@@ -6,103 +6,59 @@
 
 import type { RequestHandler, Router, Request } from "express";
 import type { WebSocket } from "ws";
-
-import "reflect-metadata";
+import { getMetadata } from "reflect-metadata/no-conflict";
+import { controllerMiddlewares } from "./metadata";
 
 export type HttpMethod = "get" | "post" | "put" | "delete" | "patch" | "options" | "head" | "ws";
+export type ControllerConstructor<Dependencies extends unknown[] = []> = new (...args: Dependencies) => object;
 
-type ControllerInstance = {
-  [key: string]: any;
-};
+const restMethods: ReadonlySet<string> = new Set(["get", "post", "put", "delete", "patch", "options", "head"]);
+function isRestMethod(method: unknown): method is Exclude<HttpMethod, "ws"> {
+  return typeof method === "string" && restMethods.has(method);
+}
 
-export type ControllerConstructor = {
-  new (...args: any[]): ControllerInstance;
-  prototype: ControllerInstance;
-};
-
+export function registerController(router: Router, Controller: ControllerConstructor): void;
+export function registerController<Dependencies extends unknown[]>(
+  router: Router,
+  Controller: ControllerConstructor<Dependencies>,
+  dependencies: Dependencies
+): void;
 export function registerController(
   router: Router,
-  Controller: ControllerConstructor,
+  Controller: new (...args: never[]) => object,
   dependencies: unknown[] = []
 ): void {
-  // Create the controller instance with dependencies
-  const instance = new Controller(...dependencies);
-
-  // Determine if it's a WebSocket controller or REST controller by checking
-  // if it has any methods with the "ws" method metadata
-  const isWebsocket = Object.getOwnPropertyNames(Controller.prototype).some((methodName) => {
-    if (methodName === "constructor") return false;
-    return Reflect.getMetadata("method", instance, methodName) === "ws";
-  });
-
-  if (isWebsocket) {
-    // Register as WebSocket controller
-    // Pass the existing instance with dependencies to avoid creating a new instance without them
-    registerWebSocketController(router, Controller, instance);
-  } else {
-    // Register as REST controller with the existing instance
-    registerRestController(router, Controller, instance);
-  }
-}
-
-function registerRestController(
-  router: Router,
-  Controller: ControllerConstructor,
-  existingInstance?: ControllerInstance
-): void {
-  const instance = existingInstance || new Controller();
-  const baseRoute = Reflect.getMetadata("baseRoute", Controller) as string;
-
-  Object.getOwnPropertyNames(Controller.prototype).forEach((methodName) => {
-    if (methodName === "constructor") return; // Skip the constructor
-
-    const method = Reflect.getMetadata("method", instance, methodName) as HttpMethod;
-    const route = Reflect.getMetadata("route", instance, methodName) as string;
-    const middlewares = (Reflect.getMetadata("middlewares", instance, methodName) as RequestHandler[]) || [];
-
-    if (method && route) {
-      const handler = instance[methodName] as unknown;
-
-      if (typeof handler === "function") {
-        if (method !== "ws") {
-          (router[method] as (path: string, ...handlers: RequestHandler[]) => void)(
-            `${baseRoute}${route}`,
-            ...middlewares,
-            handler.bind(instance)
-          );
-        }
-      }
-    }
-  });
-}
-
-function registerWebSocketController(
-  router: Router,
-  Controller: ControllerConstructor,
-  existingInstance?: ControllerInstance
-): void {
-  const instance = existingInstance || new Controller();
-  const baseRoute = Reflect.getMetadata("baseRoute", Controller) as string;
-
-  Object.getOwnPropertyNames(Controller.prototype).forEach((methodName) => {
-    if (methodName === "constructor") return; // Skip the constructor
-
-    const method = Reflect.getMetadata("method", instance, methodName) as string;
-    const route = Reflect.getMetadata("route", instance, methodName) as string;
-
-    if (method === "ws" && route) {
-      const handler = instance[methodName] as unknown;
-
-      if (typeof handler === "function" && "ws" in router && typeof router.ws === "function") {
-        router.ws(`${baseRoute}${route}`, (ws: WebSocket, req: Request) => {
+  const instance: object = Reflect.construct(Controller, dependencies);
+  const baseRoute: unknown = getMetadata("baseRoute", Controller);
+  if (typeof baseRoute !== "string") throw new TypeError(`Missing controller route for ${Controller.name}`);
+  const names = Object.getOwnPropertyNames(Controller.prototype).filter((name) => name !== "constructor");
+  // Preserve the existing controller-level WebSocket selection contract.
+  const websocket = names.some((name) => getMetadata("method", instance, name) === "ws");
+  for (const name of names) {
+    const method: unknown = getMetadata("method", instance, name);
+    const route: unknown = getMetadata("route", instance, name);
+    if (typeof route !== "string") continue;
+    const handler: unknown = Reflect.get(instance, name);
+    if (typeof handler !== "function") continue;
+    const path = `${baseRoute}${route}`;
+    if (websocket) {
+      if (method === "ws" && "ws" in router && typeof router.ws === "function") {
+        router.ws(path, (socket: WebSocket, request: Request) => {
+          const reportFailure = (error: unknown) => {
+            console.error(`WebSocket error in ${Controller.name}.${name}`, error);
+            socket.close(1011, "Internal server error");
+          };
           try {
-            handler.call(instance, ws, req);
+            void Promise.resolve(Reflect.apply(handler, instance, [socket, request])).catch(reportFailure);
           } catch (error) {
-            console.error(`WebSocket error in ${Controller.name}.${methodName}`, error);
-            ws.close(1011, error instanceof Error ? error.message : "Internal server error");
+            reportFailure(error);
           }
         });
       }
+    } else if (isRestMethod(method)) {
+      const bound: RequestHandler = (request, response, next) =>
+        Reflect.apply(handler, instance, [request, response, next]);
+      router[method](path, ...controllerMiddlewares(instance, name), bound);
     }
-  });
+  }
 }

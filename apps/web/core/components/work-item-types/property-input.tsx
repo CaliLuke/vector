@@ -108,7 +108,13 @@ function SelectionInput({ property, value, onChange, disabled }: PropertyInputPr
   return property.multiple ? (
     <CustomSearchSelect {...props} multiple value={selected} />
   ) : (
-    <CustomSearchSelect {...props} value={selected[0] ?? ""} />
+    <CustomSearchSelect
+      {...props}
+      value={selected[0] ?? ""}
+      onChange={(selection) => {
+        if (selection !== null) onChange(selection);
+      }}
+    />
   );
 }
 function CascadingInput({ property, value, onChange, disabled, draft }: PropertyInputProps) {

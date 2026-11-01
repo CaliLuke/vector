@@ -10,7 +10,6 @@ import React, { useCallback, useMemo } from "react";
 import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { CycleIcon, IntakeIcon, ModuleIcon, PageIcon, ViewsIcon, WorkItemsIcon } from "@plane/propel/icons";
-import type { EUserProjectRoles } from "@plane/types";
 // plane ui
 // components
 import { SidebarNavItem } from "@/components/sidebar/sidebar-navigation";
@@ -24,7 +23,7 @@ export type TNavigationItem = {
   name: string;
   href: string;
   icon: React.ElementType;
-  access: EUserPermissions[] | EUserProjectRoles[];
+  access: EUserPermissions[];
   shouldRender: boolean;
   sortOrder: number;
   i18n_key: string;
@@ -66,12 +65,12 @@ export const ProjectNavigation = function ProjectNavigation(props: TProjectItems
   };
 
   const baseNavigation = useCallback(
-    (workspaceSlug: string, projectId: string): TNavigationItem[] => [
+    (targetWorkspaceSlug: string, targetProjectId: string): TNavigationItem[] => [
       {
         i18n_key: "sidebar.work_items",
         key: "work_items",
         name: "Work items",
-        href: `/${workspaceSlug}/projects/${projectId}/issues`,
+        href: `/${targetWorkspaceSlug}/projects/${targetProjectId}/issues`,
         icon: WorkItemsIcon,
         access: [EUserPermissions.ADMIN, EUserPermissions.MEMBER, EUserPermissions.GUEST],
         shouldRender: true,
@@ -81,7 +80,7 @@ export const ProjectNavigation = function ProjectNavigation(props: TProjectItems
         i18n_key: "sidebar.cycles",
         key: "cycles",
         name: "Cycles",
-        href: `/${workspaceSlug}/projects/${projectId}/cycles`,
+        href: `/${targetWorkspaceSlug}/projects/${targetProjectId}/cycles`,
         icon: CycleIcon,
         access: [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
         shouldRender: project?.cycle_view ?? false,
@@ -91,7 +90,7 @@ export const ProjectNavigation = function ProjectNavigation(props: TProjectItems
         i18n_key: "sidebar.modules",
         key: "modules",
         name: "Modules",
-        href: `/${workspaceSlug}/projects/${projectId}/modules`,
+        href: `/${targetWorkspaceSlug}/projects/${targetProjectId}/modules`,
         icon: ModuleIcon,
         access: [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
         shouldRender: project?.module_view ?? false,
@@ -101,7 +100,7 @@ export const ProjectNavigation = function ProjectNavigation(props: TProjectItems
         i18n_key: "sidebar.views",
         key: "views",
         name: "Views",
-        href: `/${workspaceSlug}/projects/${projectId}/views`,
+        href: `/${targetWorkspaceSlug}/projects/${targetProjectId}/views`,
         icon: ViewsIcon,
         access: [EUserPermissions.ADMIN, EUserPermissions.MEMBER, EUserPermissions.GUEST],
         shouldRender: project?.issue_views_view ?? false,
@@ -111,7 +110,7 @@ export const ProjectNavigation = function ProjectNavigation(props: TProjectItems
         i18n_key: "sidebar.pages",
         key: "pages",
         name: "Pages",
-        href: `/${workspaceSlug}/projects/${projectId}/pages`,
+        href: `/${targetWorkspaceSlug}/projects/${targetProjectId}/pages`,
         icon: PageIcon,
         access: [EUserPermissions.ADMIN, EUserPermissions.MEMBER, EUserPermissions.GUEST],
         shouldRender: project?.page_view ?? false,
@@ -121,7 +120,7 @@ export const ProjectNavigation = function ProjectNavigation(props: TProjectItems
         i18n_key: "sidebar.intake",
         key: "intake",
         name: "Intake",
-        href: `/${workspaceSlug}/projects/${projectId}/intake`,
+        href: `/${targetWorkspaceSlug}/projects/${targetProjectId}/intake`,
         icon: IntakeIcon,
         access: [EUserPermissions.ADMIN, EUserPermissions.MEMBER, EUserPermissions.GUEST],
         shouldRender: project?.inbox_view ?? false,
@@ -133,18 +132,18 @@ export const ProjectNavigation = function ProjectNavigation(props: TProjectItems
 
   // memoized navigation items and adding additional navigation items
   const navigationItemsMemo = useMemo(() => {
-    const navigationItems = (workspaceSlug: string, projectId: string): TNavigationItem[] => {
-      const navItems = baseNavigation(workspaceSlug, projectId);
+    const navigationItems = (targetWorkspaceSlug: string, targetProjectId: string): TNavigationItem[] => {
+      const navItems = baseNavigation(targetWorkspaceSlug, targetProjectId);
 
       if (additionalNavigationItems) {
-        navItems.push(...additionalNavigationItems(workspaceSlug, projectId));
+        navItems.push(...additionalNavigationItems(targetWorkspaceSlug, targetProjectId));
       }
 
       return navItems;
     };
 
     // sort navigation items by sortOrder
-    const sortedNavigationItems = navigationItems(workspaceSlug, projectId).sort(
+    const sortedNavigationItems = navigationItems(workspaceSlug, projectId).toSorted(
       (a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)
     );
 
@@ -173,7 +172,7 @@ export const ProjectNavigation = function ProjectNavigation(props: TProjectItems
   return (
     <>
       {navigationItemsMemo.map((item) => {
-        if (!item.shouldRender) return;
+        if (!item.shouldRender) return undefined;
 
         const hasAccess = canProject(item.access);
         if (!hasAccess) return null;
@@ -182,7 +181,7 @@ export const ProjectNavigation = function ProjectNavigation(props: TProjectItems
 
         return (
           <Link key={item.key} to={item.href} onClick={handleProjectClick}>
-            <SidebarNavItem isActive={!!isActive(item)}>
+            <SidebarNavItem isActive={isActive(item)}>
               <div className="flex w-full items-center justify-between gap-1.5 py-[1px]">
                 <div className="flex items-center gap-1.5">
                   <item.icon

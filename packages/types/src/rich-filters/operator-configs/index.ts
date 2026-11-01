@@ -8,7 +8,6 @@ import type { EQUALITY_OPERATOR, COLLECTION_OPERATOR, COMPARISON_OPERATOR } from
 import type { TCoreExactOperatorConfigs, TCoreInOperatorConfigs, TCoreRangeOperatorConfigs } from "./core";
 import type {
   TExtendedExactOperatorConfigs,
-  TExtendedInOperatorConfigs,
   TExtendedOperatorSpecificConfigs,
   TExtendedRangeOperatorConfigs,
 } from "./extended";
@@ -23,7 +22,7 @@ export type TExactOperatorConfigs = TCoreExactOperatorConfigs | TExtendedExactOp
 /**
  * IN operator - combines core and extended configurations
  */
-export type TInOperatorConfigs = TCoreInOperatorConfigs | TExtendedInOperatorConfigs;
+export type TInOperatorConfigs = TCoreInOperatorConfigs;
 
 /**
  * RANGE operator - combines core and extended configurations

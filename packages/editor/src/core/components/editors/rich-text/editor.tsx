@@ -9,7 +9,7 @@ import { forwardRef, useCallback } from "react";
 import { EditorWrapper } from "@/components/editors";
 import { BlockMenu, EditorBubbleMenu } from "@/components/menus";
 // extensions
-import { SideMenuExtension } from "@/extensions";
+import { createSideMenuExtension } from "@/extensions";
 // plane editor imports
 import { RichTextEditorAdditionalExtensions } from "@/plane-editor/extensions/rich-text-extensions";
 // types
@@ -30,7 +30,7 @@ function RichTextEditor(props: IRichTextEditorProps) {
   const getExtensions = useCallback(() => {
     const extensions = [
       ...externalExtensions,
-      SideMenuExtension({
+      createSideMenuExtension({
         aiEnabled: false,
         dragDropEnabled: !!dragDropEnabled,
       }),
@@ -73,7 +73,7 @@ const RichTextEditorWithRef = forwardRef(function RichTextEditorWithRef(
   props: IRichTextEditorProps,
   ref: React.ForwardedRef<EditorRefApi>
 ) {
-  return <RichTextEditor {...props} forwardedRef={ref as React.MutableRefObject<EditorRefApi | null>} />;
+  return <RichTextEditor {...props} forwardedRef={ref} />;
 });
 
 RichTextEditorWithRef.displayName = "RichTextEditorWithRef";

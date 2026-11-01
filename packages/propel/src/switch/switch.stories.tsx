@@ -39,7 +39,7 @@ export const WithLabel: Story = {
     return (
       <div className="flex items-center gap-2">
         <Switch {...args} value={value} onChange={setValue} label="Enable notifications" />
-        <label className="text-13">Enable notifications</label>
+        <span className="text-13">Enable notifications</span>
       </div>
     );
   },
@@ -218,7 +218,7 @@ export const CustomStyles: Story = {
 
 export const MultipleControls: Story = {
   render() {
-    const [settings, setSettings] = useState({
+    const [settings, setSettings] = useState<Record<string, boolean>>({
       feature1: true,
       feature2: false,
       feature3: true,
@@ -237,7 +237,7 @@ export const MultipleControls: Story = {
           {Object.entries(settings).map(([key, value]) => (
             <div key={key} className="flex items-center justify-between">
               <span className="text-13 capitalize">{key.replace(/([A-Z])/g, " $1").trim()}</span>
-              <Switch value={value} onChange={() => toggleSetting(key as keyof typeof settings)} size="sm" />
+              <Switch value={value} onChange={() => toggleSetting(key)} size="sm" />
             </div>
           ))}
         </div>

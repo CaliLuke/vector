@@ -15,7 +15,6 @@ import { insertEmptyParagraphAtNodeBoundaries } from "@/helpers/insert-empty-par
 // types
 import type { TFileHandler } from "@/types";
 // local imports
-import type { CustomImageNodeViewProps } from "./components/node-view";
 import { CustomImageNodeView } from "./components/node-view";
 import { CustomImageExtensionConfig } from "./extension-config";
 import type { CustomImageExtensionStorage } from "./types";
@@ -51,14 +50,14 @@ export function CustomImageExtension(props: Props) {
     addCommands() {
       return {
         insertImageComponent:
-          (props) =>
+          (componentProps) =>
           ({ commands }) => {
             // Early return if there's an invalid file being dropped
             if (
-              props?.file &&
+              componentProps?.file &&
               !isFileValid({
                 acceptedMimeTypes: ACCEPTED_IMAGE_MIME_TYPES,
-                file: props.file,
+                file: componentProps.file,
                 maxFileSize: this.storage.maxFileSize,
                 onError: (_error, message) => alert(message),
               })
@@ -73,14 +72,14 @@ export function CustomImageExtension(props: Props) {
             const imageComponentImageFileMap = getImageComponentImageFileMap(this.editor);
 
             if (imageComponentImageFileMap) {
-              if (props?.event === "drop" && props.file) {
+              if (componentProps?.event === "drop" && componentProps.file) {
                 imageComponentImageFileMap.set(fileId, {
-                  file: props.file,
-                  event: props.event,
+                  file: componentProps.file,
+                  event: componentProps.event,
                 });
-              } else if (props.event === "insert") {
+              } else if (componentProps.event === "insert") {
                 imageComponentImageFileMap.set(fileId, {
-                  event: props.event,
+                  event: componentProps.event,
                   hasOpenedFileInputOnce: false,
                 });
               }
@@ -91,8 +90,8 @@ export function CustomImageExtension(props: Props) {
               [ECustomImageAttributeNames.STATUS]: ECustomImageStatus.PENDING,
             };
 
-            if (props.pos) {
-              return commands.insertContentAt(props.pos, {
+            if (componentProps.pos) {
+              return commands.insertContentAt(componentProps.pos, {
                 type: this.name,
                 attrs: attributes,
               });
@@ -112,9 +111,7 @@ export function CustomImageExtension(props: Props) {
       };
     },
     addNodeView() {
-      return ReactNodeViewRenderer((props) => (
-        <CustomImageNodeView {...props} node={props.node as CustomImageNodeViewProps["node"]} />
-      ));
+      return ReactNodeViewRenderer(CustomImageNodeView);
     },
   });
 }

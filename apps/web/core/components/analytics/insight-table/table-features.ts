@@ -51,6 +51,7 @@ declare module "@tanstack/react-table" {
     in out TData extends RowData,
     TValue extends CellData = CellData,
   > {
+    align?: "left" | "right";
     export: {
       key: string;
       value: (row: Row<TFeatures, TData>) => string | number;

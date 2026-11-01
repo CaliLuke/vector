@@ -5,7 +5,13 @@
  */
 
 import { API_BASE_URL } from "@plane/constants";
-import type { IWorkspaceMemberInvitation, IWorkspaceBulkInviteFormData, IWorkspaceMember } from "@plane/types";
+import type {
+  TWorkspaceInvitationDecision,
+  TWorkspaceInvitationsAccept,
+  IWorkspaceMemberInvitation,
+  IWorkspaceBulkInviteFormData,
+  IWorkspaceMember,
+} from "@plane/types";
 import { APIService } from "../api.service";
 
 /**
@@ -24,11 +30,7 @@ export class WorkspaceInvitationService extends APIService {
    * @throws {Error} If the API request fails
    */
   async userInvitations(): Promise<IWorkspaceMemberInvitation[]> {
-    return this.get("/api/users/me/workspaces/invitations/")
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get("/api/users/me/workspaces/invitations/"));
   }
 
   /**
@@ -38,26 +40,18 @@ export class WorkspaceInvitationService extends APIService {
    * @throws {Error} If the API request fails
    */
   async workspaceInvitations(workspaceSlug: string): Promise<IWorkspaceMemberInvitation[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/invitations/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/invitations/`));
   }
 
   /**
    * Sends bulk invitations to users for a workspace
    * @param {string} workspaceSlug - The unique slug identifier for the workspace
    * @param {IWorkspaceBulkInviteFormData} data - Bulk invitation data containing user information
-   * @returns {Promise<any>} Promise resolving to the invitation response
+   * @returns {Promise<unknown>} Promise resolving to the invitation response
    * @throws {Error} If the API request fails
    */
-  async invite(workspaceSlug: string, data: IWorkspaceBulkInviteFormData): Promise<any> {
-    return this.post(`/api/workspaces/${workspaceSlug}/invitations/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async invite(workspaceSlug: string, data: IWorkspaceBulkInviteFormData): Promise<{ message: string }> {
+    return this.responseData(this.post(`/api/workspaces/${workspaceSlug}/invitations/`, data));
   }
 
   /**
@@ -67,12 +61,12 @@ export class WorkspaceInvitationService extends APIService {
    * @param data
    * @returns
    */
-  async update(workspaceSlug: string, invitationId: string, data: Partial<IWorkspaceMember>): Promise<any> {
-    return this.patch(`/api/workspaces/${workspaceSlug}/invitations/${invitationId}/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async update(
+    workspaceSlug: string,
+    invitationId: string,
+    data: Partial<IWorkspaceMember>
+  ): Promise<IWorkspaceMemberInvitation> {
+    return this.responseData(this.patch(`/api/workspaces/${workspaceSlug}/invitations/${invitationId}/`, data));
   }
 
   /**
@@ -81,43 +75,33 @@ export class WorkspaceInvitationService extends APIService {
    * @param invitationId
    * @returns
    */
-  async destroy(workspaceSlug: string, invitationId: string): Promise<any> {
-    return this.delete(`/api/workspaces/${workspaceSlug}/invitations/${invitationId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async destroy(workspaceSlug: string, invitationId: string): Promise<unknown> {
+    return this.responseData(this.delete(`/api/workspaces/${workspaceSlug}/invitations/${invitationId}/`));
   }
 
   /**
    * Accepts an invitation to join a workspace
    * @param {string} workspaceSlug - The unique slug identifier for the workspace
    * @param {string} invitationId - The unique identifier for the invitation
-   * @param {any} data - Additional data required for joining the workspace
-   * @returns {Promise<any>} Promise resolving to the join response
+   * @param {object} data - Additional data required for joining the workspace
+   * @returns {Promise<unknown>} Promise resolving to the join response
    * @throws {Error} If the API request fails
    */
-  async join(workspaceSlug: string, invitationId: string, data: any): Promise<any> {
-    return this.post(`/api/workspaces/${workspaceSlug}/invitations/${invitationId}/join/`, data, {
-      headers: {},
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async join(workspaceSlug: string, invitationId: string, data: TWorkspaceInvitationDecision): Promise<unknown> {
+    return this.responseData(
+      this.post(`/api/workspaces/${workspaceSlug}/invitations/${invitationId}/join/`, data, {
+        headers: {},
+      })
+    );
   }
 
   /**
    * Accepts multiple workspace invitations at once
-   * @param {any} data - Data containing information about invitations to accept
-   * @returns {Promise<any>} Promise resolving to the bulk join response
+   * @param {object} data - Data containing information about invitations to accept
+   * @returns {Promise<unknown>} Promise resolving to the bulk join response
    * @throws {Error} If the API request fails
    */
-  async joinMany(data: any): Promise<any> {
-    return this.post("/api/users/me/workspaces/invitations/", data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async joinMany(data: TWorkspaceInvitationsAccept): Promise<unknown> {
+    return this.responseData(this.post("/api/users/me/workspaces/invitations/", data));
   }
 }

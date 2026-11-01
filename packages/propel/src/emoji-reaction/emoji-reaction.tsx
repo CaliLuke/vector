@@ -12,6 +12,8 @@ import { Tooltip } from "../tooltip";
 import { cn } from "@plane/utils/common";
 import { IconButton } from "../icon-button";
 
+const EMPTY_USERS: string[] = [];
+
 export interface EmojiReactionType {
   emoji: string;
   count: number;
@@ -49,7 +51,7 @@ const EmojiReaction = React.forwardRef(function EmojiReaction(
     emoji,
     count,
     reacted = false,
-    users = [],
+    users = EMPTY_USERS,
     onReactionClick,
     className,
     showCount = true,

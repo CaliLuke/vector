@@ -4,16 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { STATE_GROUPS } from "@plane/constants";
 import type { IState } from "@plane/types";
+import { sortStates as orderStates } from "@plane/utils/work-item";
 
-export const sortStates = (states: IState[]) => {
-  if (states.length === 0) return [];
-
-  return states.sort((stateA, stateB) => {
-    if (stateA.group === stateB.group) {
-      return stateA.sequence - stateB.sequence;
-    }
-    return Object.keys(STATE_GROUPS).indexOf(stateA.group) - Object.keys(STATE_GROUPS).indexOf(stateB.group);
-  });
-};
+export const sortStates = (states: readonly IState[]): IState[] => orderStates(states) ?? [];

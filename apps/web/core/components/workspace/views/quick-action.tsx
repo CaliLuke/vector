@@ -47,7 +47,7 @@ export function WorkspaceViewQuickActions(props: Props) {
     handleDelete: () => setDeleteViewModal(true),
     handleEdit: () => setUpdateViewModal(true),
     handleOpenInNewTab,
-    handleCopyLink: handleCopyText,
+    handleCopyLink: () => void handleCopyText(),
     workspaceSlug,
     view,
   });

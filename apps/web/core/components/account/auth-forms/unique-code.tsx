@@ -8,11 +8,11 @@ import { showAuthenticationError } from "@/helpers/authentication.helper";
 
 import { useRef } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
-import { CircleCheck, XCircle } from "lucide-react";
+import { XCircle } from "lucide-react";
 import { API_BASE_URL } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
-import { Input, Spinner } from "@plane/ui";
+import { Input, Spinner, AuthCodeResend } from "@plane/ui";
 // constants
 // helpers
 import { EAuthModes } from "@/helpers/authentication.helper";
@@ -51,12 +51,15 @@ export function AuthUniqueCodeForm(props: TAuthUniqueCodeForm) {
   const code = useStore(form.store, (state) => state.values.code);
   const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
   const { t } = useTranslation();
-  const { form: resendForm, cooldown: resendTimerCode } = useResendCodeForm({
+  const {
+    isSubmitting: isRequestingNewCode,
+    cooldown: resendTimerCode,
+    resend,
+  } = useResendCodeForm({
     send: () => generateEmailUniqueCode(email),
     onSent: () => form.setFieldValue("code", ""),
     onError: () => showAuthenticationError(t),
   });
-  const isRequestingNewCode = useStore(resendForm.store, (state) => state.isSubmitting);
 
   const isRequestNewCodeDisabled = isSubmitting || isRequestingNewCode || resendTimerCode > 0;
   const isButtonDisabled = isRequestingNewCode || !code || isSubmitting;
@@ -118,34 +121,18 @@ export function AuthUniqueCodeForm(props: TAuthUniqueCodeForm) {
           placeholder={t("auth.common.unique_code.placeholder")}
           className="h-10 w-full border border-strong !bg-surface-1 pr-12 disable-autofill-style placeholder:text-placeholder"
           autoComplete="off"
-          autoFocus
         />
-        <div className="flex w-full items-center justify-between px-1 pt-1 text-11">
-          <p className="flex items-center gap-1 font-medium text-success-primary">
-            <CircleCheck height={12} width={12} />
-            {t("auth.common.unique_code.paste_code")}
-          </p>
-          <button
-            type="button"
-            onClick={() =>
-              void resendForm.handleSubmit().catch(() => {
-                // The failed resend is already reported by showAuthenticationError.
-              })
-            }
-            className={
-              isRequestNewCodeDisabled
-                ? "text-placeholder"
-                : "font-medium text-accent-secondary hover:text-accent-secondary"
-            }
-            disabled={isRequestNewCodeDisabled}
-          >
-            {resendTimerCode > 0
-              ? t("auth.common.resend_in", { seconds: resendTimerCode })
-              : isRequestingNewCode
-                ? t("auth.common.unique_code.requesting_new_code")
-                : t("common.resend")}
-          </button>
-        </div>
+        <AuthCodeResend
+          hint={t("auth.common.unique_code.paste_code")}
+          disabled={isRequestNewCodeDisabled}
+          onResend={resend}
+        >
+          {resendTimerCode > 0
+            ? t("auth.common.resend_in", { seconds: resendTimerCode })
+            : isRequestingNewCode
+              ? t("auth.common.unique_code.requesting_new_code")
+              : t("common.resend")}
+        </AuthCodeResend>
       </div>
 
       <div className="space-y-2.5">

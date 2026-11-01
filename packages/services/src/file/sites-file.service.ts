@@ -6,6 +6,7 @@
 
 // plane imports
 import { API_BASE_URL } from "@plane/constants";
+import { isAxiosError } from "axios";
 // local services
 import type { TFileEntityInfo, TFileSignedURLResponse } from "@plane/types";
 import { FileUploadService } from "./file-upload.service";
@@ -20,7 +21,7 @@ import { generateFileUploadPayload, getAssetIdFromUrl, getFileMetaDataForUpload 
  * @remarks This service is only available for plane sites
  */
 export class SitesFileService extends FileService {
-  private cancelSource: any;
+  private uploads = new Set<AbortController>();
   fileUploadService: FileUploadService;
 
   /**
@@ -41,12 +42,12 @@ export class SitesFileService extends FileService {
    * @returns {Promise<void>} Promise resolving to void
    * @throws {Error} If the request fails
    */
-  private async updateAssetUploadStatus(anchor: string, assetId: string): Promise<void> {
-    return this.patch(`/api/public/assets/v2/anchor/${anchor}/${assetId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  private async updateAssetUploadStatus(anchor: string, assetId: string, signal: AbortSignal): Promise<void> {
+    signal.throwIfAborted();
+    return this.responseData(
+      this.patch(`/api/public/assets/v2/anchor/${anchor}/${assetId}/`, {}, { signal }),
+      "data-or-error"
+    );
   }
 
   /**
@@ -64,11 +65,7 @@ export class SitesFileService extends FileService {
       asset_ids: string[];
     }
   ): Promise<void> {
-    return this.post(`/api/public/assets/v2/anchor/${anchor}/${entityId}/bulk/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.post(`/api/public/assets/v2/anchor/${anchor}/${entityId}/bulk/`, data));
   }
 
   /**
@@ -80,21 +77,31 @@ export class SitesFileService extends FileService {
    * @throws {Error} If the request fails
    */
   async uploadAsset(anchor: string, data: TFileEntityInfo, file: File): Promise<TFileSignedURLResponse> {
-    const fileMetaData = await getFileMetaDataForUpload(file);
-    return this.post(`/api/public/assets/v2/anchor/${anchor}/`, {
-      ...data,
-      ...fileMetaData,
-    })
-      .then(async (response) => {
-        const signedURLResponse: TFileSignedURLResponse = response?.data;
-        const fileUploadPayload = generateFileUploadPayload(signedURLResponse, file);
-        await this.fileUploadService.uploadFile(signedURLResponse.upload_data.url, fileUploadPayload);
-        await this.updateAssetUploadStatus(anchor, signedURLResponse.asset_id);
-        return signedURLResponse;
-      })
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    const controller = new AbortController();
+    const { signal } = controller;
+    this.uploads.add(controller);
+    try {
+      const fileMetaData = await getFileMetaDataForUpload(file);
+      signal.throwIfAborted();
+      const response = await this.post(
+        `/api/public/assets/v2/anchor/${anchor}/`,
+        {
+          ...data,
+          ...fileMetaData,
+        },
+        { signal }
+      );
+      signal.throwIfAborted();
+      const signedURLResponse: TFileSignedURLResponse = response.data;
+      const fileUploadPayload = generateFileUploadPayload(signedURLResponse, file);
+      await this.fileUploadService.uploadFile(signedURLResponse.upload_data.url, fileUploadPayload, signal);
+      await this.updateAssetUploadStatus(anchor, signedURLResponse.asset_id, signal);
+      return signedURLResponse;
+    } catch (error) {
+      throw isAxiosError(error) ? (error.response?.data ?? error) : error;
+    } finally {
+      this.uploads.delete(controller);
+    }
   }
 
   /**
@@ -107,17 +114,13 @@ export class SitesFileService extends FileService {
   async restoreNewAsset(anchor: string, src: string): Promise<void> {
     // remove the last slash and get the asset id
     const assetId = getAssetIdFromUrl(src);
-    return this.post(`/api/public/assets/v2/anchor/${anchor}/restore/${assetId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.post(`/api/public/assets/v2/anchor/${anchor}/restore/${assetId}/`));
   }
 
   /**
    * Cancels the upload
    */
   cancelUpload() {
-    this.cancelSource.cancelUpload();
+    for (const controller of this.uploads) controller.abort();
   }
 }

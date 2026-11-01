@@ -51,7 +51,7 @@ export const PROFILE_SETTINGS: Record<
   },
 };
 
-export const PROFILE_SETTINGS_TABS: TProfileSettingsTabs[] = Object.keys(PROFILE_SETTINGS) as TProfileSettingsTabs[];
+export const PROFILE_SETTINGS_TABS: TProfileSettingsTabs[] = Object.values(PROFILE_SETTINGS).map((tab) => tab.key);
 
 export const GROUPED_PROFILE_SETTINGS: Record<
   PROFILE_SETTINGS_CATEGORY,

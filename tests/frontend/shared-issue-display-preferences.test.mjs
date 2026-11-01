@@ -1,3 +1,4 @@
+import * as ContractEnums from "../../packages/types/dist/index.mjs";
 import { registerWebTestModules } from "./helpers/web-test-modules.mjs";
 import assert from "node:assert/strict";
 
@@ -29,11 +30,17 @@ await test("shared display preference hooks retain profile and project write sco
   globalThis.profileIssueParams = { workspaceSlug: "acme", userId: "alice" };
   globalThis.profileIssuePreferences = {
     domain: "PROFILE",
-    issueFilters: { displayFilters: { layout: "list" }, displayProperties: { priority: true } },
+    issueFilters: {
+      displayFilters: { layout: ContractEnums.EIssueLayoutTypes.LIST },
+      displayProperties: { priority: true },
+    },
     updateFilters: (...args) => profileWrites.push(args),
   };
   globalThis.projectIssuePreferences = {
-    issueFilters: { displayFilters: { layout: "kanban" }, displayProperties: { priority: false } },
+    issueFilters: {
+      displayFilters: { layout: ContractEnums.EIssueLayoutTypes.KANBAN },
+      displayProperties: { priority: false },
+    },
     projectPreferences: { save: (value) => projectWrites.push(value) },
   };
 
@@ -42,7 +49,10 @@ await test("shared display preference hooks retain profile and project write sco
     return React.createElement(
       "div",
       null,
-      React.createElement("button", { id: "profile-layout", onClick: () => preferences.handleLayoutChange("kanban") }),
+      React.createElement("button", {
+        id: "profile-layout",
+        onClick: () => preferences.handleLayoutChange(ContractEnums.EIssueLayoutTypes.KANBAN),
+      }),
       React.createElement("button", {
         id: "profile-display",
         onClick: () => preferences.handleDisplayFilters({ group_by: "priority" }),
@@ -67,7 +77,10 @@ await test("shared display preference hooks retain profile and project write sco
     return React.createElement(
       "div",
       null,
-      React.createElement("button", { id: "project-layout", onClick: () => preferences.handleLayoutChange("list") }),
+      React.createElement("button", {
+        id: "project-layout",
+        onClick: () => preferences.handleLayoutChange(ContractEnums.EIssueLayoutTypes.LIST),
+      }),
       React.createElement("button", {
         id: "project-display",
         onClick: () => preferences.handleDisplayFilters({ group_by: "priority" }),
@@ -87,12 +100,12 @@ await test("shared display preference hooks retain profile and project write sco
 
   await environment.render(React.createElement(ProfileActions));
   assert.deepEqual(JSON.parse(environment.container.querySelector("#profile-scope").textContent), {
-    layout: "list",
+    layout: ContractEnums.EIssueLayoutTypes.LIST,
     options: { source: "profile-list" },
   });
   await clickDisplayActions("profile");
   assert.deepEqual(profileWrites, [
-    ["display_filters", { layout: "kanban" }],
+    ["display_filters", { layout: ContractEnums.EIssueLayoutTypes.KANBAN }],
     ["display_filters", { group_by: "priority" }],
     ["display_properties", { priority: false }],
   ]);
@@ -101,7 +114,7 @@ await test("shared display preference hooks retain profile and project write sco
   assert.equal(globalThis.projectStoreType, "PROJECT");
   await clickDisplayActions("project");
   assert.deepEqual(projectWrites, [
-    { display_filters: { layout: "list" } },
+    { display_filters: { layout: ContractEnums.EIssueLayoutTypes.LIST } },
     { display_filters: { group_by: "priority" } },
     { display_properties: { priority: true } },
   ]);

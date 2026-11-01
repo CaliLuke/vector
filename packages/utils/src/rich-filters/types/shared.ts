@@ -37,7 +37,7 @@ export const processGroupNode = <P extends TFilterProperty, T>(
   }
   if (isOrGroupNode(group)) return handlers.onOrGroup(group);
   if (isNotGroupNode(group)) return handlers.onNotGroup(group);
-  throw new Error(`Invalid group node: unknown logical operator ${group}`);
+  throw new Error(`Invalid group node: unknown logical operator ${JSON.stringify(group)}`);
 };
 
 /**

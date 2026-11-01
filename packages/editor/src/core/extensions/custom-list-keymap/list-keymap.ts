@@ -5,6 +5,7 @@
  */
 
 import { Extension } from "@tiptap/core";
+import type { Editor } from "@tiptap/core";
 // constants
 import { CORE_EXTENSIONS } from "@/constants/extension";
 // extensions
@@ -37,6 +38,24 @@ export const ListKeymap = ({ tabIndex }: { tabIndex?: number }) =>
     },
 
     addKeyboardShortcuts() {
+      const handleItems = (editor: Editor, operation: "Delete" | "Backspace") => {
+        let handled = false;
+        for (const { itemName, wrapperNames } of this.options.listTypes) {
+          if (editor.state.schema.nodes[itemName] === undefined) continue;
+          const changed =
+            operation === "Delete" ? handleDelete(editor, itemName) : handleBackspace(editor, itemName, wrapperNames);
+          handled = changed || handled;
+        }
+        return handled;
+      };
+      const guarded = (editor: Editor, operation: "Delete" | "Backspace") => {
+        try {
+          return handleItems(editor, operation);
+        } catch (error) {
+          console.error(`Error in handling ${operation}:`, error);
+          return false;
+        }
+      };
       return {
         Tab: () => {
           if (this.editor.isActive(CORE_EXTENSIONS.LIST_ITEM) || this.editor.isActive(CORE_EXTENSIONS.TASK_ITEM)) {
@@ -65,76 +84,10 @@ export const ListKeymap = ({ tabIndex }: { tabIndex?: number }) =>
           }
           return true;
         },
-        Delete: ({ editor }) => {
-          try {
-            let handled = false;
-
-            this.options.listTypes.forEach(({ itemName }) => {
-              if (editor.state.schema.nodes[itemName] === undefined) {
-                return;
-              }
-
-              if (handleDelete(editor, itemName)) {
-                handled = true;
-              }
-            });
-
-            return handled;
-          } catch (e) {
-            console.log("Error in handling Delete:", e);
-            return false;
-          }
-        },
-        "Mod-Delete": ({ editor }) => {
-          let handled = false;
-
-          this.options.listTypes.forEach(({ itemName }) => {
-            if (editor.state.schema.nodes[itemName] === undefined) {
-              return;
-            }
-
-            if (handleDelete(editor, itemName)) {
-              handled = true;
-            }
-          });
-
-          return handled;
-        },
-        Backspace: ({ editor }) => {
-          try {
-            let handled = false;
-
-            this.options.listTypes.forEach(({ itemName, wrapperNames }) => {
-              if (editor.state.schema.nodes[itemName] === undefined) {
-                return;
-              }
-
-              if (handleBackspace(editor, itemName, wrapperNames)) {
-                handled = true;
-              }
-            });
-
-            return handled;
-          } catch (e) {
-            console.log("Error in handling Backspace:", e);
-            return false;
-          }
-        },
-        "Mod-Backspace": ({ editor }) => {
-          let handled = false;
-
-          this.options.listTypes.forEach(({ itemName, wrapperNames }) => {
-            if (editor.state.schema.nodes[itemName] === undefined) {
-              return;
-            }
-
-            if (handleBackspace(editor, itemName, wrapperNames)) {
-              handled = true;
-            }
-          });
-
-          return handled;
-        },
+        Delete: ({ editor }) => guarded(editor, "Delete"),
+        "Mod-Delete": ({ editor }) => handleItems(editor, "Delete"),
+        Backspace: ({ editor }) => guarded(editor, "Backspace"),
+        "Mod-Backspace": ({ editor }) => handleItems(editor, "Backspace"),
       };
     },
   });

@@ -33,21 +33,23 @@ export const PageDetailsHeader = function PageDetailsHeader() {
   const projectQuery = useRouteProject();
   const { page, pages, pageQuery, pageListQuery, syncStatus } = usePageRecord();
   // derived values
-  const switcherOptions = pages
+  const switcherOptions: ICustomSearchSelectOption[] = pages
     .filter((_page) => _page.project_ids?.includes(projectId))
-    .map((_page) => {
-      return {
-        value: _page.id,
-        query: _page.name,
-        content: (
-          <div className="flex items-center justify-between gap-2">
-            <SwitcherLabel logo_props={_page.logo_props} name={getPageName(_page.name)} LabelIcon={PageIcon} />
-            <PageAccessIcon {..._page} />
-          </div>
-        ),
-      };
-    })
-    .filter((option) => option !== undefined) as ICustomSearchSelectOption[];
+    .flatMap((_page) => {
+      if (!_page.id) return [];
+      return [
+        {
+          value: _page.id,
+          query: getPageName(_page.name),
+          content: (
+            <div className="flex items-center justify-between gap-2">
+              <SwitcherLabel logo_props={_page.logo_props} name={getPageName(_page.name)} LabelIcon={PageIcon} />
+              <PageAccessIcon {..._page} />
+            </div>
+          ),
+        },
+      ];
+    });
 
   if (!page) return null;
 

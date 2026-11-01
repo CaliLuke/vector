@@ -29,7 +29,8 @@ registerHooks({
 });
 const { Breadcrumbs } = await import("../../packages/ui/src/breadcrumbs/breadcrumbs.tsx");
 
-test("loading breadcrumbs keep list keys and restore item navigation", async (t) => {
+// Register eagerly; node:test owns completion and reports failures before suite cleanup.
+void test("loading breadcrumbs keep list keys and restore item navigation", async (t) => {
   const environment = await createReactDomTestEnvironment();
   const errors = [];
   const originalConsoleError = console.error;
@@ -69,7 +70,7 @@ test("loading breadcrumbs keep list keys and restore item navigation", async (t)
   );
 });
 
-test("mobile breadcrumb back control is keyboard-focusable and activates on click", async (t) => {
+void test("mobile breadcrumb back control is keyboard-focusable and activates on click", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(async () => environment.unmount());
 

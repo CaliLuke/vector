@@ -78,7 +78,7 @@ export const CommentQuickActions = function CommentQuickActions(props: TCommentC
           icon: TrashIcon,
           shouldRender: canDelete,
         },
-      ].filter((item) => item.shouldRender !== false);
+      ].filter((item) => item.shouldRender);
     },
     [t, setEditMode, canEdit, showCopyLinkOption, activityOperations, comment, showAccessSpecifier, canDelete]
   );

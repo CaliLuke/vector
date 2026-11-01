@@ -109,7 +109,6 @@ function LinkEditForm({ viewProps }: LinkEditViewProps) {
       noValidate
       className="shadow-md animate-in fade-in flex translate-y-1 flex-col gap-3 rounded-sm border-2 border-subtle bg-layer-1 p-2"
       style={{ transition: "all 0.1s cubic-bezier(.55, .085, .68, .53)" }}
-      tabIndex={0}
     >
       <form.Field name="url">
         {(field) => (
@@ -129,7 +128,6 @@ function LinkEditForm({ viewProps }: LinkEditViewProps) {
                 field.handleChange(event.target.value);
               }}
               onBlur={field.handleBlur}
-              autoFocus
               disabled={isSubmitting}
               aria-invalid={Boolean(formError)}
             />

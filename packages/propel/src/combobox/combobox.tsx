@@ -64,26 +64,41 @@ const MAX_HEIGHT_CLASSES: Record<TMaxHeight, string> = {
 
 // Root component
 function ComboboxRoot({
-  value,
+  value: controlledValue,
   defaultValue,
   onValueChange,
   multiSelect = false,
+  maxSelections,
   disabled = false,
   open,
   onOpenChange,
   children,
 }: ComboboxProps) {
+  const [uncontrolledValue, setUncontrolledValue] = React.useState<string | string[]>(
+    () => defaultValue ?? (multiSelect ? [] : "")
+  );
+  const value = controlledValue ?? uncontrolledValue;
   const handleValueChange = React.useCallback(
-    (newValue: string | string[] | null) => {
-      onValueChange?.(newValue ?? (multiSelect ? [] : ""));
+    (newValue: string | string[] | null, details: BaseCombobox.Root.ChangeEventDetails) => {
+      const next = newValue ?? (multiSelect ? [] : "");
+      if (
+        Array.isArray(next) &&
+        maxSelections !== undefined &&
+        next.length > maxSelections &&
+        next.some((item) => !Array.isArray(value) || !value.includes(item))
+      ) {
+        details.cancel();
+        return;
+      }
+      onValueChange?.(next);
+      if (controlledValue === undefined) setUncontrolledValue(next);
     },
-    [multiSelect, onValueChange]
+    [controlledValue, maxSelections, multiSelect, onValueChange, value]
   );
 
   return (
     <BaseCombobox.Root
       value={value}
-      defaultValue={defaultValue}
       onValueChange={handleValueChange}
       multiple={multiSelect}
       disabled={disabled}
@@ -106,6 +121,18 @@ const ComboboxButton = React.forwardRef(function ComboboxButton(
     </BaseCombobox.Trigger>
   );
 });
+
+function getTextContent(node: React.ReactNode): string {
+  if (typeof node === "string") return node;
+  if (typeof node === "number") return String(node);
+  if (React.isValidElement<{ children?: React.ReactNode }>(node) && node.props.children) {
+    return getTextContent(node.props.children);
+  }
+  if (Array.isArray(node)) {
+    return node.map(getTextContent).join(" ");
+  }
+  return "";
+}
 
 // Options popup component
 function ComboboxOptions({
@@ -144,30 +171,18 @@ function ComboboxOptions({
     if (!showSearch || !searchQuery) return children;
 
     return React.Children.toArray(children).filter((child) => {
-      if (!React.isValidElement(child)) return true;
+      if (!React.isValidElement<ComboboxOptionProps>(child)) return true;
 
       // Only filter ComboboxOption components, leave other elements (like additional content) unfiltered
       if (child.type !== ComboboxOption) return true;
 
       // Extract text content from child to search against
-      const getTextContent = (node: React.ReactNode): string => {
-        if (typeof node === "string") return node;
-        if (typeof node === "number") return String(node);
-        if (React.isValidElement<{ children?: React.ReactNode }>(node) && node.props.children) {
-          return getTextContent(node.props.children);
-        }
-        if (Array.isArray(node)) {
-          return node.map(getTextContent).join(" ");
-        }
-        return "";
-      };
 
-      const item = child as React.ReactElement<{ children?: React.ReactNode; value?: string }>;
-      const textContent = getTextContent(item.props.children);
-      const value = item.props.value || "";
+      const textContent = getTextContent(child.props.children);
+      const value = child.props.value || "";
 
       const searchLower = searchQuery.toLowerCase();
-      return textContent.toLowerCase().includes(searchLower) || String(value).toLowerCase().includes(searchLower);
+      return textContent.toLowerCase().includes(searchLower) || value.toLowerCase().includes(searchLower);
     });
   }, [children, searchQuery, showSearch]);
 

@@ -21,13 +21,11 @@ export class IntakeWorkItemVersionService extends APIService {
     projectId: string,
     intakeWorkItemId: string
   ): Promise<TDescriptionVersionsListResponse> {
-    return this.get(
-      `/api/workspaces/${workspaceSlug}/projects/${projectId}/intake-work-items/${intakeWorkItemId}/description-versions/`
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(
+        `/api/workspaces/${workspaceSlug}/projects/${projectId}/intake-work-items/${intakeWorkItemId}/description-versions/`
+      )
+    );
   }
 
   async retrieveDescriptionVersion(
@@ -36,12 +34,10 @@ export class IntakeWorkItemVersionService extends APIService {
     intakeWorkItemId: string,
     versionId: string
   ): Promise<TDescriptionVersionDetails> {
-    return this.get(
-      `/api/workspaces/${workspaceSlug}/projects/${projectId}/intake-work-items/${intakeWorkItemId}/description-versions/${versionId}/`
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(
+      this.get(
+        `/api/workspaces/${workspaceSlug}/projects/${projectId}/intake-work-items/${intakeWorkItemId}/description-versions/${versionId}/`
+      )
+    );
   }
 }

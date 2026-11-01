@@ -38,7 +38,7 @@ export function DropdownOptions(props: IDropdownOptions) {
         <InputSearch
           isOpen={isOpen}
           query={query}
-          updateQuery={(query) => setQuery(query)}
+          updateQuery={(nextQuery) => setQuery(nextQuery)}
           inputIcon={inputIcon}
           inputPlaceholder={inputPlaceholder}
           inputClassName={inputClassName}

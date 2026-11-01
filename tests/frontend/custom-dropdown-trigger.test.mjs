@@ -1,12 +1,9 @@
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
 import { after, afterEach, test } from "node:test";
-import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment, waitForReactCondition as waitForCondition } from "./helpers/react-dom.mjs";
 import { React } from "./helpers/react.mjs";
-import { createModuleStub, resolvePackageStub } from "./helpers/module-stubs.mjs";
-import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
+import { registerDropdownSourceModules } from "./helpers/dropdown-source-modules.mjs";
 
-registerWebModuleHooks();
 const packageStubs = {
   "@plane/hooks": "export const useOutsideClickDetector = () => {};",
   "@plane/propel/icons": `export const ChevronDownIcon = () => null;
@@ -16,16 +13,7 @@ const packageStubs = {
   "@plane/propel/tooltip": `export const Tooltip = ({ children }) => children;`,
   "react-popper": "export const usePopper = () => ({ styles: { popper: {} }, attributes: { popper: {} } });",
 };
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    if (specifier === "../utils" && context.parentURL?.includes("/packages/ui/src/dropdowns/")) {
-      return createModuleStub(
-        "export const cn = (...values) => values.filter(value => typeof value === 'string').join(' ');"
-      );
-    }
-    return resolvePackageStub(specifier, packageStubs, context, nextResolve);
-  },
-});
+registerDropdownSourceModules(undefined, packageStubs);
 
 const environment = await createReactDomTestEnvironment();
 
@@ -69,17 +57,6 @@ async function activateOption(option) {
     option.dispatchEvent(new MouseEvent("mousedown", { button: 0, bubbles: true, cancelable: true }));
     option.click();
   });
-}
-
-async function waitForCondition(condition, message, timeoutMs = 2_000) {
-  const deadline = performance.now() + timeoutMs;
-  await React.act(async () => {
-    await new Promise((resolve) => {
-      const check = () => (condition() || performance.now() >= deadline ? resolve() : setTimeout(check, 10));
-      check();
-    });
-  });
-  assert.ok(condition(), message);
 }
 
 function waitForAnimationFramesInCurrentAct(frameCount = 2) {
@@ -156,7 +133,8 @@ async function renderDropdown(kind, callbacks = {}) {
 }
 
 for (const kind of ["menu", "select", "search"]) {
-  test(`${kind} trigger toggles on repeated non-pointer activation`, async (t) => {
+  // Register eagerly; node:test owns completion and reports failures before suite cleanup.
+  void test(`${kind} trigger toggles on repeated non-pointer activation`, async (t) => {
     assertNoConsoleErrors(t);
     const trigger = await renderDropdown(kind);
 
@@ -177,7 +155,7 @@ for (const kind of ["menu", "select", "search"]) {
   });
 
   for (const key of ["Enter", " ", "ArrowDown", "ArrowUp"]) {
-    test(`${kind} opens once with ${JSON.stringify(key)} and closes with Escape`, async (t) => {
+    void test(`${kind} opens once with ${JSON.stringify(key)} and closes with Escape`, async (t) => {
       assertNoConsoleErrors(t);
       const trigger = await renderDropdown(kind);
 
@@ -206,7 +184,7 @@ for (const kind of ["menu", "select", "search"]) {
   }
 }
 
-test("CustomMenu composes a button trigger and opens/closes with keyboard while restoring focus", async (t) => {
+void test("CustomMenu composes a button trigger and opens/closes with keyboard while restoring focus", async (t) => {
   assertNoConsoleErrors(t);
   const { CustomMenu } = await loadDropdowns();
   const openCallbacks = [];
@@ -262,7 +240,7 @@ test("CustomMenu composes a button trigger and opens/closes with keyboard while 
   assert.equal(closeCallbacks.length, 3);
 });
 
-test("CustomMenu keeps a disabled child disabled and retains the text-content compatibility trigger", async (t) => {
+void test("CustomMenu keeps a disabled child disabled and retains the text-content compatibility trigger", async (t) => {
   assertNoConsoleErrors(t);
   const { CustomMenu } = await loadDropdowns();
   await environment.render(
@@ -306,7 +284,7 @@ test("CustomMenu keeps a disabled child disabled and retains the text-content co
   );
 });
 
-test("CustomSelect and CustomSearchSelect keep one trigger and call onOpen after opening", async (t) => {
+void test("CustomSelect and CustomSearchSelect keep one trigger and call onOpen after opening", async (t) => {
   assertNoConsoleErrors(t);
   const { CustomSelect, CustomSearchSelect } = await loadDropdowns();
   const opened = [];
@@ -442,7 +420,7 @@ void test("CustomSearchSelect defaultOpen synchronizes Headless UI state and clo
   assert.deepEqual(defaultOpenEvents, ["open", "close", "open", "close"]);
 });
 
-test("CustomSelect and CustomSearchSelect honor disabled state from either the wrapper or child trigger", async (t) => {
+void test("CustomSelect and CustomSearchSelect honor disabled state from either the wrapper or child trigger", async (t) => {
   assertNoConsoleErrors(t);
   const { CustomSelect, CustomSearchSelect } = await loadDropdowns();
   await environment.render(
@@ -682,4 +660,70 @@ void test("CustomMenu keyboard action inside an open submenu closes both menus",
   assert.equal(document.querySelector('[role="menu"]'), null);
   assert.equal(document.body.textContent.includes("Nested action"), false);
   await waitForFocus(trigger);
+});
+
+void test("search selection preserves typed values and an explicit null option", async (t) => {
+  assertNoConsoleErrors(t);
+  const { CustomSearchSelect } = await loadDropdowns();
+  const changes = [];
+  await environment.render(
+    React.createElement(CustomSearchSelect, {
+      value: "selected",
+      onChange: (value) => changes.push(value),
+      label: "Search",
+      options: [{ value: null, query: "none", content: "No value" }],
+    })
+  );
+  await React.act(async () => environment.container.querySelector("button").click());
+  await waitForCondition(() => document.querySelector("[role=option]"), "null option should render");
+  await activateOption(document.querySelector("[role=option]"));
+  assert.deepEqual(changes, [null]);
+});
+
+void test("multi search retains selected values outside the loaded option list", async (t) => {
+  assertNoConsoleErrors(t);
+  const { CustomSearchSelect } = await loadDropdowns();
+  const changes = [];
+  await environment.render(
+    React.createElement(CustomSearchSelect, {
+      multiple: true,
+      value: ["retained"],
+      onChange: (value) => changes.push(value),
+      label: "Search",
+      options: [{ value: "new", query: "new", content: "New selection" }],
+    })
+  );
+  await React.act(async () => environment.container.querySelector("button").click());
+  await waitForCondition(() => document.querySelector("[role=option]"), "new option should render");
+  await activateOption(document.querySelector("[role=option]"));
+  assert.deepEqual(changes, [["retained", "new"]]);
+});
+
+void test("select forwards its trigger ref and invokes callback-ref cleanup once", async () => {
+  const { CustomSelect } = await loadDropdowns();
+  const attached = [];
+  let cleaned = 0;
+  const ref = (node) => {
+    attached.push(node);
+    return () => {
+      cleaned++;
+    };
+  };
+  await environment.render(
+    React.createElement(
+      CustomSelect,
+      {
+        value: "selected",
+        onChange: () => {},
+        label: "Select",
+        ref,
+      },
+      React.createElement(CustomSelect.Option, { value: "selected" }, "Selected")
+    )
+  );
+  assert.equal(attached.length, 1);
+  assert.equal(attached[0], environment.container.querySelector("button"));
+  await environment.render(null);
+  assert.equal(cleaned, 1);
+  assert.equal(attached.length, 1);
 });

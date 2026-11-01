@@ -9,8 +9,8 @@ export enum EGanttBlockType {
   PROJECT = "project",
   ISSUE = "issue",
 }
-export interface IGanttBlock {
-  data: any;
+export interface IGanttBlock<TItem extends { id: string } = { id: string }> {
+  data: TItem;
   id: string;
   name: string;
   position?: {
@@ -20,7 +20,7 @@ export interface IGanttBlock {
   sort_order: number | undefined;
   start_date: string | undefined;
   target_date: string | undefined;
-  meta?: Record<string, any>;
+  meta?: { project_id?: string | null };
 }
 
 export interface IBlockUpdateData {
@@ -31,14 +31,14 @@ export interface IBlockUpdateData {
   };
   start_date?: string;
   target_date?: string;
-  meta?: Record<string, any>;
+  meta?: { project_id?: string | null };
 }
 
 export interface IBlockUpdateDependencyData {
   id: string;
   start_date?: string;
   target_date?: string;
-  meta?: Record<string, any>;
+  meta?: { project_id?: string | null };
 }
 
 export type TGanttViews = "week" | "month" | "quarter";
@@ -52,7 +52,7 @@ export interface WeekMonthDataType {
 }
 
 export interface ChartDataType {
-  key: string;
+  key: TGanttViews;
   i18n_title: string;
   data: ChartDataTypeData;
 }

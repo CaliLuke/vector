@@ -7,7 +7,7 @@
 // plane types
 import { useRouter } from "@tanstack/react-router";
 import { Logo } from "@plane/propel/emoji-icon-picker";
-import type { TActivityEntityData, TProjectEntityData } from "@plane/types";
+import type { TActivityEntityData } from "@plane/types";
 import { calculateTimeAgo } from "@plane/utils/datetime";
 // components
 import { ListItem } from "@/components/core/list";
@@ -16,7 +16,7 @@ import { MemberDropdown } from "@/components/dropdowns/member/dropdown";
 // helpers
 
 type BlockProps = {
-  activity: TActivityEntityData;
+  activity: Extract<TActivityEntityData, { entity_name: "project" }>;
   parentRef: React.RefObject<HTMLDivElement | null>;
   workspaceSlug: string;
 };
@@ -25,23 +25,23 @@ export function RecentProject(props: BlockProps) {
   // router
   const router = useRouter();
   // derived values
-  const projectDetails: TProjectEntityData = activity.entity_data as TProjectEntityData;
+  const projectDetails = activity.entity_data;
 
   if (!projectDetails) return <></>;
 
-  const projectLink = `/${workspaceSlug}/projects/${projectDetails?.id}/issues`;
+  const projectLink = `/${workspaceSlug}/projects/${projectDetails.id}/issues`;
 
   return (
     <ListItem
       key={activity.id}
       itemLink={projectLink}
-      title={projectDetails?.name}
+      title={projectDetails.name}
       prependTitleElement={
         <div className="flex flex-shrink-0 items-center gap-2">
           <div className="grid size-8 flex-shrink-0 place-items-center rounded-sm bg-layer-2">
-            <Logo logo={projectDetails?.logo_props} size={16} />
+            <Logo logo={projectDetails.logo_props} size={16} />
           </div>
-          <div className="text-13 font-medium whitespace-nowrap text-placeholder">{projectDetails?.identifier}</div>
+          <div className="text-13 font-medium whitespace-nowrap text-placeholder">{projectDetails.identifier}</div>
         </div>
       }
       appendTitleElement={
@@ -51,27 +51,25 @@ export function RecentProject(props: BlockProps) {
       }
       quickActionElement={
         <div className="flex gap-4">
-          {projectDetails?.project_members?.length > 0 && (
+          {projectDetails.project_members?.length > 0 && (
             <div className="h-5">
               <MemberDropdown
                 workspaceSlug={workspaceSlug}
-                projectId={projectDetails?.id}
-                value={projectDetails?.project_members}
+                projectId={projectDetails.id}
+                value={projectDetails.project_members}
                 onChange={() => {}}
                 disabled
                 multiple
                 button={
                   <ButtonAvatars
                     showTooltip={false}
-                    userIds={projectDetails?.project_members}
+                    userIds={projectDetails.project_members}
                     workspaceSlug={workspaceSlug}
                   />
                 }
-                buttonVariant={
-                  projectDetails?.project_members?.length > 0 ? "transparent-without-text" : "border-without-text"
-                }
-                buttonClassName={projectDetails?.project_members?.length > 0 ? "hover:bg-transparent px-0" : ""}
-                showTooltip={projectDetails?.project_members?.length === 0}
+                buttonVariant="transparent-without-text"
+                buttonClassName="hover:bg-transparent px-0"
+                showTooltip={false}
                 placeholder="Assignees"
                 optionsClassName="z-10"
                 tooltipContent=""

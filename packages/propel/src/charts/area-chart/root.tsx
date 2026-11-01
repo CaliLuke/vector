@@ -5,14 +5,14 @@
  */
 
 import React, { useMemo, useState } from "react";
-import { Area, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis, Line, ComposedChart, CartesianGrid } from "recharts";
+import { Area, ResponsiveContainer, Line, ComposedChart, CartesianGrid } from "recharts";
 // plane imports
-import { AXIS_LABEL_CLASSNAME } from "@plane/constants";
 import type { TAreaChartProps } from "@plane/types";
+import { chartMargin } from "../components/layout";
 // local components
-import { getLegendProps } from "../components/legend";
-import { CustomXAxisTick, CustomYAxisTick } from "../components/tick";
-import { CustomTooltip } from "../components/tooltip";
+import { ChartLegend } from "../components/legend";
+import { ChartXAxis, ChartYAxis } from "../components/cartesian-axes";
+import { ChartTooltip } from "../components/tooltip";
 
 export const AreaChart = React.memo(function AreaChart<K extends string, T extends string>(
   props: TAreaChartProps<K, T>
@@ -92,12 +92,13 @@ export const AreaChart = React.memo(function AreaChart<K extends string, T exten
     // get the last data point
     const lastPoint = data[data.length - 1];
     // for the y-value in the last point, use its yAxis key value
-    const lastYValue = lastPoint[yAxis.key] ?? 0;
+    const lastY = lastPoint[yAxis.key];
+    const lastYValue = typeof lastY === "number" ? lastY : 0;
     // create data for a straight line that has points at each x-axis position
     return data.map((item, index) => {
       // calculate the y value for this point on the straight line
       // using linear interpolation between (0,0) and (last_x, last_y)
-      const ratio = index / (data.length - 1);
+      const ratio = data.length > 1 ? index / (data.length - 1) : 0;
       const interpolatedValue = ratio * lastYValue;
 
       return {
@@ -109,82 +110,17 @@ export const AreaChart = React.memo(function AreaChart<K extends string, T exten
   return (
     <div className={className}>
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart
-          data={data}
-          margin={{
-            top: margin?.top === undefined ? 5 : margin.top,
-            right: margin?.right === undefined ? 30 : margin.right,
-            bottom: margin?.bottom === undefined ? 5 : margin.bottom,
-            left: margin?.left === undefined ? 20 : margin.left,
-          }}
-        >
+        <ComposedChart data={data} margin={chartMargin(margin)}>
           <CartesianGrid stroke="var(--border-color-subtle)" vertical={false} />
-          <XAxis
-            dataKey={xAxis.key}
-            tick={(props) => {
-              const TickComponent = customTicks?.x || CustomXAxisTick;
-              return <TickComponent {...props} />;
-            }}
-            tickLine={false}
-            axisLine={false}
-            label={
-              xAxis.label && {
-                value: xAxis.label,
-                dy: 28,
-                className: AXIS_LABEL_CLASSNAME,
-              }
-            }
-            tickCount={tickCount.x}
-          />
-          <YAxis
-            domain={yAxis.domain}
-            tickLine={false}
-            axisLine={false}
-            label={
-              yAxis.label && {
-                value: yAxis.label,
-                angle: -90,
-                position: "bottom",
-                offset: yAxis.offset ?? -24,
-                dx: yAxis.dx ?? -16,
-                className: AXIS_LABEL_CLASSNAME,
-              }
-            }
-            tick={(props) => {
-              const TickComponent = customTicks?.y || CustomYAxisTick;
-              return <TickComponent {...props} />;
-            }}
-            tickCount={tickCount.y}
-            allowDecimals={!!yAxis.allowDecimals}
-          />
-          {legend && (
-            <Legend
-              formatter={(value) => itemLabels[value]}
-              onMouseEnter={(payload) => setActiveLegend(payload.value ?? null)}
-              onMouseLeave={() => setActiveLegend(null)}
-              {...getLegendProps(legend)}
-            />
-          )}
+          <ChartXAxis axis={{ ...xAxis, dy: 28 }} tick={customTicks?.x} tickCount={tickCount.x} />
+          <ChartYAxis axis={yAxis} tick={customTicks?.y} tickCount={tickCount.y} />
+          {legend && <ChartLegend options={legend} labels={itemLabels} onActiveChange={setActiveLegend} />}
           {showTooltip && (
-            <Tooltip
-              cursor={{
-                stroke: "var(--text-color-tertiary)",
-                strokeDasharray: "4 4",
-              }}
-              wrapperStyle={{
-                pointerEvents: "auto",
-              }}
-              content={({ active, label, payload }) => (
-                <CustomTooltip
-                  active={active}
-                  activeKey={activeArea}
-                  label={label}
-                  payload={payload}
-                  itemKeys={itemKeys}
-                  itemLabels={itemLabels}
-                  itemDotColors={itemDotColors}
-                />
-              )}
+            <ChartTooltip
+              activeKey={activeArea}
+              itemKeys={itemKeys}
+              itemLabels={itemLabels}
+              itemDotColors={itemDotColors}
             />
           )}
           {renderAreas}

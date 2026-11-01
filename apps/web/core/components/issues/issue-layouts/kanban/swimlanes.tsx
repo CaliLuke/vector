@@ -9,7 +9,7 @@ import { useGroupColumns } from "@/components/issues/issue-layouts/use-group-col
 import { useParams } from "@tanstack/react-router";
 
 // plane imports
-import type { GroupByColumnTypes, IGroupByColumn } from "@plane/types";
+import type { IGroupByColumn } from "@plane/types";
 import { Row } from "@plane/ui";
 // hooks
 import { useIssueListType } from "@/hooks/use-issue-list-type";
@@ -68,7 +68,7 @@ const SubGroupSwimlaneHeader = function SubGroupSwimlaneHeader({
 
           const subGroupByVisibilityToggle = visibilitySubGroupByGroupCount(groupCount, showEmptyGroup);
 
-          if (subGroupByVisibilityToggle === false) return <></>;
+          if (!subGroupByVisibilityToggle) return <></>;
 
           return (
             <div key={`${sub_group_by}_${_list.id}`} className="flex w-[350px] flex-shrink-0 flex-col">
@@ -144,7 +144,7 @@ const SubGroupSwimlane = function SubGroupSwimlane(props: ISubGroupSwimlane) {
         list.map((_list: IGroupByColumn, subGroupIndex) => {
           const issueCount = getGroupIssueCount(undefined, _list.id, true) ?? 0;
           const subGroupByVisibilityToggle = visibilitySubGroupBy(_list, issueCount);
-          if (subGroupByVisibilityToggle.showGroup === false) return <></>;
+          if (!subGroupByVisibilityToggle.showGroup) return <></>;
           return (
             <div key={_list.id} className="flex flex-shrink-0 flex-col">
               <div className="sticky top-[50px] z-[3] flex w-full items-center border-y-[0.5px] border-subtle bg-layer-1 py-1">
@@ -232,7 +232,7 @@ export const KanBanSwimLanes = function KanBanSwimLanes(props: IKanBanSwimLanes)
   const groupByList = useGroupColumns({
     workspaceSlug,
     projectId,
-    groupBy: group_by as GroupByColumnTypes,
+    groupBy: group_by,
     observedIds: propertyGroupingIds(groupedIssueIds),
     includeNone: true,
     isWorkspaceLevel: isWorkspaceLevel(storeType),
@@ -241,7 +241,7 @@ export const KanBanSwimLanes = function KanBanSwimLanes(props: IKanBanSwimLanes)
   const subGroupByList = useGroupColumns({
     workspaceSlug,
     projectId,
-    groupBy: sub_group_by as GroupByColumnTypes,
+    groupBy: sub_group_by,
     observedIds: propertyGroupingIds(groupedIssueIds, true),
     includeNone: true,
     isWorkspaceLevel: isWorkspaceLevel(storeType),

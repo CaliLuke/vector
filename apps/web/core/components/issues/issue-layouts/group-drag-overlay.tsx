@@ -84,3 +84,12 @@ export function GroupDragOverlay(props: Props) {
     </div>
   );
 }
+
+export function groupDropPolicy(
+  orderBy: TIssueOrderByOptions | undefined,
+  workflowDisabled: boolean,
+  groupDisabled: boolean | undefined
+) {
+  const isDropDisabled = workflowDisabled || Boolean(groupDisabled);
+  return { isDropDisabled, canOverlayBeVisible: isDropDisabled || orderBy !== "sort_order" };
+}

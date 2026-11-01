@@ -8,7 +8,7 @@ import { useParams } from "@tanstack/react-router";
 
 // plane imports
 import type { TDisplayConfig } from "@plane/editor";
-import type { JSONContent, TPageVersion } from "@plane/types";
+import type { TPageVersion } from "@plane/types";
 import { Loader } from "@plane/ui";
 import { isJSONContentEmpty } from "@plane/utils/string";
 // components
@@ -82,7 +82,7 @@ export function PagesVersionEditor(props: TVersionEditorProps) {
       </div>
     );
 
-  const description = isJSONContentEmpty(versionDetails?.description_json as JSONContent)
+  const description = isJSONContentEmpty(versionDetails.description_json)
     ? versionDetails?.description_html
     : versionDetails?.description_json;
 

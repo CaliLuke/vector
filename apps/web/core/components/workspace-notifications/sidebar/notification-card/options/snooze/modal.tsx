@@ -114,7 +114,7 @@ function SnoozeForm({ onClose, onSubmit }: TNotificationSnoozeModal) {
                 <CustomSelect
                   value={field.state.value}
                   disabled={isSubmitting}
-                  onChange={field.handleChange}
+                  onChange={(selection) => (selection !== null ? field.handleChange(selection) : undefined)}
                   label={
                     <div className="truncate">
                       {field.state.value ? (

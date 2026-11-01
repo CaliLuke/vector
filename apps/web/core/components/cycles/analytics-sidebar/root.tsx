@@ -5,10 +5,11 @@
  */
 
 import React from "react";
+import { AnalyticsSidebarLoader } from "@/components/common/analytics-sidebar-loader";
 import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
 
 // plane imports
-import { Loader } from "@plane/ui";
+
 // local imports
 import useCyclesDetails from "../active-cycle/use-cycles-details";
 import { CycleAnalyticsProgress } from "./issue-progress";
@@ -39,20 +40,7 @@ export const CycleDetailsSidebar = function CycleDetailsSidebar(props: Props) {
   });
 
   if (isError) return <CatalogueReadFailure label="cycles" retry={retry} />;
-  if (!cycleDetails)
-    return (
-      <Loader className="px-5">
-        <div className="space-y-2">
-          <Loader.Item height="15px" width="50%" />
-          <Loader.Item height="15px" width="30%" />
-        </div>
-        <div className="mt-8 space-y-3">
-          <Loader.Item height="30px" />
-          <Loader.Item height="30px" />
-          <Loader.Item height="30px" />
-        </div>
-      </Loader>
-    );
+  if (!cycleDetails) return <AnalyticsSidebarLoader className="px-5" />;
 
   return (
     <div className="relative pb-2">

@@ -43,11 +43,14 @@ export function DeactivateAccountModal(props: Props) {
         handleClose();
         return;
       })
-      .catch((err: any) => {
+      .catch((err: unknown) => {
         setToast({
           type: TOAST_TYPE.ERROR,
           title: "Error!",
-          message: err?.error,
+          message:
+            err && typeof err === "object" && "error" in err && typeof err.error === "string"
+              ? err.error
+              : "Account could not be deactivated. Please try again.",
         });
       });
   };
@@ -76,7 +79,7 @@ export function DeactivateAccountModal(props: Props) {
         <Button variant="secondary" size="lg" onClick={handleClose} disabled={isDeactivating}>
           {t("cancel")}
         </Button>
-        <Button variant="error-fill" size="lg" onClick={handleDeleteAccount} disabled={isDeactivating}>
+        <Button variant="error-fill" size="lg" onClick={() => void handleDeleteAccount()} disabled={isDeactivating}>
           {isDeactivating ? t("deactivating") : t("confirm")}
         </Button>
       </div>

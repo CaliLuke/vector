@@ -30,11 +30,7 @@ export class WorkspaceMemberService extends APIService {
    * @throws {Error} If the API request fails
    */
   async myInfo(workspaceSlug: string): Promise<IWorkspaceMemberMe> {
-    return this.get(`/api/workspaces/${workspaceSlug}/workspace-members/me/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/workspace-members/me/`), "response");
   }
 
   /**
@@ -44,11 +40,7 @@ export class WorkspaceMemberService extends APIService {
    * @throws {Error} If the API request fails
    */
   async list(workspaceSlug: string): Promise<IWorkspaceMember[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/members/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/workspaces/${workspaceSlug}/members/`));
   }
 
   /**
@@ -60,26 +52,18 @@ export class WorkspaceMemberService extends APIService {
    * @throws {Error} If the API request fails
    */
   async update(workspaceSlug: string, memberId: string, data: Partial<IWorkspaceMember>): Promise<IWorkspaceMember> {
-    return this.patch(`/api/workspaces/${workspaceSlug}/members/${memberId}/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.patch(`/api/workspaces/${workspaceSlug}/members/${memberId}/`, data));
   }
 
   /**
    * Removes a member from a workspace
    * @param {string} workspaceSlug - The unique slug identifier for the workspace
    * @param {string} memberId - The unique identifier for the member to remove
-   * @returns {Promise<any>} Promise resolving to the deletion response
+   * @returns {Promise<unknown>} Promise resolving to the deletion response
    * @throws {Error} If the API request fails
    */
-  async destroy(workspaceSlug: string, memberId: string): Promise<any> {
-    return this.delete(`/api/workspaces/${workspaceSlug}/members/${memberId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async destroy(workspaceSlug: string, memberId: string): Promise<unknown> {
+    return this.responseData(this.delete(`/api/workspaces/${workspaceSlug}/members/${memberId}/`));
   }
 
   /**
@@ -89,10 +73,6 @@ export class WorkspaceMemberService extends APIService {
    * @throws {Error} If the API request fails
    */
   async getWorkspaceUserProjectsRole(workspaceSlug: string): Promise<IUserProjectsRole> {
-    return this.get(`/api/users/me/workspaces/${workspaceSlug}/project-roles/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.responseData(this.get(`/api/users/me/workspaces/${workspaceSlug}/project-roles/`));
   }
 }

@@ -63,6 +63,7 @@ export const ProfileSettingsSidebarItemCategories = function ProfileSettingsSide
                   isActive={activeTab === item.key}
                   icon={ICONS[item.key]}
                   label={t(item.i18n_label)}
+                  aria-label={t(item.i18n_label)}
                 />
               ))}
             </div>

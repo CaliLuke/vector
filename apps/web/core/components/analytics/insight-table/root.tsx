@@ -36,7 +36,7 @@ export function InsightTable<T extends Exclude<TAnalyticsTabsBase, "overview">>(
         columns={columns}
         data={data || []}
         searchPlaceholder={`${data?.length || 0} ${headerText}`}
-        actions={(table: AnalyticsTable<AnalyticsTableDataMap[T]>) => (
+        renderActions={(table: AnalyticsTable<AnalyticsTableDataMap[T]>) => (
           <Button
             variant="secondary"
             prependIcon={<Download className="h-3.5 w-3.5" />}

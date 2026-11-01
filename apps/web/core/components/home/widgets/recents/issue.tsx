@@ -23,7 +23,7 @@ import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 import { useWorkspaceStates } from "@/hooks/use-project-states";
 
 type BlockProps = {
-  activity: TActivityEntityData;
+  activity: Extract<TActivityEntityData, { entity_name: "issue" }>;
   parentRef: React.RefObject<HTMLDivElement | null>;
   workspaceSlug: string;
 };
@@ -36,7 +36,7 @@ export const RecentIssue = function RecentIssue(props: BlockProps) {
   const projectCatalogue = useWorkspaceProjectDetails();
   const projectRows = projectCatalogue.projects;
   // derived values
-  const issueDetails: TIssueEntityData = activity.entity_data as TIssueEntityData;
+  const issueDetails = activity.entity_data;
   const projectIdentifier = projectRows?.find((project) => project.id === issueDetails?.project_id)?.identifier ?? "";
 
   if (!issueDetails) return <></>;
