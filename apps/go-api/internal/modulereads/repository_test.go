@@ -327,6 +327,33 @@ func TestIssueListHandlesNullFiltersAndIndependentModuleFilter(t *testing.T) {
 	}
 }
 
+func TestModuleIssuesRejectDateOverflowAfterAuthorizationWithoutReadingItems(t *testing.T) {
+	for _, scenario := range []struct {
+		name    string
+		allowed bool
+		options IssueListOptions
+	}{
+		{"forbidden", false, IssueListOptions{StartDate: strings.Repeat("9", 40) + "_weeks;after;fromnow"}},
+		{"integer overflow", true, IssueListOptions{CreatedAt: strings.Repeat("9", 40) + "_weeks;after;fromnow"}},
+		{"duration overflow", true, IssueListOptions{TargetDate: "9223372036854775807_months;before;fromnow"}},
+	} {
+		t.Run(scenario.name, func(t *testing.T) {
+			database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(scenario.allowed)}}
+			repository, err := NewRepository(database)
+			require.NoError(t, err)
+			page, err := repository.Issues(t.Context(), uuid.New(), "demo", uuid.New(), uuid.New(), scenario.options)
+			require.Error(t, err)
+			if scenario.allowed {
+				require.ErrorContains(t, err, "relative date duration")
+			} else {
+				require.ErrorIs(t, err, ErrForbidden)
+			}
+			require.Empty(t, page.Items)
+			require.Len(t, database.queries, 1, "only authorization may query the database")
+		})
+	}
+}
+
 func TestIssueFiltersMatchDjangoSanitizingAndDateSemantics(t *testing.T) {
 	where, args, dateErr := addIssueDateFilters(nil, nil, "2026-08,2_months;after;fromnow", "issue.start_date")
 	require.NoError(t, dateErr)
