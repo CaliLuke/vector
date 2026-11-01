@@ -33,12 +33,19 @@ transport changes; do not edit generated transports manually.
   compatibility API used by tools and test loaders. Follow the
   [side-by-side compiler guidance](development.md#requirements) before removing it.
 - TanStack React DB stays on stable 0.5.12 with query-db-collection 1.4.8.
-  Review peer ranges and migrate the bindings together before changing this
-  cohort. A release candidate alone is not a reason to replace it.
+  Query DB Collection 1.5.0 requires `@tanstack/db@^1.0.0-rc.0`; its
+  [release notes](https://github.com/TanStack/db/blob/main/packages/query-db-collection/CHANGELOG.md#150)
+  explain the stable version number on the release-candidate cohort. Review peer
+  ranges and migrate the bindings together before changing this cohort. A release
+  candidate alone is not a reason to replace it.
 - `react-popper@2.3.0` in Space and `use-font-face-observer@1.3.0` in Propel
   declare React peers through 18. Their React 19 peer warnings remain visible.
   Replace their integrations or adopt compatible declarations before closing
   this compatibility debt. No peer override hides the warnings.
+- CEL remains on `github.com/google/cel-go` 0.31.0. Version 0.32.0 changes
+  its module path to `cel.dev/cel-go`; see the [upstream migration notice](https://github.com/cel-expr/cel-go/releases/tag/v0.32.0).
+  Adopt that path when the importing dependencies migrate. Do not replace the
+  old module path with a module that declares a different identity.
 - Testcontainers core and PostgreSQL share the upstream commit containing the
   [HostPort timeout fix](https://github.com/testcontainers/testcontainers-go/pull/4055)
   for [issue #4054](https://github.com/testcontainers/testcontainers-go/issues/4054).
