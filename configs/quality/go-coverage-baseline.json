@@ -618,16 +618,16 @@
       "percent": 0
     },
     "github.com/CaliLuke/go-plane/ticket_collaboration/design": {
-      "statements": 2739,
-      "percent": 0.29
+      "statements": 2736,
+      "percent": 100
     },
     "github.com/CaliLuke/go-plane/user_account_writes/design": {
       "statements": 135,
       "percent": 100
     },
     "github.com/CaliLuke/go-plane/work_item_core/design": {
-      "statements": 4688,
-      "percent": 0.17
+      "statements": 4685,
+      "percent": 100
     },
     "github.com/CaliLuke/go-plane/workitemhistory/design": {
       "statements": 169,
