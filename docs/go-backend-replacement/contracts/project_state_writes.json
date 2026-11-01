@@ -451,7 +451,7 @@
     },
     {
       "name": "UTF-8 JSON",
-      "contract": "Use the existing shared djangoinput parser and established UTF-8-only JSON contract. Invalid bytes are rejected before persistence; declared charset labels do not select another decoder."
+      "contract": "Use the existing shared requestinput parser and established UTF-8-only JSON contract. Invalid bytes are rejected before persistence; declared charset labels do not select another decoder."
     },
     {
       "name": "App create transient order field",

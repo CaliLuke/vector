@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/google/uuid"
@@ -161,9 +161,9 @@ type Result struct {
 }
 
 func failure(status int, field, message string) error {
-	return &djangoapi.HTTPError{Status: status, Body: map[string]any{field: message}}
+	return &apicontract.HTTPError{Status: status, Body: map[string]any{field: message}}
 }
-func invalid(fields map[string]any) error { return &djangoapi.HTTPError{Status: 400, Body: fields} }
+func invalid(fields map[string]any) error { return &apicontract.HTTPError{Status: 400, Body: fields} }
 func requiredObject() error               { return failure(404, "error", "The required object does not exist.") }
 func forbidden() error                    { return failure(403, "error", "You don't have the required permissions.") }
 
@@ -223,7 +223,7 @@ func (r *Repository) row(ctx context.Context, query string, args ...any) (map[st
 }
 
 func readWorkItemRow(ctx context.Context, db Database, query string, args ...any) (map[string]any, error) {
-	v, err := djangoapi.JSON(ctx, db, query, args...)
+	v, err := apicontract.JSON(ctx, db, query, args...)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, requiredObject()
 	}
@@ -254,10 +254,10 @@ func (r *Repository) issue(ctx context.Context, q Request, live bool) (map[strin
 	if live {
 		predicate = liveIssue
 	}
-	row, err := r.row(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id
+	row, err := r.row(ctx, `SELECT `+apicontract.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id
  WHERE i.id=$1 AND i.project_id=$2 AND w.slug=$3 AND `+predicate, q.IssueID, q.ProjectID, q.Slug)
 	if q.API {
-		var missing *djangoapi.HTTPError
+		var missing *apicontract.HTTPError
 		if errors.As(err, &missing) && missing.Status == 404 {
 			return nil, failure(404, "error", "The requested resource does not exist.")
 		}

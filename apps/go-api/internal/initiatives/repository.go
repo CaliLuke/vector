@@ -7,8 +7,8 @@ import (
 	"fmt"
 	stduuid "uuid"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/workitems"
@@ -65,7 +65,7 @@ func scope(ctx context.Context, tx pgx.Tx, q Query, write bool) error {
 	return nil
 }
 func rawRows(ctx context.Context, tx pgx.Tx, query string, args ...any) ([]map[string]any, error) {
-	return djangoapi.ReadJSONRows(ctx, tx, query, args...)
+	return apicontract.ReadJSONRows(ctx, tx, query, args...)
 }
 func record(ctx context.Context, tx pgx.Tx, q Query) (map[string]any, error) {
 	rows, err := rawRows(ctx, tx, `SELECT to_jsonb(i) FROM initiatives i WHERE id=$1 AND workspace_id=$2 AND deleted_at IS NULL`, q.ID, q.WorkspaceID)
@@ -148,14 +148,14 @@ func (r *Repository) Read(ctx context.Context, q Query) (_ json.RawMessage, resu
 	return raw, tx.Commit(ctx)
 }
 func associationPage(ctx context.Context, tx pgx.Tx, q Query) (map[string]any, error) {
-	limit, page, offset, err := djangoapi.PageWindow(djangoapi.Query{Params: q.Params, Present: q.Present})
+	limit, page, offset, err := apicontract.PageWindow(apicontract.Query{Params: q.Params, Present: q.Present})
 	if err != nil {
 		return nil, err
 	}
 	from := ` FROM initiative_projects rel JOIN projects p ON p.id=rel.project_id AND p.workspace_id=rel.workspace_id WHERE rel.initiative_id=$1 AND rel.workspace_id=$2 AND p.deleted_at IS NULL AND (p.network=2 OR EXISTS(SELECT 1 FROM project_members pm WHERE pm.project_id=p.id AND pm.workspace_id=p.workspace_id AND pm.member_id=$3 AND pm.is_active AND pm.deleted_at IS NULL AND pm.role IN(5,15,20)))`
 	selected, order := `jsonb_build_object('project_id',p.id)`, `p.created_at DESC,p.id`
 	if q.Action == "list_workitems" {
-		from = ` FROM initiative_work_items rel JOIN issues i ON i.id=rel.issue_id AND i.project_id=rel.project_id AND i.workspace_id=rel.workspace_id JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id WHERE rel.initiative_id=$1 AND rel.workspace_id=$2 AND p.archived_at IS NULL AND ` + djangoapi.IssueVisibleSQL("i", "$3::uuid", "$2::uuid")
+		from = ` FROM initiative_work_items rel JOIN issues i ON i.id=rel.issue_id AND i.project_id=rel.project_id AND i.workspace_id=rel.workspace_id JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id WHERE rel.initiative_id=$1 AND rel.workspace_id=$2 AND p.archived_at IS NULL AND ` + apicontract.IssueVisibleSQL("i", "$3::uuid", "$2::uuid")
 		selected, order = `jsonb_build_object('id',i.id,'project_id',i.project_id)`, `i.created_at DESC,i.id`
 	}
 	var total int
@@ -193,5 +193,5 @@ func associationPage(ctx context.Context, tx pgx.Tx, q Query) (map[string]any, e
 			values = append(values, result.Body)
 		}
 	}
-	return djangoapi.Envelope(values, total, limit, page), nil
+	return apicontract.Envelope(values, total, limit, page), nil
 }

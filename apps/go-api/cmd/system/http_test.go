@@ -2394,7 +2394,7 @@ func TestUserMeReadRejectsOversizedBodyBeforeSessionOrDispatch(t *testing.T) {
 		pendingReplacementEndpoints{
 			userIdentity:          useridentityapi.NewEndpoints(userIdentityHTTPStub{}),
 			userIdentitySession:   throttle,
-			userIdentityCookie:    djangoSessionCookieConfig{Name: "session-id", Configured: true},
+			userIdentityCookie:    browserSessionCookieConfig{Name: "session-id", Configured: true},
 			userIdentityBodyLimit: 8,
 			userIdentityBodySet:   true,
 		},
@@ -2425,7 +2425,7 @@ func TestUserMeReadRejectsOversizedBodyBeforeSessionOrDispatch(t *testing.T) {
 		pendingReplacementEndpoints{
 			userIdentity:          useridentityapi.NewEndpoints(userIdentityHTTPStub{}),
 			userIdentitySession:   refreshThrottle,
-			userIdentityCookie:    djangoSessionCookieConfig{Name: "session-id", Configured: true},
+			userIdentityCookie:    browserSessionCookieConfig{Name: "session-id", Configured: true},
 			userIdentityBodyLimit: 8,
 			userIdentityBodySet:   true,
 		},
@@ -2447,7 +2447,7 @@ func TestUserMeReadRejectsOversizedBodyBeforeSessionOrDispatch(t *testing.T) {
 		pendingReplacementEndpoints{
 			userIdentity:        useridentityapi.NewEndpoints(userIdentityHTTPStub{}),
 			userIdentitySession: readErrorThrottle,
-			userIdentityCookie:  djangoSessionCookieConfig{Name: "session-id", Configured: true},
+			userIdentityCookie:  browserSessionCookieConfig{Name: "session-id", Configured: true},
 		},
 	)
 	readErrorRequest := httptest.NewRequest(http.MethodGet, "/api/users/me/", nil)
@@ -2557,7 +2557,7 @@ func TestUserMeReadLogsAPIKeyActivityForSuccessAndAuthenticationFailure(t *testi
 	}
 }
 
-func TestUserMeReadAppliesDjangoSessionLifecycle(t *testing.T) {
+func TestUserMeReadAppliesBrowserSessionLifecycle(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	now := time.Date(2026, 7, 2, 3, 4, 5, 0, time.UTC)
 	throttle := &publicProjectMetadataThrottleStub{
@@ -2578,7 +2578,7 @@ func TestUserMeReadAppliesDjangoSessionLifecycle(t *testing.T) {
 		pendingReplacementEndpoints{
 			userIdentity:        useridentityapi.NewEndpoints(userIdentityHTTPStub{}),
 			userIdentitySession: throttle,
-			userIdentityCookie:  djangoSessionCookieConfig{Name: "session-id", Configured: true},
+			userIdentityCookie:  browserSessionCookieConfig{Name: "session-id", Configured: true},
 		},
 	)
 	request := httptest.NewRequest(http.MethodGet, "/api/users/me/", nil)
@@ -2632,7 +2632,7 @@ func TestUserMeReadAppliesDjangoSessionLifecycle(t *testing.T) {
 		pendingReplacementEndpoints{
 			userIdentity:        useridentityapi.NewEndpoints(userIdentityUnauthenticatedHTTPStub{}),
 			userIdentitySession: expiredThrottle,
-			userIdentityCookie:  djangoSessionCookieConfig{Name: "session-id", Configured: true},
+			userIdentityCookie:  browserSessionCookieConfig{Name: "session-id", Configured: true},
 		},
 	)
 	expiredResponse := httptest.NewRecorder()
@@ -3099,7 +3099,7 @@ func TestPublicProjectMetadataReadsHTTPMatchesDjangoAcceptParsing(t *testing.T) 
 	}
 }
 
-func TestPublicProjectMetadataReadsHTTPExpiresInvalidDjangoSessionCookie(t *testing.T) {
+func TestPublicProjectMetadataReadsHTTPExpiresInvalidBrowserSessionCookie(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	throttle := &publicProjectMetadataThrottleStub{allowed: true, expire: true}
 	handler := newHTTPHandlerWithPendingReplacements(
@@ -3110,7 +3110,7 @@ func TestPublicProjectMetadataReadsHTTPExpiresInvalidDjangoSessionCookie(t *test
 		pendingReplacementEndpoints{
 			publicProjectMetadataReads:    publicprojectmetadatareadsapi.NewEndpoints(publicProjectMetadataReadsHTTPStub{}),
 			publicProjectMetadataThrottle: throttle,
-			publicProjectMetadataCookie:   djangoSessionCookieConfig{Name: "custom-session", Domain: ".example.test"},
+			publicProjectMetadataCookie:   browserSessionCookieConfig{Name: "custom-session", Domain: ".example.test"},
 		},
 	)
 	response := httptest.NewRecorder()
@@ -3221,7 +3221,7 @@ func TestPublicProjectMetadataReadsHTTPDeletionCookiesUseSecurePrefixes(t *testi
 	for _, name := range []string{"__Secure-session-id", "__Host-session-id"} {
 		t.Run(name, func(t *testing.T) {
 			headers := make(http.Header)
-			if err := expireDjangoSessionCookie(headers, djangoSessionCookieConfig{Name: name}); err != nil {
+			if err := expireBrowserSessionCookie(headers, browserSessionCookieConfig{Name: name}); err != nil {
 				t.Fatal(err)
 			}
 			if got := headers.Get("Set-Cookie"); !strings.HasSuffix(got, "; Secure") {
@@ -3255,8 +3255,8 @@ func TestPublicProjectMetadataReadsHTTPDoesNotChangeAdminCookieForAnchorText(t *
 				pendingReplacementEndpoints{
 					publicProjectMetadataReads:       publicprojectmetadatareadsapi.NewEndpoints(publicProjectMetadataReadsHTTPStub{}),
 					publicProjectMetadataThrottle:    throttle,
-					publicProjectMetadataCookie:      djangoSessionCookieConfig{Name: "session-id"},
-					publicProjectMetadataAdminCookie: djangoSessionCookieConfig{Name: "admin-session-id"},
+					publicProjectMetadataCookie:      browserSessionCookieConfig{Name: "session-id"},
+					publicProjectMetadataAdminCookie: browserSessionCookieConfig{Name: "admin-session-id"},
 				},
 			)
 			request := httptest.NewRequest(http.MethodGet, scenario.path, nil)
@@ -3272,7 +3272,7 @@ func TestPublicProjectMetadataReadsHTTPDoesNotChangeAdminCookieForAnchorText(t *
 	}
 }
 
-func TestPublicProjectMetadataReadsHTTPRefreshesDjangoSessionAfterSuccess(t *testing.T) {
+func TestPublicProjectMetadataReadsHTTPRefreshesBrowserSessionAfterSuccess(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	expiresAt := time.Date(2026, time.September, 2, 3, 4, 5, 0, time.UTC)
 	throttle := &publicProjectMetadataThrottleStub{
@@ -3288,7 +3288,7 @@ func TestPublicProjectMetadataReadsHTTPRefreshesDjangoSessionAfterSuccess(t *tes
 		pendingReplacementEndpoints{
 			publicProjectMetadataReads:    publicprojectmetadatareadsapi.NewEndpoints(publicProjectMetadataReadsHTTPStub{}),
 			publicProjectMetadataThrottle: throttle,
-			publicProjectMetadataCookie:   djangoSessionCookieConfig{Name: "custom-session", Domain: ".example.test", Secure: true},
+			publicProjectMetadataCookie:   browserSessionCookieConfig{Name: "custom-session", Domain: ".example.test", Secure: true},
 		},
 	)
 	request := httptest.NewRequest(http.MethodGet, "/api/public/anchor/example/labels/", nil)
@@ -3394,9 +3394,9 @@ func TestPublicProjectMetadataReadsHTTPConcurrentSessionDeletionReturnsDjangoBad
 	}
 }
 
-func TestRefreshDjangoSessionCookieOmitsPersistenceForBrowserClose(t *testing.T) {
+func TestRefreshBrowserSessionCookieOmitsPersistenceForBrowserClose(t *testing.T) {
 	headers := make(http.Header)
-	if err := refreshDjangoSessionCookie(headers, djangoSessionCookieConfig{}, browsersession.SessionRefresh{
+	if err := refreshBrowserSessionCookie(headers, browserSessionCookieConfig{}, browsersession.SessionRefresh{
 		SessionKey: "valid-session-key", BrowserClose: true,
 	}); err != nil {
 		t.Fatal(err)
@@ -3406,9 +3406,9 @@ func TestRefreshDjangoSessionCookieOmitsPersistenceForBrowserClose(t *testing.T)
 	}
 }
 
-func TestRefreshDjangoSessionCookieUsesSeparateCookieExpiry(t *testing.T) {
+func TestRefreshBrowserSessionCookieUsesSeparateCookieExpiry(t *testing.T) {
 	headers := make(http.Header)
-	if err := refreshDjangoSessionCookie(headers, djangoSessionCookieConfig{}, browsersession.SessionRefresh{
+	if err := refreshBrowserSessionCookie(headers, browserSessionCookieConfig{}, browsersession.SessionRefresh{
 		SessionKey: "valid-session-key", ExpiresAt: time.Date(2026, time.September, 2, 3, 4, 5, 0, time.UTC),
 		CookieExpiresAt: time.Date(2026, time.September, 2, 3, 4, 4, 0, time.UTC), MaxAgeSeconds: 61,
 	}); err != nil {
@@ -3419,30 +3419,30 @@ func TestRefreshDjangoSessionCookieUsesSeparateCookieExpiry(t *testing.T) {
 	}
 }
 
-func TestDjangoSessionCookieHelpersRejectExplicitEmptyName(t *testing.T) {
-	config := djangoSessionCookieConfig{Configured: true}
-	if err := expireDjangoSessionCookie(make(http.Header), config); err == nil {
-		t.Fatal("expireDjangoSessionCookie() accepted an empty cookie name")
+func TestBrowserSessionCookieHelpersRejectExplicitEmptyName(t *testing.T) {
+	config := browserSessionCookieConfig{Configured: true}
+	if err := expireBrowserSessionCookie(make(http.Header), config); err == nil {
+		t.Fatal("expireBrowserSessionCookie() accepted an empty cookie name")
 	}
-	if err := refreshDjangoSessionCookie(make(http.Header), config, browsersession.SessionRefresh{SessionKey: "valid-session-key"}); err == nil {
-		t.Fatal("refreshDjangoSessionCookie() accepted an empty cookie name")
+	if err := refreshBrowserSessionCookie(make(http.Header), config, browsersession.SessionRefresh{SessionKey: "valid-session-key"}); err == nil {
+		t.Fatal("refreshBrowserSessionCookie() accepted an empty cookie name")
 	}
 }
 
 func TestSessionCookiesUseHTTPHeaderParsing(t *testing.T) {
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
 	request.Header.Set("Cookie", "session-id=first-session; session-id=last-session")
-	cookie := lastDjangoSessionCookie(request, "session-id")
+	cookie := requestSessionCookie(request, "session-id")
 	if cookie == nil || cookie.Value != "first-session" {
 		t.Fatalf("cookie=%+v", cookie)
 	}
 	request.Header["Cookie"] = []string{"session-id=first-session", "session-id=second-session"}
-	cookie = lastDjangoSessionCookie(request, "session-id")
+	cookie = requestSessionCookie(request, "session-id")
 	if cookie == nil || cookie.Value != "first-session" {
 		t.Fatalf("repeated-header cookie=%+v", cookie)
 	}
 	request.Header.Set("Cookie", `session-id="quoted\054value"`)
-	if cookie := lastDjangoSessionCookie(request, "session-id"); cookie != nil {
+	if cookie := requestSessionCookie(request, "session-id"); cookie != nil {
 		t.Fatalf("invalid cookie accepted: %+v", cookie)
 	}
 }
@@ -3823,8 +3823,8 @@ func TestPublicProjectMetadataReadsHTTPRefreshesUnaccessedSessionAfter413(t *tes
 				pendingReplacementEndpoints{
 					publicProjectMetadataReads:       publicprojectmetadatareadsapi.NewEndpoints(publicProjectMetadataReadsHTTPStub{}),
 					publicProjectMetadataThrottle:    throttle,
-					publicProjectMetadataCookie:      djangoSessionCookieConfig{Name: "session-id"},
-					publicProjectMetadataAdminCookie: djangoSessionCookieConfig{Name: "admin-session-id"},
+					publicProjectMetadataCookie:      browserSessionCookieConfig{Name: "session-id"},
+					publicProjectMetadataAdminCookie: browserSessionCookieConfig{Name: "admin-session-id"},
 					publicProjectMetadataBodyLimit:   8,
 					publicProjectMetadataBodySet:     true,
 				},
@@ -3849,12 +3849,12 @@ func TestPublicProjectMetadataReadsHTTPReplaces413OnUnaccessedSessionFailure(t *
 		body         string
 		expire       bool
 		refresh      *browsersession.SessionRefresh
-		cookieConfig djangoSessionCookieConfig
+		cookieConfig browserSessionCookieConfig
 	}{
 		{name: "session store", err: fmt.Errorf("database unavailable: %w", browsersession.ErrSessionStore), status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
 		{name: "signed non-object session", err: browsersession.ErrInvalidSessionShape, status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
-		{name: "cookie expiry", expire: true, cookieConfig: djangoSessionCookieConfig{Configured: true}, status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
-		{name: "cookie refresh", refresh: &browsersession.SessionRefresh{SessionKey: "refreshed"}, cookieConfig: djangoSessionCookieConfig{Configured: true}, status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
+		{name: "cookie expiry", expire: true, cookieConfig: browserSessionCookieConfig{Configured: true}, status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
+		{name: "cookie refresh", refresh: &browsersession.SessionRefresh{SessionKey: "refreshed"}, cookieConfig: browserSessionCookieConfig{Configured: true}, status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			var logs bytes.Buffer
@@ -3887,7 +3887,7 @@ func TestPublicProjectMetadataReadsHTTPBodyReadFailureRetainsValidUnaccessedSess
 	for _, testCase := range []struct {
 		name         string
 		cookie       string
-		cookieConfig djangoSessionCookieConfig
+		cookieConfig browserSessionCookieConfig
 		wantFrame    string
 		wantLog      string
 	}{
@@ -5369,7 +5369,7 @@ func TestCSRFTokenCORSPreflightCompatibility(t *testing.T) {
 }
 
 func TestCSRFTokenHTTPSessionLifecycle(t *testing.T) {
-	sessionConfig := djangoSessionCookieConfig{Name: "session-id", Domain: ".example.test", Secure: true, Configured: true}
+	sessionConfig := browserSessionCookieConfig{Name: "session-id", Domain: ".example.test", Secure: true, Configured: true}
 	newRoute := func(method string, throttle publicProjectMetadataThrottle) http.Handler {
 		endpoints := csrftoken.NewEndpoints(systemapi.NewCSRFToken())
 		mux := loomhttp.NewMuxer()
@@ -6453,7 +6453,7 @@ func TestParseConfigRequiresDjangoSecretKey(t *testing.T) {
 	}
 }
 
-func TestParseConfigUsesDjangoSessionCookieName(t *testing.T) {
+func TestParseConfigUsesBrowserSessionCookieName(t *testing.T) {
 	t.Setenv("SECRET_KEY", "test-secret")
 	t.Setenv("SESSION_COOKIE_NAME", "custom-session")
 	t.Setenv("COOKIE_DOMAIN", ".example.test")
@@ -6599,7 +6599,7 @@ func TestParseConfigEnforcesPythonDecimalIntegerLimit(t *testing.T) {
 	}
 }
 
-func TestParseConfigParsesDjangoSessionCookieAge(t *testing.T) {
+func TestParseConfigParsesBrowserSessionCookieAge(t *testing.T) {
 	t.Setenv("SECRET_KEY", "test-secret")
 	t.Setenv("SESSION_COOKIE_AGE", " 3_600 ")
 	if cfg, err := parseConfig(nil); err != nil || cfg.sessionCookieAge != 3600 {

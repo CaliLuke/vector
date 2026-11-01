@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/google/uuid"
 )
 
@@ -72,7 +72,7 @@ func TestLegacyUploadValidatesSizeBeforeObjectOrDatabaseWrites(t *testing.T) {
 				}
 				return
 			}
-			var failure *djangoapi.HTTPError
+			var failure *apicontract.HTTPError
 			if !errors.As(err, &failure) || failure.Status != http.StatusBadRequest {
 				t.Errorf("error=%v, want HTTP 400", err)
 			}

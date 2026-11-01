@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -49,7 +49,7 @@ func TestCollaborationCommentSanitizerAlignsAPIAndApp(t *testing.T) {
 	for _, api := range []bool{false, true} {
 		r := &Repository{}
 		q := Request{API: api, Method: "POST"}
-		input := djangoinput.Input{Fields: map[string]any{"comment_html": "<p>Safe</p><script>alert(1)</script>"}}
+		input := requestinput.Input{Fields: map[string]any{"comment_html": "<p>Safe</p><script>alert(1)</script>"}}
 		values, err := r.validateCollaboration(context.Background(), q, input, "issue_comments")
 		if err != nil {
 			t.Fatal(err)
@@ -93,7 +93,7 @@ func TestCollaborationReferenceRequiresBothProjectAndWorkspace(t *testing.T) {
 					t.Fatal(err)
 				}
 			} else {
-				var denied *djangoapi.HTTPError
+				var denied *apicontract.HTTPError
 				if !errors.As(err, &denied) || denied.Status != 404 {
 					t.Fatalf("%s ownership %s/%s allowed: %v", table, tc.project, tc.workspace, err)
 				}
@@ -111,12 +111,12 @@ func TestCollaborationMissingLinkCreatorStaysNullInActivitySnapshot(t *testing.T
 }
 func TestCollaborationAPICommentNonObjectFailsBeforeDomainEffects(t *testing.T) {
 	r := &Repository{}
-	for _, input := range []djangoinput.Input{{Null: true}, {Kind: "list"}} {
+	for _, input := range []requestinput.Input{{Null: true}, {Kind: "list"}} {
 		err := r.collaborationExternalConflict(context.Background(), Request{API: true, Operation: "post_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_comments"}, input, nil)
 		if err == nil {
 			t.Fatal("non-object request reached serializer/domain processing")
 		}
-		var response *djangoapi.HTTPError
+		var response *apicontract.HTTPError
 		if errors.As(err, &response) {
 			t.Fatalf("source server failure became serializer response: %v", err)
 		}
@@ -128,8 +128,8 @@ func TestCollaborationUpdateRejectsPersistedForeignDescriptionBeforeWrites(t *te
 		repository := &Repository{db: collaborationReferenceDB{project: "foreign-project", workspace: "workspace"}}
 		// An omitted issue reference isolates the effective description check;
 		// any project lookup, transaction, or effect panics through the embedded DB.
-		_, err := repository.writeCollaboration(context.Background(), Request{API: api, Method: "PATCH", ProjectID: "project", Slug: "workspace"}, "comment", "issue_comments", djangoinput.Input{}, map[string]any{"comment_html": "<p>changed</p>"}, map[string]any{"description_id": "foreign-description"})
-		var denied *djangoapi.HTTPError
+		_, err := repository.writeCollaboration(context.Background(), Request{API: api, Method: "PATCH", ProjectID: "project", Slug: "workspace"}, "comment", "issue_comments", requestinput.Input{}, map[string]any{"comment_html": "<p>changed</p>"}, map[string]any{"description_id": "foreign-description"})
+		var denied *apicontract.HTTPError
 		if !errors.As(err, &denied) || denied.Status != 404 {
 			t.Fatalf("API=%v persisted foreign description allowed: %v", api, err)
 		}

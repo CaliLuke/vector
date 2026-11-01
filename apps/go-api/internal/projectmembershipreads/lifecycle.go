@@ -12,9 +12,9 @@ import (
 	"strings"
 	storeuuid "uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -64,7 +64,7 @@ func (r *LifecycleRepository) forCommand(c LifecycleCommand) *LifecycleRepositor
 }
 
 func lifecycleFailure(status int, field, message string) error {
-	return &djangoapi.HTTPError{Status: status, Body: map[string]any{field: message}}
+	return &apicontract.HTTPError{Status: status, Body: map[string]any{field: message}}
 }
 func lifecycleMissing(legacy bool) error {
 	if legacy {
@@ -129,9 +129,9 @@ func (r *LifecycleRepository) ExecuteLifecycle(ctx context.Context, c LifecycleC
 	case strings.Contains(c.Operation, "lite"):
 		return r.lifecycleLite(ctx, c)
 	case strings.HasPrefix(c.Operation, "v1-list-"):
-		return djangoapi.JSON(ctx, r.database, `SELECT COALESCE(jsonb_agg(`+lifecycleUserSQL+` ORDER BY u.created_at DESC),'[]'::jsonb) FROM users u WHERE u.id IN (SELECT pm.member_id FROM project_members pm JOIN workspaces w ON w.id=pm.workspace_id WHERE w.slug=$1 AND pm.project_id=$2 AND pm.deleted_at IS NULL)`, c.Slug, c.ProjectID)
+		return apicontract.JSON(ctx, r.database, `SELECT COALESCE(jsonb_agg(`+lifecycleUserSQL+` ORDER BY u.created_at DESC),'[]'::jsonb) FROM users u WHERE u.id IN (SELECT pm.member_id FROM project_members pm JOIN workspaces w ON w.id=pm.workspace_id WHERE w.slug=$1 AND pm.project_id=$2 AND pm.deleted_at IS NULL)`, c.Slug, c.ProjectID)
 	case strings.HasPrefix(c.Operation, "v1-detail-"):
-		value, err := djangoapi.JSON(ctx, r.database, `SELECT `+lifecycleUserSQL+` FROM project_members pm JOIN workspaces w ON w.id=pm.workspace_id JOIN users u ON u.id=pm.member_id WHERE pm.id=$1 AND pm.project_id=$2 AND w.slug=$3 AND pm.deleted_at IS NULL`, c.MemberID, c.ProjectID, c.Slug)
+		value, err := apicontract.JSON(ctx, r.database, `SELECT `+lifecycleUserSQL+` FROM project_members pm JOIN workspaces w ON w.id=pm.workspace_id JOIN users u ON u.id=pm.member_id WHERE pm.id=$1 AND pm.project_id=$2 AND w.slug=$3 AND pm.deleted_at IS NULL`, c.MemberID, c.ProjectID, c.Slug)
 		if errors.Is(err, pgx.ErrNoRows) {
 			err = lifecycleMissing(false)
 		}
@@ -154,7 +154,7 @@ func (r *LifecycleRepository) ExecuteLifecycle(ctx context.Context, c LifecycleC
 	return nil, fmt.Errorf("unknown membership lifecycle operation %q", c.Operation)
 }
 
-var lifecycleUserSQL = `(jsonb_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'email',u.email,'avatar',u.avatar,'display_name',u.display_name)||` + djangoapi.FileAssetURLFieldSQL("u.avatar_asset_id", "u.avatar", "avatar_url") + `)`
+var lifecycleUserSQL = `(jsonb_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'email',u.email,'avatar',u.avatar,'display_name',u.display_name)||` + apicontract.FileAssetURLFieldSQL("u.avatar_asset_id", "u.avatar", "avatar_url") + `)`
 
 func (r *LifecycleRepository) lifecycleLite(ctx context.Context, c LifecycleCommand) (any, error) {
 	var project bool
@@ -164,18 +164,18 @@ func (r *LifecycleRepository) lifecycleLite(ctx context.Context, c LifecycleComm
 	if !project {
 		return nil, lifecycleFailure(404, "error", "Provided project does not exist")
 	}
-	limit, page, offset, err := djangoapi.PageWindow(djangoapi.Query{Params: c.Params, Present: c.Present})
+	limit, page, offset, err := apicontract.PageWindow(apicontract.Query{Params: c.Params, Present: c.Present})
 	if err != nil {
 		return nil, err
 	}
-	value, err := djangoapi.JSON(ctx, r.database, `SELECT COALESCE(jsonb_agg(row.value ORDER BY row.created_at DESC),'[]'::jsonb) FROM (SELECT (CASE WHEN u.id IS NULL THEN jsonb_build_object('avatar',NULL,'avatar_url',NULL) ELSE `+lifecycleUserSQL+`||jsonb_build_object('is_bot',u.is_bot) END)||jsonb_build_object('role',pm.role,'is_active',pm.is_active) AS value,pm.created_at FROM project_members pm LEFT JOIN users u ON u.id=pm.member_id JOIN workspaces w ON w.id=pm.workspace_id WHERE pm.project_id=$1 AND w.slug=$2 AND pm.deleted_at IS NULL ORDER BY pm.created_at DESC) row`, c.ProjectID, c.Slug)
+	value, err := apicontract.JSON(ctx, r.database, `SELECT COALESCE(jsonb_agg(row.value ORDER BY row.created_at DESC),'[]'::jsonb) FROM (SELECT (CASE WHEN u.id IS NULL THEN jsonb_build_object('avatar',NULL,'avatar_url',NULL) ELSE `+lifecycleUserSQL+`||jsonb_build_object('is_bot',u.is_bot) END)||jsonb_build_object('role',pm.role,'is_active',pm.is_active) AS value,pm.created_at FROM project_members pm LEFT JOIN users u ON u.id=pm.member_id JOIN workspaces w ON w.id=pm.workspace_id WHERE pm.project_id=$1 AND w.slug=$2 AND pm.deleted_at IS NULL ORDER BY pm.created_at DESC) row`, c.ProjectID, c.Slug)
 	if err != nil {
 		return nil, err
 	}
 	all := value.([]any)
 	start := min(offset, len(all))
 	end := min(start+limit, len(all))
-	return djangoapi.Envelope(all[start:end], len(all), limit, page), nil
+	return apicontract.Envelope(all[start:end], len(all), limit, page), nil
 }
 func (r *LifecycleRepository) authorizeLegacyAction(ctx context.Context, c LifecycleCommand) error {
 	var allowed bool
@@ -193,20 +193,20 @@ func (r *LifecycleRepository) authorizeLegacyAction(ctx context.Context, c Lifec
 	}
 	return nil
 }
-func lifecycleParse(c LifecycleCommand) (djangoinput.Input, error) {
-	input, err := djangoinput.Parse(c.Body, c.ContentType)
+func lifecycleParse(c LifecycleCommand) (requestinput.Input, error) {
+	input, err := requestinput.Parse(c.Body, c.ContentType)
 	if err != nil {
 		return input, err
 	}
 	return input, lifecycleObjectError(input)
 }
 
-func lifecycleObjectError(input djangoinput.Input) error {
+func lifecycleObjectError(input requestinput.Input) error {
 	if input.Null {
-		return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"non_field_errors": []string{"No data provided"}}}
+		return &apicontract.HTTPError{Status: 400, Body: map[string]any{"non_field_errors": []string{"No data provided"}}}
 	}
 	if input.Kind != "" {
-		return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"non_field_errors": []string{"Invalid data. Expected a dictionary, but got " + input.Kind + "."}}}
+		return &apicontract.HTTPError{Status: 400, Body: map[string]any{"non_field_errors": []string{"Invalid data. Expected a dictionary, but got " + input.Kind + "."}}}
 	}
 	return nil
 }
@@ -214,7 +214,7 @@ func lifecycleRole(v any) (int, string) {
 	if v == nil {
 		return 0, "This field may not be null."
 	}
-	value := djangoinput.ScalarString(v)
+	value := requestinput.ScalarString(v)
 	switch value {
 	case "5":
 		return 5, ""
@@ -249,9 +249,9 @@ func (r *LifecycleRepository) lifecycleV1Write(ctx context.Context, c LifecycleC
 		} else if value == nil {
 			failures["member"] = []string{"This field may not be null."}
 		} else {
-			parsed, e := djangoinput.UUID(value)
+			parsed, e := requestinput.UUID(value)
 			if e != nil {
-				failures["member"] = []string{"“" + djangoinput.ScalarString(value) + "” is not a valid UUID."}
+				failures["member"] = []string{"“" + requestinput.ScalarString(value) + "” is not a valid UUID."}
 			} else {
 				memberID := parsed.String()
 				currentMember = &memberID
@@ -279,7 +279,7 @@ func (r *LifecycleRepository) lifecycleV1Write(ctx context.Context, c LifecycleC
 		}
 	}
 	if len(failures) > 0 {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: failures}
+		return nil, &apicontract.HTTPError{Status: 400, Body: failures}
 	}
 	if create {
 		// Django creates the user property in ProjectMember.save before inserting
@@ -367,7 +367,7 @@ var ErrLifecycleRendering = errors.New("Django cannot render a nonfinite members
 
 func (r *LifecycleRepository) lifecycleLegacyRepresentation(ctx context.Context, c LifecycleCommand) (any, error) {
 	// Reuse the complete legacy read serializer, including a just-deleted target.
-	value, err := djangoapi.JSON(ctx, r.database, `SELECT (to_jsonb(pm)-'workspace_id'-'project_id'-'member_id'-'created_by_id'-'updated_by_id')||jsonb_build_object('created_by',pm.created_by_id,'updated_by',pm.updated_by_id,'member',jsonb_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'avatar',u.avatar,'is_bot',u.is_bot,'display_name',u.display_name)||`+djangoapi.FileAssetURLFieldSQL("u.avatar_asset_id", "u.avatar", "avatar_url")+`,'project',jsonb_build_object('id',p.id,'identifier',p.identifier,'name',p.name,'cover_image',p.cover_image,'logo_props',p.logo_props,'description',p.description)||`+djangoapi.FileAssetURLFieldSQL("p.cover_image_asset_id", "p.cover_image", "cover_image_url")+`,'workspace',jsonb_build_object('id',w.id,'name',w.name,'slug',w.slug)||`+djangoapi.FileAssetURLFieldSQL("w.logo_asset_id", "w.logo", "logo_url")+`) FROM project_members pm JOIN users u ON u.id=pm.member_id JOIN projects p ON p.id=pm.project_id JOIN workspaces w ON w.id=pm.workspace_id WHERE pm.id=$1`, c.MemberID)
+	value, err := apicontract.JSON(ctx, r.database, `SELECT (to_jsonb(pm)-'workspace_id'-'project_id'-'member_id'-'created_by_id'-'updated_by_id')||jsonb_build_object('created_by',pm.created_by_id,'updated_by',pm.updated_by_id,'member',jsonb_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'avatar',u.avatar,'is_bot',u.is_bot,'display_name',u.display_name)||`+apicontract.FileAssetURLFieldSQL("u.avatar_asset_id", "u.avatar", "avatar_url")+`,'project',jsonb_build_object('id',p.id,'identifier',p.identifier,'name',p.name,'cover_image',p.cover_image,'logo_props',p.logo_props,'description',p.description)||`+apicontract.FileAssetURLFieldSQL("p.cover_image_asset_id", "p.cover_image", "cover_image_url")+`,'workspace',jsonb_build_object('id',w.id,'name',w.name,'slug',w.slug)||`+apicontract.FileAssetURLFieldSQL("w.logo_asset_id", "w.logo", "logo_url")+`) FROM project_members pm JOIN users u ON u.id=pm.member_id JOIN projects p ON p.id=pm.project_id JOIN workspaces w ON w.id=pm.workspace_id WHERE pm.id=$1`, c.MemberID)
 	if err != nil {
 		return nil, err
 	}
@@ -433,7 +433,7 @@ func lifecycleBoolean(value any) (bool, string) {
 		}
 		return false, "Must be a valid boolean."
 	}
-	switch strings.ToLower(djangoinput.ScalarString(value)) {
+	switch strings.ToLower(requestinput.ScalarString(value)) {
 	case "true", "1", "yes", "on", "t", "y":
 		return true, ""
 	case "false", "0", "no", "off", "f", "n":

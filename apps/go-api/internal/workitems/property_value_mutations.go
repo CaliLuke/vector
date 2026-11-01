@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
@@ -101,6 +101,6 @@ func (r *Repository) MutatePropertyValue(ctx context.Context, cmd projectmutatio
 		if err != nil {
 			return nil, err
 		}
-		return djangoapi.JSONTimestamps(raw, cmd.Timezone)
+		return apicontract.JSONTimestamps(raw, cmd.Timezone)
 	})
 }

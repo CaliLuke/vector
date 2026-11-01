@@ -6,7 +6,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	"github.com/stretchr/testify/require"
 
@@ -29,8 +29,8 @@ func TestCycleFailuresAreTypedAndSanitized(t *testing.T) {
 		code    string
 	}{
 		{"denied", cycles.ErrForbidden, "forbidden"}, {"missing", cycles.ErrNotFound, "not_found"},
-		{"invalid cursor", &djangoapi.HTTPError{Status: 400}, "invalid_params"},
-		{"backend HTTP failure", &djangoapi.HTTPError{Status: 500, Body: map[string]any{"password": "secret"}}, "internal_error"},
+		{"invalid cursor", &apicontract.HTTPError{Status: 400}, "invalid_params"},
+		{"backend HTTP failure", &apicontract.HTTPError{Status: 500, Body: map[string]any{"password": "secret"}}, "internal_error"},
 		{"database failure", errors.New("secret database details"), "internal_error"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

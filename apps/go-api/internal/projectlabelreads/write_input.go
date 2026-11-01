@@ -7,34 +7,34 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/labelhierarchy"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
 type labelInput struct {
-	fields     map[string]any
-	surrogates map[string][]string
+	fields map[string]any
+
 	kind       string
 	null, form bool
 }
 
 func parseLabelInput(body io.Reader, contentType string) (labelInput, error) {
-	input, err := djangoinput.Parse(body, contentType)
-	var failure *djangoapi.HTTPError
+	input, err := requestinput.Parse(body, contentType)
+	var failure *apicontract.HTTPError
 	if errors.As(err, &failure) {
 		err = &HTTPError{Status: failure.Status, Body: failure.Body}
 	}
-	return labelInput{input.Fields, input.Surrogates, input.Kind, input.Null, input.Form}, err
+	return labelInput{input.Fields, input.Kind, input.Null, input.Form}, err
 }
-func pythonScalarString(value any) string { return djangoinput.ScalarString(value) }
-func charField(value any, allowBlank bool, surrogates []string) (string, []string) {
-	return djangoinput.CharField(value, allowBlank, surrogates)
+func pythonScalarString(value any) string { return requestinput.ScalarString(value) }
+func charField(value any, allowBlank bool) (string, []string) {
+	return requestinput.CharField(value, allowBlank)
 }
-func labelParentUUID(value any) (uuid.UUID, error) { return djangoinput.UUID(value) }
-func labelFloatField(value any) (float64, string)  { return djangoinput.FloatField(value) }
+func labelParentUUID(value any) (uuid.UUID, error) { return requestinput.UUID(value) }
+func labelFloatField(value any) (float64, string)  { return requestinput.FloatField(value) }
 func (r *WriteRepository) validateInput(ctx context.Context, tx pgx.Tx, input labelInput, label *Label, project, method string) error {
 	if input.null {
 		return &HTTPError{400, map[string]any{"non_field_errors": []string{"No data provided"}}}
@@ -68,7 +68,7 @@ func (r *WriteRepository) validateInput(ctx context.Context, tx pgx.Tx, input la
 		}
 	}
 	if name, present := input.fields["name"]; present {
-		value, errs := charField(name, false, input.surrogates["name"])
+		value, errs := charField(name, false)
 		if len(errs) == 0 {
 			duplicate, err := r.duplicate(ctx, nil, value, label.ID, false)
 			if err != nil {
@@ -100,7 +100,7 @@ func (r *WriteRepository) validateInput(ctx context.Context, tx pgx.Tx, input la
 		failures["name"] = []string{"This field is required."}
 	}
 	if color, present := input.fields["color"]; present {
-		value, errs := charField(color, true, input.surrogates["color"])
+		value, errs := charField(color, true)
 		if len(errs) > 0 {
 			failures["color"] = errs
 		} else {

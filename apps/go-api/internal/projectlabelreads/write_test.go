@@ -211,7 +211,7 @@ func TestPatchRejectsParentOutsideProject(t *testing.T) {
 }
 
 func TestPatchRejectsNonfiniteSortOrderBeforePersistence(t *testing.T) {
-	for _, value := range []string{`"NaN"`, `"Infinity"`, `"-Infinity"`, `"1e10000"`, `1e309`} {
+	for _, value := range []string{`"١٢"`, `"1_000"`, `true`, `"NaN"`, `"Infinity"`, `"-Infinity"`, `"1e10000"`, `1e309`} {
 		t.Run(value, func(t *testing.T) {
 			db := &parentWriteDatabase{label: existingWriteLabel()}
 			repository := newWriteRepository(t, db)
@@ -224,13 +224,13 @@ func TestPatchRejectsNonfiniteSortOrderBeforePersistence(t *testing.T) {
 	}
 }
 
-func TestPatchPythonFloatSyntaxIsPersisted(t *testing.T) {
+func TestPatchNativeDecimalSortOrderIsPersisted(t *testing.T) {
 	for _, scenario := range []struct {
 		name, body string
 		want       float64
 	}{
-		{"Unicode decimal digits", `{"sort_order":"١٢"}`, 12},
-		{"digit separator", `{"sort_order":"1_000"}`, 1000},
+		{"decimal string", `{"sort_order":"12"}`, 12},
+		{"exponent", `{"sort_order":"1e3"}`, 1000},
 	} {
 		t.Run(scenario.name, func(t *testing.T) {
 			db := &parentWriteDatabase{label: existingWriteLabel()}
@@ -252,7 +252,7 @@ func TestPatchPythonFloatSyntaxIsPersisted(t *testing.T) {
 
 func TestPatchParentPrimaryKeyCoercionMatchesRecordedCases(t *testing.T) {
 	for _, scenario := range []struct{ name, body, want string }{
-		{"numeric", `{"parent":123}`, `Invalid pk "123" - object does not exist.`},
+		{"numeric", `{"parent":123}`, "“123” is not a valid UUID."},
 		{"boolean", `{"parent":true}`, "Incorrect type. Expected pk value, received bool."},
 	} {
 		t.Run(scenario.name, func(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
@@ -69,7 +69,7 @@ func (s *Service) propertyValue(ctx context.Context, in propertyInput) (result l
 	if json.Unmarshal(raw, &data) != nil {
 		return result, workitemResultError()
 	}
-	data = djangoapi.Timestamps(data, actor.Timezone)
+	data = apicontract.Timestamps(data, actor.Timezone)
 	if _, multiple := data.([]any); multiple {
 		var values api.WorkitemPropertyArray
 		if err = decodeWorkitemProjection(data, &values); err != nil {

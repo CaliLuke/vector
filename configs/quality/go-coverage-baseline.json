@@ -193,11 +193,11 @@
       "statements": 384,
       "percent": 63.28
     },
-    "github.com/CaliLuke/go-plane/internal/djangoapi": {
+    "github.com/CaliLuke/go-plane/internal/apicontract": {
       "statements": 267,
       "percent": 90.26
     },
-    "github.com/CaliLuke/go-plane/internal/djangoinput": {
+    "github.com/CaliLuke/go-plane/internal/requestinput": {
       "statements": 405,
       "percent": 92.84
     },

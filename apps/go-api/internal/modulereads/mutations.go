@@ -33,9 +33,9 @@ func (r *LifecycleRepository) MutateResource(ctx context.Context, cmd projectmut
 		case "manage_workitems":
 			return nil, workitems.ApplyPlanning(ctx, tx, cmd, "module", r.baseHost)
 		case "create":
-			return transaction.CreateModuleV1(ctx, cmd.ActorID.String(), cmd.WorkspaceSlug, cmd.ProjectID.String(), cmd.Fields, nil, r.baseHost)
+			return transaction.CreateModuleV1(ctx, cmd.ActorID.String(), cmd.WorkspaceSlug, cmd.ProjectID.String(), cmd.Fields, r.baseHost)
 		case "update":
-			return transaction.UpdateModuleV1(ctx, cmd.ActorID.String(), cmd.WorkspaceSlug, cmd.ProjectID.String(), cmd.ResourceID.String(), cmd.Fields, nil, r.baseHost)
+			return transaction.UpdateModuleV1(ctx, cmd.ActorID.String(), cmd.WorkspaceSlug, cmd.ProjectID.String(), cmd.ResourceID.String(), cmd.Fields, r.baseHost)
 		case "delete":
 			return nil, transaction.DeleteModule(ctx, cmd.ActorID.String(), cmd.WorkspaceSlug, cmd.ProjectID.String(), cmd.ResourceID.String(), true, r.baseHost)
 		}

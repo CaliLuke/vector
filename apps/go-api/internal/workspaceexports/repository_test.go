@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -40,17 +40,17 @@ func (database *exportDatabase) QueryRow(_ context.Context, query string, args .
 	}
 }
 
-func TestDjangoUUIDArrayValues(t *testing.T) {
+func TestUUIDArrayValuesRequireTextIdentities(t *testing.T) {
 	for _, test := range []struct {
 		name    string
 		value   any
 		want    pgtype.UUID
 		wantErr bool
 	}{
-		{name: "integer becomes UUID integer", value: json.Number("123"), want: pgtype.UUID{Bytes: [16]byte{15: 123}, Valid: true}},
+		{name: "integer rejected", value: json.Number("123"), wantErr: true},
 		{name: "UUID string", value: "123e4567-e89b-12d3-a456-426614174000", want: pgtype.UUID{Bytes: [16]byte{0x12, 0x3e, 0x45, 0x67, 0xe8, 0x9b, 0x12, 0xd3, 0xa4, 0x56, 0x42, 0x66, 0x14, 0x17, 0x40, 0x00}, Valid: true}},
 		{name: "null array member", value: nil, want: pgtype.UUID{}},
-		{name: "boolean follows Python integer semantics", value: true, want: pgtype.UUID{Bytes: [16]byte{15: 1}, Valid: true}},
+		{name: "boolean rejected", value: true, wantErr: true},
 		{name: "negative integer rejected", value: json.Number("-1"), wantErr: true},
 		{name: "integer overflow rejected", value: json.Number("340282366920938463463374607431768211456"), wantErr: true},
 		{name: "fraction rejected", value: json.Number("1.0"), wantErr: true},
@@ -74,7 +74,7 @@ func TestCreateIssueExportStoresCanonicalUUIDsAndReturnsOriginalTaskValues(t *te
 	if err != nil {
 		t.Fatal(err)
 	}
-	original := []any{json.Number("123"), "123e4567-e89b-12d3-a456-426614174000", nil}
+	original := []any{"00000000-0000-0000-0000-00000000007b", "123e4567-e89b-12d3-a456-426614174000", nil}
 	_, _, _, queuedProjects, err := repository.CreateIssueExport(context.Background(), "00000000-0000-4000-8000-000000000002", "demo", "csv", original, false)
 	if err != nil {
 		t.Fatal(err)
@@ -119,7 +119,7 @@ func TestHistoryRejectsUnsafeOrderingBeforeQuery(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = repository.History(context.Background(), "user", "demo", djangoapi.Query{Params: map[string]string{
+	_, err = repository.History(context.Background(), "user", "demo", apicontract.Query{Params: map[string]string{
 		"per_page": "20", "cursor": "20:1:0", "order_by": "created_at; DROP TABLE exporters",
 	}})
 	if err == nil || err.Error() != "unsupported exporter order_by" {

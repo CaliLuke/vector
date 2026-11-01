@@ -97,21 +97,21 @@ func TestModuleOptionsLookupFailuresDoNotReturnSuccessMetadata(t *testing.T) {
 	}
 }
 
-func (repo *moduleLifecycleTransportRepository) CreateModule(context.Context, string, string, string, map[string]any, map[string][]string, string) (json.RawMessage, error) {
+func (repo *moduleLifecycleTransportRepository) CreateModule(context.Context, string, string, string, map[string]any, string) (json.RawMessage, error) {
 	repo.createCalls++
 	return json.RawMessage(`{}`), nil
 }
 
-func (repo *moduleLifecycleTransportRepository) UpdateModule(context.Context, string, string, string, string, map[string]any, map[string][]string, bool, string) (json.RawMessage, error) {
+func (repo *moduleLifecycleTransportRepository) UpdateModule(context.Context, string, string, string, string, map[string]any, bool, string) (json.RawMessage, error) {
 	repo.updateCalls++
 	return json.RawMessage(`{}`), nil
 }
 
-func (*moduleLifecycleTransportRepository) CreateModuleV1(context.Context, string, string, string, map[string]any, map[string][]string, string) (json.RawMessage, error) {
+func (*moduleLifecycleTransportRepository) CreateModuleV1(context.Context, string, string, string, map[string]any, string) (json.RawMessage, error) {
 	return nil, errors.New("unexpected API-v1 module create in app transport test")
 }
 
-func (*moduleLifecycleTransportRepository) UpdateModuleV1(context.Context, string, string, string, string, map[string]any, map[string][]string, string) (json.RawMessage, error) {
+func (*moduleLifecycleTransportRepository) UpdateModuleV1(context.Context, string, string, string, string, map[string]any, string) (json.RawMessage, error) {
 	return nil, errors.New("unexpected API-v1 module update in app transport test")
 }
 
@@ -127,11 +127,11 @@ func (*moduleLifecycleTransportRepository) DeleteModule(context.Context, string,
 	return nil
 }
 
-func (*moduleLifecycleTransportRepository) CreateLink(context.Context, string, string, string, string, map[string]any, map[string][]string) (json.RawMessage, error) {
+func (*moduleLifecycleTransportRepository) CreateLink(context.Context, string, string, string, string, map[string]any) (json.RawMessage, error) {
 	return json.RawMessage(`{}`), nil
 }
 
-func (repo *moduleLifecycleTransportRepository) UpdateLink(context.Context, string, string, string, string, string, map[string]any, map[string][]string, bool) (json.RawMessage, error) {
+func (repo *moduleLifecycleTransportRepository) UpdateLink(context.Context, string, string, string, string, string, map[string]any, bool) (json.RawMessage, error) {
 	if repo.linkErr != nil {
 		return nil, repo.linkErr
 	}
@@ -187,7 +187,7 @@ func moduleLifecycleTransportHandler(t *testing.T, repo *moduleLifecycleTranspor
 			moduleLifecycleMetadata: service,
 			moduleReads:             moduleReads,
 			readServicesSession:     publicSession,
-			readServicesCookie:      djangoSessionCookieConfig{Name: "session-id", Configured: true},
+			readServicesCookie:      browserSessionCookieConfig{Name: "session-id", Configured: true},
 			activityReadsBodyLimit:  1 << 20,
 		},
 	)

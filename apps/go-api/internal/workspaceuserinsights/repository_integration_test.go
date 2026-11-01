@@ -11,7 +11,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
@@ -139,7 +139,7 @@ func TestWorkspaceAuthorizationAndActivityQueryUseSourceScopeAndCTEAliases(t *te
 		t.Fatalf("export permission = (%v, %v), want allowed", allowed, err)
 	}
 
-	query := djangoapi.Query{
+	query := apicontract.Query{
 		Params:  map[string]string{"cursor": "10:0:0", "per_page": "10", "order_by": "-created_at"},
 		Present: map[string]bool{"cursor": true, "per_page": true, "order_by": true},
 	}
@@ -188,9 +188,9 @@ func TestWorkspaceAuthorizationAndActivityQueryUseSourceScopeAndCTEAliases(t *te
 	if profileBody.UserData.DateJoined != "2026-01-01T00:00:00Z" {
 		t.Errorf("profile date_joined = %q, want DRF UTC Z format", profileBody.UserData.DateJoined)
 	}
-	invalidPage := djangoapi.Query{Params: map[string]string{"per_page": "0"}, Present: map[string]bool{"per_page": true}}
+	invalidPage := apicontract.Query{Params: map[string]string{"per_page": "0"}, Present: map[string]bool{"per_page": true}}
 	_, err = repository.Activity(ctx, insightsRequesterID, "demo", insightsTargetID, nil, invalidPage)
-	var httpError *djangoapi.HTTPError
+	var httpError *apicontract.HTTPError
 	if !errors.As(err, &httpError) || httpError.Status != 400 {
 		t.Fatalf("per_page=0 error = %#v, want source-approved HTTP 400", err)
 	}

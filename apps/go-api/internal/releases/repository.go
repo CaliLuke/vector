@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
@@ -121,7 +121,7 @@ func (r *Repository) Read(ctx context.Context, q Query) (_ json.RawMessage, resu
 	return raw, tx.Commit(ctx)
 }
 func rawRows(ctx context.Context, tx pgx.Tx, query string, args ...any) ([]map[string]any, error) {
-	return djangoapi.ReadJSONRows(ctx, tx, query, args...)
+	return apicontract.ReadJSONRows(ctx, tx, query, args...)
 }
 func record(ctx context.Context, tx pgx.Tx, q Query, id uuid.UUID) (map[string]any, error) {
 	suffix := ""
@@ -138,7 +138,7 @@ func record(ctx context.Context, tx pgx.Tx, q Query, id uuid.UUID) (map[string]a
 	return project(ctx, tx, q, rows[0])
 }
 func page(ctx context.Context, tx pgx.Tx, q Query) (map[string]any, error) {
-	limit, p, offset, err := djangoapi.PageWindow(djangoapi.Query{Params: q.Params, Present: q.Present})
+	limit, p, offset, err := apicontract.PageWindow(apicontract.Query{Params: q.Params, Present: q.Present})
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +167,7 @@ func page(ctx context.Context, tx pgx.Tx, q Query) (map[string]any, error) {
 			return nil, err
 		}
 		args = []any{q.WorkspaceID, q.ID, q.ActorID}
-		from = ` FROM release_work_items rel JOIN issues t ON t.id=rel.issue_id AND t.project_id=rel.project_id AND t.workspace_id=rel.workspace_id WHERE rel.workspace_id=$1 AND rel.release_id=$2 AND ` + djangoapi.IssueVisibleSQL("t", "$3::uuid", "$1::uuid")
+		from = ` FROM release_work_items rel JOIN issues t ON t.id=rel.issue_id AND t.project_id=rel.project_id AND t.workspace_id=rel.workspace_id WHERE rel.workspace_id=$1 AND rel.release_id=$2 AND ` + apicontract.IssueVisibleSQL("t", "$3::uuid", "$1::uuid")
 		rowSQL = `jsonb_build_object('id',t.id,'name',t.name,'project_id',t.project_id)`
 	}
 	var total int
@@ -192,7 +192,7 @@ func page(ctx context.Context, tx pgx.Tx, q Query) (map[string]any, error) {
 			values = append(values, value)
 		}
 	}
-	return djangoapi.Envelope(values, total, limit, p), nil
+	return apicontract.Envelope(values, total, limit, p), nil
 }
 func project(ctx context.Context, tx pgx.Tx, q Query, row map[string]any) (map[string]any, error) {
 	keys := []string{"id", "name", "color", "sort_order"}

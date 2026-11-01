@@ -15,7 +15,7 @@ import (
 	api "github.com/CaliLuke/go-plane/authredirects/gen/auth_redirects"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	core "github.com/CaliLuke/go-plane/internal/authredirects"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	loomhttp "github.com/CaliLuke/loom/http"
 	loom "github.com/CaliLuke/loom/pkg"
 )
@@ -103,7 +103,7 @@ func (s *authRedirectsService) request(ctx context.Context, body io.ReadCloser, 
 	if body != nil {
 		defer platform.CloseRequestBody(ctx, body)
 	}
-	input, err := djangoinput.Parse(body, authRedirectRequestContentType(ctx))
+	input, err := requestinput.Parse(body, authRedirectRequestContentType(ctx))
 	if err != nil {
 		return core.Request{}, err
 	}
@@ -112,7 +112,7 @@ func (s *authRedirectsService) request(ctx context.Context, body io.ReadCloser, 
 		if !present || value == nil {
 			return ""
 		}
-		parsed, _ := djangoinput.TextField(value, true, 0, nil)
+		parsed, _ := requestinput.TextField(value, true, 0)
 		return parsed
 	}
 	web, err := s.service.ConfigValue(ctx, "WEB_URL", "")

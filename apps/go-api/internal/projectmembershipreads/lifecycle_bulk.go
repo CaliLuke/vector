@@ -8,8 +8,8 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -56,7 +56,7 @@ func (r *LifecycleRepository) lifecycleBulkCreate(ctx context.Context, c Lifecyc
 	if err = r.createLifecycleBulkMembers(ctx, c.ProjectID, batch); err != nil {
 		return nil, err
 	}
-	value, err := djangoapi.JSON(ctx, r.database, `SELECT COALESCE(jsonb_agg(jsonb_build_object('id',id,'member',member_id,'role',role,'project',project_id,'original_role',role,'created_at',created_at) ORDER BY created_at DESC),'[]'::jsonb) FROM project_members WHERE project_id=$1 AND member_id::text=ANY($2) AND deleted_at IS NULL`, c.ProjectID, queryIDs)
+	value, err := apicontract.JSON(ctx, r.database, `SELECT COALESCE(jsonb_agg(jsonb_build_object('id',id,'member',member_id,'role',role,'project',project_id,'original_role',role,'created_at',created_at) ORDER BY created_at DESC),'[]'::jsonb) FROM project_members WHERE project_id=$1 AND member_id::text=ANY($2) AND deleted_at IS NULL`, c.ProjectID, queryIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +152,7 @@ func (r *LifecycleRepository) resolveLifecycleBulkMembers(ctx context.Context, s
 }
 
 func (r *LifecycleRepository) updateLifecycleBulkMembers(ctx context.Context, projectID string, queryIDs []string, roles map[string]*lifecycleBulkRole) error {
-	existing, err := djangoapi.JSON(ctx, r.database, `SELECT COALESCE(jsonb_agg(member_id::text),'[]'::jsonb) FROM project_members WHERE project_id=$1 AND member_id::text=ANY($2) AND deleted_at IS NULL`, projectID, queryIDs)
+	existing, err := apicontract.JSON(ctx, r.database, `SELECT COALESCE(jsonb_agg(member_id::text),'[]'::jsonb) FROM project_members WHERE project_id=$1 AND member_id::text=ANY($2) AND deleted_at IS NULL`, projectID, queryIDs)
 	if err != nil {
 		return err
 	}
@@ -193,7 +193,7 @@ func (r *LifecycleRepository) createLifecycleBulkMembers(ctx context.Context, pr
 			return err
 		}
 		inserts = append(inserts, map[string]any{"id": uuid.NewString(), "member_id": id, "role": role})
-		properties = append(properties, map[string]any{"id": uuid.NewString(), "user_id": id, "lookup_key": djangoinput.ScalarString(m["member_id"])})
+		properties = append(properties, map[string]any{"id": uuid.NewString(), "user_id": id, "lookup_key": requestinput.ScalarString(m["member_id"])})
 	}
 	insertJSON, _ := json.Marshal(inserts)
 	_, err := r.database.Exec(ctx, `INSERT INTO project_members(id,project_id,workspace_id,member_id,role,comment,view_props,default_props,preferences,sort_order,is_active,created_at,updated_at,created_by_id,updated_by_id)
@@ -222,7 +222,7 @@ func lifecycleBulkMemberUUID(value any) (string, error) {
 			value = json.Number("1")
 		}
 	}
-	id, err := djangoinput.UUID(value)
+	id, err := requestinput.UUID(value)
 	if err != nil {
 		return "", lifecycleFailure(400, "error", "Please provide valid detail")
 	}

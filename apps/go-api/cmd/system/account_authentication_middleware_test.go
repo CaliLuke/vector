@@ -65,7 +65,7 @@ func TestAccountAuthenticationAPIViewUsesOptionalSessionCSRFWithoutTimezone(t *t
 		accountAuthentication:         api.NewEndpoints(service),
 		accountAuthenticationMetadata: service.(systemapi.SessionProtocolAuthorizer),
 		readServicesAuthSession:       sessions,
-		readServicesAuthCookie:        djangoSessionCookieConfig{Name: "session-id", Configured: true},
+		readServicesAuthCookie:        browserSessionCookieConfig{Name: "session-id", Configured: true},
 	})
 	request := httptest.NewRequest(http.MethodPost, "https://app.example/auth/email-check/", strings.NewReader(`{"email":"alice@example.com"}`))
 	request.Header.Set("Content-Type", "application/json")
@@ -106,7 +106,7 @@ func TestAccountAuthenticationProductionMiddlewareOrderAndTimezoneProfile(t *tes
 		accountAuthentication:         endpoints,
 		accountAuthenticationMetadata: service.(systemapi.SessionProtocolAuthorizer),
 		readServicesAuthSession:       sessions,
-		readServicesAuthCookie:        djangoSessionCookieConfig{Name: "session-id", Configured: true},
+		readServicesAuthCookie:        browserSessionCookieConfig{Name: "session-id", Configured: true},
 		activityReadsActivity:         activity,
 		activityReadsSecret:           "account-authentication-test-secret",
 		activityReadsBodyLimit:        64,
@@ -208,7 +208,7 @@ func TestAccountAuthenticationProductionMountSeparatesCSRFTrustFromCORS(t *testi
 		accountAuthenticationCSRFTrustedOrigins: []string{trustedOrigin},
 		readServicesCORS:                        []string{"https://cors-only.example.test"},
 		readServicesAuthSession:                 sessions,
-		readServicesAuthCookie:                  djangoSessionCookieConfig{Name: "session-id", Configured: true},
+		readServicesAuthCookie:                  browserSessionCookieConfig{Name: "session-id", Configured: true},
 	})
 	request := httptest.NewRequest(http.MethodPost, "https://api.example.test/auth/email-check/", strings.NewReader(`{"email":"alice@example.com"}`))
 	request.Header.Set("Content-Type", "application/json")
@@ -249,7 +249,7 @@ func TestAccountAuthenticationUnsupportedMediaTypeUses415ThroughProductionMount(
 		accountAuthentication:         api.NewEndpoints(service),
 		accountAuthenticationMetadata: service.(systemapi.SessionProtocolAuthorizer),
 		readServicesAuthSession:       sessions,
-		readServicesAuthCookie:        djangoSessionCookieConfig{Name: "session-id", Configured: true},
+		readServicesAuthCookie:        browserSessionCookieConfig{Name: "session-id", Configured: true},
 	})
 	request := httptest.NewRequest(http.MethodPost, "/auth/email-check/", strings.NewReader("email=alice%40example.com"))
 	request.Header.Set("Content-Type", "text/plain")

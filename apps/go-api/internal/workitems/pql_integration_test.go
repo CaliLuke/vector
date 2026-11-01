@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/stretchr/testify/require"
@@ -124,7 +124,7 @@ func TestAPIPQLFiltersBeforePaginationWithinExistingScope(t *testing.T) {
 			q := base
 			q.Params = params
 			_, readErr := repo.Execute(ctx, q, nil, "")
-			var invalid *djangoapi.HTTPError
+			var invalid *apicontract.HTTPError
 			require.ErrorAs(t, readErr, &invalid)
 			require.Equal(t, 400, invalid.Status)
 			raw, marshalErr := json.Marshal(invalid.Body)

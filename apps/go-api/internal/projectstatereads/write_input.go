@@ -7,24 +7,23 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 // ParseStateWriteBody preserves the shared parser's form and Unicode metadata
 // until the route-specific serializer runs.
-func ParseStateWriteBody(body io.Reader, contentType string) (djangoinput.Input, error) {
-	input, err := djangoinput.Parse(body, contentType)
-	var response *djangoapi.HTTPError
+func ParseStateWriteBody(body io.Reader, contentType string) (requestinput.Input, error) {
+	input, err := requestinput.Parse(body, contentType)
+	var response *apicontract.HTTPError
 	if errors.As(err, &response) {
 		return input, &WriteFailure{Status: response.Status, Body: response.Body}
 	}
 	return input, err
 }
 
-func validateStateFields(fields map[string]any, create, app bool, parsed *djangoinput.Input) error {
-	input := djangoinput.Input{Fields: fields}
+func validateStateFields(fields map[string]any, create, app bool, parsed *requestinput.Input) error {
+	input := requestinput.Input{Fields: fields}
 	if parsed != nil {
 		input = *parsed
 		input.Fields = fields
@@ -68,7 +67,7 @@ func validateStateFields(fields map[string]any, create, app bool, parsed *django
 			fields[field.name] = nil
 			continue
 		}
-		text, messages := djangoinput.TextField(value, field.blank, field.maximum, input.Surrogates[field.name])
+		text, messages := requestinput.TextField(value, field.blank, field.maximum)
 		if len(messages) != 0 {
 			failures[field.name] = messages
 		} else {
@@ -84,7 +83,7 @@ func validateStateFields(fields map[string]any, create, app bool, parsed *django
 			delete(fields, field)
 			continue
 		}
-		boolean, message := djangoinput.BooleanField(value)
+		boolean, message := requestinput.BooleanField(value)
 		if message != "" {
 			failures[field] = []string{message}
 		} else {
@@ -109,7 +108,7 @@ func validateStateFields(fields map[string]any, create, app bool, parsed *django
 		if number, ok := value.(float64); ok {
 			value = json.Number(strconv.FormatFloat(number, 'g', -1, 64))
 		}
-		number, message := djangoinput.FloatField(value)
+		number, message := requestinput.FloatField(value)
 		if message != "" {
 			failures[field] = []string{message}
 		} else {
@@ -120,7 +119,7 @@ func validateStateFields(fields map[string]any, create, app bool, parsed *django
 		if value == nil {
 			failures["group"] = []string{"This field may not be null."}
 		} else if text, ok := value.(string); !ok || !oneOf(text, "backlog", "unstarted", "started", "completed", "cancelled", "triage") {
-			text, err := pythoncompat.String(value, input.JSONFieldSource("group"))
+			text, err := requestinput.Text(value)
 			if err != nil {
 				return err
 			}

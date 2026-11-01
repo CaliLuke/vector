@@ -9,11 +9,11 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 func TestRequireObjectInputRejectsValidJSONNonObjectsAs400(t *testing.T) {
-	for _, input := range []djangoinput.Input{
+	for _, input := range []requestinput.Input{
 		{Kind: "list"},
 		{Kind: "string"},
 		{Kind: "number"},

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	states "github.com/CaliLuke/go-plane/internal/projectstatereads"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 	googleuuid "github.com/google/uuid"
@@ -50,7 +50,7 @@ func TestStateMCPActionsAcrossCredentialsAndProtocols(t *testing.T) {
 				require.Equal(t, created, detail)
 				value, readErr := native.ReadAPIV1(t.Context(), testsupport.LabelActor, states.APIV1Request{Operation: "detail", ExpectedWorkspaceID: &workspace, Params: map[string]string{"slug": "workspace-one", "project_id": testsupport.LabelProject, "state_id": id}})
 				require.NoError(t, readErr)
-				body, marshalErr := json.Marshal(djangoapi.Timestamps(value, "UTC"))
+				body, marshalErr := json.Marshal(apicontract.Timestamps(value, "UTC"))
 				require.NoError(t, marshalErr)
 				require.JSONEq(t, string(body), string(project(map[string]any{"action": "retrieve", "state_id": id}).StructuredContent))
 				workspaceDetail := milestoneObject(t, call(map[string]any{"action": "retrieve", "state_id": id, "project_id": ""}))

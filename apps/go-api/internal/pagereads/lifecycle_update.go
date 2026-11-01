@@ -6,14 +6,13 @@ import (
 	"net/http"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	"github.com/jackc/pgx/v5"
 )
 
-func (repository *Repository) updateOrDuplicatePage(ctx context.Context, db lifecycleDatabase, operation string, user uuid.UUID, slug string, project, page uuid.UUID, state pageLifecycleState, timezone string, input djangoinput.Input) (int, json.RawMessage, error) {
+func (repository *Repository) updateOrDuplicatePage(ctx context.Context, db lifecycleDatabase, operation string, user uuid.UUID, slug string, project, page uuid.UUID, state pageLifecycleState, timezone string, input requestinput.Input) (int, json.RawMessage, error) {
 	if operation == "duplicate" {
 		return repository.duplicatePage(ctx, db, user, slug, project, page, state, timezone)
 	}
@@ -46,7 +45,7 @@ func (repository *Repository) updateOrDuplicatePage(ctx context.Context, db life
 			if key == "view_props" || key == "logo_props" {
 				jsonValue, _, jsonFieldErr := input.JSONFieldValue(key)
 				if jsonFieldErr != nil {
-					return &djangoapi.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{key: []string{"Value must be valid JSON."}}}
+					return &apicontract.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{key: []string{"Value must be valid JSON."}}}
 				}
 				encoded, jsonFieldErr := json.Marshal(jsonValue)
 				if jsonFieldErr != nil {
@@ -86,7 +85,7 @@ func (repository *Repository) updateOrDuplicatePage(ctx context.Context, db life
 	}); writePageErr != nil {
 		return 0, nil, writePageErr
 	}
-	if rawDescription, present := input.Fields["description_html"]; (repository.publisher != nil || repository.nativeTasks != nil) && descriptionChanged && present && pythoncompat.Truthy(rawDescription) {
+	if rawDescription, present := input.Fields["description_html"]; (repository.publisher != nil || repository.nativeTasks != nil) && descriptionChanged && present && requestinput.Nonempty(rawDescription) {
 		if err := repository.admitPageTransaction(ctx, rawDescription, oldDescription, page.String()); err != nil {
 			return 0, nil, err
 		}
@@ -94,7 +93,7 @@ func (repository *Repository) updateOrDuplicatePage(ctx context.Context, db life
 	return repository.pageLifecycleDetail(ctx, user, slug, project, page, timezone, http.StatusOK, "update")
 }
 
-func (repository *Repository) validatePageUpdateFields(ctx context.Context, user, project, page uuid.UUID, state pageLifecycleState, input djangoinput.Input) (map[string]any, lifecycleLabelList, error) {
+func (repository *Repository) validatePageUpdateFields(ctx context.Context, user, project, page uuid.UUID, state pageLifecycleState, input requestinput.Input) (map[string]any, lifecycleLabelList, error) {
 	fields := input.Fields
 	// The view resolves the submitted parent before it compares access or
 	// validates serializer fields. A stale or foreign parent therefore wins
@@ -102,9 +101,9 @@ func (repository *Repository) validatePageUpdateFields(ctx context.Context, user
 	var handlerParent uuid.UUID
 	var serializerPrecheckedParent *uuid.UUID
 	parentValue, parentPresent := fields["parent"]
-	parentTruthy := parentPresent && pythoncompat.Truthy(parentValue)
+	parentTruthy := parentPresent && requestinput.Nonempty(parentValue)
 	if parentTruthy {
-		parent, err := lifecycleParentLookupUUID(parentValue)
+		parent, err := lifecycleParentUUID(parentValue)
 		if err != nil {
 			return nil, lifecycleLabelList{}, lifecycleError(http.StatusBadRequest, "Please provide valid detail")
 		}
@@ -130,7 +129,7 @@ func (repository *Repository) validatePageUpdateFields(ctx context.Context, user
 			return nil, lifecycleLabelList{}, err
 		}
 		if cycle {
-			return nil, lifecycleLabelList{}, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"parent": []string{"Page hierarchy cannot contain a cycle."}}}
+			return nil, lifecycleLabelList{}, &apicontract.HTTPError{Status: 400, Body: map[string]any{"parent": []string{"Page hierarchy cannot contain a cycle."}}}
 		}
 	}
 	fields, fieldErrors, labelList := validatePageLifecycleFields(input)
@@ -142,7 +141,7 @@ func (repository *Repository) validatePageUpdateFields(ctx context.Context, user
 		fieldErrors["labels"] = labelList.errors
 	}
 	if parentPresent {
-		parentValueNormalized, message, parentErr := repository.lifecycleSerializerParent(ctx, state.workspaceID, project, parentValue, input.JSONFieldSource("parent"), serializerPrecheckedParent)
+		parentValueNormalized, message, parentErr := repository.lifecycleSerializerParent(ctx, state.workspaceID, project, parentValue, serializerPrecheckedParent)
 		if parentErr != nil {
 			return nil, lifecycleLabelList{}, parentErr
 		}
@@ -153,12 +152,12 @@ func (repository *Repository) validatePageUpdateFields(ctx context.Context, user
 		}
 	}
 	if len(fieldErrors) > 0 {
-		return nil, lifecycleLabelList{}, &djangoapi.HTTPError{Status: 400, Body: fieldErrors}
+		return nil, lifecycleLabelList{}, &apicontract.HTTPError{Status: 400, Body: fieldErrors}
 	}
 	if value, ok := fields["access"]; ok {
 		access, valid := lifecycleChoice(value)
 		if !valid {
-			return nil, lifecycleLabelList{}, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"access": []string{lifecycleChoiceMessage(input, value)}}}
+			return nil, lifecycleLabelList{}, &apicontract.HTTPError{Status: 400, Body: map[string]any{"access": []string{lifecycleChoiceMessage(value)}}}
 		}
 		if access != state.access && state.ownerID != user {
 			return nil, lifecycleLabelList{}, lifecycleError(http.StatusBadRequest, "Access cannot be updated since this page is owned by someone else")

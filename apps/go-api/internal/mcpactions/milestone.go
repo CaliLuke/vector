@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/milestones"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
@@ -14,9 +14,9 @@ import (
 
 type milestoneApplication interface {
 	VisibleActions(context.Context, uuid.UUID, uuid.UUID, string) (milestones.Capabilities, error)
-	List(context.Context, milestones.Scope, djangoapi.Query) (milestones.Page[milestones.Record], error)
+	List(context.Context, milestones.Scope, apicontract.Query) (milestones.Page[milestones.Record], error)
 	Retrieve(context.Context, milestones.Scope, uuid.UUID, bool) (milestones.Record, error)
-	ListWorkItems(context.Context, milestones.Scope, uuid.UUID, djangoapi.Query) (milestones.Page[milestones.Link], error)
+	ListWorkItems(context.Context, milestones.Scope, uuid.UUID, apicontract.Query) (milestones.Page[milestones.Link], error)
 	Create(context.Context, milestones.WriteOptions, milestones.Fields) (milestones.MutationResult, error)
 	Update(context.Context, milestones.WriteOptions, uuid.UUID, milestones.Fields) (milestones.MutationResult, error)
 	Delete(context.Context, milestones.WriteOptions, uuid.UUID) (milestones.MutationResult, error)

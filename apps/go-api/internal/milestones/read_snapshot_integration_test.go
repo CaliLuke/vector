@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/milestones"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/require"
@@ -43,7 +43,7 @@ func TestMilestoneReadsShareAuthorizationCountAndRowSnapshot(t *testing.T) {
 	}
 	finished := make(chan outcome, 1)
 	go func() {
-		page, failure := repo.List(readCtx, f.scope, djangoapi.Query{})
+		page, failure := repo.List(readCtx, f.scope, apicontract.Query{})
 		closeErr := reader.Close(context.WithoutCancel(readCtx))
 		finished <- outcome{page, errors.Join(failure, closeErr)}
 	}()
@@ -61,11 +61,11 @@ func TestMilestoneReadsShareAuthorizationCountAndRowSnapshot(t *testing.T) {
 	require.Equal(t, 3, result.page.Total)
 	require.Len(t, result.page.Results, 3)
 	require.Equal(t, firstMilestone, result.page.Results[0].ID)
-	_, err = f.repo.List(f.ctx, f.scope, djangoapi.Query{})
+	_, err = f.repo.List(f.ctx, f.scope, apicontract.Query{})
 	require.ErrorIs(t, err, milestones.ErrForbidden)
 	_, err = f.db.Exec(f.ctx, `UPDATE project_members SET is_active=true`)
 	require.NoError(t, err)
-	page, err := f.repo.List(f.ctx, f.scope, djangoapi.Query{})
+	page, err := f.repo.List(f.ctx, f.scope, apicontract.Query{})
 	require.NoError(t, err)
 	require.Equal(t, 2, page.Total)
 	require.Len(t, page.Results, 2)

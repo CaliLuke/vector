@@ -153,7 +153,7 @@ func newWorkspaceLifecycleMiddlewareHandler(t *testing.T, trace *workspaceLifecy
 	return extensionHTTPHandler(pendingReplacementEndpoints{
 		workspaceLifecycle:     workspaceapi.NewEndpoints(service),
 		readServicesSession:    sessions,
-		readServicesCookie:     djangoSessionCookieConfig{Name: "session-id", Configured: true},
+		readServicesCookie:     browserSessionCookieConfig{Name: "session-id", Configured: true},
 		activityReadsBodyLimit: bodyLimit,
 		activityReadsActivity:  activity,
 	})

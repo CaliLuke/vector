@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 )
 
 func TestLifecycleRoleRetainsDRFChoiceIdentity(t *testing.T) {
@@ -43,7 +43,7 @@ func TestLifecyclePermissionsPrecedeRateAndNeverRequireWorkspaceMembershipForAPI
 	}
 	command := LifecycleCommand{Operation: "v1-list-members", Method: "GET", UserID: "user", Slug: "demo", ProjectID: "project"}
 	err = repo.AuthorizeLifecycle(context.Background(), command)
-	var denied *djangoapi.HTTPError
+	var denied *apicontract.HTTPError
 	if !errors.As(err, &denied) || denied.Status != 403 {
 		t.Fatalf("denied=%v", err)
 	}
@@ -127,7 +127,7 @@ func TestLegacyPatchNonObjectParsingRetainsViewGuardPrecedence(t *testing.T) {
 	}
 	for _, body := range []string{`null`, `true`, `5`} {
 		_, err := lifecycleLegacyPatchInput(LifecycleCommand{Body: strings.NewReader(body), ContentType: "application/json"})
-		var failure *djangoapi.HTTPError
+		var failure *apicontract.HTTPError
 		if !errors.As(err, &failure) || failure.Status != 400 {
 			t.Fatalf("body=%s error=%v", body, err)
 		}
@@ -175,7 +175,7 @@ func TestLegacyBulkNonObjectBodyFailsBeforeProjectLookup(t *testing.T) {
 			t.Fatal(err)
 		}
 		_, err = repository.ExecuteLifecycle(context.Background(), LifecycleCommand{Operation: "legacy-create-members", Method: "POST", Body: strings.NewReader(body), ContentType: "application/json"})
-		var failure *djangoapi.HTTPError
+		var failure *apicontract.HTTPError
 		if !errors.As(err, &failure) || failure.Status != 400 {
 			t.Fatalf("body=%s error=%v", body, err)
 		}

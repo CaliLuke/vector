@@ -183,7 +183,7 @@ func newProjectLabelWriteTestMux(t *testing.T, repository *labelWriteHTTPReposit
 	}
 	mux := loomhttp.NewMuxer()
 	server := labelssvr.New(labelsapi.NewEndpoints(service), mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, nil, nil, policy)
-	server.Use(sessionServiceMiddlewareStack(apiV1CompatibilityOptions{bodySizeLimit: limit, activityLogger: logger, activitySecret: "secret"}, sessions, djangoSessionCookieConfig{}))
+	server.Use(sessionServiceMiddlewareStack(apiV1CompatibilityOptions{bodySizeLimit: limit, activityLogger: logger, activitySecret: "secret"}, sessions, browserSessionCookieConfig{}))
 	labelssvr.Mount(mux, server)
 	return mux
 }

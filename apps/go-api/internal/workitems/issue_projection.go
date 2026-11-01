@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/google/uuid"
@@ -20,7 +20,7 @@ var apiIssueOrder = strings.Fields("id type_id created_at updated_at deleted_at 
 // Only authenticated work-item handlers use this projection. The shared public
 // serializer retains its explicit field allowlist, including expanded relations.
 func (r *Repository) serializeAuthorizedIssue(ctx context.Context, row map[string]any, fields, expand string) (map[string]any, error) {
-	result, err := djangoapi.SerializeIssue(ctx, r.db, row, fields, expand)
+	result, err := apicontract.SerializeIssue(ctx, r.db, row, fields, expand)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ func (r *Repository) serializeVisibleIssue(ctx context.Context, row map[string]a
 	if q.ExpectedWorkspaceID != nil {
 		return r.boundIssueProjection(ctx, row, q, fields, expand)
 	}
-	row, err := djangoapi.MaskIssueParent(ctx, r.db, row, q.ActorID)
+	row, err := apicontract.MaskIssueParent(ctx, r.db, row, q.ActorID)
 	if err != nil {
 		return nil, err
 	}
@@ -206,11 +206,11 @@ func issueCollectionAnnotationsSQL(actor string) string {
 }
 
 func issueAnnotationsSQLWithModuleConditions(actor string, activeAssignees bool, moduleConditions string) string {
-	return issueAnnotationsSQLWithVisibility(actor, activeAssignees, moduleConditions, djangoapi.VisibleParentSQL("i", actor), djangoapi.IssueVisibleSQL("child", actor, "i.workspace_id"))
+	return issueAnnotationsSQLWithVisibility(actor, activeAssignees, moduleConditions, apicontract.VisibleParentSQL("i", actor), apicontract.IssueVisibleSQL("child", actor, "i.workspace_id"))
 }
 
 func publicIssueAnnotationsSQL(actor, moduleConditions string) string {
-	return issueAnnotationsSQLWithVisibility(actor, false, moduleConditions, djangoapi.PublicParentSQL("i"), djangoapi.PublicRelatedIssueSQL("child", "i"))
+	return issueAnnotationsSQLWithVisibility(actor, false, moduleConditions, apicontract.PublicParentSQL("i"), apicontract.PublicRelatedIssueSQL("child", "i"))
 }
 
 func issueAnnotationsSQLWithVisibility(actor string, activeAssignees bool, moduleConditions, parentSQL, childSQL string) string {

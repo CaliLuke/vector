@@ -52,7 +52,7 @@ func userMeCacheControlMiddleware(next http.Handler) http.Handler {
 func userMeReadCompatibilityMiddleware(
 	sessions userIdentitySessionLifecycle,
 	allowedCORSOrigins []string,
-	sessionCookie djangoSessionCookieConfig,
+	sessionCookie browserSessionCookieConfig,
 	bodySizeLimit int64,
 	activityLogger publicprojectmetadatareadsstore.ActivityLogger,
 	activitySecret string,
@@ -84,7 +84,7 @@ func userMeReadCompatibilityMiddleware(
 				logPublicProjectMetadataCompatibilityError(request.Context(), bodyErr)
 				headers.Del("Allow")
 				if sessions != nil {
-					if err := finalizeUnaccessedDjangoSession(headers, request, http.StatusInternalServerError, sessionCookie, sessions); err != nil {
+					if err := finalizeUnaccessedBrowserSession(headers, request, http.StatusInternalServerError, sessionCookie, sessions); err != nil {
 						writer := &publicProjectMetadataReadsResponseWriter{ResponseWriter: response}
 						replacePublicProjectMetadataSessionError(writer, err)
 						writer.finish()
@@ -116,12 +116,12 @@ func userMeReadCompatibilityMiddleware(
 					userID = resolvedUserID
 				}
 				if expireSession {
-					sessionCookieErr = expireDjangoSessionCookie(headers, sessionCookie)
+					sessionCookieErr = expireBrowserSessionCookie(headers, sessionCookie)
 				}
 				if rotatedSession != nil {
 					preparedSessionRefresh = rotatedSession
 				} else if refreshSession {
-					if cookie := lastDjangoSessionCookie(request, sessionCookieName(sessionCookie)); cookie != nil {
+					if cookie := requestSessionCookie(request, sessionCookieName(sessionCookie)); cookie != nil {
 						preparedSessionRefresh = &browsersession.SessionRefresh{SessionKey: cookie.Value}
 					}
 				}
@@ -142,7 +142,7 @@ func userMeReadCompatibilityMiddleware(
 					writer.status, writer.renderedBody(),
 				)
 				if !sessionInspected && !inspectSessionAfterResponse && sessions != nil {
-					if err := finalizeUnaccessedDjangoSession(headers, request, writer.status, sessionCookie, sessions); err != nil {
+					if err := finalizeUnaccessedBrowserSession(headers, request, writer.status, sessionCookie, sessions); err != nil {
 						logPublicProjectMetadataCompatibilityError(request.Context(), err)
 						replacePublicProjectMetadataSessionError(writer, err)
 					}
@@ -154,7 +154,7 @@ func userMeReadCompatibilityMiddleware(
 					if err != nil {
 						logPublicProjectMetadataCompatibilityError(request.Context(), err)
 						replacePublicProjectMetadataSessionError(writer, err)
-					} else if err := refreshDjangoSessionCookie(headers, sessionCookie, refresh); err != nil {
+					} else if err := refreshBrowserSessionCookie(headers, sessionCookie, refresh); err != nil {
 						logPublicProjectMetadataCompatibilityError(request.Context(), err)
 						replacePublicProjectMetadataSessionError(writer, err)
 					}

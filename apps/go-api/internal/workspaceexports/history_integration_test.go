@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -96,7 +96,7 @@ INSERT INTO exporters(id,created_at,updated_at,type,workspace_id,project,provide
 			if err != nil {
 				t.Fatal(err)
 			}
-			data, err := repository.History(ctx, test.actor, "demo", djangoapi.Query{Params: map[string]string{"per_page": "20", "cursor": "20:1:0"}})
+			data, err := repository.History(ctx, test.actor, "demo", apicontract.Query{Params: map[string]string{"per_page": "20", "cursor": "20:1:0"}})
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	"github.com/google/uuid"
 )
@@ -141,7 +141,7 @@ func (r *Repository) saveIssueRow(ctx context.Context, actor string, row map[str
 			return nil, err
 		}
 	}
-	return r.row(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i WHERE id=$1`, row["id"])
+	return r.row(ctx, `SELECT `+apicontract.IssueRowSQL("i")+` FROM issues i WHERE id=$1`, row["id"])
 }
 
 func issueRecordJSON(row map[string]any) ([]byte, error) {

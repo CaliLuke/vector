@@ -25,7 +25,7 @@ func TestUserAccountProtocolMetadataAndAppendSlash(t *testing.T) {
 		userAccountWrites:         useraccountwritesapi.NewEndpoints(service),
 		userAccountWritesMetadata: service.(sessionResourceProtocolAuthorizer),
 		readServicesSession:       sessions,
-		readServicesCookie:        djangoSessionCookieConfig{Name: "session-id", Configured: true},
+		readServicesCookie:        browserSessionCookieConfig{Name: "session-id", Configured: true},
 		activityReadsBodyLimit:    1 << 20,
 	})
 
@@ -93,7 +93,7 @@ func TestWorkspaceCollectionOptionsUsesRecordedSourceMetadata(t *testing.T) {
 		t.Fatal(err)
 	}
 	options := apiV1CompatibilityOptions{bodySizeLimit: defaultFileSizeLimit}
-	cookie := djangoSessionCookieConfig{Name: "session-id", Configured: true}
+	cookie := browserSessionCookieConfig{Name: "session-id", Configured: true}
 	stack := sessionServiceMiddlewareStack(options, nil, cookie)
 	handler := newSessionServiceProtocolMiddleware(
 		notificationProtocolMetadata,

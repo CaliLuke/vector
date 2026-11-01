@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
@@ -42,7 +42,7 @@ func LoadPropertyValueScope(ctx context.Context, tx pgx.Tx, q PropertyValueAPIQu
 	}
 	var definition, values []byte
 	var typeID string
-	err := tx.QueryRow(ctx, `SELECT p.definition,i.custom_properties,i.type_id::text FROM issues i JOIN issue_types t ON t.id=i.type_id AND t.workspace_id=i.workspace_id AND t.deleted_at IS NULL JOIN work_item_type_settings s ON s.workspace_id=i.workspace_id AND s.enabled JOIN work_item_type_properties l ON l.type_id=i.type_id AND l.property_id=$2 JOIN work_item_properties p ON p.id=l.property_id AND p.workspace_id=i.workspace_id WHERE i.id=$1 AND i.project_id=$3 AND `+djangoapi.IssueVisibleSQL("i", "$4::uuid", "$5::uuid")+suffix, q.IssueID, q.PropertyID, q.ProjectID, q.ActorID, q.WorkspaceID).Scan(&definition, &values, &typeID)
+	err := tx.QueryRow(ctx, `SELECT p.definition,i.custom_properties,i.type_id::text FROM issues i JOIN issue_types t ON t.id=i.type_id AND t.workspace_id=i.workspace_id AND t.deleted_at IS NULL JOIN work_item_type_settings s ON s.workspace_id=i.workspace_id AND s.enabled JOIN work_item_type_properties l ON l.type_id=i.type_id AND l.property_id=$2 JOIN work_item_properties p ON p.id=l.property_id AND p.workspace_id=i.workspace_id WHERE i.id=$1 AND i.project_id=$3 AND `+apicontract.IssueVisibleSQL("i", "$4::uuid", "$5::uuid")+suffix, q.IssueID, q.PropertyID, q.ProjectID, q.ActorID, q.WorkspaceID).Scan(&definition, &values, &typeID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return out, projectmutations.ErrNotFound
 	}

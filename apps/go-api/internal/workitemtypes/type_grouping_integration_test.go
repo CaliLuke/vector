@@ -7,7 +7,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	"github.com/google/uuid"
 )
@@ -141,7 +141,7 @@ func TestDiscoveryTypeGroupingRejectsInvalidAndUnauthorizedRequests(t *testing.T
 	expect := func(actor string, params map[string]string, status int) {
 		t.Helper()
 		_, err := discoveryGroupedRead(f, repo, f.project, actor, params)
-		var failure *djangoapi.HTTPError
+		var failure *apicontract.HTTPError
 		if !errors.As(err, &failure) || failure.Status != status {
 			t.Fatalf("want %d, got %v", status, err)
 		}

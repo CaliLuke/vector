@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
@@ -37,14 +37,14 @@ func (r *Repository) List(ctx context.Context, q Query) (_ json.RawMessage, resu
 	var allowed bool
 	err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM workspaces w JOIN workspace_members wm ON wm.workspace_id=w.id JOIN users u ON u.id=wm.member_id
  WHERE w.id=$1 AND w.slug=$2 AND w.deleted_at IS NULL AND u.id=$3 AND u.is_active AND wm.is_active AND wm.deleted_at IS NULL AND wm.role IN(5,15,20)
- AND EXISTS(SELECT 1 FROM issues i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id WHERE i.id=$4 AND i.project_id=$5 AND p.archived_at IS NULL AND `+djangoapi.IssueVisibleSQL("i", "$3::uuid", "w.id")+`))`, q.WorkspaceID, q.WorkspaceSlug, q.ActorID, q.IssueID, q.ProjectID).Scan(&allowed)
+ AND EXISTS(SELECT 1 FROM issues i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id WHERE i.id=$4 AND i.project_id=$5 AND p.archived_at IS NULL AND `+apicontract.IssueVisibleSQL("i", "$3::uuid", "w.id")+`))`, q.WorkspaceID, q.WorkspaceSlug, q.ActorID, q.IssueID, q.ProjectID).Scan(&allowed)
 	if err != nil {
 		return nil, err
 	}
 	if !allowed {
 		return nil, projectmutations.ErrForbidden
 	}
-	limit, _, offset, err := djangoapi.PageWindow(djangoapi.Query{Params: q.Params, Present: q.Present})
+	limit, _, offset, err := apicontract.PageWindow(apicontract.Query{Params: q.Params, Present: q.Present})
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (r *Repository) List(ctx context.Context, q Query) (_ json.RawMessage, resu
 }
 func authorizeMutation(ctx context.Context, tx pgx.Tx, cmd projectmutations.Command) error {
 	var id uuid.UUID
-	err := tx.QueryRow(ctx, `SELECT i.id FROM issues i WHERE i.id=$1 AND i.project_id=$2 AND `+djangoapi.IssueVisibleSQL("i", "$3::uuid", "$4::uuid")+` FOR SHARE`, cmd.ParentID, cmd.ProjectID, cmd.ActorID, cmd.WorkspaceID).Scan(&id)
+	err := tx.QueryRow(ctx, `SELECT i.id FROM issues i WHERE i.id=$1 AND i.project_id=$2 AND `+apicontract.IssueVisibleSQL("i", "$3::uuid", "$4::uuid")+` FOR SHARE`, cmd.ParentID, cmd.ProjectID, cmd.ActorID, cmd.WorkspaceID).Scan(&id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return projectmutations.ErrNotFound
 	}

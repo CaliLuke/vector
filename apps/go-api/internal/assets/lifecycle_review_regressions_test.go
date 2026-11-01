@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	api "github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/google/uuid"
 )
 
@@ -149,7 +149,7 @@ func TestPublicAssetUploadMapsMalformedSizeToSource400(t *testing.T) {
 			body := io.NopCloser(strings.NewReader(`{"name":"image.png","type":"image/png","size":` + size + `,"entity_type":"USER_AVATAR"}`))
 
 			_, err := service.createPublicAsset(ctx, "anchor", body)
-			var httpErr *djangoapi.HTTPError
+			var httpErr *apicontract.HTTPError
 			if err == nil || !errors.As(err, &httpErr) || httpErr.Status != 400 {
 				t.Fatalf("malformed public upload size error = %v, want HTTP 400", err)
 			}
@@ -264,7 +264,7 @@ func TestProjectCoverUploadRejectsMissingRouteProjectBeforeCreation(t *testing.T
 	body := io.NopCloser(strings.NewReader(`{"name":"cover.png","type":"image/png","size":68,"entity_type":"PROJECT_COVER","entity_identifier":"` + projectID.String() + `"}`))
 
 	_, err := service.createV2ProjectUpload(ctx, "workspace", projectID.String(), body)
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if err == nil || !errors.As(err, &httpErr) || httpErr.Status != 404 || httpErr.Body["error"] != "Project not found" || httpErr.Body["status"] != false {
 		t.Fatalf("missing route project upload error = %v, want source 404", err)
 	}
@@ -322,7 +322,7 @@ func TestProjectCoverDuplicateValidatesEffectiveProjectBeforeSourceLookup(t *tes
 			body := io.NopCloser(strings.NewReader(`{"entity_type":"PROJECT_COVER",` + test.fields + `}`))
 
 			_, err := service.duplicateWorkspaceAsset(ctx, "workspace", uuid.NewString(), body)
-			var httpErr *djangoapi.HTTPError
+			var httpErr *apicontract.HTTPError
 			if err == nil || !errors.As(err, &httpErr) || httpErr.Status != test.wantStatus {
 				t.Fatalf("foreign project duplicate error = %v, want HTTP %d", err, test.wantStatus)
 			}
@@ -344,7 +344,7 @@ func TestDuplicateRejectsSoftDeletedExplicitProjectBeforeSourceLookup(t *testing
 	body := io.NopCloser(strings.NewReader(`{"entity_type":"WORKSPACE_LOGO","project_id":"` + projectID.String() + `"}`))
 
 	_, err := service.duplicateWorkspaceAsset(ctx, "workspace", uuid.NewString(), body)
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if err == nil || !errors.As(err, &httpErr) || httpErr.Status != 404 || httpErr.Body["error"] != "Project not found" {
 		t.Fatalf("soft-deleted explicit destination error = %v, want 404 Project not found", err)
 	}
@@ -368,7 +368,7 @@ func TestProjectCoverDuplicateAcceptsEntityOnlyProjectInWorkspace(t *testing.T) 
 	body := io.NopCloser(strings.NewReader(`{"entity_type":"PROJECT_COVER","entity_id":"` + projectID.String() + `"}`))
 
 	_, err := service.duplicateWorkspaceAsset(ctx, "workspace", uuid.NewString(), body)
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if err == nil || !errors.As(err, &httpErr) || httpErr.Status != 404 || httpErr.Body["error"] != "Asset not found" {
 		t.Fatalf("entity-only project duplicate error = %v, want source lookup after project validation", err)
 	}
@@ -379,7 +379,7 @@ func TestProjectCoverDuplicateAcceptsEntityOnlyProjectInWorkspace(t *testing.T) 
 
 func assertProjectCoverMismatch(t *testing.T, err error) {
 	t.Helper()
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if err == nil || !errors.As(err, &httpErr) || httpErr.Status != 400 {
 		t.Fatalf("project cover validation error = %v, want HTTP 400", err)
 	}

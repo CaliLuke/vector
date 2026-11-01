@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -94,7 +94,7 @@ func lifecycleReviewRepository(t *testing.T, db *lifecycleReviewDB) *LifecycleRe
 
 func lifecycleReviewError(t *testing.T, err error, status int, body map[string]any) {
 	t.Helper()
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if !errors.As(err, &failure) || failure.Status != status || !reflect.DeepEqual(failure.Body, body) {
 		t.Fatalf("error = %#v, want %d %#v", err, status, body)
 	}
@@ -212,8 +212,8 @@ func TestLifecycleBulkMalformedUUIDIsDistinctFromMissingMember(t *testing.T) {
 		{`"not-a-uuid"`, 400, "Please provide valid detail"},
 		{`1.5`, 400, "Please provide valid detail"},
 		{`null`, 404, "The required object does not exist."},
-		{`true`, 404, "The required object does not exist."},
-		{`123`, 404, "The required object does not exist."},
+		{`true`, 400, "Please provide valid detail"},
+		{`123`, 400, "Please provide valid detail"},
 		{`{}`, 400, "Please provide valid detail"},
 		{`[]`, 400, "Please provide valid detail"},
 	} {
@@ -224,12 +224,8 @@ func TestLifecycleBulkMalformedUUIDIsDistinctFromMissingMember(t *testing.T) {
 			t.Fatal("invalid UUID saved")
 		}
 		if test.identity == "true" || test.identity == "123" {
-			want := "00000000-0000-0000-0000-000000000001"
-			if test.identity == "123" {
-				want = "00000000-0000-0000-0000-00000000007b"
-			}
-			if db.arguments[len(db.arguments)-1][1] != want {
-				t.Fatalf("ORM lookup lost integer identity: %#v", db.arguments)
+			if len(db.arguments) != 1 {
+				t.Fatalf("nontext identity reached member lookup after workspace authorization: %#v", db.arguments)
 			}
 		}
 	}

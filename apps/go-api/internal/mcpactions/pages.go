@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/pagereads"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
@@ -213,7 +213,7 @@ func (s *Service) pageOperation(ctx context.Context, tool string, input interfac
 			}
 		}
 	}
-	return json.Marshal(djangoapi.Timestamps(body, actor.Timezone))
+	return json.Marshal(apicontract.Timestamps(body, actor.Timezone))
 }
 func (s *Service) mutatePage(ctx context.Context, actor mcpauth.Principal, selector *string, cmd pagereads.PageAPICommand) (projectmutations.Result, error) {
 	cmd.Revalidate = mutationRevalidator(actor, selector, true)

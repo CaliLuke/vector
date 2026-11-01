@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -32,9 +32,9 @@ func (r *Repository) scopedAPIActivities(ctx context.Context, principal Principa
 		}
 	}
 	serializer := activityAPIJSON + `||jsonb_build_object('issue_comment',(SELECT c.id FROM issue_comments c WHERE c.id=a.issue_comment_id AND c.issue_id=a.issue_id AND c.project_id=a.project_id AND c.workspace_id=a.workspace_id))`
-	query := `WITH ` + djangoapi.ProjectMemberReadScopeSQL(1, 2, 3, 4) + `visible_parent AS MATERIALIZED (
+	query := `WITH ` + apicontract.ProjectMemberReadScopeSQL(1, 2, 3, 4) + `visible_parent AS MATERIALIZED (
  SELECT i.id,i.project_id,i.workspace_id FROM issues i JOIN scope ON scope.id=i.project_id AND scope.workspace_id=i.workspace_id
- JOIN projects p ON p.id=i.project_id WHERE i.id=$5::uuid AND p.archived_at IS NULL AND ` + djangoapi.IssueVisibleSQL("i", "$3::uuid", "scope.workspace_id") + `),
+ JOIN projects p ON p.id=i.project_id WHERE i.id=$5::uuid AND p.archived_at IS NULL AND ` + apicontract.IssueVisibleSQL("i", "$3::uuid", "scope.workspace_id") + `),
  matching AS MATERIALIZED (SELECT a.* FROM issue_activities a JOIN visible_parent v ON v.id=a.issue_id AND v.project_id=a.project_id AND v.workspace_id=a.workspace_id
  WHERE a.deleted_at IS NULL AND (a.field IS NULL OR a.field NOT IN ('comment','vote','reaction','draft')) AND ($6::uuid IS NULL OR a.id=$6::uuid) AND ` + issuequery.MilestoneActivityVisibleSQL("a.field", "a.issue_id", "a.project_id", "a.workspace_id", "$3::uuid") + `),
  page AS (SELECT * FROM matching a ORDER BY a.created_at ASC LIMIT $7 OFFSET $8)

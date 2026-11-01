@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -29,9 +29,9 @@ func (db *draftRelationDatabase) Exec(_ context.Context, query string, _ ...any)
 func TestDraftMalformedModulePreservesEarlierRelationChanges(t *testing.T) {
 	db := &draftRelationDatabase{}
 	r := &draftOperation{db: db, now: time.Now}
-	input := djangoinput.Input{Fields: map[string]any{"cycle_id": nil, "module_ids": []any{"invalid"}}}
+	input := requestinput.Input{Fields: map[string]any{"cycle_id": nil, "module_ids": []any{"invalid"}}}
 	err := r.replaceDraftRelations(context.Background(), Request{}, map[string]any{"id": "draft"}, issueChanges{assigneesSet: true, labelsSet: true}, input, false)
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	if !errors.As(err, &response) || response.Status != 400 {
 		t.Fatalf("module error=%v", err)
 	}

@@ -12,9 +12,9 @@ import (
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	api "github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 )
 
@@ -25,14 +25,14 @@ func (service *LifecycleService) bulkAssociateProjectAssets(ctx context.Context,
 	}
 	projectID, err := uuid.Parse(rawProjectID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Project not found"}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Project not found"}}
 	}
 	allowed, err := service.assets.repository.ProjectPermissionAllowed(ctx, userID, slug, projectID)
 	if err != nil {
 		return err
 	}
 	if !allowed {
-		return &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
+		return &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
 	}
 	workspaceID, err := service.assets.repository.RelatedWorkspaceIDBySlug(ctx, slug)
 	if err != nil {
@@ -40,7 +40,7 @@ func (service *LifecycleService) bulkAssociateProjectAssets(ctx context.Context,
 	}
 	entityID, err := uuid.Parse(rawEntityID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
 	}
 	fields := map[string]any{}
 	if body != nil {
@@ -49,7 +49,7 @@ func (service *LifecycleService) bulkAssociateProjectAssets(ctx context.Context,
 		if contentType == "" {
 			contentType = "application/json"
 		}
-		parsed, parseErr := djangoinput.Parse(body, contentType)
+		parsed, parseErr := requestinput.Parse(body, contentType)
 		if parseErr != nil {
 			return parseErr
 		}
@@ -65,17 +65,17 @@ func (service *LifecycleService) bulkAssociateProjectAssets(ctx context.Context,
 		}
 	}
 	if len(values) == 0 {
-		return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "No asset ids provided."}}
+		return &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "No asset ids provided."}}
 	}
 	ids := make([]uuid.UUID, 0, len(values))
 	for _, raw := range values {
 		value, ok := raw.(string)
 		if !ok {
-			return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
+			return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
 		}
 		id, parseErr := uuid.Parse(value)
 		if parseErr != nil {
-			return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
+			return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
 		}
 		ids = append(ids, id)
 	}
@@ -94,7 +94,7 @@ func (service *LifecycleService) listScopedIssueAttachments(ctx context.Context,
 	projectID, _ := uuid.Parse(rawProjectID)
 	issueID, err := uuid.Parse(rawIssueID)
 	if err != nil {
-		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	rows, err := service.assets.repository.VisibleIssueAttachments(ctx, userID, workspaceID, projectID, issueID, uploadedOnly)
 	if err != nil {
@@ -111,15 +111,15 @@ func (service *LifecycleService) createLegacyIssueAttachment(ctx context.Context
 	projectID, _ := uuid.Parse(rawProjectID)
 	issueID, err := uuid.Parse(rawIssueID)
 	if err != nil {
-		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	if body == nil {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"asset": []string{"No file was submitted."}}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"asset": []string{"No file was submitted."}}}
 	}
 	defer platform.CloseRequestBody(ctx, body)
 	file, err := parseLegacyAssetFile(body, RequestContentType(ctx))
 	if err != nil {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"asset": []string{"No file was submitted."}}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"asset": []string{"No file was submitted."}}}
 	}
 	workspaceID, err := service.assets.repository.WorkspaceIDBySlug(ctx, slug)
 	if err != nil {
@@ -130,16 +130,16 @@ func (service *LifecycleService) createLegacyIssueAttachment(ctx context.Context
 		return nil, err
 	}
 	if !found {
-		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Issue not found."}}
+		return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Issue not found."}}
 	}
 	if !allowed {
-		return nil, &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
+		return nil, &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
 	}
 	if file.Name == "" {
-		return nil, &djangoapi.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"asset": []string{"No file was submitted."}}}
+		return nil, &apicontract.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"asset": []string{"No file was submitted."}}}
 	}
 	if int64(len(file.Contents)) > service.assets.fileLimit {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"asset": []string{"File too large. Size should not exceed 5 MB."}}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"asset": []string{"File too large. Size should not exceed 5 MB."}}}
 	}
 	fields, err := legacyWritableFields(file.Fields)
 	if err != nil {
@@ -189,22 +189,22 @@ func (service *LifecycleService) deleteLegacyIssueAttachment(ctx context.Context
 	}
 	projectID, err := uuid.Parse(rawProjectID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	issueID, err := uuid.Parse(rawIssueID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	assetID, err := uuid.Parse(rawAssetID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Issue attachment not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Issue attachment not found."}}
 	}
 	allowed, err := service.assets.repository.IssueAttachmentDeleteAllowed(ctx, userID, slug, projectID, assetID)
 	if err != nil {
 		return err
 	}
 	if !allowed {
-		return &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
+		return &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
 	}
 	workspaceID, err := service.assets.repository.RelatedWorkspaceIDBySlug(ctx, slug)
 	if err != nil {
@@ -212,7 +212,7 @@ func (service *LifecycleService) deleteLegacyIssueAttachment(ctx context.Context
 	}
 	_, _, err = service.assets.repository.IssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Issue attachment not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Issue attachment not found."}}
 	}
 	activity := map[string]any{"type": "attachment.activity.deleted", "requested_data": nil, "actor_id": userID.String(), "issue_id": issueID.String(), "project_id": projectID.String(), "current_instance": nil, "epoch": time.Now().Unix(), "notification": true, "origin": service.assets.taskOrigin(ctx)}
 	return service.assets.repository.DeleteLegacyIssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID, activity)
@@ -225,14 +225,14 @@ func (service *LifecycleService) attachmentScope(ctx context.Context, slug, rawP
 	}
 	projectID, err := uuid.Parse(rawProjectID)
 	if err != nil {
-		return uuid.Nil, uuid.Nil, &djangoapi.HTTPError{Status: http.StatusForbidden, Body: map[string]any{"error": "You don't have the required permissions."}}
+		return uuid.Nil, uuid.Nil, &apicontract.HTTPError{Status: http.StatusForbidden, Body: map[string]any{"error": "You don't have the required permissions."}}
 	}
 	allowed, err := service.assets.repository.ProjectPermissionAllowed(ctx, userID, slug, projectID)
 	if err != nil {
 		return uuid.Nil, uuid.Nil, err
 	}
 	if !allowed {
-		return uuid.Nil, uuid.Nil, &djangoapi.HTTPError{Status: http.StatusForbidden, Body: map[string]any{"error": "You don't have the required permissions."}}
+		return uuid.Nil, uuid.Nil, &apicontract.HTTPError{Status: http.StatusForbidden, Body: map[string]any{"error": "You don't have the required permissions."}}
 	}
 	workspaceID, err := service.assets.repository.RelatedWorkspaceIDBySlug(ctx, slug)
 	if err != nil {
@@ -253,21 +253,21 @@ func (service *LifecycleService) listIssueAttachmentsAPI(ctx context.Context, sl
 	}
 	projectID, err := uuid.Parse(rawProjectID)
 	if err != nil {
-		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	issueID, err := uuid.Parse(rawIssueID)
 	if err != nil {
-		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	userID, workspaceID, _, found, allowed, err := service.issuePermissionV1(ctx, slug, rawProjectID, rawIssueID)
 	if err != nil {
 		return nil, err
 	}
 	if !found {
-		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested resource does not exist."}}
+		return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested resource does not exist."}}
 	}
 	if !allowed {
-		return nil, &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You are not allowed to download this attachment"}}
+		return nil, &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You are not allowed to download this attachment"}}
 	}
 	rows, err := service.assets.repository.VisibleIssueAttachments(ctx, userID, workspaceID, projectID, issueID, true)
 	if err != nil {
@@ -291,10 +291,10 @@ func (service *LifecycleService) createIssueAttachmentAPI(ctx context.Context, s
 			return nil, permissionErr
 		}
 		if !found {
-			return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested resource does not exist."}}
+			return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested resource does not exist."}}
 		}
 		if !allowed {
-			return nil, &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You are not allowed to upload this attachment"}}
+			return nil, &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You are not allowed to upload this attachment"}}
 		}
 		issueID, _ = uuid.Parse(rawIssueID)
 	} else {
@@ -305,7 +305,7 @@ func (service *LifecycleService) createIssueAttachmentAPI(ctx context.Context, s
 		projectID, _ = uuid.Parse(rawProjectID)
 		issueID, err = uuid.Parse(rawIssueID)
 		if err != nil {
-			return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+			return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 		}
 	}
 	request, err := service.decodeUploadRequest(ctx, body)
@@ -322,10 +322,10 @@ func (service *LifecycleService) createIssueAttachmentAPI(ctx context.Context, s
 		return nil, err
 	}
 	if apiV1 && (sanitizeFilename(stringValue(request.Name)) == "" || !request.SizePresent || size == 0) {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid request.", "status": false}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid request.", "status": false}}
 	}
 	if !allowedAttachmentMIME(contentType) {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid file type.", "status": false}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid file type.", "status": false}}
 	}
 	if size > service.assets.fileLimit {
 		size = service.assets.fileLimit
@@ -347,7 +347,7 @@ func (service *LifecycleService) createIssueAttachmentAPI(ctx context.Context, s
 				return nil, checkErr
 			}
 			if exists {
-				return nil, &djangoapi.HTTPError{Status: 409, Body: map[string]any{"error": "Issue with the same external id and external source already exists", "id": id.String()}}
+				return nil, &apicontract.HTTPError{Status: 409, Body: map[string]any{"error": "Issue with the same external id and external source already exists", "id": id.String()}}
 			}
 		}
 	}
@@ -382,14 +382,14 @@ func (service *LifecycleService) getIssueAttachmentV1(ctx context.Context, slug,
 		return nil, err
 	}
 	if !found {
-		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested resource does not exist."}}
+		return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested resource does not exist."}}
 	}
 	if !allowed {
-		return nil, &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You are not allowed to download this attachment"}}
+		return nil, &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You are not allowed to download this attachment"}}
 	}
 	assetID, err := uuid.Parse(rawAssetID)
 	if err != nil {
-		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	issueID, _ := uuid.Parse(rawIssueID)
 	asset, _, err := service.assets.repository.IssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID)
@@ -397,7 +397,7 @@ func (service *LifecycleService) getIssueAttachmentV1(ctx context.Context, slug,
 		return nil, sourceLookupError(err, map[string]any{"error": "The requested resource does not exist."})
 	}
 	if !asset.IsUploaded {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "The asset is not uploaded.", "status": false}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "The asset is not uploaded.", "status": false}}
 	}
 	var filename *string
 	attributes, err := fileAssetAttributesObject(asset.Attributes)
@@ -422,7 +422,7 @@ func (service *LifecycleService) issuePermissionV1(ctx context.Context, slug, ra
 	}
 	projectID, err := uuid.Parse(rawProjectID)
 	if err != nil {
-		return uuid.Nil, uuid.Nil, uuid.Nil, false, false, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return uuid.Nil, uuid.Nil, uuid.Nil, false, false, &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	workspaceID, err := service.assets.repository.RelatedWorkspaceIDBySlug(ctx, slug)
 	if err != nil {
@@ -430,7 +430,7 @@ func (service *LifecycleService) issuePermissionV1(ctx context.Context, slug, ra
 	}
 	issueID, err := uuid.Parse(rawIssueID)
 	if err != nil {
-		return uuid.Nil, uuid.Nil, uuid.Nil, false, false, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Issue not found"}}
+		return uuid.Nil, uuid.Nil, uuid.Nil, false, false, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Issue not found"}}
 	}
 	found, allowed, err := service.assets.repository.IssueAccess(ctx, userID, workspaceID, projectID, issueID)
 	return userID, workspaceID, projectID, found, allowed, err
@@ -442,18 +442,18 @@ func (service *LifecycleService) confirmIssueAttachmentV1(ctx context.Context, s
 		return err
 	}
 	if !found {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested resource does not exist."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested resource does not exist."}}
 	}
 	if !allowed {
-		return &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You are not allowed to upload this attachment"}}
+		return &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You are not allowed to upload this attachment"}}
 	}
 	issueID, err := uuid.Parse(rawIssueID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Issue not found"}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Issue not found"}}
 	}
 	assetID, err := uuid.Parse(rawAssetID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	asset, row, err := service.assets.repository.IssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID)
 	if err != nil {
@@ -481,18 +481,18 @@ func (service *LifecycleService) deleteIssueAttachmentV1(ctx context.Context, sl
 		return err
 	}
 	if !found {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested resource does not exist."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested resource does not exist."}}
 	}
 	if !allowed {
-		return &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You are not allowed to delete this attachment"}}
+		return &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You are not allowed to delete this attachment"}}
 	}
 	issueID, err := uuid.Parse(rawIssueID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Issue not found"}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Issue not found"}}
 	}
 	assetID, err := uuid.Parse(rawAssetID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	_, _, err = service.assets.repository.IssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID)
 	if err != nil {
@@ -514,18 +514,18 @@ func (service *LifecycleService) getIssueAttachment(ctx context.Context, slug, r
 	projectID, _ := uuid.Parse(rawProjectID)
 	issueID, err := uuid.Parse(rawIssueID)
 	if err != nil {
-		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	assetID, err := uuid.Parse(rawAssetID)
 	if err != nil {
-		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	asset, _, err := service.assets.repository.IssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID)
 	if err != nil {
 		return nil, sourceLookupError(err, map[string]any{"error": "The required object does not exist."})
 	}
 	if !asset.IsUploaded {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "The asset is not uploaded.", "status": false}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "The asset is not uploaded.", "status": false}}
 	}
 	var filename *string
 	attributes, err := fileAssetAttributesObject(asset.Attributes)
@@ -551,11 +551,11 @@ func (service *LifecycleService) confirmIssueAttachment(ctx context.Context, slu
 	projectID, _ := uuid.Parse(rawProjectID)
 	issueID, err := uuid.Parse(rawIssueID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	assetID, err := uuid.Parse(rawAssetID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	asset, row, err := service.assets.repository.IssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID)
 	if err != nil {
@@ -584,18 +584,18 @@ func (service *LifecycleService) deleteIssueAttachment(ctx context.Context, slug
 	}
 	projectID, err := uuid.Parse(rawProjectID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
+		return &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
 	}
 	assetID, err := uuid.Parse(rawAssetID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	allowed, err := service.assets.repository.IssueAttachmentDeleteAllowed(ctx, userID, slug, projectID, assetID)
 	if err != nil {
 		return err
 	}
 	if !allowed {
-		return &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
+		return &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
 	}
 	workspaceID, err := service.assets.repository.RelatedWorkspaceIDBySlug(ctx, slug)
 	if err != nil {
@@ -603,7 +603,7 @@ func (service *LifecycleService) deleteIssueAttachment(ctx context.Context, slug
 	}
 	issueID, err := uuid.Parse(rawIssueID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	activity := map[string]any{"type": "attachment.activity.deleted", "requested_data": nil, "actor_id": userID.String(),
 		"issue_id": issueID.String(), "project_id": projectID.String(), "current_instance": nil,

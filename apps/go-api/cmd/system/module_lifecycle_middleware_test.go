@@ -38,12 +38,12 @@ func (repo moduleLifecycleMiddlewareRepository) AuthorizeEntityProject(context.C
 	return nil
 }
 
-func (repo moduleLifecycleMiddlewareRepository) CreateModule(context.Context, string, string, string, map[string]any, map[string][]string, string) (json.RawMessage, error) {
+func (repo moduleLifecycleMiddlewareRepository) CreateModule(context.Context, string, string, string, map[string]any, string) (json.RawMessage, error) {
 	repo.recorder.add("dispatch")
 	return json.RawMessage(`{}`), nil
 }
 
-func (repo moduleLifecycleMiddlewareRepository) CreateModuleV1(context.Context, string, string, string, map[string]any, map[string][]string, string) (json.RawMessage, error) {
+func (repo moduleLifecycleMiddlewareRepository) CreateModuleV1(context.Context, string, string, string, map[string]any, string) (json.RawMessage, error) {
 	repo.recorder.add("dispatch")
 	return json.RawMessage(`{"id":"33333333-3333-4333-8333-333333333333"}`), nil
 }
@@ -67,7 +67,7 @@ func newModuleLifecycleMiddlewareTestHandler(t *testing.T, recorder *cycleMiddle
 			activityReads:           activityapi.NewEndpoints(protocolActivity),
 			activityReadsMetadata:   protocolActivity,
 			readServicesSession:     sessions,
-			readServicesCookie:      djangoSessionCookieConfig{Name: "session-id", Configured: true},
+			readServicesCookie:      browserSessionCookieConfig{Name: "session-id", Configured: true},
 			activityReadsActivity:   activity,
 			activityReadsSecret:     "module-lifecycle-test-secret",
 			activityReadsBodyLimit:  bodyLimit,

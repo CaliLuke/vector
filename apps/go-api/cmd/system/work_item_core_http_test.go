@@ -102,7 +102,7 @@ func TestWorkItemProtocolMiddlewarePassesRetiredGetForEveryCollision(t *testing.
 		path := strings.Join(segments, "/")
 		t.Run(pattern, func(t *testing.T) {
 			authorizer := &workItemProtocolAuthorizerStub{}
-			middleware := workItemProtocolMiddleware(authorizer, loomhttp.RuntimeCORSPolicy{}, func(next http.Handler) http.Handler { return next }, djangoSessionCookieConfig{})
+			middleware := workItemProtocolMiddleware(authorizer, loomhttp.RuntimeCORSPolicy{}, func(next http.Handler) http.Handler { return next }, browserSessionCookieConfig{})
 			handler := middleware(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 				response.WriteHeader(http.StatusNoContent)
 			}))
@@ -119,7 +119,7 @@ func TestWorkItemProtocolMiddlewareAuthorizesUnsupportedCoreMethods(t *testing.T
 	for _, method := range []string{http.MethodHead, http.MethodOptions, http.MethodDelete} {
 		t.Run(method, func(t *testing.T) {
 			authorizer := &workItemProtocolAuthorizerStub{}
-			middleware := workItemProtocolMiddleware(authorizer, loomhttp.RuntimeCORSPolicy{}, func(next http.Handler) http.Handler { return next }, djangoSessionCookieConfig{})
+			middleware := workItemProtocolMiddleware(authorizer, loomhttp.RuntimeCORSPolicy{}, func(next http.Handler) http.Handler { return next }, browserSessionCookieConfig{})
 			handler := middleware(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 				t.Fatal("unsupported method reached generated route")
 			}))
@@ -162,7 +162,7 @@ func TestWorkItemProtocolMiddlewareRejectsEncodedIdentifierSlashesBeforeAuth(t *
 		for _, authenticated := range []bool{false, true} {
 			t.Run(path+"/authenticated="+strconv.FormatBool(authenticated), func(t *testing.T) {
 				authorizer := &workItemProtocolAuthorizerStub{}
-				middleware := workItemProtocolMiddleware(authorizer, loomhttp.RuntimeCORSPolicy{}, func(next http.Handler) http.Handler { return next }, djangoSessionCookieConfig{})
+				middleware := workItemProtocolMiddleware(authorizer, loomhttp.RuntimeCORSPolicy{}, func(next http.Handler) http.Handler { return next }, browserSessionCookieConfig{})
 				handler := workItemIdentifierResolver404Middleware(middleware(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 					t.Fatal("encoded slash reached generated route")
 				})), nil, loomhttp.RuntimeCORSPolicy{})
@@ -334,7 +334,7 @@ func TestWorkItemProtocolMiddlewareReturnsAuthorizationErrorBeforeMethodResponse
 	want := map[string]any{"detail": "Given API token is not valid"}
 	body := loom.MustJSONValueFrom(want)
 	authorizer := &workItemProtocolAuthorizerStub{err: &workitemapi.WorkItemError{Kind: "status_403", Body: body}}
-	middleware := workItemProtocolMiddleware(authorizer, loomhttp.RuntimeCORSPolicy{}, func(next http.Handler) http.Handler { return next }, djangoSessionCookieConfig{})
+	middleware := workItemProtocolMiddleware(authorizer, loomhttp.RuntimeCORSPolicy{}, func(next http.Handler) http.Handler { return next }, browserSessionCookieConfig{})
 	handler := middleware(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		t.Fatal("unsupported method reached generated route")
 	}))
@@ -349,7 +349,7 @@ func TestWorkItemProtocolMiddlewareReturnsAuthorizationErrorBeforeMethodResponse
 
 func TestWorkItemProtocolMiddlewareAppOptionsUsesSourceActionsAfterAuthorization(t *testing.T) {
 	authorizer := &workItemProtocolAuthorizerStub{}
-	middleware := workItemProtocolMiddleware(authorizer, loomhttp.RuntimeCORSPolicy{}, func(next http.Handler) http.Handler { return next }, djangoSessionCookieConfig{})
+	middleware := workItemProtocolMiddleware(authorizer, loomhttp.RuntimeCORSPolicy{}, func(next http.Handler) http.Handler { return next }, browserSessionCookieConfig{})
 	handler := middleware(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		t.Fatal("OPTIONS reached generated route")
 	}))
@@ -417,8 +417,8 @@ func TestWorkItemProtocolOptionsUsesSessionGzipStackLikeSource(t *testing.T) {
 			}
 
 			authorizer := &workItemProtocolAuthorizerStub{}
-			stack := sessionServiceMiddlewareStack(apiV1CompatibilityOptions{bodySizeLimit: 1 << 20}, nil, djangoSessionCookieConfig{})
-			middleware := workItemProtocolMiddleware(authorizer, loomhttp.RuntimeCORSPolicy{}, stack, djangoSessionCookieConfig{})
+			stack := sessionServiceMiddlewareStack(apiV1CompatibilityOptions{bodySizeLimit: 1 << 20}, nil, browserSessionCookieConfig{})
+			middleware := workItemProtocolMiddleware(authorizer, loomhttp.RuntimeCORSPolicy{}, stack, browserSessionCookieConfig{})
 			handler := middleware(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 				t.Fatal("OPTIONS reached generated route")
 			}))
@@ -480,7 +480,7 @@ func TestWorkItemResponseContentTypeOmittedOnlyForCoreNoContent(t *testing.T) {
 
 func TestWorkItemProtocolMissingIssueOmitsPutActionWithoutChangingSharedMetadata(t *testing.T) {
 	authorizer := &workItemProtocolAuthorizerStub{metadata: systemapi.WorkItemProtocolMetadata{OmitPutAction: true}}
-	middleware := workItemProtocolMiddleware(authorizer, loomhttp.RuntimeCORSPolicy{}, func(next http.Handler) http.Handler { return next }, djangoSessionCookieConfig{})
+	middleware := workItemProtocolMiddleware(authorizer, loomhttp.RuntimeCORSPolicy{}, func(next http.Handler) http.Handler { return next }, browserSessionCookieConfig{})
 	handler := middleware(http.HandlerFunc(func(http.ResponseWriter, *http.Request) { t.Fatal("OPTIONS reached generated route") }))
 	for _, missing := range []bool{true, false, true} {
 		authorizer.metadata.OmitPutAction = missing

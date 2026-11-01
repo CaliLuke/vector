@@ -8,8 +8,8 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -193,5 +193,5 @@ func itemEditBody(command itemEditCommand) *bytes.Reader {
 
 // Only call after an authorized, exact receipt lookup proves no commit occurred.
 func uncommittedItemReview(message string) error {
-	return &djangoapi.HTTPError{Status: 409, Body: map[string]any{"error": message, "review_again": true}}
+	return &apicontract.HTTPError{Status: 409, Body: map[string]any{"error": message, "review_again": true}}
 }

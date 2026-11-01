@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,7 +15,7 @@ func TestIssueProjectionsRejectInvalidSortOrderWithoutInventingZero(t *testing.T
 			projected, err := projectFields(row, []string{"id", "sort_order"})
 			require.Error(t, err)
 			require.Nil(t, projected)
-			projected, err = appWriteProjection(row, djangoinput.Input{Fields: map[string]any{}})
+			projected, err = appWriteProjection(row, requestinput.Input{Fields: map[string]any{}})
 			require.Error(t, err)
 			require.Nil(t, projected)
 			require.Equal(t, json.Number(token), row["sort_order"])
@@ -35,7 +35,7 @@ func TestIssueProjectionsKeepPythonFloatSpelling(t *testing.T) {
 			projected, err := projectFields(row, []string{"sort_order"})
 			require.NoError(t, err)
 			require.Equal(t, json.Number(sample.want), projected["sort_order"])
-			projected, err = appWriteProjection(row, djangoinput.Input{Fields: map[string]any{}})
+			projected, err = appWriteProjection(row, requestinput.Input{Fields: map[string]any{}})
 			require.NoError(t, err)
 			require.Equal(t, json.Number(sample.want), projected["sort_order"])
 		})

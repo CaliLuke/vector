@@ -12,9 +12,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	workitemstore "github.com/CaliLuke/go-plane/internal/workitems"
 	server "github.com/CaliLuke/go-plane/work_item_core/gen/http/work_item_core/server"
@@ -159,7 +159,7 @@ func TestWorkItemCoreRejectionOrderStopsBeforeExecution(t *testing.T) {
 		throttleAllowed           bool
 		throttleCalls             int
 	}{
-		{name: "permission precedes throttle", timezone: "UTC", authorizationErr: &djangoapi.HTTPError{Status: http.StatusForbidden, Body: map[string]any{"error": "You don't have the required permissions."}}, throttleAllowed: true, errorName: "status_403"},
+		{name: "permission precedes throttle", timezone: "UTC", authorizationErr: &apicontract.HTTPError{Status: http.StatusForbidden, Body: map[string]any{"error": "You don't have the required permissions."}}, throttleAllowed: true, errorName: "status_403"},
 		{name: "throttle precedes timezone", timezone: "Not/A_Timezone", errorName: "status_429", throttleCalls: 1},
 		{name: "timezone follows authorization and throttle", timezone: "Not/A_Timezone", throttleAllowed: true, errorName: "status_400", throttleCalls: 1},
 	} {
@@ -210,7 +210,7 @@ func TestWorkItemCorePathValuesOverrideConflictingQueryValues(t *testing.T) {
 
 func TestWorkItemCoreGeneratedErrorPreservesCompleteJSONBodyAndLargeIntegers(t *testing.T) {
 	const expected = `{"detail":{"name":["Already used"]},"errors":[{"code":"invalid","value":9007199254740993}],"metadata":{"keys":["field","other"]}}`
-	repository := &workItemCoreRepositoryStub{executeErr: &djangoapi.HTTPError{
+	repository := &workItemCoreRepositoryStub{executeErr: &apicontract.HTTPError{
 		Status: http.StatusBadRequest,
 		Body: map[string]any{
 			"detail":   map[string]any{"name": []any{"Already used"}},
@@ -246,7 +246,7 @@ func TestWorkItemCoreGeneratedErrorPreservesCompleteJSONBodyAndLargeIntegers(t *
 }
 
 func TestWorkItemProtocolUsesResourceAuthorizationBeforeThrottle(t *testing.T) {
-	repository := &workItemCoreRepositoryStub{authorizeErr: &djangoapi.HTTPError{Status: 403, Body: map[string]any{"detail": "denied"}}}
+	repository := &workItemCoreRepositoryStub{authorizeErr: &apicontract.HTTPError{Status: 403, Body: map[string]any{"detail": "denied"}}}
 	throttle := &activityThrottleStub{rate: apikey.Rate{Allowed: true}}
 	service := newWorkItemCoreTestService(t, repository, nil, throttle).(WorkItemProtocolAuthorizer)
 	_, err := service.AuthorizeWorkItemProtocol(context.Background(), WorkItemProtocolResource{Method: "OPTIONS", Pattern: "/api/v1/workspaces/{slug}/issues/{identifier}/", APIKey: "valid", Params: map[string]string{"slug": "demo", "identifier": "PROJ-1"}})
@@ -303,7 +303,7 @@ func TestWorkItemOptionsChecksPutObjectAfterAuthorizationOnlyForDetailMetadata(t
 	}{
 		{name: "missing detail", method: "OPTIONS", pattern: "/api/workspaces/{slug}/projects/{project_id}/issues/{pk}/", wantCalls: 1, wantOmit: true},
 		{name: "existing detail", method: "OPTIONS", pattern: "/api/workspaces/{slug}/projects/{project_id}/issues/{pk}/", available: true, wantCalls: 1},
-		{name: "denied before lookup", method: "OPTIONS", pattern: "/api/workspaces/{slug}/projects/{project_id}/issues/{pk}/", authorizeErr: &djangoapi.HTTPError{Status: 403}, wantError: true},
+		{name: "denied before lookup", method: "OPTIONS", pattern: "/api/workspaces/{slug}/projects/{project_id}/issues/{pk}/", authorizeErr: &apicontract.HTTPError{Status: 403}, wantError: true},
 		{name: "unexpected lookup failure", method: "OPTIONS", pattern: "/api/workspaces/{slug}/projects/{project_id}/issues/{pk}/", lookupErr: errors.New("database unavailable"), wantCalls: 1, wantError: true},
 		{name: "collection metadata", method: "OPTIONS", pattern: "/api/workspaces/{slug}/projects/{project_id}/issues/"},
 		{name: "unsupported method", method: "TRACE", pattern: "/api/workspaces/{slug}/projects/{project_id}/issues/{pk}/"},

@@ -7,14 +7,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/jackc/pgx/v5"
 )
 
 // An absent property object is different from a malformed object or an explicit
 // null. Individual null values are valid clears; the enclosing object is required.
-func submittedCustomValues(input djangoinput.Input) (map[string]any, error) {
+func submittedCustomValues(input requestinput.Input) (map[string]any, error) {
 	value, present := input.Fields["custom_properties"]
 	if !present {
 		return nil, nil

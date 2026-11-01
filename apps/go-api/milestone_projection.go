@@ -7,7 +7,7 @@ import (
 	jsonv2 "encoding/json/v2"
 	"net/http"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	store "github.com/CaliLuke/go-plane/internal/milestones"
 	api "github.com/CaliLuke/go-plane/milestones/gen/milestones"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -36,8 +36,8 @@ func milestoneProjection[T any](value any) (*T, error) {
 	}
 	return projected, nil
 }
-func milestoneQuery(ctx context.Context, cursor, perPage *string) djangoapi.Query {
-	query := djangoapi.Query{Params: map[string]string{}, Present: map[string]bool{}}
+func milestoneQuery(ctx context.Context, cursor, perPage *string) apicontract.Query {
+	query := apicontract.Query{Params: map[string]string{}, Present: map[string]bool{}}
 	for key, value := range map[string]*string{"cursor": cursor, "per_page": perPage} {
 		if value != nil {
 			query.Params[key] = *value

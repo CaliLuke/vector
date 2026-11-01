@@ -122,10 +122,10 @@ func newActivityHTTPHandler(service *activityHTTPService) http.Handler {
 }
 
 func newActivityHTTPHandlerWithOptions(service *activityHTTPService, options apiV1CompatibilityOptions) http.Handler {
-	return newActivityHTTPHandlerWithSession(service, options, nil, djangoSessionCookieConfig{})
+	return newActivityHTTPHandlerWithSession(service, options, nil, browserSessionCookieConfig{})
 }
 
-func newActivityHTTPHandlerWithSession(service *activityHTTPService, options apiV1CompatibilityOptions, sessions readServicesSessionLifecycle, cookie djangoSessionCookieConfig) http.Handler {
+func newActivityHTTPHandlerWithSession(service *activityHTTPService, options apiV1CompatibilityOptions, sessions readServicesSessionLifecycle, cookie browserSessionCookieConfig) http.Handler {
 	mux := loomhttp.NewMuxer()
 	corsPolicy, err := djangoRuntimeCORSPolicy([]string{"https://app.example.com"})
 	if err != nil {
@@ -287,7 +287,7 @@ func TestActivitySlashlessPreservesExpiredSessionCookie(t *testing.T) {
 		&activityHTTPService{},
 		apiV1CompatibilityOptions{bodySizeLimit: defaultFileSizeLimit},
 		sessions,
-		djangoSessionCookieConfig{Name: "session-id", Configured: true},
+		browserSessionCookieConfig{Name: "session-id", Configured: true},
 	)
 	request := httptest.NewRequest(http.MethodGet, "/api/users/me/activities", nil)
 	request.AddCookie(&http.Cookie{Name: "session-id", Value: "invalid"})
@@ -299,7 +299,7 @@ func TestActivitySlashlessPreservesExpiredSessionCookie(t *testing.T) {
 	}
 }
 func TestActivitySlashlessUsesOuterSessionResponseSemantics(t *testing.T) {
-	cookie := djangoSessionCookieConfig{Name: "session-id", Configured: true}
+	cookie := browserSessionCookieConfig{Name: "session-id", Configured: true}
 
 	t.Run("timezone validation stays view-local", func(t *testing.T) {
 		sessions := &publicProjectMetadataThrottleStub{err: browsersession.ErrTimezoneNotFound}
@@ -459,7 +459,7 @@ func TestActivityMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizationTh
 		service := &activityHTTPService{}
 		handler := newActivityHTTPHandlerWithSession(service, apiV1CompatibilityOptions{
 			activityLogger: logger, activitySecret: "secret", bodySizeLimit: 1,
-		}, sessions, djangoSessionCookieConfig{})
+		}, sessions, browserSessionCookieConfig{})
 		request := httptest.NewRequest(http.MethodGet, "/api/users/me/activities/", strings.NewReader("oversized"))
 		request.Header.Set("X-Api-Key", "audit-only")
 		request.AddCookie(&http.Cookie{Name: "session-id", Value: "session"})
@@ -484,7 +484,7 @@ func TestActivityMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizationTh
 		}
 		handler := newActivityHTTPHandlerWithSession(&activityHTTPService{}, apiV1CompatibilityOptions{
 			activityLogger: logger, activitySecret: "secret", bodySizeLimit: defaultFileSizeLimit,
-		}, sessions, djangoSessionCookieConfig{Name: "session-id", Configured: true})
+		}, sessions, browserSessionCookieConfig{Name: "session-id", Configured: true})
 		request := httptest.NewRequest(http.MethodGet, "/api/users/me/activities/", nil)
 		request.Header.Set("X-Api-Key", "audit-only")
 		request.AddCookie(&http.Cookie{Name: "session-id", Value: "session"})
@@ -499,7 +499,7 @@ func TestActivityMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizationTh
 		logger := &apiV1ActivityLoggerStub{}
 		handler := newActivityHTTPHandlerWithSession(&activityHTTPService{}, apiV1CompatibilityOptions{
 			activityLogger: logger, activitySecret: "secret", bodySizeLimit: defaultFileSizeLimit,
-		}, sessions, djangoSessionCookieConfig{Name: "session-id", Configured: true})
+		}, sessions, browserSessionCookieConfig{Name: "session-id", Configured: true})
 		request := httptest.NewRequest(http.MethodGet, "/api/users/me/activities/", nil)
 		request.Header.Set("X-Api-Key", "audit-only")
 		request.AddCookie(&http.Cookie{Name: "session-id", Value: "session"})
@@ -513,7 +513,7 @@ func TestActivityMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizationTh
 		for _, method := range []string{http.MethodGet, http.MethodPost} {
 			sessions := &publicProjectMetadataThrottleStub{allowed: true, userID: "00000000-0000-4000-8000-000000000003", userTimezone: "UTC"}
 			service := &activityHTTPService{}
-			handler := newActivityHTTPHandlerWithSession(service, apiV1CompatibilityOptions{bodySizeLimit: 1}, sessions, djangoSessionCookieConfig{})
+			handler := newActivityHTTPHandlerWithSession(service, apiV1CompatibilityOptions{bodySizeLimit: 1}, sessions, browserSessionCookieConfig{})
 			request := httptest.NewRequest(method, "/api/users/me/activities", strings.NewReader("oversized"))
 			request.AddCookie(&http.Cookie{Name: "session-id", Value: "session"})
 			response := httptest.NewRecorder()
@@ -537,7 +537,7 @@ func TestActivityMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizationTh
 	t.Run("timezone precedes OPTIONS dispatch", func(t *testing.T) {
 		sessions := &publicProjectMetadataThrottleStub{err: browsersession.ErrTimezoneNotFound}
 		service := &activityHTTPService{}
-		handler := newActivityHTTPHandlerWithSession(service, apiV1CompatibilityOptions{bodySizeLimit: defaultFileSizeLimit}, sessions, djangoSessionCookieConfig{})
+		handler := newActivityHTTPHandlerWithSession(service, apiV1CompatibilityOptions{bodySizeLimit: defaultFileSizeLimit}, sessions, browserSessionCookieConfig{})
 		request := httptest.NewRequest(http.MethodOptions, "/api/users/me/activities/", nil)
 		request.AddCookie(&http.Cookie{Name: "session-id", Value: "session"})
 		response := httptest.NewRecorder()
@@ -671,7 +671,7 @@ func TestActivityCompatibilityLogsUncompressedBodyWithOriginalQuery(t *testing.T
 	})
 	handler := readServicesCompatibilityMiddleware(activityReadsMiddlewareStack(apiV1CompatibilityOptions{
 		activityLogger: logger, activitySecret: "secret", bodySizeLimit: defaultFileSizeLimit,
-	}, nil, djangoSessionCookieConfig{})(inner))
+	}, nil, browserSessionCookieConfig{})(inner))
 	request := httptest.NewRequest(http.MethodGet, "/api/v1/workspaces/demo/projects/00000000-0000-4000-8000-000000000001/issues/00000000-0000-4000-8000-000000000002/activities/?per_page=1&per_page=2&fields=a%3Bb", nil)
 	request.Header.Set("X-Api-Key", "token")
 	request.Header.Set("Accept-Encoding", "gzip")
@@ -686,7 +686,7 @@ func TestActivityCompatibilityLogsUncompressedBodyWithOriginalQuery(t *testing.T
 }
 
 func TestActivityFinalizesSessionsOutsideEarlyResponses(t *testing.T) {
-	cookie := djangoSessionCookieConfig{Name: "session-id", Domain: ".example.test", Secure: true, Configured: true}
+	cookie := browserSessionCookieConfig{Name: "session-id", Domain: ".example.test", Secure: true, Configured: true}
 	validPath := "/api/v1/workspaces/demo/projects/00000000-0000-4000-8000-000000000001/issues/00000000-0000-4000-8000-000000000002/activities/"
 	tests := []struct {
 		name, method, path, body, accept, apiKey string

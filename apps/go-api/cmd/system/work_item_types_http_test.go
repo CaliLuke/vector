@@ -13,8 +13,8 @@ import (
 
 	systemapi "github.com/CaliLuke/go-plane"
 	"github.com/CaliLuke/go-plane/gen/system"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	store "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	api "github.com/CaliLuke/go-plane/workitemtypes/gen/work_item_types"
@@ -118,7 +118,7 @@ func TestWorkItemTypesHTTPProtection(t *testing.T) {
 		{name: "property restore invalid version", method: "POST", resource: "work-item-edits", path: "preview/", body: strings.Replace(restoreBody, "ffffffff-ffff-4fff-8fff-ffffffffffff", "bad", 1), session: "types-session", csrf: strings.Repeat("a", 32), status: 400},
 		{name: "invalid item edit source", method: "POST", resource: "work-item-edits", path: "preview/", body: strings.Replace(editBody, "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", "bad", 1), session: "types-session", csrf: strings.Repeat("a", 32), status: 400},
 
-		{name: "item edit field errors", method: "POST", resource: "work-item-edits", path: "commit/", body: editBody, session: "types-session", csrf: strings.Repeat("a", 32), status: 400, called: true, editError: &djangoapi.HTTPError{Status: 400, Body: map[string]any{"custom_properties": map[string]any{"effort": "Enter a number."}}}},
+		{name: "item edit field errors", method: "POST", resource: "work-item-edits", path: "commit/", body: editBody, session: "types-session", csrf: strings.Repeat("a", 32), status: 400, called: true, editError: &apicontract.HTTPError{Status: 400, Body: map[string]any{"custom_properties": map[string]any{"effort": "Enter a number."}}}},
 		{name: "item edit database privacy", method: "POST", resource: "work-item-edits", path: "preview/", body: editBody, session: "types-session", csrf: strings.Repeat("a", 32), status: 500, called: true, editError: errors.New("private database detail")},
 
 		{name: "anonymous hierarchy", method: "GET", resource: "work-item-hierarchy", status: 401},

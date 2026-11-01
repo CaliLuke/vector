@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	loom "github.com/CaliLuke/loom/pkg"
@@ -20,7 +20,7 @@ func (s *Service) projectMembers(ctx context.Context, actor mcpauth.Principal, p
 	}
 	body, err := s.projects.ListProjectMembersInWorkspace(ctx, uuid.UUID(actor.UserID), actor.WorkspaceSlug, project, uuid.UUID(actor.WorkspaceID))
 	if err != nil {
-		var failure *djangoapi.HTTPError
+		var failure *apicontract.HTTPError
 		if errors.As(err, &failure) && failure.Status == http.StatusForbidden {
 			return nil, api.MakeForbidden(errors.New("project access denied"))
 		}

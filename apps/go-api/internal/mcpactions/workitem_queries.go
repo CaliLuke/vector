@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	loom "github.com/CaliLuke/loom/pkg"
@@ -133,7 +133,7 @@ func (s *Service) queryWorkitems(ctx context.Context, tool string, payload any) 
 	params["fields"] = normalizeWorkitemFields(params["fields"])
 	result, err := s.collaborationReads.ReadWorkitem(ctx, workitems.Request{ExpectedWorkspaceID: &actor.WorkspaceID, API: true, Method: "GET", Operation: operation, ActorID: actor.UserID.String(), Slug: actor.WorkspaceSlug, ProjectID: params["project_id"], IssueID: params["workitem_id"], Timezone: actor.Timezone, Params: params, Present: present})
 	if err != nil {
-		var failure *djangoapi.HTTPError
+		var failure *apicontract.HTTPError
 		if params["pql"] != "" && errors.As(err, &failure) && failure.Status == 400 {
 			if body := failure.Body; body["pql"] != nil {
 				projection := &api.WorkitemPQLFailure{}
@@ -143,7 +143,7 @@ func (s *Service) queryWorkitems(ctx context.Context, tool string, payload any) 
 		}
 		return nil, action, resourceReadError(err, nil, nil)
 	}
-	value := djangoapi.Timestamps(result.Body, actor.Timezone)
+	value := apicontract.Timestamps(result.Body, actor.Timezone)
 	if action == "list" || action == "list_archived" || action == "list_workitems" {
 		page, ok := value.(map[string]any)
 		if !ok {

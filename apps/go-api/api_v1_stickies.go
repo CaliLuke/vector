@@ -17,10 +17,10 @@ import (
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	api "github.com/CaliLuke/go-plane/apiv1stickies/gen/api_v1_stickies"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	stickystore "github.com/CaliLuke/go-plane/internal/stickies"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -112,7 +112,7 @@ func (service *apiV1StickiesService) List(ctx context.Context, payload *api.List
 	limit := 20
 	if payload.PerPage != nil {
 		params["per_page"], present["per_page"] = *payload.PerPage, true
-		parsed, parseErr := djangoapi.PageSizeWithMinimum(djangoapi.Query{Params: params, Present: present}, 1)
+		parsed, parseErr := apicontract.PageSize(apicontract.Query{Params: params, Present: present})
 		if parseErr != nil {
 			return nil, nil, apiV1StickyMapError(parseErr)
 		}
@@ -124,7 +124,7 @@ func (service *apiV1StickiesService) List(ctx context.Context, payload *api.List
 	if payload.Cursor != nil {
 		params["cursor"], present["cursor"] = *payload.Cursor, true
 	}
-	page, err := djangoapi.CursorPage(djangoapi.Query{Params: params, Present: present}, limit)
+	page, err := apicontract.CursorPage(apicontract.Query{Params: params, Present: present}, limit)
 	if err != nil {
 		return nil, nil, apiV1StickyMapError(err)
 	}
@@ -145,7 +145,7 @@ func (service *apiV1StickiesService) List(ctx context.Context, payload *api.List
 	for _, sticky := range result.Stickies {
 		rows = append(rows, apiV1StickyResponse(sticky, apiV1StickyTimezone(ctx)))
 	}
-	envelope := djangoapi.Envelope(rows, result.TotalCount, limit, result.Page)
+	envelope := apicontract.Envelope(rows, result.TotalCount, limit, result.Page)
 	envelope["next_page_results"] = result.HasNext
 	return apiV1StickyJSON(envelope)
 }
@@ -278,13 +278,13 @@ func (service *apiV1StickiesService) update(ctx context.Context, slug, rawID str
 	return apiV1StickyJSON(apiV1StickyResponse(updated, apiV1StickyTimezone(ctx)))
 }
 
-func (service *apiV1StickiesService) validateAuditUsers(ctx context.Context, input djangoinput.Input, failures map[string]any) error {
+func (service *apiV1StickiesService) validateAuditUsers(ctx context.Context, input requestinput.Input, failures map[string]any) error {
 	for _, field := range []string{"created_by", "updated_by"} {
 		raw, present := input.Fields[field]
 		if !present || raw == nil {
 			continue
 		}
-		parsed, err := djangoinput.UUID(raw)
+		parsed, err := requestinput.UUID(raw)
 		if err != nil {
 			failures[field] = []string{"Must be a valid UUID."}
 			continue
@@ -367,15 +367,15 @@ func (service *apiV1StickiesService) scope(ctx context.Context, slug string, ope
 	return scope, nil
 }
 
-func apiV1StickyParseBody(ctx context.Context, body io.Reader) (djangoinput.Input, error) {
+func apiV1StickyParseBody(ctx context.Context, body io.Reader) (requestinput.Input, error) {
 	contentType := ""
 	if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok {
 		contentType = metadata.Headers().Get("Content-Type")
 	}
-	return djangoinput.Parse(body, contentType)
+	return requestinput.Parse(body, contentType)
 }
 
-func apiV1StickyRequireObject(input djangoinput.Input) error {
+func apiV1StickyRequireObject(input requestinput.Input) error {
 	if input.Kind != "" || input.Null {
 		if input.Null {
 			return apiV1StickyError(http.StatusBadRequest, map[string]any{"non_field_errors": []string{"No data provided"}})
@@ -388,13 +388,13 @@ func apiV1StickyRequireObject(input djangoinput.Input) error {
 	return nil
 }
 
-func apiV1StickyCreateFields(input djangoinput.Input, location *time.Location) (stickystore.CreateStickyInput, map[string]any) {
+func apiV1StickyCreateFields(input requestinput.Input, location *time.Location) (stickystore.CreateStickyInput, map[string]any) {
 	values := stickystore.CreateStickyInput{}
 	failures := map[string]any{}
 	if raw, present := input.Fields["name"]; present {
 		if raw == nil {
 			values.Name = nil
-		} else if value, fieldErrors := djangoinput.TextField(raw, true, 0, input.Surrogates["name"]); len(fieldErrors) != 0 {
+		} else if value, fieldErrors := requestinput.TextField(raw, true, 0); len(fieldErrors) != 0 {
 			failures["name"] = fieldErrors
 		} else {
 			values.Name = &value
@@ -404,7 +404,7 @@ func apiV1StickyCreateFields(input djangoinput.Input, location *time.Location) (
 		if raw, present := input.Fields[field]; present {
 			if raw == nil {
 				*target = nil
-			} else if value, fieldErrors := djangoinput.TextField(raw, true, 255, input.Surrogates[field]); len(fieldErrors) != 0 {
+			} else if value, fieldErrors := requestinput.TextField(raw, true, 255); len(fieldErrors) != 0 {
 				failures[field] = fieldErrors
 			} else {
 				*target = &value
@@ -450,7 +450,7 @@ func apiV1StickyCreateFields(input djangoinput.Input, location *time.Location) (
 		}
 	}
 	if raw, present := input.Fields["sort_order"]; present {
-		value, message := djangoinput.FloatField(raw)
+		value, message := requestinput.FloatField(raw)
 		if message != "" {
 			failures["sort_order"] = []string{message}
 		} else {
@@ -468,13 +468,13 @@ func apiV1StickyCreateFields(input djangoinput.Input, location *time.Location) (
 	return values, failures
 }
 
-func apiV1StickyPatchFields(input djangoinput.Input, current stickystore.Sticky, _ bool, location *time.Location) (stickystore.PatchStickyInput, map[string]any) {
+func apiV1StickyPatchFields(input requestinput.Input, current stickystore.Sticky, _ bool, location *time.Location) (stickystore.PatchStickyInput, map[string]any) {
 	patch := stickystore.PatchStickyInput{}
 	failures := map[string]any{}
 	if raw, present := input.Fields["name"]; present {
 		var value *string
 		if raw != nil {
-			parsed, fieldErrors := djangoinput.TextField(raw, true, 0, input.Surrogates["name"])
+			parsed, fieldErrors := requestinput.TextField(raw, true, 0)
 			if len(fieldErrors) != 0 {
 				failures["name"] = fieldErrors
 			} else {
@@ -487,7 +487,7 @@ func apiV1StickyPatchFields(input djangoinput.Input, current stickystore.Sticky,
 		if raw, present := input.Fields[field]; present {
 			var value *string
 			if raw != nil {
-				parsed, fieldErrors := djangoinput.TextField(raw, true, 255, input.Surrogates[field])
+				parsed, fieldErrors := requestinput.TextField(raw, true, 255)
 				if len(fieldErrors) != 0 {
 					failures[field] = fieldErrors
 				} else {
@@ -561,7 +561,7 @@ func apiV1StickyPatchFields(input djangoinput.Input, current stickystore.Sticky,
 		patch.DeletedAt = &value
 	}
 	if raw, present := input.Fields["sort_order"]; present {
-		value, message := djangoinput.FloatField(raw)
+		value, message := requestinput.FloatField(raw)
 		if message != "" {
 			failures["sort_order"] = []string{message}
 		} else {
@@ -571,7 +571,7 @@ func apiV1StickyPatchFields(input djangoinput.Input, current stickystore.Sticky,
 	if raw, present := input.Fields["created_by"]; present {
 		var value *stickystore.UserID
 		if raw != nil {
-			parsed, err := djangoinput.UUID(raw)
+			parsed, err := requestinput.UUID(raw)
 			if err != nil {
 				failures["created_by"] = []string{"Must be a valid UUID."}
 			} else {
@@ -628,7 +628,7 @@ func apiV1StickyOptionsWithoutActions(name string) map[string]any {
 	return metadata
 }
 
-func apiV1StickyJSONField(input djangoinput.Input, field string, fallback []byte) ([]byte, error) {
+func apiV1StickyJSONField(input requestinput.Input, field string, fallback []byte) ([]byte, error) {
 	value, present := input.Fields[field]
 	if !present {
 		return append([]byte(nil), fallback...), nil
@@ -745,7 +745,7 @@ func apiV1StickyMapError(err error) error {
 	if err == nil {
 		return nil
 	}
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	if errors.As(err, &response) {
 		return apiV1StickyError(response.Status, response.Body)
 	}

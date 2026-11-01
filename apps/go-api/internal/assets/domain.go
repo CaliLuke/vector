@@ -13,8 +13,8 @@ import (
 	"strings"
 
 	systemapi "github.com/CaliLuke/go-plane"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
@@ -113,7 +113,7 @@ func fileAssetAttributesObject(value any) (map[string]any, error) {
 }
 
 func projectCoverEntityMismatchError() error {
-	return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Entity project must match the requested project.", "status": false}}
+	return &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Entity project must match the requested project.", "status": false}}
 }
 
 type apiKeyValidator interface {
@@ -203,25 +203,25 @@ type assetUserKey struct{}
 
 func (service *Service) APIKeyAuth(ctx context.Context, key string, scheme *security.APIKeyScheme) (context.Context, error) {
 	if scheme == nil {
-		return ctx, &djangoapi.HTTPError{Status: http.StatusUnauthorized, Body: map[string]any{"detail": "Authentication credentials were not provided."}}
+		return ctx, &apicontract.HTTPError{Status: http.StatusUnauthorized, Body: map[string]any{"detail": "Authentication credentials were not provided."}}
 	}
 	if scheme.Name == "PlaneSessionCookie" {
 		userID, ok := systemapi.ReadServiceSessionUserID(ctx)
 		parsed, err := uuid.Parse(userID)
 		if !ok || err != nil {
-			return ctx, &djangoapi.HTTPError{Status: http.StatusUnauthorized, Body: map[string]any{"detail": "Authentication credentials were not provided."}}
+			return ctx, &apicontract.HTTPError{Status: http.StatusUnauthorized, Body: map[string]any{"detail": "Authentication credentials were not provided."}}
 		}
 		return context.WithValue(ctx, assetUserKey{}, parsed), nil
 	}
 	if scheme.Name != "ApiKeyAuth" {
-		return ctx, &djangoapi.HTTPError{Status: http.StatusUnauthorized, Body: map[string]any{"detail": "Authentication credentials were not provided."}}
+		return ctx, &apicontract.HTTPError{Status: http.StatusUnauthorized, Body: map[string]any{"detail": "Authentication credentials were not provided."}}
 	}
 	if key == "" {
-		return ctx, &djangoapi.HTTPError{Status: http.StatusUnauthorized, Body: map[string]any{"detail": "Authentication credentials were not provided."}}
+		return ctx, &apicontract.HTTPError{Status: http.StatusUnauthorized, Body: map[string]any{"detail": "Authentication credentials were not provided."}}
 	}
 	principal, err := service.apiKeys.Validate(ctx, key)
 	if err != nil {
-		return ctx, &djangoapi.HTTPError{Status: http.StatusForbidden, Body: map[string]any{"detail": "Given API token is not valid"}}
+		return ctx, &apicontract.HTTPError{Status: http.StatusForbidden, Body: map[string]any{"detail": "Given API token is not valid"}}
 	}
 	if effects := apikey.EffectsFromContext(ctx); effects != nil {
 		effects.Authenticated = true
@@ -242,7 +242,7 @@ func (service *Service) APIKeyAuth(ctx context.Context, key string, scheme *secu
 			return ctx, fmt.Errorf("check generic asset workspace permission: %w", permissionErr)
 		}
 		if !member {
-			return ctx, &djangoapi.HTTPError{Status: http.StatusForbidden, Body: map[string]any{"detail": "You do not have permission to perform this action."}}
+			return ctx, &apicontract.HTTPError{Status: http.StatusForbidden, Body: map[string]any{"detail": "You do not have permission to perform this action."}}
 		}
 	}
 	rate, err := service.throttle.Allow(ctx, key)
@@ -253,7 +253,7 @@ func (service *Service) APIKeyAuth(ctx context.Context, key string, scheme *secu
 		effects.Rate = &rate
 	}
 	if !rate.Allowed {
-		return ctx, &djangoapi.HTTPError{Status: http.StatusTooManyRequests, Body: map[string]any{"detail": "Request was throttled."}}
+		return ctx, &apicontract.HTTPError{Status: http.StatusTooManyRequests, Body: map[string]any{"detail": "Request was throttled."}}
 	}
 	return ctx, nil
 }
@@ -266,7 +266,7 @@ func isGenericAssetResource(resource systemapi.SessionProtocolResource) bool {
 func assetUserID(ctx context.Context) (uuid.UUID, error) {
 	userID, ok := ctx.Value(assetUserKey{}).(uuid.UUID)
 	if !ok {
-		return uuid.Nil, &djangoapi.HTTPError{Status: http.StatusUnauthorized, Body: map[string]any{"detail": "Authentication credentials were not provided."}}
+		return uuid.Nil, &apicontract.HTTPError{Status: http.StatusUnauthorized, Body: map[string]any{"detail": "Authentication credentials were not provided."}}
 	}
 	return userID, nil
 }
@@ -286,10 +286,10 @@ func (service *Service) createUserUpload(ctx context.Context, body uploadRequest
 	}
 	entityType := stringValue(body.EntityType)
 	if entityType != "USER_AVATAR" && entityType != "USER_COVER" {
-		return nil, &djangoapi.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error": "Invalid entity type.", "status": false}}
+		return nil, &apicontract.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error": "Invalid entity type.", "status": false}}
 	}
 	if !allowedProfileMIME(contentType) {
-		return nil, &djangoapi.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error": "Invalid file type. Only JPEG and PNG files are allowed.", "status": false}}
+		return nil, &apicontract.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error": "Invalid file type. Only JPEG and PNG files are allowed.", "status": false}}
 	}
 	size, err := body.IntSize(service.fileLimit)
 	if err != nil {
@@ -326,10 +326,10 @@ func (service *Service) createUserUploadV2(ctx context.Context, body uploadReque
 	}
 	entityType := stringValue(body.EntityType)
 	if entityType != "USER_AVATAR" && entityType != "USER_COVER" {
-		return nil, &djangoapi.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error": "Invalid entity type.", "status": false}}
+		return nil, &apicontract.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error": "Invalid entity type.", "status": false}}
 	}
 	if !allowedV2ProfileMIME(contentType) {
-		return nil, &djangoapi.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error": "Invalid file type. Only JPEG, PNG, WebP, JPG and GIF files are allowed.", "status": false}}
+		return nil, &apicontract.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error": "Invalid file type. Only JPEG, PNG, WebP, JPG and GIF files are allowed.", "status": false}}
 	}
 	sizeLimit := size
 	if sizeLimit > service.fileLimit {
@@ -350,11 +350,11 @@ func (service *Service) createWorkspaceUpload(ctx context.Context, userID, works
 		return nil, err
 	}
 	if name == "" || size == 0 {
-		return nil, &djangoapi.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error": "Name and size are required fields.", "status": false}}
+		return nil, &apicontract.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error": "Name and size are required fields.", "status": false}}
 	}
 	contentType := stringValue(body.Type)
 	if contentType == "" || !allowedAttachmentMIME(contentType) {
-		return nil, &djangoapi.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error": "Invalid file type.", "status": false}}
+		return nil, &apicontract.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error": "Invalid file type.", "status": false}}
 	}
 	sizeLimit := size
 	if sizeLimit > service.fileLimit {
@@ -488,23 +488,23 @@ func (request uploadRequest) IntSize(defaultValue int64) (int64, error) {
 		if strings.ContainsAny(string(value), ".eE") {
 			parsed, err := strconv.ParseFloat(string(value), 64)
 			if err != nil || math.IsInf(parsed, 0) || math.IsNaN(parsed) || parsed < math.MinInt64 || parsed >= math.MaxInt64 {
-				return 0, &djangoapi.HTTPError{Status: 500, Body: map[string]any{"error": "Something went wrong please try again later"}}
+				return 0, &apicontract.HTTPError{Status: 500, Body: map[string]any{"error": "Something went wrong please try again later"}}
 			}
 			return int64(parsed), nil
 		}
 		parsed, ok := new(big.Int).SetString(string(value), 10)
 		if !ok {
-			return 0, &djangoapi.HTTPError{Status: 500, Body: map[string]any{"error": "Something went wrong please try again later"}}
+			return 0, &apicontract.HTTPError{Status: 500, Body: map[string]any{"error": "Something went wrong please try again later"}}
 		}
 		number = parsed
 	case string:
 		parsed, ok := new(big.Int).SetString(strings.TrimSpace(value), 10)
 		if !ok {
-			return 0, &djangoapi.HTTPError{Status: 500, Body: map[string]any{"error": "Something went wrong please try again later"}}
+			return 0, &apicontract.HTTPError{Status: 500, Body: map[string]any{"error": "Something went wrong please try again later"}}
 		}
 		number = parsed
 	default:
-		return 0, &djangoapi.HTTPError{Status: 500, Body: map[string]any{"error": "Something went wrong please try again later"}}
+		return 0, &apicontract.HTTPError{Status: 500, Body: map[string]any{"error": "Something went wrong please try again later"}}
 	}
 	if !number.IsInt64() {
 		if number.Sign() > 0 {

@@ -45,7 +45,7 @@ func newSessionServiceProtocol(pattern, allow, name string, head bool) readServi
 
 // Session CRUD services use the same Django middleware as activity reads, but
 // keep their string-valued queries intact for service-level parsing.
-func sessionServiceMiddlewareStack(options apiV1CompatibilityOptions, sessions readServicesSessionLifecycle, cookie djangoSessionCookieConfig) func(http.Handler) http.Handler {
+func sessionServiceMiddlewareStack(options apiV1CompatibilityOptions, sessions readServicesSessionLifecycle, cookie browserSessionCookieConfig) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		next = djangoRendererFailureMiddleware(next)
 		next = readServicesQueryPresenceMiddleware(next)
@@ -72,7 +72,7 @@ func djangoRendererFailureMiddleware(next http.Handler) http.Handler {
 
 // newSessionServiceProtocolMiddleware handles DRF's authenticated metadata and
 // unsupported-method responses through the same stack as generated methods.
-func newSessionServiceProtocolMiddleware(metadata func(readServiceProtocol) (int, any), authorizer systemapi.SessionProtocolAuthorizer, policy loomhttp.RuntimeCORSPolicy, stack func(http.Handler) http.Handler, cookie djangoSessionCookieConfig, debugMode bool, options apiV1CompatibilityOptions, csrfTrustedOrigins ...[]string) func(http.Handler) http.Handler {
+func newSessionServiceProtocolMiddleware(metadata func(readServiceProtocol) (int, any), authorizer systemapi.SessionProtocolAuthorizer, policy loomhttp.RuntimeCORSPolicy, stack func(http.Handler) http.Handler, cookie browserSessionCookieConfig, debugMode bool, options apiV1CompatibilityOptions, csrfTrustedOrigins ...[]string) func(http.Handler) http.Handler {
 	var trustedOrigins []string
 	if len(csrfTrustedOrigins) > 0 {
 		trustedOrigins = csrfTrustedOrigins[0]

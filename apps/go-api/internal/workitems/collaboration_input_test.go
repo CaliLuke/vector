@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -44,7 +44,7 @@ func TestCollaborationFiltersRejectMalformedUUIDWrapper(t *testing.T) {
 	}
 }
 
-func TestCollaborationFiltersAcceptDjangoUUIDForms(t *testing.T) {
+func TestCollaborationFiltersAcceptStandardUUIDForms(t *testing.T) {
 	for _, value := range []string{
 		"123e4567-e89b-12d3-a456-426614174000",
 		"{123e4567-e89b-12d3-a456-426614174000}",
@@ -68,7 +68,7 @@ func TestCollaborationAuthorizationRejectsMalformedUUIDBeforeDatabase(t *testing
 		API: true, Method: "GET", Operation: "get_api_v1_workspaces_projects_issues_comments",
 		ProjectID: "x123e4567-e89b-12d3-a456-426614174000y", Slug: "demo", ActorID: "user",
 	})
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	if !errors.As(err, &response) || response.Status != 400 {
 		t.Fatalf("malformed UUID authorization error = %v, want validation response", err)
 	}
@@ -77,7 +77,7 @@ func TestCollaborationAuthorizationRejectsMalformedUUIDBeforeDatabase(t *testing
 	}
 }
 
-func TestCollaborationAuthorizationCanonicalizesDjangoUUIDForms(t *testing.T) {
+func TestCollaborationAuthorizationCanonicalizesStandardUUIDForms(t *testing.T) {
 	for _, value := range []string{
 		"123e4567-e89b-12d3-a456-426614174000",
 		"{123e4567-e89b-12d3-a456-426614174000}",
@@ -108,14 +108,14 @@ func TestCollaborationURLValidation(t *testing.T) {
 		{"https://example.com/" + strings.Repeat("a", 2029), false},
 		{"http://localhost:8000/path", true},
 		{"HTTPS://EXAMPLE.COM/path", true},
-		{"http://example.com:99999/path", true},
+		{"http://example.com:99999/path", false},
 		{"http://example.com:999999/path", false},
 		{"http://bad..example.com/path", false},
 		{"http://-bad.example.com/path", false},
 		{"http://bad-.example.com/path", false},
 		{"http://" + strings.Repeat("a", 64) + ".com/path", false},
-		{"http://example.c/path", false},
-		{"http://example.123/path", false},
+		{"http://example.c/path", true},
+		{"http://example.123/path", true},
 		{"http://example.xn--p1ai/path", true},
 		{"http://例子.中国/path", true},
 		{"http://example.com./path", true},
@@ -125,10 +125,10 @@ func TestCollaborationURLValidation(t *testing.T) {
 		{"http://[2001::db8::1]/path", false},
 		{"http://example.com/a\u00a0b", false},
 		{"http://example.com/a\x1cb", false},
-		{"http://example.com/%", true},
+		{"http://example.com/%", false},
 	} {
 		t.Run(tc.url, func(t *testing.T) {
-			_, err := (&Repository{}).validateCollaboration(context.Background(), Request{API: true, Method: "PATCH"}, djangoinput.Input{Fields: map[string]any{"url": tc.url}}, "issue_links")
+			_, err := (&Repository{}).validateCollaboration(context.Background(), Request{API: true, Method: "PATCH"}, requestinput.Input{Fields: map[string]any{"url": tc.url}}, "issue_links")
 			if got := err == nil; got != tc.valid {
 				t.Fatalf("API link PATCH valid=%v, want %v: %v", got, tc.valid, err)
 			}
@@ -140,7 +140,7 @@ func TestCollaborationTextLimitsFollowModelFields(t *testing.T) {
 	r := &Repository{}
 	for _, table := range []string{"issue_reactions", "comment_reactions"} {
 		value := strings.Repeat("a", 256)
-		values, err := r.validateCollaboration(context.Background(), Request{Method: "POST"}, djangoinput.Input{Fields: map[string]any{"reaction": value}}, table)
+		values, err := r.validateCollaboration(context.Background(), Request{Method: "POST"}, requestinput.Input{Fields: map[string]any{"reaction": value}}, table)
 		if err != nil || values["reaction"] != value {
 			t.Fatalf("%s rejected a TextField value: %v", table, err)
 		}
@@ -148,17 +148,17 @@ func TestCollaborationTextLimitsFollowModelFields(t *testing.T) {
 	for _, api := range []bool{false, true} {
 		for _, method := range []string{"POST", "PATCH"} {
 			value := "https://example.com/" + strings.Repeat("a", 220)
-			values, err := r.validateCollaboration(context.Background(), Request{API: api, Method: method}, djangoinput.Input{Fields: map[string]any{"url": value}}, "issue_links")
+			values, err := r.validateCollaboration(context.Background(), Request{API: api, Method: method}, requestinput.Input{Fields: map[string]any{"url": value}}, "issue_links")
 			if err != nil || values["url"] != value {
 				t.Fatalf("API=%v method=%s rejected a valid long URL: %v", api, method, err)
 			}
 		}
 	}
-	_, err := r.validateCollaboration(context.Background(), Request{Method: "PATCH"}, djangoinput.Input{Fields: map[string]any{"title": strings.Repeat("a", 256)}}, "issue_links")
+	_, err := r.validateCollaboration(context.Background(), Request{Method: "PATCH"}, requestinput.Input{Fields: map[string]any{"title": strings.Repeat("a", 256)}}, "issue_links")
 	if err == nil {
 		t.Fatal("link title CharField length limit was lost")
 	}
-	_, err = r.validateCollaboration(context.Background(), Request{Method: "PATCH"}, djangoinput.Input{Fields: map[string]any{"attachments": []any{"https://example.com/" + strings.Repeat("a", 182)}}}, "issue_comments")
+	_, err = r.validateCollaboration(context.Background(), Request{Method: "PATCH"}, requestinput.Input{Fields: map[string]any{"attachments": []any{"https://example.com/" + strings.Repeat("a", 182)}}}, "issue_comments")
 	if err == nil {
 		t.Fatal("attachment URLField length limit was lost")
 	}

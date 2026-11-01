@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	states "github.com/CaliLuke/go-plane/internal/projectstatereads"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
@@ -13,14 +13,14 @@ import (
 
 type stateStub struct {
 	visible states.StateCapabilities
-	read    func(context.Context, string, djangoapi.ProjectReadRequest) (any, error)
+	read    func(context.Context, string, apicontract.ProjectReadRequest) (any, error)
 	write   func(context.Context, states.MutationCommand) (states.MutationResult, error)
 }
 
 func (s *stateStub) VisibleActions(context.Context, uuid.UUID, uuid.UUID, string) (states.StateCapabilities, error) {
 	return s.visible, nil
 }
-func (s *stateStub) ReadAPIV1(ctx context.Context, actor string, request djangoapi.ProjectReadRequest) (any, error) {
+func (s *stateStub) ReadAPIV1(ctx context.Context, actor string, request apicontract.ProjectReadRequest) (any, error) {
 	if s.read == nil {
 		return nil, errors.New("unexpected state read")
 	}

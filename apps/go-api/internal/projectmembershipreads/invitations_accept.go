@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -144,7 +144,7 @@ func invitationIDs(value any) ([]string, error) {
 	}
 	ids := make([]string, 0, len(raw))
 	for _, id := range raw {
-		u, err := djangoinput.UUID(id)
+		u, err := requestinput.UUID(id)
 		if err != nil {
 			return nil, inviteFailure(400, "Invalid input.")
 		}

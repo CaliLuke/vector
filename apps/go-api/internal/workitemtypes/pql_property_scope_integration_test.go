@@ -5,7 +5,7 @@ package workitemtypes_test
 import (
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/google/uuid"
@@ -15,7 +15,7 @@ import (
 func requirePQLPropertyError(t *testing.T, f projectTypeFixture, repo *workitems.Repository, actor, query string, status int) map[string]any {
 	t.Helper()
 	_, err := repo.Execute(f.ctx, workitems.Request{Operation: pqlPropertyOperation, Method: "GET", ActorID: actor, Slug: "types", ProjectID: f.project, API: true, Timezone: "UTC", Params: map[string]string{"pql": query}}, nil, "")
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	require.ErrorAs(t, err, &failure)
 	require.Equal(t, status, failure.Status)
 	if status == 400 {

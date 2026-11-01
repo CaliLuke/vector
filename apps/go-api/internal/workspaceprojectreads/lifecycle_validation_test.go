@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -19,7 +19,7 @@ func TestProjectFieldFailuresPrecedeRelationshipScopeFailures(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = repo.validateProjectFields(context.Background(), "workspace", "project", djangoinput.Input{Fields: map[string]any{
+	_, err = repo.validateProjectFields(context.Background(), "workspace", "project", requestinput.Input{Fields: map[string]any{
 		"name":          "invalid!",
 		"page_view":     nil,
 		"default_state": "00000000-0000-4000-8000-000000000001",
@@ -57,7 +57,7 @@ func TestProjectRelationshipFailuresPreserveSessionAggregationAndAPIPrecedence(t
 			if err != nil {
 				t.Fatal(err)
 			}
-			_, err = repo.validateProjectFields(context.Background(), "workspace", "project", djangoinput.Input{Fields: map[string]any{
+			_, err = repo.validateProjectFields(context.Background(), "workspace", "project", requestinput.Input{Fields: map[string]any{
 				"project_lead":  "00000000-0000-4000-8000-000000000001",
 				"default_state": "00000000-0000-4000-8000-000000000002",
 			}}, test.app, false, false)
@@ -71,7 +71,7 @@ func TestAPIProjectFieldFailuresPrecedeSpecialCharacterFailure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = repo.validateProjectFields(context.Background(), "workspace", "project", djangoinput.Input{Fields: map[string]any{
+	_, err = repo.validateProjectFields(context.Background(), "workspace", "project", requestinput.Input{Fields: map[string]any{
 		"name": "invalid!", "page_view": nil,
 	}}, false, false, false)
 	assertProjectValidationFailure(t, err, map[string]any{"page_view": []string{"This field may not be null."}})
@@ -79,7 +79,7 @@ func TestAPIProjectFieldFailuresPrecedeSpecialCharacterFailure(t *testing.T) {
 
 func assertProjectValidationFailure(t *testing.T, err error, want map[string]any) {
 	t.Helper()
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	if !errors.As(err, &response) || response.Status != 400 || !reflect.DeepEqual(response.Body, want) {
 		t.Fatalf("validation error = %v, want HTTP 400 with %#v", err, want)
 	}

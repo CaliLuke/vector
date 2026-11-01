@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/milestones"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	api "github.com/CaliLuke/go-plane/milestones/gen/milestones"
@@ -16,9 +16,9 @@ import (
 
 type milestoneApplication interface {
 	ResolveScope(context.Context, uuid.UUID, uuid.UUID, string, string) (store.Scope, error)
-	List(context.Context, store.Scope, djangoapi.Query) (store.Page[store.Record], error)
+	List(context.Context, store.Scope, apicontract.Query) (store.Page[store.Record], error)
 	Retrieve(context.Context, store.Scope, uuid.UUID, bool) (store.Record, error)
-	ListWorkItems(context.Context, store.Scope, uuid.UUID, djangoapi.Query) (store.Page[store.Link], error)
+	ListWorkItems(context.Context, store.Scope, uuid.UUID, apicontract.Query) (store.Page[store.Link], error)
 	Create(context.Context, store.WriteOptions, store.Fields) (store.MutationResult, error)
 	Update(context.Context, store.WriteOptions, uuid.UUID, store.Fields) (store.MutationResult, error)
 	Delete(context.Context, store.WriteOptions, uuid.UUID) (store.MutationResult, error)

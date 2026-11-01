@@ -731,7 +731,7 @@ func TestReadServicesDerivedHEADUsesCompressedGETRepresentation(t *testing.T) {
 	}
 }
 func TestReadServicesSessionLifecycleMatchesDjango(t *testing.T) {
-	config := djangoSessionCookieConfig{Name: "session-id", Domain: ".example.test", Secure: true, Configured: true}
+	config := browserSessionCookieConfig{Name: "session-id", Domain: ".example.test", Secure: true, Configured: true}
 	next := http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 		response.WriteHeader(http.StatusOK)
 		testsupport.Write(t, response, []byte(`{"ok":true}`))

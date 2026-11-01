@@ -1,11 +1,11 @@
 package cyclereads
 
 import (
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
-func ValidateCreateInput(fields map[string]any, surrogates map[string][]string, apiV1 bool) (CycleCreate, map[string]any) {
+func ValidateCreateInput(fields map[string]any, apiV1 bool) (CycleCreate, map[string]any) {
 	var result CycleCreate
 	errorsByField := map[string]any{}
 	stringField := func(key string, required, allowBlank, allowNull bool, max int) (*string, bool) {
@@ -23,7 +23,7 @@ func ValidateCreateInput(fields map[string]any, surrogates map[string][]string, 
 			errorsByField[key] = []string{"This field may not be null."}
 			return nil, false
 		}
-		text, messages := djangoinput.TextField(value, allowBlank, max, surrogates[key])
+		text, messages := requestinput.TextField(value, allowBlank, max)
 		if len(messages) > 0 {
 			errorsByField[key] = messages
 			return nil, false
@@ -64,12 +64,12 @@ func ValidateCreateInput(fields map[string]any, surrogates map[string][]string, 
 	result.ExternalID = optionalString("external_id", 255)
 	if apiV1 {
 		if value, present := fields["owned_by"]; present && value != nil {
-			parsed, err := djangoinput.UUID(value)
+			parsed, err := requestinput.UUID(value)
 			if err != nil {
 				if _, ok := value.(string); ok {
-					errorsByField["owned_by"] = []string{"“" + djangoinput.ScalarString(value) + "” is not a valid UUID."}
+					errorsByField["owned_by"] = []string{"“" + requestinput.ScalarString(value) + "” is not a valid UUID."}
 				} else {
-					errorsByField["owned_by"] = []string{"Incorrect type. Expected pk value, received " + djangoinput.PythonType(value) + "."}
+					errorsByField["owned_by"] = []string{"Incorrect type. Expected pk value, received " + requestinput.TypeName(value) + "."}
 				}
 			} else {
 				owner := parsed.String()
@@ -78,7 +78,7 @@ func ValidateCreateInput(fields map[string]any, surrogates map[string][]string, 
 		}
 	} else {
 		if value, present := fields["sort_order"]; present {
-			sortOrder, message := djangoinput.FloatField(value)
+			sortOrder, message := requestinput.FloatField(value)
 			if message != "" {
 				errorsByField["sort_order"] = []string{message}
 			} else {
@@ -97,7 +97,7 @@ func ValidateCreateInput(fields map[string]any, surrogates map[string][]string, 
 			}
 		}
 		if value, present := fields["version"]; present {
-			integer, err := pythoncompat.DecimalInteger(djangoinput.ScalarString(value))
+			integer, err := pythoncompat.DecimalInteger(requestinput.ScalarString(value))
 			if err != nil || !integer.IsInt64() {
 				errorsByField["version"] = []string{"A valid integer is required."}
 			} else if number := integer.Int64(); number < -2147483648 || number > 2147483647 {
@@ -114,7 +114,7 @@ func ValidateCreateInput(fields map[string]any, surrogates map[string][]string, 
 	return result, errorsByField
 }
 
-func ValidatePatchInput(fields map[string]any, surrogates map[string][]string, apiV1 bool) (map[string]any, map[string]any) {
+func ValidatePatchInput(fields map[string]any, apiV1 bool) (map[string]any, map[string]any) {
 	validated := make(map[string]any, len(fields))
 	errorsByField := map[string]any{}
 	readonly := map[string]bool{"id": true, "created_at": true, "updated_at": true, "deleted_at": true, "created_by": true, "updated_by": true, "archived_at": true, "project": true, "workspace": true}
@@ -155,7 +155,7 @@ func ValidatePatchInput(fields map[string]any, surrogates map[string][]string, a
 				}
 				continue
 			}
-			text, messages := djangoinput.TextField(value, allowBlank, maximum, surrogates[key])
+			text, messages := requestinput.TextField(value, allowBlank, maximum)
 			if len(messages) > 0 {
 				errorsByField[key] = messages
 				continue
@@ -170,7 +170,7 @@ func ValidatePatchInput(fields map[string]any, surrogates map[string][]string, a
 			}
 			validated[key] = value
 		case "sort_order":
-			number, message := djangoinput.FloatField(value)
+			number, message := requestinput.FloatField(value)
 			if message != "" {
 				errorsByField[key] = []string{message}
 				continue
@@ -187,14 +187,14 @@ func ValidatePatchInput(fields map[string]any, surrogates map[string][]string, a
 				validated[key] = nil
 				continue
 			}
-			owner, err := djangoinput.UUID(value)
+			owner, err := requestinput.UUID(value)
 			if err != nil {
-				errorsByField[key] = []string{"“" + djangoinput.ScalarString(value) + "” is not a valid UUID."}
+				errorsByField[key] = []string{"“" + requestinput.ScalarString(value) + "” is not a valid UUID."}
 				continue
 			}
 			validated[key] = owner.String()
 		case "version":
-			integer, err := pythoncompat.DecimalInteger(djangoinput.ScalarString(value))
+			integer, err := pythoncompat.DecimalInteger(requestinput.ScalarString(value))
 			if err != nil || !integer.IsInt64() {
 				errorsByField[key] = []string{"A valid integer is required."}
 				continue

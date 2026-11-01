@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 )
 
@@ -26,7 +26,7 @@ type issueChanges struct {
 	assigneesSet, labelsSet bool
 }
 
-func (r *Repository) validateIssue(ctx context.Context, input djangoinput.Input, options issueValidation) (issueChanges, error) {
+func (r *Repository) validateIssue(ctx context.Context, input requestinput.Input, options issueValidation) (issueChanges, error) {
 	changes := issueChanges{values: map[string]any{}}
 	if input.Null {
 		return changes, invalid(map[string]any{"non_field_errors": []string{"No data provided"}})
@@ -69,7 +69,7 @@ func (r *Repository) validateIssue(ctx context.Context, input djangoinput.Input,
 	return changes, nil
 }
 
-func validateIssueTextFields(input djangoinput.Input, options issueValidation, changes *issueChanges, failures map[string]any) {
+func validateIssueTextFields(input requestinput.Input, options issueValidation, changes *issueChanges, failures map[string]any) {
 	fields := input.Fields
 	for _, field := range []string{"name", "description_html", "external_source", "external_id"} {
 		value, present := fields[field]
@@ -87,7 +87,7 @@ func validateIssueTextFields(input djangoinput.Input, options issueValidation, c
 		if field == "description_html" {
 			maximum = 0
 		}
-		parsed, errs := djangoinput.TextField(value, field != "name" || options.Draft, maximum, input.Surrogates[field])
+		parsed, errs := requestinput.TextField(value, field != "name" || options.Draft, maximum)
 		if len(errs) > 0 {
 			failures[field] = errs
 		} else {
@@ -96,13 +96,13 @@ func validateIssueTextFields(input djangoinput.Input, options issueValidation, c
 	}
 }
 
-func validateIssuePriority(input djangoinput.Input, changes *issueChanges, failures map[string]any) {
+func validateIssuePriority(input requestinput.Input, changes *issueChanges, failures map[string]any) {
 	fields := input.Fields
 	if value, present := fields["priority"]; present {
 		if value == nil {
 			failures["priority"] = []string{"This field may not be null."}
 		} else {
-			v := djangoinput.ScalarString(value)
+			v := requestinput.ScalarString(value)
 			if !slices.Contains([]string{"urgent", "high", "medium", "low", "none"}, v) {
 				failures["priority"] = []string{fmt.Sprintf("%q is not a valid choice.", v)}
 			} else {
@@ -112,7 +112,7 @@ func validateIssuePriority(input djangoinput.Input, changes *issueChanges, failu
 	}
 }
 
-func validateIssueDates(input djangoinput.Input, changes *issueChanges, failures map[string]any) {
+func validateIssueDates(input requestinput.Input, changes *issueChanges, failures map[string]any) {
 	fields := input.Fields
 	for _, field := range []string{"start_date", "target_date", "archived_at"} {
 		if value, present := fields[field]; present {
@@ -131,7 +131,7 @@ func validateIssueDates(input djangoinput.Input, changes *issueChanges, failures
 	}
 }
 
-func validateIssueDateTimes(input djangoinput.Input, options issueValidation, changes *issueChanges, failures map[string]any) {
+func validateIssueDateTimes(input requestinput.Input, options issueValidation, changes *issueChanges, failures map[string]any) {
 	fields := input.Fields
 	datetimeFields := []string{"deleted_at"}
 	if options.API {
@@ -159,12 +159,12 @@ func validateIssueDateTimes(input djangoinput.Input, options issueValidation, ch
 
 }
 
-func validateIssueNumbers(input djangoinput.Input, changes *issueChanges, failures map[string]any) {
+func validateIssueNumbers(input requestinput.Input, changes *issueChanges, failures map[string]any) {
 	fields := input.Fields
 	if value, present := fields["sort_order"]; present && (!input.Form || value != "") {
 		if value == nil {
 			failures["sort_order"] = []string{"This field may not be null."}
-		} else if parsed, message := djangoinput.FloatField(value); message != "" {
+		} else if parsed, message := requestinput.FloatField(value); message != "" {
 			failures["sort_order"] = []string{message}
 		} else {
 			changes.values["sort_order"] = parsed
@@ -200,7 +200,7 @@ func validateIssueNumbers(input djangoinput.Input, changes *issueChanges, failur
 	}
 }
 
-func validateIssueDraftFlag(input djangoinput.Input, options issueValidation, changes *issueChanges, failures map[string]any) {
+func validateIssueDraftFlag(input requestinput.Input, options issueValidation, changes *issueChanges, failures map[string]any) {
 	fields := input.Fields
 	if value, present := fields["is_draft"]; present {
 		if parsed, ok := booleanField(value); ok {
@@ -213,20 +213,20 @@ func validateIssueDraftFlag(input djangoinput.Input, options issueValidation, ch
 	}
 }
 
-func validateIssueJSON(input djangoinput.Input, options issueValidation, changes *issueChanges, failures map[string]any) {
+func validateIssueJSON(input requestinput.Input, options issueValidation, changes *issueChanges, failures map[string]any) {
 	if !options.API {
 		validateJSONInputFields(input, []string{"description_json"}, changes.values, failures)
 	}
 }
 
-func validateJSONInputFields(input djangoinput.Input, jsonFields []string, values, failures map[string]any) {
+func validateJSONInputFields(input requestinput.Input, jsonFields []string, values, failures map[string]any) {
 	for _, field := range jsonFields {
 		if value, present := input.Fields[field]; present {
 			if value == nil {
 				failures[field] = []string{"This field may not be null."}
 			} else if input.Form {
 				var parsed any
-				decoder := json.NewDecoder(strings.NewReader(djangoinput.ScalarString(value)))
+				decoder := json.NewDecoder(strings.NewReader(requestinput.ScalarString(value)))
 				decoder.UseNumber()
 				if err := decoder.Decode(&parsed); err != nil {
 					failures[field] = []string{"Value must be valid JSON."}
@@ -240,7 +240,7 @@ func validateJSONInputFields(input djangoinput.Input, jsonFields []string, value
 	}
 }
 
-func (r *Repository) validateIssueReferences(ctx context.Context, input djangoinput.Input, options issueValidation, changes *issueChanges, failures map[string]any) error {
+func (r *Repository) validateIssueReferences(ctx context.Context, input requestinput.Input, options issueValidation, changes *issueChanges, failures map[string]any) error {
 	fields := input.Fields
 	// Declared aliases are evaluated before model relationship fields, as DRF's
 	// ModelSerializer does when two input fields have the same source.
@@ -280,7 +280,7 @@ func (r *Repository) validateIssueReferences(ctx context.Context, input djangoin
 	return nil
 }
 
-func (r *Repository) validateIssueMemberAndLabelLists(ctx context.Context, input djangoinput.Input, options issueValidation, changes *issueChanges, failures map[string]any) error {
+func (r *Repository) validateIssueMemberAndLabelLists(ctx context.Context, input requestinput.Input, options issueValidation, changes *issueChanges, failures map[string]any) error {
 	fields := input.Fields
 	assignees, labels := "assignee_ids", "label_ids"
 	if options.API {
@@ -302,7 +302,7 @@ func (r *Repository) validateIssueMemberAndLabelLists(ctx context.Context, input
 		}
 		values, ok := value.([]any)
 		if !ok {
-			failures[item.field] = []string{fmt.Sprintf("Expected a list of items but got type %q.", djangoinput.PythonType(value))}
+			failures[item.field] = []string{fmt.Sprintf("Expected a list of items but got type %q.", requestinput.TypeName(value))}
 			continue
 		}
 		indexed := map[string]any{}
@@ -412,9 +412,9 @@ func primaryKey(ctx context.Context, db Database, value any, table string, allSt
 	if _, ok := value.(bool); ok {
 		return "", []string{"Incorrect type. Expected pk value, received bool."}, nil
 	}
-	id, err := djangoinput.UUID(value)
+	id, err := requestinput.UUID(value)
 	if err != nil {
-		return "", []string{"“" + djangoinput.ScalarString(value) + "” is not a valid UUID."}, nil
+		return "", []string{"“" + requestinput.ScalarString(value) + "” is not a valid UUID."}, nil
 	}
 	predicate := ` AND deleted_at IS NULL`
 	if table == "users" || allStates {
@@ -429,7 +429,7 @@ func primaryKey(ctx context.Context, db Database, value any, table string, allSt
 		return "", nil, err
 	}
 	if !exists {
-		return "", []string{fmt.Sprintf("Invalid pk %q - object does not exist.", djangoinput.ScalarString(value))}, nil
+		return "", []string{fmt.Sprintf("Invalid pk %q - object does not exist.", requestinput.ScalarString(value))}, nil
 	}
 	return id.String(), nil, nil
 }
@@ -473,7 +473,7 @@ func integerField(value any) (*big.Int, error) {
 	if _, ok := value.(bool); ok {
 		return nil, fmt.Errorf("boolean integer")
 	}
-	text := strings.TrimSpace(djangoinput.ScalarString(value))
+	text := strings.TrimSpace(requestinput.ScalarString(value))
 	if index := strings.IndexByte(text, '.'); index >= 0 {
 		if strings.Trim(text[index+1:], "0") == "" {
 			text = text[:index]
@@ -485,7 +485,7 @@ func booleanField(value any) (bool, bool) {
 	if v, ok := value.(bool); ok {
 		return v, true
 	}
-	text := strings.ToLower(djangoinput.ScalarString(value))
+	text := strings.ToLower(requestinput.ScalarString(value))
 	switch text {
 	case "t", "y", "yes", "true", "on", "1", "1.0":
 		return true, true

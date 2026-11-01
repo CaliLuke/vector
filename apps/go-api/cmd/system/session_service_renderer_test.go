@@ -24,7 +24,7 @@ func TestSessionServiceRendererFailurePreservesHTMLAndAudit(t *testing.T) {
 				}
 				writeReadServiceJSON(w, 500, map[string]string{"error": "application failure"})
 			})
-			handler := sessionServiceMiddlewareStack(options, nil, djangoSessionCookieConfig{})(endpoint)
+			handler := sessionServiceMiddlewareStack(options, nil, browserSessionCookieConfig{})(endpoint)
 			request := httptest.NewRequest("POST", "/api/workspaces/demo/users/notifications/", strings.NewReader(`{}`))
 			request.Header.Set("X-Api-Key", "audit-only")
 			response := httptest.NewRecorder()
@@ -92,7 +92,7 @@ func TestSessionServiceAuthoredOptionsAndResourceAuthorization(t *testing.T) {
 			next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { called = true; w.WriteHeader(202) })
 			identity := func(h http.Handler) http.Handler { return h }
 			metadata := func(readServiceProtocol) (int, any) { t.Fatal("authored metadata was intercepted"); return 0, nil }
-			handler := newSessionServiceProtocolMiddleware(metadata, authorizer, policy, identity, djangoSessionCookieConfig{}, false, apiV1CompatibilityOptions{})(next)
+			handler := newSessionServiceProtocolMiddleware(metadata, authorizer, policy, identity, browserSessionCookieConfig{}, false, apiV1CompatibilityOptions{})(next)
 			request := httptest.NewRequest(tc.method, path, nil)
 			if tc.preflight {
 				request.Header.Set("Origin", "https://app.example.test")

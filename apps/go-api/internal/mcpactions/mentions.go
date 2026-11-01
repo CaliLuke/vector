@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	htmlcompat "github.com/CaliLuke/go-plane/internal/htmlcompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 type mentionSpan struct {
@@ -41,7 +41,7 @@ func tokenizeMentions(source string) string {
 			attrs := mentionAttributes(raw)
 			user := ""
 			if attrs["entity_name"] == "user_mention" {
-				if id, err := djangoinput.UUID(strings.TrimSpace(attrs["entity_identifier"])); err == nil {
+				if id, err := requestinput.UUID(strings.TrimSpace(attrs["entity_identifier"])); err == nil {
 					user = id.String()
 				}
 			}

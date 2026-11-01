@@ -12,11 +12,11 @@ import (
 
 	api "github.com/CaliLuke/go-plane/apistatereads/gen/api_state_reads"
 	activitystore "github.com/CaliLuke/go-plane/internal/activityreads"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/projectstatereads"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
 )
@@ -110,7 +110,7 @@ func apiStateError(status int, body map[string]any) error {
 }
 
 func mapAPIStateError(err error) error {
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	switch {
 	case errors.As(err, &response):
 		return apiStateError(response.Status, response.Body)
@@ -169,7 +169,7 @@ func (s *apiStateReadsService) executeWrite(ctx context.Context, operation, stat
 			return nil, nil, apiStateErrorFromWrite(resolveForUpdateErr)
 		}
 	}
-	parsed := djangoinput.Input{Fields: map[string]any{}}
+	parsed := requestinput.Input{Fields: map[string]any{}}
 	if operation != "delete" {
 		parsed, err = store.ParseStateWriteBody(body, apiStateWriteContentType(payload))
 		if err != nil {
@@ -226,7 +226,7 @@ func apiStateErrorFromWrite(err error) error {
 	if errors.As(err, &failure) {
 		return apiStateWriteError(failure.Status, asAPIErrorBody(failure.Body))
 	}
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	if errors.As(err, &response) {
 		return apiStateWriteError(response.Status, asAPIErrorBody(response.Body))
 	}
@@ -246,7 +246,7 @@ func apiStateWriteError(status int, body map[string]any) error {
 }
 
 func mapAPIStateWriteError(err error) error {
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	switch {
 	case errors.As(err, &response):
 		return apiStateWriteError(response.Status, asAPIErrorBody(response.Body))

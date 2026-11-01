@@ -128,7 +128,7 @@ func TestProjectConfigurationMiddlewareRequestSizeAuthenticationTimezoneAuthoriz
 			}
 			handler := newHTTPHandlerWithPendingReplacements(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false,
 				nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-				pendingReplacementEndpoints{projectConfiguration: api.NewEndpoints(service), projectConfigurationMetadata: service.(projectConfigurationProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsActivity: audit, activityReadsSecret: "configuration-test-secret", activityReadsBodyLimit: 64})
+				pendingReplacementEndpoints{projectConfiguration: api.NewEndpoints(service), projectConfigurationMetadata: service.(projectConfigurationProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsActivity: audit, activityReadsSecret: "configuration-test-secret", activityReadsBodyLimit: 64})
 			path := base + tc.suffix
 			if tc.apiKey {
 				path = "/api/v1" + path[len("/api"):]

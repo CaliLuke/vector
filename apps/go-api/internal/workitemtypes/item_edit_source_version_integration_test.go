@@ -11,7 +11,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 )
@@ -32,7 +32,7 @@ func setEditSourceVersion(t *testing.T, f projectTypeFixture, repo *workitems.Re
 }
 func requireSourceConflict(t *testing.T, err error, reviewed bool) {
 	t.Helper()
-	var conflict *djangoapi.HTTPError
+	var conflict *apicontract.HTTPError
 	if !errors.As(err, &conflict) || conflict.Status != 409 || conflict.Body["source_changed"] != true || (conflict.Body["review_again"] == true) != reviewed {
 		t.Fatalf("expected source conflict, got %v", err)
 	}

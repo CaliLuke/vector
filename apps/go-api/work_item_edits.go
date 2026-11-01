@@ -9,7 +9,7 @@ import (
 
 	loom "github.com/CaliLuke/loom/pkg"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	store "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	api "github.com/CaliLuke/go-plane/workitemtypes/gen/work_item_types"
@@ -81,7 +81,7 @@ func (s *workItemTypesService) runItemEdit(ctx context.Context, slug string, dat
 }
 
 func itemEditServiceError(err error) error {
-	var request *djangoapi.HTTPError
+	var request *apicontract.HTTPError
 	if errors.As(err, &request) && request.Status >= 400 && request.Status < 500 {
 		out := &api.ItemEditError{Kind: "status_" + strconv.Itoa(request.Status), Message: "The work item could not be saved. Check the highlighted fields."}
 		if fields := request.Body; fields != nil {

@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	api "github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/google/uuid"
 )
 
@@ -175,7 +175,7 @@ func TestSourceLookupErrorsAreMappedAtServiceBoundaries(t *testing.T) {
 				{name: "internal repository failure", err: internalErr},
 				{
 					name: "missing row",
-					err: &djangoapi.HTTPError{
+					err: &apicontract.HTTPError{
 						Status: 404,
 						Body:   map[string]any{"detail": "repository not found"},
 					},
@@ -199,7 +199,7 @@ func TestSourceLookupErrorsAreMappedAtServiceBoundaries(t *testing.T) {
 						return
 					}
 
-					var httpErr *djangoapi.HTTPError
+					var httpErr *apicontract.HTTPError
 					if !errors.As(err, &httpErr) || httpErr.Status != 404 || !reflect.DeepEqual(httpErr.Body, test.missingBody) {
 						t.Fatalf("service missing-row error = %#v, want source 404 %#v", err, test.missingBody)
 					}
@@ -251,7 +251,7 @@ func assertAssetErrorBody(t *testing.T, err error, want map[string]any) {
 func TestV2AssetsMissingRowsUseSourceBodies(t *testing.T) {
 	userID, workspaceID := uuid.New(), uuid.New()
 	ctx := context.WithValue(context.Background(), assetUserKey{}, userID)
-	missing := &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+	missing := &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	assetID, projectID, issueID := uuid.NewString(), uuid.NewString(), uuid.NewString()
 
 	runMissingAssetCases(t, workspaceID, []missingAssetCase{
@@ -306,7 +306,7 @@ func TestV2AssetsMissingRowsUseSourceBodies(t *testing.T) {
 			repository: func() *sourceLookupRepository {
 				return &sourceLookupRepository{
 					workspaceID: workspaceID,
-					relatedWorkspaceErr: &djangoapi.HTTPError{
+					relatedWorkspaceErr: &apicontract.HTTPError{
 						Status: 404,
 						Body:   map[string]any{"error": "The required object does not exist."},
 					},
@@ -371,7 +371,7 @@ func TestV2AssetsMissingRowsUseSourceBodies(t *testing.T) {
 func TestV1AssetsMissingRowsUseSourceBodies(t *testing.T) {
 	userID, workspaceID := uuid.New(), uuid.New()
 	ctx := context.WithValue(context.Background(), assetUserKey{}, userID)
-	missing := &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+	missing := &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	assetID, projectID, issueID := uuid.NewString(), uuid.NewString(), uuid.NewString()
 
 	runMissingAssetCases(t, workspaceID, []missingAssetCase{
@@ -435,7 +435,7 @@ func TestV1AssetsMissingRowsUseSourceBodies(t *testing.T) {
 func TestLegacyAssetsMissingRowsUseSourceBodies(t *testing.T) {
 	userID, workspaceID := uuid.New(), uuid.New()
 	ctx := context.WithValue(context.Background(), assetUserKey{}, userID)
-	missing := &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+	missing := &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 
 	runMissingAssetCases(t, workspaceID, []missingAssetCase{
 		{

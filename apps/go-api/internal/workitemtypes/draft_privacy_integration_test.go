@@ -8,7 +8,7 @@ import (
 	"testing"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 )
 
@@ -26,7 +26,7 @@ func TestDraftPublicationAndDeletionRespectPrivacyAndCurrentProjectAccess(t *tes
 	}
 	assertStatus := func(err error, status int) {
 		t.Helper()
-		var failure *djangoapi.HTTPError
+		var failure *apicontract.HTTPError
 		if !errors.As(err, &failure) || failure.Status != status {
 			t.Fatalf("want HTTP %d, got %v", status, err)
 		}

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 func TestAPIIssueActivitySnapshotPreservesSourceSerializerOrder(t *testing.T) {
@@ -48,7 +48,7 @@ func TestAPIIssueActivitySnapshotPreservesSourceSerializerOrder(t *testing.T) {
 }
 
 func TestFormActivityPreservesFieldOrderAndLastRepeatedValue(t *testing.T) {
-	input, err := djangoinput.Parse(strings.NewReader("name=Example&label_ids=first&assignee_ids=member&label_ids=last"), "application/x-www-form-urlencoded")
+	input, err := requestinput.Parse(strings.NewReader("name=Example&label_ids=first&assignee_ids=member&label_ids=last"), "application/x-www-form-urlencoded")
 	if err != nil {
 		t.Fatal(err)
 	}

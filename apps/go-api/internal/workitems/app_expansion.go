@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/jackc/pgx/v5"
 )
@@ -43,7 +43,7 @@ func (r *Repository) appIssueExpansion(ctx context.Context, row map[string]any, 
 	case "state":
 		query = `SELECT jsonb_build_object('id',id,'name',name,'color',color,'group',"group") FROM states WHERE id=$1`
 	case "parent":
-		query = `SELECT jsonb_build_object('id',related.id,'sequence_id',related.sequence_id,'project_id',related.project_id) FROM issues related WHERE related.id=$1 AND ` + djangoapi.IssueVisibleSQL("related", "$2::uuid", "$3::uuid") + ``
+		query = `SELECT jsonb_build_object('id',related.id,'sequence_id',related.sequence_id,'project_id',related.project_id) FROM issues related WHERE related.id=$1 AND ` + apicontract.IssueVisibleSQL("related", "$2::uuid", "$3::uuid") + ``
 	case "assignees":
 		query, id, many = `SELECT `+appUserSQL+` FROM users u WHERE u.id IN (SELECT assignee_id FROM issue_assignees WHERE issue_id=$1) ORDER BY u.created_at DESC`, row["id"], true
 	case "labels":
@@ -55,13 +55,13 @@ func (r *Repository) appIssueExpansion(ctx context.Context, row map[string]any, 
 	case "issue_intake":
 		query, id, many = `SELECT jsonb_build_object('id',id,'status',status,'duplicate_to',duplicate_to_id,'snoozed_till',snoozed_till,'source',source) FROM intake_issues WHERE issue_id=$1 AND deleted_at IS NULL ORDER BY created_at DESC`, row["id"], true
 	case "sub_issues":
-		query, id, many = `SELECT jsonb_build_object('id',related.id,'sequence_id',related.sequence_id,'project_id',related.project_id) FROM issues related WHERE related.parent_id=$1 AND `+djangoapi.IssueVisibleSQL("related", "$2::uuid", "$3::uuid")+` ORDER BY related.created_at DESC`, row["id"], true
+		query, id, many = `SELECT jsonb_build_object('id',related.id,'sequence_id',related.sequence_id,'project_id',related.project_id) FROM issues related WHERE related.parent_id=$1 AND `+apicontract.IssueVisibleSQL("related", "$2::uuid", "$3::uuid")+` ORDER BY related.created_at DESC`, row["id"], true
 	case "issue_relation", "issue_related":
 		anchor, related := "issue_id", "related_issue_id"
 		if field == "issue_related" {
 			anchor, related = related, anchor
 		}
-		query, id, many = `SELECT jsonb_build_object('id',i.id,'project_id',i.project_id,'sequence_id',i.sequence_id,'relation_type',rel.relation_type,'name',i.name,'state_id',i.state_id,'priority',i.priority,'created_by',rel.created_by_id,'created_at',rel.created_at,'updated_at',rel.updated_at,'updated_by',rel.updated_by_id) FROM issue_relations rel JOIN issues i ON i.id=rel.`+related+` WHERE rel.`+anchor+`=$1 AND rel.deleted_at IS NULL AND `+djangoapi.IssueVisibleSQL("i", "$2::uuid", "$3::uuid")+` ORDER BY rel.created_at DESC`, row["id"], true
+		query, id, many = `SELECT jsonb_build_object('id',i.id,'project_id',i.project_id,'sequence_id',i.sequence_id,'relation_type',rel.relation_type,'name',i.name,'state_id',i.state_id,'priority',i.priority,'created_by',rel.created_by_id,'created_at',rel.created_at,'updated_at',rel.updated_at,'updated_by',rel.updated_by_id) FROM issue_relations rel JOIN issues i ON i.id=rel.`+related+` WHERE rel.`+anchor+`=$1 AND rel.deleted_at IS NULL AND `+apicontract.IssueVisibleSQL("i", "$2::uuid", "$3::uuid")+` ORDER BY rel.created_at DESC`, row["id"], true
 	case "issue_cycle":
 		links, err := r.rows(ctx, `SELECT to_jsonb(c) FROM cycle_issues c WHERE issue_id=$1 AND deleted_at IS NULL ORDER BY created_at DESC`, row["id"])
 		if err != nil {
@@ -78,7 +78,7 @@ func (r *Repository) appIssueExpansion(ctx context.Context, row map[string]any, 
 		}
 		return out, true, nil
 	case "issue_attachments":
-		query, id, many = `SELECT jsonb_build_object('id',f.id,'asset',f.asset,'attributes',f.attributes,'created_by',f.created_by_id,'updated_at',f.updated_at,'updated_by',f.updated_by_id)||`+djangoapi.FileAssetURLFieldSQL("f.id", "NULL", "asset_url")+` FROM file_assets f WHERE f.issue_id=$1 AND f.entity_type='ISSUE_ATTACHMENT' AND f.deleted_at IS NULL ORDER BY f.created_at DESC`, row["id"], true
+		query, id, many = `SELECT jsonb_build_object('id',f.id,'asset',f.asset,'attributes',f.attributes,'created_by',f.created_by_id,'updated_at',f.updated_at,'updated_by',f.updated_by_id)||`+apicontract.FileAssetURLFieldSQL("f.id", "NULL", "asset_url")+` FROM file_assets f WHERE f.issue_id=$1 AND f.entity_type='ISSUE_ATTACHMENT' AND f.deleted_at IS NULL ORDER BY f.created_at DESC`, row["id"], true
 	default:
 		return nil, false, nil
 	}
@@ -102,15 +102,15 @@ func (r *Repository) appIssueExpansion(ctx context.Context, row map[string]any, 
 	if id == nil {
 		return map[string]any{}, true, nil
 	}
-	value, err := djangoapi.JSON(ctx, r.db, query, args...)
+	value, err := apicontract.JSON(ctx, r.db, query, args...)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return map[string]any{}, true, nil
 	}
 	return value, true, err
 }
 
-var appUserSQL = `jsonb_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'avatar',u.avatar,'is_bot',u.is_bot,'display_name',u.display_name)||` + djangoapi.FileAssetURLFieldSQL("u.avatar_asset_id", "u.avatar", "avatar_url")
-var appProjectSQL = `jsonb_build_object('id',p.id,'identifier',p.identifier,'name',p.name,'cover_image',p.cover_image,'logo_props',p.logo_props,'description',p.description)||` + djangoapi.FileAssetURLFieldSQL("p.cover_image_asset_id", "p.cover_image", "cover_image_url")
+var appUserSQL = `jsonb_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'avatar',u.avatar,'is_bot',u.is_bot,'display_name',u.display_name)||` + apicontract.FileAssetURLFieldSQL("u.avatar_asset_id", "u.avatar", "avatar_url")
+var appProjectSQL = `jsonb_build_object('id',p.id,'identifier',p.identifier,'name',p.name,'cover_image',p.cover_image,'logo_props',p.logo_props,'description',p.description)||` + apicontract.FileAssetURLFieldSQL("p.cover_image_asset_id", "p.cover_image", "cover_image_url")
 
 func (r *Repository) appIssueState(ctx context.Context, row map[string]any, q Request) (map[string]any, error) {
 	result, err := r.serializeVisibleIssue(ctx, row, q, "", "")
@@ -154,5 +154,5 @@ func (r *Repository) appIssueRelationIDs(ctx context.Context, issue any, field s
 	if field == "labels" {
 		query = `SELECT COALESCE(jsonb_agg(label.id ORDER BY label.created_at DESC),'[]'::jsonb) FROM labels label WHERE label.id IN (SELECT relation.label_id FROM issue_labels relation JOIN issues issue ON issue.id=relation.issue_id WHERE issue.id=$1 AND ` + issuequery.LiveIssueLabelPredicate("issue", "relation") + `)`
 	}
-	return djangoapi.JSON(ctx, r.db, query, issue)
+	return apicontract.JSON(ctx, r.db, query, issue)
 }

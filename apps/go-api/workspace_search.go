@@ -13,8 +13,8 @@ import (
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	store "github.com/CaliLuke/go-plane/internal/workspacesearch"
 	api "github.com/CaliLuke/go-plane/workspacesearch/gen/workspace_search"
 	loom "github.com/CaliLuke/loom/pkg"
@@ -118,7 +118,7 @@ func (s *workspaceSearchService) GlobalSearch(ctx context.Context, p *api.Global
 	projectID := value(p.ProjectID, "")
 	workspaceSearch := value(p.WorkspaceSearch, "false")
 	if projectID != "" && workspaceSearch == "false" {
-		if _, parseErr := djangoinput.UUID(projectID); parseErr != nil {
+		if _, parseErr := requestinput.UUID(projectID); parseErr != nil {
 			return nil, nil, s.error(400, map[string]any{"error": "Please provide valid detail"})
 		}
 	}
@@ -143,7 +143,7 @@ func (s *workspaceSearchService) EntitySearch(ctx context.Context, p *api.Entity
 	}
 	projectID := value(p.ProjectID, "")
 	if projectID != "" {
-		if _, parseErr := djangoinput.UUID(projectID); parseErr != nil {
+		if _, parseErr := requestinput.UUID(projectID); parseErr != nil {
 			return nil, nil, s.error(400, map[string]any{"error": "Please provide valid detail"})
 		}
 	}

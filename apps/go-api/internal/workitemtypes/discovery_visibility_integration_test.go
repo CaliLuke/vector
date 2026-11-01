@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	"github.com/google/uuid"
@@ -70,7 +70,7 @@ func TestTypeDiscoveryPreservesGuestVisibilityAndArchivePermissions(t *testing.T
 	}
 	f.exec(`UPDATE issues SET archived_at=now() WHERE id=$1`, ids[0])
 	_, err = typeDiscoveryList(f, repo, "api_workspaces_by_slug_projects_by_project_id_archived_issues", f.project, f.member, filter, "1:0:0", false)
-	var denied *djangoapi.HTTPError
+	var denied *apicontract.HTTPError
 	if !errors.As(err, &denied) || denied.Status != 403 {
 		t.Fatalf("guest archive restriction lost: %v", err)
 	}

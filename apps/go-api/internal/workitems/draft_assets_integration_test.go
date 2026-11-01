@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
@@ -71,7 +71,7 @@ CREATE TABLE work_item_properties(id uuid PRIMARY KEY, workspace_id uuid, defini
 				}
 				return
 			}
-			var conflict *djangoapi.HTTPError
+			var conflict *apicontract.HTTPError
 			if !errors.As(validationErr, &conflict) || conflict.Status != 409 {
 				t.Fatalf("pending referenced upload must block publication: %v", validationErr)
 			}

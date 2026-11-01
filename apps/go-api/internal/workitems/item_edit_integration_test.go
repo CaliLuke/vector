@@ -7,8 +7,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/bootstrap"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
@@ -65,7 +65,7 @@ func TestReviewedSaveRejectsExpiredReceiptAndCommitsRepairedDraftOnce(t *testing
 	input.ReviewID = review.Body.(ItemEditReview).ID
 	exec(`UPDATE work_item_schema_reviews SET created_at=now()-interval '31 minutes' WHERE id=$1`, input.ReviewID)
 	_, err = repo.CommitItemChange(ctx, q, input)
-	var rejected *djangoapi.HTTPError
+	var rejected *apicontract.HTTPError
 	if !errors.As(err, &rejected) || rejected.Status != 409 || rejected.Body["review_again"] != true {
 		t.Fatalf("expired uncommitted review did not allow repair: %v", err)
 	}

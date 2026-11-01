@@ -8,9 +8,9 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/redis/go-redis/v9"
@@ -117,7 +117,7 @@ type StateWriteInput struct {
 	Method                           string
 	App                              bool
 	Fields                           map[string]any
-	Parsed                           *djangoinput.Input
+	Parsed                           *requestinput.Input
 }
 
 func (repository *WriteRepository) Create(ctx context.Context, input StateWriteInput) (json.RawMessage, error) {
@@ -371,7 +371,7 @@ func (repository *WriteRepository) SerializeAPIV1(ctx context.Context, data json
 	if err := json.Unmarshal(data, &row); err != nil {
 		return nil, err
 	}
-	return djangoapi.Serialize(ctx, repository.database, row, apiStateFields, fields, expand, false)
+	return apicontract.Serialize(ctx, repository.database, row, apiStateFields, fields, expand, false)
 }
 
 func cloneStateFields(fields map[string]any) map[string]any {

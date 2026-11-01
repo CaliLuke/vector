@@ -11,7 +11,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/intakeinboxreads"
 	"github.com/CaliLuke/go-plane/internal/workitemhistory"
 	"github.com/CaliLuke/go-plane/internal/workitems"
@@ -178,7 +178,7 @@ func TestHierarchyVisibilityUsesCurrentMembershipAndGuestPolicy(t *testing.T) {
 	row := map[string]any{"parent_id": parent, "workspace_id": f.workspace}
 	check := func(visible bool) {
 		t.Helper()
-		masked, err := djangoapi.MaskIssueParent(f.ctx, f.db, row, f.member)
+		masked, err := apicontract.MaskIssueParent(f.ctx, f.db, row, f.member)
 		if err != nil || (masked["parent_id"] != nil) != visible {
 			t.Fatalf("parent visibility want %v: %#v %v", visible, masked, err)
 		}

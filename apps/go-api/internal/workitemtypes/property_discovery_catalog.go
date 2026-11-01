@@ -5,7 +5,7 @@ import (
 	"context"
 	"slices"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/formula"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/jackc/pgx/v5"
@@ -147,7 +147,7 @@ func (snapshot *PropertyDiscoverySnapshot) discoveryChoices(ctx context.Context,
 				args = append(args, projects)
 			}
 			if field.Kind == property.Issue {
-				query = `SELECT i.id::text,p.identifier||'-'||i.sequence_id||' · '||i.name FROM issues i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id WHERE ` + djangoapi.IssueVisibleSQL("i", "$2::uuid", "$1::uuid") + ` ORDER BY p.identifier,i.sequence_id,i.id`
+				query = `SELECT i.id::text,p.identifier||'-'||i.sequence_id||' · '||i.name FROM issues i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id WHERE ` + apicontract.IssueVisibleSQL("i", "$2::uuid", "$1::uuid") + ` ORDER BY p.identifier,i.sequence_id,i.id`
 				args = []any{snapshot.workspace, snapshot.actor}
 			}
 			var err error

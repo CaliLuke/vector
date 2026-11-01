@@ -14,9 +14,9 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	store "github.com/CaliLuke/go-plane/internal/workitems"
 	api "github.com/CaliLuke/go-plane/ticket_collaboration/gen/ticket_collaboration"
@@ -76,11 +76,11 @@ func (s *ticketCollaborationService) AuthorizeWorkItemProtocol(ctx context.Conte
 			effects.Rate = &rate
 		}
 		if !rate.Allowed {
-			return WorkItemProtocolMetadata{}, workItemError(&djangoapi.HTTPError{Status: 429, Body: map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))}})
+			return WorkItemProtocolMetadata{}, workItemError(&apicontract.HTTPError{Status: 429, Body: map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))}})
 		}
 	}
 	if err = browsersession.ValidateUserTimezone(p.timezone); errors.Is(err, browsersession.ErrTimezoneNotFound) {
-		err = &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "The required key does not exist."}}
+		err = &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "The required key does not exist."}}
 	}
 	if err != nil {
 		return WorkItemProtocolMetadata{}, workItemError(err)
@@ -111,7 +111,7 @@ func collaborationProtocolError(err error) error {
 	if e = json.Unmarshal(data, &body); e != nil {
 		return workItemError(e)
 	}
-	return workItemError(&djangoapi.HTTPError{Status: status, Body: body})
+	return workItemError(&apicontract.HTTPError{Status: status, Body: body})
 }
 
 func NewTicketCollaboration(repository collaborationRepository, sessions activityReadsSessions, keys activityReadsAPIKeys, throttle activityReadsThrottle) (api.Service, error) {
@@ -127,7 +127,7 @@ func collaborationError(err error) error {
 		return err
 	}
 	status, body := 500, map[string]any{"error": "Something went wrong please try again later"}
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if errors.As(err, &failure) {
 		status, body = failure.Status, failure.Body
 	}
@@ -168,7 +168,7 @@ func (s *ticketCollaborationService) APIKeyAuth(ctx context.Context, key string,
 			} else if errors.Is(err, apikey.ErrInvalid) {
 				status, message = 403, "Given API token is not valid"
 			}
-			return ctx, collaborationError(&djangoapi.HTTPError{Status: status, Body: map[string]any{"detail": message}})
+			return ctx, collaborationError(&apicontract.HTTPError{Status: status, Body: map[string]any{"detail": message}})
 		}
 		p = collaborationPrincipal{principal.UserID.String(), principal.Timezone, key}
 		if effects := apikey.EffectsFromContext(ctx); effects != nil {
@@ -189,7 +189,7 @@ func (s *ticketCollaborationService) APIKeyAuth(ctx context.Context, key string,
 			}
 		}
 		if id == "" {
-			return ctx, collaborationError(&djangoapi.HTTPError{Status: 401, Body: map[string]any{"detail": unauthenticatedDetail}})
+			return ctx, collaborationError(&apicontract.HTTPError{Status: 401, Body: map[string]any{"detail": unauthenticatedDetail}})
 		}
 		p = collaborationPrincipal{user: id, timezone: zone}
 	}
@@ -242,7 +242,7 @@ func (s *ticketCollaborationService) execute(ctx context.Context, operation stri
 		p, ok = collaborationPrincipal{user: id, timezone: zone}, true
 	}
 	if !ok {
-		return nil, nil, collaborationError(&djangoapi.HTTPError{Status: 401, Body: map[string]any{"detail": unauthenticatedDetail}})
+		return nil, nil, collaborationError(&apicontract.HTTPError{Status: 401, Body: map[string]any{"detail": unauthenticatedDetail}})
 	}
 	q.ActorID, q.Timezone = p.user, p.timezone
 	if err := s.repository.AuthorizeCollaborationInitial(ctx, q); err != nil {
@@ -257,12 +257,12 @@ func (s *ticketCollaborationService) execute(ctx context.Context, operation stri
 			effects.Rate = &rate
 		}
 		if !rate.Allowed {
-			return nil, nil, collaborationError(&djangoapi.HTTPError{Status: 429, Body: map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))}})
+			return nil, nil, collaborationError(&apicontract.HTTPError{Status: 429, Body: map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))}})
 		}
 	}
 	if err := browsersession.ValidateUserTimezone(p.timezone); p.user != "" && err != nil {
 		if errors.Is(err, browsersession.ErrTimezoneNotFound) {
-			err = &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "The required key does not exist."}}
+			err = &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "The required key does not exist."}}
 		}
 		return nil, nil, collaborationError(err)
 	}
@@ -272,7 +272,7 @@ func (s *ticketCollaborationService) execute(ctx context.Context, operation stri
 	}
 	result, err := s.repository.ExecuteCollaboration(ctx, q, body, contentType)
 	if err != nil {
-		var httpError *djangoapi.HTTPError
+		var httpError *apicontract.HTTPError
 		if !errors.As(err, &httpError) {
 			fields := []log.Fielder{log.KV{K: "msg", V: "Ticket collaboration operation failed"}, log.KV{K: "operation", V: operation}, log.KV{K: "error_type", V: fmt.Sprintf("%T", err)}, log.KV{K: "error_kind", V: workItemErrorKind(err)}}
 			var pg *pgconn.PgError

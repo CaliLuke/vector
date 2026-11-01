@@ -13,7 +13,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/intakeinboxreads"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
@@ -129,7 +129,7 @@ func TestDraftValuesSaveIncompleteAndValidateOnPublication(t *testing.T) {
 		t.Fatalf("private draft subscribed users: %d %v", subscribers, err)
 	}
 	_, err = publishDraftForTest(f, repo, draft, f.member, `{}`)
-	var validation *djangoapi.HTTPError
+	var validation *apicontract.HTTPError
 	if !errors.As(err, &validation) || validation.Status != 400 {
 		t.Fatalf("missing required accepted: %v", err)
 	}
@@ -161,7 +161,7 @@ func TestDraftValuesRejectInvalidShapesUnknownAndReadonlyEdits(t *testing.T) {
 	repo, draft, _ := seedPublicationDraft(t, f)
 	for _, payload := range []string{`null`, `[]`, `"text"`, `1`, fmt.Sprintf(`{"%s":1}`, uuid.New().String()), fmt.Sprintf(`{"%s":"replace"}`, readonly)} {
 		err := editValueDraft(f, repo, draft, `{"custom_properties":`+payload+`}`)
-		var validation *djangoapi.HTTPError
+		var validation *apicontract.HTTPError
 		if !errors.As(err, &validation) || validation.Status != 400 {
 			t.Fatalf("accepted %s: %v", payload, err)
 		}
@@ -180,7 +180,7 @@ func TestDraftTypeClearRequiresPreservation(t *testing.T) {
 		t.Fatal(err)
 	}
 	err := editValueDraft(f, repo, draft, `{"project":null,"type_id":null}`)
-	var conflict *djangoapi.HTTPError
+	var conflict *apicontract.HTTPError
 	if !errors.As(err, &conflict) || conflict.Status != 409 {
 		t.Fatalf("type clear discarded value meaning: %v", err)
 	}

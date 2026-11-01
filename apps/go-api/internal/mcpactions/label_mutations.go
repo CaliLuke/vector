@@ -6,7 +6,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	labels "github.com/CaliLuke/go-plane/internal/projectconfiguration"
@@ -135,7 +135,7 @@ func (s *Service) labelMutation(ctx context.Context, input *api.LabelRequest) (r
 		if json.Unmarshal(value.Result, &row) != nil || row == nil {
 			return nil, labelMutationError(nil)
 		}
-		record, err = projectLabelRecord(djangoapi.Timestamps(row, actor.Timezone).(map[string]any))
+		record, err = projectLabelRecord(apicontract.Timestamps(row, actor.Timezone).(map[string]any))
 		if err != nil {
 			return nil, labelMutationError(err)
 		}

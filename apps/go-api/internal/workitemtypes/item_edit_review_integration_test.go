@@ -15,7 +15,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/jackc/pgx/v5/pgconn"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 )
@@ -42,7 +42,7 @@ func reviewedEditFixture(t *testing.T) (projectTypeFixture, *workitems.Repositor
 
 func requireEditStatus(t *testing.T, err error, status int) {
 	t.Helper()
-	var denied *djangoapi.HTTPError
+	var denied *apicontract.HTTPError
 	if !errors.As(err, &denied) || denied.Status != status {
 		t.Fatalf("want HTTP %d, got %v", status, err)
 	}

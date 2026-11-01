@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/assets"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	"github.com/google/uuid"
 )
@@ -17,7 +17,7 @@ type projectLifecycleAssetReader interface {
 func projectLifecycleCoverValidator(reader projectLifecycleAssetReader) workspaceprojectreads.ProjectCoverAssetValidator {
 	return func(ctx context.Context, workspace, project, id uuid.UUID) (bool, error) {
 		asset, err := reader.AssetByProjectAndID(ctx, workspace, project, id)
-		var response *djangoapi.HTTPError
+		var response *apicontract.HTTPError
 		if errors.As(err, &response) && response.Status == 404 {
 			return false, nil
 		}

@@ -8,8 +8,8 @@ import (
 	"time"
 
 	systemapi "github.com/CaliLuke/go-plane"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/loom/security"
 	"github.com/google/uuid"
 )
@@ -63,7 +63,7 @@ func apiKeyAuthService(t *testing.T, validate apiKeyValidatorFunc, cache *apiKey
 }
 
 func apiKeyAuthErrorStatus(err error) int {
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if !errors.As(err, &httpErr) {
 		return 0
 	}

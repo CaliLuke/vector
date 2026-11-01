@@ -35,7 +35,7 @@ func workspaceLifecycleProtocolForMethod(protocol readServiceProtocol, method st
 	return protocol
 }
 
-func mountWorkspaceLifecycle(mux loomhttp.Muxer, endpoints *workspaceapi.Endpoints, cors loomhttp.RuntimeCORSPolicy, options apiV1CompatibilityOptions, sessions readServicesSessionLifecycle, cookie djangoSessionCookieConfig) {
+func mountWorkspaceLifecycle(mux loomhttp.Muxer, endpoints *workspaceapi.Endpoints, cors loomhttp.RuntimeCORSPolicy, options apiV1CompatibilityOptions, sessions readServicesSessionLifecycle, cookie browserSessionCookieConfig) {
 	server := svr.New(endpoints, mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil, cors)
 	server.Use(sessionServiceMiddlewareStack(options, sessions, cookie))
 	svr.Mount(mux, server)

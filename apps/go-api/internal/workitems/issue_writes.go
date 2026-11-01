@@ -8,11 +8,11 @@ import (
 	"maps"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -41,7 +41,7 @@ func (r *Repository) writeIssue(ctx context.Context, q Request, body io.Reader, 
 }
 
 type issueEdit struct {
-	input                   djangoinput.Input
+	input                   requestinput.Input
 	changes                 issueChanges
 	old, project, submitted map[string]any
 	skipActivity            any
@@ -130,7 +130,7 @@ func (r *Repository) prepareIssueEdit(ctx context.Context, q Request, body io.Re
 			return issueEdit{}, err
 		}
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return issueEdit{}, err
 	}
@@ -148,7 +148,7 @@ func (r *Repository) prepareIssueEdit(ctx context.Context, q Request, body io.Re
 	if q.Method != "POST" && old == nil {
 		old, err = r.issue(ctx, q, true)
 		if err != nil {
-			var e *djangoapi.HTTPError
+			var e *apicontract.HTTPError
 			if q.Method == "PATCH" && errors.As(err, &e) && e.Status == 404 {
 				return issueEdit{}, failure(404, "error", "Issue not found")
 			}
@@ -179,14 +179,14 @@ func (r *Repository) prepareIssueEdit(ctx context.Context, q Request, body io.Re
 	return issueEdit{input: input, changes: changes, old: old, project: project, submitted: submitted, skipActivity: skip}, nil
 }
 
-func (r *Repository) validateIssueExternalIdentity(ctx context.Context, q Request, input djangoinput.Input, old map[string]any) error {
-	if q.API && truthy(input.Fields["external_id"]) && (q.Method == "POST" && truthy(input.Fields["external_source"]) || q.Method == "PATCH" && old["external_id"] != djangoinput.ScalarString(input.Fields["external_id"])) {
+func (r *Repository) validateIssueExternalIdentity(ctx context.Context, q Request, input requestinput.Input, old map[string]any) error {
+	if q.API && truthy(input.Fields["external_id"]) && (q.Method == "POST" && truthy(input.Fields["external_source"]) || q.Method == "PATCH" && old["external_id"] != requestinput.ScalarString(input.Fields["external_id"])) {
 		source := input.Fields["external_source"]
 		if _, present := input.Fields["external_source"]; !present && old != nil {
 			source = old["external_source"]
 		}
 		var id *string
-		err := r.db.QueryRow(ctx, `SELECT (SELECT i.id::text FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE i.project_id=$1 AND w.slug=$2 AND i.deleted_at IS NULL AND i.external_id=$3 AND i.external_source=$4 ORDER BY i.created_at DESC LIMIT 1)`, q.ProjectID, q.Slug, djangoinput.ScalarString(input.Fields["external_id"]), source).Scan(&id)
+		err := r.db.QueryRow(ctx, `SELECT (SELECT i.id::text FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE i.project_id=$1 AND w.slug=$2 AND i.deleted_at IS NULL AND i.external_id=$3 AND i.external_source=$4 ORDER BY i.created_at DESC LIMIT 1)`, q.ProjectID, q.Slug, requestinput.ScalarString(input.Fields["external_id"]), source).Scan(&id)
 		if err != nil {
 			return err
 		}
@@ -195,7 +195,7 @@ func (r *Repository) validateIssueExternalIdentity(ctx context.Context, q Reques
 			if old != nil {
 				conflict = q.IssueID
 			}
-			return &djangoapi.HTTPError{Status: 409, Body: map[string]any{"error": "Issue with the same external id and external source already exists", "id": conflict}}
+			return &apicontract.HTTPError{Status: 409, Body: map[string]any{"error": "Issue with the same external id and external source already exists", "id": conflict}}
 		}
 	}
 	return nil
@@ -287,7 +287,7 @@ func (r *Repository) persistIssueEdit(ctx context.Context, q Request, edit *issu
 	return row, nil
 }
 
-func (r *Repository) finishIssueWrite(ctx context.Context, q Request, input djangoinput.Input, old, row map[string]any, previous, skip any) (Result, error) {
+func (r *Repository) finishIssueWrite(ctx context.Context, q Request, input requestinput.Input, old, row map[string]any, previous, skip any) (Result, error) {
 	var err error
 	q.IssueID = row["id"].(string)
 	if old == nil && !q.API {
@@ -333,7 +333,7 @@ func (r *Repository) finishIssueWrite(ctx context.Context, q Request, input djan
 	return Result{201, projected}, projectionErr
 }
 
-func (r *Repository) createdAppIssueResponse(ctx context.Context, q Request, input djangoinput.Input) (Result, error) {
+func (r *Repository) createdAppIssueResponse(ctx context.Context, q Request, input requestinput.Input) (Result, error) {
 	requested, e := r.issueWriteActivity(ctx, q, input, nil, true)
 	if e != nil {
 		return Result{}, e
@@ -355,7 +355,7 @@ func (r *Repository) createdAppIssueResponse(ctx context.Context, q Request, inp
 	return Result{201, projected}, projectionErr
 }
 
-func (r *Repository) saveAPIIssueCreationAudit(ctx context.Context, q Request, input djangoinput.Input) error {
+func (r *Repository) saveAPIIssueCreationAudit(ctx context.Context, q Request, input requestinput.Input) error {
 	createdAt := input.Fields["created_at"]
 	if createdAt == nil {
 		createdAt = timestamp(r.now())
@@ -375,7 +375,7 @@ func (r *Repository) saveAPIIssueCreationAudit(ctx context.Context, q Request, i
 // Unexpected failures still reach the ordinary exception boundary.
 func (r *Repository) ProtocolPutAction(ctx context.Context, q Request) (bool, error) {
 	_, err := r.putIssue(ctx, q)
-	var missing *djangoapi.HTTPError
+	var missing *apicontract.HTTPError
 	var filter *issuequery.FilterError
 	if errors.As(err, &missing) || errors.As(err, &filter) {
 		return false, nil
@@ -395,8 +395,8 @@ func (r *Repository) putIssue(ctx context.Context, q Request) (map[string]any, e
 	}
 	// $1 supplies the request timezone to date filter expressions. Keep it
 	// typed even when a filter does not use that expression.
-	row, err := r.row(ctx, `SELECT `+djangoapi.IssueRowSQL("issue")+` FROM issues issue JOIN workspaces workspace ON workspace.id=issue.workspace_id WHERE $1::uuid IS NOT NULL AND `+where, args...)
-	var missing *djangoapi.HTTPError
+	row, err := r.row(ctx, `SELECT `+apicontract.IssueRowSQL("issue")+` FROM issues issue JOIN workspaces workspace ON workspace.id=issue.workspace_id WHERE $1::uuid IS NOT NULL AND `+where, args...)
+	var missing *apicontract.HTTPError
 	if errors.As(err, &missing) && missing.Status == 404 {
 		return nil, failure(404, "detail", "No Issue matches the given query.")
 	}
@@ -474,7 +474,7 @@ func (r *Repository) replaceIssueRelations(ctx context.Context, row map[string]a
 	return nil
 }
 
-func (r *Repository) issueWriteEffects(ctx context.Context, q Request, input djangoinput.Input, previous any, create bool) error {
+func (r *Repository) issueWriteEffects(ctx context.Context, q Request, input requestinput.Input, previous any, create bool) error {
 	requested, err := r.issueWriteActivity(ctx, q, input, previous, create)
 	if err != nil {
 		return err
@@ -482,7 +482,7 @@ func (r *Repository) issueWriteEffects(ctx context.Context, q Request, input dja
 	return r.issueWriteFollowups(ctx, q, input, previous, requested, create)
 }
 
-func (r *Repository) issueWriteActivity(ctx context.Context, q Request, input djangoinput.Input, previous any, create bool) (string, error) {
+func (r *Repository) issueWriteActivity(ctx context.Context, q Request, input requestinput.Input, previous any, create bool) (string, error) {
 	requested, err := dumpRequest(input)
 	if err != nil {
 		return "", err
@@ -498,14 +498,14 @@ func (r *Repository) issueWriteActivity(ctx context.Context, q Request, input dj
 	return requested, nil
 }
 
-func dumpRequest(input djangoinput.Input) (string, error) {
+func dumpRequest(input requestinput.Input) (string, error) {
 	if input.Form {
 		return orderedDump(input.Fields, input.FormKeys)
 	}
 	return pythoncompat.Dumps(input.Fields, input.Raw)
 }
 
-func (r *Repository) issueWriteFollowups(ctx context.Context, q Request, input djangoinput.Input, previous any, requested string, create bool) error {
+func (r *Repository) issueWriteFollowups(ctx context.Context, q Request, input requestinput.Input, previous any, requested string, create bool) error {
 	if err := r.publishTask(ctx, "plane.bgtasks.webhook_task.model_activity", []any{}, map[string]any{"model_name": "issue", "model_id": q.IssueID, "requested_data": input.Fields, "current_instance": previous, "actor_id": q.ActorID, "slug": q.Slug, "origin": r.origin}); err != nil {
 		return err
 	}
@@ -562,19 +562,19 @@ func (r *Repository) destroyIssue(ctx context.Context, q Request) (Result, error
 	return Result{Status: 204}, nil
 }
 
-func (r *Repository) visibleAppWriteProjection(ctx context.Context, q Request, row map[string]any, input djangoinput.Input) (map[string]any, error) {
+func (r *Repository) visibleAppWriteProjection(ctx context.Context, q Request, row map[string]any, input requestinput.Input) (map[string]any, error) {
 	return visibleAppWriteProjection(ctx, r.db, q, row, input)
 }
 
-func visibleAppWriteProjection(ctx context.Context, db Database, q Request, row map[string]any, input djangoinput.Input) (map[string]any, error) {
-	row, err := djangoapi.MaskIssueParent(ctx, db, row, q.ActorID)
+func visibleAppWriteProjection(ctx context.Context, db Database, q Request, row map[string]any, input requestinput.Input) (map[string]any, error) {
+	row, err := apicontract.MaskIssueParent(ctx, db, row, q.ActorID)
 	if err != nil {
 		return nil, err
 	}
 	return appWriteProjection(row, input)
 }
 
-func appWriteProjection(row map[string]any, input djangoinput.Input) (map[string]any, error) {
+func appWriteProjection(row map[string]any, input requestinput.Input) (map[string]any, error) {
 	result := maps.Clone(row)
 	for _, field := range []string{"created_by", "updated_by", "workspace", "project", "state", "parent", "estimate_point", "type"} {
 		result[field] = row[field+"_id"]

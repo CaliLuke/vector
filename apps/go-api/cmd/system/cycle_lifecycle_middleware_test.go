@@ -175,7 +175,7 @@ func newCycleMiddlewareTestHandler(t *testing.T, recorder *cycleMiddlewareRecord
 		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 		pendingReplacementEndpoints{
 			cycleLifecycle: cycleapi.NewEndpoints(service), cycleLifecycleMetadata: service,
-			readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true},
+			readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true},
 			activityReadsActivity: activity, activityReadsSecret: "cycle-test-secret", activityReadsBodyLimit: bodyLimit,
 		},
 	)

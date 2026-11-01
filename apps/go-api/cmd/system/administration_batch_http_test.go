@@ -74,7 +74,7 @@ func TestWebhookProductionAuthenticationPrecedesParsingAndProtocolDispatch(t *te
 			}
 			handler := newHTTPHandlerWithPendingReplacements(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false,
 				nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-				pendingReplacementEndpoints{workspaceWebhooks: api.NewEndpoints(service), workspaceWebhooksMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsActivity: audit, activityReadsBodyLimit: 64})
+				pendingReplacementEndpoints{workspaceWebhooks: api.NewEndpoints(service), workspaceWebhooksMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsActivity: audit, activityReadsBodyLimit: 64})
 			path := tc.path
 			if path == "" {
 				path = "/api/workspaces/demo/webhooks/"
@@ -151,7 +151,7 @@ func TestWebhookMalformedLogUUIDUsesDjangoConverter404BeforeAuth(t *testing.T) {
 			}
 			handler := newHTTPHandlerWithPendingReplacements(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false,
 				nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-				pendingReplacementEndpoints{workspaceWebhooks: api.NewEndpoints(service), workspaceWebhooksMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsActivity: audit, activityReadsBodyLimit: 64})
+				pendingReplacementEndpoints{workspaceWebhooks: api.NewEndpoints(service), workspaceWebhooksMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsActivity: audit, activityReadsBodyLimit: 64})
 			request := httptest.NewRequest(http.MethodGet, "/api/workspaces/demo/webhook-logs/not-a-uuid/", nil)
 			if authenticated {
 				request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})

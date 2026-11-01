@@ -7,14 +7,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/jackc/pgx/v5"
 )
 
-type APIV1Request = djangoapi.ProjectReadRequest
+type APIV1Request = apicontract.ProjectReadRequest
 
 func (r *Repository) AuthorizeAPIV1(ctx context.Context, user, slug, project string, write bool) error {
-	allowed, err := djangoapi.ProjectEntityAllowed(ctx, r.database, user, slug, project, write)
+	allowed, err := apicontract.ProjectEntityAllowed(ctx, r.database, user, slug, project, write)
 	if err != nil {
 		return err
 	}
@@ -37,7 +37,7 @@ func (r *Repository) ReadAPIV1(ctx context.Context, user string, request APIV1Re
 	limit, page, offset := 1000, 0, 0
 	if !detail {
 		var err error
-		limit, page, offset, err = djangoapi.PageWindow(djangoapi.Query{Params: p, Present: request.Present})
+		limit, page, offset, err = apicontract.PageWindow(apicontract.Query{Params: p, Present: request.Present})
 		if err != nil {
 			return nil, err
 		}
@@ -60,7 +60,7 @@ func (r *Repository) ReadAPIV1(ctx context.Context, user string, request APIV1Re
 	for i, raw := range rows {
 		row := raw.(map[string]any)
 		if request.Operation == "issues" {
-			rows[i], err = djangoapi.SerializeVisibleIssue(ctx, r.database, row, p["fields"], p["expand"], user)
+			rows[i], err = apicontract.SerializeVisibleIssue(ctx, r.database, row, p["fields"], p["expand"], user)
 		} else {
 			fields, expand := p["fields"], p["expand"]
 			declared := append([]string{}, apiModuleFields...)
@@ -70,7 +70,7 @@ func (r *Repository) ReadAPIV1(ctx context.Context, user string, request APIV1Re
 				declared = append(declared, apiModuleCounts...)
 			}
 			var projected map[string]any
-			projected, err = djangoapi.Serialize(ctx, r.database, row, declared, fields, expand, false)
+			projected, err = apicontract.Serialize(ctx, r.database, row, declared, fields, expand, false)
 			if err == nil {
 				projected["members"] = row["members"]
 				if request.ExpectedWorkspaceID != nil && detail && p["include_revision"] == "true" {
@@ -94,7 +94,7 @@ func (r *Repository) ReadAPIV1(ctx context.Context, user string, request APIV1Re
 	if err != nil {
 		return nil, err
 	}
-	result := djangoapi.Envelope(rows, total, limit, page)
+	result := apicontract.Envelope(rows, total, limit, page)
 	result["next_page_results"] = doc["has_next"]
 	return result, nil
 }
@@ -147,7 +147,7 @@ func (r *Repository) apiModules(ctx context.Context, user string, request APIV1R
 	}
 	scope, scopeJoin, scopeResult := "", "", ""
 	if scoped {
-		scope = djangoapi.ProjectMemberReadScopeSQL(1, 2, 6, 7)
+		scope = apicontract.ProjectMemberReadScopeSQL(1, 2, 6, 7)
 		scopeJoin = " JOIN scope ON scope.id=m.project_id AND scope.workspace_id=m.workspace_id "
 		scopeResult = " FROM scope"
 	}
@@ -160,7 +160,7 @@ func (r *Repository) apiModules(ctx context.Context, user string, request APIV1R
 	if scoped {
 		args = append(args, user, request.ExpectedWorkspaceID)
 	}
-	value, err := djangoapi.JSON(ctx, r.database, query+scopeResult, args...)
+	value, err := apicontract.JSON(ctx, r.database, query+scopeResult, args...)
 	if scoped && errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrForbidden
 	}
@@ -169,13 +169,13 @@ func (r *Repository) apiModules(ctx context.Context, user string, request APIV1R
 
 func (r *Repository) apiIssues(ctx context.Context, request APIV1Request, limit, offset int) (any, error) {
 	p := request.Params
-	order, joins := djangoapi.IssueOrderSQL(p["order_by"])
+	order, joins := apicontract.IssueOrderSQL(p["order_by"])
 	// Django reuses the module bridge already constrained by the filter, unlike cycle issue ordering.
 	if strings.TrimPrefix(p["order_by"], "-") == "issue_module__module__name" {
 		joins = " LEFT JOIN modules ordering_module ON ordering_module.id=$3::uuid"
 	}
 	query := `WITH base AS MATERIALIZED(SELECT i.* FROM issues i JOIN module_issues mi ON mi.issue_id=i.id JOIN projects p ON p.id=i.project_id JOIN workspaces w ON w.id=i.workspace_id LEFT JOIN states s ON s.id=i.state_id WHERE i.project_id=$1::uuid AND w.slug=$2 AND mi.module_id=$3::uuid AND mi.deleted_at IS NULL AND i.deleted_at IS NULL AND i.archived_at IS NULL AND NOT i.is_draft AND p.archived_at IS NULL AND (s."group" IS NULL OR s."group"<>'triage')),
- ordered AS(SELECT ` + djangoapi.IssueRowSQL("i") + ` AS data,row_number() OVER(ORDER BY ` + order + `) AS ordinal FROM base i ` + joins + `), page AS(SELECT * FROM ordered ORDER BY ordinal LIMIT $4 OFFSET $5)
+ ordered AS(SELECT ` + apicontract.IssueRowSQL("i") + ` AS data,row_number() OVER(ORDER BY ` + order + `) AS ordinal FROM base i ` + joins + `), page AS(SELECT * FROM ordered ORDER BY ordinal LIMIT $4 OFFSET $5)
  SELECT jsonb_build_object('total_count',(SELECT count(*) FROM base),'has_next',(SELECT count(*) FROM ordered)-$5::bigint>$4::bigint,'results',COALESCE((SELECT jsonb_agg(data ORDER BY ordinal) FROM page),'[]'::jsonb))`
-	return djangoapi.JSON(ctx, r.database, query, p["project_id"], p["slug"], p["module_id"], limit, offset)
+	return apicontract.JSON(ctx, r.database, query, p["project_id"], p["slug"], p["module_id"], limit, offset)
 }

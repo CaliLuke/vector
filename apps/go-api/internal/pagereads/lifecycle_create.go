@@ -8,9 +8,8 @@ import (
 	"time"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	"github.com/jackc/pgx/v5"
 )
@@ -31,7 +30,7 @@ type pageCreateContent struct {
 	html, json, binary, stripped any
 }
 
-func (repository *Repository) createPage(ctx context.Context, db lifecycleDatabase, user uuid.UUID, slug string, project uuid.UUID, timezone string, input djangoinput.Input) (int, json.RawMessage, error) {
+func (repository *Repository) createPage(ctx context.Context, db lifecycleDatabase, user uuid.UUID, slug string, project uuid.UUID, timezone string, input requestinput.Input) (int, json.RawMessage, error) {
 	fields := input.Fields
 	var workspace uuid.UUID
 	var role int
@@ -48,8 +47,8 @@ func (repository *Repository) createPage(ctx context.Context, db lifecycleDataba
 	// serializer. A truthy invalid or out-of-scope parent therefore takes
 	// precedence over every serializer field error, including labels.
 	var handlerParent *uuid.UUID
-	if value, present := fields["parent"]; present && pythoncompat.Truthy(value) {
-		parentID, err := lifecycleParentLookupUUID(value)
+	if value, present := fields["parent"]; present && requestinput.Nonempty(value) {
+		parentID, err := lifecycleParentUUID(value)
 		if err != nil {
 			return 0, nil, lifecycleError(http.StatusBadRequest, "Please provide valid detail")
 		}
@@ -100,13 +99,13 @@ func (repository *Repository) createPage(ctx context.Context, db lifecycleDataba
 	return repository.pageLifecycleDetail(ctx, user, slug, project, page, timezone, http.StatusCreated, "create")
 }
 
-func (repository *Repository) validatePageCreateFields(ctx context.Context, workspace, project uuid.UUID, input djangoinput.Input, handlerParent *uuid.UUID) (pageCreateFields, error) {
+func (repository *Repository) validatePageCreateFields(ctx context.Context, workspace, project uuid.UUID, input requestinput.Input, handlerParent *uuid.UUID) (pageCreateFields, error) {
 	fields := input.Fields
 	name := ""
 	validationErrors := map[string]any{}
 	if value, present := input.FieldValue("name", false, true, false); present {
 		var failures []string
-		name, failures = djangoinput.TextField(value, true, 0, input.Surrogates["name"])
+		name, failures = requestinput.TextField(value, true, 0)
 		if len(failures) > 0 {
 			validationErrors["name"] = failures
 		}
@@ -114,7 +113,7 @@ func (repository *Repository) validatePageCreateFields(ctx context.Context, work
 	color := ""
 	if value, present := input.FieldValue("color", false, true, false); present {
 		var failures []string
-		color, failures = djangoinput.CharField(value, true, input.Surrogates["color"])
+		color, failures = requestinput.CharField(value, true)
 		if len(failures) > 0 {
 			validationErrors["color"] = failures
 		}
@@ -123,7 +122,7 @@ func (repository *Repository) validatePageCreateFields(ctx context.Context, work
 	if value, present := input.FieldValue("access", false, false, false); present {
 		accessValue, valid := lifecycleChoice(value)
 		if !valid {
-			message := lifecycleChoiceMessage(input, value)
+			message := lifecycleChoiceMessage(value)
 			if value == nil {
 				message = "This field may not be null."
 			}
@@ -133,7 +132,7 @@ func (repository *Repository) validatePageCreateFields(ctx context.Context, work
 		}
 	}
 	labelValue, labelsPresent := input.ListValue("labels", false)
-	labelList := lifecycleParseLabelList(labelValue, labelsPresent, input.JSONFieldSource("labels"))
+	labelList := lifecycleParseLabelList(labelValue, labelsPresent)
 	labelList, err := repository.validateLifecycleLabelReferences(ctx, workspace, labelList)
 	if err != nil {
 		return pageCreateFields{}, err
@@ -143,7 +142,7 @@ func (repository *Repository) validatePageCreateFields(ctx context.Context, work
 	}
 	var parent any
 	if value, present := fields["parent"]; present {
-		parentValue, message, parentErr := repository.lifecycleSerializerParent(ctx, workspace, project, value, input.JSONFieldSource("parent"), handlerParent)
+		parentValue, message, parentErr := repository.lifecycleSerializerParent(ctx, workspace, project, value, handlerParent)
 		if parentErr != nil {
 			return pageCreateFields{}, parentErr
 		}
@@ -182,7 +181,7 @@ func (repository *Repository) validatePageCreateFields(ctx context.Context, work
 		}
 	}
 	if len(validationErrors) > 0 {
-		return pageCreateFields{}, &djangoapi.HTTPError{Status: 400, Body: validationErrors}
+		return pageCreateFields{}, &apicontract.HTTPError{Status: 400, Body: validationErrors}
 	}
 	return pageCreateFields{
 		name: name, color: color, access: access, labels: labelList,

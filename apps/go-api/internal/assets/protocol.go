@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/loom/security"
 	"github.com/google/uuid"
 )
@@ -85,7 +85,7 @@ func protocolSessionUserID(ctx context.Context) (uuid.UUID, error) {
 }
 
 func protocolHTTPError(err error) (int, map[string]any) {
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if errors.As(err, &httpErr) {
 		return httpErr.Status, httpErr.Body
 	}

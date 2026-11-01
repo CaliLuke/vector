@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/jackc/pgx/v5"
 )
@@ -69,7 +69,7 @@ func (r *Repository) collaborationProjection(ctx context.Context, q Request, row
 			}
 			expanded = strings.Join(other, ",")
 		}
-		out, err := djangoapi.Serialize(ctx, r.db, row, fields, selected, expanded, false)
+		out, err := apicontract.Serialize(ctx, r.db, row, fields, selected, expanded, false)
 		if err != nil {
 			return nil, err
 		}
@@ -181,9 +181,9 @@ JOIN workspaces parent_workspace ON parent_workspace.id=parent.workspace_id
 WHERE parent.id=$1 AND parent.issue_id=$2 AND parent.project_id=$3 AND parent_workspace.slug=$4 AND parent.deleted_at IS NULL AND `
 	args := []any{row["parent_id"], q.IssueID, q.ProjectID, q.Slug}
 	if collaborationPublic(q) {
-		query += `parent.access='EXTERNAL' AND ` + djangoapi.PublicRelatedIssueSQL("parent_issue", "parent_issue")
+		query += `parent.access='EXTERNAL' AND ` + apicontract.PublicRelatedIssueSQL("parent_issue", "parent_issue")
 	} else {
-		query += djangoapi.IssueVisibleSQL("parent_issue", "NULLIF($5,'')::uuid", "parent_workspace.id")
+		query += apicontract.IssueVisibleSQL("parent_issue", "NULLIF($5,'')::uuid", "parent_workspace.id")
 		args = append(args, q.ActorID)
 	}
 	return r.collaborationOptionalRow(ctx, query, args...)
@@ -232,7 +232,7 @@ func (r *Repository) collaborationUser(ctx context.Context, id any) (any, error)
 	if id == nil {
 		return nil, nil
 	}
-	value, err := djangoapi.JSON(ctx, r.db, `SELECT `+appUserSQL+` FROM users u WHERE u.id=$1`, id)
+	value, err := apicontract.JSON(ctx, r.db, `SELECT `+appUserSQL+` FROM users u WHERE u.id=$1`, id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, nil
 	}
@@ -293,7 +293,7 @@ func (r *Repository) collaborationWorkspaceDetail(ctx context.Context, id any) (
 	if id == nil {
 		return map[string]any{}, nil
 	}
-	row, err := r.collaborationOptionalRow(ctx, `SELECT jsonb_build_object('name',w.name,'slug',w.slug,'id',w.id)||jsonb_build_object('logo_url',`+djangoapi.FileAssetURLSQL("w.logo_asset_id", "w.logo")+`) FROM workspaces w WHERE w.id=$1`, id)
+	row, err := r.collaborationOptionalRow(ctx, `SELECT jsonb_build_object('name',w.name,'slug',w.slug,'id',w.id)||jsonb_build_object('logo_url',`+apicontract.FileAssetURLSQL("w.logo_asset_id", "w.logo")+`) FROM workspaces w WHERE w.id=$1`, id)
 	if err != nil || row == nil {
 		return map[string]any{}, err
 	}
@@ -301,7 +301,7 @@ func (r *Repository) collaborationWorkspaceDetail(ctx context.Context, id any) (
 }
 
 func (r *Repository) collaborationOptionalRow(ctx context.Context, query string, args ...any) (map[string]any, error) {
-	value, err := djangoapi.JSON(ctx, r.db, query, args...)
+	value, err := apicontract.JSON(ctx, r.db, query, args...)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, nil
 	}

@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	api "github.com/CaliLuke/go-plane/gen/project_state_reads"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/projectstatereads"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 type projectStateWritesRepository interface {
@@ -52,7 +52,7 @@ func (service *projectStateReadsService) appStateWrite(ctx context.Context, oper
 			return nil, nil, projectStateAppError(resolveForUpdateErr)
 		}
 	}
-	parsed := djangoinput.Input{Fields: map[string]any{}}
+	parsed := requestinput.Input{Fields: map[string]any{}}
 	if method == http.MethodPost || method == http.MethodPatch {
 		parsed, err = store.ParseStateWriteBody(body, contentType)
 		if err != nil {

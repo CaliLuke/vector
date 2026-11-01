@@ -6,8 +6,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/assets"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	loom "github.com/CaliLuke/loom/pkg"
@@ -107,7 +107,7 @@ func (s *Service) attachmentRead(ctx context.Context, q assets.AttachmentQuery, 
 		}
 		records := api.AttachmentRecords{}
 		for _, row := range rows {
-			record, attachmentProjectionErr := attachmentProjection(djangoapi.Timestamps(row, actor.Timezone).(map[string]any))
+			record, attachmentProjectionErr := attachmentProjection(apicontract.Timestamps(row, actor.Timezone).(map[string]any))
 			if attachmentProjectionErr != nil {
 				return loom.Nullable[api.WorkitemAttachmentResult]{}, attachmentProjectionErr
 			}

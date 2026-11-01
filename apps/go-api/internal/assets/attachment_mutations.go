@@ -8,8 +8,8 @@ import (
 	"path"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
@@ -23,7 +23,7 @@ func (a *AttachmentApplication) MutateResource(ctx context.Context, cmd projectm
 	resource := projectmutations.Resource{Name: "workitem_attachment", Table: "file_assets", RevisionTable: "file_asset_edit_revisions", RevisionColumn: "asset_id", ParentColumn: "issue_id", SchemaLock: true}
 	resource.Authorize = func(ctx context.Context, tx pgx.Tx) error {
 		var id uuid.UUID
-		err := tx.QueryRow(ctx, `SELECT i.id FROM issues i WHERE i.id=$1 AND i.project_id=$2 AND `+djangoapi.IssueVisibleSQL("i", "$3::uuid", "$4::uuid")+` FOR SHARE`, cmd.ParentID, cmd.ProjectID, cmd.ActorID, cmd.WorkspaceID).Scan(&id)
+		err := tx.QueryRow(ctx, `SELECT i.id FROM issues i WHERE i.id=$1 AND i.project_id=$2 AND `+apicontract.IssueVisibleSQL("i", "$3::uuid", "$4::uuid")+` FOR SHARE`, cmd.ParentID, cmd.ProjectID, cmd.ActorID, cmd.WorkspaceID).Scan(&id)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return projectmutations.ErrNotFound
 		}
@@ -76,7 +76,7 @@ func (a *AttachmentApplication) stageAttachment(ctx context.Context, repository 
 	name, _ := cmd.Fields["name"].(string)
 	body, contentType, err := a.fetch(ctx, rawURL, a.limit)
 	if err != nil {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "The public file could not be imported. Check the URL and 5 MB size limit."}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "The public file could not be imported. Check the URL and 5 MB size limit."}}
 	}
 	if len(body) == 0 || int64(len(body)) > a.limit {
 		return nil, projectmutations.ErrInvalid
@@ -129,7 +129,7 @@ func (a *AttachmentApplication) stageAttachment(ctx context.Context, repository 
 	}
 	row["is_uploaded"] = true // Only released after CompleteAttachmentUpload succeeds.
 	normalizeAttachment(row)
-	return json.Marshal(djangoapi.Timestamps(row, cmd.Timezone))
+	return json.Marshal(apicontract.Timestamps(row, cmd.Timezone))
 }
 func attachmentActivity(cmd projectmutations.Command, origin, verb string) map[string]any {
 	return map[string]any{"type": "attachment.activity." + verb, "requested_data": nil, "actor_id": cmd.ActorID.String(), "issue_id": cmd.ParentID.String(), "project_id": cmd.ProjectID.String(), "epoch": time.Now().Unix(), "notification": true, "origin": origin}

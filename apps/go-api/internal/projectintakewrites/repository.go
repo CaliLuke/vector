@@ -9,8 +9,8 @@ import (
 
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	intakereads "github.com/CaliLuke/go-plane/internal/intakeinboxreads"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -68,7 +68,7 @@ func (r *Repository) Authorize(ctx context.Context, user, slug, project string) 
 // ValidateCreate mirrors the IntakeSerializer checks that DRF runs before
 // IntakeViewSet.perform_create applies its role decorator. It returns the
 // normalized serializer values so the insert uses the same values it checked.
-func (r *Repository) ValidateCreate(input djangoinput.Input) (map[string]any, error) {
+func (r *Repository) ValidateCreate(input requestinput.Input) (map[string]any, error) {
 	if input.Null {
 		return nil, &HTTPError{400, map[string]any{"non_field_errors": []string{"No data provided"}}}
 	}
@@ -83,14 +83,14 @@ func (r *Repository) ValidateCreate(input djangoinput.Input) (map[string]any, er
 	if !present {
 		return nil, &HTTPError{400, map[string]any{"name": []string{"This field is required."}}}
 	}
-	name, failures := djangoinput.TextField(nameValue, false, 255, input.Surrogates["name"])
+	name, failures := requestinput.TextField(nameValue, false, 255)
 	if len(failures) > 0 {
 		return nil, &HTTPError{400, map[string]any{"name": failures}}
 	}
 	fields["name"] = name
 
 	if description, present := input.FieldValue("description", false, true, false); present {
-		text, messages := djangoinput.TextField(description, true, 0, input.Surrogates["description"])
+		text, messages := requestinput.TextField(description, true, 0)
 		if len(messages) > 0 {
 			return nil, &HTTPError{400, map[string]any{"description": messages}}
 		}
@@ -100,7 +100,7 @@ func (r *Repository) ValidateCreate(input djangoinput.Input) (map[string]any, er
 	}
 
 	if value, present := input.BooleanFieldValue("is_default", false); present {
-		parsed, message := djangoinput.BooleanField(value)
+		parsed, message := requestinput.BooleanField(value)
 		if message != "" {
 			return nil, &HTTPError{400, map[string]any{"is_default": []string{message}}}
 		}
@@ -122,7 +122,7 @@ func (r *Repository) ValidateCreate(input djangoinput.Input) (map[string]any, er
 }
 
 func (r *Repository) Create(ctx context.Context, user, slug, project string, fields map[string]any) (json.RawMessage, error) {
-	validated, err := r.ValidateCreate(djangoinput.Input{Fields: fields})
+	validated, err := r.ValidateCreate(requestinput.Input{Fields: fields})
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +131,7 @@ func (r *Repository) Create(ctx context.Context, user, slug, project string, fie
 	description, _ := fields["description"].(string)
 	isDefault := false
 	if value, exists := fields["is_default"]; exists {
-		isDefault, _ = djangoinput.BooleanField(value)
+		isDefault, _ = requestinput.BooleanField(value)
 	}
 	viewProps, err := jsonField(fields, "view_props")
 	if err != nil {

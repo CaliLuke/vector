@@ -11,10 +11,9 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	store "github.com/CaliLuke/go-plane/internal/workspaceexports"
 	api "github.com/CaliLuke/go-plane/workspaceexports/gen/workspace_exports"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -33,7 +32,7 @@ type workspaceExportsRepository interface {
 	Authorized(context.Context, string, string) (bool, error)
 	UserEmail(context.Context, string) (string, error)
 	CreateIssueExport(context.Context, string, string, string, []any, bool) (json.RawMessage, string, string, []any, error)
-	History(context.Context, string, string, djangoapi.Query) (json.RawMessage, error)
+	History(context.Context, string, string, apicontract.Query) (json.RawMessage, error)
 }
 type workspaceExportsPrincipal struct{ userID, email, timezone string }
 type workspaceExportsPrincipalKey struct{}
@@ -115,7 +114,7 @@ func workspaceExportsRaw(data json.RawMessage) (*api.WorkspaceExportsRawJSON, io
 	}
 	return &api.WorkspaceExportsRawJSON{ContentType: "application/json"}, io.NopCloser(bytes.NewReader(data)), nil
 }
-func exportBody(ctx context.Context, body io.ReadCloser) (djangoinput.Input, error) {
+func exportBody(ctx context.Context, body io.ReadCloser) (requestinput.Input, error) {
 	if body != nil {
 		defer platform.CloseRequestBody(ctx, body)
 	}
@@ -123,7 +122,7 @@ func exportBody(ctx context.Context, body io.ReadCloser) (djangoinput.Input, err
 	if m, ok := loomhttp.RequestMetadataFromContext(ctx); ok {
 		contentType = m.Headers().Get("Content-Type")
 	}
-	return djangoinput.Parse(body, contentType)
+	return requestinput.Parse(body, contentType)
 }
 func (s *workspaceExportsService) GetIssueExports(ctx context.Context, p *api.GetIssueExportsPayload) (*api.WorkspaceExportsRawJSON, io.ReadCloser, error) {
 	principal, err := s.actor(ctx, p.Slug)
@@ -141,9 +140,9 @@ func (s *workspaceExportsService) GetIssueExports(ctx context.Context, p *api.Ge
 	}
 	params["order_by"] = order
 	present["order_by"] = p.OrderBy != nil
-	data, err := s.repo.History(ctx, principal.userID, p.Slug, djangoapi.Query{Params: params, Present: present})
+	data, err := s.repo.History(ctx, principal.userID, p.Slug, apicontract.Query{Params: params, Present: present})
 	if err != nil {
-		var httpErr *djangoapi.HTTPError
+		var httpErr *apicontract.HTTPError
 		if errors.As(err, &httpErr) {
 			return nil, nil, s.error(httpErr.Status, httpErr.Body)
 		}
@@ -168,9 +167,7 @@ func (s *workspaceExportsService) CreateIssueExport(ctx context.Context, p *api.
 	if !ok {
 		providerValue = false
 	}
-	var sourceFields map[string]json.RawMessage
-	_ = json.Unmarshal(input.Raw, &sourceFields)
-	provider, err := pythoncompat.String(providerValue, sourceFields["provider"])
+	provider, err := requestinput.Text(providerValue)
 	if err != nil {
 		return nil, nil, s.internal()
 	}
@@ -202,7 +199,7 @@ func (s *workspaceExportsService) CreateIssueExport(ctx context.Context, p *api.
 	}
 	return workspaceExportsRaw(json.RawMessage(`{"message":"Once the export is ready you will be able to download it"}`))
 }
-func workspaceExportCustomProperties(input djangoinput.Input) (bool, error) {
+func workspaceExportCustomProperties(input requestinput.Input) (bool, error) {
 	value, exists := input.Fields["include_custom_properties"]
 	if !exists {
 		return false, nil
@@ -213,9 +210,9 @@ func workspaceExportCustomProperties(input djangoinput.Input) (bool, error) {
 	}
 	return include, nil
 }
-func workspaceExportProjectValues(input djangoinput.Input) ([]any, error) {
+func workspaceExportProjectValues(input requestinput.Input) ([]any, error) {
 	value, ok := input.Fields["project"]
-	if !ok || !pythoncompat.Truthy(value) {
+	if !ok || !requestinput.Nonempty(value) {
 		return nil, nil
 	}
 	projects, ok := value.([]any)
@@ -268,20 +265,18 @@ func (s *workspaceExportsService) ExportAnalytics(ctx context.Context, p *api.Ex
 	return workspaceExportsRaw(json.RawMessage(fmt.Sprintf(`{"message":%s}`, strconv.Quote("Once the export is ready it will be emailed to you at "+principal.email))))
 }
 func workspaceExportsInputError(s *workspaceExportsService, err error) error {
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if errors.As(err, &httpErr) {
 		return s.error(httpErr.Status, httpErr.Body)
 	}
 	return s.internal()
 }
-func workspaceExportStringOrFalse(input djangoinput.Input, name string) (string, error) {
+func workspaceExportStringOrFalse(input requestinput.Input, name string) (string, error) {
 	value, ok := input.Fields[name]
-	if !ok || !pythoncompat.Truthy(value) {
+	if !ok || !requestinput.Nonempty(value) {
 		return "", nil
 	}
-	var sourceFields map[string]json.RawMessage
-	_ = json.Unmarshal(input.Raw, &sourceFields)
-	return pythoncompat.String(value, sourceFields[name])
+	return requestinput.Text(value)
 }
 func validAnalyticsField(value string) bool {
 	switch value {

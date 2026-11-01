@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 )
 
@@ -34,7 +34,7 @@ func (repository *Repository) PublicIssueList(ctx context.Context, scope PublicF
 	if options.GroupBy != "" && options.GroupBy == options.SubGroupBy {
 		return Result{}, failure(400, "error", "Group by and sub group by cannot have same parameters")
 	}
-	limit, page, offset, err := djangoapi.PageWindow(djangoapi.Query{Params: q.Params, Present: q.Present})
+	limit, page, offset, err := apicontract.PageWindow(apicontract.Query{Params: q.Params, Present: q.Present})
 	if err != nil {
 		return Result{}, err
 	}
@@ -51,7 +51,7 @@ func (repository *Repository) PublicIssueList(ctx context.Context, scope PublicF
 			if options.GroupBy != "" {
 				return repository.groupedPageWithVisibleRowCounts(ctx, q, []any{}, []map[string]any{}, limit, page, true)
 			}
-			return Result{Status: 200, Body: djangoapi.Envelope([]any{}, 0, limit, page)}, nil
+			return Result{Status: 200, Body: apicontract.Envelope([]any{}, 0, limit, page)}, nil
 		}
 	}
 	actorArg := any(nil)
@@ -110,8 +110,8 @@ func (repository *Repository) PublicIssueList(ctx context.Context, scope PublicF
 		from += ` LEFT JOIN module_issues selected_module ON selected_module.issue_id=issue.id AND selected_module.deleted_at IS NULL`
 		annotations += `||jsonb_build_object('issue_module__module_id',selected_module.module_id)`
 	}
-	query := `SELECT ` + djangoapi.IssueRowSQL("issue") + `||` + annotations + `||jsonb_build_object(
- 'parent_id',` + djangoapi.PublicParentSQL("issue") + `,
+	query := `SELECT ` + apicontract.IssueRowSQL("issue") + `||` + annotations + `||jsonb_build_object(
+ 'parent_id',` + apicontract.PublicParentSQL("issue") + `,
  'state__group',(SELECT public_state."group" FROM states public_state WHERE public_state.id=issue.state_id),
  'vote_items',(SELECT jsonb_agg(jsonb_build_object('vote', vote.vote, 'actor_details', jsonb_build_object(
    'id', actor.id, 'first_name', actor.first_name, 'last_name', actor.last_name, 'avatar', actor.avatar,
@@ -141,7 +141,7 @@ func (repository *Repository) PublicIssueList(ctx context.Context, scope PublicF
 			}
 			results = append(results, projected)
 		}
-		return Result{Status: 200, Body: djangoapi.Envelope(results, total, limit, page)}, nil
+		return Result{Status: 200, Body: apicontract.Envelope(results, total, limit, page)}, nil
 	}
 	rows, err := repository.rows(ctx, query, args...)
 	if err != nil {

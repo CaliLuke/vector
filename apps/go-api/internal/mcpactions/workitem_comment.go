@@ -5,14 +5,14 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 )
 
 func (s *Service) workitemCommentRead(ctx context.Context, input *api.WorkitemCommentRequest) (*api.WorkitemCommentResult, error) {
 	return readProjectResource(ctx, input, selectWorkitemCommentAction, collaborationRead{s.collaborationReads, "comments"}, nil, nil, projectWorkitemCommentResult)
 }
-func selectWorkitemCommentAction(input *api.WorkitemCommentRequest) (djangoapi.ProjectReadRequest, *string, error) {
+func selectWorkitemCommentAction(input *api.WorkitemCommentRequest) (apicontract.ProjectReadRequest, *string, error) {
 	return selectItemReadUnion(input, func(input api.WorkitemCommentRequest) itemReadSelection {
 		detail, ok := input.AsWorkitemCommentRetrieve()
 		if !ok || detail == nil {

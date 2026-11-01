@@ -12,9 +12,9 @@ import (
 	"strings"
 
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/labelhierarchy"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -26,7 +26,7 @@ const estimatePointReadSQL = `SELECT jsonb_build_object('id',ep.id,'created_at',
  FROM estimate_points ep WHERE ep.id=$1`
 
 func (r *Repository) PatchEstimate(ctx context.Context, user, slug, project, estimateID string, body io.Reader, contentType string) (_ json.RawMessage, resultErr error) {
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return nil, err
 	}
@@ -59,10 +59,10 @@ func (r *Repository) PatchEstimate(ctx context.Context, user, slug, project, est
 	if estimate, ok := input.Fields["estimate"].(map[string]any); ok && len(estimate) > 0 {
 		name, typ := any(nil), any(nil)
 		if value, present := estimate["name"]; present {
-			name = djangoinput.ScalarString(value)
+			name = requestinput.ScalarString(value)
 		}
 		if value, present := estimate["type"]; present {
-			typ = djangoinput.ScalarString(value)
+			typ = requestinput.ScalarString(value)
 		}
 		_, err = tx.Exec(ctx, `UPDATE estimates SET name=COALESCE($4,name),type=COALESCE($5,type),updated_at=clock_timestamp(),updated_by_id=$6 WHERE id=$1 AND project_id=$2 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$3)`, estimateID, project, slug, name, typ, user)
 		if err != nil {
@@ -87,7 +87,7 @@ func (r *Repository) PatchEstimate(ctx context.Context, user, slug, project, est
 			key = n
 		}
 		if v, ok := point["value"]; ok {
-			text, problems := djangoinput.CharField(v, false, nil)
+			text, problems := requestinput.CharField(v, false)
 			if len(problems) > 0 {
 				return nil, failure(400, "estimate_points", problems[0])
 			}
@@ -143,7 +143,7 @@ func (r *Repository) DeleteEstimate(ctx context.Context, user, slug, project, es
 }
 
 func (r *Repository) CreateEstimatePoint(ctx context.Context, user, slug, project, estimateID string, body io.Reader, contentType string) (json.RawMessage, error) {
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +159,7 @@ func (r *Repository) CreateEstimatePoint(ctx context.Context, user, slug, projec
 	if !valid || n < 0 {
 		return nil, failure(400, "key", "A valid integer is required.")
 	}
-	text, problems := djangoinput.CharField(value, false, nil)
+	text, problems := requestinput.CharField(value, false)
 	if len(problems) > 0 {
 		return nil, failure(400, "value", problems[0])
 	}
@@ -197,7 +197,7 @@ func (r *Repository) patchEstimatePoint(ctx context.Context, user, slug, project
 	if !exists {
 		return nil, failure(404, "error", "The required object does not exist.")
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return nil, err
 	}
@@ -215,7 +215,7 @@ func (r *Repository) patchEstimatePoint(ctx context.Context, user, slug, project
 		add("key", n)
 	}
 	if value, ok := input.Fields["value"]; ok {
-		text, problems := djangoinput.CharField(value, false, nil)
+		text, problems := requestinput.CharField(value, false)
 		if len(problems) > 0 {
 			return nil, failure(400, "value", problems[0])
 		}
@@ -267,7 +267,7 @@ func (r *Repository) DeleteEstimatePoint(ctx context.Context, user, slug, projec
 }
 
 func (r *Repository) deleteEstimatePoint(ctx context.Context, user, slug, project, estimateID, pointID string, body io.Reader, contentType string) (json.RawMessage, error) {
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return nil, err
 	}
@@ -414,7 +414,7 @@ func (r *Repository) writeAPILabel(ctx context.Context, tx pgx.Tx, user, slug, p
 	if method == http.MethodDelete {
 		return nil, deleteAPILabelTree(ctx, tx, user, slug, project, labelID)
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return nil, err
 	}
@@ -465,7 +465,7 @@ func (r *Repository) writeAPILabel(ctx context.Context, tx pgx.Tx, user, slug, p
 		if !valid {
 			parent, _ := input.FieldValue("parent", false, false, true)
 			return nil, &HTTPError{Status: http.StatusBadRequest, Body: map[string][]string{
-				"parent": {"Invalid pk \"" + djangoinput.ScalarString(parent) + "\" - object does not exist."},
+				"parent": {"Invalid pk \"" + requestinput.ScalarString(parent) + "\" - object does not exist."},
 			}}
 		}
 		values["parent_id"] = parentID
@@ -560,7 +560,7 @@ func deleteAPILabelTree(ctx context.Context, tx pgx.Tx, user, slug, project, lab
 
 // validateAPILabelFields applies serializer rules without querying the database.
 // The parsed parent remains separate until the transaction validates its scope.
-func validateAPILabelFields(input djangoinput.Input, requireName bool) (map[string]any, string, error) {
+func validateAPILabelFields(input requestinput.Input, requireName bool) (map[string]any, string, error) {
 	values := map[string]any{}
 	fieldErrors := map[string][]string{}
 	parentID := ""
@@ -576,7 +576,7 @@ func validateAPILabelFields(input djangoinput.Input, requireName bool) (map[stri
 			values[field] = nil
 			return
 		}
-		text, problems := djangoinput.TextField(value, allowBlank, maximum, nil)
+		text, problems := requestinput.TextField(value, allowBlank, maximum)
 		if len(problems) != 0 {
 			fieldErrors[field] = problems
 			return
@@ -592,9 +592,9 @@ func validateAPILabelFields(input djangoinput.Input, requireName bool) (map[stri
 		if parent == nil {
 			values["parent_id"] = nil
 		} else {
-			parsedParentID, parseErr := djangoinput.UUID(parent)
+			parsedParentID, parseErr := requestinput.UUID(parent)
 			if parseErr != nil {
-				fieldErrors["parent"] = []string{"“" + djangoinput.ScalarString(parent) + "” is not a valid UUID."}
+				fieldErrors["parent"] = []string{"“" + requestinput.ScalarString(parent) + "” is not a valid UUID."}
 			} else {
 				parentID = parsedParentID.String()
 			}
@@ -603,7 +603,7 @@ func validateAPILabelFields(input djangoinput.Input, requireName bool) (map[stri
 	if sortOrder, present := input.FieldValue("sort_order", false, false, false); present {
 		if sortOrder == nil {
 			fieldErrors["sort_order"] = []string{"This field may not be null."}
-		} else if parsed, message := djangoinput.FloatField(sortOrder); message != "" {
+		} else if parsed, message := requestinput.FloatField(sortOrder); message != "" {
 			fieldErrors["sort_order"] = []string{message}
 		} else {
 			values["sort_order"] = parsed
@@ -630,7 +630,7 @@ func nullableLabelValue(values map[string]any, key string) any {
 }
 
 func (r *Repository) BulkCreateLabels(ctx context.Context, user, slug, project string, body io.Reader, contentType string) (json.RawMessage, error) {
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return nil, err
 	}
@@ -643,7 +643,7 @@ func (r *Repository) BulkCreateLabels(ctx context.Context, user, slug, project s
 		var ok bool
 		labels, ok = value.([]any)
 		if !ok {
-			return nil, failure(400, "label_data", "Expected a list of items but got type \""+djangoinput.PythonType(value)+"\".")
+			return nil, failure(400, "label_data", "Expected a list of items but got type \""+requestinput.TypeName(value)+"\".")
 		}
 	}
 	result := make([]any, 0)
@@ -654,11 +654,11 @@ func (r *Repository) BulkCreateLabels(ctx context.Context, user, slug, project s
 		}
 		name := "Migrated"
 		if value, ok := label["name"]; ok {
-			name = djangoinput.ScalarString(value)
+			name = requestinput.ScalarString(value)
 		}
 		description := "Migrated Issue"
 		if value, ok := label["description"]; ok {
-			description = djangoinput.ScalarString(value)
+			description = requestinput.ScalarString(value)
 		}
 		colorNumber, labelErr := rand.Int(rand.Reader, big.NewInt(0x1000001))
 		if labelErr != nil {

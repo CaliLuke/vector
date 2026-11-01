@@ -13,7 +13,7 @@ import (
 	storeuuid "uuid"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	store "github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	api "github.com/CaliLuke/go-plane/projectlifecycle/gen/project_lifecycle"
@@ -39,12 +39,12 @@ func (f *projectLifecycleWriteFake) CheckProjectMutation(context.Context, string
 	return nil
 }
 
-func (f *projectLifecycleWriteFake) CreateProject(context.Context, string, string, djangoinput.Input, bool) (json.RawMessage, error) {
+func (f *projectLifecycleWriteFake) CreateProject(context.Context, string, string, requestinput.Input, bool) (json.RawMessage, error) {
 	f.createCalls++
 	return json.RawMessage(`{}`), nil
 }
 
-func (f *projectLifecycleWriteFake) UpdateProject(context.Context, string, string, string, djangoinput.Input, bool, bool) (json.RawMessage, error) {
+func (f *projectLifecycleWriteFake) UpdateProject(context.Context, string, string, string, requestinput.Input, bool, bool) (json.RawMessage, error) {
 	f.updateCalls++
 	return json.RawMessage(`{}`), nil
 }

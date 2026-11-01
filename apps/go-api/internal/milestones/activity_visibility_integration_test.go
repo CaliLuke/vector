@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/CaliLuke/go-plane/internal/activityreads"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/notifications"
 	"github.com/CaliLuke/go-plane/internal/personaldashboard"
 	"github.com/CaliLuke/go-plane/internal/workitemhistory"
@@ -93,7 +93,7 @@ func (f activityReadFixture) checkFeeds(t *testing.T, db pgx.Tx, want int) {
 	}
 	insights, err := workspaceuserinsights.NewRepository(db)
 	require.NoError(t, err)
-	raw, err := insights.Activity(f.ctx, f.opts.ActorID.String(), "milestones", f.opts.ActorID.String(), nil, djangoapi.Query{Params: map[string]string{"per_page": "1"}, Present: map[string]bool{"per_page": true}})
+	raw, err := insights.Activity(f.ctx, f.opts.ActorID.String(), "milestones", f.opts.ActorID.String(), nil, apicontract.Query{Params: map[string]string{"per_page": "1"}, Present: map[string]bool{"per_page": true}})
 	require.NoError(t, err)
 	var page struct {
 		Total   int `json:"total_count"`

@@ -106,11 +106,11 @@ func newAPIV1StickyMiddlewareHandler(t *testing.T, service api.Service, dispatch
 		t.Fatal(err)
 	}
 	options := apiV1CompatibilityOptions{activityLogger: logger, activitySecret: "sticky-test-secret", bodySizeLimit: bodyLimit}
-	stack := activityReadsMiddlewareStack(options, nil, djangoSessionCookieConfig{})
+	stack := activityReadsMiddlewareStack(options, nil, browserSessionCookieConfig{})
 	server := stickiessvr.New(api.NewEndpoints(service), mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, nil, nil, policy)
-	server.Use(apiV1StickyActivityMiddlewareStack(options, nil, djangoSessionCookieConfig{}))
+	server.Use(apiV1StickyActivityMiddlewareStack(options, nil, browserSessionCookieConfig{}))
 	stickiessvr.Mount(mux, server)
-	handler := newActivityReadsProtocolMiddleware(membershipActivityProtocolDispatch{ActivityReadsProtocolAuthorizer: dispatch, stickies: service.(systemapi.APIV1StickyProtocolAuthorizer)}, policy, stack, options, djangoSessionCookieConfig{}, bodyLimit, true)(mux)
+	handler := newActivityReadsProtocolMiddleware(membershipActivityProtocolDispatch{ActivityReadsProtocolAuthorizer: dispatch, stickies: service.(systemapi.APIV1StickyProtocolAuthorizer)}, policy, stack, options, browserSessionCookieConfig{}, bodyLimit, true)(mux)
 	handler = readServicesCompatibilityMiddleware(handler)
 	handler = readServicesDjangoPathConverterMiddleware(policy, &options)(handler)
 	handler = loomhttp.RequestMetadataMiddleware(requestMetadataPolicy)(handler)

@@ -73,13 +73,13 @@ import (
 	workspaceuserinsightsapi "github.com/CaliLuke/go-plane/workspaceuserinsights/gen/workspace_user_insights"
 )
 
-type djangoSessionLifecycle interface {
+type browserSessionLifecycle interface {
 	InspectSession(context.Context, *http.Request) (bool, bool, *browsersession.SessionRefresh, string, error)
 	RefreshSession(context.Context, *http.Request, browsersession.SessionRefresh) (browsersession.SessionRefresh, error)
 }
 
 type publicProjectMetadataThrottle interface {
-	djangoSessionLifecycle
+	browserSessionLifecycle
 	AllowRequest(context.Context, *http.Request) (bool, time.Duration, bool, bool, *browsersession.SessionRefresh, string, error)
 	AllowRequestWithoutTimezone(context.Context, *http.Request) (bool, time.Duration, bool, bool, *browsersession.SessionRefresh, string, error)
 	FinalizeUnaccessedSession(context.Context, *http.Request, int) (bool, *browsersession.SessionRefresh, error)
@@ -110,7 +110,7 @@ type pendingReplacementEndpoints struct {
 	oauthRedirects                          *oauthredirectsapi.Endpoints
 	workspaceUserInsights                   *workspaceuserinsightsapi.Endpoints
 	workspaceUserInsightsMetadata           sessionResourceProtocolAuthorizer
-	readServicesAuthCookie                  djangoSessionCookieConfig
+	readServicesAuthCookie                  browserSessionCookieConfig
 	readServicesAuthSession                 authSessionLifecycle
 	workspaceExports                        *exportsapi.Endpoints
 	workspaceExportsMetadata                sessionResourceProtocolAuthorizer
@@ -141,12 +141,12 @@ type pendingReplacementEndpoints struct {
 	accountAuthenticationCSRFTrustedOrigins []string
 	csrfTokenCookie                         djangoCSRFCookieConfig
 	csrfTokenThrottle                       publicProjectMetadataThrottle
-	csrfTokenSessionCookie                  djangoSessionCookieConfig
+	csrfTokenSessionCookie                  browserSessionCookieConfig
 	csrfTokenBodyLimit                      int64
 	csrfTokenBodySet                        bool
 	userIdentity                            *useridentity.Endpoints
 	userIdentityCORS                        []string
-	userIdentityCookie                      djangoSessionCookieConfig
+	userIdentityCookie                      browserSessionCookieConfig
 	userIdentitySession                     userIdentitySessionLifecycle
 	userIdentityBodyLimit                   int64
 	userIdentityBodySet                     bool
@@ -177,8 +177,8 @@ type pendingReplacementEndpoints struct {
 	publicProjectMetadataReads              *publicprojectmetadatareads.Endpoints
 	publicFeedback                          *publicfeedback.Endpoints
 	publicProjectMetadataCORS               []string
-	publicProjectMetadataCookie             djangoSessionCookieConfig
-	publicProjectMetadataAdminCookie        djangoSessionCookieConfig
+	publicProjectMetadataCookie             browserSessionCookieConfig
+	publicProjectMetadataAdminCookie        browserSessionCookieConfig
 	publicProjectMetadataThrottle           publicProjectMetadataThrottle
 	publicProjectMetadataActivity           publicprojectmetadatareadsstore.ActivityLogger
 	publicProjectMetadataSecret             string
@@ -190,7 +190,7 @@ type pendingReplacementEndpoints struct {
 	stickyWorkspaceAuthorizer               systemapi.StickyWorkspaceAuthorizer
 	readServicesCORS                        []string
 	readServicesSession                     readServicesSessionLifecycle
-	readServicesCookie                      djangoSessionCookieConfig
+	readServicesCookie                      browserSessionCookieConfig
 	workspaceProjectReads                   *workspaceprojectreads.Endpoints
 	projectLifecycle                        *projectlifecycleapi.Endpoints
 	projectLifecycleMetadata                projectLifecycleProtocolAuthorizer

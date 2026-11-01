@@ -13,7 +13,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	store "github.com/CaliLuke/go-plane/internal/workspacewebhooks"
 	api "github.com/CaliLuke/go-plane/workspace_webhooks/gen/workspace_webhooks"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -72,7 +72,7 @@ func parseWebhookBody[T any](ctx context.Context, body io.ReadCloser) (*T, error
 	if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok {
 		contentType = metadata.Headers().Get("Content-Type")
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return nil, &api.WebhookInvalid{NonFieldErrors: []string{err.Error()}}
 	}

@@ -11,8 +11,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/workitems"
 	server "github.com/CaliLuke/go-plane/ticket_collaboration/gen/http/ticket_collaboration/server"
 	api "github.com/CaliLuke/go-plane/ticket_collaboration/gen/ticket_collaboration"
@@ -98,7 +98,7 @@ func TestCollaborationQueriesCannotReplaceResourcePaths(t *testing.T) {
 	}
 }
 func TestCollaborationNativeAuthErrorUsesSharedProtocolBody(t *testing.T) {
-	err := collaborationProtocolError(collaborationError(&djangoapi.HTTPError{Status: 401, Body: map[string]any{"detail": "credentials required"}}))
+	err := collaborationProtocolError(collaborationError(&apicontract.HTTPError{Status: 401, Body: map[string]any{"detail": "credentials required"}}))
 	var protocol *workapi.WorkItemError
 	if !errors.As(err, &protocol) || protocol.Kind != "status_401" {
 		t.Fatalf("protocol error%#v", err)
@@ -112,9 +112,9 @@ func TestCollaborationNativeAuthErrorUsesSharedProtocolBody(t *testing.T) {
 func TestCollaborationMalformedFiltersReachAuthorizedDomainValidation(t *testing.T) {
 	for _, field := range []string{"workspace__id", "issue__id"} {
 		for _, denied := range []bool{false, true} {
-			repository := &collaborationRepositorySpy{executeErr: &djangoapi.HTTPError{Status: 400, Body: map[string]any{field: []string{"Enter a valid UUID."}}}}
+			repository := &collaborationRepositorySpy{executeErr: &apicontract.HTTPError{Status: 400, Body: map[string]any{field: []string{"Enter a valid UUID."}}}}
 			if denied {
-				repository.authorizeErr = &djangoapi.HTTPError{Status: 403, Body: map[string]any{"detail": "Not permitted."}}
+				repository.authorizeErr = &apicontract.HTTPError{Status: 403, Body: map[string]any{"detail": "Not permitted."}}
 			}
 			sessions := &activitySessionStub{principal: browsersession.Principal{UserID: "reader", UserTimezone: "UTC"}}
 			path := "/api/workspaces/test/projects/00000000-0000-4000-8000-000000000001/issues/00000000-0000-4000-8000-000000000002/comments/?" + field + "=not-a-uuid"

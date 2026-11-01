@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 func (r *Repository) transferCycle(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
@@ -21,7 +21,7 @@ func (r *Repository) transferCycle(ctx context.Context, q Request, body io.Reade
 	if !truthy(raw) {
 		return Result{}, failure(400, "error", "New Cycle Id is required")
 	}
-	id, err := djangoinput.UUID(raw)
+	id, err := requestinput.UUID(raw)
 	if err != nil {
 		return Result{}, failure(400, "error", "Please provide valid detail")
 	}

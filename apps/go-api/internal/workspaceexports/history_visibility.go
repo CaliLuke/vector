@@ -1,6 +1,6 @@
 package workspaceexports
 
-import "github.com/CaliLuke/go-plane/internal/djangoapi"
+import "github.com/CaliLuke/go-plane/internal/apicontract"
 
 // Custom exports are private snapshots. Rechecking the recorded rows prevents
 // history from handing out a download after the actor loses any source access.
@@ -16,4 +16,4 @@ var customExportHistoryVisibleSQL = `(COALESCE(e.rich_filters->>'include_custom_
  AND (e.status<>'completed' OR jsonb_typeof(e.rich_filters->'exported_item_ids')='array')
  AND NOT EXISTS(SELECT 1 FROM jsonb_array_elements_text(
   CASE WHEN jsonb_typeof(e.rich_filters->'exported_item_ids')='array' THEN e.rich_filters->'exported_item_ids' ELSE '[]'::jsonb END
- ) exported(id) WHERE NOT EXISTS(SELECT 1 FROM issues i WHERE i.id::text=exported.id AND ` + djangoapi.IssueVisibleSQL("i", "$4::uuid", "e.workspace_id") + `))))`
+ ) exported(id) WHERE NOT EXISTS(SELECT 1 FROM issues i WHERE i.id::text=exported.id AND ` + apicontract.IssueVisibleSQL("i", "$4::uuid", "e.workspace_id") + `))))`

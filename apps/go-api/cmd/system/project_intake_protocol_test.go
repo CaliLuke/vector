@@ -97,7 +97,7 @@ func TestIntakeMixedProtocolAppliesSlashlessAndOptionsCompatibility(t *testing.T
 		intakeProtocolAuthorizer{},
 		loomhttp.RuntimeCORSPolicy{},
 		func(next http.Handler) http.Handler { return next },
-		djangoSessionCookieConfig{Name: "session-id", Configured: true},
+		browserSessionCookieConfig{Name: "session-id", Configured: true},
 		false,
 		apiV1CompatibilityOptions{},
 	)(handler)

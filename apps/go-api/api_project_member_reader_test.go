@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	api "github.com/CaliLuke/go-plane/projectmembershiplifecycle/gen/project_membership_lifecycle"
 	"github.com/CaliLuke/loom/security"
 	"github.com/google/uuid"
@@ -34,7 +34,7 @@ func TestProjectRosterHTTPUsesTheSharedAuthorizedApplication(t *testing.T) {
 			repository := &projectMembershipLifecycleRepositoryStub{result: []any{map[string]any{"id": actor.String(), "display_name": "Alice"}}}
 			throttle := projectRosterThrottle{beforeRead: func() {
 				if tc.revoke {
-					repository.authorizeErr = &djangoapi.HTTPError{Status: http.StatusForbidden, Body: map[string]any{"detail": "forbidden"}}
+					repository.authorizeErr = &apicontract.HTTPError{Status: http.StatusForbidden, Body: map[string]any{"detail": "forbidden"}}
 				}
 			}}
 			service, err := NewProjectMembershipLifecycle(repository,

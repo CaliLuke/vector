@@ -46,7 +46,7 @@ func mountProjectPublication(
 	cors loomhttp.RuntimeCORSPolicy,
 	options apiV1CompatibilityOptions,
 	sessions readServicesSessionLifecycle,
-	cookie djangoSessionCookieConfig,
+	cookie browserSessionCookieConfig,
 ) {
 	server := projectpublicationsvr.New(endpoints, mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil, cors)
 	stack := func(protocol readServiceProtocol, next http.Handler) http.Handler {

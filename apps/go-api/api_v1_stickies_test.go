@@ -17,7 +17,7 @@ import (
 
 	api "github.com/CaliLuke/go-plane/apiv1stickies/gen/api_v1_stickies"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	stickystore "github.com/CaliLuke/go-plane/internal/stickies"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -27,7 +27,7 @@ import (
 func TestAPIV1StickyPUTAllowsOmittedSerializerFields(t *testing.T) {
 	stripped := "preserved text"
 	current := stickystore.Sticky{DescriptionHTML: "<p>preserved text</p>", DescriptionStripped: &stripped}
-	patch, failures := apiV1StickyPatchFields(djangoinput.Input{Fields: map[string]any{}}, current, true, time.UTC)
+	patch, failures := apiV1StickyPatchFields(requestinput.Input{Fields: map[string]any{}}, current, true, time.UTC)
 	if len(failures) != 0 {
 		t.Fatalf("empty PUT field failures = %#v", failures)
 	}
@@ -220,7 +220,7 @@ func TestAPIV1StickyListRejectsNonpositivePerPageBeforeCursorParsing(t *testing.
 			if !errors.As(err, &response) || response.Name != "status_400" {
 				t.Fatalf("List error = %#v, want status 400", err)
 			}
-			if got, want := string(response.Body), `{"detail":"Error in parsing"}`; got != want {
+			if got, want := string(response.Body), `{"detail":"per_page must be an integer from 1 to 1000."}`; got != want {
 				t.Fatalf("List error body = %s, want %s", got, want)
 			}
 			if repository.listCalls != 0 {
@@ -633,7 +633,7 @@ func TestAPIV1StickyPermissionAndDeletedWorkspacePrecedeMalformedPK(t *testing.T
 
 func TestAPIV1StickySerializerNullAndWritableAuditFields(t *testing.T) {
 	owner := uuid.MustParse("0198a28d-d227-7752-82ac-bc4c1c290702")
-	input := djangoinput.Input{Fields: map[string]any{
+	input := requestinput.Input{Fields: map[string]any{
 		"created_by":       owner.String(),
 		"deleted_at":       nil,
 		"description_html": "<p>updated</p>",
@@ -651,7 +651,7 @@ func TestAPIV1StickySerializerNullAndWritableAuditFields(t *testing.T) {
 	if patch.DescriptionHTML == nil || *patch.DescriptionHTML != "<p>updated</p>" {
 		t.Fatalf("description_html = %#v", patch.DescriptionHTML)
 	}
-	input = djangoinput.Input{Fields: map[string]any{"description": nil}}
+	input = requestinput.Input{Fields: map[string]any{"description": nil}}
 	_, failures = apiV1StickyPatchFields(input, stickystore.Sticky{}, false, time.UTC)
 	if failures["description"] == nil {
 		t.Fatalf("null description should fail validation, got %#v", failures)
@@ -671,7 +671,7 @@ func TestAPIV1StickyDeletedAtUsesDjangoDateTimeParsing(t *testing.T) {
 
 func TestAPIV1StickyInvalidDeletedAtUsesExactDRFMessage(t *testing.T) {
 	_, failures := apiV1StickyPatchFields(
-		djangoinput.Input{Fields: map[string]any{"deleted_at": "not-a-datetime"}},
+		requestinput.Input{Fields: map[string]any{"deleted_at": "not-a-datetime"}},
 		stickystore.Sticky{},
 		false,
 		time.UTC,

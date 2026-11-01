@@ -246,7 +246,7 @@ func workItemProtocolMiddleware(
 	authorizer systemapi.WorkItemProtocolAuthorizer,
 	policy loomhttp.RuntimeCORSPolicy,
 	stack func(http.Handler) http.Handler,
-	cookie djangoSessionCookieConfig,
+	cookie browserSessionCookieConfig,
 ) func(http.Handler) http.Handler {
 	ordinary := policy.Handler(loomhttp.AsHandlerFunc(stack(http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		protocol, matched := resolveReadServiceProtocolForMethod(request.URL.Path, request.Method)

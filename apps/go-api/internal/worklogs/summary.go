@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/jackc/pgx/v5"
 )
@@ -27,7 +27,7 @@ func (r *Repository) Summary(ctx context.Context, q Query) (_ json.RawMessage, r
 	if !allowed {
 		return nil, projectmutations.ErrForbidden
 	}
-	rows, err := tx.Query(ctx, `SELECT jsonb_build_object('issue_id',l.issue_id,'duration',sum(l.duration::bigint)*60) FROM work_logs l JOIN issues i ON i.id=l.issue_id AND i.project_id=l.project_id AND i.workspace_id=l.workspace_id WHERE l.workspace_id=$1 AND l.project_id=$2 AND l.deleted_at IS NULL AND `+djangoapi.IssueVisibleSQL("i", "$3::uuid", "$1::uuid")+` GROUP BY l.issue_id ORDER BY l.issue_id`, q.WorkspaceID, q.ProjectID, q.ActorID)
+	rows, err := tx.Query(ctx, `SELECT jsonb_build_object('issue_id',l.issue_id,'duration',sum(l.duration::bigint)*60) FROM work_logs l JOIN issues i ON i.id=l.issue_id AND i.project_id=l.project_id AND i.workspace_id=l.workspace_id WHERE l.workspace_id=$1 AND l.project_id=$2 AND l.deleted_at IS NULL AND `+apicontract.IssueVisibleSQL("i", "$3::uuid", "$1::uuid")+` GROUP BY l.issue_id ORDER BY l.issue_id`, q.WorkspaceID, q.ProjectID, q.ActorID)
 	if err != nil {
 		return nil, err
 	}

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
@@ -21,9 +21,9 @@ func (r *LifecycleRepository) MutateResource(ctx context.Context, cmd projectmut
 	var validation map[string]any
 	switch cmd.Action {
 	case "create":
-		create, validation = ValidateCreateInput(cmd.Fields, nil, true)
+		create, validation = ValidateCreateInput(cmd.Fields, true)
 	case "update":
-		cmd.Fields, validation = ValidatePatchInput(cmd.Fields, nil, true)
+		cmd.Fields, validation = ValidatePatchInput(cmd.Fields, true)
 	case "manage_workitems", "transfer_workitems":
 		var err error
 		cmd.Fields, err = workitems.NormalizePlanningFields(cmd.Action, cmd.Fields)
@@ -36,7 +36,7 @@ func (r *LifecycleRepository) MutateResource(ctx context.Context, cmd projectmut
 		}
 	}
 	if len(validation) > 0 {
-		return projectmutations.Result{}, &djangoapi.HTTPError{Status: 400, Body: validation}
+		return projectmutations.Result{}, &apicontract.HTTPError{Status: 400, Body: validation}
 	}
 	db, ok := r.database.(mutationreceipts.Database)
 	if !ok {

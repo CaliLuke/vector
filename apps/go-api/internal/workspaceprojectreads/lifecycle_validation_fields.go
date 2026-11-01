@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	"github.com/go-json-experiment/json/jsontext"
 )
@@ -14,7 +14,7 @@ import (
 // projectFieldValidation collects normalized values and field errors for one request.
 // Relationship scope checks run only after field validation succeeds.
 type projectFieldValidation struct {
-	input    djangoinput.Input
+	input    requestinput.Input
 	values   map[string]any
 	failures map[string]any
 }
@@ -62,7 +62,7 @@ func (v *projectFieldValidation) text(key string, required, blank, nullable bool
 		}
 		return
 	}
-	value, messages := djangoinput.TextField(raw, blank, max, v.input.Surrogates[key])
+	value, messages := requestinput.TextField(raw, blank, max)
 	if len(messages) > 0 {
 		v.failures[key] = messages
 		return
@@ -72,7 +72,7 @@ func (v *projectFieldValidation) text(key string, required, blank, nullable bool
 
 func (v *projectFieldValidation) timezone() error {
 	if raw, present := v.input.FieldValue("timezone", false, false, false); present {
-		zone, err := projectFieldErrorString(v.input, "timezone", raw)
+		zone, err := projectFieldErrorString(raw)
 		if err != nil {
 			return err
 		}
@@ -116,7 +116,7 @@ func (v *projectFieldValidation) durations() {
 			v.failures[key] = []string{"This field may not be null."}
 			continue
 		}
-		number, err := djangoinput.IntegerField(raw)
+		number, err := requestinput.IntegerField(raw)
 		if err != nil || !number.IsInt64() {
 			v.failures[key] = []string{"A valid integer is required."}
 			continue
@@ -163,7 +163,7 @@ func (v *projectFieldValidation) jsonFields(app bool) {
 
 func (v *projectFieldValidation) network() error {
 	if raw, present := v.input.FieldValue("network", false, false, false); present {
-		choice, err := projectFieldErrorString(v.input, "network", raw)
+		choice, err := projectFieldErrorString(raw)
 		if err != nil {
 			return err
 		}
@@ -184,8 +184,8 @@ func (v *projectFieldValidation) network() error {
 }
 
 func (v *projectFieldValidation) descriptionHTML() error {
-	if raw, present := v.values["description_html"]; present && pythoncompat.Truthy(raw) {
-		text, err := pythoncompat.String(raw, v.input.JSONFieldSource("description_html"))
+	if raw, present := v.values["description_html"]; present && requestinput.Nonempty(raw) {
+		text, err := requestinput.Text(raw)
 		if err != nil {
 			return err
 		}
@@ -200,12 +200,12 @@ func (v *projectFieldValidation) descriptionHTML() error {
 	return nil
 }
 
-func projectFieldErrorString(input djangoinput.Input, field string, value any) (string, error) {
+func projectFieldErrorString(value any) (string, error) {
 	switch value.(type) {
 	case []any, map[string]any:
-		return pythoncompat.String(value, input.JSONFieldSource(field))
+		return requestinput.Text(value)
 	default:
-		return djangoinput.ScalarString(value), nil
+		return requestinput.ScalarString(value), nil
 	}
 }
 
@@ -214,7 +214,7 @@ func projectBoolean(raw any) (bool, bool) {
 	case bool:
 		return v, true
 	case json.Number:
-		label := djangoinput.ScalarString(v)
+		label := requestinput.ScalarString(v)
 		if label == "1" || label == "1.0" {
 			return true, true
 		}
@@ -248,14 +248,14 @@ func normalizeProjectJSONField(value any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	normalized, err := pythoncompat.NormalizeJSONNumbers(raw)
-	if err != nil {
+	// Property numbers must fit the browser's finite numeric range. Validate
+	// that range separately so the returned value keeps its exact decimal text.
+	var browserValue any
+	if err := json.Unmarshal(raw, &browserValue); err != nil {
 		return nil, err
 	}
-	decoder := json.NewDecoder(strings.NewReader(string(normalized)))
-	decoder.UseNumber()
 	var decoded any
-	if err := decoder.Decode(&decoded); err != nil {
+	if err := apicontract.DecodeJSON(raw, &decoded); err != nil {
 		return nil, err
 	}
 	return decoded, nil
@@ -265,7 +265,7 @@ func normalizeProjectJSONField(value any) (any, error) {
 // request decoder can replace lone-surrogate escapes with U+FFFD. Duplicate
 // names remain valid; an invalid escape in an overwritten duplicate is still
 // rejected as part of validating the submitted field source.
-func projectJSONFieldUnicodeValid(input djangoinput.Input, field string) bool {
+func projectJSONFieldUnicodeValid(input requestinput.Input, field string) bool {
 	source := input.JSONFieldSource(field)
 	if len(source) == 0 {
 		value, present := input.Fields[field]

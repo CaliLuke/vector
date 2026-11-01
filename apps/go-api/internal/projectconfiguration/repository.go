@@ -12,9 +12,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -39,7 +39,7 @@ func failure(status int, field, message string) error {
 	return &HTTPError{Status: status, Body: map[string]any{field: message}}
 }
 
-func requireObjectInput(input djangoinput.Input) error {
+func requireObjectInput(input requestinput.Input) error {
 	if input.Kind != "" || input.Null {
 		return failure(http.StatusBadRequest, "error", "Please provide valid detail")
 	}
@@ -60,7 +60,7 @@ func (r *Repository) DatabaseQueryRow(ctx context.Context, query string, args ..
 }
 
 func (r *Repository) Authorize(ctx context.Context, user, slug, project string, write bool) error {
-	allowed, err := djangoapi.ProjectEntityAllowed(ctx, r.db, user, slug, project, write)
+	allowed, err := apicontract.ProjectEntityAllowed(ctx, r.db, user, slug, project, write)
 	if err != nil {
 		return fmt.Errorf("authorize project configuration request: %w", err)
 	}
@@ -73,7 +73,7 @@ func (r *Repository) Authorize(ctx context.Context, user, slug, project string, 
 // AuthorizeAPIV1 applies ProjectMemberPermission: any active project member may
 // access API v1 labels, without the app ProjectEntityPermission role threshold.
 func (r *Repository) AuthorizeAPIV1(ctx context.Context, user, slug, project string) error {
-	allowed, err := djangoapi.ProjectEntityAllowed(ctx, r.db, user, slug, project, false)
+	allowed, err := apicontract.ProjectEntityAllowed(ctx, r.db, user, slug, project, false)
 	if err != nil {
 		return fmt.Errorf("authorize API v1 project label request: %w", err)
 	}
@@ -87,7 +87,7 @@ func (r *Repository) AuthorizeAPIV1(ctx context.Context, user, slug, project str
 // The old Django handler persisted the estimate before point validation; the
 // parity correction preserves the response while preventing that partial write.
 func (r *Repository) CreateEstimate(ctx context.Context, user, slug, project string, body io.Reader, contentType string) (_ json.RawMessage, resultErr error) {
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return nil, err
 	}
@@ -102,14 +102,14 @@ func (r *Repository) CreateEstimate(ctx context.Context, user, slug, project str
 	if !exists {
 		name = randomEstimateName()
 	}
-	nameText := djangoinput.ScalarString(name)
+	nameText := requestinput.ScalarString(name)
 	typeValue := "categories"
 	if value, present := estimate["type"]; present {
-		typeValue = djangoinput.ScalarString(value)
+		typeValue = requestinput.ScalarString(value)
 	}
 	var lastUsed any = false
 	if value, present := estimate["last_used"]; present {
-		if parsed, problem := djangoinput.BooleanField(value); problem == "" {
+		if parsed, problem := requestinput.BooleanField(value); problem == "" {
 			lastUsed = parsed
 		} else {
 			lastUsed = value
@@ -120,14 +120,14 @@ func (r *Repository) CreateEstimate(ctx context.Context, user, slug, project str
 		var valid bool
 		points, valid = value.([]any)
 		if !valid {
-			return nil, failure(400, "estimate_points", "Expected a list of items but got type \""+djangoinput.PythonType(value)+"\".")
+			return nil, failure(400, "estimate_points", "Expected a list of items but got type \""+requestinput.TypeName(value)+"\".")
 		}
 	}
 	validated := make([]estimatePointInput, len(points))
 	for index, raw := range points {
 		point, valid := raw.(map[string]any)
 		if !valid {
-			return nil, failure(400, "estimate_points", "Expected a dictionary of items but got type \""+djangoinput.PythonType(raw)+"\".")
+			return nil, failure(400, "estimate_points", "Expected a dictionary of items but got type \""+requestinput.TypeName(raw)+"\".")
 		}
 		key, keyExists := point["key"]
 		keyNumber, keyValid := int64(0), true
@@ -141,7 +141,7 @@ func (r *Repository) CreateEstimate(ctx context.Context, user, slug, project str
 		if !valueExists {
 			return nil, failure(400, "estimate_points", "This field is required.")
 		}
-		value, fieldErrors := djangoinput.CharField(rawValue, false, nil)
+		value, fieldErrors := requestinput.CharField(rawValue, false)
 		if len(fieldErrors) > 0 {
 			return nil, failure(400, "estimate_points", fieldErrors[0])
 		}
@@ -211,7 +211,7 @@ func integerValue(value any) (int64, bool) {
 	case int64:
 		return v, true
 	case string:
-		n, err := djangoinput.IntegerField(v)
+		n, err := requestinput.IntegerField(v)
 		if err != nil || !n.IsInt64() {
 			return 0, false
 		}

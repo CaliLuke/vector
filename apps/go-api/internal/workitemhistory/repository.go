@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/google/uuid"
@@ -139,7 +139,7 @@ func (repository *Repository) versions(ctx context.Context, request Request) (js
 		return nil, err
 	}
 	if page.limit <= 0 {
-		return nil, &djangoapi.HTTPError{Status: 500, Body: map[string]any{"error": "Something went wrong please try again later"}}
+		return nil, &apicontract.HTTPError{Status: 500, Body: map[string]any{"error": "Something went wrong please try again later"}}
 	}
 	offset, err := page.offset()
 	if err != nil {
@@ -169,7 +169,7 @@ func (repository *Repository) descriptionVersions(ctx context.Context, request R
 		return nil, err
 	}
 	if page.limit <= 0 {
-		return nil, &djangoapi.HTTPError{Status: 500, Body: map[string]any{"error": "Something went wrong please try again later"}}
+		return nil, &apicontract.HTTPError{Status: 500, Body: map[string]any{"error": "Something went wrong please try again later"}}
 	}
 	offset, err := page.offset()
 	if err != nil {
@@ -232,7 +232,7 @@ func (repository *Repository) history(ctx context.Context, request Request) (jso
 	if request.CreatedAtGT != nil && *request.CreatedAtGT != "" {
 		parsed, err := pythoncompat.ISODateTime(*request.CreatedAtGT, time.UTC)
 		if err != nil {
-			return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Please provide valid detail"}}
+			return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Please provide valid detail"}}
 		}
 		createdAfter = parsed
 	}
@@ -292,7 +292,7 @@ func parseCursor(raw *string) (cursorPage, error) {
 }
 
 func invalidCursor() error {
-	return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"detail": "Invalid cursor parameter."}}
+	return &apicontract.HTTPError{Status: 400, Body: map[string]any{"detail": "Invalid cursor parameter."}}
 }
 
 func scannedJSON(data []byte, err error, operation string) (json.RawMessage, error) {
@@ -367,7 +367,7 @@ SELECT jsonb_build_object(
 ) FROM totals LEFT JOIN page ON true GROUP BY totals.total`
 
 var issueVersionDetailSQL = `SELECT jsonb_build_object(
- 'id',v.id,'workspace',v.workspace_id,'project',v.project_id,'issue',v.issue_id,'parent',(SELECT related.id FROM issues related WHERE related.id=v.parent AND ` + djangoapi.IssueVisibleSQL("related", "$5::uuid", "v.workspace_id") + `),'state',v.state,
+ 'id',v.id,'workspace',v.workspace_id,'project',v.project_id,'issue',v.issue_id,'parent',(SELECT related.id FROM issues related WHERE related.id=v.parent AND ` + apicontract.IssueVisibleSQL("related", "$5::uuid", "v.workspace_id") + `),'state',v.state,
  'estimate_point',v.estimate_point,'name',v.name,'priority',v.priority,'start_date',v.start_date,'target_date',v.target_date,
  'assignees',v.assignees,'sequence_id',v.sequence_id,'labels',v.labels,'sort_order',v.sort_order,'completed_at',v.completed_at,
  'archived_at',v.archived_at,'is_draft',v.is_draft,'external_source',v.external_source,'external_id',v.external_id,'type',v.type,
@@ -400,10 +400,10 @@ const descriptionVersionDetailSQL = `SELECT jsonb_build_object(
 var activityBase = `((to_jsonb(a)-'workspace_id'-'project_id'-'issue_id'-'issue_comment_id'-'actor_id'-'created_by_id'-'updated_by_id') || jsonb_build_object(
  'workspace',a.workspace_id,'project',a.project_id,'issue',a.issue_id,'issue_comment',a.issue_comment_id,'actor',a.actor_id,
  'created_by',a.created_by_id,'updated_by',a.updated_by_id,
- 'actor_detail',COALESCE((SELECT jsonb_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'avatar',u.avatar,'is_bot',u.is_bot,'display_name',u.display_name)||` + djangoapi.FileAssetURLFieldSQL("u.avatar_asset_id", "u.avatar", "avatar_url") + ` FROM users u WHERE u.id=a.actor_id),'{}'::jsonb),
+ 'actor_detail',COALESCE((SELECT jsonb_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'avatar',u.avatar,'is_bot',u.is_bot,'display_name',u.display_name)||` + apicontract.FileAssetURLFieldSQL("u.avatar_asset_id", "u.avatar", "avatar_url") + ` FROM users u WHERE u.id=a.actor_id),'{}'::jsonb),
  'issue_detail',(SELECT jsonb_build_object('id',i.id,'name',i.name,'description_json',i.description_json,'description_html',i.description_html,'priority',i.priority,'start_date',i.start_date,'target_date',i.target_date,'sequence_id',i.sequence_id,'sort_order',i.sort_order,'is_draft',i.is_draft) FROM issues i WHERE i.id=a.issue_id),
- 'project_detail',(SELECT jsonb_build_object('id',p.id,'identifier',p.identifier,'name',p.name,'cover_image',p.cover_image,'logo_props',p.logo_props,'description',p.description)||` + djangoapi.FileAssetURLFieldSQL("p.cover_image_asset_id", "p.cover_image", "cover_image_url") + ` FROM projects p WHERE p.id=a.project_id),
- 'workspace_detail',(SELECT jsonb_build_object('name',w.name,'slug',w.slug,'id',w.id)||` + djangoapi.FileAssetURLFieldSQL("w.logo_asset_id", "w.logo", "logo_url") + ` FROM workspaces w WHERE w.id=a.workspace_id),
+ 'project_detail',(SELECT jsonb_build_object('id',p.id,'identifier',p.identifier,'name',p.name,'cover_image',p.cover_image,'logo_props',p.logo_props,'description',p.description)||` + apicontract.FileAssetURLFieldSQL("p.cover_image_asset_id", "p.cover_image", "cover_image_url") + ` FROM projects p WHERE p.id=a.project_id),
+ 'workspace_detail',(SELECT jsonb_build_object('name',w.name,'slug',w.slug,'id',w.id)||` + apicontract.FileAssetURLFieldSQL("w.logo_asset_id", "w.logo", "logo_url") + ` FROM workspaces w WHERE w.id=a.workspace_id),
  'source_data',(SELECT jsonb_build_object('source',ii.source,'source_email',ii.source_email,'extra',ii.extra) FROM intake_issues ii WHERE ii.issue_id=a.issue_id AND ii.deleted_at IS NULL ORDER BY ii.created_at DESC LIMIT 1)
  ))` + parentActivityVisibilitySQL()
 
@@ -417,10 +417,10 @@ var activityBaseWithoutSourceData = strings.Replace(
 var commentBase = `((to_jsonb(c)-'workspace_id'-'project_id'-'issue_id'-'description_id'-'actor_id'-'parent_id'-'created_by_id'-'updated_by_id') || jsonb_build_object(
  'workspace',c.workspace_id,'project',c.project_id,'issue',c.issue_id,'description',c.description_id,'actor',c.actor_id,'parent',c.parent_id,
  'created_by',c.created_by_id,'updated_by',c.updated_by_id,
- 'actor_detail',COALESCE((SELECT jsonb_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'avatar',u.avatar,'is_bot',u.is_bot,'display_name',u.display_name)||` + djangoapi.FileAssetURLFieldSQL("u.avatar_asset_id", "u.avatar", "avatar_url") + ` FROM users u WHERE u.id=c.actor_id),'{}'::jsonb),
+ 'actor_detail',COALESCE((SELECT jsonb_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'avatar',u.avatar,'is_bot',u.is_bot,'display_name',u.display_name)||` + apicontract.FileAssetURLFieldSQL("u.avatar_asset_id", "u.avatar", "avatar_url") + ` FROM users u WHERE u.id=c.actor_id),'{}'::jsonb),
  'issue_detail',(SELECT jsonb_build_object('id',i.id,'name',i.name,'description_json',i.description_json,'description_html',i.description_html,'priority',i.priority,'start_date',i.start_date,'target_date',i.target_date,'sequence_id',i.sequence_id,'sort_order',i.sort_order,'is_draft',i.is_draft) FROM issues i WHERE i.id=c.issue_id),
- 'project_detail',(SELECT jsonb_build_object('id',p.id,'identifier',p.identifier,'name',p.name,'cover_image',p.cover_image,'logo_props',p.logo_props,'description',p.description)||` + djangoapi.FileAssetURLFieldSQL("p.cover_image_asset_id", "p.cover_image", "cover_image_url") + ` FROM projects p WHERE p.id=c.project_id),
- 'workspace_detail',(SELECT jsonb_build_object('name',w.name,'slug',w.slug,'id',w.id)||` + djangoapi.FileAssetURLFieldSQL("w.logo_asset_id", "w.logo", "logo_url") + ` FROM workspaces w WHERE w.id=c.workspace_id),
+ 'project_detail',(SELECT jsonb_build_object('id',p.id,'identifier',p.identifier,'name',p.name,'cover_image',p.cover_image,'logo_props',p.logo_props,'description',p.description)||` + apicontract.FileAssetURLFieldSQL("p.cover_image_asset_id", "p.cover_image", "cover_image_url") + ` FROM projects p WHERE p.id=c.project_id),
+ 'workspace_detail',(SELECT jsonb_build_object('name',w.name,'slug',w.slug,'id',w.id)||` + apicontract.FileAssetURLFieldSQL("w.logo_asset_id", "w.logo", "logo_url") + ` FROM workspaces w WHERE w.id=c.workspace_id),
  'comment_reactions',COALESCE((SELECT jsonb_agg((to_jsonb(cr)-'workspace_id'-'project_id'-'comment_id'-'actor_id'-'created_by_id'-'updated_by_id')||jsonb_build_object('workspace',cr.workspace_id,'project',cr.project_id,'comment',cr.comment_id,'actor',cr.actor_id,'created_by',cr.created_by_id,'updated_by',cr.updated_by_id,'display_name',(SELECT u.display_name FROM users u WHERE u.id=cr.actor_id)) ORDER BY cr.created_at DESC) FROM comment_reactions cr WHERE cr.comment_id=c.id AND cr.deleted_at IS NULL),'[]'::jsonb)
  ))`
 

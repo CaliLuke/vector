@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -221,6 +221,6 @@ CREATE TEMP TABLE file_assets (
 }
 
 func isPublicNotFound(err error) bool {
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	return errors.As(err, &httpErr) && httpErr.Status == 404
 }

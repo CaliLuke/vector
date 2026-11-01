@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
@@ -69,7 +69,7 @@ func (s *Service) readWorkitemType(ctx context.Context, in workitemTypeInput) (l
 		}
 	}
 	if in.action == "list" && scope.ProjectID != uuid.Nil {
-		params := djangoapi.Query{Params: map[string]string{}, Present: map[string]bool{}}
+		params := apicontract.Query{Params: map[string]string{}, Present: map[string]bool{}}
 		if in.perPage != nil && *in.perPage != 0 {
 			params.Params["per_page"] = strconv.Itoa(*in.perPage)
 			params.Present["per_page"] = true
@@ -78,11 +78,11 @@ func (s *Service) readWorkitemType(ctx context.Context, in workitemTypeInput) (l
 			params.Params["cursor"] = *in.cursor
 			params.Present["cursor"] = true
 		}
-		query.Limit, err = djangoapi.PageSizeWithMinimum(params, 1)
+		query.Limit, err = apicontract.PageSize(params)
 		if err != nil {
 			return loom.Nullable[api.WorkitemTypeResult]{}, api.MakeInvalidParams(errors.New("invalid page size"))
 		}
-		page, parseErr := djangoapi.CursorPage(params, query.Limit)
+		page, parseErr := apicontract.CursorPage(params, query.Limit)
 		if parseErr != nil || page < 0 || page > math.MaxInt/query.Limit {
 			return loom.Nullable[api.WorkitemTypeResult]{}, api.MakeInvalidParams(errors.New("invalid cursor"))
 		}

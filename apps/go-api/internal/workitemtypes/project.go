@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -33,7 +33,7 @@ func authorizeProject(ctx context.Context, tx pgx.Tx, actor, slug, project strin
 	if err != nil {
 		return "", false, err
 	}
-	allowed, err := djangoapi.ProjectEntityAllowed(ctx, tx, actor, slug, project, false)
+	allowed, err := apicontract.ProjectEntityAllowed(ctx, tx, actor, slug, project, false)
 	if err != nil {
 		return "", false, err
 	}

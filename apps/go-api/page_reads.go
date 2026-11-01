@@ -13,10 +13,10 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/page_reads"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/pagereads"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	loomhttp "github.com/CaliLuke/loom/http"
 	"github.com/CaliLuke/loom/security"
 )
@@ -42,7 +42,7 @@ type pageReadsRepository interface {
 type pageLifecycleRepository interface {
 	AuthorizeLifecycle(context.Context, string, uuid.UUID, string, uuid.UUID, uuid.UUID) error
 	ValidateLifecycleHandler(context.Context, string, uuid.UUID, string, uuid.UUID, uuid.UUID) error
-	Lifecycle(context.Context, string, uuid.UUID, string, uuid.UUID, uuid.UUID, string, djangoinput.Input) (int, json.RawMessage, error)
+	Lifecycle(context.Context, string, uuid.UUID, string, uuid.UUID, uuid.UUID, string, requestinput.Input) (int, json.RawMessage, error)
 }
 
 type pageReadsSessions interface {
@@ -331,7 +331,7 @@ func pageReadsOptionsError(err error) error {
 	if errors.As(err, &lifecycle) && lifecycle.Status == http.StatusForbidden {
 		return &api.PageReadsForbidden{Detail: "You do not have permission to perform this action."}
 	}
-	var source *djangoapi.HTTPError
+	var source *apicontract.HTTPError
 	if errors.As(err, &source) && source.Status == http.StatusForbidden {
 		return &api.PageReadsForbidden{Detail: "You do not have permission to perform this action."}
 	}

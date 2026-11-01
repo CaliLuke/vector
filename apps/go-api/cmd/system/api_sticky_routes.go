@@ -13,7 +13,7 @@ import (
 func apiV1StickyActivityMiddlewareStack(
 	options apiV1CompatibilityOptions,
 	sessions readServicesSessionLifecycle,
-	cookie djangoSessionCookieConfig,
+	cookie browserSessionCookieConfig,
 ) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		next = apiV1StickyProtocolHeadersMiddleware(next)

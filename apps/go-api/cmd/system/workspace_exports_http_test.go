@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	api "github.com/CaliLuke/go-plane/workspaceexports/gen/workspace_exports"
 )
 
@@ -28,7 +28,7 @@ func (r *exportMountRepository) CreateIssueExport(context.Context, string, strin
 	r.creates++
 	return json.RawMessage(`{"message":"export queued"}`), "workspace-id", "export-token", []any{"project-id"}, nil
 }
-func (r *exportMountRepository) History(context.Context, string, string, djangoapi.Query) (json.RawMessage, error) {
+func (r *exportMountRepository) History(context.Context, string, string, apicontract.Query) (json.RawMessage, error) {
 	r.reads++
 	return json.RawMessage(`{"results":[]}`), nil
 }
@@ -69,7 +69,7 @@ func TestWorkspaceExportsProductionAuthorizationAndEffects(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			handler := extensionHTTPHandler(pendingReplacementEndpoints{workspaceExports: api.NewEndpoints(service), workspaceExportsMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20})
+			handler := extensionHTTPHandler(pendingReplacementEndpoints{workspaceExports: api.NewEndpoints(service), workspaceExportsMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20})
 			request := httptest.NewRequest(tc.method, "/api/workspaces/demo/"+tc.path, strings.NewReader(tc.body))
 			request.Header.Set("Content-Type", "application/json")
 			if !tc.anonymous {

@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -77,7 +77,7 @@ func (r *LifecycleRepository) readLegacyPatchRoles(ctx context.Context, c Lifecy
 	return &legacyPatchRoles{targetRole: targetRole, targetWorkspace: targetWorkspace, requesterRole: requesterRole, admin: admin}, nil
 }
 
-func validateLegacyPatchPermissions(input djangoinput.Input, roles *legacyPatchRoles) error {
+func validateLegacyPatchPermissions(input requestinput.Input, roles *legacyPatchRoles) error {
 	if value, ok := input.Fields["role"]; ok {
 		if roles.requesterRole < 20 && !roles.admin {
 			return lifecycleFailure(403, "error", "You do not have permission to update roles")
@@ -94,7 +94,7 @@ func validateLegacyPatchPermissions(input djangoinput.Input, roles *legacyPatchR
 			if value == nil {
 				message = "This field may not be null."
 			}
-			return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"role": []string{message}}}
+			return &apicontract.HTTPError{Status: 400, Body: map[string]any{"role": []string{message}}}
 		}
 		if number.Cmp(big.NewInt(int64(roles.requesterRole))) >= 0 && !roles.admin {
 			return lifecycleFailure(403, "error", "You cannot assign a role equal to or higher than your own")
@@ -114,7 +114,7 @@ func validateLegacyPatchPermissions(input djangoinput.Input, roles *legacyPatchR
 	return lifecycleObjectError(input)
 }
 
-func (r *LifecycleRepository) prepareLegacyPatchAssignments(ctx context.Context, c LifecycleCommand, input djangoinput.Input) ([]string, []any, error) {
+func (r *LifecycleRepository) prepareLegacyPatchAssignments(ctx context.Context, c LifecycleCommand, input requestinput.Input) ([]string, []any, error) {
 	failures := map[string]any{}
 	// BaseModel.save always uses the current actor; submitted updated_by is validated below but never assigned.
 	assignments := []string{"updated_at=clock_timestamp()", "updated_by_id=$2", "workspace_id=(SELECT workspace_id FROM projects WHERE id=project_members.project_id)"}
@@ -144,7 +144,7 @@ func (r *LifecycleRepository) prepareLegacyPatchAssignments(ctx context.Context,
 		case "comment":
 			if value != nil {
 				var es []string
-				value, es = djangoinput.TextField(value, true, 0, input.Surrogates[field])
+				value, es = requestinput.TextField(value, true, 0)
 				if len(es) > 0 {
 					failure = es[0]
 				}
@@ -153,7 +153,7 @@ func (r *LifecycleRepository) prepareLegacyPatchAssignments(ctx context.Context,
 			if value == nil {
 				failure = "This field may not be null."
 			} else {
-				value, failure = djangoinput.FloatField(value)
+				value, failure = requestinput.FloatField(value)
 			}
 		case "deleted_at":
 			if value != nil {
@@ -163,7 +163,7 @@ func (r *LifecycleRepository) prepareLegacyPatchAssignments(ctx context.Context,
 						location = zone
 					}
 				}
-				parsed, e := pythoncompat.DjangoDateTime(djangoinput.ScalarString(value), location)
+				parsed, e := pythoncompat.DjangoDateTime(requestinput.ScalarString(value), location)
 				if e != nil {
 					failure = "Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."
 				} else {
@@ -175,7 +175,7 @@ func (r *LifecycleRepository) prepareLegacyPatchAssignments(ctx context.Context,
 				failure = "This field may not be null."
 			} else {
 				if input.Form {
-					decoder := json.NewDecoder(strings.NewReader(djangoinput.ScalarString(value)))
+					decoder := json.NewDecoder(strings.NewReader(requestinput.ScalarString(value)))
 					decoder.UseNumber()
 					if decodeErr := decoder.Decode(&value); decodeErr != nil {
 						failure = "Value must be valid JSON."
@@ -197,9 +197,9 @@ func (r *LifecycleRepository) prepareLegacyPatchAssignments(ctx context.Context,
 			if _, boolean := value.(bool); boolean {
 				failure = "Incorrect type. Expected pk value, received bool."
 			} else if value != nil {
-				parsed, e := djangoinput.UUID(value)
+				parsed, e := requestinput.UUID(value)
 				if e != nil {
-					failure = "“" + djangoinput.ScalarString(value) + "” is not a valid UUID."
+					failure = "“" + requestinput.ScalarString(value) + "” is not a valid UUID."
 				} else {
 					value = parsed.String()
 					var exists bool
@@ -223,15 +223,15 @@ func (r *LifecycleRepository) prepareLegacyPatchAssignments(ctx context.Context,
 		assignments = append(assignments, fmt.Sprintf("%s=$%d", column, len(args)))
 	}
 	if len(failures) > 0 {
-		return nil, nil, &djangoapi.HTTPError{Status: 400, Body: failures}
+		return nil, nil, &apicontract.HTTPError{Status: 400, Body: failures}
 	}
 	return assignments, args, nil
 }
 
 // The legacy view performs Python containment checks before passing data to
 // its serializer. Retain those guard branches for non-dictionary JSON too.
-func lifecycleLegacyPatchInput(c LifecycleCommand) (djangoinput.Input, error) {
-	input, err := djangoinput.Parse(c.Body, c.ContentType)
+func lifecycleLegacyPatchInput(c LifecycleCommand) (requestinput.Input, error) {
+	input, err := requestinput.Parse(c.Body, c.ContentType)
 	if err != nil {
 		return input, err
 	}

@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -31,28 +31,28 @@ func assetParentVisibilitySQL(asset, actor string) string {
 func parentVisibilitySQL(workspace, project, issue, comment, page, actor string) string {
 	return `(` + issue + ` IS NULL OR EXISTS(SELECT 1 FROM issues asset_issue WHERE asset_issue.id=` + issue + `
 	 AND (` + project + ` IS NULL OR asset_issue.project_id=` + project + `)
-	 AND ` + djangoapi.IssueVisibleSQL("asset_issue", actor, workspace) + `))
+	 AND ` + apicontract.IssueVisibleSQL("asset_issue", actor, workspace) + `))
 	AND (` + comment + ` IS NULL OR EXISTS(SELECT 1 FROM issue_comments asset_comment
 	 JOIN issues asset_comment_issue ON asset_comment_issue.id=asset_comment.issue_id
 	 WHERE asset_comment.id=` + comment + ` AND asset_comment.workspace_id=` + workspace + `
 	 AND (` + project + ` IS NULL OR asset_comment.project_id=` + project + `)
 	 AND (` + issue + ` IS NULL OR asset_comment.issue_id=` + issue + `)
 	 AND asset_comment.deleted_at IS NULL
-	 AND ` + djangoapi.IssueVisibleSQL("asset_comment_issue", actor, workspace) + `))
+	 AND ` + apicontract.IssueVisibleSQL("asset_comment_issue", actor, workspace) + `))
 	AND (` + page + ` IS NULL OR EXISTS(SELECT 1 FROM project_pages asset_page_link
 	 JOIN pages asset_page ON asset_page.id=asset_page_link.page_id
 	 WHERE asset_page.id=` + page + ` AND (` + project + ` IS NULL OR asset_page_link.project_id=` + project + `)
-	 AND ` + djangoapi.PageVisibleSQL("asset_page", actor, workspace, "asset_page_link.project_id") + `))`
+	 AND ` + apicontract.PageVisibleSQL("asset_page", actor, workspace, "asset_page_link.project_id") + `))`
 }
 
 func targetVisibilitySQL(entityType, actor, workspace, project, issue, comment, page string) string {
 	switch entityType {
 	case "ISSUE_ATTACHMENT", "ISSUE_DESCRIPTION":
-		return `EXISTS(SELECT 1 FROM issues target_issue WHERE target_issue.id=` + issue + ` AND ` + djangoapi.IssueVisibleSQL("target_issue", actor, workspace) + ` AND (` + project + ` IS NULL OR target_issue.project_id=` + project + `))`
+		return `EXISTS(SELECT 1 FROM issues target_issue WHERE target_issue.id=` + issue + ` AND ` + apicontract.IssueVisibleSQL("target_issue", actor, workspace) + ` AND (` + project + ` IS NULL OR target_issue.project_id=` + project + `))`
 	case "COMMENT_DESCRIPTION":
-		return `EXISTS(SELECT 1 FROM issue_comments target_comment JOIN issues target_issue ON target_issue.id=target_comment.issue_id WHERE target_comment.id=` + comment + ` AND target_comment.workspace_id=` + workspace + ` AND target_comment.deleted_at IS NULL AND (` + issue + ` IS NULL OR target_comment.issue_id=` + issue + `) AND ` + djangoapi.IssueVisibleSQL("target_issue", actor, workspace) + ` AND (` + project + ` IS NULL OR target_comment.project_id=` + project + `))`
+		return `EXISTS(SELECT 1 FROM issue_comments target_comment JOIN issues target_issue ON target_issue.id=target_comment.issue_id WHERE target_comment.id=` + comment + ` AND target_comment.workspace_id=` + workspace + ` AND target_comment.deleted_at IS NULL AND (` + issue + ` IS NULL OR target_comment.issue_id=` + issue + `) AND ` + apicontract.IssueVisibleSQL("target_issue", actor, workspace) + ` AND (` + project + ` IS NULL OR target_comment.project_id=` + project + `))`
 	case "PAGE_DESCRIPTION":
-		return `EXISTS(SELECT 1 FROM project_pages target_page_link JOIN pages target_page ON target_page.id=target_page_link.page_id WHERE target_page.id=` + page + ` AND target_page_link.deleted_at IS NULL AND (` + project + ` IS NULL OR target_page_link.project_id=` + project + `) AND ` + djangoapi.PageVisibleSQL("target_page", actor, workspace, "target_page_link.project_id") + `)`
+		return `EXISTS(SELECT 1 FROM project_pages target_page_link JOIN pages target_page ON target_page.id=target_page_link.page_id WHERE target_page.id=` + page + ` AND target_page_link.deleted_at IS NULL AND (` + project + ` IS NULL OR target_page_link.project_id=` + project + `) AND ` + apicontract.PageVisibleSQL("target_page", actor, workspace, "target_page_link.project_id") + `)`
 	default:
 		return "TRUE"
 	}
@@ -130,7 +130,7 @@ func (repository *PostgresRepository) AuthorizedWorkspaceID(ctx context.Context,
 		SELECT id FROM workspaces WHERE slug=$1 AND deleted_at IS NULL
 	`, slug).Scan(&id)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return uuid.Nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Workspace not found"}}
+		return uuid.Nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Workspace not found"}}
 	}
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("resolve asset workspace: %w", err)
@@ -142,7 +142,7 @@ func (repository *PostgresRepository) AuthorizedWorkspaceID(ctx context.Context,
 		return uuid.Nil, fmt.Errorf("check asset workspace membership: %w", err)
 	}
 	if !member {
-		return uuid.Nil, &djangoapi.HTTPError{Status: 403, Body: map[string]any{"detail": "You do not have permission to perform this action."}}
+		return uuid.Nil, &apicontract.HTTPError{Status: 403, Body: map[string]any{"detail": "You do not have permission to perform this action."}}
 	}
 	return id, nil
 }
@@ -151,7 +151,7 @@ func (repository *PostgresRepository) WorkspaceIDBySlug(ctx context.Context, slu
 	var id uuid.UUID
 	err := repository.database.QueryRow(ctx, `SELECT id FROM workspaces WHERE slug=$1 AND deleted_at IS NULL`, slug).Scan(&id)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return uuid.Nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
+		return uuid.Nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
 	}
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("resolve asset workspace: %w", err)
@@ -166,7 +166,7 @@ func (repository *PostgresRepository) RelatedWorkspaceIDBySlug(ctx context.Conte
 	var id uuid.UUID
 	err := repository.database.QueryRow(ctx, `SELECT id FROM workspaces WHERE slug=$1`, slug).Scan(&id)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return uuid.Nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
+		return uuid.Nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
 	}
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("resolve related asset workspace: %w", err)
@@ -331,7 +331,7 @@ func (repository *PostgresRepository) CreateWorkspaceUpload(ctx context.Context,
 	if projectID != "" {
 		parsed, err := uuid.Parse(projectID)
 		if err != nil {
-			return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"project_id": []string{"Must be a valid UUID."}}}
+			return &apicontract.HTTPError{Status: 400, Body: map[string]any{"project_id": []string{"Must be a valid UUID."}}}
 		}
 		project = parsed
 	}
@@ -354,7 +354,7 @@ func (repository *PostgresRepository) CreateIssueAttachment(ctx context.Context,
 		INSERT INTO file_assets
 			 (id,created_at,updated_at,attributes,asset,workspace_id,project_id,issue_id,entity_type,external_id,external_source,size,is_uploaded,is_deleted,is_archived,storage_metadata,created_by_id)
 		SELECT $1,NOW(),NOW(),$2::jsonb,$3,$4,$5,$6,'ISSUE_ATTACHMENT',NULLIF($7,''),NULLIF($8,''),$9,false,false,false,'{}'::jsonb,$10
- WHERE EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$6 AND attachment_item.project_id=$5 AND `+djangoapi.IssueVisibleSQL("attachment_item", "$10::uuid", "$4::uuid")+`)
+ WHERE EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$6 AND attachment_item.project_id=$5 AND `+apicontract.IssueVisibleSQL("attachment_item", "$10::uuid", "$4::uuid")+`)
 	`, id, attributes, key, workspaceID, projectID, issueID, externalID, externalSource, float64(size), userID)
 	if err != nil {
 		return fmt.Errorf("insert issue attachment FileAsset: %w", err)
@@ -368,7 +368,7 @@ func (repository *PostgresRepository) CreateIssueAttachment(ctx context.Context,
 func (repository *PostgresRepository) IssueAttachmentExternal(ctx context.Context, userID, workspaceID, projectID, issueID uuid.UUID, externalID, externalSource string) (uuid.UUID, bool, error) {
 	var id uuid.UUID
 	err := repository.database.QueryRow(ctx, `SELECT file.id FROM file_assets file WHERE file.workspace_id=$1 AND file.project_id=$2 AND file.issue_id=$3 AND file.entity_type='ISSUE_ATTACHMENT' AND file.external_id=$4 AND file.external_source=$5 AND file.deleted_at IS NULL
-		AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$3 AND attachment_item.project_id=$2 AND `+djangoapi.IssueVisibleSQL("attachment_item", "$6::uuid", "$1::uuid")+`)
+		AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$3 AND attachment_item.project_id=$2 AND `+apicontract.IssueVisibleSQL("attachment_item", "$6::uuid", "$1::uuid")+`)
 		ORDER BY file.created_at ASC LIMIT 1`, workspaceID, projectID, issueID, externalID, externalSource, userID).Scan(&id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return uuid.Nil, false, nil
@@ -387,7 +387,7 @@ func (repository *PostgresRepository) BulkAssociateProjectAssets(ctx context.Con
 		AND (project_id=$4 OR project_id IS NULL)
 		ORDER BY (entity_type='DRAFT_ISSUE_DESCRIPTION' OR draft_issue_id IS NOT NULL) DESC, created_at DESC LIMIT 1`, assetIDs, workspaceID, userID, projectID).Scan(&entityType)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
 	}
 	if err != nil {
 		return fmt.Errorf("find project bulk assets: %w", err)
@@ -408,7 +408,7 @@ func (repository *PostgresRepository) BulkAssociateProjectAssets(ctx context.Con
 			return fmt.Errorf("load active project for cover association: %w", scanErr)
 		}
 		if !projectExists {
-			return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
+			return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
 		}
 		for _, id := range ids {
 			if _, execErr := repository.database.Exec(ctx, `UPDATE projects SET cover_image_asset_id=$1, updated_by_id=$3, updated_at=NOW() WHERE id=$2 AND deleted_at IS NULL`, id, projectID, userID); execErr != nil {
@@ -470,9 +470,9 @@ func (repository *PostgresRepository) DeleteLegacyIssueAttachment(ctx context.Co
 	err = tx.QueryRow(ctx, `SELECT file.asset FROM file_assets file
 		WHERE file.id=$1 AND file.workspace_id=$2 AND file.project_id=$3 AND file.issue_id=$4 AND file.deleted_at IS NULL
 		AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$4 AND attachment_item.project_id=$3
-		 AND `+djangoapi.IssueVisibleSQL("attachment_item", "$5::uuid", "$2::uuid")+`) FOR UPDATE`, assetID, workspaceID, projectID, issueID, userID).Scan(&objectKey)
+		 AND `+apicontract.IssueVisibleSQL("attachment_item", "$5::uuid", "$2::uuid")+`) FOR UPDATE`, assetID, workspaceID, projectID, issueID, userID).Scan(&objectKey)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Issue attachment not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Issue attachment not found."}}
 	}
 	if err != nil {
 		return fmt.Errorf("load legacy issue attachment for deletion: %w", err)
@@ -480,12 +480,12 @@ func (repository *PostgresRepository) DeleteLegacyIssueAttachment(ctx context.Co
 	result, err := tx.Exec(ctx, `UPDATE file_assets SET asset='', is_deleted=true, deleted_at=NOW(), updated_by_id=$5, updated_at=NOW()
 		WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND issue_id=$4 AND deleted_at IS NULL
 		AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$4 AND attachment_item.project_id=$3
-		 AND `+djangoapi.IssueVisibleSQL("attachment_item", "$5::uuid", "$2::uuid")+`)`, assetID, workspaceID, projectID, issueID, userID)
+		 AND `+apicontract.IssueVisibleSQL("attachment_item", "$5::uuid", "$2::uuid")+`)`, assetID, workspaceID, projectID, issueID, userID)
 	if err != nil {
 		return fmt.Errorf("delete legacy issue attachment row: %w", err)
 	}
 	if result.RowsAffected() == 0 {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Issue attachment not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Issue attachment not found."}}
 	}
 	if activity != nil {
 		if err := insertWorkItemEffect(ctx, tx, "activity", activity); err != nil {
@@ -510,7 +510,7 @@ func (repository *PostgresRepository) IssueAccess(ctx context.Context, userID, w
 	var found, allowed bool
 	err := repository.database.QueryRow(ctx, `SELECT
  EXISTS(SELECT 1 FROM issues i WHERE i.id=$1 AND i.workspace_id=$2 AND i.project_id=$3 AND i.deleted_at IS NULL),
- EXISTS(SELECT 1 FROM issues i WHERE i.id=$1 AND i.project_id=$3 AND `+djangoapi.IssueVisibleSQL("i", "$4::uuid", "$2::uuid")+`)`, issueID, workspaceID, projectID, userID).Scan(&found, &allowed)
+ EXISTS(SELECT 1 FROM issues i WHERE i.id=$1 AND i.project_id=$3 AND `+apicontract.IssueVisibleSQL("i", "$4::uuid", "$2::uuid")+`)`, issueID, workspaceID, projectID, userID).Scan(&found, &allowed)
 	if err != nil {
 		return false, false, fmt.Errorf("check issue attachment access: %w", err)
 	}
@@ -519,24 +519,24 @@ func (repository *PostgresRepository) IssueAccess(ctx context.Context, userID, w
 
 func (repository *PostgresRepository) UpdateAPIFileAssetUploaded(ctx context.Context, userID, workspaceID, projectID, assetID uuid.UUID) error {
 	result, err := repository.database.Exec(ctx, `UPDATE file_assets SET is_uploaded=true, created_by_id=CASE WHEN is_uploaded THEN created_by_id ELSE $4 END, updated_by_id=$4, updated_at=NOW() WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND deleted_at IS NULL AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')
-	AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=file_assets.issue_id AND attachment_item.project_id=file_assets.project_id AND `+djangoapi.IssueVisibleSQL("attachment_item", "$4::uuid", "$2::uuid")+`)`, assetID, workspaceID, projectID, userID)
+	AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=file_assets.issue_id AND attachment_item.project_id=file_assets.project_id AND `+apicontract.IssueVisibleSQL("attachment_item", "$4::uuid", "$2::uuid")+`)`, assetID, workspaceID, projectID, userID)
 	if err != nil {
 		return fmt.Errorf("confirm API issue attachment: %w", err)
 	}
 	if result.RowsAffected() == 0 {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	return nil
 }
 
 func (repository *PostgresRepository) DeleteAPIFileAsset(ctx context.Context, userID, workspaceID, projectID, assetID uuid.UUID) error {
 	result, err := repository.database.Exec(ctx, `UPDATE file_assets SET is_deleted=true, deleted_at=NOW(), updated_by_id=$4, updated_at=NOW() WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND deleted_at IS NULL AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')
-	AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=file_assets.issue_id AND attachment_item.project_id=file_assets.project_id AND `+djangoapi.IssueVisibleSQL("attachment_item", "$4::uuid", "$2::uuid")+`)`, assetID, workspaceID, projectID, userID)
+	AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=file_assets.issue_id AND attachment_item.project_id=file_assets.project_id AND `+apicontract.IssueVisibleSQL("attachment_item", "$4::uuid", "$2::uuid")+`)`, assetID, workspaceID, projectID, userID)
 	if err != nil {
 		return fmt.Errorf("delete API issue attachment: %w", err)
 	}
 	if result.RowsAffected() == 0 {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	return nil
 }
@@ -688,10 +688,10 @@ func (repository *PostgresRepository) PublicProjectAsset(ctx context.Context, wo
 		return FileAsset{}, err
 	}
 	if privateDraftAsset(asset) || asset.ProjectID == nil || *asset.ProjectID != projectID {
-		return FileAsset{}, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return FileAsset{}, &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	if descriptionsOnly && asset.EntityType != "ISSUE_DESCRIPTION" && asset.EntityType != "COMMENT_DESCRIPTION" {
-		return FileAsset{}, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return FileAsset{}, &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	return asset, nil
 }
@@ -710,14 +710,14 @@ func (repository *PostgresRepository) CreatePublicUpload(ctx context.Context, id
 	if entityIdentifier != "" {
 		parsedID, parseErr := uuid.Parse(entityIdentifier)
 		if parseErr != nil {
-			return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+			return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 		}
 		relationID = parsedID
 		switch entityType {
 		case "COMMENT_DESCRIPTION":
 			var found uuid.UUID
 			if scanErr := tx.QueryRow(ctx, `SELECT id FROM issue_comments WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND created_by_id=$4 AND deleted_at IS NULL FOR KEY SHARE`, parsedID, workspaceID, projectID, userID).Scan(&found); errors.Is(scanErr, pgx.ErrNoRows) {
-				return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+				return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 			} else if scanErr != nil {
 				return fmt.Errorf("validate public upload comment: %w", scanErr)
 			}
@@ -725,12 +725,12 @@ func (repository *PostgresRepository) CreatePublicUpload(ctx context.Context, id
 			relationColumn = "issue_id"
 			var found uuid.UUID
 			if scanErr := tx.QueryRow(ctx, `SELECT id FROM issues WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND deleted_at IS NULL FOR KEY SHARE`, parsedID, workspaceID, projectID).Scan(&found); errors.Is(scanErr, pgx.ErrNoRows) {
-				return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+				return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 			} else if scanErr != nil {
 				return fmt.Errorf("validate public upload issue: %w", scanErr)
 			}
 		default:
-			return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid entity identifier.", "status": false}}
+			return &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid entity identifier.", "status": false}}
 		}
 	}
 	query := `INSERT INTO file_assets
@@ -760,7 +760,7 @@ func (repository *PostgresRepository) UpdatePublicAsset(ctx context.Context, use
 		return fmt.Errorf("confirm public FileAsset upload: %w", err)
 	}
 	if result.RowsAffected() == 0 {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	return nil
 }
@@ -774,7 +774,7 @@ func (repository *PostgresRepository) DeletePublicAsset(ctx context.Context, use
 		return fmt.Errorf("delete public FileAsset: %w", err)
 	}
 	if result.RowsAffected() == 0 {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	return nil
 }
@@ -788,7 +788,7 @@ func (repository *PostgresRepository) RestorePublicAsset(ctx context.Context, us
 		return fmt.Errorf("restore public FileAsset: %w", err)
 	}
 	if result.RowsAffected() == 0 {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	return nil
 }
@@ -796,7 +796,7 @@ func (repository *PostgresRepository) RestorePublicAsset(ctx context.Context, us
 func (repository *PostgresRepository) BulkAssociatePublicAssetComments(ctx context.Context, userID, workspaceID, projectID, commentID uuid.UUID, assetIDs []uuid.UUID) (resultErr error) {
 	ids := uniquePublicAssetIDs(assetIDs)
 	if len(ids) == 0 {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
 	}
 	tx, err := repository.database.Begin(ctx)
 	if err != nil {
@@ -805,7 +805,7 @@ func (repository *PostgresRepository) BulkAssociatePublicAssetComments(ctx conte
 	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
 	var authorizedComment uuid.UUID
 	if scanErr := tx.QueryRow(ctx, `SELECT id FROM issue_comments WHERE id=@comment AND workspace_id=@workspace AND project_id=@project AND created_by_id=@actor AND deleted_at IS NULL FOR KEY SHARE`, pgx.StrictNamedArgs{"comment": commentID, "workspace": workspaceID, "project": projectID, "actor": userID}).Scan(&authorizedComment); errors.Is(scanErr, pgx.ErrNoRows) {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	} else if scanErr != nil {
 		return fmt.Errorf("validate public asset comment association: %w", scanErr)
 	}
@@ -831,7 +831,7 @@ func (repository *PostgresRepository) BulkAssociatePublicAssetComments(ctx conte
 		return fmt.Errorf("read public FileAsset association: %w", rowsErr)
 	}
 	if len(matched) != len(ids) {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
 	}
 	result, err := tx.Exec(ctx, `UPDATE file_assets SET comment_id=@comment
 		WHERE id=ANY(@ids) AND workspace_id=@workspace AND project_id=@project AND created_by_id=@actor
@@ -840,7 +840,7 @@ func (repository *PostgresRepository) BulkAssociatePublicAssetComments(ctx conte
 		return fmt.Errorf("associate public FileAssets with comment: %w", err)
 	}
 	if result.RowsAffected() != int64(len(ids)) {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
 	}
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit public FileAsset association: %w", err)
@@ -872,12 +872,12 @@ func (repository *PostgresRepository) PublicBulkAssetRows(ctx context.Context, u
 		if i == 0 {
 			entityType = row.EntityType
 		} else if row.EntityType != entityType {
-			return nil, "", &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
+			return nil, "", &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
 		}
 		matchedIDs = append(matchedIDs, row.ID)
 	}
 	if len(matchedIDs) != len(ids) {
-		return nil, "", &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
+		return nil, "", &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
 	}
 	return matchedIDs, entityType, nil
 }
@@ -921,7 +921,7 @@ func (repository *PostgresRepository) readIssueAttachmentRows(ctx context.Contex
 	var encoded []byte
 	if err := repository.database.QueryRow(ctx, query, args...).Scan(&encoded); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+			return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 		}
 		return nil, fmt.Errorf("list issue FileAssets: %w", err)
 	}
@@ -942,7 +942,7 @@ func (repository *PostgresRepository) IssueAttachments(ctx context.Context, work
 // metadata, so an earlier project permission check cannot authorize a stale read.
 func (repository *PostgresRepository) VisibleIssueAttachments(ctx context.Context, userID, workspaceID, projectID, issueID uuid.UUID, uploadedOnly bool) ([]map[string]any, error) {
 	query := `SELECT attachment_result.data FROM (` + issueAttachmentsQuery("f.workspace_id=$1", uploadedOnly) + `) AS attachment_result(data)
- WHERE EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$3 AND attachment_item.project_id=$2 AND ` + djangoapi.IssueVisibleSQL("attachment_item", "$4::uuid", "$1::uuid") + `)`
+ WHERE EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$3 AND attachment_item.project_id=$2 AND ` + apicontract.IssueVisibleSQL("attachment_item", "$4::uuid", "$1::uuid") + `)`
 	return repository.readIssueAttachmentRows(ctx, query, workspaceID, projectID, issueID, userID)
 }
 
@@ -954,7 +954,7 @@ func (repository *PostgresRepository) IssueAttachment(ctx context.Context, userI
  AND f.deleted_at IS NULL AND f.draft_issue_id IS NULL
  AND COALESCE(f.entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')
  AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=f.issue_id AND attachment_item.project_id=f.project_id
- AND ` + djangoapi.IssueVisibleSQL("attachment_item", "$5::uuid", "f.workspace_id") + `)`
+ AND ` + apicontract.IssueVisibleSQL("attachment_item", "$5::uuid", "f.workspace_id") + `)`
 	asset, err := scanFileAsset(repository.database.QueryRow(ctx, query, assetID, workspaceID, projectID, issueID, userID), &encoded)
 	if err != nil {
 		return FileAsset{}, nil, err
@@ -978,9 +978,9 @@ func (repository *PostgresRepository) UpdateIssueAttachmentUploaded(ctx context.
 	err = tx.QueryRow(ctx, `SELECT file.is_uploaded FROM file_assets file WHERE file.id=$1 AND file.workspace_id=$2 AND file.project_id=$3 AND file.issue_id=$4
 		AND file.deleted_at IS NULL AND file.draft_issue_id IS NULL AND COALESCE(file.entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')
 		AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$4 AND attachment_item.project_id=$3
-		 AND `+djangoapi.IssueVisibleSQL("attachment_item", "$5::uuid", "$2::uuid")+`) FOR UPDATE`, assetID, workspaceID, projectID, issueID, userID).Scan(&uploaded)
+		 AND `+apicontract.IssueVisibleSQL("attachment_item", "$5::uuid", "$2::uuid")+`) FOR UPDATE`, assetID, workspaceID, projectID, issueID, userID).Scan(&uploaded)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	if err != nil {
 		return fmt.Errorf("load issue attachment confirmation: %w", err)
@@ -988,12 +988,12 @@ func (repository *PostgresRepository) UpdateIssueAttachmentUploaded(ctx context.
 	if !uploaded {
 		result, err := tx.Exec(ctx, `UPDATE file_assets SET is_uploaded=true, updated_by_id=$5, updated_at=NOW() WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND issue_id=$4
 		AND deleted_at IS NULL AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$4 AND attachment_item.project_id=$3
-		 AND `+djangoapi.IssueVisibleSQL("attachment_item", "$5::uuid", "$2::uuid")+`)`, assetID, workspaceID, projectID, issueID, userID)
+		 AND `+apicontract.IssueVisibleSQL("attachment_item", "$5::uuid", "$2::uuid")+`)`, assetID, workspaceID, projectID, issueID, userID)
 		if err != nil {
 			return fmt.Errorf("confirm issue attachment upload: %w", err)
 		}
 		if result.RowsAffected() == 0 {
-			return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+			return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 		}
 	}
 	if !uploaded && activity != nil {
@@ -1022,12 +1022,12 @@ func (repository *PostgresRepository) DeleteIssueAttachment(ctx context.Context,
 		WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND issue_id=$4 AND deleted_at IS NULL AND draft_issue_id IS NULL
 		AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')
 		AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$4 AND attachment_item.project_id=$3
-		 AND `+djangoapi.IssueVisibleSQL("attachment_item", "$5::uuid", "$2::uuid")+`)`, assetID, workspaceID, projectID, issueID, userID)
+		 AND `+apicontract.IssueVisibleSQL("attachment_item", "$5::uuid", "$2::uuid")+`)`, assetID, workspaceID, projectID, issueID, userID)
 	if err != nil {
 		return fmt.Errorf("delete issue attachment: %w", err)
 	}
 	if result.RowsAffected() == 0 {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	if activity != nil {
 		if err := insertWorkItemEffect(ctx, tx, "activity", activity); err != nil {
@@ -1154,7 +1154,7 @@ func (repository *PostgresRepository) UpdateAssetDeletedByKey(ctx context.Contex
 		return fmt.Errorf("multiple FileAssets match storage key %q", key)
 	}
 	if len(ids) == 0 {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	update := `UPDATE file_assets SET is_deleted=$1 WHERE id=$2 AND asset=$3 AND deleted_at IS NULL AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')`
 	updateArgs := []any{deleted, ids[0], key}
@@ -1170,7 +1170,7 @@ func (repository *PostgresRepository) UpdateAssetDeletedByKey(ctx context.Contex
 		return fmt.Errorf("update FileAsset deletion by key: %w", err)
 	}
 	if result.RowsAffected() == 0 {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	return tx.Commit(ctx)
 }
@@ -1192,7 +1192,7 @@ WHERE id=$2 AND user_id=$3 AND deleted_at IS NULL AND `+assetParentVisibilitySQL
 		return fmt.Errorf("confirm legacy user FileAsset upload: %w", err)
 	}
 	if result.RowsAffected() == 0 {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	if enqueueMetadata {
 		if err := insertWorkItemEffect(ctx, tx, "asset_storage_metadata", map[string]string{"asset_id": assetID.String()}); err != nil {
@@ -1226,7 +1226,7 @@ WHERE f.id=$1 AND f.user_id=$2 AND f.deleted_at IS NULL AND `+assetParentVisibil
 FOR UPDATE OF f
 `, assetID, userID).Scan(&entityType, &previous)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	if err != nil {
 		return fmt.Errorf("load user FileAsset for update: %w", err)
@@ -1278,7 +1278,7 @@ func (repository *PostgresRepository) DeleteUserAsset(ctx context.Context, userI
 	var entityType string
 	err = tx.QueryRow(ctx, `SELECT COALESCE(entity_type,'') FROM file_assets WHERE id=$1 AND user_id=$2 AND deleted_at IS NULL AND `+assetParentVisibilitySQL("file_assets", "$2::uuid")+` FOR UPDATE`, assetID, userID).Scan(&entityType)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	if err != nil {
 		return fmt.Errorf("load user FileAsset for deletion: %w", err)
@@ -1311,7 +1311,7 @@ func (repository *PostgresRepository) AssetByProjectAndID(ctx context.Context, w
 		return FileAsset{}, err
 	}
 	if asset.ProjectID == nil || *asset.ProjectID != projectID {
-		return FileAsset{}, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return FileAsset{}, &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	return asset, nil
 }
@@ -1330,7 +1330,7 @@ WHERE id=$2 AND workspace_id=$3 AND is_deleted=false AND deleted_at IS NULL AND 
 		return fmt.Errorf("update workspace FileAsset upload state: %w", err)
 	}
 	if result.RowsAffected() == 0 {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}}
 	}
 	if uploaded && enqueueMetadata {
 		if err := insertWorkItemEffect(ctx, tx, "asset_storage_metadata", map[string]string{"asset_id": assetID.String()}); err != nil {
@@ -1358,7 +1358,7 @@ func (repository *PostgresRepository) UpdateWorkspaceAsset(ctx context.Context, 
 		WHERE id=$1 AND workspace_id=$2 AND deleted_at IS NULL AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT') AND `+assetParentVisibilitySQL("file_assets", "$3::uuid")+` FOR UPDATE
 	`, assetID, workspaceID, userID).Scan(&entityType, &projectID)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return false, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return false, &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	if err != nil {
 		return false, fmt.Errorf("load workspace FileAsset confirmation: %w", err)
@@ -1398,7 +1398,7 @@ func (repository *PostgresRepository) UpdateWorkspaceAsset(ctx context.Context, 
 		return false, fmt.Errorf("confirm workspace FileAsset upload: %w", err)
 	}
 	if result.RowsAffected() == 0 {
-		return false, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return false, &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	if enqueueMetadata {
 		if err := insertWorkItemEffect(ctx, tx, "asset_storage_metadata", map[string]string{"asset_id": assetID.String()}); err != nil {
@@ -1426,7 +1426,7 @@ func (repository *PostgresRepository) DeleteWorkspaceAsset(ctx context.Context, 
 		WHERE id=$1 AND workspace_id=$2 AND deleted_at IS NULL AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT') AND `+assetParentVisibilitySQL("file_assets", "$3::uuid")+` FOR UPDATE
 	`, assetID, workspaceID, userID).Scan(&entityType, &projectID)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	if err != nil {
 		return fmt.Errorf("load workspace FileAsset deletion: %w", err)
@@ -1438,7 +1438,7 @@ func (repository *PostgresRepository) DeleteWorkspaceAsset(ctx context.Context, 
 			return fmt.Errorf("check active workspace for logo deletion: %w", scanErr)
 		}
 		if !exists {
-			return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
+			return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
 		}
 		if _, execErr := tx.Exec(ctx, `UPDATE workspaces SET logo_asset_id=NULL, updated_at=NOW() WHERE id=$1 AND logo_asset_id=$2 AND deleted_at IS NULL`, workspaceID, assetID); execErr != nil {
 			return fmt.Errorf("clear workspace logo asset: %w", execErr)
@@ -1455,7 +1455,7 @@ func (repository *PostgresRepository) DeleteWorkspaceAsset(ctx context.Context, 
 		return fmt.Errorf("logically delete workspace FileAsset: %w", err)
 	}
 	if result.RowsAffected() == 0 {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit workspace FileAsset deletion: %w", err)
@@ -1480,7 +1480,7 @@ func (repository *PostgresRepository) UpdateProjectAsset(ctx context.Context, ac
 		return fmt.Errorf("confirm project FileAsset upload: %w", err)
 	}
 	if command.RowsAffected() == 0 {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	if enqueueMetadata {
 		if err := insertWorkItemEffect(ctx, tx, "asset_storage_metadata", map[string]string{"asset_id": assetID.String()}); err != nil {
@@ -1499,7 +1499,7 @@ func (repository *PostgresRepository) DeleteProjectAsset(ctx context.Context, ac
 		return fmt.Errorf("delete project FileAsset: %w", err)
 	}
 	if command.RowsAffected() == 0 {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	return nil
 }
@@ -1513,7 +1513,7 @@ WHERE id=$1 AND workspace_id=$2 AND draft_issue_id IS NULL AND COALESCE(entity_t
 		return fmt.Errorf("restore workspace FileAsset: %w", err)
 	}
 	if result.RowsAffected() == 0 {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	return nil
 }
@@ -1607,7 +1607,7 @@ func (repository *PostgresRepository) CreateDuplicate(ctx context.Context, sourc
 	if projectID != "" {
 		parsed, parseErr := uuid.Parse(projectID)
 		if parseErr != nil {
-			return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"project_id": []string{"Must be a valid UUID."}}}
+			return &apicontract.HTTPError{Status: 400, Body: map[string]any{"project_id": []string{"Must be a valid UUID."}}}
 		}
 		project = parsed
 	}
@@ -1723,7 +1723,7 @@ func scanFileAsset(row pgx.Row, extra ...any) (FileAsset, error) {
 	destinations := []any{&asset.ID, &asset.Asset, &asset.EntityType, &attributes, &workspaceID, &projectID, &issueID, &userID, &asset.DraftIssueID, &asset.IsUploaded, &asset.IsDeleted, &asset.Size, &metadata}
 	err := row.Scan(append(destinations, extra...)...)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return FileAsset{}, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return FileAsset{}, &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	if err != nil {
 		return FileAsset{}, fmt.Errorf("load FileAsset: %w", err)

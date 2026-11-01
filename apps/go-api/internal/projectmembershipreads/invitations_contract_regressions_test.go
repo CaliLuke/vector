@@ -11,7 +11,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -58,7 +58,7 @@ func TestV1InvitationSupportedMediaAndCompleteDocumentParsing(t *testing.T) {
 					_, err = repository.PatchAPIWorkspaceInvite(context.Background(), "workspace", uuid.New(), strings.NewReader(test.body), test.contentType)
 				}
 				if test.status != 0 {
-					var failure *djangoapi.HTTPError
+					var failure *apicontract.HTTPError
 					if !errors.As(err, &failure) || failure.Status != test.status || strings.Contains(db.query, "INSERT") || strings.Contains(db.query, "UPDATE") {
 						t.Fatalf("error=%v final query=%s", err, db.query)
 					}
@@ -133,7 +133,7 @@ func TestInvitationTargetLookupPrecedesRequestDataParsing(t *testing.T) {
 				db := &invitationTestDB{databaseStub: databaseStub{row: rowFunc(func(...any) error { return pgx.ErrNoRows })}}
 				repository := &InvitationsRepository{reader: db, writer: db, publisher: &invitationTaskSpy{}}
 				_, err := repository.Invitation(context.Background(), InvitationCommand{Operation: operation, Slug: "workspace", ID: uuid.NewString(), UserID: "actor", ContentType: media, Body: strings.NewReader("{")})
-				var failure *djangoapi.HTTPError
+				var failure *apicontract.HTTPError
 				if !errors.Is(err, ErrNotFound) && (!errors.As(err, &failure) || failure.Status != 404) {
 					t.Fatalf("missing target error=%v", err)
 				}
@@ -151,7 +151,7 @@ func TestInvitationSelfEditPrecedesRequestDataParsing(t *testing.T) {
 			db := invitationMemberDB()
 			repository := &InvitationsRepository{reader: db, writer: db, publisher: &invitationTaskSpy{}}
 			_, err := repository.Invitation(context.Background(), InvitationCommand{Operation: "member-patch", ID: "membership", UserID: "target", ContentType: media, Body: strings.NewReader("{")})
-			var failure *djangoapi.HTTPError
+			var failure *apicontract.HTTPError
 			if !errors.As(err, &failure) || failure.Status != 400 || failure.Body["error"] != "You cannot update your own role" || db.beginCount != 0 || db.execCount != 0 {
 				t.Fatalf("error=%v transactions=%d writes=%d", err, db.beginCount, db.execCount)
 			}
@@ -242,7 +242,7 @@ func TestWorkspaceInvitationExistingMemberPrecedesEmailValidation(t *testing.T) 
 	publisher := &invitationTaskSpy{}
 	repository := &InvitationsRepository{reader: db, writer: db, publisher: publisher}
 	_, err := repository.Invitation(context.Background(), InvitationCommand{Operation: "workspace-create", UserID: "owner", ContentType: "application/json", Body: strings.NewReader(`{"emails":[{"email":"existing@example.com","role":5},{"email":"bad","role":5}]}`)})
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if !errors.As(err, &failure) || failure.Status != 400 || failure.Body["error"] != "Some users are already member of workspace" || failure.Body["workspace_users"] == nil {
 		t.Fatalf("error=%v", err)
 	}
@@ -272,7 +272,7 @@ func TestWorkspaceInvitationTombstoneLookupFollowsRoleCap(t *testing.T) {
 		repository := &InvitationsRepository{reader: db, writer: db, publisher: publisher}
 		body := fmt.Sprintf(`{"emails":[{"email":"fresh@example.com","role":%d}]}`, test.role)
 		_, err := repository.Invitation(context.Background(), InvitationCommand{Operation: "workspace-create", UserID: "owner", ContentType: "application/json", Body: strings.NewReader(body)})
-		var failure *djangoapi.HTTPError
+		var failure *apicontract.HTTPError
 		if !errors.As(err, &failure) || failure.Status != test.status || failure.Body["error"] != test.message {
 			t.Fatalf("role=%d error=%v", test.role, err)
 		}
@@ -303,7 +303,7 @@ func TestWorkspaceInvitationInvalidEmailPreservesPythonRepresentation(t *testing
 		publisher := &invitationTaskSpy{}
 		repository := &InvitationsRepository{reader: db, writer: db, publisher: publisher}
 		_, err := repository.Invitation(context.Background(), InvitationCommand{Operation: "workspace-create", UserID: "owner", ContentType: "application/json", Body: strings.NewReader(test.body)})
-		var failure *djangoapi.HTTPError
+		var failure *apicontract.HTTPError
 		want := "Invalid email - " + test.entry + " provided a valid email address is required to send the invite"
 		if !errors.As(err, &failure) || failure.Status != 400 || failure.Body["error"] != want {
 			t.Fatalf("body=%s error=%v expected=%s", test.body, failure, want)
@@ -347,7 +347,7 @@ func TestInvitationNonObjectJSONFollowsOperationSourceAccess(t *testing.T) {
 					t.Fatal("non-object JSON reached save")
 				}
 				got := 500
-				var failure *djangoapi.HTTPError
+				var failure *apicontract.HTTPError
 				if errors.As(err, &failure) {
 					got = failure.Status
 				}

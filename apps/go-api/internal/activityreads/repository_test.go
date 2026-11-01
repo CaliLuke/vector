@@ -153,7 +153,7 @@ func TestUserActivitiesPaginateBeforeJSONAggregation(t *testing.T) {
 	}
 }
 
-func TestUserActivitiesPreserveNegativeOnePageFailure(t *testing.T) {
+func TestUserActivitiesRejectNegativePageSizeBeforeReading(t *testing.T) {
 	database := &activityDatabase{body: map[string]any{"total_count": 2, "results": []any{}}}
 	repository, constructorErr := NewRepository(database)
 	require.NoError(t, constructorErr)
@@ -163,14 +163,14 @@ func TestUserActivitiesPreserveNegativeOnePageFailure(t *testing.T) {
 		Present:   map[string]bool{"per_page": true},
 	})
 	var httpError *HTTPError
-	if !errors.As(err, &httpError) || httpError.Status != http.StatusInternalServerError || httpError.Body["error"] != "Something went wrong please try again later" {
+	if !errors.As(err, &httpError) || httpError.Status != http.StatusBadRequest || httpError.Body["detail"] != "per_page must be an integer from 1 to 1000." {
 		t.Fatalf("error=%T %#v", err, err)
 	}
 	if len(database.queries) != 0 {
 		t.Fatalf("queries=%q", database.queries)
 	}
 }
-func TestNegativePageSizePreservesDjangoFailureOrder(t *testing.T) {
+func TestNegativePageSizeAlwaysReturnsClientError(t *testing.T) {
 	tests := []struct {
 		name       string
 		perPage    string
@@ -179,8 +179,8 @@ func TestNegativePageSizePreservesDjangoFailureOrder(t *testing.T) {
 	}{
 		{name: "positive page", perPage: "-1", cursor: "1:1:0", wantStatus: http.StatusBadRequest},
 		{name: "backward cursor", perPage: "-2", cursor: "1:1:1", wantStatus: http.StatusBadRequest},
-		{name: "negative page", perPage: "-2", cursor: "-2:-1:0", wantStatus: http.StatusInternalServerError},
-		{name: "outside int64", perPage: "-18446744073709551615", wantStatus: http.StatusInternalServerError},
+		{name: "negative page", perPage: "-2", cursor: "-2:-1:0", wantStatus: http.StatusBadRequest},
+		{name: "outside int64", perPage: "-18446744073709551615", wantStatus: http.StatusBadRequest},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -209,16 +209,14 @@ func TestUserActivitiesRejectInvalidPagination(t *testing.T) {
 		Present:   map[string]bool{"per_page": true},
 	})
 	var httpError *HTTPError
-	if !errors.As(err, &httpError) || httpError.Status != 400 || httpError.Body["detail"] != "Invalid per_page value. Cannot exceed 1000." {
+	if !errors.As(err, &httpError) || httpError.Status != 400 || httpError.Body["detail"] != "per_page must be an integer from 1 to 1000." {
 		t.Fatalf("error=%T %#v", err, err)
 	}
 }
 func TestActivityPaginationMatchesCursorContract(t *testing.T) {
 	for cursor, expected := range map[string]int{
-		"2:1:1":      1,
-		"1:1:1":      1,
-		"2.5:1:1":    1,
-		"1.e999:0:0": 0,
+		"2:1:1": 1,
+		"1:1:1": 1,
 	} {
 		t.Run("valid_"+strings.ReplaceAll(cursor, ":", "_"), func(t *testing.T) {
 			page, err := cursorPage(Request{Params: map[string]string{"cursor": cursor}, Present: map[string]bool{"cursor": true}}, 2)
@@ -233,7 +231,7 @@ func TestActivityPaginationMatchesCursorContract(t *testing.T) {
 			t.Fatalf("size=%d error=%v", size, err)
 		}
 	})
-	for _, cursor := range []string{"garbage:0:0", "%ZZ", "", "2:0", "2:page:0", "2:0:previous", "NaN:0:0", "Inf:0:0", "1_.0:0:0", "1e999:0:0"} {
+	for _, cursor := range []string{"2.5:1:1", "1.e999:0:0", "garbage:0:0", "%ZZ", "", "2:0", "2:page:0", "2:0:previous", "NaN:0:0", "Inf:0:0", "1_.0:0:0", "1e999:0:0"} {
 		t.Run("invalid_"+strings.ReplaceAll(cursor, ":", "_"), func(t *testing.T) {
 			_, err := cursorPage(Request{Params: map[string]string{"cursor": cursor}, Present: map[string]bool{"cursor": true}}, 1000)
 			var httpError *HTTPError
@@ -243,7 +241,7 @@ func TestActivityPaginationMatchesCursorContract(t *testing.T) {
 		})
 	}
 	for cursor, status := range map[string]int{
-		"1:9223372036854775808:0":  http.StatusInternalServerError,
+		"1:9223372036854775808:0":  http.StatusBadRequest,
 		"1:-9223372036854775809:0": http.StatusBadRequest,
 	} {
 		_, err := cursorPage(Request{Params: map[string]string{"cursor": cursor}, Present: map[string]bool{"cursor": true}}, 1000)
@@ -256,13 +254,7 @@ func TestActivityPaginationMatchesCursorContract(t *testing.T) {
 	if err != nil || limit != 1000 || page != 1 || offset != 1000 {
 		t.Fatalf("backward default-limit window=(%d,%d,%d), error=%v", limit, page, offset, err)
 	}
-	for raw, expected := range map[string]int{" 1_0 ": 10, "١٠": 10} {
-		size, pageSizeErr := pageSize(Request{Params: map[string]string{"per_page": raw}, Present: map[string]bool{"per_page": true}})
-		if pageSizeErr != nil || size != expected {
-			t.Fatalf("per_page=%q size=%d error=%v", raw, size, pageSizeErr)
-		}
-	}
-	for _, raw := range []string{"", "%ZZ"} {
+	for _, raw := range []string{"", "%ZZ", " 1_0 ", "١٠"} {
 		_, err = pageSize(Request{Params: map[string]string{"per_page": raw}, Present: map[string]bool{"per_page": true}})
 		var httpError *HTTPError
 		if !errors.As(err, &httpError) || httpError.Status != 400 {

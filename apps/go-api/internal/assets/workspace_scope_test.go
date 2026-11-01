@@ -11,7 +11,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/google/uuid"
 )
 
@@ -87,7 +87,7 @@ func TestV2WorkspaceScopeUsesRelatedWorkspaceLookupAfterPermission(t *testing.T)
 	workspaceID := uuid.New()
 	repository := &workspaceBoundaryRepository{
 		workspaceID:     workspaceID,
-		activeWorkspace: &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}},
+		activeWorkspace: &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}},
 	}
 	service := &LifecycleService{assets: &Service{repository: repository}}
 
@@ -126,7 +126,7 @@ func TestTombstonedWorkspaceLogoHooksPreserveSourceBehavior(t *testing.T) {
 	})
 
 	t.Run("DELETE stops on missing active Workspace before cache invalidation", func(t *testing.T) {
-		workspaceErr := &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
+		workspaceErr := &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
 		repository := &workspaceBoundaryRepository{
 			workspaceID:        uuid.New(),
 			asset:              FileAsset{ID: uuid.NewString(), EntityType: "WORKSPACE_LOGO", StorageMetadata: map[string]any{"ContentLength": 68}},
@@ -137,7 +137,7 @@ func TestTombstonedWorkspaceLogoHooksPreserveSourceBehavior(t *testing.T) {
 		ctx := context.WithValue(context.Background(), assetUserKey{}, uuid.New())
 
 		err := service.deleteWorkspaceAsset(ctx, "tombstoned", repository.asset.ID)
-		var httpErr *djangoapi.HTTPError
+		var httpErr *apicontract.HTTPError
 		if err == nil || !errors.As(err, &httpErr) || httpErr.Status != 404 || httpErr.Body["error"] != "The required object does not exist." {
 			t.Fatalf("DELETE tombstoned workspace logo error = %v, want source required-object 404", err)
 		}
@@ -160,7 +160,7 @@ func TestLegacyIssueAttachmentMissingFileChecksActiveWorkspaceFirst(t *testing.T
 		t.Fatal(err)
 	}
 
-	workspaceErr := &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
+	workspaceErr := &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
 	repository := &workspaceBoundaryRepository{workspaceID: uuid.New(), activeWorkspace: workspaceErr}
 	service := &LifecycleService{assets: &Service{repository: repository}}
 	userID, projectID, issueID := uuid.New(), uuid.New(), uuid.New()
@@ -182,7 +182,7 @@ func TestLegacyIssueAttachmentMissingFileChecksActiveWorkspaceFirst(t *testing.T
 
 func TestWorkspaceUploadAndDuplicateCheckActiveWorkspaceAfterSourceValidation(t *testing.T) {
 	projectID, entityID := uuid.New(), uuid.New()
-	activeError := &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
+	activeError := &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
 	tests := []struct {
 		name       string
 		body       string
@@ -298,7 +298,7 @@ func TestWorkspaceUploadAndDuplicateCheckActiveWorkspaceAfterSourceValidation(t 
 			ctx := context.WithValue(context.Background(), assetUserKey{}, uuid.New())
 
 			err = test.call(service, ctx, test.body)
-			var httpErr *djangoapi.HTTPError
+			var httpErr *apicontract.HTTPError
 			if err == nil || !errors.As(err, &httpErr) || httpErr.Status != test.wantStatus {
 				t.Fatalf("request error = %v, want HTTP %d", err, test.wantStatus)
 			}

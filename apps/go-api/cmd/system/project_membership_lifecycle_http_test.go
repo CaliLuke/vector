@@ -14,9 +14,9 @@ import (
 	systemapi "github.com/CaliLuke/go-plane"
 	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
 	system "github.com/CaliLuke/go-plane/gen/system"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	api "github.com/CaliLuke/go-plane/projectmembershiplifecycle/gen/project_membership_lifecycle"
 	"github.com/google/uuid"
@@ -32,7 +32,7 @@ type membershipHTTPRepository struct {
 func (r *membershipHTTPRepository) AuthorizeLifecycle(_ context.Context, c store.LifecycleCommand) error {
 	*r.events = append(*r.events, "authorization:"+c.Method)
 	if r.denied {
-		return &djangoapi.HTTPError{Status: 403, Body: map[string]any{"detail": "You do not have permission to perform this action."}}
+		return &apicontract.HTTPError{Status: 403, Body: map[string]any{"detail": "You do not have permission to perform this action."}}
 	}
 	return nil
 }
@@ -132,7 +132,7 @@ func TestProjectMembershipLifecycleSessionOptionsRetainsSourceSerializerMetadata
 		t.Fatal(err)
 	}
 	stack := func(next http.Handler) http.Handler { return next }
-	middleware := newSessionServiceProtocolMiddleware(notificationProtocolMetadata, sessionProtocolAuthorizerStub{allowed: true}, policy, stack, djangoSessionCookieConfig{}, false, apiV1CompatibilityOptions{})
+	middleware := newSessionServiceProtocolMiddleware(notificationProtocolMetadata, sessionProtocolAuthorizerStub{allowed: true}, policy, stack, browserSessionCookieConfig{}, false, apiV1CompatibilityOptions{})
 	handler := middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t.Fatalf("unexpected generated dispatch for %s", r.URL.Path)
 	}))
@@ -175,7 +175,7 @@ func TestProjectMembershipLifecycleRetainsExistingReadAndHeadOwnership(t *testin
 	stack := func(next http.Handler) http.Handler { return next }
 	// Denied session protocol makes accidental interception visible: retained
 	// methods must reach their existing owner, which performs its own auth.
-	middleware := newSessionServiceProtocolMiddleware(notificationProtocolMetadata, sessionProtocolAuthorizerStub{allowed: false}, policy, stack, djangoSessionCookieConfig{}, false, apiV1CompatibilityOptions{})
+	middleware := newSessionServiceProtocolMiddleware(notificationProtocolMetadata, sessionProtocolAuthorizerStub{allowed: false}, policy, stack, browserSessionCookieConfig{}, false, apiV1CompatibilityOptions{})
 	for _, suffix := range []string{"members/", "members/22222222-2222-4222-8222-222222222222/"} {
 		for _, method := range []string{http.MethodGet, http.MethodHead} {
 			called := false
@@ -202,7 +202,7 @@ func TestProjectMembershipLifecycleRetainedReadsRedirectSlashlessPaths(t *testin
 		t.Fatal(err)
 	}
 	stack := func(next http.Handler) http.Handler { return next }
-	middleware := newSessionServiceProtocolMiddleware(notificationProtocolMetadata, sessionProtocolAuthorizerStub{allowed: false}, policy, stack, djangoSessionCookieConfig{}, false, apiV1CompatibilityOptions{})
+	middleware := newSessionServiceProtocolMiddleware(notificationProtocolMetadata, sessionProtocolAuthorizerStub{allowed: false}, policy, stack, browserSessionCookieConfig{}, false, apiV1CompatibilityOptions{})
 	for _, suffix := range []string{"members", "members/22222222-2222-4222-8222-222222222222"} {
 		for _, method := range []string{http.MethodGet, http.MethodHead} {
 			called := false

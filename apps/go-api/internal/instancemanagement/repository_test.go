@@ -13,7 +13,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 )
 
-func TestWorkspacePageWindowMatchesDjangoCursorProjection(t *testing.T) {
+func TestWorkspacePageWindowUsesNativeCursorProjection(t *testing.T) {
 	tests := []struct {
 		name    string
 		perPage string
@@ -23,8 +23,8 @@ func TestWorkspacePageWindowMatchesDjangoCursorProjection(t *testing.T) {
 	}{
 		{name: "defaults", want: [3]int64{10, 0, 0}},
 		{name: "cursor limit does not control request page size", perPage: "10", cursor: "5:1:0", want: [3]int64{10, 1, 10}},
-		{name: "float cursor limit", perPage: "10", cursor: "10.0:1:0", want: [3]int64{10, 1, 10}},
-		{name: "python decimal integer syntax", perPage: "1_0", cursor: "10:1:0", want: [3]int64{10, 1, 10}},
+		{name: "reject fractional cursor limit", perPage: "10", cursor: "10.0:1:0", wantErr: "Invalid cursor parameter."},
+		{name: "reject separated decimal digits", perPage: "1_0", cursor: "10:1:0", wantErr: "Invalid per_page parameter."},
 		{name: "reject malformed cursor", perPage: "10", cursor: "not-a-cursor", wantErr: "Invalid cursor parameter."},
 		{name: "reject malformed per page", perPage: "ten", wantErr: "Invalid per_page parameter."},
 		{name: "reject zero page size", perPage: "0", wantErr: "Invalid per_page parameter."},
@@ -205,7 +205,7 @@ func TestWorkspaceCharFieldUsesSharedPythonTruthiness(t *testing.T) {
 	}
 }
 
-func TestWorkspaceCompanyRoleMatchesDjangoTextFieldPreparation(t *testing.T) {
+func TestWorkspaceCompanyRoleUsesNativeJSONText(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  map[string]json.RawMessage
@@ -215,9 +215,9 @@ func TestWorkspaceCompanyRoleMatchesDjangoTextFieldPreparation(t *testing.T) {
 		{name: "omitted defaults to empty string", fields: map[string]json.RawMessage{}, want: ""},
 		{name: "string", fields: map[string]json.RawMessage{"company_role": json.RawMessage(`"Founder"`)}, want: "Founder"},
 		{name: "number", fields: map[string]json.RawMessage{"company_role": json.RawMessage(`123`)}, want: "123"},
-		{name: "boolean", fields: map[string]json.RawMessage{"company_role": json.RawMessage(`true`)}, want: "True"},
-		{name: "list uses Python representation", fields: map[string]json.RawMessage{"company_role": json.RawMessage(`[1,"x"]`)}, want: `[1, 'x']`},
-		{name: "object uses Python representation", fields: map[string]json.RawMessage{"company_role": json.RawMessage(`{"a":1}`)}, want: `{'a': 1}`},
+		{name: "boolean", fields: map[string]json.RawMessage{"company_role": json.RawMessage(`true`)}, want: "true"},
+		{name: "list uses JSON representation", fields: map[string]json.RawMessage{"company_role": json.RawMessage(`[1,"x"]`)}, want: `[1,"x"]`},
+		{name: "object uses JSON representation", fields: map[string]json.RawMessage{"company_role": json.RawMessage(`{"a":1}`)}, want: `{"a":1}`},
 		{name: "null remains SQL null", fields: map[string]json.RawMessage{"company_role": json.RawMessage(`null`)}, want: nil},
 		{name: "invalid JSON", fields: map[string]json.RawMessage{"company_role": json.RawMessage(`{`)}, wantErr: true},
 	}

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -36,11 +36,11 @@ func (r *Repository) AuthorizeCollaborationInitial(ctx context.Context, q Reques
 		unsafe = false
 	}
 	// Django converts model UUID filters before PostgreSQL receives them.
-	projectID, err := djangoinput.UUID(q.ProjectID)
+	projectID, err := requestinput.UUID(q.ProjectID)
 	if err != nil {
 		return failure(400, "error", "Please provide valid detail")
 	}
-	allowed, err := djangoapi.ProjectEntityAllowed(ctx, r.db, q.ActorID, q.Slug, projectID.String(), unsafe)
+	allowed, err := apicontract.ProjectEntityAllowed(ctx, r.db, q.ActorID, q.Slug, projectID.String(), unsafe)
 	if err != nil {
 		return err
 	}

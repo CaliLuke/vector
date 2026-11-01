@@ -5,8 +5,8 @@ import (
 	"maps"
 	"slices"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 func (r *Repository) lockItemEditSource(ctx context.Context, q Request, command itemEditCommand, workspace string) (map[string]any, error) {
@@ -96,7 +96,7 @@ func (r *Repository) applyItemEdit(ctx context.Context, q Request, command itemE
 	}
 	fields := command.Changes
 	if command.Mode == "publish" || (command.Mode == "draft" && command.ProjectID != stringValue(source["project_id"])) {
-		input, err := draft.publicationInput(ctx, source, djangoinput.Input{Fields: maps.Clone(fields)})
+		input, err := draft.publicationInput(ctx, source, requestinput.Input{Fields: maps.Clone(fields)})
 		if err != nil {
 			return err
 		}
@@ -160,7 +160,7 @@ func (r *Repository) itemEditProjection(ctx context.Context, q Request, command 
 	if err := r.allowProject(ctx, q, []int{15, 20}, true); err != nil {
 		return Result{}, err
 	}
-	row, err := r.row(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i WHERE i.id=$1 AND i.project_id=$2 AND i.workspace_id=$3 AND `+djangoapi.IssueVisibleSQL("i", "$4::uuid", "$3::uuid"), q.IssueID, q.ProjectID, workspace, q.ActorID)
+	row, err := r.row(ctx, `SELECT `+apicontract.IssueRowSQL("i")+` FROM issues i WHERE i.id=$1 AND i.project_id=$2 AND i.workspace_id=$3 AND `+apicontract.IssueVisibleSQL("i", "$4::uuid", "$3::uuid"), q.IssueID, q.ProjectID, workspace, q.ActorID)
 	if err != nil {
 		return Result{}, err
 	}

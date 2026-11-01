@@ -6,7 +6,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	modules "github.com/CaliLuke/go-plane/internal/modulereads"
 	labels "github.com/CaliLuke/go-plane/internal/projectlabelreads"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
@@ -43,7 +43,7 @@ func TestResourceReadFailuresAreSanitized(t *testing.T) {
 	}{
 		{"module", modules.ErrForbidden, "forbidden"}, {"module", modules.ErrNotFound, "not_found"},
 		{"label", labels.ErrForbidden, "forbidden"}, {"label", labels.ErrNotFound, "not_found"},
-		{"module", &djangoapi.HTTPError{Status: 400}, "invalid_params"}, {"label", &djangoapi.HTTPError{Status: 400}, "invalid_params"},
+		{"module", &apicontract.HTTPError{Status: 400}, "invalid_params"}, {"label", &apicontract.HTTPError{Status: 400}, "invalid_params"},
 		{"module", errors.New("secret database details"), "internal_error"}, {"label", errors.New("secret database details"), "internal_error"},
 	} {
 		t.Run(tc.tool+"/"+tc.code, func(t *testing.T) {

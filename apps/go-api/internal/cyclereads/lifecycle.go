@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -138,7 +138,7 @@ func (repository *LifecycleRepository) Patch(ctx context.Context, slug, projectI
 		if api {
 			message = "Archived cycle cannot be edited"
 		}
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": message}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": message}}
 	}
 	var currentInstance map[string]any
 	if !api {
@@ -164,7 +164,7 @@ func (repository *LifecycleRepository) Patch(ctx context.Context, slug, projectI
 	if completed {
 		if _, ok := requested["sort_order"]; !ok {
 			message := "The Cycle has already been completed so it cannot be edited"
-			return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": message}}
+			return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": message}}
 		}
 		effective["sort_order"] = requested["sort_order"]
 		activityData = map[string]any{"sort_order": activityRequested["sort_order"]}
@@ -200,7 +200,7 @@ func (repository *LifecycleRepository) Patch(ctx context.Context, slug, projectI
 		}
 		if key == "sort_order" {
 			if _, ok := value.(float64); !ok {
-				return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"sort_order": []string{"A valid number is required."}}}
+				return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"sort_order": []string{"A valid number is required."}}}
 			}
 		}
 		cast := ""
@@ -219,7 +219,7 @@ func (repository *LifecycleRepository) Patch(ctx context.Context, slug, projectI
 					return nil, scanErr
 				}
 				if !exists {
-					return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"owned_by": []string{"Invalid pk \"" + text + "\" - object does not exist."}}}
+					return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"owned_by": []string{"Invalid pk \"" + text + "\" - object does not exist."}}}
 				}
 			}
 		}
@@ -272,11 +272,11 @@ func normalizeCyclePatchDates(effective map[string]any, actorTimezone, projectTi
 		}
 		text, ok := value.(string)
 		if !ok {
-			return &djangoapi.HTTPError{Status: 400, Body: map[string]any{key: []string{"Datetime has wrong format."}}}
+			return &apicontract.HTTPError{Status: 400, Body: map[string]any{key: []string{"Datetime has wrong format."}}}
 		}
 		parsed, dateParseErr := parseCycleDateTime(text, actorTimezone)
 		if dateParseErr != nil {
-			return &djangoapi.HTTPError{Status: 400, Body: map[string]any{key: []string{"Datetime has wrong format."}}}
+			return &apicontract.HTTPError{Status: 400, Body: map[string]any{key: []string{"Datetime has wrong format."}}}
 		}
 		*destination = parsed
 		effective[key] = parsed
@@ -296,13 +296,13 @@ func (repository *LifecycleRepository) checkAPIExternalIDConflict(ctx context.Co
 	if !hasExternalID || !cycleExternalIDTruthy(rawExternalID) || reflect.DeepEqual(rawExternalID, before["external_id"]) {
 		return nil
 	}
-	externalID := djangoinput.ScalarString(rawExternalID)
+	externalID := requestinput.ScalarString(rawExternalID)
 	externalSource, hasExternalSource := requestData["external_source"]
 	if !hasExternalSource {
 		externalSource = before["external_source"]
 	}
 	if externalSource != nil {
-		externalSource = djangoinput.ScalarString(externalSource)
+		externalSource = requestinput.ScalarString(externalSource)
 	}
 	var duplicate bool
 	if err := repository.database.QueryRow(ctx, `SELECT EXISTS(
@@ -313,7 +313,7 @@ func (repository *LifecycleRepository) checkAPIExternalIDConflict(ctx context.Co
 		return err
 	}
 	if duplicate {
-		return &djangoapi.HTTPError{Status: 409, Body: map[string]any{
+		return &apicontract.HTTPError{Status: 409, Body: map[string]any{
 			"error": "Cycle with the same external id and external source already exists",
 			"id":    cycleID,
 		}}
@@ -348,7 +348,7 @@ func parseCycleDateTime(value, zone string) (*time.Time, error) {
 }
 
 func (repository *LifecycleRepository) appCycleSerializerSnapshot(ctx context.Context, actor, slug, projectID, cycleID string) (map[string]any, error) {
-	value, err := djangoapi.JSON(ctx, repository.database, userCycleMutationDetailSQL, actor, slug, projectID, cycleID)
+	value, err := apicontract.JSON(ctx, repository.database, userCycleMutationDetailSQL, actor, slug, projectID, cycleID)
 	if err != nil {
 		return nil, err
 	}
@@ -361,7 +361,7 @@ func (repository *LifecycleRepository) appCycleSerializerSnapshot(ctx context.Co
 
 func (repository *LifecycleRepository) userCycleSerializerSnapshot(ctx context.Context, actor, slug, projectID, cycleID string) (map[string]any, error) {
 	query := `SELECT to_jsonb(c)||jsonb_build_object('workspace',c.workspace_id,'project',c.project_id,'owned_by',c.owned_by_id,'created_by',c.created_by_id,'updated_by',c.updated_by_id,` + cycleUserTimestampJSONFields("c") + `) FROM cycles c JOIN workspaces w ON w.id=c.workspace_id WHERE c.id=$2 AND c.project_id=$3 AND w.slug=$4 AND c.deleted_at IS NULL`
-	value, err := djangoapi.JSON(ctx, repository.database, query, actor, cycleID, projectID, slug)
+	value, err := apicontract.JSON(ctx, repository.database, query, actor, cycleID, projectID, slug)
 	if err != nil {
 		return nil, err
 	}
@@ -394,7 +394,7 @@ func (repository *LifecycleRepository) rawCycle(ctx context.Context, slug, proje
 	if appScope {
 		query += ` AND EXISTS(SELECT 1 FROM projects p WHERE p.id=c.project_id AND p.deleted_at IS NULL AND p.archived_at IS NULL)`
 	}
-	value, err := djangoapi.JSON(ctx, repository.database, query, cycleID, projectID, slug)
+	value, err := apicontract.JSON(ctx, repository.database, query, cycleID, projectID, slug)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -453,7 +453,7 @@ func (repository *LifecycleRepository) appCycleMutationProjection(ctx context.Co
 	if put {
 		query = userCycleMutationDetailSQL
 	}
-	value, err := djangoapi.JSON(ctx, repository.database, query, actor, slug, projectID, cycleID)
+	value, err := apicontract.JSON(ctx, repository.database, query, actor, slug, projectID, cycleID)
 	if err != nil {
 		return nil, err
 	}
@@ -532,7 +532,7 @@ func (repository *LifecycleRepository) SetArchived(ctx context.Context, slug, pr
 	}
 	now := repository.now()
 	if archive && (cycle.EndDate == nil || !cycle.EndDate.Before(now)) {
-		return time.Time{}, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Only completed cycles can be archived"}}
+		return time.Time{}, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Only completed cycles can be archived"}}
 	}
 	var archivedAt *time.Time
 	if archive {
@@ -670,7 +670,7 @@ func (repository *LifecycleRepository) Create(ctx context.Context, actor, slug, 
 		return nil, err
 	}
 	if api && !cycleEnabled {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"non_field_errors": []string{"Cycles are not enabled for this project"}}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"non_field_errors": []string{"Cycles are not enabled for this project"}}}
 	}
 	start, end, err := parseCycleInputDates(input.StartDate, input.EndDate, actorTimezone, projectTimezone)
 	if err != nil {
@@ -685,7 +685,7 @@ func (repository *LifecycleRepository) Create(ctx context.Context, actor, slug, 
 		return nil, scanErr
 	}
 	if !ownerExists {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"owned_by": []string{"Invalid pk \"" + owner + "\" - object does not exist."}}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"owned_by": []string{"Invalid pk \"" + owner + "\" - object does not exist."}}}
 	}
 	if input.Timezone == "" {
 		input.Timezone = "UTC"
@@ -694,7 +694,7 @@ func (repository *LifecycleRepository) Create(ctx context.Context, actor, slug, 
 	if api && input.ExternalID != nil && *input.ExternalID != "" && input.ExternalSource != nil && *input.ExternalSource != "" {
 		err = repository.database.QueryRow(ctx, `SELECT id::text FROM cycles WHERE project_id=$1 AND workspace_id=$2 AND external_source=$3 AND external_id=$4 AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1`, projectID, workspaceID, *input.ExternalSource, *input.ExternalID).Scan(&duplicate)
 		if err == nil {
-			return nil, &djangoapi.HTTPError{Status: 409, Body: map[string]any{"error": "Cycle with the same external id and external source already exists", "id": duplicate}}
+			return nil, &apicontract.HTTPError{Status: 409, Body: map[string]any{"error": "Cycle with the same external id and external source already exists", "id": duplicate}}
 		}
 		if !errors.Is(err, pgx.ErrNoRows) {
 			return nil, err
@@ -744,7 +744,7 @@ RETURNING id::text`
 	if scanErr := repository.database.QueryRow(ctx, query, args).Scan(&cycleID); scanErr != nil {
 		return nil, scanErr
 	}
-	value, err := djangoapi.JSON(ctx, repository.database, `SELECT to_jsonb(c) || jsonb_build_object('workspace',c.workspace_id,'project',c.project_id,'owned_by',c.owned_by_id,'created_by',c.created_by_id,'updated_by',c.updated_by_id,`+cycleUserTimestampJSONFields("c")+`) FROM cycles c WHERE c.id=$2`, actor, cycleID)
+	value, err := apicontract.JSON(ctx, repository.database, `SELECT to_jsonb(c) || jsonb_build_object('workspace',c.workspace_id,'project',c.project_id,'owned_by',c.owned_by_id,'created_by',c.created_by_id,'updated_by',c.updated_by_id,`+cycleUserTimestampJSONFields("c")+`) FROM cycles c WHERE c.id=$2`, actor, cycleID)
 	if err != nil {
 		return nil, err
 	}
@@ -821,7 +821,7 @@ func parseCycleDate(value *string, zone string, start bool) (*time.Time, error) 
 		}
 	}
 	if err != nil {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"start_date": []string{"Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."}}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"start_date": []string{"Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."}}}
 	}
 	return &parsed, nil
 }
@@ -851,7 +851,7 @@ func normalizeCycleDateRange(start, end *time.Time, actorTimezone, projectTimezo
 		return start, end, nil
 	}
 	if start.After(*end) {
-		return nil, nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"non_field_errors": []string{"Start date cannot exceed end date"}}}
+		return nil, nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"non_field_errors": []string{"Start date cannot exceed end date"}}}
 	}
 	actorLocation, err := time.LoadLocation(actorTimezone)
 	if err != nil {

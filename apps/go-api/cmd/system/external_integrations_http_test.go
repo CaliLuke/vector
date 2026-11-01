@@ -60,7 +60,7 @@ func TestExternalIntegrationProductionMounts(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			handler := extensionHTTPHandler(pendingReplacementEndpoints{externalIntegrations: api.NewEndpoints(service), externalIntegrationsMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20})
+			handler := extensionHTTPHandler(pendingReplacementEndpoints{externalIntegrations: api.NewEndpoints(service), externalIntegrationsMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20})
 			request := httptest.NewRequest(tc.method, tc.path, strings.NewReader(tc.body))
 			request.Header.Set("Content-Type", "application/json")
 			if tc.authenticated {

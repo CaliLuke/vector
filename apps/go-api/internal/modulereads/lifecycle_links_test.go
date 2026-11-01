@@ -52,7 +52,7 @@ func TestValidateModuleLinkFieldsMatchesSerializerBranches(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			values, failures := validateModuleLinkFields(test.fields, nil, test.method, test.requiredURL)
+			values, failures := validateModuleLinkFields(test.fields, test.method, test.requiredURL)
 			if !reflect.DeepEqual(values, test.wantValues) {
 				t.Errorf("values = %#v, want %#v", values, test.wantValues)
 			}

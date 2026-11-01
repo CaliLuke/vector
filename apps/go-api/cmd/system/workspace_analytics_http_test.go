@@ -82,7 +82,7 @@ func TestWorkspaceAnalyticsProductionMounts(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				handler := extensionHTTPHandler(pendingReplacementEndpoints{workspaceAnalytics: api.NewEndpoints(service), workspaceAnalyticsMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20})
+				handler := extensionHTTPHandler(pendingReplacementEndpoints{workspaceAnalytics: api.NewEndpoints(service), workspaceAnalyticsMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20})
 				query := "?x_axis=state_id&y_axis=issue_count"
 				if strings.Contains(definition.path, "/projects/{project_id}/advance-analytics-charts/") {
 					query += "&type=custom-work-items"

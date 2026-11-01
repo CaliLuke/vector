@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/worklogs"
@@ -136,5 +136,5 @@ func projectWorkLogRecord(raw json.RawMessage, timezone string) (*api.WorkLogRec
 		return nil, workitemResultError()
 	}
 	result := &api.WorkLogRecord{}
-	return result, decodeWorkitemProjection(djangoapi.Timestamps(value, timezone), result)
+	return result, decodeWorkitemProjection(apicontract.Timestamps(value, timezone), result)
 }

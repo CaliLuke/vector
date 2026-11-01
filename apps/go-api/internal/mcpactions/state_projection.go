@@ -6,7 +6,7 @@ import (
 
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	states "github.com/CaliLuke/go-plane/internal/projectstatereads"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	loom "github.com/CaliLuke/loom/pkg"
@@ -53,7 +53,7 @@ func stateMutationResult(input stateInput, value states.MutationResult, timezone
 			return nil, stateError(nil)
 		}
 		var err error
-		record, err = projectStateRecord(djangoapi.Timestamps(row, timezone).(map[string]any))
+		record, err = projectStateRecord(apicontract.Timestamps(row, timezone).(map[string]any))
 		if err != nil {
 			return nil, stateError(nil)
 		}

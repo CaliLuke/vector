@@ -5,7 +5,7 @@ package milestones_test
 import (
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/milestones"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
@@ -23,7 +23,7 @@ func TestMilestoneRetainedArchivedIntakeLinksRemainRemovable(t *testing.T) {
 	require.NoError(t, err)
 	_, err = f.db.Exec(f.ctx, `UPDATE issues SET archived_at=now() WHERE id=$1`, item)
 	require.NoError(t, err)
-	page, err := f.repo.ListWorkItems(f.ctx, f.opts.Scope, id, djangoapi.Query{})
+	page, err := f.repo.ListWorkItems(f.ctx, f.opts.Scope, id, apicontract.Query{})
 	require.NoError(t, err)
 	require.Len(t, page.Results, 1)
 	_, err = f.repo.ManageWorkItems(f.ctx, f.opts, id, nil, []uuid.UUID{item})

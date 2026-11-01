@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/google/uuid"
 )
 
@@ -64,7 +64,7 @@ func (store *PostgresWebhookTaskStore) webhookModelOwned(ctx context.Context, ev
 var milestoneWebhookProjectionSQL = `SELECT json_build_object(
  'id',model.id,'title',model.title,'target_date',model.target_date::text,
  'external_source',model.external_source,'external_id',model.external_id,
- 'created_at',` + djangoapi.DjangoTimestampSQL("model.created_at") + `,
- 'updated_at',` + djangoapi.DjangoTimestampSQL("model.updated_at") + `,
+ 'created_at',` + apicontract.TimestampSQL("model.created_at") + `,
+ 'updated_at',` + apicontract.TimestampSQL("model.updated_at") + `,
  'project',model.project_id,'workspace',model.workspace_id)
  FROM milestones model WHERE model.id=$1 AND model.deleted_at IS NULL`

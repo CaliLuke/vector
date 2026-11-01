@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/google/uuid"
 )
 
@@ -37,7 +37,7 @@ func TestDraftAssetAssociationHTTPAuthorizationAndBody(t *testing.T) {
 					t.Fatalf("incorrect association scope: %v %v %v %v", workspace, actor, target, ids)
 				}
 				if tc.deny {
-					return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+					return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 				}
 				return nil
 			}}

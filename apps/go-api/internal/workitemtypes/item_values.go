@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -234,7 +234,7 @@ func itemValueReferences(ctx context.Context, tx pgx.Tx, in ItemValueInput, defi
 			}
 			// Lock selected targets and the actor's corresponding project memberships
 			// so revocation or movement cannot race an accepted reference write.
-			query = `SELECT i.id::text FROM issues i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id JOIN project_members pm ON pm.project_id=p.id AND pm.workspace_id=p.workspace_id AND pm.member_id=NULLIF($2,'')::uuid AND pm.is_active AND pm.deleted_at IS NULL AND pm.role IN(5,15,20) WHERE i.id=ANY($3::uuid[]) AND ` + djangoapi.IssueVisibleSQL("i", "NULLIF($2,'')::uuid", "$1::uuid") + ` ORDER BY i.id`
+			query = `SELECT i.id::text FROM issues i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id JOIN project_members pm ON pm.project_id=p.id AND pm.workspace_id=p.workspace_id AND pm.member_id=NULLIF($2,'')::uuid AND pm.is_active AND pm.deleted_at IS NULL AND pm.role IN(5,15,20) WHERE i.id=ANY($3::uuid[]) AND ` + apicontract.IssueVisibleSQL("i", "NULLIF($2,'')::uuid", "$1::uuid") + ` ORDER BY i.id`
 			if lock {
 				query += " FOR SHARE OF i,p,pm"
 			}

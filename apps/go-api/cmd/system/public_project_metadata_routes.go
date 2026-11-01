@@ -43,7 +43,7 @@ func publicProjectMetadataRouteCompatibilityMiddleware(
 	compatibility func(http.Handler) http.Handler,
 	throttle publicProjectMetadataThrottle,
 	allowedCORSOrigins []string,
-	sessionCookie djangoSessionCookieConfig,
+	sessionCookie browserSessionCookieConfig,
 	activityLogger publicprojectmetadatareadsstore.ActivityLogger,
 	activitySecret string,
 	bodySizeLimit int64,
@@ -90,7 +90,7 @@ func publicProjectMetadataRouteCompatibilityMiddleware(
 func publicProjectMetadataNotFoundHandler(
 	throttle publicProjectMetadataThrottle,
 	allowedCORSOrigins []string,
-	sessionCookie djangoSessionCookieConfig,
+	sessionCookie browserSessionCookieConfig,
 	activityLogger publicprojectmetadatareadsstore.ActivityLogger,
 	activitySecret string,
 	bodySizeLimit int64,
@@ -115,7 +115,7 @@ func publicProjectMetadataNotFoundHandler(
 		}
 		if bodyErr != nil {
 			logPublicProjectMetadataCompatibilityError(request.Context(), bodyErr)
-			cookieErr := expireUnaccessedDjangoSessionCookie(headers, request, sessionCookie)
+			cookieErr := expireUnaccessedBrowserSessionCookie(headers, request, sessionCookie)
 			if cookieErr != nil {
 				logPublicProjectMetadataCompatibilityError(request.Context(), cookieErr)
 				headers.Del("X-Frame-Options")
@@ -136,7 +136,7 @@ func publicProjectMetadataNotFoundHandler(
 		expireSession, refreshSession, rotatedSession, userID, err := throttle.InspectSession(request.Context(), request)
 		var sessionCookieErr error
 		if expireSession {
-			sessionCookieErr = expireDjangoSessionCookie(headers, sessionCookie)
+			sessionCookieErr = expireBrowserSessionCookie(headers, sessionCookie)
 		}
 		if err != nil {
 			logPublicProjectMetadataCompatibilityError(request.Context(), err)
@@ -177,7 +177,7 @@ func publicProjectMetadataNotFoundHandler(
 		if rotatedSession != nil {
 			preparedSessionRefresh = rotatedSession
 		} else if refreshSession {
-			if cookie := lastDjangoSessionCookie(request, sessionCookieName(sessionCookie)); cookie != nil {
+			if cookie := requestSessionCookie(request, sessionCookieName(sessionCookie)); cookie != nil {
 				preparedSessionRefresh = &browsersession.SessionRefresh{SessionKey: cookie.Value}
 			}
 		}
@@ -189,7 +189,7 @@ func publicProjectMetadataNotFoundHandler(
 				writer.finish()
 				return
 			}
-			if cookieErr := refreshDjangoSessionCookie(headers, sessionCookie, refresh); cookieErr != nil {
+			if cookieErr := refreshBrowserSessionCookie(headers, sessionCookie, refresh); cookieErr != nil {
 				logPublicProjectMetadataCompatibilityError(request.Context(), cookieErr)
 				replacePublicProjectMetadataSessionError(writer, cookieErr)
 				writer.finish()
@@ -361,23 +361,23 @@ type publicMetadataSessionEffects struct {
 	cookieErr error
 }
 
-func (effects *publicMetadataSessionEffects) apply(headers http.Header, request *http.Request, sessionCookie djangoSessionCookieConfig, expireSession, refreshSession bool, rotatedSession *browsersession.SessionRefresh, resolvedUserID string) {
+func (effects *publicMetadataSessionEffects) apply(headers http.Header, request *http.Request, sessionCookie browserSessionCookieConfig, expireSession, refreshSession bool, rotatedSession *browsersession.SessionRefresh, resolvedUserID string) {
 	if resolvedUserID != "" {
 		effects.userID = resolvedUserID
 	}
 	if expireSession {
-		effects.cookieErr = expireDjangoSessionCookie(headers, sessionCookie)
+		effects.cookieErr = expireBrowserSessionCookie(headers, sessionCookie)
 	}
 	if rotatedSession != nil {
 		effects.refresh = rotatedSession
 	} else if refreshSession {
-		if cookie := lastDjangoSessionCookie(request, sessionCookieName(sessionCookie)); cookie != nil {
+		if cookie := requestSessionCookie(request, sessionCookieName(sessionCookie)); cookie != nil {
 			effects.refresh = &browsersession.SessionRefresh{SessionKey: cookie.Value}
 		}
 	}
 }
 
-func (effects *publicMetadataSessionEffects) finish(writer *publicProjectMetadataReadsResponseWriter, request *http.Request, throttle publicProjectMetadataThrottle, sessionCookie djangoSessionCookieConfig) {
+func (effects *publicMetadataSessionEffects) finish(writer *publicProjectMetadataReadsResponseWriter, request *http.Request, throttle publicProjectMetadataThrottle, sessionCookie browserSessionCookieConfig) {
 	headers := writer.Header()
 	if effects.cookieErr != nil {
 		logPublicProjectMetadataCompatibilityError(request.Context(), effects.cookieErr)
@@ -387,7 +387,7 @@ func (effects *publicMetadataSessionEffects) finish(writer *publicProjectMetadat
 		if err != nil {
 			logPublicProjectMetadataCompatibilityError(request.Context(), err)
 			replacePublicProjectMetadataSessionError(writer, err)
-		} else if cookieErr := refreshDjangoSessionCookie(headers, sessionCookie, refresh); cookieErr != nil {
+		} else if cookieErr := refreshBrowserSessionCookie(headers, sessionCookie, refresh); cookieErr != nil {
 			logPublicProjectMetadataCompatibilityError(request.Context(), cookieErr)
 			replacePublicProjectMetadataSessionError(writer, cookieErr)
 		}
@@ -398,7 +398,7 @@ func (effects *publicMetadataSessionEffects) finish(writer *publicProjectMetadat
 func publicProjectMetadataReadsCompatibilityMiddleware(
 	throttle publicProjectMetadataThrottle,
 	allowedCORSOrigins []string,
-	sessionCookie djangoSessionCookieConfig,
+	sessionCookie browserSessionCookieConfig,
 	activityLogger publicprojectmetadatareadsstore.ActivityLogger,
 	activitySecret string,
 	bodySizeLimit int64,
@@ -427,7 +427,7 @@ func publicProjectMetadataReadsCompatibilityMiddleware(
 			}
 			if bodyErr != nil {
 				logPublicProjectMetadataCompatibilityError(request.Context(), bodyErr)
-				cookieErr := expireUnaccessedDjangoSessionCookie(headers, request, sessionCookie)
+				cookieErr := expireUnaccessedBrowserSessionCookie(headers, request, sessionCookie)
 				if cookieErr != nil {
 					logPublicProjectMetadataCompatibilityError(request.Context(), cookieErr)
 					headers.Del("X-Frame-Options")
@@ -638,7 +638,7 @@ func replacePublicProjectMetadataSessionError(writer *publicProjectMetadataReads
 func writePublicProjectMetadataRequestTooLarge(
 	response http.ResponseWriter,
 	request *http.Request,
-	sessionCookie djangoSessionCookieConfig,
+	sessionCookie browserSessionCookieConfig,
 	throttle publicProjectMetadataThrottle,
 ) {
 	headers := response.Header()
@@ -646,7 +646,7 @@ func writePublicProjectMetadataRequestTooLarge(
 		request.Context(), request, http.StatusRequestEntityTooLarge,
 	)
 	if expireSession {
-		if cookieErr := expireDjangoSessionCookie(headers, sessionCookie); cookieErr != nil {
+		if cookieErr := expireBrowserSessionCookie(headers, sessionCookie); cookieErr != nil {
 			mergeVary(headers, "origin")
 			logPublicProjectMetadataCompatibilityError(request.Context(), cookieErr)
 			writer := &publicProjectMetadataReadsResponseWriter{ResponseWriter: response}
@@ -664,7 +664,7 @@ func writePublicProjectMetadataRequestTooLarge(
 		return
 	}
 	if refreshSession != nil {
-		if cookieErr := refreshUnaccessedDjangoSessionCookie(headers, sessionCookie, *refreshSession); cookieErr != nil {
+		if cookieErr := refreshUnaccessedBrowserSessionCookie(headers, sessionCookie, *refreshSession); cookieErr != nil {
 			mergeVary(headers, "origin")
 			logPublicProjectMetadataCompatibilityError(request.Context(), cookieErr)
 			writer := &publicProjectMetadataReadsResponseWriter{ResponseWriter: response}

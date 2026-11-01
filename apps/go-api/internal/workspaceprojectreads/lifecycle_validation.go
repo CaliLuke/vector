@@ -4,13 +4,13 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 var forbiddenProjectCharacters = regexp.MustCompile(`^.*[&+,:;$^}{*=?@#|'<>.()%!-].*$`)
 var projectBooleanFields = []string{"module_view", "cycle_view", "issue_views_view", "page_view", "intake_view", "guest_view_all_features", "is_issue_type_enabled", "is_time_tracking_enabled"}
 
-func (r *LifecycleRepository) validateProjectFields(ctx context.Context, workspace, project string, input djangoinput.Input, app, replace, create bool) (map[string]any, error) {
+func (r *LifecycleRepository) validateProjectFields(ctx context.Context, workspace, project string, input requestinput.Input, app, replace, create bool) (map[string]any, error) {
 	v := &projectFieldValidation{input: input, values: map[string]any{}, failures: map[string]any{}}
 	if err := v.validateScalars(app, replace, create); err != nil {
 		return nil, err

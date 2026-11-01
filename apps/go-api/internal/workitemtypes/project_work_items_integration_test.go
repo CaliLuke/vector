@@ -10,7 +10,7 @@ import (
 	"testing"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 )
 
@@ -62,7 +62,7 @@ func TestUnavailableTypeRejectsWholeIssueEdit(t *testing.T) {
 	f.mutate(t, "pause", f.bug)
 	t.Run("paused type", func(t *testing.T) {
 		_, writeErr := execute("PATCH", created.ID, `{"name":"Must not save","type_id":"`+f.bug+`","labels":[],"assignees":[]}`)
-		var constraint *djangoapi.HTTPError
+		var constraint *apicontract.HTTPError
 		if !errors.As(writeErr, &constraint) || constraint.Status != 400 {
 			t.Fatalf("want availability validation rejection, got %v", writeErr)
 		}
@@ -71,7 +71,7 @@ func TestUnavailableTypeRejectsWholeIssueEdit(t *testing.T) {
 	f.mutate(t, "remove", f.bug)
 	t.Run("removed type", func(t *testing.T) {
 		_, writeErr := execute("PATCH", created.ID, `{"name":"Must not save","type_id":"`+f.bug+`","labels":[],"assignees":[]}`)
-		var constraint *djangoapi.HTTPError
+		var constraint *apicontract.HTTPError
 		if !errors.As(writeErr, &constraint) || constraint.Status != 400 {
 			t.Fatalf("want availability validation rejection, got %v", writeErr)
 		}

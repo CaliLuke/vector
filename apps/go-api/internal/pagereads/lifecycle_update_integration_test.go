@@ -10,9 +10,9 @@ import (
 	"testing"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/pagereads"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/stretchr/testify/require"
 )
@@ -64,10 +64,10 @@ func TestPageUpdateValidationOrderLeavesPageAndTasksUnchanged(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			_, _, err := fixture.repository.Lifecycle(t.Context(), "update", fixture.actor, "milestones", fixture.project, page, "UTC", djangoinput.Input{Fields: sample.fields})
+			_, _, err := fixture.repository.Lifecycle(t.Context(), "update", fixture.actor, "milestones", fixture.project, page, "UTC", requestinput.Input{Fields: sample.fields})
 
 			var lifecycle *pagereads.LifecycleError
-			var httpError *djangoapi.HTTPError
+			var httpError *apicontract.HTTPError
 			switch {
 			case errors.As(err, &lifecycle):
 				require.Equal(t, sample.status, lifecycle.Status)
@@ -110,7 +110,7 @@ func TestPageUpdatePersistsMetadataRelationsAndRawTaskAfterCommit(t *testing.T) 
 	require.NoError(t, err)
 	fields := map[string]any{"name": "  After  ", "description_html": "  <p>After</p>  ", "color": "#abcdef", "access": json.Number("1"), "parent": parent.String(), "labels": []any{label}, "view_props": map[string]any{"full_width": true}, "logo_props": map[string]any{"emoji": "map"}, "is_locked": true, "archived_at": "2026-10-29"}
 
-	status, raw, err := repository.Lifecycle(t.Context(), "update", fixture.actor, "milestones", fixture.project, page, "UTC", djangoinput.Input{Fields: fields})
+	status, raw, err := repository.Lifecycle(t.Context(), "update", fixture.actor, "milestones", fixture.project, page, "UTC", requestinput.Input{Fields: fields})
 
 	require.NoError(t, err)
 	require.Equal(t, 200, status)
@@ -143,7 +143,7 @@ func TestPageUpdateLabelFailureRollsBackContentAndExistingRelations(t *testing.T
 	_, err := fixture.pool.Exec(t.Context(), fmt.Sprintf(`ALTER TABLE page_labels ADD CONSTRAINT reject_new_label CHECK (label_id <> '%s'::uuid)`, newLabel))
 	require.NoError(t, err)
 
-	_, _, err = fixture.repository.Lifecycle(t.Context(), "update", fixture.actor, "milestones", fixture.project, page, "UTC", djangoinput.Input{Fields: map[string]any{"name": "After", "description_html": "<p>After</p>", "labels": []any{newLabel}}})
+	_, _, err = fixture.repository.Lifecycle(t.Context(), "update", fixture.actor, "milestones", fixture.project, page, "UTC", requestinput.Input{Fields: map[string]any{"name": "After", "description_html": "<p>After</p>", "labels": []any{newLabel}}})
 
 	require.Error(t, err)
 	var name, html, label string
@@ -161,7 +161,7 @@ func TestPageUpdateClearsParentAndLabelsWithoutChangingDescription(t *testing.T)
 	label := createUpdateTestLabel(t, fixture)
 	page := createUpdateTestPage(t, fixture, map[string]any{"name": "Before", "description_html": "<p>Before</p>", "parent": parent.String(), "labels": []any{label}})
 
-	status, _, err := fixture.repository.Lifecycle(t.Context(), "update", fixture.actor, "milestones", fixture.project, page, "UTC", djangoinput.Input{Fields: map[string]any{"parent": nil, "labels": []any{}}})
+	status, _, err := fixture.repository.Lifecycle(t.Context(), "update", fixture.actor, "milestones", fixture.project, page, "UTC", requestinput.Input{Fields: map[string]any{"parent": nil, "labels": []any{}}})
 
 	require.NoError(t, err)
 	require.Equal(t, 200, status)
@@ -185,9 +185,9 @@ func TestPageUpdateNonOwnerAccessCheckUsesRawScalarBeforeValidation(t *testing.T
 	_, err = fixture.pool.Exec(t.Context(), `UPDATE pages SET owned_by_id=$1 WHERE id=$2`, owner, page)
 	require.NoError(t, err)
 
-	_, _, err = fixture.repository.Lifecycle(t.Context(), "update", fixture.actor, "milestones", fixture.project, page, "UTC", djangoinput.Input{Fields: map[string]any{"access": "0", "description_html": nil}})
+	_, _, err = fixture.repository.Lifecycle(t.Context(), "update", fixture.actor, "milestones", fixture.project, page, "UTC", requestinput.Input{Fields: map[string]any{"access": "0", "description_html": nil}})
 
-	var rejected *djangoapi.HTTPError
+	var rejected *apicontract.HTTPError
 	require.ErrorAs(t, err, &rejected)
 	require.Equal(t, 400, rejected.Status)
 	require.Equal(t, map[string]any{"error": "Access cannot be updated since this page is owned by someone else"}, rejected.Body)
@@ -195,7 +195,7 @@ func TestPageUpdateNonOwnerAccessCheckUsesRawScalarBeforeValidation(t *testing.T
 	require.NoError(t, fixture.pool.QueryRow(t.Context(), `SELECT name FROM pages WHERE id=$1`, page).Scan(&storedName))
 	require.Equal(t, "Before", storedName)
 
-	status, _, err := fixture.repository.Lifecycle(t.Context(), "update", fixture.actor, "milestones", fixture.project, page, "UTC", djangoinput.Input{Fields: map[string]any{"access": json.Number("0"), "name": "After"}})
+	status, _, err := fixture.repository.Lifecycle(t.Context(), "update", fixture.actor, "milestones", fixture.project, page, "UTC", requestinput.Input{Fields: map[string]any{"access": json.Number("0"), "name": "After"}})
 
 	require.NoError(t, err)
 	require.Equal(t, 200, status)

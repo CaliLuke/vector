@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
@@ -61,7 +61,7 @@ func (db revokeBeforeChildWrite) Begin(ctx context.Context) (pgx.Tx, error) {
 
 func requireChildHidden(t *testing.T, err error) {
 	t.Helper()
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if !errors.As(err, &failure) || failure.Status != 404 {
 		t.Fatalf("want hidden child 404, got %v", err)
 	}
@@ -370,9 +370,9 @@ func TestPrivateItemChildrenRequireCurrentParentVisibility(t *testing.T) {
 		exec(tx, `UPDATE issues SET created_by_id=$1 WHERE id=$2`, actor, issue)
 		exec(tx, `INSERT INTO issue_comments(id,workspace_id,project_id,issue_id,external_source,external_id) VALUES($1,$2,$3,$4,'sync','external-1')`, hiddenComment, workspace, project, target)
 		query := Request{API: true, Operation: "post_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_comments", Slug: "test", ProjectID: project, IssueID: issue, ActorID: actor}
-		input := djangoinput.Input{Fields: map[string]any{"external_source": "sync", "external_id": "external-1"}}
+		input := requestinput.Input{Fields: map[string]any{"external_source": "sync", "external_id": "external-1"}}
 		err = (&Repository{db: tx}).collaborationExternalConflict(ctx, query, input, nil)
-		var conflict *djangoapi.HTTPError
+		var conflict *apicontract.HTTPError
 		if !errors.As(err, &conflict) || conflict.Status != 409 {
 			t.Fatalf("expected duplicate conflict, got %v", err)
 		}

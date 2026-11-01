@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -51,7 +51,7 @@ func TestProjectCreationCleansUpAfterCanceledWriteFailure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = repo.CreateProject(ctx, "00000000-0000-4000-8000-000000000001", "space", djangoinput.Input{Fields: map[string]any{"name": "Created", "identifier": "NEW"}}, false)
+	_, err = repo.CreateProject(ctx, "00000000-0000-4000-8000-000000000001", "space", requestinput.Input{Fields: map[string]any{"name": "Created", "identifier": "NEW"}}, false)
 	if !errors.Is(err, failure) {
 		t.Fatalf("lost insert failure: %v", err)
 	}

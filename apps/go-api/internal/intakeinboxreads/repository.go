@@ -14,7 +14,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 
 	"uuid"
@@ -1135,7 +1135,7 @@ var draftIssueProjection = `json_build_object(
   'id', draft.id, 'name', draft.name, 'state_id', draft.state_id, 'sort_order', draft.sort_order,
   'completed_at', draft.completed_at, 'estimate_point', draft.estimate_point_id, 'priority', draft.priority,
   'start_date', draft.start_date, 'target_date', draft.target_date, 'project_id', draft.project_id,
-  'parent_id', ` + djangoapi.VisibleParentSQL("draft", "$1::uuid") + `,
+  'parent_id', ` + apicontract.VisibleParentSQL("draft", "$1::uuid") + `,
   'cycle_id', (SELECT relation.cycle_id FROM draft_issue_cycles relation WHERE relation.draft_issue_id = draft.id AND relation.deleted_at IS NULL ORDER BY relation.created_at DESC LIMIT 1),
   'module_ids', COALESCE((SELECT json_agg(DISTINCT relation.module_id) FROM draft_issue_modules relation JOIN modules module ON module.id = relation.module_id WHERE relation.draft_issue_id = draft.id AND relation.deleted_at IS NULL AND module.archived_at IS NULL), '[]'::json),
   'label_ids', COALESCE((SELECT json_agg(DISTINCT relation.label_id) FROM draft_issue_labels relation JOIN labels label ON label.id = relation.label_id WHERE ` + issuequery.LiveDraftIssueLabelPredicate("draft", "relation") + `), '[]'::json),
@@ -1224,7 +1224,7 @@ SELECT json_build_object(
     'id', issue.id, 'name', issue.name, 'state_id', issue.state_id, 'sort_order', issue.sort_order,
     'completed_at', issue.completed_at, 'estimate_point', issue.estimate_point_id, 'priority', issue.priority,
     'start_date', issue.start_date, 'target_date', issue.target_date, 'sequence_id', issue.sequence_id,
-    'project_id', issue.project_id, 'parent_id', ` + djangoapi.VisibleParentSQL("issue", "$4::uuid") + `,
+    'project_id', issue.project_id, 'parent_id', ` + apicontract.VisibleParentSQL("issue", "$4::uuid") + `,
     'label_ids', COALESCE((SELECT json_agg(DISTINCT relation.label_id) FROM issue_labels relation JOIN labels label ON label.id = relation.label_id WHERE ` + issuequery.LiveIssueLabelPredicate("issue", "relation") + `), '[]'::json),
     'assignee_ids', COALESCE((SELECT json_agg(DISTINCT relation.assignee_id) FROM issue_assignees relation WHERE relation.issue_id = issue.id AND relation.deleted_at IS NULL), '[]'::json),
     'created_at', issue.created_at, 'updated_at', issue.updated_at, 'created_by', issue.created_by_id,

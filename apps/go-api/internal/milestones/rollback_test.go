@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -36,7 +36,7 @@ func TestMilestoneListRetainsSnapshotAndCleanupErrors(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = repo.List(ctx, Scope{ActorID: uuid.New(), WorkspaceID: uuid.New(), ProjectID: uuid.New(), WorkspaceSlug: "space"}, djangoapi.Query{})
+	_, err = repo.List(ctx, Scope{ActorID: uuid.New(), WorkspaceID: uuid.New(), ProjectID: uuid.New(), WorkspaceSlug: "space"}, apicontract.Query{})
 	if !errors.Is(err, db.readErr) || !errors.Is(err, db.cleanupErr) {
 		t.Fatalf("read or cleanup failure lost: %v", err)
 	}

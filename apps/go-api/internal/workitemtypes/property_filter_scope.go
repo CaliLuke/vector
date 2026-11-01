@@ -6,7 +6,7 @@ import (
 	"strings"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/jackc/pgx/v5"
 )
@@ -137,7 +137,7 @@ func (snapshot *PropertyDiscoverySnapshot) predicateReferences(ctx context.Conte
 		args = append(args, projects)
 	}
 	if kind == property.Issue {
-		query = `SELECT i.id::text FROM issues i WHERE ` + djangoapi.IssueVisibleSQL("i", "$2::uuid", "$1::uuid")
+		query = `SELECT i.id::text FROM issues i WHERE ` + apicontract.IssueVisibleSQL("i", "$2::uuid", "$1::uuid")
 		args = []any{snapshot.workspace, snapshot.actor}
 	}
 	rows, err := tx.Query(ctx, query, args...)

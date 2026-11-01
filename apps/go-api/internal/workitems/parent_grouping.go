@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 )
 
 const parentGroupingPrefix = "parent_type_"
@@ -45,9 +45,9 @@ func (r *Repository) prepareParentGrouping(ctx context.Context, q Request) error
 	parents, err := r.rows(ctx, `SELECT jsonb_build_object('id',parent.id,'name',parent.name,
  'project_id',parent.project_id,'identifier',p.identifier||'-'||parent.sequence_id::text)
  FROM issues parent JOIN projects p ON p.id=parent.project_id JOIN workspaces w ON w.id=parent.workspace_id
- WHERE w.slug=$1 AND parent.type_id=$2::uuid AND `+djangoapi.IssueVisibleSQL("parent", "$3::uuid", "w.id")+`
+ WHERE w.slug=$1 AND parent.type_id=$2::uuid AND `+apicontract.IssueVisibleSQL("parent", "$3::uuid", "w.id")+`
  AND ($4='' OR parent.project_id::text=$4 OR EXISTS(SELECT 1 FROM issues child
- WHERE child.parent_id=parent.id AND child.project_id::text=$4 AND `+djangoapi.IssueVisibleSQL("child", "$3::uuid", "w.id")+`))
+ WHERE child.parent_id=parent.id AND child.project_id::text=$4 AND `+apicontract.IssueVisibleSQL("child", "$3::uuid", "w.id")+`))
  ORDER BY parent.created_at,parent.id`, q.Slug, typeID, q.ActorID, q.ProjectID)
 	if err != nil {
 		return err

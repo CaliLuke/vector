@@ -8,30 +8,30 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 206,
+    "findings": 198,
     "also_in_ERR_01": 0,
-    "additional_ERR_02": 206,
+    "additional_ERR_02": 198,
     "test_file_findings": 0,
-    "non_test_file_findings": 206
+    "non_test_file_findings": 198
   },
   "findings": [
     {
       "file": "apps/go-api/account_authentication.go",
-      "line": 440,
+      "line": 439,
       "column": 11,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/activity_reads.go",
-      "line": 291,
+      "line": 293,
       "column": 7,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/activity_reads.go",
-      "line": 292,
+      "line": 294,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
@@ -849,20 +849,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/djangoinput/input.go",
-      "line": 241,
-      "column": 11,
-      "message": "Error return value of `url.QueryUnescape` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/djangoinput/input.go",
-      "line": 345,
-      "column": 12,
-      "message": "Error return value of `value.Float64` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/features/repository.go",
       "line": 162,
       "column": 14,
@@ -920,7 +906,7 @@
     },
     {
       "file": "apps/go-api/internal/instancemanagement/repository.go",
-      "line": 1035,
+      "line": 1025,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
@@ -1018,30 +1004,23 @@
     },
     {
       "file": "apps/go-api/internal/pagereads/lifecycle.go",
-      "line": 153,
+      "line": 152,
       "column": 10,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/pagereads/lifecycle.go",
-      "line": 709,
+      "line": 687,
       "column": 13,
       "message": "Error return value of `pythoncompat.Dumps` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/pagereads/lifecycle.go",
-      "line": 714,
+      "line": 692,
       "column": 10,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pagereads/lifecycle.go",
-      "line": 852,
-      "column": 2,
-      "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1126,27 +1105,6 @@
       "line": 91,
       "column": 3,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pythoncompat/repr.go",
-      "line": 30,
-      "column": 11,
-      "message": "Error return value of `value.Float64` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pythoncompat/repr.go",
-      "line": 100,
-      "column": 3,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/pythoncompat/repr.go",
-      "line": 134,
-      "column": 11,
-      "message": "Error return value is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1434,20 +1392,6 @@
       "line": 123,
       "column": 5,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_exports.go",
-      "line": 172,
-      "column": 2,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_exports.go",
-      "line": 283,
-      "column": 2,
-      "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
     },
     {

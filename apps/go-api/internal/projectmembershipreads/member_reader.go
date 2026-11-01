@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -60,7 +60,7 @@ func (r *MemberReader) listProjectMembers(ctx context.Context, actor uuid.UUID, 
 // read after project membership is revoked. Preserve the HTTP roster's UserLite
 // shape and inclusion of inactive (but not deleted) target memberships.
 func (r *LifecycleRepository) projectMembers(ctx context.Context, c LifecycleCommand) (any, error) {
-	value, err := djangoapi.JSON(ctx, r.database, `
+	value, err := apicontract.JSON(ctx, r.database, `
 WITH scope AS (
  SELECT p.id, p.workspace_id
  FROM projects p JOIN workspaces w ON w.id=p.workspace_id

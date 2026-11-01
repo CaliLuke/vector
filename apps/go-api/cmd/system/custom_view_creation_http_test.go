@@ -79,7 +79,7 @@ func TestCustomViewCreationProductionMounts(t *testing.T) {
 			mux := loomhttp.NewMuxer()
 			endpoints := customviewcreationapi.NewEndpoints(service)
 			mountCustomViewCreation(mux, endpoints, apiV1CompatibilityOptions{bodySizeLimit: 1 << 20}, sessions,
-				djangoSessionCookieConfig{Name: "session-id", Configured: true}, policy)
+				browserSessionCookieConfig{Name: "session-id", Configured: true}, policy)
 			handler := loomhttp.RequestMetadataMiddleware(requestMetadataPolicy)(mux)
 			request := httptest.NewRequest(tc.method, tc.path, strings.NewReader(tc.body))
 			request.Header.Set("Content-Type", "application/json")

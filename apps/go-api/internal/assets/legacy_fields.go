@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 )
 
@@ -51,7 +51,7 @@ func legacyWritableFields(raw map[string]string) (map[string]any, error) {
 			}
 			fields[name] = id
 		case "size":
-			number, message := djangoinput.FloatField(value)
+			number, message := requestinput.FloatField(value)
 			if message != "" {
 				errorsByField[name] = []string{message}
 				continue
@@ -94,13 +94,13 @@ func legacyWritableFields(raw map[string]string) (map[string]any, error) {
 		}
 	}
 	if len(errorsByField) > 0 {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: errorsByField}
+		return nil, &apicontract.HTTPError{Status: 400, Body: errorsByField}
 	}
 	return fields, nil
 }
 
 func legacyRelationError(name, value string) error {
-	return &djangoapi.HTTPError{Status: 400, Body: map[string]any{name: []string{fmt.Sprintf("Invalid pk \"%s\" - object does not exist.", value)}}}
+	return &apicontract.HTTPError{Status: 400, Body: map[string]any{name: []string{fmt.Sprintf("Invalid pk \"%s\" - object does not exist.", value)}}}
 }
 
 func parseDRFBool(value string) (bool, error) {

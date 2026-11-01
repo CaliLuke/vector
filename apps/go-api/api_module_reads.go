@@ -9,8 +9,8 @@ import (
 
 	api "github.com/CaliLuke/go-plane/apimodulereads/gen/api_module_reads"
 	activitystore "github.com/CaliLuke/go-plane/internal/activityreads"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/modulereads"
 	"github.com/CaliLuke/loom/security"
 )
@@ -84,7 +84,7 @@ func apiModuleError(status int, body map[string]any) error {
 	return result
 }
 func mapAPIModuleError(err error) error {
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	switch {
 	case errors.As(err, &response):
 		return apiModuleError(response.Status, response.Body)

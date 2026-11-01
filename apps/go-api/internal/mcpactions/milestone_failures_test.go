@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/milestones"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
@@ -30,13 +30,13 @@ func TestMilestoneFailuresAreTypedAndSanitized(t *testing.T) {
 			t.Run(tc.code+"/"+action, func(t *testing.T) {
 				f := newFixture(t)
 				failure := fmt.Errorf("private-database-marker: %w", tc.failure)
-				f.milestones.list = func(milestones.Scope, djangoapi.Query) (milestones.Page[milestones.Record], error) {
+				f.milestones.list = func(milestones.Scope, apicontract.Query) (milestones.Page[milestones.Record], error) {
 					return milestones.Page[milestones.Record]{}, failure
 				}
 				f.milestones.read = func(milestones.Scope, uuid.UUID, bool) (milestones.Record, error) {
 					return milestones.Record{}, failure
 				}
-				f.milestones.links = func(milestones.Scope, uuid.UUID, djangoapi.Query) (milestones.Page[milestones.Link], error) {
+				f.milestones.links = func(milestones.Scope, uuid.UUID, apicontract.Query) (milestones.Page[milestones.Link], error) {
 					return milestones.Page[milestones.Link]{}, failure
 				}
 				f.milestones.write = func(context.Context, string, milestones.WriteOptions, uuid.UUID, milestones.Fields, []uuid.UUID, []uuid.UUID) (milestones.MutationResult, error) {

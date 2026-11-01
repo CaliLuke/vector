@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/jackc/pgx/v5"
@@ -36,7 +36,7 @@ func previewFormulaInputs(ctx context.Context, tx pgx.Tx, workspace string, inpu
 		}
 	}
 	if preview.Name != nil {
-		name, failures := djangoinput.TextField(*preview.Name, true, 255, nil)
+		name, failures := requestinput.TextField(*preview.Name, true, 255)
 		if len(failures) > 0 {
 			return builtins, nil, reject(422, strings.Join(failures, " "))
 		}

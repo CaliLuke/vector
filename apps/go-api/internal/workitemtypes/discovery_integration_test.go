@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
@@ -196,7 +196,7 @@ func TestAuthenticatedTypeFilterRejectsUnknownAndUnauthorizedSelections(t *testi
 		t.Fatalf("unknown selection: %v", err)
 	}
 	_, err = typeDiscoveryList(f, repo, operation, f.project, f.outsider, filter, "", false)
-	var denied *djangoapi.HTTPError
+	var denied *apicontract.HTTPError
 	if !errors.As(err, &denied) || denied.Status != 403 {
 		t.Fatalf("access mapping: %v", err)
 	}

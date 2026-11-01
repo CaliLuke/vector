@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/google/uuid"
 )
 
@@ -50,7 +50,7 @@ func TestLegacyWritableFieldsAggregatesDeclaredFieldErrors(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected validation error")
 	}
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if !errors.As(err, &httpErr) {
 		t.Fatalf("error type = %T", err)
 	}
@@ -101,7 +101,7 @@ func TestLegacyWritableFieldsRejectsNonfiniteSize(t *testing.T) {
 	for _, value := range []string{"NaN", "Infinity", "-Infinity", "1e309"} {
 		t.Run(value, func(t *testing.T) {
 			fields, err := legacyWritableFields(map[string]string{"size": value})
-			var failure *djangoapi.HTTPError
+			var failure *apicontract.HTTPError
 			if !errors.As(err, &failure) || failure.Status != 400 {
 				t.Fatalf("error=%v, want HTTP 400", err)
 			}

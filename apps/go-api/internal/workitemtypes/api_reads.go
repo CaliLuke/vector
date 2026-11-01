@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -80,7 +80,7 @@ func readAPITypeRows(ctx context.Context, tx pgx.Tx, in APIRead) (json.RawMessag
 	if err != nil {
 		return nil, err
 	}
-	return djangoapi.JSONTimestamps(raw, in.Timezone)
+	return apicontract.JSONTimestamps(raw, in.Timezone)
 }
 
 const apiTypeJSON = `jsonb_build_object('id',t.id,'deleted_at',t.deleted_at,'name',t.name,'description',t.description,'logo_props',t.logo_props,

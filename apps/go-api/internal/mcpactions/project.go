@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	projects "github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
@@ -136,7 +136,7 @@ func projectReadError(err error) error {
 	case errors.Is(err, projects.ErrBadRequest):
 		return api.MakeInvalidParams(errors.New("invalid project query"))
 	}
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if errors.As(err, &failure) && failure.Status == http.StatusBadRequest {
 		return api.MakeInvalidParams(errors.New("invalid project query"))
 	}

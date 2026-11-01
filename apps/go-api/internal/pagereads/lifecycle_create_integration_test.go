@@ -12,10 +12,10 @@ import (
 	"time"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/bootstrap"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pagereads"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -88,7 +88,7 @@ func (*pageCreateFixture) SoftDelete(context.Context, string, string, string) er
 
 func (fixture *pageCreateFixture) create(t *testing.T, fields map[string]any) (int, json.RawMessage, error) {
 	t.Helper()
-	return fixture.repository.Lifecycle(t.Context(), "create", fixture.actor, "milestones", fixture.project, uuid.UUID{}, "UTC", djangoinput.Input{Fields: fields})
+	return fixture.repository.Lifecycle(t.Context(), "create", fixture.actor, "milestones", fixture.project, uuid.UUID{}, "UTC", requestinput.Input{Fields: fields})
 }
 
 func (fixture *pageCreateFixture) counts(t *testing.T) []int {
@@ -153,7 +153,7 @@ func TestPageCreateRejectsInvalidInputWithoutDurableEffects(t *testing.T) {
 		t.Run(sample.name, func(t *testing.T) {
 			_, _, err := fixture.create(t, sample.fields)
 			var lifecycle *pagereads.LifecycleError
-			var httpError *djangoapi.HTTPError
+			var httpError *apicontract.HTTPError
 			switch {
 			case errors.As(err, &lifecycle):
 				require.Equal(t, sample.status, lifecycle.Status)
@@ -175,7 +175,7 @@ func TestPageCreateChecksMembershipBeforeParentOrFields(t *testing.T) {
 	_, err := fixture.pool.Exec(t.Context(), `UPDATE project_members SET role=5 WHERE project_id=$1 AND member_id=$2`, fixture.project, fixture.actor)
 	require.NoError(t, err)
 	_, _, err = fixture.create(t, map[string]any{"parent": "bad", "access": nil})
-	var denied *djangoapi.HTTPError
+	var denied *apicontract.HTTPError
 	require.ErrorAs(t, err, &denied)
 	require.Equal(t, 403, denied.Status)
 	require.Equal(t, []int{0, 0, 0}, fixture.counts(t))
@@ -218,7 +218,7 @@ func TestPageCreateRollsBackWhenProjectLinkCannotBeWritten(t *testing.T) {
 	_, err := fixture.pool.Exec(t.Context(), `ALTER TABLE project_pages ADD CONSTRAINT reject_new_page_links CHECK (false) NOT VALID`)
 	require.NoError(t, err)
 	_, _, err = fixture.create(t, map[string]any{"name": "Rejected"})
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	require.ErrorAs(t, err, &failure)
 	require.Equal(t, 400, failure.Status)
 	require.Equal(t, []int{0, 0, 0}, fixture.counts(t))

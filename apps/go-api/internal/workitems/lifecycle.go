@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 func (r *Repository) lifecycle(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
@@ -31,7 +31,7 @@ func (r *Repository) lifecycleTransaction(ctx context.Context, q Request, body i
 		return r.bulkLifecycle(ctx, q, body, contentType)
 	}
 	if q.Method == "GET" {
-		row, err := r.row(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+`||jsonb_build_object('parent_id',`+djangoapi.VisibleParentSQL("i", "$4::uuid")+`,'is_subscribed',
+		row, err := r.row(ctx, `SELECT `+apicontract.IssueRowSQL("i")+`||jsonb_build_object('parent_id',`+apicontract.VisibleParentSQL("i", "$4::uuid")+`,'is_subscribed',
  EXISTS(SELECT 1 FROM issue_subscribers s WHERE s.issue_id=i.id AND s.workspace_id=i.workspace_id AND s.project_id=i.project_id AND s.subscriber_id=$4 AND s.deleted_at IS NULL))
  FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE i.id=$1 AND i.project_id=$2 AND w.slug=$3
  AND i.deleted_at IS NULL AND i.archived_at IS NOT NULL AND NOT EXISTS(SELECT 1 FROM issue_types t WHERE t.id=i.type_id AND t.is_epic)`, q.IssueID, q.ProjectID, q.Slug, q.ActorID)
@@ -127,7 +127,7 @@ func (r *Repository) bulkLifecycle(ctx context.Context, q Request, body io.Reade
 	if q.Method == "DELETE" {
 		predicate = liveIssue
 	}
-	rows, err := r.rows(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE w.slug=$1 AND i.project_id=$2 AND i.id=ANY($3::uuid[]) AND `+predicate+` ORDER BY i.created_at DESC`, q.Slug, q.ProjectID, ids)
+	rows, err := r.rows(ctx, `SELECT `+apicontract.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE w.slug=$1 AND i.project_id=$2 AND i.id=ANY($3::uuid[]) AND `+predicate+` ORDER BY i.created_at DESC`, q.Slug, q.ProjectID, ids)
 	if err != nil {
 		return Result{}, err
 	}
@@ -217,7 +217,7 @@ func (r *Repository) issueDates(ctx context.Context, q Request, body io.Reader, 
 		if !ok {
 			return Result{}, failure(400, "error", "The required key does not exist.")
 		}
-		value, e := djangoinput.UUID(id)
+		value, e := requestinput.UUID(id)
 		if e != nil {
 			return Result{}, failure(400, "error", "Please provide valid detail")
 		}
@@ -263,7 +263,7 @@ func (r *Repository) issueDates(ctx context.Context, q Request, body io.Reader, 
 			local := q
 			local.IssueID = id
 			data, _ := pythoncompat.Dumps(map[string]any{field: item[field]}, nil)
-			previous, _ := pythoncompat.Dumps(map[string]any{field: djangoinput.ScalarString(row[field])}, nil)
+			previous, _ := pythoncompat.Dumps(map[string]any{field: requestinput.ScalarString(row[field])}, nil)
 			if err = r.activity(ctx, local, "issue.activity.updated", data, previous, true); err != nil {
 				return Result{}, err
 			}

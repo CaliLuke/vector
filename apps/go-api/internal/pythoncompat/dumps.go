@@ -195,7 +195,7 @@ func dumpString(output *strings.Builder, value string) {
 }
 
 // DecodeObject preserves JSON integer precision at application-owned body
-// boundaries. Stream framing and parser errors are handled by djangoinput.
+// boundaries. Stream framing and parser errors are handled by requestinput.
 func DecodeObject(data []byte) (map[string]any, error) {
 	var value map[string]any
 	decoder := json.NewDecoder(bytes.NewReader(data))

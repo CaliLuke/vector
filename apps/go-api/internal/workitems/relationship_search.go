@@ -3,8 +3,8 @@ package workitems
 import (
 	"context"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 // All eligibility predicates run before LIMIT, including the complete graph
@@ -17,11 +17,11 @@ func (r *Repository) searchRelationships(ctx context.Context, q Request, add fun
 	}
 	var anchor map[string]any
 	if raw := q.Params["issue_id"]; raw != "" {
-		id, err := djangoinput.UUID(raw)
+		id, err := requestinput.UUID(raw)
 		if err != nil {
 			return failure(400, "error", "Please provide valid detail")
 		}
-		rows, err := r.rows(ctx, `SELECT to_jsonb(i) FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE i.id=$1 AND w.slug=$2 AND `+liveIssue+` AND `+djangoapi.IssueVisibleSQL("i", "$3::uuid", "w.id"), id.String(), q.Slug, q.ActorID)
+		rows, err := r.rows(ctx, `SELECT to_jsonb(i) FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE i.id=$1 AND w.slug=$2 AND `+liveIssue+` AND `+apicontract.IssueVisibleSQL("i", "$3::uuid", "w.id"), id.String(), q.Slug, q.ActorID)
 		if err != nil {
 			return err
 		}
@@ -63,7 +63,7 @@ func (r *Repository) searchHierarchyLevel(ctx context.Context, q Request, anchor
 		*where = append(*where, `NOT EXISTS(SELECT 1 FROM work_item_type_settings h WHERE h.workspace_id=i.workspace_id AND h.hierarchy_enabled)`)
 		return nil
 	}
-	id, err := djangoinput.UUID(typeID)
+	id, err := requestinput.UUID(typeID)
 	if err != nil {
 		return failure(400, "error", "Please provide a valid work item type")
 	}

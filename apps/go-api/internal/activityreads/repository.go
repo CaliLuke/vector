@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -20,7 +20,7 @@ var (
 	ErrNotFound  = errors.New("not found")
 )
 
-type HTTPError = djangoapi.HTTPError
+type HTTPError = apicontract.HTTPError
 
 type database interface {
 	QueryRow(context.Context, string, ...any) pgx.Row
@@ -111,7 +111,7 @@ func (repository *Repository) authorizeProject(ctx context.Context, user uuid.UU
 		return ErrNotFound
 	}
 	var allowed bool
-	allowed, err = djangoapi.ProjectEntityAllowed(ctx, repository.database, user, slug, id, requireMemberRole)
+	allowed, err = apicontract.ProjectEntityAllowed(ctx, repository.database, user, slug, id, requireMemberRole)
 	if err != nil {
 		return err
 	}
@@ -138,16 +138,16 @@ func param(request Request, names ...string) string {
 }
 
 func pageSize(request Request) (int, error) {
-	return djangoapi.PageSize(djangoapi.Query{Params: request.Params, Present: request.Present})
+	return apicontract.PageSize(apicontract.Query{Params: request.Params, Present: request.Present})
 }
 func cursorPage(request Request, limit int) (int, error) {
-	return djangoapi.CursorPage(djangoapi.Query{Params: request.Params, Present: request.Present}, limit)
+	return apicontract.CursorPage(apicontract.Query{Params: request.Params, Present: request.Present}, limit)
 }
 func pageWindow(request Request) (int, int, int, error) {
-	return djangoapi.PageWindow(djangoapi.Query{Params: request.Params, Present: request.Present})
+	return apicontract.PageWindow(apicontract.Query{Params: request.Params, Present: request.Present})
 }
 func envelope(results []any, total, limit, page int) map[string]any {
-	return djangoapi.Envelope(results, total, limit, page)
+	return apicontract.Envelope(results, total, limit, page)
 }
 
 func paginatedResult(value any, limit, page int) (Result, error) {
@@ -178,7 +178,7 @@ const activityAPIJSON = `jsonb_build_object(
 'new_identifier',a.new_identifier,'epoch',a.epoch)`
 
 func fileAssetURLSQL(assetID, legacy string) string {
-	return djangoapi.FileAssetURLSQL(assetID, legacy)
+	return apicontract.FileAssetURLSQL(assetID, legacy)
 }
 
 var activityActorExpansion = `COALESCE((SELECT jsonb_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'email',u.email,'display_name',u.display_name,'avatar',u.avatar,'avatar_url',` + fileAssetURLSQL("u.avatar_asset_id", "u.avatar") + `) FROM users u WHERE u.id=a.actor_id),'{}'::jsonb)`

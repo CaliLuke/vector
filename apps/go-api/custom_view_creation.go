@@ -12,10 +12,10 @@ import (
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	api "github.com/CaliLuke/go-plane/customviewcreation/gen/custom_view_creation"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/customviewcreation"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	loomhttp "github.com/CaliLuke/loom/http"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
@@ -123,7 +123,7 @@ func (s *customViewCreationService) prepare(ctx context.Context) (customViewCrea
 	return principal, nil
 }
 
-func customViewCreationInput(ctx context.Context, body io.ReadCloser) (djangoinput.Input, error) {
+func customViewCreationInput(ctx context.Context, body io.ReadCloser) (requestinput.Input, error) {
 	if body != nil {
 		defer platform.CloseRequestBody(ctx, body)
 	}
@@ -131,7 +131,7 @@ func customViewCreationInput(ctx context.Context, body io.ReadCloser) (djangoinp
 	if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok {
 		contentType = metadata.Headers().Get("Content-Type")
 	}
-	return djangoinput.Parse(body, contentType)
+	return requestinput.Parse(body, contentType)
 }
 
 func (s *customViewCreationService) CreateProjectView(ctx context.Context, payload *api.CreateProjectViewPayload, body io.ReadCloser) error {
@@ -168,7 +168,7 @@ func (s *customViewCreationService) CreateProjectView(ctx context.Context, paylo
 		}
 	}
 	if raw, ok := input.Fields["sort_order"]; ok {
-		value, message := djangoinput.FloatField(raw)
+		value, message := requestinput.FloatField(raw)
 		if message != "" {
 			return s.error(http.StatusBadRequest, map[string]any{"sort_order": []string{message}})
 		}
@@ -215,7 +215,7 @@ func (s *customViewCreationService) invalidNull() error {
 }
 
 func (s *customViewCreationService) inputError(err error) error {
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if errors.As(err, &failure) {
 		return s.error(failure.Status, failure.Body)
 	}

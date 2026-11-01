@@ -9,7 +9,7 @@ import (
 	"testing"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
@@ -95,7 +95,7 @@ func TestProjectRosterRechecksAccessAfterInitialAuthorization(t *testing.T) {
 			_, err = tx.Exec(t.Context(), tc.mutation)
 			require.NoError(t, err)
 			result, err := repository.ExecuteLifecycle(t.Context(), command)
-			var denied *djangoapi.HTTPError
+			var denied *apicontract.HTTPError
 			require.ErrorAs(t, err, &denied)
 			assert.Equal(t, tc.status, denied.Status)
 			assert.Nil(t, result)

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 )
 
@@ -45,9 +45,9 @@ func (r *LifecycleRepository) validateProjectReference(ctx context.Context, v *p
 		v.failures[key] = []string{"Incorrect type. Expected pk value, received bool."}
 		return nil
 	}
-	id, err := djangoinput.UUID(raw)
+	id, err := requestinput.UUID(raw)
 	if err != nil {
-		value, stringErr := projectFieldErrorString(v.input, key, raw)
+		value, stringErr := projectFieldErrorString(raw)
 		if stringErr != nil {
 			return stringErr
 		}
@@ -59,7 +59,7 @@ func (r *LifecycleRepository) validateProjectReference(ctx context.Context, v *p
 		return err
 	}
 	if !exists {
-		value, stringErr := projectFieldErrorString(v.input, key, raw)
+		value, stringErr := projectFieldErrorString(raw)
 		if stringErr != nil {
 			return stringErr
 		}

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 )
 
 func TestParseCursorMatchesGlobalPaginatorInputs(t *testing.T) {
@@ -40,7 +40,7 @@ func TestParseCursorRejectsInvalidPagination(t *testing.T) {
 	for _, raw := range []string{"", "1:2", "1:2:3:4", "x:0:0", "1.0:0:0", "0:0:0", "-1:0:0", "1:999999999999999999999999999:0"} {
 		t.Run(raw, func(t *testing.T) {
 			_, err := parseCursor(&raw)
-			var httpError *djangoapi.HTTPError
+			var httpError *apicontract.HTTPError
 			if !errors.As(err, &httpError) || httpError.Status != 400 || httpError.Body["detail"] != "Invalid cursor parameter." {
 				t.Fatalf("parseCursor(%q) error = %v, want 400 Invalid cursor parameter", raw, err)
 			}
@@ -51,7 +51,7 @@ func TestParseCursorRejectsInvalidPagination(t *testing.T) {
 func TestCursorOffsetRejectsNonPositiveLimitAndOverflow(t *testing.T) {
 	for _, page := range []cursorPage{{limit: 0, page: 0}, {limit: -1, page: 0}, {limit: 2, page: math.MaxInt}} {
 		_, err := page.offset()
-		var httpError *djangoapi.HTTPError
+		var httpError *apicontract.HTTPError
 		if !errors.As(err, &httpError) || httpError.Status != 400 {
 			t.Fatalf("offset(%+v) error = %v, want HTTP 400", page, err)
 		}

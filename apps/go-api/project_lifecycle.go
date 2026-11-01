@@ -12,11 +12,11 @@ import (
 
 	storeuuid "uuid"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	store "github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	api "github.com/CaliLuke/go-plane/projectlifecycle/gen/project_lifecycle"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -28,8 +28,8 @@ import (
 type projectLifecycleRepository interface {
 	AuthorizeProjectWrite(context.Context, string, string, string, string, bool) error
 	CheckProjectMutation(context.Context, string, string, string, bool) error
-	CreateProject(context.Context, string, string, djangoinput.Input, bool) (json.RawMessage, error)
-	UpdateProject(context.Context, string, string, string, djangoinput.Input, bool, bool) (json.RawMessage, error)
+	CreateProject(context.Context, string, string, requestinput.Input, bool) (json.RawMessage, error)
+	UpdateProject(context.Context, string, string, string, requestinput.Input, bool, bool) (json.RawMessage, error)
 	DeleteProject(context.Context, string, string, string, bool) error
 	ArchiveProject(context.Context, store.ArchiveCommand) (store.ArchiveResult, error)
 
@@ -65,7 +65,7 @@ func projectLifecycleError(status int, body map[string]any) error {
 	return &api.ProjectLifecycleErrorIdentity{Kind: fmt.Sprintf("status_%d", status), Body: value}
 }
 func projectLifecycleRepoError(ctx context.Context, err error) error {
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	if errors.As(err, &response) {
 		return projectLifecycleError(response.Status, response.Body)
 	}
@@ -233,12 +233,12 @@ func projectLifecycleWriteRepoError(ctx context.Context, err error, app bool) er
 	}
 	return projectLifecycleRepoError(ctx, err)
 }
-func (s *projectLifecycleService) parseWrite(ctx context.Context, body io.ReadCloser) (djangoinput.Input, error) {
+func (s *projectLifecycleService) parseWrite(ctx context.Context, body io.ReadCloser) (requestinput.Input, error) {
 	contentType := "application/json"
 	if meta, ok := loomhttp.RequestMetadataFromContext(ctx); ok && meta.Headers().Get("Content-Type") != "" {
 		contentType = meta.Headers().Get("Content-Type")
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return input, projectLifecycleRepoError(ctx, err)
 	}
@@ -271,7 +271,7 @@ func (s *projectLifecycleService) create(ctx context.Context, slug string, body 
 	}
 	raw, err := s.repo.CreateProject(ctx, p.userID.String(), slug, input, app)
 	if err != nil {
-		var response *djangoapi.HTTPError
+		var response *apicontract.HTTPError
 		if !app && !errors.As(err, &response) {
 			moduleLifecycleLogError(ctx, err)
 			err = projectLifecycleError(500, map[string]any{"error": "An unexpected error occurred"})

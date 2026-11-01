@@ -12,7 +12,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -97,7 +97,7 @@ func TestCycleLifecycleAPIPatchDuplicateExternalIDUsesRawExternalSource(t *testi
 				requestData["external_source"] = test.requestSource
 			}
 			err = repository.checkAPIExternalIDConflict(context.Background(), "project", "workspace", "cycle-current", before, requestData)
-			var httpError *djangoapi.HTTPError
+			var httpError *apicontract.HTTPError
 			if !errors.As(err, &httpError) || httpError.Status != 409 {
 				t.Fatalf("conflict error=%v, want HTTP 409", err)
 			}
@@ -125,7 +125,7 @@ func TestCycleLifecycleAPIPatchExternalIDNumericCoercionKeepsRawComparison(t *te
 		map[string]any{"external_id": "1", "external_source": "tracker"},
 		map[string]any{"external_id": json.Number("1")},
 	)
-	var httpError *djangoapi.HTTPError
+	var httpError *apicontract.HTTPError
 	if !errors.As(err, &httpError) || httpError.Status != 409 {
 		t.Fatalf("numeric raw external ID conflict=%v, want HTTP 409", err)
 	}
@@ -328,7 +328,7 @@ func TestParseCycleInputDatesUsesActorCalendarDayBeforeProjectNormalization(t *t
 func TestParseCycleInputDatesRejectsReversedInstantsOnSameDay(t *testing.T) {
 	startText, endText := "2099-02-01T15:00:00Z", "2099-02-01T14:00:00Z"
 	_, _, err := parseCycleInputDates(&startText, &endText, "UTC", "UTC")
-	var httpError *djangoapi.HTTPError
+	var httpError *apicontract.HTTPError
 	if !errors.As(err, &httpError) || httpError.Status != 400 {
 		t.Fatalf("reversed same-day pair error = %v, want source-compatible 400", err)
 	}

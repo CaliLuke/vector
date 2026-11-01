@@ -10,10 +10,10 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	store "github.com/CaliLuke/go-plane/internal/notifications"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	api "github.com/CaliLuke/go-plane/notificationactions/gen/notification_actions"
 	reads "github.com/CaliLuke/go-plane/notificationreads/gen/notifications"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -109,15 +109,15 @@ func (s *notificationActionsService) MarkAllRead(ctx context.Context, payload *a
 	if contentType == "" {
 		contentType = "application/json"
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return nil, notificationActionParseError(err)
 	}
 	if input.Kind != "" {
 		return nil, notificationActionBodyError(400, map[string]any{"detail": "Expected a JSON object."})
 	}
-	snoozed := pythoncompat.Truthy(input.Fields["snoozed"])
-	archived := pythoncompat.Truthy(input.Fields["archived"])
+	snoozed := requestinput.Nonempty(input.Fields["snoozed"])
+	archived := requestinput.Nonempty(input.Fields["archived"])
 	kind := "all"
 	if value, ok := input.Fields["type"].(string); ok {
 		kind = value
@@ -129,7 +129,7 @@ func (s *notificationActionsService) MarkAllRead(ctx context.Context, payload *a
 }
 
 func notificationActionParseError(err error) error {
-	var source *djangoapi.HTTPError
+	var source *apicontract.HTTPError
 	if !errors.As(err, &source) {
 		return notificationActionError(err)
 	}
@@ -160,13 +160,13 @@ func (s *notificationActionsService) Update(ctx context.Context, payload *api.Up
 	if contentType == "" {
 		contentType = "application/json"
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return nil, notificationActionParseError(err)
 	}
 	value := any(nil)
 	if raw, present := input.FieldValue("snoozed_till", false, false, true); present && raw != nil {
-		text := djangoinput.ScalarString(raw)
+		text := requestinput.ScalarString(raw)
 		location, locationErr := time.LoadLocation(p.Timezone)
 		if locationErr != nil {
 			return nil, notificationActionError(locationErr)

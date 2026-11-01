@@ -4,12 +4,12 @@ import (
 	"context"
 	"maps"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 // Intake edits share the ordinary item's value and preservation contract. The
 // surrounding project transaction owns the schema lock and durable effects.
-func (r *Repository) saveIntakeIssueEdit(ctx context.Context, actor string, old map[string]any, changes issueChanges, input djangoinput.Input) (map[string]any, error) {
+func (r *Repository) saveIntakeIssueEdit(ctx context.Context, actor string, old map[string]any, changes issueChanges, input requestinput.Input) (map[string]any, error) {
 	submitted, err := submittedCustomValues(input)
 	if err != nil {
 		return nil, err

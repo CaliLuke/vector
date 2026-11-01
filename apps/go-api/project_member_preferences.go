@@ -10,8 +10,8 @@ import (
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/projectmemberpreferences"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	api "github.com/CaliLuke/go-plane/projectmemberpreferences/gen/project_member_preferences"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
@@ -140,7 +140,7 @@ func (s *projectMemberPreferencesService) Patch(ctx context.Context, payload *ap
 		return nil, preferenceErrorFromRepository(err)
 	}
 	contentType := requestContentType(ctx)
-	parsed, err := djangoinput.Parse(body, contentType)
+	parsed, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return nil, preferenceError(400, map[string]any{"detail": "Invalid data"})
 	}

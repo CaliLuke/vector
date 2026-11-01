@@ -10,9 +10,9 @@ import (
 
 	systemapi "github.com/CaliLuke/go-plane"
 	projectmembershipreadsapi "github.com/CaliLuke/go-plane/gen/project_membership_reads"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	intakeStore "github.com/CaliLuke/go-plane/internal/projectintakewrites"
 	preferencesstore "github.com/CaliLuke/go-plane/internal/projectmemberpreferences"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	intakeapi "github.com/CaliLuke/go-plane/projectintakewrites/gen/project_intake_writes"
 	preferencesapi "github.com/CaliLuke/go-plane/projectmemberpreferences/gen/project_member_preferences"
 )
@@ -56,7 +56,7 @@ func TestProjectMemberPreferencesProductionMount(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			pending := pendingReplacementEndpoints{projectMemberPreferences: preferencesapi.NewEndpoints(service), projectMemberPreferencesMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20}
+			pending := pendingReplacementEndpoints{projectMemberPreferences: preferencesapi.NewEndpoints(service), projectMemberPreferencesMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20}
 			handler := extensionHTTPHandler(pending)
 			request := httptest.NewRequest(tc.method, path, strings.NewReader(tc.body))
 			request.Header.Set("Content-Type", "application/json")
@@ -97,7 +97,7 @@ func (r *extensionIntakeRepository) Authorize(context.Context, string, string, s
 	}
 	return nil
 }
-func (r *extensionIntakeRepository) ValidateCreate(input djangoinput.Input) (map[string]any, error) {
+func (r *extensionIntakeRepository) ValidateCreate(input requestinput.Input) (map[string]any, error) {
 	return (&intakeStore.Repository{}).ValidateCreate(input)
 }
 func (r *extensionIntakeRepository) Create(context.Context, string, string, string, map[string]any) (json.RawMessage, error) {
@@ -123,7 +123,7 @@ func TestProjectIntakeWritesProductionMounts(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				pending := pendingReplacementEndpoints{projectIntakeWrites: intakeapi.NewEndpoints(service), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20}
+				pending := pendingReplacementEndpoints{projectIntakeWrites: intakeapi.NewEndpoints(service), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20}
 				handler := extensionHTTPHandler(pending)
 				path := "/api/workspaces/demo/projects/11111111-1111-4111-8111-111111111111/" + collection + "/"
 				status := 201
@@ -168,7 +168,7 @@ func TestProjectIntakeSerializerValidationPrecedesCreatePermission(t *testing.T)
 	if err != nil {
 		t.Fatal(err)
 	}
-	handler := extensionHTTPHandler(pendingReplacementEndpoints{projectIntakeWrites: intakeapi.NewEndpoints(service), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20})
+	handler := extensionHTTPHandler(pendingReplacementEndpoints{projectIntakeWrites: intakeapi.NewEndpoints(service), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20})
 	request := httptest.NewRequest("POST", "/api/workspaces/demo/projects/11111111-1111-4111-8111-111111111111/intakes/", strings.NewReader(`{"name":""}`))
 	request.Header.Set("Content-Type", "application/json")
 	request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
@@ -197,7 +197,7 @@ func TestProjectMemberPreferenceWritesRetainReadAndHead(t *testing.T) {
 		t.Fatal(err)
 	}
 	stub := projectMembershipReadsHTTPStub{}
-	handler := extensionHTTPHandler(pendingReplacementEndpoints{projectMemberPreferences: preferencesapi.NewEndpoints(service), projectMemberPreferencesMetadata: service.(sessionResourceProtocolAuthorizer), projectMembershipReads: projectmembershipreadsapi.NewEndpoints(stub), projectMembershipMetadata: stub, readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}})
+	handler := extensionHTTPHandler(pendingReplacementEndpoints{projectMemberPreferences: preferencesapi.NewEndpoints(service), projectMemberPreferencesMetadata: service.(sessionResourceProtocolAuthorizer), projectMembershipReads: projectmembershipreadsapi.NewEndpoints(stub), projectMembershipMetadata: stub, readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}})
 	for _, method := range []string{"GET", "HEAD"} {
 		request := httptest.NewRequest(method, "/api/workspaces/demo/projects/11111111-1111-4111-8111-111111111111/preferences/member/22222222-2222-4222-8222-222222222222/", nil)
 		request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})

@@ -116,7 +116,7 @@ func newInstanceManagementMiddlewareTestHandlerWithThrottle(t *testing.T, denied
 	legacy := adminapi.NewEndpoints(&instanceAdminSessionHTTPStub{authenticated: true})
 	return newHTTPHandlerWithPendingReplacements(newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false,
 		nil, nil, nil, nil, nil, nil, nil, nil, nil, legacy, nil, nil, nil, nil, nil, nil, nil, nil,
-		pendingReplacementEndpoints{instanceManagement: api.NewEndpoints(service), instanceManagementMetadata: service.(sessionResourceProtocolAuthorizer), instanceManagementThrottle: throttle, readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}, publicProjectMetadataAdminCookie: djangoSessionCookieConfig{Name: "admin-session-id", Configured: true}, activityReadsActivity: audit, activityReadsBodyLimit: limit})
+		pendingReplacementEndpoints{instanceManagement: api.NewEndpoints(service), instanceManagementMetadata: service.(sessionResourceProtocolAuthorizer), instanceManagementThrottle: throttle, readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}, publicProjectMetadataAdminCookie: browserSessionCookieConfig{Name: "admin-session-id", Configured: true}, activityReadsActivity: audit, activityReadsBodyLimit: limit})
 }
 
 func TestInstanceManagementAnonymousThrottleSharedRootAndSignupBudget(t *testing.T) {

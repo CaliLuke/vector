@@ -142,7 +142,7 @@ func newPageLifecycleProductionWriteHandler(t *testing.T, service *pageLifecycle
 		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 		pendingReplacementEndpoints{
 			pageReads: pagereads.NewEndpoints(service), pageReadsMetadata: authorizer,
-			readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true},
+			readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true},
 			readServicesCORS:      []string{"https://app.example.test"},
 			activityReadsActivity: activity, activityReadsSecret: "page-test-secret", activityReadsBodyLimit: bodyLimit,
 		},
@@ -299,7 +299,7 @@ func TestPageLifecycleUnsupportedCanonicalMethodsAuthorizeBefore405(t *testing.T
 			if test.denied {
 				authorizer.status = http.StatusForbidden
 			}
-			cookie := djangoSessionCookieConfig{Name: "session-id", Configured: true}
+			cookie := browserSessionCookieConfig{Name: "session-id", Configured: true}
 			options := apiV1CompatibilityOptions{activityLogger: activity, activitySecret: "page-test-secret", bodySizeLimit: 1 << 20}
 			stack := sessionServiceMiddlewareStack(options, sessions, cookie)
 			protocol := newSessionServiceProtocolMiddleware(notificationProtocolMetadata, labelSessionProtocolDispatch{pages: authorizer}, loomhttp.RuntimeCORSPolicy{}, stack, cookie, false, options)

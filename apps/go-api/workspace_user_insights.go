@@ -14,10 +14,10 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	store "github.com/CaliLuke/go-plane/internal/workspaceuserinsights"
 	api "github.com/CaliLuke/go-plane/workspaceuserinsights/gen/workspace_user_insights"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -34,7 +34,7 @@ type workspaceUserInsightsSessions interface {
 type workspaceUserInsightsRepository interface {
 	AuthorizeWorkspace(context.Context, string, string, bool) error
 	Profile(context.Context, string, string, string) (json.RawMessage, error)
-	Activity(context.Context, string, string, string, []string, djangoapi.Query) (json.RawMessage, error)
+	Activity(context.Context, string, string, string, []string, apicontract.Query) (json.RawMessage, error)
 	Stats(context.Context, string, string, string, map[string]string) (json.RawMessage, error)
 	ExportActivity(context.Context, string, string, string, string) ([]store.ActivityCSVRow, error)
 	CanExportActivity(context.Context, string, string) (bool, error)
@@ -197,15 +197,15 @@ func (s *workspaceUserInsightsService) Activity(ctx context.Context, p *api.Acti
 		projects = []string{*p.Project}
 	}
 	for _, project := range projects {
-		if _, parseErr := djangoinput.UUID(project); parseErr != nil {
+		if _, parseErr := requestinput.UUID(project); parseErr != nil {
 			return nil, nil, s.error(400, map[string]any{"error": "Please provide valid detail"})
 		}
 	}
-	body, err := s.repo.Activity(ctx, actor.userID, p.Slug, p.UserID, projects, djangoapi.Query{Params: params, Present: present})
+	body, err := s.repo.Activity(ctx, actor.userID, p.Slug, p.UserID, projects, apicontract.Query{Params: params, Present: present})
 	if errors.Is(err, store.ErrForbidden) {
 		return nil, nil, s.error(403, map[string]any{"error": "You don't have the required permissions."})
 	}
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if errors.As(err, &httpErr) {
 		return nil, nil, s.error(httpErr.Status, httpErr.Body)
 	}
@@ -259,9 +259,9 @@ func (s *workspaceUserInsightsService) ExportActivity(ctx context.Context, p *ap
 	if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok {
 		contentType = metadata.Headers().Get("Content-Type")
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
-		var httpErr *djangoapi.HTTPError
+		var httpErr *apicontract.HTTPError
 		if errors.As(err, &httpErr) {
 			return nil, nil, s.error(httpErr.Status, httpErr.Body)
 		}

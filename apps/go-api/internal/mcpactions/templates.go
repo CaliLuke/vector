@@ -6,7 +6,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
@@ -74,7 +74,7 @@ func selectTemplate(input *api.TemplateRequest) (templateInput, templates.Comman
 		cmd.Description = in.Description
 	}
 	if in.Data != nil && *in.Data != "" {
-		if djangoapi.DecodeJSON([]byte(*in.Data), &cmd.Data) != nil || cmd.Data == nil {
+		if apicontract.DecodeJSON([]byte(*in.Data), &cmd.Data) != nil || cmd.Data == nil {
 			return in, cmd, api.MakeInvalidParams(errors.New("template_data must be a JSON object"))
 		}
 	}
@@ -110,10 +110,10 @@ func (s *Service) templateOperation(ctx context.Context, input *api.TemplateRequ
 		return raw, nil
 	}
 	var value any
-	if djangoapi.DecodeJSON(raw, &value) != nil {
+	if apicontract.DecodeJSON(raw, &value) != nil {
 		return nil, workitemResultError()
 	}
-	return json.Marshal(djangoapi.Timestamps(value, actor.Timezone))
+	return json.Marshal(apicontract.Timestamps(value, actor.Timezone))
 }
 
 // resourceReceiptJSON is shared by native catalogue adapters with varying result shapes.
@@ -122,7 +122,7 @@ func resourceReceiptJSON(result projectmutations.Result, extended, keyed bool) (
 		return result.Record, nil
 	}
 	var value any
-	if djangoapi.DecodeJSON(result.Record, &value) != nil {
+	if apicontract.DecodeJSON(result.Record, &value) != nil {
 		return nil, workitemResultError()
 	}
 	body := map[string]any{"resource_id": result.ID, "revision": result.Revision, "result": value}

@@ -6,7 +6,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	loom "github.com/CaliLuke/loom/pkg"
 )
@@ -84,7 +84,7 @@ func projectWorkitemRecord(raw json.RawMessage) (*api.WorkitemRecord, error) {
 			row[key] = []string{}
 		}
 	}
-	raw, err := json.Marshal(djangoapi.Timestamps(row, "UTC"))
+	raw, err := json.Marshal(apicontract.Timestamps(row, "UTC"))
 	if err != nil {
 		return nil, workitemResultError()
 	}

@@ -29,11 +29,11 @@ func TestWorkItemMixedPathsPreserveSessionProtocol(t *testing.T) {
 				t.Fatal(err)
 			}
 			options := apiV1CompatibilityOptions{bodySizeLimit: defaultFileSizeLimit}
-			stack := sessionServiceMiddlewareStack(options, nil, djangoSessionCookieConfig{})
+			stack := sessionServiceMiddlewareStack(options, nil, browserSessionCookieConfig{})
 			auth := &workItemProtocolAuthorizerStub{err: &workitemapi.WorkItemError{Kind: "status_403", Body: loom.MustJSONValueFrom(map[string]any{"detail": "You do not have permission to perform this action."})}}
 			var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusTeapot) })
-			handler = newSessionServiceProtocolMiddleware(notificationProtocolMetadata, sessionProtocolAuthorizerStub{false}, policy, stack, djangoSessionCookieConfig{}, false, options)(handler)
-			handler = workItemProtocolMiddleware(auth, policy, stack, djangoSessionCookieConfig{})(handler)
+			handler = newSessionServiceProtocolMiddleware(notificationProtocolMetadata, sessionProtocolAuthorizerStub{false}, policy, stack, browserSessionCookieConfig{}, false, options)(handler)
+			handler = workItemProtocolMiddleware(auth, policy, stack, browserSessionCookieConfig{})(handler)
 			handler = readServicesCompatibilityMiddleware(handler)
 			for _, method := range []string{http.MethodGet, http.MethodHead, http.MethodPost, http.MethodOptions, http.MethodTrace} {
 				response := httptest.NewRecorder()

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/mcpactions"
 	"github.com/CaliLuke/go-plane/internal/milestones"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
@@ -101,7 +101,7 @@ func (r changingMilestoneApplication) Create(ctx context.Context, o milestones.W
 	r.change()
 	return r.Repository.Create(ctx, o, fields)
 }
-func (r changingMilestoneApplication) List(ctx context.Context, scope milestones.Scope, q djangoapi.Query) (milestones.Page[milestones.Record], error) {
+func (r changingMilestoneApplication) List(ctx context.Context, scope milestones.Scope, q apicontract.Query) (milestones.Page[milestones.Record], error) {
 	r.change()
 	return r.Repository.List(ctx, scope, q)
 }

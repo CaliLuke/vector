@@ -26,7 +26,7 @@ introspection, verified account linking and expiring proof storage. `mcpoauthlin
 defines the generated browser-link API. `internal/mcpactions` projects credential-neutral
 application operations shared with HTTP. `internal/projectmembershipreads.DirectoryReader`
 owns current workspace-directory authorization, filtering, paging and the existing-role catalogue.
-Project reads use `internal/workspaceprojectreads` on the primary. Cycle, module, and label reads use primary `internal/cyclereads`, `internal/modulereads`, and `internal/projectlabelreads` instances and their shared API serializers. A shared `internal/djangoapi.ProjectMemberReadScopeSQL` binds authorization and resource data to one database snapshot; immutable workspace IDs prevent slug reassignment from changing the target. Comment and link reads reuse `internal/workitems`; activity reads reuse `internal/activityreads`. Their bound queries also recheck parent-item visibility and relationship ownership. `internal/djangoapi.Timestamps` supplies the shared HTTP/MCP timezone projection. All scoped MCP
+Project reads use `internal/workspaceprojectreads` on the primary. Cycle, module, and label reads use primary `internal/cyclereads`, `internal/modulereads`, and `internal/projectlabelreads` instances and their shared API serializers. A shared `internal/apicontract.ProjectMemberReadScopeSQL` binds authorization and resource data to one database snapshot; immutable workspace IDs prevent slug reassignment from changing the target. Comment and link reads reuse `internal/workitems`; activity reads reuse `internal/activityreads`. Their bound queries also recheck parent-item visibility and relationship ownership. `internal/apicontract.Timestamps` supplies the shared HTTP/MCP timezone projection. All scoped MCP
 reads retain the verified workspace UUID through the data query, preventing slug
 reassignment from changing the selected tenant. Project archive and restore share a transactional writer with HTTP. Optional receipts live in `internal/mutationreceipts`; a database trigger advances project revisions for all project-row writers. Discovery filters generated action schemas using current scopes and workspace/project permissions without changing the shared catalogue.
 OAuth is available through an explicitly configured external issuer; remaining resource actions
@@ -43,6 +43,14 @@ The [PQL query boundary](pql.md) lives in `internal/issuequery` and executes thr
 `internal/milestones` owns the [native milestone operations](mcp-milestones.md): consistent scoped reads and transactional record/association changes, receipts, revisions and outbox insertion. The webhook worker supports explicit milestone subscriptions and immutable workspace binding. Item-activity and notification delivery preserve milestone snapshots and recheck queued email scope. Existing history, profile, export, activity counts and notification readers share current milestone visibility checks; notification writes recheck the same scope. The generated native HTTP routes use primary API-key validation, immutable workspace admission and the shared operations. The generated MCP tool mounts all seven operations through the same repository, with project-scoped discovery, pinned output shapes and optional receipt/revision extensions.
 
 ## Source layout
+
+Shared response, pagination and query-policy helpers live in `internal/apicontract`.
+`internal/requestinput` owns JSON and form decoding plus field validation.
+JSON uses UTF-8 and retains exact number text. Form text also requires UTF-8;
+malformed escapes fail before field validation. UUID inputs use validated textual
+representations. Shared pagination accepts page sizes from 1 to 1,000 and rejects
+invalid or overflowing cursors with HTTP 400. Native browser sessions live in
+`internal/authentication/browsersession`.
 
 Draft creation, editing, deletion and publication belong to `draftLifecycle` and
 `draftOperation` in `internal/workitems`. The lifecycle owns standalone transactions;

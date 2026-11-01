@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/milestones"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
@@ -40,7 +40,7 @@ func TestMilestoneAssociationsApplyNetChangeAndKeepReceiptInputsCanonical(t *tes
 	added, err := f.repo.ManageWorkItems(f.ctx, f.opts, id, []uuid.UUID{item}, nil)
 	require.NoError(t, err)
 	require.NotEqual(t, created.Revision, added.Revision)
-	page, err := f.repo.ListWorkItems(f.ctx, f.opts.Scope, id, djangoapi.Query{})
+	page, err := f.repo.ListWorkItems(f.ctx, f.opts.Scope, id, apicontract.Query{})
 	require.NoError(t, err)
 	require.Len(t, page.Results, 1)
 	linkID := page.Results[0].ID
@@ -53,7 +53,7 @@ func TestMilestoneAssociationsApplyNetChangeAndKeepReceiptInputsCanonical(t *tes
 	require.NotEqual(t, added.Revision, removed.Revision)
 	_, err = f.repo.ManageWorkItems(f.ctx, f.opts, id, []uuid.UUID{item}, nil)
 	require.NoError(t, err)
-	page, err = f.repo.ListWorkItems(f.ctx, f.opts.Scope, id, djangoapi.Query{})
+	page, err = f.repo.ListWorkItems(f.ctx, f.opts.Scope, id, apicontract.Query{})
 	require.NoError(t, err)
 	require.Len(t, page.Results, 1)
 	require.NotEqual(t, linkID, page.Results[0].ID, "re-adding allocates a new association identity")
@@ -84,7 +84,7 @@ func TestMilestoneAssociationValidationIsAtomicAndDoesNotMoveOtherAssignments(t 
 	unchanged, err := f.repo.ManageWorkItems(f.ctx, f.opts, id, nil, []uuid.UUID{item})
 	require.NoError(t, err)
 	require.Equal(t, first.Revision, unchanged.Revision)
-	page, err := f.repo.ListWorkItems(f.ctx, f.opts.Scope, other, djangoapi.Query{})
+	page, err := f.repo.ListWorkItems(f.ctx, f.opts.Scope, other, apicontract.Query{})
 	require.NoError(t, err)
 	require.Len(t, page.Results, 1)
 	require.Equal(t, item.String(), page.Results[0].Issue)

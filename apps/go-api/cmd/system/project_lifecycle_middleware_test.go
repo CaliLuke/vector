@@ -15,7 +15,7 @@ import (
 	systemapi "github.com/CaliLuke/go-plane"
 	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
 	"github.com/CaliLuke/go-plane/gen/system"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	projects "github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	api "github.com/CaliLuke/go-plane/projectlifecycle/gen/project_lifecycle"
 )
@@ -38,7 +38,7 @@ func (r projectLifecycleMiddlewareRepository) AuthorizeAPIProjectRead(context.Co
 func (projectLifecycleMiddlewareRepository) CheckProjectMutation(context.Context, string, string, string, bool) error {
 	return nil
 }
-func (r projectLifecycleMiddlewareRepository) CreateProject(context.Context, string, string, djangoinput.Input, bool) (json.RawMessage, error) {
+func (r projectLifecycleMiddlewareRepository) CreateProject(context.Context, string, string, requestinput.Input, bool) (json.RawMessage, error) {
 	r.recorder.add("dispatch")
 	return json.RawMessage(`{}`), nil
 }
@@ -61,7 +61,7 @@ func newProjectLifecycleMiddlewareTestHandler(t *testing.T, recorder *cycleMiddl
 		pendingReplacementEndpoints{
 			projectLifecycle: api.NewEndpoints(service), projectLifecycleMetadata: service,
 			activityReads: activityapi.NewEndpoints(protocolActivity), activityReadsMetadata: protocolActivity,
-			readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true},
+			readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true},
 			activityReadsActivity: activity, activityReadsSecret: "project-lifecycle-test-secret", activityReadsBodyLimit: bodyLimit,
 		},
 	)

@@ -29,9 +29,9 @@ func sessionProtocolTestHandlerWithOptions(t *testing.T, authenticated bool, opt
 	if err != nil {
 		t.Fatal(err)
 	}
-	stack := sessionServiceMiddlewareStack(options, nil, djangoSessionCookieConfig{})
+	stack := sessionServiceMiddlewareStack(options, nil, browserSessionCookieConfig{})
 	next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusTeapot) })
-	handler := newSessionServiceProtocolMiddleware(notificationProtocolMetadata, sessionProtocolAuthorizerStub{authenticated}, policy, stack, djangoSessionCookieConfig{}, true, options)(next)
+	handler := newSessionServiceProtocolMiddleware(notificationProtocolMetadata, sessionProtocolAuthorizerStub{authenticated}, policy, stack, browserSessionCookieConfig{}, true, options)(next)
 	return readServicesCompatibilityMiddleware(handler)
 }
 func TestSessionServiceProtocolAuthenticatesMetadataAndUnsupportedMethods(t *testing.T) {
@@ -71,11 +71,11 @@ func TestAccountAuthenticationSlashlessRedirectMatchesCommonMiddlewareOrdering(t
 		t.Fatal(err)
 	}
 	options := apiV1CompatibilityOptions{bodySizeLimit: defaultFileSizeLimit}
-	stack := sessionServiceMiddlewareStack(options, nil, djangoSessionCookieConfig{})
+	stack := sessionServiceMiddlewareStack(options, nil, browserSessionCookieConfig{})
 	handler := newSessionServiceProtocolMiddleware(
 		notificationProtocolMetadata,
 		accountAuthenticationSessionProtocolDispatch{account: authenticatedAccountProtocolStub{}},
-		policy, stack, djangoSessionCookieConfig{}, false, options,
+		policy, stack, browserSessionCookieConfig{}, false, options,
 	)(http.NotFoundHandler())
 	handler = readServicesCompatibilityMiddleware(handler)
 
@@ -102,7 +102,7 @@ func TestAccountAuthenticationSlashlessRedirectMatchesCommonMiddlewareOrdering(t
 	debugHandler := newSessionServiceProtocolMiddleware(
 		notificationProtocolMetadata,
 		accountAuthenticationSessionProtocolDispatch{account: authenticatedAccountProtocolStub{}},
-		policy, stack, djangoSessionCookieConfig{}, true, options,
+		policy, stack, browserSessionCookieConfig{}, true, options,
 	)(http.NotFoundHandler())
 	debugResponse := httptest.NewRecorder()
 	debugHandler.ServeHTTP(debugResponse, httptest.NewRequest(http.MethodPost, "/auth/email-check", strings.NewReader(`{"email":"a@example.com"}`)))
@@ -151,7 +151,7 @@ func TestSessionServiceProtocolFinalizesSessionsAfterEarlyResponses(t *testing.T
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			sessions := &publicProjectMetadataThrottleStub{earlyRefresh: &browsersession.SessionRefresh{SessionKey: "refreshed", BrowserClose: true}}
-			cookie := djangoSessionCookieConfig{Name: "session-id", Configured: true}
+			cookie := browserSessionCookieConfig{Name: "session-id", Configured: true}
 			policy, err := djangoRuntimeCORSPolicy(nil)
 			if err != nil {
 				t.Fatal(err)
@@ -182,7 +182,7 @@ func TestDedicatedAuthenticationRoutesDoNotRunReadServiceSessionFinalizer(t *tes
 	} {
 		t.Run(path, func(t *testing.T) {
 			sessions := &publicProjectMetadataThrottleStub{}
-			handler := activityReadsSessionFinalizationMiddleware(sessions, djangoSessionCookieConfig{Name: "session-id", Configured: true})(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
+			handler := activityReadsSessionFinalizationMiddleware(sessions, browserSessionCookieConfig{Name: "session-id", Configured: true})(http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 				response.WriteHeader(http.StatusOK)
 			}))
 			response := httptest.NewRecorder()

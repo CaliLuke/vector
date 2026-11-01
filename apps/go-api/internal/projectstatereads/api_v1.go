@@ -7,19 +7,19 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/jackc/pgx/v5"
 )
 
 // APIV1Request keeps API serializer and pagination behavior separate from the
 // session-authenticated project-state endpoints in this package.
-type APIV1Request = djangoapi.ProjectReadRequest
+type APIV1Request = apicontract.ProjectReadRequest
 
 // AuthorizeAPIV1 mirrors ProjectEntityPermission for safe API requests: any
 // active project member, including guests, may read a project state.
 func (repository *Repository) AuthorizeAPIV1(ctx context.Context, user, slug, project string, write bool) error {
-	allowed, err := djangoapi.ProjectEntityAllowed(ctx, repository.database, user, slug, project, write)
+	allowed, err := apicontract.ProjectEntityAllowed(ctx, repository.database, user, slug, project, write)
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func (repository *Repository) ReadAPIV1(ctx context.Context, user string, reques
 	limit, page, offset := 1000, 0, 0
 	if !detail {
 		var err error
-		limit, page, offset, err = djangoapi.PageWindow(djangoapi.Query{Params: p, Present: request.Present})
+		limit, page, offset, err = apicontract.PageWindow(apicontract.Query{Params: p, Present: request.Present})
 		if err != nil {
 			return nil, err
 		}
@@ -54,7 +54,7 @@ func (repository *Repository) ReadAPIV1(ctx context.Context, user string, reques
 	if request.ExpectedWorkspaceID != nil {
 		query, args = boundStateReadQuery(user, request, limit, offset)
 	}
-	value, err := djangoapi.JSON(ctx, repository.database, query, args...)
+	value, err := apicontract.JSON(ctx, repository.database, query, args...)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			if request.ExpectedWorkspaceID != nil {
@@ -83,7 +83,7 @@ func (repository *Repository) ReadAPIV1(ctx context.Context, user string, reques
 		}
 	}
 	for i, raw := range rows {
-		projected, serializeErr := djangoapi.Serialize(ctx, repository.database, raw.(map[string]any), apiStateFields, fields, expand, false)
+		projected, serializeErr := apicontract.Serialize(ctx, repository.database, raw.(map[string]any), apiStateFields, fields, expand, false)
 		if serializeErr != nil {
 			return nil, serializeErr
 		}
@@ -108,7 +108,7 @@ func (repository *Repository) ReadAPIV1(ctx context.Context, user string, reques
 	if err != nil {
 		return nil, err
 	}
-	result := djangoapi.Envelope(rows, total, limit, page)
+	result := apicontract.Envelope(rows, total, limit, page)
 	result["next_page_results"] = doc["has_next"]
 	return result, nil
 }

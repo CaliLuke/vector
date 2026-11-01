@@ -14,9 +14,9 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	store "github.com/CaliLuke/go-plane/internal/workitems"
 	api "github.com/CaliLuke/go-plane/work_item_core/gen/work_item_core"
@@ -84,11 +84,11 @@ func (s *workItemCoreService) AuthorizeWorkItemProtocol(ctx context.Context, res
 			effects.Rate = &rate
 		}
 		if !rate.Allowed {
-			return WorkItemProtocolMetadata{}, workItemError(&djangoapi.HTTPError{Status: 429, Body: map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))}})
+			return WorkItemProtocolMetadata{}, workItemError(&apicontract.HTTPError{Status: 429, Body: map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))}})
 		}
 	}
 	if err = browsersession.ValidateUserTimezone(p.timezone); errors.Is(err, browsersession.ErrTimezoneNotFound) {
-		err = &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "The required key does not exist."}}
+		err = &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "The required key does not exist."}}
 	}
 	if err != nil {
 		workItemLogError(ctx, operation, "timezone", err)
@@ -118,7 +118,7 @@ func workItemError(err error) error {
 		return err
 	}
 	status, body := 500, map[string]any{"error": "Something went wrong please try again later"}
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if errors.As(err, &failure) {
 		status, body = failure.Status, failure.Body
 	}
@@ -153,7 +153,7 @@ func workItemError(err error) error {
 }
 
 func workItemLogError(ctx context.Context, operation, stage string, err error) {
-	var httpError *djangoapi.HTTPError
+	var httpError *apicontract.HTTPError
 	if errors.As(err, &httpError) && httpError.Status < 500 {
 		return
 	}
@@ -193,7 +193,7 @@ func (s *workItemCoreService) APIKeyAuth(ctx context.Context, key string, scheme
 			if status == 500 {
 				workItemLogError(ctx, "authentication", "api_key_validation", err)
 			}
-			return ctx, workItemError(&djangoapi.HTTPError{Status: status, Body: map[string]any{"detail": message}})
+			return ctx, workItemError(&apicontract.HTTPError{Status: status, Body: map[string]any{"detail": message}})
 		}
 		p = workItemPrincipal{principal.UserID.String(), principal.Timezone, key}
 		if effects := apikey.EffectsFromContext(ctx); effects != nil {
@@ -216,7 +216,7 @@ func (s *workItemCoreService) APIKeyAuth(ctx context.Context, key string, scheme
 			}
 		}
 		if id == "" {
-			return ctx, workItemError(&djangoapi.HTTPError{Status: 401, Body: map[string]any{"detail": unauthenticatedDetail}})
+			return ctx, workItemError(&apicontract.HTTPError{Status: 401, Body: map[string]any{"detail": unauthenticatedDetail}})
 		}
 		p = workItemPrincipal{user: id, timezone: zone}
 	}
@@ -256,7 +256,7 @@ func (s *workItemCoreService) execute(ctx context.Context, operation string, pay
 	}
 	p, ok := ctx.Value(workItemPrincipalKey{}).(workItemPrincipal)
 	if !ok {
-		return nil, nil, workItemError(&djangoapi.HTTPError{Status: 401, Body: map[string]any{"detail": unauthenticatedDetail}})
+		return nil, nil, workItemError(&apicontract.HTTPError{Status: 401, Body: map[string]any{"detail": unauthenticatedDetail}})
 	}
 	q := workItemRequest(ctx, operation, payload)
 	q.ActorID, q.Timezone = p.user, p.timezone
@@ -274,12 +274,12 @@ func (s *workItemCoreService) execute(ctx context.Context, operation string, pay
 			effects.Rate = &rate
 		}
 		if !rate.Allowed {
-			return nil, nil, workItemError(&djangoapi.HTTPError{Status: 429, Body: map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))}})
+			return nil, nil, workItemError(&apicontract.HTTPError{Status: 429, Body: map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))}})
 		}
 	}
 	if err := browsersession.ValidateUserTimezone(p.timezone); err != nil {
 		if errors.Is(err, browsersession.ErrTimezoneNotFound) {
-			err = &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "The required key does not exist."}}
+			err = &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "The required key does not exist."}}
 		}
 		workItemLogError(ctx, operation, "timezone", err)
 		return nil, nil, workItemError(err)

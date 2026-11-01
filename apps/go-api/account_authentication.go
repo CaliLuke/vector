@@ -14,13 +14,12 @@ import (
 
 	api "github.com/CaliLuke/go-plane/accountauthentication/gen/account_authentication"
 	store "github.com/CaliLuke/go-plane/internal/accountauthentication"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/authentication/password"
 	"github.com/CaliLuke/go-plane/internal/authentication/passwordstrength"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/emailvalidation"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	loomhttp "github.com/CaliLuke/loom/http"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
@@ -416,7 +415,7 @@ func (s *accountAuthenticationService) allow(ctx context.Context) error {
 	}
 	return nil
 }
-func (s *accountAuthenticationService) parse(ctx context.Context, body io.ReadCloser, contentType *string) (djangoinput.Input, error) {
+func (s *accountAuthenticationService) parse(ctx context.Context, body io.ReadCloser, contentType *string) (requestinput.Input, error) {
 	if body != nil {
 		defer platform.CloseRequestBody(ctx, body)
 	}
@@ -424,10 +423,10 @@ func (s *accountAuthenticationService) parse(ctx context.Context, body io.ReadCl
 	if contentType != nil {
 		ct = *contentType
 	}
-	return djangoinput.Parse(body, ct)
+	return requestinput.Parse(body, ct)
 }
 func (s *accountAuthenticationService) inputFailure(err error) error {
-	var httpError *djangoapi.HTTPError
+	var httpError *apicontract.HTTPError
 	if errors.As(err, &httpError) {
 		return s.failure(httpError.Status, httpError.Body)
 	}
@@ -518,4 +517,4 @@ func authenticationString(value any) string {
 	}
 	return ""
 }
-func authenticationTruthy(value any) bool { return pythoncompat.Truthy(value) }
+func authenticationTruthy(value any) bool { return requestinput.Nonempty(value) }

@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
@@ -59,7 +59,7 @@ func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.R
 			}
 			// Freeze the accepted representation before persisting the receipt.
 			// Timezone preferences are not part of the normalized mutation identity.
-			current, applyErr = djangoapi.JSONTimestamps(current, in.Timezone)
+			current, applyErr = apicontract.JSONTimestamps(current, in.Timezone)
 			if applyErr != nil {
 				return nil, applyErr
 			}

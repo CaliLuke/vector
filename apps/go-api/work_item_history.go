@@ -9,8 +9,8 @@ import (
 	"io"
 	"strconv"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/workitemhistory"
 	api "github.com/CaliLuke/go-plane/workitemhistory/gen/work_item_history"
 	loom "github.com/CaliLuke/loom/pkg"
@@ -164,7 +164,7 @@ func (service *workItemHistoryService) read(ctx context.Context, request store.R
 	request.Timezone = principal.timezone
 	body, err := service.repository.Read(ctx, request)
 	if err != nil {
-		var httpError *djangoapi.HTTPError
+		var httpError *apicontract.HTTPError
 		if errors.As(err, &httpError) {
 			return nil, nil, service.error(httpError.Status, httpError.Body)
 		}

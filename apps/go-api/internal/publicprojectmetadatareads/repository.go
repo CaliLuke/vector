@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 
 	"uuid"
@@ -276,7 +276,7 @@ SELECT COALESCE((
     'target_date', issue.target_date,
     'sequence_id', issue.sequence_id,
     'project_id', issue.project_id,
-    'parent_id', `+djangoapi.PublicParentSQL("issue")+`,
+    'parent_id', `+apicontract.PublicParentSQL("issue")+`,
     'cycle_id', (SELECT relation.cycle_id FROM cycle_issues relation WHERE relation.issue_id = issue.id AND relation.deleted_at IS NULL LIMIT 1),
     'created_by', issue.created_by_id,
     'vote_items', (SELECT jsonb_agg(DISTINCT jsonb_build_object(

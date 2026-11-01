@@ -12,7 +12,7 @@ import (
 
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -40,14 +40,14 @@ func (repository *Repository) APIProjects(ctx context.Context, userID uuid.UUID,
 	if err != nil {
 		return nil, err
 	}
-	query := djangoapi.Query{Params: map[string]string{}, Present: map[string]bool{}}
+	query := apicontract.Query{Params: map[string]string{}, Present: map[string]bool{}}
 	if options.PerPage != nil {
 		query.Params["per_page"], query.Present["per_page"] = *options.PerPage, true
 	}
 	if options.Cursor != nil {
 		query.Params["cursor"], query.Present["cursor"] = *options.Cursor, true
 	}
-	limit, page, offset, err := djangoapi.PageWindow(query)
+	limit, page, offset, err := apicontract.PageWindow(query)
 	if err != nil {
 		return nil, err
 	}
@@ -66,14 +66,14 @@ func (repository *Repository) APIProjectList(ctx context.Context, userID uuid.UU
 	if err != nil {
 		return nil, err
 	}
-	query := djangoapi.Query{Params: map[string]string{}, Present: map[string]bool{}}
+	query := apicontract.Query{Params: map[string]string{}, Present: map[string]bool{}}
 	if options.PerPage != nil {
 		query.Params["per_page"], query.Present["per_page"] = *options.PerPage, true
 	}
 	if options.Cursor != nil {
 		query.Params["cursor"], query.Present["cursor"] = *options.Cursor, true
 	}
-	limit, page, offset, err := djangoapi.PageWindow(query)
+	limit, page, offset, err := apicontract.PageWindow(query)
 	if err != nil {
 		return nil, err
 	}
@@ -204,7 +204,7 @@ SELECT COALESCE((SELECT json_agg(item ORDER BY ordinal) FROM ordered WHERE ordin
 	if err := json.Unmarshal(body, &rows); err != nil {
 		return nil, fmt.Errorf("decode lite API project list: %w", err)
 	}
-	return json.Marshal(djangoapi.Envelope(rows, total, limit, page))
+	return json.Marshal(apicontract.Envelope(rows, total, limit, page))
 }
 
 // APIProjectSummary preserves the summary endpoint's distinct permission and
@@ -333,7 +333,7 @@ func (repository *Repository) projectProjection(ctx context.Context, body json.R
 		return nil, err
 	}
 	project := func(row map[string]any) (map[string]any, error) {
-		return djangoapi.Serialize(ctx, repository.database, row, slices.Sorted(maps.Keys(row)), fields, expand, false)
+		return apicontract.Serialize(ctx, repository.database, row, slices.Sorted(maps.Keys(row)), fields, expand, false)
 	}
 	if collection {
 		rows, ok := document["results"].([]any)

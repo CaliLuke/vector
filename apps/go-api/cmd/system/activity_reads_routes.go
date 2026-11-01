@@ -47,7 +47,7 @@ func newActivityReadsProtocolMiddleware(
 	corsPolicy loomhttp.RuntimeCORSPolicy,
 	stack func(http.Handler) http.Handler,
 	compatibilityOptions apiV1CompatibilityOptions,
-	cookieConfig djangoSessionCookieConfig,
+	cookieConfig browserSessionCookieConfig,
 	bodySizeLimit int64,
 	debugMode bool,
 ) func(http.Handler) http.Handler {
@@ -195,7 +195,7 @@ func activityReadsAPIMethodNotAllowedHandler(authorizer systemapi.ActivityReadsP
 	})
 }
 
-func activityReadsUserMethodNotAllowedHandler(authorizer systemapi.ActivityReadsProtocolAuthorizer, cookieConfig djangoSessionCookieConfig) http.Handler {
+func activityReadsUserMethodNotAllowedHandler(authorizer systemapi.ActivityReadsProtocolAuthorizer, cookieConfig browserSessionCookieConfig) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		sessionID := ""
 		if cookie, err := request.Cookie(sessionCookieName(cookieConfig)); err == nil {
@@ -228,7 +228,7 @@ type activityReadsSessionFinalizationResponseWriter struct {
 	http.ResponseWriter
 	request       *http.Request
 	sessions      readServicesSessionLifecycle
-	sessionCookie djangoSessionCookieConfig
+	sessionCookie browserSessionCookieConfig
 	access        *activityReadsSessionAccess
 	wroteHeader   bool
 	failed        bool
@@ -240,7 +240,7 @@ func (writer *activityReadsSessionFinalizationResponseWriter) WriteHeader(status
 	}
 	writer.wroteHeader = true
 	if !writer.access.accessed {
-		if err := finalizeUnaccessedDjangoSession(writer.Header(), writer.request, status, writer.sessionCookie, writer.sessions); err != nil {
+		if err := finalizeUnaccessedBrowserSession(writer.Header(), writer.request, status, writer.sessionCookie, writer.sessions); err != nil {
 			logPublicProjectMetadataCompatibilityError(writer.request.Context(), err)
 			writer.failed = true
 			writeReadServicesSessionError(writer.ResponseWriter, writer.request, err)
@@ -260,7 +260,7 @@ func (writer *activityReadsSessionFinalizationResponseWriter) Write(body []byte)
 	return writer.ResponseWriter.Write(body)
 }
 
-func activityReadsSessionFinalizationMiddleware(sessions readServicesSessionLifecycle, cookie djangoSessionCookieConfig) func(http.Handler) http.Handler {
+func activityReadsSessionFinalizationMiddleware(sessions readServicesSessionLifecycle, cookie browserSessionCookieConfig) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 			if authResponseSessionPath(request) {
@@ -386,7 +386,7 @@ func activityReadsSlashlessCompatibilityHandler(stack func(http.Handler) http.Ha
 func activityReadsMiddlewareStack(
 	options apiV1CompatibilityOptions,
 	sessions readServicesSessionLifecycle,
-	cookie djangoSessionCookieConfig,
+	cookie browserSessionCookieConfig,
 ) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		next = readServicesQueryPresenceMiddleware(next)
@@ -424,7 +424,7 @@ func activityReadsIntegerQueryMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func activityReadsSessionMiddleware(sessions readServicesSessionLifecycle, cookie djangoSessionCookieConfig) func(http.Handler) http.Handler {
+func activityReadsSessionMiddleware(sessions readServicesSessionLifecycle, cookie browserSessionCookieConfig) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		session := readServicesSessionMiddleware(sessions, cookie)(next)
 		return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {

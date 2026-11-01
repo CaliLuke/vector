@@ -62,7 +62,7 @@ func TestWorkItemHistoryGeneratedHTTPMountCarriesAuthenticatedRequests(t *testin
 				workItemHistory:         workitemhistoryapi.NewEndpoints(service),
 				workItemHistoryMetadata: service.(sessionResourceProtocolAuthorizer),
 				readServicesSession:     sessions,
-				readServicesCookie:      djangoSessionCookieConfig{Name: "session-id", Configured: true},
+				readServicesCookie:      browserSessionCookieConfig{Name: "session-id", Configured: true},
 			})
 			requestURL := test.path
 			if len(test.query) > 0 {
@@ -107,7 +107,7 @@ func TestWorkItemHistoryProtocolAuthScopeHeadAndOptions(t *testing.T) {
 			workItemHistory:         workitemhistoryapi.NewEndpoints(service),
 			workItemHistoryMetadata: service.(sessionResourceProtocolAuthorizer),
 			readServicesSession:     sessions,
-			readServicesCookie:      djangoSessionCookieConfig{Name: "session-id", Configured: true},
+			readServicesCookie:      browserSessionCookieConfig{Name: "session-id", Configured: true},
 			activityReadsBodyLimit:  1 << 20,
 		})
 		return handler, repository, sessions
@@ -180,7 +180,7 @@ func TestWorkItemHistoryOptionsMetadataMatchesSourceViews(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	handler := extensionHTTPHandler(pendingReplacementEndpoints{workItemHistory: workitemhistoryapi.NewEndpoints(service), workItemHistoryMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}})
+	handler := extensionHTTPHandler(pendingReplacementEndpoints{workItemHistory: workitemhistoryapi.NewEndpoints(service), workItemHistoryMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}})
 	for i, pattern := range workItemHistoryPaths {
 		t.Run(names[i]+pattern, func(t *testing.T) {
 			path := strings.NewReplacer("{slug}", "demo", "{project_id}", historyHTTPProjectID, "{issue_id}", historyHTTPIssueID, "{work_item_id}", historyHTTPIssueID, "{pk}", historyHTTPVersionID, "{property_id}", historyHTTPVersionID).Replace(pattern)

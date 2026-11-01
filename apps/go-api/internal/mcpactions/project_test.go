@@ -10,7 +10,7 @@ import (
 	"testing"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	projects "github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	"github.com/stretchr/testify/require"
@@ -102,8 +102,8 @@ func TestProjectApplicationFailuresAreSafe(t *testing.T) {
 			{"revoked", "forbidden", projects.ErrForbidden, ""},
 			{"hidden", "not_found", projects.ErrNotFound, ""},
 			{"bad query", "invalid_params", projects.ErrBadRequest, ""},
-			{"bad cursor", "invalid_params", &djangoapi.HTTPError{Status: 400}, ""},
-			{"cursor overflow", "internal_error", &djangoapi.HTTPError{Status: 500}, ""},
+			{"bad cursor", "invalid_params", &apicontract.HTTPError{Status: 400}, ""},
+			{"cursor overflow", "internal_error", &apicontract.HTTPError{Status: 500}, ""},
 			{"database unavailable", "internal_error", errors.New("private-database-error"), ""},
 			{"invalid JSON", "internal_error", nil, "invalid-private-json"},
 			{"null JSON", "internal_error", nil, "null"},

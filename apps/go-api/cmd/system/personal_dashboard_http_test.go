@@ -33,7 +33,7 @@ func TestPersonalDashboardRejectsMalformedMonthsBeforeQuery(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				handler := extensionHTTPHandler(pendingReplacementEndpoints{personalDashboard: api.NewEndpoints(service), personalDashboardMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}})
+				handler := extensionHTTPHandler(pendingReplacementEndpoints{personalDashboard: api.NewEndpoints(service), personalDashboardMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}})
 				request := httptest.NewRequest(http.MethodGet, "/api/users/me/workspaces/demo/"+suffix+"/?month="+url.QueryEscape(month), nil)
 				request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
 				response := httptest.NewRecorder()
@@ -76,7 +76,7 @@ func TestPersonalDashboardProductionMounts(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				handler := extensionHTTPHandler(pendingReplacementEndpoints{personalDashboard: api.NewEndpoints(service), personalDashboardMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}})
+				handler := extensionHTTPHandler(pendingReplacementEndpoints{personalDashboard: api.NewEndpoints(service), personalDashboardMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}})
 				request := httptest.NewRequest(tc.method, "/api/users/me/workspaces/demo/"+suffix+"/", nil)
 				if tc.auth {
 					request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
@@ -133,7 +133,7 @@ func TestPersonalDashboardNormalizesSourceIntegerMonths(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				handler := extensionHTTPHandler(pendingReplacementEndpoints{personalDashboard: api.NewEndpoints(service), personalDashboardMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}})
+				handler := extensionHTTPHandler(pendingReplacementEndpoints{personalDashboard: api.NewEndpoints(service), personalDashboardMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}})
 				path := "/api/users/me/workspaces/demo/" + suffix + "/"
 				if tc.include {
 					path += "?month=" + url.QueryEscape(tc.input)

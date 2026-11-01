@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 )
 
 // ReadIntake keeps the queue, its item projections and pagination in the same
@@ -35,7 +35,7 @@ func (r *Repository) ReadIntake(ctx context.Context, q Request) (_ Result, resul
  AND i.project_id=t.project_id AND i.workspace_id=t.workspace_id
  AND p.intake_view AND p.deleted_at IS NULL AND p.archived_at IS NULL
  AND (t.snoozed_till >= $4 OR t.snoozed_till IS NULL)
- AND ` + djangoapi.IssueVisibleSQL("i", "$5::uuid", "$1::uuid") + `
+ AND ` + apicontract.IssueVisibleSQL("i", "$5::uuid", "$1::uuid") + `
  AND (i.created_by_id=$5 OR EXISTS(SELECT 1 FROM project_members pm WHERE pm.project_id=t.project_id AND pm.workspace_id=t.workspace_id AND pm.member_id=$5 AND pm.is_active AND pm.deleted_at IS NULL AND pm.role IN(15,20)))`
 	args := []any{q.ExpectedWorkspaceID.String(), q.ProjectID, intake, r.now(), q.ActorID}
 	from := ` FROM intake_issues t JOIN issues i ON i.id=t.issue_id JOIN projects p ON p.id=t.project_id AND p.workspace_id=t.workspace_id WHERE `
@@ -50,7 +50,7 @@ func (r *Repository) ReadIntake(ctx context.Context, q Request) (_ Result, resul
 		}
 		body, err = reader.intakeAPIRecord(ctx, q, row)
 	} else {
-		limit, page, offset, e := djangoapi.PageWindow(djangoapi.Query{Params: q.Params, Present: q.Present})
+		limit, page, offset, e := apicontract.PageWindow(apicontract.Query{Params: q.Params, Present: q.Present})
 		if e != nil {
 			return Result{}, e
 		}
@@ -70,7 +70,7 @@ func (r *Repository) ReadIntake(ctx context.Context, q Request) (_ Result, resul
 			}
 			values = append(values, value)
 		}
-		body = djangoapi.Envelope(values, total, limit, page)
+		body = apicontract.Envelope(values, total, limit, page)
 	}
 	if err != nil {
 		return Result{}, err
@@ -79,7 +79,7 @@ func (r *Repository) ReadIntake(ctx context.Context, q Request) (_ Result, resul
 }
 
 func (r *Repository) intakeAPIRecord(ctx context.Context, q Request, row map[string]any) (map[string]any, error) {
-	issue, err := r.row(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i WHERE i.id=$1 AND i.project_id=$2 AND i.workspace_id=$3`, row["issue_id"], q.ProjectID, q.ExpectedWorkspaceID.String())
+	issue, err := r.row(ctx, `SELECT `+apicontract.IssueRowSQL("i")+` FROM issues i WHERE i.id=$1 AND i.project_id=$2 AND i.workspace_id=$3`, row["issue_id"], q.ProjectID, q.ExpectedWorkspaceID.String())
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func (r *Repository) intakeAPIRecord(ctx context.Context, q Request, row map[str
 	}
 	if duplicate := result["duplicate_to"]; duplicate != nil {
 		var visible bool
-		if err = r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issues i WHERE i.id=$1 AND `+djangoapi.IssueVisibleSQL("i", "$2::uuid", "$3::uuid")+`)`, duplicate, q.ActorID, q.ExpectedWorkspaceID.String()).Scan(&visible); err != nil {
+		if err = r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issues i WHERE i.id=$1 AND `+apicontract.IssueVisibleSQL("i", "$2::uuid", "$3::uuid")+`)`, duplicate, q.ActorID, q.ExpectedWorkspaceID.String()).Scan(&visible); err != nil {
 			return nil, err
 		}
 		if !visible {

@@ -7,7 +7,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -42,15 +42,15 @@ func (page Page[T]) Envelope() map[string]any {
 	for i, row := range page.Results {
 		rows[i] = row
 	}
-	return djangoapi.Envelope(rows, page.Total, page.Limit, page.Index)
+	return apicontract.Envelope(rows, page.Total, page.Limit, page.Index)
 }
 
-func pageWindow(query djangoapi.Query) (limit, page, offset int, err error) {
-	limit, err = djangoapi.PageSizeWithMinimum(query, 1)
+func pageWindow(query apicontract.Query) (limit, page, offset int, err error) {
+	limit, err = apicontract.PageSize(query)
 	if err != nil {
 		return 0, 0, 0, ErrInvalidInput
 	}
-	page, err = djangoapi.CursorPage(query, limit)
+	page, err = apicontract.CursorPage(query, limit)
 	if err != nil || page < 0 || page > math.MaxInt/limit {
 		return 0, 0, 0, ErrInvalidInput
 	}
@@ -68,12 +68,12 @@ func scanRecord(row pgx.Row, timezone string) (Record, error) {
 		return Record{}, err
 	}
 	times := map[string]any{"created_at": created.UTC().Format(time.RFC3339Nano), "updated_at": updated.UTC().Format(time.RFC3339Nano)}
-	djangoapi.Timestamps(times, timezone)
+	apicontract.Timestamps(times, timezone)
 	record.CreatedAt, record.UpdatedAt = times["created_at"].(string), times["updated_at"].(string)
 	return record, nil
 }
 
-func (r *Repository) List(ctx context.Context, scope Scope, query djangoapi.Query) (Page[Record], error) {
+func (r *Repository) List(ctx context.Context, scope Scope, query apicontract.Query) (Page[Record], error) {
 	limit, page, offset, err := pageWindow(query)
 	if err != nil {
 		return Page[Record]{}, err
@@ -135,7 +135,7 @@ var visibleLinks = ` FROM milestone_issues link JOIN issues issue ON issue.id=li
  WHERE link.milestone_id=$1 AND link.workspace_id=$2 AND link.project_id=$3 AND link.deleted_at IS NULL AND ` +
 	issuequery.IssueVisibleSQL("issue", "$4::uuid", "$2::uuid")
 
-func (r *Repository) ListWorkItems(ctx context.Context, scope Scope, id uuid.UUID, query djangoapi.Query) (Page[Link], error) {
+func (r *Repository) ListWorkItems(ctx context.Context, scope Scope, id uuid.UUID, query apicontract.Query) (Page[Link], error) {
 	if id == uuid.Nil {
 		return Page[Link]{}, ErrInvalidInput
 	}

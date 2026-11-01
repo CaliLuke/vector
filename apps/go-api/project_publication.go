@@ -12,10 +12,10 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/projectpublication"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	api "github.com/CaliLuke/go-plane/projectpublication/gen/project_publication"
 	loomhttp "github.com/CaliLuke/loom/http"
 	loom "github.com/CaliLuke/loom/pkg"
@@ -112,7 +112,7 @@ func (s *projectPublicationService) principal(ctx context.Context) (projectPubli
 	}
 	return p, nil
 }
-func publicationInput(ctx context.Context, body io.ReadCloser) (djangoinput.Input, error) {
+func publicationInput(ctx context.Context, body io.ReadCloser) (requestinput.Input, error) {
 	if body != nil {
 		defer platform.CloseRequestBody(ctx, body)
 	}
@@ -120,7 +120,7 @@ func publicationInput(ctx context.Context, body io.ReadCloser) (djangoinput.Inpu
 	if m, ok := loomhttp.RequestMetadataFromContext(ctx); ok {
 		contentType = m.Headers().Get("Content-Type")
 	}
-	return djangoinput.Parse(body, contentType)
+	return requestinput.Parse(body, contentType)
 }
 func (s *projectPublicationService) Create(ctx context.Context, p *api.CreatePayload, body io.ReadCloser) (*api.ProjectPublicationRawJSON, io.ReadCloser, error) {
 	principal, err := s.principal(ctx)
@@ -194,7 +194,7 @@ func (s *projectPublicationService) Update(ctx context.Context, p *api.UpdatePay
 				fields[name] = nil
 				continue
 			}
-			parsed, uUIDErr := djangoinput.UUID(value)
+			parsed, uUIDErr := requestinput.UUID(value)
 			if uUIDErr != nil {
 				message := "Must be a valid UUID."
 				if name == "intake" {
@@ -209,7 +209,7 @@ func (s *projectPublicationService) Update(ctx context.Context, p *api.UpdatePay
 		if value == nil {
 			fields["entity_name"] = nil
 		} else {
-			text, fieldErrors := djangoinput.TextField(value, true, 30, input.Surrogates["entity_name"])
+			text, fieldErrors := requestinput.TextField(value, true, 30)
 			if len(fieldErrors) > 0 {
 				return nil, nil, s.fieldError("entity_name", fieldErrors[0])
 			}
@@ -218,7 +218,7 @@ func (s *projectPublicationService) Update(ctx context.Context, p *api.UpdatePay
 	}
 	for _, name := range []string{"is_activity_enabled", "is_comments_enabled", "is_reactions_enabled", "is_votes_enabled", "is_disabled"} {
 		if value, ok := input.Fields[name]; ok {
-			parsed, e := djangoinput.BooleanField(value)
+			parsed, e := requestinput.BooleanField(value)
 			if e != "" {
 				return nil, nil, s.fieldError(name, e)
 			}
@@ -244,15 +244,15 @@ func (s *projectPublicationService) Delete(ctx context.Context, p *api.DeletePay
 	}
 	return nil
 }
-func publicationBool(input djangoinput.Input, key string, def bool) (bool, string) {
+func publicationBool(input requestinput.Input, key string, def bool) (bool, string) {
 	value, ok := input.Fields[key]
 	if !ok {
 		return def, ""
 	}
-	return djangoinput.BooleanField(value)
+	return requestinput.BooleanField(value)
 }
 func (s *projectPublicationService) parseError(err error) error {
-	var f *djangoapi.HTTPError
+	var f *apicontract.HTTPError
 	if errors.As(err, &f) {
 		return s.err(f.Status, f.Body)
 	}

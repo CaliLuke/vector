@@ -77,11 +77,9 @@ func TestStateWriteInputPreservesFormAndUnicodeValidation(t *testing.T) {
 	if input.Fields["name"] != name {
 		t.Fatal("Unicode name changed")
 	}
-	input, err = ParseStateWriteBody(strings.NewReader(`{"name":"\ud800","color":"red"}`), "application/json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = validateStateFields(input.Fields, true, true, &input); err == nil {
-		t.Fatal("unpaired surrogate accepted")
+	_, err = ParseStateWriteBody(strings.NewReader(`{"name":"\ud800","color":"red"}`), "application/json")
+	var malformed *WriteFailure
+	if !errors.As(err, &malformed) || malformed.Status != 400 {
+		t.Fatalf("malformed Unicode request error=%v", err)
 	}
 }

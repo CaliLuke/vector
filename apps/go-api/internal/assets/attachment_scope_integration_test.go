@@ -7,7 +7,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -41,7 +41,7 @@ func TestIssueAttachmentRepositoryBindsReadAndWritesToPathIssue(t *testing.T) {
 
 func assertScopeNotFound(t *testing.T, err error, operation string) {
 	t.Helper()
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if err == nil || !errors.As(err, &httpErr) || httpErr.Status != 404 {
 		t.Fatalf("%s error = %v, want HTTP 404", operation, err)
 	}

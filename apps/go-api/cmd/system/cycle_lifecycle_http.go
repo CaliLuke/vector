@@ -53,7 +53,7 @@ func newCycleSessionProtocol(pattern, allow, name string, head bool) readService
 	return protocol
 }
 
-func mountCycleLifecycle(mux loomhttp.Muxer, endpoints *cyclelifecycleapi.Endpoints, cors loomhttp.RuntimeCORSPolicy, options apiV1CompatibilityOptions, sessions readServicesSessionLifecycle, cookie djangoSessionCookieConfig) {
+func mountCycleLifecycle(mux loomhttp.Muxer, endpoints *cyclelifecycleapi.Endpoints, cors loomhttp.RuntimeCORSPolicy, options apiV1CompatibilityOptions, sessions readServicesSessionLifecycle, cookie browserSessionCookieConfig) {
 	server := cyclelifecyclesvr.New(endpoints, mux, djangoRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
 	apiStack := activityReadsMiddlewareStack(options, sessions, cookie)
 	sessionStack := sessionServiceMiddlewareStack(options, sessions, cookie)

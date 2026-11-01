@@ -43,8 +43,8 @@ func TestLabelWriteFloatFieldGuards(t *testing.T) {
 		{"string size limit", `"` + strings.Repeat("0", 1001) + `"`, "String value too large."},
 		{"size checked before trimming", `"` + strings.Repeat(" ", 1000) + `1"`, "String value too large."},
 		{"string boundary", `"` + strings.Repeat("0", 1000) + `"`, ""},
-		{"integer overflow", "1" + strings.Repeat("0", 309), "Integer value too large to convert to float"},
-		{"negative integer overflow", "-1" + strings.Repeat("0", 309), "Integer value too large to convert to float"},
+		{"integer overflow", "1" + strings.Repeat("0", 309), "A valid number is required."},
+		{"negative integer overflow", "-1" + strings.Repeat("0", 309), "A valid number is required."},
 		{"float overflow", "1e309", "A valid number is required."},
 		{"string overflow", `"1e309"`, "A valid number is required."},
 	} {
@@ -71,8 +71,7 @@ func TestLabelWriteFloatFieldGuards(t *testing.T) {
 
 func TestLabelWriteParentUUIDRepresentations(t *testing.T) {
 	compact := strings.ReplaceAll(writeParent, "-", "")
-	unicodeDigits := strings.Map(func(r rune) rune { return '\u0660' + r - '0' }, compact)
-	for _, encoded := range []string{"urn:uuid:" + compact, "urn:uuid:{" + compact + "}", "{{" + compact[:4] + "--" + compact[4:] + "}}", unicodeDigits} {
+	for _, encoded := range []string{writeParent, compact, "{" + writeParent + "}", "urn:uuid:" + writeParent} {
 		t.Run(encoded, func(t *testing.T) {
 			db := &parentWriteDatabase{label: existingWriteLabel()}
 			db.row = func(query string, args []any) pgx.Row {
@@ -103,8 +102,8 @@ func TestLabelWriteParentUUIDRepresentations(t *testing.T) {
 	}
 }
 
-func TestLabelWriteNumericNameUsesPythonScalarCoercion(t *testing.T) {
-	for _, test := range []struct{ value, want string }{{"1e309", "inf"}, {"-1e309", "-inf"}, {"-0", "0"}} {
+func TestLabelWriteNumericNameKeepsJSONNumberText(t *testing.T) {
+	for _, test := range []struct{ value, want string }{{"1e309", "1e309"}, {"-1e309", "-1e309"}, {"-0", "-0"}} {
 		t.Run(test.value, func(t *testing.T) {
 			db := &parentWriteDatabase{label: existingWriteLabel()}
 			repository := newWriteRepository(t, db)
@@ -127,16 +126,13 @@ func TestLabelWriteMultipartFileCannotSupplySortOrder(t *testing.T) {
 	}
 }
 
-func TestLabelWriteReportsFirstSurrogate(t *testing.T) {
+func TestLabelWriteRejectsMalformedUnicodeBeforeSaving(t *testing.T) {
 	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		t.Run(method, func(t *testing.T) {
 			db := &parentWriteDatabase{label: existingWriteLabel()}
 			repository := newWriteRepository(t, db)
 			_, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, method, strings.NewReader(`{"name":"bad\ud800\ud801","color":"\udfff\udffe"}`), "application/json")
-			assertWriteHTTPError(t, err, 400, map[string]any{
-				"name":  []string{"Surrogate characters are not allowed: U+D800."},
-				"color": []string{"Surrogate characters are not allowed: U+DFFF."},
-			})
+			assertWriteHTTPError(t, err, 400, map[string]any{"detail": "Invalid JSON body."})
 			if db.saved {
 				t.Fatal("invalid surrogate was persisted")
 			}

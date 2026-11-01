@@ -6,8 +6,8 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/assets"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/google/uuid"
 )
 
@@ -36,7 +36,7 @@ func TestProjectCoverAssignmentUsesAssetOwnerScopeAndRejectsDeletedOrWrongEntity
 			t.Fatalf("accepted unavailable cover %#v: %v", asset, err)
 		}
 	}
-	reader.err = &djangoapi.HTTPError{Status: 404}
+	reader.err = &apicontract.HTTPError{Status: 404}
 	if allowed, err = validate(context.Background(), workspace, project, id); err != nil || allowed {
 		t.Fatalf("foreign asset accepted: %v", err)
 	}

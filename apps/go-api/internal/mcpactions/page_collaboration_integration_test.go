@@ -7,9 +7,9 @@ import (
 	"testing"
 	stduuid "uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/pagereads"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
@@ -22,7 +22,7 @@ func TestMCPPageReplacementRejectsOldCollaborationWrites(t *testing.T) {
 		id := page["id"].(string)
 		repository := pagereads.NewPageAPIRepository(f.pool)
 		native := func(operation string, fields map[string]any) error {
-			_, _, err := repository.Lifecycle(t.Context(), operation, stduuid.UUID(uuid.MustParse(testsupport.LabelActor)), "workspace-one", stduuid.UUID(uuid.MustParse(testsupport.LabelProject)), stduuid.UUID(uuid.MustParse(id)), "UTC", djangoinput.Input{Fields: fields})
+			_, _, err := repository.Lifecycle(t.Context(), operation, stduuid.UUID(uuid.MustParse(testsupport.LabelActor)), "workspace-one", stduuid.UUID(uuid.MustParse(testsupport.LabelProject)), stduuid.UUID(uuid.MustParse(id)), "UTC", requestinput.Input{Fields: fields})
 			return err
 		}
 		revision := func() int64 {
@@ -45,7 +45,7 @@ func TestMCPPageReplacementRejectsOldCollaborationWrites(t *testing.T) {
 			{"update", map[string]any{"name": "Old cached title"}},
 			{"update", map[string]any{"name": "Old cached title", "collaboration_revision": 0}},
 		} {
-			var conflict *djangoapi.HTTPError
+			var conflict *apicontract.HTTPError
 			err := native(write.operation, write.fields)
 			require.True(t, errors.As(err, &conflict), "%s: %v", write.operation, err)
 			require.Equal(t, 409, conflict.Status)

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 )
@@ -95,14 +95,14 @@ func (in propertyInput) query(scope workitemtypes.APIScope) (workitemtypes.Prope
 		}
 	}
 	if in.Project != nil && *in.Project != "" && (in.Action == "list" || in.Action == "list_options") {
-		paging := djangoapi.Query{Params: map[string]string{}, Present: map[string]bool{}}
+		paging := apicontract.Query{Params: map[string]string{}, Present: map[string]bool{}}
 		if in.Cursor != nil && *in.Cursor != "" {
 			paging.Params["cursor"], paging.Present["cursor"] = *in.Cursor, true
 		}
 		if in.PerPage != nil && *in.PerPage != 0 {
 			paging.Params["per_page"], paging.Present["per_page"] = strconv.Itoa(*in.PerPage), true
 		}
-		q.Limit, _, q.Offset, err = djangoapi.PageWindow(paging)
+		q.Limit, _, q.Offset, err = apicontract.PageWindow(paging)
 		if err != nil {
 			return q, propertyInputError()
 		}

@@ -9,20 +9,20 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 func TestPublicVoteDisabledGuardsPrecedeBodyAndTargetAccess(t *testing.T) {
 	repository := &Repository{}
 	scope := PublicFeedbackScope{VotesEnabled: false}
 	_, err := repository.PublicVoteCreate(context.Background(), scope, "not-a-uuid", "actor", strings.NewReader("{"), "application/json")
-	var createError *djangoapi.HTTPError
+	var createError *apicontract.HTTPError
 	if !errors.As(err, &createError) || createError.Status != 403 || createError.Body["error"] != publicVoteDisabled {
 		t.Fatalf("create err=%v", err)
 	}
 	_, err = repository.PublicVoteDelete(context.Background(), scope, "not-a-uuid", "actor")
-	var deleteError *djangoapi.HTTPError
+	var deleteError *apicontract.HTTPError
 	if !errors.As(err, &deleteError) || deleteError.Status != 403 || deleteError.Body["error"] != publicVoteDisabled {
 		t.Fatalf("delete err=%v", err)
 	}
@@ -69,12 +69,12 @@ func TestPublicFeedbackJSONObjectRootErrorsMatchDRFTypes(t *testing.T) {
 	}
 	for _, test := range cases {
 		t.Run(test.body, func(t *testing.T) {
-			input, err := djangoinput.Parse(strings.NewReader(test.body), "application/json")
+			input, err := requestinput.Parse(strings.NewReader(test.body), "application/json")
 			if err != nil {
 				t.Fatal(err)
 			}
 			err = publicFeedbackObjectRootError(input)
-			var response *djangoapi.HTTPError
+			var response *apicontract.HTTPError
 			if !errors.As(err, &response) || response.Status != 400 || response.Body["non_field_errors"] == nil {
 				t.Fatalf("root validation error=%v", err)
 			}
@@ -84,7 +84,7 @@ func TestPublicFeedbackJSONObjectRootErrorsMatchDRFTypes(t *testing.T) {
 			}
 		})
 	}
-	object, err := djangoinput.Parse(strings.NewReader(`{"issue":{}}`), "application/json")
+	object, err := requestinput.Parse(strings.NewReader(`{"issue":{}}`), "application/json")
 	if err != nil || publicFeedbackObjectRootError(object) != nil {
 		t.Fatalf("object root validation error=%v", err)
 	}
@@ -92,7 +92,7 @@ func TestPublicFeedbackJSONObjectRootErrorsMatchDRFTypes(t *testing.T) {
 
 func TestPublicFeedbackNestedIssueShapeErrorIsStable(t *testing.T) {
 	err := publicFeedbackNestedIssueError()
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	if !errors.As(err, &response) || response.Status != 400 {
 		t.Fatalf("nested issue error=%v", err)
 	}
@@ -182,7 +182,7 @@ func TestPublicIntakeSerializerProjectionsMatchEachOperation(t *testing.T) {
 func TestPublicIntakeBindingErrorMatchesDjangoNotFound(t *testing.T) {
 	configured := "configured-intake"
 	err := (&Repository{}).validatePublicIntake(context.Background(), PublicFeedbackScope{IntakeID: &configured}, "other-intake")
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	if !errors.As(err, &response) || response.Status != 404 || response.Body["error"] != "Not found" {
 		t.Fatalf("binding error=%v, want Django 404 Not found", err)
 	}
@@ -196,7 +196,7 @@ func TestPublicIssueListSameGroupingFieldsUseSameParametersError(t *testing.T) {
 		map[string]string{"group_by": "state", "sub_group_by": "state"},
 		map[string]bool{"group_by": true, "sub_group_by": true},
 	)
-	var listError *djangoapi.HTTPError
+	var listError *apicontract.HTTPError
 	if !errors.As(err, &listError) || listError.Status != 400 || listError.Body["error"] != "Group by and sub group by cannot have same parameters" {
 		t.Fatalf("result=%#v err=%v", result, err)
 	}
@@ -210,7 +210,7 @@ func TestPublicIssueListUnsupportedGroupingFieldUsesDetailError(t *testing.T) {
 		map[string]string{"group_by": "unsupported"},
 		map[string]bool{"group_by": true},
 	)
-	var listError *djangoapi.HTTPError
+	var listError *apicontract.HTTPError
 	if !errors.As(err, &listError) || listError.Status != 400 || listError.Body["detail"] != "Invalid group_by field: unsupported" {
 		t.Fatalf("err=%v", err)
 	}
@@ -278,7 +278,7 @@ func TestPublicIssueListEqualGroupingFieldsPrecedePaginationErrors(t *testing.T)
 				test.params,
 				present,
 			)
-			var listError *djangoapi.HTTPError
+			var listError *apicontract.HTTPError
 			if !errors.As(err, &listError) || listError.Status != 400 || listError.Body["error"] != "Group by and sub group by cannot have same parameters" {
 				t.Fatalf("err=%v; want same-group 400 error", err)
 			}

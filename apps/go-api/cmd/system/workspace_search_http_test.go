@@ -43,7 +43,7 @@ func TestWorkspaceSearchCountUsesPythonIntegerGrammar(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			handler := extensionHTTPHandler(pendingReplacementEndpoints{workspaceSearch: api.NewEndpoints(service), workspaceSearchMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}})
+			handler := extensionHTTPHandler(pendingReplacementEndpoints{workspaceSearch: api.NewEndpoints(service), workspaceSearchMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}})
 			request := httptest.NewRequest("GET", "/api/workspaces/demo/entity-search/?"+url.Values{"count": {count}}.Encode(), nil)
 			request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
 			response := httptest.NewRecorder()
@@ -62,7 +62,7 @@ func TestWorkspaceSearchInvalidCountReturnsValidationErrorBeforeRepository(t *te
 	if err != nil {
 		t.Fatal(err)
 	}
-	handler := extensionHTTPHandler(pendingReplacementEndpoints{workspaceSearch: api.NewEndpoints(service), workspaceSearchMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}})
+	handler := extensionHTTPHandler(pendingReplacementEndpoints{workspaceSearch: api.NewEndpoints(service), workspaceSearchMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}})
 	request := httptest.NewRequest("GET", "/api/workspaces/demo/entity-search/?count=many", nil)
 	request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
 	response := httptest.NewRecorder()
@@ -90,7 +90,7 @@ func TestWorkspaceSearchRejectsMalformedProjectUUIDBeforeRepository(t *testing.T
 			if err != nil {
 				t.Fatal(err)
 			}
-			handler := extensionHTTPHandler(pendingReplacementEndpoints{workspaceSearch: api.NewEndpoints(service), workspaceSearchMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}})
+			handler := extensionHTTPHandler(pendingReplacementEndpoints{workspaceSearch: api.NewEndpoints(service), workspaceSearchMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}})
 			request := httptest.NewRequest("GET", tc.path, nil)
 			request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
 			response := httptest.NewRecorder()
@@ -131,7 +131,7 @@ func TestWorkspaceSearchProductionMounts(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				handler := extensionHTTPHandler(pendingReplacementEndpoints{workspaceSearch: api.NewEndpoints(service), workspaceSearchMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20})
+				handler := extensionHTTPHandler(pendingReplacementEndpoints{workspaceSearch: api.NewEndpoints(service), workspaceSearchMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20})
 				request := httptest.NewRequest(tc.method, strings.ReplaceAll(protocol.pattern, "{slug}", "demo"), nil)
 				if tc.authenticated {
 					request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})

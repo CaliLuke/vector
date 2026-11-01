@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -101,7 +101,7 @@ func (r *Repository) intakeID(ctx context.Context, slug, projectID string, value
 	if !ok {
 		return nil, ErrInvalidIntake
 	}
-	id, err := djangoinput.UUID(text)
+	id, err := requestinput.UUID(text)
 	if err != nil {
 		return nil, ErrInvalidIntake
 	}

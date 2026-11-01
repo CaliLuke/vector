@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/require"
 )
@@ -73,7 +73,7 @@ func TestCycleAPIPatchRejectsInvalidDatesBeforeWriteOrWebhook(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			original := maps.Clone(test.request)
 			_, err := repository.Patch(ctx, "lifecycle", lifecycleProject, patchDateCycle, lifecycleActor, true, test.request, test.request)
-			var invalid *djangoapi.HTTPError
+			var invalid *apicontract.HTTPError
 			require.ErrorAs(t, err, &invalid)
 			require.Equal(t, 400, invalid.Status)
 			require.Equal(t, []string{test.message}, invalid.Body[test.field])

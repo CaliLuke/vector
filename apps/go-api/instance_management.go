@@ -19,10 +19,10 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	"github.com/CaliLuke/go-plane/internal/authentication/password"
 	"github.com/CaliLuke/go-plane/internal/authredirects"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/instancemail"
 	"github.com/CaliLuke/go-plane/internal/instancemanagement"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	loomhttp "github.com/CaliLuke/loom/http"
 	pkg "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
@@ -150,7 +150,7 @@ func (service *instanceManagementService) adminRedirectRequest(ctx context.Conte
 	if body != nil {
 		defer platform.CloseRequestBody(ctx, body)
 	}
-	input, err := djangoinput.Parse(body, authRedirectRequestContentType(ctx))
+	input, err := requestinput.Parse(body, authRedirectRequestContentType(ctx))
 	if err != nil {
 		return authredirects.Request{}, err
 	}
@@ -159,7 +159,7 @@ func (service *instanceManagementService) adminRedirectRequest(ctx context.Conte
 		if !present || value == nil {
 			return ""
 		}
-		parsed, _ := djangoinput.TextField(value, true, 0, nil)
+		parsed, _ := requestinput.TextField(value, true, 0)
 		return parsed
 	}
 	base, err := service.adminRedirects.ConfigValue(ctx, "ADMIN_BASE_URL", "")
@@ -531,7 +531,7 @@ func parseInstanceManagementBody(ctx context.Context, body io.ReadCloser) (map[s
 	if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok {
 		contentType = metadata.Headers().Get("Content-Type")
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return nil, err
 	}

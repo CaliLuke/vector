@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	states "github.com/CaliLuke/go-plane/internal/projectstatereads"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	loom "github.com/CaliLuke/loom/pkg"
@@ -114,8 +114,8 @@ func stateUUID(value string) (uuid.UUID, error) {
 	return id, nil
 }
 func stateInvalid() error { return api.MakeInvalidParams(errors.New("invalid state input")) }
-func selectStateRead(input *stateInput) (djangoapi.ProjectReadRequest, *string, error) {
-	request := djangoapi.ProjectReadRequest{Operation: "list", Params: map[string]string{}, Present: map[string]bool{}}
+func selectStateRead(input *stateInput) (apicontract.ProjectReadRequest, *string, error) {
+	request := apicontract.ProjectReadRequest{Operation: "list", Params: map[string]string{}, Present: map[string]bool{}}
 	if input.project != nil {
 		request.Params["project_id"] = *input.project
 	}

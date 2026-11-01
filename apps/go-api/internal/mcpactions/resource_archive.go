@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/cyclereads"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/modulereads"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
@@ -98,7 +98,7 @@ func archiveResourceError(err error) error {
 	case errors.Is(err, mutationreceipts.ErrIndeterminate):
 		return api.MakeIndeterminate(errors.New("unacknowledged commit"))
 	}
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if errors.As(err, &failure) {
 		switch failure.Status {
 		case 400, 409:

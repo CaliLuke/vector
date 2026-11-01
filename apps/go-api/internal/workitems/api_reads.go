@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/jackc/pgx/v5"
@@ -104,7 +104,7 @@ func (r *Repository) authorizeWorkitemRead(ctx context.Context, q Request) error
 
 func (r *Repository) boundWorkitemDetail(ctx context.Context, q Request) (Result, error) {
 	args := []any{q.ExpectedWorkspaceID.String(), q.ActorID}
-	where := `i.workspace_id=$1 AND ` + liveIssue + ` AND ` + djangoapi.IssueVisibleSQL("i", "$2::uuid", "$1::uuid")
+	where := `i.workspace_id=$1 AND ` + liveIssue + ` AND ` + apicontract.IssueVisibleSQL("i", "$2::uuid", "$1::uuid")
 	if q.Operation == "retrieve_by_identifier" {
 		head, sequence, ok := splitIdentifier(q.Params["identifier"])
 		if !ok || head == "" || sequence == "" || strings.Trim(sequence, "0123456789") != "" {
@@ -116,7 +116,7 @@ func (r *Repository) boundWorkitemDetail(ctx context.Context, q Request) (Result
 		args = append(args, q.ProjectID, q.IssueID)
 		where += ` AND i.project_id=$3 AND i.id=$4`
 	}
-	row, err := r.row(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id WHERE `+where, args...)
+	row, err := r.row(ctx, `SELECT `+apicontract.IssueRowSQL("i")+` FROM issues i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id WHERE `+where, args...)
 	if err != nil {
 		return Result{}, err
 	}
@@ -139,7 +139,7 @@ func appendBoundWorkitemScope(q Request, where []string, args []any) ([]string, 
 		return where, args
 	}
 	args = append(args, q.ExpectedWorkspaceID.String())
-	where = append(where, fmt.Sprintf("issue.workspace_id=$%d", len(args)), "project.workspace_id=issue.workspace_id", "project.archived_at IS NULL", djangoapi.IssueVisibleSQL("issue", "$1::uuid", "issue.workspace_id"))
+	where = append(where, fmt.Sprintf("issue.workspace_id=$%d", len(args)), "project.workspace_id=issue.workspace_id", "project.archived_at IS NULL", apicontract.IssueVisibleSQL("issue", "$1::uuid", "issue.workspace_id"))
 	if q.Operation == "cycle_items" || q.Operation == "module_items" {
 		kind := "cycle"
 		if q.Operation == "module_items" {

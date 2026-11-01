@@ -97,7 +97,7 @@ func newStateWritesMiddlewareTestHandler(t *testing.T, repo stateWritesMiddlewar
 			projectStateReads: statesapi.NewEndpoints(appService), projectStateMetadata: appService.(systemapi.ProjectStateReadsMetadataAuthorizer),
 			apiStateReads: api.NewEndpoints(apiService),
 			activityReads: activityapi.NewEndpoints(protocolActivity), activityReadsMetadata: protocolActivity,
-			readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true},
+			readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true},
 			activityReadsActivity: activity, activityReadsSecret: "state-writes-test-secret", activityReadsBodyLimit: bodyLimit,
 		})
 }

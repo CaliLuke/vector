@@ -6,15 +6,15 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 
 	"github.com/jackc/pgx/v5"
 )
 
 func invitationMemberPatchFields(c InvitationCommand) (map[string]any, error) {
-	input, err := djangoinput.Parse(c.Body, c.ContentType)
+	input, err := requestinput.Parse(c.Body, c.ContentType)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func invitationMemberPatchFields(c InvitationCommand) (map[string]any, error) {
 }
 
 func workspaceMemberProjection() string {
-	return `(to_jsonb(m)-'workspace_id'-'member_id'-'created_by_id'-'updated_by_id')||jsonb_build_object('workspace',m.workspace_id,'created_by',m.created_by_id,'updated_by',m.updated_by_id,'member',jsonb_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'avatar',u.avatar,'is_bot',u.is_bot,'display_name',u.display_name)||` + djangoapi.FileAssetURLFieldSQL("u.avatar_asset_id", "u.avatar", "avatar_url") + `)`
+	return `(to_jsonb(m)-'workspace_id'-'member_id'-'created_by_id'-'updated_by_id')||jsonb_build_object('workspace',m.workspace_id,'created_by',m.created_by_id,'updated_by',m.updated_by_id,'member',jsonb_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'avatar',u.avatar,'is_bot',u.is_bot,'display_name',u.display_name)||` + apicontract.FileAssetURLFieldSQL("u.avatar_asset_id", "u.avatar", "avatar_url") + `)`
 }
 
 func (r *InvitationsRepository) mutateWorkspaceMember(ctx context.Context, c InvitationCommand) (_ json.RawMessage, resultErr error) {

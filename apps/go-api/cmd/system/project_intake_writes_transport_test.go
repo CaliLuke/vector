@@ -24,7 +24,7 @@ func TestProjectIntakeWritesProductionTransportCompatibility(t *testing.T) {
 		projectIntakeWrites:         intakeapi.NewEndpoints(service),
 		projectIntakeWritesMetadata: service.(systemapi.SessionResourceProtocolAuthorizer),
 		readServicesSession:         sessions,
-		readServicesCookie:          djangoSessionCookieConfig{Name: "session-id", Configured: true},
+		readServicesCookie:          browserSessionCookieConfig{Name: "session-id", Configured: true},
 		activityReadsBodyLimit:      1 << 20,
 	}
 	handler := extensionHTTPHandler(pending)

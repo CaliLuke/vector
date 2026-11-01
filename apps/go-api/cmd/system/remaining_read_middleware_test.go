@@ -162,7 +162,7 @@ func TestRemainingReadFamiliesMiddlewareOrder(t *testing.T) {
 					pending, calls := family.prepare(t, sessions)
 					audit := &cycleMiddlewareActivity{recorder: events}
 					pending.readServicesSession = sessions
-					pending.readServicesCookie = djangoSessionCookieConfig{Name: "session-id", Configured: true}
+					pending.readServicesCookie = browserSessionCookieConfig{Name: "session-id", Configured: true}
 					pending.activityReadsBodyLimit = 64
 					pending.activityReadsActivity = audit
 					handler := extensionHTTPHandler(pending)
@@ -221,7 +221,7 @@ func TestHistoryPermissionClassesBeforeTimezone(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				handler := extensionHTTPHandler(pendingReplacementEndpoints{workItemHistory: historyapi.NewEndpoints(service), workItemHistoryMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}})
+				handler := extensionHTTPHandler(pendingReplacementEndpoints{workItemHistory: historyapi.NewEndpoints(service), workItemHistoryMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}})
 				req := httptest.NewRequest(method, "/api/workspaces/demo/projects/"+historyHTTPProjectID+"/issues/"+historyHTTPIssueID+"/history/", nil)
 				req.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
 				response := httptest.NewRecorder()

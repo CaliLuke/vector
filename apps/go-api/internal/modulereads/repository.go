@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 
 	"uuid"
 
@@ -1298,11 +1298,11 @@ var issueJSON = `json_build_object(
     'target_date', issue.target_date,
     'sequence_id', issue.sequence_id,
     'project_id', issue.project_id,
-    'parent_id', ` + djangoapi.VisibleParentSQL("issue", "$1::uuid") + `,
+    'parent_id', ` + apicontract.VisibleParentSQL("issue", "$1::uuid") + `,
     'cycle_id', (SELECT cycle_issue.cycle_id FROM cycle_issues cycle_issue
       WHERE cycle_issue.issue_id = issue.id AND cycle_issue.deleted_at IS NULL ORDER BY cycle_issue.created_at DESC LIMIT 1),
     'sub_issues_count', (SELECT count(*) FROM issues child
-      WHERE child.parent_id = issue.id AND ` + djangoapi.IssueVisibleSQL("child", "$1::uuid", "issue.workspace_id") + ` AND child.deleted_at IS NULL AND child.archived_at IS NULL AND child.is_draft = false
+      WHERE child.parent_id = issue.id AND ` + apicontract.IssueVisibleSQL("child", "$1::uuid", "issue.workspace_id") + ` AND child.deleted_at IS NULL AND child.archived_at IS NULL AND child.is_draft = false
         AND (child.state_id IS NULL OR EXISTS (
           SELECT 1 FROM states child_state
           WHERE child_state.id = child.state_id AND child_state."group" <> 'triage'
@@ -1365,7 +1365,7 @@ var moduleIssueJSON = `json_build_object(
     ),
     'issue_detail', json_build_object('id', issue.id, 'name', issue.name),
     'sub_issues_count', (SELECT count(*) FROM issues child
-      WHERE child.parent_id = issue.id AND ` + djangoapi.IssueVisibleSQL("child", "$1::uuid", "issue.workspace_id") + ` AND child.deleted_at IS NULL AND child.archived_at IS NULL AND child.is_draft = false
+      WHERE child.parent_id = issue.id AND ` + apicontract.IssueVisibleSQL("child", "$1::uuid", "issue.workspace_id") + ` AND child.deleted_at IS NULL AND child.archived_at IS NULL AND child.is_draft = false
         AND (child.state_id IS NULL OR EXISTS (
           SELECT 1 FROM states child_state
           WHERE child_state.id = child.state_id AND child_state."group" <> 'triage'

@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 )
 
-func (r *Repository) validateCollaboration(ctx context.Context, q Request, input djangoinput.Input, table string) (map[string]any, error) {
+func (r *Repository) validateCollaboration(ctx context.Context, q Request, input requestinput.Input, table string) (map[string]any, error) {
 	values := map[string]any{}
 	if input.Null {
 		return nil, invalid(map[string]any{"non_field_errors": []string{"No data provided"}})
@@ -86,7 +86,7 @@ func validateCollaborationURL(q Request, parsed string) (string, any) {
 	if !q.API && parsed != "" && !strings.HasPrefix(parsed, "http://") && !strings.HasPrefix(parsed, "https://") {
 		parsed = "http://" + parsed
 	}
-	if !djangoinput.ValidURL(parsed) {
+	if !requestinput.ValidURL(parsed) {
 		if q.API {
 			message = []string{"Enter a valid URL."}
 			if q.Method == "POST" {
@@ -104,7 +104,7 @@ func validateCollaborationURL(q Request, parsed string) (string, any) {
 	return parsed, nil
 }
 
-func validateCollaborationTexts(q Request, input djangoinput.Input, rules collaborationFieldRules, values, failures map[string]any) {
+func validateCollaborationTexts(q Request, input requestinput.Input, rules collaborationFieldRules, values, failures map[string]any) {
 	for _, field := range rules.texts {
 		value, present := input.Fields[field]
 		required := field == "reaction" || field == "url"
@@ -122,7 +122,7 @@ func validateCollaborationTexts(q Request, input djangoinput.Input, rules collab
 		if strings.HasPrefix(field, "comment_") || field == "url" || field == "reaction" {
 			maximum = 0
 		}
-		parsed, messages := djangoinput.TextField(value, field != "reaction" && field != "url", maximum, input.Surrogates[field])
+		parsed, messages := requestinput.TextField(value, field != "reaction" && field != "url", maximum)
 		if len(messages) > 0 {
 			failures[field] = messages
 			continue
@@ -140,12 +140,12 @@ func validateCollaborationTexts(q Request, input djangoinput.Input, rules collab
 	}
 }
 
-func validateCollaborationAccess(input djangoinput.Input, table string, values, failures map[string]any) {
+func validateCollaborationAccess(input requestinput.Input, table string, values, failures map[string]any) {
 	if value, present := input.Fields["access"]; present && table == "issue_comments" {
 		if value == nil {
 			failures["access"] = []string{"This field may not be null."}
 		} else {
-			access := djangoinput.ScalarString(value)
+			access := requestinput.ScalarString(value)
 			if access != "INTERNAL" && access != "EXTERNAL" {
 				failures["access"] = []string{fmt.Sprintf("\"%s\" is not a valid choice.", access)}
 			} else {
@@ -155,7 +155,7 @@ func validateCollaborationAccess(input djangoinput.Input, table string, values, 
 	}
 }
 
-func (r *Repository) validateCollaborationForeignKeys(ctx context.Context, q Request, input djangoinput.Input, foreign map[string]string, values, failures map[string]any) error {
+func (r *Repository) validateCollaborationForeignKeys(ctx context.Context, q Request, input requestinput.Input, foreign map[string]string, values, failures map[string]any) error {
 	for field, table := range foreign {
 		value, present := input.Fields[field]
 		if !present {
@@ -186,7 +186,7 @@ func (r *Repository) validateCollaborationForeignKeys(ctx context.Context, q Req
 	return nil
 }
 
-func validateCollaborationDates(q Request, input djangoinput.Input, dates []string, values, failures map[string]any) {
+func validateCollaborationDates(q Request, input requestinput.Input, dates []string, values, failures map[string]any) {
 	for _, field := range dates {
 		if value, present := input.Fields[field]; present {
 			if value == nil || input.Form && value == "" {
@@ -204,7 +204,7 @@ func validateCollaborationDates(q Request, input djangoinput.Input, dates []stri
 	}
 }
 
-func validateCollaborationAttachments(q Request, input djangoinput.Input, table string, values, failures map[string]any) {
+func validateCollaborationAttachments(q Request, input requestinput.Input, table string, values, failures map[string]any) {
 	if table == "issue_comments" && !q.API {
 		if value, present := input.ListValue("attachments", q.Method == "PATCH"); present {
 			list, ok := value.([]any)
@@ -212,7 +212,7 @@ func validateCollaborationAttachments(q Request, input djangoinput.Input, table 
 				if value == nil {
 					failures["attachments"] = []string{"This field may not be null."}
 				} else {
-					failures["attachments"] = []string{fmt.Sprintf("Expected a list of items but got type \"%s\".", djangoinput.PythonType(value))}
+					failures["attachments"] = []string{fmt.Sprintf("Expected a list of items but got type \"%s\".", requestinput.TypeName(value))}
 				}
 			} else if len(list) > 10 {
 				failures["attachments"] = []string{"Ensure this field has no more than 10 elements."}
@@ -220,8 +220,8 @@ func validateCollaborationAttachments(q Request, input djangoinput.Input, table 
 				bad := map[string]any{}
 				converted := []any{}
 				for i, item := range list {
-					raw, msg := djangoinput.TextField(item, false, 200, nil)
-					if len(msg) == 0 && !djangoinput.ValidURL(raw) {
+					raw, msg := requestinput.TextField(item, false, 200)
+					if len(msg) == 0 && !requestinput.ValidURL(raw) {
 						msg = []string{"Enter a valid URL."}
 					}
 					if len(msg) > 0 {

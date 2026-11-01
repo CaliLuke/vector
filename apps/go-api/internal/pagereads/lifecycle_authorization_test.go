@@ -11,7 +11,7 @@ import (
 
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -206,7 +206,7 @@ func assertLifecycleStateReadOnce(t *testing.T, database *databaseStub) {
 
 func assertPageLifecycleFixtureError(t *testing.T, err error, status int, body map[string]any) {
 	t.Helper()
-	var httpError *djangoapi.HTTPError
+	var httpError *apicontract.HTTPError
 	if !errors.As(err, &httpError) {
 		t.Fatalf("error=%v, want HTTP %d with source body %v", err, status, body)
 	}

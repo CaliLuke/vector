@@ -9,8 +9,8 @@ import (
 
 	api "github.com/CaliLuke/go-plane/apilabelreads/gen/api_label_reads"
 	activitystore "github.com/CaliLuke/go-plane/internal/activityreads"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/projectlabelreads"
 	"github.com/CaliLuke/loom/security"
 )
@@ -84,7 +84,7 @@ func apiLabelError(status int, body map[string]any) error {
 	return result
 }
 func mapAPILabelError(err error) error {
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	switch {
 	case errors.As(err, &response):
 		return apiLabelError(response.Status, response.Body)

@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	store "github.com/CaliLuke/go-plane/internal/workspaceuserinsights"
 	api "github.com/CaliLuke/go-plane/workspaceuserinsights/gen/workspace_user_insights"
 )
@@ -29,7 +29,7 @@ func (r *insightsMountRepository) Profile(context.Context, string, string, strin
 	r.calls++
 	return json.RawMessage(`{"display_name":"Existing member"}`), nil
 }
-func (r *insightsMountRepository) Activity(context.Context, string, string, string, []string, djangoapi.Query) (json.RawMessage, error) {
+func (r *insightsMountRepository) Activity(context.Context, string, string, string, []string, apicontract.Query) (json.RawMessage, error) {
 	r.calls++
 	return json.RawMessage(`{"results":[{"comment":"Existing activity"}]}`), nil
 }
@@ -76,7 +76,7 @@ func TestWorkspaceUserInsightsProductionMounts(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			handler := extensionHTTPHandler(pendingReplacementEndpoints{workspaceUserInsights: api.NewEndpoints(service), workspaceUserInsightsMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20})
+			handler := extensionHTTPHandler(pendingReplacementEndpoints{workspaceUserInsights: api.NewEndpoints(service), workspaceUserInsightsMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20})
 			request := httptest.NewRequest(tc.method, "/api/workspaces/demo/"+tc.path+tc.query, strings.NewReader(tc.body))
 			request.Header.Set("Content-Type", "application/json")
 			if !tc.anonymous {

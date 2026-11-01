@@ -6,7 +6,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/milestones"
 	"github.com/CaliLuke/go-plane/internal/projectstatereads"
 	"github.com/google/uuid"
@@ -18,8 +18,8 @@ type milestoneStub struct {
 	visible milestones.Capabilities
 	err     error
 	read    func(milestones.Scope, uuid.UUID, bool) (milestones.Record, error)
-	list    func(milestones.Scope, djangoapi.Query) (milestones.Page[milestones.Record], error)
-	links   func(milestones.Scope, uuid.UUID, djangoapi.Query) (milestones.Page[milestones.Link], error)
+	list    func(milestones.Scope, apicontract.Query) (milestones.Page[milestones.Record], error)
+	links   func(milestones.Scope, uuid.UUID, apicontract.Query) (milestones.Page[milestones.Link], error)
 	write   func(context.Context, string, milestones.WriteOptions, uuid.UUID, milestones.Fields, []uuid.UUID, []uuid.UUID) (milestones.MutationResult, error)
 }
 
@@ -29,10 +29,10 @@ func (s *milestoneStub) VisibleActions(context.Context, uuid.UUID, uuid.UUID, st
 func (s *milestoneStub) Retrieve(_ context.Context, scope milestones.Scope, id uuid.UUID, revision bool) (milestones.Record, error) {
 	return s.read(scope, id, revision)
 }
-func (s *milestoneStub) List(_ context.Context, scope milestones.Scope, q djangoapi.Query) (milestones.Page[milestones.Record], error) {
+func (s *milestoneStub) List(_ context.Context, scope milestones.Scope, q apicontract.Query) (milestones.Page[milestones.Record], error) {
 	return s.list(scope, q)
 }
-func (s *milestoneStub) ListWorkItems(_ context.Context, scope milestones.Scope, id uuid.UUID, q djangoapi.Query) (milestones.Page[milestones.Link], error) {
+func (s *milestoneStub) ListWorkItems(_ context.Context, scope milestones.Scope, id uuid.UUID, q apicontract.Query) (milestones.Page[milestones.Link], error) {
 	return s.links(scope, id, q)
 }
 func (s *milestoneStub) Create(ctx context.Context, o milestones.WriteOptions, f milestones.Fields) (milestones.MutationResult, error) {

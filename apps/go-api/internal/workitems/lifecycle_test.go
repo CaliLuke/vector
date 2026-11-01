@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 )
 
 func TestBulkDateValidationDefersUnpairedWrongTypeToModelPreparation(t *testing.T) {
@@ -27,7 +27,7 @@ func TestBulkDateValidationDefersUnpairedWrongTypeToModelPreparation(t *testing.
 
 func TestBulkDatePersistenceRejectsSpacePaddedDayAsClientError(t *testing.T) {
 	_, err := prepareBulkDateForPersistence("2026-1- 2")
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if !errors.As(err, &httpErr) {
 		t.Fatalf("expected HTTP 400 error, got %v", err)
 	}

@@ -10,12 +10,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	membership "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/loom/clue/log"
+	"github.com/go-json-experiment/json/jsontext"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -57,24 +57,21 @@ func NewLifecycleRepository(db lifecycleDatabase, effects LifecycleEffects, base
 	return &LifecycleRepository{Repository: reads, writer: db, effects: effects, baseHost: baseHost, coverAssets: coverAssets}, nil
 }
 func projectFailure(status int, body map[string]any) error {
-	return &djangoapi.HTTPError{Status: status, Body: body}
+	return &apicontract.HTTPError{Status: status, Body: body}
 }
 
 func normalizeProjectIdentifier(value string) string {
 	return cases.Upper(language.Und).String(strings.TrimSpace(value))
 }
 
-func lifecycleRequestedData(input djangoinput.Input) (any, error) {
+func lifecycleRequestedData(input requestinput.Input) (any, error) {
 	if input.Form || len(input.Raw) == 0 {
 		return input.Fields, nil
 	}
-	normalized, err := pythoncompat.NormalizeDecodedJSONNumbers(input.Raw)
-	if err != nil {
-		return nil, err
+	if !jsontext.Value(input.Raw).IsValid(jsontext.AllowDuplicateNames(true)) {
+		return nil, errors.New("invalid JSON request data")
 	}
-	// Keep the normalized object encoded until Celery serialization: decoding it
-	// here would merge lone-surrogate keys with U+FFFD and replace their values.
-	return json.RawMessage(normalized), nil
+	return append(json.RawMessage(nil), input.Raw...), nil
 }
 
 // AuthorizeProjectWrite keeps the source route policies distinct after the
@@ -165,7 +162,7 @@ func insertProjectRecordExec(ctx context.Context, db projectExecer, values map[s
 	_, err = db.Exec(ctx, `INSERT INTO projects (`+list+`) SELECT `+list+` FROM jsonb_populate_record(NULL::projects,$1::jsonb)`, string(raw))
 	return err
 }
-func (r *LifecycleRepository) CreateProject(ctx context.Context, user, slug string, input djangoinput.Input, app bool) (out json.RawMessage, resultErr error) {
+func (r *LifecycleRepository) CreateProject(ctx context.Context, user, slug string, input requestinput.Input, app bool) (out json.RawMessage, resultErr error) {
 	var workspace, timezone string
 	if err := r.writer.QueryRow(ctx, `SELECT id,timezone FROM workspaces WHERE slug=$1`, slug).Scan(&workspace, &timezone); err != nil {
 		return nil, err
@@ -250,33 +247,26 @@ func (r *LifecycleRepository) projectWriteProjection(ctx context.Context, user, 
 	if err != nil {
 		return nil, err
 	}
-	return projectResponseFloatFields(raw)
+	return projectResponseJSON(raw)
 }
 
-func projectResponseFloatFields(raw json.RawMessage) (json.RawMessage, error) {
-	values, err := pythoncompat.DecodeObject(raw)
-	if err != nil {
+func projectResponseJSON(raw json.RawMessage) (json.RawMessage, error) {
+	var values map[string]any
+	if err := apicontract.DecodeJSON(raw, &values); err != nil {
 		return nil, err
 	}
-	if number, ok := values["sort_order"].(json.Number); ok {
-		value, err := number.Float64()
-		if err != nil {
-			return nil, err
-		}
-		values["sort_order"] = json.Number(pythoncompat.FloatString(value))
+	if values == nil {
+		return nil, errors.New("project response must be a JSON object")
 	}
 	return json.Marshal(values)
 }
 
 func projectCurrentInstance(raw json.RawMessage) (string, error) {
-	values, err := pythoncompat.DecodeObject(raw)
-	if err != nil {
-		return "", err
-	}
-	return pythoncompat.Dumps(values, raw)
+	encoded, err := projectResponseJSON(raw)
+	return string(encoded), err
 }
 
-func (r *LifecycleRepository) UpdateProject(ctx context.Context, user, slug, id string, input djangoinput.Input, app, replace bool) (json.RawMessage, error) {
+func (r *LifecycleRepository) UpdateProject(ctx context.Context, user, slug, id string, input requestinput.Input, app, replace bool) (json.RawMessage, error) {
 	fields := input.Fields
 	current, err := r.projectModelProjection(ctx, user, slug, id, app)
 	if errors.Is(err, pgx.ErrNoRows) {

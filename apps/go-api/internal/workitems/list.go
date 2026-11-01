@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 )
@@ -159,9 +159,9 @@ func (r *Repository) authorizeIssueList(ctx context.Context, q Request, shape is
 
 func (r *Repository) externalIssueListResult(ctx context.Context, q Request) (Result, error) {
 
-	row, err := r.row(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE w.slug=$1 AND i.project_id=$2 AND i.external_id=$3 AND i.external_source=$4 AND i.deleted_at IS NULL`, q.Slug, q.ProjectID, q.Params["external_id"], q.Params["external_source"])
+	row, err := r.row(ctx, `SELECT `+apicontract.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE w.slug=$1 AND i.project_id=$2 AND i.external_id=$3 AND i.external_source=$4 AND i.deleted_at IS NULL`, q.Slug, q.ProjectID, q.Params["external_id"], q.Params["external_source"])
 	if err != nil {
-		var missing *djangoapi.HTTPError
+		var missing *apicontract.HTTPError
 		if errors.As(err, &missing) && missing.Status == 404 {
 			return Result{}, failure(404, "error", "The requested resource does not exist.")
 		}
@@ -324,7 +324,7 @@ func (r *Repository) readIssueListPage(ctx context.Context, q Request, shape iss
 	if !q.API {
 		order += ",issue.created_at DESC"
 	}
-	sql := `SELECT ` + djangoapi.IssueRowSQL("issue") + `||` + strings.ReplaceAll(issueAnnotationsSQL("$1", shape.v2), "i.", "issue.") + `||jsonb_build_object('state__group',(SELECT "group" FROM states s WHERE s.id=issue.state_id))` + from + ` ORDER BY ` + order
+	sql := `SELECT ` + apicontract.IssueRowSQL("issue") + `||` + strings.ReplaceAll(issueAnnotationsSQL("$1", shape.v2), "i.", "issue.") + `||jsonb_build_object('state__group',(SELECT "group" FROM states s WHERE s.id=issue.state_id))` + from + ` ORDER BY ` + order
 	limit, page, offset, total := 0, 0, 0, 0
 	pageInSQL := shape.v2 || !shape.byIDs && (q.API || options.GroupBy == "")
 	if pageInSQL {
@@ -332,7 +332,7 @@ func (r *Repository) readIssueListPage(ctx context.Context, q Request, shape iss
 			limit, page, err = v2Window(q)
 			offset = max(0, page) * limit
 		} else {
-			limit, page, offset, err = djangoapi.PageWindow(djangoapi.Query{Params: q.Params, Present: q.Present})
+			limit, page, offset, err = apicontract.PageWindow(apicontract.Query{Params: q.Params, Present: q.Present})
 		}
 		if err != nil {
 			return issueListPage{}, err
@@ -411,9 +411,9 @@ func (r *Repository) issueListResponse(ctx context.Context, q Request, shape iss
 		return Result{200, results}, nil
 	}
 	if pageInSQL {
-		return Result{200, djangoapi.Envelope(results, total, limit, page)}, nil
+		return Result{200, apicontract.Envelope(results, total, limit, page)}, nil
 	}
-	limit, page, offset, err = djangoapi.PageWindow(djangoapi.Query{Params: q.Params, Present: q.Present})
+	limit, page, offset, err = apicontract.PageWindow(apicontract.Query{Params: q.Params, Present: q.Present})
 	if err != nil {
 		return Result{}, err
 	}
@@ -423,7 +423,7 @@ func (r *Repository) issueListResponse(ctx context.Context, q Request, shape iss
 	total = len(results)
 	end := min(total, offset+limit)
 	offset = min(offset, total)
-	return Result{200, djangoapi.Envelope(results[offset:end], total, limit, page)}, nil
+	return Result{200, apicontract.Envelope(results[offset:end], total, limit, page)}, nil
 }
 
 func apiIssueOrderSQL(raw string) string {

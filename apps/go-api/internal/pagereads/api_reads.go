@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
@@ -17,7 +17,7 @@ import (
 )
 
 func pageAPIVisible(alias string, linked bool) string {
-	project := djangoapi.PageVisibleSQL(alias, "$2::uuid", "$1::uuid", "$3::uuid") + ` AND EXISTS(SELECT 1 FROM project_members vm JOIN projects vp ON vp.id=vm.project_id AND vp.workspace_id=vm.workspace_id WHERE vm.member_id=$2 AND vm.project_id=$3 AND vm.workspace_id=$1 AND vm.is_active AND vm.deleted_at IS NULL AND vp.archived_at IS NULL AND (vm.role IN(15,20) OR vm.role=5 AND (vp.guest_view_all_features OR ` + alias + `.owned_by_id=$2)))`
+	project := apicontract.PageVisibleSQL(alias, "$2::uuid", "$1::uuid", "$3::uuid") + ` AND EXISTS(SELECT 1 FROM project_members vm JOIN projects vp ON vp.id=vm.project_id AND vp.workspace_id=vm.workspace_id WHERE vm.member_id=$2 AND vm.project_id=$3 AND vm.workspace_id=$1 AND vm.is_active AND vm.deleted_at IS NULL AND vp.archived_at IS NULL AND (vm.role IN(15,20) OR vm.role=5 AND (vp.guest_view_all_features OR ` + alias + `.owned_by_id=$2)))`
 	if linked {
 		return `(` + alias + `.is_global AND workspace_page_visible(` + alias + `.id,$2,$1) OR NOT ` + alias + `.is_global AND ` + project + `)`
 	}
@@ -31,7 +31,7 @@ func pageAPIArgs(q PageAPIQuery) []any {
 	return []any{q.WorkspaceID, q.ActorID, project}
 }
 func pageAPIRows(ctx context.Context, tx pgx.Tx, query string, args ...any) ([]map[string]any, error) {
-	return djangoapi.ReadJSONRows(ctx, tx, query, args...)
+	return apicontract.ReadJSONRows(ctx, tx, query, args...)
 }
 func (r *Repository) ReadPageAPI(ctx context.Context, q PageAPIQuery) (_ json.RawMessage, resultErr error) {
 	db, ok := r.database.(mutationreceipts.Database)
@@ -142,7 +142,7 @@ func listPagesAPI(ctx context.Context, tx pgx.Tx, q PageAPIQuery) (map[string]an
 		args = append(args, parent, q.Search)
 		where += ` AND p.parent_id IS NOT DISTINCT FROM $5::uuid AND strpos(lower(p.name),lower($6))>0`
 	}
-	limit, page, offset, err := djangoapi.PageWindow(djangoapi.Query{Params: q.Params, Present: q.Present})
+	limit, page, offset, err := apicontract.PageWindow(apicontract.Query{Params: q.Params, Present: q.Present})
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +167,7 @@ func listPagesAPI(ctx context.Context, tx pgx.Tx, q PageAPIQuery) (map[string]an
 		}
 		values = append(values, value)
 	}
-	return djangoapi.Envelope(values, total, limit, page), nil
+	return apicontract.Envelope(values, total, limit, page), nil
 }
 func collectionProjection(ctx context.Context, tx pgx.Tx, q PageAPIQuery, row map[string]any) (map[string]any, error) {
 	out := map[string]any{}

@@ -5,7 +5,7 @@ package mcpactions_test
 import (
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/modulereads"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
@@ -56,7 +56,7 @@ func TestNativeModuleDeleteAuthorizationPreservesAppAndAPIContracts(t *testing.T
 					if route.allowed {
 						require.NoError(t, err)
 					} else if route.api {
-						var denied *djangoapi.HTTPError
+						var denied *apicontract.HTTPError
 						require.ErrorAs(t, err, &denied)
 						require.Equal(t, 403, denied.Status)
 					} else {

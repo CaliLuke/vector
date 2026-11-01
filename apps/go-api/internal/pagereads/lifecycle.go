@@ -12,10 +12,10 @@ import (
 
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -40,10 +40,9 @@ type pageLifecycleState struct {
 }
 
 type lifecycleLabelReference struct {
-	index  int
-	id     uuid.UUID
-	raw    any
-	source json.RawMessage
+	index int
+	id    uuid.UUID
+	raw   any
 }
 
 type lifecycleLabelList struct {
@@ -72,7 +71,7 @@ func (repository *Repository) Lifecycle(
 	projectID uuid.UUID,
 	pageID uuid.UUID,
 	timezone string,
-	input djangoinput.Input,
+	input requestinput.Input,
 ) (int, json.RawMessage, error) {
 	db, ok := repository.database.(lifecycleDatabase)
 	if !ok {
@@ -114,7 +113,7 @@ func (repository *Repository) Lifecycle(
 			if accessValue == nil {
 				return 0, nil, &LifecycleError{Status: http.StatusBadRequest, Body: []string{"This field may not be null."}}
 			}
-			return 0, nil, &LifecycleError{Status: http.StatusBadRequest, Body: []string{lifecycleChoiceMessage(input, accessValue)}}
+			return 0, nil, &LifecycleError{Status: http.StatusBadRequest, Body: []string{lifecycleChoiceMessage(accessValue)}}
 		}
 		rawAccess, present := input.Fields["access"]
 		if present && lifecycleRawAccessChanged(rawAccess, state, userID) {
@@ -254,12 +253,12 @@ func (repository *Repository) ValidateLifecycleHandler(ctx context.Context, oper
 	case "update", "description_update":
 		if state.locked {
 			if operation == "description_update" {
-				return &djangoapi.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error_code": 4701, "error_message": "PAGE_LOCKED"}}
+				return &apicontract.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error_code": 4701, "error_message": "PAGE_LOCKED"}}
 			}
 			return lifecycleError(http.StatusBadRequest, "Page is locked")
 		}
 		if state.archivedAt != nil && operation == "description_update" {
-			return &djangoapi.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error_code": 4702, "error_message": "PAGE_ARCHIVED"}}
+			return &apicontract.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error_code": 4702, "error_message": "PAGE_ARCHIVED"}}
 		}
 	}
 	return nil
@@ -361,13 +360,13 @@ func lifecycleError(status int, message string) error {
 	if status == http.StatusForbidden {
 		key = "detail"
 	}
-	return &djangoapi.HTTPError{Status: status, Body: map[string]any{key: message}}
+	return &apicontract.HTTPError{Status: status, Body: map[string]any{key: message}}
 }
 
 func pageLifecycleDatabaseError(err error) error {
 	var postgres *pgconn.PgError
 	if errors.As(err, &postgres) && strings.HasPrefix(postgres.Code, "23") {
-		return &djangoapi.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error": "The payload is not valid"}}
+		return &apicontract.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error": "The payload is not valid"}}
 	}
 	return err
 }
@@ -375,7 +374,7 @@ func pageLifecycleDatabaseError(err error) error {
 func lifecycleChoice(value any) (int, bool) {
 	// DRF ChoiceField compares the Python string spelling with its choices;
 	// an integral-looking JSON float is still "0.0", not choice "0".
-	switch djangoinput.ScalarString(value) {
+	switch requestinput.ScalarString(value) {
 	case "0":
 		return 0, true
 	case "1":
@@ -385,56 +384,35 @@ func lifecycleChoice(value any) (int, bool) {
 	}
 }
 
-func lifecycleChoiceMessage(input djangoinput.Input, value any) string {
-	text, err := pythoncompat.String(value, input.JSONFieldSource("access"))
+func lifecycleChoiceMessage(value any) string {
+	text, err := requestinput.Text(value)
 	if err != nil {
-		text = djangoinput.ScalarString(value)
+		text = requestinput.ScalarString(value)
 	}
 	return `"` + text + `" is not a valid choice.`
 }
 
-// lifecycleParentLookupUUID matches the raw Page.objects.get/filter lookup in
-// the page views. Django accepts booleans as integer primary keys, while the
-// later DRF relation field performs its own typed validation.
-func lifecycleParentLookupUUID(value any) (uuid.UUID, error) {
-	lookupValue := value
-	if boolean, ok := value.(bool); ok {
-		if boolean {
-			lookupValue = json.Number("1")
-		} else {
-			lookupValue = json.Number("0")
-		}
-	}
-	parsed, err := djangoinput.UUID(lookupValue)
+// lifecycleParentUUID validates textual identities for both lookup and field validation.
+func lifecycleParentUUID(value any) (uuid.UUID, error) {
+	parsed, err := requestinput.UUID(value)
 	if err != nil {
 		return uuid.Nil(), err
 	}
 	return uuid.Parse(parsed.String())
 }
 
-func lifecycleSerializerParentUUID(value any) (uuid.UUID, error) {
-	if _, ok := value.(bool); ok {
-		return uuid.Nil(), fmt.Errorf("boolean is not a primary key value")
-	}
-	parsed, err := djangoinput.UUID(value)
-	if err != nil {
-		return uuid.Nil(), err
-	}
-	return uuid.Parse(parsed.String())
-}
-
-func (repository *Repository) lifecycleSerializerParent(ctx context.Context, workspace, project uuid.UUID, value any, source []byte, prechecked *uuid.UUID) (any, string, error) {
+func (repository *Repository) lifecycleSerializerParent(ctx context.Context, workspace, project uuid.UUID, value any, prechecked *uuid.UUID) (any, string, error) {
 	if value == nil || value == "" {
 		return nil, "", nil
 	}
 	if _, ok := value.(bool); ok {
 		return nil, "Incorrect type. Expected pk value, received bool.", nil
 	}
-	parent, err := lifecycleSerializerParentUUID(value)
+	parent, err := lifecycleParentUUID(value)
 	if err != nil {
-		text, reprErr := pythoncompat.String(value, source)
+		text, reprErr := requestinput.Text(value)
 		if reprErr != nil {
-			text = djangoinput.ScalarString(value)
+			text = requestinput.ScalarString(value)
 		}
 		return nil, "“" + text + "” is not a valid UUID.", nil
 	}
@@ -446,9 +424,9 @@ func (repository *Repository) lifecycleSerializerParent(ctx context.Context, wor
 		return nil, "", err
 	}
 	if !exists {
-		text, reprErr := pythoncompat.String(value, source)
+		text, reprErr := requestinput.Text(value)
 		if reprErr != nil {
-			text = djangoinput.ScalarString(value)
+			text = requestinput.ScalarString(value)
 		}
 		return nil, `Invalid pk "` + text + `" - object does not exist.`, nil
 	}
@@ -461,7 +439,7 @@ func (repository *Repository) lifecycleParentExists(ctx context.Context, parent,
 	return exists, err
 }
 
-func lifecycleJSONField(input djangoinput.Input, key string, fallback any) ([]byte, error) {
+func lifecycleJSONField(input requestinput.Input, key string, fallback any) ([]byte, error) {
 	value, present, err := input.JSONFieldValue(key)
 	if err != nil {
 		return nil, err
@@ -483,7 +461,7 @@ func lifecycleJSONFieldMessage(err error) string {
 }
 
 func lifecycleBoolean(value any) (bool, bool) {
-	text := strings.ToLower(djangoinput.ScalarString(value))
+	text := strings.ToLower(requestinput.ScalarString(value))
 	switch text {
 	case "true", "t", "yes", "y", "on", "1":
 		return true, true
@@ -538,7 +516,7 @@ func lifecycleRawAccessChanged(raw any, state pageLifecycleState, user uuid.UUID
 	}
 }
 
-func validatePageLifecycleFields(input djangoinput.Input) (map[string]any, map[string]any, lifecycleLabelList) {
+func validatePageLifecycleFields(input requestinput.Input) (map[string]any, map[string]any, lifecycleLabelList) {
 	values := make(map[string]any, len(input.Fields))
 	errorsByField := map[string]any{}
 	for key, maximum := range map[string]int{"name": 0, "color": 255, "description_html": 0} {
@@ -549,9 +527,9 @@ func validatePageLifecycleFields(input djangoinput.Input) (map[string]any, map[s
 		var text string
 		var failures []string
 		if key == "color" {
-			text, failures = djangoinput.CharField(value, true, input.Surrogates[key])
+			text, failures = requestinput.CharField(value, true)
 		} else {
-			text, failures = djangoinput.TextField(value, true, maximum, input.Surrogates[key])
+			text, failures = requestinput.TextField(value, true, maximum)
 		}
 		if len(failures) > 0 {
 			errorsByField[key] = failures
@@ -562,14 +540,14 @@ func validatePageLifecycleFields(input djangoinput.Input) (map[string]any, map[s
 		}
 	}
 	value, present := input.ListValue("labels", true)
-	labels := lifecycleParseLabelList(value, present, input.JSONFieldSource("labels"))
+	labels := lifecycleParseLabelList(value, present)
 	if labels.errors != nil {
 		errorsByField["labels"] = labels.errors
 	}
 	if value, present := input.FieldValue("access", false, false, false); present {
 		choice, valid := lifecycleChoice(value)
 		if !valid {
-			message := lifecycleChoiceMessage(input, value)
+			message := lifecycleChoiceMessage(value)
 			if value == nil {
 				message = "This field may not be null."
 			}
@@ -621,7 +599,7 @@ func validatePageLifecycleFields(input djangoinput.Input) (map[string]any, map[s
 	return values, errorsByField, labels
 }
 
-func (repository *Repository) updatePageDescription(ctx context.Context, db lifecycleDatabase, user, page uuid.UUID, state pageLifecycleState, input djangoinput.Input) (int, json.RawMessage, error) {
+func (repository *Repository) updatePageDescription(ctx context.Context, db lifecycleDatabase, user, page uuid.UUID, state pageLifecycleState, input requestinput.Input) (int, json.RawMessage, error) {
 	fields := input.Fields
 	var oldHTML string
 	if err := repository.database.QueryRow(ctx, `SELECT description_html FROM pages WHERE id=$1 AND workspace_id=$2 AND deleted_at IS NULL`, page, state.workspaceID).Scan(&oldHTML); err != nil {
@@ -630,25 +608,25 @@ func (repository *Repository) updatePageDescription(ctx context.Context, db life
 	update := map[string]any{}
 	if value, ok := fields["description_html"]; ok {
 		if value == nil {
-			return 0, nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"description_html": []string{"This field may not be null."}}}
+			return 0, nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"description_html": []string{"This field may not be null."}}}
 		}
-		html, failures := djangoinput.TextField(value, true, 0, input.Surrogates["description_html"])
+		html, failures := requestinput.TextField(value, true, 0)
 		if len(failures) > 0 {
-			return 0, nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"description_html": failures}}
+			return 0, nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"description_html": failures}}
 		}
 		clean, _, err := content.ValidateHTML(html)
 		if err != nil {
-			return 0, nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"description_html": []string{err.Error()}}}
+			return 0, nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"description_html": []string{err.Error()}}}
 		}
 		update["description_html"] = clean
 	}
 	if value, ok := fields["description_binary"]; ok {
 		if value == nil {
-			return 0, nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"description_binary": []string{"This field may not be null."}}}
+			return 0, nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"description_binary": []string{"This field may not be null."}}}
 		}
-		encoded, failures := djangoinput.TextField(value, true, 0, input.Surrogates["description_binary"])
+		encoded, failures := requestinput.TextField(value, true, 0)
 		if len(failures) > 0 {
-			return 0, nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"description_binary": failures}}
+			return 0, nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"description_binary": failures}}
 		}
 		if encoded == "" {
 			update["description_binary"] = []byte{}
@@ -656,9 +634,9 @@ func (repository *Repository) updatePageDescription(ctx context.Context, db life
 			decoded, err := content.DecodeBase64Binary(encoded)
 			if err != nil {
 				if errors.Is(err, content.ErrInvalidBase64) {
-					return 0, nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"description_binary": []string{"Failed to decode base64 data"}}}
+					return 0, nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"description_binary": []string{"Failed to decode base64 data"}}}
 				}
-				return 0, nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"description_binary": []string{"Invalid binary data: " + err.Error()}}}
+				return 0, nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"description_binary": []string{"Invalid binary data: " + err.Error()}}}
 			}
 			update["description_binary"] = decoded
 		}
@@ -666,14 +644,14 @@ func (repository *Repository) updatePageDescription(ctx context.Context, db life
 	if _, ok := fields["description_json"]; ok {
 		value, _, err := input.JSONFieldValue("description_json")
 		if err != nil {
-			return 0, nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"description_json": []string{"Value must be valid JSON."}}}
+			return 0, nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"description_json": []string{"Value must be valid JSON."}}}
 		}
 		if value == nil {
 			update["description_json"] = nil
 		} else {
 			encoded, err := json.Marshal(value)
 			if err != nil {
-				return 0, nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"description_json": []string{"Value must be valid JSON."}}}
+				return 0, nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"description_json": []string{"Value must be valid JSON."}}}
 			}
 			update["description_json"] = encoded
 		}
@@ -701,7 +679,7 @@ func (repository *Repository) updatePageDescription(ctx context.Context, db life
 		return 0, nil, pageLifecycleDatabaseError(err)
 	}
 	if repository.publisher != nil || repository.nativeTasks != nil {
-		if value, ok := fields["description_html"]; ok && pythoncompat.Truthy(value) {
+		if value, ok := fields["description_html"]; ok && requestinput.Nonempty(value) {
 			if err := repository.admitPageTransaction(ctx, value, oldHTML, page.String()); err != nil {
 				return 0, nil, err
 			}
@@ -833,7 +811,7 @@ JOIN project_members member ON member.project_id=project.id AND member.workspace
 WHERE page.id=$4 AND page.workspace_id=workspace.id AND page.deleted_at IS NULL
 LIMIT 1`
 
-func lifecycleParseLabelList(value any, present bool, source []byte) lifecycleLabelList {
+func lifecycleParseLabelList(value any, present bool) lifecycleLabelList {
 	labels := lifecycleLabelList{present: present}
 	if !present {
 		return labels
@@ -844,18 +822,12 @@ func lifecycleParseLabelList(value any, present bool, source []byte) lifecycleLa
 	}
 	items, ok := value.([]any)
 	if !ok {
-		labels.errors = []string{fmt.Sprintf("Expected a list of items but got type %q.", djangoinput.PythonType(value))}
+		labels.errors = []string{fmt.Sprintf("Expected a list of items but got type %q.", requestinput.TypeName(value))}
 		return labels
 	}
 	childErrors := map[string]any{}
-	var sourceChildren []json.RawMessage
-	_ = json.Unmarshal(source, &sourceChildren)
 	for index, item := range items {
 		indexKey := strconv.Itoa(index)
-		var childSource []byte
-		if index < len(sourceChildren) {
-			childSource = sourceChildren[index]
-		}
 		if item == nil || item == "" {
 			childErrors[indexKey] = []string{"This field may not be null."}
 			continue
@@ -864,17 +836,17 @@ func lifecycleParseLabelList(value any, present bool, source []byte) lifecycleLa
 			childErrors[indexKey] = []string{"Incorrect type. Expected pk value, received bool."}
 			continue
 		}
-		parsed, err := djangoinput.UUID(item)
+		parsed, err := requestinput.UUID(item)
 		if err != nil {
-			childErrors[indexKey] = []string{"“" + lifecycleLabelValueString(item, childSource) + "” is not a valid UUID."}
+			childErrors[indexKey] = []string{"“" + lifecycleLabelValueString(item) + "” is not a valid UUID."}
 			continue
 		}
 		id, err := uuid.Parse(parsed.String())
 		if err != nil {
-			childErrors[indexKey] = []string{"“" + lifecycleLabelValueString(item, childSource) + "” is not a valid UUID."}
+			childErrors[indexKey] = []string{"“" + lifecycleLabelValueString(item) + "” is not a valid UUID."}
 			continue
 		}
-		labels.references = append(labels.references, lifecycleLabelReference{index: index, id: id, raw: item, source: childSource})
+		labels.references = append(labels.references, lifecycleLabelReference{index: index, id: id, raw: item})
 	}
 	if len(childErrors) > 0 {
 		labels.errors = childErrors
@@ -896,7 +868,7 @@ func (repository *Repository) validateLifecycleLabelReferences(ctx context.Conte
 			return labels, err
 		}
 		if !exists {
-			childErrors[strconv.Itoa(label.index)] = []string{"Invalid pk \"" + lifecycleLabelValueString(label.raw, label.source) + "\" - object does not exist."}
+			childErrors[strconv.Itoa(label.index)] = []string{"Invalid pk \"" + lifecycleLabelValueString(label.raw) + "\" - object does not exist."}
 		}
 	}
 	if len(childErrors) > 0 {
@@ -905,10 +877,10 @@ func (repository *Repository) validateLifecycleLabelReferences(ctx context.Conte
 	return labels, nil
 }
 
-func lifecycleLabelValueString(value any, source []byte) string {
-	text, err := pythoncompat.String(value, source)
+func lifecycleLabelValueString(value any) string {
+	text, err := requestinput.Text(value)
 	if err != nil {
-		return djangoinput.ScalarString(value)
+		return requestinput.ScalarString(value)
 	}
 	return text
 }

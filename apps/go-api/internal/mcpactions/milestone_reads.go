@@ -4,7 +4,7 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/milestones"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	loom "github.com/CaliLuke/loom/pkg"
@@ -54,15 +54,15 @@ func (s *Service) milestoneRead(ctx context.Context, input milestoneInput) (*api
 	return &result, nil
 }
 
-func milestoneQuery(input milestoneInput) (djangoapi.Query, error) {
+func milestoneQuery(input milestoneInput) (apicontract.Query, error) {
 	size := 1000
 	if input.perPage != nil && *input.perPage != 0 {
 		size = *input.perPage
 	}
 	if size < 1 || size > 1000 {
-		return djangoapi.Query{}, milestoneInvalid()
+		return apicontract.Query{}, milestoneInvalid()
 	}
-	query := djangoapi.Query{Params: map[string]string{"per_page": strconv.Itoa(size)}, Present: map[string]bool{"per_page": true}}
+	query := apicontract.Query{Params: map[string]string{"per_page": strconv.Itoa(size)}, Present: map[string]bool{"per_page": true}}
 	if input.cursor != nil && *input.cursor != "" {
 		query.Params["cursor"], query.Present["cursor"] = *input.cursor, true
 	}

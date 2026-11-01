@@ -8,7 +8,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
@@ -119,7 +119,7 @@ func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.R
 			if operationErr = tx.QueryRow(ctx, `SELECT revision FROM work_item_relation_revisions WHERE workspace_id=$1`, in.WorkspaceID).Scan(&revision); operationErr != nil {
 				return nil, operationErr
 			}
-			record, operationErr = djangoapi.JSONTimestamps(record, in.Timezone)
+			record, operationErr = apicontract.JSONTimestamps(record, in.Timezone)
 			if operationErr != nil {
 				return nil, operationErr
 			}

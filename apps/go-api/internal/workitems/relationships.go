@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 )
 
@@ -61,8 +61,8 @@ func issueActivityData(q Request, kind string, requested, previous any, defaults
 	return data
 }
 
-func parseObject(body io.Reader, contentType string) (djangoinput.Input, error) {
-	input, err := djangoinput.Parse(body, contentType)
+func parseObject(body io.Reader, contentType string) (requestinput.Input, error) {
+	input, err := requestinput.Parse(body, contentType)
 	if err == nil && input.Kind != "" {
 		err = errors.New("request data has no get method")
 	}
@@ -85,7 +85,7 @@ func rawIDs(value any) ([]string, error) {
 	}
 	ids := []string{}
 	for _, v := range values {
-		id, e := djangoinput.UUID(v)
+		id, e := requestinput.UUID(v)
 		if e != nil {
 			return nil, failure(400, "error", "Please provide valid detail")
 		}
@@ -98,10 +98,10 @@ func (r *Repository) workspaceAnchor(ctx context.Context, q Request, live bool) 
 	if live {
 		pred = liveIssue
 	}
-	return r.row(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE i.id=$1 AND w.slug=$2 AND `+pred, q.IssueID, q.Slug)
+	return r.row(ctx, `SELECT `+apicontract.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE i.id=$1 AND w.slug=$2 AND `+pred, q.IssueID, q.Slug)
 }
 func (r *Repository) eligibleIssues(ctx context.Context, q Request, ids []string, project bool) ([]map[string]any, error) {
-	sql := `SELECT ` + djangoapi.IssueRowSQL("i") + ` FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE i.id=ANY($1::uuid[]) AND w.slug=$2 AND ` + liveIssue
+	sql := `SELECT ` + apicontract.IssueRowSQL("i") + ` FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE i.id=ANY($1::uuid[]) AND w.slug=$2 AND ` + liveIssue
 	args := []any{ids, q.Slug}
 	if project {
 		sql += " AND i.project_id=$3"
@@ -122,7 +122,7 @@ func (r *Repository) relations(ctx context.Context, q Request, body io.Reader, c
 		return r.removeRelation(ctx, q, input)
 	}
 	relation, present := input.Fields["relation_type"]
-	value := djangoinput.ScalarString(relation)
+	value := requestinput.ScalarString(relation)
 	if !q.API && (!present || relation == nil) {
 		return Result{}, failure(400, "message", "Issue relation type is required")
 	}
@@ -141,7 +141,7 @@ func (r *Repository) relations(ctx context.Context, q Request, body io.Reader, c
 		case []any:
 			bad := map[string]any{}
 			for i, item := range list {
-				id, e := djangoinput.UUID(item)
+				id, e := requestinput.UUID(item)
 				if e != nil {
 					bad[strconv.Itoa(i)] = []string{"Must be a valid UUID."}
 				} else {
@@ -159,7 +159,7 @@ func (r *Repository) relations(ctx context.Context, q Request, body io.Reader, c
 			} else if raw == nil {
 				fields["issues"] = []string{"This field may not be null."}
 			} else {
-				fields["issues"] = []string{fmt.Sprintf("Expected a list of items but got type \"%s\".", djangoinput.PythonType(raw))}
+				fields["issues"] = []string{fmt.Sprintf("Expected a list of items but got type \"%s\".", requestinput.TypeName(raw))}
 			}
 		}
 		if len(fields) > 0 {
@@ -260,7 +260,7 @@ func relationProjection(relation, target map[string]any) (map[string]any, error)
 	return out, nil
 }
 func (r *Repository) listRelations(ctx context.Context, q Request) (Result, error) {
-	rows, err := r.visibleCollaborationRows(ctx, q, "relation", `SELECT to_jsonb(rel)||jsonb_build_object('left_project',i.project_id,'right_project',j.project_id) FROM issue_relations rel JOIN issues i ON i.id=rel.issue_id JOIN issues j ON j.id=rel.related_issue_id JOIN workspaces w ON w.id=rel.workspace_id WHERE (rel.issue_id=$1 OR rel.related_issue_id=$1) AND w.slug=$2 AND rel.deleted_at IS NULL AND `+djangoapi.IssueVisibleSQL("i", "$3::uuid", "w.id")+` AND `+djangoapi.IssueVisibleSQL("j", "$3::uuid", "w.id")+` ORDER BY rel.created_at DESC`, q.IssueID, q.Slug, q.ActorID)
+	rows, err := r.visibleCollaborationRows(ctx, q, "relation", `SELECT to_jsonb(rel)||jsonb_build_object('left_project',i.project_id,'right_project',j.project_id) FROM issue_relations rel JOIN issues i ON i.id=rel.issue_id JOIN issues j ON j.id=rel.related_issue_id JOIN workspaces w ON w.id=rel.workspace_id WHERE (rel.issue_id=$1 OR rel.related_issue_id=$1) AND w.slug=$2 AND rel.deleted_at IS NULL AND `+apicontract.IssueVisibleSQL("i", "$3::uuid", "w.id")+` AND `+apicontract.IssueVisibleSQL("j", "$3::uuid", "w.id")+` ORDER BY rel.created_at DESC`, q.IssueID, q.Slug, q.ActorID)
 	if err != nil {
 		return Result{}, err
 	}
@@ -320,11 +320,11 @@ func (r *Repository) listRelations(ctx context.Context, q Request) (Result, erro
 	}
 	return Result{200, out}, nil
 }
-func (r *Repository) removeRelation(ctx context.Context, q Request, input djangoinput.Input) (Result, error) {
+func (r *Repository) removeRelation(ctx context.Context, q Request, input requestinput.Input) (Result, error) {
 	related := input.Fields["related_issue"]
 	var id any
 	if related != nil {
-		v, e := djangoinput.UUID(related)
+		v, e := requestinput.UUID(related)
 		if e != nil {
 			return Result{}, failure(400, "error", "Please provide valid detail")
 		}
@@ -390,7 +390,7 @@ func (r *Repository) subissuesTransaction(ctx context.Context, q Request, body i
 		return Result{}, err
 	}
 	var parentVisible bool
-	if err = r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issues i WHERE i.id=$1 AND `+djangoapi.IssueVisibleSQL("i", "$2::uuid", "$3::uuid")+`)`, q.IssueID, q.ActorID, parent["workspace_id"]).Scan(&parentVisible); err != nil {
+	if err = r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issues i WHERE i.id=$1 AND `+apicontract.IssueVisibleSQL("i", "$2::uuid", "$3::uuid")+`)`, q.IssueID, q.ActorID, parent["workspace_id"]).Scan(&parentVisible); err != nil {
 		return Result{}, err
 	}
 	if !parentVisible {
@@ -413,7 +413,7 @@ func (r *Repository) subissuesTransaction(ctx context.Context, q Request, body i
 		if e != nil {
 			return Result{}, e
 		}
-		rows, e = r.rows(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i WHERE i.id=ANY($1::uuid[]) AND `+liveIssue+` AND `+djangoapi.IssueVisibleSQL("i", "$2::uuid", "$3::uuid")+` ORDER BY i.created_at DESC`, ids, q.ActorID, parent["workspace_id"])
+		rows, e = r.rows(ctx, `SELECT `+apicontract.IssueRowSQL("i")+` FROM issues i WHERE i.id=ANY($1::uuid[]) AND `+liveIssue+` AND `+apicontract.IssueVisibleSQL("i", "$2::uuid", "$3::uuid")+` ORDER BY i.created_at DESC`, ids, q.ActorID, parent["workspace_id"])
 		if e != nil {
 			return Result{}, e
 		}
@@ -451,7 +451,7 @@ func (r *Repository) subissuesTransaction(ctx context.Context, q Request, body i
 			}
 		}
 	} else {
-		rows, err = r.rows(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id JOIN projects p ON p.id=i.project_id
+		rows, err = r.rows(ctx, `SELECT `+apicontract.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id JOIN projects p ON p.id=i.project_id
  WHERE i.parent_id=$1 AND w.slug=$2 AND p.deleted_at IS NULL AND EXISTS(
  SELECT 1 FROM project_members m JOIN workspace_members wm ON wm.workspace_id=m.workspace_id AND wm.member_id=m.member_id
  WHERE m.project_id=i.project_id AND m.workspace_id=i.workspace_id AND m.member_id=$3 AND m.is_active AND m.deleted_at IS NULL
@@ -539,7 +539,10 @@ func groupSubissues(results []any, group string) (map[string]any, error) {
 			values = []any{v}
 		}
 		for _, v := range values {
-			key := djangoinput.ScalarString(v)
+			key := requestinput.ScalarString(v)
+			if v == nil {
+				key = "None" // The frontend uses this key for unassigned groups.
+			}
 			items, _ := grouped[key].([]any)
 			grouped[key] = append(items, row)
 		}

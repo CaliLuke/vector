@@ -13,7 +13,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	api "github.com/CaliLuke/go-plane/gen/public_feedback"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	metadata "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -224,13 +224,13 @@ func publicFeedbackIntakeError(err error) error {
 
 func publicFeedbackVoteCreateError(err error) error {
 	if errors.Is(err, metadata.ErrProjectNotPublished) {
-		err = &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
+		err = &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
 	}
 	return publicFeedbackError(err)
 }
 
 func publicFeedbackIntakeMissingBoardError() error {
-	return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Not found"}}
+	return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Not found"}}
 }
 
 func (service *publicFeedbackService) resolve(ctx context.Context, anchor string) (metadata.PublicBoard, error) {
@@ -254,7 +254,7 @@ func publicFeedbackUserID(ctx context.Context) string { return metadata.UserID(c
 func publicFeedbackAuthenticatedUser(ctx context.Context) (string, error) {
 	userID := publicFeedbackUserID(ctx)
 	if userID == "" {
-		return "", &djangoapi.HTTPError{Status: 401, Body: map[string]any{"detail": "Authentication credentials were not provided."}}
+		return "", &apicontract.HTTPError{Status: 401, Body: map[string]any{"detail": "Authentication credentials were not provided."}}
 	}
 	return userID, nil
 }
@@ -283,7 +283,7 @@ func publicFeedbackError(err error) error {
 	if errors.Is(err, metadata.ErrProjectNotPublished) {
 		status, body = 404, map[string]any{"error": "Project is not published"}
 	}
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if errors.As(err, &failure) {
 		status, body = failure.Status, failure.Body
 	}

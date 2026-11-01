@@ -30,7 +30,7 @@ func TestAssetsSessionPrincipalReachesPublicAndRestoreHandlers(t *testing.T) {
 			request := httptest.NewRequest(http.MethodPost, path, nil)
 			request.AddCookie(&http.Cookie{Name: "session-id", Value: "asset-session"})
 			response := httptest.NewRecorder()
-			readServicesSessionMiddleware(sessions, djangoSessionCookieConfig{Name: "session-id", Configured: true})(next).ServeHTTP(response, request)
+			readServicesSessionMiddleware(sessions, browserSessionCookieConfig{Name: "session-id", Configured: true})(next).ServeHTTP(response, request)
 			if sessions.calls != 1 || sessions.inspectedCookie != "asset-session" || response.Code != http.StatusNoContent {
 				t.Fatalf("session calls=%d cookie=%q response=%d", sessions.calls, sessions.inspectedCookie, response.Code)
 			}

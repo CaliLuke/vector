@@ -7,11 +7,11 @@ import (
 	"maps"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 )
 
@@ -33,7 +33,7 @@ func (r *draftOperation) writeDraft(ctx context.Context, q Request, body io.Read
 	if q.Method == "DELETE" {
 		return Result{Status: 204}, r.deleteDraft(ctx, q, old)
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return Result{}, err
 	}
@@ -104,7 +104,7 @@ func (r *draftOperation) draftForWrite(ctx context.Context, q Request, workspace
 		old, err = readWorkItemRow(ctx, r.db, `SELECT to_jsonb(d) FROM draft_issues d WHERE d.id=$1 AND d.workspace_id=$2 AND d.created_by_id=$3 AND d.deleted_at IS NULL FOR UPDATE`, id, workspace, q.ActorID)
 		if err != nil {
 			if q.Method == "PATCH" {
-				var e *djangoapi.HTTPError
+				var e *apicontract.HTTPError
 				if errors.As(err, &e) && e.Status == 404 {
 					return nil, failure(404, "error", "Issue not found")
 				}
@@ -115,7 +115,7 @@ func (r *draftOperation) draftForWrite(ctx context.Context, q Request, workspace
 	return old, nil
 }
 
-func (r *draftOperation) validateDraftEdit(ctx context.Context, q Request, input djangoinput.Input, old, workspace map[string]any, publish bool) (draftEdit, error) {
+func (r *draftOperation) validateDraftEdit(ctx context.Context, q Request, input requestinput.Input, old, workspace map[string]any, publish bool) (draftEdit, error) {
 	project := any(nil)
 	if old != nil {
 		project = old["project_id"]
@@ -128,7 +128,7 @@ func (r *draftOperation) validateDraftEdit(ctx context.Context, q Request, input
 	}
 	optionsProject := ""
 	if project != nil {
-		optionsProject = djangoinput.ScalarString(project)
+		optionsProject = requestinput.ScalarString(project)
 	}
 	validation := input
 	validation.Fields = maps.Clone(input.Fields)
@@ -164,7 +164,7 @@ func (r *draftOperation) validateDraftEdit(ctx context.Context, q Request, input
 	return draftEdit{project: project, projectID: optionsProject, changes: changes}, nil
 }
 
-func (r *draftOperation) validateDraftProjectAndCompletion(ctx context.Context, q Request, input djangoinput.Input, changes *issueChanges) error {
+func (r *draftOperation) validateDraftProjectAndCompletion(ctx context.Context, q Request, input requestinput.Input, changes *issueChanges) error {
 	for _, field := range []string{"project_id", "project"} {
 		value, ok := input.Fields[field]
 		if !ok {
@@ -187,7 +187,7 @@ func (r *draftOperation) validateDraftProjectAndCompletion(ctx context.Context, 
 		if value == nil {
 			changes.values["completed_at"] = nil
 		} else {
-			parsed, e := parseQueryDateTime(djangoinput.ScalarString(value), q.Timezone)
+			parsed, e := parseQueryDateTime(requestinput.ScalarString(value), q.Timezone)
 			if e != nil {
 				return invalid(map[string]any{"completed_at": []string{"Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."}})
 			}
@@ -197,7 +197,7 @@ func (r *draftOperation) validateDraftProjectAndCompletion(ctx context.Context, 
 	return nil
 }
 
-func (r *draftOperation) persistDraftEdit(ctx context.Context, q Request, input djangoinput.Input, old, workspace, submitted map[string]any, edit draftEdit) (Result, error) {
+func (r *draftOperation) persistDraftEdit(ctx context.Context, q Request, input requestinput.Input, old, workspace, submitted map[string]any, edit draftEdit) (Result, error) {
 	project, optionsProject, changes := edit.project, edit.projectID, edit.changes
 	var err error
 	row := maps.Clone(old)
@@ -245,7 +245,7 @@ func (r *draftOperation) persistDraftEdit(ctx context.Context, q Request, input 
 
 func (r *draftOperation) validateDraftReferences(ctx context.Context, input map[string]any, project, workspace any) error {
 	if project != nil && project != "" {
-		if id, e := djangoinput.UUID(project); e == nil {
+		if id, e := requestinput.UUID(project); e == nil {
 			var foreign bool
 			if e = r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM projects WHERE id=$1 AND workspace_id<>$2)`, id.String(), workspace).Scan(&foreign); e != nil {
 				return e
@@ -262,7 +262,7 @@ func (r *draftOperation) validateDraftReferences(ctx context.Context, input map[
 			values, _ = input[entry.field].([]any)
 		}
 		for _, value := range values {
-			if id, e := djangoinput.UUID(value); e == nil {
+			if id, e := requestinput.UUID(value); e == nil {
 				var foreign bool
 				if e = r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM `+entry.table+` WHERE id=$1 AND workspace_id<>$2)`, id.String(), workspace).Scan(&foreign); e != nil {
 					return e
@@ -282,7 +282,7 @@ func (r *draftOperation) validateDraftReferences(ctx context.Context, input map[
 
 func (r *draftOperation) saveDraft(ctx context.Context, actor string, row map[string]any, create bool) (map[string]any, error) {
 	if row["project_id"] != nil {
-		project, err := readWorkItemProject(ctx, r.db, djangoinput.ScalarString(row["project_id"]))
+		project, err := readWorkItemProject(ctx, r.db, requestinput.ScalarString(row["project_id"]))
 		if err != nil {
 			return nil, err
 		}
@@ -342,12 +342,12 @@ func (r *draftOperation) deleteDraft(ctx context.Context, q Request, row map[str
 	return enqueueEffect(ctx, r.db, "soft_delete", map[string]string{"app": "db", "model": "draftissue", "id": row["id"].(string)})
 }
 
-func (r *draftOperation) replaceDraftRelations(ctx context.Context, q Request, row map[string]any, changes issueChanges, input djangoinput.Input, create bool) error {
+func (r *draftOperation) replaceDraftRelations(ctx context.Context, q Request, row map[string]any, changes issueChanges, input requestinput.Input, create bool) error {
 	cycle, cycleSet := input.Fields["cycle_id"]
 	module, moduleSet := input.Fields["module_ids"]
 	cycleIDs := []string{}
 	if cycle != nil && (create || truthy(cycle)) {
-		cycleIDs = append(cycleIDs, djangoinput.ScalarString(cycle))
+		cycleIDs = append(cycleIDs, requestinput.ScalarString(cycle))
 	}
 	for _, rel := range []struct {
 		kind, column  string
@@ -385,7 +385,7 @@ func (r *draftOperation) replaceDraftRelations(ctx context.Context, q Request, r
 			if rel.instance {
 				creator, updater = q.ActorID, nil
 				if row["project_id"] != nil {
-					project, e := readWorkItemProject(ctx, r.db, djangoinput.ScalarString(row["project_id"]))
+					project, e := readWorkItemProject(ctx, r.db, requestinput.ScalarString(row["project_id"]))
 					if e != nil {
 						err = e
 						break
@@ -409,7 +409,7 @@ func (r *draftOperation) replaceDraftRelations(ctx context.Context, q Request, r
 }
 
 func (r *draftOperation) draftProjection(ctx context.Context, row map[string]any, actor string) (map[string]any, error) {
-	row, err := djangoapi.MaskIssueParent(ctx, r.db, row, actor)
+	row, err := apicontract.MaskIssueParent(ctx, r.db, row, actor)
 	if err != nil {
 		return nil, err
 	}
@@ -436,7 +436,7 @@ func (r *draftOperation) draftProjection(ctx context.Context, row map[string]any
 	return result, nil
 }
 
-func (r *draftOperation) publishDraft(ctx context.Context, q Request, draft map[string]any, input djangoinput.Input, changes issueChanges, submitted map[string]any) (Result, error) {
+func (r *draftOperation) publishDraft(ctx context.Context, q Request, draft map[string]any, input requestinput.Input, changes issueChanges, submitted map[string]any) (Result, error) {
 	if err := allowProject(ctx, r.db, q, []int{15, 20}, false); err != nil {
 		return Result{}, err
 	}

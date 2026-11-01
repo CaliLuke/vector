@@ -61,7 +61,7 @@ func TestProjectPublicationGeneratedHTTPMountsAndAuthorizesWrites(t *testing.T) 
 	service := &projectPublicationHTTPService{}
 	authorizer := &projectPublicationHTTPAuthorizer{}
 	endpoints := projectpublication.NewEndpoints(service)
-	mountProjectPublication(mux, endpoints, authorizer, loomhttp.RuntimeCORSPolicy{}, apiV1CompatibilityOptions{}, nil, djangoSessionCookieConfig{})
+	mountProjectPublication(mux, endpoints, authorizer, loomhttp.RuntimeCORSPolicy{}, apiV1CompatibilityOptions{}, nil, browserSessionCookieConfig{})
 	handler := http.HandlerFunc(mux.ServeHTTP)
 
 	requests := []struct {
@@ -107,7 +107,7 @@ func TestProjectPublicationGeneratedHTTPMountStopsForbiddenWrite(t *testing.T) {
 	mux := loomhttp.NewMuxer()
 	service := &projectPublicationHTTPService{}
 	authorizer := &projectPublicationHTTPAuthorizer{status: http.StatusForbidden}
-	mountProjectPublication(mux, projectpublication.NewEndpoints(service), authorizer, loomhttp.RuntimeCORSPolicy{}, apiV1CompatibilityOptions{}, nil, djangoSessionCookieConfig{})
+	mountProjectPublication(mux, projectpublication.NewEndpoints(service), authorizer, loomhttp.RuntimeCORSPolicy{}, apiV1CompatibilityOptions{}, nil, browserSessionCookieConfig{})
 	request := httptest.NewRequest(http.MethodPost, "/api/workspaces/acme/projects/00000000-0000-4000-8000-000000000001/project-deploy-boards/", strings.NewReader(`{}`))
 	response := httptest.NewRecorder()
 	http.HandlerFunc(mux.ServeHTTP).ServeHTTP(response, request)

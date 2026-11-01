@@ -15,14 +15,14 @@ import (
 	"unicode/utf8"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/instanceadminsession"
 	"github.com/CaliLuke/go-plane/internal/instancemail"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	"github.com/CaliLuke/go-plane/internal/workspacevalidation"
 	"github.com/jackc/pgx/v5"
@@ -527,7 +527,7 @@ func (r *Repository) Workspaces(ctx context.Context, search, perPage, cursor str
 	if limit == 0 {
 		return nil, errors.New("division by zero")
 	}
-	response := djangoapi.Envelope(rawMessagesAsValues(results), int(count), int(limit), int(pageIndex))
+	response := apicontract.Envelope(rawMessagesAsValues(results), int(count), int(limit), int(pageIndex))
 	return json.Marshal(response)
 }
 
@@ -794,7 +794,7 @@ func (r *Repository) UpdateWorkspace(ctx context.Context, actor uuid.UUID, slug 
 		"set_background_color": set["background_color"], "background_color": backgroundColor,
 	}).Scan(&result)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
+		return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
 	}
 	if err != nil {
 		return nil, err
@@ -844,9 +844,8 @@ func (r *Repository) SoftDeleteWorkspace(ctx context.Context, actor uuid.UUID, w
 	return nil
 }
 
-// Django passes this value directly to a TextField on the related member
-// model. PostgreSQL preparation stringifies non-null Python values; omitted
-// fields use the source view's empty-string default.
+// workspaceCompanyRole stores native JSON text for non-null values. Omitted
+// values default to an empty string; explicit null remains SQL NULL.
 func workspaceCompanyRole(fields map[string]json.RawMessage) (any, error) {
 	raw, present := fields["company_role"]
 	if !present {
@@ -859,7 +858,7 @@ func workspaceCompanyRole(fields map[string]json.RawMessage) (any, error) {
 	if !ok {
 		return nil, errors.New("company_role is not valid JSON")
 	}
-	return pythoncompat.String(value, raw)
+	return requestinput.Text(value)
 }
 
 func rawMessagesAsValues(messages []json.RawMessage) []any {
@@ -886,30 +885,21 @@ func workspaceFieldsExceedLength(name, slug string) bool {
 func workspacePageWindow(perPage, cursor string) (limit int64, page int64, offset int64, err error) {
 	limit = 10
 	if perPage != "" {
-		parsed, parseErr := pythoncompat.DecimalInteger(perPage)
-		if parseErr != nil {
+		parsed, parseErr := strconv.Atoi(perPage)
+		if parseErr != nil || parsed < 1 {
 			return 0, 0, 0, &WorkspacePaginationError{Message: "Invalid per_page parameter."}
 		}
-		if parsed.Sign() < 0 {
-			return 0, 0, 0, &WorkspacePaginationError{Message: "Invalid per_page parameter."}
-		}
-		if parsed.Sign() == 0 {
-			return 0, 0, 0, &WorkspacePaginationError{Message: "Invalid per_page parameter."}
-		}
-		if parsed.Sign() > 0 && parsed.Cmp(big.NewInt(10)) > 0 {
+		if parsed > 10 {
 			return 0, 0, 0, &WorkspacePaginationError{Message: "Invalid per_page value. Cannot exceed 10."}
 		}
-		if !parsed.IsInt64() {
-			return 0, 0, 0, &WorkspacePaginationError{Message: "Invalid per_page parameter."}
-		}
-		limit = parsed.Int64()
+		limit = int64(parsed)
 	}
-	request := djangoapi.Query{}
+	request := apicontract.Query{}
 	if cursor != "" {
 		request.Params = map[string]string{"cursor": cursor}
 		request.Present = map[string]bool{"cursor": true}
 	}
-	parsedPage, parseErr := djangoapi.CursorPage(request, int(limit))
+	parsedPage, parseErr := apicontract.CursorPage(request, int(limit))
 	if parseErr != nil {
 		return 0, 0, 0, &WorkspacePaginationError{Message: "Invalid cursor parameter."}
 	}
@@ -934,8 +924,8 @@ func workspaceCharField(raw json.RawMessage) (value string, present, truthy bool
 	if !ok {
 		return "", true, false, "Not a valid string."
 	}
-	truthy = pythoncompat.Truthy(input)
-	value, failures := djangoinput.CharField(input, false, nil)
+	truthy = requestinput.Nonempty(input)
+	value, failures := requestinput.CharField(input, false)
 	if len(failures) > 0 {
 		fieldError = failures[0]
 	}
@@ -957,7 +947,7 @@ func workspaceOptionalText(fields map[string]json.RawMessage, key string, allowB
 	if !ok {
 		return nil, &WorkspaceValidationError{Field: key, Message: "Not a valid string."}
 	}
-	text, failures := djangoinput.TextField(value, allowBlank, maximum, nil)
+	text, failures := requestinput.TextField(value, allowBlank, maximum)
 	if len(failures) > 0 {
 		return nil, &WorkspaceValidationError{Field: key, Message: failures[0]}
 	}

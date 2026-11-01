@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
@@ -92,7 +92,7 @@ func (r *Repository) MutatePropertyAPI(ctx context.Context, in PropertyAPIMutati
 			if loadPropertiesErr != nil {
 				return nil, loadPropertiesErr
 			}
-			record, loadPropertiesErr = djangoapi.JSONTimestamps(record, in.Timezone)
+			record, loadPropertiesErr = apicontract.JSONTimestamps(record, in.Timezone)
 			if loadPropertiesErr != nil {
 				return nil, loadPropertiesErr
 			}

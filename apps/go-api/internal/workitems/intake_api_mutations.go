@@ -10,7 +10,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
@@ -106,7 +106,7 @@ func (r *Repository) MutateIntake(ctx context.Context, cmd projectmutations.Comm
 				if rowErr != nil {
 					return nil, rowErr
 				}
-				record, rowErr = json.Marshal(djangoapi.Timestamps(projected, cmd.Timezone))
+				record, rowErr = json.Marshal(apicontract.Timestamps(projected, cmd.Timezone))
 				if rowErr != nil {
 					return nil, rowErr
 				}
@@ -185,7 +185,7 @@ func authorizeIntakeMutation(ctx context.Context, tx pgx.Tx, cmd projectmutation
 	}
 	if duplicate, ok := fields["duplicate_to"].(string); ok {
 		var id string
-		err = tx.QueryRow(ctx, `SELECT i.id::text FROM issues i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id JOIN project_members pm ON pm.project_id=p.id AND pm.workspace_id=p.workspace_id AND pm.member_id=$2 AND pm.is_active AND pm.deleted_at IS NULL AND pm.role IN(5,15,20) WHERE i.id=$1 AND `+djangoapi.IssueVisibleSQL("i", "$2::uuid", "$3::uuid")+` FOR SHARE OF i,p,pm`, duplicate, cmd.ActorID, cmd.WorkspaceID).Scan(&id)
+		err = tx.QueryRow(ctx, `SELECT i.id::text FROM issues i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id JOIN project_members pm ON pm.project_id=p.id AND pm.workspace_id=p.workspace_id AND pm.member_id=$2 AND pm.is_active AND pm.deleted_at IS NULL AND pm.role IN(5,15,20) WHERE i.id=$1 AND `+apicontract.IssueVisibleSQL("i", "$2::uuid", "$3::uuid")+` FOR SHARE OF i,p,pm`, duplicate, cmd.ActorID, cmd.WorkspaceID).Scan(&id)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return projectmutations.ErrNotFound
 		}

@@ -242,7 +242,7 @@ type readServicesSessionResponseWriter struct {
 	http.ResponseWriter
 	request       *http.Request
 	sessions      readServicesSessionLifecycle
-	sessionCookie djangoSessionCookieConfig
+	sessionCookie browserSessionCookieConfig
 	refresh       *browsersession.SessionRefresh
 	wroteHeader   bool
 	failed        bool
@@ -258,14 +258,14 @@ func (writer *readServicesSessionResponseWriter) WriteHeader(status int) {
 		var err error
 		switch {
 		case expire:
-			err = expireDjangoSessionCookie(writer.Header(), writer.sessionCookie)
+			err = expireBrowserSessionCookie(writer.Header(), writer.sessionCookie)
 		case explicit:
-			err = refreshDjangoSessionCookie(writer.Header(), writer.sessionCookie, *override)
+			err = refreshBrowserSessionCookie(writer.Header(), writer.sessionCookie, *override)
 		default:
 			var refresh browsersession.SessionRefresh
 			refresh, err = writer.sessions.RefreshSession(writer.request.Context(), writer.request, *writer.refresh)
 			if err == nil {
-				err = refreshDjangoSessionCookie(writer.Header(), writer.sessionCookie, refresh)
+				err = refreshBrowserSessionCookie(writer.Header(), writer.sessionCookie, refresh)
 			}
 		}
 		if err != nil {
@@ -299,9 +299,9 @@ func readServicesQueryPresenceMiddleware(next http.Handler) http.Handler {
 
 func readServicesSessionMiddleware(
 	sessions readServicesSessionLifecycle,
-	sessionCookie djangoSessionCookieConfig,
+	sessionCookie browserSessionCookieConfig,
 ) func(http.Handler) http.Handler {
-	return djangoSessionLifecycleMiddleware(sessions, sessionCookie, func(request *http.Request) bool {
+	return browserSessionLifecycleMiddleware(sessions, sessionCookie, func(request *http.Request) bool {
 		_, matched := resolveReadServiceProtocolForMethod(request.URL.Path, request.Method)
 		return matched
 	})

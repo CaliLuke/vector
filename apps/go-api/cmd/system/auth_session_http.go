@@ -18,7 +18,7 @@ import (
 	systemapi "github.com/CaliLuke/go-plane"
 	csrftoken "github.com/CaliLuke/go-plane/gen/csrf_token"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	loomhttp "github.com/CaliLuke/loom/http"
 )
 
@@ -222,7 +222,7 @@ func accountAuthenticationCSRFSubmittedToken(request *http.Request) (string, str
 		// Reuse the application's form parser and restore the bytes for the
 		// generated handler. The outer request-size boundary remains in force.
 		var raw bytes.Buffer
-		input, err := djangoinput.Parse(io.TeeReader(request.Body, &raw), contentType)
+		input, err := requestinput.Parse(io.TeeReader(request.Body, &raw), contentType)
 		platform.CloseRequestBody(request.Context(), request.Body)
 		request.Body = io.NopCloser(bytes.NewReader(raw.Bytes()))
 		if err == nil {
@@ -356,9 +356,9 @@ func (sessions authSessionWithoutTimezone) InspectReadServiceSession(ctx context
 }
 
 // Plain Django auth Views resolve sessions without DRF's timezone validation.
-func djangoAuthSessionMiddleware(sessions authSessionLifecycle, cookie djangoSessionCookieConfig, matches func(*http.Request) bool) func(http.Handler) http.Handler {
+func djangoAuthSessionMiddleware(sessions authSessionLifecycle, cookie browserSessionCookieConfig, matches func(*http.Request) bool) func(http.Handler) http.Handler {
 	if sessions == nil {
-		return djangoSessionLifecycleMiddleware(nil, cookie, matches)
+		return browserSessionLifecycleMiddleware(nil, cookie, matches)
 	}
-	return djangoSessionLifecycleMiddleware(authSessionWithoutTimezone{sessions}, cookie, matches)
+	return browserSessionLifecycleMiddleware(authSessionWithoutTimezone{sessions}, cookie, matches)
 }

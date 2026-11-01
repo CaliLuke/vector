@@ -12,7 +12,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 )
@@ -63,7 +63,7 @@ func TestOrdinaryItemValuesPersistAndRejectAtomically(t *testing.T) {
 		t.Fatalf("durable effects/subscribers: %d %d %v", effects, subscribers, err)
 	}
 	_, err = writeValueItem(f, repo, "PATCH", id, fmt.Sprintf(`{"name":"Must not persist","custom_properties":{"%s":null}}`, text))
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if !errors.As(err, &failure) || failure.Status != 400 {
 		t.Fatalf("required clear accepted: %v", err)
 	}
@@ -121,7 +121,7 @@ func TestMemberEligibilityUsesResultingItemCreator(t *testing.T) {
 	// must fail despite their access to the old row.
 	body := fmt.Sprintf(`{"created_by":"%s","custom_properties":{"%s":"%s"}}`, f.owner, member, f.member)
 	_, err = repo.Execute(f.ctx, request, strings.NewReader(body), "application/json")
-	var validation *djangoapi.HTTPError
+	var validation *apicontract.HTTPError
 	if !errors.As(err, &validation) || validation.Status != 400 {
 		t.Fatalf("former creator subscribed without resulting access: %v", err)
 	}
@@ -169,7 +169,7 @@ func TestAPIValuesRespectGuestVisibilityAcrossReadPaths(t *testing.T) {
 	f.exec(`UPDATE project_members SET role=5 WHERE member_id=$1 AND project_id=$2`, f.member, f.project)
 	request := workitems.Request{Operation: "api_v1_workspaces_by_slug_projects_by_project_id_issues_by_pk", Method: "GET", API: true, ActorID: f.member, Slug: "types", ProjectID: f.project, IssueID: id, Timezone: "UTC", Params: map[string]string{}}
 	_, err = repo.Execute(f.ctx, request, nil, "")
-	var denied *djangoapi.HTTPError
+	var denied *apicontract.HTTPError
 	if !errors.As(err, &denied) || denied.Status != 403 {
 		t.Fatalf("guest read another creator's item: %v", err)
 	}
@@ -248,7 +248,7 @@ func TestSubissueValuesRespectAnchorAndChildVisibility(t *testing.T) {
 	assertHidden() // Normal membership in the parent project grants no child access.
 	f.exec(`UPDATE issues SET project_id=$2 WHERE id=$1`, parent, otherProject)
 	_, err = repo.Execute(f.ctx, request, nil, "")
-	var missing *djangoapi.HTTPError
+	var missing *apicontract.HTTPError
 	if !errors.As(err, &missing) || missing.Status != 404 {
 		t.Fatalf("mismatched URL project accepted parent: %v", err)
 	}

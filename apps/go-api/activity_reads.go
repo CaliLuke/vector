@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 
 	api "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
 	activitystore "github.com/CaliLuke/go-plane/internal/activityreads"
@@ -274,7 +274,9 @@ func activityFields(value any, raw string) any {
 	}
 }
 
-func activityTimestamps(value any, timezone string) any { return djangoapi.Timestamps(value, timezone) }
+func activityTimestamps(value any, timezone string) any {
+	return apicontract.Timestamps(value, timezone)
+}
 func activityRawResult(body any, err error) (*api.ActivityRawJSONResponseMetadata, io.ReadCloser, error) {
 	if err != nil {
 		return nil, nil, err

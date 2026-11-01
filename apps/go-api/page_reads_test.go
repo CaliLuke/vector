@@ -16,8 +16,8 @@ import (
 	pagereadssvr "github.com/CaliLuke/go-plane/gen/http/page_reads/server"
 	api "github.com/CaliLuke/go-plane/gen/page_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/pagereads"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	loomhttp "github.com/CaliLuke/loom/http"
 	"github.com/CaliLuke/loom/security"
@@ -133,7 +133,7 @@ func (stub *pageReadsRepositoryStub) ValidateLifecycleHandler(context.Context, s
 	return stub.lifecycleHandlerErr
 }
 
-func (stub *pageReadsRepositoryStub) Lifecycle(context.Context, string, uuid.UUID, string, uuid.UUID, uuid.UUID, string, djangoinput.Input) (int, json.RawMessage, error) {
+func (stub *pageReadsRepositoryStub) Lifecycle(context.Context, string, uuid.UUID, string, uuid.UUID, uuid.UUID, string, requestinput.Input) (int, json.RawMessage, error) {
 	stub.lifecycleCalls = append(stub.lifecycleCalls, "dispatch")
 	return 200, json.RawMessage(`{}`), nil
 }

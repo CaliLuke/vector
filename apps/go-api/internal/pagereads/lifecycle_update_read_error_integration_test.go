@@ -10,8 +10,8 @@ import (
 	"testing"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pagereads"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/require"
@@ -53,7 +53,7 @@ func TestPageUpdateDescriptionReadFailureLeavesPageAndTasksUnchanged(t *testing.
 			repository, err := pagereads.NewRepository(&failedPageDescriptionDatabase{Pool: fixture.pool, failure: failure}, fixture)
 			require.NoError(t, err)
 
-			_, _, err = repository.Lifecycle(t.Context(), "update", fixture.actor, "milestones", fixture.project, page.ID, "UTC", djangoinput.Input{Fields: sample.fields})
+			_, _, err = repository.Lifecycle(t.Context(), "update", fixture.actor, "milestones", fixture.project, page.ID, "UTC", requestinput.Input{Fields: sample.fields})
 
 			require.ErrorIs(t, err, failure)
 			var name, html, stripped string

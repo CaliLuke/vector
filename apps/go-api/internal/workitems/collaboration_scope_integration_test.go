@@ -5,7 +5,7 @@ package workitems
 import (
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
@@ -41,7 +41,7 @@ func TestBoundCollaborationReadsRejectScopeEscapes(t *testing.T) {
 		invalid := q
 		change(&invalid)
 		_, err = repo.ExecuteCollaboration(ctx, invalid, nil, "")
-		var failure *djangoapi.HTTPError
+		var failure *apicontract.HTTPError
 		require.ErrorAs(t, err, &failure)
 		require.Equal(t, 403, failure.Status)
 	}

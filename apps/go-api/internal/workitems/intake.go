@@ -10,10 +10,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	"github.com/google/uuid"
 )
@@ -40,9 +40,9 @@ func (r *Repository) intakeTransaction(ctx context.Context, q Request, body io.R
 	if q.Method == "GET" {
 		return r.readIntake(ctx, q, project, intakeID)
 	}
-	var input djangoinput.Input
+	var input requestinput.Input
 	if !q.API && q.Method == "PATCH" {
-		input, err = djangoinput.Parse(body, contentType)
+		input, err = requestinput.Parse(body, contentType)
 		if err != nil {
 			return Result{}, err
 		}
@@ -79,7 +79,7 @@ func (r *Repository) intakeTransaction(ctx context.Context, q Request, body io.R
 		return Result{Status: 204}, r.softDeleteRow(ctx, "intake_issues", "intakeissue", row["id"].(string), q.ActorID)
 	}
 	if q.API {
-		input, err = djangoinput.Parse(body, contentType)
+		input, err = requestinput.Parse(body, contentType)
 		if err != nil {
 			return Result{}, err
 		}
@@ -90,7 +90,7 @@ func (r *Repository) intakeTransaction(ctx context.Context, q Request, body io.R
 	return r.patchIntake(ctx, q, project, row, input)
 }
 func intakeError(q Request, err error) error {
-	var e *djangoapi.HTTPError
+	var e *apicontract.HTTPError
 	if q.API && errors.As(err, &e) && e.Status == 404 {
 		return failure(404, "error", "The requested resource does not exist.")
 	}
@@ -118,7 +118,7 @@ func (r *Repository) readIntake(ctx context.Context, q Request, project map[stri
 		result, err := r.intakeProjection(ctx, q, row, true, false)
 		return Result{200, result}, err
 	}
-	limit, page, offset, err := djangoapi.PageWindow(djangoapi.Query{Params: q.Params, Present: q.Present})
+	limit, page, offset, err := apicontract.PageWindow(apicontract.Query{Params: q.Params, Present: q.Present})
 	if err != nil {
 		return Result{}, err
 	}
@@ -138,11 +138,11 @@ func (r *Repository) readIntake(ctx context.Context, q Request, project map[stri
 		}
 		results = append(results, result)
 	}
-	return Result{200, djangoapi.Envelope(results, total, limit, page)}, nil
+	return Result{200, apicontract.Envelope(results, total, limit, page)}, nil
 }
 
 func (r *Repository) createIntake(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return Result{}, err
 	}
@@ -181,7 +181,7 @@ func (r *Repository) createIntake(ctx context.Context, q Request, body io.Reader
 		return Result{}, err
 	}
 	row["workspace_id"] = project["workspace_id"]
-	submitted, err := submittedCustomValues(djangoinput.Input{Fields: data})
+	submitted, err := submittedCustomValues(requestinput.Input{Fields: data})
 	if err != nil {
 		return Result{}, err
 	}
@@ -269,7 +269,7 @@ func (r *Repository) ensureIntakeTriageState(ctx context.Context, q Request, pro
 			// state creation, and preserve their precedence over tenant errors.
 			preflight := maps.Clone(data)
 			delete(preflight, "state_id") // The intake view replaces this alias.
-			changes, validationErr := r.validateIssue(ctx, djangoinput.Input{Fields: preflight}, issueValidation{ActorID: q.ActorID, Timezone: q.Timezone, AllowTriage: true, ProjectID: q.ProjectID, WorkspaceID: project["workspace_id"].(string)})
+			changes, validationErr := r.validateIssue(ctx, requestinput.Input{Fields: preflight}, issueValidation{ActorID: q.ActorID, Timezone: q.Timezone, AllowTriage: true, ProjectID: q.ProjectID, WorkspaceID: project["workspace_id"].(string)})
 			if tenantErr := r.validateTypeTenant(ctx, changes.values, data, project["workspace_id"]); tenantErr != nil {
 				if validationErr != nil {
 					return "", validationErr
@@ -292,7 +292,7 @@ func (r *Repository) newIntakeIssueRow(ctx context.Context, q Request, project, 
 	row := defaultIssue(q.ProjectID)
 	changes := issueChanges{}
 	if q.API {
-		row["name"] = djangoinput.ScalarString(data["name"])
+		row["name"] = requestinput.ScalarString(data["name"])
 		row["priority"] = priority
 		row["state_id"] = state
 		description := data["description"]
@@ -305,7 +305,7 @@ func (r *Repository) newIntakeIssueRow(ctx context.Context, q Request, project, 
 		row["description_json"] = description
 		raw := "<p></p>"
 		if value, ok := data["description_html"]; ok {
-			raw = djangoinput.ScalarString(value)
+			raw = requestinput.ScalarString(value)
 		}
 		clean, _, e := content.ValidateHTML(raw)
 		if e != nil {
@@ -314,7 +314,7 @@ func (r *Repository) newIntakeIssueRow(ctx context.Context, q Request, project, 
 		row["description_html"] = clean
 	} else {
 		data["state_id"] = state
-		nestedInput := djangoinput.Input{Fields: data}
+		nestedInput := requestinput.Input{Fields: data}
 		changes, err = r.validateIssue(ctx, nestedInput, issueValidation{ActorID: q.ActorID, Timezone: q.Timezone, AllowTriage: true, ProjectID: q.ProjectID, WorkspaceID: project["workspace_id"].(string)})
 		if err != nil {
 			return nil, issueChanges{}, err
@@ -331,7 +331,7 @@ func (r *Repository) newIntakeIssueRow(ctx context.Context, q Request, project, 
 				typeFields[key] = value
 			}
 		}
-		typeChanges, validationErr := r.validateIssue(ctx, djangoinput.Input{Fields: typeFields}, issueValidation{API: true, Partial: true, ProjectID: q.ProjectID, WorkspaceID: stringValue(project["workspace_id"]), ActorID: q.ActorID})
+		typeChanges, validationErr := r.validateIssue(ctx, requestinput.Input{Fields: typeFields}, issueValidation{API: true, Partial: true, ProjectID: q.ProjectID, WorkspaceID: stringValue(project["workspace_id"]), ActorID: q.ActorID})
 		if validationErr != nil {
 			return nil, issueChanges{}, validationErr
 		}
@@ -355,7 +355,7 @@ func (r *Repository) intakeProjection(ctx context.Context, q Request, row map[st
 	if len(cached) > 0 {
 		issue = maps.Clone(cached[0])
 	} else {
-		issue, err = r.row(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i WHERE id=$1`, row["issue_id"])
+		issue, err = r.row(ctx, `SELECT `+apicontract.IssueRowSQL("i")+` FROM issues i WHERE id=$1`, row["issue_id"])
 		if err != nil {
 			return nil, err
 		}
@@ -396,7 +396,7 @@ func (r *Repository) intakeProjection(ctx context.Context, q Request, row map[st
 	}
 	// IssueExpandSerializer exposes description_json via both the model and its
 	// deprecated alias, and omits nonexistent singular cycle/module properties.
-	expanded, err := djangoapi.Serialize(ctx, r.db, issue, strings.Fields("id created_at updated_at deleted_at name description_html description_binary description_json description_stripped priority start_date target_date sequence_id sort_order completed_at archived_at is_draft external_source external_id point created_by updated_by workspace project parent state estimate_point type assignees labels"), "", "state", true)
+	expanded, err := apicontract.Serialize(ctx, r.db, issue, strings.Fields("id created_at updated_at deleted_at name description_html description_binary description_json description_stripped priority start_date target_date sequence_id sort_order completed_at archived_at is_draft external_source external_id point created_by updated_by workspace project parent state estimate_point type assignees labels"), "", "state", true)
 	if err != nil {
 		return nil, err
 	}
@@ -408,11 +408,11 @@ func (r *Repository) intakeProjection(ctx context.Context, q Request, row map[st
 	prepared := maps.Clone(row)
 	prepared["issue_detail"], prepared["inbox"] = expanded, row["intake_id"]
 	prepared["duplicate_to"], prepared["intake"] = row["duplicate_to_id"], row["intake_id"]
-	return djangoapi.Serialize(ctx, r.db, prepared, strings.Fields("id issue_detail inbox created_at updated_at deleted_at status snoozed_till source source_email external_source external_id extra created_by updated_by project workspace intake issue duplicate_to"), fields, expand, false)
+	return apicontract.Serialize(ctx, r.db, prepared, strings.Fields("id issue_detail inbox created_at updated_at deleted_at status snoozed_till source source_email external_source external_id extra created_by updated_by project workspace intake issue duplicate_to"), fields, expand, false)
 }
 
-func (r *Repository) patchIntake(ctx context.Context, q Request, project, row map[string]any, input djangoinput.Input) (Result, error) {
-	cachedIssue, err := r.row(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i WHERE id=$1`, row["issue_id"])
+func (r *Repository) patchIntake(ctx context.Context, q Request, project, row map[string]any, input requestinput.Input) (Result, error) {
+	cachedIssue, err := r.row(ctx, `SELECT `+apicontract.IssueRowSQL("i")+` FROM issues i WHERE id=$1`, row["issue_id"])
 	if err != nil {
 		return Result{}, err
 	}
@@ -497,7 +497,7 @@ func (r *Repository) patchIntake(ctx context.Context, q Request, project, row ma
 type intakeIssueEdit struct {
 	old                 map[string]any
 	changes             issueChanges
-	input               djangoinput.Input
+	input               requestinput.Input
 	previous, requested any
 }
 
@@ -523,10 +523,10 @@ func (r *Repository) intakeEditAccess(ctx context.Context, q Request, row map[st
 	return role, workspaceAdmin, nil
 }
 
-func (r *Repository) prepareIntakeIssueEdit(ctx context.Context, q Request, project map[string]any, input djangoinput.Input, nested any, role *int) (intakeIssueEdit, error) {
+func (r *Repository) prepareIntakeIssueEdit(ctx context.Context, q Request, project map[string]any, input requestinput.Input, nested any, role *int) (intakeIssueEdit, error) {
 	var old map[string]any
 	var changes issueChanges
-	var nestedInput djangoinput.Input
+	var nestedInput requestinput.Input
 	var previous, requested any
 	if truthy(nested) {
 		data, ok := nested.(map[string]any)
@@ -546,7 +546,7 @@ func (r *Repository) prepareIntakeIssueEdit(ctx context.Context, q Request, proj
 		if role != nil && *role <= 5 {
 			data = intakeGuestIssueData(q, data, old)
 		}
-		nestedInput = djangoinput.Input{Fields: data}
+		nestedInput = requestinput.Input{Fields: data}
 		options := issueValidation{ActorID: q.ActorID, Timezone: q.Timezone, API: q.API, Partial: true, AllowTriage: !q.API, ProjectID: q.ProjectID, WorkspaceID: project["workspace_id"].(string)}
 		if q.API {
 			options.ProjectID = ""
@@ -607,7 +607,7 @@ func intakeGuestIssueData(q Request, data, old map[string]any) map[string]any {
 	return map[string]any{"name": get("name"), "description_html": get("description_html"), "description_json": description}
 }
 
-func (r *Repository) applyIntakeMetadata(ctx context.Context, q Request, input djangoinput.Input, row, metadata, cachedIssue map[string]any, intakePrevious any) (map[string]any, error) {
+func (r *Repository) applyIntakeMetadata(ctx context.Context, q Request, input requestinput.Input, row, metadata, cachedIssue map[string]any, intakePrevious any) (map[string]any, error) {
 	maps.Copy(row, metadata)
 	row["updated_at"], row["updated_by_id"] = timestamp(r.now()), q.ActorID
 	encoded, err := json.Marshal(row)
@@ -665,12 +665,12 @@ func dumpIntakeSnapshot(value map[string]any, api bool) (string, error) {
 	return pythoncompat.Dumps(value, jsonOrder(order, map[string][]byte{nested: childOrder}))
 }
 
-func (r *Repository) validateIntake(ctx context.Context, q Request, row map[string]any, input djangoinput.Input) (map[string]any, error) {
+func (r *Repository) validateIntake(ctx context.Context, q Request, row map[string]any, input requestinput.Input) (map[string]any, error) {
 	values, failures := map[string]any{}, map[string]any{}
 	if raw, ok := input.Fields["status"]; ok {
-		value, valid := map[string]int{"-2": -2, "-1": -1, "0": 0, "1": 1, "2": 2}[djangoinput.ScalarString(raw)]
+		value, valid := map[string]int{"-2": -2, "-1": -1, "0": 0, "1": 1, "2": 2}[requestinput.ScalarString(raw)]
 		if !valid {
-			failures["status"] = []string{fmt.Sprintf("%q is not a valid choice.", djangoinput.ScalarString(raw))}
+			failures["status"] = []string{fmt.Sprintf("%q is not a valid choice.", requestinput.ScalarString(raw))}
 		} else {
 			values["status"] = int64(value)
 		}
@@ -682,7 +682,7 @@ func (r *Repository) validateIntake(ctx context.Context, q Request, row map[stri
 		if raw == nil {
 			values["snoozed_till"] = nil
 		} else {
-			parsed, err := parseQueryDateTime(djangoinput.ScalarString(raw), q.Timezone)
+			parsed, err := parseQueryDateTime(requestinput.ScalarString(raw), q.Timezone)
 			if err != nil {
 				failures["snoozed_till"] = []string{"Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."}
 			} else {
@@ -702,7 +702,7 @@ func (r *Repository) validateIntake(ctx context.Context, q Request, row map[stri
 				if field == "source_email" {
 					max = 0
 				}
-				value, messages := djangoinput.TextField(raw, true, max, input.Surrogates[field])
+				value, messages := requestinput.TextField(raw, true, max)
 				if len(messages) > 0 {
 					failures[field] = messages
 				} else {

@@ -117,13 +117,13 @@ func TestLifecycleBulkPropertySortLookupRetainsOriginalIdentitySpelling(t *testi
 	}
 }
 
-func TestLifecycleBulkDictionaryRetainsPythonNumericKeyIdentity(t *testing.T) {
+func TestLifecycleBulkRejectsNumericIdentityBeforeLookup(t *testing.T) {
 	for _, test := range []struct {
 		body            string
 		status, lookups int
 		message         string
 	}{
-		{`{"members":[{"member_id":true,"role":5},{"member_id":1.0,"role":20}]}`, 400, 1, "You cannot add a user with role higher than the workspace role"},
+		{`{"members":[{"member_id":true,"role":5},{"member_id":1.0,"role":20}]}`, 400, 0, "Please provide valid detail"},
 		{`{"members":[{"member_id":1.0,"role":5},{"member_id":true,"role":20}]}`, 400, 0, "Please provide valid detail"},
 	} {
 		db := &bulkIdentityDB{role: 5}
@@ -133,23 +133,14 @@ func TestLifecycleBulkDictionaryRetainsPythonNumericKeyIdentity(t *testing.T) {
 			t.Fatalf("lookups=%v writes=%v", db.lookups, db.writes)
 		}
 	}
-	key := func(value any) string {
-		key, ok := lifecycleBulkIdentityKey(value)
-		if !ok {
-			t.Fatalf("unhashable scalar %#v", value)
-		}
-		return key
-	}
-	if key(true) != key(json.Number("1")) || key(true) != key(json.Number("1.0")) || key(false) != key(json.Number("-0.0")) || key("1") == key(json.Number("1")) || key(nil) == key("None") {
-		t.Fatal("Python numeric/string/null dictionary identities changed")
-	}
+
 }
 
-func TestLifecycleBulkOriginalValuesAreCoercedAgainBeforeExistingMemberLookup(t *testing.T) {
+func TestLifecycleBulkRejectsBooleanIdentityBeforeExistingMemberLookup(t *testing.T) {
 	db := &bulkIdentityDB{role: 15, existing: []string{"00000000-0000-0000-0000-000000000001"}}
 	err := runBulkIdentity(t, db, `{"members":[{"member_id":true,"role":15},{"member_id":1.0,"role":15}]}`)
 	lifecycleReviewError(t, err, 400, map[string]any{"error": "Please provide valid detail"})
-	if len(db.lookups) != 1 || db.lookups[0] != "00000000-0000-0000-0000-000000000001" || len(db.writes) != 0 {
+	if len(db.lookups) != 0 || len(db.writes) != 0 {
 		t.Fatalf("lookups=%v writes=%v", db.lookups, db.writes)
 	}
 }

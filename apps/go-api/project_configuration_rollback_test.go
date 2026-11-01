@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	store "github.com/CaliLuke/go-plane/internal/projectconfiguration"
 	api "github.com/CaliLuke/go-plane/projectconfiguration/gen/project_configuration"
 )
@@ -18,7 +18,7 @@ func TestProjectConfigurationMappingPreservesPrimaryFailureAfterRollbackFailure(
 		wantBody string
 	}{
 		{"validation", &store.HTTPError{Status: 400, Body: map[string]any{"name": "required"}}, "status_400", `{"name":"required"}`},
-		{"authorization", &djangoapi.HTTPError{Status: 403, Body: map[string]any{"detail": "forbidden"}}, "status_403", `{"detail":"forbidden"}`},
+		{"authorization", &apicontract.HTTPError{Status: 403, Body: map[string]any{"detail": "forbidden"}}, "status_403", `{"detail":"forbidden"}`},
 		{"internal", errors.New("private query details"), "status_500", `{"detail":"Something went wrong please try again later"}`},
 		{"mapped", serviceError(404, map[string]any{"detail": "Not found."}), "status_404", `{"detail":"Not found."}`},
 	} {

@@ -9,13 +9,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 func invitationCommandFields(c *InvitationCommand) (map[string]any, error) {
-	input, err := djangoinput.Parse(c.Body, c.ContentType)
+	input, err := requestinput.Parse(c.Body, c.ContentType)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,7 @@ func invitationFieldUpdates(fields map[string]any, id, actor, zone string, keys 
 		case "workspace", "created_by", "updated_by":
 			column += "_id"
 			if value != nil {
-				parsed, err := djangoinput.UUID(value)
+				parsed, err := requestinput.UUID(value)
 				if err != nil {
 					messages = []string{fmt.Sprintf("“%v” is not a valid UUID.", value)}
 				} else {
@@ -165,7 +165,7 @@ func invitationFieldUpdates(fields map[string]any, id, actor, zone string, keys 
 			}
 		case "company_role":
 			if value != nil {
-				value, messages = djangoinput.TextField(value, true, 0, nil)
+				value, messages = requestinput.TextField(value, true, 0)
 			}
 		default:
 			data, err := json.Marshal(value)
@@ -202,7 +202,7 @@ func (r *InvitationsRepository) invitationRelationErrors(ctx context.Context, fi
 		if !present || raw == nil {
 			continue
 		}
-		id, err := djangoinput.UUID(raw)
+		id, err := requestinput.UUID(raw)
 		if err != nil {
 			continue
 		}
@@ -232,7 +232,7 @@ func invitationValidationErrors(left, right error) error {
 	if right == nil {
 		return left
 	}
-	var first, second *djangoapi.HTTPError
+	var first, second *apicontract.HTTPError
 	if errors.As(left, &first) && errors.As(right, &second) && first.Status == 400 && second.Status == 400 {
 		body := map[string]any{}
 		for key, value := range first.Body {

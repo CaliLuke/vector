@@ -10,8 +10,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 const issueSourceFixtureDir = "../../../../apps/go-api/internal/parity/testdata/fixtures/work_item_core"
@@ -36,7 +36,7 @@ func TestValidateIssueMatchesSourceScalarValidationFixtures(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			fixture := readIssueValidationFixture(t, tc.fixture)
-			input, err := djangoinput.Parse(bytes.NewReader(fixture.Request.Body), "application/json")
+			input, err := requestinput.Parse(bytes.NewReader(fixture.Request.Body), "application/json")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -50,7 +50,7 @@ func TestValidateIssueMatchesSourceScalarValidationFixtures(t *testing.T) {
 				}
 				return
 			}
-			var got *djangoapi.HTTPError
+			var got *apicontract.HTTPError
 			if !errors.As(err, &got) {
 				t.Fatalf("validateIssue() error = %v, want source HTTP 400", err)
 			}
@@ -70,12 +70,12 @@ func TestValidateIssueRunsObjectValidationOnlyAfterFieldValidation(t *testing.T)
 	// issue-core-app-list-priority-invalid.json. DRF runs object-level
 	// IssueCreateSerializer.validate only after all fields validate, so its
 	// reversed-date check must not add non_field_errors to field failures.
-	input, err := djangoinput.Parse(bytes.NewBufferString(`{"name":true,"priority":"unknown","start_date":"2020-03-01","target_date":"2020-02-01"}`), "application/json")
+	input, err := requestinput.Parse(bytes.NewBufferString(`{"name":true,"priority":"unknown","start_date":"2020-03-01","target_date":"2020-02-01"}`), "application/json")
 	if err != nil {
 		t.Fatal(err)
 	}
 	_, err = (&Repository{}).validateIssue(context.Background(), input, issueValidation{})
-	var got *djangoapi.HTTPError
+	var got *apicontract.HTTPError
 	if !errors.As(err, &got) {
 		t.Fatalf("validateIssue() error = %v, want field validation error", err)
 	}
@@ -135,18 +135,18 @@ func marshalJSON(t *testing.T, value any) []byte {
 func TestAPIWritableCreationTimestampValidatesBeforePersistence(t *testing.T) {
 	for _, tc := range []struct{ name, body, want string }{{"invalid", "{\"created_at\":\"not-a-date\"}", "Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."}, {"null", "{\"created_at\":null}", "This field may not be null."}} {
 		t.Run(tc.name, func(t *testing.T) {
-			input, err := djangoinput.Parse(bytes.NewBufferString(tc.body), "application/json")
+			input, err := requestinput.Parse(bytes.NewBufferString(tc.body), "application/json")
 			if err != nil {
 				t.Fatal(err)
 			}
 			_, err = (&Repository{}).validateIssue(context.Background(), input, issueValidation{API: true, Partial: true})
-			var failure *djangoapi.HTTPError
+			var failure *apicontract.HTTPError
 			if !errors.As(err, &failure) || !sameJSON(t, failure.Body, map[string]any{"created_at": []string{tc.want}}) {
 				t.Fatalf("validation=%#v", err)
 			}
 		})
 	}
-	input, err := djangoinput.Parse(bytes.NewBufferString(`{"created_at":"2010-01-02T03:04:05"}`), "application/json")
+	input, err := requestinput.Parse(bytes.NewBufferString(`{"created_at":"2010-01-02T03:04:05"}`), "application/json")
 	if err != nil {
 		t.Fatal(err)
 	}

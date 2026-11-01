@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -196,7 +196,7 @@ func pageAPIItem(ctx context.Context, tx pgx.Tx, q PageAPIQuery, write bool) err
 		suffix = " FOR UPDATE"
 	}
 	var id uuid.UUID
-	err = tx.QueryRow(ctx, `SELECT i.id FROM issues i WHERE i.id=$1 AND i.project_id=$2 AND `+djangoapi.IssueVisibleSQL("i", "$3::uuid", "$4::uuid")+suffix, q.ItemID, q.ProjectID, q.ActorID, q.WorkspaceID).Scan(&id)
+	err = tx.QueryRow(ctx, `SELECT i.id FROM issues i WHERE i.id=$1 AND i.project_id=$2 AND `+apicontract.IssueVisibleSQL("i", "$3::uuid", "$4::uuid")+suffix, q.ItemID, q.ProjectID, q.ActorID, q.WorkspaceID).Scan(&id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		err = projectmutations.ErrNotFound
 	}

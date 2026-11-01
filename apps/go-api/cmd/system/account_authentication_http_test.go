@@ -143,8 +143,8 @@ func TestAccountAuthenticationAPIViewThrottleCoversOptionsAndUnsupportedMethods(
 		notificationProtocolMetadata,
 		accountAuthenticationSessionProtocolDispatch{account: account},
 		policy,
-		sessionServiceMiddlewareStack(apiV1CompatibilityOptions{bodySizeLimit: defaultFileSizeLimit}, nil, djangoSessionCookieConfig{}),
-		djangoSessionCookieConfig{}, false, apiV1CompatibilityOptions{},
+		sessionServiceMiddlewareStack(apiV1CompatibilityOptions{bodySizeLimit: defaultFileSizeLimit}, nil, browserSessionCookieConfig{}),
+		browserSessionCookieConfig{}, false, apiV1CompatibilityOptions{},
 	)(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusNoContent) }))
 	handler = readServicesCompatibilityMiddleware(handler)
 
@@ -247,7 +247,7 @@ func TestAccountAuthenticationUnsupportedUnsafeMethodChecksCSRFBefore405(t *test
 				next.ServeHTTP(response, request.WithContext(ctx))
 			})
 		},
-		djangoSessionCookieConfig{Name: "session-id", Configured: true},
+		browserSessionCookieConfig{Name: "session-id", Configured: true},
 		false,
 		apiV1CompatibilityOptions{},
 		[]string{"https://trusted.example.test"},
@@ -287,7 +287,7 @@ func TestAccountAuthenticationPublicUnsupportedMethodChecksCSRFOnlyForSessionUse
 				notificationProtocolMetadata,
 				accountAuthenticationSessionProtocolDispatch{account: authenticatedAccountProtocolStub{}},
 				loomhttp.RuntimeCORSPolicy{}, stack,
-				djangoSessionCookieConfig{}, false, apiV1CompatibilityOptions{},
+				browserSessionCookieConfig{}, false, apiV1CompatibilityOptions{},
 			)(http.NotFoundHandler())
 			request := httptest.NewRequest(http.MethodPut, "https://app.example.test/auth/email-check/", strings.NewReader(`[]`))
 			response := httptest.NewRecorder()

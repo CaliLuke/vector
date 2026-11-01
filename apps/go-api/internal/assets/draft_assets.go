@@ -8,9 +8,9 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -29,30 +29,30 @@ func (service *LifecycleService) bulkAssociateDraftAssets(ctx context.Context, s
 		return notFoundAssetError()
 	}
 	if body == nil {
-		return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "No asset ids provided."}}
+		return &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "No asset ids provided."}}
 	}
 	defer platform.CloseRequestBody(ctx, body)
 	contentType := RequestContentType(ctx)
 	if contentType == "" {
 		contentType = "application/json"
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return err
 	}
 	encoded, ok := input.Fields["asset_ids"].([]any)
 	if !ok || len(encoded) == 0 {
-		return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Provide an array of asset ids."}}
+		return &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Provide an array of asset ids."}}
 	}
 	ids := make([]uuid.UUID, 0, len(encoded))
 	for _, value := range encoded {
 		raw, ok := value.(string)
 		if !ok {
-			return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Asset ids must be UUIDs."}}
+			return &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Asset ids must be UUIDs."}}
 		}
 		id, err := uuid.Parse(raw)
 		if err != nil {
-			return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Asset ids must be UUIDs."}}
+			return &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Asset ids must be UUIDs."}}
 		}
 		ids = append(ids, id)
 	}

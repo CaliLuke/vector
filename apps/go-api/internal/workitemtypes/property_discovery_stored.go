@@ -3,7 +3,7 @@ package workitemtypes
 import (
 	"context"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 )
 
 // DiscoveryItemReference identifies a published item already admitted by the
@@ -48,7 +48,7 @@ func (snapshot *PropertyDiscoverySnapshot) ProjectStoredItems(ctx context.Contex
 	rows, err := snapshot.tx.Query(ctx, `SELECT i.id::text,i.project_id::text,COALESCE(i.type_id::text,''),COALESCE(i.estimate_point_id::text,''),
  i.name,i.priority,COALESCE(i.start_date::text,''),COALESCE(i.target_date::text,''),i.custom_properties
  FROM issues i WHERE i.id=ANY($1::uuid[]) AND i.workspace_id=$2::uuid AND i.project_id=ANY($3::uuid[])
- AND i.deleted_at IS NULL AND NOT i.is_draft AND (`+djangoapi.IssueVisibleSQL("i", "$4::uuid", "$2::uuid")+`
+ AND i.deleted_at IS NULL AND NOT i.is_draft AND (`+apicontract.IssueVisibleSQL("i", "$4::uuid", "$2::uuid")+`
  OR ($5::boolean AND EXISTS (
  SELECT 1 FROM workspace_members wm
  JOIN project_members pm ON pm.workspace_id=wm.workspace_id AND pm.member_id=wm.member_id

@@ -7,8 +7,8 @@ import (
 	"encoding/json"
 	"slices"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/google/uuid"
 )
 
@@ -143,5 +143,5 @@ func validateItemSourceVersion(input ItemEditInput, snapshot map[string]any) err
 	if input.ReviewID != "" {
 		fields["review_again"] = true
 	}
-	return &djangoapi.HTTPError{Status: 409, Body: fields}
+	return &apicontract.HTTPError{Status: 409, Body: fields}
 }

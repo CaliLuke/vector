@@ -12,7 +12,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/stretchr/testify/require"
 )
 
@@ -37,7 +37,7 @@ func TestLegacyNonfiniteSizeCannotWriteObjectsOrActivity(t *testing.T) {
 			ctx := context.WithValue(t.Context(), assetUserKey{}, f.actor)
 			ctx = WithRequestContentType(ctx, writer.FormDataContentType())
 			row, err := service.createLegacyIssueAttachment(ctx, "drafts", f.project.String(), issue.String(), io.NopCloser(bytes.NewReader(body.Bytes())))
-			var failure *djangoapi.HTTPError
+			var failure *apicontract.HTTPError
 			require.ErrorAs(t, err, &failure)
 			require.Equal(t, http.StatusBadRequest, failure.Status)
 			require.Equal(t, map[string]any{"size": []string{"A valid number is required."}}, failure.Body)

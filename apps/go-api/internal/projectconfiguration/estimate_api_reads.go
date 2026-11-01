@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -48,7 +48,7 @@ func (r *Repository) ReadEstimate(ctx context.Context, in EstimateRead) (json.Ra
 	if len(body) == 0 {
 		return nil, projectmutations.ErrNotFound
 	}
-	return djangoapi.JSONTimestamps(body, in.Timezone)
+	return apicontract.JSONTimestamps(body, in.Timezone)
 }
 
 const estimateReadScopeSQL = `WITH scope AS MATERIALIZED (

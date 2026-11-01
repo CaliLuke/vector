@@ -75,7 +75,7 @@ func TestNotificationMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizati
 			}
 			mux := loomhttp.NewMuxer()
 			server := notificationssvr.New(notificationsapi.NewEndpoints(service), mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, nil, nil, policy)
-			server.Use(sessionServiceMiddlewareStack(apiV1CompatibilityOptions{bodySizeLimit: 1, activityLogger: logger, activitySecret: "secret"}, sessions, djangoSessionCookieConfig{}))
+			server.Use(sessionServiceMiddlewareStack(apiV1CompatibilityOptions{bodySizeLimit: 1, activityLogger: logger, activitySecret: "secret"}, sessions, browserSessionCookieConfig{}))
 			notificationssvr.Mount(mux, server)
 			request := httptest.NewRequest(http.MethodGet, "/api/workspaces/demo/users/notifications/unread/", strings.NewReader(test.body))
 			request.AddCookie(&http.Cookie{Name: "session-id", Value: "session"})

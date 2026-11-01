@@ -10,7 +10,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
@@ -96,7 +96,7 @@ func visibleItem(ctx context.Context, tx pgx.Tx, q Query, id uuid.UUID, lock boo
 		suffix = " FOR UPDATE OF i"
 	}
 	var project uuid.UUID
-	err := tx.QueryRow(ctx, `SELECT i.project_id FROM issues i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id WHERE i.id=$1 AND p.archived_at IS NULL AND `+djangoapi.IssueVisibleSQL("i", "$2::uuid", "$3::uuid")+suffix, id, q.ActorID, q.WorkspaceID).Scan(&project)
+	err := tx.QueryRow(ctx, `SELECT i.project_id FROM issues i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id WHERE i.id=$1 AND p.archived_at IS NULL AND `+apicontract.IssueVisibleSQL("i", "$2::uuid", "$3::uuid")+suffix, id, q.ActorID, q.WorkspaceID).Scan(&project)
 	if errors.Is(err, pgx.ErrNoRows) {
 		err = projectmutations.ErrNotFound
 	}
@@ -213,7 +213,7 @@ func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.R
 			if err = tx.QueryRow(ctx, `SELECT revision FROM initiative_revisions WHERE workspace_id=$1`, in.WorkspaceID).Scan(&rev); err != nil {
 				return nil, err
 			}
-			current, err = djangoapi.JSONTimestamps(current, in.Timezone)
+			current, err = apicontract.JSONTimestamps(current, in.Timezone)
 			if err != nil {
 				return nil, err
 			}

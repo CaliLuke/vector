@@ -8,7 +8,7 @@ import (
 	"strings"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -34,15 +34,15 @@ func NewRepository(db Database) (*Repository, error) {
 }
 
 var webhookJSON = `json_build_object(
- 'id',h.id,'workspace',h.workspace_id,'created_at',` + djangoapi.DjangoTimestampSQL("h.created_at") + `,'updated_at',` + djangoapi.DjangoTimestampSQL("h.updated_at") + `,
- 'created_by',h.created_by_id,'updated_by',h.updated_by_id,'deleted_at',` + djangoapi.DjangoTimestampSQL("h.deleted_at") + `,
+ 'id',h.id,'workspace',h.workspace_id,'created_at',` + apicontract.TimestampSQL("h.created_at") + `,'updated_at',` + apicontract.TimestampSQL("h.updated_at") + `,
+ 'created_by',h.created_by_id,'updated_by',h.updated_by_id,'deleted_at',` + apicontract.TimestampSQL("h.deleted_at") + `,
  'url',h.url,'is_active',h.is_active,'secret_key',h.secret_key,'project',h.project,
  'issue',h.issue,'module',h.module,'cycle',h.cycle,'milestone',h.milestone,'issue_comment',h.issue_comment,
  'is_internal',h.is_internal,'version',h.version)`
 
 var webhookLogJSON = `json_build_object(
- 'id',l.id,'workspace',l.workspace_id,'created_at',` + djangoapi.DjangoTimestampSQL("l.created_at") + `,'updated_at',` + djangoapi.DjangoTimestampSQL("l.updated_at") + `,
- 'created_by',l.created_by_id,'updated_by',l.updated_by_id,'deleted_at',` + djangoapi.DjangoTimestampSQL("l.deleted_at") + `,
+ 'id',l.id,'workspace',l.workspace_id,'created_at',` + apicontract.TimestampSQL("l.created_at") + `,'updated_at',` + apicontract.TimestampSQL("l.updated_at") + `,
+ 'created_by',l.created_by_id,'updated_by',l.updated_by_id,'deleted_at',` + apicontract.TimestampSQL("l.deleted_at") + `,
  'webhook',l.webhook,'event_type',l.event_type,'request_method',l.request_method,
  'request_headers',l.request_headers,'request_body',l.request_body,
  'response_status',l.response_status,'response_headers',l.response_headers,

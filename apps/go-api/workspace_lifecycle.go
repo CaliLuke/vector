@@ -13,10 +13,10 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/instancemanagement"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	api "github.com/CaliLuke/go-plane/workspacelifecycle/gen/workspace_lifecycle"
 	loomhttp "github.com/CaliLuke/loom/http"
 	loom "github.com/CaliLuke/loom/pkg"
@@ -184,7 +184,7 @@ func workspaceLifecycleRequestBody(ctx context.Context, body io.ReadCloser) (map
 	if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok {
 		contentType = metadata.Headers().Get("Content-Type")
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return nil, err
 	}
@@ -293,7 +293,7 @@ func (service *workspaceLifecycleService) updateWorkspace(ctx context.Context, s
 		if errors.As(err, &validation) {
 			return nil, nil, service.error(http.StatusBadRequest, validation.Fields)
 		}
-		var httpError *djangoapi.HTTPError
+		var httpError *apicontract.HTTPError
 		if errors.As(err, &httpError) {
 			return nil, nil, service.error(httpError.Status, httpError.Body)
 		}

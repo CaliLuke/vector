@@ -16,10 +16,10 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/page_reads"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/pagereads"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	loomhttp "github.com/CaliLuke/loom/http"
 	loom "github.com/CaliLuke/loom/pkg"
 )
@@ -149,7 +149,7 @@ func pageLifecyclePermissionDenied(err error) bool {
 	if errors.As(err, &lifecycle) && lifecycle.Status == http.StatusForbidden {
 		return true
 	}
-	var source *djangoapi.HTTPError
+	var source *apicontract.HTTPError
 	return errors.As(err, &source) && source.Status == http.StatusForbidden
 }
 
@@ -259,7 +259,7 @@ func pageLifecyclePermissionOperation(method string, hasPage bool) string {
 }
 
 func pageLifecycleProtocolFailure(err error) (int, map[string]any) {
-	var source *djangoapi.HTTPError
+	var source *apicontract.HTTPError
 	if errors.As(err, &source) {
 		return source.Status, source.Body
 	}
@@ -312,7 +312,7 @@ func (service *pageReadsService) pageLifecycle(ctx context.Context, operation, s
 	if validateLifecycleHandlerErr := repository.ValidateLifecycleHandler(ctx, operation, principal.userID, slug, projectID, pageID); validateLifecycleHandlerErr != nil {
 		return 0, nil, pageLifecycleStoreError(validateLifecycleHandlerErr)
 	}
-	input := djangoinput.Input{Fields: map[string]any{}, Surrogates: map[string][]string{}}
+	input := requestinput.Input{Fields: map[string]any{}}
 	if operation == "duplicate" {
 		if body != nil {
 			platform.CloseRequestBody(ctx, body)
@@ -323,7 +323,7 @@ func (service *pageReadsService) pageLifecycle(ctx context.Context, operation, s
 		if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok && metadata.Headers().Get("Content-Type") != "" {
 			contentType = metadata.Headers().Get("Content-Type")
 		}
-		parsedInput, parseErr := djangoinput.Parse(body, contentType)
+		parsedInput, parseErr := requestinput.Parse(body, contentType)
 		if parseErr != nil {
 			return 0, nil, pageLifecycleStoreError(parseErr)
 		}
@@ -355,7 +355,7 @@ func pageLifecycleStoreError(err error) error {
 	if errors.As(err, &raw) {
 		return pageLifecycleError(raw.Status, raw.Body)
 	}
-	var source *djangoapi.HTTPError
+	var source *apicontract.HTTPError
 	if errors.As(err, &source) {
 		return pageLifecycleError(source.Status, source.Body)
 	}

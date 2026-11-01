@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/releases"
@@ -204,7 +204,7 @@ func (s *Service) releaseOperation(ctx context.Context, tool string, input inter
 	if json.Unmarshal(raw, &value) != nil {
 		return nil, workitemResultError()
 	}
-	return json.Marshal(djangoapi.Timestamps(value, actor.Timezone))
+	return json.Marshal(apicontract.Timestamps(value, actor.Timezone))
 }
 func (s *Service) mutateRelease(ctx context.Context, actor mcpauth.Principal, selector *string, cmd releases.Command) (projectmutations.Result, error) {
 	cmd.Revalidate = mutationRevalidator(actor, selector, true)

@@ -39,13 +39,13 @@ func (repo *moduleLifecycleSecurityRepository) AuthorizeEntityProject(_ context.
 	return nil
 }
 
-func (repo *moduleLifecycleSecurityRepository) CreateModuleV1(_ context.Context, user, slug, project string, _ map[string]any, _ map[string][]string, _ string) (json.RawMessage, error) {
+func (repo *moduleLifecycleSecurityRepository) CreateModuleV1(_ context.Context, user, slug, project string, _ map[string]any, _ string) (json.RawMessage, error) {
 	repo.createCalls++
 	repo.createdUser, repo.createdSlug, repo.createdProj = user, slug, project
 	return json.RawMessage(`{"id":"33333333-3333-4333-8333-333333333333"}`), nil
 }
 
-func (repo *moduleLifecycleSecurityRepository) CreateLink(context.Context, string, string, string, string, map[string]any, map[string][]string) (json.RawMessage, error) {
+func (repo *moduleLifecycleSecurityRepository) CreateLink(context.Context, string, string, string, string, map[string]any) (json.RawMessage, error) {
 	repo.linkCalls++
 	return json.RawMessage(`{"created_at":"2025-01-02T03:04:05Z","created_by":null,"deleted_at":null,"id":"44444444-4444-4444-8444-444444444444","metadata":{},"module":"22222222-2222-4222-8222-222222222222","project":"11111111-1111-4111-8111-111111111111","title":"Brief","updated_at":"2025-01-02T03:04:05Z","updated_by":null,"url":"https://example.test/brief","workspace":"55555555-5555-4555-8555-555555555555"}`), nil
 }
@@ -89,7 +89,7 @@ func moduleLifecycleSecurityHandler(t *testing.T, repo *moduleLifecycleSecurityR
 			moduleLifecycle:         moduleapi.NewEndpoints(service),
 			moduleLifecycleMetadata: service,
 			readServicesSession:     &assetsTransportSession{publicProjectMetadataThrottleStub: &publicProjectMetadataThrottleStub{allowed: true, userID: assetsTransportUserID, userTimezone: "UTC"}},
-			readServicesCookie:      djangoSessionCookieConfig{Name: "session-id", Configured: true},
+			readServicesCookie:      browserSessionCookieConfig{Name: "session-id", Configured: true},
 			activityReadsBodyLimit:  1 << 20,
 		},
 	)

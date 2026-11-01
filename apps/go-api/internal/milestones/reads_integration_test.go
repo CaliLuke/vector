@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/milestones"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/google/uuid"
@@ -42,7 +42,7 @@ func newReadFixture(t *testing.T) readFixture {
 
 func TestMilestoneReadRecordsAndPagesMatchNativeContract(t *testing.T) {
 	f := newReadFixture(t)
-	query := djangoapi.Query{Params: map[string]string{"per_page": "2"}, Present: map[string]bool{"per_page": true}}
+	query := apicontract.Query{Params: map[string]string{"per_page": "2"}, Present: map[string]bool{"per_page": true}}
 	page, err := f.repo.List(f.ctx, f.scope, query)
 	require.NoError(t, err)
 	require.Equal(t, 3, page.Total)
@@ -69,14 +69,14 @@ func TestMilestoneReadRecordsAndPagesMatchNativeContract(t *testing.T) {
 	record, err = f.repo.Retrieve(f.ctx, f.scope, uuid.MustParse(firstMilestone), true)
 	require.NoError(t, err)
 	require.Equal(t, "milestone:"+firstMilestone+":7", *record.Revision)
-	page, err = f.repo.List(f.ctx, f.scope, djangoapi.Query{})
+	page, err = f.repo.List(f.ctx, f.scope, apicontract.Query{})
 	require.NoError(t, err)
 	require.Equal(t, 1000, page.Limit)
 }
 
 func TestMilestoneAssociationReadsRetainArchivedAndIntakeItems(t *testing.T) {
 	f := newReadFixture(t)
-	query := djangoapi.Query{Params: map[string]string{"per_page": "1"}, Present: map[string]bool{"per_page": true}}
+	query := apicontract.Query{Params: map[string]string{"per_page": "1"}, Present: map[string]bool{"per_page": true}}
 	page, err := f.repo.ListWorkItems(f.ctx, f.scope, uuid.MustParse(firstMilestone), query)
 	require.NoError(t, err)
 	require.Equal(t, 2, page.Total)
@@ -88,7 +88,7 @@ func TestMilestoneAssociationReadsRetainArchivedAndIntakeItems(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 2, page.Total)
 	require.Equal(t, []milestones.Link{{ID: "40000000-0000-4000-8000-000000000002", Issue: testsupport.LabelEmptyIssue, Milestone: firstMilestone}}, page.Results)
-	empty, err := f.repo.ListWorkItems(f.ctx, f.scope, uuid.MustParse(laterMilestone), djangoapi.Query{})
+	empty, err := f.repo.ListWorkItems(f.ctx, f.scope, uuid.MustParse(laterMilestone), apicontract.Query{})
 	require.NoError(t, err)
 	require.Zero(t, empty.Total)
 	require.NotNil(t, empty.Results)
@@ -100,12 +100,12 @@ func TestMilestoneReadsMaskTargetsAndRecheckScope(t *testing.T) {
 	for _, id := range []string{"30000000-0000-4000-8000-000000000004", "30000000-0000-4000-8000-000000000005", "30000000-0000-4000-8000-000000000006", "30000000-0000-4000-8000-000000000099"} {
 		_, err := f.repo.Retrieve(f.ctx, f.scope, uuid.MustParse(id), true)
 		require.ErrorIs(t, err, milestones.ErrNotFound)
-		_, err = f.repo.ListWorkItems(f.ctx, f.scope, uuid.MustParse(id), djangoapi.Query{})
+		_, err = f.repo.ListWorkItems(f.ctx, f.scope, uuid.MustParse(id), apicontract.Query{})
 		require.ErrorIs(t, err, milestones.ErrNotFound)
 	}
 	wrongWorkspace := f.scope
 	wrongWorkspace.WorkspaceID = uuid.MustParse("00000000-0000-4000-8000-000000000099")
-	_, err := f.repo.List(f.ctx, wrongWorkspace, djangoapi.Query{})
+	_, err := f.repo.List(f.ctx, wrongWorkspace, apicontract.Query{})
 	require.ErrorIs(t, err, milestones.ErrForbidden)
 	_, err = f.db.Exec(f.ctx, `UPDATE workspaces SET slug='moved' WHERE id=$1`, f.scope.WorkspaceID)
 	require.NoError(t, err)
@@ -116,11 +116,11 @@ func TestMilestoneReadsMaskTargetsAndRecheckScope(t *testing.T) {
 	require.NoError(t, err)
 	_, err = f.db.Exec(f.ctx, `UPDATE project_members SET is_active=false`)
 	require.NoError(t, err)
-	_, err = f.repo.List(f.ctx, f.scope, djangoapi.Query{})
+	_, err = f.repo.List(f.ctx, f.scope, apicontract.Query{})
 	require.ErrorIs(t, err, milestones.ErrForbidden)
 	_, err = f.repo.Retrieve(f.ctx, f.scope, uuid.MustParse(firstMilestone), false)
 	require.ErrorIs(t, err, milestones.ErrForbidden)
-	_, err = f.repo.ListWorkItems(f.ctx, f.scope, uuid.MustParse(firstMilestone), djangoapi.Query{})
+	_, err = f.repo.ListWorkItems(f.ctx, f.scope, uuid.MustParse(firstMilestone), apicontract.Query{})
 	require.ErrorIs(t, err, milestones.ErrForbidden)
 }
 
@@ -131,7 +131,7 @@ func TestMilestoneReadsRejectInvalidPagesWithoutWeakeningGuestPolicy(t *testing.
 		for key := range params {
 			present[key] = true
 		}
-		query := djangoapi.Query{Params: params, Present: present}
+		query := apicontract.Query{Params: params, Present: present}
 		_, err := f.repo.List(f.ctx, f.scope, query)
 		require.ErrorIs(t, err, milestones.ErrInvalidInput)
 		_, err = f.repo.ListWorkItems(f.ctx, f.scope, uuid.MustParse(firstMilestone), query)
@@ -139,14 +139,14 @@ func TestMilestoneReadsRejectInvalidPagesWithoutWeakeningGuestPolicy(t *testing.
 	}
 	_, err := f.db.Exec(f.ctx, `UPDATE project_members SET role=5`)
 	require.NoError(t, err)
-	_, err = f.repo.List(f.ctx, f.scope, djangoapi.Query{})
+	_, err = f.repo.List(f.ctx, f.scope, apicontract.Query{})
 	require.ErrorIs(t, err, milestones.ErrForbidden)
 	_, err = f.db.Exec(f.ctx, `UPDATE projects SET guest_view_all_features=true`)
 	require.NoError(t, err)
-	_, err = f.repo.ListWorkItems(f.ctx, f.scope, uuid.MustParse(firstMilestone), djangoapi.Query{})
+	_, err = f.repo.ListWorkItems(f.ctx, f.scope, uuid.MustParse(firstMilestone), apicontract.Query{})
 	require.NoError(t, err)
 	_, err = f.db.Exec(f.ctx, `UPDATE projects SET archived_at=now()`)
 	require.NoError(t, err)
-	_, err = f.repo.ListWorkItems(f.ctx, f.scope, uuid.MustParse(firstMilestone), djangoapi.Query{})
+	_, err = f.repo.ListWorkItems(f.ctx, f.scope, uuid.MustParse(firstMilestone), apicontract.Query{})
 	require.ErrorIs(t, err, milestones.ErrForbidden)
 }

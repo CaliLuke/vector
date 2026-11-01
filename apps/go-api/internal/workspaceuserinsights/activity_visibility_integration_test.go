@@ -8,13 +8,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/jackc/pgx/v5"
 )
 
-func activityPageQuery() djangoapi.Query {
-	return djangoapi.Query{Params: map[string]string{"per_page": "10"}, Present: map[string]bool{"per_page": true}}
+func activityPageQuery() apicontract.Query {
+	return apicontract.Query{Params: map[string]string{"per_page": "10"}, Present: map[string]bool{"per_page": true}}
 }
 
 func TestPropertyActivityFeedsEnforceOwningItemVisibility(t *testing.T) {

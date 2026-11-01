@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 )
 
 // AuthorizeInitial runs permission_classes before throttle and timezone. App
@@ -14,7 +14,7 @@ import (
 func (r *Repository) AuthorizeInitial(ctx context.Context, q Request) error {
 	if !q.API {
 		if strings.Contains(q.Operation, "_issue_relation") || strings.HasSuffix(q.Operation, "_remove_relation") || strings.HasSuffix(q.Operation, "_sub_issues") || strings.HasSuffix(q.Operation, "_bulk_archive_issues") {
-			allowed, err := djangoapi.ProjectEntityAllowed(ctx, r.db, q.ActorID, q.Slug, q.ProjectID, q.Method != "GET" && q.Method != "HEAD" && q.Method != "OPTIONS")
+			allowed, err := apicontract.ProjectEntityAllowed(ctx, r.db, q.ActorID, q.Slug, q.ProjectID, q.Method != "GET" && q.Method != "HEAD" && q.Method != "OPTIONS")
 			if err != nil {
 				return err
 			}
@@ -47,7 +47,7 @@ func (r *Repository) AuthorizeInitial(ctx context.Context, q Request) error {
 		}
 		err = r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM project_members m JOIN projects p ON p.id=m.project_id JOIN workspaces w ON w.id=m.workspace_id WHERE w.slug=$1 AND p.identifier=$2 AND m.member_id=$3 AND m.is_active AND m.deleted_at IS NULL)`, q.Slug, project, q.ActorID).Scan(&allowed)
 	} else {
-		allowed, err = djangoapi.ProjectEntityAllowed(ctx, r.db, q.ActorID, q.Slug, q.ProjectID, q.Method != "GET" && q.Method != "HEAD" && q.Method != "OPTIONS")
+		allowed, err = apicontract.ProjectEntityAllowed(ctx, r.db, q.ActorID, q.Slug, q.ProjectID, q.Method != "GET" && q.Method != "HEAD" && q.Method != "OPTIONS")
 	}
 	if err != nil {
 		return err

@@ -12,8 +12,8 @@ import (
 	"path"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -134,7 +134,7 @@ func (a *AttachmentApplication) Read(ctx context.Context, q AttachmentQuery) (_ 
 	case "text/plain", "text/markdown", "text/csv", "text/html", "text/xml", "text/yaml", "application/json", "application/xml", "application/yaml", "application/x-yaml":
 		kind = "text"
 	default:
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Unsupported inline content type. Use download_url for this attachment."}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Unsupported inline content type. Use download_url for this attachment."}}
 	}
 	body, err := a.storage.readAttachment(ctx, asset.Asset, limit)
 	if err != nil {
@@ -157,7 +157,7 @@ func authorizeAttachmentRead(ctx context.Context, tx pgx.Tx, q AttachmentQuery) 
 	var allowed bool
 	err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM workspaces w JOIN workspace_members wm ON wm.workspace_id=w.id JOIN users u ON u.id=wm.member_id
  WHERE w.id=$1 AND w.slug=$2 AND w.deleted_at IS NULL AND u.id=$3 AND u.is_active AND wm.is_active AND wm.deleted_at IS NULL AND wm.role IN(5,15,20)
- AND EXISTS(SELECT 1 FROM issues i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id WHERE i.id=$4 AND i.project_id=$5 AND p.archived_at IS NULL AND `+djangoapi.IssueVisibleSQL("i", "$3::uuid", "w.id")+`))`, q.WorkspaceID, q.WorkspaceSlug, q.ActorID, q.IssueID, q.ProjectID).Scan(&allowed)
+ AND EXISTS(SELECT 1 FROM issues i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id WHERE i.id=$4 AND i.project_id=$5 AND p.archived_at IS NULL AND `+apicontract.IssueVisibleSQL("i", "$3::uuid", "w.id")+`))`, q.WorkspaceID, q.WorkspaceSlug, q.ActorID, q.IssueID, q.ProjectID).Scan(&allowed)
 	if err != nil {
 		return err
 	}
@@ -222,11 +222,11 @@ func (s *Storage) readAttachment(ctx context.Context, key string, limit int64) (
 		}
 	}()
 	if response.ContentLength != nil && *response.ContentLength > limit {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Attachment exceeds inline size limit. Use download_url."}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Attachment exceeds inline size limit. Use download_url."}}
 	}
 	body, err := io.ReadAll(io.LimitReader(response.Body, limit+1))
 	if err == nil && int64(len(body)) > limit {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Attachment exceeds inline size limit. Use download_url."}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Attachment exceeds inline size limit. Use download_url."}}
 	}
 	return body, err
 }

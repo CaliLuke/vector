@@ -8,9 +8,9 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/workitemsearch"
 )
 
@@ -62,7 +62,7 @@ func (r *Repository) identifier(ctx context.Context, q Request) (Result, error) 
 	if q.API {
 		// API lookup traverses the project FK inside Issue.get(). A deleted
 		// project still participates, and duplicate identifiers can match twice.
-		rows, e := r.rows(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i JOIN projects p ON p.id=i.project_id JOIN workspaces w ON w.id=i.workspace_id WHERE w.slug=$1 AND p.identifier=$2 AND i.sequence_id::numeric=$3::numeric AND `+liveIssue, q.Slug, projectName, n.String())
+		rows, e := r.rows(ctx, `SELECT `+apicontract.IssueRowSQL("i")+` FROM issues i JOIN projects p ON p.id=i.project_id JOIN workspaces w ON w.id=i.workspace_id WHERE w.slug=$1 AND p.identifier=$2 AND i.sequence_id::numeric=$3::numeric AND `+liveIssue, q.Slug, projectName, n.String())
 		if e != nil {
 			return Result{}, e
 		}
@@ -108,7 +108,7 @@ func (r *Repository) identifier(ctx context.Context, q Request) (Result, error) 
 	if q.API {
 		predicate = liveIssue
 	}
-	values, err := r.rows(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE w.slug=$1 AND i.project_id=$2 AND i.sequence_id::numeric=$3::numeric AND `+predicate+` ORDER BY i.created_at DESC`, q.Slug, q.ProjectID, n.String())
+	values, err := r.rows(ctx, `SELECT `+apicontract.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE w.slug=$1 AND i.project_id=$2 AND i.sequence_id::numeric=$3::numeric AND `+predicate+` ORDER BY i.created_at DESC`, q.Slug, q.ProjectID, n.String())
 	if err != nil {
 		return Result{}, err
 	}
@@ -167,7 +167,7 @@ func (r *Repository) search(ctx context.Context, q Request) (Result, error) {
 	}
 	args := []any{q.Slug, q.ActorID}
 	searchJoin := ""
-	where := []string{liveIssue, `w.slug=$1`, djangoapi.IssueVisibleSQL("i", "$2::uuid", "w.id")}
+	where := []string{liveIssue, `w.slug=$1`, apicontract.IssueVisibleSQL("i", "$2::uuid", "w.id")}
 	add := func(value any, format string) {
 		args = append(args, value)
 		where = append(where, fmt.Sprintf(format, len(args)))
@@ -185,14 +185,14 @@ func (r *Repository) search(ctx context.Context, q Request) (Result, error) {
 		project = q.Params["project_id"]
 	}
 	if workspace == "false" && project != "" {
-		id, e := djangoinput.UUID(project)
+		id, e := requestinput.UUID(project)
 		if e != nil {
 			return Result{}, failure(400, "error", "Please provide valid detail")
 		}
 		add(id.String(), `i.project_id=$%d`)
 	}
 	if !q.API && q.Params["type_id"] != "" {
-		id, err := djangoinput.UUID(q.Params["type_id"])
+		id, err := requestinput.UUID(q.Params["type_id"])
 		if err != nil {
 			return Result{}, failure(400, "error", "Please provide a valid work item type")
 		}
@@ -226,7 +226,7 @@ func (r *Repository) search(ctx context.Context, q Request) (Result, error) {
 			where = append(where, `NOT EXISTS(SELECT 1 FROM cycle_issues ci WHERE ci.issue_id=i.id AND ci.deleted_at IS NULL)`)
 		}
 		if module := q.Params["module"]; module != "" {
-			id, e := djangoinput.UUID(module)
+			id, e := requestinput.UUID(module)
 			if e != nil {
 				return Result{}, failure(400, "error", "Please provide valid detail")
 			}

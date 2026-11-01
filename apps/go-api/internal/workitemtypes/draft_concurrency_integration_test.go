@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -69,7 +69,7 @@ func TestConcurrentPublicationCreationAndDraftEditSerializeWithoutResurrection(t
 		select {
 		case result := <-results:
 			if result.kind == "edit" {
-				var failure *djangoapi.HTTPError
+				var failure *apicontract.HTTPError
 				if !errors.As(result.err, &failure) || failure.Status != 404 {
 					t.Fatalf("consumed draft edit was not rejected: %v", result.err)
 				}

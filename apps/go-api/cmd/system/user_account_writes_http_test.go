@@ -113,7 +113,7 @@ func TestUserAccountWritesProductionMounts(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				handler := extensionHTTPHandler(pendingReplacementEndpoints{userAccountWrites: api.NewEndpoints(service), userAccountWritesMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20})
+				handler := extensionHTTPHandler(pendingReplacementEndpoints{userAccountWrites: api.NewEndpoints(service), userAccountWritesMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20})
 				request := httptest.NewRequest(tc.method, tc.path, strings.NewReader(tc.body))
 				contentType := tc.contentType
 				if contentType == "" {
@@ -224,7 +224,7 @@ func TestUserAccountWritesProductionMiddlewareEvidence(t *testing.T) {
 	}
 	handler := extensionHTTPHandler(pendingReplacementEndpoints{
 		userAccountWrites: api.NewEndpoints(service), userAccountWritesMetadata: service.(sessionResourceProtocolAuthorizer),
-		readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true},
+		readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true},
 		activityReadsActivity: activity, activityReadsSecret: "user-account-test-secret", activityReadsBodyLimit: 32,
 	})
 
@@ -251,7 +251,7 @@ func TestUserAccountWritesProductionMiddlewareEvidence(t *testing.T) {
 		t.Fatalf("authorization/dispatch effects checks=%d writes=%d tasks=%v", repository.deactivationChecks, repository.writes, tasks.names)
 	}
 	if len(activity.records) != 0 {
-		t.Fatalf("Django session request unexpectedly entered API-key audit fallback: %#v", activity.records)
+		t.Fatalf("browser session request unexpectedly entered API-key audit fallback: %#v", activity.records)
 	}
 }
 
@@ -264,7 +264,7 @@ func TestEmailVerificationThrottlePrecedesTimezone(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	handler := extensionHTTPHandler(pendingReplacementEndpoints{userAccountWrites: api.NewEndpoints(service), userAccountWritesMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20})
+	handler := extensionHTTPHandler(pendingReplacementEndpoints{userAccountWrites: api.NewEndpoints(service), userAccountWritesMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true}, activityReadsBodyLimit: 1 << 20})
 	for attempt := 1; attempt <= 4; attempt++ {
 		request := httptest.NewRequest(http.MethodPost, "/api/users/me/email/generate-code/", strings.NewReader(`{`))
 		request.Header.Set("Content-Type", "application/json")

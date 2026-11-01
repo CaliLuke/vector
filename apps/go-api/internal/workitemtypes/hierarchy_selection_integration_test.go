@@ -11,7 +11,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 )
 
@@ -73,7 +73,7 @@ func TestHierarchySearchAndWritesAllowOnlyReadableCrossProjectParents(t *testing
 		t.Fatalf("private parent found: %#v", found)
 	}
 	_, err := writeValueItem(f, repo, "POST", "", `{"name":"Child","parent_id":"`+parent+`"}`)
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if !errors.As(err, &httpErr) || httpErr.Status != 400 {
 		t.Fatalf("private parent accepted: %v", err)
 	}
@@ -130,7 +130,7 @@ func TestHierarchySearchExcludesCyclesThroughHiddenNodesAndRejectsPrivateAnchor(
 		t.Fatalf("ancestor candidate returned: %#v", found)
 	}
 	result, err := repo.Execute(f.ctx, workitems.Request{Operation: "api_workspaces_by_slug_projects_by_project_id_search_issues", Method: "GET", ActorID: f.member, Slug: "types", ProjectID: f.project, Params: map[string]string{"parent": "true", "issue_id": hidden, "workspace_search": "true"}}, nil, "")
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if !errors.As(err, &httpErr) || httpErr.Status != 404 {
 		t.Fatalf("private anchor: %#v %v", result, err)
 	}
@@ -165,7 +165,7 @@ func TestHierarchyBulkAttachmentRejectsDeletedProjectWithoutPartialWrites(t *tes
 		t.Fatal(err)
 	}
 	err = attachHierarchyChildren(f, repo, parent, child, hidden)
-	var denied *djangoapi.HTTPError
+	var denied *apicontract.HTTPError
 	if !errors.As(err, &denied) || denied.Status != 400 {
 		t.Fatalf("deleted-project child accepted: %v", err)
 	}
@@ -205,7 +205,7 @@ func TestHierarchyParentWritersReauthorizeAfterSchemaWait(t *testing.T) {
 			}
 			select {
 			case err = <-done:
-				var denied *djangoapi.HTTPError
+				var denied *apicontract.HTTPError
 				if !errors.As(err, &denied) || denied.Status != 403 {
 					t.Fatalf("revoked writer accepted: %v", err)
 				}

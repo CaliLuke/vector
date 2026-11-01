@@ -33,7 +33,7 @@ func TestAuthSessionMiddlewareUsesExplicitCookieWithoutSavingOldSession(t *testi
 			if tc.incoming {
 				sessions.rotated = &browsersession.SessionRefresh{SessionKey: "old-session"}
 			}
-			handler := djangoAuthSessionMiddleware(sessions, djangoSessionCookieConfig{Name: "admin-session-id", Configured: true}, func(*http.Request) bool { return true })(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			handler := djangoAuthSessionMiddleware(sessions, browserSessionCookieConfig{Name: "admin-session-id", Configured: true}, func(*http.Request) bool { return true })(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				current, found := browsersession.CurrentSessionFromContext(r.Context())
 				if found != tc.incoming || found && current.SessionKey != "old-session" {
 					t.Fatalf("wrong current session: %v %v", current, found)
@@ -79,7 +79,7 @@ func TestAuthSessionIsAvailableWithoutAutomaticSaving(t *testing.T) {
 	for _, expire := range []bool{false, true} {
 		t.Run(fmt.Sprintf("expire=%v", expire), func(t *testing.T) {
 			sessions := &publicProjectMetadataThrottleStub{userID: "user-id", sessionKey: "authenticated-session"}
-			handler := djangoAuthSessionMiddleware(sessions, djangoSessionCookieConfig{Name: "session-id", Configured: true}, authRedirectSessionPath)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			handler := djangoAuthSessionMiddleware(sessions, browserSessionCookieConfig{Name: "session-id", Configured: true}, authRedirectSessionPath)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				current, found := browsersession.CurrentSessionFromContext(r.Context())
 				if !found || current.SessionKey != sessions.sessionKey {
 					t.Fatal("authenticated session is unavailable to the sign-out handler")

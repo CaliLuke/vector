@@ -6,7 +6,7 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -63,7 +63,7 @@ func (r *Repository) resolvePropertyRestore(ctx context.Context, q Request, comm
 	}
 	var raw []byte
 	err = tx.QueryRow(ctx, `SELECT v.value FROM work_item_property_versions v JOIN issues i ON i.id=v.issue_id AND i.workspace_id=v.workspace_id
- WHERE v.workspace_id=$1 AND i.project_id=$2 AND v.issue_id=$3 AND v.property_id=$4 AND v.id=$5 AND `+djangoapi.IssueVisibleSQL("i", "$6::uuid", "$1::uuid")+` FOR SHARE OF v`, state.WorkspaceID, state.ProjectID, state.ItemID, command.Restore.PropertyID, command.Restore.VersionID, q.ActorID).Scan(&raw)
+ WHERE v.workspace_id=$1 AND i.project_id=$2 AND v.issue_id=$3 AND v.property_id=$4 AND v.id=$5 AND `+apicontract.IssueVisibleSQL("i", "$6::uuid", "$1::uuid")+` FOR SHARE OF v`, state.WorkspaceID, state.ProjectID, state.ItemID, command.Restore.PropertyID, command.Restore.VersionID, q.ActorID).Scan(&raw)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, requiredObject()
 	}

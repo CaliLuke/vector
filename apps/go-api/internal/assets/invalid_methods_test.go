@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	planeinternaldjangomigrationapi "github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/google/uuid"
 )
 
@@ -40,7 +40,7 @@ func TestV2WorkspaceDecoratorPermissionUsesRoleBeforeLookup(t *testing.T) {
 	userID := uuid.New()
 	service := &LifecycleService{assets: &Service{repository: invalidMethodRepository{workspaceAllowed: false}}}
 	_, err := service.v2WorkspaceID(context.Background(), userID, "missing-or-denied")
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if !errors.As(err, &httpErr) || httpErr.Status != 403 {
 		t.Fatalf("V2 workspace permission error = %#v, want HTTP 403", err)
 	}
@@ -110,7 +110,7 @@ func TestInvalidAssetMethodsReturn405AfterPermission(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			service := &LifecycleService{assets: &Service{repository: tc.repository}}
 			_, err := service.invoke(ctx, tc.operation, tc.payload, nil)
-			var httpErr *djangoapi.HTTPError
+			var httpErr *apicontract.HTTPError
 			if !errors.As(err, &httpErr) || httpErr.Status != tc.status {
 				t.Fatalf("unsupported operation error = %#v, want HTTP %d", err, tc.status)
 			}
@@ -128,10 +128,10 @@ func TestInvalidAssetAttachmentDeleteChecksWorkspaceBefore405(t *testing.T) {
 	}
 	ctx := context.WithValue(context.Background(), assetUserKey{}, userID)
 	service := &LifecycleService{assets: &Service{repository: invalidMethodRepository{
-		workspaceErr: &djangoapi.HTTPError{Status: 403, Body: map[string]any{"detail": "membership"}},
+		workspaceErr: &apicontract.HTTPError{Status: 403, Body: map[string]any{"detail": "membership"}},
 	}}}
 	_, err := service.invoke(ctx, "DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachments", payload, nil)
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if !errors.As(err, &httpErr) || httpErr.Status != 403 {
 		t.Fatalf("nonmember invalid DELETE error = %#v, want HTTP 403", err)
 	}

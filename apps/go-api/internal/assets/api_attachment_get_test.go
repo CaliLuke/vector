@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/google/uuid"
 )
 
@@ -75,7 +75,7 @@ func (repository *apiAttachmentGetRepository) IssueAttachment(_ context.Context,
 	if repository.asset.WorkspaceID != nil && *repository.asset.WorkspaceID != workspaceID ||
 		repository.asset.ProjectID != nil && *repository.asset.ProjectID != projectID ||
 		repository.asset.IssueID != nil && *repository.asset.IssueID != issueID {
-		return FileAsset{}, nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return FileAsset{}, nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	row := map[string]any{"id": assetID.String(), "issue": issueID.String(), "project": projectID.String(), "entity_type": "ISSUE_ATTACHMENT", "is_uploaded": repository.asset.IsUploaded}
 	return repository.asset, row, nil
@@ -176,7 +176,7 @@ func TestAPIssueAttachmentGetRejectsNonmemberBeforeAssetLookup(t *testing.T) {
 	ctx := context.WithValue(context.Background(), assetUserKey{}, userID)
 
 	_, err := service.getIssueAttachmentV1(ctx, "workspace", projectID.String(), uuid.NewString(), assetID.String())
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if err == nil || !errors.As(err, &httpErr) || httpErr.Status != 403 {
 		t.Fatalf("nonmember GET error = %v, want source 403", err)
 	}
@@ -206,7 +206,7 @@ func TestAPIssueAttachmentGetResolvesSlugAfterProjectMembership(t *testing.T) {
 	}{
 		{
 			name:         "missing workspace fails before issue permission",
-			workspaceErr: &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}},
+			workspaceErr: &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}},
 			wantStatus:   404,
 			wantBody:     map[string]any{"error": "The requested resource does not exist."},
 			wantCalls:    []string{"RelatedWorkspaceIDBySlug"},
@@ -239,7 +239,7 @@ func TestAPIssueAttachmentGetResolvesSlugAfterProjectMembership(t *testing.T) {
 			userID, projectID, assetID := uuid.New(), uuid.New(), uuid.New()
 			repository := &apiAttachmentGetRepository{
 				workspaceID: uuid.New(), asset: test.asset, attachmentReadErr: test.assetErr, apiWorkspaceLookupErr: test.workspaceErr, member: test.member,
-				activeWorkspaceErr: &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}},
+				activeWorkspaceErr: &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}},
 				issueFound:         test.found, issueMember: test.member,
 			}
 			storage, err := NewStorage(StorageConfig{AccessKeyID: "test-access-key", SecretAccessKey: "test-secret-key", Bucket: "assets-test", Region: "us-east-1"})
@@ -255,7 +255,7 @@ func TestAPIssueAttachmentGetResolvesSlugAfterProjectMembership(t *testing.T) {
 					t.Fatalf("tombstoned workspace download = %v, %v; want signed redirect", location, err)
 				}
 			} else {
-				var httpErr *djangoapi.HTTPError
+				var httpErr *apicontract.HTTPError
 				if err == nil || !errors.As(err, &httpErr) || httpErr.Status != test.wantStatus || !reflect.DeepEqual(httpErr.Body, test.wantBody) {
 					t.Fatalf("workspace-boundary GET error = %v, want HTTP %d body %#v", err, test.wantStatus, test.wantBody)
 				}
@@ -292,7 +292,7 @@ func TestAPIIssueAttachmentMutationsMapMissingIssueToSourceNotFound(t *testing.T
 			ctx := context.WithValue(context.Background(), assetUserKey{}, userID)
 
 			err := test.call(service, ctx, "workspace", projectID.String(), issueID.String())
-			var httpErr *djangoapi.HTTPError
+			var httpErr *apicontract.HTTPError
 			if err == nil || !errors.As(err, &httpErr) || httpErr.Status != 404 || httpErr.Body["error"] != "The requested resource does not exist." {
 				t.Fatalf("missing issue mutation error = %v, want source 404", err)
 			}
@@ -317,7 +317,7 @@ func TestAPIIssueAttachmentCollectionGETRequiresIssueAccess(t *testing.T) {
 	}{
 		{
 			name:         "missing workspace is not found",
-			workspaceErr: &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}},
+			workspaceErr: &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}},
 			wantStatus:   404,
 			wantCalls:    []string{"RelatedWorkspaceIDBySlug"},
 		},
@@ -353,7 +353,7 @@ func TestAPIIssueAttachmentCollectionGETRequiresIssueAccess(t *testing.T) {
 					t.Fatalf("API attachment collection GET error = %v", err)
 				}
 			} else {
-				var httpErr *djangoapi.HTTPError
+				var httpErr *apicontract.HTTPError
 				if err == nil || !errors.As(err, &httpErr) || httpErr.Status != test.wantStatus {
 					t.Fatalf("API attachment collection GET error = %v, want HTTP %d", err, test.wantStatus)
 				}
@@ -380,7 +380,7 @@ func TestAPIssueAttachmentUploadMapsMissingIssueToSourceNotFound(t *testing.T) {
 	ctx := context.WithValue(context.Background(), assetUserKey{}, userID)
 
 	_, err := service.createIssueAttachmentAPI(ctx, "workspace", projectID.String(), issueID.String(), io.NopCloser(strings.NewReader(`{}`)), true)
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if err == nil || !errors.As(err, &httpErr) || httpErr.Status != 404 {
 		t.Fatalf("soft-deleted issue upload error = %v, want HTTP 404", err)
 	}
@@ -421,12 +421,12 @@ func TestAPIIssueAttachmentOperationsMapMissingWorkspaceToSourceNotFound(t *test
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			repository := &apiAttachmentGetRepository{
-				apiWorkspaceLookupErr: &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}},
+				apiWorkspaceLookupErr: &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}},
 			}
 			service := &LifecycleService{assets: &Service{repository: repository}}
 			ctx := context.WithValue(context.Background(), assetUserKey{}, uuid.New())
 			err := test.call(service, ctx, "missing-workspace", uuid.NewString(), uuid.NewString())
-			var httpErr *djangoapi.HTTPError
+			var httpErr *apicontract.HTTPError
 			if err == nil || !errors.As(err, &httpErr) || httpErr.Status != 404 || httpErr.Body["error"] != "The requested resource does not exist." {
 				t.Fatalf("missing workspace %s error = %v, want source 404", test.name, err)
 			}
@@ -474,12 +474,12 @@ func TestAPIIssueAttachmentPostKeepsTombstonedWorkspaceValidationOrder(t *testin
 		t.Run(test.name, func(t *testing.T) {
 			repository := &apiAttachmentGetRepository{
 				workspaceID: uuid.New(), issueFound: true, issueMember: test.member,
-				activeWorkspaceErr: &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}},
+				activeWorkspaceErr: &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}},
 			}
 			service := &LifecycleService{assets: &Service{repository: repository, fileLimit: 5 << 20}}
 			ctx := context.WithValue(context.Background(), assetUserKey{}, uuid.New())
 			_, err := service.createIssueAttachmentAPI(ctx, "tombstoned-workspace", uuid.NewString(), uuid.NewString(), io.NopCloser(strings.NewReader(test.body)), true)
-			var httpErr *djangoapi.HTTPError
+			var httpErr *apicontract.HTTPError
 			if err == nil || !errors.As(err, &httpErr) || httpErr.Status != test.wantStatus || !reflect.DeepEqual(httpErr.Body, test.wantBody) {
 				t.Fatalf("tombstoned workspace POST error = %v, want HTTP %d body %#v", err, test.wantStatus, test.wantBody)
 			}
@@ -588,7 +588,7 @@ func TestAPIIssueAttachmentListDeniesNonmemberBeforeQuery(t *testing.T) {
 	ctx := context.WithValue(context.Background(), assetUserKey{}, uuid.New())
 
 	_, err := service.listIssueAttachmentsAPI(ctx, "workspace", uuid.NewString(), uuid.NewString())
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if err == nil || !errors.As(err, &httpErr) || httpErr.Status != 403 {
 		t.Fatalf("nonmember attachment list error = %v, want 403", err)
 	}
@@ -617,7 +617,7 @@ func TestAPIIssueAttachmentGetRejectsAssetFromDifferentIssue(t *testing.T) {
 	ctx := context.WithValue(context.Background(), assetUserKey{}, userID)
 
 	location, err := service.getIssueAttachmentV1(ctx, "workspace", projectID.String(), pathIssueID.String(), assetID.String())
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if err == nil || location != nil || !errors.As(err, &httpErr) || httpErr.Status != 404 {
 		t.Fatalf("cross-issue attachment GET = (%v, %v), want no signed location and 404", location, err)
 	}
@@ -657,7 +657,7 @@ func TestAPIIssueAttachmentMutationsRejectAssetFromDifferentIssue(t *testing.T) 
 			ctx := context.WithValue(context.Background(), assetUserKey{}, userID)
 
 			err := test.call(service, ctx, "workspace", projectID.String(), pathIssueID.String(), assetID.String())
-			var httpErr *djangoapi.HTTPError
+			var httpErr *apicontract.HTTPError
 			if err == nil || !errors.As(err, &httpErr) || httpErr.Status != 404 {
 				t.Fatalf("cross-issue %s error = %v, want 404", test.name, err)
 			}

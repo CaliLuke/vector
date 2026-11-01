@@ -14,9 +14,9 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	api "github.com/CaliLuke/go-plane/invitationsmembership/gen/invitations_membership"
@@ -238,7 +238,7 @@ func invitationsMembershipRepositoryError(err error) error {
 	if err == nil {
 		return nil
 	}
-	var httpError *djangoapi.HTTPError
+	var httpError *apicontract.HTTPError
 	if errors.As(err, &httpError) {
 		return invitationsMembershipError(httpError.Status, httpError.Body)
 	}
@@ -758,7 +758,7 @@ func (service *invitationsMembershipService) executeInvitation(ctx context.Conte
 		err = service.repository.AuthorizeWorkspaceRole(ctx, principal.UserID, c.Slug, 5, 15, 20)
 	}
 	if errors.Is(err, store.ErrForbidden) {
-		err = &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
+		err = &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
 	}
 	if err != nil {
 		return nil, invitationsMembershipRepositoryError(err)

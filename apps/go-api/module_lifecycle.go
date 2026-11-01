@@ -10,12 +10,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/modulereads"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	api "github.com/CaliLuke/go-plane/modulelifecycle/gen/module_lifecycle_api"
 	"github.com/CaliLuke/loom/clue/log"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -40,16 +40,16 @@ type moduleLifecycleRepository interface {
 	AuthorizeAppProject(context.Context, string, string, string) error
 	CheckModuleProject(context.Context, string, string, bool) error
 	CheckModule(context.Context, string, string, string, bool, bool) error
-	CreateModule(context.Context, string, string, string, map[string]any, map[string][]string, string) (json.RawMessage, error)
-	CreateModuleV1(context.Context, string, string, string, map[string]any, map[string][]string, string) (json.RawMessage, error)
-	UpdateModule(context.Context, string, string, string, string, map[string]any, map[string][]string, bool, string) (json.RawMessage, error)
-	UpdateModuleV1(context.Context, string, string, string, string, map[string]any, map[string][]string, string) (json.RawMessage, error)
+	CreateModule(context.Context, string, string, string, map[string]any, string) (json.RawMessage, error)
+	CreateModuleV1(context.Context, string, string, string, map[string]any, string) (json.RawMessage, error)
+	UpdateModule(context.Context, string, string, string, string, map[string]any, bool, string) (json.RawMessage, error)
+	UpdateModuleV1(context.Context, string, string, string, string, map[string]any, string) (json.RawMessage, error)
 	SetModuleArchived(context.Context, string, string, string, string, bool) (time.Time, error)
 	DeleteModule(context.Context, string, string, string, string, bool, string) error
 	CheckDeleteModule(context.Context, string, string, string, string, bool) error
-	CreateLink(context.Context, string, string, string, string, map[string]any, map[string][]string) (json.RawMessage, error)
+	CreateLink(context.Context, string, string, string, string, map[string]any) (json.RawMessage, error)
 	CheckLink(context.Context, string, string, string, string, string) error
-	UpdateLink(context.Context, string, string, string, string, string, map[string]any, map[string][]string, bool) (json.RawMessage, error)
+	UpdateLink(context.Context, string, string, string, string, string, map[string]any, bool) (json.RawMessage, error)
 	DeleteLink(context.Context, string, string, string, string, string) error
 }
 type moduleLifecycleService struct {
@@ -81,7 +81,7 @@ func moduleLifecycleRepoError(ctx context.Context, err error, apiV1 bool) error 
 	if errors.As(err, &generated) {
 		return err
 	}
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	if errors.As(err, &response) {
 		return moduleLifecycleError(response.Status, response.Body)
 	}
@@ -108,7 +108,7 @@ func moduleLifecycleRepoError(ctx context.Context, err error, apiV1 bool) error 
 // moduleLifecycleLogError records only failure classification and PostgreSQL
 // metadata. It omits request bodies, credentials, and error text.
 func moduleLifecycleLogError(ctx context.Context, err error) {
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	if errors.As(err, &response) && response.Status < 500 {
 		return
 	}
@@ -309,13 +309,13 @@ func (s *moduleLifecycleService) SessionProtocolOptionsMetadata(ctx context.Cont
 	return 200, metadata, true
 }
 
-func (s *moduleLifecycleService) parse(ctx context.Context, body io.ReadCloser) (djangoinput.Input, error) {
+func (s *moduleLifecycleService) parse(ctx context.Context, body io.ReadCloser) (requestinput.Input, error) {
 	metadata, ok := loomhttp.RequestMetadataFromContext(ctx)
 	contentType := "application/json"
 	if ok && metadata.Headers().Get("Content-Type") != "" {
 		contentType = metadata.Headers().Get("Content-Type")
 	}
-	in, err := djangoinput.Parse(body, contentType)
+	in, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return in, moduleLifecycleRepoError(ctx, err, false)
 	}
@@ -365,7 +365,7 @@ func (s *moduleLifecycleService) moduleCreate(ctx context.Context, slug, project
 	if err != nil {
 		return nil, err
 	}
-	raw, err := s.repo.CreateModule(ctx, p.userID.String(), slug, project, in.Fields, in.Surrogates, moduleLifecycleOrigin(ctx))
+	raw, err := s.repo.CreateModule(ctx, p.userID.String(), slug, project, in.Fields, moduleLifecycleOrigin(ctx))
 	if err != nil {
 		return nil, moduleLifecycleRepoError(ctx, err, !app)
 	}
@@ -390,7 +390,7 @@ func (s *moduleLifecycleService) moduleCreateV1(ctx context.Context, slug, proje
 	if err != nil {
 		return nil, err
 	}
-	raw, err := s.repo.CreateModuleV1(ctx, p.userID.String(), slug, project, in.Fields, in.Surrogates, moduleLifecycleOrigin(ctx))
+	raw, err := s.repo.CreateModuleV1(ctx, p.userID.String(), slug, project, in.Fields, moduleLifecycleOrigin(ctx))
 	if err != nil {
 		return nil, moduleLifecycleRepoError(ctx, err, true)
 	}
@@ -415,7 +415,7 @@ func (s *moduleLifecycleService) moduleUpdateV1(ctx context.Context, slug, proje
 	if err != nil {
 		return nil, err
 	}
-	raw, err := s.repo.UpdateModuleV1(ctx, p.userID.String(), slug, project, id, in.Fields, in.Surrogates, moduleLifecycleOrigin(ctx))
+	raw, err := s.repo.UpdateModuleV1(ctx, p.userID.String(), slug, project, id, in.Fields, moduleLifecycleOrigin(ctx))
 	if err != nil {
 		return nil, moduleLifecycleRepoError(ctx, err, true)
 	}
@@ -460,7 +460,7 @@ func (s *moduleLifecycleService) moduleUpdate(ctx context.Context, slug, project
 	if err != nil {
 		return nil, err
 	}
-	raw, err := s.repo.UpdateModule(ctx, p.userID.String(), slug, project, id, in.Fields, in.Surrogates, replace, moduleLifecycleOrigin(ctx))
+	raw, err := s.repo.UpdateModule(ctx, p.userID.String(), slug, project, id, in.Fields, replace, moduleLifecycleOrigin(ctx))
 	if err != nil {
 		return nil, moduleLifecycleRepoError(ctx, err, false)
 	}
@@ -530,13 +530,13 @@ func (s *moduleLifecycleService) link(ctx context.Context, slug, project, module
 		return nil, err
 	}
 	if method == "POST" {
-		raw, createLinkErr := s.repo.CreateLink(ctx, p.userID.String(), slug, project, module, in.Fields, in.Surrogates)
+		raw, createLinkErr := s.repo.CreateLink(ctx, p.userID.String(), slug, project, module, in.Fields)
 		if createLinkErr != nil {
 			return nil, moduleLifecycleRepoError(ctx, createLinkErr, false)
 		}
 		return raw, nil
 	}
-	raw, err := s.repo.UpdateLink(ctx, p.userID.String(), slug, project, module, linkID, in.Fields, in.Surrogates, method == "PUT")
+	raw, err := s.repo.UpdateLink(ctx, p.userID.String(), slug, project, module, linkID, in.Fields, method == "PUT")
 	if err != nil {
 		return nil, moduleLifecycleRepoError(ctx, err, false)
 	}

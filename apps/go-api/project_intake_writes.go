@@ -11,8 +11,8 @@ import (
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/projectintakewrites"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	api "github.com/CaliLuke/go-plane/projectintakewrites/gen/project_intake_writes"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
@@ -20,7 +20,7 @@ import (
 
 type projectIntakeWritesRepository interface {
 	Authorize(context.Context, string, string, string) error
-	ValidateCreate(djangoinput.Input) (map[string]any, error)
+	ValidateCreate(requestinput.Input) (map[string]any, error)
 	Create(context.Context, string, string, string, map[string]any) (json.RawMessage, error)
 	Patch(context.Context, string, string, string, string, map[string]any) (json.RawMessage, error)
 	Delete(context.Context, string, string, string, string) error
@@ -127,16 +127,16 @@ func (s *projectIntakeWritesService) principal(ctx context.Context) (projectInta
 	return p, nil
 }
 func projectIntakeFields(ctx context.Context, body io.Reader) (map[string]any, error) {
-	parsed, err := djangoinput.Parse(body, requestContentType(ctx))
+	parsed, err := requestinput.Parse(body, requestContentType(ctx))
 	if err != nil {
 		return nil, intakeWriteError(400, map[string]any{"detail": "Invalid data"})
 	}
 	return parsed.Fields, nil
 }
-func projectIntakeInput(ctx context.Context, body io.Reader) (djangoinput.Input, error) {
-	parsed, err := djangoinput.Parse(body, requestContentType(ctx))
+func projectIntakeInput(ctx context.Context, body io.Reader) (requestinput.Input, error) {
+	parsed, err := requestinput.Parse(body, requestContentType(ctx))
 	if err != nil {
-		return djangoinput.Input{}, intakeWriteError(400, map[string]any{"detail": "Invalid data"})
+		return requestinput.Input{}, intakeWriteError(400, map[string]any{"detail": "Invalid data"})
 	}
 	return parsed, nil
 }

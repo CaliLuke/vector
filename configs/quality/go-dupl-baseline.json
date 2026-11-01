@@ -1562,8 +1562,8 @@
       "fingerprint": [
         "cycle_lifecycle.go",
         "work_item_core.go",
-        "d90f8db9034eb8ff68ea984f9fb1d5c6d049338cfcc6aaf4e6c0a6b7ef41c9ea",
-        "ebc9cb77a2a7a303982bd1d79721a7997283d39546fb1462ceb1d531a1924412"
+        "49bb39324bd015602ddfe06510a1a2acfe355ee9fb19da3cd25b52f827b11808",
+        "6b949569a3610ba0011bdb3198ec54296ea6b8aef36aa48a629f42eddb49600c"
       ],
       "count": 2
     },
@@ -1922,8 +1922,8 @@
       "fingerprint": [
         "internal/assets/public.go",
         "internal/assets/public.go",
-        "a7943503f322a6b4b5a383685206dd65b6b6fcc586eb1d4633d5d6cf5e89e5e9",
-        "df8cb1f34954aa027b815437b4fe27ed2bfc5058019de09729690553b5b1ee8a"
+        "690643bc2ba3c7dbed93fad733e2f8075686e2f4a2ca8f174783310f841bcad6",
+        "744be306071132aca03d9fd34bf057f74337ca96314963df81bc1e4940250ebb"
       ],
       "count": 2
     },
@@ -2075,8 +2075,8 @@
       "fingerprint": [
         "internal/workspaceprojectreads/api_projects.go",
         "internal/workspaceprojectreads/api_projects.go",
-        "b21e1cb87a8ef8ba6e4315cd3556831bb387ca39fda592023be8309b90a58cff",
-        "d5c542da7c2a20db5103660425d7746d0973765ba792774d53147aa1a41c9532"
+        "8422a41922e3c030451eb9116a8ba282a109d18cf181c288377db1a06718d20e",
+        "b7d6cc2437887741de9a78631aced85b2265aa40c2d0d5ebb7e952838b76d131"
       ],
       "count": 2
     },

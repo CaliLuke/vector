@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 )
 
 // The parent and its child collection are authorized in one PostgreSQL snapshot.
@@ -38,7 +38,7 @@ func collaborationVisibleParentSQL(q Request, kind string, args *[]any) string {
 	}
 	return `SELECT visible_issue.id,visible_issue.workspace_id,visible_issue.project_id,` + anchorExpression + ` AS anchor_id
         FROM ` + from + ` WHERE visible_workspace.slug=` + slug + ` AND visible_issue.project_id=` + project + `::uuid
-        AND ` + anchorExpression + `=` + item + `::uuid AND ` + djangoapi.IssueVisibleSQL("visible_issue", actor+"::uuid", "visible_workspace.id") + binding
+        AND ` + anchorExpression + `=` + item + `::uuid AND ` + apicontract.IssueVisibleSQL("visible_issue", actor+"::uuid", "visible_workspace.id") + binding
 }
 
 func (r *Repository) visibleCollaborationRows(ctx context.Context, q Request, kind, statement string, args ...any) ([]map[string]any, error) {
@@ -105,11 +105,11 @@ WHERE parent.id=` + row + `.parent_id AND parent.id<>` + row + `.id AND parent.i
 AND parent.project_id=` + row + `.project_id AND parent.workspace_id=` + row + `.workspace_id
 AND parent_workspace.slug=` + slug + ` AND parent.deleted_at IS NULL AND `
 	if collaborationPublic(q) {
-		return predicate + `parent.access='EXTERNAL' AND ` + djangoapi.PublicRelatedIssueSQL("parent_issue", "parent_issue") + `))`
+		return predicate + `parent.access='EXTERNAL' AND ` + apicontract.PublicRelatedIssueSQL("parent_issue", "parent_issue") + `))`
 	}
 	*args = append(*args, q.ActorID)
 	actor := "$" + strconv.Itoa(len(*args)) + "::uuid"
-	return predicate + djangoapi.IssueVisibleSQL("parent_issue", actor, "parent_workspace.id") + `))`
+	return predicate + apicontract.IssueVisibleSQL("parent_issue", actor, "parent_workspace.id") + `))`
 }
 
 // Reject hidden parents before serializer/duplicate checks can disclose child

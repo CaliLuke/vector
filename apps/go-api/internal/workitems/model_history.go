@@ -3,8 +3,8 @@ package workitems
 import (
 	"context"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/workitemsearch"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/jackc/pgx/v5"
@@ -31,7 +31,7 @@ func (r *Repository) saveIssue(ctx context.Context, actor string, row, old map[s
 	}
 	var before *workitemtypes.ItemHistoryState
 	if old != nil {
-		current, readErr := writer.row(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i WHERE id=$1 FOR UPDATE`, row["id"])
+		current, readErr := writer.row(ctx, `SELECT `+apicontract.IssueRowSQL("i")+` FROM issues i WHERE id=$1 FOR UPDATE`, row["id"])
 		if readErr != nil {
 			return nil, readErr
 		}

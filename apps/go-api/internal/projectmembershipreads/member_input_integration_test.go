@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/stretchr/testify/require"
 )
@@ -40,7 +40,7 @@ func TestMalformedMemberWritesPreserveStoredRows(t *testing.T) {
 				UserID: "00000000-0000-4000-8000-00000000000a", MemberID: "00000000-0000-4000-8000-000000000200",
 				ContentType: "application/json", Body: strings.NewReader(test.body),
 			})
-			var failure *djangoapi.HTTPError
+			var failure *apicontract.HTTPError
 			require.ErrorAs(t, writeErr, &failure)
 			require.Equal(t, 400, failure.Status)
 			var after string

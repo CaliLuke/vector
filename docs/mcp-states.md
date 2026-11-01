@@ -29,7 +29,7 @@ checks. Other MCP domains retain their separate acceptance requirements.
 
 `internal/projectstatereads.Repository.ReadAPIV1` remains the canonical API state
 projection. Its `APIV1Request` adopts the shared
-`djangoapi.ProjectReadRequest`. A non-nil `ExpectedWorkspaceID` selects a bound
+`apicontract.ProjectReadRequest`. A non-nil `ExpectedWorkspaceID` selects a bound
 read that requires a fresh primary-database authorization snapshot. An absent
 binding retains the existing HTTP request contract, including serialization,
 field selection, expansion, ordering and pagination. No new public HTTP route is
@@ -54,7 +54,7 @@ All of these invalid bound requests return `ErrForbidden`, including a missing
 Presence flags or nonempty parameter values each suffice to reject those two
 serializer options. This internal boundary fails closed; the later MCP adapter
 can return invalid-parameters errors for malformed public inputs before calling
-it. List paging retains `djangoapi.PageWindow` and `Envelope`, including their
+it. List paging retains `apicontract.PageWindow` and `Envelope`, including their
 defaults and invalid-query errors. Detail ignores paging parameters as before.
 
 The bound workspace must match both immutable UUID and current slug, be live,

@@ -922,7 +922,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -974,7 +974,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -2793,7 +2793,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -2862,7 +2862,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -9045,7 +9045,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -9108,7 +9108,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -12173,7 +12173,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -12235,7 +12235,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -12762,7 +12762,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -12802,7 +12802,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -13926,7 +13926,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -13976,7 +13976,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -17742,7 +17742,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -17822,7 +17822,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -20222,7 +20222,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -20286,7 +20286,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -23289,7 +23289,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -23351,7 +23351,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -24907,7 +24907,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -24947,7 +24947,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -26058,7 +26058,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -26108,7 +26108,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -29898,7 +29898,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -29978,7 +29978,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -31009,7 +31009,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -31062,7 +31062,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -32186,7 +32186,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -32240,7 +32240,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -35624,7 +35624,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -35671,7 +35671,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -42551,7 +42551,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -42596,7 +42596,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -48233,7 +48233,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -48359,7 +48359,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -51877,7 +51877,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -51945,7 +51945,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -52869,7 +52869,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -52918,7 +52918,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -55771,7 +55771,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -55809,7 +55809,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
@@ -56918,7 +56918,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -56970,7 +56970,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
@@ -60290,7 +60290,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -60373,7 +60373,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
@@ -61134,7 +61134,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -61181,7 +61181,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
@@ -63813,7 +63813,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -63870,7 +63870,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -64602,7 +64602,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -64647,7 +64647,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -65284,7 +65284,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -65331,7 +65331,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -67016,7 +67016,7 @@
           "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
           "apps/go-api/internal/authentication/apikey/validator_test.go",
           "apps/go-api/internal/authentication/apikey/throttle_test.go",
-          "apps/go-api/internal/djangoapi/pagination_test.go",
+          "apps/go-api/internal/apicontract/pagination_test.go",
           "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
           "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
           "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"
@@ -67086,7 +67086,7 @@
         "apps/go-api/internal/authentication/browsersession/postgres_integration_test.go",
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
-        "apps/go-api/internal/djangoapi/pagination_test.go",
+        "apps/go-api/internal/apicontract/pagination_test.go",
         "apps/go-api/internal/parity/project_label_writes_proxy_integration_test.go",
         "apps/api/plane/tests/parity/test_project_label_write_recorder.py",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py"

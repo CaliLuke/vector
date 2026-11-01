@@ -11,7 +11,7 @@ import (
 
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -831,7 +831,7 @@ WHERE workspace.slug = $2
   AND page.deleted_at IS NULL
   AND project.deleted_at IS NULL
   AND workspace.deleted_at IS NULL
-  AND ` + djangoapi.PageVisibleSQL("page", "$1", "page.workspace_id", "$3") + `
+  AND ` + apicontract.PageVisibleSQL("page", "$1", "page.workspace_id", "$3") + `
 LIMIT 1
 `
 

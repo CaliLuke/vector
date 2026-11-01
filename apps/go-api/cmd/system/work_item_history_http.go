@@ -48,7 +48,7 @@ func mountWorkItemHistory(
 	cors loomhttp.RuntimeCORSPolicy,
 	options apiV1CompatibilityOptions,
 	sessions readServicesSessionLifecycle,
-	cookie djangoSessionCookieConfig,
+	cookie browserSessionCookieConfig,
 ) {
 	server := workitemhistorysvr.New(endpoints, mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil, cors)
 	server.Use(sessionServiceMiddlewareStack(options, sessions, cookie))

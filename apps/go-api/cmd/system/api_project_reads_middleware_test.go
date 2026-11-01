@@ -47,7 +47,7 @@ func newAPIProjectReadsMiddlewareTestHandler(t *testing.T, repository *apiProjec
 		pendingReplacementEndpoints{
 			projectLifecycle: api.NewEndpoints(service), projectLifecycleMetadata: service,
 			activityReads: activityapi.NewEndpoints(protocolActivity), activityReadsMetadata: protocolActivity,
-			readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true},
+			readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true},
 			activityReadsActivity: activity, activityReadsSecret: "api-project-reads-test-secret", activityReadsBodyLimit: bodyLimit,
 		},
 	)

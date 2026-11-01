@@ -12,8 +12,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -42,8 +42,8 @@ func TestSessionProjectFieldsRejectActorAndArchiveAssignmentsIncludingNull(t *te
 	repo, constructorErr := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
 	require.NoError(t, constructorErr)
 	for _, value := range []any{nil, "00000000-0000-4000-8000-000000000001"} {
-		_, err := repo.validateProjectFields(context.Background(), "workspace", "project", djangoinput.Input{Fields: map[string]any{"created_by": value, "updated_by": value, "archived_at": value}, Surrogates: nil}, true, false, false)
-		var response *djangoapi.HTTPError
+		_, err := repo.validateProjectFields(context.Background(), "workspace", "project", requestinput.Input{Fields: map[string]any{"created_by": value, "updated_by": value, "archived_at": value}}, true, false, false)
+		var response *apicontract.HTTPError
 		if !errors.As(err, &response) || response.Status != 400 || len(response.Body) != 3 {
 			t.Fatalf("server-owned input %#v: %v", value, err)
 		}
@@ -66,24 +66,24 @@ func TestSessionProjectCoverPreservesNullAndValidatesExistingAssetScope(t *testi
 	require.NoError(t, constructorErr)
 	reader := &projectCoverAssetsFake{allowed: true}
 	repo.coverAssets = reader.Validate
-	values, err := repo.validateProjectFields(context.Background(), workspace.String(), project.String(), djangoinput.Input{Fields: map[string]any{"cover_image_asset": nil}, Surrogates: nil}, true, false, false)
+	values, err := repo.validateProjectFields(context.Background(), workspace.String(), project.String(), requestinput.Input{Fields: map[string]any{"cover_image_asset": nil}}, true, false, false)
 	if err != nil || values["cover_image_asset_id"] != nil || len(reader.requested) != 0 {
 		t.Fatalf("null cover=%v,%v lookup=%v", values, err, reader.requested)
 	}
-	values, err = repo.validateProjectFields(context.Background(), workspace.String(), project.String(), djangoinput.Input{Fields: map[string]any{"cover_image_asset": id.String()}, Surrogates: nil}, true, false, false)
+	values, err = repo.validateProjectFields(context.Background(), workspace.String(), project.String(), requestinput.Input{Fields: map[string]any{"cover_image_asset": id.String()}}, true, false, false)
 	if err != nil || values["cover_image_asset_id"] != id.String() || !slices.Equal(reader.requested, []uuid.UUID{workspace, project, id}) {
 		t.Fatalf("scoped cover=%v,%v lookup=%v", values, err, reader.requested)
 	}
 	reader.allowed = false
-	_, err = repo.validateProjectFields(context.Background(), workspace.String(), project.String(), djangoinput.Input{Fields: map[string]any{"cover_image_asset": id.String()}, Surrogates: nil}, true, false, false)
-	var rejected *djangoapi.HTTPError
+	_, err = repo.validateProjectFields(context.Background(), workspace.String(), project.String(), requestinput.Input{Fields: map[string]any{"cover_image_asset": id.String()}}, true, false, false)
+	var rejected *apicontract.HTTPError
 	if !errors.As(err, &rejected) || rejected.Status != 400 || rejected.Body["cover_image_asset"] == nil {
 		t.Fatalf("invalid cover: %v", err)
 	}
 
 	reader.err = nil
-	_, err = repo.validateProjectFields(context.Background(), workspace.String(), project.String(), djangoinput.Input{Fields: map[string]any{"cover_image_asset": id.String()}, Surrogates: nil}, true, false, false)
-	var response *djangoapi.HTTPError
+	_, err = repo.validateProjectFields(context.Background(), workspace.String(), project.String(), requestinput.Input{Fields: map[string]any{"cover_image_asset": id.String()}}, true, false, false)
+	var response *apicontract.HTTPError
 	if !errors.As(err, &response) || response.Status != 400 {
 		t.Fatalf("foreign/missing cover=%v", err)
 	}
@@ -151,7 +151,7 @@ func TestCreateProjectUppercasesUnicodeIdentifierWithFullMappings(t *testing.T) 
 	effects := &projectLifecycleEffectsFake{}
 	repo, constructorErr := NewLifecycleRepository(db, effects, "", validProjectCover)
 	require.NoError(t, constructorErr)
-	input, err := djangoinput.Parse(strings.NewReader(`{"name":"Unicode Example","identifier":"straße"}`), "application/json")
+	input, err := requestinput.Parse(strings.NewReader(`{"name":"Unicode Example","identifier":"straße"}`), "application/json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -186,7 +186,7 @@ func TestProjectPATCHUppercasesUnicodeIdentifierAndRetainsReservation(t *testing
 	effects := &projectLifecycleEffectsFake{}
 	repo, constructorErr := NewLifecycleRepository(db, effects, "", validProjectCover)
 	require.NoError(t, constructorErr)
-	input, err := djangoinput.Parse(strings.NewReader(`{"identifier":"straße"}`), "application/json")
+	input, err := requestinput.Parse(strings.NewReader(`{"identifier":"straße"}`), "application/json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -220,7 +220,7 @@ func TestProjectPUTUppercasesUnicodeIdentifierAndRetainsReservation(t *testing.T
 	effects := &projectLifecycleEffectsFake{}
 	repo, constructorErr := NewLifecycleRepository(db, effects, "", validProjectCover)
 	require.NoError(t, constructorErr)
-	input, err := djangoinput.Parse(strings.NewReader(`{"name":"Unicode project","identifier":"straße"}`), "application/json")
+	input, err := requestinput.Parse(strings.NewReader(`{"name":"Unicode project","identifier":"straße"}`), "application/json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -243,10 +243,10 @@ func TestProjectPUTUppercasesUnicodeIdentifierAndRetainsReservation(t *testing.T
 	assertProjectRequestedDataJSON(t, effects, `{"name":"Unicode project","identifier":"straße"}`)
 }
 
-func TestProjectJSONFieldsNormalizeDecimalNumbersLikePython(t *testing.T) {
+func TestProjectJSONFieldsPreserveDecimalNumbers(t *testing.T) {
 	repo, constructorErr := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
 	require.NoError(t, constructorErr)
-	input, err := djangoinput.Parse(strings.NewReader(`{"icon_prop":{"fraction":9007199254740993.0,"integer":9007199254740993,"text":"9007199254740993.0"}}`), "application/json")
+	input, err := requestinput.Parse(strings.NewReader(`{"icon_prop":{"fraction":9007199254740993.0,"integer":9007199254740993,"text":"9007199254740993.0"}}`), "application/json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -255,7 +255,7 @@ func TestProjectJSONFieldsNormalizeDecimalNumbersLikePython(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := map[string]any{
-		"fraction": json.Number("9007199254740992.0"),
+		"fraction": json.Number("9007199254740993.0"),
 		"integer":  json.Number("9007199254740993"),
 		"text":     "9007199254740993.0",
 	}
@@ -263,12 +263,12 @@ func TestProjectJSONFieldsNormalizeDecimalNumbersLikePython(t *testing.T) {
 		t.Fatalf("icon_prop=%#v, want %#v", values["icon_prop"], want)
 	}
 
-	formInput, err := djangoinput.Parse(strings.NewReader(`icon_prop=%7B%22n%22%3A9007199254740993.0%7D`), "application/x-www-form-urlencoded")
+	formInput, err := requestinput.Parse(strings.NewReader(`icon_prop=%7B%22n%22%3A9007199254740993.0%7D`), "application/x-www-form-urlencoded")
 	if err != nil {
 		t.Fatal(err)
 	}
 	formValues, err := repo.validateProjectFields(context.Background(), "workspace", "project", formInput, true, false, false)
-	if err != nil || !reflect.DeepEqual(formValues["icon_prop"], map[string]any{"n": json.Number("9007199254740992.0")}) {
+	if err != nil || !reflect.DeepEqual(formValues["icon_prop"], map[string]any{"n": json.Number("9007199254740993.0")}) {
 		t.Fatalf("form icon_prop=%#v, %v", formValues["icon_prop"], err)
 	}
 	requested, err := lifecycleRequestedData(formInput)
@@ -276,14 +276,14 @@ func TestProjectJSONFieldsNormalizeDecimalNumbersLikePython(t *testing.T) {
 		t.Fatalf("form requested_data=%#v, %v", requested, err)
 	}
 
-	overflowInput, err := djangoinput.Parse(strings.NewReader(`{"icon_prop":{"n":1e309}}`), "application/json")
+	overflowInput, err := requestinput.Parse(strings.NewReader(`{"icon_prop":{"n":1e309}}`), "application/json")
 	if err != nil {
 		t.Fatal(err)
 	}
 	_, err = repo.validateProjectFields(context.Background(), "workspace", "project", overflowInput, true, false, false)
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	if !errors.As(err, &response) || response.Status != 400 || !reflect.DeepEqual(response.Body["icon_prop"], []string{"Value must be valid JSON."}) {
-		t.Fatalf("overflow JSONField error=%v, want source JSONField validation error", err)
+		t.Fatalf("overflow JSONField error=%v, want finite-number JSONField validation error", err)
 	}
 }
 
@@ -306,9 +306,13 @@ func TestProjectJSONFieldUnicodeValidationUsesOriginalJSONAndFormSource(t *testi
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			input, err := djangoinput.Parse(strings.NewReader(test.body), test.contentType)
+			input, err := requestinput.Parse(strings.NewReader(test.body), test.contentType)
 			if err != nil {
-				t.Fatal(err)
+				var response *apicontract.HTTPError
+				if test.valid || test.contentType != "application/json" || !errors.As(err, &response) || response.Status != 400 || response.Body["detail"] != "Invalid JSON body." {
+					t.Fatalf("invalid native request error: %v", err)
+				}
+				return
 			}
 			repo, constructorErr := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
 			require.NoError(t, constructorErr)
@@ -322,7 +326,7 @@ func TestProjectJSONFieldUnicodeValidationUsesOriginalJSONAndFormSource(t *testi
 				}
 				return
 			}
-			var response *djangoapi.HTTPError
+			var response *apicontract.HTTPError
 			if !errors.As(err, &response) || response.Status != 400 || !reflect.DeepEqual(response.Body["icon_prop"], []string{"Value must be valid JSON."}) {
 				t.Fatalf("invalid JSONField error=%v, want field-shaped 400", err)
 			}
@@ -330,18 +334,22 @@ func TestProjectJSONFieldUnicodeValidationUsesOriginalJSONAndFormSource(t *testi
 	}
 }
 
-func TestSessionProjectJSONFieldUnicodeValidationCoversAllPersistedFields(t *testing.T) {
+func TestProjectInputRejectsMalformedUnicodeInPersistedFields(t *testing.T) {
 	for _, field := range []string{"icon_prop", "logo_props", "description_text", "description_html"} {
 		t.Run(field, func(t *testing.T) {
 			body := `{"` + field + `":{"value":"\ud800"}}`
-			input, err := djangoinput.Parse(strings.NewReader(body), "application/json")
+			input, err := requestinput.Parse(strings.NewReader(body), "application/json")
 			if err != nil {
-				t.Fatal(err)
+				var response *apicontract.HTTPError
+				if !errors.As(err, &response) || response.Status != 400 || response.Body["detail"] != "Invalid JSON body." {
+					t.Fatalf("invalid native request error: %v", err)
+				}
+				return
 			}
 			repo, constructorErr := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
 			require.NoError(t, constructorErr)
 			_, err = repo.validateProjectFields(context.Background(), "workspace", "project", input, true, false, false)
-			var response *djangoapi.HTTPError
+			var response *apicontract.HTTPError
 			if !errors.As(err, &response) || response.Status != 400 || !reflect.DeepEqual(response.Body[field], []string{"Value must be valid JSON."}) {
 				t.Fatalf("session %s invalid JSONField error=%v, want field-shaped 400", field, err)
 			}
@@ -349,21 +357,11 @@ func TestSessionProjectJSONFieldUnicodeValidationCoversAllPersistedFields(t *tes
 	}
 }
 
-func TestAPIProjectValidationIgnoresNonIconJSONFieldUnicode(t *testing.T) {
-	input, err := djangoinput.Parse(strings.NewReader(`{"description_html":{"value":"\ud800"},"description_text":{"value":"\ud800"},"logo_props":{"value":"\ud800"}}`), "application/json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	repo, constructorErr := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
-	require.NoError(t, constructorErr)
-	values, err := repo.validateProjectFields(context.Background(), "workspace", "project", input, false, false, false)
-	if err != nil {
-		t.Fatalf("API ignored non-icon JSONFields were rejected: %v", err)
-	}
-	for _, field := range []string{"description_html", "description_text", "logo_props"} {
-		if _, present := values[field]; present {
-			t.Errorf("API persisted ignored field %q: %#v", field, values[field])
-		}
+func TestAPIProjectInputRejectsMalformedUnicodeInIgnoredFields(t *testing.T) {
+	_, err := requestinput.Parse(strings.NewReader(`{"description_html":{"value":"\ud800"},"unused":{"value":"\ud800"}}`), "application/json")
+	var response *apicontract.HTTPError
+	if !errors.As(err, &response) || response.Status != 400 || response.Body["detail"] != "Invalid JSON body." {
+		t.Fatalf("invalid ignored field request error: %v", err)
 	}
 }
 
@@ -386,18 +384,15 @@ func TestProjectCreateAndPATCHRejectUnpairedJSONFieldBeforeWritesOrActivity(t *t
 			effects := &projectLifecycleEffectsFake{}
 			repo, constructorErr := NewLifecycleRepository(db, effects, "", validProjectCover)
 			require.NoError(t, constructorErr)
-			input, err := djangoinput.Parse(strings.NewReader(body), "application/json")
-			if err != nil {
-				t.Fatal(err)
-			}
-			if operation == "create" {
+			input, err := requestinput.Parse(strings.NewReader(body), "application/json")
+			if err == nil && operation == "create" {
 				_, err = repo.CreateProject(context.Background(), "00000000-0000-4000-8000-000000000001", "space", input, false)
-			} else {
+			} else if err == nil {
 				_, err = repo.UpdateProject(context.Background(), "00000000-0000-4000-8000-000000000001", "space", projectID, input, false, false)
 			}
-			var response *djangoapi.HTTPError
-			if !errors.As(err, &response) || response.Status != 400 || response.Body["icon_prop"] == nil {
-				t.Fatalf("%s invalid JSONField error=%v, want field-shaped 400", operation, err)
+			var response *apicontract.HTTPError
+			if !errors.As(err, &response) || response.Status != 400 || response.Body["detail"] != "Invalid JSON body." {
+				t.Fatalf("%s invalid JSONField error=%v, want native JSON 400", operation, err)
 			}
 			if len(db.execArgs) != 0 || len(effects.payloads) != 0 || tx != nil && (tx.committed || len(tx.execArgs) != 0) {
 				t.Fatalf("%s invalid JSONField wrote data or published activity: DB=%v tx=%+v effects=%v", operation, db.execArgs, tx, effects.payloads)
@@ -406,9 +401,9 @@ func TestProjectCreateAndPATCHRejectUnpairedJSONFieldBeforeWritesOrActivity(t *t
 	}
 }
 
-func TestLifecycleRequestedDataUsesPythonNumbersWithoutMutatingInput(t *testing.T) {
+func TestLifecycleRequestedDataPreservesExactNumbersWithoutMutatingInput(t *testing.T) {
 	const raw = `{"icon_prop":{"fraction":9007199254740993.0,"integer":9007199254740993,"text":"9007199254740993.0"},"unused":1e309}`
-	input, err := djangoinput.Parse(strings.NewReader(raw), "application/json")
+	input, err := requestinput.Parse(strings.NewReader(raw), "application/json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -420,7 +415,7 @@ func TestLifecycleRequestedDataUsesPythonNumbersWithoutMutatingInput(t *testing.
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := `{"icon_prop":{"fraction":9007199254740992.0,"integer":9007199254740993,"text":"9007199254740993.0"},"unused":1e309}`
+	want := `{"icon_prop":{"fraction":9007199254740993.0,"integer":9007199254740993,"text":"9007199254740993.0"},"unused":1e309}`
 	if string(encoded) != want {
 		t.Fatalf("requested_data=%s, want %s", encoded, want)
 	}
@@ -435,8 +430,8 @@ func TestLifecycleRequestedDataUsesPythonNumbersWithoutMutatingInput(t *testing.
 
 func TestProjectCreateAndPATCHActivityPreserveDecodedJSONUnicodeAndNumbers(t *testing.T) {
 	const projectID = "00000000-0000-4000-8000-000000000003"
-	const raw = `{"name":"Unicode Example","identifier":"UNIC","unused":{"\ud800":"surrogate","\ufffd":"replacement","value":"\ud800","astral":{"\ud83d\ude00":"first","😀":"last"},"fraction":9007199254740993.0,"overflow":1e309}}`
-	const wantRequestedData = `{"name":"Unicode Example","identifier":"UNIC","unused":{"\ud800":"surrogate","\ufffd":"replacement","value":"\ud800","astral":{"\ud83d\ude00":"first","😀":"last"},"fraction":9007199254740992.0,"overflow":1e309}}`
+	const raw = `{"name":"Unicode Example","identifier":"UNIC","unused":{"\ud83d\ude80":"surrogate","\ufffd":"replacement","value":"\ud83d\ude80","astral":{"\ud83d\ude00":"first","😀":"last"},"fraction":9007199254740993.0,"overflow":1e309}}`
+	const wantRequestedData = `{"name":"Unicode Example","identifier":"UNIC","unused":{"\ud83d\ude80":"surrogate","\ufffd":"replacement","value":"\ud83d\ude80","astral":{"\ud83d\ude00":"first","😀":"last"},"fraction":9007199254740993.0,"overflow":1e309}}`
 
 	for _, operation := range []string{"create", "PATCH"} {
 		t.Run(operation, func(t *testing.T) {
@@ -458,7 +453,7 @@ func TestProjectCreateAndPATCHActivityPreserveDecodedJSONUnicodeAndNumbers(t *te
 			if err != nil {
 				t.Fatal(err)
 			}
-			input, err := djangoinput.Parse(strings.NewReader(raw), "application/json")
+			input, err := requestinput.Parse(strings.NewReader(raw), "application/json")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -513,68 +508,68 @@ func TestProjectCreateAndPATCHActivityPreserveDecodedJSONUnicodeAndNumbers(t *te
 	}
 }
 
-func TestProjectCompositeValidationErrorsUsePythonSourceRepresentation(t *testing.T) {
+func TestProjectCompositeValidationErrorsUseNativeJSONText(t *testing.T) {
 	tests := []struct {
 		name, field, body, want string
 		app                     bool
 	}{
 		{
-			name:  "project lead preserves order, Unicode printability, and surrogates",
+			name:  "project lead preserves Unicode JSON values",
 			field: "project_lead",
-			body:  `{"project_lead":{"z":1,"a":["\u00a0","\ufffd","\ud833\udc00","\ud800"]}}`,
-			want:  `“{'z': 1, 'a': ['\xa0', '�', '\U0001cc00', '\ud800']}” is not a valid UUID.`,
+			body:  `{"project_lead":{"z":1,"a":["\u00a0","\ufffd","\ud833\udc00","\ud83d\ude80"]}}`,
+			want:  `“{"a":[" ","�","𜰀","🚀"],"z":1}” is not a valid UUID.`,
 		},
 		{
 			name:  "default assignee preserves nested order",
 			field: "default_assignee",
 			body:  `{"default_assignee":["\u00a0",{"b":2,"a":true}]}`,
-			want:  `“['\xa0', {'b': 2, 'a': True}]” is not a valid UUID.`,
+			want:  `“[" ",{"a":true,"b":2}]” is not a valid UUID.`,
 		},
 		{
 			name:  "default state preserves nested order",
 			field: "default_state",
 			body:  `{"default_state":{"state":[1,{"z":"\u00a0"}]}}`,
-			want:  `“{'state': [1, {'z': '\xa0'}]}” is not a valid UUID.`,
+			want:  `“{"state":[1,{"z":" "}]}” is not a valid UUID.`,
 		},
 		{
 			name:  "estimate list",
 			field: "estimate",
 			body:  `{"estimate":["point",{"z":0}]}`,
-			want:  `“['point', {'z': 0}]” is not a valid UUID.`,
+			want:  `“["point",{"z":0}]” is not a valid UUID.`,
 		},
 		{
 			name:  "timezone choice",
 			field: "timezone",
 			body:  `{"timezone":["UTC",{"tz":"\u00a0"}]}`,
-			want:  `"['UTC', {'tz': '\xa0'}]" is not a valid choice.`,
+			want:  `"["UTC",{"tz":" "}]" is not a valid choice.`,
 		},
 		{
 			name:  "network choice",
 			field: "network",
 			body:  `{"network":{"z":1,"a":[false]}}`,
-			want:  `"{'z': 1, 'a': [False]}" is not a valid choice.`,
+			want:  `"{"a":[false],"z":1}" is not a valid choice.`,
 			app:   true,
 		},
 		{
 			name:  "cover asset UUID",
 			field: "cover_image_asset",
 			body:  `{"cover_image_asset":{"z":"asset","a":[true,1]}}`,
-			want:  `“{'z': 'asset', 'a': [True, 1]}” is not a valid UUID.`,
+			want:  `“{"a":[true,1],"z":"asset"}” is not a valid UUID.`,
 			app:   true,
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			input, err := djangoinput.Parse(strings.NewReader(test.body), "application/json")
+			input, err := requestinput.Parse(strings.NewReader(test.body), "application/json")
 			if err != nil {
 				t.Fatal(err)
 			}
 			repo, constructorErr := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
 			require.NoError(t, constructorErr)
 			_, err = repo.validateProjectFields(context.Background(), "workspace", "project", input, test.app, false, false)
-			var response *djangoapi.HTTPError
+			var response *apicontract.HTTPError
 			if !errors.As(err, &response) || response.Status != 400 || !reflect.DeepEqual(response.Body[test.field], []string{test.want}) {
-				t.Fatalf("validation response=%v, want %s=%q", err, test.field, test.want)
+				t.Fatalf("validation response=%#v, want %s=%q", response, test.field, test.want)
 			}
 		})
 	}
@@ -601,8 +596,8 @@ func TestProjectForeignKeyValidationKeepsSourceTypeAndUUIDErrors(t *testing.T) {
 			db := &projectLifecycleDBFake{workspaceProjectDatabase: workspaceProjectDatabase{rows: test.rows}}
 			repo, constructorErr := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
 			require.NoError(t, constructorErr)
-			_, err := repo.validateProjectFields(context.Background(), uuid.NewString(), uuid.NewString(), djangoinput.Input{Fields: map[string]any{test.field: test.value}}, true, false, false)
-			var response *djangoapi.HTTPError
+			_, err := repo.validateProjectFields(context.Background(), uuid.NewString(), uuid.NewString(), requestinput.Input{Fields: map[string]any{test.field: test.value}}, true, false, false)
+			var response *apicontract.HTTPError
 			if !errors.As(err, &response) || response.Status != 400 || !reflect.DeepEqual(response.Body[test.field], []string{test.want}) {
 				t.Fatalf("validation error=%v, want %s", err, test.want)
 			}
@@ -626,7 +621,7 @@ func TestProjectBooleanAcceptsNumericNegativeZeroButRejectsStringControl(t *test
 	repo, constructorErr := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
 	require.NoError(t, constructorErr)
 	for _, body := range []string{`{"page_view":-0.0}`, `{"page_view":-0e2}`, `{"page_view":-1e-9999}`} {
-		input, err := djangoinput.Parse(strings.NewReader(body), "application/json")
+		input, err := requestinput.Parse(strings.NewReader(body), "application/json")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -635,12 +630,12 @@ func TestProjectBooleanAcceptsNumericNegativeZeroButRejectsStringControl(t *test
 			t.Errorf("validate %s=(%v,%v), want false", body, values["page_view"], err)
 		}
 	}
-	input, err := djangoinput.Parse(strings.NewReader(`{"page_view":"-0.0"}`), "application/json")
+	input, err := requestinput.Parse(strings.NewReader(`{"page_view":"-0.0"}`), "application/json")
 	if err != nil {
 		t.Fatal(err)
 	}
 	_, err = repo.validateProjectFields(context.Background(), "workspace", "project", input, true, false, false)
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	if !errors.As(err, &response) || response.Body["page_view"] == nil {
 		t.Fatalf("string negative zero error=%v, want boolean field error", err)
 	}
@@ -688,21 +683,21 @@ func assertProjectRequestedDataJSON(t *testing.T, effects *projectLifecycleEffec
 	}
 }
 
-func TestProjectHTMLMatchesSourceContainersAndEmptyJSONValues(t *testing.T) {
+func TestProjectHTMLUsesSafeNativeJSONTextAndEmptyValues(t *testing.T) {
 	repo, constructorErr := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
 	require.NoError(t, constructorErr)
 	for _, vector := range []struct {
 		body string
 		want any
 	}{
-		{`{"description_html":{"type":"doc","content":[{"type":"paragraph"}]}}`, `{'type': 'doc', 'content': [{'type': 'paragraph'}]}`},
-		{`{"description_html":["<p>first</p>","<p>second</p>"]}`, `['<p>first</p>', '<p>second</p>']`},
+		{`{"description_html":{"type":"doc","content":[{"type":"paragraph"}]}}`, `{&#34;content&#34;:[{&#34;type&#34;:&#34;paragraph&#34;}],&#34;type&#34;:&#34;doc&#34;}`},
+		{`{"description_html":["<p>first</p>","<p>second</p>"]}`, `[&#34;\u003cp\u003efirst\u003c/p\u003e&#34;,&#34;\u003cp\u003esecond\u003c/p\u003e&#34;]`},
 		{`{"description_html":[]}`, []any{}},
 		{`{"description_html":{}}`, map[string]any{}},
 		{`{"description_html":0}`, json.Number("0")},
 		{`{"description_html":false}`, false},
 	} {
-		input, err := djangoinput.Parse(strings.NewReader(vector.body), "application/json")
+		input, err := requestinput.Parse(strings.NewReader(vector.body), "application/json")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -718,12 +713,12 @@ func TestProjectFullAndPartialFormsUseLastValueJSONAndCheckboxSemantics(t *testi
 		db := &projectLifecycleDBFake{workspaceProjectDatabase: workspaceProjectDatabase{rows: []pgx.Row{projectLifecycleBoolRow(false), projectLifecycleBoolRow(false)}}}
 		repo, constructorErr := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
 		require.NoError(t, constructorErr)
-		input, err := djangoinput.Parse(strings.NewReader(`name=first&name=last&identifier=FORM&description_html=%7B%22type%22%3A%22doc%22%7D`), "application/x-www-form-urlencoded")
+		input, err := requestinput.Parse(strings.NewReader(`name=first&name=last&identifier=FORM&description_html=%7B%22type%22%3A%22doc%22%7D`), "application/x-www-form-urlencoded")
 		if err != nil {
 			t.Fatal(err)
 		}
 		values, err := repo.validateProjectFields(context.Background(), "workspace", "project", input, true, replace, false)
-		if err != nil || values["name"] != "last" || values["description_html"] != `{'type': 'doc'}` {
+		if err != nil || values["name"] != "last" || values["description_html"] != `{&#34;type&#34;:&#34;doc&#34;}` {
 			t.Fatalf("form values=%v,%v", values, err)
 		}
 		value, present := values["page_view"]
@@ -744,7 +739,7 @@ func TestProjectIntakeEffectUsesValidatedBooleanAndRetainsOriginalTaskInput(t *t
 	effects := &projectLifecycleEffectsFake{}
 	repo, constructorErr := NewLifecycleRepository(db, effects, "", validProjectCover)
 	require.NoError(t, constructorErr)
-	input, err := djangoinput.Parse(strings.NewReader(`inbox_view=false`), "application/x-www-form-urlencoded")
+	input, err := requestinput.Parse(strings.NewReader(`inbox_view=false`), "application/x-www-form-urlencoded")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -783,7 +778,7 @@ func TestCreateProjectRollsBackMembershipAndStatesBeforePublishing(t *testing.T)
 	effects := &projectLifecycleEffectsFake{}
 	repo, constructorErr := NewLifecycleRepository(db, effects, "http://localhost", validProjectCover)
 	require.NoError(t, constructorErr)
-	_, err := repo.CreateProject(context.Background(), "00000000-0000-4000-8000-000000000001", "space", djangoinput.Input{Fields: map[string]any{"name": "Created", "identifier": "NEW"}, Surrogates: nil}, false)
+	_, err := repo.CreateProject(context.Background(), "00000000-0000-4000-8000-000000000001", "space", requestinput.Input{Fields: map[string]any{"name": "Created", "identifier": "NEW"}}, false)
 	if err == nil {
 		t.Fatal("creation succeeded after rejected state insert")
 	}
@@ -839,9 +834,9 @@ func TestAPIProjectPATCHMissingProjectRetainsHandlerErrorBody(t *testing.T) {
 		if checkOnly {
 			err = repo.CheckProjectMutation(context.Background(), "space", "project", "patch", false)
 		} else {
-			_, err = repo.UpdateProject(context.Background(), "actor", "space", "project", djangoinput.Input{Fields: map[string]any{}}, false, false)
+			_, err = repo.UpdateProject(context.Background(), "actor", "space", "project", requestinput.Input{Fields: map[string]any{}}, false, false)
 		}
-		var failure *djangoapi.HTTPError
+		var failure *apicontract.HTTPError
 		if !errors.As(err, &failure) || failure.Status != 404 || !reflect.DeepEqual(failure.Body, map[string]any{"error": "Project does not exist"}) {
 			t.Errorf("checkOnly=%v missing API PATCH=%v", checkOnly, err)
 		}
@@ -861,24 +856,24 @@ func TestProjectRestoreRetainsProjectMembershipWhileV1ArchiveUsesWorkspaceRole(t
 		t.Fatalf("POST/DELETE permission branch collapsed: %v", db.queries)
 	}
 }
-func TestProjectCurrentInstancePreservesIntegerAndFieldOrder(t *testing.T) {
+func TestProjectCurrentInstanceUsesCanonicalJSONWithoutNumberCoercion(t *testing.T) {
 	raw := []byte(`{"id":"p","archive_in":0,"network":2,"description":null}`)
 	got, err := projectCurrentInstance(raw)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got != `{"id": "p", "archive_in": 0, "network": 2, "description": null}` {
+	if got != `{"archive_in":0,"description":null,"id":"p","network":2}` {
 		t.Fatalf("current_instance=%s", got)
 	}
 }
 
-func TestProjectWriteResponsePreservesSerializerFloatTypeWithoutChangingIntegerFields(t *testing.T) {
+func TestProjectWriteResponsePreservesJSONNumberValues(t *testing.T) {
 	for _, vector := range []struct{ input, want string }{
-		{`{"sort_order":65535,"network":2}`, `{"network":2,"sort_order":65535.0}`},
+		{`{"sort_order":65535,"network":2}`, `{"network":2,"sort_order":65535}`},
 		{`{"sort_order":1.25,"network":2}`, `{"network":2,"sort_order":1.25}`},
 		{`{"sort_order":null,"network":2}`, `{"network":2,"sort_order":null}`},
 	} {
-		got, err := projectResponseFloatFields([]byte(vector.input))
+		got, err := projectResponseJSON([]byte(vector.input))
 		if err != nil || string(got) != vector.want {
 			t.Errorf("response=%s,%v want %s", got, err, vector.want)
 		}
@@ -908,8 +903,8 @@ func TestAPIProjectUpdateRejectsForeignStateWithFieldErrorBeforeWrite(t *testing
 	db := &projectLifecycleDBFake{workspaceProjectDatabase: workspaceProjectDatabase{rows: []pgx.Row{projectLifecycleBoolRow(true), projectLifecycleBoolRow(false)}}}
 	repo, constructorErr := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
 	require.NoError(t, constructorErr)
-	_, err := repo.validateProjectFields(context.Background(), "workspace", "project", djangoinput.Input{Fields: map[string]any{"default_state": "00000000-0000-4000-8000-000000000001"}, Surrogates: nil}, false, false, false)
-	var response *djangoapi.HTTPError
+	_, err := repo.validateProjectFields(context.Background(), "workspace", "project", requestinput.Input{Fields: map[string]any{"default_state": "00000000-0000-4000-8000-000000000001"}}, false, false, false)
+	var response *apicontract.HTTPError
 	if !errors.As(err, &response) || response.Status != 400 || !reflect.DeepEqual(response.Body, map[string]any{"default_state": []string{"The provided state does not belong to this project."}}) {
 		t.Fatalf("foreign state error=%v", err)
 	}
@@ -921,7 +916,7 @@ func TestAPIProjectUpdateAcceptsStateBelongingToProject(t *testing.T) {
 	db := &projectLifecycleDBFake{workspaceProjectDatabase: workspaceProjectDatabase{rows: []pgx.Row{projectLifecycleBoolRow(true), projectLifecycleBoolRow(true)}}}
 	repo, constructorErr := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
 	require.NoError(t, constructorErr)
-	values, err := repo.validateProjectFields(context.Background(), "workspace", "project", djangoinput.Input{Fields: map[string]any{"default_state": "00000000-0000-4000-8000-000000000001"}, Surrogates: nil}, false, false, false)
+	values, err := repo.validateProjectFields(context.Background(), "workspace", "project", requestinput.Input{Fields: map[string]any{"default_state": "00000000-0000-4000-8000-000000000001"}}, false, false, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -940,8 +935,8 @@ func TestNewSessionProjectRejectsExistingStateAndEstimateButAcceptsNull(t *testi
 		repo, constructorErr := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
 		require.NoError(t, constructorErr)
 		fields := map[string]any{"name": "Created", "identifier": "NEW", field: uuid.NewString()}
-		_, err := repo.validateProjectFields(context.Background(), uuid.NewString(), "", djangoinput.Input{Fields: fields, Surrogates: nil}, true, false, true)
-		var response *djangoapi.HTTPError
+		_, err := repo.validateProjectFields(context.Background(), uuid.NewString(), "", requestinput.Input{Fields: fields}, true, false, true)
+		var response *apicontract.HTTPError
 		if !errors.As(err, &response) || response.Status != 400 || response.Body[field] == nil {
 			t.Fatalf("new project %s=%v", field, err)
 		}
@@ -950,7 +945,7 @@ func TestNewSessionProjectRejectsExistingStateAndEstimateButAcceptsNull(t *testi
 		}
 		db.rows = []pgx.Row{projectLifecycleBoolRow(false), projectLifecycleBoolRow(false)}
 		fields[field] = nil
-		values, err := repo.validateProjectFields(context.Background(), uuid.NewString(), "", djangoinput.Input{Fields: fields, Surrogates: nil}, true, false, true)
+		values, err := repo.validateProjectFields(context.Background(), uuid.NewString(), "", requestinput.Input{Fields: fields}, true, false, true)
 		if err != nil || values[field+"_id"] != nil {
 			t.Fatalf("nullable %s=%v,%v", field, values, err)
 		}
@@ -960,12 +955,12 @@ func TestNewSessionProjectRejectsExistingStateAndEstimateButAcceptsNull(t *testi
 func TestProjectFieldValidationCollectsNullChoiceAndIntegerFailures(t *testing.T) {
 	repo, constructorErr := NewLifecycleRepository(&projectLifecycleDBFake{}, &projectLifecycleEffectsFake{}, "", validProjectCover)
 	require.NoError(t, constructorErr)
-	_, err := repo.validateProjectFields(context.Background(), "workspace", "project", djangoinput.Input{Fields: map[string]any{"page_view": nil, "archive_in": "1.5", "network": json.Number("2.0"), "timezone": "Etc/UTC"}, Surrogates: nil}, true, false, false)
-	var response *djangoapi.HTTPError
+	_, err := repo.validateProjectFields(context.Background(), "workspace", "project", requestinput.Input{Fields: map[string]any{"page_view": nil, "archive_in": "1.5", "network": json.Number("2.0"), "timezone": "Etc/UTC"}}, true, false, false)
+	var response *apicontract.HTTPError
 	if !errors.As(err, &response) || response.Status != 400 || len(response.Body) != 4 {
 		t.Fatalf("invalid bundle=%v", err)
 	}
-	values, err := repo.validateProjectFields(context.Background(), "workspace", "project", djangoinput.Input{Fields: map[string]any{"page_view": json.Number("1.00"), "archive_in": "1.000", "network": 2, "timezone": "US/Pacific"}, Surrogates: nil}, true, false, false)
+	values, err := repo.validateProjectFields(context.Background(), "workspace", "project", requestinput.Input{Fields: map[string]any{"page_view": json.Number("1.00"), "archive_in": "1", "network": 2, "timezone": "US/Pacific"}}, true, false, false)
 	if err != nil || values["page_view"] != true || values["archive_in"] != int64(1) || values["network"] != int64(2) {
 		t.Fatalf("valid coercion=%v,%v", values, err)
 	}

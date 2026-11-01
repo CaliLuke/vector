@@ -7,17 +7,17 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/jackc/pgx/v5"
 )
 
-type APIV1Request = djangoapi.ProjectReadRequest
+type APIV1Request = apicontract.ProjectReadRequest
 
 // Safe-method ProjectMemberPermission is identical to ProjectEntityPermission.
 // Label writes use the projectconfiguration repository, including its distinct
 // API v1 POST workspace policy.
 func (r *Repository) AuthorizeAPIV1(ctx context.Context, user, slug, project string, write bool) error {
-	allowed, err := djangoapi.ProjectEntityAllowed(ctx, r.database, user, slug, project, write)
+	allowed, err := apicontract.ProjectEntityAllowed(ctx, r.database, user, slug, project, write)
 	if err != nil {
 		return err
 	}
@@ -39,7 +39,7 @@ func (r *Repository) ReadAPIV1(ctx context.Context, user string, request APIV1Re
 	limit, page, offset := 1000, 0, 0
 	if !detail {
 		var err error
-		limit, page, offset, err = djangoapi.PageWindow(djangoapi.Query{Params: p, Present: request.Present})
+		limit, page, offset, err = apicontract.PageWindow(apicontract.Query{Params: p, Present: request.Present})
 		if err != nil {
 			return nil, err
 		}
@@ -51,7 +51,7 @@ func (r *Repository) ReadAPIV1(ctx context.Context, user string, request APIV1Re
 	}
 	scope, scopeJoin, scopeResult, parentScope, parentValue := "", "", "", "", ""
 	if request.ExpectedWorkspaceID != nil {
-		scope = djangoapi.ProjectMemberReadScopeSQL(1, 2, 3, 7)
+		scope = apicontract.ProjectMemberReadScopeSQL(1, 2, 3, 7)
 		scopeJoin = " JOIN scope ON scope.id=l.project_id AND scope.workspace_id=l.workspace_id "
 		scopeResult = " FROM scope"
 		parentScope = " AND parent.project_id=l.project_id AND parent.workspace_id=l.workspace_id"
@@ -76,7 +76,7 @@ func (r *Repository) ReadAPIV1(ctx context.Context, user string, request APIV1Re
 	if request.ExpectedWorkspaceID != nil {
 		args = append(args, request.ExpectedWorkspaceID)
 	}
-	value, err := djangoapi.JSON(ctx, r.database, query+scopeResult, args...)
+	value, err := apicontract.JSON(ctx, r.database, query+scopeResult, args...)
 	if request.ExpectedWorkspaceID != nil && errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrForbidden
 	}
@@ -105,7 +105,7 @@ func (r *Repository) ReadAPIV1(ctx context.Context, user string, request APIV1Re
 	}
 	for i, raw := range rows {
 		row := raw.(map[string]any)
-		projected, projectionErr := djangoapi.Serialize(ctx, r.database, row, apiLabelFields, fields, strings.Join(tokens, ","), false)
+		projected, projectionErr := apicontract.Serialize(ctx, r.database, row, apiLabelFields, fields, strings.Join(tokens, ","), false)
 		if projectionErr != nil {
 			return nil, projectionErr
 		}
@@ -128,7 +128,7 @@ func (r *Repository) ReadAPIV1(ctx context.Context, user string, request APIV1Re
 	if err != nil {
 		return nil, err
 	}
-	result := djangoapi.Envelope(rows, total, limit, page)
+	result := apicontract.Envelope(rows, total, limit, page)
 	result["next_page_results"] = doc["has_next"]
 	return result, nil
 }

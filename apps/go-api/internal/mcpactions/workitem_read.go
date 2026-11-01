@@ -8,7 +8,7 @@ import (
 	"uuid"
 
 	"github.com/CaliLuke/go-plane/internal/activityreads"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
@@ -33,7 +33,7 @@ type collaborationRead struct {
 	kind   string
 }
 
-func (r collaborationRead) ReadAPIV1(ctx context.Context, user string, q djangoapi.ProjectReadRequest) (any, error) {
+func (r collaborationRead) ReadAPIV1(ctx context.Context, user string, q apicontract.ProjectReadRequest) (any, error) {
 	workspace := googleuuid.UUID(*q.ExpectedWorkspaceID)
 	result, err := r.reader.ExecuteCollaboration(ctx, workitems.Request{
 		ExpectedWorkspaceID: &workspace, API: true, Method: "GET", Operation: "get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_" + r.kind,
@@ -44,7 +44,7 @@ func (r collaborationRead) ReadAPIV1(ctx context.Context, user string, q djangoa
 
 type activityRead struct{ reader activityReader }
 
-func (r activityRead) ReadAPIV1(ctx context.Context, user string, q djangoapi.ProjectReadRequest) (any, error) {
+func (r activityRead) ReadAPIV1(ctx context.Context, user string, q apicontract.ProjectReadRequest) (any, error) {
 	workspace := googleuuid.UUID(*q.ExpectedWorkspaceID)
 	operation := "get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_activities"
 	if q.Operation == "detail" {
@@ -63,8 +63,8 @@ type itemReadSelection struct {
 	includeRevision                bool
 }
 
-func selectItemRead(q itemReadSelection) (djangoapi.ProjectReadRequest, *string, error) {
-	request := djangoapi.ProjectReadRequest{Params: map[string]string{"project_id": q.project, "issue_id": q.issue}, Present: map[string]bool{}}
+func selectItemRead(q itemReadSelection) (apicontract.ProjectReadRequest, *string, error) {
+	request := apicontract.ProjectReadRequest{Params: map[string]string{"project_id": q.project, "issue_id": q.issue}, Present: map[string]bool{}}
 	valid := q.action == "list" || q.action == "retrieve"
 	for _, id := range []string{q.project, q.issue} {
 		if _, err := uuid.Parse(id); err != nil {
@@ -90,7 +90,7 @@ func selectItemRead(q itemReadSelection) (djangoapi.ProjectReadRequest, *string,
 		valid = valid && *q.perPage > 0 && *q.perPage <= 1000
 	}
 	if !valid {
-		return djangoapi.ProjectReadRequest{}, nil, api.MakeInvalidParams(errors.New("invalid work-item read action"))
+		return apicontract.ProjectReadRequest{}, nil, api.MakeInvalidParams(errors.New("invalid work-item read action"))
 	}
 	return request, q.workspace, nil
 }
@@ -100,7 +100,7 @@ type itemReadRequest interface {
 	AsWorkitemReadList() (*api.WorkitemReadList, bool)
 }
 
-func selectItemReadUnion[Input itemReadRequest](input *Input, detail func(Input) itemReadSelection) (djangoapi.ProjectReadRequest, *string, error) {
+func selectItemReadUnion[Input itemReadRequest](input *Input, detail func(Input) itemReadSelection) (apicontract.ProjectReadRequest, *string, error) {
 	selection := itemReadSelection{}
 	if input != nil {
 		if list, ok := (*input).AsWorkitemReadList(); ok && list != nil && list.Action == "list" {

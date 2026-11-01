@@ -7,8 +7,8 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -100,15 +100,15 @@ func djangoUUIDArrayValue(value any) (pgtype.UUID, error) {
 			value = json.Number("0")
 		}
 	}
-	parsed, err := djangoinput.UUID(value)
+	parsed, err := requestinput.UUID(value)
 	if err != nil {
 		return pgtype.UUID{}, err
 	}
 	return pgtype.UUID{Bytes: [16]byte(parsed), Valid: true}, nil
 }
 
-func (r *Repository) History(ctx context.Context, userID, slug string, query djangoapi.Query) (json.RawMessage, error) {
-	limit, _, offset, err := djangoapi.PageWindow(query)
+func (r *Repository) History(ctx context.Context, userID, slug string, query apicontract.Query) (json.RawMessage, error) {
+	limit, _, offset, err := apicontract.PageWindow(query)
 	if err != nil {
 		return nil, err
 	}

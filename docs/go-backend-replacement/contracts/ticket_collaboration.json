@@ -192,8 +192,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [200, 401],
@@ -762,8 +762,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [201, 400, 401],
@@ -908,8 +908,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [204, 401],
@@ -1188,8 +1188,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [200],
@@ -1999,8 +1999,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [201, 400, 401, 404],
@@ -2154,8 +2154,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [204, 401, 404],
@@ -2381,8 +2381,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [200, 404],
@@ -2741,8 +2741,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [200, 400, 401, 404],
@@ -2926,8 +2926,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [200, 401],
@@ -3496,8 +3496,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [201, 400, 401],
@@ -3642,8 +3642,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [204, 401],
@@ -4043,8 +4043,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [200, 400, 401, 403],
@@ -4634,8 +4634,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [201, 400, 401, 409, 500],
@@ -4770,8 +4770,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [204, 401, 404],
@@ -4907,8 +4907,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [200, 401, 404],
@@ -5260,8 +5260,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [200, 401, 404, 500],
@@ -5459,8 +5459,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [200, 400, 401],
@@ -6254,8 +6254,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [201, 400, 401, 403],
@@ -6390,8 +6390,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [204, 401, 404],
@@ -6527,8 +6527,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [200, 401, 404],
@@ -6863,8 +6863,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [200, 401, 404],
@@ -7213,8 +7213,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [200, 400, 401, 403],
@@ -7666,8 +7666,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [201, 400, 401, 409],
@@ -7802,8 +7802,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [204, 401, 404],
@@ -7939,8 +7939,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [200, 401, 404],
@@ -8157,8 +8157,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [200, 401, 404],
@@ -8356,8 +8356,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [200, 400, 401],
@@ -9033,8 +9033,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [201, 400, 401, 403],
@@ -9169,8 +9169,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [204, 401, 404],
@@ -9306,8 +9306,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [200, 401, 404],
@@ -9642,8 +9642,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "api-key"],
       "statuses": [200, 401, 404],
@@ -9817,8 +9817,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [200, 401],
@@ -10276,8 +10276,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [201, 400, 401],
@@ -10476,8 +10476,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [204, 401, 404],
@@ -10900,8 +10900,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [200, 400, 401],
@@ -11570,8 +11570,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [201, 400, 401],
@@ -11772,8 +11772,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [204, 401, 403, 404],
@@ -12100,8 +12100,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [200, 400, 401, 404],
@@ -13031,8 +13031,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [200, 401, 403, 404],
@@ -13296,8 +13296,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [200, 400, 401, 404],
@@ -13544,8 +13544,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [200, 401, 403],
@@ -14465,8 +14465,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [201, 400, 401, 403, 404, 500],
@@ -14587,8 +14587,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [204, 401],
@@ -14830,8 +14830,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [200, 401, 404],
@@ -15117,8 +15117,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [200, 400, 401, 404],
@@ -15258,8 +15258,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [200, 400, 401, 404],
@@ -15460,8 +15460,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [200, 401],
@@ -15724,8 +15724,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [201, 400, 401],
@@ -15879,8 +15879,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [204, 401, 404],
@@ -16080,8 +16080,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [200, 401],
@@ -16449,8 +16449,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [201, 400, 401],
@@ -16610,8 +16610,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [204, 401, 404],
@@ -16743,8 +16743,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [204, 401, 404],
@@ -16891,8 +16891,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [200, 401],
@@ -17131,8 +17131,8 @@
         "apps/go-api/internal/authentication/apikey/validator_test.go",
         "apps/go-api/internal/authentication/apikey/throttle_test.go",
         "apps/api/plane/tests/parity/test_api_v1_audit_boundary.py",
-        "apps/go-api/internal/djangoinput/list_test.go",
-        "apps/go-api/internal/djangoinput/url_test.go"
+        "apps/go-api/internal/requestinput/list_test.go",
+        "apps/go-api/internal/requestinput/url_test.go"
       ],
       "authentication": ["anonymous", "django-session"],
       "statuses": [201, 400, 401],

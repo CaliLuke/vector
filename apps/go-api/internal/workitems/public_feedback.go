@@ -8,9 +8,9 @@ import (
 	"io"
 	"math"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -28,7 +28,7 @@ type PublicFeedbackScope struct {
 
 const publicVoteDisabled = "Voting is not enabled for this Project Board"
 
-func publicFeedbackObjectRootError(input djangoinput.Input) error {
+func publicFeedbackObjectRootError(input requestinput.Input) error {
 	if input.Kind == "" {
 		return nil
 	}
@@ -57,7 +57,7 @@ SELECT jsonb_build_object(
     'avatar', actor.avatar,
     'display_name', actor.display_name,
     'is_bot', actor.is_bot
-  )||`+djangoapi.FileAssetURLFieldSQL("actor.avatar_asset_id", "actor.avatar", "avatar_url")+`,
+  )||`+apicontract.FileAssetURLFieldSQL("actor.avatar_asset_id", "actor.avatar", "avatar_url")+`,
   'issue', vote.issue_id,
   'project', vote.project_id,
   'vote', vote.vote,
@@ -95,7 +95,7 @@ func (repository *Repository) PublicVoteCreate(
 	if err := repository.publicVisibleIssue(ctx, scope, issueID); err != nil {
 		return Result{}, err
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return Result{}, err
 	}
@@ -154,7 +154,7 @@ func (repository *Repository) PublicVoteCreate(
 SELECT jsonb_build_object(
   'actor', vote.actor_id,
   'actor_detail', jsonb_build_object('id',actor.id,'first_name',actor.first_name,'last_name',actor.last_name,
-    'avatar',actor.avatar,'display_name',actor.display_name,'is_bot',actor.is_bot)||`+djangoapi.FileAssetURLFieldSQL("actor.avatar_asset_id", "actor.avatar", "avatar_url")+`,
+    'avatar',actor.avatar,'display_name',actor.display_name,'is_bot',actor.is_bot)||`+apicontract.FileAssetURLFieldSQL("actor.avatar_asset_id", "actor.avatar", "avatar_url")+`,
   'issue',vote.issue_id,'project',vote.project_id,'vote',vote.vote,'workspace',vote.workspace_id
 )
 FROM issue_votes vote JOIN users actor ON actor.id=vote.actor_id WHERE vote.id=$1

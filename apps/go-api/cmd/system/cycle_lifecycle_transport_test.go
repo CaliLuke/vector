@@ -112,7 +112,7 @@ func cycleLifecycleTransportHandler(reads *cycleLifecycleTransportReads, writes 
 			activityReadsMetadata:  &cycleLifecycleUnsupportedAPIKeyAuthorizer{},
 			activityReadsBodyLimit: 1 << 20,
 			readServicesSession:    session,
-			readServicesCookie:     djangoSessionCookieConfig{Name: "session-id", Configured: true},
+			readServicesCookie:     browserSessionCookieConfig{Name: "session-id", Configured: true},
 		},
 	)
 }

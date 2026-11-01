@@ -6,7 +6,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/initiatives"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
@@ -124,7 +124,7 @@ func (s *Service) initiativeOperation(ctx context.Context, input *api.Initiative
 	if json.Unmarshal(raw, &body) != nil {
 		return nil, workitemResultError()
 	}
-	body = djangoapi.Timestamps(body, actor.Timezone)
+	body = apicontract.Timestamps(body, actor.Timezone)
 	if in.Action == "list_projects" || in.Action == "list_workitems" {
 		page, ok := body.(map[string]any)
 		if !ok {

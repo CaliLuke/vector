@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -94,7 +94,7 @@ func TestItemTransactionsPreserveRollbackFailureAfterCancellation(t *testing.T) 
 		}},
 		{"draft relation batch", func(ctx context.Context, r *Repository) error {
 			operation := newDraftOperation(r.db, r.now, "", nil)
-			return operation.replaceDraftRelations(ctx, q, defaultIssue(q.ProjectID), issueChanges{assignees: []string{q.ActorID}}, djangoinput.Input{}, true)
+			return operation.replaceDraftRelations(ctx, q, defaultIssue(q.ProjectID), issueChanges{assignees: []string{q.ActorID}}, requestinput.Input{}, true)
 		}},
 		{"create item", func(ctx context.Context, r *Repository) error {
 			_, err := r.saveIssueRow(ctx, q.ActorID, defaultIssue(q.ProjectID), nil)
@@ -113,7 +113,7 @@ func TestItemTransactionsPreserveRollbackFailureAfterCancellation(t *testing.T) 
 			return err
 		}},
 		{"module batch", func(ctx context.Context, r *Repository) error {
-			_, err := r.issueModules(ctx, q, djangoinput.Input{Fields: map[string]any{}})
+			_, err := r.issueModules(ctx, q, requestinput.Input{Fields: map[string]any{}})
 			return err
 		}},
 		{"relations", func(ctx context.Context, r *Repository) error {

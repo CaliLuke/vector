@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 func TestCustomPropertyProjectionRemainsPrivateAndHonorsFieldSelection(t *testing.T) {
@@ -23,7 +23,7 @@ func TestCustomPropertyProjectionRemainsPrivateAndHonorsFieldSelection(t *testin
 		t.Fatalf("field selection ignored: %#v %v", result, err)
 	}
 	for _, fields := range []string{"", "custom_properties"} {
-		public, publicErr := djangoapi.SerializeIssue(context.Background(), nil, row, fields, "")
+		public, publicErr := apicontract.SerializeIssue(context.Background(), nil, row, fields, "")
 		if _, exposed := public["custom_properties"]; publicErr != nil || exposed {
 			t.Fatalf("public custom property exposed: %#v %v", public, publicErr)
 		}
@@ -33,16 +33,16 @@ func TestCustomPropertyProjectionRemainsPrivateAndHonorsFieldSelection(t *testin
 func TestSubmittedCustomValuesDistinguishesOmissionClearAndMalformedObject(t *testing.T) {
 	for _, test := range []struct {
 		name            string
-		input           djangoinput.Input
+		input           requestinput.Input
 		invalid, absent bool
 	}{
-		{name: "omitted", input: djangoinput.Input{Fields: map[string]any{}}, absent: true},
-		{name: "empty", input: djangoinput.Input{Fields: map[string]any{"custom_properties": map[string]any{}}}},
-		{name: "explicit field clear", input: djangoinput.Input{Fields: map[string]any{"custom_properties": map[string]any{"field": nil}}}},
-		{name: "null object", input: djangoinput.Input{Fields: map[string]any{"custom_properties": nil}}, invalid: true},
-		{name: "form object", input: djangoinput.Input{Form: true, Fields: map[string]any{"custom_properties": `{"field":false}`}}},
-		{name: "form trailing json", input: djangoinput.Input{Form: true, Fields: map[string]any{"custom_properties": `{} {}`}}, invalid: true},
-		{name: "form array", input: djangoinput.Input{Form: true, Fields: map[string]any{"custom_properties": `[]`}}, invalid: true},
+		{name: "omitted", input: requestinput.Input{Fields: map[string]any{}}, absent: true},
+		{name: "empty", input: requestinput.Input{Fields: map[string]any{"custom_properties": map[string]any{}}}},
+		{name: "explicit field clear", input: requestinput.Input{Fields: map[string]any{"custom_properties": map[string]any{"field": nil}}}},
+		{name: "null object", input: requestinput.Input{Fields: map[string]any{"custom_properties": nil}}, invalid: true},
+		{name: "form object", input: requestinput.Input{Form: true, Fields: map[string]any{"custom_properties": `{"field":false}`}}},
+		{name: "form trailing json", input: requestinput.Input{Form: true, Fields: map[string]any{"custom_properties": `{} {}`}}, invalid: true},
+		{name: "form array", input: requestinput.Input{Form: true, Fields: map[string]any{"custom_properties": `[]`}}, invalid: true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			value, err := submittedCustomValues(test.input)

@@ -10,20 +10,20 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	api "github.com/CaliLuke/go-plane/workspaceexports/gen/workspace_exports"
 	loomhttp "github.com/CaliLuke/loom/http"
 )
 
-func TestWorkspaceExportStringFieldsUseSharedPythonCompatibility(t *testing.T) {
-	input, err := djangoinput.Parse(strings.NewReader(`{"x_axis":{"z":[true,null,"é"],"a":0},"y_axis":false,"segment":1.0}`), "application/json")
+func TestWorkspaceExportStringFieldsUseNativeJSONText(t *testing.T) {
+	input, err := requestinput.Parse(strings.NewReader(`{"x_axis":{"z":[true,null,"é"],"a":0},"y_axis":false,"segment":1.0}`), "application/json")
 	if err != nil {
 		t.Fatal(err)
 	}
-	for field, want := range map[string]string{"x_axis": "{'z': [True, None, 'é'], 'a': 0}", "y_axis": "", "segment": "1.0", "missing": ""} {
+	for field, want := range map[string]string{"x_axis": `{"a":0,"z":[true,null,"é"]}`, "y_axis": "", "segment": "1.0", "missing": ""} {
 		got, err := workspaceExportStringOrFalse(input, field)
 		if err != nil || got != want {
 			t.Errorf("%s = %q, %v; want %q", field, got, err, want)
@@ -50,7 +50,7 @@ func (repository *projectValuesRepository) CreateIssueExport(_ context.Context, 
 	}
 	return json.RawMessage(`{"message":"queued"}`), "workspace-id", "token-id", projects, nil
 }
-func (*projectValuesRepository) History(context.Context, string, string, djangoapi.Query) (json.RawMessage, error) {
+func (*projectValuesRepository) History(context.Context, string, string, apicontract.Query) (json.RawMessage, error) {
 	return nil, nil
 }
 
@@ -86,7 +86,7 @@ func (repository *deniedWorkspaceExportsRepository) CreateIssueExport(context.Co
 	repository.createCalls++
 	return nil, "", "", nil, nil
 }
-func (repository *deniedWorkspaceExportsRepository) History(context.Context, string, string, djangoapi.Query) (json.RawMessage, error) {
+func (repository *deniedWorkspaceExportsRepository) History(context.Context, string, string, apicontract.Query) (json.RawMessage, error) {
 	repository.historyCalls++
 	return nil, nil
 }
@@ -146,7 +146,7 @@ func TestWorkspaceExportProjectValuesUseSourceFallbackAndRejectNonArray(t *testi
 		{name: "malformed scalar rejected", body: `{"project":"123"}`, wantErr: true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			input, err := djangoinput.Parse(strings.NewReader(test.body), "application/json")
+			input, err := requestinput.Parse(strings.NewReader(test.body), "application/json")
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"slices"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 func (r *Repository) applyItemEditPlanning(ctx context.Context, q Request, command itemEditCommand, relations map[string]any) error {
@@ -48,7 +48,7 @@ func (r *Repository) applyItemEditPlanning(ctx context.Context, q Request, comma
 			return err
 		}
 		if kind == "module" {
-			if _, err = r.issueModules(ctx, q, djangoinput.Input{Fields: map[string]any{"modules": added, "removed_modules": removed}}); err != nil {
+			if _, err = r.issueModules(ctx, q, requestinput.Input{Fields: map[string]any{"modules": added, "removed_modules": removed}}); err != nil {
 				return err
 			}
 			continue

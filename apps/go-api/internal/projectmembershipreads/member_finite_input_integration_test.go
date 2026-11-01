@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/stretchr/testify/require"
 )
@@ -34,7 +34,7 @@ func TestLegacyMemberNonfiniteOrderDoesNotChangeMembership(t *testing.T) {
 					UserID: "00000000-0000-4000-8000-00000000000a", MemberID: "00000000-0000-4000-8000-000000000200",
 					ContentType: contentType, Body: strings.NewReader(body),
 				})
-				var failure *djangoapi.HTTPError
+				var failure *apicontract.HTTPError
 				require.ErrorAs(t, patchErr, &failure)
 				require.Equal(t, 400, failure.Status)
 				require.Equal(t, []string{"A valid number is required."}, failure.Body["sort_order"])

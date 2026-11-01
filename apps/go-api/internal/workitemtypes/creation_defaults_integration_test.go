@@ -9,7 +9,7 @@ import (
 	"testing"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 )
@@ -84,7 +84,7 @@ func TestCreationDefaultsParentAdjacencyAndLeafEmptySchema(t *testing.T) {
 	}
 	repo, _, _ := seedPublicationDraft(t, f)
 	_, err := writeValueItem(f, repo, "POST", "", `{"name":"Impossible child","parent_id":"`+leaf+`"}`)
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if !errors.As(err, &failure) || failure.Status != 400 {
 		t.Fatalf("leaf child saved: %v", err)
 	}
@@ -133,7 +133,7 @@ func TestCreationDefaultsAmbiguityRequiresSelection(t *testing.T) {
 	}
 	repo, _, _ := seedPublicationDraft(t, f)
 	_, err := writeValueItem(f, repo, "POST", "", `{"name":"Ambiguous"}`)
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if !errors.As(err, &failure) || failure.Status != 400 {
 		t.Fatalf("ambiguous creation saved: %v", err)
 	}
@@ -153,7 +153,7 @@ func TestCreationSavedUntypedDraftNeverAcquiresSuggestedType(t *testing.T) {
 		t.Fatalf("publication schema defaulted: %+v %v", schema, err)
 	}
 	_, err = publishDraftForTest(f, repo, draft, f.member, `{}`)
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if !errors.As(err, &failure) || failure.Status != 400 {
 		t.Fatalf("unselected saved draft published: %v", err)
 	}
@@ -246,7 +246,7 @@ func TestCreationExplicitEmptyTypeDoesNotRequestSuggestion(t *testing.T) {
 				operation = "api_v1_workspaces_by_slug_projects_by_project_id_issues"
 			}
 			_, err := repo.Execute(f.ctx, workitems.Request{Operation: operation, Method: "POST", API: api, ActorID: f.owner, Slug: "types", ProjectID: f.project, Timezone: "UTC", Params: map[string]string{}}, strings.NewReader(`{"name":"Explicitly untyped","`+field+`":null}`), "application/json")
-			var failure *djangoapi.HTTPError
+			var failure *apicontract.HTTPError
 			if !errors.As(err, &failure) || failure.Status != 400 {
 				t.Fatalf("api=%v field=%s: cleared type replaced: %v", api, field, err)
 			}

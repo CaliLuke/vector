@@ -11,8 +11,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -86,7 +86,7 @@ func TestProjectCreateRetainsCreatorLeadDeduplicationAndDefaultWorkflow(t *testi
 				effects := &projectContractEffects{tx: tx}
 				repo, constructorErr := NewLifecycleRepository(db, effects, "", validProjectCover)
 				require.NoError(t, constructorErr)
-				if _, err := repo.CreateProject(context.Background(), creator, "space", djangoinput.Input{Fields: fields}, app); err != nil {
+				if _, err := repo.CreateProject(context.Background(), creator, "space", requestinput.Input{Fields: fields}, app); err != nil {
 					t.Fatal(err)
 				}
 				members, properties, states := []string{}, 0, []string{}
@@ -130,7 +130,7 @@ func TestAPIProjectCreateRetainsSuccessWhenPostCommitActivityBrokerFails(t *test
 	effects := &projectContractEffects{tx: tx, err: errors.New("broker unavailable")}
 	repo, constructorErr := NewLifecycleRepository(db, effects, "", validProjectCover)
 	require.NoError(t, constructorErr)
-	body, err := repo.CreateProject(context.Background(), "00000000-0000-4000-8000-000000000001", "space", djangoinput.Input{Fields: map[string]any{"name": "Broker Down", "identifier": "BD"}}, false)
+	body, err := repo.CreateProject(context.Background(), "00000000-0000-4000-8000-000000000001", "space", requestinput.Input{Fields: map[string]any{"name": "Broker Down", "identifier": "BD"}}, false)
 	if err != nil || string(body) != `{"id":"persisted"}` || !tx.committed || effects.calls != 1 {
 		t.Fatalf("post-commit result=%s,%v committed=%v activity=%d", body, err, tx.committed, effects.calls)
 	}
@@ -157,8 +157,8 @@ func TestSessionProjectRetainsRequiredBlankAndDuplicateFieldErrors(t *testing.T)
 			db := &projectLifecycleDBFake{workspaceProjectDatabase: workspaceProjectDatabase{rows: vector.rows}}
 			repo, constructorErr := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
 			require.NoError(t, constructorErr)
-			_, err := repo.validateProjectFields(context.Background(), "workspace", "project", djangoinput.Input{Fields: vector.fields}, true, false, vector.create)
-			var failure *djangoapi.HTTPError
+			_, err := repo.validateProjectFields(context.Background(), "workspace", "project", requestinput.Input{Fields: vector.fields}, true, false, vector.create)
+			var failure *apicontract.HTTPError
 			if !errors.As(err, &failure) || failure.Status != 400 || !reflect.DeepEqual(failure.Body, vector.want) {
 				t.Fatalf("validation=%v want 400/%v", err, vector.want)
 			}
@@ -175,8 +175,8 @@ func TestAPIProjectCreateRejectsForeignLeadBeforeTransaction(t *testing.T) {
 	}}}
 	repo, constructorErr := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
 	require.NoError(t, constructorErr)
-	_, err := repo.CreateProject(context.Background(), "actor", "space", djangoinput.Input{Fields: map[string]any{"name": "Outsider", "identifier": "OUT", "project_lead": "00000000-0000-4000-8000-000000000009"}}, false)
-	var failure *djangoapi.HTTPError
+	_, err := repo.CreateProject(context.Background(), "actor", "space", requestinput.Input{Fields: map[string]any{"name": "Outsider", "identifier": "OUT", "project_lead": "00000000-0000-4000-8000-000000000009"}}, false)
+	var failure *apicontract.HTTPError
 	if !errors.As(err, &failure) || failure.Status != 400 || !reflect.DeepEqual(failure.Body, map[string]any{"project_lead": []string{"The provided user is not a member of this workspace."}}) {
 		t.Fatalf("foreign lead=%v", err)
 	}
@@ -190,7 +190,7 @@ func TestSessionProjectPATCHRetainsMutableFields(t *testing.T) {
 	repo, constructorErr := NewLifecycleRepository(db, &projectLifecycleEffectsFake{}, "", validProjectCover)
 	require.NoError(t, constructorErr)
 	fields := map[string]any{"name": "Updated Project", "description": "Updated description", "cycle_view": true, "module_view": false}
-	if _, err := repo.UpdateProject(context.Background(), "actor", "space", "project", djangoinput.Input{Fields: fields}, true, false); err != nil {
+	if _, err := repo.UpdateProject(context.Background(), "actor", "space", "project", requestinput.Input{Fields: fields}, true, false); err != nil {
 		t.Fatal(err)
 	}
 	var stored map[string]any

@@ -6,7 +6,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/workitemrelations"
@@ -102,7 +102,7 @@ func projectRelationResult(raw json.RawMessage, action, timezone string) (loom.N
 	if json.Unmarshal(raw, &data) != nil {
 		return loom.Nullable[api.WorkitemRelationResult]{}, workitemResultError()
 	}
-	encoded, err := json.Marshal(djangoapi.Timestamps(data, timezone))
+	encoded, err := json.Marshal(apicontract.Timestamps(data, timezone))
 	if err != nil {
 		return loom.Nullable[api.WorkitemRelationResult]{}, workitemResultError()
 	}

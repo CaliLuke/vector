@@ -318,7 +318,7 @@ func assetsTransportHandlerWithTimezone(t *testing.T, repository assetsTransport
 			activityReadsSecret:     "assets-transport-secret",
 			activityReadsBodyLimit:  5 << 20,
 			readServicesSession:     session,
-			readServicesCookie:      djangoSessionCookieConfig{Name: "session-id", Configured: true},
+			readServicesCookie:      browserSessionCookieConfig{Name: "session-id", Configured: true},
 			readServicesCORS:        []string{"https://app.example.test"},
 		})
 }

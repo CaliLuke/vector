@@ -10,7 +10,7 @@ import (
 
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -97,8 +97,8 @@ func TestAPIProjectsRejectsInvalidPaginationBeforeProjectQuery(t *testing.T) {
 	repository, constructorErr := NewRepository(database)
 	require.NoError(t, constructorErr)
 	_, err := repository.APIProjects(context.Background(), user, "demo", APIProjectListOptions{PerPage: &bad})
-	var response *djangoapi.HTTPError
-	if !errors.As(err, &response) || response.Status != 400 || response.Body["detail"] != "Invalid per_page parameter." {
+	var response *apicontract.HTTPError
+	if !errors.As(err, &response) || response.Status != 400 || response.Body["detail"] != "per_page must be an integer from 1 to 1000." {
 		t.Fatalf("invalid pagination error = %#v", err)
 	}
 	if len(database.queries) != 1 {

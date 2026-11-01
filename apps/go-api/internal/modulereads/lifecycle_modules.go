@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -38,9 +38,9 @@ func (repository *LifecycleRepository) CheckModuleProject(ctx context.Context, s
 		return nil
 	}
 	if apiV1 {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested resource does not exist."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested resource does not exist."}}
 	}
-	return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
+	return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
 }
 
 // CheckModule resolves a write target before request-body validation, as DRF's
@@ -50,11 +50,11 @@ func (repository *LifecycleRepository) CheckModule(ctx context.Context, slug, pr
 	if errors.Is(err, ErrNotFound) {
 		switch {
 		case apiV1:
-			return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested resource does not exist."}}
+			return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested resource does not exist."}}
 		case replace:
-			return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "No Module matches the given query."}}
+			return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "No Module matches the given query."}}
 		default:
-			return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Module not found"}}
+			return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Module not found"}}
 		}
 	}
 	if err != nil {
@@ -65,7 +65,7 @@ func (repository *LifecycleRepository) CheckModule(ctx context.Context, slug, pr
 		if apiV1 {
 			message = "Archived module cannot be edited"
 		}
-		return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": message}}
+		return &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": message}}
 	}
 	return nil
 }
@@ -89,18 +89,18 @@ func (repository *LifecycleRepository) ModuleExists(ctx context.Context, slug, p
 
 // CreateModule implements the app ModuleWriteSerializer create path. The
 // caller must authorize before parsing the body, matching allow_permission.
-func (repository *LifecycleRepository) CreateModule(ctx context.Context, actor, slug, projectID string, fields map[string]any, surrogates map[string][]string, origin string) (json.RawMessage, error) {
+func (repository *LifecycleRepository) CreateModule(ctx context.Context, actor, slug, projectID string, fields map[string]any, origin string) (json.RawMessage, error) {
 	if origin == "" {
 		origin = repository.baseHost
 	}
 	var workspaceID string
 	if err := repository.database.QueryRow(ctx, `SELECT p.workspace_id FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$1 AND w.slug=$2 AND p.deleted_at IS NULL AND w.deleted_at IS NULL`, projectID, slug).Scan(&workspaceID); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
+			return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
 		}
 		return nil, fmt.Errorf("load module project: %w", err)
 	}
-	values, fieldErrors := validateModuleWriteFields(fields, surrogates, false)
+	values, fieldErrors := validateModuleWriteFields(fields, false)
 	relationErrors, err := repository.validateModuleRelations(ctx, fields, []string{"lead", "lead_id"}, "member_ids")
 	if err != nil {
 		return nil, err
@@ -154,7 +154,7 @@ func (repository *LifecycleRepository) CreateModule(ctx context.Context, actor, 
 // CreateModuleV1 keeps the API serializer contract separate from the app
 // ModuleWriteSerializer: API v1 accepts lead/members, gates on module_view,
 // checks external identifiers, and returns the API ModuleSerializer shape.
-func (repository *LifecycleRepository) CreateModuleV1(ctx context.Context, actor, slug, projectID string, fields map[string]any, surrogates map[string][]string, origin string) (json.RawMessage, error) {
+func (repository *LifecycleRepository) CreateModuleV1(ctx context.Context, actor, slug, projectID string, fields map[string]any, origin string) (json.RawMessage, error) {
 	if origin == "" {
 		origin = repository.baseHost
 	}
@@ -163,11 +163,11 @@ func (repository *LifecycleRepository) CreateModuleV1(ctx context.Context, actor
 	err := repository.database.QueryRow(ctx, `SELECT p.workspace_id,p.module_view FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$1 AND w.slug=$2 AND p.deleted_at IS NULL AND w.deleted_at IS NULL`, projectID, slug).Scan(&workspaceID, &enabled)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested resource does not exist."}}
+			return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested resource does not exist."}}
 		}
 		return nil, fmt.Errorf("load API module project: %w", err)
 	}
-	values, validation := validateModuleAPIWriteFields(fields, surrogates, false)
+	values, validation := validateModuleAPIWriteFields(fields, false)
 	relationErrors, err := repository.validateModuleRelations(ctx, fields, []string{"lead"}, "members")
 	if err != nil {
 		return nil, err
@@ -196,7 +196,7 @@ func (repository *LifecycleRepository) CreateModuleV1(ctx context.Context, actor
 		var duplicateID string
 		scanErr := repository.database.QueryRow(ctx, `SELECT id::text FROM modules WHERE project_id=$1 AND workspace_id=$2 AND external_source=$3 AND external_id=$4 AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1`, projectID, workspaceID, externalSource, externalID).Scan(&duplicateID)
 		if scanErr == nil {
-			return nil, &djangoapi.HTTPError{Status: 409, Body: map[string]any{"error": "Module with the same external id and external source already exists", "id": duplicateID}}
+			return nil, &apicontract.HTTPError{Status: 409, Body: map[string]any{"error": "Module with the same external id and external source already exists", "id": duplicateID}}
 		}
 		if !errors.Is(scanErr, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("check API module external identifier: %w", scanErr)
@@ -241,7 +241,7 @@ func (repository *LifecycleRepository) CreateModuleV1(ctx context.Context, actor
 // UpdateModuleV1 follows ModuleDetailAPIEndpoint.patch and returns the narrow
 // ModuleUpdateSerializer representation while recording the full current
 // ModuleSerializer snapshot in the model-activity task.
-func (repository *LifecycleRepository) UpdateModuleV1(ctx context.Context, actor, slug, projectID, moduleID string, fields map[string]any, surrogates map[string][]string, origin string) (json.RawMessage, error) {
+func (repository *LifecycleRepository) UpdateModuleV1(ctx context.Context, actor, slug, projectID, moduleID string, fields map[string]any, origin string) (json.RawMessage, error) {
 	if origin == "" {
 		origin = repository.baseHost
 	}
@@ -250,7 +250,7 @@ func (repository *LifecycleRepository) UpdateModuleV1(ctx context.Context, actor
 		return nil, err
 	}
 	if current["archived_at"] != nil {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Archived module cannot be edited"}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Archived module cannot be edited"}}
 	}
 	currentRaw, err := repository.moduleWriteProjection(ctx, actor, slug, projectID, moduleID)
 	if err != nil {
@@ -270,7 +270,7 @@ func (repository *LifecycleRepository) UpdateModuleV1(ctx context.Context, actor
 		return nil, err
 	}
 	currentJSON := []byte(currentJSONText)
-	values, validation := validateModuleAPIWriteFields(fields, surrogates, true)
+	values, validation := validateModuleAPIWriteFields(fields, true)
 	relationErrors, err := repository.validateModuleRelations(ctx, fields, []string{"lead"}, "members")
 	if err != nil {
 		return nil, err
@@ -305,7 +305,7 @@ func (repository *LifecycleRepository) UpdateModuleV1(ctx context.Context, actor
 		var duplicateID string
 		scanErr := repository.database.QueryRow(ctx, `SELECT id::text FROM modules WHERE project_id=$1 AND workspace_id=$2 AND id<>$3 AND external_source IS NOT DISTINCT FROM $4 AND external_id=$5 AND deleted_at IS NULL LIMIT 1`, projectID, current["workspace_id"], moduleID, externalSource, externalID).Scan(&duplicateID)
 		if scanErr == nil {
-			return nil, &djangoapi.HTTPError{Status: 409, Body: map[string]any{"error": "Module with the same external id and external source already exists", "id": moduleID}}
+			return nil, &apicontract.HTTPError{Status: 409, Body: map[string]any{"error": "Module with the same external id and external source already exists", "id": moduleID}}
 		}
 		if !errors.Is(scanErr, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("check API module external identifier: %w", scanErr)
@@ -348,7 +348,7 @@ func (repository *LifecycleRepository) UpdateModuleV1(ctx context.Context, actor
 	return json.Marshal(selected)
 }
 
-func validateModuleAPIWriteFields(fields map[string]any, surrogates map[string][]string, partial bool) (map[string]any, map[string]any) {
+func validateModuleAPIWriteFields(fields map[string]any, partial bool) (map[string]any, map[string]any) {
 	converted := make(map[string]any, len(fields))
 	for key, value := range fields {
 		switch key {
@@ -360,7 +360,7 @@ func validateModuleAPIWriteFields(fields map[string]any, surrogates map[string][
 			converted[key] = value
 		}
 	}
-	values, failures := validateModuleWriteFields(converted, surrogates, partial)
+	values, failures := validateModuleWriteFields(converted, partial)
 	remapped := map[string]any{}
 	for key, value := range failures {
 		switch key {
@@ -422,7 +422,7 @@ func (repository *LifecycleRepository) projectModuleMembers(ctx context.Context,
 
 // UpdateModule performs the object lookup before serializer validation, as the
 // viewset's update/partial_update actions do. replace selects PUT semantics.
-func (repository *LifecycleRepository) UpdateModule(ctx context.Context, actor, slug, projectID, moduleID string, fields map[string]any, surrogates map[string][]string, replace bool, origin string) (json.RawMessage, error) {
+func (repository *LifecycleRepository) UpdateModule(ctx context.Context, actor, slug, projectID, moduleID string, fields map[string]any, replace bool, origin string) (json.RawMessage, error) {
 	if origin == "" {
 		origin = repository.baseHost
 	}
@@ -431,7 +431,7 @@ func (repository *LifecycleRepository) UpdateModule(ctx context.Context, actor, 
 		return nil, err
 	}
 	if !replace && current["archived_at"] != nil {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Archived module cannot be updated"}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Archived module cannot be updated"}}
 	}
 	var currentProjection json.RawMessage
 	if !replace {
@@ -440,7 +440,7 @@ func (repository *LifecycleRepository) UpdateModule(ctx context.Context, actor, 
 			return nil, err
 		}
 	}
-	values, fieldErrors := validateModuleWriteFields(fields, surrogates, !replace)
+	values, fieldErrors := validateModuleWriteFields(fields, !replace)
 	relationErrors, err := repository.validateModuleRelations(ctx, fields, []string{"lead", "lead_id"}, "member_ids")
 	if err != nil {
 		return nil, err
@@ -513,7 +513,7 @@ func (repository *LifecycleRepository) SetModuleArchived(ctx context.Context, ac
 	if archive {
 		status, _ := current["status"].(string)
 		if status != "completed" && status != "cancelled" {
-			return time.Time{}, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Only completed or cancelled modules can be archived"}}
+			return time.Time{}, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Only completed or cancelled modules can be archived"}}
 		}
 	}
 	now := repository.now()
@@ -568,7 +568,7 @@ func (repository *LifecycleRepository) CheckDeleteModule(ctx context.Context, ac
 			return fmt.Errorf("check API module delete permission: %w", err)
 		}
 		if !isProjectAdmin {
-			return &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "Only admin or creator can delete the module"}}
+			return &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "Only admin or creator can delete the module"}}
 		}
 		return nil
 	}
@@ -698,7 +698,7 @@ func (repository *LifecycleRepository) DeleteModule(ctx context.Context, actor, 
 	return nil
 }
 
-func validateModuleWriteFields(fields map[string]any, surrogates map[string][]string, partial bool) (map[string]any, map[string]any) {
+func validateModuleWriteFields(fields map[string]any, partial bool) (map[string]any, map[string]any) {
 	values, failures := map[string]any{}, map[string]any{}
 	text := func(key string, required, allowBlank bool, maximum int) {
 		value, present := fields[key]
@@ -716,7 +716,7 @@ func validateModuleWriteFields(fields map[string]any, surrogates map[string][]st
 			failures[key] = []string{"This field may not be null."}
 			return
 		}
-		if value, messages := djangoinput.TextField(value, allowBlank, maximum, surrogates[key]); len(messages) > 0 {
+		if value, messages := requestinput.TextField(value, allowBlank, maximum); len(messages) > 0 {
 			failures[key] = messages
 		} else {
 			values[key] = value
@@ -765,8 +765,8 @@ func validateModuleWriteFields(fields map[string]any, surrogates map[string][]st
 		}
 		if raw == nil || raw == "" {
 			values["lead_id"] = nil
-		} else if id, err := djangoinput.UUID(raw); err != nil {
-			failures[key] = []string{"Invalid pk \"" + djangoinput.ScalarString(raw) + "\" - object does not exist."}
+		} else if id, err := requestinput.UUID(raw); err != nil {
+			failures[key] = []string{"Invalid pk \"" + requestinput.ScalarString(raw) + "\" - object does not exist."}
 		} else {
 			values["lead_id"] = id.String()
 		}
@@ -783,7 +783,7 @@ func validateModuleWriteFields(fields map[string]any, surrogates map[string][]st
 		}
 	}
 	if raw, present := fields["sort_order"]; present {
-		value, message := djangoinput.FloatField(raw)
+		value, message := requestinput.FloatField(raw)
 		if message != "" {
 			failures["sort_order"] = []string{message}
 		} else {
@@ -801,7 +801,7 @@ func validateModuleWriteFields(fields map[string]any, surrogates map[string][]st
 			} else if raw == nil {
 				failures["member_ids"] = []string{"This field may not be null."}
 			} else {
-				failures["member_ids"] = []string{"Expected a list of items but got type \"" + djangoinput.PythonType(raw) + "\"."}
+				failures["member_ids"] = []string{"Expected a list of items but got type \"" + requestinput.TypeName(raw) + "\"."}
 			}
 		}
 		if members != nil {
@@ -824,9 +824,9 @@ func validateModuleWriteFields(fields map[string]any, surrogates map[string][]st
 					memberErrors[strconv.Itoa(index)] = []string{"Incorrect type. Expected pk value, received dict."}
 					continue
 				}
-				id, err := djangoinput.UUID(member)
+				id, err := requestinput.UUID(member)
 				if err != nil {
-					memberErrors[strconv.Itoa(index)] = []string{fmt.Sprintf("“%s” is not a valid UUID.", djangoinput.ScalarString(member))}
+					memberErrors[strconv.Itoa(index)] = []string{fmt.Sprintf("“%s” is not a valid UUID.", requestinput.ScalarString(member))}
 					continue
 				}
 				ids = append(ids, id.String())
@@ -876,7 +876,7 @@ func (repository *LifecycleRepository) validateModuleRelations(ctx context.Conte
 		if !present || raw == nil || raw == "" {
 			continue
 		}
-		id, err := djangoinput.UUID(raw)
+		id, err := requestinput.UUID(raw)
 		if err != nil {
 			continue // Shape errors have already been collected by field conversion.
 		}
@@ -889,7 +889,7 @@ func (repository *LifecycleRepository) validateModuleRelations(ctx context.Conte
 			checkedLeadIDs[idText] = exists
 		}
 		if !exists {
-			fieldErrors[key] = []string{"Invalid pk \"" + djangoinput.ScalarString(raw) + "\" - object does not exist."}
+			fieldErrors[key] = []string{"Invalid pk \"" + requestinput.ScalarString(raw) + "\" - object does not exist."}
 		}
 	}
 	if _, supplied := fields[memberField]; supplied {
@@ -906,7 +906,7 @@ func (repository *LifecycleRepository) validateModuleRelations(ctx context.Conte
 				case []any, map[string]any:
 					continue
 				}
-				id, err := djangoinput.UUID(member)
+				id, err := requestinput.UUID(member)
 				if err != nil {
 					continue // The field converter already records this child's shape error.
 				}
@@ -916,7 +916,7 @@ func (repository *LifecycleRepository) validateModuleRelations(ctx context.Conte
 					return nil, err
 				}
 				if !exists {
-					memberErrors[strconv.Itoa(index)] = []string{"Invalid pk \"" + djangoinput.ScalarString(member) + "\" - object does not exist."}
+					memberErrors[strconv.Itoa(index)] = []string{"Invalid pk \"" + requestinput.ScalarString(member) + "\" - object does not exist."}
 				}
 			}
 			if len(memberErrors) > 0 {
@@ -1072,7 +1072,7 @@ func (repository *LifecycleRepository) updateModuleFields(ctx context.Context, a
 }
 
 func (repository *LifecycleRepository) rawModule(ctx context.Context, slug, projectID, moduleID string) (map[string]any, error) {
-	value, err := djangoapi.JSON(ctx, repository.database, `SELECT to_jsonb(m)||jsonb_build_object('workspace',m.workspace_id,'project',m.project_id,'lead',m.lead_id,'created_by',m.created_by_id,'updated_by',m.updated_by_id) FROM modules m JOIN workspaces w ON w.id=m.workspace_id WHERE m.id=$1 AND m.project_id=$2 AND w.slug=$3 AND m.deleted_at IS NULL`, moduleID, projectID, slug)
+	value, err := apicontract.JSON(ctx, repository.database, `SELECT to_jsonb(m)||jsonb_build_object('workspace',m.workspace_id,'project',m.project_id,'lead',m.lead_id,'created_by',m.created_by_id,'updated_by',m.updated_by_id) FROM modules m JOIN workspaces w ON w.id=m.workspace_id WHERE m.id=$1 AND m.project_id=$2 AND w.slug=$3 AND m.deleted_at IS NULL`, moduleID, projectID, slug)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
 	}

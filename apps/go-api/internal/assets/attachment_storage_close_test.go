@@ -9,7 +9,7 @@ import (
 	"testing"
 	"testing/iotest"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -74,7 +74,7 @@ func TestAttachmentStorageReadPreservesReadLimitAndCloseErrors(t *testing.T) {
 				require.ErrorIs(t, err, tc.readErr)
 			}
 			if tc.limited {
-				var rejected *djangoapi.HTTPError
+				var rejected *apicontract.HTTPError
 				require.ErrorAs(t, err, &rejected)
 				require.Equal(t, http.StatusBadRequest, rejected.Status)
 				require.Nil(t, content)

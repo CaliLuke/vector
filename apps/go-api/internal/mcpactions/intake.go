@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	loom "github.com/CaliLuke/loom/pkg"
@@ -125,7 +125,7 @@ func (s *Service) readIntake(ctx context.Context, in intakeInput) (loom.Nullable
 		if !ok {
 			return loom.Nullable[api.IntakeResult]{}, workitemResultError()
 		}
-		djangoapi.Timestamps(row, actor.Timezone)
+		apicontract.Timestamps(row, actor.Timezone)
 		record, projectIntakeRecordErr := projectIntakeRecord(row)
 		return loom.NullableValue(api.NewIntakeResultIntakeRecord(record)), projectIntakeRecordErr
 	}
@@ -144,7 +144,7 @@ func (s *Service) readIntake(ctx context.Context, in intakeInput) (loom.Nullable
 		if !ok {
 			return loom.Nullable[api.IntakeResult]{}, workitemResultError()
 		}
-		djangoapi.Timestamps(row, actor.Timezone)
+		apicontract.Timestamps(row, actor.Timezone)
 		record, projectIntakeRecordErr2 := projectIntakeRecord(row)
 		if projectIntakeRecordErr2 != nil {
 			return loom.Nullable[api.IntakeResult]{}, projectIntakeRecordErr2

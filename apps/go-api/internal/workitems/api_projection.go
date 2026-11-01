@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 )
 
 // Bound relations follow the item's ownership, including corrupt or stale
@@ -37,7 +37,7 @@ func (r *Repository) boundIssueProjection(ctx context.Context, row map[string]an
 			parts = append(parts, key)
 		}
 	}
-	projected, err = djangoapi.MaskIssueParent(ctx, r.db, projected, q.ActorID)
+	projected, err = apicontract.MaskIssueParent(ctx, r.db, projected, q.ActorID)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (r *Repository) boundIssueProjection(ctx context.Context, row map[string]an
 		values := []any{}
 		if ids, ok := projected["assignees"].([]any); ok {
 			for _, id := range ids {
-				value, err := djangoapi.JSON(ctx, r.db, `SELECT jsonb_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'display_name',u.display_name,'email',u.email,'avatar',u.avatar)||`+djangoapi.FileAssetURLFieldSQL("u.avatar_asset_id", "u.avatar", "avatar_url")+` FROM users u WHERE u.id=$1`, id)
+				value, err := apicontract.JSON(ctx, r.db, `SELECT jsonb_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'display_name',u.display_name,'email',u.email,'avatar',u.avatar)||`+apicontract.FileAssetURLFieldSQL("u.avatar_asset_id", "u.avatar", "avatar_url")+` FROM users u WHERE u.id=$1`, id)
 				if err != nil {
 					return nil, err
 				}

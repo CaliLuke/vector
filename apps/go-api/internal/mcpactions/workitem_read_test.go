@@ -8,7 +8,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	"github.com/stretchr/testify/require"
 
@@ -77,9 +77,9 @@ func TestWorkitemReadFailuresAreSanitized(t *testing.T) {
 			err  error
 			code string
 		}{
-			{&djangoapi.HTTPError{Status: 400}, "invalid_params"},
-			{&djangoapi.HTTPError{Status: 403}, "forbidden"},
-			{&djangoapi.HTTPError{Status: 404}, "not_found"},
+			{&apicontract.HTTPError{Status: 400}, "invalid_params"},
+			{&apicontract.HTTPError{Status: 403}, "forbidden"},
+			{&apicontract.HTTPError{Status: 404}, "not_found"},
 			{errors.New("private database secret"), "internal_error"},
 		} {
 			t.Run(tool+"/"+tc.code, func(t *testing.T) {

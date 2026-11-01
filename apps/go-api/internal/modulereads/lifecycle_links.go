@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -96,15 +96,15 @@ func (repository *LifecycleRepository) AuthorizeAppProject(ctx context.Context, 
 
 // CreateLink validates serializer fields before resolving the scoped module,
 // then checks duplicate URLs before saving, matching the Django call order.
-func (repository *LifecycleRepository) CreateLink(ctx context.Context, userID, slug, projectID, moduleID string, fields map[string]any, surrogates map[string][]string) (json.RawMessage, error) {
-	values, fieldErrors := validateModuleLinkFields(fields, surrogates, "POST", true)
+func (repository *LifecycleRepository) CreateLink(ctx context.Context, userID, slug, projectID, moduleID string, fields map[string]any) (json.RawMessage, error) {
+	values, fieldErrors := validateModuleLinkFields(fields, "POST", true)
 	if len(fieldErrors) != 0 {
 		return nil, &ModuleValidationError{Body: fieldErrors}
 	}
 	moduleIDValue, err := repository.scopedModule(ctx, slug, projectID, moduleID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
+			return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
 		}
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func (repository *LifecycleRepository) CreateLink(ctx context.Context, userID, s
 	return result, nil
 }
 
-func (repository *LifecycleRepository) UpdateLink(ctx context.Context, userID, slug, projectID, moduleID, linkID string, fields map[string]any, surrogates map[string][]string, replace bool) (json.RawMessage, error) {
+func (repository *LifecycleRepository) UpdateLink(ctx context.Context, userID, slug, projectID, moduleID, linkID string, fields map[string]any, replace bool) (json.RawMessage, error) {
 	method := "PATCH"
 	if replace {
 		method = "PUT"
@@ -142,7 +142,7 @@ func (repository *LifecycleRepository) UpdateLink(ctx context.Context, userID, s
 	if err := repository.authorizeLink(ctx, userID, slug, projectID, moduleID, linkID); err != nil {
 		return nil, err
 	}
-	values, fieldErrors := validateModuleLinkFields(fields, surrogates, method, replace)
+	values, fieldErrors := validateModuleLinkFields(fields, method, replace)
 	if len(fieldErrors) != 0 {
 		return nil, &ModuleValidationError{Body: fieldErrors}
 	}
@@ -187,7 +187,7 @@ func (repository *LifecycleRepository) UpdateLink(ctx context.Context, userID, s
 func (repository *LifecycleRepository) CheckLink(ctx context.Context, userID, slug, projectID, moduleID, linkID string) error {
 	err := repository.authorizeLink(ctx, userID, slug, projectID, moduleID, linkID)
 	if errors.Is(err, ErrNotFound) {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "No ModuleLink matches the given query."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "No ModuleLink matches the given query."}}
 	}
 	return err
 }
@@ -294,13 +294,13 @@ func (repository *LifecycleRepository) duplicateLink(ctx context.Context, module
 	return nil
 }
 
-func validateModuleLinkFields(fields map[string]any, surrogates map[string][]string, method string, requiredURL bool) (map[string]any, map[string]any) {
+func validateModuleLinkFields(fields map[string]any, method string, requiredURL bool) (map[string]any, map[string]any) {
 	values := map[string]any{}
 	failures := map[string]any{}
 	if value, present := fields["title"]; present {
 		if value == nil {
 			values["title"] = nil
-		} else if text, messages := djangoinput.TextField(value, true, 255, surrogates["title"]); len(messages) > 0 {
+		} else if text, messages := requestinput.TextField(value, true, 255); len(messages) > 0 {
 			failures["title"] = messages
 		} else {
 			values["title"] = text
@@ -327,16 +327,16 @@ func validateModuleLinkFields(fields map[string]any, surrogates map[string][]str
 		if text != "" && !strings.HasPrefix(text, "http://") && !strings.HasPrefix(text, "https://") {
 			text = "http://" + text
 		}
-		if validatedURL, messages := djangoinput.TextField(text, false, 200, surrogates["url"]); len(messages) > 0 {
+		if validatedURL, messages := requestinput.TextField(text, false, 200); len(messages) > 0 {
 			failures["url"] = messages
 		} else if validatedURL == "" {
 			failures["url"] = []string{"This field may not be blank."}
-		} else if !djangoinput.ValidURL(validatedURL) {
+		} else if !requestinput.ValidURL(validatedURL) {
 			failures["url"] = []string{"Enter a valid URL."}
 		} else {
 			values["url"] = validatedURL
 		}
-	} else if _, messages := djangoinput.TextField(value, false, 200, surrogates["url"]); len(messages) > 0 {
+	} else if _, messages := requestinput.TextField(value, false, 200); len(messages) > 0 {
 		failures["url"] = messages
 	} else {
 		failures["url"] = []string{"Enter a valid URL."}

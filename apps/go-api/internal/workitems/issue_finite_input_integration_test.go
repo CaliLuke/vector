@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/bootstrap"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/stretchr/testify/require"
@@ -51,7 +51,7 @@ func TestIssueNonfiniteOrderLeavesRowsSequencesAndEffectsUnchanged(t *testing.T)
 				q := request
 				q.Method, q.API = route.method, route.api
 				_, writeErr := repo.Execute(ctx, q, strings.NewReader(`{"name":"Rejected","sort_order":"`+value+`"}`), "application/json")
-				var failure *djangoapi.HTTPError
+				var failure *apicontract.HTTPError
 				require.ErrorAs(t, writeErr, &failure)
 				require.Equal(t, 400, failure.Status)
 				require.Equal(t, []string{"A valid number is required."}, failure.Body["sort_order"])

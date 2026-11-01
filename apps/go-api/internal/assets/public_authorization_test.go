@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/google/uuid"
 )
 
@@ -24,7 +24,7 @@ func (r *publicOwnershipRepository) PublicProjectBoard(context.Context, string, 
 
 func (r *publicOwnershipRepository) PublicOwnedProjectAsset(_ context.Context, actorID, workspaceID, projectID, assetID uuid.UUID, _ bool) (FileAsset, error) {
 	if actorID != r.userID || workspaceID != r.workspaceID || projectID != r.projectID || assetID != r.assetID {
-		return FileAsset{}, &djangoapi.HTTPError{Status: 404}
+		return FileAsset{}, &apicontract.HTTPError{Status: 404}
 	}
 	return r.asset, nil
 }
@@ -32,7 +32,7 @@ func (r *publicOwnershipRepository) PublicOwnedProjectAsset(_ context.Context, a
 func (r *publicOwnershipRepository) UpdatePublicAsset(_ context.Context, actorID, workspaceID, projectID, assetID uuid.UUID, _ []byte) error {
 	r.lastActor = actorID
 	if actorID != r.userID || workspaceID != r.workspaceID || projectID != r.projectID || assetID != r.assetID {
-		return &djangoapi.HTTPError{Status: 404}
+		return &apicontract.HTTPError{Status: 404}
 	}
 	r.updated++
 	return nil
@@ -41,7 +41,7 @@ func (r *publicOwnershipRepository) UpdatePublicAsset(_ context.Context, actorID
 func (r *publicOwnershipRepository) DeletePublicAsset(_ context.Context, actorID, workspaceID, projectID, assetID uuid.UUID) error {
 	r.lastActor = actorID
 	if actorID != r.userID || workspaceID != r.workspaceID || projectID != r.projectID || assetID != r.assetID {
-		return &djangoapi.HTTPError{Status: 404}
+		return &apicontract.HTTPError{Status: 404}
 	}
 	r.deleted++
 	return nil
@@ -50,7 +50,7 @@ func (r *publicOwnershipRepository) DeletePublicAsset(_ context.Context, actorID
 func (r *publicOwnershipRepository) RestorePublicAsset(_ context.Context, actorID, workspaceID, projectID, assetID uuid.UUID) error {
 	r.lastActor = actorID
 	if actorID != r.userID || workspaceID != r.workspaceID || projectID != r.projectID || assetID != r.assetID {
-		return &djangoapi.HTTPError{Status: 404}
+		return &apicontract.HTTPError{Status: 404}
 	}
 	r.restored++
 	return nil
@@ -59,7 +59,7 @@ func (r *publicOwnershipRepository) RestorePublicAsset(_ context.Context, actorI
 func (r *publicOwnershipRepository) PublicBulkAssetRows(_ context.Context, actorID, workspaceID, projectID uuid.UUID, ids []uuid.UUID) ([]uuid.UUID, string, error) {
 	r.lastActor = actorID
 	if actorID != r.userID || workspaceID != r.workspaceID || projectID != r.projectID || len(ids) != 1 || ids[0] != r.assetID {
-		return nil, "", &djangoapi.HTTPError{Status: 404}
+		return nil, "", &apicontract.HTTPError{Status: 404}
 	}
 	return ids, "COMMENT_DESCRIPTION", nil
 }
@@ -67,7 +67,7 @@ func (r *publicOwnershipRepository) PublicBulkAssetRows(_ context.Context, actor
 func (r *publicOwnershipRepository) BulkAssociatePublicAssetComments(_ context.Context, actorID, workspaceID, projectID, commentID uuid.UUID, ids []uuid.UUID) error {
 	r.lastActor = actorID
 	if actorID != r.userID || workspaceID != r.workspaceID || projectID != r.projectID || commentID != r.commentID || len(ids) != 1 || ids[0] != r.assetID {
-		return &djangoapi.HTTPError{Status: 404}
+		return &apicontract.HTTPError{Status: 404}
 	}
 	r.associated++
 	return nil

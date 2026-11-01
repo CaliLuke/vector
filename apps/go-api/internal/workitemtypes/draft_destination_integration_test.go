@@ -11,7 +11,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 )
 
@@ -78,14 +78,14 @@ func TestDraftDestinationErrorsPreserveOriginalDraft(t *testing.T) {
 		`{"project_id":"` + target + `"}`,
 	} {
 		_, err := publishDraftForTest(f, repo, draft, f.member, body)
-		var failure *djangoapi.HTTPError
+		var failure *apicontract.HTTPError
 		if !errors.As(err, &failure) || failure.Status != 400 {
 			t.Fatalf("invalid destination or old relation accepted: %s %v", body, err)
 		}
 	}
 	f.exec(`UPDATE project_members SET is_active=false WHERE project_id=$1`, target)
 	_, err := publishDraftForTest(f, repo, draft, f.member, `{"project_id":"`+target+`","label_ids":[],"assignee_ids":[]}`)
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if !errors.As(err, &failure) || failure.Status != 403 {
 		t.Fatalf("denied destination accepted: %v", err)
 	}

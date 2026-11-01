@@ -7,8 +7,8 @@ import (
 	"maps"
 	stduuid "uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -54,7 +54,7 @@ func (r *Repository) applyPageAPI(ctx context.Context, tx pgx.Tx, in PageAPIComm
 		if marshalErr != nil {
 			return id, nil, marshalErr
 		}
-		input, marshalErr := djangoinput.Parse(bytes.NewReader(raw), "application/json")
+		input, marshalErr := requestinput.Parse(bytes.NewReader(raw), "application/json")
 		if marshalErr != nil {
 			return id, nil, marshalErr
 		}

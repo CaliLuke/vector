@@ -18,7 +18,7 @@ import (
 	publicfeedbackclient "github.com/CaliLuke/go-plane/gen/http/public_feedback/client"
 	publicfeedbackserver "github.com/CaliLuke/go-plane/gen/http/public_feedback/server"
 	publicfeedback "github.com/CaliLuke/go-plane/gen/public_feedback"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	invitationsmembershipserver "github.com/CaliLuke/go-plane/invitationsmembership/gen/http/invitations_membership/server"
 	modulelifecycleclient "github.com/CaliLuke/go-plane/modulelifecycle/gen/http/module_lifecycle_api/client"
 	modulelifecycleserver "github.com/CaliLuke/go-plane/modulelifecycle/gen/http/module_lifecycle_api/server"
@@ -165,7 +165,7 @@ func TestPublicFeedbackGeneratedClientDecodesKindFromStatusWithoutHeader(t *test
 	}
 
 	items := &publicFeedbackMiddlewareItems{
-		voteDeleteErr: &djangoapi.HTTPError{
+		voteDeleteErr: &apicontract.HTTPError{
 			Status: http.StatusBadRequest,
 			Body:   map[string]any{"error": "The required object does not exist."},
 		},

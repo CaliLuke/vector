@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	"github.com/stretchr/testify/assert"
@@ -41,7 +41,7 @@ func (s *projectStore) AuthorizeLifecycle(_ context.Context, command projectmemb
 		return s.authorizeErr
 	}
 	if _, ok := s.rows[projectScope{command.UserID, command.Slug, command.ProjectID}]; !ok {
-		return &djangoapi.HTTPError{Status: http.StatusForbidden, Body: map[string]any{"detail": "private permission details"}}
+		return &apicontract.HTTPError{Status: http.StatusForbidden, Body: map[string]any{"detail": "private permission details"}}
 	}
 	return nil
 }
@@ -128,9 +128,9 @@ func TestProjectMemberFailuresAreSafe(t *testing.T) {
 		body       any
 	}{
 		{"database error", "internal_error", errors.New("private database password"), []any{}},
-		{"deleted workspace", "not_found", &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "private details"}}, []any{}},
-		{"not found", "not_found", &djangoapi.HTTPError{Status: 404}, []any{}},
-		{"domain failure", "internal_error", &djangoapi.HTTPError{Status: 500}, []any{}},
+		{"deleted workspace", "not_found", &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "private details"}}, []any{}},
+		{"not found", "not_found", &apicontract.HTTPError{Status: 404}, []any{}},
+		{"domain failure", "internal_error", &apicontract.HTTPError{Status: 500}, []any{}},
 		{"null result", "internal_error", nil, nil},
 		{"object result", "internal_error", nil, map[string]any{}},
 		{"null row", "internal_error", nil, []any{nil}},

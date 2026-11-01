@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/google/uuid"
@@ -38,7 +38,7 @@ func TestCustomPropertyCatalogIdentityAndForeignSelections(t *testing.T) {
 		fmt.Sprintf(`{"customproperty_%s_level_%s__exact":"%s"}`, cascade, level, root),
 	} {
 		_, err := typeDiscoveryList(f, repo, "api_workspaces_by_slug_projects_by_project_id_issues", f.project, f.owner, filter, "", false)
-		var invalid *djangoapi.HTTPError
+		var invalid *apicontract.HTTPError
 		if !errors.As(err, &invalid) || invalid.Status != 400 {
 			t.Fatalf("unavailable catalog/level accepted: %v", err)
 		}
@@ -60,7 +60,7 @@ func TestCustomPropertyReferenceFiltersRespectScope(t *testing.T) {
 	}
 	for _, filter := range []string{fmt.Sprintf(`{"customproperty_%s__exact":"%s"}`, member, f.outsider), fmt.Sprintf(`{"customproperty_%s__exact":"%s"}`, release, foreign), fmt.Sprintf(`{"customproperty_%s__exact":4}`, uuid.NewString())} {
 		_, err := typeDiscoveryList(f, repo, "api_workspaces_by_slug_projects_by_project_id_issues", f.project, f.owner, filter, "", false)
-		var invalid *djangoapi.HTTPError
+		var invalid *apicontract.HTTPError
 		if !errors.As(err, &invalid) || invalid.Status != 400 {
 			t.Fatalf("foreign identity accepted: %v", err)
 		}

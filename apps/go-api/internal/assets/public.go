@@ -9,8 +9,8 @@ import (
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	api "github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 )
 
@@ -24,7 +24,7 @@ func (service *LifecycleService) createPublicAsset(ctx context.Context, anchor s
 		return nil, err
 	}
 	if !found {
-		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Project is not published"}}
+		return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Project is not published"}}
 	}
 	request, err := service.decodeUploadRequest(ctx, body)
 	if err != nil {
@@ -40,7 +40,7 @@ func (service *LifecycleService) createPublicAsset(ctx context.Context, anchor s
 	}
 	size, err := request.IntSize(service.assets.fileLimit)
 	if err != nil {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid size.", "status": false}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid size.", "status": false}}
 	}
 	if size < 1 {
 		size = 1
@@ -50,10 +50,10 @@ func (service *LifecycleService) createPublicAsset(ctx context.Context, anchor s
 	}
 	entityType := stringValue(request.EntityType)
 	if !validEntityType(entityType) {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid entity type.", "status": false}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid entity type.", "status": false}}
 	}
 	if !allowedV2ProfileMIME(contentType) {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid file type. Only JPEG, PNG, WebP, JPG and GIF files are allowed.", "status": false}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid file type. Only JPEG, PNG, WebP, JPG and GIF files are allowed.", "status": false}}
 	}
 	entityIdentifier := stringValue(request.EntityID)
 	assetID := uuid.New()
@@ -85,18 +85,18 @@ func (service *LifecycleService) getPublicAsset(ctx context.Context, anchor, raw
 		return nil, err
 	}
 	if !found {
-		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Requested resource could not be found."}}
+		return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Requested resource could not be found."}}
 	}
 	assetID, err := uuid.Parse(rawAssetID)
 	if err != nil {
-		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	asset, err := service.assets.repository.PublicProjectAsset(ctx, workspaceID, projectID, assetID, false, true)
 	if err != nil {
 		return nil, sourceLookupError(err, map[string]any{"error": "The required object does not exist."})
 	}
 	if !asset.IsUploaded {
-		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
+		return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
 	}
 	attributes, err := fileAssetAttributesObject(asset.Attributes)
 	if err != nil {
@@ -127,11 +127,11 @@ func (service *LifecycleService) confirmPublicAsset(ctx context.Context, anchor,
 		return err
 	}
 	if !found {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Project is not published"}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Project is not published"}}
 	}
 	assetID, err := uuid.Parse(rawAssetID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	asset, err := service.assets.repository.PublicOwnedProjectAsset(ctx, userID, workspaceID, projectID, assetID, false)
 	if err != nil {
@@ -159,11 +159,11 @@ func (service *LifecycleService) deletePublicAsset(ctx context.Context, anchor, 
 		return err
 	}
 	if !found {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Project is not published"}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Project is not published"}}
 	}
 	assetID, err := uuid.Parse(rawAssetID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	return service.assets.repository.DeletePublicAsset(ctx, userID, workspaceID, projectID, assetID)
 }
@@ -178,11 +178,11 @@ func (service *LifecycleService) restorePublicAsset(ctx context.Context, anchor,
 		return err
 	}
 	if !found {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Project is not published"}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Project is not published"}}
 	}
 	assetID, err := uuid.Parse(rawAssetID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	return service.assets.repository.RestorePublicAsset(ctx, userID, workspaceID, projectID, assetID)
 }
@@ -197,7 +197,7 @@ func (service *LifecycleService) bulkAssociatePublicAssets(ctx context.Context, 
 		return err
 	}
 	if !found {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Project is not published"}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Project is not published"}}
 	}
 	var fields map[string]any
 	if body != nil {
@@ -206,7 +206,7 @@ func (service *LifecycleService) bulkAssociatePublicAssets(ctx context.Context, 
 		if contentType == "" {
 			contentType = "application/json"
 		}
-		input, parseErr := djangoinput.Parse(body, contentType)
+		input, parseErr := requestinput.Parse(body, contentType)
 		if parseErr != nil {
 			return parseErr
 		}
@@ -222,17 +222,17 @@ func (service *LifecycleService) bulkAssociatePublicAssets(ctx context.Context, 
 		}
 	}
 	if len(rawIDs) == 0 {
-		return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "No asset ids provided."}}
+		return &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "No asset ids provided."}}
 	}
 	assetIDs := make([]uuid.UUID, 0, len(rawIDs))
 	for _, raw := range rawIDs {
 		value, ok := raw.(string)
 		if !ok {
-			return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "The requested asset could not be found."}}
+			return &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "The requested asset could not be found."}}
 		}
 		id, parseErr := uuid.Parse(value)
 		if parseErr != nil {
-			return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "The requested asset could not be found."}}
+			return &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "The requested asset could not be found."}}
 		}
 		assetIDs = append(assetIDs, id)
 	}
@@ -241,12 +241,12 @@ func (service *LifecycleService) bulkAssociatePublicAssets(ctx context.Context, 
 		return err
 	}
 	if len(matchedIDs) == 0 {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
 	}
 	if entityType == "COMMENT_DESCRIPTION" {
 		commentID, parseErr := uuid.Parse(rawEntityID)
 		if parseErr != nil {
-			return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+			return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 		}
 		return service.assets.repository.BulkAssociatePublicAssetComments(ctx, userID, workspaceID, projectID, commentID, matchedIDs)
 	}

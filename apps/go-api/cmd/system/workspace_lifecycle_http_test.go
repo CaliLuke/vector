@@ -37,15 +37,15 @@ func TestWorkspaceLifecycleUnsupportedMethodsStillUseSessionProtocol(t *testing.
 	}
 }
 
-func TestWorkspaceLifecycleTransportUsesDjangoSessionProtocol(t *testing.T) {
+func TestWorkspaceLifecycleTransportUsesBrowserSessionProtocol(t *testing.T) {
 	policy, err := djangoRuntimeCORSPolicy([]string{"https://app.example.test"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	options := apiV1CompatibilityOptions{bodySizeLimit: defaultFileSizeLimit}
-	stack := sessionServiceMiddlewareStack(options, nil, djangoSessionCookieConfig{})
+	stack := sessionServiceMiddlewareStack(options, nil, browserSessionCookieConfig{})
 	next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusTeapot) })
-	protocol := newSessionServiceProtocolMiddleware(notificationProtocolMetadata, sessionProtocolAuthorizerStub{allowed: true}, policy, stack, djangoSessionCookieConfig{}, true, options)
+	protocol := newSessionServiceProtocolMiddleware(notificationProtocolMetadata, sessionProtocolAuthorizerStub{allowed: true}, policy, stack, browserSessionCookieConfig{}, true, options)
 	handler := readServicesCompatibilityMiddleware(protocol(next))
 
 	for _, test := range []struct {

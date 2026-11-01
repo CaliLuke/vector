@@ -6,7 +6,7 @@ import (
 	"strings"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -90,7 +90,7 @@ func schemaParent(ctx context.Context, tx pgx.Tx, workspace, actor string, input
 		return "", reject(422, "Choose an available parent work item.")
 	}
 	var visible bool
-	err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issues i WHERE i.id=$1 AND i.workspace_id=$2 AND i.deleted_at IS NULL AND `+djangoapi.IssueVisibleSQL("i", "$3::uuid", "$2::uuid")+`)`, id, workspace, actor).Scan(&visible)
+	err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issues i WHERE i.id=$1 AND i.workspace_id=$2 AND i.deleted_at IS NULL AND `+apicontract.IssueVisibleSQL("i", "$3::uuid", "$2::uuid")+`)`, id, workspace, actor).Scan(&visible)
 	if err != nil {
 		return "", err
 	}

@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 )
 
 var apiAuditFields = strings.Fields("id created_at updated_at deleted_at created_by updated_by workspace project")
@@ -12,7 +12,7 @@ var apiCycleFields = strings.Fields("name description start_date end_date owned_
 
 func (r *Repository) apiSerialize(ctx context.Context, row map[string]any, kind, fields, expand, actor string) (map[string]any, error) {
 	if kind == "issue" {
-		return djangoapi.SerializeVisibleIssue(ctx, r.database, row, fields, expand, actor)
+		return apicontract.SerializeVisibleIssue(ctx, r.database, row, fields, expand, actor)
 	}
 	declared := append([]string{}, apiAuditFields...)
 	if kind == "cycle" {
@@ -20,5 +20,5 @@ func (r *Repository) apiSerialize(ctx context.Context, row map[string]any, kind,
 	} else {
 		declared = append(declared, "issue", "cycle", "sub_issues_count")
 	}
-	return djangoapi.SerializeVisible(ctx, r.database, row, declared, fields, expand, false, actor)
+	return apicontract.SerializeVisible(ctx, r.database, row, declared, fields, expand, false, actor)
 }

@@ -7,8 +7,8 @@ import (
 	"maps"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -17,7 +17,7 @@ func (r *draftOperation) publishedDraft(ctx context.Context, q Request, workspac
 	if err != nil || !found {
 		return Result{}, found, err
 	}
-	body, projectionErr := visibleAppWriteProjection(ctx, r.db, q, row, djangoinput.Input{Fields: map[string]any{"assignee_ids": row["assignees"], "label_ids": row["labels"]}})
+	body, projectionErr := visibleAppWriteProjection(ctx, r.db, q, row, requestinput.Input{Fields: map[string]any{"assignee_ids": row["assignees"], "label_ids": row["labels"]}})
 	return Result{201, body}, true, projectionErr
 }
 
@@ -34,7 +34,7 @@ func (r *draftOperation) publishedDraftSource(ctx context.Context, q Request, wo
 	if err = allowProject(ctx, r.db, q, []int{15, 20}, false); err != nil {
 		return nil, q, true, err
 	}
-	row, err := readWorkItemRow(ctx, r.db, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND deleted_at IS NULL`, issue, workspace, project)
+	row, err := readWorkItemRow(ctx, r.db, `SELECT `+apicontract.IssueRowSQL("i")+` FROM issues i WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND deleted_at IS NULL`, issue, workspace, project)
 	if err != nil {
 		return nil, q, true, err
 	}
@@ -43,7 +43,7 @@ func (r *draftOperation) publishedDraftSource(ctx context.Context, q Request, wo
 
 // Saved values and relationships form the publication input; the request only
 // overrides fields the owner edited in the publication form. Read under its lock.
-func (r *draftOperation) publicationInput(ctx context.Context, draft map[string]any, input djangoinput.Input) (djangoinput.Input, error) {
+func (r *draftOperation) publicationInput(ctx context.Context, draft map[string]any, input requestinput.Input) (requestinput.Input, error) {
 	input, err := normalizePublicationForm(input)
 	if err != nil {
 		return input, err
@@ -81,7 +81,7 @@ func (r *draftOperation) publicationInput(ctx context.Context, draft map[string]
 	return input, nil
 }
 
-func normalizePublicationForm(input djangoinput.Input) (djangoinput.Input, error) {
+func normalizePublicationForm(input requestinput.Input) (requestinput.Input, error) {
 	if !input.Form {
 		return input, nil
 	}
@@ -92,7 +92,7 @@ func normalizePublicationForm(input djangoinput.Input) (djangoinput.Input, error
 	}
 	if value, present := input.Fields["description_json"]; present {
 		var parsed any
-		decoder := json.NewDecoder(strings.NewReader(djangoinput.ScalarString(value)))
+		decoder := json.NewDecoder(strings.NewReader(requestinput.ScalarString(value)))
 		decoder.UseNumber()
 		if err := decoder.Decode(&parsed); err != nil {
 			return input, invalid(map[string]any{"description_json": []string{"Value must be valid JSON."}})
@@ -116,7 +116,7 @@ func (r *draftOperation) validatePublicationRelations(ctx context.Context, q Req
 }
 
 // Select and authorize the publication target without first mutating the private draft.
-func (r *draftOperation) publicationDestination(ctx context.Context, q Request, draft map[string]any, input djangoinput.Input) (Request, error) {
+func (r *draftOperation) publicationDestination(ctx context.Context, q Request, draft map[string]any, input requestinput.Input) (Request, error) {
 	value := draft["project_id"]
 	if explicit, ok := input.Fields["project_id"]; ok {
 		value = explicit
@@ -126,12 +126,12 @@ func (r *draftOperation) publicationDestination(ctx context.Context, q Request, 
 	if value == nil || value == "" {
 		return q, invalid(map[string]any{"project_id": []string{"Select a project before publishing."}})
 	}
-	id, err := djangoinput.UUID(value)
+	id, err := requestinput.UUID(value)
 	if err != nil {
 		return q, invalid(map[string]any{"project_id": []string{"Enter a valid project ID."}})
 	}
 	if alias, present := input.Fields["project"]; present {
-		aliasID, aliasErr := djangoinput.UUID(alias)
+		aliasID, aliasErr := requestinput.UUID(alias)
 		if aliasErr != nil || aliasID != id {
 			return q, invalid(map[string]any{"project_id": []string{"Conflicting project IDs."}})
 		}

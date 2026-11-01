@@ -3,10 +3,10 @@ package workitems
 import (
 	"maps"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
-func composedItemEditInput(review *itemEditState, input djangoinput.Input, row map[string]any) djangoinput.Input {
+func composedItemEditInput(review *itemEditState, input requestinput.Input, row map[string]any) requestinput.Input {
 	if review == nil || len(review.plan.Preserved) == 0 {
 		return input
 	}

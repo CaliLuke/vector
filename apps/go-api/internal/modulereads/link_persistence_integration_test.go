@@ -44,7 +44,7 @@ func TestModuleLinkEditsPreserveOmittedMetadataAndAdmitScopedDeletion(t *testing
 	if err != nil {
 		t.Fatal(err)
 	}
-	raw, err := repository.CreateLink(ctx, linkActor, "links", linkProject, linkModule, map[string]any{"title": "Documentation", "url": "https://example.test/docs", "metadata": map[string]any{"source": "manual"}}, nil)
+	raw, err := repository.CreateLink(ctx, linkActor, "links", linkProject, linkModule, map[string]any{"title": "Documentation", "url": "https://example.test/docs", "metadata": map[string]any{"source": "manual"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +56,7 @@ func TestModuleLinkEditsPreserveOmittedMetadataAndAdmitScopedDeletion(t *testing
 	if !ok || id == "" || created["project"] != linkProject || created["workspace"] != linkWorkspace || created["created_by"] != linkActor {
 		t.Fatalf("created link = %#v", created)
 	}
-	raw, err = repository.UpdateLink(ctx, linkActor, "links", linkProject, linkModule, id, map[string]any{"title": "Updated documentation", "url": "https://example.test/docs"}, nil, false)
+	raw, err = repository.UpdateLink(ctx, linkActor, "links", linkProject, linkModule, id, map[string]any{"title": "Updated documentation", "url": "https://example.test/docs"}, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -91,10 +91,10 @@ func TestModuleLinkDuplicateURLLeavesOnlyTheOriginalRow(t *testing.T) {
 		t.Fatal(err)
 	}
 	fields := map[string]any{"title": "Original", "url": "https://example.test/docs"}
-	if _, err = repository.CreateLink(ctx, linkActor, "links", linkProject, linkModule, fields, nil); err != nil {
+	if _, err = repository.CreateLink(ctx, linkActor, "links", linkProject, linkModule, fields); err != nil {
 		t.Fatal(err)
 	}
-	_, err = repository.CreateLink(ctx, linkActor, "links", linkProject, linkModule, fields, nil)
+	_, err = repository.CreateLink(ctx, linkActor, "links", linkProject, linkModule, fields)
 	var invalid *ModuleValidationError
 	if !errors.As(err, &invalid) {
 		t.Fatalf("duplicate error = %v", err)

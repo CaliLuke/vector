@@ -12,12 +12,12 @@ import (
 	"time"
 
 	api "github.com/CaliLuke/go-plane/cyclelifecycle/gen/cycle_lifecycle_api"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/cyclereads"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/loom/clue/log"
 	loomhttp "github.com/CaliLuke/loom/http"
 	loom "github.com/CaliLuke/loom/pkg"
@@ -130,7 +130,7 @@ func sessionCredentialFromContext(ctx context.Context) string {
 func cycleLifecycleError(status int, body map[string]any) error {
 	encoded, err := loom.JSONValueFrom(body)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 500, Body: map[string]any{"error": "Something went wrong please try again later"}}
+		return &apicontract.HTTPError{Status: 500, Body: map[string]any{"error": "Something went wrong please try again later"}}
 	}
 	return &api.CycleLifecycleError{Kind: fmt.Sprintf("status_%d", status), Body: encoded}
 }
@@ -255,7 +255,7 @@ func (service *cycleLifecycleService) create(ctx context.Context, slug, projectI
 	if hasMetadata && metadata.Headers().Get("Content-Type") != "" {
 		contentType = metadata.Headers().Get("Content-Type")
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return nil, cycleLifecycleRepoError(ctx, err, apiV1)
 	}
@@ -266,7 +266,7 @@ func (service *cycleLifecycleService) create(ctx context.Context, slug, projectI
 	if (fields["start_date"] != nil) != (fields["end_date"] != nil) {
 		return nil, cycleLifecycleError(400, map[string]any{"error": "Both start date and end date are either required or are to be null"})
 	}
-	validated, validationErrors := validateCycleCreateInput(fields, input.Surrogates, apiV1)
+	validated, validationErrors := validateCycleCreateInput(fields, apiV1)
 	if len(validationErrors) > 0 {
 		return nil, cycleLifecycleError(400, validationErrors)
 	}
@@ -281,7 +281,7 @@ func (service *cycleLifecycleService) create(ctx context.Context, slug, projectI
 // metadata. Request bodies, credentials, and error strings can contain user
 // data and are deliberately excluded.
 func cycleLifecycleLogError(ctx context.Context, operation, stage string, err error) {
-	var httpError *djangoapi.HTTPError
+	var httpError *apicontract.HTTPError
 	if errors.As(err, &httpError) && httpError.Status < 500 {
 		return
 	}
@@ -320,7 +320,7 @@ func cycleLifecycleErrorKind(err error) string {
 
 func cycleLifecycleRepoError(ctx context.Context, err error, apiV1 bool) error {
 	cycleLifecycleLogError(ctx, "request", "repository", err)
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	if errors.As(err, &response) {
 		return cycleLifecycleError(response.Status, response.Body)
 	}
@@ -351,11 +351,11 @@ func cycleLifecycleTypedResponse[T any](value map[string]any) (*T, error) {
 	return &result, nil
 }
 
-func validateCycleCreateInput(fields map[string]any, surrogates map[string][]string, apiV1 bool) (store.CycleCreate, map[string]any) {
-	return store.ValidateCreateInput(fields, surrogates, apiV1)
+func validateCycleCreateInput(fields map[string]any, apiV1 bool) (store.CycleCreate, map[string]any) {
+	return store.ValidateCreateInput(fields, apiV1)
 }
-func validateCyclePatchInput(fields map[string]any, surrogates map[string][]string, apiV1 bool) (map[string]any, map[string]any) {
-	return store.ValidatePatchInput(fields, surrogates, apiV1)
+func validateCyclePatchInput(fields map[string]any, apiV1 bool) (map[string]any, map[string]any) {
+	return store.ValidatePatchInput(fields, apiV1)
 }
 
 func (service *cycleLifecycleService) PostAPIWorkspacesBySlugProjectsByProjectIDCycles(ctx context.Context, payload *api.PostAPIWorkspacesBySlugProjectsByProjectIDCyclesPayload, body io.ReadCloser) (*api.PlaneAppSerializersCycleCycleserializerResponse, error) {
@@ -393,7 +393,7 @@ func (service *cycleLifecycleService) PostAPIWorkspacesBySlugProjectsByProjectID
 	if hasMetadata && metadata.Headers().Get("Content-Type") != "" {
 		contentType = metadata.Headers().Get("Content-Type")
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return nil, cycleLifecycleRepoError(ctx, err, false)
 	}
@@ -594,7 +594,7 @@ func (service *cycleLifecycleService) patch(ctx context.Context, slug, projectID
 	if hasMetadata && metadata.Headers().Get("Content-Type") != "" {
 		contentType = metadata.Headers().Get("Content-Type")
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return nil, cycleLifecycleRepoError(ctx, err, apiV1)
 	}
@@ -602,16 +602,13 @@ func (service *cycleLifecycleService) patch(ctx context.Context, slug, projectID
 		return nil, cycleLifecycleError(400, map[string]any{"non_field_errors": []string{"Invalid data. Expected a dictionary, but got " + strings.ToLower(input.Kind) + "."}})
 	}
 	validationInput := input.Fields
-	validationSurrogates := input.Surrogates
 	if completed {
 		validationInput = map[string]any{}
-		validationSurrogates = map[string][]string{}
 		if value, present := input.Fields["sort_order"]; present {
 			validationInput["sort_order"] = value
-			validationSurrogates["sort_order"] = input.Surrogates["sort_order"]
 		}
 	}
-	fields, validationErrors := validateCyclePatchInput(validationInput, validationSurrogates, apiV1)
+	fields, validationErrors := validateCyclePatchInput(validationInput, apiV1)
 	if len(validationErrors) > 0 {
 		return nil, cycleLifecycleError(400, validationErrors)
 	}
@@ -661,7 +658,7 @@ func (service *cycleLifecycleService) PutAPIWorkspacesBySlugProjectsByProjectIDC
 	if hasMetadata && metadata.Headers().Get("Content-Type") != "" {
 		contentType = metadata.Headers().Get("Content-Type")
 	}
-	if _, parseErr := djangoinput.Parse(body, contentType); parseErr != nil {
+	if _, parseErr := requestinput.Parse(body, contentType); parseErr != nil {
 		return nil, cycleLifecycleRepoError(ctx, parseErr, false)
 	}
 	cycle, err := service.repo.PutNoop(ctx, payload.Slug, payload.ProjectID, payload.Pk, principal.userID.String())

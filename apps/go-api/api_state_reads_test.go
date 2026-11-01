@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	api "github.com/CaliLuke/go-plane/apistatereads/gen/api_state_reads"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/projectstatereads"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/CaliLuke/loom/security"
@@ -82,7 +82,7 @@ func TestAPIStateDetailPreservesPathIdentityAndRawQuery(t *testing.T) {
 }
 
 func TestAPIStateMapsPaginationSourceError(t *testing.T) {
-	repository := &apiStateRepositoryStub{readErr: &djangoapi.HTTPError{Status: 500, Body: map[string]any{"error": "Something went wrong please try again later"}}}
+	repository := &apiStateRepositoryStub{readErr: &apicontract.HTTPError{Status: 500, Body: map[string]any{"error": "Something went wrong please try again later"}}}
 	keys := &activityAPIKeyStub{principal: apikey.Principal{UserID: uuid.New(), Timezone: "UTC"}}
 	value, err := NewAPIStateReads(repository, keys, &activityThrottleStub{rate: apikey.Rate{Allowed: true}})
 	if err != nil {

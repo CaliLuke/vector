@@ -1,12 +1,12 @@
 package workitemhistory
 
-import "github.com/CaliLuke/go-plane/internal/djangoapi"
+import "github.com/CaliLuke/go-plane/internal/apicontract"
 
 // Activity values contain historical names, so masking only the identifier would
 // still reveal a parent in a project the reader cannot access today.
 func parentActivityVisibilitySQL() string {
 	visible := func(side string) string {
-		return `(COALESCE(a.` + side + `_value,'')='' AND COALESCE(a.` + side + `_identifier::text,'')='' OR EXISTS(SELECT 1 FROM issues related WHERE related.id::text=a.` + side + `_identifier::text AND ` + djangoapi.IssueVisibleSQL("related", "$5::uuid", "a.workspace_id") + `))`
+		return `(COALESCE(a.` + side + `_value,'')='' AND COALESCE(a.` + side + `_identifier::text,'')='' OR EXISTS(SELECT 1 FROM issues related WHERE related.id::text=a.` + side + `_identifier::text AND ` + apicontract.IssueVisibleSQL("related", "$5::uuid", "a.workspace_id") + `))`
 	}
 	old, next := visible("old"), visible("new")
 	return `||CASE WHEN a.field IN ('parent','parent_id') THEN jsonb_build_object(

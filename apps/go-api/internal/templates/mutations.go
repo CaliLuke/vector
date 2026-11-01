@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
@@ -23,7 +23,7 @@ func row(ctx context.Context, tx pgx.Tx, q Query) (map[string]any, error) {
 		return nil, err
 	}
 	var value map[string]any
-	err = djangoapi.DecodeJSON(raw, &value)
+	err = apicontract.DecodeJSON(raw, &value)
 	return value, err
 }
 func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.Result, error) {
@@ -129,7 +129,7 @@ func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.R
 			if operationErr2 != nil {
 				return nil, operationErr2
 			}
-			raw, operationErr2 = djangoapi.JSONTimestamps(raw, in.Timezone)
+			raw, operationErr2 = apicontract.JSONTimestamps(raw, in.Timezone)
 			if operationErr2 != nil {
 				return nil, operationErr2
 			}

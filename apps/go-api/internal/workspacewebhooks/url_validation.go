@@ -10,7 +10,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 type IPResolver interface {
@@ -28,7 +28,7 @@ func ValidateURL(ctx context.Context, raw, requestHost string) (string, error) {
 }
 
 func (validator URLValidator) Validate(ctx context.Context, raw, requestHost string) (string, error) {
-	if raw == "" || utf8.RuneCountInString(raw) > 1024 || !djangoinput.ValidURL(raw) {
+	if raw == "" || utf8.RuneCountInString(raw) > 1024 || !requestinput.ValidURL(raw) {
 		return "Enter a valid URL.", fmt.Errorf("invalid URL syntax")
 	}
 	parsed, err := url.Parse(raw)

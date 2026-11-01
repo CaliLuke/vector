@@ -6,11 +6,11 @@ import (
 	"testing"
 
 	api "github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 )
 
 func TestMapAssetsLifecycleErrorUsesOperationSpecificStatus(t *testing.T) {
-	err := mapAssetsLifecycleError("PostAPIAssetsV2WorkspacesBySlug", &djangoapi.HTTPError{
+	err := mapAssetsLifecycleError("PostAPIAssetsV2WorkspacesBySlug", &apicontract.HTTPError{
 		Status: 405,
 		Body:   map[string]any{"detail": `Method "PATCH" not allowed.`},
 	})
@@ -46,7 +46,7 @@ func TestMapAssetsLifecycleErrorFallsBackToOperationGeneric500(t *testing.T) {
 }
 
 func TestMapAssetsLifecycleErrorUsesValueReceiverResponse(t *testing.T) {
-	err := mapAssetsLifecycleError("GetAPIV1WorkspacesBySlugAssetsByAssetID", &djangoapi.HTTPError{
+	err := mapAssetsLifecycleError("GetAPIV1WorkspacesBySlugAssetsByAssetID", &apicontract.HTTPError{
 		Status: 400,
 		Body:   map[string]any{"error": "bad request"},
 	})

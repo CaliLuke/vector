@@ -7,7 +7,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workspaceexports"
 	"github.com/google/uuid"
 )
@@ -87,7 +87,7 @@ func assertCustomExportHistoryCount(t *testing.T, f projectTypeFixture, want int
 	if err != nil {
 		t.Fatal(err)
 	}
-	raw, err := repo.History(f.ctx, f.owner, "types", djangoapi.Query{Params: map[string]string{"per_page": "20", "cursor": "20:1:0"}})
+	raw, err := repo.History(f.ctx, f.owner, "types", apicontract.Query{Params: map[string]string{"per_page": "20", "cursor": "20:1:0"}})
 	if err != nil {
 		t.Fatal(err)
 	}

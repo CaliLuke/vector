@@ -135,7 +135,7 @@ func generate() ([]byte, error) {
 	source.WriteString("//go:generate go run ./bindingsgen -output service_bindings.go\n\n")
 	source.WriteString("package assets\n\nimport (\n\t\"context\"\n\t\"encoding/json\"\n\t\"errors\"\n\t\"fmt\"\n\t\"io\"\n\t\"reflect\"\n\n")
 	source.WriteString("\tapi \"github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api\"\n")
-	source.WriteString("\t\"github.com/CaliLuke/go-plane/internal/djangoapi\"\n")
+	source.WriteString("\t\"github.com/CaliLuke/go-plane/internal/apicontract\"\n")
 	for _, imported := range sortedImports(usedImports) {
 		source.WriteString("\t" + imported.name + " " + strconv.Quote(imported.path) + "\n")
 	}
@@ -246,7 +246,7 @@ func renderErrorMapper(statusTypes map[string]map[string]statusType) string {
 func mapAssetsLifecycleError(operation string, err error) error {
 	status := 500
 	body := any(map[string]any{"error": "Something went wrong please try again later"})
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	if errors.As(err, &response) {
 		status = response.Status
 		body = response.Body

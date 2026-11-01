@@ -12,7 +12,7 @@ import (
 	"reflect"
 
 	api "github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 )
 
 type BindingResultTypeError struct {
@@ -55,7 +55,7 @@ func isNilable(kind reflect.Kind) bool {
 func mapAssetsLifecycleError(operation string, err error) error {
 	status := 500
 	body := any(map[string]any{"error": "Something went wrong please try again later"})
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	if errors.As(err, &response) {
 		status = response.Status
 		body = response.Body

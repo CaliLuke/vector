@@ -14,9 +14,9 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	api "github.com/CaliLuke/go-plane/projectmembershiplifecycle/gen/project_membership_lifecycle"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -160,7 +160,7 @@ func projectMembershipLifecycleError(status int, body map[string]any) error {
 	return result
 }
 func projectMembershipLifecycleMapError(err error) error {
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	if errors.As(err, &response) {
 		return projectMembershipLifecycleError(response.Status, response.Body)
 	}

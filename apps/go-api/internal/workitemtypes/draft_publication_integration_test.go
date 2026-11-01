@@ -13,7 +13,7 @@ import (
 	"testing"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 )
 
@@ -95,7 +95,7 @@ func TestDraftPublicationRetainsSavedDataAndRetriesAfterCleanup(t *testing.T) {
 		t.Fatalf("retry repeated durable work: issues=%d effects=%d %v", issues, remainingEffects, err)
 	}
 	_, err = publishDraftForTest(f, repo, draft, f.owner, `{}`)
-	var denied *djangoapi.HTTPError
+	var denied *apicontract.HTTPError
 	if !errors.As(err, &denied) || denied.Status != 404 {
 		t.Fatalf("another owner obtained published draft: %v", err)
 	}
@@ -164,7 +164,7 @@ func TestDraftPublicationValidatesSavedRelationsAndHonorsExplicitClearing(t *tes
 	repo, draft, label := seedPublicationDraft(t, f)
 	f.exec(`UPDATE labels SET deleted_at=now() WHERE id=$1`, label)
 	_, err := publishDraftForTest(f, repo, draft, f.member, `{}`)
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if !errors.As(err, &failure) || failure.Status != 400 {
 		t.Fatalf("removed saved relationship silently discarded: %v", err)
 	}

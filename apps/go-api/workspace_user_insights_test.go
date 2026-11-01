@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	store "github.com/CaliLuke/go-plane/internal/workspaceuserinsights"
 	api "github.com/CaliLuke/go-plane/workspaceuserinsights/gen/workspace_user_insights"
@@ -42,7 +42,7 @@ type workspaceUserInsightsRepositoryStub struct {
 	activityErr  error
 	calls        []string
 	projects     []string
-	query        djangoapi.Query
+	query        apicontract.Query
 }
 
 func (r *workspaceUserInsightsRepositoryStub) AuthorizeWorkspace(_ context.Context, _, _ string, write bool) error {
@@ -56,7 +56,7 @@ func (r *workspaceUserInsightsRepositoryStub) AuthorizeWorkspace(_ context.Conte
 func (*workspaceUserInsightsRepositoryStub) Profile(context.Context, string, string, string) (json.RawMessage, error) {
 	return json.RawMessage(`{}`), nil
 }
-func (r *workspaceUserInsightsRepositoryStub) Activity(_ context.Context, _, _, _ string, projects []string, query djangoapi.Query) (json.RawMessage, error) {
+func (r *workspaceUserInsightsRepositoryStub) Activity(_ context.Context, _, _, _ string, projects []string, query apicontract.Query) (json.RawMessage, error) {
 	r.projects, r.query = projects, query
 	r.calls = append(r.calls, "activity")
 	return json.RawMessage(`{}`), r.activityErr
@@ -142,7 +142,7 @@ func TestWorkspaceActivityUsesRepeatedProjectQueryValues(t *testing.T) {
 }
 
 func TestWorkspaceUserInsightsActivityPaginationZeroPreservesApproved400(t *testing.T) {
-	repo := &workspaceUserInsightsRepositoryStub{activityErr: &djangoapi.HTTPError{
+	repo := &workspaceUserInsightsRepositoryStub{activityErr: &apicontract.HTTPError{
 		Status: 400, Body: map[string]any{"detail": "Error in parsing"},
 	}}
 	service := newWorkspaceUserInsightsTestService(t, repo, "UTC")

@@ -10,8 +10,8 @@ import (
 	"time"
 	stduuid "uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -93,7 +93,7 @@ func (repository *InvitationsRepository) RetrieveRole(ctx context.Context, actor
 }
 
 func invitationHTTP(status int, body map[string]any) error {
-	return &djangoapi.HTTPError{Status: status, Body: body}
+	return &apicontract.HTTPError{Status: status, Body: body}
 }
 
 func apiInvitationValues(payload map[string]any, requireEmail bool) (*string, *int, map[string]any) {
@@ -101,7 +101,7 @@ func apiInvitationValues(payload map[string]any, requireEmail bool) (*string, *i
 	var email *string
 	var role *int
 	if raw, present := payload["email"]; present {
-		value, messages := djangoinput.TextField(raw, false, 255, nil)
+		value, messages := requestinput.TextField(raw, false, 255)
 		if len(messages) > 0 {
 			failures["email"] = messages
 		} else if !validInvitationEmail(value) {
@@ -123,14 +123,14 @@ func apiInvitationValues(payload map[string]any, requireEmail bool) (*string, *i
 	return email, role, failures
 }
 func decodeInvitationSerializerPayload(body io.Reader, contentType string) (map[string]any, error) {
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return nil, err
 	}
 	return invitationSerializerData(input)
 }
 
-func invitationSerializerData(input djangoinput.Input) (map[string]any, error) {
+func invitationSerializerData(input requestinput.Input) (map[string]any, error) {
 	if input.Kind != "" {
 		message := "Invalid data. Expected a dictionary, but got " + input.Kind + "."
 		if input.Null {

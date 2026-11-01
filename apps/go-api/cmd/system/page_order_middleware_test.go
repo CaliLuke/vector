@@ -102,7 +102,7 @@ func newPageOrderHandler(t *testing.T) (http.Handler, *pageOrderAuthorizationDat
 		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 		pendingReplacementEndpoints{
 			pageReads: pagereads.NewEndpoints(service), pageReadsMetadata: &pageLifecycleProtocolAuthorizerStub{},
-			readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true},
+			readServicesSession: sessions, readServicesCookie: browserSessionCookieConfig{Name: "session-id", Configured: true},
 		},
 	)
 	return handler, database, visits

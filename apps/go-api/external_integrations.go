@@ -16,9 +16,8 @@ import (
 
 	api "github.com/CaliLuke/go-plane/externalintegrations/gen/external_integrations"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	store "github.com/CaliLuke/go-plane/internal/externalintegrations"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	loomhttp "github.com/CaliLuke/loom/http"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
@@ -246,7 +245,7 @@ func parseExternalAIRequest(ctx context.Context, body io.ReadCloser) (externalAI
 	if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok {
 		contentType = metadata.Headers().Get("Content-Type")
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return externalAIRequest{}, err
 	}
@@ -254,7 +253,7 @@ func parseExternalAIRequest(ctx context.Context, body io.ReadCloser) (externalAI
 		return externalAIRequest{}, errExternalAIExpectedObject
 	}
 	request := externalAIRequest{task: input.Fields["task"], prompt: input.Fields["prompt"]}
-	if !pythoncompat.Truthy(request.task) {
+	if !requestinput.Nonempty(request.task) {
 		return request, errExternalTaskRequired
 	}
 	if _, ok := request.task.(string); !ok {

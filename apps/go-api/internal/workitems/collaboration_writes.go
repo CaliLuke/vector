@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -29,10 +29,10 @@ func (r *Repository) collaborationActivity(ctx context.Context, q Request, kind,
 	}
 	return r.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, kwargs)
 }
-func (r *Repository) collaborationWebhook(ctx context.Context, q Request, row map[string]any, input djangoinput.Input, previous any) error {
+func (r *Repository) collaborationWebhook(ctx context.Context, q Request, row map[string]any, input requestinput.Input, previous any) error {
 	return r.publisher.Task(ctx, "plane.bgtasks.webhook_task.model_activity", []any{}, map[string]any{"model_name": "issue_comment", "model_id": row["id"], "requested_data": input.Fields, "current_instance": previous, "actor_id": q.ActorID, "slug": q.Slug, "origin": r.origin})
 }
-func (r *Repository) collaborationExternalConflict(ctx context.Context, q Request, input djangoinput.Input, old map[string]any) error {
+func (r *Repository) collaborationExternalConflict(ctx context.Context, q Request, input requestinput.Input, old map[string]any) error {
 	// The API source calls request.data.get before serializer validation.
 	// Arrays and JSON null therefore fail before any domain write or job.
 	if q.API && collaborationComment(q) && (input.Null || input.Kind != "") {
@@ -46,7 +46,7 @@ func (r *Repository) collaborationExternalConflict(ctx context.Context, q Reques
 		return nil
 	}
 	if old != nil {
-		if old["external_id"] == djangoinput.ScalarString(input.Fields["external_id"]) {
+		if old["external_id"] == requestinput.ScalarString(input.Fields["external_id"]) {
 			return nil
 		}
 		if !present {
@@ -56,7 +56,7 @@ func (r *Repository) collaborationExternalConflict(ctx context.Context, q Reques
 	var exists bool
 	var visibleID *string
 	query := `WITH conflicts AS (
-SELECT c.id,` + djangoapi.IssueVisibleSQL("visible_issue", "NULLIF($5,'')::uuid", "w.id") + ` AS visible
+SELECT c.id,` + apicontract.IssueVisibleSQL("visible_issue", "NULLIF($5,'')::uuid", "w.id") + ` AS visible
 FROM issue_comments c JOIN workspaces w ON w.id=c.workspace_id
 JOIN issues visible_issue ON visible_issue.id=c.issue_id AND visible_issue.project_id=c.project_id AND visible_issue.workspace_id=c.workspace_id
 WHERE c.project_id=$1 AND w.slug=$2 AND c.external_source=$3 AND c.external_id=$4 AND c.deleted_at IS NULL
@@ -73,7 +73,7 @@ SELECT EXISTS(SELECT 1 FROM conflicts), (SELECT id::text FROM conflicts WHERE vi
 		if old != nil {
 			body["id"] = old["id"]
 		}
-		return &djangoapi.HTTPError{Status: 409, Body: body}
+		return &apicontract.HTTPError{Status: 409, Body: body}
 	}
 	return nil
 }
@@ -86,10 +86,10 @@ func (r *Repository) validateCollaborationCommentReferences(ctx context.Context,
 		}
 		var visible bool
 		args := []any{parentID, q.IssueID, q.ProjectID, q.Slug, selfID}
-		visibility := `parent.access='EXTERNAL' AND ` + djangoapi.PublicRelatedIssueSQL("parent_issue", "parent_issue")
+		visibility := `parent.access='EXTERNAL' AND ` + apicontract.PublicRelatedIssueSQL("parent_issue", "parent_issue")
 		if !collaborationPublic(q) {
 			args = append(args, q.ActorID)
-			visibility = djangoapi.IssueVisibleSQL("parent_issue", "NULLIF($6,'')::uuid", "parent_workspace.id")
+			visibility = apicontract.IssueVisibleSQL("parent_issue", "NULLIF($6,'')::uuid", "parent_workspace.id")
 		}
 		query := `SELECT EXISTS(SELECT 1 FROM issue_comments parent
 JOIN issues parent_issue ON parent_issue.id=parent.issue_id
@@ -125,7 +125,7 @@ AND ` + visibility + `)`
 	return nil
 }
 
-func (r *Repository) writeCollaboration(ctx context.Context, q Request, kind, table string, input djangoinput.Input, changes, old map[string]any) (Result, error) {
+func (r *Repository) writeCollaboration(ctx context.Context, q Request, kind, table string, input requestinput.Input, changes, old map[string]any) (Result, error) {
 	if err := r.validateCollaborationWrite(ctx, q, kind, changes, old); err != nil {
 		return Result{}, err
 	}
@@ -233,7 +233,7 @@ func (r *Repository) validateCollaborationWrite(ctx context.Context, q Request, 
 	return nil
 }
 
-func (r *Repository) saveAPICollaborationAudit(ctx context.Context, q Request, kind string, input djangoinput.Input, row map[string]any) error {
+func (r *Repository) saveAPICollaborationAudit(ctx context.Context, q Request, kind string, input requestinput.Input, row map[string]any) error {
 	// API creation has a second update_fields save. Preserve its deliberately
 	// narrower persisted fields and its in-memory actor/updater representation.
 	creator := any(q.ActorID)
@@ -258,7 +258,7 @@ func (r *Repository) saveAPICollaborationAudit(ctx context.Context, q Request, k
 	return nil
 }
 
-func (r *Repository) collaborationWriteRequest(ctx context.Context, q Request, kind string, input djangoinput.Input, row map[string]any, create bool) (string, error) {
+func (r *Repository) collaborationWriteRequest(ctx context.Context, q Request, kind string, input requestinput.Input, row map[string]any, create bool) (string, error) {
 	requested, err := dumpRequest(input)
 	if err != nil {
 		return "", err
@@ -287,7 +287,7 @@ func (r *Repository) collaborationWriteRequest(ctx context.Context, q Request, k
 	return requested, nil
 }
 
-func (r *Repository) finishCollaborationWrite(ctx context.Context, q Request, kind, table string, input djangoinput.Input, row, old map[string]any, workspace, previous any) (Result, error) {
+func (r *Repository) finishCollaborationWrite(ctx context.Context, q Request, kind, table string, input requestinput.Input, row, old map[string]any, workspace, previous any) (Result, error) {
 	requested, err := r.collaborationWriteRequest(ctx, q, kind, input, row, old == nil)
 	if err != nil {
 		return Result{}, err
@@ -298,7 +298,7 @@ func (r *Repository) finishCollaborationWrite(ctx context.Context, q Request, ki
 	}
 	activityQ := q
 	if q.API && old == nil {
-		activityQ.ActorID = djangoinput.ScalarString(row["created_by_id"])
+		activityQ.ActorID = requestinput.ScalarString(row["created_by_id"])
 	}
 	if collaborationPublic(q) && kind == "comment" && old != nil {
 		previous, err = r.collaborationDump(ctx, q, row, kind)
@@ -330,7 +330,7 @@ func (r *Repository) finishCollaborationWrite(ctx context.Context, q Request, ki
 		readQ.Params["pk"] = row["id"].(string)
 		row, err = r.collaborationObject(ctx, readQ, kind, table, true)
 		if err != nil {
-			var missing *djangoapi.HTTPError
+			var missing *apicontract.HTTPError
 			if errors.As(err, &missing) && missing.Status == 404 {
 				return Result{}, requiredObject()
 			}
@@ -437,7 +437,7 @@ func (r *Repository) writeCollaborationSubscriber(ctx context.Context, q Request
 	}
 	changes := map[string]any{}
 	if !self {
-		input, err := djangoinput.Parse(body, contentType)
+		input, err := requestinput.Parse(body, contentType)
 		if err != nil {
 			return Result{}, err
 		}
@@ -449,7 +449,7 @@ func (r *Repository) writeCollaborationSubscriber(ctx context.Context, q Request
 		if _, err := r.collaborationObject(ctx, q, "subscriber", "issue_subscribers", false); err == nil {
 			return Result{}, failure(400, "message", "User already subscribed to the issue.")
 		} else {
-			var missing *djangoapi.HTTPError
+			var missing *apicontract.HTTPError
 			if !errors.As(err, &missing) || missing.Status != 404 {
 				return Result{}, err
 			}

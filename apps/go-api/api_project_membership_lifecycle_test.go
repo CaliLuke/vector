@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	client "github.com/CaliLuke/go-plane/projectmembershiplifecycle/gen/http/project_membership_lifecycle/client"
@@ -122,7 +122,7 @@ func TestProjectMembershipLifecycleAPIKeyAndSessionAuthenticationStayIsolated(t 
 }
 
 func TestProjectMembershipLifecycleForbiddenPermissionDoesNotThrottleOrExecute(t *testing.T) {
-	repository := &projectMembershipLifecycleRepositoryStub{authorizeErr: &djangoapi.HTTPError{Status: http.StatusForbidden, Body: map[string]any{"detail": "forbidden"}}}
+	repository := &projectMembershipLifecycleRepositoryStub{authorizeErr: &apicontract.HTTPError{Status: http.StatusForbidden, Body: map[string]any{"detail": "forbidden"}}}
 	throttle := &activityThrottleStub{rate: apikey.Rate{Allowed: true}}
 	service := lifecycleService(t, repository, &activityAPIKeyStub{principal: apikey.Principal{UserID: uuid.New(), Timezone: "UTC"}}, &activitySessionStub{}, throttle)
 	ctx, err := service.APIKeyAuth(context.Background(), "token", &security.APIKeyScheme{Name: "ApiKeyAuth"})
@@ -330,7 +330,7 @@ func TestProjectMembershipLifecycleGeneratedPathMapsRawSerializerFailure(t *test
 
 func TestProjectMembershipLifecycleGeneratedPathPreservesFieldValidationErrors(t *testing.T) {
 	projectID := uuid.NewString()
-	repository := &projectMembershipLifecycleRepositoryStub{executeErr: &djangoapi.HTTPError{
+	repository := &projectMembershipLifecycleRepositoryStub{executeErr: &apicontract.HTTPError{
 		Status: http.StatusBadRequest,
 		Body: map[string]any{
 			"member": []string{"This field is required."},

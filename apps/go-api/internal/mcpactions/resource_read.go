@@ -5,15 +5,15 @@ import (
 	"errors"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 )
 
 type projectResourceReader interface {
-	ReadAPIV1(context.Context, string, djangoapi.ProjectReadRequest) (any, error)
+	ReadAPIV1(context.Context, string, apicontract.ProjectReadRequest) (any, error)
 }
 
-func readProjectResource[Input, Result any](ctx context.Context, input *Input, selectAction func(*Input) (djangoapi.ProjectReadRequest, *string, error), reader projectResourceReader, forbidden, notFound error, project func(any, string) (*Result, error)) (*Result, error) {
+func readProjectResource[Input, Result any](ctx context.Context, input *Input, selectAction func(*Input) (apicontract.ProjectReadRequest, *string, error), reader projectResourceReader, forbidden, notFound error, project func(any, string) (*Result, error)) (*Result, error) {
 	request, workspace, err := selectAction(input)
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func readProjectResource[Input, Result any](ctx context.Context, input *Input, s
 	if err != nil {
 		return nil, resourceReadError(err, forbidden, notFound)
 	}
-	result, err := project(djangoapi.Timestamps(value, actor.Timezone), request.Operation)
+	result, err := project(apicontract.Timestamps(value, actor.Timezone), request.Operation)
 	if err != nil {
 		return nil, api.MakeInternalError(errors.New("resource projection unavailable"))
 	}
@@ -45,7 +45,7 @@ func resourceReadError(err, forbidden, notFound error) error {
 	case errors.Is(err, notFound):
 		return api.MakeNotFound(errors.New("resource unavailable"))
 	}
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if errors.As(err, &failure) {
 		switch failure.Status {
 		case 400:

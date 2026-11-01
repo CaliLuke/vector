@@ -20,7 +20,7 @@ func TestProjectIntakePatchRejectsUnauthorizedBeforeMutation(t *testing.T) {
 	pending := pendingReplacementEndpoints{
 		projectIntakeWrites:    intakeapi.NewEndpoints(service),
 		readServicesSession:    sessions,
-		readServicesCookie:     djangoSessionCookieConfig{Name: "session-id", Configured: true},
+		readServicesCookie:     browserSessionCookieConfig{Name: "session-id", Configured: true},
 		activityReadsBodyLimit: 1 << 20,
 	}
 	handler := extensionHTTPHandler(pending)

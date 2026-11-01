@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 func TestIssueListDefaultOrderMatchesNewestFirstSource(t *testing.T) {
@@ -24,7 +24,7 @@ func TestSearchInvalidProjectMatchesValidationException(t *testing.T) {
 	for _, api := range []bool{false, true} {
 		q := Request{API: api, ProjectID: "bad", Params: map[string]string{"search": "Needle", "project_id": "bad"}}
 		_, err := (&Repository{}).search(context.Background(), q)
-		var response *djangoapi.HTTPError
+		var response *apicontract.HTTPError
 		if !errors.As(err, &response) || response.Status != 400 || response.Body["error"] != "Please provide valid detail" {
 			t.Fatalf("API=%v: invalid project response=%v", api, err)
 		}
@@ -43,7 +43,7 @@ func TestPUTValidatesRichFilterBeforeLookingUpOrReadingBody(t *testing.T) {
 func TestSubissueGroupingPreservesMissingFieldAndUnassignedContract(t *testing.T) {
 	rows := []any{map[string]any{"id": "child", "assignee_ids": []any{}}}
 	_, err := groupSubissues(rows, "missing_field")
-	var response *djangoapi.HTTPError
+	var response *apicontract.HTTPError
 	if !errors.As(err, &response) || response.Status != 400 || response.Body["error"] != "The required key does not exist." {
 		t.Fatalf("invalid grouping response: %v", err)
 	}
@@ -73,7 +73,7 @@ func TestIdentifierOperationPreservesCanonicalManifestName(t *testing.T) {
 	// placeholder separators. Routing must use the decoded composite resource.
 	q := Request{Operation: "get_api_workspaces_by_slug_work_items__project_identifier___issue_identifier", Method: "GET", Params: map[string]string{"identifier": "TEST-invalid"}}
 	_, err := (&Repository{}).Execute(context.Background(), q, nil, "")
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if !errors.As(err, &failure) || failure.Status != 400 || failure.Body["error"] != "Invalid issue identifier" {
 		t.Fatalf("identifier dispatch: %#v", err)
 	}
@@ -86,7 +86,7 @@ func TestDraftNameUsesNullableOptionalModelContract(t *testing.T) {
 		want   any
 	}{{"omitted", map[string]any{}, nil}, {"null", map[string]any{"name": nil}, nil}, {"blank", map[string]any{"name": ""}, ""}} {
 		t.Run(tc.name, func(t *testing.T) {
-			changes, err := (&Repository{}).validateIssue(context.Background(), djangoinput.Input{Fields: tc.fields}, issueValidation{Draft: true})
+			changes, err := (&Repository{}).validateIssue(context.Background(), requestinput.Input{Fields: tc.fields}, issueValidation{Draft: true})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -123,7 +123,7 @@ func TestAPIIdentifierUnsafeMethodsDenyBeforeProjectLookup(t *testing.T) {
 			// ProjectEntityPermission uses project_identifier only for safe
 			// methods. This view has no project_id for its unsafe branch.
 			err := (&Repository{}).AuthorizeInitial(context.Background(), Request{API: true, Method: method, Params: map[string]string{"identifier": "IC-999999"}})
-			var response *djangoapi.HTTPError
+			var response *apicontract.HTTPError
 			if !errors.As(err, &response) || response.Status != 403 || response.Body["detail"] != "You do not have permission to perform this action." {
 				t.Fatalf("unsafe identifier authorization=%v", err)
 			}

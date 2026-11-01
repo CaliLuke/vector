@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -66,7 +66,7 @@ func (r *LifecycleRepository) MutateResource(ctx context.Context, cmd projectmut
 			if mutationErr != nil {
 				return nil, mutationErr
 			}
-			fields := djangoinput.Input{Fields: cmd.Fields, Raw: body}
+			fields := requestinput.Input{Fields: cmd.Fields, Raw: body}
 			var record json.RawMessage
 			switch cmd.Action {
 			case "create":

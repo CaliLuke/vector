@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -53,7 +53,7 @@ func relationRows(ctx context.Context, tx pgx.Tx, q Query) (map[string]any, erro
 			label = `CASE WHEN r.issue_id=$1 THEN d.outward ELSE d.inward END`
 			extra = ` AND d.deleted_at IS NULL AND d.is_active AND cardinality($4::text[])>0`
 		}
-		rows, err := tx.Query(ctx, `SELECT `+label+`,`+targetProjection+`||jsonb_build_object('relation_type',`+label+`) FROM `+table+` JOIN issues i ON i.id=CASE WHEN r.issue_id=$1 THEN r.related_issue_id ELSE r.issue_id END JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id WHERE (r.issue_id=$1 OR r.related_issue_id=$1) AND r.workspace_id=$2 AND r.deleted_at IS NULL AND p.archived_at IS NULL AND `+djangoapi.IssueVisibleSQL("i", "$3::uuid", "$2::uuid")+extra+` ORDER BY r.created_at,r.id`, q.IssueID, q.WorkspaceID, q.ActorID, DependencyTypes)
+		rows, err := tx.Query(ctx, `SELECT `+label+`,`+targetProjection+`||jsonb_build_object('relation_type',`+label+`) FROM `+table+` JOIN issues i ON i.id=CASE WHEN r.issue_id=$1 THEN r.related_issue_id ELSE r.issue_id END JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id WHERE (r.issue_id=$1 OR r.related_issue_id=$1) AND r.workspace_id=$2 AND r.deleted_at IS NULL AND p.archived_at IS NULL AND `+apicontract.IssueVisibleSQL("i", "$3::uuid", "$2::uuid")+extra+` ORDER BY r.created_at,r.id`, q.IssueID, q.WorkspaceID, q.ActorID, DependencyTypes)
 		if err != nil {
 			return nil, err
 		}

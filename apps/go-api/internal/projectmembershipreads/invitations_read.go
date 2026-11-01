@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -15,7 +15,7 @@ import (
 const inviteWorkspaceSQL = `jsonb_build_object('id',w.id,'name',w.name,'slug',w.slug)||`
 
 func workspaceInviteProjection(public bool) string {
-	full := `(to_jsonb(i)-'workspace_id'-'created_by_id'-'updated_by_id')||jsonb_build_object('created_by',i.created_by_id,'updated_by',i.updated_by_id,'workspace',` + inviteWorkspaceSQL + djangoapi.FileAssetURLFieldSQL("w.logo_asset_id", "w.logo", "logo_url") + `,'invite_link','/workspace-invitations/?invitation_id='||i.id::text||'&slug='||w.slug||'&token='||i.token)`
+	full := `(to_jsonb(i)-'workspace_id'-'created_by_id'-'updated_by_id')||jsonb_build_object('created_by',i.created_by_id,'updated_by',i.updated_by_id,'workspace',` + inviteWorkspaceSQL + apicontract.FileAssetURLFieldSQL("w.logo_asset_id", "w.logo", "logo_url") + `,'invite_link','/workspace-invitations/?invitation_id='||i.id::text||'&slug='||w.slug||'&token='||i.token)`
 	if public {
 		return `(` + full + `)-'token'-'invite_link'-'deleted_at'-'updated_by'`
 	}
@@ -23,8 +23,8 @@ func workspaceInviteProjection(public bool) string {
 }
 
 func projectInviteProjection(public bool) string {
-	project := `jsonb_build_object('id',p.id,'identifier',p.identifier,'name',p.name,'description',p.description,'cover_image',p.cover_image,'logo_props',p.logo_props)||` + djangoapi.FileAssetURLFieldSQL("p.cover_image_asset_id", "p.cover_image", "cover_image_url")
-	full := `(to_jsonb(i)-'workspace_id'-'project_id'-'created_by_id'-'updated_by_id')||jsonb_build_object('created_by',i.created_by_id,'updated_by',i.updated_by_id,'workspace',` + inviteWorkspaceSQL + djangoapi.FileAssetURLFieldSQL("w.logo_asset_id", "w.logo", "logo_url") + `,'project',` + project + `)`
+	project := `jsonb_build_object('id',p.id,'identifier',p.identifier,'name',p.name,'description',p.description,'cover_image',p.cover_image,'logo_props',p.logo_props)||` + apicontract.FileAssetURLFieldSQL("p.cover_image_asset_id", "p.cover_image", "cover_image_url")
+	full := `(to_jsonb(i)-'workspace_id'-'project_id'-'created_by_id'-'updated_by_id')||jsonb_build_object('created_by',i.created_by_id,'updated_by',i.updated_by_id,'workspace',` + inviteWorkspaceSQL + apicontract.FileAssetURLFieldSQL("w.logo_asset_id", "w.logo", "logo_url") + `,'project',` + project + `)`
 	if public {
 		return `(` + full + `)-'token'-'email'-'created_at'-'updated_at'-'deleted_at'-'created_by'-'updated_by'`
 	}

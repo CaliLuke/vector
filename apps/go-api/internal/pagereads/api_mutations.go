@@ -10,7 +10,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
@@ -332,7 +332,7 @@ func (r *Repository) MutatePageAPI(ctx context.Context, in PageAPICommand) (proj
 			if operationErr = tx.QueryRow(ctx, `SELECT revision FROM page_api_revisions WHERE workspace_id=$1`, in.WorkspaceID).Scan(&rev); operationErr != nil {
 				return nil, operationErr
 			}
-			raw, operationErr := json.Marshal(djangoapi.Timestamps(after, in.Timezone))
+			raw, operationErr := json.Marshal(apicontract.Timestamps(after, in.Timezone))
 			if operationErr != nil {
 				return nil, operationErr
 			}

@@ -10,7 +10,7 @@ import (
 	"testing"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
@@ -242,7 +242,7 @@ func TestFormulaSampleSearchFiltersBeforeTheResultLimit(t *testing.T) {
 	}
 	request.Params["type_id"] = "invalid"
 	_, err = repo.Execute(f.ctx, request, nil, "")
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if !errors.As(err, &failure) || failure.Status != 400 {
 		t.Fatalf("invalid type accepted: %v", err)
 	}

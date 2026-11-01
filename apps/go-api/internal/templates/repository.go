@@ -9,8 +9,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
@@ -137,7 +137,7 @@ func (r *Repository) List(ctx context.Context, q Query) (_ json.RawMessage, resu
 		if err = rows.Scan(&raw); err != nil {
 			break
 		}
-		if err = djangoapi.DecodeJSON(raw, &row); err != nil {
+		if err = apicontract.DecodeJSON(raw, &row); err != nil {
 			break
 		}
 		value := projection(row)
@@ -190,7 +190,7 @@ func normalize(in *Command) error {
 			return projectmutations.ErrInvalid
 		}
 		var copy map[string]any
-		if djangoapi.DecodeJSON(raw, &copy) != nil {
+		if apicontract.DecodeJSON(raw, &copy) != nil {
 			return projectmutations.ErrInvalid
 		}
 		in.Data = copy

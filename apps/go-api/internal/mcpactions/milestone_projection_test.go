@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/mcpactions"
 	"github.com/CaliLuke/go-plane/internal/milestones"
 	"github.com/google/uuid"
@@ -18,18 +18,18 @@ import (
 func TestMilestonePinnedPageEnvelopeAndEntryShapes(t *testing.T) {
 	for _, version := range []string{"2025-11-25", "2026-07-28"} {
 		f := newFixture(t)
-		check := func(scope milestones.Scope, q djangoapi.Query) {
+		check := func(scope milestones.Scope, q apicontract.Query) {
 			require.Equal(t, readProject, scope.ProjectID.String())
 			require.Equal(t, "20000000-0000-4000-8000-000000000001", scope.WorkspaceID.String())
 			require.Equal(t, "2", q.Params["per_page"])
 			require.Equal(t, "2:1:0", q.Params["cursor"])
 			require.True(t, q.Present["cursor"])
 		}
-		f.milestones.list = func(scope milestones.Scope, q djangoapi.Query) (milestones.Page[milestones.Record], error) {
+		f.milestones.list = func(scope milestones.Scope, q apicontract.Query) (milestones.Page[milestones.Record], error) {
 			check(scope, q)
 			return milestones.Page[milestones.Record]{Results: []milestones.Record{{ID: milestoneTestID, Title: "Ship", CreatedAt: "2026-01-02T03:04:05Z", UpdatedAt: "2026-01-02T03:04:05Z"}}, Total: 3, Limit: 2, Index: 1}, nil
 		}
-		f.milestones.links = func(scope milestones.Scope, id uuid.UUID, q djangoapi.Query) (milestones.Page[milestones.Link], error) {
+		f.milestones.links = func(scope milestones.Scope, id uuid.UUID, q apicontract.Query) (milestones.Page[milestones.Link], error) {
 			check(scope, q)
 			require.Equal(t, milestoneTestID, id.String())
 			return milestones.Page[milestones.Link]{Results: []milestones.Link{{ID: milestoneTestID, Issue: readProject, Milestone: milestoneTestID}}, Total: 3, Limit: 2, Index: 1}, nil

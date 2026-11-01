@@ -20,11 +20,11 @@ import (
 
 	"math/big"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/emailvalidation"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	store "github.com/CaliLuke/go-plane/internal/useraccountwrites"
 	api "github.com/CaliLuke/go-plane/user_account_writes/gen/user_account_writes"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -173,7 +173,7 @@ func (service *userAccountWritesService) PatchMe(ctx context.Context, payload *a
 	fieldErrors := make(map[string][]string)
 	for _, field := range []string{"first_name", "last_name", "display_name"} {
 		if value, supplied := input.Fields[field]; supplied {
-			text, failures := djangoinput.CharField(value, field != "display_name", input.Surrogates[field])
+			text, failures := requestinput.CharField(value, field != "display_name")
 			if len(failures) != 0 {
 				fieldErrors[field] = failures
 			} else {
@@ -385,7 +385,7 @@ func (service *userAccountWritesService) validateNewEmail(ctx context.Context, u
 	return nil
 }
 
-func parseUserAccountInput(ctx context.Context, body io.ReadCloser, contentType *string) (djangoinput.Input, error) {
+func parseUserAccountInput(ctx context.Context, body io.ReadCloser, contentType *string) (requestinput.Input, error) {
 	defer platform.CloseRequestBody(ctx, body)
 	var reader io.Reader
 	if body != nil {
@@ -395,7 +395,7 @@ func parseUserAccountInput(ctx context.Context, body io.ReadCloser, contentType 
 	if contentType != nil {
 		content = *contentType
 	}
-	return djangoinput.Parse(reader, content)
+	return requestinput.Parse(reader, content)
 }
 
 func emailVerificationCode() (string, error) {
@@ -478,7 +478,7 @@ func userAccountWritesError(name string, body any) *api.UserAccountWritesError {
 	return &api.UserAccountWritesError{Name: name, Body: value}
 }
 func userAccountWritesInputError(err error) error {
-	var inputErr *djangoapi.HTTPError
+	var inputErr *apicontract.HTTPError
 	if errors.As(err, &inputErr) {
 		if inputErr.Status == http.StatusUnsupportedMediaType {
 			return userAccountWritesError("unsupported_media_type", inputErr.Body)

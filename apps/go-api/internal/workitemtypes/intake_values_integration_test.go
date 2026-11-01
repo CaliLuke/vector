@@ -9,7 +9,7 @@ import (
 	"testing"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	types "github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
@@ -44,7 +44,7 @@ func TestTypedIntakePatchRejectsMalformedValuesAtomically(t *testing.T) {
 				t.Fatal(err)
 			}
 			err := patchTypedIntake(f, repo, item, intake, api, `{"issue":{"name":"Rejected","custom_properties":{"`+field+`":"twelve"}},"status":1}`)
-			var invalid *djangoapi.HTTPError
+			var invalid *apicontract.HTTPError
 			if !errors.As(err, &invalid) || invalid.Status != 400 {
 				t.Fatalf("want 400, got %v", err)
 			}
@@ -66,7 +66,7 @@ func TestTypedIntakePatchRequiresPreservationReview(t *testing.T) {
 			f, repo, item, field, intake, _ := seedIntakeWriter(t)
 			f.mutate(t, "import", f.bug)
 			err := patchTypedIntake(f, repo, item, intake, api, `{"issue":{"type_id":"`+f.bug+`"}}`)
-			var invalid *djangoapi.HTTPError
+			var invalid *apicontract.HTTPError
 			if !errors.As(err, &invalid) || invalid.Status != 409 {
 				t.Fatalf("want preservation conflict, got %v", err)
 			}
@@ -129,7 +129,7 @@ func TestAPIIntakePatchAcceptsVisibleCrossProjectParent(t *testing.T) {
 func TestAPIIntakePatchRejectsUnknownParent(t *testing.T) {
 	f, repo, item, _, intake, _ := seedIntakeWriter(t)
 	err := patchTypedIntake(f, repo, item, intake, true, `{"issue":{"parent":"`+uuid.New().String()+`","name":"Rejected"}}`)
-	var invalid *djangoapi.HTTPError
+	var invalid *apicontract.HTTPError
 	if !errors.As(err, &invalid) || invalid.Status != 400 {
 		t.Fatalf("want invalid parent, got %v", err)
 	}
@@ -191,7 +191,7 @@ func TestAPIIntakePatchRejectsHiddenParent(t *testing.T) {
 	parentFixture.project = other
 	parent := addHierarchyItem(t, parentFixture, f.task, "")
 	err := patchTypedIntake(f, repo, item, intake, true, `{"issue":{"parent":"`+parent+`"}}`)
-	var invalid *djangoapi.HTTPError
+	var invalid *apicontract.HTTPError
 	if !errors.As(err, &invalid) || invalid.Status != 400 {
 		t.Fatalf("want hidden parent rejection, got %v", err)
 	}
@@ -207,7 +207,7 @@ func TestAPIIntakePatchRejectsForeignWorkspaceParent(t *testing.T) {
 	f.exec(`INSERT INTO project_members(id,workspace_id,project_id,member_id,role,is_active,created_at,updated_at,view_props,default_props,preferences,sort_order) VALUES(gen_random_uuid(),$1,$2,$3,20,true,now(),now(),'{}','{}','{}',0)`, workspace, project, f.owner)
 	f.exec(`INSERT INTO issues(id,workspace_id,project_id,name,description_json,description_html,priority,sort_order,sequence_id,is_draft,created_at,updated_at,created_by_id) VALUES($1,$2,$3,'Foreign parent','{}','','none',0,1,false,now(),now(),$4)`, parent, workspace, project, f.owner)
 	err := patchTypedIntake(f, repo, item, intake, true, `{"issue":{"parent":"`+parent+`"}}`)
-	var invalid *djangoapi.HTTPError
+	var invalid *apicontract.HTTPError
 	if !errors.As(err, &invalid) || invalid.Status != 400 {
 		t.Fatalf("want cross-workspace parent rejection, got %v", err)
 	}

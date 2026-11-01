@@ -6,7 +6,7 @@ import (
 	"time"
 
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 // draftLifecycle owns standalone draft transactions. Reviewed changes instead
@@ -34,7 +34,7 @@ func (lifecycle draftLifecycle) execute(ctx context.Context, q Request, body io.
 // These capabilities share item validation and model persistence without giving
 // the draft lifecycle access to query discovery, list state or other workflows.
 type draftItemValidation interface {
-	validateIssue(context.Context, djangoinput.Input, issueValidation) (issueChanges, error)
+	validateIssue(context.Context, requestinput.Input, issueValidation) (issueChanges, error)
 	validateCustomValues(context.Context, string, map[string]any, map[string]any, map[string]any, bool, bool, bool) ([]string, error)
 }
 

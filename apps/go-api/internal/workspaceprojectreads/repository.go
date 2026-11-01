@@ -11,7 +11,7 @@ import (
 
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -395,7 +395,7 @@ LIMIT 1
 }
 
 func djangoTimestamp(column string) string {
-	return djangoapi.DjangoTimestampSQL(column)
+	return apicontract.TimestampSQL(column)
 }
 
 func workspaceJSON(includeRole bool) string {

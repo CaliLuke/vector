@@ -136,7 +136,7 @@ func moduleLifecycleAPIResponseCompatibilityMiddleware(next http.Handler) http.H
 	})
 }
 
-func mountModuleLifecycle(mux loomhttp.Muxer, endpoints *modulelifecycleapi.Endpoints, cors loomhttp.RuntimeCORSPolicy, options apiV1CompatibilityOptions, sessions readServicesSessionLifecycle, cookie djangoSessionCookieConfig) {
+func mountModuleLifecycle(mux loomhttp.Muxer, endpoints *modulelifecycleapi.Endpoints, cors loomhttp.RuntimeCORSPolicy, options apiV1CompatibilityOptions, sessions readServicesSessionLifecycle, cookie browserSessionCookieConfig) {
 	server := modulelifecyclesvr.New(endpoints, mux, djangoRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
 	apiStack := activityReadsMiddlewareStack(options, sessions, cookie)
 	sessionStack := sessionServiceMiddlewareStack(options, sessions, cookie)

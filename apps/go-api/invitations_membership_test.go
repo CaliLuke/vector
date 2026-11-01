@@ -15,7 +15,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	store "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	invitationserver "github.com/CaliLuke/go-plane/invitationsmembership/gen/http/invitations_membership/server"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -107,7 +107,7 @@ func (spy invitationCommandSpy) AuthorizeWorkspaceRole(context.Context, uuid.UUI
 }
 func (spy invitationCommandSpy) Invitation(context.Context, store.InvitationCommand) (json.RawMessage, error) {
 	*spy.events = append(*spy.events, "command")
-	return nil, &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You do not have permission to join the workspace"}}
+	return nil, &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You do not have permission to join the workspace"}}
 }
 func TestWorkspaceJoinInvalidatesBeforeTokenFailure(t *testing.T) {
 	events := []string{}
@@ -366,7 +366,7 @@ func (repository *invitationEmptyBodyRepository) CreateAPIWorkspaceInvite(_ cont
 			return nil, errors.New("expected empty body")
 		}
 	}
-	return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"email": []string{"This field is required."}}}
+	return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"email": []string{"This field is required."}}}
 }
 
 func TestInvitationBodyReaderPreservesEmptyRequestsForSerializerValidation(t *testing.T) {

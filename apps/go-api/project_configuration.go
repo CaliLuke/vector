@@ -13,9 +13,9 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/projectconfiguration"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	api "github.com/CaliLuke/go-plane/projectconfiguration/gen/project_configuration"
@@ -362,7 +362,7 @@ func (service *projectConfigurationService) mapError(err error) error {
 	if errors.As(err, &apiErr) {
 		return serviceError(apiErr.Status, apiErr.Body)
 	}
-	var djangoErr *djangoapi.HTTPError
+	var djangoErr *apicontract.HTTPError
 	if errors.As(err, &djangoErr) {
 		return serviceError(djangoErr.Status, djangoErr.Body)
 	}
@@ -394,7 +394,7 @@ func (service *projectConfigurationService) appPrincipal(ctx context.Context, sl
 func validateConfigurationTimezone(value string) error {
 	err := browsersession.ValidateUserTimezone(value)
 	if errors.Is(err, browsersession.ErrTimezoneNotFound) {
-		return &djangoapi.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error": "The required key does not exist."}}
+		return &apicontract.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"error": "The required key does not exist."}}
 	}
 	return err
 }
@@ -415,7 +415,7 @@ func (service *projectConfigurationService) apiLabelPrincipal(ctx context.Contex
 		effects.Rate = &rate
 	}
 	if !rate.Allowed {
-		return principal{}, &djangoapi.HTTPError{Status: http.StatusTooManyRequests, Body: map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait.Seconds()))}}
+		return principal{}, &apicontract.HTTPError{Status: http.StatusTooManyRequests, Body: map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait.Seconds()))}}
 	}
 	if err := validateConfigurationTimezone(identity.timezone); err != nil {
 		return principal{}, err

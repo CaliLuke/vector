@@ -42,7 +42,7 @@ func TestCycleOptionsLookupFailureDoesNotReturnSuccessMetadata(t *testing.T) {
 	cycles := &cycleLifecycleOptionsAuthorizerStub{lookupErr: errors.New("database unavailable")}
 	dispatch := labelSessionProtocolDispatch{cycles: cycles}
 	stack := func(next http.Handler) http.Handler { return next }
-	handler := newSessionServiceProtocolMiddleware(notificationProtocolMetadata, dispatch, loomhttp.RuntimeCORSPolicy{}, stack, djangoSessionCookieConfig{}, false, apiV1CompatibilityOptions{})(http.NotFoundHandler())
+	handler := newSessionServiceProtocolMiddleware(notificationProtocolMetadata, dispatch, loomhttp.RuntimeCORSPolicy{}, stack, browserSessionCookieConfig{}, false, apiV1CompatibilityOptions{})(http.NotFoundHandler())
 	request := httptest.NewRequest(http.MethodOptions, "/api/workspaces/acme/projects/11111111-1111-4111-8111-111111111111/cycles/22222222-2222-4222-8222-222222222222/", nil)
 	request.AddCookie(&http.Cookie{Name: "session-id", Value: "validated"})
 	response := httptest.NewRecorder()
@@ -63,7 +63,7 @@ func TestCycleDetailOptionsUsesSourceMetadataAndOmitsActionsForMissingObject(t *
 	cycles := &cycleLifecycleOptionsAuthorizerStub{exists: true}
 	dispatch := labelSessionProtocolDispatch{cycles: cycles}
 	stack := func(next http.Handler) http.Handler { return next }
-	handler := newSessionServiceProtocolMiddleware(notificationProtocolMetadata, dispatch, loomhttp.RuntimeCORSPolicy{}, stack, djangoSessionCookieConfig{}, false, apiV1CompatibilityOptions{})(http.NotFoundHandler())
+	handler := newSessionServiceProtocolMiddleware(notificationProtocolMetadata, dispatch, loomhttp.RuntimeCORSPolicy{}, stack, browserSessionCookieConfig{}, false, apiV1CompatibilityOptions{})(http.NotFoundHandler())
 	path := "/api/workspaces/acme/projects/11111111-1111-4111-8111-111111111111/cycles/22222222-2222-4222-8222-222222222222/"
 
 	for _, test := range []struct {

@@ -53,9 +53,9 @@ func TestAccountAuthenticationMountedOptionsIgnoresInvalidSessionTimezone(t *tes
 		accountAuthentication:         api.NewEndpoints(service),
 		accountAuthenticationMetadata: accountAuthenticationOptionsAuthorizer{},
 		readServicesSession:           sessions,
-		readServicesCookie:            djangoSessionCookieConfig{Name: "session-id", Configured: true},
+		readServicesCookie:            browserSessionCookieConfig{Name: "session-id", Configured: true},
 		readServicesAuthSession:       sessions,
-		readServicesAuthCookie:        djangoSessionCookieConfig{Name: "session-id", Configured: true},
+		readServicesAuthCookie:        browserSessionCookieConfig{Name: "session-id", Configured: true},
 	})
 
 	protocols := accountAuthenticationProtocols()

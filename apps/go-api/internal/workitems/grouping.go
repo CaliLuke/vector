@@ -5,7 +5,7 @@ import (
 	"math"
 	"slices"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 )
 
@@ -199,7 +199,7 @@ func (r *Repository) groupedPageWithVisibleRowCounts(ctx context.Context, q Requ
 			}
 		}
 	}
-	envelope := djangoapi.Envelope([]any{}, total, limit, page)
+	envelope := apicontract.Envelope([]any{}, total, limit, page)
 	envelope["results"] = grouped
 	if r.parentGrouping != nil {
 		envelope["parent_groups"] = r.parentGrouping.parents

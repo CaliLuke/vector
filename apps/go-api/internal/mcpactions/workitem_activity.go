@@ -7,14 +7,14 @@ import (
 	"strings"
 
 	"github.com/CaliLuke/go-plane/internal/activityreads"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 )
 
 func (s *Service) WorkitemActivity(ctx context.Context, input *api.WorkitemActivityRequest) (*api.WorkitemActivityResult, error) {
 	return readProjectResource(ctx, input, selectWorkitemActivityAction, activityRead{s.activityReads}, activityreads.ErrForbidden, activityreads.ErrNotFound, projectWorkitemActivityResult)
 }
-func selectWorkitemActivityAction(input *api.WorkitemActivityRequest) (djangoapi.ProjectReadRequest, *string, error) {
+func selectWorkitemActivityAction(input *api.WorkitemActivityRequest) (apicontract.ProjectReadRequest, *string, error) {
 	return selectItemReadUnion(input, func(input api.WorkitemActivityRequest) itemReadSelection {
 		detail, ok := input.AsWorkitemActivityRetrieve()
 		if !ok || detail == nil || detail.Action != "retrieve" {

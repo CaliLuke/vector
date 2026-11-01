@@ -13,8 +13,8 @@ import (
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	api "github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
 	"github.com/google/uuid"
@@ -77,7 +77,7 @@ func (service *LifecycleService) invokeRead(ctx context.Context, name string, pa
 				return nil, lookupErr
 			}
 			if accessErr := service.authorizeAssetAttachment(ctx, workspaceID, userID, asset); accessErr != nil {
-				var denied *djangoapi.HTTPError
+				var denied *apicontract.HTTPError
 				if errors.As(accessErr, &denied) && denied.Status == 404 {
 					exists = false
 				} else {
@@ -328,14 +328,14 @@ func (service *LifecycleService) getLegacyWorkspaceAssetByKey(ctx context.Contex
 	}
 	workspaceID, err := uuid.Parse(rawWorkspaceID)
 	if err != nil {
-		return nil, &djangoapi.HTTPError{Status: 403, Body: map[string]any{"detail": "You do not have permission to perform this action."}}
+		return nil, &apicontract.HTTPError{Status: 403, Body: map[string]any{"detail": "You do not have permission to perform this action."}}
 	}
 	member, err := service.assets.repository.WorkspaceMemberByID(ctx, workspaceID, userID)
 	if err != nil {
 		return nil, err
 	}
 	if !member {
-		return nil, &djangoapi.HTTPError{Status: 403, Body: map[string]any{"detail": "You do not have permission to perform this action."}}
+		return nil, &apicontract.HTTPError{Status: 403, Body: map[string]any{"detail": "You do not have permission to perform this action."}}
 	}
 	assets, err := service.assets.repository.WorkspaceAssetsByKey(ctx, workspaceAssetKey(rawWorkspaceID, key), workspaceID, userID)
 	if err != nil {
@@ -358,7 +358,7 @@ func (service *LifecycleService) getLegacyWorkspaceAssetByKey(ctx context.Contex
 			asset.DraftIssueID = &draft
 		}
 		if accessErr := service.authorizeAssetAttachment(ctx, workspaceID, userID, asset); accessErr != nil {
-			var denied *djangoapi.HTTPError
+			var denied *apicontract.HTTPError
 			if errors.As(accessErr, &denied) && denied.Status == 404 {
 				continue
 			}
@@ -400,14 +400,14 @@ func (service *LifecycleService) deleteLegacyWorkspaceAssetByKey(ctx context.Con
 	}
 	workspaceID, err := uuid.Parse(rawWorkspaceID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 403, Body: map[string]any{"detail": "You do not have permission to perform this action."}}
+		return &apicontract.HTTPError{Status: 403, Body: map[string]any{"detail": "You do not have permission to perform this action."}}
 	}
 	member, err := service.assets.repository.WorkspaceMemberByID(ctx, workspaceID, userID)
 	if err != nil {
 		return err
 	}
 	if !member {
-		return &djangoapi.HTTPError{Status: 403, Body: map[string]any{"detail": "You do not have permission to perform this action."}}
+		return &apicontract.HTTPError{Status: 403, Body: map[string]any{"detail": "You do not have permission to perform this action."}}
 	}
 	return sourceLookupError(service.assets.repository.UpdateAssetDeletedByKey(ctx, workspaceAssetKey(rawWorkspaceID, key), nil, &workspaceID, userID, deleted), map[string]any{"error": "The required object does not exist."})
 }
@@ -434,7 +434,7 @@ func (service *LifecycleService) authorizeV2Workspace(ctx context.Context, userI
 		return err
 	}
 	if !allowed {
-		return &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
+		return &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
 	}
 	return nil
 }
@@ -460,7 +460,7 @@ func (service *LifecycleService) projectAssetForMutation(ctx context.Context, sl
 		return uuid.Nil, uuid.Nil, FileAsset{}, err
 	}
 	if !allowed {
-		return uuid.Nil, uuid.Nil, FileAsset{}, &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
+		return uuid.Nil, uuid.Nil, FileAsset{}, &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
 	}
 	workspaceID, err := service.assets.repository.RelatedWorkspaceIDBySlug(ctx, slug)
 	if err != nil {
@@ -611,7 +611,7 @@ func assetAttributes(ctx context.Context, body io.ReadCloser, current any) ([]by
 		if contentType == "" {
 			contentType = "application/json"
 		}
-		input, err := djangoinput.Parse(body, contentType)
+		input, err := requestinput.Parse(body, contentType)
 		if err != nil {
 			return nil, err
 		}
@@ -621,7 +621,7 @@ func assetAttributes(ctx context.Context, body io.ReadCloser, current any) ([]by
 	}
 	encoded, err := json.Marshal(value)
 	if err != nil {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"attributes": []string{"Value must be valid JSON."}}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"attributes": []string{"Value must be valid JSON."}}}
 	}
 	return encoded, nil
 }
@@ -637,7 +637,7 @@ func (service *LifecycleService) restoreWorkspaceAsset(ctx context.Context, slug
 	}
 	assetID, err := uuid.Parse(rawAssetID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	asset, err := service.assets.repository.AssetByWorkspaceAndIDIncludingDeleted(ctx, workspaceID, assetID)
 	if err != nil {
@@ -663,7 +663,7 @@ func (service *LifecycleService) confirmLegacyWorkspaceAssetUpload(ctx context.C
 	}
 	assetID, err := uuid.Parse(rawAssetID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}}
 	}
 	asset, err := service.assets.repository.AssetByWorkspaceAndID(ctx, workspaceID, assetID)
 	if err != nil {
@@ -673,7 +673,7 @@ func (service *LifecycleService) confirmLegacyWorkspaceAssetUpload(ctx context.C
 		return accessErr
 	}
 	if asset.IsDeleted {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}}
 	}
 	uploaded := asset.IsUploaded
 	if body != nil {
@@ -682,14 +682,14 @@ func (service *LifecycleService) confirmLegacyWorkspaceAssetUpload(ctx context.C
 		if contentType == "" {
 			contentType = "application/json"
 		}
-		input, parseErr := djangoinput.Parse(body, contentType)
+		input, parseErr := requestinput.Parse(body, contentType)
 		if parseErr != nil {
 			return parseErr
 		}
 		if value, exists := input.Fields["is_uploaded"]; exists {
 			parsed, ok := djangoBool(value)
 			if !ok {
-				return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"is_uploaded": []string{"Must be a valid boolean."}}}
+				return &apicontract.HTTPError{Status: 400, Body: map[string]any{"is_uploaded": []string{"Must be a valid boolean."}}}
 			}
 			uploaded = parsed
 		}
@@ -727,7 +727,7 @@ func (service *LifecycleService) confirmLegacyUserAssetUpload(ctx context.Contex
 	}
 	assetID, err := uuid.Parse(rawAssetID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	asset, err := service.assets.repository.UserAssetByID(ctx, userID, assetID)
 	if err != nil {
@@ -740,7 +740,7 @@ func (service *LifecycleService) confirmLegacyUserAssetUpload(ctx context.Contex
 		if contentType == "" {
 			contentType = "application/json"
 		}
-		input, parseErr := djangoinput.Parse(body, contentType)
+		input, parseErr := requestinput.Parse(body, contentType)
 		if parseErr != nil {
 			return parseErr
 		}
@@ -762,7 +762,7 @@ func (service *LifecycleService) deleteLegacyUserAsset(ctx context.Context, rawA
 	}
 	assetID, err := uuid.Parse(rawAssetID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	if _, err := service.assets.repository.UserAssetByID(ctx, userID, assetID); err != nil {
 		return sourceLookupError(err, map[string]any{"error": "The requested resource does not exist."})
@@ -777,7 +777,7 @@ func (service *LifecycleService) confirmUserAssetUpload(ctx context.Context, raw
 	}
 	assetID, err := uuid.Parse(rawAssetID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	asset, err := service.assets.repository.UserAssetByID(ctx, userID, assetID)
 	if err != nil {
@@ -790,7 +790,7 @@ func (service *LifecycleService) confirmUserAssetUpload(ctx context.Context, raw
 		if contentType == "" {
 			contentType = "application/json"
 		}
-		input, parseErr := djangoinput.Parse(body, contentType)
+		input, parseErr := requestinput.Parse(body, contentType)
 		if parseErr != nil {
 			return parseErr
 		}
@@ -818,7 +818,7 @@ func (service *LifecycleService) deleteUserAsset(ctx context.Context, rawAssetID
 	}
 	assetID, err := uuid.Parse(rawAssetID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		return &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	asset, err := service.assets.repository.UserAssetByID(ctx, userID, assetID)
 	if err != nil {
@@ -899,7 +899,7 @@ func (service *LifecycleService) projectAssetRedirect(ctx context.Context, slug,
 		return "", err
 	}
 	if !allowed {
-		return "", &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
+		return "", &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
 	}
 	workspaceID, err := service.assets.repository.RelatedWorkspaceIDBySlug(ctx, slug)
 	if err != nil {
@@ -914,7 +914,7 @@ func (service *LifecycleService) projectAssetRedirect(ctx context.Context, slug,
 		return "", sourceLookupError(err, map[string]any{"error": "The required object does not exist."})
 	}
 	if asset.ProjectID == nil || *asset.ProjectID != projectID {
-		return "", &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
+		return "", &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
 	}
 	if accessErr := service.authorizeAssetAttachment(ctx, workspaceID, userID, asset); accessErr != nil {
 		return "", accessErr
@@ -972,7 +972,7 @@ func (service *LifecycleService) invalidMethod(ctx context.Context, name string,
 			return err
 		}
 	}
-	return &djangoapi.HTTPError{Status: 405, Body: map[string]any{"detail": fmt.Sprintf("Method %q not allowed.", method)}}
+	return &apicontract.HTTPError{Status: 405, Body: map[string]any{"detail": fmt.Sprintf("Method %q not allowed.", method)}}
 }
 
 func payloadString(payload any, field string) string {
@@ -1008,23 +1008,23 @@ func (service *LifecycleService) authorizeWorkspaceFor405(ctx context.Context, n
 		if err == nil {
 			return nil
 		}
-		var httpErr *djangoapi.HTTPError
+		var httpErr *apicontract.HTTPError
 		if errors.As(err, &httpErr) && httpErr.Status == 403 {
-			return &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
+			return &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
 		}
 		return err
 	}
 	if rawWorkspaceID := payloadString(payload, "WorkspaceID"); rawWorkspaceID != "" {
 		workspaceID, parseErr := uuid.Parse(rawWorkspaceID)
 		if parseErr != nil {
-			return &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
+			return &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
 		}
 		member, checkErr := service.assets.repository.WorkspaceMemberByID(ctx, workspaceID, userID)
 		if checkErr != nil {
 			return checkErr
 		}
 		if !member {
-			return &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
+			return &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
 		}
 	}
 	return nil
@@ -1038,14 +1038,14 @@ func (service *LifecycleService) authorizeProjectFor405(ctx context.Context, pay
 	slug, rawProjectID := payloadString(payload, "Slug"), payloadString(payload, "ProjectID")
 	projectID, err := uuid.Parse(rawProjectID)
 	if err != nil {
-		return &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
+		return &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
 	}
 	allowed, err := service.assets.repository.ProjectPermissionAllowed(ctx, userID, slug, projectID)
 	if err != nil {
 		return err
 	}
 	if !allowed {
-		return &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
+		return &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
 	}
 	return nil
 }
@@ -1064,7 +1064,7 @@ func (service *LifecycleService) duplicateWorkspaceAsset(ctx context.Context, sl
 	}
 	entityType := stringValue(request.EntityType)
 	if !validEntityType(entityType) {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid entity type or entity id"}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid entity type or entity id"}}
 	}
 	workspaceID, err := service.assets.repository.WorkspaceIDBySlug(ctx, slug)
 	if err != nil {
@@ -1075,14 +1075,14 @@ func (service *LifecycleService) duplicateWorkspaceAsset(ctx context.Context, sl
 	if projectID != "" {
 		parsed, parseErr := uuid.Parse(projectID)
 		if parseErr != nil {
-			return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Project not found"}}
+			return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Project not found"}}
 		}
 		belongs, checkErr := service.assets.repository.ProjectBelongsToWorkspace(ctx, workspaceID, parsed)
 		if checkErr != nil {
 			return nil, checkErr
 		}
 		if !belongs {
-			return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Project not found"}}
+			return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Project not found"}}
 		}
 		requestedProjectID = parsed
 	}
@@ -1104,14 +1104,14 @@ func (service *LifecycleService) duplicateWorkspaceAsset(ctx context.Context, sl
 				return nil, checkErr
 			}
 			if !belongs {
-				return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Project not found"}}
+				return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Project not found"}}
 			}
 		}
 		projectID = coverProjectID.String()
 	}
 	assetID, err := uuid.Parse(rawAssetID)
 	if err != nil {
-		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}}
+		return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}}
 	}
 	source, err := service.assets.repository.AssetForDuplicate(ctx, userID, workspaceID, assetID)
 	if err != nil {
@@ -1121,7 +1121,7 @@ func (service *LifecycleService) duplicateWorkspaceAsset(ctx context.Context, sl
 		return nil, accessErr
 	}
 	if !source.IsUploaded {
-		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}}
+		return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}}
 	}
 	attributes, err := fileAssetAttributesObject(source.Attributes)
 	if err != nil {
@@ -1184,7 +1184,7 @@ func (service *LifecycleService) createV2WorkspaceUpload(ctx context.Context, sl
 	}
 	entityType := stringValue(request.EntityType)
 	if !validEntityType(entityType) {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid entity type.", "status": false}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid entity type.", "status": false}}
 	}
 	if entityType == "WORKSPACE_LOGO" {
 		relatedWorkspaceID, lookupErr := service.assets.repository.RelatedWorkspaceIDBySlug(ctx, slug)
@@ -1196,11 +1196,11 @@ func (service *LifecycleService) createV2WorkspaceUpload(ctx context.Context, sl
 			return nil, roleErr
 		}
 		if role != 20 {
-			return nil, &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "Only workspace admins can upload a workspace logo."}}
+			return nil, &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "Only workspace admins can upload a workspace logo."}}
 		}
 	}
 	if !allowedV2ProfileMIME(contentType) {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid file type. Only JPEG, PNG, WebP, JPG and GIF files are allowed.", "status": false}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid file type. Only JPEG, PNG, WebP, JPG and GIF files are allowed.", "status": false}}
 	}
 	if size > service.assets.fileLimit {
 		size = service.assets.fileLimit
@@ -1227,14 +1227,14 @@ func (service *LifecycleService) createV2ProjectUpload(ctx context.Context, slug
 	}
 	projectID, err := uuid.Parse(rawProjectID)
 	if err != nil {
-		return nil, &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
+		return nil, &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
 	}
 	allowed, err := service.assets.repository.ProjectPermissionAllowed(ctx, userID, slug, projectID)
 	if err != nil {
 		return nil, err
 	}
 	if !allowed {
-		return nil, &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
+		return nil, &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
 	}
 	request, err := service.decodeUploadRequest(ctx, body)
 	if err != nil {
@@ -1254,10 +1254,10 @@ func (service *LifecycleService) createV2ProjectUpload(ctx context.Context, slug
 	}
 	entityType := stringValue(request.EntityType)
 	if !validEntityType(entityType) {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid entity type.", "status": false}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid entity type.", "status": false}}
 	}
 	if !allowedV2ProfileMIME(contentType) {
-		return nil, &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid file type. Only JPEG, PNG, WebP, JPG and GIF files are allowed.", "status": false}}
+		return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid file type. Only JPEG, PNG, WebP, JPG and GIF files are allowed.", "status": false}}
 	}
 	if size > service.assets.fileLimit {
 		size = service.assets.fileLimit
@@ -1283,7 +1283,7 @@ func (service *LifecycleService) createV2ProjectUpload(ctx context.Context, slug
 			return nil, checkErr
 		}
 		if !projectExists {
-			return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Project not found", "status": false}}
+			return nil, &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Project not found", "status": false}}
 		}
 		entityID = coverProjectID.String()
 	}
@@ -1340,7 +1340,7 @@ func (service *LifecycleService) projectDownload(ctx context.Context, slug, rawP
 		return "", err
 	}
 	if !allowed {
-		return "", &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
+		return "", &apicontract.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
 	}
 	workspaceID, err := service.assets.repository.RelatedWorkspaceIDBySlug(ctx, slug)
 	if err != nil {
@@ -1392,16 +1392,16 @@ func assetFilenameDefault(attributes any, generatedWhenMissing bool) (*string, e
 }
 
 func notFoundAssetError() error {
-	return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
+	return &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
 }
 
 // sourceLookupError converts only an actual missing-row result. Django's bare
 // ORM .get() calls surface database failures as server errors, so repository
 // failures other than the explicit 404 must retain their original status.
 func sourceLookupError(err error, missingBody map[string]any) error {
-	var httpErr *djangoapi.HTTPError
+	var httpErr *apicontract.HTTPError
 	if errors.As(err, &httpErr) && httpErr.Status == 404 {
-		return &djangoapi.HTTPError{Status: 404, Body: missingBody}
+		return &apicontract.HTTPError{Status: 404, Body: missingBody}
 	}
 	return err
 }
@@ -1417,7 +1417,7 @@ func (service *LifecycleService) decodeUploadRequest(ctx context.Context, body i
 	if contentType == "" {
 		contentType = "application/json"
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return uploadRequest{}, err
 	}
@@ -1479,13 +1479,13 @@ func (service *LifecycleService) GetAPIV1WorkspacesBySlugAssetsByAssetID(ctx con
 	}
 	assetID, err := uuid.Parse(payload.AssetID)
 	if err != nil {
-		return nil, mapAssetsLifecycleError("GetAPIV1WorkspacesBySlugAssetsByAssetID", &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}})
+		return nil, mapAssetsLifecycleError("GetAPIV1WorkspacesBySlugAssetsByAssetID", &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}})
 	}
 	asset, err := service.assets.repository.AssetByWorkspaceAndID(ctx, workspaceID, assetID)
 	if err != nil {
-		var httpErr *djangoapi.HTTPError
+		var httpErr *apicontract.HTTPError
 		if errors.As(err, &httpErr) && httpErr.Status == 404 {
-			return nil, mapAssetsLifecycleError("GetAPIV1WorkspacesBySlugAssetsByAssetID", &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}})
+			return nil, mapAssetsLifecycleError("GetAPIV1WorkspacesBySlugAssetsByAssetID", &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}})
 		}
 		return nil, mapAssetsLifecycleError("GetAPIV1WorkspacesBySlugAssetsByAssetID", err)
 	}
@@ -1493,10 +1493,10 @@ func (service *LifecycleService) GetAPIV1WorkspacesBySlugAssetsByAssetID(ctx con
 		return nil, mapAssetsLifecycleError("GetAPIV1WorkspacesBySlugAssetsByAssetID", accessErr)
 	}
 	if asset.IsDeleted {
-		return nil, mapAssetsLifecycleError("GetAPIV1WorkspacesBySlugAssetsByAssetID", &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}})
+		return nil, mapAssetsLifecycleError("GetAPIV1WorkspacesBySlugAssetsByAssetID", &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}})
 	}
 	if !asset.IsUploaded {
-		return nil, mapAssetsLifecycleError("GetAPIV1WorkspacesBySlugAssetsByAssetID", &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Asset not yet uploaded"}})
+		return nil, mapAssetsLifecycleError("GetAPIV1WorkspacesBySlugAssetsByAssetID", &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Asset not yet uploaded"}})
 	}
 	attributes, err := fileAssetAttributesObject(asset.Attributes)
 	if err != nil {
@@ -1528,19 +1528,19 @@ func (service *LifecycleService) GetAPIV1WorkspacesBySlugAssetsByAssetID(ctx con
 func (service *LifecycleService) GetAPIAssetsV2StaticByAssetID(ctx context.Context, payload *api.GetAPIAssetsV2StaticByAssetIDPayload) (*api.GetAPIAssetsV2StaticByAssetIDResult, error) {
 	assetID, err := uuid.Parse(payload.AssetID)
 	if err != nil {
-		return nil, mapAssetsLifecycleError("GetAPIAssetsV2StaticByAssetID", &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}})
+		return nil, mapAssetsLifecycleError("GetAPIAssetsV2StaticByAssetID", &apicontract.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}})
 	}
 	asset, err := service.assets.repository.AssetByID(ctx, assetID)
 	if err != nil {
 		return nil, mapAssetsLifecycleError("GetAPIAssetsV2StaticByAssetID", sourceLookupError(err, map[string]any{"error": "The required object does not exist."}))
 	}
 	if privateDraftAsset(asset) || !asset.IsUploaded {
-		return nil, mapAssetsLifecycleError("GetAPIAssetsV2StaticByAssetID", &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}})
+		return nil, mapAssetsLifecycleError("GetAPIAssetsV2StaticByAssetID", &apicontract.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}})
 	}
 	switch asset.EntityType {
 	case "USER_AVATAR", "USER_COVER", "WORKSPACE_LOGO", "PROJECT_COVER":
 	default:
-		return nil, mapAssetsLifecycleError("GetAPIAssetsV2StaticByAssetID", &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid entity type.", "status": false}})
+		return nil, mapAssetsLifecycleError("GetAPIAssetsV2StaticByAssetID", &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid entity type.", "status": false}})
 	}
 	attributes, err := fileAssetAttributesObject(asset.Attributes)
 	if err != nil {

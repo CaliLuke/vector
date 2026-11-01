@@ -6,7 +6,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -111,7 +111,7 @@ func exportSourceIDs(ctx context.Context, tx pgx.Tx, actor, workspace string, ro
  UNION SELECT child.id FROM issues child WHERE child.parent_id=ANY($1::uuid[]) AND child.archived_at IS NULL
  UNION SELECT CASE WHEN rel.issue_id=ANY($1::uuid[]) THEN rel.related_issue_id ELSE rel.issue_id END FROM issue_relations rel
  WHERE (rel.issue_id=ANY($1::uuid[]) OR rel.related_issue_id=ANY($1::uuid[])) AND rel.deleted_at IS NULL
- ) ref JOIN issues visible ON visible.id=ref.id WHERE `+djangoapi.IssueVisibleSQL("visible", "$3::uuid", "$2::uuid"), ids, workspace, actor)
+ ) ref JOIN issues visible ON visible.id=ref.id WHERE `+apicontract.IssueVisibleSQL("visible", "$3::uuid", "$2::uuid"), ids, workspace, actor)
 	if err != nil {
 		return nil, err
 	}

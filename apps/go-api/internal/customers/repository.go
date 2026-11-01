@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
@@ -84,7 +84,7 @@ func scope(ctx context.Context, tx pgx.Tx, q Query, write bool) error {
 	return nil
 }
 func rows(ctx context.Context, tx pgx.Tx, query string, args ...any) ([]map[string]any, error) {
-	return djangoapi.ReadJSONRows(ctx, tx, query, args...)
+	return apicontract.ReadJSONRows(ctx, tx, query, args...)
 }
 func record(ctx context.Context, tx pgx.Tx, q Query, id uuid.UUID) (map[string]any, error) {
 	query := `SELECT to_jsonb(t) FROM ` + table(q.Tool) + ` t WHERE id=$1 AND workspace_id=$2 AND deleted_at IS NULL`
@@ -177,7 +177,7 @@ func (r *Repository) Read(ctx context.Context, q Query) (_ json.RawMessage, resu
 	return raw, tx.Commit(ctx)
 }
 func page(ctx context.Context, tx pgx.Tx, q Query) (map[string]any, error) {
-	limit, p, offset, err := djangoapi.PageWindow(djangoapi.Query{Params: q.Params, Present: q.Present})
+	limit, p, offset, err := apicontract.PageWindow(apicontract.Query{Params: q.Params, Present: q.Present})
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +208,7 @@ func page(ctx context.Context, tx pgx.Tx, q Query) (map[string]any, error) {
 		}
 		values = append(values, value)
 	}
-	return djangoapi.Envelope(values, total, limit, p), nil
+	return apicontract.Envelope(values, total, limit, p), nil
 }
 func projection(ctx context.Context, tx pgx.Tx, q Query, row map[string]any) (map[string]any, error) {
 	keys := []string{"id", "name", "deleted_at", "created_at", "updated_at", "description", "description_html", "description_stripped", "description_binary", "email", "website_url", "logo_props", "domain", "employees", "stage", "contract_status", "revenue", "external_source", "external_id", "archived_at"}
@@ -245,5 +245,5 @@ func projection(ctx context.Context, tx pgx.Tx, q Query, row map[string]any) (ma
 	return out, err
 }
 func linkedItems(ctx context.Context, tx pgx.Tx, q Query) ([]map[string]any, error) {
-	return rows(ctx, tx, `SELECT jsonb_build_object('id',i.id,'name',i.name,'state_id',(SELECT s.id FROM states s WHERE s.id=i.state_id AND s.project_id=i.project_id AND s.workspace_id=i.workspace_id AND s.deleted_at IS NULL),'priority',i.priority,'sequence_id',i.sequence_id,'project_id',i.project_id,'project_identifier',p.identifier,'created_at',i.created_at,'updated_at',i.updated_at) FROM issues i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id WHERE EXISTS(SELECT 1 FROM customer_work_items rel WHERE rel.issue_id=i.id AND rel.project_id=i.project_id AND rel.workspace_id=$1 AND rel.customer_id=$2 AND ($3::uuid IS NULL OR rel.request_id=$3)) AND p.archived_at IS NULL AND `+djangoapi.IssueVisibleSQL("i", "$4::uuid", "$1::uuid")+` AND (strpos(lower(i.name),lower($5))>0 OR strpos(i.sequence_id::text,$5)>0 OR strpos(lower(p.identifier),lower($5))>0) ORDER BY i.created_at DESC,i.id`, q.WorkspaceID, q.CustomerID, optionalID(q.RequestID), q.ActorID, q.Search)
+	return rows(ctx, tx, `SELECT jsonb_build_object('id',i.id,'name',i.name,'state_id',(SELECT s.id FROM states s WHERE s.id=i.state_id AND s.project_id=i.project_id AND s.workspace_id=i.workspace_id AND s.deleted_at IS NULL),'priority',i.priority,'sequence_id',i.sequence_id,'project_id',i.project_id,'project_identifier',p.identifier,'created_at',i.created_at,'updated_at',i.updated_at) FROM issues i JOIN projects p ON p.id=i.project_id AND p.workspace_id=i.workspace_id WHERE EXISTS(SELECT 1 FROM customer_work_items rel WHERE rel.issue_id=i.id AND rel.project_id=i.project_id AND rel.workspace_id=$1 AND rel.customer_id=$2 AND ($3::uuid IS NULL OR rel.request_id=$3)) AND p.archived_at IS NULL AND `+apicontract.IssueVisibleSQL("i", "$4::uuid", "$1::uuid")+` AND (strpos(lower(i.name),lower($5))>0 OR strpos(i.sequence_id::text,$5)>0 OR strpos(lower(p.identifier),lower($5))>0) ORDER BY i.created_at DESC,i.id`, q.WorkspaceID, q.CustomerID, optionalID(q.RequestID), q.ActorID, q.Search)
 }

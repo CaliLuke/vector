@@ -13,8 +13,8 @@ import (
 
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	store "github.com/CaliLuke/go-plane/internal/workspaceanalytics"
 	api "github.com/CaliLuke/go-plane/workspaceanalytics/gen/workspace_analytics"
@@ -368,7 +368,7 @@ func workspaceAnalyticsFilters(values map[string]*string) (map[string]string, ma
 }
 
 func analyticsFilterError(service *workspaceAnalyticsService, err error) error {
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	if errors.As(err, &failure) {
 		return service.error(failure.Status, failure.Body)
 	}

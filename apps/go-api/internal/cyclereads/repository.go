@@ -13,7 +13,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 
@@ -2396,11 +2396,11 @@ var groupedIssueListSQL = issueRequestScopeSQL + `, filtered AS (
       'id',issue.id,'name',issue.name,'type_id',issue.type_id,'state_id',issue.state_id,'sort_order',issue.sort_order,
       'completed_at',` + utcTimestampSQL("issue.completed_at") + `,'estimate_point',issue.estimate_point_id,'priority',issue.priority,
       'start_date',issue.start_date,'target_date',issue.target_date,'sequence_id',issue.sequence_id,
-      'project_id',issue.project_id,'parent_id',` + djangoapi.VisibleParentSQL("issue", "$1::uuid") + `,'cycle_id',issue.cycle_id,
+      'project_id',issue.project_id,'parent_id',` + apicontract.VisibleParentSQL("issue", "$1::uuid") + `,'cycle_id',issue.cycle_id,
       'sub_issues_count',(SELECT count(*) FROM issues child
         LEFT JOIN states child_state ON child_state.id=child.state_id
         JOIN projects child_project ON child_project.id=child.project_id
-        WHERE child.parent_id=issue.id AND ` + djangoapi.IssueVisibleSQL("child", "$1::uuid", "issue.workspace_id") + ` AND child.deleted_at IS NULL AND child.archived_at IS NULL
+        WHERE child.parent_id=issue.id AND ` + apicontract.IssueVisibleSQL("child", "$1::uuid", "issue.workspace_id") + ` AND child.deleted_at IS NULL AND child.archived_at IS NULL
           AND child.is_draft=false AND child_state."group" IS DISTINCT FROM 'triage' AND child_project.archived_at IS NULL),
       'created_at',` + utcTimestampSQL("issue.created_at") + `,'updated_at',` + utcTimestampSQL("issue.updated_at") + `,
       'created_by',issue.created_by_id,'updated_by',issue.updated_by_id,
@@ -2484,11 +2484,11 @@ var issueListSQL = issueRequestScopeSQL + `, base AS (
     'id',issue.id,'name',issue.name,'type_id',issue.type_id,'state_id',issue.state_id,'sort_order',issue.sort_order,
     'completed_at',` + utcTimestampSQL("issue.completed_at") + `,'estimate_point',issue.estimate_point_id,'priority',issue.priority,
     'start_date',issue.start_date,'target_date',issue.target_date,'sequence_id',issue.sequence_id,
-    'project_id',issue.project_id,'parent_id',` + djangoapi.VisibleParentSQL("issue", "$1::uuid") + `,'cycle_id',issue.cycle_id,
+    'project_id',issue.project_id,'parent_id',` + apicontract.VisibleParentSQL("issue", "$1::uuid") + `,'cycle_id',issue.cycle_id,
     'sub_issues_count',(SELECT count(*) FROM issues child
       LEFT JOIN states child_state ON child_state.id=child.state_id
       JOIN projects child_project ON child_project.id=child.project_id
-      WHERE child.parent_id=issue.id AND ` + djangoapi.IssueVisibleSQL("child", "$1::uuid", "issue.workspace_id") + ` AND child.deleted_at IS NULL AND child.archived_at IS NULL
+      WHERE child.parent_id=issue.id AND ` + apicontract.IssueVisibleSQL("child", "$1::uuid", "issue.workspace_id") + ` AND child.deleted_at IS NULL AND child.archived_at IS NULL
         AND child.is_draft=false AND child_state."group" IS DISTINCT FROM 'triage' AND child_project.archived_at IS NULL),
     'created_at',` + utcTimestampSQL("issue.created_at") + `,'updated_at',` + utcTimestampSQL("issue.updated_at") + `,'created_by',issue.created_by_id,'updated_by',issue.updated_by_id,
     'attachment_count',(SELECT count(*) FROM file_assets asset WHERE asset.issue_id=issue.id AND asset.entity_type='ISSUE_ATTACHMENT' AND asset.deleted_at IS NULL),
@@ -2517,13 +2517,13 @@ SELECT json_build_object(
   'sub_issues_count',(SELECT count(*) FROM issues child
     LEFT JOIN states child_state ON child_state.id=child.state_id
     JOIN projects child_project ON child_project.id=child.project_id
-    WHERE child.parent_id=issue.id AND ` + djangoapi.IssueVisibleSQL("child", "$1::uuid", "issue.workspace_id") + ` AND child.deleted_at IS NULL AND child.archived_at IS NULL
+    WHERE child.parent_id=issue.id AND ` + apicontract.IssueVisibleSQL("child", "$1::uuid", "issue.workspace_id") + ` AND child.deleted_at IS NULL AND child.archived_at IS NULL
       AND child.is_draft=false AND child_state."group" IS DISTINCT FROM 'triage' AND child_project.archived_at IS NULL),
   'issue_detail',(to_jsonb(issue)
     - 'workspace_id' - 'project_id' - 'state_id' - 'parent_id' - 'estimate_point_id' - 'type_id'
     - 'created_by_id' - 'updated_by_id'
     || jsonb_build_object(
-      'workspace',issue.workspace_id,'project',issue.project_id,'state',issue.state_id,'parent',` + djangoapi.VisibleParentSQL("issue", "$1::uuid") + `,
+      'workspace',issue.workspace_id,'project',issue.project_id,'state',issue.state_id,'parent',` + apicontract.VisibleParentSQL("issue", "$1::uuid") + `,
       'estimate_point',issue.estimate_point_id,'type',issue.type_id,
       'created_by',issue.created_by_id,'updated_by',issue.updated_by_id,
       'description_binary',CASE WHEN issue.description_binary IS NULL THEN NULL

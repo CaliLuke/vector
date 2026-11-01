@@ -8,7 +8,7 @@ import (
 	"testing"
 	"uuid"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 )
 
@@ -43,7 +43,7 @@ func TestPlanningQueuedWriteRechecksMembership(t *testing.T) {
 	}
 	select {
 	case err = <-done:
-		var denied *djangoapi.HTTPError
+		var denied *apicontract.HTTPError
 		if !errors.As(err, &denied) || denied.Status != 403 {
 			t.Fatalf("queued permission revocation ignored: %v", err)
 		}

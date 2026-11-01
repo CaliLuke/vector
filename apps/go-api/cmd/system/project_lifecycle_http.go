@@ -110,7 +110,7 @@ func projectLifecycleResponseCompatibilityMiddleware(next http.Handler) http.Han
 		next.ServeHTTP(w, r)
 	})
 }
-func mountProjectLifecycle(mux loomhttp.Muxer, endpoints *api.Endpoints, cors loomhttp.RuntimeCORSPolicy, options apiV1CompatibilityOptions, sessions readServicesSessionLifecycle, cookie djangoSessionCookieConfig) {
+func mountProjectLifecycle(mux loomhttp.Muxer, endpoints *api.Endpoints, cors loomhttp.RuntimeCORSPolicy, options apiV1CompatibilityOptions, sessions readServicesSessionLifecycle, cookie browserSessionCookieConfig) {
 	server := svr.New(endpoints, mux, djangoRequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil)
 	server.Use(func(next http.Handler) http.Handler {
 		apiStack := activityReadsMiddlewareStack(options, sessions, cookie)(projectLifecycleResponseCompatibilityMiddleware(projectLifecycleQueryCompatibilityMiddleware(next)))

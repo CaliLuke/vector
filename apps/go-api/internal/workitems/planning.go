@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 )
 
@@ -70,7 +70,7 @@ func (r *Repository) planningTransaction(ctx context.Context, q Request, body io
 		return Result{}, err
 	}
 	if q.API && kind == "module" {
-		targets, err = r.rows(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE i.id=ANY($1::uuid[]) AND w.slug=$2 AND i.project_id=$3 AND i.deleted_at IS NULL ORDER BY i.created_at DESC`, ids, q.Slug, q.ProjectID)
+		targets, err = r.rows(ctx, `SELECT `+apicontract.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE i.id=ANY($1::uuid[]) AND w.slug=$2 AND i.project_id=$3 AND i.deleted_at IS NULL ORDER BY i.created_at DESC`, ids, q.Slug, q.ProjectID)
 		if err != nil {
 			return Result{}, err
 		}
@@ -111,7 +111,7 @@ func (r *Repository) planningTransaction(ctx context.Context, q Request, body io
 	if !q.API {
 		return Result{201, map[string]any{"message": "success"}}, nil
 	}
-	rows, err := r.rows(ctx, `SELECT to_jsonb(link)||jsonb_build_object('sub_issues_count',(SELECT COUNT(*) FROM issues child WHERE child.parent_id=link.issue_id AND `+djangoapi.IssueVisibleSQL("child", "$4::uuid", "link.workspace_id")+` AND child.deleted_at IS NULL AND child.archived_at IS NULL AND NOT child.is_draft AND NOT EXISTS(SELECT 1 FROM states s WHERE s.id=child.state_id AND s."group"='triage'))) FROM `+kind+`_issues link JOIN projects p ON p.id=link.project_id JOIN workspaces w ON w.id=link.workspace_id WHERE link.`+kind+`_id=$1 AND link.project_id=$2 AND w.slug=$3 AND p.archived_at IS NULL AND link.deleted_at IS NULL ORDER BY link.created_at DESC`, q.Params[kind+"_id"], q.ProjectID, q.Slug, q.ActorID)
+	rows, err := r.rows(ctx, `SELECT to_jsonb(link)||jsonb_build_object('sub_issues_count',(SELECT COUNT(*) FROM issues child WHERE child.parent_id=link.issue_id AND `+apicontract.IssueVisibleSQL("child", "$4::uuid", "link.workspace_id")+` AND child.deleted_at IS NULL AND child.archived_at IS NULL AND NOT child.is_draft AND NOT EXISTS(SELECT 1 FROM states s WHERE s.id=child.state_id AND s."group"='triage'))) FROM `+kind+`_issues link JOIN projects p ON p.id=link.project_id JOIN workspaces w ON w.id=link.workspace_id WHERE link.`+kind+`_id=$1 AND link.project_id=$2 AND w.slug=$3 AND p.archived_at IS NULL AND link.deleted_at IS NULL ORDER BY link.created_at DESC`, q.Params[kind+"_id"], q.ProjectID, q.Slug, q.ActorID)
 	if err != nil {
 		return Result{}, err
 	}
@@ -156,7 +156,7 @@ func unassignedPlanningIssues(targets, existing []map[string]any) []string {
 	return selected
 }
 
-func (r *Repository) publishPlanningCreation(ctx context.Context, q Request, kind string, input djangoinput.Input, selected []string, created []map[string]any, updated []any) error {
+func (r *Repository) publishPlanningCreation(ctx context.Context, q Request, kind string, input requestinput.Input, selected []string, created []map[string]any, updated []any) error {
 	var err error
 	raw := input.Fields["issues"]
 	if !q.API && kind == "module" {
@@ -338,7 +338,7 @@ func (r *Repository) removePlanning(ctx context.Context, q Request, kind string,
 	}
 	return Result{Status: 204}, err
 }
-func (r *Repository) issueModules(ctx context.Context, q Request, input djangoinput.Input) (out Result, resultErr error) {
+func (r *Repository) issueModules(ctx context.Context, q Request, input requestinput.Input) (out Result, resultErr error) {
 	project, err := r.project(ctx, q.ProjectID)
 	if err != nil {
 		return Result{}, err
@@ -358,7 +358,7 @@ func (r *Repository) issueModules(ctx context.Context, q Request, input djangoin
 		ids := []string{}
 		if values, ok := input.Fields[field].([]any); ok {
 			for _, value := range values {
-				if id, e := djangoinput.UUID(value); e == nil {
+				if id, e := requestinput.UUID(value); e == nil {
 					ids = append(ids, id.String())
 				}
 			}

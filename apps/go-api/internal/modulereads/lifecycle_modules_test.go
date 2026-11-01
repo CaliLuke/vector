@@ -42,7 +42,7 @@ func TestValidateModuleWriteFieldsTracksDateOrderAndMemberReplacement(t *testing
 	values, failures := validateModuleWriteFields(map[string]any{
 		"name": "Roadmap", "start_date": "2026-11-02", "target_date": "2026-11-01",
 		"member_ids": []any{}, "deleted_at": "2020-01-01T00:00:00Z", "archived_at": "2020-01-01T00:00:00Z",
-	}, nil, false)
+	}, false)
 	if len(failures) != 0 {
 		t.Fatalf("validation errors = %#v", failures)
 	}
@@ -61,7 +61,7 @@ func TestValidateModuleWriteFieldsTracksDateOrderAndMemberReplacement(t *testing
 }
 
 func TestValidateModuleWriteFieldsDistinguishesOmittedMembers(t *testing.T) {
-	values, failures := validateModuleWriteFields(map[string]any{"name": "Roadmap"}, nil, true)
+	values, failures := validateModuleWriteFields(map[string]any{"name": "Roadmap"}, true)
 	if len(failures) != 0 {
 		t.Fatalf("validation errors = %#v", failures)
 	}
@@ -71,7 +71,7 @@ func TestValidateModuleWriteFieldsDistinguishesOmittedMembers(t *testing.T) {
 }
 
 func TestModuleCreateDefaultsDoNotLeakIntoPutValidation(t *testing.T) {
-	values, failures := validateModuleWriteFields(map[string]any{"name": "Renamed"}, nil, false)
+	values, failures := validateModuleWriteFields(map[string]any{"name": "Renamed"}, false)
 	if len(failures) != 0 {
 		t.Fatalf("PUT validation errors = %#v", failures)
 	}
@@ -92,7 +92,7 @@ func TestModuleCreateDefaultsDoNotLeakIntoPutValidation(t *testing.T) {
 func TestModuleFieldErrorsSuppressObjectDateValidation(t *testing.T) {
 	_, failures := validateModuleWriteFields(map[string]any{
 		"name": nil, "start_date": "2026-11-02", "target_date": "2026-11-01",
-	}, nil, true)
+	}, true)
 	if !reflect.DeepEqual(failures, map[string]any{"name": []string{"This field may not be null."}}) {
 		t.Fatalf("validation errors = %#v", failures)
 	}
@@ -150,7 +150,7 @@ func TestValidateModuleAPIWriteFieldsIgnoresFieldsOutsideSerializer(t *testing.T
 		"name": "Roadmap", "lead_id": "f0530a31-b60e-4fca-850e-e23cb0ddfb92",
 		"member_ids": []any{"f0530a31-b60e-4fca-850e-e23cb0ddfb92"}, "view_props": map[string]any{"layout": "list"},
 		"deleted_at": "2026-01-01T00:00:00Z", "members": []any{},
-	}, nil, false)
+	}, false)
 	if len(failures) != 0 {
 		t.Fatalf("validation errors = %#v", failures)
 	}
@@ -171,10 +171,11 @@ func TestModuleMemberListFieldErrorsPreserveEveryIndex(t *testing.T) {
 	values, failures := validateModuleWriteFields(map[string]any{
 		"name":       "Roadmap",
 		"member_ids": []any{nil, true, json.Number("42"), []any{"nested"}, map[string]any{"z": "first", "id": "not-a-uuid"}, ""},
-	}, nil, false)
+	}, false)
 	want := map[string]any{"member_ids": map[string]any{
 		"0": []string{"This field may not be null."},
 		"1": []string{"Incorrect type. Expected pk value, received bool."},
+		"2": []string{"“42” is not a valid UUID."},
 		"3": []string{"Incorrect type. Expected pk value, received list."},
 		"4": []string{"Incorrect type. Expected pk value, received dict."},
 		"5": []string{"This field may not be null."},
@@ -190,7 +191,7 @@ func TestModuleMemberListFieldErrorsPreserveEveryIndex(t *testing.T) {
 func TestModuleMemberListFieldCollectsMultipleMalformedUUIDs(t *testing.T) {
 	values, failures := validateModuleWriteFields(map[string]any{
 		"name": "Roadmap", "member_ids": []any{"not-a-uuid", "also-not-a-uuid"},
-	}, nil, false)
+	}, false)
 	want := map[string]any{"member_ids": map[string]any{
 		"0": []string{"“not-a-uuid” is not a valid UUID."},
 		"1": []string{"“also-not-a-uuid” is not a valid UUID."},
@@ -213,11 +214,12 @@ func TestModuleMemberCompositeValuesRejectWithoutTraversal(t *testing.T) {
 	fields := map[string]any{"name": "Roadmap", "member_ids": []any{deepList, deepDict, json.Number("42")}}
 	var failures map[string]any
 	allocations := testing.AllocsPerRun(20, func() {
-		_, failures = validateModuleWriteFields(fields, nil, false)
+		_, failures = validateModuleWriteFields(fields, false)
 	})
 	want := map[string]any{"member_ids": map[string]any{
 		"0": []string{"Incorrect type. Expected pk value, received list."},
 		"1": []string{"Incorrect type. Expected pk value, received dict."},
+		"2": []string{"“42” is not a valid UUID."},
 	}}
 	if !reflect.DeepEqual(failures, want) {
 		t.Fatalf("composite member errors = %#v, want %#v", failures, want)
@@ -232,12 +234,8 @@ func TestModuleMemberCompositeValuesRejectWithoutTraversal(t *testing.T) {
 	if err != nil {
 		t.Fatalf("composite relation validation: %v", err)
 	}
-	wantRelations := map[string]any{"member_ids": map[string]any{"2": []string{"Invalid pk \"42\" - object does not exist."}}}
-	if !reflect.DeepEqual(relationErrors, wantRelations) {
-		t.Fatalf("scalar relation validation = %#v, want %#v", relationErrors, wantRelations)
-	}
-	if len(database.queries) != 1 || len(database.args) != 1 || len(database.args[0]) != 1 {
-		t.Fatalf("relation queries=%v args=%v, want only one lookup for the primitive numeric child", database.queries, database.args)
+	if len(relationErrors) != 0 || len(database.queries) != 0 || len(database.args) != 0 {
+		t.Fatalf("invalid identities reached relation lookup: errors=%v queries=%v args=%v", relationErrors, database.queries, database.args)
 	}
 }
 

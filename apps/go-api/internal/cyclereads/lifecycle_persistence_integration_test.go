@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -90,7 +90,7 @@ func TestCycleAPICreateRejectsDisabledProjectWithoutWriting(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err := repository.Create(ctx, lifecycleActor, "lifecycle", lifecycleProject, CycleCreate{Name: "Disabled"}, true, nil)
-	var invalid *djangoapi.HTTPError
+	var invalid *apicontract.HTTPError
 	if !errors.As(err, &invalid) || invalid.Status != 400 {
 		t.Fatalf("disabled project error = %v", err)
 	}

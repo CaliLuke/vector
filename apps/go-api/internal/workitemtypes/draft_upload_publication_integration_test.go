@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes/property"
 	"github.com/google/uuid"
 )
@@ -29,7 +29,7 @@ func TestDraftPublicationDistinguishesRichTextUploadsFromLiteralText(t *testing.
 		t.Fatal(err)
 	}
 	_, err = publishDraftForTest(f, repo, draft, f.member, string(body))
-	var conflict *djangoapi.HTTPError
+	var conflict *apicontract.HTTPError
 	if !errors.As(err, &conflict) || conflict.Status != 409 {
 		t.Fatalf("pending rich-text image must block publication: %v", err)
 	}
@@ -58,7 +58,7 @@ func TestDraftPublicationWaitsForUploadsWithoutConsumingTheDraft(t *testing.T) {
 	f.exec(`UPDATE file_assets SET is_uploaded=false WHERE id=$1`, asset)
 	body := fmt.Sprintf(`{"description_html":"<image-component src=\"%s\"></image-component>"}`, asset)
 	_, err := publishDraftForTest(f, repo, draft, f.member, body)
-	var conflict *djangoapi.HTTPError
+	var conflict *apicontract.HTTPError
 	if !errors.As(err, &conflict) || conflict.Status != 409 {
 		t.Fatalf("pending uploads: want 409, got %v", err)
 	}

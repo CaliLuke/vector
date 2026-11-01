@@ -5,7 +5,7 @@ package activityreads
 import (
 	"testing"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
@@ -58,7 +58,7 @@ func TestScopedActivityReadsPreserveVisibilityAndDistinguishMissing(t *testing.T
 	q.Params["cursor"] = "invalid"
 	q.Present["cursor"] = true
 	_, err = repo.Read(ctx, principal, q)
-	var failure *djangoapi.HTTPError
+	var failure *apicontract.HTTPError
 	require.ErrorAs(t, err, &failure)
 	require.Equal(t, 400, failure.Status)
 	delete(q.Params, "cursor")

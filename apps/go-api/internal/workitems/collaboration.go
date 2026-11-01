@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/requestinput"
 )
 
 func collaborationKind(q Request) (string, string) {
@@ -108,7 +108,7 @@ func (r *Repository) ExecuteCollaboration(ctx context.Context, q Request, body i
 			return Result{}, failure(400, "error", "You are not allowed to comment on the issue")
 		}
 	}
-	input, err := djangoinput.Parse(body, contentType)
+	input, err := requestinput.Parse(body, contentType)
 	if err != nil {
 		return Result{}, err
 	}
@@ -183,7 +183,7 @@ func (r *Repository) collaborationObject(ctx context.Context, q Request, kind, t
 		where += ` AND EXISTS(` + collaborationVisibleParentSQL(q, kind, &args) + `)`
 	}
 	row, err := r.row(ctx, `SELECT to_jsonb(t) FROM `+table+` t JOIN workspaces w ON w.id=t.workspace_id JOIN projects p ON p.id=t.project_id WHERE `+where, args...)
-	var missing *djangoapi.HTTPError
+	var missing *apicontract.HTTPError
 	if errors.As(err, &missing) && missing.Status == 404 {
 		if filtered && !q.API {
 			model := "IssueComment"
@@ -203,7 +203,7 @@ func collaborationFilters(q Request, args *[]any) (string, error) {
 		if !q.Present[filter[0]] || q.Params[filter[0]] == "" {
 			continue
 		}
-		id, err := djangoinput.UUID(q.Params[filter[0]])
+		id, err := requestinput.UUID(q.Params[filter[0]])
 		if err != nil {
 			return "", invalid(map[string]any{filter[0]: []string{"Enter a valid UUID."}})
 		}
@@ -217,7 +217,7 @@ func (r *Repository) readCollaboration(ctx context.Context, q Request, kind, tab
 	if kind == "subscriber" {
 		if strings.Contains(q.Operation, "_subscribe") && !strings.Contains(q.Operation, "_subscribers") {
 			_, err := r.collaborationObject(ctx, q, kind, table, false)
-			var missing *djangoapi.HTTPError
+			var missing *apicontract.HTTPError
 			if errors.As(err, &missing) && missing.Status == 404 {
 				return Result{200, map[string]any{"subscribed": false}}, nil
 			}
@@ -303,7 +303,7 @@ func (r *Repository) readCollaboration(ctx context.Context, q Request, kind, tab
 	total := len(rows)
 	limit, page, offset := total, 0, 0
 	if q.API {
-		limit, page, offset, err = djangoapi.PageWindow(djangoapi.Query{Params: q.Params, Present: q.Present})
+		limit, page, offset, err = apicontract.PageWindow(apicontract.Query{Params: q.Params, Present: q.Present})
 		if err != nil {
 			return Result{}, err
 		}
@@ -322,7 +322,7 @@ func (r *Repository) readCollaboration(ctx context.Context, q Request, kind, tab
 		result = append(result, projected)
 	}
 	if q.API {
-		return Result{200, djangoapi.Envelope(result, total, limit, page)}, nil
+		return Result{200, apicontract.Envelope(result, total, limit, page)}, nil
 	}
 	return Result{200, result}, nil
 }
@@ -333,7 +333,7 @@ func (r *Repository) ProtocolCollaborationPutAction(ctx context.Context, q Reque
 	}
 	q.Method = "PUT"
 	if err := r.AuthorizeCollaborationInitial(ctx, q); err != nil {
-		var handled *djangoapi.HTTPError
+		var handled *apicontract.HTTPError
 		if errors.As(err, &handled) {
 			return false, nil
 		}
@@ -341,7 +341,7 @@ func (r *Repository) ProtocolCollaborationPutAction(ctx context.Context, q Reque
 	}
 	kind, table := collaborationKind(q)
 	_, err := r.collaborationObject(ctx, q, kind, table, true)
-	var handled *djangoapi.HTTPError
+	var handled *apicontract.HTTPError
 	if errors.As(err, &handled) {
 		return false, nil
 	}
