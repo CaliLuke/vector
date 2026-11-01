@@ -312,6 +312,16 @@ type-only declarations, unloaded files, and merged worker/build output.
 
 ### Dependency limitations
 
+PostgreSQL 18.6 can hold `DROP DATABASE` behind a client paused during
+SCRAM authentication, even when that client targets another database. The pending
+backend releases the barrier when its connection closes or authentication times
+out. The [upstream barrier-wait report](https://www.postgresql.org/message-id/179223137070.3783589.15732839710523354747%40gmail.com)
+also records the authentication wait. A startup packet that reaches the SASL
+challenge without answering it reproduces the blocked drop. This explains a
+cleanup delay after a failed connection; it does not establish that connection's
+transport failure. Keep fixture deadlines and failure reporting intact. Recheck
+this limitation when an upstream release processes barriers during that wait.
+
 `@headlessui/react@2.2.10` drops React 19 callback-ref cleanup functions when
 forwarding `Combobox.Button` refs. `CustomSelect` uses Floating UI's `useMergeRefs`
 to run those cleanups when Headless UI clears the ref. A standalone reproduction
