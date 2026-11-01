@@ -24,14 +24,20 @@ type writeFixture struct {
 
 func newWriteFixture(t *testing.T) writeFixture {
 	t.Helper()
+	started := time.Now()
 	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Minute)
 	t.Cleanup(cancel)
 	address := cloneMilestoneDatabase(t, ctx, milestoneSchema)
-	db, err := pgx.Connect(ctx, address)
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, db.Close(context.WithoutCancel(ctx))) })
 	config, err := pgxpool.ParseConfig(address)
 	require.NoError(t, err)
+	config.ConnConfig.Tracer = milestoneFixtureTrace(t)
+	db, err := pgx.ConnectConfig(ctx, config.ConnConfig.Copy())
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		cleanup, stop := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer stop()
+		testsupport.CloseContext(t, db, cleanup)
+	})
 	config.MaxConns = 2
 	config.ConnConfig.RuntimeParams["application_name"] = "milestone-writes"
 	pool, err := pgxpool.NewWithConfig(ctx, config)
@@ -41,6 +47,20 @@ func newWriteFixture(t *testing.T) writeFixture {
 	require.NoError(t, err)
 	_, err = db.Exec(ctx, testsupport.MilestoneWriteSeed)
 	require.NoError(t, err)
+	setupElapsed := time.Since(started)
+	t.Cleanup(func() {
+		if t.Failed() {
+			t.Logf("milestone fixture setup=%s total=%s", setupElapsed, time.Since(started))
+			diagnostics, stop := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+			defer stop()
+			waits, queryErr := milestoneDatabaseWaits(diagnostics, db)
+			if queryErr != nil {
+				t.Logf("milestone database diagnostics unavailable: error_type=%T", queryErr)
+				return
+			}
+			t.Logf("milestone database waits: %+v", waits)
+		}
+	})
 	return writeFixture{ctx, db, repo, milestones.WriteOptions{Scope: milestones.Scope{ActorID: uuid.MustParse(testsupport.LabelActor), WorkspaceID: uuid.MustParse(testsupport.LabelWorkspace), ProjectID: uuid.MustParse(testsupport.LabelProject), WorkspaceSlug: "milestones", Timezone: "UTC"}, Origin: "https://example.test"}}
 }
 

@@ -11,7 +11,7 @@ sized tasks or an estimate of time remaining.
    parity tracker.
 3. **ERR-01/ERR-02:** resolve unchecked errors by observable impact and resource
    ownership.
-4. **NEW-04/NEW-08/NEW-09/STRUCT-01/DUP-01/COV-01/COV-03:** resolve the recorded
+4. **NEW-04/NEW-08/NEW-09/NEW-10/STRUCT-01/DUP-01/COV-01/COV-03:** resolve the recorded
    Go runtime failures, maintainability exceptions, duplication, and coverage gaps.
 
 ## Outstanding inventory
@@ -37,7 +37,7 @@ coverage does not retire the uncovered behavior.
 
 ## Open findings
 
-Five recorded failures still lack a confirmed cause or evidence that they are
+Six recorded failures still lack a confirmed cause or evidence that they are
 obsolete. Passing rechecks alone do not close them.
 
 | ID     | Outstanding work                                                                                                                                                                                                          | Closure evidence                                                                                                                                      |
@@ -47,6 +47,7 @@ obsolete. Passing rechecks alone do not close them.
 | NEW-07 | Investigate consecutive two-second process-memory sample timeouts that stopped the frontend behavior gate. The cause of the stalled `ps` calls is unknown.                                                                | Establish and resolve the sampling failure cause, or prove the observation obsolete. Preserve memory enforcement, deadlines and fail-closed behavior. |
 | NEW-08 | Investigate the attachment-import `internal_error` in `TestMCPAttachmentImportNamesTypesAndLimits/2026-07-28/personal_token/empty_path`. The native cause is unconfirmed.                                                 | Resolve the cause or prove the observation obsolete. Preserve import-name/type/size assertions and the protocol/credential matrix.                    |
 | NEW-09 | Investigate the HTTP 503 setup timeout in `TestMCPTemplateWritesReauthorizeAfterWaiting/page//update/personal_token_revoked/2026-07-28/receipt_replay`. The cause is unconfirmed.                                         | Resolve the cause or prove the observation obsolete. Preserve current-authorization and replay assertions and all existing deadlines.                 |
+| NEW-10 | Investigate `TestMilestoneRetainedArchivedIntakeLinksRemainRemovable` exhausting its two-minute fixture deadline at the first milestone creation. The native wait stage and cause are unconfirmed.                        | Resolve the cause or prove the observation obsolete. Preserve the deadline and archived-intake association assertions.                                |
 
 ## Deferred work and product follow-ups
 
