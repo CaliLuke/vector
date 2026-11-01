@@ -113,7 +113,9 @@ func TestReadServiceMalformedQueryPrecedesScalarSelection(t *testing.T) {
 	handler := readServicesCompatibilityMiddleware(http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		got = request.URL.Query().Get("cursor")
 		response.Header().Set("Content-Type", "application/json")
-		response.Write([]byte(`[]`))
+		if _, err := response.Write([]byte(`[]`)); err != nil {
+			t.Errorf("write query fixture response: %v", err)
+		}
 	}))
 	request := httptest.NewRequest(http.MethodGet, "/api/workspaces/test/projects/0198a28d-d227-7752-82ac-bc4c1c290703/cycles/?cursor=20:0:0&cursor=20:1:0&cursor=%ZZ", nil)
 	handler.ServeHTTP(httptest.NewRecorder(), request)

@@ -80,13 +80,13 @@ void test("repeated memory sampling timeouts fail closed", (t) => {
   assert.match(result.stderr, /memory monitoring failed/);
 });
 
-void test("a timed-out memory sample that exits with SIGPIPE gets one retry", (t) => {
+void test("a timed-out memory inspector with pending output gets one retry", (t) => {
   const result = runWithUnavailableSamples(t, 1, { mode: "timeout-pipe" });
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stderr, /memory sample timed out; retrying once/);
 });
 
-void test("repeated SIGPIPE exits after sampling deadlines still fail closed", (t) => {
+void test("repeated inspector timeouts with pending output still fail closed", (t) => {
   const result = runWithUnavailableSamples(t, 2, { mode: "timeout-pipe", childDuration: 60_000 });
   assert.equal(result.status, 125, result.stderr);
   assert.match(result.stderr, /memory sample timed out; retrying once/);
@@ -365,3 +365,60 @@ for (const [signal, code] of [
     await assertWorkerStopped(worker);
   });
 }
+
+void test("a SIGTERM-resistant memory inspector cannot suspend enforcement past its sampling deadlines", async () => {
+  const directory = mkdtempSync(path.join(tmpdir(), "vector-stuck-inspector-"));
+  const childPath = path.join(directory, "child.pid");
+  const inspectorsPath = path.join(directory, "inspectors");
+  const inspector = `
+process.on("SIGTERM", () => {});
+require("node:fs").appendFileSync(${JSON.stringify(inspectorsPath)}, process.pid + "\\n");
+setInterval(() => {}, 1000);
+`;
+  writeFileSync(
+    path.join(directory, "ps"),
+    `#!/bin/sh\nexec ${shellQuote(process.execPath)} -e ${shellQuote(inspector)}\n`,
+    { mode: 0o700 }
+  );
+  const application = `require("node:fs").writeFileSync(${JSON.stringify(childPath)}, String(process.pid)); setInterval(() => {}, 1000);`;
+  const child = spawn(process.execPath, [runner, "--seconds", "30", "--", process.execPath, "-e", application], {
+    stdio: ["ignore", "ignore", "pipe"],
+    env: { ...process.env, PATH: `${directory}${path.delimiter}${process.env.PATH}` },
+  });
+  let stderr = "";
+  child.stderr.on("data", (chunk) => {
+    stderr += chunk;
+  });
+  const completed = new Promise((resolve, reject) => {
+    child.once("error", reject);
+    child.once("close", (code, signal) => resolve({ code, signal }));
+  });
+  let deadline;
+  try {
+    const result = await Promise.race([
+      completed,
+      new Promise((resolve) => {
+        deadline = setTimeout(() => resolve(null), 7000);
+      }),
+    ]);
+    assert.notEqual(result, null, "a stuck inspector must not disable monitoring until the command deadline");
+    assert.equal(result.code, 125, stderr);
+    assert.match(stderr, /memory sample timed out; retrying once/);
+    assert.match(stderr, /memory monitoring failed/);
+    await assertWorkerStopped(Number(readFileSync(childPath, "utf8")));
+    const inspectors = readFileSync(inspectorsPath, "utf8").trim().split("\n").map(Number);
+    assert.equal(inspectors.length, 2, "one bounded retry is permitted");
+    for (const pid of inspectors) {
+      assert.throws(() => process.kill(pid, 0), { code: "ESRCH" }, "timed-out inspectors must be reaped");
+    }
+  } finally {
+    clearTimeout(deadline);
+    child.kill("SIGKILL");
+    cleanupWorkerFile(childPath);
+    if (existsSync(inspectorsPath)) {
+      for (const pid of readFileSync(inspectorsPath, "utf8").trim().split("\n").map(Number)) cleanupWorker(pid);
+    }
+    await completed;
+    rmSync(directory, { recursive: true, force: true });
+  }
+});

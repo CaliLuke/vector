@@ -267,7 +267,8 @@ a baseline. This bounds parser and type-checker memory without omitting source.
 Production builds use one Turbo task at a time with a 4 GiB RSS ceiling. The Go
 gate has a 6 GiB RSS ceiling and two Go runtime threads. These are process-group
 watchdogs sampled every 100 ms, not OS-enforced total-memory reservations. They
-retry one timed-out process sample. Consecutive sample timeouts or other
+send `SIGKILL` to an inspector at its two-second sampling deadline and retry one
+timed-out process sample. Consecutive sample timeouts or other
 monitoring errors fail the gate. The external command deadline remains active.
 They track descendant processes and their groups, including Turbo task groups, but
 do not measure Docker containers. A process that fully daemonizes between

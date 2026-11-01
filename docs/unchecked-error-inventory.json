@@ -8,10 +8,10 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 840,
-    "also_in_ERR_01": 13,
-    "additional_ERR_02": 827,
-    "test_file_findings": 541,
+    "findings": 815,
+    "also_in_ERR_01": 0,
+    "additional_ERR_02": 815,
+    "test_file_findings": 516,
     "non_test_file_findings": 299
   },
   "findings": [
@@ -658,13 +658,6 @@
       "column": 5,
       "message": "Error return value of `response.Write` is not checked",
       "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/cmd/system/query_http_contract_test.go",
-      "line": 116,
-      "column": 17,
-      "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": true
     },
     {
       "file": "apps/go-api/cmd/system/read_service_middleware.go",
@@ -1591,27 +1584,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/backgroundtasks/link_preview_test.go",
-      "line": 37,
-      "column": 18,
-      "message": "Error return value of `io.WriteString` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/link_preview_test.go",
-      "line": 40,
-      "column": 18,
-      "message": "Error return value of `io.WriteString` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/link_preview_test.go",
-      "line": 78,
-      "column": 109,
-      "message": "Error return value of `io.WriteString` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
       "file": "apps/go-api/internal/backgroundtasks/page_transactions.go",
       "line": 185,
       "column": 5,
@@ -1637,97 +1609,6 @@
       "line": 166,
       "column": 11,
       "message": "Error return value of `uuid.Parse` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/templated_email_tasks_integration_test.go",
-      "line": 209,
-      "column": 4,
-      "message": "Error return value of `part.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/templated_email_tasks_integration_test.go",
-      "line": 212,
-      "column": 3,
-      "message": "Error return value of `part.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/templated_email_tasks_integration_test.go",
-      "line": 257,
-      "column": 24,
-      "message": "Error return value of `connection.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/templated_email_tasks_integration_test.go",
-      "line": 259,
-      "column": 5,
-      "message": "Error return value of `fmt.Fprint` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/templated_email_tasks_integration_test.go",
-      "line": 269,
-      "column": 7,
-      "message": "Error return value of `fmt.Fprint` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/templated_email_tasks_integration_test.go",
-      "line": 271,
-      "column": 7,
-      "message": "Error return value of `fmt.Fprint` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/templated_email_tasks_integration_test.go",
-      "line": 273,
-      "column": 7,
-      "message": "Error return value of `fmt.Fprint` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/templated_email_tasks_integration_test.go",
-      "line": 275,
-      "column": 7,
-      "message": "Error return value of `fmt.Fprint` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/templated_email_tasks_integration_test.go",
-      "line": 295,
-      "column": 8,
-      "message": "Error return value of `fmt.Fprint` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/templated_email_tasks_integration_test.go",
-      "line": 297,
-      "column": 8,
-      "message": "Error return value of `fmt.Fprint` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/templated_email_tasks_integration_test.go",
-      "line": 300,
-      "column": 7,
-      "message": "Error return value of `fmt.Fprint` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/templated_email_tasks_integration_test.go",
-      "line": 302,
-      "column": 7,
-      "message": "Error return value of `fmt.Fprint` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/backgroundtasks/templated_email_tasks_integration_test.go",
-      "line": 305,
-      "column": 7,
-      "message": "Error return value of `fmt.Fprint` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -2201,17 +2082,10 @@
     },
     {
       "file": "apps/go-api/internal/estimatereads/repository_integration_test.go",
-      "line": 35,
+      "line": 36,
       "column": 14,
       "message": "Error return value is not checked",
       "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/estimatereads/repository_integration_test.go",
-      "line": 148,
-      "column": 24,
-      "message": "Error return value of `connection.Close` is not checked",
-      "also_in_configured_audit": true
     },
     {
       "file": "apps/go-api/internal/estimatereads/repository_test.go",
@@ -2275,34 +2149,6 @@
       "column": 13,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/htmlcompat/parse_test.go",
-      "line": 478,
-      "column": 15,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/htmlcompat/parse_test.go",
-      "line": 489,
-      "column": 16,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/htmlcompat/parse_test.go",
-      "line": 501,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/internal/htmlcompat/parse_test.go",
-      "line": 520,
-      "column": 8,
-      "message": "Error return value is not checked",
-      "also_in_configured_audit": true
     },
     {
       "file": "apps/go-api/internal/initiatives/mutations.go",
@@ -4048,13 +3894,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/standardviews/mutation_validation_upgrade_integration_test.go",
-      "line": 94,
-      "column": 24,
-      "message": "Error return value of `connection.Close` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
       "file": "apps/go-api/internal/standardviews/repository_test.go",
       "line": 88,
       "column": 5,
@@ -5404,20 +5243,6 @@
       "column": 6,
       "message": "Error return value of `fmt.Sscanf` is not checked",
       "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/project_label_writes/design/transport_test.go",
-      "line": 92,
-      "column": 10,
-      "message": "Error return value of `s.record` is not checked",
-      "also_in_configured_audit": true
-    },
-    {
-      "file": "apps/go-api/project_label_writes/design/transport_test.go",
-      "line": 96,
-      "column": 10,
-      "message": "Error return value of `s.record` is not checked",
-      "also_in_configured_audit": true
     },
     {
       "file": "apps/go-api/project_lifecycle.go",

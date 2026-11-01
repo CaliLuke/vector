@@ -111,6 +111,9 @@ function stop(code, reason) {
 async function groupMemory() {
   const { stdout } = await execFileAsync("ps", ["-axo", "pid=,ppid=,pgid=,rss=,comm="], {
     timeout: 2000,
+    // Inspectors have no domain work to drain. A soft signal can leave memory
+    // monitoring suspended indefinitely while waiting for the inspector to exit.
+    killSignal: "SIGKILL",
     maxBuffer: 2 * 1024 * 1024,
   });
   const rows = stdout
@@ -172,7 +175,7 @@ async function checkMemory() {
     // Process enumeration can briefly stall during compiler process churn.
     // Permit one missed sample, but never continue without working monitoring.
     // execFile destroys its pipes before sending the timeout signal, so a
-    // writer can exit with SIGPIPE instead of SIGTERM. Its killed flag and
+    // writer can exit with SIGPIPE before the requested signal. Its killed flag and
     // null exit code identify this timeout; buffer-limit errors have a code.
     const timedOut = error.killed && error.code === null;
     if ((timedOut || error.code === "NO_PROCESS_TREE") && sampleFailures++ === 0) {

@@ -34,10 +34,14 @@ func TestLinkPreviewPinnedRedirectCharsetAndFavicon(t *testing.T) {
 			http.Redirect(w, r, "/page", http.StatusFound)
 		case "/page":
 			w.Header().Set("Content-Type", "text/html; charset=iso-8859-1")
-			io.WriteString(w, "<title> Caf\xe9 &amp; tea </title><link rel='apple-touch-icon' href='/other'><link rel='icon' href='fav.ico'>")
+			if _, err := io.WriteString(w, "<title> Caf\xe9 &amp; tea </title><link rel='apple-touch-icon' href='/other'><link rel='icon' href='fav.ico'>"); err != nil {
+				t.Errorf("write page fixture: %v", err)
+			}
 		case "/fav.ico":
 			w.Header().Set("Content-Type", "image/png")
-			io.WriteString(w, "icon")
+			if _, err := io.WriteString(w, "icon"); err != nil {
+				t.Errorf("write favicon fixture: %v", err)
+			}
 		case "/private":
 			http.Redirect(w, r, "http://127.0.0.1/private", http.StatusFound)
 		default:
@@ -75,7 +79,11 @@ func TestLinkPreviewPinnedRedirectCharsetAndFavicon(t *testing.T) {
 	}
 }
 func TestLinkPreviewBoundsResponseBytes(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { io.WriteString(w, "0123456789") }))
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if _, err := io.WriteString(w, "0123456789"); err != nil {
+			t.Errorf("write bounded response fixture: %v", err)
+		}
+	}))
 	defer server.Close()
 	store := &PostgresLinkPreviewStore{resolver: &previewResolver{addresses: []netip.Addr{netip.MustParseAddr("8.8.8.8")}}, dial: func(ctx context.Context, n, a string) (net.Conn, error) {
 		return (&net.Dialer{}).DialContext(ctx, n, strings.TrimPrefix(server.URL, "http://"))

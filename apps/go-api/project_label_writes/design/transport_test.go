@@ -89,12 +89,12 @@ func (s *labelService) Delete(_ context.Context, p *api.DeletePayload) error {
 	return err
 }
 func (s *labelService) CollectionOptions(_ context.Context, p *api.CollectionOptionsPayload) (*api.LabelMetadata, error) {
-	s.record("CollectionOptions", p.Slug, p.ProjectID, "", nil)
-	return labelMetadata(), s.failure
+	_, err := s.record("CollectionOptions", p.Slug, p.ProjectID, "", nil)
+	return labelMetadata(), err
 }
 func (s *labelService) DetailOptions(_ context.Context, p *api.DetailOptionsPayload) (*api.LabelMetadata, error) {
-	s.record("DetailOptions", p.Slug, p.ProjectID, p.Pk, nil)
-	return labelMetadata(), s.failure
+	_, err := s.record("DetailOptions", p.Slug, p.ProjectID, p.Pk, nil)
+	return labelMetadata(), err
 }
 func labelMetadata() *api.LabelMetadata {
 	return &api.LabelMetadata{Name: "Issue label", Description: "", Renders: []string{"application/json"}, Parses: []string{"application/json"}, Actions: map[string]map[string]*api.LabelMetadataField{"POST": {"name": {Type: "string", Required: true, ReadOnly: false, Label: "Name"}}}}

@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"uuid"
 
@@ -86,12 +87,16 @@ func TestMutationValidationPreservesDjangoPrecedence(t *testing.T) {
 	}
 }
 
-func seedMutationValidation(ctx context.Context, databaseURL string) error {
+func seedMutationValidation(ctx context.Context, databaseURL string) (resultErr error) {
 	connection, err := pgx.Connect(ctx, databaseURL)
 	if err != nil {
 		return err
 	}
-	defer connection.Close(ctx)
+	defer func() {
+		closeCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer cancel()
+		resultErr = errors.Join(resultErr, connection.Close(closeCtx))
+	}()
 	_, err = connection.Exec(ctx, `
 CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text, deleted_at timestamptz);
 CREATE TABLE workspace_members (workspace_id uuid, member_id uuid, role integer, is_active boolean, deleted_at timestamptz);

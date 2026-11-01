@@ -14,6 +14,7 @@ import (
 	"mime/quotedprintable"
 	"net"
 	"net/mail"
+	"net/textproto"
 	"strings"
 	"sync"
 	"testing"
@@ -206,10 +207,11 @@ func extractEmailPlainText(raw string) (string, error) {
 		}
 		if strings.HasPrefix(strings.ToLower(part.Header.Get("Content-Type")), "text/plain") {
 			decoded, err := io.ReadAll(quotedprintable.NewReader(part))
-			_ = part.Close()
-			return string(decoded), err
+			return string(decoded), errors.Join(err, part.Close())
 		}
-		_ = part.Close()
+		if err := part.Close(); err != nil {
+			return "", fmt.Errorf("close skipped MIME part: %w", err)
+		}
 	}
 	return "", errors.New("email did not include a text/plain MIME part")
 }
@@ -229,6 +231,8 @@ type retryOnceEmailSMTP struct {
 	mu       sync.Mutex
 	count    int
 	accepted string
+	done     chan struct{}
+	failure  error
 }
 
 func startRetryOnceEmailSMTP(t *testing.T) *retryOnceEmailSMTP {
@@ -237,72 +241,89 @@ func startRetryOnceEmailSMTP(t *testing.T) *retryOnceEmailSMTP {
 	if err != nil {
 		t.Fatal(err)
 	}
-	sink := &retryOnceEmailSMTP{listener: listener, port: listener.Addr().(*net.TCPAddr).Port}
-	t.Cleanup(func() { testsupport.Close(t, listener) })
+	sink := &retryOnceEmailSMTP{listener: listener, port: listener.Addr().(*net.TCPAddr).Port, done: make(chan struct{})}
+	t.Cleanup(func() {
+		testsupport.Close(t, listener)
+		<-sink.done
+		if sink.failure != nil {
+			t.Errorf("SMTP fixture failed: %v", sink.failure)
+		}
+	})
 	go sink.serve()
 	return sink
 }
 
 func (sink *retryOnceEmailSMTP) serve() {
+	defer close(sink.done)
 	for {
 		connection, err := sink.listener.Accept()
 		if err != nil {
+			if !errors.Is(err, net.ErrClosed) {
+				sink.failure = errors.Join(sink.failure, err)
+			}
 			return
 		}
-		sink.handle(connection)
+		sink.failure = errors.Join(sink.failure, sink.handle(connection))
 	}
 }
 
-func (sink *retryOnceEmailSMTP) handle(connection net.Conn) {
-	defer connection.Close()
+func (sink *retryOnceEmailSMTP) handle(connection net.Conn) (resultErr error) {
+	defer func() { resultErr = errors.Join(resultErr, connection.Close()) }()
+	if err := connection.SetDeadline(time.Now().Add(5 * time.Second)); err != nil {
+		return err
+	}
+	reply := func(value string) error {
+		_, err := fmt.Fprint(connection, value)
+		return err
+	}
+	if err := reply("220 localhost ESMTP test sink\r\n"); err != nil {
+		return err
+	}
 	reader := bufio.NewReader(connection)
-	_, _ = fmt.Fprint(connection, "220 localhost ESMTP test sink\r\n")
-	var body strings.Builder
 	for {
 		line, err := reader.ReadString('\n')
+		if errors.Is(err, io.EOF) && line == "" {
+			return nil
+		}
 		if err != nil {
-			return
+			return err
 		}
 		command := strings.ToUpper(strings.TrimSpace(line))
+		response := "250 2.0.0 ok\r\n"
 		switch {
 		case strings.HasPrefix(command, "EHLO"), strings.HasPrefix(command, "HELO"):
-			_, _ = fmt.Fprint(connection, "250-localhost\r\n250 SIZE 1000000\r\n")
+			response = "250-localhost\r\n250 SIZE 1000000\r\n"
 		case strings.HasPrefix(command, "MAIL FROM:"):
-			_, _ = fmt.Fprint(connection, "250 2.1.0 sender ok\r\n")
+			response = "250 2.1.0 sender ok\r\n"
 		case strings.HasPrefix(command, "RCPT TO:"):
-			_, _ = fmt.Fprint(connection, "250 2.1.5 recipient ok\r\n")
+			response = "250 2.1.5 recipient ok\r\n"
 		case command == "DATA":
-			_, _ = fmt.Fprint(connection, "354 end with dot\r\n")
-			body.Reset()
-			for {
-				part, readErr := reader.ReadString('\n')
-				if readErr != nil {
-					return
-				}
-				if strings.TrimSpace(part) == "." {
-					break
-				}
-				body.WriteString(part)
+			if err := reply("354 end with dot\r\n"); err != nil {
+				return err
+			}
+			body, err := textproto.NewReader(reader).ReadDotBytes()
+			if err != nil {
+				return fmt.Errorf("read SMTP data: %w", err)
 			}
 			sink.mu.Lock()
 			sink.count++
 			count := sink.count
 			if count > 1 {
-				sink.accepted = body.String()
+				sink.accepted = string(body)
 			}
 			sink.mu.Unlock()
-			if count == 1 {
-				_, _ = fmt.Fprint(connection, "451 4.3.0 temporary failure\r\n")
-			} else {
-				_, _ = fmt.Fprint(connection, "250 2.0.0 accepted\r\n")
+			response = "451 4.3.0 temporary failure\r\n"
+			if count > 1 {
+				response = "250 2.0.0 accepted\r\n"
 			}
-		case command == "RSET", command == "NOOP":
-			_, _ = fmt.Fprint(connection, "250 2.0.0 ok\r\n")
 		case command == "QUIT":
-			_, _ = fmt.Fprint(connection, "221 2.0.0 bye\r\n")
-			return
-		default:
-			_, _ = fmt.Fprint(connection, "250 2.0.0 ok\r\n")
+			response = "221 2.0.0 bye\r\n"
+		}
+		if err := reply(response); err != nil {
+			return err
+		}
+		if command == "QUIT" {
+			return nil
 		}
 	}
 }
@@ -317,4 +338,39 @@ func (sink *retryOnceEmailSMTP) acceptedMessage() string {
 	sink.mu.Lock()
 	defer sink.mu.Unlock()
 	return sink.accepted
+}
+
+func TestTemplatedEmailSMTPFixtureRejectsTruncatedData(t *testing.T) {
+	server, client := net.Pipe()
+	t.Cleanup(func() { testsupport.Close(t, client); testsupport.Close(t, server) })
+	sink := &retryOnceEmailSMTP{}
+	done := make(chan error, 1)
+	go func() { done <- sink.handle(server) }()
+	reader := bufio.NewReader(client)
+	greeting, err := reader.ReadString('\n')
+	if err != nil || !strings.HasPrefix(greeting, "220 ") {
+		t.Fatalf("SMTP greeting %q: %v", greeting, err)
+	}
+	if _, err = fmt.Fprint(client, "DATA\r\n"); err != nil {
+		t.Fatal(err)
+	}
+	response, err := reader.ReadString('\n')
+	if err != nil || !strings.HasPrefix(response, "354 ") {
+		t.Fatalf("SMTP data response %q: %v", response, err)
+	}
+	if _, err = fmt.Fprint(client, "partial message without a terminator\r\n"); err != nil {
+		t.Fatal(err)
+	}
+	testsupport.Close(t, client)
+	select {
+	case err = <-done:
+		if !errors.Is(err, io.ErrUnexpectedEOF) {
+			t.Fatalf("truncated SMTP data returned %v, want unexpected EOF", err)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("SMTP fixture did not release its connection")
+	}
+	if got := sink.attempts(); got != 0 {
+		t.Fatalf("truncated delivery counted as %d attempts", got)
+	}
 }

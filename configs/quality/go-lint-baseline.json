@@ -19,58 +19,6 @@
     },
     {
       "fingerprint": [
-        "errcheck",
-        "cmd/system/query_http_contract_test.go",
-        "Error return value of `response.Write` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/link_preview_test.go",
-        "Error return value of `io.WriteString` is not checked"
-      ],
-      "count": 3
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/backgroundtasks/templated_email_tasks_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/estimatereads/repository_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": ["errcheck", "internal/htmlcompat/parse_test.go", "Error return value is not checked"],
-      "count": 4
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/standardviews/mutation_validation_upgrade_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "project_label_writes/design/transport_test.go",
-        "Error return value of `s.record` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
         "errorlint",
         "cmd/durable-metadata/main.go",
         "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"

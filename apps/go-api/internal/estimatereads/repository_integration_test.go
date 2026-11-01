@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+	"time"
 
 	"uuid"
 
@@ -140,12 +141,16 @@ func decodeEstimate(t *testing.T, data json.RawMessage) estimateWire {
 	return estimate
 }
 
-func seedEstimateReads(ctx context.Context, databaseURL string) error {
+func seedEstimateReads(ctx context.Context, databaseURL string) (resultErr error) {
 	connection, err := pgx.Connect(ctx, databaseURL)
 	if err != nil {
 		return err
 	}
-	defer connection.Close(context.WithoutCancel(ctx))
+	defer func() {
+		closeCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer cancel()
+		resultErr = errors.Join(resultErr, connection.Close(closeCtx))
+	}()
 	_, err = connection.Exec(ctx, `
 CREATE TABLE users (id uuid PRIMARY KEY, user_timezone text NOT NULL);
 CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text NOT NULL, deleted_at timestamptz);

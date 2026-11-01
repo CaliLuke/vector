@@ -475,7 +475,9 @@ func TestNodeConsistency(t *testing.T) {
 
 func TestParseFragmentWithNilContext(t *testing.T) {
 	// This shouldn't panic.
-	ParseFragment(strings.NewReader("<p>hello</p>"), nil)
+	if _, err := ParseFragment(strings.NewReader("<p>hello</p>"), nil); err != nil {
+		t.Fatalf("parse fragment without a context: %v", err)
+	}
 }
 
 func TestParseFragmentForeignContentTemplates(t *testing.T) {
@@ -486,7 +488,9 @@ func TestParseFragmentForeignContentTemplates(t *testing.T) {
 	}
 	for _, src := range srcs {
 		// The next line shouldn't infinite-loop.
-		ParseFragment(strings.NewReader(src), nil)
+		if _, err := ParseFragment(strings.NewReader(src), nil); err != nil {
+			t.Errorf("parse foreign-content fragment %q: %v", src, err)
+		}
 	}
 }
 
@@ -498,7 +502,9 @@ func TestSearchTagClosesP(t *testing.T) {
 	}
 
 	var builder strings.Builder
-	Render(&builder, node)
+	if err := Render(&builder, node); err != nil {
+		t.Fatalf("render parsed search element: %v", err)
+	}
 	output := builder.String()
 
 	expected := `<html><head></head><body><p>Unclosed paragraph</p><search>Search content</search></body></html>`
@@ -517,7 +523,9 @@ func BenchmarkParser(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Parse(bytes.NewBuffer(buf))
+		if _, err := Parse(bytes.NewBuffer(buf)); err != nil {
+			b.Fatalf("parse benchmark input: %v", err)
+		}
 	}
 }
 
