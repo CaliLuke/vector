@@ -1,5 +1,5 @@
 {
-  "loom_version": "v1.10.0-alpha.16",
+  "loom_version": "v1.10.0-alpha.22",
   "design_package": "github.com/CaliLuke/go-plane/projectlifecycle/design",
-  "design_digest": "a0d29dc7746ab5576b1716cad237dbae258a26694cf736390d992a92f20d08ee"
+  "design_digest": "13aa70c3705e38ee710224e233bc5a851c4f43e3225944593819efd096c86f74"
 }

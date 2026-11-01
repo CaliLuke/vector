@@ -3,7 +3,7 @@
 // Credential locations for workspace_sidebar_preferences
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/design --output .
+// $ loom gen github.com/CaliLuke/go-plane/design --output ..
 
 package diagnostics
 

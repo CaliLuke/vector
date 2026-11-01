@@ -15,13 +15,14 @@ import (
 	"unicode/utf8"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/instanceadminsession"
 	"github.com/CaliLuke/go-plane/internal/instancemail"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/projectmembershipreads"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	"github.com/CaliLuke/go-plane/internal/workspacevalidation"
@@ -630,7 +631,7 @@ func (r *Repository) CreateWorkspace(ctx context.Context, actor uuid.UUID, field
 					location = loaded
 				}
 			}
-			parsed, err := pythoncompat.DjangoDateTime(text, location)
+			parsed, err := datetime.Parse(text, location)
 			if err != nil {
 				addWorkspaceFieldError(fieldErrors, "deleted_at", "Datetime has wrong format.")
 			} else {

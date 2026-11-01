@@ -12,8 +12,8 @@ import (
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	activitysvr "github.com/CaliLuke/go-plane/activityreads/gen/http/plane_internal_django_migration_api/server"
-	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
+	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/activity_reads"
+	activitysvr "github.com/CaliLuke/go-plane/activityreads/gen/http/activity_reads/server"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	loomhttp "github.com/CaliLuke/loom/http"

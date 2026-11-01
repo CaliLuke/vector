@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
@@ -230,7 +232,7 @@ func (repository *Repository) authorizeDescriptionGuest(ctx context.Context, req
 func (repository *Repository) history(ctx context.Context, request Request) (json.RawMessage, error) {
 	var createdAfter any
 	if request.CreatedAtGT != nil && *request.CreatedAtGT != "" {
-		parsed, err := pythoncompat.ISODateTime(*request.CreatedAtGT, time.UTC)
+		parsed, err := datetime.Parse(*request.CreatedAtGT, time.UTC)
 		if err != nil {
 			return nil, &apicontract.HTTPError{Status: 400, Body: map[string]any{"error": "Please provide valid detail"}}
 		}
@@ -341,7 +343,7 @@ func convertResponseTimes(value any, location *time.Location, detail bool) {
 					if key == "last_saved_at" && !detail {
 						timestampLocation = time.UTC
 					}
-					typed[key] = pythoncompat.DRFDateTimeString(parsed, timestampLocation)
+					typed[key] = datetime.Format(parsed, timestampLocation)
 				}
 			} else {
 				convertResponseTimes(nested, location, detail)

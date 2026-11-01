@@ -198,7 +198,7 @@ func TestModuleLifecycleGeneratedServerClientArchiveSessionRoundTrip(t *testing.
 	if !ok {
 		t.Fatalf("generated client response type=%T", result)
 	}
-	if got, want := string(response.ArchivedAt), "2025-01-02 03:04:05+00:00"; got != want {
+	if got, want := string(response.ArchivedAt), "2025-01-02T03:04:05Z"; got != want {
 		t.Errorf("archived_at=%q, want %q", got, want)
 	}
 	if len(repo.archiveCalls) != 1 || repo.archiveCalls[0].id != moduleLifecycleTransportModule || !repo.archiveCalls[0].archive {

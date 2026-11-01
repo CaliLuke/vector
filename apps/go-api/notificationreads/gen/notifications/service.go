@@ -41,7 +41,7 @@ type Authorizer interface {
 }
 
 // APIName is the name of the API as defined in the design.
-const APIName = "Plane Internal Django Migration API"
+const APIName = "Vector API"
 
 // APIVersion is the version of the API as defined in the design.
 const APIVersion = "1.0.0"
@@ -160,36 +160,54 @@ func ValidateNotification(result *Notification, validationContext ...string) (er
 			validationPath += validationPart
 		}
 	}
+	if !result.CreatedBy.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("created_by", validationPath))
+	}
+	if !result.UpdatedBy.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("updated_by", validationPath))
+	}
+	if !result.DeletedAt.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("deleted_at", validationPath))
+	}
+	if !result.Project.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("project", validationPath))
+	}
 	if result.Data == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("data", validationPath))
+	}
+	if !result.EntityIdentifier.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("entity_identifier", validationPath))
 	}
 	if result.Message == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("message", validationPath))
 	}
-	if !result.TriggeredByDetails.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("triggered_by_details", validationPath))
+	if !result.MessageStripped.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("message_stripped", validationPath))
+	}
+	if !result.TriggeredBy.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("triggered_by", validationPath))
+	}
+	if !result.ReadAt.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("read_at", validationPath))
+	}
+	if !result.SnoozedTill.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("snoozed_till", validationPath))
 	}
 	if !result.ArchivedAt.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("archived_at", validationPath))
+	}
+	if !result.TriggeredByDetails.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("triggered_by_details", validationPath))
 	}
 	if actual, ok := result.ArchivedAt.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".archived_at", actual, loom.FormatDateTime))
 	}
 	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".created_at", result.CreatedAt, loom.FormatDateTime))
-	if !result.CreatedBy.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("created_by", validationPath))
-	}
 	if actual, ok := result.CreatedBy.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidatePatternCompiled(validationPath+".created_by", actual, loomPatternService0))
 	}
-	if !result.DeletedAt.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("deleted_at", validationPath))
-	}
 	if actual, ok := result.DeletedAt.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".deleted_at", actual, loom.FormatDateTime))
-	}
-	if !result.EntityIdentifier.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("entity_identifier", validationPath))
 	}
 	if actual, ok := result.EntityIdentifier.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidatePatternCompiled(validationPath+".entity_identifier", actual, loomPatternService0))
@@ -198,17 +216,8 @@ func ValidateNotification(result *Notification, validationContext ...string) (er
 		err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".entity_name", utf8.RuneCountInString(result.EntityName), 255, false))
 	}
 	err = loom.MergeErrors(err, loom.ValidatePatternCompiled(validationPath+".id", result.ID, loomPatternService0))
-	if !result.MessageStripped.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("message_stripped", validationPath))
-	}
-	if !result.Project.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("project", validationPath))
-	}
 	if actual, ok := result.Project.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidatePatternCompiled(validationPath+".project", actual, loomPatternService0))
-	}
-	if !result.ReadAt.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("read_at", validationPath))
 	}
 	if actual, ok := result.ReadAt.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".read_at", actual, loom.FormatDateTime))
@@ -217,14 +226,8 @@ func ValidateNotification(result *Notification, validationContext ...string) (er
 	if utf8.RuneCountInString(result.Sender) > 255 {
 		err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".sender", utf8.RuneCountInString(result.Sender), 255, false))
 	}
-	if !result.SnoozedTill.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("snoozed_till", validationPath))
-	}
 	if actual, ok := result.SnoozedTill.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".snoozed_till", actual, loom.FormatDateTime))
-	}
-	if !result.TriggeredBy.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("triggered_by", validationPath))
 	}
 	if actual, ok := result.TriggeredBy.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidatePatternCompiled(validationPath+".triggered_by", actual, loomPatternService0))
@@ -235,9 +238,6 @@ func ValidateNotification(result *Notification, validationContext ...string) (er
 		}
 	}
 	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".updated_at", result.UpdatedAt, loom.FormatDateTime))
-	if !result.UpdatedBy.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("updated_by", validationPath))
-	}
 	if actual, ok := result.UpdatedBy.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidatePatternCompiled(validationPath+".updated_by", actual, loomPatternService0))
 	}

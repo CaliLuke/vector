@@ -131,8 +131,7 @@ type GetAPIV1WorkspacesBySlugProjectsByProjectIDStatesPayload struct {
 	Cursor *string `json:"cursor,omitzero"`
 	Expand *string `json:"expand,omitzero"`
 	Fields *string `json:"fields,omitzero"`
-	// Pagination input interpreted by Django-compatible pagination (default and
-	// maximum: 1000)
+	// Page size from 1 to 1000 (default: 1000)
 	PerPage              *string `json:"perPage,omitzero"`
 	ProjectID            string  `json:"project_id"`
 	Slug                 string  `json:"slug"`

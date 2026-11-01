@@ -40,30 +40,27 @@ func TestPostgresSchemaBootstrapFreshAndRepeat(t *testing.T) {
 			t.Fatal(migrateErr)
 		}
 		assertSchemaBootstrapLockReleased(t, ctx, connection)
-		for table, want := range map[string]int{"auth_permission": 424, "django_content_type": 106, "django_migrations": 164} {
-			var got int
-			if scanErr := connection.QueryRow(ctx, "SELECT count(*) FROM "+pgx.Identifier{"public", table}.Sanitize()).Scan(&got); scanErr != nil || got != want {
-				t.Fatalf("source metadata %s: count=%d want=%d error=%v", table, got, want, scanErr)
-			}
+		var version int64
+		var dirty bool
+		if scanErr := connection.QueryRow(ctx, `SELECT version,dirty FROM public.plane_schema_migrations`).Scan(&version, &dirty); scanErr != nil || version < 1 || dirty {
+			t.Fatalf("application migration ledger: version=%d dirty=%t error=%v", version, dirty, scanErr)
 		}
 	}
 }
 
-func TestPostgresSchemaBootstrapAdoptsDjango(t *testing.T) {
-	// Build the historical source directly. Reversing selected migrations from
-	// the latest schema does not represent an interrupted baseline adoption.
-	baseline, err := schemaFiles.ReadFile("schema_migrations/000001_django_baseline.up.sql")
+func TestPostgresSchemaBootstrapRejectsUnmanagedApplicationTables(t *testing.T) {
+	// An existing schema without the native ledger must not be silently adopted.
+	baseline, err := schemaFiles.ReadFile("schema_migrations/000001_initial_schema.up.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, test := range []struct {
-		name      string
-		setup     string
-		wantError string
+		name  string
+		setup string
 	}{
 		{name: "missing ledger"},
 		{name: "empty ledger", setup: `CREATE TABLE public.plane_schema_migrations(version bigint PRIMARY KEY, dirty boolean NOT NULL)`},
-		{name: "partial schema", setup: `ALTER TABLE public.users DROP COLUMN last_login_ip`, wantError: "column:users.last_login_ip"},
+		{name: "partial schema", setup: `ALTER TABLE public.users DROP COLUMN last_login_ip`},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			databaseURL := postgresfixture.EmptyDatabase(t)
@@ -85,21 +82,24 @@ func TestPostgresSchemaBootstrapAdoptsDjango(t *testing.T) {
 				t.Fatal(execErr)
 			}
 			migrateErr := MigrateSchema(ctx, databaseURL)
-			if test.wantError != "" {
-				if migrateErr == nil || !strings.Contains(migrateErr.Error(), test.wantError) {
-					t.Fatalf("partial schema adoption error = %v", migrateErr)
+			if migrateErr == nil || !strings.Contains(migrateErr.Error(), "without a managed migration baseline") {
+				t.Fatalf("unmanaged schema error = %v", migrateErr)
+			}
+			var ledgerRows int
+			if test.name == "empty ledger" {
+				if scanErr := connection.QueryRow(ctx, `SELECT count(*) FROM public.plane_schema_migrations`).Scan(&ledgerRows); scanErr != nil || ledgerRows != 0 {
+					t.Fatalf("rejected schema changed migration ledger: rows=%d error=%v", ledgerRows, scanErr)
 				}
+			} else {
 				var ledger bool
 				if scanErr := connection.QueryRow(ctx, `SELECT to_regclass('public.plane_schema_migrations') IS NOT NULL`).Scan(&ledger); scanErr != nil || ledger {
-					t.Fatalf("rejected adoption wrote migration ledger: exists=%t error=%v", ledger, scanErr)
+					t.Fatalf("rejected schema wrote migration ledger: exists=%t error=%v", ledger, scanErr)
 				}
-			} else if migrateErr != nil {
-				t.Fatalf("adopt source schema: %v", migrateErr)
 			}
 			assertSchemaBootstrapLockReleased(t, ctx, connection)
 			var saved string
 			if scanErr := connection.QueryRow(ctx, `SELECT name FROM public.django_migrations WHERE app='bootstrap_test'`).Scan(&saved); scanErr != nil || saved != "preserved" {
-				t.Fatalf("adoption changed data: %q %v", saved, scanErr)
+				t.Fatalf("rejected schema changed data: %q %v", saved, scanErr)
 			}
 			var version int
 			if scanErr := connection.QueryRow(ctx, `SELECT version FROM public.schema_migrations`).Scan(&version); scanErr != nil || version != 9 {

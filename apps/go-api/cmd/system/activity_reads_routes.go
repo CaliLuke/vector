@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	activityreadssvr "github.com/CaliLuke/go-plane/activityreads/gen/http/plane_internal_django_migration_api/server"
+	activityreadssvr "github.com/CaliLuke/go-plane/activityreads/gen/http/activity_reads/server"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	loomhttp "github.com/CaliLuke/loom/http"
 )

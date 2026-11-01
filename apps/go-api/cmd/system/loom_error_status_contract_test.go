@@ -13,7 +13,7 @@ import (
 	"strings"
 	"testing"
 
-	activityreadsserver "github.com/CaliLuke/go-plane/activityreads/gen/http/plane_internal_django_migration_api/server"
+	activityreadsserver "github.com/CaliLuke/go-plane/activityreads/gen/http/activity_reads/server"
 	cyclelifecycleserver "github.com/CaliLuke/go-plane/cyclelifecycle/gen/http/cycle_lifecycle_api/server"
 	publicfeedbackclient "github.com/CaliLuke/go-plane/gen/http/public_feedback/client"
 	publicfeedbackserver "github.com/CaliLuke/go-plane/gen/http/public_feedback/server"

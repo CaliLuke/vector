@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	planeinternaldjangomigrationapi "github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
+	assetslifecycleapi "github.com/CaliLuke/go-plane/assetslifecycle/gen/assets_lifecycle"
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/google/uuid"
 )
@@ -76,34 +76,34 @@ func TestInvalidAssetMethodsReturn405AfterPermission(t *testing.T) {
 	}{
 		{
 			name: "user collection write", operation: "DeleteAPIAssetsV2UserAssets",
-			payload: &planeinternaldjangomigrationapi.DeleteAPIAssetsV2UserAssetsPayload{},
+			payload: &assetslifecycleapi.DeleteAPIAssetsV2UserAssetsPayload{},
 			status:  405, field: "detail", message: `Method "DELETE" not allowed.`,
 		},
 		{
 			name: "legacy user collection read", operation: "GetAPIUsersFileAssets",
-			payload: &planeinternaldjangomigrationapi.GetAPIUsersFileAssetsPayload{},
+			payload: &assetslifecycleapi.GetAPIUsersFileAssetsPayload{},
 			status:  405, field: "detail", message: `Method "GET" not allowed.`,
 		},
 		{
 			name: "allowed workspace read", operation: "GetAPIAssetsV2WorkspacesBySlug",
-			payload:    &planeinternaldjangomigrationapi.GetAPIAssetsV2WorkspacesBySlugPayload{Slug: "assets"},
+			payload:    &assetslifecycleapi.GetAPIAssetsV2WorkspacesBySlugPayload{Slug: "assets"},
 			repository: invalidMethodRepository{workspaceAllowed: true},
 			status:     405, field: "detail", message: `Method "GET" not allowed.`,
 		},
 		{
 			name: "denied workspace read", operation: "GetAPIAssetsV2WorkspacesBySlug",
-			payload: &planeinternaldjangomigrationapi.GetAPIAssetsV2WorkspacesBySlugPayload{Slug: "assets"},
+			payload: &assetslifecycleapi.GetAPIAssetsV2WorkspacesBySlugPayload{Slug: "assets"},
 			status:  403, field: "error", message: "You don't have the required permissions.",
 		},
 		{
 			name: "allowed project read", operation: "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectID",
-			payload:    &planeinternaldjangomigrationapi.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDPayload{Slug: "assets", ProjectID: projectID},
+			payload:    &assetslifecycleapi.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDPayload{Slug: "assets", ProjectID: projectID},
 			repository: invalidMethodRepository{projectOK: true},
 			status:     405, field: "detail", message: `Method "GET" not allowed.`,
 		},
 		{
 			name: "denied project read", operation: "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectID",
-			payload: &planeinternaldjangomigrationapi.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDPayload{Slug: "assets", ProjectID: projectID},
+			payload: &assetslifecycleapi.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDPayload{Slug: "assets", ProjectID: projectID},
 			status:  403, field: "error", message: "You don't have the required permissions.",
 		},
 	} {
@@ -123,7 +123,7 @@ func TestInvalidAssetMethodsReturn405AfterPermission(t *testing.T) {
 
 func TestInvalidAssetAttachmentDeleteChecksWorkspaceBefore405(t *testing.T) {
 	userID, projectID, issueID := uuid.New(), uuid.New(), uuid.New()
-	payload := &planeinternaldjangomigrationapi.DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsPayload{
+	payload := &assetslifecycleapi.DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsPayload{
 		Slug: "private", ProjectID: projectID.String(), IssueID: issueID.String(),
 	}
 	ctx := context.WithValue(context.Background(), assetUserKey{}, userID)

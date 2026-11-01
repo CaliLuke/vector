@@ -3,7 +3,7 @@
 // instance_workspace_slug_check client HTTP transport
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/design --output .
+// $ loom gen github.com/CaliLuke/go-plane/design --output ..
 
 package client
 

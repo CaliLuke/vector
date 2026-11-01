@@ -10,12 +10,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	storeuuid "uuid"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	store "github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	api "github.com/CaliLuke/go-plane/projectlifecycle/gen/project_lifecycle"
@@ -367,7 +368,7 @@ func (s *projectLifecycleService) PostAPIWorkspacesBySlugProjectsByProjectIDArch
 	if err != nil {
 		return nil, nil, err
 	}
-	raw, err := json.Marshal(map[string]any{"archived_at": pythoncompat.PythonDateTimeString(at)})
+	raw, err := json.Marshal(map[string]any{"archived_at": datetime.Format(at, time.UTC)})
 	return projectLifecycleRawResult(raw, err)
 }
 

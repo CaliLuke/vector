@@ -3,7 +3,7 @@ package design
 import . "github.com/CaliLuke/loom/dsl"
 
 var planeAdminSessionCookie = APIKeySecurity("plane_admin_session_cookie", func() {
-	Description("Plane Django instance-admin session cookie.")
+	Description("Vector instance-admin session cookie.")
 })
 
 func instanceAdminSessionPayload() {

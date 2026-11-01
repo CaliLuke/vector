@@ -10,6 +10,8 @@ import (
 	"io"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/intake_inbox_reads"
@@ -491,14 +493,6 @@ func convertIntakeInboxIssuePageItemTimes(item map[string]any, location *time.Lo
 	}
 }
 
-func formatDjangoDateTime(value time.Time) string {
-	layout := "2006-01-02T15:04:05Z07:00"
-	if value.Nanosecond() != 0 {
-		layout = "2006-01-02T15:04:05.000000Z07:00"
-	}
-	return value.Format(layout)
-}
-
 func convertIntakeInboxIssueDetailTimes(item map[string]any, location *time.Location) {
 	convertIntakeInboxIssuePageItemTimes(item, location)
 	if duplicate, ok := item["duplicate_issue_detail"].(map[string]any); ok {
@@ -518,6 +512,6 @@ func convertIntakeInboxTimeField(item map[string]any, key string, location *time
 		return
 	}
 	if parsed, err := time.Parse(time.RFC3339Nano, text); err == nil {
-		item[key] = formatDjangoDateTime(parsed.In(location))
+		item[key] = datetime.Format(parsed, location)
 	}
 }

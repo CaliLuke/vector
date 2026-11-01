@@ -14,12 +14,13 @@ import (
 	"time"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	api "github.com/CaliLuke/go-plane/apiv1stickies/gen/api_v1_stickies"
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	stickystore "github.com/CaliLuke/go-plane/internal/stickies"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
@@ -647,7 +648,7 @@ func apiV1StickyDatetime(value any, location *time.Location) (*time.Time, error)
 	if location == nil {
 		location = time.UTC
 	}
-	parsed, err := pythoncompat.DjangoDateTime(text, location)
+	parsed, err := datetime.Parse(text, location)
 	if err != nil {
 		return nil, err
 	}
@@ -693,7 +694,7 @@ func apiV1StickyTimeInZone(value time.Time, timezone string) string {
 	if err != nil {
 		location = time.UTC
 	}
-	return pythoncompat.DRFDateTimeString(value, location)
+	return datetime.Format(value, location)
 }
 
 func apiV1StickyTimePtrInZone(value *time.Time, timezone string) any {

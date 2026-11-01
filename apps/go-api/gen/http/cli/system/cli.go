@@ -3,7 +3,7 @@
 // system HTTP client CLI support package
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/design --output .
+// $ loom gen github.com/CaliLuke/go-plane/design --output ..
 
 package cli
 
@@ -106,7 +106,7 @@ type commandLine struct {
 		CsrfTokenOptions struct {
 			Format string `help:"" name:"format"`
 		} `cmd:"" help:"Describes the CSRF token endpoint's supported representations." name:"csrf-token-options"`
-	} `cmd:"" help:"Issues Django-compatible CSRF tokens and endpoint metadata." name:"csrf-token"`
+	} `cmd:"" help:"Issues masked CSRF tokens and endpoint metadata." name:"csrf-token"`
 	CycleReads struct {
 		WorkspaceList struct {
 			Slug      string `help:"" name:"slug" required:""`
@@ -5505,7 +5505,7 @@ func analyticViewsDeleteUsage() {
 // csrfTokenUsage displays the usage of the csrf-token command and its
 // subcommands.
 func csrfTokenUsage() {
-	fmt.Fprintln(os.Stderr, "Issues Django-compatible CSRF tokens and endpoint metadata.")
+	fmt.Fprintln(os.Stderr, "Issues masked CSRF tokens and endpoint metadata.")
 	fmt.Fprintf(os.Stderr, "Usage:\n    %s [globalflags] csrf-token COMMAND [flags]\n\n", os.Args[0])
 	fmt.Fprintln(os.Stderr, "COMMAND:")
 	fmt.Fprintln(os.Stderr, "    csrf-token: Returns a freshly masked CSRF token backed by the client's CSRF cookie secret.")

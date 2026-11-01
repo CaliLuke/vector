@@ -19,9 +19,9 @@ import (
 	"github.com/CaliLuke/go-plane/internal/testsupport"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
-	assetslifecyclesvr "github.com/CaliLuke/go-plane/assetslifecycle/gen/http/plane_internal_django_migration_api/server"
-	assetsapi "github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
+	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/activity_reads"
+	assetsapi "github.com/CaliLuke/go-plane/assetslifecycle/gen/assets_lifecycle"
+	assetslifecyclesvr "github.com/CaliLuke/go-plane/assetslifecycle/gen/http/assets_lifecycle/server"
 	system "github.com/CaliLuke/go-plane/gen/system"
 	assetdomain "github.com/CaliLuke/go-plane/internal/assets"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"

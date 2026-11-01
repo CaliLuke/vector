@@ -31,7 +31,7 @@ never tool arguments or personal-token scope grants.
 
 The existing `oauth_redirects.go` login service uses provider profile/email
 identity and can create accounts. MCP linking cannot use that login operation.
-The existing Django session validator, CSRF checks, shared API-key throttle,
+The native browser session validator, CSRF checks, shared API-key throttle,
 instance cipher and embedded bootstrap SQL migration mechanism remain owners
 of their respective primitives. New account-link HTTP contracts are authored
 in a dedicated Loom design and generated; their application service uses the

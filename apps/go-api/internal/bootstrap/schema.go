@@ -21,8 +21,8 @@ var schemaFiles embed.FS
 
 const schemaMigrationTable = "plane_schema_migrations"
 
-// MigrateSchema installs the application schema without Python. Existing Django
-// databases are adopted only after every baseline definition has been verified.
+// MigrateSchema installs or upgrades the managed application schema.
+// Existing application tables require an application migration ledger.
 // Application data and the independent support/River migration ledgers remain intact.
 func MigrateSchema(ctx context.Context, databaseURL string) (resultErr error) {
 	parsed, err := parseDatabaseURL(databaseURL)
@@ -59,27 +59,12 @@ func MigrateSchema(ctx context.Context, databaseURL string) (resultErr error) {
 		}
 		managed = dirty || scanErr == nil && version >= 1
 	}
-	adopt := false
-	adoptVersion := 1
 	if !managed {
 		for key := range expected {
 			if strings.HasPrefix(key, "table:") {
 				if _, exists := actual[key]; exists {
-					adopt = true
-					break
+					return errors.New("application tables exist without a managed migration baseline")
 				}
-			}
-		}
-		if adopt {
-			if validateSchemaErr := validateSchema(expected, actual); validateSchemaErr != nil {
-				native, nativeErr := schemaManifest("schema_native_deletion.json")
-				if nativeErr != nil {
-					return nativeErr
-				}
-				if validateSchema(native, actual) != nil {
-					return fmt.Errorf("cannot adopt existing Django schema: %w", validateSchemaErr)
-				}
-				adoptVersion = 2
 			}
 		}
 	}
@@ -98,14 +83,7 @@ func MigrateSchema(ctx context.Context, databaseURL string) (resultErr error) {
 		return closeMigrationSource("application", source.Close, fmt.Errorf("configure application migrations: %w", err))
 	}
 	defer func() { resultErr = closeMigration("application", migrator.Close, resultErr) }()
-	if adopt {
-		// Force is the library's baseline-adoption operation. It is safe only
-		// after the complete source schema comparison above has succeeded.
-		if forceErr := migrator.Force(adoptVersion); forceErr != nil {
-			return fmt.Errorf("record verified Django baseline: %w", forceErr)
-		}
-	}
-	if !managed && !adopt {
+	if !managed {
 		// Verify the original schema before applying native constraint policies.
 		if stepsErr := migrator.Steps(1); stepsErr != nil {
 			return fmt.Errorf("install source baseline: %w", stepsErr)
@@ -126,7 +104,7 @@ func MigrateSchema(ctx context.Context, databaseURL string) (resultErr error) {
 		return err
 	}
 	// Migration 31 permits one live edge per relation kind. Keep the original
-	// manifest for adoption of pre-migration databases, and verify the replacement
+	// manifest as the initial schema definition, and verify the replacement
 	// constraint after upgrading instead of requiring the retired pair-only index.
 	delete(native, "index:issue_relations.issue_relation_unique_issue_related_issue_when_deleted_at_null")
 	native["index:issue_relations.issue_relation_unique_kind_live"] = `["CREATE UNIQUE INDEX issue_relation_unique_kind_live ON public.issue_relations USING btree (issue_id, related_issue_id, relation_type) WHERE (deleted_at IS NULL)", true, true]`

@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	assetslifecyclesvr "github.com/CaliLuke/go-plane/assetslifecycle/gen/http/plane_internal_django_migration_api/server"
+	assetslifecyclesvr "github.com/CaliLuke/go-plane/assetslifecycle/gen/http/assets_lifecycle/server"
 	assetsstore "github.com/CaliLuke/go-plane/internal/assets"
 	loomhttp "github.com/CaliLuke/loom/http"
 	"github.com/google/uuid"

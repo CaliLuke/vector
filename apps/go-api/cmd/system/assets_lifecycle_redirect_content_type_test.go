@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	assetslifecyclesvr "github.com/CaliLuke/go-plane/assetslifecycle/gen/http/plane_internal_django_migration_api/server"
-	assetsapi "github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
+	assetsapi "github.com/CaliLuke/go-plane/assetslifecycle/gen/assets_lifecycle"
+	assetslifecyclesvr "github.com/CaliLuke/go-plane/assetslifecycle/gen/http/assets_lifecycle/server"
 	loomhttp "github.com/CaliLuke/loom/http"
 )
 

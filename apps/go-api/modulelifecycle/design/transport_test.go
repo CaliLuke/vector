@@ -14,11 +14,11 @@ import (
 	loomhttp "github.com/CaliLuke/loom/http"
 )
 
-func TestGeneratedArchiveClientAcceptsPythonDateTimeRepresentation(t *testing.T) {
+func TestGeneratedArchiveClientAcceptsNativeRFC3339Timestamps(t *testing.T) {
 	decode := modulelifecycleclient.DecodePostAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDArchiveResponse(loomhttp.ResponseDecoder, false)
 	for _, timestamp := range []string{
-		"2026-10-20 10:11:12+00:00",
-		"2026-10-20 10:11:12.123456+00:00",
+		"2026-10-20T10:11:12Z",
+		"2026-10-20T10:11:12.123456Z",
 	} {
 		t.Run(timestamp, func(t *testing.T) {
 			response := &http.Response{
@@ -28,7 +28,7 @@ func TestGeneratedArchiveClientAcceptsPythonDateTimeRepresentation(t *testing.T)
 			}
 			value, err := decode(response)
 			if err != nil {
-				t.Fatalf("decode Python datetime archive response: %v", err)
+				t.Fatalf("decode RFC 3339 archive response: %v", err)
 			}
 			result, ok := value.(*modulelifecycleapi.RestFrameworkSerializersArchiveresponseResponse)
 			if !ok {

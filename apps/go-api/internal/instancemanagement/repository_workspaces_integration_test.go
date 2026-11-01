@@ -108,7 +108,7 @@ INSERT INTO users(id,email,first_name,last_name,is_bot) VALUES('00000000-0000-40
 	}
 }
 
-func TestCreateWorkspacePersistsDjangoTextFieldCompanyRoleValues(t *testing.T) {
+func TestCreateWorkspacePersistsNativeCompanyRoleValues(t *testing.T) {
 	ctx := context.Background()
 	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
 		pool, err := pgxpool.New(ctx, databaseURL)
@@ -142,9 +142,9 @@ INSERT INTO users(id,email,first_name,last_name) VALUES('00000000-0000-4000-8000
 		want *string
 	}{
 		{name: "number", raw: json.RawMessage(`123`), want: stringPointer("123")},
-		{name: "boolean", raw: json.RawMessage(`true`), want: stringPointer("True")},
-		{name: "list", raw: json.RawMessage(`[1,"ops"]`), want: stringPointer(`[1, 'ops']`)},
-		{name: "object", raw: json.RawMessage(`{"team":"ops"}`), want: stringPointer(`{'team': 'ops'}`)},
+		{name: "boolean", raw: json.RawMessage(`true`), want: stringPointer("true")},
+		{name: "list", raw: json.RawMessage(`[1,"ops"]`), want: stringPointer(`[1,"ops"]`)},
+		{name: "object", raw: json.RawMessage(`{"team":"ops"}`), want: stringPointer(`{"team":"ops"}`)},
 		{name: "null", raw: json.RawMessage(`null`), want: nil},
 		{name: "omitted", want: stringPointer("")},
 	} {

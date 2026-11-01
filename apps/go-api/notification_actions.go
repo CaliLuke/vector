@@ -8,11 +8,12 @@ import (
 	"io"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	store "github.com/CaliLuke/go-plane/internal/notifications"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	api "github.com/CaliLuke/go-plane/notificationactions/gen/notification_actions"
 	reads "github.com/CaliLuke/go-plane/notificationreads/gen/notifications"
@@ -171,7 +172,7 @@ func (s *notificationActionsService) Update(ctx context.Context, payload *api.Up
 		if locationErr != nil {
 			return nil, notificationActionError(locationErr)
 		}
-		parsed, parseErr := pythoncompat.DjangoDateTime(text, location)
+		parsed, parseErr := datetime.Parse(text, location)
 		if parseErr != nil {
 			return nil, notificationActionBodyError(400, map[string]any{"snoozed_till": []string{"Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."}})
 		}

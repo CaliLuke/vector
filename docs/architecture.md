@@ -51,6 +51,11 @@ malformed escapes fail before field validation. UUID inputs use validated textua
 representations. Shared pagination accepts page sizes from 1 to 1,000 and rejects
 invalid or overflowing cursors with HTTP 400. Native browser sessions live in
 `internal/authentication/browsersession`.
+`internal/datetime` parses RFC 3339 timestamps and padded local calendar values.
+Local inputs use the caller's timezone; zoned inputs normalize to UTC. Responses
+use RFC 3339 with database microsecond precision. Schema startup installs empty
+databases or upgrades the native migration ledger. It rejects unmanaged application
+tables before writing a ledger or changing their data.
 
 Draft creation, editing, deletion and publication belong to `draftLifecycle` and
 `draftOperation` in `internal/workitems`. The lifecycle owns standalone transactions;

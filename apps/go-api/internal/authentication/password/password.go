@@ -1,4 +1,4 @@
-// Package password implements Django's default PBKDF2-SHA256 password format.
+// Package password stores and verifies PBKDF2-SHA256 password hashes.
 package password
 
 import (
@@ -24,18 +24,17 @@ const (
 )
 
 var (
-	ErrInvalidHash = errors.New("invalid Django PBKDF2 password hash")
-	ErrIterations  = errors.New("Django PBKDF2 iteration count is outside supported range")
+	ErrInvalidHash = errors.New("invalid PBKDF2 password hash")
+	ErrIterations  = errors.New("PBKDF2 iteration count is outside supported range")
 )
 
-// Hasher encodes and verifies Django's default password hash format.
+// Hasher encodes and verifies algorithm, iteration count, salt, and derived key.
 type Hasher struct {
 	iterations int
 	random     io.Reader
 }
 
-// New creates a Django-compatible hasher using the configured iteration
-// count. Django 5.2 uses 1,000,000 iterations by default.
+// New creates a PBKDF2-SHA256 hasher using the configured iteration count.
 func New(iterations int) (*Hasher, error) {
 	if iterations < 1 {
 		return nil, ErrIterations
@@ -43,28 +42,28 @@ func New(iterations int) (*Hasher, error) {
 	return &Hasher{iterations: iterations, random: rand.Reader}, nil
 }
 
-// Default creates a hasher using Django 5.2's default PBKDF2 iteration count.
+// Default creates a hasher using the application iteration count.
 func Default() *Hasher {
 	return &Hasher{iterations: DefaultIterations, random: rand.Reader}
 }
 
-// Encode returns a Django PBKDF2-SHA256 hash with a 128-bit-entropy salt.
+// Encode returns a PBKDF2-SHA256 hash with a 128-bit-entropy salt.
 func (hasher *Hasher) Encode(raw string) (string, error) {
 	if hasher == nil || hasher.iterations < 1 || hasher.random == nil {
-		return "", errors.New("Django PBKDF2 password hasher is not initialized")
+		return "", errors.New("PBKDF2 password hasher is not initialized")
 	}
 	salt, err := randomSalt(hasher.random)
 	if err != nil {
-		return "", fmt.Errorf("generate Django PBKDF2 salt: %w", err)
+		return "", fmt.Errorf("generate PBKDF2 salt: %w", err)
 	}
 	return encode(raw, salt, hasher.iterations)
 }
 
-// Verify checks an encoded Django PBKDF2-SHA256 hash. A malformed hash is an
+// Verify checks an encoded PBKDF2-SHA256 hash. A malformed hash is an
 // error; a well-formed hash with a different password returns false,nil.
 func (hasher *Hasher) Verify(encoded, raw string) (bool, error) {
 	if hasher == nil {
-		return false, errors.New("Django PBKDF2 password hasher is not initialized")
+		return false, errors.New("PBKDF2 password hasher is not initialized")
 	}
 	parts := strings.Split(encoded, "$")
 	if len(parts) != 4 || parts[0] != Algorithm || parts[2] == "" || strings.Contains(parts[2], "$") {
@@ -87,7 +86,7 @@ func (hasher *Hasher) Verify(encoded, raw string) (bool, error) {
 func encode(raw, salt string, iterations int) (string, error) {
 	key, err := pbkdf2.Key(sha256.New, raw, []byte(salt), iterations, derivedKeyLength)
 	if err != nil {
-		return "", fmt.Errorf("derive Django PBKDF2-SHA256 hash: %w", err)
+		return "", fmt.Errorf("derive PBKDF2-SHA256 hash: %w", err)
 	}
 	return Algorithm + "$" + strconv.Itoa(iterations) + "$" + salt + "$" + base64.StdEncoding.EncodeToString(key), nil
 }

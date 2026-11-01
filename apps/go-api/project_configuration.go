@@ -11,13 +11,14 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/projectconfiguration"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	api "github.com/CaliLuke/go-plane/projectconfiguration/gen/project_configuration"
 	loomhttp "github.com/CaliLuke/loom/http"
 	loom "github.com/CaliLuke/loom/pkg"
@@ -218,7 +219,7 @@ func formatProjectEstimateDateTimes(raw []byte, location *time.Location) ([]byte
 				continue
 			}
 			if parsed, parseErr := time.Parse(time.RFC3339Nano, text); parseErr == nil {
-				point[key] = pythoncompat.DRFDateTimeString(parsed, location)
+				point[key] = datetime.Format(parsed, location)
 			}
 		}
 	}

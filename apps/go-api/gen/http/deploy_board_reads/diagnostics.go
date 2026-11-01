@@ -3,7 +3,7 @@
 // Credential locations for deploy_board_reads
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/design --output .
+// $ loom gen github.com/CaliLuke/go-plane/design --output ..
 
 package diagnostics
 

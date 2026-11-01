@@ -373,14 +373,14 @@ func TestParseCycleDateTimeKeepsSingleDateAtMidnight(t *testing.T) {
 	}
 }
 
-func TestParseCycleDateTimeUsesDjangoDateTimeFormats(t *testing.T) {
+func TestParseCycleDateTimeUsesNativeCalendarAndTimestampFormats(t *testing.T) {
 	for _, test := range []struct {
 		input string
 		zone  string
 		want  string
 	}{
-		{input: "2026-1-15 4:5", zone: "America/Los_Angeles", want: "2026-01-15T04:05:00-08:00"},
-		{input: "2026-1-15T4:5:6+0530", zone: "UTC", want: "2026-01-14T22:35:06Z"},
+		{input: "2026-01-15 04:05", zone: "America/Los_Angeles", want: "2026-01-15T04:05:00-08:00"},
+		{input: "2026-01-15T04:05:06+05:30", zone: "UTC", want: "2026-01-14T22:35:06Z"},
 		{input: "2026-01-15", zone: "America/Los_Angeles", want: "2026-01-15T00:00:00-08:00"},
 	} {
 		parsed, err := parseCycleDateTime(test.input, test.zone)

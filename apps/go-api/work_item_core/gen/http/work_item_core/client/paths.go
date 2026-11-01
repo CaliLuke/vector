@@ -3,8 +3,7 @@
 // HTTP request path constructors for the WorkItemCore service.
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/work_item_core/design -o
-// work_item_core
+// $ loom gen github.com/CaliLuke/go-plane/work_item_core/design --output ..
 
 package client
 

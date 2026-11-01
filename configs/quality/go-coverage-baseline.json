@@ -117,6 +117,10 @@
       "statements": 30,
       "percent": 70
     },
+    "github.com/CaliLuke/go-plane/internal/apicontract": {
+      "statements": 267,
+      "percent": 90.26
+    },
     "github.com/CaliLuke/go-plane/internal/assets": {
       "statements": 3556,
       "percent": 58.63
@@ -181,6 +185,10 @@
       "statements": 34,
       "percent": 94.12
     },
+    "github.com/CaliLuke/go-plane/internal/datetime": {
+      "statements": 18,
+      "percent": 100
+    },
     "github.com/CaliLuke/go-plane/internal/deletion": {
       "statements": 11,
       "percent": 81.82
@@ -192,14 +200,6 @@
     "github.com/CaliLuke/go-plane/internal/devtools": {
       "statements": 384,
       "percent": 63.28
-    },
-    "github.com/CaliLuke/go-plane/internal/apicontract": {
-      "statements": 267,
-      "percent": 90.26
-    },
-    "github.com/CaliLuke/go-plane/internal/requestinput": {
-      "statements": 405,
-      "percent": 92.84
     },
     "github.com/CaliLuke/go-plane/internal/emailvalidation": {
       "statements": 60,
@@ -366,12 +366,16 @@
       "percent": 89.46
     },
     "github.com/CaliLuke/go-plane/internal/pythoncompat": {
-      "statements": 664,
-      "percent": 85.84
+      "statements": 256,
+      "percent": 90.23
     },
     "github.com/CaliLuke/go-plane/internal/releases": {
       "statements": 467,
       "percent": 79.01
+    },
+    "github.com/CaliLuke/go-plane/internal/requestinput": {
+      "statements": 405,
+      "percent": 92.84
     },
     "github.com/CaliLuke/go-plane/internal/routing": {
       "statements": 251,

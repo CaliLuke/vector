@@ -584,8 +584,8 @@ var ImportedPlaneSessionCookieSecurity = APIKeySecurity("PlaneSessionCookie", fu
 	Description("Plane session authentication without CSRF enforcement.")
 })
 
-var _ = API("Plane Internal Django Migration API", func() {
-	Title("Plane Internal Django Migration API")
+var _ = API("Vector API", func() {
+	Title("Vector API")
 	Description("Internal full-server migration schema. Route inventory and behavior fixtures remain authoritative. This artifact does not change the public /api/v1 schema.")
 	Version("1.0.0")
 	Meta("openapi:example", "false")
@@ -792,7 +792,7 @@ var ImportedGetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachm
 var ImportedPostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus500 = Type("PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsStatus500", MapOf(String, Any))
 var ImportedDeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus500 = Type("DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkStatus500", MapOf(String, Any))
 
-var _ = Service("PlaneInternalDjangoMigrationAPI", func() {
+var _ = Service("AssetsLifecycle", func() {
 	Method("GetAPIAssetsV2StaticByAssetID", func() {
 		Description("This endpoint is used to get the signed URL for a static asset.")
 		Meta("openapi:operationId", "get_api_assets_v2_static_by_asset_id")

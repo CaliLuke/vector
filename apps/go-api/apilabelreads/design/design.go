@@ -104,18 +104,6 @@ var ImportedAPIKeyAuthSecurity = APIKeySecurity("ApiKeyAuth", func() {
 	Description("Plane API token authentication.")
 })
 
-var ImportedDjangoCsrfCookieSecurity = APIKeySecurity("DjangoCsrfCookie", func() {
-	Description("Django CSRF cookie for unsafe standard-session requests.")
-})
-
-var ImportedDjangoCsrfHeaderSecurity = APIKeySecurity("DjangoCsrfHeader", func() {
-	Description("Django CSRF header for unsafe standard-session requests.")
-})
-
-var ImportedDjangoSessionCookieSecurity = APIKeySecurity("DjangoSessionCookie", func() {
-	Description("Standard Django session authentication.")
-})
-
 var ImportedPlaneAdminSessionCookieSecurity = APIKeySecurity("PlaneAdminSessionCookie", func() {
 	Description("Plane instance-administration session authentication without CSRF enforcement.")
 })

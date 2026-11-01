@@ -10,8 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	"github.com/CaliLuke/go-plane/internal/apicontract"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/jackc/pgx/v5"
 )
@@ -163,7 +164,7 @@ func (r *LifecycleRepository) prepareLegacyPatchAssignments(ctx context.Context,
 						location = zone
 					}
 				}
-				parsed, e := pythoncompat.DjangoDateTime(requestinput.ScalarString(value), location)
+				parsed, e := datetime.Parse(requestinput.ScalarString(value), location)
 				if e != nil {
 					failure = "Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."
 				} else {

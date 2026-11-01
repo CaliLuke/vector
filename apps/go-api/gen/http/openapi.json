@@ -39513,17 +39513,30 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "example": {
-                    "count": 1,
-                    "next_cursor": "20:0:0",
-                    "next_page_results": false,
-                    "prev_cursor": "20:0:0",
-                    "prev_page_results": false,
-                    "results": [],
-                    "total_count": 1,
-                    "total_pages": 1,
-                    "total_results": 1
-                  },
+                  "examples": [
+                    {
+                      "count": 1,
+                      "next_cursor": "20:0:0",
+                      "next_page_results": false,
+                      "prev_cursor": "20:0:0",
+                      "prev_page_results": false,
+                      "results": [],
+                      "total_count": 1,
+                      "total_pages": 1,
+                      "total_results": 1
+                    },
+                    {
+                      "count": 1,
+                      "next_cursor": "20:0:0",
+                      "next_page_results": false,
+                      "prev_cursor": "20:0:0",
+                      "prev_page_results": false,
+                      "results": [],
+                      "total_count": 1,
+                      "total_pages": 1,
+                      "total_results": 1
+                    }
+                  ],
                   "$ref": "#/components/schemas/StickyPage"
                 },
                 "examples": {
@@ -63589,13 +63602,13 @@
     "securitySchemes": {
       "plane_admin_session_cookie": {
         "type": "apiKey",
-        "description": "Plane Django instance-admin session cookie.",
+        "description": "Vector instance-admin session cookie.",
         "name": "admin-session-id",
         "in": "cookie"
       },
       "plane_session_cookie": {
         "type": "apiKey",
-        "description": "Plane Django session cookie.",
+        "description": "Vector browser session cookie.",
         "name": "session-id",
         "in": "cookie"
       }
@@ -63607,7 +63620,7 @@
     },
     {
       "name": "csrf_token",
-      "description": "Issues Django-compatible CSRF tokens and endpoint metadata."
+      "description": "Issues masked CSRF tokens and endpoint metadata."
     },
     {
       "name": "cycle_reads",

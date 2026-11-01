@@ -658,10 +658,10 @@ func TestAPIV1StickySerializerNullAndWritableAuditFields(t *testing.T) {
 	}
 }
 
-func TestAPIV1StickyDeletedAtUsesDjangoDateTimeParsing(t *testing.T) {
-	parsed, err := apiV1StickyDatetime("2026-1-2T3:4:5.123456789012 +0530", time.UTC)
+func TestAPIV1StickyDeletedAtUsesNativeTimestampParsing(t *testing.T) {
+	parsed, err := apiV1StickyDatetime("2026-01-02T03:04:05.123456789+05:30", time.UTC)
 	if err != nil {
-		t.Fatalf("Django-compatible timestamp rejected: %v", err)
+		t.Fatalf("RFC 3339 timestamp rejected: %v", err)
 	}
 	want := time.Date(2026, time.January, 1, 21, 34, 5, 123456000, time.UTC)
 	if !parsed.Equal(want) {

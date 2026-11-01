@@ -222,8 +222,8 @@ var ImportedPlaneSessionCookieSecurity = APIKeySecurity("PlaneSessionCookie", fu
 	Description("Plane session authentication without CSRF enforcement.")
 })
 
-var _ = API("Plane Internal Django Migration API", func() {
-	Title("Plane Internal Django Migration API")
+var _ = API("Vector API", func() {
+	Title("Vector API")
 	Description("Internal full-server migration schema. Route inventory and behavior fixtures remain authoritative. This artifact does not change the public /api/v1 schema.")
 	Version("1.0.0")
 	Meta("http:generate", "server")

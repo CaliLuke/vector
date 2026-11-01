@@ -14,7 +14,7 @@ import (
 	"testing"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
+	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/activity_reads"
 	system "github.com/CaliLuke/go-plane/gen/system"
 	notificationsapi "github.com/CaliLuke/go-plane/notificationreads/gen/notifications"
 	workitemapi "github.com/CaliLuke/go-plane/work_item_core/gen/work_item_core"

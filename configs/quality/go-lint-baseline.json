@@ -136,14 +136,6 @@
     {
       "fingerprint": [
         "staticcheck",
-        "internal/authentication/password/password.go",
-        "ST1005: error strings should not be capitalized"
-      ],
-      "count": 3
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
         "internal/bootstrap/install.go",
         "ST1005: error strings should not end with punctuation or newlines"
       ],

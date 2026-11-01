@@ -243,6 +243,22 @@ type moduleRelationDatabase struct {
 	*moduleDatabaseStub
 }
 
+func TestModuleMembersRequireExistingUsersAfterTextualUUIDValidation(t *testing.T) {
+	const existing = "00000000-0000-4000-8000-000000000001"
+	const missing = "F0530A31-B60E-4FCA-850E-E23CB0DDFB92"
+	database := &moduleRelationDatabase{moduleDatabaseStub: &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), moduleBoolRow(false)}}}
+	repository := &LifecycleRepository{database: database}
+	failures, err := repository.validateModuleRelations(t.Context(), map[string]any{"member_ids": []any{existing, missing}}, nil, "member_ids")
+	want := map[string]any{"member_ids": map[string]any{"1": []string{"Invalid pk \"" + missing + "\" - object does not exist."}}}
+	if err != nil || !reflect.DeepEqual(failures, want) {
+		t.Fatalf("member lookup failures=%#v error=%v; want %#v", failures, err, want)
+	}
+	wantArgs := [][]any{{existing}, {"f0530a31-b60e-4fca-850e-e23cb0ddfb92"}}
+	if !reflect.DeepEqual(database.args, wantArgs) {
+		t.Fatalf("member lookups=%#v; want normalized UUIDs %#v", database.args, wantArgs)
+	}
+}
+
 func (*moduleRelationDatabase) Exec(context.Context, string, ...any) (pgconn.CommandTag, error) {
 	return pgconn.CommandTag{}, nil
 }

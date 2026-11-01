@@ -14,7 +14,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 
-	api "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
+	api "github.com/CaliLuke/go-plane/activityreads/gen/activity_reads"
 	activitystore "github.com/CaliLuke/go-plane/internal/activityreads"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
@@ -95,7 +95,7 @@ func (service *activityReadsService) APIKeyAuth(ctx context.Context, key string,
 		return context.WithValue(ctx, activityReadsPrincipalKey{}, activitystore.Principal{
 			UserID: principal.UserID, Authenticated: true, Timezone: principal.Timezone, APIKey: key,
 		}), nil
-	case "PlaneSessionCookie", "DjangoSessionCookie":
+	case "PlaneSessionCookie":
 		if userID, timezone, inspected := readServiceSessionPrincipal(ctx); inspected {
 			parsed, err := uuid.Parse(userID)
 			if err != nil {

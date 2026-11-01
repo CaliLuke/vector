@@ -39,7 +39,7 @@
           {
             "name": "per_page",
             "in": "query",
-            "description": "Pagination input interpreted by Django-compatible pagination (default and maximum: 1000)",
+            "description": "Page size from 1 to 1000 (default: 1000)",
             "schema": {
               "type": "string"
             }

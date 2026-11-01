@@ -35,7 +35,7 @@ var _ = API("system", func() {
 })
 
 var _ = Service("csrf_token", func() {
-	Description("Issues Django-compatible CSRF tokens and endpoint metadata.")
+	Description("Issues masked CSRF tokens and endpoint metadata.")
 	HTTP(func() {
 		RuntimeCORS()
 	})
@@ -43,7 +43,7 @@ var _ = Service("csrf_token", func() {
 	Method("csrf_token", func() {
 		Description("Returns a freshly masked CSRF token backed by the client's CSRF cookie secret.")
 		Security()
-		SessionSecurity(planeDjangoSession)
+		SessionSecurity(browserSession)
 		Payload(func() {
 			Field(1, "csrf_cookie", String)
 		})
@@ -69,7 +69,7 @@ var _ = Service("csrf_token", func() {
 	Method("csrf_token_options", func() {
 		Description("Describes the CSRF token endpoint's supported representations.")
 		Security()
-		SessionSecurity(planeDjangoSession)
+		SessionSecurity(browserSession)
 		Payload(func() {
 			Field(1, "format", String)
 		})

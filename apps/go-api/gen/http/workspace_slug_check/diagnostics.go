@@ -3,7 +3,7 @@
 // Credential locations for workspace_slug_check
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/design --output .
+// $ loom gen github.com/CaliLuke/go-plane/design --output ..
 
 package diagnostics
 

@@ -3,7 +3,7 @@
 // csrf_token service
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/design --output .
+// $ loom gen github.com/CaliLuke/go-plane/design --output ..
 
 package csrftoken
 
@@ -13,7 +13,7 @@ import (
 	"github.com/CaliLuke/loom/security"
 )
 
-// Issues Django-compatible CSRF tokens and endpoint metadata.
+// Issues masked CSRF tokens and endpoint metadata.
 type Service interface {
 	// Returns a freshly masked CSRF token backed by the client's CSRF cookie
 	// secret.

@@ -1,12 +1,12 @@
 openapi: 3.1.1
 info:
-    title: Plane Internal Django Migration API
+    title: Vector API
     description: Internal full-server migration schema. Route inventory and behavior fixtures remain authoritative. This artifact does not change the public /api/v1 schema.
     version: 1.0.0
 jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
 servers:
     - url: http://localhost:80
-      description: Default server for Plane Internal Django Migration API
+      description: Default server for Vector API
 paths:
     /api/assets/v2/static/{asset_id}/:
         get:
@@ -747,8 +747,8 @@ paths:
     /api/assets/v2/workspaces/{slug}/{entity_id}/bulk/:
         post:
             tags:
-                - PlaneInternalDjangoMigrationAPI
-            summary: PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk PlaneInternalDjangoMigrationAPI
+                - AssetsLifecycle
+            summary: PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk AssetsLifecycle
             description: Associate completed uploads with an active private draft owned by the current user.
             operationId: post_api_assets_v2_workspaces_by_slug_by_entity_id_bulk
             parameters:
@@ -2685,11 +2685,15 @@ paths:
                 content:
                     application/json:
                         schema:
-                            example:
-                                entity_type: USER_COVER
-                                name: cover.jpg
-                                size: 1024000
-                                type: image/jpeg
+                            examples:
+                                - entity_type: USER_AVATAR
+                                  name: profile.jpg
+                                  size: 1024000
+                                  type: image/jpeg
+                                - entity_type: USER_COVER
+                                  name: cover.jpg
+                                  size: 1024000
+                                  type: image/jpeg
                             allOf:
                                 - $ref: '#/components/schemas/PlaneApiSerializersAssetUserassetuploadserializerRequestRequest'
                         examples:
@@ -2699,11 +2703,15 @@ paths:
                                 $ref: '#/components/examples/PostAPIV1AssetsUserAssetsRequestBodyUserCoverUploadExample'
                     application/x-www-form-urlencoded:
                         schema:
-                            example:
-                                entity_type: USER_COVER
-                                name: cover.jpg
-                                size: 1024000
-                                type: image/jpeg
+                            examples:
+                                - entity_type: USER_AVATAR
+                                  name: profile.jpg
+                                  size: 1024000
+                                  type: image/jpeg
+                                - entity_type: USER_COVER
+                                  name: cover.jpg
+                                  size: 1024000
+                                  type: image/jpeg
                             allOf:
                                 - $ref: '#/components/schemas/PlaneApiSerializersAssetUserassetuploadserializerRequestRequest'
                         examples:
@@ -2713,11 +2721,15 @@ paths:
                                 $ref: '#/components/examples/PostAPIV1AssetsUserAssetsRequestBodyUserCoverUploadExample'
                     multipart/form-data:
                         schema:
-                            example:
-                                entity_type: USER_COVER
-                                name: cover.jpg
-                                size: 1024000
-                                type: image/jpeg
+                            examples:
+                                - entity_type: USER_AVATAR
+                                  name: profile.jpg
+                                  size: 1024000
+                                  type: image/jpeg
+                                - entity_type: USER_COVER
+                                  name: cover.jpg
+                                  size: 1024000
+                                  type: image/jpeg
                             allOf:
                                 - $ref: '#/components/schemas/PlaneApiSerializersAssetUserassetuploadserializerRequestRequest'
                         examples:

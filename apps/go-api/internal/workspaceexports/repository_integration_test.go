@@ -14,7 +14,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func TestCreateIssueExportPersistsDjangoUUIDArrayValues(t *testing.T) {
+func TestCreateIssueExportPersistsTextualUUIDArrayValues(t *testing.T) {
 	ctx := context.Background()
 	pair, err := postgresfixture.StartUncloned(ctx, func(ctx context.Context, databaseURL string) error {
 		connection, err := pgx.Connect(ctx, databaseURL)
@@ -59,7 +59,14 @@ VALUES ('00000000-0000-4000-8000-000000000002','Test','User','Test User','',FALS
 	if err != nil {
 		t.Fatal(err)
 	}
-	original := []any{json.Number("123"), "123e4567-e89b-12d3-a456-426614174000", nil}
+	if _, _, _, _, createErr := repository.CreateIssueExport(ctx, "00000000-0000-4000-8000-000000000002", "demo", "csv", []any{json.Number("123")}, false); createErr == nil {
+		t.Fatal("integer project UUID was accepted")
+	}
+	var count int
+	if countErr := connection.QueryRow(ctx, `SELECT count(*) FROM exporters`).Scan(&count); countErr != nil || count != 0 {
+		t.Fatalf("invalid UUID wrote exporter rows: count=%d error=%v", count, countErr)
+	}
+	original := []any{"00000000-0000-0000-0000-00000000007b", "123e4567-e89b-12d3-a456-426614174000", nil}
 	_, _, _, queued, err := repository.CreateIssueExport(ctx, "00000000-0000-4000-8000-000000000002", "demo", "csv", original, false)
 	if err != nil {
 		t.Fatal(err)

@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
+	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/activity_reads"
 	"github.com/CaliLuke/go-plane/gen/system"
 	modulereadsstore "github.com/CaliLuke/go-plane/internal/modulereads"
 	moduleapi "github.com/CaliLuke/go-plane/modulelifecycle/gen/module_lifecycle_api"

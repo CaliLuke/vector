@@ -572,12 +572,12 @@ var ImportedPlaneAppSerializersModuleModulewriteserializerResponse = Type("Plane
 
 var ImportedRestFrameworkSerializersArchiveresponseResponse = Type("RestFrameworkSerializersArchiveresponseResponse", func() {
 	Meta("openapi:typename:canonical", "true")
-	Attribute("archived_at", ImportedPythonDateTimeString)
+	Attribute("archived_at", Timestamp)
 	Required("archived_at")
 })
 
-var ImportedPythonDateTimeString = Type("PlanePythonDateTimeString", String, func() {
-	Pattern(`^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d{1,6})?\+00:00$`)
+var Timestamp = Type("VectorTimestamp", String, func() {
+	Format(FormatDateTime)
 })
 
 var ImportedAPIKeyAuthSecurity = APIKeySecurity("ApiKeyAuth", func() {
@@ -594,7 +594,7 @@ var PlaneSession = SessionAuth("PlaneSession", func() {
 
 var _ = API("Module Lifecycle API", func() {
 	Title("Module Lifecycle API")
-	Description("Django and API v1 module lifecycle operations.")
+	Description("Module lifecycle operations for browser and API clients.")
 	Version("1.0.0")
 	Meta("openapi:example", "false")
 	Meta("openapi:version", "3.1")

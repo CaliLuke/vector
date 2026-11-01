@@ -11,6 +11,8 @@ import (
 	"time"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 
 	stickyapi "github.com/CaliLuke/go-plane/gen/stickies"
@@ -403,7 +405,7 @@ func stickyResponse(sticky stickystore.Sticky) (*stickyapi.StickyResponse, error
 	}
 	return &stickyapi.StickyResponse{
 		ID: uuid.UUID(sticky.ID).String(), Workspace: uuid.UUID(sticky.WorkspaceID).String(), Owner: uuid.UUID(sticky.OwnerID).String(),
-		CreatedBy: createdBy, UpdatedBy: updatedBy, CreatedAt: formatDjangoTime(sticky.CreatedAt), UpdatedAt: formatDjangoTime(sticky.UpdatedAt),
+		CreatedBy: createdBy, UpdatedBy: updatedBy, CreatedAt: datetime.Format(sticky.CreatedAt, time.UTC), UpdatedAt: datetime.Format(sticky.UpdatedAt, time.UTC),
 		DeletedAt: formatOptionalDjangoTime(sticky.DeletedAt), Name: name, Color: color, BackgroundColor: background, Description: description,
 		DescriptionHTML: sticky.DescriptionHTML, DescriptionStripped: stripped, DescriptionBinary: binary,
 		LogoProps: logo, SortOrder: sticky.SortOrder,
@@ -421,12 +423,11 @@ func decodeJSON(value []byte) (loom.JSONValue, error) {
 	return decoded, nil
 }
 
-func formatDjangoTime(value time.Time) string { return value.UTC().Format(time.RFC3339Nano) }
 func formatOptionalDjangoTime(value *time.Time) *string {
 	if value == nil {
 		return nil
 	}
-	formatted := formatDjangoTime(*value)
+	formatted := datetime.Format(*value, time.UTC)
 	return &formatted
 }
 func stickyID(value string) (stickystore.StickyID, error) {

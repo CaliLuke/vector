@@ -452,8 +452,8 @@ func activityRawJSONResponse(schema any, description string) {
 	})
 }
 
-var _ = API("Plane Internal Django Migration API", func() {
-	Title("Plane Internal Django Migration API")
+var _ = API("Vector API", func() {
+	Title("Vector API")
 	Description("Internal full-server migration schema. Route inventory and behavior fixtures remain authoritative. This artifact does not change the public /api/v1 schema.")
 	Version("1.0.0")
 	Meta("http:generate", "server")
@@ -462,7 +462,7 @@ var _ = API("Plane Internal Django Migration API", func() {
 	Meta("openapi:tag:work-item-activities")
 })
 
-var _ = Service("PlaneInternalDjangoMigrationAPI", func() {
+var _ = Service("ActivityReads", func() {
 	HTTP(func() {
 		RuntimeCORS()
 	})

@@ -3,7 +3,7 @@
 // Credential locations for analytic_views
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/design --output .
+// $ loom gen github.com/CaliLuke/go-plane/design --output ..
 
 package diagnostics
 

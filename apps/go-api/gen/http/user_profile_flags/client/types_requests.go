@@ -3,7 +3,7 @@
 // user_profile_flags HTTP client types request types
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/design --output .
+// $ loom gen github.com/CaliLuke/go-plane/design --output ..
 
 package client
 

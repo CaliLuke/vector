@@ -47,36 +47,54 @@ func ValidateNotificationResponse(body *NotificationResponse, validationContext 
 			validationPath += validationPart
 		}
 	}
+	if !body.CreatedBy.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("created_by", validationPath))
+	}
+	if !body.UpdatedBy.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("updated_by", validationPath))
+	}
+	if !body.DeletedAt.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("deleted_at", validationPath))
+	}
+	if !body.Project.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("project", validationPath))
+	}
 	if body.Data == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("data", validationPath))
+	}
+	if !body.EntityIdentifier.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("entity_identifier", validationPath))
 	}
 	if body.Message == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("message", validationPath))
 	}
-	if !body.TriggeredByDetails.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("triggered_by_details", validationPath))
+	if !body.MessageStripped.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("message_stripped", validationPath))
+	}
+	if !body.TriggeredBy.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("triggered_by", validationPath))
+	}
+	if !body.ReadAt.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("read_at", validationPath))
+	}
+	if !body.SnoozedTill.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("snoozed_till", validationPath))
 	}
 	if !body.ArchivedAt.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("archived_at", validationPath))
+	}
+	if !body.TriggeredByDetails.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("triggered_by_details", validationPath))
 	}
 	if actual, ok := body.ArchivedAt.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".archived_at", actual, loom.FormatDateTime))
 	}
 	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".created_at", body.CreatedAt, loom.FormatDateTime))
-	if !body.CreatedBy.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("created_by", validationPath))
-	}
 	if actual, ok := body.CreatedBy.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidatePatternCompiled(validationPath+".created_by", actual, loomPatternTypesValidation0))
 	}
-	if !body.DeletedAt.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("deleted_at", validationPath))
-	}
 	if actual, ok := body.DeletedAt.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".deleted_at", actual, loom.FormatDateTime))
-	}
-	if !body.EntityIdentifier.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("entity_identifier", validationPath))
 	}
 	if actual, ok := body.EntityIdentifier.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidatePatternCompiled(validationPath+".entity_identifier", actual, loomPatternTypesValidation0))
@@ -85,17 +103,8 @@ func ValidateNotificationResponse(body *NotificationResponse, validationContext 
 		err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".entity_name", utf8.RuneCountInString(body.EntityName), 255, false))
 	}
 	err = loom.MergeErrors(err, loom.ValidatePatternCompiled(validationPath+".id", body.ID, loomPatternTypesValidation0))
-	if !body.MessageStripped.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("message_stripped", validationPath))
-	}
-	if !body.Project.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("project", validationPath))
-	}
 	if actual, ok := body.Project.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidatePatternCompiled(validationPath+".project", actual, loomPatternTypesValidation0))
-	}
-	if !body.ReadAt.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("read_at", validationPath))
 	}
 	if actual, ok := body.ReadAt.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".read_at", actual, loom.FormatDateTime))
@@ -104,14 +113,8 @@ func ValidateNotificationResponse(body *NotificationResponse, validationContext 
 	if utf8.RuneCountInString(body.Sender) > 255 {
 		err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".sender", utf8.RuneCountInString(body.Sender), 255, false))
 	}
-	if !body.SnoozedTill.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("snoozed_till", validationPath))
-	}
 	if actual, ok := body.SnoozedTill.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".snoozed_till", actual, loom.FormatDateTime))
-	}
-	if !body.TriggeredBy.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("triggered_by", validationPath))
 	}
 	if actual, ok := body.TriggeredBy.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidatePatternCompiled(validationPath+".triggered_by", actual, loomPatternTypesValidation0))
@@ -122,9 +125,6 @@ func ValidateNotificationResponse(body *NotificationResponse, validationContext 
 		}
 	}
 	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".updated_at", body.UpdatedAt, loom.FormatDateTime))
-	if !body.UpdatedBy.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("updated_by", validationPath))
-	}
 	if actual, ok := body.UpdatedBy.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidatePatternCompiled(validationPath+".updated_by", actual, loomPatternTypesValidation0))
 	}

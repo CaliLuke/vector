@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
@@ -156,7 +158,7 @@ func invitationFieldUpdates(fields map[string]any, id, actor, zone string, keys 
 						location = loaded
 					}
 				}
-				parsed, err := pythoncompat.DjangoDateTime(text, location)
+				parsed, err := datetime.Parse(text, location)
 				if !valid || err != nil {
 					messages = []string{"Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."}
 				} else {

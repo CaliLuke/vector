@@ -12,11 +12,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	store "github.com/CaliLuke/go-plane/internal/workspaceuserinsights"
 	api "github.com/CaliLuke/go-plane/workspaceuserinsights/gen/workspace_user_insights"
@@ -326,7 +327,7 @@ func csvActivityValue(value any) string {
 		}
 		return fmt.Sprint(value)
 	}
-	return pythoncompat.PythonDateTimeString(stamp)
+	return datetime.Format(stamp, time.UTC)
 }
 
 var _ api.Service = (*workspaceUserInsightsService)(nil)

@@ -8,7 +8,6 @@
 package client
 
 import (
-	"regexp"
 	"unicode/utf8"
 
 	loom "github.com/CaliLuke/loom/pkg"
@@ -242,7 +241,7 @@ func ValidatePostAPIWorkspacesBySlugProjectsByProjectIDArchivedModulesResponseBo
 		err = loom.MergeErrors(err, loom.MissingFieldError("archived_at", validationPath))
 	}
 	if body.ArchivedAt != nil {
-		err = loom.MergeErrors(err, loom.ValidatePatternCompiled(validationPath+".archived_at", *body.ArchivedAt, loomPatternTypesValidation0))
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".archived_at", *body.ArchivedAt, loom.FormatDateTime))
 	}
 	return
 }
@@ -262,7 +261,7 @@ func ValidatePostAPIWorkspacesBySlugProjectsByProjectIDArchivedModulesByPkRespon
 		err = loom.MergeErrors(err, loom.MissingFieldError("archived_at", validationPath))
 	}
 	if body.ArchivedAt != nil {
-		err = loom.MergeErrors(err, loom.ValidatePatternCompiled(validationPath+".archived_at", *body.ArchivedAt, loomPatternTypesValidation0))
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".archived_at", *body.ArchivedAt, loom.FormatDateTime))
 	}
 	return
 }
@@ -431,7 +430,7 @@ func ValidatePostAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDArchiveR
 		err = loom.MergeErrors(err, loom.MissingFieldError("archived_at", validationPath))
 	}
 	if body.ArchivedAt != nil {
-		err = loom.MergeErrors(err, loom.ValidatePatternCompiled(validationPath+".archived_at", *body.ArchivedAt, loomPatternTypesValidation0))
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".archived_at", *body.ArchivedAt, loom.FormatDateTime))
 	}
 	return
 }
@@ -950,5 +949,3 @@ func ValidatePutAPIWorkspacesBySlugProjectsByProjectIDModulesByPkResponseBody(bo
 	}
 	return
 }
-
-var loomPatternTypesValidation0 = regexp.MustCompile("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?\\+00:00$")

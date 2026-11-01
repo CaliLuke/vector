@@ -12,6 +12,8 @@ import (
 	"time"
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	"github.com/CaliLuke/go-plane/internal/platform"
 
 	api "github.com/CaliLuke/go-plane/gen/instance_management"
@@ -21,7 +23,6 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authredirects"
 	"github.com/CaliLuke/go-plane/internal/instancemail"
 	"github.com/CaliLuke/go-plane/internal/instancemanagement"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	loomhttp "github.com/CaliLuke/loom/http"
 	pkg "github.com/CaliLuke/loom/pkg"
@@ -618,7 +619,7 @@ func formatInstanceManagementDateTimes(raw []byte, location *time.Location) ([]b
 			for key, nested := range item {
 				if text, ok := nested.(string); ok && (key == "created_at" || key == "updated_at" || key == "deleted_at" || key == "last_checked_at") {
 					if parsed, err := time.Parse(time.RFC3339Nano, text); err == nil {
-						item[key] = pythoncompat.DRFDateTimeString(parsed, location)
+						item[key] = datetime.Format(parsed, location)
 					}
 				} else {
 					visit(nested)

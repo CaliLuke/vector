@@ -3,7 +3,7 @@
 // workspace_member_me client
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/design --output .
+// $ loom gen github.com/CaliLuke/go-plane/design --output ..
 
 package workspacememberme
 

@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
+	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/activity_reads"
 	cyclelifecycleapi "github.com/CaliLuke/go-plane/cyclelifecycle/gen/cycle_lifecycle_api"
 	cyclereads "github.com/CaliLuke/go-plane/gen/cycle_reads"
 	"github.com/CaliLuke/go-plane/gen/system"

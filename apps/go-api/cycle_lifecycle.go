@@ -11,12 +11,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	api "github.com/CaliLuke/go-plane/cyclelifecycle/gen/cycle_lifecycle_api"
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/cyclereads"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/loom/clue/log"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -87,7 +88,7 @@ func (service *cycleLifecycleService) APIKeyAuth(
 		return context.WithValue(ctx, cycleLifecyclePrincipalKey{}, cycleLifecyclePrincipal{
 			userID: principal.UserID, timezone: principal.Timezone, key: credential, apiKey: true,
 		}), nil
-	case "PlaneSessionCookie", "SessionAuth", "DjangoSessionCookie":
+	case "PlaneSessionCookie", "SessionAuth":
 		if userID, timezone, inspected := readServiceSessionPrincipal(ctx); inspected {
 			parsed, err := uuid.Parse(userID)
 			if err != nil {
@@ -486,7 +487,7 @@ func (service *cycleLifecycleService) PostAPIWorkspacesBySlugProjectsByProjectID
 	if err != nil {
 		return nil, err
 	}
-	return &api.RestFrameworkSerializersArchiveresponseResponse{ArchivedAt: pythoncompat.PythonDateTimeString(archivedAt)}, nil
+	return &api.RestFrameworkSerializersArchiveresponseResponse{ArchivedAt: datetime.Format(archivedAt, time.UTC)}, nil
 }
 
 func (service *cycleLifecycleService) PostAPIWorkspacesBySlugProjectsByProjectIDArchivedCycles(ctx context.Context, payload *api.PostAPIWorkspacesBySlugProjectsByProjectIDArchivedCyclesPayload) (*api.RestFrameworkSerializersArchiveresponseResponse, error) {
@@ -511,7 +512,7 @@ func (service *cycleLifecycleService) PostAPIWorkspacesBySlugProjectsByProjectID
 	if err != nil {
 		return nil, err
 	}
-	return &api.RestFrameworkSerializersArchiveresponseResponse{ArchivedAt: pythoncompat.PythonDateTimeString(archivedAt)}, nil
+	return &api.RestFrameworkSerializersArchiveresponseResponse{ArchivedAt: datetime.Format(archivedAt, time.UTC)}, nil
 }
 
 func (service *cycleLifecycleService) DeleteAPIWorkspacesBySlugProjectsByProjectIDArchivedCyclesByPk(ctx context.Context, payload *api.DeleteAPIWorkspacesBySlugProjectsByProjectIDArchivedCyclesByPkPayload) error {

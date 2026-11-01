@@ -1,5 +1,5 @@
 {
-  "loom_version": "v1.10.0-alpha.16",
+  "loom_version": "v1.10.0-alpha.22",
   "design_package": "github.com/CaliLuke/go-plane/apilabelreads/design",
-  "design_digest": "91dd85575e7b5e85bc0a8026b74db13e372757754e13e2fc7d4ab3f314815177"
+  "design_digest": "4e9a5ad0b422d3ef9fb2d0af79fe921da7f3546f400a4b5b0f8f74e8037e4f61"
 }

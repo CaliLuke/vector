@@ -711,7 +711,7 @@ func moduleLifecycleAPIDeleteAPIWorkspacesBySlugProjectsByProjectIDArchivedModul
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api delete-api-workspaces-by-slug-projects-by-project-id-archived-modules-by-pk --slug \"Qui alias et sit aut.\" --project-id \"29ed928a-a057-4bac-9815-69e480de1098\" --pk \"daf4c1a1-13f8-4008-974a-fa1a6c1bd4ed\" --plane-session-cookie-credential \"Nulla sint vel eum maiores voluptatem exercitationem.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api delete-api-workspaces-by-slug-projects-by-project-id-archived-modules-by-pk --slug \"Suscipit dolores necessitatibus eum sint dolores quia.\" --project-id \"342f1b7c-c1f5-42e1-86cb-109905186a84\" --pk \"a5e2b99d-90e3-45e5-84cc-aaf80e8dc2ea\" --plane-session-cookie-credential \"Pariatur porro maxime qui.\"")
 }
 func moduleLifecycleAPIPostAPIWorkspacesBySlugProjectsByProjectIDArchivedModulesByPkUsage() {
 	// Header with flags
@@ -734,7 +734,7 @@ func moduleLifecycleAPIPostAPIWorkspacesBySlugProjectsByProjectIDArchivedModules
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api post-api-workspaces-by-slug-projects-by-project-id-archived-modules-by-pk --slug \"Animi explicabo.\" --project-id \"b1bb1bfc-1f14-4a09-ac83-e05d733c7d16\" --pk \"65e2b916-fc68-430f-ba6c-17943556175d\" --plane-session-cookie-credential \"Vel quae.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api post-api-workspaces-by-slug-projects-by-project-id-archived-modules-by-pk --slug \"In nihil dolorem.\" --project-id \"57d94640-6906-4a68-9eda-eec3c6bff23b\" --pk \"ed83e913-7e96-4fb6-98e6-2d195b322da1\" --plane-session-cookie-credential \"Sit doloremque voluptatem occaecati corrupti et.\"")
 }
 func moduleLifecycleAPIPostAPIWorkspacesBySlugProjectsByProjectIDModulesUsage() {
 	// Header with flags
@@ -757,7 +757,7 @@ func moduleLifecycleAPIPostAPIWorkspacesBySlugProjectsByProjectIDModulesUsage() 
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api post-api-workspaces-by-slug-projects-by-project-id-modules --slug \"Omnis quisquam sunt enim et totam.\" --project-id \"e7ced4f1-d1a8-4255-9104-a40a1a579611\" --plane-session-cookie-credential \"Qui labore eum velit molestias ab quam.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api post-api-workspaces-by-slug-projects-by-project-id-modules --slug \"Eum qui.\" --project-id \"0f583dca-4e9c-41db-b1aa-5f84ce093c82\" --plane-session-cookie-credential \"Sapiente nulla.\" --stream \"loom.bin\"")
 }
 func moduleLifecycleAPIDeleteAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDArchiveUsage() {
 	// Header with flags
@@ -780,7 +780,7 @@ func moduleLifecycleAPIDeleteAPIWorkspacesBySlugProjectsByProjectIDModulesByModu
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api delete-api-workspaces-by-slug-projects-by-project-id-modules-by-module-id-archive --slug \"Occaecati aliquid laudantium.\" --project-id \"a041f21d-3d8f-473f-a633-deb8e45a6cac\" --module-id \"3962426d-eb63-4327-a103-ec31272175e3\" --plane-session-cookie-credential \"Distinctio sed dolor nam et sint.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api delete-api-workspaces-by-slug-projects-by-project-id-modules-by-module-id-archive --slug \"Possimus autem sunt expedita exercitationem.\" --project-id \"e53a2ed1-5f1b-4c7c-bd1f-3d1b938b741c\" --module-id \"b1f7544b-50af-475f-8487-91296daaba6e\" --plane-session-cookie-credential \"Cum est eos neque.\"")
 }
 func moduleLifecycleAPIPostAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDArchiveUsage() {
 	// Header with flags
@@ -803,7 +803,7 @@ func moduleLifecycleAPIPostAPIWorkspacesBySlugProjectsByProjectIDModulesByModule
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api post-api-workspaces-by-slug-projects-by-project-id-modules-by-module-id-archive --slug \"In sit.\" --project-id \"8009ee6e-a932-4fa0-99d5-44c48b7d6765\" --module-id \"628163b9-10f4-4c72-8b1a-fa6d108087cd\" --plane-session-cookie-credential \"In porro.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api post-api-workspaces-by-slug-projects-by-project-id-modules-by-module-id-archive --slug \"Illum repellendus iusto aut.\" --project-id \"cd110e8b-4934-4c29-b824-788d8d1874eb\" --module-id \"072c72a0-c875-4eaa-9ee8-54930d418a9f\" --plane-session-cookie-credential \"Cupiditate et doloremque voluptatem minima.\"")
 }
 func moduleLifecycleAPIPostAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDModuleLinksUsage() {
 	// Header with flags
@@ -828,7 +828,7 @@ func moduleLifecycleAPIPostAPIWorkspacesBySlugProjectsByProjectIDModulesByModule
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api post-api-workspaces-by-slug-projects-by-project-id-modules-by-module-id-module-links --slug \"Sed iste sapiente.\" --project-id \"63b795f6-deaf-4fd2-b23e-8b9369335ab8\" --module-id \"fe3a0646-91e4-4cc9-a1bc-8acd4cf82122\" --plane-session-cookie-credential \"Rerum qui quae.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api post-api-workspaces-by-slug-projects-by-project-id-modules-by-module-id-module-links --slug \"Non sint non.\" --project-id \"5bbcdfad-6108-4a16-bc61-e664c9250d58\" --module-id \"b4943911-95db-4d32-b9f2-287cea994fed\" --plane-session-cookie-credential \"Accusantium id.\" --stream \"loom.bin\"")
 }
 func moduleLifecycleAPIDeleteAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDModuleLinksByPkUsage() {
 	// Header with flags
@@ -853,7 +853,7 @@ func moduleLifecycleAPIDeleteAPIWorkspacesBySlugProjectsByProjectIDModulesByModu
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api delete-api-workspaces-by-slug-projects-by-project-id-modules-by-module-id-module-links-by-pk --slug \"Aliquid voluptate quia consequuntur laudantium dolorem ut.\" --project-id \"fa650e6e-a8b4-4ba9-9eb2-100f50c51e87\" --module-id \"2c096548-f561-4379-9960-d4419e3d8b06\" --pk \"0b17d1ff-4198-4599-8092-23f83d2c47cd\" --plane-session-cookie-credential \"Quidem quos earum labore officiis consequatur.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api delete-api-workspaces-by-slug-projects-by-project-id-modules-by-module-id-module-links-by-pk --slug \"Libero repellat corporis animi.\" --project-id \"ab1a0ced-2f99-45b3-9d49-9a7ac1119a61\" --module-id \"a7db75c2-bb42-4526-9aec-6714d56d3739\" --pk \"b6af40fa-b37b-4dc9-9070-de0ffd66b484\" --plane-session-cookie-credential \"Tempore ab voluptatibus atque.\"")
 }
 func moduleLifecycleAPIPatchAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDModuleLinksByPkUsage() {
 	// Header with flags
@@ -880,7 +880,7 @@ func moduleLifecycleAPIPatchAPIWorkspacesBySlugProjectsByProjectIDModulesByModul
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api patch-api-workspaces-by-slug-projects-by-project-id-modules-by-module-id-module-links-by-pk --slug \"Reiciendis temporibus molestiae ducimus voluptatem doloribus.\" --project-id \"5e295b20-6ed1-4af2-acbc-9e3aae761935\" --module-id \"471d6e5f-4dfe-46f3-9fc7-e8ed069e8a88\" --pk \"fb862568-d100-4cef-9054-ab3865c7c861\" --plane-session-cookie-credential \"Eum nihil.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api patch-api-workspaces-by-slug-projects-by-project-id-modules-by-module-id-module-links-by-pk --slug \"Omnis ut.\" --project-id \"9fd68625-1502-4201-a279-542391c152ee\" --module-id \"ff25d78f-7ba8-44e5-b0b9-b2f98550d891\" --pk \"050d8e0d-f7b3-4cbc-95ef-316e27651eaf\" --plane-session-cookie-credential \"Optio alias id recusandae.\" --stream \"loom.bin\"")
 }
 func moduleLifecycleAPIPutAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDModuleLinksByPkUsage() {
 	// Header with flags
@@ -907,7 +907,7 @@ func moduleLifecycleAPIPutAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleI
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api put-api-workspaces-by-slug-projects-by-project-id-modules-by-module-id-module-links-by-pk --slug \"Omnis veritatis exercitationem in maxime ad earum.\" --project-id \"e1ec0bfb-2a8d-40ae-a850-b5954dbad34e\" --module-id \"ced4bdf7-0ba6-41a7-9c33-bb5b5e8a0448\" --pk \"ed22df65-d32a-423b-9c05-cf0a60c1d58d\" --plane-session-cookie-credential \"Ut vitae ut.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api put-api-workspaces-by-slug-projects-by-project-id-modules-by-module-id-module-links-by-pk --slug \"Iusto quibusdam architecto deleniti molestiae.\" --project-id \"f7ffdd87-a621-48f7-96b2-79bd1829e1af\" --module-id \"41a8969b-2bf0-4604-9aa7-143ffac12b7f\" --pk \"f7b857ba-fc08-42f9-9e8e-00d8a304a33f\" --plane-session-cookie-credential \"Qui commodi voluptatem debitis qui.\" --stream \"loom.bin\"")
 }
 func moduleLifecycleAPIDeleteAPIWorkspacesBySlugProjectsByProjectIDModulesByPkUsage() {
 	// Header with flags
@@ -930,7 +930,7 @@ func moduleLifecycleAPIDeleteAPIWorkspacesBySlugProjectsByProjectIDModulesByPkUs
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api delete-api-workspaces-by-slug-projects-by-project-id-modules-by-pk --slug \"Enim a nam ab.\" --project-id \"95e72537-be46-43cd-8067-92e18b7d4687\" --pk \"4e44c1c8-511b-4777-aabc-a77071cdd082\" --plane-session-cookie-credential \"Quis totam dolorem et et.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api delete-api-workspaces-by-slug-projects-by-project-id-modules-by-pk --slug \"Temporibus et est.\" --project-id \"57e4829e-0ca2-4123-847e-6fffa1f855e9\" --pk \"aacd12de-9c5d-4fc5-87ef-8bea16bd75f6\" --plane-session-cookie-credential \"Consectetur aut.\"")
 }
 func moduleLifecycleAPIPatchAPIWorkspacesBySlugProjectsByProjectIDModulesByPkUsage() {
 	// Header with flags
@@ -955,7 +955,7 @@ func moduleLifecycleAPIPatchAPIWorkspacesBySlugProjectsByProjectIDModulesByPkUsa
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api patch-api-workspaces-by-slug-projects-by-project-id-modules-by-pk --slug \"Distinctio explicabo.\" --project-id \"fd50216e-0786-4ba9-a840-2b6d9ea60543\" --pk \"1252a890-c42c-4145-9a71-1f6cbeec3e5f\" --plane-session-cookie-credential \"Et sit.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api patch-api-workspaces-by-slug-projects-by-project-id-modules-by-pk --slug \"Sed a minima sunt.\" --project-id \"6d1b191d-b8fa-415c-85f8-2f5582d1c4c0\" --pk \"9ede6a2a-4733-4ad9-bf30-7fe498168580\" --plane-session-cookie-credential \"Consequatur beatae quasi.\" --stream \"loom.bin\"")
 }
 func moduleLifecycleAPIPutAPIWorkspacesBySlugProjectsByProjectIDModulesByPkUsage() {
 	// Header with flags
@@ -980,5 +980,5 @@ func moduleLifecycleAPIPutAPIWorkspacesBySlugProjectsByProjectIDModulesByPkUsage
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api put-api-workspaces-by-slug-projects-by-project-id-modules-by-pk --slug \"Est assumenda voluptatibus eligendi.\" --project-id \"95d63483-11e5-424e-a35e-d0ba51f3548b\" --pk \"b39e99d0-81eb-4c81-90f0-89d42062c751\" --plane-session-cookie-credential \"Non quam iusto.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "module-lifecycle-api put-api-workspaces-by-slug-projects-by-project-id-modules-by-pk --slug \"Sit velit eum libero voluptate aut occaecati.\" --project-id \"8efb5022-400d-47d1-bcff-72f97241e4dd\" --pk \"d2305def-a56a-4f73-915f-964a9d7aa1d0\" --plane-session-cookie-credential \"Aperiam suscipit consequuntur harum incidunt voluptatem harum.\" --stream \"loom.bin\"")
 }

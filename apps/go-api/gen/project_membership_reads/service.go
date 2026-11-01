@@ -3,7 +3,7 @@
 // project_membership_reads service
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/design --output .
+// $ loom gen github.com/CaliLuke/go-plane/design --output ..
 
 package projectmembershipreads
 
@@ -233,6 +233,18 @@ func ValidateProjectMembershipFullDirectory(result *ProjectMembershipFullDirecto
 	if result.Project == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("project", validationPath))
 	}
+	if !result.CreatedBy.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("created_by", validationPath))
+	}
+	if !result.UpdatedBy.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("updated_by", validationPath))
+	}
+	if !result.DeletedAt.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("deleted_at", validationPath))
+	}
+	if !result.Comment.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("comment", validationPath))
+	}
 	if result.ViewProps == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("view_props", validationPath))
 	}
@@ -258,26 +270,14 @@ func ValidateProjectMembershipFullDirectory(result *ProjectMembershipFullDirecto
 	}
 	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".created_at", result.CreatedAt, loom.FormatDateTime))
 	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".updated_at", result.UpdatedAt, loom.FormatDateTime))
-	if !result.CreatedBy.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("created_by", validationPath))
-	}
 	if actual, ok := result.CreatedBy.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".created_by", actual, loom.FormatUUID))
-	}
-	if !result.UpdatedBy.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("updated_by", validationPath))
 	}
 	if actual, ok := result.UpdatedBy.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".updated_by", actual, loom.FormatUUID))
 	}
-	if !result.DeletedAt.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("deleted_at", validationPath))
-	}
 	if actual, ok := result.DeletedAt.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".deleted_at", actual, loom.FormatDateTime))
-	}
-	if !result.Comment.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("comment", validationPath))
 	}
 	if result.Workspace != nil {
 		if err2 := ValidateProjectMembershipWorkspace(result.Workspace, validationPath+".workspace"); err2 != nil {
@@ -312,16 +312,16 @@ func ValidateProjectMembershipProject(result *ProjectMembershipProject, validati
 			validationPath += validationPart
 		}
 	}
-	if result.LogoProps == nil {
-		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
-	}
-	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", result.ID, loom.FormatUUID))
 	if !result.CoverImage.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("cover_image", validationPath))
 	}
 	if !result.CoverImageURL.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("cover_image_url", validationPath))
 	}
+	if result.LogoProps == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", result.ID, loom.FormatUUID))
 	return
 }
 
@@ -334,10 +334,10 @@ func ValidateProjectMembershipUser(result *ProjectMembershipUser, validationCont
 			validationPath += validationPart
 		}
 	}
-	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", result.ID, loom.FormatUUID))
 	if !result.AvatarURL.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("avatar_url", validationPath))
 	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", result.ID, loom.FormatUUID))
 	return
 }
 
@@ -350,10 +350,10 @@ func ValidateProjectMembershipWorkspace(result *ProjectMembershipWorkspace, vali
 			validationPath += validationPart
 		}
 	}
-	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", result.ID, loom.FormatUUID))
 	if !result.LogoURL.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("logo_url", validationPath))
 	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", result.ID, loom.FormatUUID))
 	return
 }
 
@@ -1237,6 +1237,18 @@ func (u ProjectMembershipFullDirectoryOrProjectMembershipGuestDirectory) matchJS
 				if v.Project == nil {
 					err = loom.MergeErrors(err, loom.MissingFieldError("project", "v"))
 				}
+				if !v.CreatedBy.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("created_by", "v"))
+				}
+				if !v.UpdatedBy.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("updated_by", "v"))
+				}
+				if !v.DeletedAt.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("deleted_at", "v"))
+				}
+				if !v.Comment.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("comment", "v"))
+				}
 				if v.ViewProps == nil {
 					err = loom.MergeErrors(err, loom.MissingFieldError("view_props", "v"))
 				}
@@ -1262,26 +1274,14 @@ func (u ProjectMembershipFullDirectoryOrProjectMembershipGuestDirectory) matchJS
 				}
 				err = loom.MergeErrors(err, loom.ValidateFormat("v.created_at", v.CreatedAt, loom.FormatDateTime))
 				err = loom.MergeErrors(err, loom.ValidateFormat("v.updated_at", v.UpdatedAt, loom.FormatDateTime))
-				if !v.CreatedBy.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("created_by", "v"))
-				}
 				if actual, ok := v.CreatedBy.Value(); ok {
 					err = loom.MergeErrors(err, loom.ValidateFormat("v.created_by", actual, loom.FormatUUID))
-				}
-				if !v.UpdatedBy.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("updated_by", "v"))
 				}
 				if actual, ok := v.UpdatedBy.Value(); ok {
 					err = loom.MergeErrors(err, loom.ValidateFormat("v.updated_by", actual, loom.FormatUUID))
 				}
-				if !v.DeletedAt.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("deleted_at", "v"))
-				}
 				if actual, ok := v.DeletedAt.Value(); ok {
 					err = loom.MergeErrors(err, loom.ValidateFormat("v.deleted_at", actual, loom.FormatDateTime))
-				}
-				if !v.Comment.Present() {
-					err = loom.MergeErrors(err, loom.MissingFieldError("comment", "v"))
 				}
 				if v.Workspace != nil {
 					if err2 := ValidateProjectMembershipWorkspace(v.Workspace, "v.workspace"); err2 != nil {

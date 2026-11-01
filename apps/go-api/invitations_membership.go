@@ -197,7 +197,7 @@ func (service *invitationsMembershipService) APIKeyAuth(ctx context.Context, key
 		return context.WithValue(ctx, invitationsMembershipPrincipalKey{}, invitationsMembershipPrincipal{
 			UserID: principal.UserID, Timezone: principal.Timezone, Key: key, APIKey: true,
 		}), nil
-	case "PlaneSessionCookie", "DjangoSessionCookie":
+	case "PlaneSessionCookie":
 		if userID, timezone, inspected := readServiceSessionPrincipal(ctx); inspected {
 			parsed, err := uuid.Parse(userID)
 			if err != nil {

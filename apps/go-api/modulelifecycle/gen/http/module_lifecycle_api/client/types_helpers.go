@@ -84,7 +84,7 @@ func NewPatchAPIV1WorkspacesBySlugProjectsByProjectIDModulesByPkModuleUpdateSeri
 // from a HTTP "OK" response.
 func NewPostAPIWorkspacesBySlugProjectsByProjectIDArchivedModulesRestFrameworkSerializersArchiveresponseResponseOK(body *PostAPIWorkspacesBySlugProjectsByProjectIDArchivedModulesResponseBody) *modulelifecycleapi.RestFrameworkSerializersArchiveresponseResponse {
 	v := &modulelifecycleapi.RestFrameworkSerializersArchiveresponseResponse{
-		ArchivedAt: modulelifecycleapi.PlanePythonDateTimeString(*body.ArchivedAt),
+		ArchivedAt: modulelifecycleapi.VectorTimestamp(*body.ArchivedAt),
 	}
 
 	return v
@@ -96,7 +96,7 @@ func NewPostAPIWorkspacesBySlugProjectsByProjectIDArchivedModulesRestFrameworkSe
 // result from a HTTP "OK" response.
 func NewPostAPIWorkspacesBySlugProjectsByProjectIDArchivedModulesByPkRestFrameworkSerializersArchiveresponseResponseOK(body *PostAPIWorkspacesBySlugProjectsByProjectIDArchivedModulesByPkResponseBody) *modulelifecycleapi.RestFrameworkSerializersArchiveresponseResponse {
 	v := &modulelifecycleapi.RestFrameworkSerializersArchiveresponseResponse{
-		ArchivedAt: modulelifecycleapi.PlanePythonDateTimeString(*body.ArchivedAt),
+		ArchivedAt: modulelifecycleapi.VectorTimestamp(*body.ArchivedAt),
 	}
 
 	return v
@@ -158,7 +158,7 @@ func NewPostAPIWorkspacesBySlugProjectsByProjectIDModulesAppModuleComputedRespon
 // endpoint result from a HTTP "OK" response.
 func NewPostAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDArchiveRestFrameworkSerializersArchiveresponseResponseOK(body *PostAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDArchiveResponseBody) *modulelifecycleapi.RestFrameworkSerializersArchiveresponseResponse {
 	v := &modulelifecycleapi.RestFrameworkSerializersArchiveresponseResponse{
-		ArchivedAt: modulelifecycleapi.PlanePythonDateTimeString(*body.ArchivedAt),
+		ArchivedAt: modulelifecycleapi.VectorTimestamp(*body.ArchivedAt),
 	}
 
 	return v

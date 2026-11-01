@@ -3,7 +3,7 @@
 // project_membership_reads HTTP server types validation helpers
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/design --output .
+// $ loom gen github.com/CaliLuke/go-plane/design --output ..
 
 package server
 
@@ -21,10 +21,10 @@ func ValidateProjectMembershipUserResponse(body *ProjectMembershipUserResponse, 
 			validationPath += validationPart
 		}
 	}
-	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", body.ID, loom.FormatUUID))
 	if !body.AvatarURL.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("avatar_url", validationPath))
 	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", body.ID, loom.FormatUUID))
 	return
 }
 
@@ -61,6 +61,18 @@ func ValidateProjectMembershipFullDirectoryResponse(body *ProjectMembershipFullD
 	if body.Project == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("project", validationPath))
 	}
+	if !body.CreatedBy.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("created_by", validationPath))
+	}
+	if !body.UpdatedBy.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("updated_by", validationPath))
+	}
+	if !body.DeletedAt.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("deleted_at", validationPath))
+	}
+	if !body.Comment.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("comment", validationPath))
+	}
 	if body.ViewProps == nil {
 		err = loom.MergeErrors(err, loom.MissingFieldError("view_props", validationPath))
 	}
@@ -86,26 +98,14 @@ func ValidateProjectMembershipFullDirectoryResponse(body *ProjectMembershipFullD
 	}
 	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".created_at", body.CreatedAt, loom.FormatDateTime))
 	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".updated_at", body.UpdatedAt, loom.FormatDateTime))
-	if !body.CreatedBy.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("created_by", validationPath))
-	}
 	if actual, ok := body.CreatedBy.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".created_by", actual, loom.FormatUUID))
-	}
-	if !body.UpdatedBy.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("updated_by", validationPath))
 	}
 	if actual, ok := body.UpdatedBy.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".updated_by", actual, loom.FormatUUID))
 	}
-	if !body.DeletedAt.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("deleted_at", validationPath))
-	}
 	if actual, ok := body.DeletedAt.Value(); ok {
 		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".deleted_at", actual, loom.FormatDateTime))
-	}
-	if !body.Comment.Present() {
-		err = loom.MergeErrors(err, loom.MissingFieldError("comment", validationPath))
 	}
 	if body.Workspace != nil {
 		if err2 := ValidateProjectMembershipWorkspaceResponse(body.Workspace, validationPath+".workspace"); err2 != nil {
@@ -125,16 +125,16 @@ func ValidateProjectMembershipProjectResponse(body *ProjectMembershipProjectResp
 			validationPath += validationPart
 		}
 	}
-	if body.LogoProps == nil {
-		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
-	}
-	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", body.ID, loom.FormatUUID))
 	if !body.CoverImage.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("cover_image", validationPath))
 	}
 	if !body.CoverImageURL.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("cover_image_url", validationPath))
 	}
+	if body.LogoProps == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("logo_props", validationPath))
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", body.ID, loom.FormatUUID))
 	return
 }
 
@@ -148,9 +148,9 @@ func ValidateProjectMembershipWorkspaceResponse(body *ProjectMembershipWorkspace
 			validationPath += validationPart
 		}
 	}
-	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", body.ID, loom.FormatUUID))
 	if !body.LogoURL.Present() {
 		err = loom.MergeErrors(err, loom.MissingFieldError("logo_url", validationPath))
 	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", body.ID, loom.FormatUUID))
 	return
 }

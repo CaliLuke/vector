@@ -16,15 +16,14 @@ import (
 	"github.com/CaliLuke/loom/security"
 )
 
-func TestWorkspaceActivityCSVMatchesPythonDialect(t *testing.T) {
+func TestWorkspaceActivityCSVQuotesFieldsAndPreventsFormulas(t *testing.T) {
 	rows := []store.ActivityCSVRow{{Actor: `Zoë "A"`, IssueID: "P-1", Project: "=SUM(A1)", CreatedAt: time.Date(2026, 10, 22, 1, 0, 0, 120000000, time.UTC), Verb: "updated", Field: "description", OldValue: "line one\nline two", NewValue: "@formula"}}
 	got, err := encodeWorkspaceActivityCSV(rows)
 	if err != nil {
 		t.Fatal(err)
 	}
-	// Oracle generated with Python csv.writer(quoting=csv.QUOTE_ALL), after
-	// applying plane.utils.csv_utils.sanitize_csv_row to the data row.
-	want := "\"Actor name\",\"Issue ID\",\"Project\",\"Created at\",\"Updated at\",\"Action\",\"Field\",\"Old value\",\"New value\"\r\n\"Zoë \"\"A\"\"\",\"P-1\",\"'=SUM(A1)\",\"2026-10-22 01:00:00.120000+00:00\",\"\",\"updated\",\"description\",\"line one\nline two\",\"'@formula\"\r\n"
+	// Quote every cell, double embedded quotes, and neutralize formula prefixes.
+	want := "\"Actor name\",\"Issue ID\",\"Project\",\"Created at\",\"Updated at\",\"Action\",\"Field\",\"Old value\",\"New value\"\r\n\"Zoë \"\"A\"\"\",\"P-1\",\"'=SUM(A1)\",\"2026-10-22T01:00:00.12Z\",\"\",\"updated\",\"description\",\"line one\nline two\",\"'@formula\"\r\n"
 	if got != want {
 		t.Fatalf("CSV = %q, want %q", got, want)
 	}

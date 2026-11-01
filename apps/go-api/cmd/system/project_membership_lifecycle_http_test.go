@@ -12,7 +12,7 @@ import (
 	"testing"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
+	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/activity_reads"
 	system "github.com/CaliLuke/go-plane/gen/system"
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"

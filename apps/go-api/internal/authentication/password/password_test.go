@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestVerifyPythonGeneratedDjangoPBKDF2SHA256Vector(t *testing.T) {
+func TestVerifyPBKDF2SHA256KnownAnswer(t *testing.T) {
 	hasher, err := New(1000)
 	if err != nil {
 		t.Fatal(err)
@@ -22,7 +22,7 @@ func TestVerifyPythonGeneratedDjangoPBKDF2SHA256Vector(t *testing.T) {
 	}
 }
 
-func TestEncodeProducesDjangoCompatibleHash(t *testing.T) {
+func TestEncodeProducesSaltedPBKDF2Hash(t *testing.T) {
 	hasher, err := New(1000)
 	if err != nil {
 		t.Fatal(err)
@@ -33,7 +33,7 @@ func TestEncodeProducesDjangoCompatibleHash(t *testing.T) {
 	}
 	parts := strings.Split(encoded, "$")
 	if len(parts) != 4 || parts[0] != Algorithm || parts[1] != "1000" {
-		t.Fatalf("encoded hash has invalid Django structure: %q", encoded)
+		t.Fatalf("encoded hash has invalid password-hash structure: %q", encoded)
 	}
 	if len(parts[2]) != SaltLength {
 		t.Fatalf("salt length=%d, want %d", len(parts[2]), SaltLength)
@@ -49,7 +49,7 @@ func TestEncodeProducesDjangoCompatibleHash(t *testing.T) {
 	}
 }
 
-func TestVerifyRejectsMalformedDjangoHashes(t *testing.T) {
+func TestVerifyRejectsMalformedHashes(t *testing.T) {
 	hasher := Default()
 	for _, encoded := range []string{
 		"",

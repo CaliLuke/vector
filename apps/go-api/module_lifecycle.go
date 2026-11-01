@@ -10,11 +10,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/browsersession"
 	store "github.com/CaliLuke/go-plane/internal/modulereads"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	api "github.com/CaliLuke/go-plane/modulelifecycle/gen/module_lifecycle_api"
 	"github.com/CaliLuke/loom/clue/log"
@@ -170,7 +171,7 @@ func (s *moduleLifecycleService) APIKeyAuth(ctx context.Context, credential stri
 			effects.Authenticated = true
 		}
 		return context.WithValue(ctx, moduleLifecyclePrincipalKey{}, moduleLifecyclePrincipal{userID: p.UserID, timezone: p.Timezone, key: credential, apiKey: true}), nil
-	case "PlaneSessionCookie", "SessionAuth", "DjangoSessionCookie":
+	case "PlaneSessionCookie", "SessionAuth":
 		if id, zone, inspected := readServiceSessionPrincipal(ctx); inspected {
 			parsed, err := uuid.Parse(id)
 			if err != nil {
@@ -487,9 +488,9 @@ func (s *moduleLifecycleService) archive(ctx context.Context, slug, project, id 
 		return nil, moduleLifecycleRepoError(ctx, err, !app)
 	}
 	if !archive {
-		return &api.RestFrameworkSerializersArchiveresponseResponse{ArchivedAt: api.PlanePythonDateTimeString("")}, nil
+		return &api.RestFrameworkSerializersArchiveresponseResponse{ArchivedAt: api.VectorTimestamp("")}, nil
 	}
-	return &api.RestFrameworkSerializersArchiveresponseResponse{ArchivedAt: api.PlanePythonDateTimeString(pythoncompat.PythonDateTimeString(t))}, nil
+	return &api.RestFrameworkSerializersArchiveresponseResponse{ArchivedAt: api.VectorTimestamp(datetime.Format(t, time.UTC))}, nil
 }
 func (s *moduleLifecycleService) deleteModule(ctx context.Context, slug, project, id string, apiV1 bool) error {
 	p, err := moduleLifecycleActor(ctx)

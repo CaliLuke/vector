@@ -7,13 +7,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDateTimeInputPreservesDjangoISOForms(t *testing.T) {
+func TestDateTimeInputPreservesNativeInstantsAndCalendarValues(t *testing.T) {
 	for _, tc := range []struct{ input, zone, instant string }{
 		{"2026-10-10T12:30", "UTC", "2026-10-10T12:30:00Z"},
-		{"2026-10-10T12:30Z", "UTC", "2026-10-10T12:30:00Z"},
-		{"2026-10-10T12:30:00+0530", "UTC", "2026-10-10T07:00:00Z"},
-		{"20261010T1230Z", "UTC", "2026-10-10T12:30:00Z"},
-		{"2026-W41-6T12:30:00Z", "UTC", "2026-10-10T12:30:00Z"},
+		{"2026-10-10T12:30:00Z", "UTC", "2026-10-10T12:30:00Z"},
+		{"2026-10-10T12:30:00+05:30", "UTC", "2026-10-10T07:00:00Z"},
 		{"2026-10-10T12:30", "America/New_York", "2026-10-10T16:30:00Z"},
 		{"2026-10-10", "America/New_York", "2026-10-10T04:00:00Z"},
 		{"2026-10-10T12:30:00.123456789Z", "UTC", "2026-10-10T12:30:00.123456Z"},
@@ -33,8 +31,8 @@ func TestDateTimeInputPreservesDjangoISOForms(t *testing.T) {
 	}
 }
 
-func TestDateTimeInputRejectsInvalidDjangoForms(t *testing.T) {
-	for _, input := range []string{"", "2026-02-30T12:30", "2026-10-10T12:30garbage", "2026-10-10T24:00Z", "2026-W54-1T12:30Z"} {
+func TestDateTimeInputRejectsInvalidAndLegacySpellings(t *testing.T) {
+	for _, input := range []string{"20261010T1230Z", "2026-W41-6T12:30:00Z", "2026-1-2T3:4Z", "2026-10-10T12:30Z", "2026-10-10T12:30:00+0530", "", "2026-02-30T12:30", "2026-10-10T12:30garbage", "2026-10-10T24:00Z", "2026-W54-1T12:30Z"} {
 		if got, err := parseQueryDateTime(input, "UTC"); err == nil {
 			t.Errorf("invalid input %q accepted as %q", input, got)
 		}

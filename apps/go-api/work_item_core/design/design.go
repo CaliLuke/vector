@@ -3009,18 +3009,6 @@ var ImportedAPIKeyAuthSecurity = APIKeySecurity("ApiKeyAuth", func() {
 	Description("Plane API token authentication.")
 })
 
-var ImportedDjangoCsrfCookieSecurity = APIKeySecurity("DjangoCsrfCookie", func() {
-	Description("Django CSRF cookie for unsafe standard-session requests.")
-})
-
-var ImportedDjangoCsrfHeaderSecurity = APIKeySecurity("DjangoCsrfHeader", func() {
-	Description("Django CSRF header for unsafe standard-session requests.")
-})
-
-var ImportedDjangoSessionCookieSecurity = APIKeySecurity("DjangoSessionCookie", func() {
-	Description("Standard Django session authentication.")
-})
-
 var ImportedPlaneAdminSessionCookieSecurity = APIKeySecurity("PlaneAdminSessionCookie", func() {
 	Description("Plane instance-administration session authentication without CSRF enforcement.")
 })
@@ -3029,8 +3017,8 @@ var ImportedPlaneSessionCookieSecurity = APIKeySecurity("PlaneSessionCookie", fu
 	Description("Plane session authentication without CSRF enforcement.")
 })
 
-var _ = API("Plane Internal Django Migration API", func() {
-	Title("Plane Internal Django Migration API")
+var _ = API("Vector API", func() {
+	Title("Vector API")
 	Description("Internal full-server migration schema. Route inventory and behavior fixtures remain authoritative. This artifact does not change the public /api/v1 schema.")
 	Version("1.0.0")
 	Meta("openapi:example", "false")

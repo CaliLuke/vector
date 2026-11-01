@@ -8,8 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	"github.com/CaliLuke/go-plane/internal/apicontract"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/google/uuid"
 )
@@ -82,7 +83,7 @@ func legacyWritableFields(raw map[string]string) (map[string]any, error) {
 			}
 			parsed, err := time.Parse("2006-01-02", trimmed)
 			if err != nil {
-				parsed, err = pythoncompat.DjangoDateTime(trimmed, time.UTC)
+				parsed, err = datetime.Parse(trimmed, time.UTC)
 			}
 			if err != nil {
 				errorsByField[name] = []string{"Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."}

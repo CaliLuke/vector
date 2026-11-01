@@ -514,21 +514,21 @@
     },
     {
       "file": "apps/go-api/instance_management.go",
-      "line": 442,
+      "line": 443,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/instance_management.go",
-      "line": 476,
+      "line": 477,
       "column": 8,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/instance_management.go",
-      "line": 664,
+      "line": 665,
       "column": 3,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
@@ -899,14 +899,14 @@
     },
     {
       "file": "apps/go-api/internal/instancemanagement/repository.go",
-      "line": 263,
+      "line": 264,
       "column": 3,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/instancemanagement/repository.go",
-      "line": 1025,
+      "line": 1026,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
@@ -1221,21 +1221,21 @@
     },
     {
       "file": "apps/go-api/internal/workitems/lifecycle.go",
-      "line": 187,
+      "line": 189,
       "column": 12,
       "message": "Error return value of `time.LoadLocation` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/workitems/lifecycle.go",
-      "line": 265,
+      "line": 267,
       "column": 10,
       "message": "Error return value of `pythoncompat.Dumps` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/workitems/lifecycle.go",
-      "line": 266,
+      "line": 268,
       "column": 14,
       "message": "Error return value of `pythoncompat.Dumps` is not checked",
       "also_in_configured_audit": false
@@ -1333,7 +1333,7 @@
     },
     {
       "file": "apps/go-api/module_lifecycle.go",
-      "line": 74,
+      "line": 75,
       "column": 12,
       "message": "Error return value of `loom.JSONValueFrom` is not checked",
       "also_in_configured_audit": false

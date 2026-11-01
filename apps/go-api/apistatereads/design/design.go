@@ -119,18 +119,6 @@ var ImportedAPIKeyAuthSecurity = APIKeySecurity("ApiKeyAuth", func() {
 	Description("Plane API token authentication.")
 })
 
-var ImportedDjangoCsrfCookieSecurity = APIKeySecurity("DjangoCsrfCookie", func() {
-	Description("Django CSRF cookie for unsafe standard-session requests.")
-})
-
-var ImportedDjangoCsrfHeaderSecurity = APIKeySecurity("DjangoCsrfHeader", func() {
-	Description("Django CSRF header for unsafe standard-session requests.")
-})
-
-var ImportedDjangoSessionCookieSecurity = APIKeySecurity("DjangoSessionCookie", func() {
-	Description("Standard Django session authentication.")
-})
-
 var ImportedPlaneAdminSessionCookieSecurity = APIKeySecurity("PlaneAdminSessionCookie", func() {
 	Description("Plane instance-administration session authentication without CSRF enforcement.")
 })
@@ -375,7 +363,7 @@ var _ = Service("APIStateReads", func() {
 			Attribute("expand", String, func() { Meta("openapi:allowEmptyValue", "false") })
 			Attribute("fields", String, func() { Meta("openapi:allowEmptyValue", "false") })
 			Attribute("perPage", String, func() {
-				Description("Pagination input interpreted by Django-compatible pagination (default and maximum: 1000)")
+				Description("Page size from 1 to 1000 (default: 1000)")
 				Meta("openapi:allowEmptyValue", "false")
 				Meta("openapi:format", "")
 			})

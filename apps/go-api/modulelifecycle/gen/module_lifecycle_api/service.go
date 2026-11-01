@@ -366,8 +366,6 @@ type PlaneAppSerializersModuleModulewriteserializerResponse struct {
 	Workspace       string                        `json:"workspace"`
 }
 
-type PlanePythonDateTimeString string
-
 // PostAPIV1WorkspacesBySlugProjectsByProjectIDModulesByPkArchivePayload is the
 // payload type of the ModuleLifecycleAPI service
 // PostAPIV1WorkspacesBySlugProjectsByProjectIDModulesByPkArchive method.
@@ -467,8 +465,10 @@ type PutAPIWorkspacesBySlugProjectsByProjectIDModulesByPkPayload struct {
 // ModuleLifecycleAPI service
 // PostAPIWorkspacesBySlugProjectsByProjectIDArchivedModules method.
 type RestFrameworkSerializersArchiveresponseResponse struct {
-	ArchivedAt PlanePythonDateTimeString `json:"archived_at"`
+	ArchivedAt VectorTimestamp `json:"archived_at"`
 }
+
+type VectorTimestamp string
 
 // Error returns an error description.
 func (e *ModuleLifecycleError) Error() string {

@@ -5,7 +5,7 @@ package main
 import (
 	"net/http"
 
-	assetslifecyclesvr "github.com/CaliLuke/go-plane/assetslifecycle/gen/http/plane_internal_django_migration_api/server"
+	assetslifecyclesvr "github.com/CaliLuke/go-plane/assetslifecycle/gen/http/assets_lifecycle/server"
 	loomhttp "github.com/CaliLuke/loom/http"
 )
 

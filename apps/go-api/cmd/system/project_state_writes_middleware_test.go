@@ -15,7 +15,7 @@ import (
 	"uuid"
 
 	systemapi "github.com/CaliLuke/go-plane"
-	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
+	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/activity_reads"
 	api "github.com/CaliLuke/go-plane/apistatereads/gen/api_state_reads"
 	statesapi "github.com/CaliLuke/go-plane/gen/project_state_reads"
 	"github.com/CaliLuke/go-plane/gen/system"

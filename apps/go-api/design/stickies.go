@@ -3,10 +3,10 @@ package design
 import . "github.com/CaliLuke/loom/dsl"
 
 var planeSessionCookie = APIKeySecurity("plane_session_cookie", func() {
-	Description("Plane Django session cookie.")
+	Description("Vector browser session cookie.")
 })
 
-var planeDjangoSession = SessionAuth("plane_django_session", func() {
+var browserSession = SessionAuth("vector_browser_session", func() {
 	CookieTransport(planeSessionCookie, "", func() {
 		CookieName("session-id")
 	})

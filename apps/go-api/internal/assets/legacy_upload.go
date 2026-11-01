@@ -8,7 +8,7 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
-	api "github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
+	api "github.com/CaliLuke/go-plane/assetslifecycle/gen/assets_lifecycle"
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/google/uuid"
 )

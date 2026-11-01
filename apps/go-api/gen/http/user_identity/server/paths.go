@@ -3,7 +3,7 @@
 // HTTP request path constructors for the user_identity service.
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/design --output .
+// $ loom gen github.com/CaliLuke/go-plane/design --output ..
 
 package server
 

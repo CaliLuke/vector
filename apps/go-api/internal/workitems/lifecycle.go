@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	dbutil "github.com/CaliLuke/go-plane/internal/database"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
@@ -188,7 +190,7 @@ func parseQueryDateTime(raw, zone string) (string, error) {
 	if location == nil {
 		location = time.UTC
 	}
-	if value, err := pythoncompat.DjangoDateTime(raw, location); err == nil {
+	if value, err := datetime.Parse(raw, location); err == nil {
 		if local := value.In(location); local.Year() >= 1 && local.Year() <= 9999 {
 			return local.Format(time.RFC3339Nano), nil
 		}

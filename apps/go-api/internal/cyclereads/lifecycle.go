@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/datetime"
+
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
@@ -340,7 +342,7 @@ func parseCycleDateTime(value, zone string) (*time.Time, error) {
 	if err != nil {
 		return nil, err
 	}
-	parsed, err := pythoncompat.DjangoDateTime(value, location)
+	parsed, err := datetime.Parse(value, location)
 	if err != nil {
 		return nil, err
 	}
@@ -817,7 +819,7 @@ func parseCycleDate(value *string, zone string, start bool) (*time.Time, error) 
 		var location *time.Location
 		location, err = time.LoadLocation(zone)
 		if err == nil {
-			parsed, err = pythoncompat.DjangoDateTime(*value, location)
+			parsed, err = datetime.Parse(*value, location)
 		}
 	}
 	if err != nil {

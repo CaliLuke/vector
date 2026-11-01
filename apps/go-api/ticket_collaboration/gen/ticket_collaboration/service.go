@@ -341,7 +341,7 @@ type Authorizer interface {
 }
 
 // APIName is the name of the API as defined in the design.
-const APIName = "Plane Internal Django Migration API"
+const APIName = "Vector API"
 
 // APIVersion is the version of the API as defined in the design.
 const APIVersion = "1.0.0"

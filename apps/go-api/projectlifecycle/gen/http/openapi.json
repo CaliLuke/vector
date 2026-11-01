@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.1",
   "info": {
-    "title": "Plane Internal Django Migration API",
+    "title": "Vector API",
     "description": "Internal full-server migration schema. Route inventory and behavior fixtures remain authoritative. This artifact does not change the public /api/v1 schema.",
     "version": "1.0.0"
   },
@@ -9,7 +9,7 @@
   "servers": [
     {
       "url": "http://localhost:80",
-      "description": "Default server for Plane Internal Django Migration API"
+      "description": "Default server for Vector API"
     }
   ],
   "paths": {

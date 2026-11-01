@@ -3,7 +3,7 @@
 // HTTP request path constructors for the last_visited_workspace service.
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/design --output .
+// $ loom gen github.com/CaliLuke/go-plane/design --output ..
 
 package server
 
