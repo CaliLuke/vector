@@ -101,25 +101,50 @@ The Colima gateway workaround is removed. The proxy integration suite passes
 with the pinned version and the existing readiness deadlines. Replace both pins
 with a tagged release that contains this commit when one is available.
 
-Colima also forwards published container ports to macOS. Its SSH forwarder can
-leave a port unreachable after a temporary native port collision
-([Colima #1660](https://github.com/abiosoft/colima/issues/1660)). Use a separate,
-directly reachable test VM to avoid that forwarding path. These commands use `jq`:
+Colima's reachable VM address can intermittently lose TCP connection attempts
+under connection churn ([Colima #1664](https://github.com/abiosoft/colima/issues/1664)).
+Use a dedicated test VM with SSH forwarding. A transient native port collision
+can also leave an SSH-forwarded port unreachable
+([Colima #1660](https://github.com/abiosoft/colima/issues/1660)). Reserve a guest
+publish range outside macOS's ephemeral client-port range to avoid those
+collisions. The range below assumes the macOS range starts at 49152; check it with
+`sysctl net.inet.ip.portrange.first net.inet.ip.portrange.last`.
+
+For one-time setup, create and stop the dedicated profile:
 
 ```sh
-colima start vector-mcp-tests --cpu 2 --memory 3 --disk 15 --network-address --port-forwarder none --activate=false
+colima start vector-mcp-tests --cpu 2 --memory 3 --disk 15 --port-forwarder ssh --activate=false
+colima stop --profile vector-mcp-tests
+```
+
+Merge this provision into `~/.colima/vector-mcp-tests/colima.yaml`. Keep any other
+provisions. It sets the guest range before Docker starts:
+
+```yaml
+provision:
+  - mode: after-boot
+    script: sudo sysctl -w 'net.ipv4.ip_local_port_range=20000 29999'
+```
+
+Start the configured VM and run checks. Use this block for subsequent runs too:
+
+```sh
+colima start --profile vector-mcp-tests --activate=false
 export DOCKER_HOST="unix://$HOME/.colima/vector-mcp-tests/docker.sock"
-export TESTCONTAINERS_HOST_OVERRIDE="$(colima status vector-mcp-tests --json | jq -er .ip_address)"
+export TESTCONTAINERS_HOST_OVERRIDE=127.0.0.1
+export LIVE_TEST_REDIS_BIND_HOST=127.0.0.1
 source scripts/dev-env.sh
 ./check.sh --go --full
 ```
 
-Use those exports in the shell that runs Git hooks too. The default VM and Docker
-context stay unchanged. Unset both variables before returning to the application's
-default development stack; stop the test VM with `colima stop vector-mcp-tests`
-when it is no longer needed. The separate test route can become optional once
-upstream forwarding recovery is fixed and the transient-collision reproduction
-passes. Keep the existing readiness deadlines and resource-reaper cleanup.
+Use those exports in the shell that runs Git hooks too. Keep native services out
+of ports 20000–29999 while this VM runs. The default VM and Docker context stay
+unchanged. Unset all three variables before returning to the application's
+default stack. Stop the test VM with `colima stop --profile vector-mcp-tests` when
+it is no longer needed. Revisit this route when the direct-address reproduction
+passes after an upstream fix. Remove the range constraint when upstream
+forwarding also recovers from transient port collisions. Preserve fixture
+readiness deadlines and resource-reaper cleanup.
 
 Ryuk remains enabled. `scripts/dev-env.sh` defaults its reconnection grace to
 30 minutes to cover idle gaps between package test binaries while
