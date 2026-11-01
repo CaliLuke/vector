@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/CaliLuke/go-plane/internal/mcpauth"
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
 	loom "github.com/CaliLuke/loom/pkg"
@@ -61,14 +61,13 @@ func (s *Service) Intake(ctx context.Context, input *api.IntakeRequest) (loom.Nu
 	if err != nil {
 		return loom.Nullable[api.IntakeResult]{}, err
 	}
-	actor, _ := mcpauth.PrincipalFromContext(ctx)
 	var record *api.IntakeRecord
 	if selected.Action != "delete" {
 		var row map[string]any
 		if json.Unmarshal(value.Record, &row) != nil {
 			return loom.Nullable[api.IntakeResult]{}, workitemResultError()
 		}
-		record, err = projectIntakeRecord(row, actor.Timezone)
+		record, err = projectIntakeRecord(row)
 		if err != nil {
 			return loom.Nullable[api.IntakeResult]{}, err
 		}
@@ -126,7 +125,8 @@ func (s *Service) readIntake(ctx context.Context, in intakeInput) (loom.Nullable
 		if !ok {
 			return loom.Nullable[api.IntakeResult]{}, workitemResultError()
 		}
-		record, projectIntakeRecordErr := projectIntakeRecord(row, actor.Timezone)
+		djangoapi.Timestamps(row, actor.Timezone)
+		record, projectIntakeRecordErr := projectIntakeRecord(row)
 		return loom.NullableValue(api.NewIntakeResultIntakeRecord(record)), projectIntakeRecordErr
 	}
 	var page map[string]any
@@ -144,7 +144,8 @@ func (s *Service) readIntake(ctx context.Context, in intakeInput) (loom.Nullable
 		if !ok {
 			return loom.Nullable[api.IntakeResult]{}, workitemResultError()
 		}
-		record, projectIntakeRecordErr2 := projectIntakeRecord(row, actor.Timezone)
+		djangoapi.Timestamps(row, actor.Timezone)
+		record, projectIntakeRecordErr2 := projectIntakeRecord(row)
 		if projectIntakeRecordErr2 != nil {
 			return loom.Nullable[api.IntakeResult]{}, projectIntakeRecordErr2
 		}
@@ -158,17 +159,17 @@ func (s *Service) readIntake(ctx context.Context, in intakeInput) (loom.Nullable
 	return loom.NullableValue(api.NewIntakeResultIntakePage(projected)), nil
 }
 
-func projectIntakeRecord(row map[string]any, timezone string) (*api.IntakeRecord, error) {
+func projectIntakeRecord(row map[string]any) (*api.IntakeRecord, error) {
 	if row == nil {
 		return nil, workitemResultError()
 	}
 	if nested, ok := row["issue_detail"].(map[string]any); ok {
-		record, err := workitemReadProjection(projectNestedTimestamps(nested, timezone), false)
+		record, err := workitemReadProjection(nested, false)
 		if err != nil {
 			return nil, err
 		}
 		row["issue_detail"] = record
 	}
 	record := &api.IntakeRecord{}
-	return record, decodeWorkitemProjection(projectNestedTimestamps(row, timezone), record)
+	return record, decodeWorkitemProjection(row, record)
 }

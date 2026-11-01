@@ -20,6 +20,16 @@ The caller supplies the normalized, typed domain input after defaults, preservin
 
 The result must be valid JSON containing only data safe for an authorized replay. PostgreSQL stores that result with the mutation and returns the same JSON representation on the initial call and replay. Serialize user-dependent timestamps before storing the receipt: a later timezone change must not change the accepted result. Property definitions, options, and scalar or multi-value writes use this boundary. Receipts written before this serialization fix retain their stored JSON; their original display timezone was not recorded and cannot be reconstructed reliably.
 
+Release, release-tag, initiative, page, collection, relation, and intake writers
+also serialize display timestamps before receipt storage. Timezone preferences
+are excluded from normalized request identity. Replay returns the stored result
+without applying the caller's current timezone. Ordinary reads still use the
+current preference. Audit and durable-effect snapshots retain their native
+representation. The [catalogue receipt regressions](../apps/go-api/internal/mcpactions/catalogue_receipt_timezone_integration_test.go)
+cover timezone changes across 17 mutation scenarios under both protocols and
+credentials. They also verify that release descriptions retain opaque JSON
+values while modeled timestamps use the caller's timezone.
+
 The receipt advertises its database-generated `replay_expires_at`, currently 48 hours after the receipt is written, above the required 24-hour minimum. Cleanup runs daily at 03:45 UTC through the existing durable scheduler, in batches of at most 500 rows. It compares expiry against both the fixed run cutoff and current database time, so even a future cutoff cannot remove an unexpired receipt. Row locks are skipped while another transaction replays or renews a receipt; renewed receipts remain eligible for their full advertised lifetime.
 
 Without `request_id`, the operation uses the same transaction and authorization path but stores no receipt and returns no replay expiry. It is never retried automatically.

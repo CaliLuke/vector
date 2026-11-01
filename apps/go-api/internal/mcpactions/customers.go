@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/customers"
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	api "github.com/CaliLuke/go-plane/mcp/gen/vector_mcp"
@@ -239,7 +240,7 @@ func (s *Service) customerOperation(ctx context.Context, tool string, input inte
 	if json.Unmarshal(raw, &value) != nil {
 		return nil, workitemResultError()
 	}
-	return json.Marshal(projectNestedTimestamps(value, actor.Timezone))
+	return json.Marshal(djangoapi.Timestamps(value, actor.Timezone))
 }
 func (s *Service) mutateCustomer(ctx context.Context, actor mcpauth.Principal, selector *string, cmd customers.Command) (value projectmutations.Result, err error) {
 	start := time.Now()

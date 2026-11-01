@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/workitemtypes"
@@ -99,7 +100,7 @@ func projectPropertyResult(raw json.RawMessage, action, timezone string) (loom.N
 	if json.Unmarshal(raw, &data) != nil {
 		return loom.Nullable[api.WorkitemPropertyResult]{}, workitemResultError()
 	}
-	data = projectNestedTimestamps(data, timezone)
+	data = djangoapi.Timestamps(data, timezone)
 	var result api.WorkitemPropertyResult
 	var err error
 	switch action {

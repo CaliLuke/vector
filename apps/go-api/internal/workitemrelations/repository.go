@@ -35,6 +35,7 @@ type Changes struct {
 }
 type Command struct {
 	Query
+	Timezone                      string
 	DefinitionID, RelatedID       uuid.UUID
 	Targets                       []uuid.UUID
 	RelationType, DefinitionLabel string

@@ -22,6 +22,7 @@ type PageAPIQuery struct {
 }
 type PageAPICommand struct {
 	PageAPIQuery
+	Timezone         string
 	Fields           map[string]any
 	PageIDs          []uuid.UUID
 	RequestID        *uuid.UUID

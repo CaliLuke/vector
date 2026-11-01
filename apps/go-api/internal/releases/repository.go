@@ -28,6 +28,7 @@ type Query struct {
 }
 type Command struct {
 	Query
+	Timezone         string
 	Fields           map[string]any
 	Add, Remove      []uuid.UUID
 	RequestID        *uuid.UUID

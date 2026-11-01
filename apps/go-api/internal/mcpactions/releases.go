@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/CaliLuke/go-plane/internal/releases"
@@ -167,6 +168,7 @@ func (s *Service) releaseOperation(ctx context.Context, tool string, input inter
 		return nil, err
 	}
 	cmd.ActorID, cmd.WorkspaceID, cmd.WorkspaceSlug = actor.UserID, actor.WorkspaceID, actor.WorkspaceSlug
+	cmd.Timezone = actor.Timezone
 	var raw json.RawMessage
 	if !write {
 		raw, err = s.releases.Read(ctx, cmd.Query)
@@ -194,11 +196,15 @@ func (s *Service) releaseOperation(ctx context.Context, tool string, input inter
 	if err != nil {
 		return nil, archiveResourceError(err)
 	}
+	if write && (in.Request != nil || in.Revision != nil) {
+		return raw, nil
+	}
+
 	var value any
 	if json.Unmarshal(raw, &value) != nil {
 		return nil, workitemResultError()
 	}
-	return json.Marshal(projectNestedTimestamps(value, actor.Timezone))
+	return json.Marshal(djangoapi.Timestamps(value, actor.Timezone))
 }
 func (s *Service) mutateRelease(ctx context.Context, actor mcpauth.Principal, selector *string, cmd releases.Command) (projectmutations.Result, error) {
 	cmd.Revalidate = mutationRevalidator(actor, selector, true)

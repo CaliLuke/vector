@@ -6,6 +6,7 @@ import (
 	"errors"
 	"strconv"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/initiatives"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
@@ -98,6 +99,7 @@ func (s *Service) initiativeOperation(ctx context.Context, input *api.Initiative
 		return nil, err
 	}
 	cmd.ActorID, cmd.WorkspaceID, cmd.WorkspaceSlug = actor.UserID, actor.WorkspaceID, actor.WorkspaceSlug
+	cmd.Timezone = actor.Timezone
 	var raw json.RawMessage
 	if !write {
 		raw, err = s.initiatives.Read(ctx, cmd.Query)
@@ -114,11 +116,15 @@ func (s *Service) initiativeOperation(ctx context.Context, input *api.Initiative
 	if err != nil {
 		return nil, archiveResourceError(err)
 	}
+	if write && (in.Request != nil || in.Revision != nil) {
+		return raw, nil
+	}
+
 	var body any
 	if json.Unmarshal(raw, &body) != nil {
 		return nil, workitemResultError()
 	}
-	body = projectNestedTimestamps(body, actor.Timezone)
+	body = djangoapi.Timestamps(body, actor.Timezone)
 	if in.Action == "list_projects" || in.Action == "list_workitems" {
 		page, ok := body.(map[string]any)
 		if !ok {

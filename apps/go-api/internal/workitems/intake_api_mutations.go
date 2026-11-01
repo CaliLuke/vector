@@ -106,7 +106,7 @@ func (r *Repository) MutateIntake(ctx context.Context, cmd projectmutations.Comm
 				if rowErr != nil {
 					return nil, rowErr
 				}
-				record, rowErr = json.Marshal(projected)
+				record, rowErr = json.Marshal(djangoapi.Timestamps(projected, cmd.Timezone))
 				if rowErr != nil {
 					return nil, rowErr
 				}

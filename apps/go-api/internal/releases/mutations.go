@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mutationreceipts"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
 	"github.com/google/uuid"
@@ -91,7 +92,7 @@ func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.R
 			if operationErr = tx.QueryRow(ctx, `SELECT revision FROM release_revisions WHERE workspace_id=$1`, in.WorkspaceID).Scan(&revision); operationErr != nil {
 				return nil, operationErr
 			}
-			raw, operationErr := json.Marshal(after)
+			raw, operationErr := json.Marshal(djangoapi.Timestamps(after, in.Timezone))
 			if operationErr != nil {
 				return nil, operationErr
 			}

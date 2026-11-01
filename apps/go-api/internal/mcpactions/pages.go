@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/mcpauth"
 	"github.com/CaliLuke/go-plane/internal/pagereads"
 	"github.com/CaliLuke/go-plane/internal/projectmutations"
@@ -163,6 +164,7 @@ func (s *Service) pageOperation(ctx context.Context, tool string, input interfac
 		return nil, err
 	}
 	cmd.ActorID, cmd.WorkspaceID, cmd.WorkspaceSlug = actor.UserID, actor.WorkspaceID, actor.WorkspaceSlug
+	cmd.Timezone = actor.Timezone
 	var raw json.RawMessage
 	if !write {
 		raw, err = s.pages.ReadPageAPI(ctx, cmd.PageAPIQuery)
@@ -190,6 +192,10 @@ func (s *Service) pageOperation(ctx context.Context, tool string, input interfac
 	if err != nil {
 		return nil, pageOperationError(err)
 	}
+	if write && (in.Request != nil || in.Revision != nil) {
+		return raw, nil
+	}
+
 	var body any
 	if json.Unmarshal(raw, &body) != nil {
 		return nil, workitemResultError()
@@ -207,7 +213,7 @@ func (s *Service) pageOperation(ctx context.Context, tool string, input interfac
 			}
 		}
 	}
-	return json.Marshal(projectNestedTimestamps(body, actor.Timezone))
+	return json.Marshal(djangoapi.Timestamps(body, actor.Timezone))
 }
 func (s *Service) mutatePage(ctx context.Context, actor mcpauth.Principal, selector *string, cmd pagereads.PageAPICommand) (projectmutations.Result, error) {
 	cmd.Revalidate = mutationRevalidator(actor, selector, true)

@@ -213,6 +213,10 @@ func (r *Repository) Mutate(ctx context.Context, in Command) (projectmutations.R
 			if err = tx.QueryRow(ctx, `SELECT revision FROM initiative_revisions WHERE workspace_id=$1`, in.WorkspaceID).Scan(&rev); err != nil {
 				return nil, err
 			}
+			current, err = djangoapi.JSONTimestamps(current, in.Timezone)
+			if err != nil {
+				return nil, err
+			}
 			return json.Marshal(projectmutations.Result{ID: id.String(), Revision: token(in.WorkspaceID, rev), Record: current})
 		},
 	})

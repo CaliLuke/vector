@@ -1,7 +1,7 @@
 {
   "version": 1,
   "catalog_id": "ERR-02",
-  "audit_date": "2026-10-31",
+  "audit_date": "2026-11-01",
   "tool": "golangci-lint 2.15.0 (Go 1.27.3)",
   "configuration": "Repository apps/go-api/.golangci.yml in the same Git revision as this inventory; add linters.settings.errcheck.check-blank=true and select --enable-only errcheck. Existing integration tags, test inclusion, generated-source exclusions and timeout retained.",
   "config_sha256": "50339d0f8ed7faa84b429fe70809295206325867ceea67a2b2843b2db32c2633",
@@ -2327,7 +2327,7 @@
     },
     {
       "file": "apps/go-api/internal/initiatives/mutations.go",
-      "line": 252,
+      "line": 256,
       "column": 7,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
@@ -3111,14 +3111,14 @@
     },
     {
       "file": "apps/go-api/internal/pagereads/api_mutations.go",
-      "line": 326,
+      "line": 327,
       "column": 9,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/pagereads/api_mutations.go",
-      "line": 327,
+      "line": 328,
       "column": 13,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
@@ -4021,14 +4021,14 @@
     },
     {
       "file": "apps/go-api/internal/releases/mutations.go",
-      "line": 85,
+      "line": 86,
       "column": 10,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/internal/releases/mutations.go",
-      "line": 86,
+      "line": 87,
       "column": 14,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false

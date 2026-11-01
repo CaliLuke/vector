@@ -31,6 +31,7 @@ func (s *Service) WorkitemRelation(ctx context.Context, input *api.WorkitemRelat
 		return result, err
 	}
 	in.command.ActorID, in.command.WorkspaceID, in.command.WorkspaceSlug = actor.UserID, actor.WorkspaceID, actor.WorkspaceSlug
+	in.command.Timezone = actor.Timezone
 	var raw json.RawMessage
 	if !write {
 		raw, err = s.relations.Read(ctx, in.command.Query)
@@ -45,7 +46,7 @@ func (s *Service) WorkitemRelation(ctx context.Context, input *api.WorkitemRelat
 					if json.Unmarshal(value.Record, &projected) != nil {
 						return result, workitemResultError()
 					}
-					if err = decodeWorkitemProjection(projectNestedTimestamps(projected, actor.Timezone), &receipt.Result); err != nil {
+					if err = decodeWorkitemProjection(projected, &receipt.Result); err != nil {
 						return result, err
 					}
 				}
@@ -96,26 +97,12 @@ func (s *Service) mutateRelation(ctx context.Context, actor mcpauth.Principal, i
 	}
 	return s.relations.Mutate(ctx, in.command)
 }
-func projectNestedTimestamps(value any, timezone string) any {
-	switch typed := value.(type) {
-	case map[string]any:
-		for key, child := range typed {
-			typed[key] = projectNestedTimestamps(child, timezone)
-		}
-		return djangoapi.Timestamps(typed, timezone)
-	case []any:
-		for index, child := range typed {
-			typed[index] = projectNestedTimestamps(child, timezone)
-		}
-	}
-	return value
-}
 func projectRelationResult(raw json.RawMessage, action, timezone string) (loom.Nullable[api.WorkitemRelationResult], error) {
 	var data any
 	if json.Unmarshal(raw, &data) != nil {
 		return loom.Nullable[api.WorkitemRelationResult]{}, workitemResultError()
 	}
-	encoded, err := json.Marshal(projectNestedTimestamps(data, timezone))
+	encoded, err := json.Marshal(djangoapi.Timestamps(data, timezone))
 	if err != nil {
 		return loom.Nullable[api.WorkitemRelationResult]{}, workitemResultError()
 	}
