@@ -172,9 +172,9 @@ func (service *invitationsMembershipService) AuthorizeInvitationsMembershipProto
 	data, _ := json.Marshal(generated)
 	var body map[string]any
 	_ = json.Unmarshal(data, &body)
-	var status int
+	status := http.StatusInternalServerError
 	if generated != nil {
-		_, _ = fmt.Sscanf(generated.Name, "status_%d", &status)
+		status = protocolErrorStatus(generated.Name)
 	}
 	return status, body
 }

@@ -89,7 +89,7 @@ func projectPublicationProtocolError(err error) (int, map[string]any) {
 	if !errors.As(err, &failure) {
 		return 500, map[string]any{"error": "Something went wrong please try again later"}
 	}
-	status, _ := strconv.Atoi(strings.TrimPrefix(failure.Name, "status_"))
+	status := protocolErrorStatus(failure.Name)
 	var body map[string]any
 	raw, _ := json.Marshal(failure.Body)
 	if json.Unmarshal(raw, &body) != nil || body == nil {

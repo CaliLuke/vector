@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strconv"
 	"strings"
 	"time"
 
@@ -419,7 +418,7 @@ func (s *projectLifecycleService) AuthorizeProjectLifecycleAPIProtocol(ctx conte
 	}
 	var response *api.ProjectLifecycleErrorIdentity
 	if errors.As(err, &response) {
-		status, _ := strconv.Atoi(strings.TrimPrefix(response.Kind, "status_"))
+		status := protocolErrorStatus(response.Kind)
 		raw, _ := json.Marshal(response.Body)
 		var body map[string]any
 		_ = json.Unmarshal(raw, &body)

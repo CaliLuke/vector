@@ -6,8 +6,6 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"strconv"
-	"strings"
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
@@ -112,13 +110,10 @@ func preferenceProtocolError(err error) (int, map[string]any) {
 	if !errors.As(err, &failure) {
 		return http.StatusInternalServerError, map[string]any{"detail": "Something went wrong please try again later"}
 	}
-	status, _ := strconv.Atoi(strings.TrimPrefix(failure.Name, "status_"))
+	status := protocolErrorStatus(failure.Name)
 	var body map[string]any
 	if json.Unmarshal([]byte(failure.Body), &body) != nil || body == nil {
 		body = map[string]any{}
-	}
-	if status == 0 {
-		status = http.StatusInternalServerError
 	}
 	return status, body
 }

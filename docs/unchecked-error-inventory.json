@@ -8,11 +8,11 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 299,
+    "findings": 273,
     "also_in_ERR_01": 0,
-    "additional_ERR_02": 299,
+    "additional_ERR_02": 273,
     "test_file_findings": 0,
-    "non_test_file_findings": 299
+    "non_test_file_findings": 273
   },
   "findings": [
     {
@@ -27,13 +27,6 @@
       "line": 469,
       "column": 3,
       "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/account_authentication.go",
-      "line": 472,
-      "column": 10,
-      "message": "Error return value of `strconv.Atoi` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -135,13 +128,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/api_project_membership_lifecycle.go",
-      "line": 288,
-      "column": 5,
-      "message": "Error return value of `fmt.Sscanf` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/api_state_reads.go",
       "line": 107,
       "column": 7,
@@ -165,34 +151,27 @@
     {
       "file": "apps/go-api/api_user_identity.go",
       "line": 121,
-      "column": 6,
-      "message": "Error return value of `fmt.Sscanf` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_user_identity.go",
-      "line": 122,
       "column": 8,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/api_user_identity.go",
-      "line": 124,
+      "line": 123,
       "column": 3,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/api_user_identity.go",
-      "line": 132,
+      "line": 131,
       "column": 7,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/api_user_identity.go",
-      "line": 133,
+      "line": 132,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
@@ -549,14 +528,7 @@
     },
     {
       "file": "apps/go-api/custom_view_creation.go",
-      "line": 93,
-      "column": 10,
-      "message": "Error return value of `strconv.Atoi` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/custom_view_creation.go",
-      "line": 95,
+      "line": 94,
       "column": 7,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
@@ -650,13 +622,6 @@
       "line": 382,
       "column": 3,
       "message": "Error return value of `body.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/external_integrations.go",
-      "line": 404,
-      "column": 11,
-      "message": "Error return value of `strconv.Atoi` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1507,48 +1472,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/internal/testsupport/postgres/pair.go",
-      "line": 61,
-      "column": 17,
-      "message": "Error return value of `connection.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/testsupport/postgres/pair.go",
-      "line": 78,
-      "column": 17,
-      "message": "Error return value of `connection.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/testsupport/postgres/pair.go",
-      "line": 92,
-      "column": 4,
-      "message": "Error return value of `pair.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/testsupport/postgres/pair.go",
-      "line": 127,
-      "column": 4,
-      "message": "Error return value of `testcontainers.TerminateContainer` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/testsupport/postgres/sql_fixture.go",
-      "line": 39,
-      "column": 18,
-      "message": "Error return value of `connection.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/testsupport/postgres/sql_fixture.go",
-      "line": 55,
-      "column": 21,
-      "message": "Error return value of `connection.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/internal/useraccountwrites/repository.go",
       "line": 258,
       "column": 2,
@@ -1781,13 +1704,6 @@
     },
     {
       "file": "apps/go-api/invitations_membership.go",
-      "line": 177,
-      "column": 6,
-      "message": "Error return value of `fmt.Sscanf` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/invitations_membership.go",
       "line": 236,
       "column": 8,
       "message": "Error return value of `json.Marshal` is not checked",
@@ -1836,22 +1752,8 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/project_configuration.go",
-      "line": 152,
-      "column": 11,
-      "message": "Error return value of `strconv.Atoi` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/project_intake_writes.go",
-      "line": 112,
-      "column": 10,
-      "message": "Error return value of `strconv.Atoi` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/project_intake_writes.go",
-      "line": 124,
+      "line": 120,
       "column": 11,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
@@ -1878,52 +1780,24 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/project_label_writes.go",
-      "line": 184,
-      "column": 6,
-      "message": "Error return value of `fmt.Sscanf` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/project_lifecycle.go",
       "line": 422,
-      "column": 11,
-      "message": "Error return value of `strconv.Atoi` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/project_lifecycle.go",
-      "line": 423,
       "column": 8,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/project_lifecycle.go",
-      "line": 425,
+      "line": 424,
       "column": 3,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/project_member_preferences.go",
-      "line": 115,
-      "column": 10,
-      "message": "Error return value of `strconv.Atoi` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/project_member_preferences.go",
-      "line": 131,
+      "line": 126,
       "column": 11,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/project_publication.go",
-      "line": 92,
-      "column": 10,
-      "message": "Error return value of `strconv.Atoi` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1938,13 +1812,6 @@
       "line": 358,
       "column": 3,
       "message": "Error return value of `body.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/ticket_collaboration.go",
-      "line": 106,
-      "column": 5,
-      "message": "Error return value of `fmt.Sscanf` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1970,23 +1837,9 @@
     },
     {
       "file": "apps/go-api/work_item_history.go",
-      "line": 123,
-      "column": 10,
-      "message": "Error return value of `strconv.Atoi` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/work_item_history.go",
-      "line": 125,
+      "line": 124,
       "column": 11,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_analytics.go",
-      "line": 93,
-      "column": 10,
-      "message": "Error return value of `strconv.Atoi` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1998,70 +1851,49 @@
     },
     {
       "file": "apps/go-api/workspace_exports.go",
-      "line": 83,
-      "column": 8,
-      "message": "Error return value of `strconv.Atoi` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_exports.go",
-      "line": 85,
+      "line": 84,
       "column": 5,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/workspace_exports.go",
-      "line": 179,
+      "line": 178,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/workspace_exports.go",
-      "line": 279,
+      "line": 278,
       "column": 3,
       "message": "Error return value of `body.Close` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/workspace_exports.go",
-      "line": 295,
+      "line": 294,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/workspace_lifecycle.go",
-      "line": 132,
-      "column": 10,
-      "message": "Error return value of `strconv.Atoi` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_lifecycle.go",
-      "line": 134,
+      "line": 133,
       "column": 11,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/workspace_lifecycle.go",
-      "line": 356,
+      "line": 355,
       "column": 3,
       "message": "Error return value of `body.Close` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/workspace_personal.go",
-      "line": 79,
-      "column": 8,
-      "message": "Error return value of `strconv.Atoi` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_personal.go",
-      "line": 81,
+      "line": 80,
       "column": 7,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
@@ -2076,22 +1908,8 @@
     {
       "file": "apps/go-api/workspace_search.go",
       "line": 180,
-      "column": 10,
-      "message": "Error return value of `strconv.Atoi` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_search.go",
-      "line": 181,
       "column": 11,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_user_insights.go",
-      "line": 125,
-      "column": 8,
-      "message": "Error return value of `strconv.Atoi` is not checked",
       "also_in_configured_audit": false
     },
     {

@@ -117,8 +117,7 @@ func (s *apiUserIdentityReadsService) AuthorizeAPIIdentityProtocol(ctx context.C
 	}
 	var response *api.APIUserIdentityErrorBody
 	if errors.As(err, &response) {
-		var status int
-		_, _ = fmt.Sscanf(response.Name, "status_%d", &status)
+		status := protocolErrorStatus(response.Name)
 		raw, _ := json.Marshal(response)
 		var body map[string]any
 		_ = json.Unmarshal(raw, &body)

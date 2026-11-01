@@ -102,8 +102,7 @@ func collaborationProtocolError(err error) error {
 	if !errors.As(err, &native) {
 		return err
 	}
-	status := 500
-	_, _ = fmt.Sscanf(native.Kind, "status_%d", &status)
+	status := protocolErrorStatus(native.Kind)
 	data, e := json.Marshal(native.Body)
 	if e != nil {
 		return workItemError(e)

@@ -47,7 +47,7 @@ type Database struct {
 }
 
 // CloneDatabase preserves the seed and gives each test its own database.
-func (pair *Pair) CloneDatabase(ctx context.Context) (*Database, error) {
+func (pair *Pair) CloneDatabase(ctx context.Context) (result *Database, resultErr error) {
 	name := "plane_test_" + uuid.NewString()
 	cloneURL, err := databaseURL(pair.seedURL, name)
 	if err != nil {
@@ -56,28 +56,46 @@ func (pair *Pair) CloneDatabase(ctx context.Context) (*Database, error) {
 	database := &Database{URL: cloneURL, adminURL: pair.adminURL, name: name}
 	connection, err := pgx.Connect(ctx, pair.adminURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("connect clone admin database: %w", err)
 	}
-	defer func() { _ = connection.Close(context.WithoutCancel(ctx)) }()
+	defer func() {
+		resultErr = errors.Join(resultErr, closeConnection(ctx, connection))
+		if resultErr != nil {
+			// Cancellation can obscure whether CREATE DATABASE finished. Reclaim
+			// the owned name before returning an error, including a close error.
+			cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
+			defer cancel()
+			resultErr = errors.Join(resultErr, database.Close(cleanup))
+			result = nil
+		}
+	}()
 	if _, err := connection.Exec(ctx, "CREATE DATABASE "+pgx.Identifier{name}.Sanitize()+" TEMPLATE "+pgx.Identifier{seedDatabase}.Sanitize()); err != nil {
-		// Cancellation can obscure whether CREATE DATABASE finished. Reclaim
-		// the owned name with a separate bounded cleanup context in either case.
-		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
-		defer cancel()
-		return nil, errors.Join(err, database.Close(cleanup))
+		return nil, fmt.Errorf("create fixture database %s: %w", name, err)
 	}
 	return database, nil
 }
 
 // Close drops only this test's clone, including any connections it left open.
-func (database *Database) Close(ctx context.Context) error {
+func (database *Database) Close(ctx context.Context) (resultErr error) {
 	connection, err := pgx.Connect(ctx, database.adminURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("connect drop admin database: %w", err)
 	}
-	defer func() { _ = connection.Close(context.WithoutCancel(ctx)) }()
+	defer func() { resultErr = errors.Join(resultErr, closeConnection(ctx, connection)) }()
 	_, err = connection.Exec(ctx, "DROP DATABASE IF EXISTS "+pgx.Identifier{database.name}.Sanitize()+" WITH (FORCE)")
-	return err
+	if err != nil {
+		return fmt.Errorf("drop fixture database %s: %w", database.name, err)
+	}
+	return nil
+}
+
+func closeConnection(ctx context.Context, connection *pgx.Conn) error {
+	cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	defer cancel()
+	if err := connection.Close(cleanup); err != nil {
+		return fmt.Errorf("close fixture connection: %w", err)
+	}
+	return nil
 }
 
 // Start creates a ready PostgreSQL container, migrates its seed database, and clones two targets.
@@ -89,7 +107,7 @@ func Start(ctx context.Context, migrate SeedMigration) (_ *Pair, err error) {
 	cleanup := true
 	defer func() {
 		if cleanup {
-			_ = pair.Close()
+			err = errors.Join(err, pair.Close())
 		}
 	}()
 	if err := pair.Reset(ctx); err != nil {
@@ -124,7 +142,7 @@ func StartUncloned(ctx context.Context, migrate SeedMigration) (_ *Pair, err err
 	cleanup := true
 	defer func() {
 		if cleanup {
-			_ = testcontainers.TerminateContainer(container)
+			err = errors.Join(err, testcontainers.TerminateContainer(container))
 		}
 	}()
 	if err != nil {
@@ -151,7 +169,7 @@ func (pair *Pair) Reset(ctx context.Context) (resultErr error) {
 	if err != nil {
 		return fmt.Errorf("connect to PostgreSQL testcontainer admin database: %w", err)
 	}
-	defer func() { resultErr = errors.Join(resultErr, connection.Close(context.WithoutCancel(ctx))) }()
+	defer func() { resultErr = errors.Join(resultErr, closeConnection(ctx, connection)) }()
 
 	for _, database := range []string{sourceDatabase, targetDatabase} {
 		if _, execErr := connection.Exec(

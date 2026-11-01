@@ -2,9 +2,30 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"testing"
 )
+
+func TestCloneDatabaseIdentifiesCanceledAdminConnection(t *testing.T) {
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+	pair := &Pair{seedURL: "postgresql://127.0.0.1/seed", adminURL: "postgresql://127.0.0.1/postgres"}
+	clone, err := pair.CloneDatabase(ctx)
+	if clone != nil || !errors.Is(err, context.Canceled) || !strings.Contains(err.Error(), "connect clone admin database") {
+		t.Fatalf("clone=%v error=%v; want canceled admin connection stage", clone, err)
+	}
+}
+
+func TestDatabaseCloseIdentifiesCanceledAdminConnection(t *testing.T) {
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+	database := &Database{adminURL: "postgresql://127.0.0.1/postgres", name: "owned_clone"}
+	err := database.Close(ctx)
+	if !errors.Is(err, context.Canceled) || !strings.Contains(err.Error(), "connect drop admin database") {
+		t.Fatalf("Close error=%v; want canceled admin connection stage", err)
+	}
+}
 
 func TestStartRequiresSeedMigration(t *testing.T) {
 	if _, err := Start(context.Background(), nil); err == nil || !strings.Contains(err.Error(), "seed migration is required") {

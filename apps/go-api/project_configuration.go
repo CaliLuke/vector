@@ -9,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/platform"
@@ -149,13 +148,10 @@ func protocolError(err error) (int, map[string]any) {
 	}
 	var response *api.ProjectConfigurationErrorResponse
 	if errors.As(err, &response) {
-		status, _ := strconv.Atoi(strings.TrimPrefix(response.Name, "status_"))
+		status := protocolErrorStatus(response.Name)
 		var body map[string]any
 		if json.Unmarshal(response.Body, &body) != nil {
 			body = map[string]any{"detail": "Something went wrong please try again later"}
-		}
-		if status == 0 {
-			status = http.StatusInternalServerError
 		}
 		return status, body
 	}

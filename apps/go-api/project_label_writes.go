@@ -180,8 +180,7 @@ func (s *projectLabelWritesService) AuthorizeSessionResourceProtocol(ctx context
 		data, _ := json.Marshal(failure)
 		var body map[string]any
 		_ = json.Unmarshal(data, &body)
-		var status int
-		_, _ = fmt.Sscanf(failure.Kind, "status_%d", &status)
+		status := protocolErrorStatus(failure.Kind)
 		return status, body
 	}
 	panic("unmapped label protocol error")

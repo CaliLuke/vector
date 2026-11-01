@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"strconv"
-	"strings"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
@@ -120,7 +119,7 @@ func workItemHistoryProtocolError(err error) (int, map[string]any) {
 	if !errors.As(err, &failure) {
 		return 500, map[string]any{"error": "Something went wrong please try again later"}
 	}
-	status, _ := strconv.Atoi(strings.TrimPrefix(failure.Name, "status_"))
+	status := protocolErrorStatus(failure.Name)
 	var body map[string]any
 	encoded, _ := json.Marshal(failure.Body)
 	if json.Unmarshal(encoded, &body) != nil || body == nil {

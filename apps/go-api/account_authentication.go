@@ -469,7 +469,7 @@ func accountAuthenticationProtocolError(err error) (int, map[string]any) {
 		_ = json.Unmarshal([]byte(failure.Body), &body)
 		return http.StatusUnauthorized, body
 	}
-	status, _ := strconv.Atoi(strings.TrimPrefix(failure.Name, "status_"))
+	status := protocolErrorStatus(failure.Name)
 	var body map[string]any
 	_ = json.Unmarshal([]byte(failure.Body), &body)
 	return status, body

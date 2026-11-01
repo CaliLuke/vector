@@ -9,7 +9,6 @@ import (
 	"io"
 	"log/slog"
 	"strconv"
-	"strings"
 
 	"uuid"
 
@@ -177,14 +176,11 @@ func workspaceSearchProtocolError(err error) (int, map[string]any) {
 	if !errors.As(err, &failure) {
 		return 500, map[string]any{"detail": "Something went wrong please try again later"}
 	}
-	status, _ := strconv.Atoi(strings.TrimPrefix(failure.Name, "status_"))
+	status := protocolErrorStatus(failure.Name)
 	encoded, _ := json.Marshal(failure.Body)
 	var body map[string]any
 	if json.Unmarshal(encoded, &body) != nil || body == nil {
 		body = map[string]any{}
-	}
-	if status == 0 {
-		status = 500
 	}
 	return status, body
 }

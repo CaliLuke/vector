@@ -401,7 +401,7 @@ func externalIntegrationsProtocolError(err error) (int, map[string]any) {
 	}
 	var response *api.ExternalIntegrationErrorResponse
 	if errors.As(err, &response) {
-		status, _ := strconv.Atoi(strings.TrimPrefix(response.Name, "status_"))
+		status := protocolErrorStatus(response.Name)
 		var body map[string]any
 		if json.Unmarshal([]byte(response.Body), &body) != nil {
 			body = map[string]any{"detail": "Something went wrong please try again later"}

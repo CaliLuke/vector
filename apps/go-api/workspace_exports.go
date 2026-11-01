@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"strconv"
-	"strings"
 
 	"github.com/CaliLuke/go-plane/internal/platform"
 
@@ -80,7 +79,7 @@ func workspaceExportsProtocolError(err error) (int, map[string]any) {
 	if !errors.As(err, &failure) {
 		return 500, map[string]any{"error": "Something went wrong please try again later"}
 	}
-	code, _ := strconv.Atoi(strings.TrimPrefix(failure.Name, "status_"))
+	code := protocolErrorStatus(failure.Name)
 	var body map[string]any
 	b, _ := json.Marshal(failure.Body)
 	if json.Unmarshal(b, &body) != nil || body == nil {

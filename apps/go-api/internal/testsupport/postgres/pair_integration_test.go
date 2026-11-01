@@ -6,12 +6,58 @@ import (
 	"context"
 	"errors"
 	"net/url"
+	"strings"
 	"testing"
 	"time"
 
 	testsupport "github.com/CaliLuke/go-plane/internal/testsupport"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
+
+func TestCloneDatabaseIdentifiesCreateFailureWithoutLeavingAClone(t *testing.T) {
+	ctx, cancel := context.WithTimeout(t.Context(), time.Minute)
+	defer cancel()
+	pair, err := StartUncloned(ctx, func(context.Context, string) error { return nil })
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { testsupport.Close(t, pair) })
+	observer, err := pgx.Connect(ctx, pair.adminURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer testsupport.CloseContext(t, observer, context.WithoutCancel(ctx))
+	if _, err := observer.Exec(ctx, `ALTER DATABASE plane_parity_seed RENAME TO unavailable_seed`); err != nil {
+		t.Fatal(err)
+	}
+
+	clone, cloneErr := pair.CloneDatabase(ctx)
+	var pgErr *pgconn.PgError
+	if clone != nil || !errors.As(cloneErr, &pgErr) || pgErr.Code != "3D000" || !strings.Contains(cloneErr.Error(), "create fixture database") {
+		t.Fatalf("clone=%v error=%v; want create stage with missing template cause", clone, cloneErr)
+	}
+	var clones int
+	if err := observer.QueryRow(ctx, `SELECT count(*) FROM pg_database WHERE datname LIKE 'plane_test_%'`).Scan(&clones); err != nil {
+		t.Fatal(err)
+	}
+	if clones != 0 {
+		t.Fatalf("failed creation left %d disposable databases", clones)
+	}
+}
+
+func TestDatabaseCloseIdentifiesDropFailureAndPreservesServerCause(t *testing.T) {
+	address := EmptyDatabase(t)
+	ctx, cancel := context.WithTimeout(t.Context(), time.Minute)
+	defer cancel()
+	database := &Database{URL: address, adminURL: address, name: seedDatabase}
+
+	err := database.Close(ctx)
+	var pgErr *pgconn.PgError
+	if !errors.As(err, &pgErr) || pgErr.Code != "55006" || !strings.Contains(err.Error(), "drop fixture database") {
+		t.Fatalf("Close error=%v; want drop stage with current-database server cause", err)
+	}
+}
 
 func TestSeedMigrationRunsOnceAfterSQLReadinessAndCleansUpOnFailure(t *testing.T) {
 	ctx, cancel := context.WithTimeout(t.Context(), time.Minute)

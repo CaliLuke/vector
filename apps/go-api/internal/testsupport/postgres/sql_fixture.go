@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -31,12 +32,12 @@ func OpenSQL(t testing.TB, schema string) (context.Context, *pgx.Conn) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	t.Cleanup(cancel)
-	pair, err := StartUncloned(ctx, func(seedContext context.Context, url string) error {
+	pair, err := StartUncloned(ctx, func(seedContext context.Context, url string) (resultErr error) {
 		connection, openErr := pgx.Connect(seedContext, url)
 		if openErr != nil {
 			return openErr
 		}
-		defer func() { _ = connection.Close(context.WithoutCancel(seedContext)) }()
+		defer func() { resultErr = errors.Join(resultErr, closeConnection(seedContext, connection)) }()
 		_, seedErr := connection.Exec(seedContext, schema)
 		return seedErr
 	})
@@ -52,6 +53,10 @@ func OpenSQL(t testing.TB, schema string) (context.Context, *pgx.Conn) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = connection.Close(context.WithoutCancel(ctx)) })
+	t.Cleanup(func() {
+		if closeErr := closeConnection(ctx, connection); closeErr != nil {
+			t.Errorf("close fixture connection: %v", closeErr)
+		}
+	})
 	return ctx, connection
 }
