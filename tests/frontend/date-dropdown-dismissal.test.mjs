@@ -114,33 +114,71 @@ await test("calendar outside click preserves the newly focused field", async (t)
   assert.equal(document.activeElement, outside);
 });
 
-await test("date range Escape consumes one dismissal and retains the controlled range", async (t) => {
-  const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
-  const { DateRangeDropdown } = await import("../../apps/web/core/components/dropdowns/date-range.tsx");
-  let dismissals = 0;
-  const value = { from: new Date(2026, 9, 10), to: new Date(2026, 9, 15) };
-  await environment.render(
-    React.createElement(
-      "form",
-      {
-        onKeyDown: (event) => {
-          if (event.key === "Escape" && !event.defaultPrevented) dismissals++;
-        },
-      },
-      React.createElement(DateRangeDropdown, { value, defaultOpen: true, buttonVariant: "border-with-text" })
-    )
-  );
-  const trigger = environment.container.querySelector("button");
-  assert.equal(trigger.getAttribute("aria-expanded"), "true");
-  assert.ok(document.querySelector('[role="grid"]'));
-  await pressEscape();
-  assert.equal(trigger.getAttribute("aria-expanded"), "false");
-  assert.equal(document.activeElement, trigger);
-  assert.equal(dismissals, 0);
-  await clickWithPointer(trigger);
-  assert.ok(document.querySelector('[data-selected="true"]'), "opening again retains the selected dates");
-});
+const dateRangeScenarios = [
+  {
+    name: "previous month",
+    today: new Date(2026, 10, 15),
+    from: new Date(2026, 9, 10),
+    to: new Date(2026, 9, 15),
+    visibleDay: "2026-10-15",
+  },
+  {
+    name: "previous year",
+    today: new Date(2027, 0, 15),
+    from: new Date(2026, 11, 10),
+    to: new Date(2026, 11, 15),
+    visibleDay: "2026-12-15",
+  },
+  {
+    name: "end date only",
+    today: new Date(2027, 0, 15),
+    from: undefined,
+    to: new Date(2026, 11, 15),
+    visibleDay: "2026-12-15",
+  },
+  { name: "empty range", today: new Date(2027, 0, 15), from: undefined, to: undefined, visibleDay: "2027-01-15" },
+];
+await Promise.all(
+  dateRangeScenarios.map((scenario) =>
+    test(`date range Escape retains the controlled range: ${scenario.name}`, async (t) => {
+      const environment = await createReactDomTestEnvironment();
+      t.mock.timers.enable({ apis: ["Date"], now: scenario.today.getTime() });
+      t.after(() => environment.unmount());
+      const { DateRangeDropdown } = await import("../../apps/web/core/components/dropdowns/date-range.tsx");
+      let dismissals = 0;
+      const value = { from: scenario.from, to: scenario.to };
+      await environment.render(
+        React.createElement(
+          "form",
+          {
+            onKeyDown: (event) => {
+              if (event.key === "Escape" && !event.defaultPrevented) dismissals++;
+            },
+          },
+          React.createElement(DateRangeDropdown, { value, defaultOpen: true, buttonVariant: "border-with-text" })
+        )
+      );
+      const trigger = environment.container.querySelector("button");
+      assert.equal(trigger.getAttribute("aria-expanded"), "true");
+      assert.ok(document.querySelector('[role="grid"]'));
+      const assertRangeVisible = () => {
+        assert.ok(
+          document.querySelector(`[data-day="${scenario.visibleDay}"]`),
+          "opens at the controlled endpoint or current month for an empty range"
+        );
+        if (value.from && value.to)
+          assert.ok(document.querySelector('[data-selected="true"]'), "shows the selected range");
+      };
+      assertRangeVisible();
+      await pressEscape();
+      assert.equal(trigger.getAttribute("aria-expanded"), "false");
+      assert.equal(document.activeElement, trigger);
+      assert.equal(dismissals, 0);
+      await clickWithPointer(trigger);
+      assertRangeVisible();
+    })
+  )
+);
 
 await test("date constraints disable out-of-range days while an open picker retains its selection contract", async (t) => {
   const changes = [];

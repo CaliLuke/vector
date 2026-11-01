@@ -106,6 +106,7 @@ export function DateRangeDropdown(props: Props) {
             className="rounded-md border border-subtle p-3 text-12"
             captionLayout="dropdown"
             selected={value}
+            defaultMonth={value.from ?? value.to}
             onSelect={(range: DateRange | undefined) => onSelect?.(range)}
             mode="range"
             disabled={dateDisabledDays(minDate, maxDate)}
