@@ -8,11 +8,11 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 198,
+    "findings": 196,
     "also_in_ERR_01": 0,
-    "additional_ERR_02": 198,
+    "additional_ERR_02": 196,
     "test_file_findings": 0,
-    "non_test_file_findings": 198
+    "non_test_file_findings": 196
   },
   "findings": [
     {
@@ -1224,20 +1224,6 @@
       "line": 189,
       "column": 12,
       "message": "Error return value of `time.LoadLocation` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitems/lifecycle.go",
-      "line": 267,
-      "column": 10,
-      "message": "Error return value of `pythoncompat.Dumps` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/internal/workitems/lifecycle.go",
-      "line": 268,
-      "column": 14,
-      "message": "Error return value of `pythoncompat.Dumps` is not checked",
       "also_in_configured_audit": false
     },
     {

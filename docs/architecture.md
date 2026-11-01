@@ -57,6 +57,12 @@ use RFC 3339 with database microsecond precision. Schema startup installs empty
 databases or upgrades the native migration ledger. It rejects unmanaged application
 tables before writing a ledger or changing their data.
 
+Work-item date fields and absolute intake date boundaries require `YYYY-MM-DD`.
+Bulk date edits validate the complete batch before activity admission; explicit
+null clears a date. Work-item integers accept decimal form strings or integral
+JSON numbers without float rounding. Field ranges remain enforced. Identifier
+sequences use the stored 32-bit range; API search limits range from 0 to 1,000.
+
 Draft creation, editing, deletion and publication belong to `draftLifecycle` and
 `draftOperation` in `internal/workitems`. The lifecycle owns standalone transactions;
 reviewed changes bind the operation to their existing savepoint and review state.

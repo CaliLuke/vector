@@ -186,7 +186,7 @@
       "percent": 94.12
     },
     "github.com/CaliLuke/go-plane/internal/datetime": {
-      "statements": 18,
+      "statements": 22,
       "percent": 100
     },
     "github.com/CaliLuke/go-plane/internal/deletion": {
@@ -250,8 +250,8 @@
       "percent": 92.31
     },
     "github.com/CaliLuke/go-plane/internal/intakeinboxreads": {
-      "statements": 568,
-      "percent": 88.91
+      "statements": 532,
+      "percent": 89.66
     },
     "github.com/CaliLuke/go-plane/internal/issuequery": {
       "statements": 1759,
@@ -458,7 +458,7 @@
       "percent": 75.23
     },
     "github.com/CaliLuke/go-plane/internal/workitems": {
-      "statements": 7173,
+      "statements": 7243,
       "percent": 66.15
     },
     "github.com/CaliLuke/go-plane/internal/workitemsearch": {

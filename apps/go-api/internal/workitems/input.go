@@ -9,9 +9,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/datetime"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 )
@@ -121,7 +120,7 @@ func validateIssueDates(input requestinput.Input, changes *issueChanges, failure
 				continue
 			}
 			text, ok := value.(string)
-			parsed, err := parseDate(text)
+			parsed, err := datetime.Date(text)
 			if !ok || err != nil {
 				failures[field] = []string{"Date has wrong format. Use one of these formats instead: YYYY-MM-DD."}
 			} else {
@@ -180,7 +179,7 @@ func validateIssueNumbers(input requestinput.Input, changes *issueChanges, failu
 				}
 				continue
 			}
-			integer, err := integerField(value)
+			integer, err := requestinput.IntegerField(value)
 			if err != nil {
 				failures[field] = []string{"A valid integer is required."}
 				continue
@@ -455,32 +454,6 @@ func filteredIDs(ctx context.Context, db Database, query string, args ...any) ([
 	return result, rows.Err()
 }
 
-func parseDate(value string) (string, error) {
-	parts := strings.Split(value, "-")
-	if len(parts) != 3 {
-		return "", fmt.Errorf("invalid date")
-	}
-	month, e1 := strconv.Atoi(parts[1])
-	day, e2 := strconv.Atoi(parts[2])
-	if e1 != nil || e2 != nil {
-		return "", fmt.Errorf("invalid date")
-	}
-	text := fmt.Sprintf("%s-%02d-%02d", parts[0], month, day)
-	_, err := time.Parse("2006-01-02", text)
-	return text, err
-}
-func integerField(value any) (*big.Int, error) {
-	if _, ok := value.(bool); ok {
-		return nil, fmt.Errorf("boolean integer")
-	}
-	text := strings.TrimSpace(requestinput.ScalarString(value))
-	if index := strings.IndexByte(text, '.'); index >= 0 {
-		if strings.Trim(text[index+1:], "0") == "" {
-			text = text[:index]
-		}
-	}
-	return pythoncompat.DecimalInteger(text)
-}
 func booleanField(value any) (bool, bool) {
 	if v, ok := value.(bool); ok {
 		return v, true

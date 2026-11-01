@@ -233,54 +233,23 @@ func (r *Repository) issueDates(ctx context.Context, q Request, body io.Reader, 
 	for _, row := range rows {
 		byID[row["id"].(string)] = row
 	}
-	changed := map[string]bool{}
-	for _, raw := range updates {
-		item := raw.(map[string]any)
-		id, ok := item["id"].(string)
-		if !ok {
-			continue
-		}
-		row := byID[id]
-		if row == nil {
-			continue
-		}
-		start, target := row["start_date"], row["target_date"]
-		if truthy(item["start_date"]) {
-			start = item["start_date"]
-		}
-		if truthy(item["target_date"]) {
-			target = item["target_date"]
-		}
-		valid, e := validateBulkDates(start, target)
-		if e != nil {
-			return Result{}, e
-		}
-		if !valid {
-			return Result{}, failure(400, "message", "Start date cannot exceed target date")
-		}
-		for _, field := range []string{"start_date", "target_date"} {
-			if !truthy(item[field]) {
-				continue
-			}
-			local := q
-			local.IssueID = id
-			data, _ := pythoncompat.Dumps(map[string]any{field: item[field]}, nil)
-			previous, _ := pythoncompat.Dumps(map[string]any{field: requestinput.ScalarString(row[field])}, nil)
-			if err = r.activity(ctx, local, "issue.activity.updated", data, previous, true); err != nil {
-				return Result{}, err
-			}
-			row[field] = item[field]
-			changed[id] = true
-		}
+	changed, activities, err := prepareBulkDateChanges(updates, byID)
+	if err != nil {
+		return Result{}, err
 	}
-	// Model date preparation happens only after every activity has been queued.
-	for id := range changed {
-		for _, field := range []string{"start_date", "target_date"} {
-			value, prepareBulkErr := prepareBulkDateForPersistence(byID[id][field])
-			if prepareBulkErr != nil {
-				return Result{}, prepareBulkErr
-			}
-			byID[id][field] = value
+	for _, change := range activities {
+		local := q
+		local.IssueID = change.issueID
+		data, dumpErr := pythoncompat.Dumps(map[string]any{change.field: change.value}, nil)
+		if dumpErr != nil {
+			return Result{}, dumpErr
+		}
+		previous, dumpErr := pythoncompat.Dumps(map[string]any{change.field: requestinput.ScalarString(change.previous)}, nil)
+		if dumpErr != nil {
+			return Result{}, dumpErr
+		}
+		if activityErr := r.activity(ctx, local, "issue.activity.updated", data, previous, true); activityErr != nil {
+			return Result{}, activityErr
 		}
 	}
 	tx, err := r.db.Begin(ctx)
@@ -288,8 +257,7 @@ func (r *Repository) issueDates(ctx context.Context, q Request, body io.Reader, 
 		return Result{}, err
 	}
 	defer func() { resultErr = dbutil.RollbackTransaction(ctx, tx.Rollback, resultErr) }()
-	for id := range changed {
-		row := byID[id]
+	for id, row := range changed {
 		if _, err = tx.Exec(ctx, `UPDATE issues SET start_date=$2,target_date=$3 WHERE id=$1`, id, row["start_date"], row["target_date"]); err != nil {
 			return Result{}, failure(400, "error", "Please provide valid detail")
 		}
@@ -300,55 +268,78 @@ func (r *Repository) issueDates(ctx context.Context, q Request, body io.Reader, 
 	return Result{200, map[string]any{"message": "Issues updated successfully"}}, nil
 }
 
-func prepareBulkDate(value any) (any, error) {
+type bulkDateChange struct {
+	issueID, field  string
+	value, previous any
+}
+
+// prepareBulkDateChanges validates the whole batch before activity admission.
+// The returned rows are copies; a rejected batch cannot alter its source snapshot.
+func prepareBulkDateChanges(updates []any, byID map[string]map[string]any) (map[string]map[string]any, []bulkDateChange, error) {
+	changed := map[string]map[string]any{}
+	activities := []bulkDateChange{}
+	for _, raw := range updates {
+		item := raw.(map[string]any) // issueDates already validates the object and ID.
+		id, err := requestinput.UUID(item["id"])
+		if err != nil {
+			return nil, nil, failure(400, "error", "Please provide valid detail")
+		}
+		row := changed[id.String()]
+		if row == nil {
+			row = maps.Clone(byID[id.String()])
+		}
+		if row == nil {
+			continue
+		}
+		for _, field := range []string{"start_date", "target_date"} {
+			value, present := item[field]
+			if !present {
+				continue
+			}
+			prepared, dateErr := prepareBulkDateForPersistence(value)
+			if dateErr != nil {
+				return nil, nil, dateErr
+			}
+			activities = append(activities, bulkDateChange{id.String(), field, prepared, row[field]})
+			row[field] = prepared
+			changed[id.String()] = row
+		}
+		valid, err := validateBulkDates(row["start_date"], row["target_date"])
+		if err != nil {
+			return nil, nil, err
+		}
+		if !valid {
+			return nil, nil, failure(400, "message", "Start date cannot exceed target date")
+		}
+	}
+	return changed, activities, nil
+}
+
+func prepareBulkDateForPersistence(value any) (any, error) {
 	if value == nil {
 		return nil, nil
 	}
 	text, ok := value.(string)
-	if !ok {
-		return nil, errors.New("invalid bulk update date type")
-	}
-	return parseDate(text)
-}
-
-func prepareBulkDateForPersistence(value any) (any, error) {
-	prepared, err := prepareBulkDate(value)
-	if err != nil {
-		if _, ok := value.(string); !ok && value != nil {
-			// Preserve issueDates' existing internal error for non-string input.
-			return nil, err
-		}
-		// Django's model field raises a client validation error after activity
-		// tasks have been published. Preserve those effects while returning the
-		// serializer's 400 response instead of projecting the error as a 500.
+	prepared, err := datetime.Date(text)
+	if !ok || err != nil {
 		return nil, failure(400, "error", "Please provide valid detail")
 	}
 	return prepared, nil
 }
 
 func validateBulkDates(start, target any) (bool, error) {
-	parsed := make([]time.Time, 2)
-	for i, value := range []any{start, target} {
-		if text, ok := value.(string); ok {
-			// Python strptime's %d also accepts one space before a single
-			// digit. DateField rejects that spelling later, after activities.
-			if dash := strings.LastIndexByte(text, '-'); dash >= 0 && len(text[dash+1:]) == 2 && text[dash+1] == ' ' {
-				text = text[:dash+1] + text[dash+2:]
-			}
-			date, err := time.Parse("2006-1-2", text)
-			if err != nil {
-				return false, err
-			}
-			parsed[i] = date
-		}
+	startDate, err := prepareBulkDateForPersistence(start)
+	if err != nil {
+		return false, err
 	}
-	if !truthy(start) || !truthy(target) {
+	targetDate, err := prepareBulkDateForPersistence(target)
+	if err != nil {
+		return false, err
+	}
+	if startDate == nil || targetDate == nil {
 		return true, nil
 	}
-	if parsed[0].IsZero() || parsed[1].IsZero() {
-		return false, errors.New("invalid comparison date")
-	}
-	return !parsed[0].After(parsed[1]), nil
+	return startDate.(string) <= targetDate.(string), nil
 }
 
 func (r *Repository) authorizeLifecycle(ctx context.Context, q Request) error {

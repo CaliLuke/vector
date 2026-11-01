@@ -7,12 +7,12 @@ import (
 	"github.com/CaliLuke/go-plane/internal/apicontract"
 )
 
-func TestBulkDateValidationDefersUnpairedWrongTypeToModelPreparation(t *testing.T) {
+func TestBulkDateValidationRejectsInvalidValuesAndReversedDates(t *testing.T) {
 	for _, tc := range []struct {
 		start, target any
 		valid, fails  bool
 	}{
-		{true, nil, true, false},
+		{true, nil, false, true},
 		{true, "2026-01-01", false, true},
 		{"invalid", nil, false, true},
 		{"2026-01-02", "2026-01-01", false, false},
@@ -38,15 +38,16 @@ func TestBulkDatePersistenceRejectsSpacePaddedDayAsClientError(t *testing.T) {
 		t.Fatalf("error body = %#v", httpErr.Body)
 	}
 
-	got, err := prepareBulkDateForPersistence("2026-1-3")
+	got, err := prepareBulkDateForPersistence("2026-01-03")
 	if err != nil || got != "2026-01-03" {
 		t.Fatalf("valid date = %#v, %v; want 2026-01-03", got, err)
 	}
 }
 
-func TestBulkDatePersistencePreservesNonStringInternalError(t *testing.T) {
+func TestBulkDatePersistenceRejectsNonStringAsClientError(t *testing.T) {
 	_, err := prepareBulkDateForPersistence(true)
-	if err == nil || err.Error() != "invalid bulk update date type" {
-		t.Fatalf("expected original non-string internal error, got %v", err)
+	var response *apicontract.HTTPError
+	if !errors.As(err, &response) || response.Status != 400 {
+		t.Fatalf("expected client validation error, got %v", err)
 	}
 }

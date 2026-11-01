@@ -9,7 +9,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/requestinput"
 	"github.com/CaliLuke/go-plane/internal/workitemsearch"
 )
@@ -40,24 +39,9 @@ func (r *Repository) identifier(ctx context.Context, q Request) (Result, error) 
 	if !ok {
 		return Result{}, failure(404, "error", "Page not found.")
 	}
-	if !q.API {
-		digits := strings.TrimPrefix(sequence, "-")
-		valid := digits != ""
-		for _, c := range digits {
-			if !unicode.IsDigit(c) {
-				valid = false
-			}
-		}
-		if !valid {
-			return Result{}, failure(400, "error", "Invalid issue identifier")
-		}
-	}
-	n, err := pythoncompat.DecimalInteger(sequence)
-	if err != nil {
-		if !q.API {
-			return Result{}, failure(400, "error", "Invalid issue identifier")
-		}
-		return Result{}, err
+	n, err := requestinput.IntegerField(sequence)
+	if err != nil || !n.IsInt64() || n.Int64() < -2147483648 || n.Int64() > 2147483647 {
+		return Result{}, failure(400, "error", "Invalid issue identifier")
 	}
 	if q.API {
 		// API lookup traverses the project FK inside Issue.get(). A deleted
@@ -138,22 +122,22 @@ func escapeSearch(raw string) string {
 	return strings.NewReplacer(`\`, `\\`, "%", `\%`, "_", `\_`).Replace(raw)
 }
 
-// Python's Unicode word boundary includes letters, digits and underscores.
+// Sequence matches are ASCII integers bounded by Unicode word characters.
 func searchSequences(query string) []string {
 	chars := []rune(query)
 	out := []string{}
 	word := func(c rune) bool { return unicode.IsLetter(c) || unicode.IsNumber(c) || c == '_' }
 	for i := 0; i < len(chars); {
-		if !unicode.IsDigit(chars[i]) {
+		if chars[i] < '0' || chars[i] > '9' {
 			i++
 			continue
 		}
 		start := i
-		for i < len(chars) && unicode.IsDigit(chars[i]) {
+		for i < len(chars) && chars[i] >= '0' && chars[i] <= '9' {
 			i++
 		}
 		if (start == 0 || !word(chars[start-1])) && (i == len(chars) || !word(chars[i])) {
-			if n, e := pythoncompat.DecimalInteger(string(chars[start:i])); e == nil {
+			if n, e := requestinput.IntegerField(string(chars[start:i])); e == nil {
 				out = append(out, n.String())
 			}
 		}
@@ -240,9 +224,9 @@ func (r *Repository) search(ctx context.Context, q Request) (Result, error) {
 	if q.API {
 		limit = 10
 		if q.Present["limit"] {
-			n, e := pythoncompat.DecimalInteger(q.Params["limit"])
-			if e != nil || !n.IsInt64() || n.Sign() < 0 {
-				return Result{}, errors.New("invalid search limit")
+			n, e := requestinput.IntegerField(q.Params["limit"])
+			if e != nil || !n.IsInt64() || n.Sign() < 0 || n.Int64() > 1000 {
+				return Result{}, failure(400, "error", "Search limit must be an integer between 0 and 1000")
 			}
 			limit = int(n.Int64())
 		}

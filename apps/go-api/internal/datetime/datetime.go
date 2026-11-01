@@ -11,6 +11,15 @@ import (
 var timestampPattern = regexp.MustCompile(`^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,9})?(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])$`)
 var localPattern = regexp.MustCompile(`^[0-9]{4}-[0-9]{2}-[0-9]{2}(?:[T ][0-9]{2}:[0-9]{2}(?::[0-9]{2}(?:\.[0-9]{1,9})?)?)?$`)
 
+// Date validates a calendar date without accepting a time or changing its day.
+func Date(value string) (string, error) {
+	parsed, err := time.Parse(time.DateOnly, value)
+	if err != nil || len(value) != 10 || parsed.Year() < 1 || parsed.Year() > 9999 {
+		return "", errors.New("date must be YYYY-MM-DD")
+	}
+	return value, nil
+}
+
 // Parse accepts RFC 3339 timestamps and local calendar values. Local dates
 // select midnight. Local times require the caller's explicit location.
 // Zoned input is normalized to UTC.

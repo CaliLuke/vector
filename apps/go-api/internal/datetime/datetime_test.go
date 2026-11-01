@@ -6,6 +6,19 @@ import (
 	"time"
 )
 
+func TestDateRequiresARealPaddedCalendarDate(t *testing.T) {
+	for _, value := range []string{"0001-01-01", "2024-02-29", "2026-11-01", "9999-12-31"} {
+		if got, err := Date(value); err != nil || got != value {
+			t.Fatalf("Date(%q)=%q, %v", value, got, err)
+		}
+	}
+	for _, value := range []string{"", "0000-01-01", "2026-02-29", "2026-1-02", "2026-01-2", "20261101", "2026-W44-7", "٢٠٢٦-١١-٠١", "2026-11-01T00:00:00Z", " 2026-11-01", "2026-11-01\n"} {
+		if got, err := Date(value); err == nil {
+			t.Fatalf("accepted %q as %q", value, got)
+		}
+	}
+}
+
 func TestParseCalendarValuesPreservesInstantsAndRequestTimezone(t *testing.T) {
 	location, err := time.LoadLocation("America/New_York")
 	if err != nil {

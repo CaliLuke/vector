@@ -665,23 +665,20 @@ func TestRelativeDateFilterWithoutOffsetMatchesDjangoNoOp(t *testing.T) {
 	}
 }
 
-func TestDjangoAbsoluteDateSpellingsCanonicalizeSQLBoundaries(t *testing.T) {
-	for value, expected := range map[string]string{
-		"2026-1-2": "2026-01-02", "20260102": "2026-01-02", "٢٠٢٦-١-٢": "2026-01-02",
-		"2026-W01-1": "2025-12-29", "2026W011": "2025-12-29", "2026-W01": "2025-12-29", "2026W01": "2025-12-29",
-	} {
+func TestAbsoluteDateFiltersRequireNativeCalendarDates(t *testing.T) {
+	for _, value := range []string{"0001-01-01", "2024-02-29", "2026-01-02", "9999-12-31"} {
 		builder := newWhereBuilder(uuid.New(), "demo")
 		if err := addDateFilter(builder, "issue.created_at", value+";after", "UTC", true, time.Now()); err != nil {
 			t.Fatalf("value=%q err=%v", value, err)
 		}
-		if !repositoryArgsContain(builder.args, expected) {
-			t.Fatalf("value=%q expected=%q args=%#v", value, expected, builder.args)
+		if !repositoryArgsContain(builder.args, value) {
+			t.Fatalf("value=%q args=%#v", value, builder.args)
 		}
-
 	}
-	for _, value := range []string{"0000-01-01", "2026-+1-+2", "2026-W54-1", "٢٠٢٦٠١٠٢", "٢٠٢٦-W٠١-١", "٢٠٢٦W٠١"} {
-		if parsed, ok := parseDjangoDate(value); ok {
-			t.Fatalf("invalid value=%q parsed=%q", value, parsed)
+	for _, value := range []string{"0000-01-01", "2026-02-29", "2026-+1-+2", "2026-1-2", "20260102", "٢٠٢٦-١-٢", "2026-W01-1", "2026W011", "2026-W01", "2026W01"} {
+		builder := newWhereBuilder(uuid.New(), "demo")
+		if err := addDateFilter(builder, "issue.created_at", value+";after", "UTC", true, time.Now()); !errors.Is(err, ErrInvalidDetail) {
+			t.Fatalf("invalid value=%q error=%v", value, err)
 		}
 	}
 	if _, ok := relativeDateDays("+1_weeks"); ok {

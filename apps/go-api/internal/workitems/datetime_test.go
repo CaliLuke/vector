@@ -38,35 +38,3 @@ func TestDateTimeInputRejectsInvalidAndLegacySpellings(t *testing.T) {
 		}
 	}
 }
-
-func TestBulkDatesAcceptDjangoUnpaddedCalendarValues(t *testing.T) {
-	for _, tc := range []struct {
-		start, target string
-		valid         bool
-	}{
-		{"2026-1-2", "2026-1-3", true},
-		{"2026-01-2", "2026-1-02", true},
-		{"2026-1-3", "2026-1-2", false},
-		{"2026-1- 2", "2026-1-3", true},
-	} {
-		got, err := validateBulkDates(tc.start, tc.target)
-		if err != nil || got != tc.valid {
-			t.Errorf("dates %q/%q: valid=%v err=%v, want %v", tc.start, tc.target, got, err, tc.valid)
-		}
-	}
-}
-
-func TestBulkDatePreparationRejectsSpacePaddingAfterComparison(t *testing.T) {
-	if _, err := prepareBulkDate("2026-1- 2"); err == nil {
-		t.Fatal("Django DateField rejects space-padded day during model preparation")
-	}
-	for _, input := range []any{nil, "2026-1-2"} {
-		got, err := prepareBulkDate(input)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if input != nil && got != "2026-01-02" {
-			t.Fatalf("prepared date=%v", got)
-		}
-	}
-}

@@ -15,6 +15,7 @@ import (
 	"unicode"
 
 	"github.com/CaliLuke/go-plane/internal/apicontract"
+	"github.com/CaliLuke/go-plane/internal/datetime"
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 
 	"uuid"
@@ -837,8 +838,8 @@ func addDateFilter(builder *whereBuilder, column, value, timezone string, timest
 			}
 			continue
 		}
-		parsedBoundary, ok := parseDjangoDate(boundary)
-		if !ok {
+		parsedBoundary, err := datetime.Date(boundary)
+		if err != nil {
 			return ErrInvalidDetail
 		}
 		boundary = parsedBoundary
@@ -861,71 +862,6 @@ func addDateFilter(builder *whereBuilder, column, value, timezone string, timest
 		builder.addCondition(expression+" <= %s::date", before)
 	}
 	return nil
-}
-
-func parseDjangoDate(value string) (string, bool) {
-	original := value
-	for _, layout := range []string{time.DateOnly, "20060102"} {
-		if parsed, err := time.Parse(layout, value); err == nil && parsed.Year() >= 1 && parsed.Year() <= 9999 {
-			return parsed.Format(time.DateOnly), true
-		}
-	}
-	if parsed, ok := parseDjangoISOWeekDate(value); ok {
-		return parsed.Format(time.DateOnly), true
-	}
-	value = normalizePythonDecimalDigits(original)
-	parts := strings.Split(value, "-")
-	if len(parts) != 3 || len(parts[0]) != 4 || len(parts[1]) < 1 || len(parts[1]) > 2 || len(parts[2]) < 1 || len(parts[2]) > 2 ||
-		!asciiDecimalDigits(parts[0]) || !asciiDecimalDigits(parts[1]) || !asciiDecimalDigits(parts[2]) {
-		return "", false
-	}
-	year, yearErr := strconv.Atoi(parts[0])
-	month, monthErr := strconv.Atoi(parts[1])
-	day, dayErr := strconv.Atoi(parts[2])
-	if yearErr != nil || monthErr != nil || dayErr != nil || year < 1 || year > 9999 {
-		return "", false
-	}
-	parsed := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
-	if parsed.Year() != year || int(parsed.Month()) != month || parsed.Day() != day {
-		return "", false
-	}
-	return parsed.Format(time.DateOnly), true
-}
-
-func parseDjangoISOWeekDate(value string) (time.Time, bool) {
-	var yearText, weekText, weekdayText string
-	switch {
-	case len(value) == 10 && value[4:6] == "-W" && value[8] == '-':
-		yearText, weekText, weekdayText = value[:4], value[6:8], value[9:]
-	case len(value) == 8 && value[4:6] == "-W":
-		yearText, weekText, weekdayText = value[:4], value[6:8], "1"
-	case len(value) == 8 && value[4] == 'W':
-		yearText, weekText, weekdayText = value[:4], value[5:7], value[7:]
-	case len(value) == 7 && value[4] == 'W':
-		yearText, weekText, weekdayText = value[:4], value[5:7], "1"
-	default:
-		return time.Time{}, false
-	}
-	if !asciiDecimalDigits(yearText) || !asciiDecimalDigits(weekText) || !asciiDecimalDigits(weekdayText) {
-		return time.Time{}, false
-	}
-	year, yearErr := strconv.Atoi(yearText)
-	week, weekErr := strconv.Atoi(weekText)
-	weekday, weekdayErr := strconv.Atoi(weekdayText)
-	if yearErr != nil || weekErr != nil || weekdayErr != nil || year < 1 || year > 9999 || week < 1 || week > 53 || weekday < 1 || weekday > 7 {
-		return time.Time{}, false
-	}
-	januaryFourth := time.Date(year, time.January, 4, 0, 0, 0, 0, time.UTC)
-	januaryFourthWeekday := int(januaryFourth.Weekday())
-	if januaryFourthWeekday == 0 {
-		januaryFourthWeekday = 7
-	}
-	parsed := januaryFourth.AddDate(0, 0, 1-januaryFourthWeekday+(week-1)*7+weekday-1)
-	isoYear, isoWeek := parsed.ISOWeek()
-	if isoYear != year || isoWeek != week || parsed.Year() < 1 || parsed.Year() > 9999 {
-		return time.Time{}, false
-	}
-	return parsed, true
 }
 
 func asciiDecimalDigits(value string) bool {
