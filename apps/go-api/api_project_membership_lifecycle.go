@@ -281,9 +281,5 @@ func (s *projectMembershipLifecycleService) AuthorizeMembershipLifecycleProtocol
 		err = projectMembershipLifecycleMapError(err)
 		_ = errors.As(err, &generated)
 	}
-	data, _ := json.Marshal(generated)
-	var body map[string]any
-	_ = json.Unmarshal(data, &body)
-	status := protocolErrorStatus(generated.Name)
-	return status, body
+	return protocolErrorResponse(generated.Name, generated)
 }

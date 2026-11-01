@@ -128,13 +128,7 @@ func workspaceLifecycleProtocolError(err error) (int, map[string]any) {
 	if !errors.As(err, &failure) {
 		return http.StatusInternalServerError, map[string]any{"error": workspaceLifecycleInternalMessage}
 	}
-	status := protocolErrorStatus(failure.Name)
-	var body map[string]any
-	encoded, _ := json.Marshal(failure.Body)
-	if json.Unmarshal(encoded, &body) != nil || body == nil {
-		body = map[string]any{}
-	}
-	return status, body
+	return protocolErrorResponse(failure.Name, failure.Body)
 }
 
 func (service *workspaceLifecycleService) error(status int, body any) error {

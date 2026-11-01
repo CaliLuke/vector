@@ -465,14 +465,9 @@ func accountAuthenticationProtocolError(err error) (int, map[string]any) {
 		return http.StatusInternalServerError, map[string]any{"error": accountAuthenticationInternalMessage}
 	}
 	if failure.Name == "unauthenticated" {
-		var body map[string]any
-		_ = json.Unmarshal([]byte(failure.Body), &body)
-		return http.StatusUnauthorized, body
+		return protocolErrorResponse("status_401", failure.Body)
 	}
-	status := protocolErrorStatus(failure.Name)
-	var body map[string]any
-	_ = json.Unmarshal([]byte(failure.Body), &body)
-	return status, body
+	return protocolErrorResponse(failure.Name, failure.Body)
 }
 func accountAuthenticationRaw(body any) (*api.AccountAuthenticationRawResponse, io.ReadCloser, error) {
 	encoded, err := json.Marshal(body)

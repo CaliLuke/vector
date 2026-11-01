@@ -176,13 +176,7 @@ func workspaceSearchProtocolError(err error) (int, map[string]any) {
 	if !errors.As(err, &failure) {
 		return 500, map[string]any{"detail": "Something went wrong please try again later"}
 	}
-	status := protocolErrorStatus(failure.Name)
-	encoded, _ := json.Marshal(failure.Body)
-	var body map[string]any
-	if json.Unmarshal(encoded, &body) != nil || body == nil {
-		body = map[string]any{}
-	}
-	return status, body
+	return protocolErrorResponse(failure.Name, failure.Body)
 }
 func workspaceSearchRaw(body json.RawMessage) (*api.WorkspaceSearchRawJSON, io.ReadCloser, error) {
 	if !json.Valid(body) {

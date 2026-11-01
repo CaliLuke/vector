@@ -169,14 +169,10 @@ func (service *invitationsMembershipService) AuthorizeInvitationsMembershipProto
 		err = invitationsMembershipRepositoryError(err)
 		_ = errors.As(err, &generated)
 	}
-	data, _ := json.Marshal(generated)
-	var body map[string]any
-	_ = json.Unmarshal(data, &body)
-	status := http.StatusInternalServerError
-	if generated != nil {
-		status = protocolErrorStatus(generated.Name)
+	if generated == nil {
+		return protocolErrorResponse("", nil)
 	}
-	return status, body
+	return protocolErrorResponse(generated.Name, generated)
 }
 
 func (service *invitationsMembershipService) APIKeyAuth(ctx context.Context, key string, scheme *security.APIKeyScheme) (context.Context, error) {

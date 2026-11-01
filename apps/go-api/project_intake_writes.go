@@ -108,12 +108,7 @@ func projectIntakeProtocolError(err error) (int, map[string]any) {
 	if !errors.As(err, &failure) {
 		return 500, map[string]any{"detail": "Something went wrong please try again later"}
 	}
-	status := protocolErrorStatus(failure.Name)
-	var body map[string]any
-	if json.Unmarshal([]byte(failure.Body), &body) != nil || body == nil {
-		body = map[string]any{}
-	}
-	return status, body
+	return protocolErrorResponse(failure.Name, failure.Body)
 }
 
 func intakeWriteError(status int, body map[string]any) error {

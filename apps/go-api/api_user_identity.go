@@ -117,11 +117,7 @@ func (s *apiUserIdentityReadsService) AuthorizeAPIIdentityProtocol(ctx context.C
 	}
 	var response *api.APIUserIdentityErrorBody
 	if errors.As(err, &response) {
-		status := protocolErrorStatus(response.Name)
-		raw, _ := json.Marshal(response)
-		var body map[string]any
-		_ = json.Unmarshal(raw, &body)
-		return status, body
+		return protocolErrorResponse(response.Name, response)
 	}
 	return 500, map[string]any{"error": "Something went wrong please try again later"}
 }

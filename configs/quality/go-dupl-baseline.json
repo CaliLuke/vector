@@ -1551,24 +1551,6 @@
     },
     {
       "fingerprint": [
-        "custom_view_creation.go",
-        "project_publication.go",
-        "307d6fb18cd28b0a65e7f2de1661011be5d3149bcc60e6e54cb3f161faca09b3",
-        "fbfa5685497200940896e0bf3ddeda4270a8e275ceaacfcc8caffdc453c926cd"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "custom_view_creation.go",
-        "workspace_user_insights.go",
-        "307d6fb18cd28b0a65e7f2de1661011be5d3149bcc60e6e54cb3f161faca09b3",
-        "8a3f8ee8707a008ff12a7024cc99bab8e2f2d19c6127fe57553563c650e9d09f"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
         "cycle_lifecycle.go",
         "module_lifecycle.go",
         "b11c2651785f35295e32c6aa3b6a89328020321a929651ea450a2aec565e7d94",
@@ -2340,15 +2322,6 @@
         "95c3b53487c11e0f139b598004eb397b342ede40cd3a165da245402e207ecdcf"
       ],
       "count": 2
-    },
-    {
-      "fingerprint": [
-        "project_publication.go",
-        "work_item_history.go",
-        "bbc8f5cf1895ac5f8dffe7cbbf2dd38dc494d68a949a3d198d04a511db17f1d6",
-        "fbfa5685497200940896e0bf3ddeda4270a8e275ceaacfcc8caffdc453c926cd"
-      ],
-      "count": 1
     },
     {
       "fingerprint": [
@@ -3171,15 +3144,6 @@
     },
     {
       "fingerprint": [
-        "work_item_history.go",
-        "workspace_exports.go",
-        "aa214a9e4f806f1e9e6618ed4a224d034d4f71c553a9030d8601e58eae505797",
-        "bbc8f5cf1895ac5f8dffe7cbbf2dd38dc494d68a949a3d198d04a511db17f1d6"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
         "workspace_analytics.go",
         "workspace_analytics.go",
         "2d12b2bf6a91be9775878cf86373f494f36233ba3a33ff9422db2e97458454cf",
@@ -3211,15 +3175,6 @@
         "workspace_user_insights.go",
         "6cae5a3b81bb457e32c484e42126776b3559d802404fe9dccd794c2c91649a6d",
         "d75447a115b6ff7977d75254c06c5f8e184001f74f8b97073606d1babeaf3162"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "workspace_exports.go",
-        "workspace_personal.go",
-        "53defcdf604440f285002366885087bf6f0ff7c113698901b2c2a86adf7ee30a",
-        "aa214a9e4f806f1e9e6618ed4a224d034d4f71c553a9030d8601e58eae505797"
       ],
       "count": 1
     },
@@ -3258,15 +3213,6 @@
         "914ec3a4f734169a74c1e4a8da8ddea6fe62a5aa179986353d0852516dc26d4a"
       ],
       "count": 2
-    },
-    {
-      "fingerprint": [
-        "workspace_personal.go",
-        "workspace_user_insights.go",
-        "53defcdf604440f285002366885087bf6f0ff7c113698901b2c2a86adf7ee30a",
-        "8a3f8ee8707a008ff12a7024cc99bab8e2f2d19c6127fe57553563c650e9d09f"
-      ],
-      "count": 1
     },
     {
       "fingerprint": [

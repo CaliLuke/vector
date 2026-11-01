@@ -8,11 +8,11 @@
   "status": "Outstanding findings inventory, not a quality-gate allowance or a claim that every diagnostic is a defect. Review error ownership before fixing.",
   "overlap_rule": "Configured audit matched by file, line, column and diagnostic text; do not add ERR-01 overlap twice.",
   "summary": {
-    "findings": 273,
+    "findings": 252,
     "also_in_ERR_01": 0,
-    "additional_ERR_02": 273,
+    "additional_ERR_02": 252,
     "test_file_findings": 0,
-    "non_test_file_findings": 273
+    "non_test_file_findings": 252
   },
   "findings": [
     {
@@ -20,20 +20,6 @@
       "line": 441,
       "column": 11,
       "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/account_authentication.go",
-      "line": 469,
-      "column": 3,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/account_authentication.go",
-      "line": 474,
-      "column": 2,
-      "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -114,20 +100,6 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/api_project_membership_lifecycle.go",
-      "line": 284,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_project_membership_lifecycle.go",
-      "line": 286,
-      "column": 2,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/api_state_reads.go",
       "line": 107,
       "column": 7,
@@ -150,28 +122,14 @@
     },
     {
       "file": "apps/go-api/api_user_identity.go",
-      "line": 121,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_user_identity.go",
-      "line": 123,
-      "column": 3,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/api_user_identity.go",
-      "line": 131,
+      "line": 127,
       "column": 7,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/api_user_identity.go",
-      "line": 132,
+      "line": 128,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
@@ -524,13 +482,6 @@
       "line": 491,
       "column": 6,
       "message": "Error return value of `response.Write` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/custom_view_creation.go",
-      "line": 94,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1690,28 +1641,14 @@
     },
     {
       "file": "apps/go-api/invitations_membership.go",
-      "line": 172,
+      "line": 232,
       "column": 8,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/invitations_membership.go",
-      "line": 174,
-      "column": 2,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/invitations_membership.go",
-      "line": 236,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/invitations_membership.go",
-      "line": 237,
+      "line": 233,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
@@ -1753,7 +1690,7 @@
     },
     {
       "file": "apps/go-api/project_intake_writes.go",
-      "line": 120,
+      "line": 115,
       "column": 11,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
@@ -1766,44 +1703,9 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/project_label_writes.go",
-      "line": 180,
-      "column": 9,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/project_label_writes.go",
-      "line": 182,
-      "column": 3,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/project_lifecycle.go",
-      "line": 422,
-      "column": 8,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/project_lifecycle.go",
-      "line": 424,
-      "column": 3,
-      "message": "Error return value of `json.Unmarshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/project_member_preferences.go",
-      "line": 126,
+      "line": 121,
       "column": 11,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/project_publication.go",
-      "line": 94,
-      "column": 7,
       "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
@@ -1836,66 +1738,31 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/work_item_history.go",
-      "line": 124,
-      "column": 11,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_analytics.go",
-      "line": 95,
-      "column": 11,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/workspace_exports.go",
-      "line": 84,
-      "column": 5,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_exports.go",
-      "line": 178,
+      "line": 172,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/workspace_exports.go",
-      "line": 278,
+      "line": 272,
       "column": 3,
       "message": "Error return value of `body.Close` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/workspace_exports.go",
-      "line": 294,
+      "line": 288,
       "column": 2,
       "message": "Error return value of `json.Unmarshal` is not checked",
       "also_in_configured_audit": false
     },
     {
       "file": "apps/go-api/workspace_lifecycle.go",
-      "line": 133,
-      "column": 11,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_lifecycle.go",
-      "line": 355,
+      "line": 349,
       "column": 3,
       "message": "Error return value of `body.Close` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_personal.go",
-      "line": 80,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
       "also_in_configured_audit": false
     },
     {
@@ -1906,22 +1773,8 @@
       "also_in_configured_audit": false
     },
     {
-      "file": "apps/go-api/workspace_search.go",
-      "line": 180,
-      "column": 11,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
       "file": "apps/go-api/workspace_user_insights.go",
-      "line": 127,
-      "column": 7,
-      "message": "Error return value of `json.Marshal` is not checked",
-      "also_in_configured_audit": false
-    },
-    {
-      "file": "apps/go-api/workspace_user_insights.go",
-      "line": 264,
+      "line": 258,
       "column": 4,
       "message": "Error return value of `body.Close` is not checked",
       "also_in_configured_audit": false

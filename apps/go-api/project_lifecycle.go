@@ -418,11 +418,7 @@ func (s *projectLifecycleService) AuthorizeProjectLifecycleAPIProtocol(ctx conte
 	}
 	var response *api.ProjectLifecycleErrorIdentity
 	if errors.As(err, &response) {
-		status := protocolErrorStatus(response.Kind)
-		raw, _ := json.Marshal(response.Body)
-		var body map[string]any
-		_ = json.Unmarshal(raw, &body)
-		return status, body
+		return protocolErrorResponse(response.Kind, response.Body)
 	}
 	return 500, map[string]any{"error": "Something went wrong please try again later"}
 }

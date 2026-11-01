@@ -90,13 +90,7 @@ func workspaceAnalyticsProtocolError(err error) (int, map[string]any) {
 	if !errors.As(err, &failure) {
 		return http.StatusInternalServerError, map[string]any{"detail": "Something went wrong please try again later"}
 	}
-	status := protocolErrorStatus(failure.Name)
-	var body map[string]any
-	encoded, _ := json.Marshal(failure.Body)
-	if json.Unmarshal(encoded, &body) != nil || body == nil {
-		body = map[string]any{}
-	}
-	return status, body
+	return protocolErrorResponse(failure.Name, failure.Body)
 }
 
 func (s *workspaceAnalyticsService) actor(ctx context.Context, slug, project string) (workspaceAnalyticsActor, error) {

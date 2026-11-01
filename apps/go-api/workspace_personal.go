@@ -75,13 +75,7 @@ func personalDashboardProtocolError(err error) (int, map[string]any) {
 	if !errors.As(err, &failure) {
 		return 500, map[string]any{"error": "Something went wrong please try again later"}
 	}
-	code := protocolErrorStatus(failure.Name)
-	var body map[string]any
-	raw, _ := json.Marshal(failure.Body)
-	if json.Unmarshal(raw, &body) != nil || body == nil {
-		body = map[string]any{}
-	}
-	return code, body
+	return protocolErrorResponse(failure.Name, failure.Body)
 }
 
 func (s *personalDashboardService) error(status int, body any) error {

@@ -79,13 +79,7 @@ func workspaceExportsProtocolError(err error) (int, map[string]any) {
 	if !errors.As(err, &failure) {
 		return 500, map[string]any{"error": "Something went wrong please try again later"}
 	}
-	code := protocolErrorStatus(failure.Name)
-	var body map[string]any
-	b, _ := json.Marshal(failure.Body)
-	if json.Unmarshal(b, &body) != nil || body == nil {
-		body = map[string]any{}
-	}
-	return code, body
+	return protocolErrorResponse(failure.Name, failure.Body)
 }
 func (s *workspaceExportsService) error(code int, body any) error {
 	raw, err := json.Marshal(body)
